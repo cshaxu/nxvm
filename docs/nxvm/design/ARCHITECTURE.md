@@ -36,7 +36,8 @@ it does not change runtime ownership before the corresponding cutover.
   App supplies one frozen factory with copied INFO/speed operations; it owns
   fixed hardware/firmware projection. The PC Machine adapter's S6 receiver is
   `ibmpc/machine`; Current records its acceptance status.
-- `app-nxvm/product` supplies immutable identity to the sole `ibmpc/product`
+- `app-nxvm/product` consumes the shared PC identity/version and supplies its
+  fixed binding to the sole `ibmpc/product`
   process entry, banner and cleanup body. Its fixed composition binding selects
   one Profile's frozen values/assets and preparation for Product's shared factory.
   Product consumes Machine's public creation/INFO/speed API; Machine has no

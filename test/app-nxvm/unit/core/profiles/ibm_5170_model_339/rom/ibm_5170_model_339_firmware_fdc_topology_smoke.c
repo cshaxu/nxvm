@@ -24,7 +24,7 @@ int main(void)
         vm_test_ibm_5170_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) goto done;
 
-    route = vm_profile_default_pc_at_route_find(profile,
+    route = vm_at_route_find(profile->routes, profile->route_count,
         VM_AT_ROUTE_FDC_IRQ6_DMA2);
     if (route == LIB_NULL || route->irq != 6u ||
         route->dma_channel != 2u ||

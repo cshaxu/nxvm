@@ -281,10 +281,18 @@ target_sources(core-machine-time-smoke PRIVATE
     test/app-nxvm/unit/core/profiles/model40/d4_refresh_fixture.c)
 target_link_libraries(core-machine-time-smoke PRIVATE core-machine)
 
+add_library(model40-d4-prefetch-scheduler-test OBJECT src/x86/core/machine_scheduler.c)
+target_link_libraries(model40-d4-prefetch-scheduler-test PRIVATE x86-core-observable)
+target_compile_definitions(model40-d4-prefetch-scheduler-test PRIVATE
+    core_machine_cpu_execution_advance_prefetch_reservation=test_cpu_prefetch_grant)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(model40-d4-prefetch-scheduler-test PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(model40-d4-prefetch-locality-smoke
     test/app-nxvm/unit/core/profiles/model40/d4_prefetch_locality_smoke.c)
 target_link_libraries(model40-d4-prefetch-locality-smoke PRIVATE
-    core-machine-prefetch-scheduler-test core-machine)
+    model40-d4-prefetch-scheduler-test core-machine-observable)
 
 add_executable(core-machine-competition-s3-smoke
     test/app-nxvm/unit/core/devices/machine_competition_s3_smoke.c

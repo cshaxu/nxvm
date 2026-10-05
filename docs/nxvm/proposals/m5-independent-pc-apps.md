@@ -17,7 +17,9 @@ PC110 remains a separate [future task](m6-pc110-evidence-and-implementation.md),
 not an empty fifth App. T539 chips and T540 shared board integration remain
 accepted dependencies; T542's S11 relocation and corrective
 [composition completion](../history/M5-T542-pc-composition-completion-proposal.md) are accepted.
-The split still requires its own admission. Shared AT materialization serves all three AT models;
+The additional [S20 residual correction](m5-at-composition-residual.md) must be
+accepted before split admission. All four Apps share PC version declarations
+from ibmpc/product/version_interface.h. Shared AT materialization serves all three AT models;
 no future App may import a peer profile or copy the remaining generic factory,
 asset-finishing or build machinery.
 This task does not reimplement them, T541 Product or T542's shared adapter.
@@ -27,7 +29,7 @@ App identities/build bindings rather than copying those implementations.
 
 ## Design And Cutover
 
-Each App owns immutable identity, board composition, firmware/build binding
+Each App owns immutable machine identity, board composition, firmware/build binding
 and its product-local documentation, tests, tools and artifacts. All four
 consume the same accepted ibmpc/product command/API/INI/startup/UX implementation,
 x86 Core/chips, the sole T542 PC Machine adapter and appropriate IBM-PC board

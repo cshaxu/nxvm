@@ -2,6 +2,7 @@
 
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
 #include "ibmpc/board-common/rom_validation_interface.h"
+#include "ibmpc/board-common/rom_mapping_interface.h"
 
 lib_status vm_profile_xt_5160_268_external_rom_create(
     const lib_u8 *system, lib_size system_bytes,
@@ -27,23 +28,23 @@ static lib_status vm_profile_xt_5160_268_firmware_configure(void *opaque,
     core_machine_firmware_context *firmware)
 {
     const vm_profile_xt_5160_268_external_rom *rom = opaque;
-    lib_status status;
+    vm_profile_rom_region regions[3u];
+    lib_size count = 1u;
 
-    if (rom == LIB_NULL || rom->system_bytes == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = core_machine_firmware_register_immutable_rom(firmware,
+    if (rom == LIB_NULL || rom->system_bytes == LIB_NULL ||
+        (rom->xebec_present && rom->xebec_bytes == LIB_NULL))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    regions[0] = (vm_profile_rom_region) {
         VM_PROFILE_XT_5160_268_SYSTEM_ROM_PHYSICAL_START, rom->system_bytes,
-        VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES);
-    if (status != LIB_STATUS_OK) return status;
-    if (rom->video_bytes != LIB_NULL) {
-        status = core_machine_firmware_register_immutable_rom(firmware,
-            0x000c0000u, rom->video_bytes, rom->video_byte_count);
-        if (status != LIB_STATUS_OK) return status;
-    }
-    if (!rom->xebec_present) return status;
-    if (rom->xebec_bytes == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    return core_machine_firmware_register_immutable_rom(firmware,
-        VM_PROFILE_XT_5160_268_XEBEC_ROM_PHYSICAL_START, rom->xebec_bytes,
-        VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES);
+        VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES };
+    if (rom->video_bytes != LIB_NULL)
+        regions[count++] = (vm_profile_rom_region) {0x000c0000u,
+            rom->video_bytes, rom->video_byte_count};
+    if (rom->xebec_present)
+        regions[count++] = (vm_profile_rom_region) {
+            VM_PROFILE_XT_5160_268_XEBEC_ROM_PHYSICAL_START, rom->xebec_bytes,
+            VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES };
+    return vm_profile_rom_register(firmware, regions, count, LIB_NULL, 0u);
 }
 
 static lib_status vm_profile_xt_5160_268_firmware_reset(void *opaque,

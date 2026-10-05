@@ -1,4 +1,5 @@
 #include "ibmpc/machine/preparation_interface.h"
+#include "ibmpc/board-common/at_assembly_interface.h"
 #include "app-nxvm/profiles/default_profile/construction_interface.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
@@ -118,11 +119,6 @@ static lib_status vm_profile_machine_plan_materialize_pc_at(
     const vm_profile_pc_at_machine_plan *plan, core_machine_plan *core_plan)
 {
     const vm_profile_default_pc_at_descriptor *profile;
-    const vm_at_port_leaf *dor_port;
-    const vm_at_port_leaf *status_port;
-    const vm_at_port_leaf *data_port;
-    const vm_at_port_leaf *control_port;
-    const vm_at_route *route;
     core_machine_fdc_drive_bindings drives = {
         {VM_PROFILE_MACHINE_FDD_MEDIA_ID, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u,
@@ -137,25 +133,9 @@ static lib_status vm_profile_machine_plan_materialize_pc_at(
     if (!vm_profile_default_pc_at_descriptor_is_valid(profile)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    dor_port = vm_profile_default_pc_at_port_leaf_at(profile,
-        VM_AT_DEVICE_FDC, 0u);
-    status_port = vm_profile_default_pc_at_port_leaf_at(profile,
-        VM_AT_DEVICE_FDC, 1u);
-    data_port = vm_profile_default_pc_at_port_leaf_at(profile,
-        VM_AT_DEVICE_FDC, 2u);
-    control_port = vm_profile_default_pc_at_port_leaf_at(profile,
-        VM_AT_DEVICE_FDC, 3u);
-    route = vm_profile_default_pc_at_route_find(profile,
-        VM_AT_ROUTE_FDC_IRQ6_DMA2);
-    if (dor_port == LIB_NULL || status_port == LIB_NULL || data_port == LIB_NULL ||
-        control_port == LIB_NULL || route == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    fdc.dor_port = dor_port->port;
-    fdc.status_port = status_port->port;
-    fdc.data_port = data_port->port;
-    fdc.direction_port = control_port->port;
-    fdc.control_port = control_port->port;
-    fdc.irq = route->irq;
-    fdc.dma_channel = route->dma_channel;
+    if (vm_at_fdc_materialize(profile->port_leaves, profile->port_leaf_count,
+            profile->routes, profile->route_count, &fdc) != LIB_STATUS_OK)
+        return LIB_STATUS_INVALID_ARGUMENT;
     fdc.ready_mask = profile->fdc_ready_mask;
     fdc.clock_ticks_per_second = plan->construction.core_config.time_axis.ticks_per_second;
     drives.installed_mask = profile->fdc_installed_mask;

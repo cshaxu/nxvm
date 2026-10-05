@@ -11,6 +11,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board_interface.
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/at_assembly.c" assembly_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/lifecycle.c"
     lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine_devices.c"
@@ -26,10 +27,17 @@ foreach(required IN ITEMS "core_machine_configure_dma"
     endif()
 endforeach()
 
-string(FIND "${profile_source}" "topology.dma = (core_machine_dma_wiring)" position)
+string(FIND "${profile_source}" "vm_at_topology_materialize" position)
 if(position EQUAL -1)
-    message(FATAL_ERROR "T296 S3 profile resolver does not publish DMA wiring in the Core plan")
+    message(FATAL_ERROR "T296 S3 profile resolver bypasses shared AT materialization")
 endif()
+foreach(required IN ITEMS "result.dma = (core_machine_dma_wiring)"
+    "result.dma_present = LIB_TRUE" "result.rtc_cmos_present = LIB_TRUE")
+    string(FIND "${assembly_source}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "T296 S3 shared AT materialization is incomplete: ${required}")
+    endif()
+endforeach()
 string(FIND "${profile_source}" "topology.rtc_cmos = (core_machine_rtc_cmos_config)" position)
 if(position EQUAL -1)
     message(FATAL_ERROR "T296 S3 profile resolver does not publish RTC/CMOS wiring in the Core plan")

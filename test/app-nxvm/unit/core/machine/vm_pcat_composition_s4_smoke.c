@@ -37,15 +37,15 @@ static lib_i32 vm_pcat_s4_topology_matches(
         failed |= test_core_port_has_read(session->core_machine, leaf->port) != leaf->read ||
             test_core_port_has_write(session->core_machine, leaf->port) != leaf->write;
     }
-    pit_route = vm_profile_default_pc_at_route_find(profile,
+    pit_route = vm_at_route_find(profile->routes, profile->route_count,
         VM_AT_ROUTE_PIT_IRQ0);
-    keyboard_route = vm_profile_default_pc_at_route_find(profile,
+    keyboard_route = vm_at_route_find(profile->routes, profile->route_count,
         VM_AT_ROUTE_KBC_KEYBOARD_IRQ1);
-    aux_route = vm_profile_default_pc_at_route_find(profile,
+    aux_route = vm_at_route_find(profile->routes, profile->route_count,
         VM_AT_ROUTE_KBC_AUX_IRQ12);
-    cmos_route = vm_profile_default_pc_at_route_find(profile,
+    cmos_route = vm_at_route_find(profile->routes, profile->route_count,
         VM_AT_ROUTE_CMOS_IRQ8);
-    fdc_route = vm_profile_default_pc_at_route_find(profile,
+    fdc_route = vm_at_route_find(profile->routes, profile->route_count,
         VM_AT_ROUTE_FDC_IRQ6_DMA2);
     failed |= pit_route == LIB_NULL || keyboard_route == LIB_NULL || aux_route == LIB_NULL ||
         cmos_route == LIB_NULL || fdc_route == LIB_NULL ||

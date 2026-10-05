@@ -17,7 +17,7 @@ src/
   x86/{chips,core,xasm32,debug}/
   ibmpc/{board-common,board-xt,board-at,machine,product}/
   app-nxvm/             NXVM product implementation
-    product/            main, identity and fixed composition binding
+    product/            thin main and fixed composition binding
     firmware/           project-owned BIOS source and offline ROM construction
     profiles/
       xt/               IBM 5160 board composition and firmware slots
@@ -34,7 +34,7 @@ prepare copied construction values and transfer their real context lifetime.
 Shared owns candidate publication and rollback, never an App layout or model ID.
 The shared Product INI, command/hotkey and Common composition files and their
 reusable assertions live in ibmpc/product and test/ibmpc/product. Shared process
-entry/banner formatting consumes App-owned immutable identity and factory values. The
+entry/banner formatting consumes shared PC identity/version and App-owned factory values. The
 former `app-nxvm/devices` implementation is removed. Shared board mechanisms
 live in the flat `ibmpc/board-*` receivers; genuine D4 state stays in
 `app-nxvm/profiles/model40`. Current records delivery acceptance, not this layout.
@@ -156,5 +156,6 @@ The owner-required ibmpc/product receiver owns the identical PC Console/API,
 INI/startup/UX implementation once, with matching test/ibmpc/product coverage.
 Its final flat file set and minimum typed Machine binding are determined by
 T541 S1's actual-source inventory and T542's construction ledger. Each App retains real
-product identity, fixed board/firmware composition and build binding; no App
+machine identity, fixed board/firmware composition and build binding; PC version
+declarations are shared in ibmpc/product/version_interface.h. No App
 is the source library of another App or the shared Product implementation.

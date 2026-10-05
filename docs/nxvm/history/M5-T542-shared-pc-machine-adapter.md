@@ -2130,3 +2130,142 @@ record. Close S19 and T542, remove its packet, archive the corrective proposal
 and update the successor's satisfied prerequisite. Do not admit that successor
 or allocate its T. No new hardware, physical timing or guest qualification is
 claimed by this closure. Existing TODO exceptions remain explicitly outside it.
+
+## S20 Residual AT Composition Correction
+
+Owner-approved corrective batch on 2026-10-04, baseline 398fa5a1a. The finite
+batch contains endpoint queries, AT topology/FDC projection, ROM registration,
+PC version, and the disposition of remaining entry/descriptor policy. S19
+acceptance remains historical; S20 independently verifies this changed source.
+
+| Member | Sole owner, callers and preservation/failure proof |
+| --- | --- |
+| Endpoint queries | board-at/wiring owns neutral immutable lookup. Default/5170 callers supply the existing enabled-role mask; Model40 assembly consumes the same grammar. Old private search bodies and declarations are deleted. Shared alternative-port, disabled-role and missing-endpoint tests preserve borrowed-value behavior. |
+| AT topology | board-common/at_assembly projects ports, RTC IRQ and DMA wiring into existing copied Core config. Default, 5170 and Model40 call it; model memory decode, CECG/EGA personality, RTC defaults and clocks remain unchanged local inputs. Results publish only after all required endpoints/routes exist. Shared CGA/EGA, missing-role and unchanged-output tests supplement the original profile assertions. |
+| FDC projection | The same owner projects four ports and IRQ/DRQ into existing FDC config for all three AT models. READY, diagnostics, drive/media configuration and Model40 D4 observation remain local. Custom port/IRQ/DMA and preserved-field tests cover the mechanism; no HDC forwarding wrapper is introduced. |
+| ROM registration | board-common/rom_mapping registers explicit copied regions, then declared aliases, returning the first exact Core error. Default/5170, XT and Model40 providers retain addresses, optional ROM selection, odd/even preparation and alias skip/order. Core owns storage and construction rollback. Mocked failures at every registration stop later calls; existing real mapping tests remain. |
+| PC version | product/version_interface.h owns the unchanged shared identity/version declarations. The App main consumes it; the old version.h is deleted. Build definitions supply 0.5.0542 to all four fixed products. |
+| Remaining local policy | Tiny main/fixed binding, model descriptors, CPU/memory restrictions, genuine ROM organization and D4 have distinct composition responsibilities, not duplicated runtime mechanisms. Retain them without a new registry, universal descriptor or forwarding entry framework. |
+
+The architecture/coding governance skills guide the result: extract repeated
+mechanisms, preserve actual model inputs and keep one existing publication/
+rollback boundary. No new runtime state owner, execution path or media cache
+is introduced. Lib/Common/x86 implementation, MyNES, owner INIs and external
+asset masters are excluded. The successor App split remains unadmitted.
+
+Release full-unit compilation exposed one existing test configuration conflict:
+core-machine-cpu-timing-preview-smoke linked the production Board (trace=0)
+with observable Core (trace=1). Align it with board-common-observable; the two
+other observation-pair targets already match. The whole test/build sweep finds
+no other mixed pair. This repairs test composition, not production tracing.
+
+Full Release units then exposed Model40's D4 prefetch trace fixture linked to
+production Core. Its reused scheduler test object also transitively linked
+production Core before the observable library, so changing only the final
+library was insufficient. Compile that same scheduler source in a Model40-owned
+observation test object against the existing observable Core, retaining the
+original grant redirection and every 20-tick/refresh/reset assertion. Production
+trace remains disabled and the shared x86 fixture remains untouched. The sweep
+of every trace-provider consumer finds the other assertion-based unit tests
+already use matching observable libraries. Integration providers collect
+optional diagnostics and do not assert trace counts; their production path
+remains unchanged. The complete x64 run was 505/506 before this correction;
+concurrent builds/tests exhausted the x86 aggregate's existing 300-second bound.
+Final full suites are run sequentially after dependencies are prepared, without
+raising deadlines or weakening assertions.
+
+Pre-delivery source accounting uses git diff --numstat for modified/deleted
+C/H paths and physical LF line counts for new C/H files, against 398fa5a1a;
+documentation, CMake, manifests and binaries are excluded. Production: 16
+paths, +272/-224, net +48. Tests: seven paths, +171/-19, net +152. Combined:
++443/-243, net +200. The positive production balance is the neutral public
+interfaces and shared projections replacing private searches and assignments;
+it is not another state/loader/executor layer. New tests exercise alternative
+inputs and failure boundaries rather than copying product fixtures.
+
+### S20 Fresh Delivery Verification
+
+The two new shared unit cases execute real assertions in Release (-UNDEBUG).
+The final bounded full repository-only suites use the unchanged aggregate
+deadline and run sequentially: x64 506/506 in 99.51 seconds; x86 506/506 in
+89.81 seconds. The two additional cases account for the increase from S19's
+504. No original assertion or test entry is removed. The final observation
+fixture contains no production Core archive in its link response and compiles
+the same scheduler with trace=1 and explicit strict GCC warnings. Production
+Core/Board remain trace=0.
+
+Original external integrations use the existing eight configured Profile/width
+contexts, adjacent INIs and owner-managed media, once per registered case:
+
+| Profile | Host | Pass | Wall time |
+| --- | --- | --- | --- |
+| default | x64 | 22/22 | 17.33 s |
+| XT | x64 | 1/1 | 22.96 s |
+| 5170 | x64 | 3/3 | 41.38 s |
+| Model40 | x64 | 3/3 | 70.00 s |
+| default | x86 | 22/22 | 19.83 s |
+| XT | x86 | 1/1 | 29.34 s |
+| 5170 | x86 | 3/3 | 49.94 s |
+| Model40 | x86 | 3/3 | 84.58 s |
+
+Total 58/58, with unchanged DOS/installer and Windows checkpoint predicates.
+Default runs the canonical run-integration-tests target; the other six cached
+trees run RunTestAggregate.ps1 -Route integration after their original fixture
+targets are built. Preparing many Make targets separately repeated the full
+dependency walk; those two build-only commands were stopped before default
+integration ran, and the existing aggregate completed preparation once. No
+failed runtime was hidden by retrying an integration case.
+
+The 17 manifest/corpus/DAG/negative verification CTest cases pass. All six
+canonical Lib/Common/x86 source/test manifests match and have no diff; ibmpc's
+two complete manifests have revision nxvm-m5-t542-s20-at-assembly-20261004.
+Selected composition checks pass in every product build. Documentation and
+diff checks pass. Cached MinGW direct-compile inventory has 521 strict rows and
+zero deferred; generated Make flags are inspected, not misreported as the
+Ninja-only direct-command verifier. The added NXVM observation object separately
+uses -Wall -Wextra -Wpedantic -Werror. No Lib/Common/x86 source/test, MyNES,
+root-rule/README, INI or external-master change is part of this delivery.
+
+All eight products are newly built optimized Release 0.5.0542 developer
+artifacts, not releases. Shared and NXVM delivery commits together identify
+their source. Each deployed PE architecture is checked; no .debug/.stab
+sections remain, and runtime Debug is preserved. Their SHA-256 values are:
+
+| Machine | Host | SHA-256 |
+| --- | --- | --- |
+| default | x64 | CFE338AFFEDC30F248CED18BC9272B842BD6433F6D04C3352CEEEE6E8E4502C5 |
+| default | x86 | 7E5CEC95EAD2D83928E6CFC80FD24F15A231B19E0AE2B551DE294B67588250EA |
+| XT | x64 | 246208F8867499259ECE2C39D61ACD14D2805C164B227955B7415ABE4E6236D4 |
+| XT | x86 | 1AF99F1679AB28075C76BC234276B23A45416FC4FE94255F28C12C41E660D9AB |
+| 5170 | x64 | 5621D303167FC493E4287349399EA87D445A961F0929BD6F477A38437E03EE3C |
+| 5170 | x86 | 68FBE962C0E640ED70564C0BC6A6AE2AD99D6D8EA42C3BE92BE289377E048DC4 |
+| Model40 | x64 | 726EF9E80F0597E32C119E71DA827A09054E887C9512B02B66AA19705A7E4A41 |
+| Model40 | x86 | A79157379C0A285C3B5BC2659AD026840C72026BDE4340613F3F933F1F1E2137 |
+
+The original eight pre-existing cache trees are reused, not newly owned
+temporary package trees. Test helpers perform their existing cleanup; no new
+raw recorder, external asset copy or protected source artifact is retained.
+Final coordinator review must separately verify this actual change set,
+governance links, all ledger dispositions and pushed source/artifact identity
+before changing Current to closed.
+
+Specialized closure inspection and the whole cmake/nxvm token sweep found four
+gates still requiring old App-local implementation tokens: immutable ROM
+registration, RTC endpoints, DMA topology and FDC port/channel projection.
+Update their checks to require each App-to-shared call and the shared-to-Core
+mapping/projection, retaining and extending the forbidden runtime-ROM-file
+scan. No clock, immutable backing or chip/board ownership check is removed.
+The final verify-current-specialized-gates target passes on both widths.
+Its deliberate negative self-test diagnostics are expected and finish with
+the verifier-self-test pass marker, not an ignored production failure.
+
+Executor actual-diff review checks all 16 production C/H paths, seven test C/H
+paths, shared build/manifests, four migrated closure checks, observation fixture
+composition and every changed authority/link against the six-member ledger.
+XT's absent required Xebec bytes now fail before any registration rather than
+after system/video registration; only an unpublished invalid candidate is
+affected. Successful mapping addresses/order, optional video and Core rollback
+remain unchanged. No residual private lookup/version body or second ROM route
+remains. Every excluded surface has an empty diff and INIs remain untouched.
+The paired implementation commits are ready for separate coordinator review;
+no successor is admitted by this delivery.

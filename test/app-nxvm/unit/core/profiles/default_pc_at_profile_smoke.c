@@ -86,17 +86,21 @@ lib_i32 main(void)
             CORE_MACHINE_CPU_PROFILE_80386, (x86_fpu_profile)0xffu,
             &contract)) return 1;
 
-    cmos_index = vm_profile_default_pc_at_port_leaf_find(profile,
+    cmos_index = vm_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
+        vm_profile_default_pc_at_enabled_devices(profile),
         VM_AT_DEVICE_CMOS, 0x0070u);
-    cmos_data = vm_profile_default_pc_at_port_leaf_find(profile,
+    cmos_data = vm_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
+        vm_profile_default_pc_at_enabled_devices(profile),
         VM_AT_DEVICE_CMOS, 0x0071u);
-    fdc_data = vm_profile_default_pc_at_port_leaf_find(profile,
+    fdc_data = vm_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
+        vm_profile_default_pc_at_enabled_devices(profile),
         VM_AT_DEVICE_FDC, 0x03f5u);
-    memory_control = vm_profile_default_pc_at_port_leaf_find(profile,
+    memory_control = vm_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,
+        vm_profile_default_pc_at_enabled_devices(profile),
         VM_AT_DEVICE_MEMORY_CONTROL, 0x0092u);
-    fdc_route = vm_profile_default_pc_at_route_find(profile,
+    fdc_route = vm_at_route_find(profile->routes, profile->route_count,
         VM_AT_ROUTE_FDC_IRQ6_DMA2);
-    aux_route = vm_profile_default_pc_at_route_find(profile,
+    aux_route = vm_at_route_find(profile->routes, profile->route_count,
         VM_AT_ROUTE_KBC_AUX_IRQ12);
     if (cmos_index == LIB_NULL || cmos_index->read || !cmos_index->write ||
         cmos_data == LIB_NULL || !cmos_data->read || !cmos_data->write ||

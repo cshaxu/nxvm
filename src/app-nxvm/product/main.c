@@ -5,7 +5,7 @@
  * Start:      01/25/2012
  */
 #include "ibmpc/product/entry_interface.h"
-#include "app-nxvm/product/version.h"
+#include "ibmpc/product/version_interface.h"
 #include "ibmpc/product/factory_interface.h"
 #include "app-nxvm/product/profile_binding.h"
 

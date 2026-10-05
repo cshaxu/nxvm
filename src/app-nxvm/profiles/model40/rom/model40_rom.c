@@ -2,6 +2,7 @@
 #include "app-nxvm/profiles/model40/model40_private.h"
 
 #include "ibmpc/board-common/rom_validation_interface.h"
+#include "ibmpc/board-common/rom_mapping_interface.h"
 
 lib_i32 vm_profile_model40_external_rom_is_valid(
     const vm_profile_model40_external_rom *rom)
@@ -43,35 +44,36 @@ static lib_status vm_profile_model40_firmware_configure(void *opaque,
     status = vm_profile_rom_interleave(window, sizeof(window),
         rom->even_bytes, rom->chip_byte_count, rom->odd_bytes, rom->chip_byte_count);
     if (status != LIB_STATUS_OK) return status;
-    status = core_machine_firmware_register_immutable_rom(firmware,
-        VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START, window, sizeof(window));
-    if (status != LIB_STATUS_OK) return status;
+    vm_profile_rom_region regions[2u] = {
+        {VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START, window, sizeof(window)}
+    };
+    vm_profile_rom_alias aliases[4u];
+    lib_size region_count = 1u;
+    lib_size alias_count = 0u;
+
     if (rom->video_bytes != LIB_NULL &&
         vm_profile_byob_option_rom_is_valid(rom->video_bytes, rom->video_byte_count,
             VM_PROFILE_MODEL40_VIDEO_ROM_BYTES)) {
-        status = core_machine_firmware_register_immutable_rom(firmware,
-            VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START, rom->video_bytes,
-            rom->video_byte_count);
-        if (status != LIB_STATUS_OK) return status;
-        status = core_machine_firmware_register_immutable_rom_alias(firmware,
+        regions[region_count++] = (vm_profile_rom_region) {
+            VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START,
+            rom->video_bytes, rom->video_byte_count };
+        aliases[alias_count++] = (vm_profile_rom_alias) {
             VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START +
                 VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES,
             VM_PROFILE_MODEL40_VIDEO_ROM_COMPATIBILITY_ALIAS_START +
                 VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES,
-            rom->video_byte_count - VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES);
-        if (status != LIB_STATUS_OK) return status;
+            rom->video_byte_count - VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES };
     }
-    status = core_machine_firmware_register_immutable_rom_alias(firmware,
+    aliases[alias_count++] = (vm_profile_rom_alias) {
         VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START,
-        VM_PROFILE_MODEL40_ROM_COMPATIBILITY_ALIAS_START, sizeof(window));
-    if (status != LIB_STATUS_OK) return status;
-    status = core_machine_firmware_register_immutable_rom_alias(firmware,
+        VM_PROFILE_MODEL40_ROM_COMPATIBILITY_ALIAS_START, sizeof(window) };
+    aliases[alias_count++] = (vm_profile_rom_alias) {
         VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START,
-        VM_PROFILE_MODEL40_ROM_HIGH_ALIAS_START, sizeof(window));
-    if (status != LIB_STATUS_OK) return status;
-    return core_machine_firmware_register_immutable_rom_alias(firmware,
+        VM_PROFILE_MODEL40_ROM_HIGH_ALIAS_START, sizeof(window) };
+    aliases[alias_count++] = (vm_profile_rom_alias) {
         VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START,
-        VM_PROFILE_MODEL40_ROM_HIGH_RESET_ALIAS_START, sizeof(window));
+        VM_PROFILE_MODEL40_ROM_HIGH_RESET_ALIAS_START, sizeof(window) };
+    return vm_profile_rom_register(firmware, regions, region_count, aliases, alias_count);
 }
 
 static lib_status vm_profile_model40_firmware_reset(void *opaque,

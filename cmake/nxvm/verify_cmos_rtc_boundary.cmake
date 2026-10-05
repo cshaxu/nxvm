@@ -12,6 +12,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_pro
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile_private.h"
     profile_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/at_assembly.c" assembly_source)
 
 foreach(forbidden IN ITEMS "machine->board->shared_rtc"
     "machine->board->rtc_selected_register" "x86_rtc_advance(")
@@ -75,11 +76,17 @@ string(FIND "${advance_source}" "x86_rtc_advance" machine_advance_position)
 string(FIND "${board_source}" "core_machine_configure_rtc_cmos"
     machine_binding_position)
 string(FIND "${devices_source}" "core_machine_rtc_" device_position)
-string(FIND "${profile_source}" "VM_AT_DEVICE_CMOS" profile_position)
+string(FIND "${profile_source}" "vm_at_topology_materialize" profile_position)
+string(FIND "${assembly_source}" "VM_AT_DEVICE_CMOS" endpoint_position)
+string(FIND "${assembly_source}" "result.rtc_cmos.index_port" index_position)
+string(FIND "${assembly_source}" "result.rtc_cmos.data_port" data_position)
+string(FIND "${assembly_source}" "result.rtc_cmos.irq" irq_position)
 string(FIND "${profile_header}" "rtc_ticks_per_second" clock_position)
 if(machine_advance_position EQUAL -1 OR machine_binding_position EQUAL -1 OR
     NOT device_position EQUAL -1 OR
-    profile_position EQUAL -1 OR clock_position EQUAL -1)
+    profile_position EQUAL -1 OR endpoint_position EQUAL -1 OR
+    index_position EQUAL -1 OR data_position EQUAL -1 OR irq_position EQUAL -1 OR
+    clock_position EQUAL -1)
     message(FATAL_ERROR "CMOS RTC clock binding is incomplete")
 endif()
 

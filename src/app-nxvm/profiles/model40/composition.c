@@ -4,6 +4,7 @@
 
 #include "ibmpc/board-common/vadp_interface.h"
 #include "ibmpc/board-common/floppy_interface.h"
+#include "ibmpc/board-common/at_assembly_interface.h"
 
 static lib_status vm_profile_model40_materialize_controllers(core_machine_plan *plan,
     core_machine_fdc_terminal_observation_provider terminal_observation)
@@ -25,9 +26,11 @@ static lib_status vm_profile_model40_materialize_controllers(core_machine_plan *
     if (plan == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    fdc = (core_machine_fdc_config) { 0x03f2u, 0x03f4u, 0x03f5u,
-        0x03f7u, 0x03f7u, 6u, 2u,
-        0x0fu, 8000000u, 0u, 0u };
+    fdc.ready_mask = 0x0fu;
+    fdc.clock_ticks_per_second = 8000000u;
+    if (vm_at_fdc_materialize(vm_at_port_leaves, VM_AT_PORT_LEAF_COUNT,
+            vm_at_routes_without_aux, 4u, &fdc) != LIB_STATUS_OK)
+        return LIB_STATUS_INVALID_ARGUMENT;
     hdc = (core_machine_hdc_config) {
         .protocol = CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB,
         .irq = 14u, .service = {0u, 0u}, .bus.task_file = {
@@ -50,9 +53,6 @@ lib_status vm_profile_model40_topology_materialize(
     core_machine_plan_topology *out_topology)
 {
     core_machine_display_config display = {0};
-    core_machine_dma_wiring dma = { .fdc_channel = 2u,
-        .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
-        .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_rtc_cmos_config rtc = {0};
     core_machine_plan_topology topology = {0};
     if (out_topology == LIB_NULL) {
@@ -73,12 +73,6 @@ lib_status vm_profile_model40_topology_materialize(
         { 0x00u, 0x01u, 0x02u, 0x03u, 0x04u, 0x05u, 0x06u, 0x07u,
           0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
           0x01u, 0x00u, 0x0fu, 0x00u, 0x00u } };
-    display.ports = (core_machine_display_port_topology) {
-        0x03c0u, 0x03c1u, 0x03c4u, 0x03c5u, 0x03ceu, 0x03cfu,
-        0x03d4u, 0x03dau };
-    rtc.index_port = 0x0070u;
-    rtc.data_port = 0x0071u;
-    rtc.irq = 8u;
     rtc.nmi_mask_bit = 0x80u;
     rtc.ticks_per_second = 32768u;
     rtc.timing = (core_machine_rtc_timing_plan) {8u, 65u,
@@ -102,12 +96,11 @@ lib_status vm_profile_model40_topology_materialize(
      * continues to win as its own selected physical mapping. */
     topology.absent_memory[2] = (core_machine_absent_memory_config) {
         0x000b0000u, 0x00008000u, 0xffu };
-    topology.display_present = LIB_TRUE;
     topology.display = display;
-    topology.dma_present = LIB_TRUE;
-    topology.dma = dma;
-    topology.rtc_cmos_present = LIB_TRUE;
     topology.rtc_cmos = rtc;
+    if (vm_at_topology_materialize(vm_at_port_leaves, VM_AT_PORT_LEAF_COUNT,
+            vm_at_routes_without_aux, 4u, &topology) != LIB_STATUS_OK)
+        return LIB_STATUS_INVALID_ARGUMENT;
     *out_topology = topology;
     return LIB_STATUS_OK;
 }

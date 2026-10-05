@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
+#include "ibmpc/board-common/at_assembly_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 
 static lib_i32 vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes);
@@ -316,55 +317,11 @@ lib_status vm_profile_default_pc_at_topology_materialize(
     const core_machine_controller_timing_rules *timing_rules,
     core_machine_plan_topology *out_topology)
 {
-    const vm_at_port_leaf *attribute_first;
-    const vm_at_port_leaf *attribute_last;
-    const vm_at_port_leaf *sequencer_first;
-    const vm_at_port_leaf *sequencer_last;
-    const vm_at_port_leaf *graphics_first;
-    const vm_at_port_leaf *graphics_last;
-    const vm_at_port_leaf *crtc_first;
-    const vm_at_port_leaf *crtc_last;
-    const vm_at_port_leaf *cmos_first;
-    const vm_at_port_leaf *cmos_last;
-    const vm_at_route *cmos_route;
-    const vm_at_route *fdc_route;
     core_machine_plan_topology topology = {0};
     lib_u32 first_expansion_decode;
 
     if (descriptor == LIB_NULL || timing_rules == LIB_NULL || out_topology == LIB_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(descriptor)) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    attribute_first = vm_profile_default_pc_at_port_leaf_at(descriptor,
-        VM_AT_DEVICE_VADP_ATTRIBUTE, 0u);
-    attribute_last = vm_profile_default_pc_at_port_leaf_at(descriptor,
-        VM_AT_DEVICE_VADP_ATTRIBUTE, 1u);
-    sequencer_first = vm_profile_default_pc_at_port_leaf_at(descriptor,
-        VM_AT_DEVICE_VADP_SEQUENCER, 0u);
-    sequencer_last = vm_profile_default_pc_at_port_leaf_at(descriptor,
-        VM_AT_DEVICE_VADP_SEQUENCER, 1u);
-    graphics_first = vm_profile_default_pc_at_port_leaf_at(descriptor,
-        VM_AT_DEVICE_VADP_GRAPHICS, 0u);
-    graphics_last = vm_profile_default_pc_at_port_leaf_at(descriptor,
-        VM_AT_DEVICE_VADP_GRAPHICS, 1u);
-    crtc_first = vm_profile_default_pc_at_port_leaf_at(descriptor,
-        VM_AT_DEVICE_VADP, 0u);
-    crtc_last = vm_profile_default_pc_at_port_leaf_at(descriptor,
-        VM_AT_DEVICE_VADP, 4u);
-    cmos_first = vm_profile_default_pc_at_port_leaf_at(descriptor,
-        VM_AT_DEVICE_CMOS, 0u);
-    cmos_last = vm_profile_default_pc_at_port_leaf_at(descriptor,
-        VM_AT_DEVICE_CMOS, 1u);
-    cmos_route = vm_profile_default_pc_at_route_find(descriptor,
-        VM_AT_ROUTE_CMOS_IRQ8);
-    fdc_route = vm_profile_default_pc_at_route_find(descriptor,
-        VM_AT_ROUTE_FDC_IRQ6_DMA2);
-    if ((descriptor->ega_present && (attribute_first == LIB_NULL ||
-        attribute_last == LIB_NULL || sequencer_first == LIB_NULL ||
-        sequencer_last == LIB_NULL || graphics_first == LIB_NULL ||
-        graphics_last == LIB_NULL)) || crtc_first == LIB_NULL ||
-        crtc_last == LIB_NULL || cmos_first == LIB_NULL ||
-        cmos_last == LIB_NULL || cmos_route == LIB_NULL || fdc_route == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (descriptor->unpopulated_extended_memory) {
@@ -392,23 +349,12 @@ lib_status vm_profile_default_pc_at_topology_materialize(
         descriptor->planar_parity_present ? descriptor->default_memory_bytes : 0u,
         descriptor->refresh_status_source,
         descriptor->refresh_status_toggle_ticks };
-    topology.display_present = LIB_TRUE;
     topology.display = (core_machine_display_config) {
         .text_timing = descriptor->cga_text_timing,
         .cga_vram_present = descriptor->cga_vram_present,
         .ega_present = descriptor->ega_present,
         .ega_sequencer = descriptor->ega_sequencer,
-        .ega_controllers = descriptor->ega_controllers,
-        .ports = {
-            .attribute_first = attribute_first == LIB_NULL ? 0u : attribute_first->port,
-            .attribute_last = attribute_last == LIB_NULL ? 0u : attribute_last->port,
-            .sequencer_first = sequencer_first == LIB_NULL ? 0u : sequencer_first->port,
-            .sequencer_last = sequencer_last == LIB_NULL ? 0u : sequencer_last->port,
-            .graphics_first = graphics_first == LIB_NULL ? 0u : graphics_first->port,
-            .graphics_last = graphics_last == LIB_NULL ? 0u : graphics_last->port,
-            .crtc_first = crtc_first->port,
-            .crtc_last = crtc_last->port
-        }
+        .ega_controllers = descriptor->ega_controllers
     };
     if (descriptor->monochrome_aperture_absent &&
         first_expansion_decode <= 0x000b0000u) {
@@ -420,15 +366,7 @@ lib_status vm_profile_default_pc_at_topology_materialize(
      * firmware must observe the open bus and decide that no adapter ROM exists. */
     topology.absent_memory[topology.absent_memory_count++] =
         (core_machine_absent_memory_config) { 0x000c0000u, 0x00030000u, 0xffu };
-    topology.dma_present = LIB_TRUE;
-    topology.dma = (core_machine_dma_wiring) {
-        fdc_route->dma_channel, CORE_MACHINE_DMA_CONTROLLER_COUNT,
-        CORE_MACHINE_DMA_CASCADE_CHANNEL };
-    topology.rtc_cmos_present = LIB_TRUE;
     topology.rtc_cmos = (core_machine_rtc_cmos_config) {
-        .index_port = cmos_first->port,
-        .data_port = cmos_last->port,
-        .irq = cmos_route->irq,
         .nmi_mask_bit = 0x80u,
         .ticks_per_second = descriptor->rtc_ticks_per_second,
         .timing = timing_rules->rtc_clock ==
@@ -449,6 +387,9 @@ lib_status vm_profile_default_pc_at_topology_materialize(
         .default_count = CORE_MACHINE_RTC_DEFAULT_COUNT,
         .derive_configuration_checksum = LIB_TRUE
     };
+    if (vm_at_topology_materialize(descriptor->port_leaves, descriptor->port_leaf_count,
+            descriptor->routes, descriptor->route_count, &topology) != LIB_STATUS_OK)
+        return LIB_STATUS_INVALID_ARGUMENT;
     *out_topology = topology;
     return LIB_STATUS_OK;
 }
@@ -460,7 +401,7 @@ static lib_status vm_profile_default_pc_at_values_create(
 {
     vm_profile_default_pc_at_cpu_contract contract;
     vm_profile_contract_core_input core = {.id = ibm_5170_contract_ids[0]};
-    lib_u32 enabled = (1u << (VM_AT_DEVICE_BOARD + 1u)) - 1u;
+    lib_u32 enabled = vm_profile_default_pc_at_enabled_devices(descriptor);
 
     if (out_values == LIB_NULL ||
         !vm_profile_default_pc_at_cpu_contract_select(descriptor,
@@ -468,9 +409,6 @@ static lib_status vm_profile_default_pc_at_values_create(
         !vm_profile_default_pc_at_core_config_materialize(descriptor, &contract,
             &core.configuration, &core.controller_timing_rules))
         return LIB_STATUS_INVALID_ARGUMENT;
-    if (!descriptor->hdc_present) enabled &= ~(1u << VM_AT_DEVICE_HDC);
-    if (!descriptor->ega_present) enabled &= ~((1u << VM_AT_DEVICE_VADP_ATTRIBUTE) |
-        (1u << VM_AT_DEVICE_VADP_SEQUENCER) | (1u << VM_AT_DEVICE_VADP_GRAPHICS));
     return vm_at_contract_materialize(&core, descriptor->port_leaves, descriptor->port_leaf_count,
         descriptor->routes, descriptor->route_count, enabled, descriptor->cga_vram_present, out_values);
 }
@@ -668,63 +606,16 @@ lib_status vm_profile_default_at_plan_create(
 }
 
 #endif
-const vm_at_port_leaf *
-vm_profile_default_pc_at_port_leaf_find(
-    const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_at_device_role device, lib_u16 port)
+lib_u32 vm_profile_default_pc_at_enabled_devices(
+    const vm_profile_default_pc_at_descriptor *descriptor)
 {
-    lib_size index;
+    lib_u32 enabled = VM_AT_DEVICE_MASK_ALL;
 
-    if (descriptor == LIB_NULL) return LIB_NULL;
-    for (index = 0u; index < descriptor->port_leaf_count; ++index) {
-        if (descriptor->port_leaves[index].device == device &&
-            (device != VM_AT_DEVICE_HDC || descriptor->hdc_present) &&
-            ((device != VM_AT_DEVICE_VADP_ATTRIBUTE &&
-            device != VM_AT_DEVICE_VADP_SEQUENCER &&
-            device != VM_AT_DEVICE_VADP_GRAPHICS) ||
-            descriptor->ega_present) &&
-            descriptor->port_leaves[index].port == port) {
-            return &descriptor->port_leaves[index];
-        }
-    }
-    return LIB_NULL;
-}
-
-const vm_at_port_leaf *
-vm_profile_default_pc_at_port_leaf_at(
-    const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_at_device_role device, lib_size ordinal)
-{
-    lib_size index;
-
-    if (descriptor == LIB_NULL) return LIB_NULL;
-    for (index = 0u; index < descriptor->port_leaf_count; ++index) {
-        if (descriptor->port_leaves[index].device == device &&
-            (device != VM_AT_DEVICE_HDC || descriptor->hdc_present) &&
-            ((device != VM_AT_DEVICE_VADP_ATTRIBUTE &&
-            device != VM_AT_DEVICE_VADP_SEQUENCER &&
-            device != VM_AT_DEVICE_VADP_GRAPHICS) ||
-            descriptor->ega_present)) {
-            if (ordinal == 0u) return &descriptor->port_leaves[index];
-            --ordinal;
-        }
-    }
-    return LIB_NULL;
-}
-
-const vm_at_route *vm_profile_default_pc_at_route_find(
-    const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_at_route_source source)
-{
-    lib_size index;
-
-    if (descriptor == LIB_NULL) return LIB_NULL;
-    for (index = 0u; index < descriptor->route_count; ++index) {
-        if (descriptor->routes[index].source == source) {
-            return &descriptor->routes[index];
-        }
-    }
-    return LIB_NULL;
+    if (descriptor == LIB_NULL) return 0u;
+    if (!descriptor->hdc_present) enabled &= ~(1u << VM_AT_DEVICE_HDC);
+    if (!descriptor->ega_present) enabled &= ~((1u << VM_AT_DEVICE_VADP_ATTRIBUTE) |
+        (1u << VM_AT_DEVICE_VADP_SEQUENCER) | (1u << VM_AT_DEVICE_VADP_GRAPHICS));
+    return enabled;
 }
 
 lib_i32 vm_profile_default_pc_at_descriptor_is_valid(

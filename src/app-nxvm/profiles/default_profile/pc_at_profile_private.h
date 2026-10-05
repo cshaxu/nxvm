@@ -190,17 +190,8 @@ lib_status vm_profile_ibm_5170_plan_create_memory(lib_size memory_bytes,
 lib_status vm_profile_default_at_plan_create(
     const vm_profile_default_at_request *request,
     vm_profile_default_pc_at_plan_snapshot *out_profile);
-const vm_at_port_leaf *
-vm_profile_default_pc_at_port_leaf_find(
-    const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_at_device_role device, lib_u16 port);
-const vm_at_port_leaf *
-vm_profile_default_pc_at_port_leaf_at(
-    const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_at_device_role device, lib_size ordinal);
-const vm_at_route *vm_profile_default_pc_at_route_find(
-    const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_at_route_source source);
+lib_u32 vm_profile_default_pc_at_enabled_devices(
+    const vm_profile_default_pc_at_descriptor *descriptor);
 lib_i32 vm_profile_default_pc_at_descriptor_is_valid(
     const vm_profile_default_pc_at_descriptor *descriptor);
 

@@ -15,11 +15,12 @@ Common board integration is closed as [T540](../history/M5-T540-shared-ibmpc-int
 [T541](../history/M5-T541-independent-pc-apps.md) delivers the shared
 [PC Product](../history/m5-shared-pc-product.md). The owner separated the
 four-App split into the first candidate; it has no allocated numeric T yet.
-Closed [T542](../history/M5-T542-shared-pc-machine-adapter.md) completes the
+[T542](../history/M5-T542-shared-pc-machine-adapter.md), now in corrective S20, completes the
 [residual composition extraction](../history/M5-T542-pc-composition-completion-proposal.md)
 before that split. The shared AT mechanism covers 5170, default and DeskPro;
 model-specific definitions stay local. Current owns task acceptance; the split
-is still an unnumbered Queue candidate; its completion prerequisite is satisfied.
+is still an unnumbered Queue candidate; its prerequisite awaits the additional
+[AT composition correction](../proposals/m5-at-composition-residual.md).
 Its accepted corrective S11 places board-common/XT/AT, Machine and Product
 under the separate ibmpc package consumed by that candidate.
 The later candidates retain their semantic qualification scope against the
