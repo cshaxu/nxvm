@@ -24,6 +24,11 @@ values. It does not select a machine or start with 5170 defaults and override
 them for another model. XT uses `ibmpc/board-xt`, with only genuinely common
 construction/asset mechanisms in `ibmpc/board-common`.
 
+AT endpoint grammar belongs to board-at. Projection into the existing neutral
+profile-contract values belongs to board-common, the established family
+composition root. Board-at does not depend back on board-common's value/layout
+contract; this split preserves the existing acyclic dependency direction.
+
 Each App retains its topology, CPU/clock and memory constraints, ROM layout,
 CMOS contents, display choice, HDC personality, floppy mechanisms and wiring.
 Model40 also retains D4 and its observations. Matching AT wiring/validation

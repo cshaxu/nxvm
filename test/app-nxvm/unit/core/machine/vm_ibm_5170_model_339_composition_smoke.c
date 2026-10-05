@@ -72,7 +72,7 @@ static lib_i32 vm_model_339_selected_contract(void)
         profile->pic_irq_timing.unmask_delivery_ticks[1u] != 120u ||
         profile->cmos.floppy_type != 0x20u || profile->cmos.fixed_disk_type != 0x30u ||
         vm_profile_default_pc_at_port_leaf_find(profile,
-            VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f0u) == LIB_NULL ||
+            VM_AT_DEVICE_HDC, 0x01f0u) == LIB_NULL ||
         vm_test_create_5170(&config, &session) != LIB_STATUS_OK || session == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;

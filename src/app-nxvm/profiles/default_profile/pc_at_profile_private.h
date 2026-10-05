@@ -1,6 +1,8 @@
 #ifndef VM_PROFILE_DEFAULT_PC_AT_PROFILE_PRIVATE_H
 #define VM_PROFILE_DEFAULT_PC_AT_PROFILE_PRIVATE_H
 #include "lib/types/types_interface.h"
+#include "ibmpc/board-at/wiring_interface.h"
+#include "ibmpc/board-common/at_contract_interface.h"
 
 
 #include "x86/chips/cpu/cpu_interface.h"
@@ -8,45 +10,6 @@
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/vadp_interface.h"
 #include "ibmpc/board-common/profile_contract_interface.h"
-
-typedef enum vm_profile_default_pc_at_device_role {
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_KBC,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_MEMORY_CONTROL,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_BOARD
-} vm_profile_default_pc_at_device_role;
-
-#define VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL 0xffu
-
-typedef struct vm_profile_default_pc_at_port_leaf {
-    vm_profile_default_pc_at_device_role device;
-    lib_u16 port;
-    lib_u8 read;
-    lib_u8 write;
-} vm_profile_default_pc_at_port_leaf;
-
-typedef enum vm_profile_default_pc_at_route_source {
-    VM_PROFILE_DEFAULT_PC_AT_ROUTE_PIT_IRQ0,
-    VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_KEYBOARD_IRQ1,
-    VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_AUX_IRQ12,
-    VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8,
-    VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2
-} vm_profile_default_pc_at_route_source;
-
-typedef struct vm_profile_default_pc_at_route {
-    vm_profile_default_pc_at_route_source source;
-    lib_u8 irq;
-    lib_u8 dma_channel;
-} vm_profile_default_pc_at_route;
 
 typedef struct vm_profile_default_pc_at_rom_mapping {
     lib_u32 linear_start;
@@ -152,9 +115,9 @@ typedef struct vm_profile_default_pc_at_descriptor {
     lib_u8 diskette_drive_a_field_upgrade;
     vm_profile_default_pc_at_rom_mapping rom;
     vm_profile_default_pc_at_cmos_defaults cmos;
-    const vm_profile_default_pc_at_port_leaf *port_leaves;
+    const vm_at_port_leaf *port_leaves;
     lib_size port_leaf_count;
-    const vm_profile_default_pc_at_route *routes;
+    const vm_at_route *routes;
     lib_size route_count;
     core_machine_hdc_config hdc;
     const vm_profile_default_pc_at_firmware_service *firmware_services;
@@ -179,9 +142,9 @@ typedef struct vm_profile_default_pc_at_plan_snapshot {
     vm_profile_contract_values values;
     vm_profile_default_pc_at_descriptor descriptor;
     core_machine_plan_topology topology;
-    vm_profile_default_pc_at_port_leaf
+    vm_at_port_leaf
         port_leaves[VM_PROFILE_DEFAULT_PC_AT_PLAN_PORT_LEAF_CAPACITY];
-    vm_profile_default_pc_at_route routes[VM_PROFILE_DEFAULT_PC_AT_PLAN_ROUTE_CAPACITY];
+    vm_at_route routes[VM_PROFILE_DEFAULT_PC_AT_PLAN_ROUTE_CAPACITY];
     vm_profile_default_pc_at_firmware_service
         firmware_services[VM_PROFILE_DEFAULT_PC_AT_PLAN_FIRMWARE_SERVICE_CAPACITY];
 } vm_profile_default_pc_at_plan_snapshot;
@@ -227,17 +190,17 @@ lib_status vm_profile_ibm_5170_plan_create_memory(lib_size memory_bytes,
 lib_status vm_profile_default_at_plan_create(
     const vm_profile_default_at_request *request,
     vm_profile_default_pc_at_plan_snapshot *out_profile);
-const vm_profile_default_pc_at_port_leaf *
+const vm_at_port_leaf *
 vm_profile_default_pc_at_port_leaf_find(
     const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_profile_default_pc_at_device_role device, lib_u16 port);
-const vm_profile_default_pc_at_port_leaf *
+    vm_at_device_role device, lib_u16 port);
+const vm_at_port_leaf *
 vm_profile_default_pc_at_port_leaf_at(
     const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_profile_default_pc_at_device_role device, lib_size ordinal);
-const vm_profile_default_pc_at_route *vm_profile_default_pc_at_route_find(
+    vm_at_device_role device, lib_size ordinal);
+const vm_at_route *vm_profile_default_pc_at_route_find(
     const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_profile_default_pc_at_route_source source);
+    vm_at_route_source source);
 lib_i32 vm_profile_default_pc_at_descriptor_is_valid(
     const vm_profile_default_pc_at_descriptor *descriptor);
 

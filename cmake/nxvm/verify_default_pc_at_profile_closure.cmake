@@ -14,14 +14,24 @@ file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/fdc.c" fdc_source)
 foreach(required IN ITEMS
     "default-pc-at"
     "0xfffffff0u"
-    "0x000ffff0u"
-    "VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS"
-    "VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC")
+    "0x000ffff0u")
     string(FIND "${profile_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Default PC/AT descriptor is missing ${required}")
     endif()
 endforeach()
+
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/wiring.c" at_wiring)
+foreach(required IN ITEMS "VM_AT_DEVICE_CMOS" "VM_AT_DEVICE_FDC" "0x0070u" "0x0071u" "0x03f2u" "0x03f4u" "0x03f5u" "0x03f7u")
+    string(FIND "${at_wiring}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "Shared AT electrical grammar is missing ${required}")
+    endif()
+endforeach()
+string(FIND "${profile_source}" "vm_at_port_leaves" position)
+if(position EQUAL -1)
+    message(FATAL_ERROR "Default profile no longer consumes shared AT grammar")
+endif()
 
 foreach(source_text IN ITEMS "${firmware_source}" "${devices_source}")
     foreach(forbidden IN ITEMS "0xfffffff0u" "0x000ffff0u" "0x03f2u"

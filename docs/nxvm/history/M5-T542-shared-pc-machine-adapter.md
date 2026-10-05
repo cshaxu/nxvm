@@ -1715,3 +1715,87 @@ Documentation governance and diff checks pass. Close S15 and remove its packet.
 S16 must still replace the three-consumer AT coupling; S17/S18 and once-only
 58-context S19 acceptance remain required. T542 and the App split are not closed
 or newly admitted respectively.
+
+## S16 Executor Delivery: Three-Consumer AT Contract
+
+Baseline a36120263. The original 79-entry AT port grammar and both 5/4-route
+tables move unchanged, apart from neutral symbol names, to board-at. The
+existing board-common contract owner projects complete copied Core input,
+explicit enabled endpoints and routes into its value contract. Its structural
+validator is reused for final admission; failure publishes no partial output.
+This keeps the established common-to-family DAG: board-at does not acquire a
+reverse dependency on board-common. No live state or model selector is added.
+
+Default, 5170 and Model40 all call this one materializer. Model40 independently
+supplies its existing Core configuration and the same five timing rules; it
+no longer includes the default private header or constructs a 5170 contract
+and overrides it. A static owner gate rejects that peer-model dependency.
+The original role-sorted port order, IRQ/DRQ lines and read/write masks remain.
+Default uses 79 ports and five IRQ routes; the two other effective admission
+contracts retain 73 ports and four routes, with FDC DRQ2 in all three.
+
+This is a preserved admission-contract extraction, not a claim that Model40's
+inherited contract was a complete description of its physical video topology.
+Its existing CGA-window/non-planar admission declarations are unchanged;
+its actual EGA/CECG/D4 topology remains separately model-owned, as before.
+Memory decode, clock values, ROMs, CMOS contents and hardware personalities
+are not normalized between models. XT remains separate. Remaining descriptor
+queries and model-specific topology projection must still be reviewed at S19;
+this delivery does not claim the entire corrective inventory exhausted.
+
+The independent table-driven regression covers all three effective input
+shapes, copied Core input, port ordering, IRQ/DRQ and policy non-selection.
+Malformed roles, duplicate/inaccessible ports, bad/duplicate routes, missing
+enabled endpoints, absent memory/CPU, capacities and null inputs fail cleanly.
+Existing App fixtures change type/symbol names only; no predicate is removed.
+Static source-location gates follow the moved table rather than requiring a
+second App copy. Initial full-run failures were those obsolete source-location
+predicates; they were corrected and both complete runs repeated successfully.
+
+Final verification on delivered source:
+
+- `cmake --build build/t542-s13/unit-x64 --target run-unit-tests verify-current-specialized-gates --parallel 4`:
+  units 503/503, 197.63 s; strict/specialized gates pass.
+- Same command in unit-x86: units 503/503, 65.92 s; gates pass.
+- Standalone build/t542-s15-package builds `ibmpc-test-contract ibmpc-verify`;
+  `ctest --test-dir build/t542-s15-package -R '^ibmpc.contract$' --output-on-failure`:
+  1/1, 0.39 s total, without App/firmware input.
+- Independent root manifests/corpus/negative checks and library.component-dag:
+  15/15, 27.79 s. All six canonical corpus manifests remain valid; ibmpc's
+  source/test manifests include the new files and fixed S16 revision.
+- All eight retained Release trees build `vm-0-5-0542`. Post-link and independent
+  inspection confirm PE 8664/014C respectively and no debug/zdebug/stab sections.
+  Runtime Debug remains. No MyNES build or artifact change is made.
+- Documentation governance and Git diff checks pass. No Lib/Common/x86 chip or
+  Core, owner INI, external master, MyNES, root README or shared rule changes.
+
+Actual C/H diff against a36120263, including new files and excluding
+docs/manifests/CMake/EXEs: 14 paths, +499/-363, net +136. The new independent
+98-line regression accounts for 98; the remainder is explicit neutral ABI and
+checked copied publication replacing the private projection. No framework,
+forwarding compatibility alias or second construction path is introduced.
+Every source/test and gate hunk was reviewed against the previous input values.
+No old-versus-new binary differential experiment or fresh external integration
+result is claimed: S19 still owes all 58 contexts once.
+
+### S16 Deployed Artifacts
+
+Source identity is accepted S15 a36120263 plus Shared e2df2d0d4 and the
+accompanying NXVM S16 delivery. Existing assets/nxvm locations and adjacent
+INIs are retained.
+
+| Executable | SHA-256 |
+| --- | --- |
+| nxvm_default_0_5_0542_x64.exe | E6B5159DD25F527162A8AB31B4DFC7AB9B5B933B9C7B6467C9FAE5AE77445579 |
+| nxvm_default_0_5_0542_x86.exe | F20B966B3C66C748DBA2751F4545826106E305BDB83EC4565FE2F3F5BDA39CBB |
+| nxvm_xt_0_5_0542_x64.exe | 3F568144DF951FDB0365969CBEF300BC990492AD4A336480F8D6F261BF35F1E2 |
+| nxvm_xt_0_5_0542_x86.exe | AD83173916306B44D601042CC70BCE1AD301C162D315B2434B84012F18DBDFB6 |
+| nxvm_at_0_5_0542_x64.exe | 8E408B3794EA42C34B8E0144E8E63296BFF805C88FAED4BD4CCCB22BE587482C |
+| nxvm_at_0_5_0542_x86.exe | 0FC4DB5F243E5DED11024BFB03A95EA868673C00CB9E6C3795934736324E2DA2 |
+| nxvm_model40_0_5_0542_x64.exe | DCD2C81D9AD5B0CB918AFE10829D03BACD68AB3AA551EA81506BEE914B22175F |
+| nxvm_model40_0_5_0542_x86.exe | 47E72AF170934671F073487D4FFD4F3381FD9D2FAD651D28AC0C6CE7EF092F2A |
+
+All owned build/test handles are terminal. The retained incremental
+build/t542-s13 and standalone build/t542-s15-package trees are required by
+immediately following S17; no raw traces or separate temporary products exist.
+Only S16 is submitted for acceptance. S17-S19 and T542 remain open.

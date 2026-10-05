@@ -6,6 +6,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/video/video.c" vadp_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory.c" memory_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/wiring.c" at_wiring)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_plan.c" machine_plan_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_display.c" machine_display_source)
 
@@ -17,13 +18,13 @@ if(memory_source MATCHES "GRAPHICS_REGISTER|ATTRIBUTE_REGISTER|VADP_PORT")
 endif()
 
 foreach(required IN ITEMS
-    "VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS"
-    "VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE"
+    "VM_AT_DEVICE_VADP_GRAPHICS"
+    "VM_AT_DEVICE_VADP_ATTRIBUTE"
     "0x03ceu"
     "0x03cfu"
     "0x03c0u"
     "0x03c1u")
-    set(source_text "${profile_source}")
+    set(source_text "${profile_source}\n${at_wiring}")
     string(FIND "${source_text}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "T236 profile/composition binding is missing ${required}")

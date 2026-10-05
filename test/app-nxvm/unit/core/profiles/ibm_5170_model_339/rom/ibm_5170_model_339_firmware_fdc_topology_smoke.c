@@ -14,7 +14,7 @@ int main(void)
     const vm_machine_config config = {0};
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_ibm_5170_model_339_descriptor_get();
-    const vm_profile_default_pc_at_route *route;
+    const vm_at_route *route;
     vm_machine *session = LIB_NULL;
     lib_i32 failed = 1;
     if (profile == LIB_NULL ||
@@ -25,7 +25,7 @@ int main(void)
         session == LIB_NULL) goto done;
 
     route = vm_profile_default_pc_at_route_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
+        VM_AT_ROUTE_FDC_IRQ6_DMA2);
     if (route == LIB_NULL || route->irq != 6u ||
         route->dma_channel != 2u ||
         !test_core_port_has_write(session->core_machine, 0x03f2u) ||

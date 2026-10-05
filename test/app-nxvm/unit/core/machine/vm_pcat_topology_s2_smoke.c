@@ -16,11 +16,11 @@ static lib_i32 pcat_topology_registry_matches_profile(
     const vm_profile_default_pc_at_descriptor *profile)
 {
     vm_machine *session = LIB_NULL;
-    const vm_profile_default_pc_at_route *pit_route;
-    const vm_profile_default_pc_at_route *keyboard_route;
-    const vm_profile_default_pc_at_route *aux_route;
-    const vm_profile_default_pc_at_route *cmos_route;
-    const vm_profile_default_pc_at_route *fdc_route;
+    const vm_at_route *pit_route;
+    const vm_at_route *keyboard_route;
+    const vm_at_route *aux_route;
+    const vm_at_route *cmos_route;
+    const vm_at_route *fdc_route;
     test_board_composition_observation board;
     lib_size index;
     lib_i32 failed = 0;
@@ -32,22 +32,22 @@ static lib_i32 pcat_topology_registry_matches_profile(
     }
     board = test_board_capture_composition(session->board);
     for (index = 0u; index < profile->port_leaf_count; ++index) {
-        const vm_profile_default_pc_at_port_leaf *leaf =
+        const vm_at_port_leaf *leaf =
             &profile->port_leaves[index];
 
         failed |= test_core_port_has_read(session->core_machine, leaf->port) != leaf->read ||
             test_core_port_has_write(session->core_machine, leaf->port) != leaf->write;
     }
     pit_route = vm_profile_default_pc_at_route_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_ROUTE_PIT_IRQ0);
+        VM_AT_ROUTE_PIT_IRQ0);
     keyboard_route = vm_profile_default_pc_at_route_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_KEYBOARD_IRQ1);
+        VM_AT_ROUTE_KBC_KEYBOARD_IRQ1);
     aux_route = vm_profile_default_pc_at_route_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_AUX_IRQ12);
+        VM_AT_ROUTE_KBC_AUX_IRQ12);
     cmos_route = vm_profile_default_pc_at_route_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8);
+        VM_AT_ROUTE_CMOS_IRQ8);
     fdc_route = vm_profile_default_pc_at_route_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
+        VM_AT_ROUTE_FDC_IRQ6_DMA2);
     failed |= pit_route == LIB_NULL || keyboard_route == LIB_NULL || aux_route == LIB_NULL ||
         cmos_route == LIB_NULL || fdc_route == LIB_NULL ||
         !test_board_pic_source_matches(session->board, TEST_BOARD_PIT_IRQ0, pit_route->irq) ||
@@ -81,22 +81,22 @@ static lib_i32 pcat_topology_registry_matches_profile(
 static lib_i32 pcat_topology_routes_are_explicit(
     const vm_profile_default_pc_at_descriptor *profile)
 {
-    static const vm_profile_default_pc_at_route expected[] = {
-        { VM_PROFILE_DEFAULT_PC_AT_ROUTE_PIT_IRQ0, 0u,
-            VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL },
-        { VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_KEYBOARD_IRQ1, 1u,
-            VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL },
-        { VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_AUX_IRQ12, 12u,
-            VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL },
-        { VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8, 8u,
-            VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL },
-        { VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2, 6u, 2u }
+    static const vm_at_route expected[] = {
+        { VM_AT_ROUTE_PIT_IRQ0, 0u,
+            VM_AT_NO_DMA_CHANNEL },
+        { VM_AT_ROUTE_KBC_KEYBOARD_IRQ1, 1u,
+            VM_AT_NO_DMA_CHANNEL },
+        { VM_AT_ROUTE_KBC_AUX_IRQ12, 12u,
+            VM_AT_NO_DMA_CHANNEL },
+        { VM_AT_ROUTE_CMOS_IRQ8, 8u,
+            VM_AT_NO_DMA_CHANNEL },
+        { VM_AT_ROUTE_FDC_IRQ6_DMA2, 6u, 2u }
     };
     lib_size index;
 
     if (profile->route_count != sizeof(expected) / sizeof(expected[0])) return 1;
     for (index = 0u; index < profile->route_count; ++index) {
-        const vm_profile_default_pc_at_route *route =
+        const vm_at_route *route =
             vm_profile_default_pc_at_route_find(profile, expected[index].source);
 
         if (route == LIB_NULL || lib_memory_compare(route, &expected[index],
@@ -109,7 +109,7 @@ static lib_i32 pcat_topology_rejects_before_registration(
     const vm_profile_default_pc_at_descriptor *source)
 {
     vm_profile_default_pc_at_descriptor invalid = *source;
-    vm_profile_default_pc_at_port_leaf leaves[96];
+    vm_at_port_leaf leaves[96];
 
     if (source->port_leaf_count > sizeof(leaves) / sizeof(leaves[0])) return 1;
     lib_memory_copy(leaves, source->port_leaves,

@@ -8,12 +8,12 @@ lib_i32 main(void)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
-    const vm_profile_default_pc_at_port_leaf *cmos_index;
-    const vm_profile_default_pc_at_port_leaf *cmos_data;
-    const vm_profile_default_pc_at_port_leaf *fdc_data;
-    const vm_profile_default_pc_at_port_leaf *memory_control;
-    const vm_profile_default_pc_at_route *fdc_route;
-    const vm_profile_default_pc_at_route *aux_route;
+    const vm_at_port_leaf *cmos_index;
+    const vm_at_port_leaf *cmos_data;
+    const vm_at_port_leaf *fdc_data;
+    const vm_at_port_leaf *memory_control;
+    const vm_at_route *fdc_route;
+    const vm_at_route *aux_route;
     vm_profile_default_pc_at_cpu_contract contract;
     core_machine_config configuration;
     core_machine_controller_timing_rules timing_rules;
@@ -87,17 +87,17 @@ lib_i32 main(void)
             &contract)) return 1;
 
     cmos_index = vm_profile_default_pc_at_port_leaf_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0x0070u);
+        VM_AT_DEVICE_CMOS, 0x0070u);
     cmos_data = vm_profile_default_pc_at_port_leaf_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0x0071u);
+        VM_AT_DEVICE_CMOS, 0x0071u);
     fdc_data = vm_profile_default_pc_at_port_leaf_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0x03f5u);
+        VM_AT_DEVICE_FDC, 0x03f5u);
     memory_control = vm_profile_default_pc_at_port_leaf_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_MEMORY_CONTROL, 0x0092u);
+        VM_AT_DEVICE_MEMORY_CONTROL, 0x0092u);
     fdc_route = vm_profile_default_pc_at_route_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
+        VM_AT_ROUTE_FDC_IRQ6_DMA2);
     aux_route = vm_profile_default_pc_at_route_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_AUX_IRQ12);
+        VM_AT_ROUTE_KBC_AUX_IRQ12);
     if (cmos_index == LIB_NULL || cmos_index->read || !cmos_index->write ||
         cmos_data == LIB_NULL || !cmos_data->read || !cmos_data->write ||
         fdc_data == LIB_NULL || !fdc_data->read || !fdc_data->write ||
@@ -106,7 +106,7 @@ lib_i32 main(void)
         fdc_route == LIB_NULL || fdc_route->irq != 6u ||
         fdc_route->dma_channel != 2u || aux_route == LIB_NULL ||
         aux_route->irq != 12u || aux_route->dma_channel !=
-        VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL ||
+        VM_AT_NO_DMA_CHANNEL ||
         !vm_profile_default_pc_at_core_config_materialize(profile, &contract,
             &configuration, &timing_rules) || configuration.kbc_aux_absent) return 1;
 

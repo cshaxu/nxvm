@@ -2,7 +2,7 @@
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 
-#include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
+#include "ibmpc/board-common/at_contract_interface.h"
 
 static const lib_u32 vm_profile_model40_contract_ids[] = {1u};
 
@@ -85,14 +85,23 @@ lib_status vm_profile_model40_values_create(vm_profile_contract_values *out_valu
         sizeof(vm_profile_model40_contract_ids) /
             sizeof(vm_profile_model40_contract_ids[0]) };
 
-    /* This is direct composition, not inheritance: reuse the shared PC/AT
-     * electrical grammar, then replace Model-40-specific effective values. */
-    if (out_values == LIB_NULL ||
-        vm_profile_ibm_5170_values_create(0u, &values) != LIB_STATUS_OK) {
+    vm_profile_contract_core_input core = {.id = vm_profile_model40_contract_ids[0],
+        .controller_timing_rules = {
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK}};
+    const lib_u32 enabled = ((1u << (VM_AT_DEVICE_BOARD + 1u)) - 1u) &
+        ~((1u << VM_AT_DEVICE_VADP_ATTRIBUTE) | (1u << VM_AT_DEVICE_VADP_SEQUENCER) |
+            (1u << VM_AT_DEVICE_VADP_GRAPHICS));
+
+    vm_profile_model40_core_config_initialize(&core.configuration);
+    if (out_values == LIB_NULL || vm_at_contract_materialize(&core, vm_at_port_leaves,
+        VM_AT_PORT_LEAF_COUNT, vm_at_routes_without_aux, 4u, enabled,
+        LIB_TRUE, &values) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    values.core.id = vm_profile_model40_contract_ids[0];
-    vm_profile_model40_core_config_initialize(&values.core.configuration);
     values.firmware_policy = VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BYOB;
     values.media_policy = VM_PROFILE_CONTRACT_MEDIA_POLICY_SESSION;
     values.allowed_session_options = 0u;

@@ -75,7 +75,7 @@ string(FIND "${advance_source}" "x86_rtc_advance" machine_advance_position)
 string(FIND "${board_source}" "core_machine_configure_rtc_cmos"
     machine_binding_position)
 string(FIND "${devices_source}" "core_machine_rtc_" device_position)
-string(FIND "${profile_source}" "VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS" profile_position)
+string(FIND "${profile_source}" "VM_AT_DEVICE_CMOS" profile_position)
 string(FIND "${profile_header}" "rtc_ticks_per_second" clock_position)
 if(machine_advance_position EQUAL -1 OR machine_binding_position EQUAL -1 OR
     NOT device_position EQUAL -1 OR

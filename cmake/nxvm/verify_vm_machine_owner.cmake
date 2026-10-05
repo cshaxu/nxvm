@@ -116,6 +116,15 @@ foreach(constructor IN ITEMS default 5170 xt model40)
         message(FATAL_ERROR "Build does not bind the ${constructor} constructor")
     endif()
 endforeach()
+file(GLOB_RECURSE model40_sources
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/model40/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/model40/*.h")
+foreach(source IN LISTS model40_sources)
+    file(READ "${source}" model40_text)
+    if(model40_text MATCHES "app-nxvm/profiles/default_profile/|vm_profile_ibm_5170_(values|plan)_create")
+        message(FATAL_ERROR "Model40 depends on another AT model's construction: ${source}")
+    endif()
+endforeach()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/input_interface.h" input_contract)
 if(input_contract MATCHES "profile_kind|VM_MACHINE_PROFILE_(DEFAULT|IBM|COMPAQ)|app-nxvm/")
