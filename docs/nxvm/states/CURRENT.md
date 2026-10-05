@@ -6,6 +6,28 @@
 | --- | --- |
 | T544 | Closed as a completed CPU audit by owner direction; all CPU repair/proof gaps transferred to the first queued proposal. No implementation task is active. |
 | M5 Td S177 | Complete: audit closure, full CPU repair transfer, proposal archive and queue/reference reconciliation. NXVM documentation only. |
+| T545 S1 | Active: audit SoftPC eight shared corpora and all receiving boundaries before conditional unchanged import. |
+
+## Active Subtask Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New: M5 T545 S1 after owner-closed T544; no CPU repair task is admitted. |
+| Admission And Approval | Owner requests a new T to audit SoftPC's eight corpora and import/update if acceptable. S1 authorizes read-only source/consumer audit and NXVM task documentation; exact unchanged import is conditional on acceptance. |
+| Objective | Establish complete reproducible eight-root difference, source/quality/contract and preserved-coverage evidence; decide importability without masking dirty source or receiver gaps. |
+| Non-goals | No S1 Shared/App source/test/API/binary edits, sibling mutation, unrelated CPU fixes, owner configuration or media change. |
+| Reference Baseline | NXVM 826eccc93; accepted SoftPC eight-root snapshot 03c979c7 (identical to later committed 9291c8cc). Subsequent uncommitted IBMPC work is excluded. |
+| Candidate Proposal | [Refresh proposal](../proposals/m5-softpc-eight-corpus-refresh.md) and [convergence ledger](../history/M5-T545-softpc-eight-corpus-refresh.md). |
+| Files And ABI Surface | S1 changes only NXVM proposal/history/evidence/Current/Queue; inspect src/test lib/common/x86/ibmpc, shared test helpers and all five receiving Apps read-only. |
+| Applicable Rules | Full NXVM Task Reading Set, source policy, Architecture/Coding and local governance skills; sole owners, neutral public boundary, exact provenance, one target per P and approved conditional import. |
+| Verification | Compare tracked files/normalized and exact bytes; validate eight manifests and required support scripts; inspect all semantic diffs and removed-test receivers; review contracts against existing consumers; full units and documentation checks for S closure. |
+| Expected Markers | Eight-root ledger has no unexplained deletion/dependency/contract change; fixed source identity and clear accepted/blocked decision; no 'green equals semantically identical' claim. |
+| Asset Needs | Existing source and receiving caches only; no external asset edits or new firmware/media acquisition. |
+| Reporting Requirements | Report corpus identities, diff scope, real architecture/quality gaps, unchanged-import decision and required receiving adaptations. |
+| Stop Conditions | Lost coverage, unacceptable source/manifest, unstable identity or required unapproved Shared repair blocks import; continue safe independent audit. |
+| Exit Criteria | Whole eight-root audit and receiver map complete with direct evidence, concrete decision, full units, actual-diff review and pushed target-correct delivery. |
+| Original Owner Request | Admit a new T; audit whether SoftPC's eight components can be imported unchanged; import/update if acceptable. |
+| Similar-Issue Sweep | All changed/new/removed corpus files, tests, build registrations and support scripts; compare every affected public contract across NXVM/MyNES, not only the first compilation failure. |
 
 ## Accepted Audit Baseline
 
@@ -73,7 +95,8 @@ qualification successor; they are not deployed artifacts or new source paths.
 
 ## Next Work
 
-The first candidate is [CPU gap repair](../proposals/m5-cpu-audit-gap-repair.md),
+T545 now executes the owner's newer audit/conditional-import instruction.
+The first candidate remains [CPU gap repair](../proposals/m5-cpu-audit-gap-repair.md),
 with eighteen mechanism/proof batches and final qualification. Its numeric T
 is allocated only on admission; concrete Shared edits require owner review.
 T544 is closed as audit, not CPU qualification. Actual-change review accepts
