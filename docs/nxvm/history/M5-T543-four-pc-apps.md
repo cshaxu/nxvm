@@ -20,7 +20,7 @@ This record is evidence and convergence inventory, not another current status.
 | Batch | Existing source owner | Receiving source/test owner | Admission disposition |
 | --- | --- | --- | --- |
 | S1 XT | app-nxvm/profiles/xt and XT binding/firmware composition assertions | app-my5160 and test/app-my5160 | Accepted after pushed cd173acb7 and fed7049b3, full verification and actual-change review. |
-| S2 IBM AT | IBM AT definitions inside app-nxvm/profiles/default_profile, IBM AT assertions | app-my5170 and test/app-my5170 | Admitted sequentially after S1; reconcile shared mechanisms rather than copy a peer App. |
+| S2 IBM AT | IBM AT definitions inside app-nxvm/profiles/default_profile, IBM AT assertions | app-my5170 and test/app-my5170 | Accepted after pushed e9bb0dc55 and fe4ca8107, complete verification and actual-change coordinator review. |
 | S3 DeskPro | app-nxvm/profiles/model40, D4, ROM and copied observations, Model40 assertions | app-mydeskpro386 and test/app-mydeskpro386 | Planned; retain actual Compaq-specific ownership. |
 | S4 NXVM | app-nxvm/profiles/default_profile, project-owned firmware and remaining shell | app-nxvm and test/app-nxvm | Planned; retains original default hardware, not a new board. |
 
@@ -355,3 +355,20 @@ and F4D85EE2E7BFF403F8C19588DA8416CC96FE5AC72FE7A1764817EDDDC9B76F19,
 respectively. The INI diff only removes one relative path level; original
 media bytes, access modes and other settings are preserved. These hashes
 supersede intermediate S2 output hashes, not the historical S1 evidence.
+
+## S2 Coordinator Acceptance
+
+Reviewed the pushed Shared/NXVM changes against the original request, S2 packet,
+coverage row and architecture/coding/source rules. Common AT projection and
+candidate teardown have one shared owner; Apps retain values and validators.
+The ROM algorithm is relocated, not forked. My5170 uses the shared Product
+runtime without peer-App production dependencies. Moved tests preserve their
+assertions; the CMOS fixture now uses compiled identity rather than a retired
+directory name, retaining both expected rows. Live test-only family support
+and cross-App matrices have S4 as their explicit receiver.
+
+Matched deployed hashes to the final records and reviewed scoped commits,
+INI rebase, artifact retirement and absence of six-corpus/MyNES changes.
+The complete unit, affected integration and gate results satisfy S2, not T exit.
+S2 is accepted and closed; S3/S4 remain unaccepted. App-boundary and flat-root
+checks guard the new fixed My5170 route against regression.

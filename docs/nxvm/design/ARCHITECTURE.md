@@ -199,7 +199,7 @@ clearly rather than selecting another board or silently changing hardware.
 
 Each selected product deploys once to its App's
 `assets/<app>/` directory, alongside its owner-maintained `NXVM.ini`.
-My5160 uses `assets/my5160` directly; the three remaining
+My5160 and My5170 use `assets/my5160` and `assets/my5170` directly; the two remaining
 App cutovers still use `assets/nxvm/<profile>` until their sequential delivery.
 These are the current executable locations; `build/` remains compiler state
 apart from historical evidence. The tracked executable/INI pair is adjacent

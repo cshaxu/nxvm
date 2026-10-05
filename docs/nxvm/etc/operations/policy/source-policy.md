@@ -82,7 +82,7 @@ Award, Phoenix, IBM, Compaq and other third-party firmware originals remain
 owner-supplied BYOB inputs. The owner has approved embedding those inputs into
 machine EXEs at build time and explicitly requires the resulting EXEs under
 `assets/<app>/` to be committed and pushed. My5160 uses assets/my5160;
-the active My5170 receiver uses assets/my5170. Unmigrated PC Apps retain
+My5170 uses assets/my5170. Unmigrated PC Apps retain
 assets/nxvm until their sequential cutover. This is the owner's
 specific artifact-publication authorization, superseding the earlier blanket
 exclusion of embedded firmware. It does not establish a third-party license
@@ -103,7 +103,7 @@ machine-local absolute paths. Embedded ROMs supply immutable bytes through the
 single Core ROM mapping path.
 
 For XT, `src/app-my5160/profiles` owns board C and ROM slot/mapping declarations.
-The active IBM AT receiver is `src/app-my5170/profiles`; common PC/AT ROM
+The IBM AT owner is `src/app-my5170/profiles`; common PC/AT ROM
 mapping lives once in ibmpc/board-common/pc_at_rom. DeskPro and default still
 use `src/app-nxvm/profiles` until their cutover. Current alone records delivery
 acceptance; a working source relocation does not certify runnable artifacts.

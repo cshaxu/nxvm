@@ -6,8 +6,8 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 ## Current Tree
 
 The product/shared-corpus layout is current. My5160 owns its `product` and
-`profiles` roots; the My5170 receiver has those same roots in active S2,
-whose acceptance remains recorded only by Current. DeskPro and default still
+`profiles` roots; My5170 owns those same roots after accepted S2.
+Current records runnable acceptance. DeskPro and default still
 live below `app-nxvm` during the sequential cutover. `firmware` owns
 project-authored guest firmware source and its build tools. `pc110` remains a
 future Profile only when its separate evidence task admits real source files.
@@ -21,7 +21,7 @@ src/
   app-my5160/           fixed IBM 5160 App
     product/            thin main and fixed XT binding
     profiles/           IBM 5160 composition and firmware slots
-  app-my5170/           IBM 5170 receiver under active S2 verification
+  app-my5170/           fixed IBM 5170 App
     product/            thin main and fixed AT binding
     profiles/           IBM 5170 values, constraints and preparation
   app-nxvm/             NXVM product implementation
@@ -68,7 +68,7 @@ contract carries immutable bytes, not external file paths. This is the approved
 target; Current records cutover verification and acceptance status.
 Documentation changes do not move assets. Each versioned local product EXE and its
 adjacent NXVM.ini live only in `assets/<app>/`, without a profile subdirectory; My5160 uses
-`assets/my5160`; the active My5170 receiver uses `assets/my5170`, while
+`assets/my5160`; My5170 uses `assets/my5170`, while
 unmigrated Apps retain `assets/nxvm`. Relative
 runtime-media paths resolve from that file. It has no firmware/CMOS/font asset
 path keys. NXVM.ini is the sole
