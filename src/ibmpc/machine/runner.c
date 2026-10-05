@@ -33,11 +33,11 @@ void vm_machine_runner_run(vm_machine *session)
 
     if (session == LIB_NULL || session->core_machine == LIB_NULL) return;
     control = &session->control;
-    while (vm_machine_executor_state_is_active(control->state)) {
+    while (vm_machine_executor_state_is_active(&control->state)) {
         if (session->executor_callback != LIB_NULL)
             session->executor_callback(session->executor_callback_context);
-        if (!vm_machine_executor_state_is_active(control->state)) break;
-        if (vm_machine_executor_state_take_reset(control->state)) {
+        if (!vm_machine_executor_state_is_active(&control->state)) break;
+        if (vm_machine_executor_state_take_reset(&control->state)) {
             lib_status reset_status = vm_machine_control_reset_at_boundary(control);
 
             (void)vm_machine_finish_reset(session, reset_status);
@@ -90,7 +90,7 @@ void vm_machine_runner_run(vm_machine *session)
          * Core is no longer executing. */
         if (session->executor_callback != LIB_NULL)
             session->executor_callback(session->executor_callback_context);
-        if (!vm_machine_executor_state_is_active(control->state)) break;
+        if (!vm_machine_executor_state_is_active(&control->state)) break;
         {
             if (vm_machine_pacing_wait(session) != LIB_STATUS_OK) {
                 vm_machine_runner_fail(session);

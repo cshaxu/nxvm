@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 #define SEG_GDT_POINTER 0x0100u
@@ -65,7 +65,7 @@ static lib_i32 segment_run_halt(segment_cpu *state, const lib_u8 *code,
     state->chip.cpu.data.eip = address == 0u ? 0u : address - SEG_CODE_ADDRESS;
     if (segment_execute(state, budget) != LIB_STATUS_OK ||
         !state->chip.cpu.data.flagHalt) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "M5:T301:SEGMENT-SELECTOR run address=%08x reason=%d detail=%08x\n",
             address, state->chip.execution.stop_requested, state->chip.fault.exception_mask);
         return 0;
@@ -164,14 +164,14 @@ static lib_i32 segment_boot_protected(segment_cpu *state)
     installed &= segment_write(state, 0u, real_code, sizeof(real_code));
     installed &= segment_write(state, SEG_CODE_ADDRESS, halt, sizeof(halt));
     if (!installed) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "M5:T301:SEGMENT-SELECTOR bootstrap-install-failed\n");
         return 0;
     }
     run_status = segment_execute(state, budget);
     if (run_status != LIB_STATUS_OK ||
         !state->chip.cpu.data.flagHalt) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "M5:T301:SEGMENT-SELECTOR bootstrap status=%d reason=%d detail=%08x\n",
             run_status, state->chip.execution.stop_requested, state->chip.fault.exception_mask);
         return 0;
@@ -841,7 +841,7 @@ static lib_i32 segment_test_protected_sreg_failures(void)
             before.data.eflags != after.data.eflags ||
             !(core_machine_cpu_execution_read_linear(&state.chip.execution, failures[index].access_address, (lib_uptr)&access, sizeof(access)) == 0) ||
             access != failures[index].access_value;
-        if (case_failed) fprintf(stderr,
+        if (case_failed) lib_c_fprintf(lib_c_stderr,
             "M5:T301:SEGMENT-SELECTOR mov-fail index=%u selector=%04x access=%02x esp=%08x/%08x flags=%08x/%08x\n",
             (unsigned)index, failures[index].selector, access, before.data.esp,
             after.data.esp, before.data.eflags, after.data.eflags);
@@ -875,7 +875,7 @@ static lib_i32 segment_test_protected_sreg_failures(void)
             before.data.esp != after.data.esp ||
             before.data.eflags != after.data.eflags ||
             !(core_machine_cpu_execution_read_linear(&state.chip.execution, SEG_GDT_ADDRESS + 29u, (lib_uptr)&access, sizeof(access)) == 0) || access != 0x12u;
-        if (case_failed) fprintf(stderr,
+        if (case_failed) lib_c_fprintf(lib_c_stderr,
             "M5:T301:SEGMENT-SELECTOR pop-fail index=%u access=%02x esp=%08x/%08x flags=%08x/%08x\n",
             (unsigned)index, access, before.data.esp, after.data.esp,
             before.data.eflags, after.data.eflags);
@@ -1032,7 +1032,7 @@ static lib_i32 segment_test_selector_query_edges(void)
             lib_memory_compare(&cpu.data.gs, &before.data.gs, sizeof(cpu.data.gs)) != 0;
         case_failed |= !(core_machine_cpu_execution_read_linear(&state.chip.execution, SEG_GDT_ADDRESS + 45u, (lib_uptr)&system_access, sizeof(system_access)) == 0) || system_access != 0x80u ||
             !(core_machine_cpu_execution_read_linear(&state.chip.execution, SEG_GDT_ADDRESS + 29u, (lib_uptr)&nonpresent_access, sizeof(nonpresent_access)) == 0) || nonpresent_access != 0x12u;
-        if (case_failed) fprintf(stderr,
+        if (case_failed) lib_c_fprintf(lib_c_stderr,
             "M5:T301:SEGMENT-SELECTOR query-edge index=%u eax=%08x zf=%d/%d sys=%02x np=%02x\n",
             (unsigned)index, cpu.data.eax,
             !!X86_CPU_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF), expected_zf[index],
@@ -1169,13 +1169,13 @@ lib_i32 main(void)
     if (real_loads || protected_286 || protected_286_rejections || lxs_memory_only || lxs_atomicity || real_sregs || protected_sregs ||
         protected_sreg_failures || protected_forms || query_edges || rejected ||
         atomicity || metadata) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "M5:T301:SEGMENT-SELECTOR:FAIL real=%d protected-286=%d protected-286-reject=%d lxs=%d lxs-atomic=%d sreg-real=%d sreg-protected=%d sreg-fault=%d protected=%d query=%d rejected=%d atomic=%d metadata=%d\n",
             real_loads, protected_286, protected_286_rejections, lxs_memory_only, lxs_atomicity, real_sregs, protected_sregs,
             protected_sreg_failures, protected_forms, query_edges, rejected,
             atomicity, metadata);
         return 1;
     }
-    printf("M5:T301:SEGMENT-SELECTOR:OK\n");
+    lib_c_printf("M5:T301:SEGMENT-SELECTOR:OK\n");
     return 0;
 }

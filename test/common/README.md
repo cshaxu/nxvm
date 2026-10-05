@@ -5,8 +5,9 @@ GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
 
 This neutral suite needs only sibling `src/common` and `src/lib` corpora.
 The four-directory set `src/lib`, `src/common`, `test/lib`, `test/common`
-plus `test/register.cmake` builds and tests without any x86 or importing-product
-files. The shared helper only registers tests; each package selects its own suite.
+plus the shared CMake tools directly in test/ builds and tests without any x86
+or importing-product files. Common tests also run without test/lib. Shared tools
+register/check tests only; each package selects and owns its own suite.
 
 ```text
 cmake -S test/common -B build/common-tests -DCMAKE_BUILD_TYPE=Release
@@ -22,8 +23,8 @@ tests use Base; the existing native-thread machine fake is Windows-only and
 does not imply Linux execution coverage. Production Common stays platform-free.
 
 `machine_fixture.h` and `machine_fixture.c` own that neutral fake driver and its
-native-thread test resources. Common tests inject a token protocol; the optional
-`test/x86` suite reuses the same fixture with an x86 protocol. No architecture
+native-thread test resources. Common tests inject a token protocol; other
+test packages own their own minimal drivers. No architecture
 commands or registers belong to this fixture. The scripted `machine_wait` test
 separately covers failure interleavings without scheduling or desktop input.
 

@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 typedef struct movx_form {
     lib_u8 opcode;
@@ -97,6 +97,6 @@ static lib_i32 movx_test_address_prefix(void)
 lib_i32 main(void)
 {
     if (!movx_test_forms() || !movx_test_address_prefix()) return 1;
-    printf("M5:T539:S21:MOVX-CPU:OK\n");
+    lib_c_printf("M5:T539:S21:MOVX-CPU:OK\n");
     return 0;
 }

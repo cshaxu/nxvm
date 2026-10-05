@@ -21,6 +21,10 @@ endif()
 set(SHARED_COMMON_TEST_TARGETS)
 include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 
+add_test(NAME common.test-boundaries COMMAND "${CMAKE_COMMAND}"
+    "-DTEST_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" "-DTEST_LAYER=common"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/../verify_test_boundaries.cmake")
+
 shared_register_test(common sync common-session)
 shared_register_test(common session_queue_failure common-session)
 shared_register_test(common presentation_plan common-session)
@@ -47,6 +51,9 @@ add_test(NAME common.verifier-negative COMMAND "${CMAKE_COMMAND}"
     "-DCOMMON_ROOT=${COMMON_ROOT}"
     "-DPROBE_ROOT=${CMAKE_CURRENT_BINARY_DIR}/verifier-probe"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/verify_negative.cmake")
+add_test(NAME common.test-types-boundary COMMAND "${CMAKE_COMMAND}"
+    "-DTEST_ROOTS=${CMAKE_CURRENT_SOURCE_DIR}"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/../verify_types_boundary.cmake")
 add_test(NAME common.test-manifest COMMAND "${CMAKE_COMMAND}"
     "-DCOMMON_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" -P "${COMMON_ROOT}/verify_manifest.cmake")
 

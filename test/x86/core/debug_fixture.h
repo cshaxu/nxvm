@@ -2,6 +2,7 @@
 #define TEST_X86_CORE_DEBUG_FIXTURE_H
 
 #include "lib/types/types_interface.h"
+#include "lib/types/test.h"
 #include "x86/core/debug_interface.h"
 
 static inline lib_u32 test_core_machine_fixture_read_register(
@@ -9,7 +10,7 @@ static inline lib_u32 test_core_machine_fixture_read_register(
 {
     lib_u32 value;
     if (core_machine_debug_read_register(machine, register_id, &value) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     return value;
 }
 
@@ -17,7 +18,7 @@ static inline void test_core_machine_fixture_write_register(
     core_machine *machine, core_machine_debug_register register_id, lib_u32 value)
 {
     if (core_machine_debug_write_register(machine, register_id, value) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
 }
 
 /* Historical word seeds change the low half, not the whole 32-bit register. */

@@ -1,8 +1,7 @@
+#include "lib/types/file.h"
 #include "support/protected_16_bootstrap_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/chips/cpu/cpu_interface.h"
-#include <stdio.h>
-
 #define S47_S4_VECTOR 0x30u
 #define S47_S4_HANDLER 0x0300u
 
@@ -66,7 +65,7 @@ static lib_i32 s47_s4_outer_software(core_machine_cpu_profile profile,
             frame[4] != 0x0023u;
     }
     if (failed) {
-        printf("outer profile=%u status=%u reason=%u first=%u/%08x cs=%04x ss=%04x ip=%08x sp=%08x frame=%04x/%04x/%04x/%04x/%04x\n",
+        lib_c_printf("outer profile=%u status=%u reason=%u first=%u/%08x cs=%04x ss=%04x ip=%08x sp=%08x frame=%04x/%04x/%04x/%04x/%04x\n",
         profile, run_status, result.reason, diagnostic.first_fault.valid,
         diagnostic.first_fault.exception_mask, snapshot.cs.selector,
         snapshot.ss.selector, snapshot.eip, snapshot.esp, frame[0], frame[1],
@@ -172,6 +171,6 @@ int main(void)
             TEST_PROTECTED_INTERRUPT_GATE_16)) return 9;
     if (!s47_s4_outer_nmi(CORE_MACHINE_CPU_PROFILE_80386,
             TEST_PROTECTED_TRAP_GATE_16)) return 10;
-    printf("M5:T323:S4:PROTECTED-16-EXTERNAL:OK\n");
+    lib_c_printf("M5:T323:S4:PROTECTED-16-EXTERNAL:OK\n");
     return 0;
 }

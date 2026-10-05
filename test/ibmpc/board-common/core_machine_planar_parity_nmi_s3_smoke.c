@@ -1,12 +1,11 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/machine_board_state.h"
 #include "x86/core/machine_interface.h"
 
 #include "core_machine_board_fixture.h"
-#include "../../x86/core/planar_parity_fixture.h"
+#include "../core/planar_parity_fixture.h"
 
 static lib_i32 planar_parity_s4_shared_memory(void)
 {
@@ -135,6 +134,6 @@ lib_i32 main(void)
     failed |= planar_parity_s4_shared_memory() || test_planar_parity_unbound_reconfigure() ||
         planar_parity_publication_rollback();
     if (failed) return 1;
-    printf("M5:T366:S4:PLANAR-MEMORY-PARITY:OK\n");
+    lib_c_printf("M5:T366:S4:PLANAR-MEMORY-PARITY:OK\n");
     return 0;
 }

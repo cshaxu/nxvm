@@ -1,5 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
 #include "ibmpc/board-common/machine_board_interface.h"
@@ -158,6 +158,6 @@ lib_i32 main(void)
     failed |= run_case(fninit, sizeof(fninit), X86_FPU_PROFILE_80387,
         0u, 0u, 2u);
     if (failed) return 1;
-    printf("M5:T156:S1:FPU-ESC:OK\n");
+    lib_c_printf("M5:T156:S1:FPU-ESC:OK\n");
     return 0;
 }

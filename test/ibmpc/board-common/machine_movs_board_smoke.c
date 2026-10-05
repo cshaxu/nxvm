@@ -1,9 +1,9 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "cpu_board_limit_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "pic_fixture.h"
-#include <stdio.h>
-
 static lib_i32 movs_irq_case(lib_bool repeated)
 {
     static const lib_u8 hlt = 0xf4u;
@@ -148,14 +148,14 @@ static lib_i32 movs_protected_case(lib_u8 form)
 lib_i32 main(void)
 {
     if (!movs_irq_case(LIB_FALSE) || !movs_irq_case(LIB_TRUE)) {
-        printf("MOVS board stage=irq\n");
+        lib_c_printf("MOVS board stage=irq\n");
         return 1;
     }
     for (lib_u8 form = 0u; form != 2u; ++form)
         if (!movs_protected_case(form)) {
-            printf("MOVS board stage=protected form=%u\n", form);
+            lib_c_printf("MOVS board stage=protected form=%u\n", form);
             return 1;
         }
-    printf("M5:T539:S37:MOVS-BOARD:OK\n");
+    lib_c_printf("M5:T539:S37:MOVS-BOARD:OK\n");
     return 0;
 }

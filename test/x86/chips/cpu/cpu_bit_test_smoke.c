@@ -1,5 +1,5 @@
 #include "support/cpu_operand_probe_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_i32 bit_test_register_forms(void)
 {
@@ -210,6 +210,6 @@ lib_i32 main(void)
 {
     if (!bit_test_register_forms() || !bit_test_immediate_and_memory() ||
         !bit_test_memory_destination_forms() || !bit_test_rejection()) return 1;
-    printf("M5:T539:S30:CPU-BIT-TEST:OK\n");
+    lib_c_printf("M5:T539:S30:CPU-BIT-TEST:OK\n");
     return 0;
 }

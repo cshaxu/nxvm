@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/machine/keyboard_mapper_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 
@@ -58,6 +57,6 @@ lib_i32 main(void)
         if (!vm_keyboard_native_set2_expect(function_set1[index], 0u, 1,
                 &function_set2[index], 1u)) return 1;
     }
-    printf("M5:T374:S18:HOST-SET1-TO-NATIVE-SET2:OK\n");
+    lib_c_printf("M5:T374:S18:HOST-SET1-TO-NATIVE-SET2:OK\n");
     return 0;
 }

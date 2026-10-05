@@ -1,5 +1,5 @@
 #include "support/cpu_bus_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_i32 cpu_80186_lgdt_gate(void)
 {
@@ -169,6 +169,6 @@ lib_i32 main(void)
     result |= cpu_paging_cr0_mutable_controls();
     result |= cpu_paging_invlpg_rejection();
     if (result != 0) return 1;
-    puts("M5:T539:S90:CPU-EXECUTION-PAGING:OK");
+    lib_c_printf("%s\n", "M5:T539:S90:CPU-EXECUTION-PAGING:OK");
     return 0;
 }

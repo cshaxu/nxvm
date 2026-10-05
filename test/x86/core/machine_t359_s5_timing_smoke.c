@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/core/machine_interface.h"
 #include "x86/core/debug_interface.h"
@@ -164,7 +164,7 @@ static lib_i32 t359_s5_test_secondary_rows(void)
 
     for (index = 0u; !failed && index < sizeof(rows) / sizeof(rows[0]); ++index) {
         if (!t359_s5_run(machine, &state, &rows[index])) {
-            fprintf(stderr, "S5 secondary row %u failed\n",
+            lib_c_fprintf(lib_c_stderr, "S5 secondary row %u failed\n",
                 (lib_u32)index);
             failed = 1;
         }
@@ -232,6 +232,6 @@ lib_i32 main(void)
 {
     if (t359_s5_test_secondary_rows() ||
         t359_s5_test_attributes_and_preflight()) return 1;
-    printf("M5:T359:S5:SECONDARY-INTEGER-TIMING:OK\n");
+    lib_c_printf("M5:T359:S5:SECONDARY-INTEGER-TIMING:OK\n");
     return 0;
 }

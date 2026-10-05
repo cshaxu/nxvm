@@ -1,9 +1,8 @@
+#include "lib/types/file.h"
 #include "cpu_board_limit_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "pic_fixture.h"
-#include <stdio.h>
-
 static lib_i32 scas_protected_case(lib_bool repeated)
 {
     static const lib_u8 single[] = {0xaeu};
@@ -137,9 +136,9 @@ lib_i32 main(void)
     if (!scas_protected_case(LIB_FALSE) ||
         !scas_protected_case(LIB_TRUE) ||
         !scas_irq_case(LIB_FALSE) || !scas_irq_case(LIB_TRUE)) {
-        printf("SCAS board fault/IRQ failed\n");
+        lib_c_printf("SCAS board fault/IRQ failed\n");
         return 1;
     }
-    printf("M5:T539:S38:SCAS-BOARD:OK\n");
+    lib_c_printf("M5:T539:S38:SCAS-BOARD:OK\n");
     return 0;
 }

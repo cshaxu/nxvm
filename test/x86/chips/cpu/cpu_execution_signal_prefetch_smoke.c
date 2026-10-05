@@ -1,5 +1,5 @@
 #include "support/cpu_bus_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_i32 cpu_signal_case(core_machine_cpu_profile profile)
 {
@@ -165,7 +165,7 @@ lib_i32 main(void)
     result |= run_8088_prefetch_control_and_self_modify();
     if (result != 0) return 1;
 
-    puts("M5:T539:S89:CPU-EXECUTION-SIGNAL-PREFETCH:OK");
-    puts("M5:T484:S3:XT-8088-QUEUE:OK");
+    lib_c_printf("%s\n", "M5:T539:S89:CPU-EXECUTION-SIGNAL-PREFETCH:OK");
+    lib_c_printf("%s\n", "M5:T484:S3:XT-8088-QUEUE:OK");
     return 0;
 }

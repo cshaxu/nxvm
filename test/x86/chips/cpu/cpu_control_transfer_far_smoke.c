@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 
 static lib_i32 far_step(cpu_instruction_fixture *state, const lib_u8 *code,
@@ -121,7 +121,7 @@ static lib_i32 far_test_protected_forms(void)
         far_prepare_protected(&state);
         if (!far_step(&state, jumps[index], jump_sizes[index], &after) ||
             after.data.cs.selector != 8u || after.data.eip != 7u - index) {
-            fprintf(stderr, "protected jump %u cs=%u ip=%u fault=%u\n", (unsigned)index,
+            lib_c_fprintf(lib_c_stderr, "protected jump %u cs=%u ip=%u fault=%u\n", (unsigned)index,
                 (unsigned)after.data.cs.selector, (unsigned)after.data.eip,
                 (unsigned)state.fault.exception_mask);
             return 0;
@@ -132,7 +132,7 @@ static lib_i32 far_test_protected_forms(void)
         before = state.cpu;
         if (!far_step(&state, calls[index], call_sizes[index], &after) ||
             after.data.eip != 10u - index || after.data.esp >= before.data.esp) {
-            fprintf(stderr, "protected call %u ip=%u sp=%u fault=%u\n", (unsigned)index,
+            lib_c_fprintf(lib_c_stderr, "protected call %u ip=%u sp=%u fault=%u\n", (unsigned)index,
                 (unsigned)after.data.eip, (unsigned)after.data.esp,
                 (unsigned)state.fault.exception_mask);
             return 0;
@@ -141,7 +141,7 @@ static lib_i32 far_test_protected_forms(void)
         after = state.cpu;
         if (state.execution.stop_requested || state.fault.valid ||
             after.data.eip != 7u - index || after.data.esp != before.data.esp) {
-            fprintf(stderr, "protected return %u ip=%u sp=%u fault=%u\n", (unsigned)index,
+            lib_c_fprintf(lib_c_stderr, "protected return %u ip=%u sp=%u fault=%u\n", (unsigned)index,
                 (unsigned)after.data.eip, (unsigned)after.data.esp,
                 (unsigned)state.fault.exception_mask);
             return 0;
@@ -156,7 +156,7 @@ static lib_i32 far_test_protected_forms(void)
         (const lib_u8[]){6u,0u,0u,0u,8u,0u}, 6u);
     if (!far_step(&state, indirect_jmp, sizeof(indirect_jmp), &after) ||
         after.data.cs.selector != 8u || after.data.eip != 6u) {
-        fputs("protected indirect jump\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "protected indirect jump\n");
         return 0;
     }
     far_prepare_protected(&state);
@@ -165,14 +165,14 @@ static lib_i32 far_test_protected_forms(void)
     before = state.cpu;
     if (!far_step(&state, indirect_call, sizeof(indirect_call), &after) ||
         after.data.eip != 9u || after.data.esp >= before.data.esp) {
-        fputs("protected indirect call\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "protected indirect call\n");
         return 0;
     }
     core_machine_cpu_execution_refresh(&state.execution);
     after = state.cpu;
     if (state.execution.stop_requested || state.fault.valid || after.data.eip != 6u ||
         after.data.esp != before.data.esp) {
-        fputs("protected indirect return\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "protected indirect return\n");
         return 0;
     }
     core_machine_cpu_execution_refresh(&state.execution);
@@ -184,7 +184,7 @@ static lib_i32 far_test_protected_forms(void)
     before = state.cpu;
     if (!far_expect_protected_fault(&state, (const lib_u8[]){0xcbu}, 1u,
             VCPUINS_EXCEPT_DF, &before)) {
-        fputs("protected dpl fault\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "protected dpl fault\n");
         return 0;
     }
     if (state.memory[0x0325u] != 0xbau) return 0;
@@ -194,7 +194,7 @@ static lib_i32 far_test_protected_forms(void)
     before = state.cpu;
     if (!far_expect_protected_fault(&state, (const lib_u8[]){0xcbu}, 1u,
             VCPUINS_EXCEPT_DF, &before)) {
-        fputs("protected np fault\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "protected np fault\n");
         return 0;
     }
     if (state.memory[0x032du] != 0x1au) return 0;
@@ -202,14 +202,14 @@ static lib_i32 far_test_protected_forms(void)
     before = state.cpu;
     if (!far_expect_protected_fault(&state, (const lib_u8[]){0xffu,0xd8u}, 2u,
             VCPUINS_EXCEPT_UD, &before)) {
-        fputs("protected reserved d8\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "protected reserved d8\n");
         return 0;
     }
     far_prepare_protected(&state);
     before = state.cpu;
     if (!far_expect_protected_fault(&state, (const lib_u8[]){0xffu,0xe8u}, 2u,
             VCPUINS_EXCEPT_UD, &before)) {
-        fputs("protected reserved e8\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "protected reserved e8\n");
         return 0;
     }
     return 1;
@@ -361,19 +361,19 @@ int main(void)
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     if (!far_test_protected_forms()) {
-        fputs("protected\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "protected\n");
         return 1;
     }
     for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
         ++index) {
         if (!far_test_real_mode(profiles[index]) ||
             !far_test_real_near_control(profiles[index])) {
-            fprintf(stderr, "real profile %u\n", (unsigned)profiles[index]);
+            lib_c_fprintf(lib_c_stderr, "real profile %u\n", (unsigned)profiles[index]);
             return 1;
         }
     }
-    puts("M5:T303:CONTROL-TRANSFER:OK");
-    puts("M5:T401:S23:FAR-RETURN-PROFILES:OK");
-    puts("M5:T539:S51:CPU-CONTROL-TRANSFER-FAR:OK");
+    lib_c_printf("%s\n", "M5:T303:CONTROL-TRANSFER:OK");
+    lib_c_printf("%s\n", "M5:T401:S23:FAR-RETURN-PROFILES:OK");
+    lib_c_printf("%s\n", "M5:T539:S51:CPU-CONTROL-TRANSFER-FAR:OK");
     return 0;
 }

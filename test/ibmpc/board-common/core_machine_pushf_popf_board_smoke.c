@@ -1,5 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "cpu_board_irq_fixture.h"
 #include "cpu_board_limit_fixture.h"
 
@@ -122,9 +122,9 @@ static lib_i32 pushf_board_stack_limit_fault(void)
 int main(void)
 {
     if (!pushf_board_irq() || !pushf_board_stack_limit_fault()) {
-        fputs("M5:T539:S36:PUSHF-POPF-BOARD:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:PUSHF-POPF-BOARD:FAIL\n");
         return 1;
     }
-    puts("M5:T539:S36:PUSHF-POPF-BOARD:OK");
+    lib_c_printf("%s\n", "M5:T539:S36:PUSHF-POPF-BOARD:OK");
     return 0;
 }

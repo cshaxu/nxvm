@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: retain private IDTR rejection and full
  * CPU rollback; public IVT read failures can occur after frame writes. */
@@ -315,6 +315,6 @@ lib_i32 main(void)
 {
     if (!iret_s51_test_real() || !iret_s51_test_80286_stack_boundary() ||
         !iret_s51_test_rejections()) return 1;
-    printf("M5:T540:S93:IRET-S51-CPU-STATE:OK\n");
+    lib_c_printf("M5:T540:S93:IRET-S51-CPU-STATE:OK\n");
     return 0;
 }

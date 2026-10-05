@@ -1,7 +1,6 @@
+#include "lib/types/file.h"
 #include "hdc_fixture.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/hdc.h"
 #include "ibmpc/board-common/media_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
@@ -210,7 +209,7 @@ lib_i32 main(void)
     }
 done:
     if (failed) {
-        fprintf(stderr, "M5:T386:S5:COMPAQ-HDC-ROUTE:FAIL %x status=%x error=%x phase=%u irq=%u chs=%x:%x:%x\n", failed, hdc_observe(hdc).status, hdc_observe(hdc).error, hdc_observe(hdc).phase, hdc_observe(hdc).irq_pending, hdc_observe(hdc).cylinder_high, hdc_observe(hdc).cylinder_low, hdc_observe(hdc).sector_number);
+        lib_c_fprintf(lib_c_stderr, "M5:T386:S5:COMPAQ-HDC-ROUTE:FAIL %x status=%x error=%x phase=%u irq=%u chs=%x:%x:%x\n", failed, hdc_observe(hdc).status, hdc_observe(hdc).error, hdc_observe(hdc).phase, hdc_observe(hdc).irq_pending, hdc_observe(hdc).cylinder_high, hdc_observe(hdc).cylinder_low, hdc_observe(hdc).sector_number);
     }
     core_machine_hdc_destroy(empty_hdc);
     core_machine_hdc_destroy(hdc);
@@ -220,8 +219,8 @@ done:
     core_machine_destroy(empty_port);
     core_machine_destroy(port);
     if (failed) return 1;
-    puts("M5:T386:S5:COMPAQ-HDC-ROUTE:OK");
-    puts("M5:T386:S5:PORT-WIRED-OR:OK");
-    puts("M5:T430:S1:COMPAQ-HDC-DUAL-DRIVE:OK");
+    lib_c_printf("%s\n", "M5:T386:S5:COMPAQ-HDC-ROUTE:OK");
+    lib_c_printf("%s\n", "M5:T386:S5:PORT-WIRED-OR:OK");
+    lib_c_printf("%s\n", "M5:T430:S1:COMPAQ-HDC-DUAL-DRIVE:OK");
     return 0;
 }

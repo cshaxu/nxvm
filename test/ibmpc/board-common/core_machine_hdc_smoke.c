@@ -1,8 +1,7 @@
+#include "lib/types/file.h"
 #include "hdc_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/hdc.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "ibmpc/board-common/media_interface.h"
@@ -389,12 +388,12 @@ lib_i32 main(void)
     core_machine_media_registry_destroy(registry);
     failed |= core_machine_hdc_test_ibm_wd1003();
     if (failed) {
-        fprintf(stderr, "M5:T286:S1:ATA-NIEN:PORT:FAIL bits=%x status=%02x error=%02x word=%04x\n",
+        lib_c_fprintf(lib_c_stderr, "M5:T286:S1:ATA-NIEN:PORT:FAIL bits=%x status=%02x error=%02x word=%04x\n",
             failed, status, error, word);
         return 1;
     }
-    puts("M5:T286:S1:ATA-NIEN:PORT:OK");
-    puts("M5:T283:S2:CORE-HDC-MEDIA:OK");
-    puts("M5:T479:S5:IBM-WD1003:OK");
+    lib_c_printf("%s\n", "M5:T286:S1:ATA-NIEN:PORT:OK");
+    lib_c_printf("%s\n", "M5:T283:S2:CORE-HDC-MEDIA:OK");
+    lib_c_printf("%s\n", "M5:T479:S5:IBM-WD1003:OK");
     return 0;
 }

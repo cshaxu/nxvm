@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/core/machine_interface.h"
 #include "x86/core/machine.h"
@@ -142,7 +142,7 @@ static lib_i32 timing_8086_execute(core_machine *machine,
         result.elapsed_ticks == expected_ticks && state->advanced_ticks == expected_ticks;
 
     if (!succeeded) {
-        printf("8086 ledger expected=%llu actual=%llu executed=%llu reason=%d advanced=%llu\n",
+        lib_c_printf("8086 ledger expected=%llu actual=%llu executed=%llu reason=%d advanced=%llu\n",
             expected_ticks, result.ticks, result.executed, result.reason,
             state == LIB_NULL ? 0u : state->advanced_ticks);
     }
@@ -162,7 +162,7 @@ static lib_i32 timing_8086_case(const lib_u8 *program,
     lib_i32 failed = !prepared || !loaded || !executed;
 
     if (failed) {
-        printf("8086 ledger case opcode=%u prepared=%d loaded=%d executed=%d\n",
+        lib_c_printf("8086 ledger case opcode=%u prepared=%d loaded=%d executed=%d\n",
             program == LIB_NULL ? 0u : program[0], prepared, loaded, executed);
     }
     core_machine_destroy(machine);
@@ -772,10 +772,10 @@ lib_i32 main(void)
         timing_8086_test_fallback_fault_budget_and_overflow() ? 10 : 0;
 
     if (failure != 0) {
-        printf("M5:T357:S4:8086-INSTRUCTION-TIMING-LEDGER:FAIL:%d\n",
+        lib_c_printf("M5:T357:S4:8086-INSTRUCTION-TIMING-LEDGER:FAIL:%d\n",
             failure);
         return failure;
     }
-    printf("M5:T357:S4:8086-INSTRUCTION-TIMING-LEDGER:OK\n");
+    lib_c_printf("M5:T357:S4:8086-INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "lib/types/test.h"
 #include "ibmpc/machine/preparation_interface.h"
 

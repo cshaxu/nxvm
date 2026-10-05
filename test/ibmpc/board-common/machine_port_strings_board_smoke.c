@@ -1,10 +1,9 @@
+#include "lib/types/file.h"
 #include "core_machine_board_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "pic_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 typedef struct port_strings_board_probe {
     lib_u32 input;
     lib_u32 reads;
@@ -256,7 +255,7 @@ static lib_i32 port_strings_board_protected(lib_bool input, lib_bool repeat)
 
 lib_i32 main(void)
 {
-#define CHECK(call) do { if (!(call)) { printf("Failed: %s\n", #call); return 1; } } while (0)
+#define CHECK(call) do { if (!(call)) { lib_c_printf("Failed: %s\n", #call); return 1; } } while (0)
     CHECK(port_strings_board_irq(LIB_TRUE, LIB_FALSE));
     CHECK(port_strings_board_irq(LIB_FALSE, LIB_FALSE));
     CHECK(port_strings_board_irq(LIB_TRUE, LIB_TRUE));
@@ -266,6 +265,6 @@ lib_i32 main(void)
     CHECK(port_strings_board_protected(LIB_TRUE, LIB_TRUE));
     CHECK(port_strings_board_protected(LIB_FALSE, LIB_TRUE));
 #undef CHECK
-    printf("M5:T539:S39:PORT-STRINGS-BOARD:OK\n");
+    lib_c_printf("M5:T539:S39:PORT-STRINGS-BOARD:OK\n");
     return 0;
 }

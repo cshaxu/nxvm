@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: CMPS prefix rejection is CPU-owned. */
 
 #define CMPS_FLAGS (VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF | \
@@ -78,7 +78,7 @@ static lib_i32 cmps_single(core_machine_cpu_profile profile,
         (width == 4u ? VCPU_EFLAGS_SF : 0u)) ||
         (after.data.eflags & ~CMPS_FLAGS) !=
         (before.data.eflags & ~CMPS_FLAGS)) {
-        printf("CMPS single code=%02x profile=%u width=%u\n",
+        lib_c_printf("CMPS single code=%02x profile=%u width=%u\n",
             code[0], profile, width);
         return 0;
     }
@@ -163,7 +163,7 @@ static lib_i32 cmps_rep(core_machine_cpu_profile profile,
         (before.data.eflags & ~CMPS_FLAGS) ||
         !cmps_memory_same(&state, 0x20010u, 0x30020u,
             left, right, 3u)) {
-        printf("CMPS REP code=%02x profile=%u count=%u\n",
+        lib_c_printf("CMPS REP code=%02x profile=%u count=%u\n",
             code[0], profile, count);
         return 0;
     }
@@ -392,7 +392,7 @@ lib_i32 main(void)
                 0u, 0x11u, 0x21u, VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) ||
             !cmps_rep(profiles[profile], repne, 2u, 3u, different, equal,
                 2u, 0x11u, 0x21u, VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF)) {
-            printf("CMPS stage=profile %u\n", profile);
+            lib_c_printf("CMPS stage=profile %u\n", profile);
             return 1;
         }
     if (!cmps_single(CORE_MACHINE_CPU_PROFILE_80386, dword, 2u, 4u,
@@ -409,7 +409,7 @@ lib_i32 main(void)
         !cmps_rep_attributes(address32, 3u, 1u, LIB_TRUE, LIB_FALSE) ||
         !cmps_rep_attributes(combined, 4u, 4u, LIB_TRUE, LIB_FALSE) ||
         !cmps_rep_attributes(repe, 2u, 1u, LIB_FALSE, LIB_TRUE)) {
-        printf("CMPS stage=attributes\n");
+        lib_c_printf("CMPS stage=attributes\n");
         return 1;
     }
     if (!cmps_flag_case(0x10u, 0x01u, VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) ||
@@ -422,10 +422,10 @@ lib_i32 main(void)
         !cmps_protected_case(LIB_FALSE, LIB_FALSE) ||
         !cmps_protected_case(LIB_TRUE, LIB_TRUE) ||
         !cmps_protected_case(LIB_FALSE, LIB_TRUE)) {
-        printf("CMPS stage=flags/rejections/protected\n");
+        lib_c_printf("CMPS stage=flags/rejections/protected\n");
         return 1;
     }
-    printf("M5:T316:S37:CMPS:OK\n");
-    printf("M5:T401:S16:CMPS-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S37:CMPS:OK\n");
+    lib_c_printf("M5:T401:S16:CMPS-PROFILES:OK\n");
     return 0;
 }

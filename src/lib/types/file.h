@@ -7,6 +7,10 @@
 
 typedef FILE lib_c_file;
 #define lib_c_fopen fopen
+#define lib_c_tmpfile tmpfile
+#define lib_c_rewind rewind
+#define lib_c_fseek fseek
+#define lib_c_ftell ftell
 #define lib_c_fclose fclose
 #define lib_c_fread fread
 #define lib_c_fwrite fwrite

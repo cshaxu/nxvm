@@ -2,15 +2,14 @@
 #include "lib/types/file.h"
 /* Controlled Linux platform calls; executes the real file implementation. */
 #include "lib/types/types_interface.h"
-#include "lib/types/file.h"
 
 #define LIB_TYPES_LINUX_FILE_H
 typedef lib_i64 lib_linux_off_t;
 #define LIB_LINUX_LOCK_SH 1
 #define LIB_LINUX_LOCK_EX 2
 #define LIB_LINUX_LOCK_NB 4
-#define lib_linux_fseeko fseek
-#define lib_linux_ftello ftell
+#define lib_linux_fseeko lib_c_fseek
+#define lib_linux_ftello lib_c_ftell
 static lib_bool reject_lock, reject_open;
 static lib_i32 expected_lock;
 static lib_u32 closes;
@@ -19,7 +18,7 @@ static lib_c_file *open_stream(const char *path, const char *mode)
     lib_test_assert(path != LIB_NULL);
     lib_test_assert(mode[0] == 'r' && mode[1] == 'b');
     lib_test_assert(mode[2] == (expected_lock == LIB_LINUX_LOCK_EX ? '+' : '\0'));
-    return reject_open ? LIB_NULL : tmpfile();
+    return reject_open ? LIB_NULL : lib_c_tmpfile();
 }
 static lib_i32 close_stream(lib_c_file *stream) { ++closes; return lib_c_fclose(stream); }
 static lib_i32 descriptor(lib_c_file *stream) { lib_test_assert(stream != LIB_NULL); return 7; }

@@ -1,9 +1,8 @@
+#include "lib/types/file.h"
 #include "x86/core/debug_interface.h"
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 static lib_u16 legacy_alu_real_flags_known_mask(
     core_machine_cpu_profile profile)
 {
@@ -104,6 +103,6 @@ static lib_i32 legacy_alu_divide_error_delivery(void)
 int main(void)
 {
     if (!legacy_alu_divide_error_delivery()) return 1;
-    printf("M5:T338:S2:LEGACY-ALU-DIVIDE-BOARD:OK\n");
+    lib_c_printf("M5:T338:S2:LEGACY-ALU-DIVIDE-BOARD:OK\n");
     return 0;
 }

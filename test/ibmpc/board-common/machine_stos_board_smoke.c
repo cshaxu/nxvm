@@ -1,9 +1,8 @@
+#include "lib/types/file.h"
 #include "cpu_board_limit_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "pic_fixture.h"
-#include <stdio.h>
-
 static lib_i32 stos_protected_case(lib_u8 form)
 {
     static const lib_u8 codes[][2] = {
@@ -144,9 +143,9 @@ lib_i32 main(void)
         !stos_irq_case(LIB_FALSE, 1u) ||
         !stos_irq_case(LIB_FALSE, 2u) ||
         !stos_irq_case(LIB_TRUE, 1u)) {
-        printf("STOS board fault/IRQ failed\n");
+        lib_c_printf("STOS board fault/IRQ failed\n");
         return 1;
     }
-    printf("M5:T539:S38:STOS-BOARD:OK\n");
+    lib_c_printf("M5:T539:S38:STOS-BOARD:OK\n");
     return 0;
 }

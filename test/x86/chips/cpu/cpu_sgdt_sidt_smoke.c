@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: invalid SGDT/SIDT stops at the CPU. */
 static lib_i32 sgdt_sidt_run(cpu_instruction_fixture *state,
@@ -181,11 +181,11 @@ static lib_i32 sgdt_sidt_test_segments_and_vm86(void)
         state.cpu.data.ss.dpl = 3u;
         state.cpu.data.gdtr.limit = 0x9876u;
         state.cpu.data.gdtr.base = 0x12345678u;
-        if (!sgdt_sidt_run(&state, sgdt, sizeof(sgdt), &after)) { fprintf(stderr, "vm run\n"); return 0; }
+        if (!sgdt_sidt_run(&state, sgdt, sizeof(sgdt), &after)) { lib_c_fprintf(lib_c_stderr, "vm run\n"); return 0; }
         lib_memory_copy(image, state.memory + 0x0200u, sizeof(image));
         sgdt_sidt_expected(expected, 0x9876u, 0x12345678u, LIB_FALSE,
             CORE_MACHINE_CPU_PROFILE_80386);
-        if (lib_memory_compare(image, expected, sizeof(image)) != 0) { fprintf(stderr, "vm image\n"); return 0; }
+        if (lib_memory_compare(image, expected, sizeof(image)) != 0) { lib_c_fprintf(lib_c_stderr, "vm image\n"); return 0; }
     }
     return 1;
 }
@@ -197,10 +197,10 @@ lib_i32 main(void)
     lib_i32 routes = sgdt_sidt_test_segments_and_vm86();
 
     if (!values || !rejections || !routes) {
-        fprintf(stderr, "M5:T539:S42:SGDT-SIDT CPU failed values=%d reject=%d routes=%d\n",
+        lib_c_fprintf(lib_c_stderr, "M5:T539:S42:SGDT-SIDT CPU failed values=%d reject=%d routes=%d\n",
             values, rejections, routes);
         return 1;
     }
-    puts("M5:T539:S42:SGDT-SIDT-CPU:OK");
+    lib_c_printf("%s\n", "M5:T539:S42:SGDT-SIDT-CPU:OK");
     return 0;
 }

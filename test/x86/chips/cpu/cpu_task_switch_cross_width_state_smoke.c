@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #define GDT_POINTER 0x0100u
 #define GDT_BASE 0x0300u
@@ -515,16 +515,16 @@ int main(void)
     failed |= task_switch_expect_t330_32_to_16(LIB_TRUE, LIB_FALSE,
         LIB_TRUE);
     if (failed) return 1;
-    printf("M5:T261:S2:TASK-SWITCH:OK\n");
-    printf("M5:T261:S3:TASK-SWITCH:CORPUS:OK\n");
-    printf("M5:T261:S5:SS-CACHE:OK\n");
-    printf("M5:T329:S1:TSS16-JMP:OK\n");
-    printf("M5:T329:S2:TSS32-JMP:OK\n");
-    printf("M5:T329:S3:TSS32-IMAGE:OK\n");
-    printf("M5:T329:S4:TSS-CALL-GATE:OK\n");
-    printf("M5:T329:S5:TASK-RETURN:OK\n");
-    printf("M5:T329:S6:TASK-LDT:OK\n");
-    printf("M5:T330:S1:TASK-TRANSITION:OK\n");
-    printf("M5:T539:S62:TASK-CROSS-WIDTH:OK\n");
+    lib_c_printf("M5:T261:S2:TASK-SWITCH:OK\n");
+    lib_c_printf("M5:T261:S3:TASK-SWITCH:CORPUS:OK\n");
+    lib_c_printf("M5:T261:S5:SS-CACHE:OK\n");
+    lib_c_printf("M5:T329:S1:TSS16-JMP:OK\n");
+    lib_c_printf("M5:T329:S2:TSS32-JMP:OK\n");
+    lib_c_printf("M5:T329:S3:TSS32-IMAGE:OK\n");
+    lib_c_printf("M5:T329:S4:TSS-CALL-GATE:OK\n");
+    lib_c_printf("M5:T329:S5:TASK-RETURN:OK\n");
+    lib_c_printf("M5:T329:S6:TASK-LDT:OK\n");
+    lib_c_printf("M5:T330:S1:TASK-TRANSITION:OK\n");
+    lib_c_printf("M5:T539:S62:TASK-CROSS-WIDTH:OK\n");
     return 0;
 }

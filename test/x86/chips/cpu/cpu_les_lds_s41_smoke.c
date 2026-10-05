@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static void les_lds_s41_seed(cpu_instruction_fixture *state)
@@ -408,22 +408,22 @@ static lib_i32 les_lds_s41_test_limit(void)
 lib_i32 main(void)
 {
     if (!les_lds_s41_test_real()) {
-        printf("LES-LDS-S41 stage=real\n");
+        lib_c_printf("LES-LDS-S41 stage=real\n");
         return 1;
     }
     if (!les_lds_s41_test_rejections()) {
-        printf("LES-LDS-S41 stage=rejections\n");
+        lib_c_printf("LES-LDS-S41 stage=rejections\n");
         return 1;
     }
     if (!les_lds_s41_test_protected()) {
-        printf("LES-LDS-S41 stage=protected\n");
+        lib_c_printf("LES-LDS-S41 stage=protected\n");
         return 1;
     }
     if (!les_lds_s41_test_limit()) {
-        printf("LES-LDS-S41 stage=limit\n");
+        lib_c_printf("LES-LDS-S41 stage=limit\n");
         return 1;
     }
-    printf("M5:T316:S41:LES-LDS:OK\n");
-    printf("M5:T401:S33:LES-LDS-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S41:LES-LDS:OK\n");
+    lib_c_printf("M5:T401:S33:LES-LDS-PROFILES:OK\n");
     return 0;
 }

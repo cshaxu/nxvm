@@ -1,10 +1,10 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "core_machine_board_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "pic_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 #define CMPS_FLAGS (CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_PF | CORE_MACHINE_DEBUG_EFLAGS_AF | \
     CORE_MACHINE_DEBUG_EFLAGS_ZF | CORE_MACHINE_DEBUG_EFLAGS_SF | CORE_MACHINE_DEBUG_EFLAGS_OF)
 
@@ -231,9 +231,9 @@ lib_i32 main(void)
         !cmps_protected_case(LIB_TRUE, LIB_TRUE) ||
         !cmps_protected_case(LIB_FALSE, LIB_TRUE) ||
         !cmps_irq_case(LIB_FALSE) || !cmps_irq_case(LIB_TRUE)) {
-        printf("CMPS board fault/IRQ failed\n");
+        lib_c_printf("CMPS board fault/IRQ failed\n");
         return 1;
     }
-    printf("M5:T539:S38:CMPS-BOARD:OK\n");
+    lib_c_printf("M5:T539:S38:CMPS-BOARD:OK\n");
     return 0;
 }

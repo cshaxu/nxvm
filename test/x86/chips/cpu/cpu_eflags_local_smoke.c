@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "support/cpu_bus_fixture.h"
 
 static lib_i32 eflags_run(cpu_bus_fixture *state, lib_u8 opcode, t_cpu *after)
@@ -100,6 +100,6 @@ lib_i32 main(void)
         }
         }
     }
-    printf("M5:T316:S20:EFLAGS-LOCAL:OK\n");
+    lib_c_printf("M5:T316:S20:EFLAGS-LOCAL:OK\n");
     return 0;
 }

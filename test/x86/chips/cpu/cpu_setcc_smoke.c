@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_u32 setcc_flags(lib_u8 condition, lib_i32 truth)
 {
@@ -133,6 +133,6 @@ lib_i32 main(void)
     if (!setcc_test_register_conditions() ||
         !setcc_test_memory_conditions() || !setcc_test_prefix_forms() ||
         !setcc_test_pre_fault_nonpublication()) return 1;
-    printf("M5:T539:S30:CPU-SETCC:OK\n");
+    lib_c_printf("M5:T539:S30:CPU-SETCC:OK\n");
     return 0;
 }

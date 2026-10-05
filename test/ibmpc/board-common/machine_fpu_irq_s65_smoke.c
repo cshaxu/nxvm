@@ -1,5 +1,6 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "ibmpc/board-common/machine_board_state.h"
 #include "x86/core/device_support_interface.h"
 #include "pic_fixture.h"
@@ -14,7 +15,7 @@ static core_machine_debug_cpu_snapshot fpu_interface_s65_capture(core_machine *m
 {
     core_machine_debug_cpu_snapshot snapshot = {0};
     if (core_machine_debug_capture_cpu_snapshot(machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT,
-            &snapshot) != LIB_STATUS_OK) exit(EXIT_FAILURE);
+            &snapshot) != LIB_STATUS_OK) lib_test_assert(LIB_FALSE);
     return snapshot;
 }
 
@@ -104,6 +105,6 @@ int main(void)
     const lib_u8 fninit[] = {0xdbu,0xe3u};
     if (!fpu_interface_s65_irq(wait, sizeof(wait)) ||
         !fpu_interface_s65_irq(fninit, sizeof(fninit))) return 1;
-    puts("S65 WAIT/ESC Board IRQ retirement: PASS");
+    lib_c_printf("%s\n", "S65 WAIT/ESC Board IRQ retirement: PASS");
     return 0;
 }

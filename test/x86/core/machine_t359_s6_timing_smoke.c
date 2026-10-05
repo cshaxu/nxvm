@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/machine_interface.h"
@@ -82,7 +82,7 @@ static lib_i32 t359_s6_enter_protected(core_machine *machine,
         snapshot.gdtr.base != 0x0300u || snapshot.gdtr.limit != 0x17u ||
         snapshot.eip != 0u)
     {
-        fprintf(stderr, "S6 setup failed: executed=%llu reason=%d cr0=%x cs=%x base=%x ss=%x ip=%x\n",
+        lib_c_fprintf(lib_c_stderr, "S6 setup failed: executed=%llu reason=%d cr0=%x cs=%x base=%x ss=%x ip=%x\n",
             result.executed, result.reason, snapshot.cr0, snapshot.cs.selector,
             snapshot.cs.base, snapshot.ss.selector, snapshot.eip);
         return 0;
@@ -179,7 +179,7 @@ static lib_i32 t359_s6_test_fixed_real_rows(void)
 
     for (index = 0u; !failed && index < sizeof(rows) / sizeof(rows[0]); ++index) {
         if (!t359_s6_run(machine, &state, &rows[index])) {
-            fprintf(stderr, "S6 privileged timing row %u failed\n", (lib_u32)index);
+            lib_c_fprintf(lib_c_stderr, "S6 privileged timing row %u failed\n", (lib_u32)index);
             failed = 1;
         }
     }
@@ -213,6 +213,6 @@ static lib_i32 t359_s6_test_rejected_lock(void)
 lib_i32 main(void)
 {
     if (t359_s6_test_fixed_real_rows() || t359_s6_test_rejected_lock()) return 1;
-    printf("M5:T359:S6:PRIVILEGED-TIMING:OK\n");
+    lib_c_printf("M5:T359:S6:PRIVILEGED-TIMING:OK\n");
     return 0;
 }

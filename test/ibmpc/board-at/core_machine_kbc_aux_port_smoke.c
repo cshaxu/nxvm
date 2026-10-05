@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-at/kbc.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
 #include "kbc_fixture.h"
@@ -133,7 +132,7 @@ lib_i32 main(void)
     failed |= !take_aux_byte(port, master, slave, 0xfeu);
 
     if (failed) {
-        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:CONFIG\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T267:AUX:PORT:FAIL:CONFIG\n");
         goto done;
     }
     stage = 3;
@@ -148,7 +147,7 @@ lib_i32 main(void)
     failed |= !take_aux_byte(port, master, slave, 0x01u);
     failed |= !take_aux_byte(port, master, slave, 0x01u);
     if (failed) {
-        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-ORDER:status=%02X:bat=%u\n",
+        lib_c_fprintf(lib_c_stderr, "M5:T267:AUX:PORT:FAIL:E9-ORDER:status=%02X:bat=%u\n",
             (unsigned int)read_port(port, 0x64u),
             (unsigned int)x86_keyboard_get_signals(kbc.connect.keyboard).bat_ready);
         goto done;
@@ -160,30 +159,30 @@ lib_i32 main(void)
     failed |= !take_aux_byte(port, master, slave, 0x03u);
     failed |= !take_aux_byte(port, master, slave, 200u);
     if (failed) {
-        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-BUTTONS\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T267:AUX:PORT:FAIL:E9-BUTTONS\n");
         goto done;
     }
     stage = 5;
     send_aux_command(port, 0xf6u);
     if (!take_aux_byte(port, master, slave, 0xfau)) {
-        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:F6\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T267:AUX:PORT:FAIL:F6\n");
         failed = 1;
     }
     send_aux_command(port, 0xe9u);
     if (!take_aux_byte(port, master, slave, 0xfau)) {
-        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-ACK\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T267:AUX:PORT:FAIL:E9-ACK\n");
         failed = 1;
     }
     if (!take_aux_byte(port, master, slave, 0x00u)) {
-        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-STATUS\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T267:AUX:PORT:FAIL:E9-STATUS\n");
         failed = 1;
     }
     if (!take_aux_byte(port, master, slave, 0x02u)) {
-        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-RESOLUTION\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T267:AUX:PORT:FAIL:E9-RESOLUTION\n");
         failed = 1;
     }
     if (!take_aux_byte(port, master, slave, 100u)) {
-        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-RATE\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T267:AUX:PORT:FAIL:E9-RATE\n");
         failed = 1;
     }
 
@@ -260,9 +259,9 @@ done:
     core_machine_pic_finalize(master, slave);
     core_machine_destroy(machine);
     if (failed) {
-        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:STAGE=%d\n", stage);
+        lib_c_fprintf(lib_c_stderr, "M5:T267:AUX:PORT:FAIL:STAGE=%d\n", stage);
         return 1;
     }
-    printf("M5:T267:S1:AUX:PORT:OK\n");
+    lib_c_printf("M5:T267:S1:AUX:PORT:OK\n");
     return 0;
 }

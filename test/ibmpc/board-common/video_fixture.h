@@ -1,7 +1,7 @@
+#include "lib/types/test.h"
 #ifndef TEST_IBMPC_COMMON_VIDEO_FIXTURE_H
 #define TEST_IBMPC_COMMON_VIDEO_FIXTURE_H
 #include "lib/types/types_interface.h"
-#include <stdlib.h>
 #include "x86/core/machine_interface.h"
 #include "ibmpc/board-common/vadp.h"
 
@@ -15,7 +15,7 @@ static inline core_machine *test_video_create(t_vadp *adapter)
     core_machine *machine = LIB_NULL;
     if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         core_machine_vadp_initialize(adapter, machine) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     return machine;
 }
 
@@ -23,7 +23,7 @@ static inline void test_video_ready(core_machine *machine)
 {
     if (core_machine_configuration_is_open(machine) &&
         (core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-         core_machine_reset(machine) != LIB_STATUS_OK)) exit(EXIT_FAILURE);
+         core_machine_reset(machine) != LIB_STATUS_OK)) lib_test_assert(LIB_FALSE);
 }
 
 static inline lib_u32 test_video_port_read(core_machine *machine, lib_u16 port)
@@ -31,7 +31,7 @@ static inline lib_u32 test_video_port_read(core_machine *machine, lib_u16 port)
     lib_u32 value = 0u;
     test_video_ready(machine);
     if (core_machine_bus_read(machine, port, &value) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     return value;
 }
 
@@ -40,7 +40,7 @@ static inline void test_video_port_write(core_machine *machine,
 {
     test_video_ready(machine);
     if (core_machine_bus_write(machine, port, value) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
 }
 
 static inline lib_status test_video_probe_read(void *owner, lib_u16 port,
@@ -69,13 +69,13 @@ static inline lib_bool test_video_port_is_owned(core_machine *machine,
         .write = write ? test_video_probe_write : LIB_NULL
     };
     lib_status status;
-    if (!core_machine_configuration_is_open(machine)) exit(EXIT_FAILURE);
+    if (!core_machine_configuration_is_open(machine)) lib_test_assert(LIB_FALSE);
     status = core_machine_install_port_provider(machine, port, port, &provider,
         &owner);
     if (status == LIB_STATUS_INVALID_STATE) return LIB_TRUE;
     if (status != LIB_STATUS_OK ||
         core_machine_remove_port_routes(machine, &owner) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     return LIB_FALSE;
 }
 #endif

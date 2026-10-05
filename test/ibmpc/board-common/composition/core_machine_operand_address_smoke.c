@@ -1,6 +1,6 @@
+#include "lib/types/file.h"
 #include "../core_machine_board_fixture.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 
@@ -120,13 +120,13 @@ static lib_i32 oas_prepare(oas_machine *state, oas_port_state *port,
         !oas_write(state, OAS_GDT_POINTER, gdt_pointer, sizeof(gdt_pointer)) ||
         !oas_write(state, OAS_GDT_ADDRESS, gdt, sizeof(gdt)) ||
         !oas_write(state, 0u, real_code, sizeof(real_code))) {
-        fprintf(stderr, "S29 operand board bootstrap setup failed\n");
+        lib_c_fprintf(lib_c_stderr, "S29 operand board bootstrap setup failed\n");
         return 0;
     }
     if (core_machine_run(state->machine,
             (core_machine_run_budget){ 10u, 0u }, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 10u) {
-        fprintf(stderr, "S29 operand board bootstrap run failed reason=%u executed=%u\n",
+        lib_c_fprintf(lib_c_stderr, "S29 operand board bootstrap run failed reason=%u executed=%u\n",
             (unsigned)result.reason, (unsigned)result.executed);
         return 0;
     }
@@ -162,7 +162,7 @@ static lib_i32 oas_run_gp(oas_machine *state, const lib_u8 *code,
         !diagnostic.first_fault.valid ||
         !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
             VCPUINS_EXCEPT_DF)) {
-        fprintf(stderr, "S29 operand GP status=%u reason=%u first=%08x eip=%08x\n",
+        lib_c_fprintf(lib_c_stderr, "S29 operand GP status=%u reason=%u first=%08x eip=%08x\n",
             (unsigned)status, (unsigned)result.reason,
             (unsigned)diagnostic.first_fault.exception_mask,
             (unsigned)out_cpu->eip);
@@ -197,7 +197,7 @@ static lib_i32 oas_test_fault_delivery(void)
         }
         core_machine_destroy(state.machine);
         if (failed) {
-            fprintf(stderr, "S29 operand fault form=%u failed\n",
+            lib_c_fprintf(lib_c_stderr, "S29 operand fault form=%u failed\n",
                 (unsigned)form);
             return 0;
         }
@@ -246,13 +246,13 @@ static lib_i32 oas_test_io_strings(void)
 lib_i32 main(void)
 {
     if (!oas_test_fault_delivery()) {
-        fprintf(stderr, "S29 operand fault delivery failed\n");
+        lib_c_fprintf(lib_c_stderr, "S29 operand fault delivery failed\n");
         return 1;
     }
     if (!oas_test_io_strings()) {
-        fprintf(stderr, "S29 operand I/O strings failed\n");
+        lib_c_fprintf(lib_c_stderr, "S29 operand I/O strings failed\n");
         return 1;
     }
-    printf("M5:T302:OPERAND-ADDRESS-STACK:OK\n");
+    lib_c_printf("M5:T302:OPERAND-ADDRESS-STACK:OK\n");
     return 0;
 }

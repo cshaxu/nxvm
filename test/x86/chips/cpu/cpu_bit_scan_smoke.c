@@ -1,5 +1,5 @@
 #include "support/cpu_operand_probe_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: unsupported-profile #UD is CPU-owned. */
 static lib_i32 scan_test_forms(void)
@@ -53,7 +53,7 @@ static lib_i32 scan_test_forms(void)
                 width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
                 LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || read != source;
         if (failed) {
-            fprintf(stderr, "bit scan form %u/%u/%u/%u status fault=%u eip=%u\n",
+            lib_c_fprintf(lib_c_stderr, "bit scan form %u/%u/%u/%u status fault=%u eip=%u\n",
                 (unsigned)opcode, (unsigned)width, (unsigned)memory,
                 (unsigned)zero, (unsigned)state.fault.exception_mask,
                 (unsigned)after.data.eip);
@@ -88,7 +88,7 @@ static lib_i32 scan_test_profile(void)
             after.data.eax != 0xaabbccddu ||
             after.data.eflags != VCPU_EFLAGS_CF || after.data.eip != 0u)
         {
-            fprintf(stderr, "bit scan profile %u fault=%u eip=%u\n",
+            lib_c_fprintf(lib_c_stderr, "bit scan profile %u fault=%u eip=%u\n",
                 (unsigned)index, (unsigned)state->fault.exception_mask,
                 (unsigned)after.data.eip);
             return 0;
@@ -100,6 +100,6 @@ static lib_i32 scan_test_profile(void)
 lib_i32 main(void)
 {
     if (!scan_test_forms() || !scan_test_profile()) return 1;
-    printf("M5:T539:S30:CPU-BIT-SCAN:OK\n");
+    lib_c_printf("M5:T539:S30:CPU-BIT-SCAN:OK\n");
     return 0;
 }

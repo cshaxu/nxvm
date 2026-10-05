@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "x86/core/machine.h"
 
 typedef struct board_phase_probe {
@@ -109,6 +109,6 @@ lib_i32 main(void)
         .ticks_per_instruction = 1u
     };
     if (verify_board_phases(&config)) return 1;
-    puts("M5:T540:S93:CORE-ATTACHMENT-PHASES:OK");
+    lib_c_printf("%s\n", "M5:T540:S93:CORE-ATTACHMENT-PHASES:OK");
     return 0;
 }

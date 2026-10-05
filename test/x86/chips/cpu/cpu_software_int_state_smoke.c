@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 typedef struct software_int_form {
     lib_u8 vector;
@@ -202,6 +202,6 @@ static lib_i32 software_int_state_real_forms(void)
 int main(void)
 {
     if (!software_int_state_real_forms() || !software_int_s50_test_rejections()) return 1;
-    puts("M5:T316:S50:SOFTWARE-INT:CPU-ROLLBACK:OK");
+    lib_c_printf("%s\n", "M5:T316:S50:SOFTWARE-INT:CPU-ROLLBACK:OK");
     return 0;
 }

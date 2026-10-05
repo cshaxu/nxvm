@@ -1,5 +1,5 @@
 #include "support/cpu_descriptor_query_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #define VERR_VERW_CPU_VERR_MODRM 0xe0u
 #define VERR_VERW_CPU_VERW_MODRM 0xe8u
@@ -210,9 +210,9 @@ lib_i32 main(void)
         !verr_verw_test_protected_memory_forms() ||
         !verr_verw_test_rejection() || !verr_verw_test_source_limit() ||
         !verr_verw_test_ldt_selector()) {
-        fprintf(stderr, "M5:T539:S44:VERR-VERW:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T539:S44:VERR-VERW:FAIL\n");
         return 1;
     }
-    puts("M5:T539:S44:VERR-VERW:OK");
+    lib_c_printf("%s\n", "M5:T539:S44:VERR-VERW:OK");
     return 0;
 }

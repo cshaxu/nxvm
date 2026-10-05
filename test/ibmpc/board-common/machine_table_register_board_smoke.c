@@ -1,10 +1,10 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "core_machine_board_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "pic_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 static lib_i32 table_register_board_create(core_machine **out_machine,
     core_machine_board_state **out_board)
 {
@@ -607,10 +607,10 @@ lib_i32 main(void)
     lib_i32 j = table_register_board_cpl_reject();
 
     if (!a || !b || !c || !d || !e || !f || !g || !h || !i || !j) {
-        fprintf(stderr, "M5:T539:S42:table-register board failed sgdt=%d sidt=%d lgdt=%d lidt=%d ltr=%d segments=%d limit=%d dos=%d consumer=%d cpl=%d\n",
+        lib_c_fprintf(lib_c_stderr, "M5:T539:S42:table-register board failed sgdt=%d sidt=%d lgdt=%d lidt=%d ltr=%d segments=%d limit=%d dos=%d consumer=%d cpl=%d\n",
             a, b, c, d, e, f, g, h, i, j);
         return 1;
     }
-    puts("M5:T539:S42:TABLE-REGISTER-BOARD:OK");
+    lib_c_printf("%s\n", "M5:T539:S42:TABLE-REGISTER-BOARD:OK");
     return 0;
 }

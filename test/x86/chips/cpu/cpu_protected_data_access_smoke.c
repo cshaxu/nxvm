@@ -1,5 +1,5 @@
 #include "support/cpu_protected_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* Segment access rules and atomicity live with CPU cached descriptors. */
 static lib_bool pda_same(const t_cpu *before, const t_cpu *after,
@@ -139,7 +139,7 @@ int main(void)
     if (!pda_default_access(CORE_MACHINE_CPU_PROFILE_80286) ||
         !pda_default_access(CORE_MACHINE_CPU_PROFILE_80386) || !pda_386_attributes() ||
         !pda_fault_atomicity() || !pda_expand_down_success()) {
-        fputs("M5:T539:S53:CPU-PROTECTED-DATA:FAIL\n", stderr); return 1;
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S53:CPU-PROTECTED-DATA:FAIL\n"); return 1;
     }
-    puts("M5:T323:S2:PROTECTED-DATA-ACCESS:OK"); puts("M5:T539:S53:CPU-PROTECTED-DATA:OK"); return 0;
+    lib_c_printf("%s\n", "M5:T323:S2:PROTECTED-DATA-ACCESS:OK"); lib_c_printf("%s\n", "M5:T539:S53:CPU-PROTECTED-DATA:OK"); return 0;
 }

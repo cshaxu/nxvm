@@ -1,11 +1,11 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include <stdio.h>
-
 typedef struct legacy_sreg_stack_machine { core_machine *machine;
     core_machine_board_state *board; } legacy_sreg_stack_machine;
 
@@ -269,17 +269,17 @@ static lib_i32 legacy_sreg_stack_test_irq(void)
 lib_i32 main(void)
 {
     if (!legacy_sreg_stack_test_protected_ss_null()) {
-        printf("LEGACY-SREG-STACK-BOARD stage=ss-null\n"); return 1;
+        lib_c_printf("LEGACY-SREG-STACK-BOARD stage=ss-null\n"); return 1;
     }
     if (!legacy_sreg_stack_test_protected_rejects()) {
-        printf("LEGACY-SREG-STACK-BOARD stage=rejects\n"); return 1;
+        lib_c_printf("LEGACY-SREG-STACK-BOARD stage=rejects\n"); return 1;
     }
     if (!legacy_sreg_stack_test_protected_stack_limits()) {
-        printf("LEGACY-SREG-STACK-BOARD stage=stack-limits\n"); return 1;
+        lib_c_printf("LEGACY-SREG-STACK-BOARD stage=stack-limits\n"); return 1;
     }
     if (!legacy_sreg_stack_test_irq()) {
-        printf("LEGACY-SREG-STACK-BOARD stage=irq\n"); return 1;
+        lib_c_printf("LEGACY-SREG-STACK-BOARD stage=irq\n"); return 1;
     }
-    printf("M5:T539:S26:LEGACY-SREG-STACK-BOARD:OK\n");
+    lib_c_printf("M5:T539:S26:LEGACY-SREG-STACK-BOARD:OK\n");
     return 0;
 }

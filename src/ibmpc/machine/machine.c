@@ -185,8 +185,8 @@ static lib_status vm_machine_remove_fdd_direct(vm_machine *session)
 
     if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (vm_machine_control_is_running(&session->control)) return LIB_STATUS_INVALID_STATE;
-    status = vm_machine_fdd_remove_for(session->fdd);
-    if (status == LIB_STATUS_OK) session->fdd_image_path[0] = '\0';
+    status = vm_machine_fdd_remove_for(session->floppy[0u]);
+    if (status == LIB_STATUS_OK) session->floppy_image_path[0u][0] = '\0';
     return status;
 }
 
@@ -211,22 +211,22 @@ lib_i32 vm_machine_eject_fdd(vm_machine *session)
 static lib_status vm_machine_insert_hdd_at_startup(vm_machine *session,
     const char *path, lib_storage_medium_mode mode)
 {
-    char candidate[sizeof(session->hdd_image_path)];
+    char candidate[sizeof(session->fixed_disk_image_path[0u])];
     lib_status status;
 
     if (session == LIB_NULL || !session->construction.hdc_present)
         return LIB_STATUS_INVALID_ARGUMENT;
     status = vm_machine_copy_path(candidate, sizeof(candidate), path);
     if (status == LIB_STATUS_OK)
-        status = vm_machine_hdd_insert(session->hdd, candidate, mode);
+        status = vm_machine_hdd_insert(session->fixed_disk[0u], candidate, mode);
     if (status != LIB_STATUS_OK) return status;
     if (session->construction.fixed_geometry) {
-        status = vm_machine_hdd_set_geometry(session->hdd,
+        status = vm_machine_hdd_set_geometry(session->fixed_disk[0u],
             session->construction.cylinders, session->construction.heads,
             session->construction.sectors);
         if (status != LIB_STATUS_OK) return status;
     }
-    lib_memory_copy(session->hdd_image_path, candidate, lib_text_length(candidate) + 1u);
+    lib_memory_copy(session->fixed_disk_image_path[0u], candidate, lib_text_length(candidate) + 1u);
     return LIB_STATUS_OK;
 }
 
@@ -355,9 +355,9 @@ lib_status vm_machine_create(const vm_machine_config *config,
             vm_machine_config_fixed_disk_mode(config, 0u));
         if (status != LIB_STATUS_OK) { vm_machine_destroy(session); return status; }
     }
-    if (config->create_fdd) vm_machine_fdd_create_for(session->fdd);
+    if (config->create_fdd) vm_machine_fdd_create_for(session->floppy[0u]);
     if (construction->hdc_present && config->create_hdd_cylinders != 0u) {
-        status = vm_machine_hdd_create(session->hdd, config->create_hdd_cylinders);
+        status = vm_machine_hdd_create(session->fixed_disk[0u], config->create_hdd_cylinders);
         if (status != LIB_STATUS_OK) { vm_machine_destroy(session); return status; }
     }
     status = vm_machine_reset(session);

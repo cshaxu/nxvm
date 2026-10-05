@@ -27,8 +27,8 @@ struct vm_machine {
     /* Borrowed from the sole Core attachment lifetime. */
     core_machine_board_state *board;
     core_machine_dma_request_binding fdc_dma_request;
-    union { t_fdd *fdd; t_fdd *floppy[VM_MACHINE_FLOPPY_SLOT_COUNT]; };
-    union { t_hdd *hdd; t_hdd *fixed_disk[VM_MACHINE_FIXED_DISK_SLOT_COUNT]; };
+    t_fdd *floppy[VM_MACHINE_FLOPPY_SLOT_COUNT];
+    t_hdd *fixed_disk[VM_MACHINE_FIXED_DISK_SLOT_COUNT];
     t_debug debug;
     core_machine_media_registry *media_registry;
     core_machine_display_provider_slot *display_provider;
@@ -52,10 +52,8 @@ struct vm_machine {
     lib_u64 pacing_host_units_per_second;
     lib_u64 pacing_core_origin_ticks;
     lib_bool pacing_origin_valid;
-    union { char fdd_image_path[1024];
-        char floppy_image_path[VM_MACHINE_FLOPPY_SLOT_COUNT][1024]; };
-    union { char hdd_image_path[1024];
-        char fixed_disk_image_path[VM_MACHINE_FIXED_DISK_SLOT_COUNT][1024]; };
+    char floppy_image_path[VM_MACHINE_FLOPPY_SLOT_COUNT][1024];
+    char fixed_disk_image_path[VM_MACHINE_FIXED_DISK_SLOT_COUNT][1024];
 };
 
 lib_status vm_machine_storage_initialize(vm_machine *machine);

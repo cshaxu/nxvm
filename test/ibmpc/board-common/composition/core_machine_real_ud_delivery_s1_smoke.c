@@ -1,5 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
@@ -203,6 +203,6 @@ static lib_i32 real_ud_test_delivery_failure(void)
 lib_i32 main(void)
 {
     if (!real_ud_test_delivery() || !real_ud_test_delivery_failure()) return 1;
-    printf("M5:T337:S1:REAL-UD-DELIVERY:OK\n");
+    lib_c_printf("M5:T337:S1:REAL-UD-DELIVERY:OK\n");
     return 0;
 }

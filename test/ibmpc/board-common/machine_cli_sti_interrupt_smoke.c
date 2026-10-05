@@ -1,13 +1,14 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 #include "x86/chips/cpu/cpu_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include "../../x86/core/debug_fixture.h"
-#include "../../x86/core/exception_fixture.h"
+#include "../core/debug_fixture.h"
+#include "../core/exception_fixture.h"
 
 typedef struct cli_sti_machine {
     core_machine *machine;
@@ -18,7 +19,7 @@ static core_machine_debug_cpu_snapshot cli_sti_capture(core_machine *machine)
 {
     core_machine_debug_cpu_snapshot snapshot = {0};
     if (core_machine_debug_capture_cpu_snapshot(machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT,
-            &snapshot) != LIB_STATUS_OK) exit(EXIT_FAILURE);
+            &snapshot) != LIB_STATUS_OK) lib_test_assert(LIB_FALSE);
     return snapshot;
 }
 
@@ -559,27 +560,27 @@ static lib_i32 cli_sti_test_vm86(void)
 lib_i32 main(void)
 {
     if (!cli_sti_test_real_forms()) {
-        printf("CLI-STI stage=real failed\n");
+        lib_c_printf("CLI-STI stage=real failed\n");
         return 1;
     }
     if (!cli_sti_test_irq_shadow()) {
-        printf("CLI-STI stage=pic failed\n");
+        lib_c_printf("CLI-STI stage=pic failed\n");
         return 1;
     }
     if (!cli_sti_test_8088_pic_mask_round_trip()) {
-        printf("CLI-STI stage=8088-pic-mask failed\n");
+        lib_c_printf("CLI-STI stage=8088-pic-mask failed\n");
         return 1;
     }
     if (!cli_sti_test_8088_keyboard_compare()) {
-        printf("CLI-STI stage=8088-keyboard-compare failed\n");
+        lib_c_printf("CLI-STI stage=8088-keyboard-compare failed\n");
         return 1;
     }
     if (!cli_sti_test_8088_pit_irq_round_trip()) {
-        printf("CLI-STI stage=8088-pit-irq failed\n");
+        lib_c_printf("CLI-STI stage=8088-pit-irq failed\n");
         return 1;
     }
     if (!cli_sti_test_8088_ram_post_store()) {
-        printf("CLI-STI stage=8088-ram-post-store failed\n");
+        lib_c_printf("CLI-STI stage=8088-ram-post-store failed\n");
         return 1;
     }
     if (!cli_sti_test_protected_success())
@@ -588,7 +589,7 @@ lib_i32 main(void)
         return 1;
     if (!cli_sti_test_vm86())
         return 1;
-    printf("M5:T316:S22:CLI-STI:OK\n");
-    printf("M5:T539:S64:CLI-STI-INTERRUPT:OK\n");
+    lib_c_printf("M5:T316:S22:CLI-STI:OK\n");
+    lib_c_printf("M5:T539:S64:CLI-STI-INTERRUPT:OK\n");
     return 0;
 }

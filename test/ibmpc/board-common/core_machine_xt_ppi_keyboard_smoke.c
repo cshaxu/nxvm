@@ -1,10 +1,9 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "../board-xt/controller_fixture.h"
-#include "../../x86/core/time_fixture.h"
+#include "../core/time_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "core_machine_board_fixture.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/machine_board_state.h"
 #include "x86/core/debug_interface.h"
 
@@ -326,7 +325,7 @@ static lib_i32 core_machine_xt_keyboard_refused_completion(lib_bool bat,
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) != LIB_STATUS_OK;
     failed |= !failed && test_core_machine_advance_time(machine, 10000u) != LIB_STATUS_OK;
     failed |= !failed && (core_machine_bus_read(machine, 0x0060u, &value) != LIB_STATUS_OK || value != 0u);
-    if (failed) printf("XT refused completion failed: BAT=%u reset=%u\n", bat, reset_pending);
+    if (failed) lib_c_printf("XT refused completion failed: BAT=%u reset=%u\n", bat, reset_pending);
     core_machine_destroy(machine);
     return failed;
 }
@@ -393,10 +392,10 @@ int main(void)
         core_machine_xt_keyboard_refused_completion(LIB_TRUE, LIB_TRUE, LIB_FALSE) ||
         core_machine_xt_keyboard_refused_completion(LIB_FALSE, LIB_FALSE, LIB_TRUE) ||
         core_machine_xt_keyboard_refused_completion(LIB_TRUE, LIB_FALSE, LIB_TRUE)) return 1;
-    printf("M5:T484:S8:XT-PPI-KEYBOARD:OK\n");
-    printf("M5:T484:S8:XT-IRQ1-RESET:OK\n");
-    printf("M5:T484:S8:NO-8042-ALIAS:OK\n");
-    printf("M5:T484:S19:XT-PPI-PARITY:OK\n");
-    printf("M5:T496:S2:XT-KEYBOARD-BAT:OK\n");
+    lib_c_printf("M5:T484:S8:XT-PPI-KEYBOARD:OK\n");
+    lib_c_printf("M5:T484:S8:XT-IRQ1-RESET:OK\n");
+    lib_c_printf("M5:T484:S8:NO-8042-ALIAS:OK\n");
+    lib_c_printf("M5:T484:S19:XT-PPI-PARITY:OK\n");
+    lib_c_printf("M5:T496:S2:XT-KEYBOARD-BAT:OK\n");
     return 0;
 }

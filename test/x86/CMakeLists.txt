@@ -15,13 +15,13 @@ if(NOT TARGET x86-pit825x)
     add_subdirectory("${X86_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/x86")
 endif()
 
-# Core composition tests explicitly consume the separate PC package.
-if(NOT TARGET shared-ibmpc-tests)
-    add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../ibmpc" "${CMAKE_CURRENT_BINARY_DIR}/ibmpc-tests")
-endif()
-
+# Tests consume their own fixtures and inward production targets only.
 set(SHARED_X86_TEST_TARGETS)
 include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
+
+add_test(NAME x86.test-boundaries COMMAND "${CMAKE_COMMAND}"
+    "-DTEST_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" "-DTEST_LAYER=x86"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/../verify_test_boundaries.cmake")
 
 add_library(core-machine-prefetch-scheduler-test OBJECT
     "${X86_ROOT}/core/machine_scheduler.c")
@@ -55,7 +55,6 @@ foreach(core_case IN ITEMS call-gate tss-iomap-port-authorization task-switch-cr
     set_tests_properties("unit.${core_target}" PROPERTIES LABELS "unit;x86" TIMEOUT 30)
     list(APPEND SHARED_X86_TEST_TARGETS ${core_target})
 endforeach()
-shared_register_test(x86 core/dma_route_rollback x86-core ibmpc-board-common)
 add_executable(core-machine-neutral-link-smoke core/neutral_link.c)
 target_link_libraries(core-machine-neutral-link-smoke PRIVATE x86-core)
 add_test(NAME unit.core-machine-neutral-link-smoke COMMAND core-machine-neutral-link-smoke)
@@ -64,20 +63,7 @@ list(APPEND SHARED_X86_TEST_TARGETS core-machine-neutral-link-smoke)
 
 foreach(core_case IN ITEMS
     "core-machine-ram-port-context-smoke|ram_port_context_smoke.c|x86-core"
-    "core-machine-input-display-s5-smoke|../../ibmpc/board-common/machine_input_display_s5_smoke.c|ibmpc-board-common-observable"
     "core-machine-attachment-phases-smoke|machine_attachment_phases_smoke.c|x86-core"
-    "core-machine-controller-authority-smoke|../../ibmpc/board-common/core_machine_controller_authority_smoke.c|ibmpc-board-common"
-    "core-machine-board-binding-identity-smoke|machine_board_binding_identity_smoke.c|ibmpc-board-common"
-    "core-machine-ram-create-smoke|core_machine_ram_create_smoke.c|ibmpc-board-common"
-    "core-machine-port-rollback-smoke|port_assembly_core_smoke.c|ibmpc-board-common"
-    "core-machine-plan-smoke|../../ibmpc/board-common/core_machine_plan_smoke.c|ibmpc-board-common"
-    "core-machine-instance-smoke|machine_instance_smoke.c|ibmpc-board-common"
-    "core-machine-checked-memory-smoke|machine_checked_memory_smoke.c|ibmpc-board-common"
-    "core-machine-timing-checkpoint-smoke|../../ibmpc/board-common/machine_timing_checkpoint_smoke.c|ibmpc-board-common"
-    "core-machine-ega-registration-transaction-smoke|core_machine_ega_registration_transaction_smoke.c|ibmpc-board-common"
-    "core-machine-planar-parity-nmi-s3-smoke|../../ibmpc/board-common/core_machine_planar_parity_nmi_s3_smoke.c|ibmpc-board-common"
-    "core-machine-competition-80386-s1-smoke|machine_competition_80386_s1_smoke.c|ibmpc-board-common-observable"
-    "core-machine-pic-phase-s2-smoke|core_machine_pic_phase_s2_smoke.c|ibmpc-board-common-observable"
     "core-machine-real-mode-386-address-smoke|core_machine_real_mode_386_address_smoke.c|x86-core"
     "core-machine-real-mode-386-rep-cmps-smoke|core_machine_real_mode_386_rep_cmps_smoke.c|x86-core"
     "core-machine-real-mode-corpus-smoke|core_machine_real_mode_corpus_smoke.c|x86-core"
@@ -88,16 +74,7 @@ foreach(core_case IN ITEMS
     "core-machine-immutable-rom-mapping-smoke|machine_immutable_rom_mapping_smoke.c|x86-core"
     "core-machine-rational-clock-smoke|machine_rational_clock_smoke.c|x86-core"
     "core-machine-executor-run-smoke|core_machine_executor_run_smoke.c|x86-core"
-    "core-machine-cpu-reset-identity-smoke|machine_cpu_reset_identity_smoke.c|ibmpc-board-common"
-    "core-machine-scheduler-smoke|machine_scheduler_smoke.c|ibmpc-board-common"
-    "core-machine-transaction-lifecycle-s4-smoke|machine_transaction_lifecycle_s4_smoke.c|ibmpc-board-common-observable"
-    "core-machine-transaction-s2-smoke|machine_transaction_s2_smoke.c|ibmpc-board-common-observable"
-    "core-machine-explicit-time-s4-smoke|machine_explicit_time_s4_smoke.c|ibmpc-board-common"
     "core-machine-memory-inspection-smoke|core_machine_memory_inspection_smoke.c|x86-core"
-    "core-machine-rom-route-transaction-smoke|core_machine_rom_route_transaction_smoke.c|ibmpc-board-common"
-    "core-machine-timeline-s2-smoke|machine_timeline_s2_smoke.c|ibmpc-board-common"
-    "machine-fpu-interface-s65-smoke|machine_fpu_interface_s65_smoke.c|x86-core"
-    "machine-instruction-timing-ledger-smoke|machine_instruction_timing_ledger_smoke.c|x86-core"
     "machine-80386-protected-io-timing-smoke|machine_80386_protected_io_timing_smoke.c|x86-core"
     "machine-t359-s4-timing-smoke|machine_t359_s4_timing_smoke.c|x86-core"
     "machine-t359-s6-timing-smoke|machine_t359_s6_timing_smoke.c|x86-core"
@@ -107,13 +84,7 @@ foreach(core_case IN ITEMS
     "machine-cpu-profile-gate-smoke|machine_cpu_profile_gate_smoke.c|x86-core"
     "machine-instruction-timing-smoke|machine_instruction_timing_smoke.c|x86-core"
     "core-machine-descriptor-system-smoke|core_machine_descriptor_system_smoke.c|x86-core"
-    "machine-t359-s2-timing-smoke|machine_t359_s2_timing_smoke.c|ibmpc-board-common"
-    "machine-t359-s3-timing-smoke|machine_t359_s3_timing_smoke.c|ibmpc-board-common"
-    "machine-legacy-timing-normalization-s2-smoke|machine_legacy_timing_normalization_s2_smoke.c|ibmpc-board-common"
-    "core-machine-retirement-observation-s3-smoke|machine_retirement_observation_s3_smoke.c|ibmpc-board-common"
     "core-machine-80386-paging-smoke|core_machine_80386_paging_smoke.c|x86-core-observable"
-    "core-machine-fpu-8087-smoke|core_machine_fpu_8087_smoke.c|ibmpc-board-common"
-    "core-machine-firmware-capability-smoke|machine_firmware_capability_smoke.c|ibmpc-board-common"
     "core-machine-contract-smoke|core_contract_smoke.c|x86-core"
     "core-machine-lifecycle-smoke|machine_lifecycle_smoke.c|x86-core"
     "core-machine-stopped-lifecycle-smoke|machine_stopped_lifecycle_smoke.c|x86-core"
@@ -134,52 +105,6 @@ foreach(core_case IN ITEMS
 endforeach()
 
 shared_register_test(x86 chips/pit825x/pit_8253 x86-pit825x)
-target_sources(core-machine-input-display-s5-smoke PRIVATE core/composition_fixture.c)
-target_link_libraries(core-machine-transaction-s2-smoke PRIVATE x86-core-observable)
-target_link_libraries(core-machine-input-display-s5-smoke PRIVATE x86-core-observable)
-target_link_libraries(core-machine-firmware-capability-smoke PRIVATE x86-core)
-target_link_libraries(core-machine-scheduler-smoke PRIVATE x86-core)
-target_link_libraries(core-machine-controller-authority-smoke PRIVATE x86-core)
-target_link_libraries(core-machine-board-binding-identity-smoke PRIVATE x86-core)
-target_sources(core-machine-board-binding-identity-smoke PRIVATE
-    ../ibmpc/board-common/board_binding_fixture.c)
-target_link_libraries(core-machine-ram-create-smoke PRIVATE x86-core)
-target_sources(core-machine-ram-create-smoke PRIVATE
-    ../ibmpc/board-common/board_construction_fixture.c
-    ../ibmpc/board-common/board_binding_fixture.c)
-target_link_libraries(core-machine-port-rollback-smoke PRIVATE x86-core)
-target_link_libraries(core-machine-plan-smoke PRIVATE x86-core)
-target_link_libraries(core-machine-instance-smoke PRIVATE x86-core)
-target_link_libraries(core-machine-checked-memory-smoke PRIVATE x86-core)
-target_link_libraries(core-machine-timing-checkpoint-smoke PRIVATE x86-core)
-target_link_libraries(core-machine-planar-parity-nmi-s3-smoke PRIVATE x86-core)
-target_sources(core-machine-planar-parity-nmi-s3-smoke PRIVATE
-    core/planar_parity_fixture.c)
-target_link_libraries(core-machine-ega-registration-transaction-smoke PRIVATE x86-core)
-target_sources(core-machine-ega-registration-transaction-smoke PRIVATE
-    ../ibmpc/board-common/video_registration_fixture.c)
-target_sources(core-machine-plan-smoke PRIVATE
-    core/plan_core_fixture.c
-    ../ibmpc/board-common/board_construction_fixture.c)
-target_sources(core-machine-port-rollback-smoke PRIVATE
-    core/port_assembly_fixture.c
-    ../ibmpc/board-common/port_assembly_board_fixture.c
-    ../ibmpc/board-common/board_construction_fixture.c)
-target_link_libraries(core-machine-competition-80386-s1-smoke PRIVATE x86-core-observable)
-target_sources(core-machine-competition-80386-s1-smoke PRIVATE
-    ../ibmpc/board-common/dma_competition_fixture.c)
-target_link_libraries(core-machine-pic-phase-s2-smoke PRIVATE x86-core-observable)
-target_link_libraries(core-machine-cpu-reset-identity-smoke PRIVATE x86-core)
-
-target_link_libraries(core-machine-timeline-s2-smoke PRIVATE x86-core)
-target_link_libraries(core-machine-transaction-lifecycle-s4-smoke PRIVATE x86-core-observable)
-target_link_libraries(core-machine-explicit-time-s4-smoke PRIVATE x86-core)
-target_link_libraries(core-machine-rom-route-transaction-smoke PRIVATE x86-core)
-target_link_libraries(core-machine-fpu-8087-smoke PRIVATE x86-core)
-target_link_libraries(core-machine-retirement-observation-s3-smoke PRIVATE x86-core)
-target_link_libraries(machine-t359-s2-timing-smoke PRIVATE x86-core)
-target_link_libraries(machine-t359-s3-timing-smoke PRIVATE x86-core)
-target_link_libraries(machine-legacy-timing-normalization-s2-smoke PRIVATE x86-core)
 shared_register_test(x86 chips/pit825x/pit_readback x86-pit825x)
 shared_register_test(x86 chips/pit825x/pit_waveform x86-pit825x)
 shared_register_test(x86 chips/pit825x/pit_contract x86-pit825x)
@@ -221,21 +146,6 @@ shared_register_test(x86 chips/kbc8042/controller_contract "x86-kbc8042;x86-keyb
 shared_register_test(x86 chips/ppi8255/ppi_contract x86-ppi8255)
 shared_register_test(x86 chips/xtkeyboard/xt_keyboard_contract x86-xtkeyboard)
 shared_register_test(x86 chips/cpu/cpu_contract x86-cpu-shared)
-add_executable(core-machine-cpu-context-smoke chips/cpu/cpu_execution_context_smoke.c)
-target_link_libraries(core-machine-cpu-context-smoke PRIVATE x86-cpu-shared)
-add_test(NAME unit.core-machine-cpu-context-smoke COMMAND core-machine-cpu-context-smoke)
-set_tests_properties(unit.core-machine-cpu-context-smoke PROPERTIES LABELS "unit;x86" TIMEOUT 30)
-list(APPEND SHARED_X86_TEST_TARGETS core-machine-cpu-context-smoke)
-foreach(cpu_pic_case IN ITEMS idt-privilege outer-iret protected-far protected-data task-switch16)
-    string(REPLACE "-" "_" cpu_pic_file "${cpu_pic_case}")
-    set(cpu_pic_target "machine-${cpu_pic_case}-pic-board-smoke")
-    add_executable(${cpu_pic_target}
-        "chips/cpu/machine_${cpu_pic_file}_pic_board_smoke.c" core/composition_fixture.c)
-    target_link_libraries(${cpu_pic_target} PRIVATE x86-cpu-shared ibmpc-board-common x86-core)
-    add_test(NAME "unit.${cpu_pic_target}" COMMAND ${cpu_pic_target})
-    set_tests_properties("unit.${cpu_pic_target}" PROPERTIES LABELS "unit;x86" TIMEOUT 30)
-    list(APPEND SHARED_X86_TEST_TARGETS ${cpu_pic_target})
-endforeach()
 shared_register_test(x86 chips/cpu/cpu_inc_dec_first_group x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_inc_dec_second_group x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_inc_dec_final_group x86-cpu-shared)
@@ -310,21 +220,23 @@ shared_register_test(x86 chips/cpu/cpu_protected_iret_state x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_iret_s51_state x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_task_switch_cross_width_state x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_eflags_local x86-cpu-shared)
+
+add_executable(core-machine-cpu-context-smoke chips/cpu/cpu_execution_context_smoke.c)
+target_link_libraries(core-machine-cpu-context-smoke PRIVATE x86-cpu-shared)
+add_test(NAME unit.core-machine-cpu-context-smoke COMMAND core-machine-cpu-context-smoke)
+set_tests_properties(unit.core-machine-cpu-context-smoke PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+list(APPEND SHARED_X86_TEST_TARGETS core-machine-cpu-context-smoke)
+
 if(X86_BUILD_TOOLS)
 shared_register_test(x86 debug_output x86-debug)
 shared_register_test(x86 debug_linear x86-debug)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(x86-test-debug_output PRIVATE -Wno-error=format-truncation)
-    target_compile_options(x86-test-debug_linear PRIVATE -Wno-error=format-truncation)
-endif()
 shared_register_test(x86 xasm32/xasm32 x86-xasm32)
 shared_register_test(x86 xasm32/xasm32_contract x86-xasm32)
 shared_register_test(x86 xasm32/xasm32_bounds x86-xasm32)
 if(WIN32)
     shared_register_test(x86 debug_machine x86-debug)
-    target_sources(x86-test-debug_machine PRIVATE ../common/machine_fixture.c)
-    target_include_directories(x86-test-debug_machine PRIVATE ../common)
 endif()
+
 endif()
 
 add_test(NAME x86.manifest COMMAND "${CMAKE_COMMAND}"
@@ -334,9 +246,19 @@ add_test(NAME x86.corpus COMMAND "${CMAKE_COMMAND}"
 add_test(NAME x86.verifier-negative COMMAND "${CMAKE_COMMAND}"
     "-DX86_ROOT=${X86_ROOT}" "-DPROBE_ROOT=${CMAKE_CURRENT_BINARY_DIR}/verifier-probe"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/verify_negative.cmake")
+add_test(NAME x86.test-types-boundary COMMAND "${CMAKE_COMMAND}"
+    "-DTEST_ROOTS=${CMAKE_CURRENT_SOURCE_DIR}"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/../verify_types_boundary.cmake")
 add_test(NAME x86.test-manifest COMMAND "${CMAKE_COMMAND}"
     "-DCOMMON_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" -P "${COMMON_ROOT}/verify_manifest.cmake")
 
 # One suite-owned build entry for importing products.  CTest registration and
 # standalone configuration remain unchanged.
+foreach(target IN LISTS SHARED_X86_TEST_TARGETS)
+    if(MSVC)
+        target_compile_options(${target} PRIVATE /UNDEBUG)
+    else()
+        target_compile_options(${target} PRIVATE -UNDEBUG)
+    endif()
+endforeach()
 add_custom_target(shared-x86-tests DEPENDS ${SHARED_X86_TEST_TARGETS})

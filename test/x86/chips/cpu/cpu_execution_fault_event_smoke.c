@@ -1,5 +1,5 @@
 #include "support/cpu_bus_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* Private pending-event and whole-cache invariants belong to the CPU owner;
  * the board interrupt corpus separately checks PIC, frames and transactions. */
@@ -156,6 +156,6 @@ static lib_i32 cpu_interrupt_pending_and_rollback(void)
 lib_i32 main(void)
 {
     if (cpu_ud_cache_preservation() || cpu_interrupt_pending_and_rollback()) return 1;
-    puts("M5:T539:S91:CPU-EXECUTION-FAULT-EVENT:OK");
+    lib_c_printf("%s\n", "M5:T539:S91:CPU-EXECUTION-FAULT-EVENT:OK");
     return 0;
 }

@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "video_fixture.h"
 #include "ibmpc/board-common/vadp.h"
 #include "ibmpc/board-common/machine_board_interface.h"
@@ -83,7 +82,7 @@ lib_i32 main(void)
     core_machine_vadp_finalize(&vadp);
     core_machine_destroy(machine);
     if (failed) return 1;
-    printf("M5:T235:S1:EGA-SEQUENCER:PORT:OK\n");
-    printf("M5:T480:S3:EGA-VGA-COMMON:OK\n");
+    lib_c_printf("M5:T235:S1:EGA-SEQUENCER:PORT:OK\n");
+    lib_c_printf("M5:T480:S3:EGA-VGA-COMMON:OK\n");
     return 0;
 }

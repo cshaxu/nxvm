@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 
 #define LAHF_SAHF_MASK (VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF | \
@@ -235,11 +235,11 @@ int main(void)
         !lahf_sahf_test_386_attributes() ||
         !lahf_sahf_test_vm86() ||
         !lahf_sahf_test_386_checksum_sequence()) {
-        fputs("M5:T539:S36:CPU-LAHF-SAHF:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-LAHF-SAHF:FAIL\n");
         return 1;
     }
-    puts("M5:T316:S39:LAHF-SAHF:OK");
-    puts("M5:T401:S36:LAHF-SAHF-PROFILES:OK");
-    puts("M5:T539:S36:CPU-LAHF-SAHF:OK");
+    lib_c_printf("%s\n", "M5:T316:S39:LAHF-SAHF:OK");
+    lib_c_printf("%s\n", "M5:T401:S36:LAHF-SAHF-PROFILES:OK");
+    lib_c_printf("%s\n", "M5:T539:S36:CPU-LAHF-SAHF:OK");
     return 0;
 }

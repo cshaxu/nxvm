@@ -1,29 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "ibmpc/machine/executor_state_interface.h"
-
-struct vm_machine_executor_state {
-    lib_atomic_i32 active;
-    lib_atomic_i32 reset_requested;
-};
-
-lib_status vm_machine_executor_state_create(vm_machine_executor_state **out_state)
-{
-    vm_machine_executor_state *state;
-
-    if (out_state == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_state = LIB_NULL;
-    state = lib_allocate_zero(1u, sizeof(*state));
-    if (state == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    lib_atomic_i32_initialize(&state->active, LIB_FALSE);
-    lib_atomic_i32_initialize(&state->reset_requested, LIB_FALSE);
-    *out_state = state;
-    return LIB_STATUS_OK;
-}
-
-void vm_machine_executor_state_destroy(vm_machine_executor_state *state)
-{
-    lib_release(state);
-}
+#include "ibmpc/machine/control.h"
 
 void vm_machine_executor_state_start(vm_machine_executor_state *state)
 {

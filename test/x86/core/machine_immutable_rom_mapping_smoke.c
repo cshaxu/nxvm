@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/core/machine_interface.h"
 #include "memory_alias_fixture.h"
@@ -71,7 +71,7 @@ lib_i32 main(void)
     }
     core_machine_destroy(machine);
     if (failed) return 1;
-    puts("M5:T245:S2:IMMUTABLE-ROM-MAPPING:OK");
-    puts("M5:T419:S2:ROM-PREFETCH-BOUNDARY:OK");
+    lib_c_printf("%s\n", "M5:T245:S2:IMMUTABLE-ROM-MAPPING:OK");
+    lib_c_printf("%s\n", "M5:T419:S2:ROM-PREFETCH-BOUNDARY:OK");
     return 0;
 }

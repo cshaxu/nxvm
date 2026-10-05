@@ -9,7 +9,11 @@ static lib_bool audio_stream_options_supported(const lib_audio_stream_options *o
 
 static void audio_stream_fail_locked(lib_audio_stream *stream, lib_status status)
 {
-    if (stream->failure == LIB_STATUS_OK) stream->failure = status;
+    if (stream->failure == LIB_STATUS_OK) {
+        stream->failure = status;
+        (void)base_sync_event_signal(stream->space);
+        (void)base_sync_event_signal(stream->control_done);
+    }
 }
 
 static void audio_stream_copy_head(const lib_audio_stream *stream,
@@ -37,8 +41,6 @@ static void audio_stream_worker(void *context, const base_sync_task *task)
         base_sync_mutex_lock(stream->lock);
         audio_stream_fail_locked(stream, attach_status);
         base_sync_mutex_unlock(stream->lock);
-        (void)base_sync_event_signal(stream->space);
-        (void)base_sync_event_signal(stream->control_done);
         return;
     }
     while (!base_sync_task_cancelled(task)) {
@@ -74,9 +76,15 @@ static void audio_stream_worker(void *context, const base_sync_task *task)
             continue;
         }
         if (have_batch == LIB_FALSE) {
-            (void)base_sync_wait_any(&stream->wake, 1u, task,
+            base_sync_wait_result result = base_sync_wait_any(&stream->wake, 1u, task,
                 LIB_UINT32_MAX, LIB_NULL);
-            continue;
+            if (result == BASE_SYNC_WAIT_SIGNALED) continue;
+            if (result != BASE_SYNC_WAIT_CANCELLED) {
+                base_sync_mutex_lock(stream->lock);
+                audio_stream_fail_locked(stream, LIB_STATUS_IO_ERROR);
+                base_sync_mutex_unlock(stream->lock);
+            }
+            break;
         }
         status = audio_stream_platform_wait_writable(stream->platform);
         if (base_sync_task_cancelled(task)) break;
@@ -346,12 +354,13 @@ lib_status lib_audio_stream_destroy(lib_audio_stream **stream)
     if ((*stream)->worker != LIB_NULL) {
         status = base_sync_task_request_cancel((*stream)->worker);
         if (status != LIB_STATUS_OK) return status;
+        status = audio_stream_platform_cancel_wait((*stream)->platform);
+        if (status != LIB_STATUS_OK) return status;
+        (void)base_sync_event_signal((*stream)->wake);
+        status = base_sync_task_destroy((*stream)->worker);
+        if (status != LIB_STATUS_OK) return status;
+        (*stream)->worker = LIB_NULL;
     }
-    (void)audio_stream_platform_cancel_wait((*stream)->platform);
-    (void)base_sync_event_signal((*stream)->wake);
-    status = base_sync_task_destroy((*stream)->worker);
-    if (status != LIB_STATUS_OK) return status;
-    (*stream)->worker = LIB_NULL;
     status = audio_stream_platform_destroy(&(*stream)->platform);
     if (status != LIB_STATUS_OK) return status;
     base_sync_event_destroy((*stream)->control_done);

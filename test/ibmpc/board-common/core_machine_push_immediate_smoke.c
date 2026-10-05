@@ -1,11 +1,11 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include <stdio.h>
-
 typedef struct push_immediate_machine {
     core_machine *machine;
     core_machine_board_state *board;
@@ -238,14 +238,14 @@ lib_i32 main(void)
 {
     if (!push_immediate_test_protected())
     {
-        printf("PUSH-IMMEDIATE stage=protected\n");
+        lib_c_printf("PUSH-IMMEDIATE stage=protected\n");
         return 1;
     }
     if (!push_immediate_test_irq())
     {
-        printf("PUSH-IMMEDIATE stage=irq\n");
+        lib_c_printf("PUSH-IMMEDIATE stage=irq\n");
         return 1;
     }
-    printf("M5:T316:S45:PUSH-IMMEDIATE:OK\n");
+    lib_c_printf("M5:T316:S45:PUSH-IMMEDIATE:OK\n");
     return 0;
 }

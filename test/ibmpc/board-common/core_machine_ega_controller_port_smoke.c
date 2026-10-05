@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "video_fixture.h"
 #include "ibmpc/board-common/vadp.h"
 #include "ibmpc/board-common/machine_board_interface.h"
@@ -127,14 +126,14 @@ lib_i32 main(void)
         test_video_port_read(machine, 0x03cfu) != 0u;
 
     if (failed) {
-        fprintf(stderr, "M5:T236:S1:EGA-CONTROLLER:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T236:S1:EGA-CONTROLLER:FAIL\n");
         core_machine_vadp_finalize(&vadp);
         core_machine_destroy(machine);
         return 1;
     }
     core_machine_vadp_finalize(&vadp);
     core_machine_destroy(machine);
-    printf("M5:T236:S1:EGA-CONTROLLER:PORT:OK\n");
-    printf("M5:T480:S3:COMMON-OWNER:OK\n");
+    lib_c_printf("M5:T236:S1:EGA-CONTROLLER:PORT:OK\n");
+    lib_c_printf("M5:T480:S3:COMMON-OWNER:OK\n");
     return 0;
 }

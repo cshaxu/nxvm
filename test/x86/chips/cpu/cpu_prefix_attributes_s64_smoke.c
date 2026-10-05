@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: invalid prefixes stop at the CPU owner. */
 #define PREFIX_ATTRIBUTES_S64_CMP_FLAGS (VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | \
@@ -833,49 +833,49 @@ static lib_i32 prefix_attributes_s64_test_mixed_repeat_last_wins(void)
 lib_i32 main(void)
 {
     if (!prefix_attributes_s64_test_segments()) {
-        fprintf(stderr, "S64 prefix segment grid failed\n");
+        lib_c_fprintf(lib_c_stderr, "S64 prefix segment grid failed\n");
         return 1;
     }
     if (!prefix_attributes_s64_test_last_wins()) {
-        fprintf(stderr, "S64 prefix last-wins failed\n");
+        lib_c_fprintf(lib_c_stderr, "S64 prefix last-wins failed\n");
         return 1;
     }
     if (!prefix_attributes_s64_test_attributes_and_lock()) {
-        fprintf(stderr, "S64 attribute/LOCK failed\n");
+        lib_c_fprintf(lib_c_stderr, "S64 attribute/LOCK failed\n");
         return 1;
     }
     if (!prefix_attributes_s64_test_lock_group_legality()) {
-        fprintf(stderr, "S64 LOCK group legality failed\n");
+        lib_c_fprintf(lib_c_stderr, "S64 LOCK group legality failed\n");
         return 1;
     }
     if (!prefix_attributes_s64_test_lock_group_writes()) {
-        fprintf(stderr, "S64 LOCK group writes failed\n");
+        lib_c_fprintf(lib_c_stderr, "S64 LOCK group writes failed\n");
         return 1;
     }
     if (!prefix_attributes_s64_test_repeated_width_prefixes()) {
-        fprintf(stderr, "S64 repeated width-prefix failed\n");
+        lib_c_fprintf(lib_c_stderr, "S64 repeated width-prefix failed\n");
         return 1;
     }
     if (!prefix_attributes_s64_test_fixed_segment_and_register()) {
-        fprintf(stderr, "S64 fixed-segment/register prefix failed\n");
+        lib_c_fprintf(lib_c_stderr, "S64 fixed-segment/register prefix failed\n");
         return 1;
     }
     if (!prefix_attributes_s64_test_rep_movs()) {
-        fprintf(stderr, "S64 REP MOVS failed\n");
+        lib_c_fprintf(lib_c_stderr, "S64 REP MOVS failed\n");
         return 1;
     }
     if (!prefix_attributes_s64_test_rep_edges()) {
-        fprintf(stderr, "S64 REP edges failed\n");
+        lib_c_fprintf(lib_c_stderr, "S64 REP edges failed\n");
         return 1;
     }
     if (!prefix_attributes_s64_test_repne_movs()) {
-        fprintf(stderr, "S64 REPNE MOVS failed\n");
+        lib_c_fprintf(lib_c_stderr, "S64 REPNE MOVS failed\n");
         return 1;
     }
     if (!prefix_attributes_s64_test_mixed_repeat_last_wins()) {
-        fprintf(stderr, "S64 mixed repeat-prefix failed\n");
+        lib_c_fprintf(lib_c_stderr, "S64 mixed repeat-prefix failed\n");
         return 1;
     }
-    printf("M5:T539:S29:CPU-PREFIX-ATTRIBUTES:OK\n");
+    lib_c_printf("M5:T539:S29:CPU-PREFIX-ATTRIBUTES:OK\n");
     return 0;
 }

@@ -482,10 +482,6 @@ lib_status core_machine_neutral_create_with_test_allocation(
     core_machine_port_initialize(&machine->executor_port);
     core_machine_port_set_test_allocation(&machine->executor_port,
         port_test_allocation);
-    if (core_machine_bus_initialize(machine) != LIB_STATUS_OK) {
-        core_machine_destroy(machine);
-        return LIB_STATUS_NO_MEMORY;
-    }
     if (core_machine_memory_initialize_for(&machine->executor_memory,
             memory_bytes, test_allocation) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
@@ -1196,6 +1192,5 @@ void core_machine_destroy(core_machine *machine)
         core_machine_memory_finalize(&machine->executor_memory);
     }
     core_machine_trace_finalize(machine);
-    core_machine_bus_finalize(machine);
     lib_release(machine);
 }

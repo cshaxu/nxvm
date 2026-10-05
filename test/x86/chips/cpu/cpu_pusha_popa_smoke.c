@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static void pusha_popa_seed(cpu_instruction_fixture *state)
@@ -412,30 +412,30 @@ lib_i32 main(void)
 {
     if (!pusha_popa_test_protected_pusha_limit())
     {
-        printf("CPU stack cache stage=test_protected_pusha_limit\n");
+        lib_c_printf("CPU stack cache stage=test_protected_pusha_limit\n");
         return 1;
     }
     if (!pusha_popa_test_protected_popa_limit())
     {
-        printf("CPU stack cache stage=test_protected_popa_limit\n");
+        lib_c_printf("CPU stack cache stage=test_protected_popa_limit\n");
         return 1;
     }
     if (!pusha_popa_test_defaults())
     {
-        printf("PUSHA-POPA stage=defaults\n");
+        lib_c_printf("PUSHA-POPA stage=defaults\n");
         return 1;
     }
     if (!pusha_popa_test_attributes())
     {
-        printf("PUSHA-POPA stage=attributes\n");
+        lib_c_printf("PUSHA-POPA stage=attributes\n");
         return 1;
     }
     if (!pusha_popa_test_rejections())
     {
-        printf("PUSHA-POPA stage=rejections\n");
+        lib_c_printf("PUSHA-POPA stage=rejections\n");
         return 1;
     }
-    printf("CPU:M5:T316:S42:PUSHA-POPA:OK\n");
-    printf("CPU:M5:T401:S31:PUSHA-POPA-PROFILES:OK\n");
+    lib_c_printf("CPU:M5:T316:S42:PUSHA-POPA:OK\n");
+    lib_c_printf("CPU:M5:T401:S31:PUSHA-POPA-PROFILES:OK\n");
     return 0;
 }

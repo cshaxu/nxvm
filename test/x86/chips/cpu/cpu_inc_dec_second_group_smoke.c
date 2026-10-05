@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: original invalid forms stay CPU-owned. */
 
@@ -704,13 +704,13 @@ int main(void)
         !inc_dec_test_adc_attribute_profile_fault() ||
         !inc_dec_test_sbb_forms() ||
         !inc_dec_test_sbb_boundaries()) {
-        fputs("M5:T539:S34:CPU-TEST-ADD-ADC-SBB:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S34:CPU-TEST-ADD-ADC-SBB:FAIL\n");
         return 1;
     }
-    puts("M5:T316:S7:TEST-RM-REG:OK");
-    puts("M5:T316:S8:ADD:OK");
-    puts("M5:T316:S9:ADC:OK");
-    puts("M5:T316:S10:SBB:OK");
-    puts("M5:T539:S34:CPU-TEST-ADD-ADC-SBB:OK");
+    lib_c_printf("%s\n", "M5:T316:S7:TEST-RM-REG:OK");
+    lib_c_printf("%s\n", "M5:T316:S8:ADD:OK");
+    lib_c_printf("%s\n", "M5:T316:S9:ADC:OK");
+    lib_c_printf("%s\n", "M5:T316:S10:SBB:OK");
+    lib_c_printf("%s\n", "M5:T539:S34:CPU-TEST-ADD-ADC-SBB:OK");
     return 0;
 }

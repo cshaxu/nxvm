@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static lib_i32 legacy_sreg_stack_test_lock(void)
@@ -646,52 +646,52 @@ lib_i32 main(void)
 {
     if (!legacy_sreg_stack_test_defaults())
     {
-        printf("LEGACY-SREG-STACK stage=defaults\n");
+        lib_c_printf("LEGACY-SREG-STACK stage=defaults\n");
         return 1;
     }
     if (!legacy_sreg_stack_test_attributes())
     {
-        printf("LEGACY-SREG-STACK stage=attributes\n");
+        lib_c_printf("LEGACY-SREG-STACK stage=attributes\n");
         return 1;
     }
     if (!legacy_sreg_stack_test_protected_pop())
     {
-        printf("LEGACY-SREG-STACK stage=protected-pop\n");
+        lib_c_printf("LEGACY-SREG-STACK stage=protected-pop\n");
         return 1;
     }
     if (!legacy_sreg_stack_test_protected_null())
     {
-        printf("LEGACY-SREG-STACK stage=protected-null\n");
+        lib_c_printf("LEGACY-SREG-STACK stage=protected-null\n");
         return 1;
     }
     if (!legacy_sreg_stack_test_protected_ss_null())
     {
-        printf("LEGACY-SREG-STACK stage=protected-ss-null\n");
+        lib_c_printf("LEGACY-SREG-STACK stage=protected-ss-null\n");
         return 1;
     }
     if (!legacy_sreg_stack_test_protected_rejects())
     {
-        printf("LEGACY-SREG-STACK stage=protected-rejects\n");
+        lib_c_printf("LEGACY-SREG-STACK stage=protected-rejects\n");
         return 1;
     }
     if (!legacy_sreg_stack_test_protected_stack_limits())
     {
-        printf("LEGACY-SREG-STACK stage=protected-stack-limits\n");
+        lib_c_printf("LEGACY-SREG-STACK stage=protected-stack-limits\n");
         return 1;
     }
     if (!legacy_sreg_stack_test_irq())
     {
-        printf("LEGACY-SREG-STACK stage=irq\n");
+        lib_c_printf("LEGACY-SREG-STACK stage=irq\n");
         return 1;
     }
     if (!legacy_sreg_stack_test_fs_gs())
         return 1;
     if (!legacy_sreg_stack_test_lock())
     {
-        printf("LEGACY-SREG-STACK stage=lock\n");
+        lib_c_printf("LEGACY-SREG-STACK stage=lock\n");
         return 1;
     }
-    printf("M5:T539:S26:CPU-LEGACY-SREG-STACK:OK\n");
-    printf("M5:T401:S41:SREG-PUSH-POP-PROFILES:OK\n");
+    lib_c_printf("M5:T539:S26:CPU-LEGACY-SREG-STACK:OK\n");
+    lib_c_printf("M5:T401:S41:SREG-PUSH-POP-PROFILES:OK\n");
     return 0;
 }

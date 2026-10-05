@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 
 
@@ -49,7 +49,7 @@ lib_i32 main(void)
     status = core_machine_run(machine, budget, &result);
     if (status != LIB_STATUS_OK || result.executed != 1u ||
         result.reason != CORE_MACHINE_STOP_BUDGET) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "M5:T198:S1:CORE-EXECUTOR-RUN:FAIL status=%d executed=%llu reason=%d\n",
             (lib_i32)status,
             (unsigned long long)result.executed, (lib_i32)result.reason);
@@ -70,7 +70,7 @@ lib_i32 main(void)
     status = core_machine_run(machine, budget, &result);
     if (status != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "M5:T198:S1:CORE-EXECUTOR-WAIT:FAIL status=%d executed=%llu reason=%d\n",
             (lib_i32)status, (unsigned long long)result.executed,
             (lib_i32)result.reason);
@@ -78,6 +78,6 @@ lib_i32 main(void)
         return 1;
     }
     core_machine_destroy(machine);
-    puts("M5:T83:S3:CORE-EXECUTOR-RUN:OK");
+    lib_c_printf("%s\n", "M5:T83:S3:CORE-EXECUTOR-RUN:OK");
     return 0;
 }

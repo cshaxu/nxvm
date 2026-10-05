@@ -1,12 +1,12 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
-#include "../../x86/core/exception_fixture.h"
+#include "../core/exception_fixture.h"
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 /* T337_REAL_UD_TERMINAL_IVT_REJECT: vector 6 is deliberately unreadable. */
 
 typedef struct control_board_reset_context {
@@ -103,7 +103,7 @@ static lib_i32 control_board_profile_and_lock(void)
 
     if (!control_board_fault(CORE_MACHINE_CPU_PROFILE_80186, clts,
             sizeof(clts), VCPUINS_EXCEPT_UD)) {
-        printf("control board legacy\n");
+        lib_c_printf("control board legacy\n");
         return 0;
     }
     for (profile = 0u; profile != 3u; ++profile)
@@ -116,7 +116,7 @@ static lib_i32 control_board_profile_and_lock(void)
                     msw_attribute_bytes[form], VCPUINS_EXCEPT_UD)) return 0;
     if (!control_board_fault(CORE_MACHINE_CPU_PROFILE_80386, lock_clts,
             sizeof(lock_clts), VCPUINS_EXCEPT_UD)) {
-        printf("control board lock-clts\n");
+        lib_c_printf("control board lock-clts\n");
         return 0;
     }
     for (form = 0u; form != 8u; ++form)
@@ -243,17 +243,17 @@ static lib_i32 control_board_early_80386_mov_cr(void)
 int main(void)
 {
     if (!control_board_profile_and_lock()) {
-        printf("control-state-board stage=profile-lock\n");
+        lib_c_printf("control-state-board stage=profile-lock\n");
         return 1;
     }
     if (!control_board_irq()) {
-        printf("control-state-board stage=irq\n");
+        lib_c_printf("control-state-board stage=irq\n");
         return 1;
     }
     if (!control_board_early_80386_mov_cr()) {
-        printf("control-state-board stage=early-80386-mov-cr\n");
+        lib_c_printf("control-state-board stage=early-80386-mov-cr\n");
         return 1;
     }
-    printf("M5:T539:S45:CONTROL-STATE-BOARD:OK\n");
+    lib_c_printf("M5:T539:S45:CONTROL-STATE-BOARD:OK\n");
     return 0;
 }

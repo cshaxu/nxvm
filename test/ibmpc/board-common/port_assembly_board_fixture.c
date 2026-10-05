@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "port_assembly_board_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "x86/chips/fdc8272/fdc8272_interface.h"

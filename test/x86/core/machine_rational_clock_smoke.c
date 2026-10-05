@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/core/clock_interface.h"
 #include "x86/core/machine_interface.h"
@@ -143,6 +143,6 @@ lib_i32 main(void)
 
     core_machine_destroy(machine);
     if (failed) return 1;
-    printf("M5:T256:S3:RATIONAL-CLOCK:OK\n");
+    lib_c_printf("M5:T256:S3:RATIONAL-CLOCK:OK\n");
     return 0;
 }

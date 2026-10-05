@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: original invalid forms stay CPU-owned. */
 
@@ -1191,18 +1191,18 @@ int main(void)
         !inc_dec_test_decimal_adjust() ||
         !inc_dec_test_xlat() ||
         !inc_dec_test_group1_profile_matrix()) {
-        fputs("M5:T539:S35:CPU-LOGICAL-DECIMAL-XLAT:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S35:CPU-LOGICAL-DECIMAL-XLAT:FAIL\n");
         return 1;
     }
-    puts("M5:T316:S11:OR:OK");
-    puts("M5:T316:S12:AND:OK");
-    puts("M5:T316:S13:SUB:OK");
-    puts("M5:T316:S14:XOR:OK");
-    puts("M5:T316:S15:CMP:OK");
-    puts("M5:T401:S7:GROUP1-PROFILE-MATRIX:OK");
-    puts("M5:T316:S16:DECIMAL-ADJUST:OK");
-    puts("M5:T316:S17:XLAT:OK");
-    puts("M5:T401:S35:XLAT-PROFILES:OK");
-    puts("M5:T539:S35:CPU-LOGICAL-DECIMAL-XLAT:OK");
+    lib_c_printf("%s\n", "M5:T316:S11:OR:OK");
+    lib_c_printf("%s\n", "M5:T316:S12:AND:OK");
+    lib_c_printf("%s\n", "M5:T316:S13:SUB:OK");
+    lib_c_printf("%s\n", "M5:T316:S14:XOR:OK");
+    lib_c_printf("%s\n", "M5:T316:S15:CMP:OK");
+    lib_c_printf("%s\n", "M5:T401:S7:GROUP1-PROFILE-MATRIX:OK");
+    lib_c_printf("%s\n", "M5:T316:S16:DECIMAL-ADJUST:OK");
+    lib_c_printf("%s\n", "M5:T316:S17:XLAT:OK");
+    lib_c_printf("%s\n", "M5:T401:S35:XLAT-PROFILES:OK");
+    lib_c_printf("%s\n", "M5:T539:S35:CPU-LOGICAL-DECIMAL-XLAT:OK");
     return 0;
 }

@@ -1,10 +1,9 @@
+#include "lib/types/file.h"
 #include "core_machine_board_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "pic_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 static lib_i32 bound_board_create(core_machine **out_machine,
     core_machine_cpu_profile profile,
     core_machine_board_state **out_board)
@@ -330,10 +329,10 @@ lib_i32 main(void)
     lib_i32 irq = bound_board_irq();
 
     if (!real186 || !real286 || !real386 || !lower || !br || !gp || !ss || !irq) {
-        fprintf(stderr, "M5:T539:S41:BOUND board failed real186=%d real286=%d real386=%d lower=%d br=%d gp=%d ss=%d irq=%d\n",
+        lib_c_fprintf(lib_c_stderr, "M5:T539:S41:BOUND board failed real186=%d real286=%d real386=%d lower=%d br=%d gp=%d ss=%d irq=%d\n",
             real186, real286, real386, lower, br, gp, ss, irq);
         return 1;
     }
-    puts("M5:T539:S41:BOUND-BOARD:OK");
+    lib_c_printf("%s\n", "M5:T539:S41:BOUND-BOARD:OK");
     return 0;
 }

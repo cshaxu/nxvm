@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: invalid LOCK forms stay CPU-owned. */
 
@@ -87,7 +87,7 @@ static lib_i32 legacy_lock_s1_test_transparent_real(void)
             after.data.edi != before.data.edi ||
             !legacy_lock_s1_sregs_same(&before, &after);
         if (failed) {
-            fprintf(stderr, "LOCK CBW profile=%u\n", (unsigned)profile);
+            lib_c_fprintf(lib_c_stderr, "LOCK CBW profile=%u\n", (unsigned)profile);
             return 0;
         }
 
@@ -101,7 +101,7 @@ static lib_i32 legacy_lock_s1_test_transparent_real(void)
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
                 LIB_STATUS_OK || image != 5u;
         if (failed) {
-            fprintf(stderr, "LOCK ADD profile=%u\n", (unsigned)profile);
+            lib_c_fprintf(lib_c_stderr, "LOCK ADD profile=%u\n", (unsigned)profile);
             return 0;
         }
 
@@ -122,7 +122,7 @@ static lib_i32 legacy_lock_s1_test_transparent_real(void)
                 LIB_STATUS_OK || lib_memory_compare(source, target,
                 sizeof(source)) != 0;
         if (failed) {
-            fprintf(stderr, "LOCK REP MOVS profile=%u\n", (unsigned)profile);
+            lib_c_fprintf(lib_c_stderr, "LOCK REP MOVS profile=%u\n", (unsigned)profile);
             return 0;
         }
     }
@@ -181,17 +181,17 @@ static lib_i32 legacy_lock_s1_test_80386_regression(void)
 int main(void)
 {
     if (!legacy_lock_s1_test_transparent_real()) {
-        fputs("M5:T539:S32:CPU-LEGACY-LOCK:TRANSPARENT:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S32:CPU-LEGACY-LOCK:TRANSPARENT:FAIL\n");
         return 1;
     }
     if (!legacy_lock_s1_test_legacy_ud()) {
-        fputs("M5:T539:S32:CPU-LEGACY-LOCK:UD:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S32:CPU-LEGACY-LOCK:UD:FAIL\n");
         return 1;
     }
     if (!legacy_lock_s1_test_80386_regression()) {
-        fputs("M5:T539:S32:CPU-LEGACY-LOCK:80386:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S32:CPU-LEGACY-LOCK:80386:FAIL\n");
         return 1;
     }
-    puts("M5:T539:S32:CPU-LEGACY-LOCK:OK");
+    lib_c_printf("%s\n", "M5:T539:S32:CPU-LEGACY-LOCK:OK");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 typedef struct xchg_vector {
@@ -279,7 +279,7 @@ static lib_i32 xchg_test_accumulator(void)
             }
             if (failed)
             {
-                printf(
+                lib_c_printf(
                     "XCHG acc default profile=%u opcode=%02x status=%d "
                     "fault=%08x before=%08x/%08x/%08x/%08x "
                     "after=%08x/%08x/%08x/%08x\n",
@@ -341,7 +341,7 @@ static lib_i32 xchg_test_accumulator_reject(void)
                 !xchg_acc_state_equal(&before, &after);
             if (failed)
             {
-                printf(
+                lib_c_printf(
                     "XCHG acc 66 profile=%u opcode=%02x status=%d "
                     "fault=%08x before=%08x/%08x/%08x after=%08x/%08x/%08x\n",
                     profile,
@@ -390,7 +390,7 @@ static lib_i32 xchg_test_accumulator_lock(void)
             !xchg_acc_state_equal(&before, &after);
         if (failed)
         {
-            printf(
+            lib_c_printf(
                 "XCHG acc lock opcode=%02x status=%d fault=%08x "
                 "before=%08x/%08x/%08x after=%08x/%08x/%08x\n",
                 opcode,
@@ -454,7 +454,7 @@ static lib_i32 xchg_test_accumulator_386_boundaries(void)
         }
         if (failed)
         {
-            printf(
+            lib_c_printf(
                 "XCHG acc 386 opcode=%02x status=%d fault=%08x "
                 "before=%08x/%08x/%08x after=%08x/%08x/%08x\n",
                 opcode,
@@ -477,44 +477,44 @@ lib_i32 main(void)
 {
     if (!xchg_test_real())
     {
-        printf("XCHG stage=real\n");
+        lib_c_printf("XCHG stage=real\n");
         return 1;
     }
     if (!xchg_test_profiles_and_lock())
     {
-        printf("XCHG stage=profile\n");
+        lib_c_printf("XCHG stage=profile\n");
         return 1;
     }
     if (!xchg_test_legacy_default16())
     {
-        printf("XCHG stage=legacy\n");
+        lib_c_printf("XCHG stage=legacy\n");
         return 1;
     }
     if (!xchg_test_lock())
     {
-        printf("XCHG stage=lock\n");
+        lib_c_printf("XCHG stage=lock\n");
         return 1;
     }
     if (!xchg_test_accumulator())
     {
-        printf("XCHG acc stage=default\n");
+        lib_c_printf("XCHG acc stage=default\n");
         return 1;
     }
     if (!xchg_test_accumulator_386_boundaries())
     {
-        printf("XCHG acc stage=386\n");
+        lib_c_printf("XCHG acc stage=386\n");
         return 1;
     }
     if (!xchg_test_accumulator_reject())
     {
-        printf("XCHG acc stage=reject\n");
+        lib_c_printf("XCHG acc stage=reject\n");
         return 1;
     }
     if (!xchg_test_accumulator_lock())
     {
-        printf("XCHG acc stage=lock\n");
+        lib_c_printf("XCHG acc stage=lock\n");
         return 1;
     }
-    printf("M5:T539:S23:XCHG:CPU:OK\n");
+    lib_c_printf("M5:T539:S23:XCHG:CPU:OK\n");
     return 0;
 }

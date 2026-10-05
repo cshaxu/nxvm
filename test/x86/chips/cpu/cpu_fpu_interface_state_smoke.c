@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* Full CPU storage rollback remains with the CPU, not a Core receiver. */
 static lib_i32 fpu_state_reject(const lib_u8 *code, lib_u8 bytes,
@@ -155,6 +155,6 @@ int main(void)
         X86_FPU_PROFILE_8087, VCPUINS_EXCEPT_FPU_UNSUPPORTED);
     failed |= fpu_state_vm86();
     if (failed) return 1;
-    puts("S65 CPU full rollback/cache state: PASS");
+    lib_c_printf("%s\n", "S65 CPU full rollback/cache state: PASS");
     return 0;
 }

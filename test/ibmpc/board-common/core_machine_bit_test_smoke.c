@@ -1,7 +1,6 @@
+#include "lib/types/file.h"
 #include "cpu_board_limit_fixture.h"
 #include "x86/core/debug_interface.h"
-#include <stdio.h>
-
 static lib_i32 bit_test_access_failure(void)
 {
     static const lib_u8 read_code[] = {0x0fu, 0xa3u, 0x0eu, 0x10u, 0u};
@@ -52,7 +51,7 @@ static lib_i32 bit_test_access_failure(void)
 lib_i32 main(void)
 {
     if (!bit_test_access_failure()) return 1;
-    printf("M5:T310:S5:BIT:OK\n");
-    printf("M5:T401:S61:BIT-TEST-PROFILES:OK\n");
+    lib_c_printf("M5:T310:S5:BIT:OK\n");
+    lib_c_printf("M5:T401:S61:BIT-TEST-PROFILES:OK\n");
     return 0;
 }

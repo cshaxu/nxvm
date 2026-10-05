@@ -1,7 +1,6 @@
+#include "lib/types/file.h"
 #include "support/protected_16_bootstrap_fixture.h"
 #include "x86/chips/cpu/cpu_interface.h"
-#include <stdio.h>
-
 #define S47_S7_GATE_SELECTOR 0x0033u
 #define S47_S7_TARGET 0x0320u
 #define S47_S7_GP_HANDLER 0x0340u
@@ -132,7 +131,7 @@ static lib_i32 s47_s7_dpl_rejection(void)
                 S47_S7_GP_HANDLER;
     }
     if (failed) {
-        printf("dpl reason=%u last=%u/%08x cs=%04x ss=%04x ip=%08x\n",
+        lib_c_printf("dpl reason=%u last=%u/%08x cs=%04x ss=%04x ip=%08x\n",
             result.reason, diagnostic.last_delivered_exception.valid,
             diagnostic.last_delivered_exception.exception_mask, snapshot.cs.selector,
             snapshot.ss.selector, snapshot.eip);
@@ -148,6 +147,6 @@ int main(void)
     if (!s47_s7_outer_success(CORE_MACHINE_CPU_PROFILE_80386, LIB_TRUE)) return 3;
     if (!s47_s7_same_cpl()) return 4;
     if (!s47_s7_dpl_rejection()) return 5;
-    printf("M5:T323:S7:PROTECTED-16-CALL-GATE:OK\n");
+    lib_c_printf("M5:T323:S7:PROTECTED-16-CALL-GATE:OK\n");
     return 0;
 }

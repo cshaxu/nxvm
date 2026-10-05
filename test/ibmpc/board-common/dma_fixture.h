@@ -1,3 +1,4 @@
+#include "lib/types/test.h"
 #ifndef TEST_SHARED_DMA_FIXTURE_H
 #define TEST_SHARED_DMA_FIXTURE_H
 #include "ibmpc/board-common/dma_bus_interface.h"
@@ -26,7 +27,7 @@ static inline lib_u32 test_dma_port_read(core_machine *machine, lib_u16 port)
 {
     lib_u32 value;
     if (core_machine_bus_read(machine, port, &value) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     return value;
 }
 
@@ -34,7 +35,7 @@ static inline void test_dma_port_write(core_machine *machine, lib_u16 port,
     lib_u32 value)
 {
     if (core_machine_bus_write(machine, port, value) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
 }
 
 static inline lib_u16 test_dma_register_word(core_machine *machine,
@@ -42,7 +43,7 @@ static inline lib_u16 test_dma_register_word(core_machine *machine,
 {
     lib_u16 port = secondary ? (lib_u16)(0xc0u + 2u * selector) : selector;
     if (core_machine_bus_write(machine, secondary ? 0xd8u : 0x0cu, 0u) !=
-            LIB_STATUS_OK) exit(EXIT_FAILURE);
+            LIB_STATUS_OK) lib_test_assert(LIB_FALSE);
     lib_u16 low = (lib_u16)test_dma_port_read(machine, port);
     return (lib_u16)(low | test_dma_port_read(machine, port) << 8);
 }

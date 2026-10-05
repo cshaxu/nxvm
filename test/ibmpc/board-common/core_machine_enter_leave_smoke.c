@@ -1,11 +1,11 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include <stdio.h>
-
 typedef struct enter_leave_machine
 {
     core_machine *machine;
@@ -310,15 +310,15 @@ lib_i32 main(void)
 {
     if (!enter_leave_test_protected_faults())
     {
-        printf("ENTER-LEAVE stage=protected-faults\n");
+        lib_c_printf("ENTER-LEAVE stage=protected-faults\n");
         return 1;
     }
     if (!enter_leave_test_irq_no_shadow())
     {
-        printf("ENTER-LEAVE stage=irq\n");
+        lib_c_printf("ENTER-LEAVE stage=irq\n");
         return 1;
     }
-    printf("M5:T316:S43:ENTER-LEAVE:OK\n");
-    printf("M5:T401:S24:ENTER-LEAVE-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S43:ENTER-LEAVE:OK\n");
+    lib_c_printf("M5:T401:S24:ENTER-LEAVE-PROFILES:OK\n");
     return 0;
 }

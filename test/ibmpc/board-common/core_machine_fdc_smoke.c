@@ -1,9 +1,9 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "dma_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "fdc_fixture.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/dma_bus_interface.h"
 #include "ibmpc/board-common/fdc.h"
 #include "ibmpc/board-common/machine_board_state.h"
@@ -175,8 +175,8 @@ static x86_fdc_observation observe(core_machine_fdc *fdc)
 {
     x86_fdc_observation value;
     if (x86_fdc_capture(fdc->chip, &value) != LIB_STATUS_OK) {
-        fputs("FDC observation failed\n", stderr);
-        exit(1);
+        lib_c_fprintf(lib_c_stderr, "%s", "FDC observation failed\n");
+        lib_test_assert(LIB_FALSE);
     }
     return value;
 }
@@ -309,7 +309,7 @@ static lib_i32 core_machine_fdc_readiness_matrix(core_machine *machine, core_mac
                 (inputs[input].admitted &&
                     commands[command].msr != TEST_FDC_MSR_RESULT);
             if (mismatch) {
-                fprintf(stderr, "FDC readiness variant=%zu command=%02x st=%02x/%02x/%02x irq=%u msr=%02x dma=%u\n",
+                lib_c_fprintf(lib_c_stderr, "FDC readiness variant=%zu command=%02x st=%02x/%02x/%02x irq=%u msr=%02x dma=%u\n",
                     variant, commands[command].bytes[0], result[0], result[1], result[2],
                     core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source),
                     test_fdc_port_read(port, 0x03f4u),
@@ -342,7 +342,7 @@ static lib_i32 core_machine_fdc_result_identity(core_machine_fdc *fdc,
             (const lib_u8[]){0x4au, identity}, 2u);
         if (!core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
             result[0] != (0x40u | identity) || result[1] != 0x04u) {
-            fprintf(stderr, "FDC ST0 identity=%u failed\n", identity);
+            lib_c_fprintf(lib_c_stderr, "FDC ST0 identity=%u failed\n", identity);
             failed = 1;
         }
     }
@@ -415,7 +415,7 @@ static lib_i32 core_machine_fdc_write_terminal(core_machine *machine, core_machi
                     media->forced_write_result = CORE_MACHINE_MEDIA_RESULT_OK;
                     for (lib_u16 byte = 0u; byte < sizeof(media->bytes); ++byte)
                         failed |= media->bytes[byte] != (byte < length ? 0xa5u : 0x5au);
-                    if (failed) fprintf(stderr, "FDC WRITE TC interruption=%u\n", cases[index].action);
+                    if (failed) lib_c_fprintf(lib_c_stderr, "FDC WRITE TC interruption=%u\n", cases[index].action);
                     continue;
                 }
                 for (lib_u16 byte = length; byte < 512u; ++byte) {
@@ -437,7 +437,7 @@ static lib_i32 core_machine_fdc_write_terminal(core_machine *machine, core_machi
                 for (lib_u16 byte = 0u; byte < sizeof(media->bytes); ++byte)
                     failed |= media->bytes[byte] != (byte < length ? 0xa5u :
                         (byte < 512u ? 0u : 0x5au));
-                if (failed) fprintf(stderr, "FDC WRITE TC deleted=%u timed=%u length=%u\n",
+                if (failed) lib_c_fprintf(lib_c_stderr, "FDC WRITE TC deleted=%u timed=%u length=%u\n",
                     deleted, timed, length);
             }
         }
@@ -496,7 +496,7 @@ static lib_i32 core_machine_fdc_terminal_id(core_machine *machine, core_machine_
                 result[4] != (at_eot && multi_track ? head ^ 1u : head) ||
                 result[5] != (at_eot ? 1u : 2u) || result[6] != 2u ||
                 fdc->drive_cylinder[0] != 0u || observe(fdc).pcn[0] != 0u) {
-                fprintf(stderr, "FDC TC ID command=%02x variant=%u CHRN=%u/%u/%u/%u\n",
+                lib_c_fprintf(lib_c_stderr, "FDC TC ID command=%02x variant=%u CHRN=%u/%u/%u/%u\n",
                     commands[command], variant, result[3], result[4], result[5], result[6]);
                 failed = 1;
             }
@@ -539,7 +539,7 @@ static lib_i32 core_machine_fdc_no_implied_seek(core_machine_fdc *fdc,
         result[0] != 0u || result[3] != 0u;
     media->cylinder_count = 1u;
     core_machine_fdc_reset(fdc);
-    if (failed) fputs("FDC data command implied a seek or READ ID used stale C\n", stderr);
+    if (failed) lib_c_fprintf(lib_c_stderr, "%s", "FDC data command implied a seek or READ ID used stale C\n");
     return failed;
 }
 
@@ -613,7 +613,7 @@ static lib_i32 core_machine_fdc_seek_pins(core_machine_fdc *fdc, core_machine *p
     fdc->connect.drives = saved_drives;
     fdc->connect.config = saved_config;
     core_machine_fdc_reset(fdc);
-    if (failed) fputs("FDC PCN/Track0/READY qualification failed\n", stderr);
+    if (failed) lib_c_fprintf(lib_c_stderr, "%s", "FDC PCN/Track0/READY qualification failed\n");
     return failed;
 }
 
@@ -1151,19 +1151,19 @@ lib_i32 main(void)
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
-        fprintf(stderr, "M5:T376:S4:8272A-SCAN:FAIL %x\n", failed);
+        lib_c_fprintf(lib_c_stderr, "M5:T376:S4:8272A-SCAN:FAIL %x\n", failed);
         return 1;
     }
-    puts("M5:T283:S2:CORE-FDC-MEDIA:OK");
-    puts("M5:T347:S2:FDC-SERVICE:OK");
-    puts("M5:T375:S20:FDC-DMA-CADENCE:OK");
-    puts("M5:T375:S24:FDC-NDMA-CADENCE:OK");
-    puts("M5:T376:S3:8272A-DELETED-DATA:OK");
-    puts("M5:T376:S4:8272A-SCAN:OK");
-    puts("M5:T465:S2:FDC-reset:OK");
-    puts("M5:T465:S3:FDC-8272-command:OK");
-    puts("M5:T539:S12:FDC-readiness-matrix:OK");
-    puts("M5:T539:S12:FDC-ST0-identity:OK");
-    puts("M5:T539:S12:FDC-PCN-Track0-READY:OK");
+    lib_c_printf("%s\n", "M5:T283:S2:CORE-FDC-MEDIA:OK");
+    lib_c_printf("%s\n", "M5:T347:S2:FDC-SERVICE:OK");
+    lib_c_printf("%s\n", "M5:T375:S20:FDC-DMA-CADENCE:OK");
+    lib_c_printf("%s\n", "M5:T375:S24:FDC-NDMA-CADENCE:OK");
+    lib_c_printf("%s\n", "M5:T376:S3:8272A-DELETED-DATA:OK");
+    lib_c_printf("%s\n", "M5:T376:S4:8272A-SCAN:OK");
+    lib_c_printf("%s\n", "M5:T465:S2:FDC-reset:OK");
+    lib_c_printf("%s\n", "M5:T465:S3:FDC-8272-command:OK");
+    lib_c_printf("%s\n", "M5:T539:S12:FDC-readiness-matrix:OK");
+    lib_c_printf("%s\n", "M5:T539:S12:FDC-ST0-identity:OK");
+    lib_c_printf("%s\n", "M5:T539:S12:FDC-PCN-Track0-READY:OK");
     return 0;
 }

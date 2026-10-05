@@ -1,7 +1,6 @@
+#include "lib/types/file.h"
 #include "cpu_board_limit_fixture.h"
 #include "x86/core/debug_interface.h"
-#include <stdio.h>
-
 static lib_i32 rotate_access_failure(lib_bool shift)
 {
     const lib_u32 flags = shift ?
@@ -59,7 +58,7 @@ lib_i32 main(void)
 {
     if (!rotate_access_failure(LIB_FALSE) ||
         !rotate_access_failure(LIB_TRUE)) return 1;
-    printf("M5:T316:S18:ROTATE-BOARD:OK\n");
-    printf("M5:T316:S19:SHIFT-BOARD:OK\n");
+    lib_c_printf("M5:T316:S18:ROTATE-BOARD:OK\n");
+    lib_c_printf("M5:T316:S19:SHIFT-BOARD:OK\n");
     return 0;
 }

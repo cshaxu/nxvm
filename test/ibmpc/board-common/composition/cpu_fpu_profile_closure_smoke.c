@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "x86/chips/cpu/cpu_interface.h"
 
 static lib_i32 valid_cpu_profile(core_machine_cpu_profile profile)
@@ -57,6 +56,6 @@ lib_i32 main(void)
         if (opcode < 0xd8u || opcode > 0xdfu) failed |= metadata.valid;
     }
     if (failed) return 1;
-    printf("M5:T158:S1:CPU-FPU-METADATA-CLOSURE:OK\n");
+    lib_c_printf("M5:T158:S1:CPU-FPU-METADATA-CLOSURE:OK\n");
     return 0;
 }

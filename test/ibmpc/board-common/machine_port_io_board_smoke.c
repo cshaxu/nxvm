@@ -1,10 +1,9 @@
+#include "lib/types/file.h"
 #include "core_machine_board_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "pic_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 typedef struct port_io_board_probe {
     lib_u32 input;
     lib_u32 last_write;
@@ -216,9 +215,9 @@ lib_i32 main(void)
         !port_io_board_irq(LIB_TRUE) || !port_io_board_irq(LIB_FALSE) ||
         !port_io_board_time(CORE_MACHINE_CPU_PROFILE_8086) ||
         !port_io_board_time(CORE_MACHINE_CPU_PROFILE_80386)) {
-        printf("Scalar port I/O board delivery failed\n");
+        lib_c_printf("Scalar port I/O board delivery failed\n");
         return 1;
     }
-    printf("M5:T539:S39:PORT-IO-BOARD:OK\n");
+    lib_c_printf("M5:T539:S39:PORT-IO-BOARD:OK\n");
     return 0;
 }

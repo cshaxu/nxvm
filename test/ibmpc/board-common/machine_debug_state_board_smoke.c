@@ -1,10 +1,10 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "x86/core/debug_interface.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 /* T337_REAL_UD_VECTOR6_DELIVERY: this owner installs and observes vector 6. */
 
 typedef struct debug_board_context {
@@ -427,29 +427,29 @@ static lib_i32 debug_board_test_trap_priority(void)
 int main(void)
 {
     if (!debug_board_test_real_delivery()) {
-        printf("debug-state-board stage=real-delivery\n");
+        lib_c_printf("debug-state-board stage=real-delivery\n");
         return 1;
     }
     if (!debug_board_test_pic_order()) {
-        printf("debug-state-board stage=pic-order\n");
+        lib_c_printf("debug-state-board stage=pic-order\n");
         return 1;
     }
     if (!debug_board_test_protected_trap()) {
-        printf("debug-state-board stage=protected-trap\n");
+        lib_c_printf("debug-state-board stage=protected-trap\n");
         return 1;
     }
     if (!debug_board_test_rejected_traps()) {
-        printf("debug-state-board stage=rejected-traps\n");
+        lib_c_printf("debug-state-board stage=rejected-traps\n");
         return 1;
     }
     if (!debug_board_test_trap_priority()) {
-        printf("debug-state-board stage=trap-priority\n");
+        lib_c_printf("debug-state-board stage=trap-priority\n");
         return 1;
     }
     if (!debug_board_test_protected_breakpoint()) {
-        printf("debug-state-board stage=protected-breakpoint\n");
+        lib_c_printf("debug-state-board stage=protected-breakpoint\n");
         return 1;
     }
-    printf("M5:T539:S46:DEBUG-STATE-BOARD:OK\n");
+    lib_c_printf("M5:T539:S46:DEBUG-STATE-BOARD:OK\n");
     return 0;
 }

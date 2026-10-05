@@ -1,5 +1,5 @@
 #include "support/cpu_outer_return_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_bool cpu_outer_user_code(const t_cpu_data_sreg *segment)
 {
@@ -279,6 +279,6 @@ int main(void)
     if (!cpu_outer_iret_nonpresent_stack()) return 4;
     if (!cpu_outer_error_delivery()) return 5;
     if (!cpu_outer_iret_rejections()) return 6;
-    puts("M5:T539:S54:CPU-OUTER-RETURN:OK");
+    lib_c_printf("%s\n", "M5:T539:S54:CPU-OUTER-RETURN:OK");
     return 0;
 }

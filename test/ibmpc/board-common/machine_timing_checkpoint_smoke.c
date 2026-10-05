@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "core_machine_board_fixture.h"
 
@@ -16,7 +15,7 @@ static lib_i32 timing_checkpoint_run(core_machine *machine,
     if (core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0xfffffff0u, program, CHECKPOINTS) !=
             LIB_STATUS_OK) {
-        fprintf(stderr, "T221 setup failed\n");
+        lib_c_fprintf(lib_c_stderr, "T221 setup failed\n");
         return 1;
     }
     for (index = 0u; index < CHECKPOINTS; ++index) {
@@ -26,7 +25,7 @@ static lib_i32 timing_checkpoint_run(core_machine *machine,
         if (core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != ticks || result.elapsed_ticks != elapsed) {
-            fprintf(stderr,
+            lib_c_fprintf(lib_c_stderr,
                 "T221 run failed index=%u reason=%d executed=%llu ticks=%llu elapsed=%llu\n",
                 index, (lib_i32)result.reason, (unsigned long long)result.executed,
                 (unsigned long long)result.ticks,
@@ -58,7 +57,7 @@ lib_i32 main(void)
     failed |= lib_memory_compare(first, second, sizeof(first)) != 0;
 
     if (failed) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "M5:T221:S2:TIMING-CHECKPOINT:FAIL first=%u,%u,%u,%u,%u,%u,%u "
             "second=%u,%u,%u,%u,%u,%u,%u\n",
             first[0u], first[15u], 0u, 0u, 0u, 0u, 0u,
@@ -67,6 +66,6 @@ lib_i32 main(void)
         return 1;
     }
     core_machine_destroy(machine);
-    printf("M5:T221:S2:TIMING-CHECKPOINT:OK\n");
+    lib_c_printf("M5:T221:S2:TIMING-CHECKPOINT:OK\n");
     return 0;
 }

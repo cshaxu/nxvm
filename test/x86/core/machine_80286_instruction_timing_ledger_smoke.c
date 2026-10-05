@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/machine_interface.h"
@@ -209,7 +209,7 @@ static lib_i32 timing_80286_run(core_machine *machine, timing_80286_state *state
         result.reason == CORE_MACHINE_STOP_BUDGET &&
         result.executed == instructions && result.ticks == ticks &&
         result.elapsed_ticks == elapsed + ticks && state->advanced_ticks == advanced + ticks;
-    if (!passed) fprintf(stderr,
+    if (!passed) lib_c_fprintf(lib_c_stderr,
         "286 row: status=%u reason=%u instructions=%llu/%llu ticks=%llu/%llu elapsed=%llu/%llu observer=%llu/%llu\n",
         (unsigned)status, (unsigned)result.reason,
         (unsigned long long)result.executed, (unsigned long long)instructions,
@@ -1337,6 +1337,6 @@ lib_i32 main(void)
     if (timing_80286_memory()) return 2;
     if (timing_80286_control_ports()) return 3;
     if (timing_80286_boundaries()) return 4;
-    printf("M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK\n");
+    lib_c_printf("M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

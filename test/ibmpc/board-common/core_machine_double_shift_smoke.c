@@ -1,7 +1,6 @@
+#include "lib/types/file.h"
 #include "cpu_board_limit_fixture.h"
 #include "x86/core/debug_interface.h"
-#include <stdio.h>
-
 static lib_i32 shift_test_access_failure(void)
 {
     static const lib_u8 shld[] = {0x0fu, 0xa4u, 0x0eu, 0x10u, 0u, 1u};
@@ -49,7 +48,7 @@ static lib_i32 shift_test_access_failure(void)
         }
         core_machine_destroy(machine);
         if (failed) {
-            fprintf(stderr, "shift board pass=%u fault=%u mask=%u eip=%u flags=%u memory=%u\n",
+            lib_c_fprintf(lib_c_stderr, "shift board pass=%u fault=%u mask=%u eip=%u flags=%u memory=%u\n",
                 (unsigned)pass, (unsigned)diagnostic.first_fault.valid,
                 (unsigned)diagnostic.first_fault.exception_mask,
                 (unsigned)after.eip, (unsigned)after.eflags,
@@ -63,7 +62,7 @@ static lib_i32 shift_test_access_failure(void)
 lib_i32 main(void)
 {
     if (!shift_test_access_failure()) return 1;
-    printf("M5:T310:S6:DOUBLE-SHIFT:OK\n");
-    printf("M5:T401:S62:DOUBLE-SHIFT-PROFILES:OK\n");
+    lib_c_printf("M5:T310:S6:DOUBLE-SHIFT:OK\n");
+    lib_c_printf("M5:T401:S62:DOUBLE-SHIFT-PROFILES:OK\n");
     return 0;
 }

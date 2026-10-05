@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static void gpr_push_pop_seed(cpu_instruction_fixture *state)
@@ -540,25 +540,25 @@ static lib_i32 gpr_push_pop_test_protected_faults(void)
     if (!gpr_push_pop_protected_fault(push, sizeof(push), 0u, 0xffffu,
         LIB_TRUE))
     {
-        printf("protected push\n");
+        lib_c_printf("protected push\n");
         return 0;
     }
     if (!gpr_push_pop_protected_fault(pop, sizeof(pop), 0u, 0x7fffu,
         LIB_FALSE))
     {
-        printf("protected pop\n");
+        lib_c_printf("protected pop\n");
         return 0;
     }
     if (!gpr_push_pop_protected_fault(push_source, sizeof(push_source), 1u,
         0x0fu, LIB_FALSE))
     {
-        printf("protected push-source\n");
+        lib_c_printf("protected push-source\n");
         return 0;
     }
     if (!gpr_push_pop_protected_fault(pop_dest, sizeof(pop_dest), 1u, 0x0fu,
         LIB_FALSE))
     {
-        printf("protected pop-dest\n");
+        lib_c_printf("protected pop-dest\n");
         return 0;
     }
     return 1;
@@ -568,41 +568,41 @@ lib_i32 main(void)
 {
     if (!gpr_push_pop_test_protected_faults())
     {
-        printf("CPU stack cache stage=test_protected_faults\n");
+        lib_c_printf("CPU stack cache stage=test_protected_faults\n");
         return 1;
     }
     if (!gpr_push_pop_test_push_registers())
     {
-        printf("GPR-PUSH-POP stage=push-registers\n");
+        lib_c_printf("GPR-PUSH-POP stage=push-registers\n");
         return 1;
     }
     if (!gpr_push_pop_test_pop_esp_address())
     {
-        printf("GPR-PUSH-POP stage=pop-esp-address\n");
+        lib_c_printf("GPR-PUSH-POP stage=pop-esp-address\n");
         return 1;
     }
     if (!gpr_push_pop_test_pop_registers())
     {
-        printf("GPR-PUSH-POP stage=pop-registers\n");
+        lib_c_printf("GPR-PUSH-POP stage=pop-registers\n");
         return 1;
     }
     if (!gpr_push_pop_test_rm_forms())
     {
-        printf("GPR-PUSH-POP stage=rm\n");
+        lib_c_printf("GPR-PUSH-POP stage=rm\n");
         return 1;
     }
     if (!gpr_push_pop_test_rejections())
     {
-        printf("GPR-PUSH-POP stage=rejections\n");
+        lib_c_printf("GPR-PUSH-POP stage=rejections\n");
         return 1;
     }
     if (!gpr_push_pop_test_386_attributes())
     {
-        printf("GPR-PUSH-POP stage=attributes\n");
+        lib_c_printf("GPR-PUSH-POP stage=attributes\n");
         return 1;
     }
-    printf("CPU:M5:T316:S44:GPR-PUSH-POP:OK\n");
-    printf("CPU:M5:T401:S40:GPR-PUSH-POP-PROFILES:OK\n");
-    printf("CPU:M5:T401:S10:GROUP5-PUSH-RM-PROFILES:OK\n");
+    lib_c_printf("CPU:M5:T316:S44:GPR-PUSH-POP:OK\n");
+    lib_c_printf("CPU:M5:T401:S40:GPR-PUSH-POP-PROFILES:OK\n");
+    lib_c_printf("CPU:M5:T401:S10:GROUP5-PUSH-RM-PROFILES:OK\n");
     return 0;
 }

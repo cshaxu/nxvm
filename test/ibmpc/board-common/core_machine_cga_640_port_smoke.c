@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "video_fixture.h"
 #include "ibmpc/board-common/vadp.h"
 
@@ -39,6 +38,6 @@ lib_i32 main(void)
     core_machine_vadp_finalize(&vadp);
     core_machine_destroy(machine);
     if (failed) return 1;
-    printf("M5:T254:S2:CGA-640:PORT:OK\n");
+    lib_c_printf("M5:T254:S2:CGA-640:PORT:OK\n");
     return 0;
 }

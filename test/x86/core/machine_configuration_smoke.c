@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/core/machine_interface.h"
 #include "memory_alias_fixture.h"
@@ -61,6 +61,6 @@ lib_i32 main(void)
 
     core_machine_destroy(machine);
     if (failed != 0) return 1;
-    printf("M5:T160:S1:LIFECYCLE-CONTRACT:OK\n");
+    lib_c_printf("M5:T160:S1:LIFECYCLE-CONTRACT:OK\n");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: negative cases retain the CPU-owned IDTR limit. */
 static void moffs_set_registers(cpu_instruction_fixture *state)
@@ -77,7 +77,7 @@ static lib_i32 moffs_test_default(void)
 
             if (failed)
             {
-                printf("MOFFS default profile=%u opcode=%02x\n",
+                lib_c_printf("MOFFS default profile=%u opcode=%02x\n",
                     profiles[profile], opcodes[opcode]);
                 return 0;
             }
@@ -217,7 +217,7 @@ static lib_i32 moffs_test_reject(void)
             !moffs_state_equal(&before, &after);
 
         if (failed) {
-            printf("MOFFS reject profile=%u prefix=%02x opcode=%02x status=%d fault=%08x\n",
+            lib_c_printf("MOFFS reject profile=%u prefix=%02x opcode=%02x status=%d fault=%08x\n",
                 profiles[profile], prefixes[prefix], opcodes[opcode], status,
                 state.fault.exception_mask);
             return 0;
@@ -336,6 +336,6 @@ lib_i32 main(void)
         !moffs_test_lock() ||
         !moffs_test_segment_overrides() ||
         !moffs_test_segment_writes()) return 1;
-    printf("M5:T539:S22:MOFFS:CPU:OK\n");
+    lib_c_printf("M5:T539:S22:MOFFS:CPU:OK\n");
     return 0;
 }

@@ -1,6 +1,6 @@
 #include "support/cpu_instruction_fixture.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: unsupported IMUL encodings are CPU-owned. */
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static void imul_seed(t_cpu *cpu)
 {
@@ -392,6 +392,6 @@ lib_i32 main(void)
         !imul_test_memory_forms() || !imul_test_segments() ||
         !imul_test_67_sib_ss() || !imul_test_vm86() ||
         !imul_test_synthetic_ss_limit()) return 1;
-    printf("M5:T539:S31:CPU-IMUL-IMMEDIATE:OK\n");
+    lib_c_printf("M5:T539:S31:CPU-IMUL-IMMEDIATE:OK\n");
     return 0;
 }

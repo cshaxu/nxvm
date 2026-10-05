@@ -1,22 +1,6 @@
 #include "lib/types/types_interface.h"
 
 #include "x86/core/machine.h"
-
-
-
-lib_status core_machine_bus_initialize(core_machine *machine)
-{
-    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    return LIB_STATUS_OK;
-}
-
-void core_machine_bus_finalize(core_machine *machine)
-{
-    (void)machine;
-}
-
 lib_status core_machine_install_port_routes(core_machine *machine,
     const core_machine_port_route *routes, lib_size count)
 {

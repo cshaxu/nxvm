@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/core/debug_interface.h"
@@ -132,7 +132,7 @@ int main(void)
             core_machine_debug_cpu_snapshot snapshot = {0};
             (void)core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot);
-            fprintf(stderr,
+            lib_c_fprintf(lib_c_stderr,
                 "T288 S2 call-gate result=%u markers=%04x/%04x fault=%d mask=%08x code=%08x pc=%04x:%08x cs=%04x sp=%04x\n",
                 (unsigned)result.reason, markers[0], markers[1],
                 diagnostic.first_fault.valid, diagnostic.first_fault.exception_mask,
@@ -144,6 +144,6 @@ int main(void)
     }
     core_machine_destroy(state.machine);
     if (failed) return 1;
-    printf("M5:T288:S2:CALL-GATE-16:OK\n");
+    lib_c_printf("M5:T288:S2:CALL-GATE-16:OK\n");
     return 0;
 }

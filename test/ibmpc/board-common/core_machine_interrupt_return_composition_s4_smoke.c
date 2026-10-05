@@ -1,7 +1,8 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/machine_interface.h"
@@ -38,7 +39,7 @@ static void interrupt_return_composition_s4_seed(cli_sti_machine *state,
         }
     };
     if (core_machine_debug_patch_registers(state->machine, &patch) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
 }
 
 static lib_i32 interrupt_return_composition_s4_real_irq_after_iret(void)
@@ -109,6 +110,6 @@ static lib_i32 interrupt_return_composition_s4_real_irq_after_iret(void)
 lib_i32 main(void)
 {
     if (!interrupt_return_composition_s4_real_irq_after_iret()) return 1;
-    printf("M5:T321:S4:INTERRUPT-RETURN-COMPOSITION:OK\n");
+    lib_c_printf("M5:T321:S4:INTERRUPT-RETURN-COMPOSITION:OK\n");
     return 0;
 }

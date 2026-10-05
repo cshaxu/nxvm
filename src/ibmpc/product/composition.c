@@ -72,11 +72,16 @@ lib_status vm_app_destroy(vm_app *app)
     shutdown_status = common_machine_shutdown(app->common_machine);
     if (shutdown_status != LIB_STATUS_OK)
         return vm_app_status_from_lib(shutdown_status);
-    common_ui_destroy(app->ui);
+    shutdown_status = common_ui_destroy(app->ui);
+    if (shutdown_status != LIB_STATUS_OK)
+        return vm_app_status_from_lib(shutdown_status);
+    app->ui = LIB_NULL;
     common_session_destroy(app->session);
+    app->session = LIB_NULL;
     shutdown_status = common_machine_destroy(app->common_machine);
     if (shutdown_status != LIB_STATUS_OK)
         return vm_app_status_from_lib(shutdown_status);
+    app->common_machine = LIB_NULL;
     (void)app->factory.bind(app->machine, LIB_NULL);
     app->factory.destroy(app->machine);
     lib_release(app);
@@ -111,7 +116,13 @@ lib_status vm_app_compose_machine(vm_app *app, const vm_session_request *request
     }
     if (status != LIB_STATUS_OK) {
         (void)app->factory.bind(machine, LIB_NULL);
-        common_machine_destroy(common_machine);
+        lib_status cleanup_status = common_machine_destroy(common_machine);
+
+        if (cleanup_status != LIB_STATUS_OK) {
+            app->machine = machine;
+            app->common_machine = common_machine;
+            return vm_app_status_from_lib(cleanup_status);
+        }
         app->factory.destroy(machine);
         return status;
     }
@@ -149,12 +160,17 @@ lib_status vm_app_compose_ui(vm_app *app, const common_ui_options *options)
     if (app == LIB_NULL || options == LIB_NULL || app->ui != LIB_NULL)
         return LIB_STATUS_INVALID_STATE;
     status = common_ui_create(&ui, options);
-    if (status == LIB_STATUS_OK) status = common_session_bind_ui(app->session, ui);
+    if (status != LIB_STATUS_OK) return vm_app_status_from_lib(status);
+    app->ui = ui;
+    status = common_session_bind_ui(app->session, ui);
     if (status != LIB_STATUS_OK) {
-        common_ui_destroy(ui);
+        lib_status cleanup_status = common_ui_destroy(ui);
+
+        if (cleanup_status != LIB_STATUS_OK)
+            return vm_app_status_from_lib(cleanup_status);
+        app->ui = LIB_NULL;
         return vm_app_status_from_lib(status);
     }
-    app->ui = ui;
     return LIB_STATUS_OK;
 }
 

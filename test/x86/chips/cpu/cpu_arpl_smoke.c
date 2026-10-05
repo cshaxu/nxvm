@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: rejected ARPL stops at the CPU. */
 
 static void arpl_prepare(cpu_instruction_fixture *state,
@@ -358,12 +358,12 @@ lib_i32 main(void)
 
     if (!registers || !flags || !forms286 || !limit || !memory ||
         !rejections || !metadata) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "M5:T539:S40:ARPL CPU failed register=%d flags=%d 286=%d limit=%d memory=%d reject=%d metadata=%d\n",
             registers, flags, forms286, limit, memory, rejections,
             metadata);
         return 1;
     }
-    printf("M5:T539:S40:ARPL-CPU:OK\n");
+    lib_c_printf("M5:T539:S40:ARPL-CPU:OK\n");
     return 0;
 }

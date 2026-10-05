@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "ibmpc/product/entry.c"
 
 struct vm_app { lib_bool live; };

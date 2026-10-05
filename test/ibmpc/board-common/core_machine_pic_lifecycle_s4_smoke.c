@@ -1,3 +1,4 @@
+#include "lib/types/test.h"
 #include "pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
@@ -41,7 +42,7 @@ static void pic_lifecycle_initialize(pic_lifecycle_fixture *fixture,
         core_machine_reset(fixture->machine) != LIB_STATUS_OK) {
         core_machine_pic_finalize(fixture->master, fixture->slave);
         core_machine_destroy(fixture->machine);
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     }
     core_machine_pic_reset(fixture->master, fixture->slave);
     test_pic_port_write(fixture->machine, 0x0020u, icw1);
@@ -73,7 +74,7 @@ static void pic_lifecycle_bind(pic_lifecycle_fixture *fixture,
     if (core_machine_pic_irq_source_bind(source, fixture->master, fixture->slave,
             irq) != LIB_STATUS_OK) {
         pic_lifecycle_finalize(fixture);
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     }
 }
 

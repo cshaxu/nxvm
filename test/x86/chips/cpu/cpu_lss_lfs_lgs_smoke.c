@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static lib_i32 lfg_test_real(void)
@@ -45,7 +45,7 @@ static lib_i32 lfg_test_real(void)
                     f |= a.data.gs.selector != 0x1234u;
             }
             if (f) {
-                printf("LFG real op=%02x size=%u status=%d eip=%08x eax=%08x ss=%04x fs=%04x gs=%04x flags=%08x first=%u mask=%08x\n",
+                lib_c_printf("LFG real op=%02x size=%u status=%d eip=%08x eax=%08x ss=%04x fs=%04x gs=%04x flags=%08x first=%u mask=%08x\n",
                     op[i], z, st, a.data.eip, a.data.eax, a.data.ss.selector,
                     a.data.fs.selector, a.data.gs.selector, a.data.eflags,
                     s.fault.valid, s.fault.exception_mask);
@@ -251,7 +251,7 @@ static lib_i32 lfg_test_source_fault_atomicity(void)
                         before.data.fs.selector : before.data.gs.selector);
         }
         if (failed)
-            printf("LFG source-fault op=%02x reason=%d first=%u mask=%08x eip=%08x/%08x eax=%08x/%08x flags=%08x/%08x\n",
+            lib_c_printf("LFG source-fault op=%02x reason=%d first=%u mask=%08x eip=%08x/%08x eax=%08x/%08x flags=%08x/%08x\n",
                 opcodes[opcode], state.execution.stop_requested, state.fault.valid,
                 state.fault.exception_mask, before.data.eip, after.data.eip,
                 before.data.eax, after.data.eax, before.data.eflags, after.data.eflags);
@@ -265,23 +265,23 @@ static lib_i32 lfg_test_source_fault_atomicity(void)
 lib_i32 main(void)
 {
     if (!lfg_test_real()) {
-        printf("LFG stage=real\n");
+        lib_c_printf("LFG stage=real\n");
         return 1;
     }
     if (!lfg_test_reg_direct_80386()) {
-        printf("LFG stage=regdirect\n");
+        lib_c_printf("LFG stage=regdirect\n");
         return 1;
     }
     if (!lfg_test_80286_memory()) {
-        printf("LFG stage=80286\n");
+        lib_c_printf("LFG stage=80286\n");
         return 1;
     }
     if (!lfg_test_protected()) {
-        printf("LFG stage=protected\n");
+        lib_c_printf("LFG stage=protected\n");
         return 1;
     }
     if (!lfg_test_source_fault_atomicity())
         return 1;
-    printf("M5:T316:S24:LSS-LFS-LGS:OK\n");
+    lib_c_printf("M5:T316:S24:LSS-LFS-LGS:OK\n");
     return 0;
 }

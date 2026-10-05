@@ -1,5 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
 #include "x86/chips/cpu/cpu_interface.h"
@@ -223,7 +223,7 @@ static lib_i32 privilege_test_delivery(core_machine_cpu_profile profile,
     failed = 0;
 done:
     if (failed) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "T263 S5 delivery result=%u first=%d delivered=%x/%x count=%u marker=%04x\n",
             (unsigned)result.reason, diagnostic.first_fault.valid,
             diagnostic.last_delivered_exception.exception_mask,
@@ -254,7 +254,7 @@ static lib_i32 privilege_test_stack_atomicity(void)
     failed = 0;
 done:
     if (failed) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "T263 S5 atomic status=%u result=%u cs=%04x/%u ss=%04x sp=%04x\n",
             (unsigned)run_status, (unsigned)result.reason, cpu.cs.selector,
             cpu.cs.dpl, cpu.ss.selector, cpu.esp);
@@ -287,7 +287,7 @@ int main(void)
     failed = 0;
 done:
     if (failed) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "T259 result=%u markers=%04x/%04x fault=%d delivered=%d/%u cs=%04x sp=%04x\n",
             (unsigned)result.reason, markers[0], markers[1],
             diagnostic.first_fault.valid, diagnostic.last_delivered_exception.valid,
@@ -306,9 +306,9 @@ done:
         privilege_test_delivery(CORE_MACHINE_CPU_PROFILE_80286,
             PRIVILEGE_NEGATIVE_CODE_NOT_PRESENT, VCPUINS_EXCEPT_NP, 0x0030u) ||
         privilege_test_stack_atomicity()) return 1;
-    printf("M5:T259:S2:PROTECTED-PRIVILEGE:OK\n");
-    printf("M5:T259:S3:PROTECTED-PRIVILEGE:CORPUS:OK\n");
-    printf("M5:T263:S5:PROTECTED-IDT-ATOMICITY:OK\n");
-    printf("M5:T263:S6:SYNC-IDT-ERROR-CODE:OK\n");
+    lib_c_printf("M5:T259:S2:PROTECTED-PRIVILEGE:OK\n");
+    lib_c_printf("M5:T259:S3:PROTECTED-PRIVILEGE:CORPUS:OK\n");
+    lib_c_printf("M5:T263:S5:PROTECTED-IDT-ATOMICITY:OK\n");
+    lib_c_printf("M5:T263:S6:SYNC-IDT-ERROR-CODE:OK\n");
     return 0;
 }

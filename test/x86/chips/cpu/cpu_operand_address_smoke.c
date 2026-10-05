@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #define OAS_GDT_POINTER 0x0100u
 #define OAS_GDT_ADDRESS 0x0300u
@@ -431,6 +431,6 @@ lib_i32 main(void)
     if (!oas_test_16bit_code_and_faults()) return 1;
     if (!oas_test_stack_forms()) return 1;
     if (!oas_test_memory_strings()) return 1;
-    printf("M5:T539:S29:CPU-OPERAND-ADDRESS:OK\n");
+    lib_c_printf("M5:T539:S29:CPU-OPERAND-ADDRESS:OK\n");
     return 0;
 }

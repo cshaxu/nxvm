@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 
 static lib_i32 near_run(cpu_instruction_fixture *state, const lib_u8 *code,
@@ -144,18 +144,18 @@ int main(void)
     if (!near_test_call_and_return_forms()) goto fail_call;
     if (!near_test_return_immediate()) goto fail_return;
     if (!near_test_indirect_and_fault_boundaries()) goto fail_indirect;
-    puts("M5:T401:S22:NEAR-RETURN-PROFILES:OK");
-    puts("M5:T539:S50:CPU-CONTROL-TRANSFER-NEAR:OK");
+    lib_c_printf("%s\n", "M5:T401:S22:NEAR-RETURN-PROFILES:OK");
+    lib_c_printf("%s\n", "M5:T539:S50:CPU-CONTROL-TRANSFER-NEAR:OK");
     return 0;
 fail_call:
-    fputs("call: ", stderr);
+    lib_c_fprintf(lib_c_stderr, "%s", "call: ");
     goto fail;
 fail_return:
-    fputs("return: ", stderr);
+    lib_c_fprintf(lib_c_stderr, "%s", "return: ");
     goto fail;
 fail_indirect:
-    fputs("indirect: ", stderr);
+    lib_c_fprintf(lib_c_stderr, "%s", "indirect: ");
 fail:
-    fputs("M5:T539:S50:CPU-CONTROL-TRANSFER-NEAR:FAIL\n", stderr);
+    lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S50:CPU-CONTROL-TRANSFER-NEAR:FAIL\n");
     return 1;
 }

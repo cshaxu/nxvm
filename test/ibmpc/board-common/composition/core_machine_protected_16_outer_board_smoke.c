@@ -1,8 +1,7 @@
+#include "lib/types/file.h"
 #include "support/protected_16_bootstrap_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/chips/cpu/cpu_interface.h"
-#include <stdio.h>
-
 #define S47_S5_HANDLER 0x0320u
 
 static lib_i32 s47_s5_patch_eflags(test_protected_16_machine *state,
@@ -87,6 +86,6 @@ int main(void)
                 return 2;
         }
     }
-    printf("M5:T323:S5:PROTECTED-16-OUTER:OK\n");
+    lib_c_printf("M5:T323:S5:PROTECTED-16-OUTER:OK\n");
     return 0;
 }

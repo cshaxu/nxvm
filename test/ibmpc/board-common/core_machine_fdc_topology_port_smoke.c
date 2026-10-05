@@ -1,8 +1,7 @@
+#include "lib/types/file.h"
 #include "fdc_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/dma_bus_interface.h"
 #include "ibmpc/board-common/fdc.h"
 #include "ibmpc/board-common/machine_board_state.h"
@@ -239,11 +238,11 @@ int main(void)
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
-        fprintf(stderr, "M5:T380:S2:FDC-TOPOLOGY:FAIL:%x:reads=%u,%u:phase=%u\n",
+        lib_c_fprintf(lib_c_stderr, "M5:T380:S2:FDC-TOPOLOGY:FAIL:%x:reads=%u,%u:phase=%u\n",
             failed, drive0.read_count, drive1.read_count,
             diagnostic_phase);
         return 1;
     }
-    puts("M5:T290:S1:FDC:PORT:OK");
+    lib_c_printf("%s\n", "M5:T290:S1:FDC:PORT:OK");
     return 0;
 }

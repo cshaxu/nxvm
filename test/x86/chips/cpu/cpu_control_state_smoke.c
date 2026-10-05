@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_i32 control_run(cpu_instruction_fixture *fixture,
     const lib_u8 *code, lib_u8 bytes, t_cpu *after)
@@ -503,7 +503,7 @@ static lib_i32 control_test_interrupt_control_storage(void)
                         if (status != LIB_STATUS_INTERNAL_ERROR || !fixture.fault.valid ||
                             (fixture.fault.exception_mask & VCPUINS_EXCEPT_UD) == 0u ||
                             lib_memory_compare(&before, &after, sizeof(before)) != 0) {
-                            printf("CLI-STI storage profile=%zu form=%zu lock=%u opcode=%x status=%u fault=%x\n",
+                            lib_c_printf("CLI-STI storage profile=%zu form=%zu lock=%u opcode=%x status=%u fault=%x\n",
                                 profile, form, lock, opcode, status, fixture.fault.exception_mask);
                             return 0;
                         }
@@ -511,7 +511,7 @@ static lib_i32 control_test_interrupt_control_storage(void)
                         after.data.eip != bytes || after.data.eflags != expected ||
                         after.data.flagHalt != (opcode == 0xf4u) ||
                         !control_cli_sti_storage_preserved(&before, &after)) {
-                        printf("CLI-STI storage profile=%zu form=%zu lock=%u opcode=%x status=%u flags=%x expected=%x\n",
+                        lib_c_printf("CLI-STI storage profile=%zu form=%zu lock=%u opcode=%x status=%u flags=%x expected=%x\n",
                             profile, form, lock, opcode, status, after.data.eflags, expected);
                         return 0;
                     }
@@ -546,41 +546,41 @@ static lib_i32 control_test_hlt_privilege_storage(void)
 int main(void)
 {
     if (!control_test_clts()) {
-        printf("control-state stage=clts\n");
+        lib_c_printf("control-state stage=clts\n");
         return 1;
     }
     if (!control_test_msw()) {
-        printf("control-state stage=msw\n");
+        lib_c_printf("control-state stage=msw\n");
         return 1;
     }
     if (!control_test_msw_attributes()) {
-        printf("control-state stage=msw-attributes\n");
+        lib_c_printf("control-state stage=msw-attributes\n");
         return 1;
     }
     if (!control_test_protected_state()) {
-        printf("control-state stage=protected\n");
+        lib_c_printf("control-state stage=protected\n");
         return 1;
     }
     if (!control_test_privilege_and_rollback()) {
-        printf("control-state stage=privilege-rollback\n");
+        lib_c_printf("control-state stage=privilege-rollback\n");
         return 1;
     }
     if (!control_test_mov_cr()) {
-        printf("control-state stage=mov-cr\n");
+        lib_c_printf("control-state stage=mov-cr\n");
         return 1;
     }
     if (!control_test_leave_protected_mode()) {
-        printf("control-state stage=leave-protected\n");
+        lib_c_printf("control-state stage=leave-protected\n");
         return 1;
     }
     if (!control_test_interrupt_control_storage()) {
-        printf("control-state stage=interrupt-control-storage\n");
+        lib_c_printf("control-state stage=interrupt-control-storage\n");
         return 1;
     }
     if (!control_test_hlt_privilege_storage()) {
-        printf("control-state stage=hlt-privilege-storage\n");
+        lib_c_printf("control-state stage=hlt-privilege-storage\n");
         return 1;
     }
-    printf("M5:T539:S45:CONTROL-STATE:OK\n");
+    lib_c_printf("M5:T539:S45:CONTROL-STATE:OK\n");
     return 0;
 }

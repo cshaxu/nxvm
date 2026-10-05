@@ -25,6 +25,21 @@ static lib_bool native_wait_blocks;
 static lib_bool interrupt_prefix;
 static lib_i16 delivered_prefix[6];
 static lib_u32 delivered_count;
+static base_sync_event *idle_wait_entered;
+static unsigned idle_wait_calls;
+
+static base_sync_wait_result audio_test_wait_any(base_sync_event *const *events,
+    lib_u32 count, const base_sync_task *task, lib_u32 timeout, lib_u32 *index)
+{
+    if (idle_wait_entered != LIB_NULL && task != LIB_NULL) {
+        ++idle_wait_calls;
+        lib_test_assert(base_sync_event_signal(idle_wait_entered) == LIB_STATUS_OK);
+        if (base_sync_wait_any(events, count, task, timeout, index) ==
+            BASE_SYNC_WAIT_SIGNALED) return BASE_SYNC_WAIT_FAULT;
+        return BASE_SYNC_WAIT_CANCELLED;
+    }
+    return base_sync_wait_any(events, count, task, timeout, index);
+}
 
 lib_status audio_stream_platform_create(const lib_audio_stream_options *options,
     audio_stream_platform **out_platform)
@@ -85,7 +100,7 @@ lib_status audio_stream_platform_cancel_wait(audio_stream_platform *platform)
 {
     ++cancel_calls;
     lib_test_assert(platform == &fake_platform);
-    if (native_wait_release != LIB_NULL)
+    if (cancel_status == LIB_STATUS_OK && native_wait_release != LIB_NULL)
         lib_test_assert(base_sync_event_signal(native_wait_release) == LIB_STATUS_OK);
     return cancel_status;
 }
@@ -105,7 +120,9 @@ lib_status audio_stream_platform_destroy(audio_stream_platform **platform)
     return destroy_status;
 }
 
+#define base_sync_wait_any audio_test_wait_any
 #include "lib/audio/stream.c"
+#undef base_sync_wait_any
 
 int main(void)
 {
@@ -233,6 +250,13 @@ int main(void)
     lib_test_assert(base_sync_event_wait(native_wait_entered_event, LIB_UINT32_MAX) ==
         BASE_SYNC_WAIT_SIGNALED);
     before_destroy_enqueue_calls = enqueue_calls;
+    cancel_status = LIB_STATUS_IO_ERROR;
+    lib_test_assert(lib_audio_stream_destroy(&stream) == LIB_STATUS_IO_ERROR);
+    lib_test_assert(stream != LIB_NULL && stream->worker != LIB_NULL &&
+        stream->platform == &fake_platform);
+    lib_test_assert(base_sync_event_wait(native_wait_release_event, 0u) ==
+        BASE_SYNC_WAIT_TIMED_OUT);
+    cancel_status = LIB_STATUS_OK;
     lib_test_assert(lib_audio_stream_destroy(&stream) == LIB_STATUS_OK && stream == LIB_NULL);
     lib_test_assert(enqueue_calls == before_destroy_enqueue_calls);
     native_wait_blocks = LIB_FALSE;
@@ -251,5 +275,22 @@ int main(void)
         lib_memory_compare(delivered_prefix, samples, sizeof(samples)) == 0);
     lib_test_assert(lib_audio_stream_query(stream, &queued, &writable) == LIB_STATUS_OK && queued == 0u);
     lib_test_assert(lib_audio_stream_destroy(&stream) == LIB_STATUS_OK);
+    /* Fail the idle wait when flush wakes it: the caller must receive failure
+     * and the worker must detach once, rather than retrying the failed wait. */
+    lib_test_assert(base_sync_event_create(BASE_SYNC_EVENT_AUTO_RESET,
+        &native_wait_entered_event) == LIB_STATUS_OK);
+    idle_wait_entered = native_wait_entered_event;
+    before_destroy_enqueue_calls = enqueue_calls;
+    lib_test_assert(lib_audio_stream_create(&options, &stream) == LIB_STATUS_OK);
+    lib_test_assert(base_sync_event_wait(idle_wait_entered, LIB_UINT32_MAX) ==
+        BASE_SYNC_WAIT_SIGNALED);
+    lib_test_assert(lib_audio_stream_enqueue(stream, samples, 3u, &accepted) == LIB_STATUS_OK);
+    lib_test_assert(lib_audio_stream_flush(stream) == LIB_STATUS_IO_ERROR);
+    lib_test_assert(base_sync_task_join(stream->worker) == LIB_STATUS_OK);
+    lib_test_assert(idle_wait_calls == 1u && enqueue_calls == before_destroy_enqueue_calls);
+    lib_test_assert(lib_audio_stream_query(stream, &queued, &writable) == LIB_STATUS_IO_ERROR);
+    lib_test_assert(lib_audio_stream_destroy(&stream) == LIB_STATUS_OK && stream == LIB_NULL);
+    idle_wait_entered = LIB_NULL;
+    base_sync_event_destroy(native_wait_entered_event);
     return 0;
 }

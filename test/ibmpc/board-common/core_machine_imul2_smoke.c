@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "cpu_board_limit_fixture.h"
-#include <stdio.h>
-
 static lib_i32 imul_read_failure(void)
 {
     static const lib_u8 code[] = { 0x0fu,0xafu,0x0eu,0x10u,0u };
@@ -40,7 +39,7 @@ static lib_i32 imul_read_failure(void)
 lib_i32 main(void)
 {
     if (!imul_read_failure()) return 1;
-    printf("M5:T310:S8:IMUL2:OK\n");
-    printf("M5:T401:S65:IMUL2-PROFILES:OK\n");
+    lib_c_printf("M5:T310:S8:IMUL2:OK\n");
+    lib_c_printf("M5:T401:S65:IMUL2-PROFILES:OK\n");
     return 0;
 }

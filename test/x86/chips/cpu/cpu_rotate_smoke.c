@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: unsupported Group-2 forms are CPU-owned. */
 
@@ -347,7 +347,7 @@ static lib_i32 rotate_test_cl_count_profile_matrix(void)
         }
 
         if (failed) {
-            fprintf(stderr, "cl profile=%u extension=%u before=%x/%x after=%x/%x value=%x fault=%u/%x stop=%u\n",
+            lib_c_fprintf(lib_c_stderr, "cl profile=%u extension=%u before=%x/%x after=%x/%x value=%x fault=%u/%x stop=%u\n",
                 (unsigned)profile_index, (unsigned)extension,
                 (unsigned)before.data.eax, (unsigned)before.data.eflags,
                 (unsigned)after.data.eax, (unsigned)after.data.eflags,
@@ -640,19 +640,19 @@ static lib_i32 rotate_test_80186_immediate_extensions(void)
 
 lib_i32 main(void)
 {
-    if (!rotate_test_forms()) { fprintf(stderr, "forms\n"); return 1; }
-    if (!rotate_test_count_zero()) { fprintf(stderr, "zero\n"); return 1; }
-    if (!rotate_test_non_one()) { fprintf(stderr, "non-one\n"); return 1; }
-    if (!rotate_test_cl_count_profile_matrix()) { fprintf(stderr, "cl matrix\n"); return 1; }
-    if (!rotate_test_shift_forms()) { fprintf(stderr, "shift forms\n"); return 1; }
-    if (!rotate_test_shift_boundaries()) { fprintf(stderr, "shift boundaries\n"); return 1; }
-    if (!rotate_test_shift_profile()) { fprintf(stderr, "shift profile\n"); return 1; }
-    if (!rotate_test_8086_immediate_rejection()) { fprintf(stderr, "8086\n"); return 1; }
-    if (!rotate_test_80186_immediate_extensions()) { fprintf(stderr, "80186\n"); return 1; }
-    if (!rotate_test_profile()) { fprintf(stderr, "profile\n"); return 1; }
-    printf("M5:T316:S18:ROTATE:OK\n");
-    printf("M5:T316:S19:SHIFT:OK\n");
-    printf("M5:T401:S8:GROUP2-CL-PROFILES:OK\n");
-    printf("M5:T401:S21:GROUP2-IMMEDIATE-PROFILES:OK\n");
+    if (!rotate_test_forms()) { lib_c_fprintf(lib_c_stderr, "forms\n"); return 1; }
+    if (!rotate_test_count_zero()) { lib_c_fprintf(lib_c_stderr, "zero\n"); return 1; }
+    if (!rotate_test_non_one()) { lib_c_fprintf(lib_c_stderr, "non-one\n"); return 1; }
+    if (!rotate_test_cl_count_profile_matrix()) { lib_c_fprintf(lib_c_stderr, "cl matrix\n"); return 1; }
+    if (!rotate_test_shift_forms()) { lib_c_fprintf(lib_c_stderr, "shift forms\n"); return 1; }
+    if (!rotate_test_shift_boundaries()) { lib_c_fprintf(lib_c_stderr, "shift boundaries\n"); return 1; }
+    if (!rotate_test_shift_profile()) { lib_c_fprintf(lib_c_stderr, "shift profile\n"); return 1; }
+    if (!rotate_test_8086_immediate_rejection()) { lib_c_fprintf(lib_c_stderr, "8086\n"); return 1; }
+    if (!rotate_test_80186_immediate_extensions()) { lib_c_fprintf(lib_c_stderr, "80186\n"); return 1; }
+    if (!rotate_test_profile()) { lib_c_fprintf(lib_c_stderr, "profile\n"); return 1; }
+    lib_c_printf("M5:T316:S18:ROTATE:OK\n");
+    lib_c_printf("M5:T316:S19:SHIFT:OK\n");
+    lib_c_printf("M5:T401:S8:GROUP2-CL-PROFILES:OK\n");
+    lib_c_printf("M5:T401:S21:GROUP2-IMMEDIATE-PROFILES:OK\n");
     return 0;
 }

@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/media_interface.h"
 #include "ibmpc/machine/media/fdd.h"
 #include "ibmpc/machine/media/hdd.h"
@@ -121,9 +120,9 @@ lib_i32 main(void)
             LIB_STATUS_INVALID_ARGUMENT)) failed = 1;
     vm_machine_fdd_finalize(&fdd);
     vm_machine_hdd_finalize(&hdd);
-    (void)remove(vm_media_direct_fdd_path);
-    (void)remove(vm_media_direct_hdd_path);
+    (void)lib_c_remove(vm_media_direct_fdd_path);
+    (void)lib_c_remove(vm_media_direct_hdd_path);
     if (failed) return 1;
-    printf("M5:T524:S10:MEDIA-DIRECT-READONLY:OK\n");
+    lib_c_printf("M5:T524:S10:MEDIA-DIRECT-READONLY:OK\n");
     return 0;
 }

@@ -1,6 +1,6 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
@@ -256,11 +256,11 @@ lib_i32 main(void)
     failed |= core_machine_port_probe_fdc_read_is_independent();
     failed |= core_machine_port_probe_fdc_write_conflict_is_retained();
     if (failed) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "M5:T300:S1:PORT-OWNERSHIP:FAIL reads=%u writes=%u\n",
             port_state.reads, port_state.writes);
         return 1;
     }
-    puts("M5:T300:S1:PORT-OWNERSHIP:OK");
+    lib_c_printf("%s\n", "M5:T300:S1:PORT-OWNERSHIP:OK");
     return 0;
 }

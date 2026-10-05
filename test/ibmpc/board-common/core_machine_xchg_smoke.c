@@ -1,11 +1,11 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include <stdio.h>
-
 typedef struct xchg_machine {
     core_machine *machine;
     core_machine_board_state *board;
@@ -229,7 +229,7 @@ static lib_i32 xchg_test_accumulator_irq(void)
     }
     if (failed)
     {
-        printf(
+        lib_c_printf(
             "XCHG acc irq reason=%d eip=%08x frame=%04x eax=%08x "
             "ecx=%08x irr=%02x isr=%02x\n",
             result.reason,
@@ -248,27 +248,27 @@ lib_i32 main(void)
 {
     if (!xchg_test_write_fault_atomicity())
     {
-        printf("XCHG stage=write-fault\n");
+        lib_c_printf("XCHG stage=write-fault\n");
         return 1;
     }
     if (!xchg_test_read_fault_atomicity())
     {
-        printf("XCHG stage=read-fault\n");
+        lib_c_printf("XCHG stage=read-fault\n");
         return 1;
     }
     if (!xchg_test_irq_no_shadow())
     {
-        printf("XCHG stage=irq\n");
+        lib_c_printf("XCHG stage=irq\n");
         return 1;
     }
     if (!xchg_test_accumulator_irq())
     {
-        printf("XCHG acc stage=irq\n");
+        lib_c_printf("XCHG acc stage=irq\n");
         return 1;
     }
-    printf("M5:T316:S27:XCHG:OK\n");
-    printf("M5:T316:S28:XCHG-ACC:OK\n");
-    printf("M5:T401:S12:ACCUMULATOR-XCHG-PROFILES:OK\n");
-    printf("M5:T401:S46:XCHG-MODRM-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S27:XCHG:OK\n");
+    lib_c_printf("M5:T316:S28:XCHG-ACC:OK\n");
+    lib_c_printf("M5:T401:S12:ACCUMULATOR-XCHG-PROFILES:OK\n");
+    lib_c_printf("M5:T401:S46:XCHG-MODRM-PROFILES:OK\n");
     return 0;
 }

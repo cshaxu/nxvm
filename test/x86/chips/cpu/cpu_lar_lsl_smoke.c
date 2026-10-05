@@ -1,5 +1,5 @@
 #include "support/cpu_descriptor_query_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_i32 lar_lsl_run_case(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes, lib_u16 selector, lib_u32 eax,
@@ -304,6 +304,6 @@ lib_i32 main(void)
         !lar_lsl_test_sib_and_overrides() ||
         !lar_lsl_test_visibility() || !lar_lsl_test_rejection() ||
         !lar_lsl_test_source_limit() || !lar_lsl_test_ldt_selector()) return 1;
-    puts("M5:T539:S44:LAR-LSL:OK");
+    lib_c_printf("%s\n", "M5:T539:S44:LAR-LSL:OK");
     return 0;
 }

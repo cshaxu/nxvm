@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/core/machine_interface.h"
 #include "debug_fixture.h"
@@ -261,7 +261,7 @@ lib_i32 main(void)
         !timing_s7_test_permission_strings() ||
         !timing_s7_test_permission_budget())
         return 1;
-    printf("M5:T357:S7:80386-PROTECTED-IO-TIMING:OK\n");
-    printf("M5:T358:S1:IO-PERMISSION:OK\n");
+    lib_c_printf("M5:T357:S7:80386-PROTECTED-IO-TIMING:OK\n");
+    lib_c_printf("M5:T358:S1:IO-PERMISSION:OK\n");
     return 0;
 }

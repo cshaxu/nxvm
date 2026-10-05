@@ -1,3 +1,4 @@
+#include "lib/types/test.h"
 #include "pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
@@ -48,7 +49,7 @@ static void pic_command_priority_initialize(pic_command_priority_fixture *fixtur
         core_machine_reset(fixture->machine) != LIB_STATUS_OK) {
         core_machine_pic_finalize(fixture->master, fixture->slave);
         core_machine_destroy(fixture->machine);
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     }
     core_machine_pic_reset(fixture->master, fixture->slave);
     pic_command_priority_program(fixture->machine, 0x11u, 0x04u, master_icw4,
@@ -67,7 +68,7 @@ static void pic_command_priority_raise(pic_command_priority_fixture *fixture,
     if (core_machine_pic_irq_source_bind(source, fixture->master, fixture->slave,
             irq) != LIB_STATUS_OK) {
         pic_command_priority_finalize(fixture);
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     }
     core_machine_pic_irq_source_assert(*source);
     core_machine_pic_irq_source_deassert(*source);

@@ -1,21 +1,21 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
-#include "../../x86/core/time_fixture.h"
+#include "../core/time_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 
 static void pit_port_write(core_machine *machine, lib_u16 port, lib_u32 value)
 {
     if (core_machine_bus_write(machine, port, value) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
 }
 
 static lib_u32 pit_port_read(core_machine *machine, lib_u16 port)
 {
     lib_u32 value;
     if (core_machine_bus_read(machine, port, &value) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     return value;
 }
 
@@ -88,7 +88,7 @@ lib_i32 main(void)
     }
     core_machine_destroy(machine);
     if (failed) return 1;
-    printf("M5:T386:S3:SECOND-PIT-OWNER:OK\n");
-    printf("M5:T386:S3:SECOND-PIT-ISOLATION:OK\n");
+    lib_c_printf("M5:T386:S3:SECOND-PIT-OWNER:OK\n");
+    lib_c_printf("M5:T386:S3:SECOND-PIT-ISOLATION:OK\n");
     return 0;
 }

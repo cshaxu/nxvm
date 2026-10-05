@@ -1,5 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "ibmpc/board-at/kbc.h"
 #include "kbc_fixture.h"
 
@@ -39,6 +39,6 @@ lib_i32 main(void)
     core_machine_kbc_finalize(&kbc);
     core_machine_destroy(port);
     if (failed) return 1;
-    printf("M5:T406:S1:KBC-SERIAL-CADENCE:OK\n");
+    lib_c_printf("M5:T406:S1:KBC-SERIAL-CADENCE:OK\n");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static void push_immediate_seed(cpu_instruction_fixture *state)
@@ -258,19 +258,19 @@ lib_i32 main(void)
 {
     if (!push_immediate_test_protected())
     {
-        printf("CPU stack cache stage=test_protected\n");
+        lib_c_printf("CPU stack cache stage=test_protected\n");
         return 1;
     }
     if (!push_immediate_test_defaults())
     {
-        printf("PUSH-IMMEDIATE stage=defaults\n");
+        lib_c_printf("PUSH-IMMEDIATE stage=defaults\n");
         return 1;
     }
     if (!push_immediate_test_attributes_and_lock())
     {
-        printf("PUSH-IMMEDIATE stage=attributes-lock\n");
+        lib_c_printf("PUSH-IMMEDIATE stage=attributes-lock\n");
         return 1;
     }
-    printf("CPU:M5:T316:S45:PUSH-IMMEDIATE:OK\n");
+    lib_c_printf("CPU:M5:T316:S45:PUSH-IMMEDIATE:OK\n");
     return 0;
 }

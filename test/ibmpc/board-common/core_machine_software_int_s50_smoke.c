@@ -1,7 +1,8 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 #define main cli_sti_s22_main
 #include "machine_cli_sti_interrupt_smoke.c"
@@ -22,7 +23,7 @@ static lib_bool software_int_s50_is_halted(const core_machine *machine)
 {
     core_machine_cpu_state state;
     if (core_machine_get_cpu_state(machine, &state) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     return state.halted != 0u;
 }
 
@@ -81,7 +82,7 @@ static void software_int_s50_seed(cli_sti_machine *state, lib_u32 flags)
         }
     };
     if (core_machine_debug_patch_registers(state->machine, &patch) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
 }
 
 static lib_u16 software_int_s50_real_flags_image(
@@ -477,8 +478,8 @@ lib_i32 main(void)
         return 1;
     if (!software_int_s50_test_pic_boundary())
         return 1;
-    printf("M5:T316:S50:SOFTWARE-INT:OK\n");
-    printf("M5:T401:S25:INT-IMMEDIATE-PROFILES:OK\n");
-    printf("M5:T401:S26:INT3-INTO-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S50:SOFTWARE-INT:OK\n");
+    lib_c_printf("M5:T401:S25:INT-IMMEDIATE-PROFILES:OK\n");
+    lib_c_printf("M5:T401:S26:INT3-INTO-PROFILES:OK\n");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 
 static lib_u16 pushf_real_flags_image(core_machine_cpu_profile profile,
@@ -342,7 +342,7 @@ static lib_i32 pushf_test_protected_iopl(void)
             (after.data.eflags & VCPU_EFLAGS_IOPL) != expected_iopl ||
             (after.data.eflags & VCPU_EFLAGS_ZF) != VCPU_EFLAGS_ZF ||
             after.data.eip != 1u) {
-            fprintf(stderr, "iopl pass=%u flags=%08x eip=%08x fault=%u\n",
+            lib_c_fprintf(lib_c_stderr, "iopl pass=%u flags=%08x eip=%08x fault=%u\n",
                 pass, after.data.eflags, after.data.eip,
                 state.fault.valid);
             return 0;
@@ -480,24 +480,24 @@ static lib_i32 pushf_test_vm86(void)
 
 int main(void)
 {
-    if (!pushf_test_defaults()) { fputs("defaults\n", stderr); return 1; }
+    if (!pushf_test_defaults()) { lib_c_fprintf(lib_c_stderr, "%s", "defaults\n"); return 1; }
     if (!pushf_test_attributes_and_rejects()) {
-        fputs("attributes\n", stderr); return 1;
+        lib_c_fprintf(lib_c_stderr, "%s", "attributes\n"); return 1;
     }
-    if (!pushf_test_lock()) { fputs("lock\n", stderr); return 1; }
+    if (!pushf_test_lock()) { lib_c_fprintf(lib_c_stderr, "%s", "lock\n"); return 1; }
     if (!pushf_test_legacy_forms()) {
-        fputs("legacy forms\n", stderr); return 1;
+        lib_c_fprintf(lib_c_stderr, "%s", "legacy forms\n"); return 1;
     }
     if (!pushf_test_protected_iopl()) {
-        fputs("protected iopl\n", stderr); return 1;
+        lib_c_fprintf(lib_c_stderr, "%s", "protected iopl\n"); return 1;
     }
     if (!pushf_test_stack_faults()) {
-        fputs("stack faults\n", stderr); return 1;
+        lib_c_fprintf(lib_c_stderr, "%s", "stack faults\n"); return 1;
     }
-    if (!pushf_test_vm86()) { fputs("vm86\n", stderr); return 1; }
-    puts("M5:T316:S21:PUSHF-POPF:OK");
-    puts("M5:T316:S47:PUSHF-POPF:OK");
-    puts("M5:T401:S39:PUSHF-POPF-PROFILES:OK");
-    puts("M5:T539:S36:CPU-PUSHF-POPF:OK");
+    if (!pushf_test_vm86()) { lib_c_fprintf(lib_c_stderr, "%s", "vm86\n"); return 1; }
+    lib_c_printf("%s\n", "M5:T316:S21:PUSHF-POPF:OK");
+    lib_c_printf("%s\n", "M5:T316:S47:PUSHF-POPF:OK");
+    lib_c_printf("%s\n", "M5:T401:S39:PUSHF-POPF-PROFILES:OK");
+    lib_c_printf("%s\n", "M5:T539:S36:CPU-PUSHF-POPF:OK");
     return 0;
 }

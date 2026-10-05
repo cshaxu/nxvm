@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static void debug_state_enter_protected(cpu_instruction_fixture *fixture,
     lib_u8 cpl, lib_bool vm86)
@@ -241,17 +241,17 @@ static lib_i32 debug_state_test_data_breakpoints(void)
 int main(void)
 {
     if (!debug_state_test_mov_dr()) {
-        printf("debug-state stage=mov-dr\n");
+        lib_c_printf("debug-state stage=mov-dr\n");
         return 1;
     }
     if (!debug_state_test_debug_exceptions()) {
-        printf("debug-state stage=exceptions\n");
+        lib_c_printf("debug-state stage=exceptions\n");
         return 1;
     }
     if (!debug_state_test_data_breakpoints()) {
-        printf("debug-state stage=data-breakpoints\n");
+        lib_c_printf("debug-state stage=data-breakpoints\n");
         return 1;
     }
-    printf("M5:T539:S46:DEBUG-STATE:OK\n");
+    lib_c_printf("M5:T539:S46:DEBUG-STATE:OK\n");
     return 0;
 }

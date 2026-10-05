@@ -1,11 +1,11 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "cpu_board_limit_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "pic_fixture.h"
 #include "x86/core/debug_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include <stdio.h>
-
 static void imul_seed_patch(core_machine_debug_register_patch *patch)
 {
     patch->mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
@@ -202,14 +202,14 @@ static lib_i32 imul_irq_no_shadow(void)
 lib_i32 main(void)
 {
     if (!imul_protected_source_limits()) {
-        fprintf(stderr, "IMUL protected source limit failed\n");
+        lib_c_fprintf(lib_c_stderr, "IMUL protected source limit failed\n");
         return 1;
     }
     if (!imul_irq_no_shadow()) {
-        fprintf(stderr, "IMUL IRQ/no-shadow failed\n");
+        lib_c_fprintf(lib_c_stderr, "IMUL IRQ/no-shadow failed\n");
         return 1;
     }
-    printf("M5:T316:S56:IMUL-IMM:OK\n");
-    printf("M5:T401:S30:IMUL-IMMEDIATE-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S56:IMUL-IMM:OK\n");
+    lib_c_printf("M5:T401:S30:IMUL-IMMEDIATE-PROFILES:OK\n");
     return 0;
 }

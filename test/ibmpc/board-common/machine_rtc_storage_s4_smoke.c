@@ -1,7 +1,6 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 
@@ -111,6 +110,6 @@ lib_i32 main(void)
 
     core_machine_destroy(machine);
     if (failed) return 1;
-    printf("M5:T346:S4:RTC-STORAGE-READINESS:OK\n");
+    lib_c_printf("M5:T346:S4:RTC-STORAGE-READINESS:OK\n");
     return 0;
 }

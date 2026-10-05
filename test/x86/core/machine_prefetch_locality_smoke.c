@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/core/machine.h"
 #include "x86/core/transaction.h"
@@ -506,18 +506,18 @@ lib_i32 main(void)
     failed |= !d4_cecg_memory_class_contract();
     failed |= !cecg_aperture_wait_contract();
     if (failed != 0) return 1;
-    printf("M5:T412:S1:EXTERNAL-READ-LOCALITY:OK\n");
-    printf("M5:T413:S1:EXTERNAL-WRITE-BRIDGE:OK\n");
-    printf("M5:T414:S1:DATA-READ-LOCALITY:OK\n");
-    printf("M5:T415:S1:PAGE-WALK-LOCALITY:OK\n");
-    printf("M5:T416:S1:DMA-HOLD-LOCALITY:OK\n");
-    printf("M5:T417:S1:REFRESH-LOCALITY:OK\n");
-    printf("M5:T418:S1:INSTRUCTION-BOUNDARY-LOCALITY:OK\n");
-    printf("M5:T419:S5:EXTERNAL-CYCLE-OVERLAP:OK\n");
-    printf("M5:T423:S1:CPU-BOARD-TRANSACTION:OK\n");
-    printf("M5:T428:S1:GENERIC-PREFETCH-PRODUCER:OK\n");
-    printf("M5:T429:S1:CECG-8BIT-BUS-WAIT:OK\n");
-    printf("M5:T429:S2:D4-CECG-MEMORY-CLASS:OK\n");
-    printf("M5:T429:S3:CECG-APERTURE-WAIT:OK\n");
+    lib_c_printf("M5:T412:S1:EXTERNAL-READ-LOCALITY:OK\n");
+    lib_c_printf("M5:T413:S1:EXTERNAL-WRITE-BRIDGE:OK\n");
+    lib_c_printf("M5:T414:S1:DATA-READ-LOCALITY:OK\n");
+    lib_c_printf("M5:T415:S1:PAGE-WALK-LOCALITY:OK\n");
+    lib_c_printf("M5:T416:S1:DMA-HOLD-LOCALITY:OK\n");
+    lib_c_printf("M5:T417:S1:REFRESH-LOCALITY:OK\n");
+    lib_c_printf("M5:T418:S1:INSTRUCTION-BOUNDARY-LOCALITY:OK\n");
+    lib_c_printf("M5:T419:S5:EXTERNAL-CYCLE-OVERLAP:OK\n");
+    lib_c_printf("M5:T423:S1:CPU-BOARD-TRANSACTION:OK\n");
+    lib_c_printf("M5:T428:S1:GENERIC-PREFETCH-PRODUCER:OK\n");
+    lib_c_printf("M5:T429:S1:CECG-8BIT-BUS-WAIT:OK\n");
+    lib_c_printf("M5:T429:S2:D4-CECG-MEMORY-CLASS:OK\n");
+    lib_c_printf("M5:T429:S3:CECG-APERTURE-WAIT:OK\n");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: MOVS prefix rejection is CPU-owned. */
 
 static void movs_seed(cpu_instruction_fixture *state)
@@ -147,7 +147,7 @@ static lib_i32 movs_rep(core_machine_cpu_profile profile, const lib_u8 *code,
     for (index = 0u; index != slots; ++index) {
         core_machine_cpu_execution_refresh(&state.execution);
         if (state.execution.stop_requested) {
-            printf("MOVS rep stop profile=%u code=%02x count=%u step=%u fault=%u\n",
+            lib_c_printf("MOVS rep stop profile=%u code=%02x count=%u step=%u fault=%u\n",
                 profile, code[0], count, index, state.fault.valid);
             return 0;
         }
@@ -164,7 +164,7 @@ static lib_i32 movs_rep(core_machine_cpu_profile profile, const lib_u8 *code,
             (decrement ? -(lib_i32)(count * width) : count * width) :
             (lib_u16)(destination_index + (decrement ?
                 -(lib_i32)(count * width) : count * width)))) {
-        printf("MOVS rep state profile=%u code=%02x count=%u eip=%u ecx=%08x esi=%08x edi=%08x\n",
+        lib_c_printf("MOVS rep state profile=%u code=%02x count=%u eip=%u ecx=%08x esi=%08x edi=%08x\n",
             profile, code[0], count, after.data.eip, after.data.ecx,
             after.data.esi, after.data.edi);
         return 0;
@@ -188,7 +188,7 @@ static lib_i32 movs_rep(core_machine_cpu_profile profile, const lib_u8 *code,
                     width == 2u ? 0xffffu : 0xffffffffu)) :
                 (source[element] & (width == 1u ? 0xffu :
                     width == 2u ? 0xffffu : 0xffffffffu)))) {
-            printf("MOVS rep memory profile=%u code=%02x count=%u slot=%u source=%08x destination=%08x\n",
+            lib_c_printf("MOVS rep memory profile=%u code=%02x count=%u slot=%u source=%08x destination=%08x\n",
                 profile, code[0], count, index, source_after, destination_after);
             return 0;
         }
@@ -351,22 +351,22 @@ static lib_i32 movs_test_protected_limits(void)
 lib_i32 main(void)
 {
     if (!movs_test_single()) {
-        printf("MOVS stage=single\n");
+        lib_c_printf("MOVS stage=single\n");
         return 1;
     }
     if (!movs_test_rep()) {
-        printf("MOVS stage=rep\n");
+        lib_c_printf("MOVS stage=rep\n");
         return 1;
     }
     if (!movs_test_rejections()) {
-        printf("MOVS stage=rejections\n");
+        lib_c_printf("MOVS stage=rejections\n");
         return 1;
     }
     if (!movs_test_protected_limits()) {
-        printf("MOVS stage=protected\n");
+        lib_c_printf("MOVS stage=protected\n");
         return 1;
     }
-    printf("M5:T316:S33:MOVS:OK\n");
-    printf("M5:T401:S15:MOVS-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S33:MOVS:OK\n");
+    lib_c_printf("M5:T401:S15:MOVS-PROFILES:OK\n");
     return 0;
 }

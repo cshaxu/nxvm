@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static void sign_extend_set_registers(t_cpu *cpu)
 {
@@ -186,7 +186,7 @@ static lib_i32 sign_extend_test_lock_diagnostic(void)
                 LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
             !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             !sign_extend_state_equal(&before, &after)) {
-            fprintf(stderr, "SIGN-EXT lock opcode=%02x fault=%08x\n",
+            lib_c_fprintf(lib_c_stderr, "SIGN-EXT lock opcode=%02x fault=%08x\n",
                 opcodes[opcode], state.fault.exception_mask);
             return 0;
         }
@@ -200,6 +200,6 @@ lib_i32 main(void)
         !sign_extend_test_address_prefix() ||
         !sign_extend_test_prefix_reject() ||
         !sign_extend_test_lock_diagnostic()) return 1;
-    printf("M5:T539:S30:CPU-SIGN-EXTEND:OK\n");
+    lib_c_printf("M5:T539:S30:CPU-SIGN-EXTEND:OK\n");
     return 0;
 }

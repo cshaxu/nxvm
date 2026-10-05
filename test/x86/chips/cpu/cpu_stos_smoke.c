@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: STOS prefix rejection is CPU-owned. */
 
 static void stos_seed(cpu_instruction_fixture *state)
@@ -57,7 +57,7 @@ static lib_i32 stos_case(core_machine_cpu_profile profile, const lib_u8 *code,
         -(lib_i32)width : width) : ((before.data.edi & 0xffff0000u) |
         (lib_u16)(index + (decrement ? -(lib_i32)width : width))));
     lib_memory_copy(&image, state.memory + destination, width);
-    if (failed) printf("STOS case code=%02x width=%u fault=%u\n",
+    if (failed) lib_c_printf("STOS case code=%02x width=%u fault=%u\n",
         code[0], width, state.fault.valid);
     return !failed && image == stos_written(0xa5a5a5a5u, width);
 }
@@ -117,7 +117,7 @@ static lib_i32 stos_rep_case(core_machine_cpu_profile profile,
         failed |= image != (count == 0u ? 0xa5a5a5a5u :
             stos_written(0xa5a5a5a5u, width));
     }
-    if (failed) printf("STOS REP code=%02x width=%u count=%u\n",
+    if (failed) lib_c_printf("STOS REP code=%02x width=%u count=%u\n",
         code[0], width, count);
     return !failed;
 }
@@ -139,7 +139,7 @@ static lib_i32 stos_expect_ud(core_machine_cpu_profile profile,
         !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
         after.data.eip != 0u || !stos_others_same(&before, &after) ||
         after.data.edi != before.data.edi) {
-        printf("STOS UD profile=%u code=%02x fault=%u mask=%u eip=%u\n",
+        lib_c_printf("STOS UD profile=%u code=%02x fault=%u mask=%u eip=%u\n",
             profile, code[0], state.fault.valid,
             state.fault.exception_mask, after.data.eip);
         return 0;
@@ -290,7 +290,7 @@ lib_i32 main(void)
                 1u, LIB_FALSE, 1u, LIB_FALSE) ||
             !stos_rep_case(profiles[profile], repw, 2u, 2u, LIB_FALSE, 3u,
                 LIB_FALSE)) {
-            printf("STOS stage=profile profile=%u\n", profile);
+            lib_c_printf("STOS stage=profile profile=%u\n", profile);
             return 1;
         }
     if (!stos_case(CORE_MACHINE_CPU_PROFILE_80386, dword, 2u, 4u,
@@ -302,7 +302,7 @@ lib_i32 main(void)
         !stos_case(CORE_MACHINE_CPU_PROFILE_80386, fs, 2u, 1u,
         LIB_FALSE, LIB_FALSE) || !stos_case(CORE_MACHINE_CPU_PROFILE_80386,
         &ab, 1u, 2u, LIB_FALSE, LIB_TRUE)) {
-        printf("STOS stage=attributes\n");
+        lib_c_printf("STOS stage=attributes\n");
         return 1;
     }
     if (!stos_rep_case(CORE_MACHINE_CPU_PROFILE_80386, repd, 3u, 4u,
@@ -313,18 +313,18 @@ lib_i32 main(void)
         LIB_TRUE, 3u, LIB_FALSE) ||
         !stos_rep_case(CORE_MACHINE_CPU_PROFILE_80386, repw, 2u, 2u,
         LIB_FALSE, 3u, LIB_TRUE)) {
-        printf("STOS stage=rep-attributes\n");
+        lib_c_printf("STOS stage=rep-attributes\n");
         return 1;
     }
     if (!stos_test_rejections()) {
-        printf("STOS stage=rejections\n");
+        lib_c_printf("STOS stage=rejections\n");
         return 1;
     }
     if (!stos_test_protected()) {
-        printf("STOS stage=protected\n");
+        lib_c_printf("STOS stage=protected\n");
         return 1;
     }
-    printf("M5:T316:S34:STOS:OK\n");
-    printf("M5:T401:S17:STOS-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S34:STOS:OK\n");
+    lib_c_printf("M5:T401:S17:STOS-PROFILES:OK\n");
     return 0;
 }

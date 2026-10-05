@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: CPU-local IDTR excludes vector 6,
  * preserving the original no-handler terminal-fault cases. */
@@ -242,6 +242,6 @@ lib_i32 main(void)
     if (!lea_test_real_forms() || !lea_test_register_direct() ||
         !lea_test_lock_ud() || !lea_test_protected() ||
         !lea_test_null_ds_no_read()) return 1;
-    printf("M5:T539:S21:LEA-CPU:OK\n");
+    lib_c_printf("M5:T539:S21:LEA-CPU:OK\n");
     return 0;
 }

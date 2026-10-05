@@ -1,10 +1,9 @@
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "hdc_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "dma_fixture.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "x86/core/machine_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "ibmpc/board-common/media_interface.h"
@@ -343,12 +342,12 @@ cleanup:
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(registry);
     if (failed) {
-        fprintf(stderr, "M5:T484:S15:XEBEC-STACK:FAIL bits=%x\n", failed);
+        lib_c_fprintf(lib_c_stderr, "M5:T484:S15:XEBEC-STACK:FAIL bits=%x\n", failed);
         return 1;
     }
-    puts("M5:T484:S15:XEBEC-STACK:OK");
-    puts("M5:T484:S15:XEBEC-NO-ATA-ALIAS:OK");
-    puts("M5:T484:S17:XEBEC-DMA-MEDIA:OK");
-    puts("M5:T484:S18:XEBEC-DMA-RAM:OK");
+    lib_c_printf("%s\n", "M5:T484:S15:XEBEC-STACK:OK");
+    lib_c_printf("%s\n", "M5:T484:S15:XEBEC-NO-ATA-ALIAS:OK");
+    lib_c_printf("%s\n", "M5:T484:S17:XEBEC-DMA-MEDIA:OK");
+    lib_c_printf("%s\n", "M5:T484:S18:XEBEC-DMA-RAM:OK");
     return 0;
 }

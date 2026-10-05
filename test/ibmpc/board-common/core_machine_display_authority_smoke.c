@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/core/memory_interface.h"
 #include "ibmpc/board-common/vadp.h"
@@ -55,8 +54,8 @@ int main(void)
     }
     core_machine_destroy(machine);
     if (!failed) {
-        printf("M5:T296:S2:DISPLAY-AUTHORITY:OK\n");
-        printf("M5:T540:S84:BOARD-DISPLAY-HANDLE:OK\n");
+        lib_c_printf("M5:T296:S2:DISPLAY-AUTHORITY:OK\n");
+        lib_c_printf("M5:T540:S84:BOARD-DISPLAY-HANDLE:OK\n");
     }
     return failed;
 }

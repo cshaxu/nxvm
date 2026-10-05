@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: invalid BOUND stops at the CPU. */
 
 static lib_i32 bound_same_state(const t_cpu *before, const t_cpu *after)
@@ -230,18 +230,18 @@ static lib_i32 bound_test_rejections(void)
 lib_i32 main(void)
 {
     if (!bound_test_width_and_attributes()) {
-        fprintf(stderr, "BOUND width or address attributes failed\n");
+        lib_c_fprintf(lib_c_stderr, "BOUND width or address attributes failed\n");
         return 1;
     }
     if (!bound_test_rejections()) {
-        fprintf(stderr, "BOUND invalid forms were not #UD\n");
+        lib_c_fprintf(lib_c_stderr, "BOUND invalid forms were not #UD\n");
         return 1;
     }
     if (!bound_test_segments() || !bound_test_sib_ss() ||
         !bound_test_vm86()) {
-        fprintf(stderr, "BOUND segment route failed\n");
+        lib_c_fprintf(lib_c_stderr, "BOUND segment route failed\n");
         return 1;
     }
-    puts("M5:T539:S41:BOUND-REGISTER-UD:OK");
+    lib_c_printf("%s\n", "M5:T539:S41:BOUND-REGISTER-UD:OK");
     return 0;
 }

@@ -1,11 +1,11 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include <stdio.h>
-
 typedef struct gpr_mov_machine { core_machine *machine;
     core_machine_board_state *board; } gpr_mov_machine;
 
@@ -195,9 +195,9 @@ lib_i32 main(void)
 {
     if (!gpr_mov_test_protected_limit() ||
         !gpr_mov_test_irq_no_shadow()) return 1;
-    printf("M5:T316:S31:GPR-MOV:OK\n");
-    printf("M5:T401:S13:IMMEDIATE-REGISTER-MOV-PROFILES:OK\n");
-    printf("M5:T401:S47:GPR-MOV-MODRM-PROFILES:OK\n");
-    printf("M5:T401:S58:RM-IMMEDIATE-MOV-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S31:GPR-MOV:OK\n");
+    lib_c_printf("M5:T401:S13:IMMEDIATE-REGISTER-MOV-PROFILES:OK\n");
+    lib_c_printf("M5:T401:S47:GPR-MOV-MODRM-PROFILES:OK\n");
+    lib_c_printf("M5:T401:S58:RM-IMMEDIATE-MOV-PROFILES:OK\n");
     return 0;
 }

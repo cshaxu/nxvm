@@ -1,11 +1,11 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include <stdio.h>
-
 typedef struct lfg_machine { core_machine *machine;
     core_machine_board_state *board; } lfg_machine;
 
@@ -108,7 +108,7 @@ static lib_i32 lfg_test_source_fault_atomicity(void)
                         before.fs.selector : before.gs.selector);
         }
         if (failed)
-            printf("LFG source-fault op=%02x reason=%d first=%u mask=%08x eip=%08x/%08x eax=%08x/%08x flags=%08x/%08x\n",
+            lib_c_printf("LFG source-fault op=%02x reason=%d first=%u mask=%08x eip=%08x/%08x eax=%08x/%08x flags=%08x/%08x\n",
                 opcodes[opcode], result.reason, diagnostic.first_fault.valid,
                 diagnostic.first_fault.exception_mask, before.eip, after.eip,
                 before.eax, after.eax, before.eflags, after.eflags);
@@ -176,7 +176,7 @@ static lib_i32 lfg_test_irq_shadow(void)
                     VPIC_IRR_IRQ(0u)) || frame_ip != (opcode == 0u ? 6u : 5u);
         }
         if (failed && state.board != LIB_NULL)
-            printf("LFG irq op=%02x eip=%08x esp=%08x irr=%02x isr=%02x frame=%04x\n",
+            lib_c_printf("LFG irq op=%02x eip=%08x esp=%08x irr=%02x isr=%02x frame=%04x\n",
                 opcodes[opcode], after.eip, after.esp,
                 test_pic_read(state.board->shared_pic_master, 0x0au),
                 test_pic_read(state.board->shared_pic_master, 0x0bu), frame_ip);
@@ -191,6 +191,6 @@ lib_i32 main(void)
 {
     if (!lfg_test_source_fault_atomicity() ||
         !lfg_test_irq_shadow()) return 1;
-    printf("M5:T539:S27:LSS_LFS_LGS-BOARD:OK\n");
+    lib_c_printf("M5:T539:S27:LSS_LFS_LGS-BOARD:OK\n");
     return 0;
 }

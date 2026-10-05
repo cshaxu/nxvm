@@ -171,6 +171,14 @@ int main(void)
     lib_test_assert(lib_win32_wait_for_single_object(fake.reset_completed, 5000u) == LIB_WIN32_WAIT_OBJECT_0);
     lib_test_assert(lib_win32_interlocked_compare_exchange(&fake.resets, 0, 0) == 2);
     lib_test_assert(common_machine_state_get(machine) == COMMON_MACHINE_PAUSED);
+    /* Identical text is still the first publication of the reset run. */
+    {
+        lib_u32 sequence = frame.sequence;
+        lib_test_assert(common_machine_copy_published_frame(machine, &frame,
+            common_machine_run_generation(machine)));
+        lib_test_assert(frame.window.valid && !frame.window.graphics &&
+            frame.sequence > sequence && frame.window.text.base.text_rows == KVM_TEXT_ROWS);
+    }
     lib_test_assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
     lib_test_assert(common_machine_debug_execute_with_lease(machine, &lease,
         &token, sizeof(token), &debug_result, sizeof(debug_result),

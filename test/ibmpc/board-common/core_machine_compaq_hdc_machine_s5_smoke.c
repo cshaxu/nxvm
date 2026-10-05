@@ -1,7 +1,6 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/dma_bus_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "ibmpc/board-common/media_interface.h"
@@ -158,9 +157,9 @@ lib_i32 main(void)
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
-        fprintf(stderr, "M5:T386:S5:COMPAQ-HDC-MACHINE:FAIL:%x\n", failed);
+        lib_c_fprintf(lib_c_stderr, "M5:T386:S5:COMPAQ-HDC-MACHINE:FAIL:%x\n", failed);
         return 1;
     }
-    puts("M5:T386:S5:COMPAQ-HDC-MACHINE:OK");
+    lib_c_printf("%s\n", "M5:T386:S5:COMPAQ-HDC-MACHINE:OK");
     return 0;
 }

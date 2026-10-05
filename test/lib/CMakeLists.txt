@@ -18,6 +18,13 @@ endif()
 set(SHARED_LIB_TEST_TARGETS)
 include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 
+add_test(NAME lib.test-boundaries COMMAND "${CMAKE_COMMAND}"
+    "-DTEST_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" "-DTEST_LAYER=lib"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/../verify_test_boundaries.cmake")
+add_test(NAME lib.test-boundaries-selftest COMMAND "${CMAKE_COMMAND}"
+    "-DTEST_WORK_DIR=${CMAKE_CURRENT_BINARY_DIR}"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/../test_boundaries_selftest.cmake")
+
 shared_register_test(lib lib_console console)
 shared_register_test(lib types_contract base)
 shared_register_test(lib process_directory base)
@@ -110,11 +117,11 @@ add_test(NAME library.types-layout-selftest COMMAND "${CMAKE_COMMAND}"
     "-DLIBRARY_ROOT=${LIB_ROOT}" "-DTEST_WORK_DIR=${CMAKE_CURRENT_BINARY_DIR}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/types_layout_selftest.cmake")
 add_test(NAME library.test-types-boundary COMMAND "${CMAKE_COMMAND}"
-    "-DTEST_ROOTS=${CMAKE_CURRENT_SOURCE_DIR};${CMAKE_CURRENT_SOURCE_DIR}/../common;${CMAKE_CURRENT_SOURCE_DIR}/../x86"
-    -P "${CMAKE_CURRENT_SOURCE_DIR}/verify_types_boundary.cmake")
+    "-DTEST_ROOTS=${CMAKE_CURRENT_SOURCE_DIR}"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/../verify_types_boundary.cmake")
 add_test(NAME library.test-types-boundary-selftest COMMAND "${CMAKE_COMMAND}"
     "-DTEST_WORK_DIR=${CMAKE_CURRENT_BINARY_DIR}"
-    -P "${CMAKE_CURRENT_SOURCE_DIR}/types_boundary_selftest.cmake")
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/../types_boundary_selftest.cmake")
 add_test(NAME library.test-manifest COMMAND "${CMAKE_COMMAND}"
     "-DLIBRARY_ROOT=${CMAKE_CURRENT_SOURCE_DIR}"
     -P "${LIB_ROOT}/verify_manifest.cmake")

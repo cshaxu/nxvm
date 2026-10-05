@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
@@ -18,7 +18,7 @@ static core_machine_debug_cpu_snapshot vm86_iret_capture(const core_machine *mac
     core_machine_debug_cpu_snapshot snapshot = {0};
     if (core_machine_debug_capture_cpu_snapshot(machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     return snapshot;
 }
 
@@ -191,6 +191,6 @@ lib_i32 main(void)
         !vm86_iret_success((const lib_u8[]){ 0x67u, 0xcfu }, 2u) ||
         !vm86_iret_stack_atomic() || !vm86_iret_paging_success())
         return 1;
-    printf("M5:T320:S2:VM86-IRET:OK\n");
+    lib_c_printf("M5:T320:S2:VM86-IRET:OK\n");
     return 0;
 }

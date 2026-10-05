@@ -1,7 +1,8 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 #define main cli_sti_s22_main
 #include "machine_cli_sti_interrupt_smoke.c"
@@ -64,14 +65,14 @@ static void hlt_s49_seed(cli_sti_machine *state)
         }
     };
     if (core_machine_debug_patch_registers(state->machine, &seed) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
 }
 
 static lib_bool hlt_s49_is_halted(const core_machine *machine)
 {
     core_machine_cpu_state state;
     if (core_machine_get_cpu_state(machine, &state) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
     return state.halted != 0u;
 }
 
@@ -470,7 +471,7 @@ lib_i32 main(void)
         return 1;
     if (!hlt_s49_test_irq())
         return 1;
-    printf("M5:T316:S49:HLT:OK\n");
-    printf("M5:T401:S38:HLT-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S49:HLT:OK\n");
+    lib_c_printf("M5:T401:S38:HLT-PROFILES:OK\n");
     return 0;
 }

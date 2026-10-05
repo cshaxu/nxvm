@@ -1,3 +1,4 @@
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
@@ -5,8 +6,6 @@
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
 #include "x86/core/debug_interface.h"
-#include <stdio.h>
-
 static lib_i32 sign_extend_test_irq(void)
 {
     static const lib_u8 opcodes[] = {0x98u, 0x99u};
@@ -99,7 +98,7 @@ static lib_i32 sign_extend_test_irq(void)
 lib_i32 main(void)
 {
     if (!sign_extend_test_irq()) return 1;
-    printf("M5:T316:S29:SIGN-EXTEND:OK\n");
-    printf("M5:T401:S45:SIGN-EXTEND-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S29:SIGN-EXTEND:OK\n");
+    lib_c_printf("M5:T401:S45:SIGN-EXTEND-PROFILES:OK\n");
     return 0;
 }

@@ -1,6 +1,6 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 
@@ -26,7 +26,7 @@ static void program_pit_divider(core_machine *machine,
     if (core_machine_bus_write(machine, 0x43u, control) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x40u, divisor & 0xffu) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x40u, divisor >> 8u) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
 }
 
 lib_i32 main(void)
@@ -98,6 +98,6 @@ lib_i32 main(void)
     }
     core_machine_destroy(machine);
     if (failed) return 1;
-    printf("M5:T225:S2:PIT-DIVIDER:OK\n");
+    lib_c_printf("M5:T225:S2:PIT-DIVIDER:OK\n");
     return 0;
 }

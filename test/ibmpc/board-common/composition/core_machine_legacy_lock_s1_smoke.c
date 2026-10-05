@@ -1,5 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/core/debug_interface.h"
 
@@ -235,9 +235,9 @@ int main(void)
 {
     if (!legacy_lock_s1_test_port_output() ||
         !legacy_lock_s1_test_80286_iopl()) {
-        fputs("M5:T539:S32:BOARD-LEGACY-LOCK:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S32:BOARD-LEGACY-LOCK:FAIL\n");
         return 1;
     }
-    puts("M5:T539:S32:BOARD-LEGACY-LOCK:OK");
+    lib_c_printf("%s\n", "M5:T539:S32:BOARD-LEGACY-LOCK:OK");
     return 0;
 }

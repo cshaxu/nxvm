@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: legacy invalid opcodes are CPU-owned. */
 
@@ -1071,10 +1071,10 @@ int main(void)
         !legacy_alu_test_flags_and_sign_forms() || !legacy_alu_test_group2_forms() ||
         !legacy_alu_test_group2_immediate_extensions() ||
         !legacy_alu_test_reserved_and_attribute_rejections()) {
-        fprintf(stderr, "M5:T338:S2:LEGACY-ALU:FAILED\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T338:S2:LEGACY-ALU:FAILED\n");
         return 1;
     }
-    printf("M5:T338:S2:LEGACY-ALU:OK\n");
-    printf("M5:T401:S34:DECIMAL-ADJUST-PROFILES:OK\n");
+    lib_c_printf("M5:T338:S2:LEGACY-ALU:OK\n");
+    lib_c_printf("M5:T401:S34:DECIMAL-ADJUST-PROFILES:OK\n");
     return 0;
 }

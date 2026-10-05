@@ -1,6 +1,5 @@
 #include "support/cpu_operand_probe_fixture.h"
-#include <limits.h>
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_i32 imul_forms(void)
 {
@@ -90,6 +89,6 @@ static lib_i32 imul_profile(void)
 lib_i32 main(void)
 {
     if (!imul_forms() || !imul_profile()) return 1;
-    printf("M5:T539:S30:CPU-IMUL2:OK\n");
+    lib_c_printf("M5:T539:S30:CPU-IMUL2:OK\n");
     return 0;
 }

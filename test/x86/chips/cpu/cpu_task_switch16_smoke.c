@@ -1,5 +1,5 @@
 #include "support/cpu_task_switch16_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_bool cpu_task16_expect_success(core_machine_cpu_profile profile,
     cpu_task16_case test_case)
@@ -24,7 +24,7 @@ static lib_bool cpu_task16_expect_success(core_machine_cpu_profile profile,
             (fixture.memory[CPU_TASK16_B_BASE] == 0x28u &&
                 fixture.memory[CPU_TASK16_B_BASE + 1u] == 0u &&
                 (after.data.eflags & VCPU_EFLAGS_NT) != 0u))) return LIB_TRUE;
-    fprintf(stderr, "task16 success profile=%u case=%u halt=%u tr=%04x ax=%04x marker=%04x fault=%u delivered=%u busy=%02x/%02x\n",
+    lib_c_fprintf(lib_c_stderr, "task16 success profile=%u case=%u halt=%u tr=%04x ax=%04x marker=%04x fault=%u delivered=%u busy=%02x/%02x\n",
         (unsigned)profile, (unsigned)test_case, (unsigned)after.data.flagHalt,
         after.data.tr.selector, after.data.ax, marker, (unsigned)fixture.fault.valid,
         (unsigned)fixture.delivered_exception.valid,
@@ -45,7 +45,7 @@ static lib_bool cpu_task16_expect_fault(core_machine_cpu_profile profile,
     if (snapshot->valid && (snapshot->exception_mask & mask) != 0u &&
         snapshot->exception_code == code && fixture.cpu.data.tr.selector == 0x28u)
         return LIB_TRUE;
-    fprintf(stderr, "task16 fault profile=%u case=%u fault=%u/%x/%04x delivered=%u/%x/%04x expected=%x/%04x tr=%04x\n",
+    lib_c_fprintf(lib_c_stderr, "task16 fault profile=%u case=%u fault=%u/%x/%04x delivered=%u/%x/%04x expected=%x/%04x tr=%04x\n",
         (unsigned)profile, (unsigned)test_case, (unsigned)fixture.fault.valid,
         (unsigned)fixture.fault.exception_mask, fixture.fault.exception_code,
         (unsigned)fixture.delivered_exception.valid,
@@ -99,7 +99,7 @@ static lib_bool cpu_task16_expect_gate_rejection(
     if (snapshot->valid && (snapshot->exception_mask & mask) != 0u &&
         fixture.cpu.data.tr.selector == 0x28u && fixture.cpu.data.ax == 0x1111u)
         return LIB_TRUE;
-    fprintf(stderr, "task16 gate profile=%u case=%u fault=%u/%x delivered=%u/%x expected=%x tr=%04x ax=%04x\n",
+    lib_c_fprintf(lib_c_stderr, "task16 gate profile=%u case=%u fault=%u/%x delivered=%u/%x expected=%x tr=%04x ax=%04x\n",
         (unsigned)profile, (unsigned)test_case, (unsigned)fixture.fault.valid,
         (unsigned)fixture.fault.exception_mask,
         (unsigned)fixture.delivered_exception.valid,
@@ -121,7 +121,7 @@ static lib_bool cpu_task16_expect_stack_limit(core_machine_cpu_profile profile)
     if (snapshot->valid && (snapshot->exception_mask & expected) != 0u &&
         snapshot->exception_code == 0u && fixture.cpu.data.tr.selector == 0x30u &&
         fixture.cpu.data.sp == 0u) return LIB_TRUE;
-    fprintf(stderr, "task16 stack profile=%u fault=%u/%x delivered=%u/%x expected=%x tr=%04x sp=%04x\n",
+    lib_c_fprintf(lib_c_stderr, "task16 stack profile=%u fault=%u/%x delivered=%u/%x expected=%x tr=%04x sp=%04x\n",
         (unsigned)profile, (unsigned)fixture.fault.valid,
         (unsigned)fixture.fault.exception_mask,
         (unsigned)fixture.delivered_exception.valid,
@@ -218,9 +218,9 @@ int main(void)
     failed |= !cpu_task16_expect_fault(CORE_MACHINE_CPU_PROFILE_80386,
         CPU_TASK16_LOCK, VCPUINS_EXCEPT_UD, 0u);
     if (failed) {
-        fputs("M5:T539:S55:TASK16:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S55:TASK16:FAIL\n");
         return 1;
     }
-    puts("M5:T539:S55:TASK16:OK");
+    lib_c_printf("%s\n", "M5:T539:S55:TASK16:OK");
     return 0;
 }

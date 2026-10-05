@@ -1,13 +1,13 @@
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
 #include "x86/chips/cpu/cpu_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include "../../x86/core/debug_fixture.h"
+#include "../core/debug_fixture.h"
 #include "core_machine_board_fixture.h"
 
 /* Retained owners supply the detailed gate and VM86 frame matrices. */
@@ -217,6 +217,6 @@ lib_i32 main(void)
         !hardware_delivery_s3_vm86_priority(1)) {
         return 1;
     }
-    printf("M5:T321:S3:HARDWARE-DELIVERY:OK\n");
+    lib_c_printf("M5:T321:S3:HARDWARE-DELIVERY:OK\n");
     return 0;
 }

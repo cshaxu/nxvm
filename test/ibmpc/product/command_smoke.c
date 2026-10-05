@@ -1,3 +1,4 @@
+#include "lib/types/file.h"
 #include "ibmpc/product/command.c"
 #include "ibmpc/product/composition.c"
 

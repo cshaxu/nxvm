@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/machine_interface.h"
@@ -67,7 +67,7 @@ static lib_i32 run_case(core_machine_cpu_profile profile, const lib_u8 *program,
             failed |= diagnostic.first_fault.valid;
         }
     }
-    if (failed) printf("Profile case failed: profile=%u opcode=%02x status=%u reason=%u fault=%u mask=%x\n",
+    if (failed) lib_c_printf("Profile case failed: profile=%u opcode=%02x status=%u reason=%u fault=%u mask=%x\n",
         (lib_u32)profile, program[0], (lib_u32)run_status,
         (lib_u32)result.reason, diagnostic.first_fault.valid,
         diagnostic.first_fault.exception_mask);
@@ -151,6 +151,6 @@ lib_i32 main(void)
     failed |= run_case(CORE_MACHINE_CPU_PROFILE_80286, fs_prefix, sizeof(fs_prefix), 1);
     failed |= run_case(CORE_MACHINE_CPU_PROFILE_80286, jcc_near, sizeof(jcc_near), 1);
     if (failed) return 1;
-    printf("M5:T155:S1:CPU-PROFILE-GATE:OK\n");
+    lib_c_printf("M5:T155:S1:CPU-PROFILE-GATE:OK\n");
     return 0;
 }

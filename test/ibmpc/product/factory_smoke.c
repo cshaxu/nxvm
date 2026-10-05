@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "ibmpc/product/factory.c"
 
 static lib_u32 phase;

@@ -1,11 +1,11 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include <stdio.h>
-
 typedef struct les_lds_s41_machine { core_machine *machine;
     core_machine_board_state *board; } les_lds_s41_machine;
 
@@ -312,14 +312,14 @@ static lib_i32 les_lds_s41_test_irq(void)
 lib_i32 main(void)
 {
     if (!les_lds_s41_test_protected()) {
-        puts("LES-LDS-S41 stage=protected"); return 1;
+        lib_c_printf("%s\n", "LES-LDS-S41 stage=protected"); return 1;
     }
     if (!les_lds_s41_test_limit()) {
-        puts("LES-LDS-S41 stage=limit"); return 1;
+        lib_c_printf("%s\n", "LES-LDS-S41 stage=limit"); return 1;
     }
     if (!les_lds_s41_test_irq()) {
-        puts("LES-LDS-S41 stage=irq"); return 1;
+        lib_c_printf("%s\n", "LES-LDS-S41 stage=irq"); return 1;
     }
-    printf("M5:T539:S27:LES_LDS_S41-BOARD:OK\n");
+    lib_c_printf("M5:T539:S27:LES_LDS_S41-BOARD:OK\n");
     return 0;
 }

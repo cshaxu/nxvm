@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 #include "x86/core/device_support_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/core/machine_interface.h"
 #include "debug_fixture.h"
@@ -537,6 +537,6 @@ lib_i32 main(void)
         t359_s4_test_80186_preflight() ||
         t359_s4_test_repeat_continuation_reset() ||
         t359_s4_test_80386_attributes_and_failure()) return 6;
-    printf("M5:T359:S4:STRING-IO-TIMING:OK\n");
+    lib_c_printf("M5:T359:S4:STRING-IO-TIMING:OK\n");
     return 0;
 }

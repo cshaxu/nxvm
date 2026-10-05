@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/core/machine_interface.h"
 #include "x86/core/debug_interface.h"
@@ -357,8 +357,8 @@ static lib_i32 timing_test_physical_contract(void)
             result.elapsed_ticks != 3u;
     }
     if (!failed) {
-        printf("M5:T394:S4:ELIGIBILITY-KEY:OK\n");
-        printf("M5:T394:S4:PHYSICAL-ABSENT-KEY:OK\n");
+        lib_c_printf("M5:T394:S4:ELIGIBILITY-KEY:OK\n");
+        lib_c_printf("M5:T394:S4:PHYSICAL-ABSENT-KEY:OK\n");
     }
     core_machine_destroy(machine);
     return failed;
@@ -391,6 +391,6 @@ lib_i32 main(void)
     if (timing_test_stop()) return 7;
     if (timing_test_invalid_qualification()) return 8;
     if (timing_test_physical_contract()) return 9;
-    printf("M5:T265:S3:INSTRUCTION-TIMING:OK\n");
+    lib_c_printf("M5:T265:S3:INSTRUCTION-TIMING:OK\n");
     return 0;
 }

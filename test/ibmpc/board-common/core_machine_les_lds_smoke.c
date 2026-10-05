@@ -1,11 +1,11 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include <stdio.h>
-
 typedef struct lld_machine { core_machine *machine;
     core_machine_board_state *board; } lld_machine;
 
@@ -180,6 +180,6 @@ lib_i32 main(void)
 {
     if (!lld_test_source_fault_atomicity() ||
         !lld_test_irq_no_shadow()) return 1;
-    printf("M5:T539:S27:LES_LDS-BOARD:OK\n");
+    lib_c_printf("M5:T539:S27:LES_LDS-BOARD:OK\n");
     return 0;
 }

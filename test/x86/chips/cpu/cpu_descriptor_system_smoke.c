@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #define DESCRIPTOR_GDT_ADDRESS 0x0300u
 #define DESCRIPTOR_LOAD_ADDRESS 0x0240u
@@ -534,11 +534,11 @@ lib_i32 main(void)
 
     if (!stores || !protected_stores || !loads || !faults || !memory_faults ||
         !selector_stores || !selector_loads || !c7) {
-        fprintf(stderr, "M5:T539:S43:descriptor cpu failed stores=%d protected-stores=%d loads=%d faults=%d memory-faults=%d selector-stores=%d selector-loads=%d c7=%d\n",
+        lib_c_fprintf(lib_c_stderr, "M5:T539:S43:descriptor cpu failed stores=%d protected-stores=%d loads=%d faults=%d memory-faults=%d selector-stores=%d selector-loads=%d c7=%d\n",
             stores, protected_stores, loads, faults, memory_faults,
             selector_stores, selector_loads, c7);
         return 1;
     }
-    puts("M5:T539:S43:DESCRIPTOR-SYSTEM-CPU:OK");
+    lib_c_printf("%s\n", "M5:T539:S43:DESCRIPTOR-SYSTEM-CPU:OK");
     return 0;
 }

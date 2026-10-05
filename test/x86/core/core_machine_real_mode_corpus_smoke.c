@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
@@ -162,10 +162,10 @@ static lib_i32 corpus_test_rep_direction(void)
             source_after[0] != source[0] || source_after[1] != source[1] ||
             source_after[2] != source[2];
         if (failed) {
-            fprintf(stderr,
+            lib_c_fprintf(lib_c_stderr,
                 "M5:T240:S2:8086-CORPUS:REP copied=%02x%02x%02x stored=%02x\n",
                 copied[0], copied[1], copied[2], stored);
-            fprintf(stderr,
+            lib_c_fprintf(lib_c_stderr,
                 "M5:T240:S2:8086-CORPUS:REP source=%02x%02x%02x\n",
                 source_after[0], source_after[1], source_after[2]);
         }
@@ -279,25 +279,25 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     if (corpus_test_segment_override()) {
-        fprintf(stderr, "M5:T240:S2:8086-CORPUS:FAIL case=segment-override\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T240:S2:8086-CORPUS:FAIL case=segment-override\n");
         failed = 1;
     }
     if (corpus_test_rep_direction()) {
-        fprintf(stderr, "M5:T240:S2:8086-CORPUS:FAIL case=rep-direction\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T240:S2:8086-CORPUS:FAIL case=rep-direction\n");
         failed = 1;
     }
     if (corpus_test_int_iret()) {
-        fprintf(stderr, "M5:T240:S2:8086-CORPUS:FAIL case=int-iret\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T240:S2:8086-CORPUS:FAIL case=int-iret\n");
         failed = 1;
     }
     if (corpus_test_port_transactions()) {
-        fprintf(stderr, "M5:T240:S2:8086-CORPUS:FAIL case=port-transactions\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T240:S2:8086-CORPUS:FAIL case=port-transactions\n");
         failed = 1;
     }
     if (failed) {
-        fprintf(stderr, "M5:T240:S2:8086-CORPUS:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T240:S2:8086-CORPUS:FAIL\n");
         return 1;
     }
-    printf("M5:T240:S2:8086-CORPUS:OK\n");
+    lib_c_printf("M5:T240:S2:8086-CORPUS:OK\n");
     return 0;
 }

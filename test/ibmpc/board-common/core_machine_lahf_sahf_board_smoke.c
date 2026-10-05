@@ -1,5 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "cpu_board_flags_protected_fixture.h"
 #include "cpu_board_irq_fixture.h"
 
@@ -81,9 +81,9 @@ static lib_i32 lahf_sahf_test_irq(void)
 int main(void)
 {
     if (!lahf_sahf_test_protected() || !lahf_sahf_test_irq()) {
-        fputs("M5:T539:S36:BOARD-LAHF-SAHF:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:BOARD-LAHF-SAHF:FAIL\n");
         return 1;
     }
-    puts("M5:T539:S36:BOARD-LAHF-SAHF:OK");
+    lib_c_printf("%s\n", "M5:T539:S36:BOARD-LAHF-SAHF:OK");
     return 0;
 }

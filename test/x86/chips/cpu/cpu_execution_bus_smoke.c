@@ -1,5 +1,5 @@
 #include "support/cpu_bus_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 typedef struct cpu_bus_reset_case {
     core_machine_cpu_profile profile;
@@ -131,6 +131,6 @@ lib_i32 main(void)
 
     for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
         if (cpu_bus_cases(&cases[index])) return 1;
-    puts("M5:T539:S87:CPU-EXECUTION-BUS:OK");
+    lib_c_printf("%s\n", "M5:T539:S87:CPU-EXECUTION-BUS:OK");
     return 0;
 }

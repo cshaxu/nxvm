@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_u32 shift_parity(lib_u32 value)
 {
@@ -154,6 +154,6 @@ lib_i32 main(void)
 {
     if (!shift_test_forms() || !shift_test_count_zero() ||
         !shift_test_profile()) return 1;
-    printf("M5:T539:S30:CPU-DOUBLE-SHIFT:OK\n");
+    lib_c_printf("M5:T539:S30:CPU-DOUBLE-SHIFT:OK\n");
     return 0;
 }

@@ -37,6 +37,12 @@ without a held-key entry; character support belongs to the machine adapter.
 UI submits the fixed graphical Console explanation only when entering that
 content kind or creating a fresh Console. Text still follows frame sequences;
 only successful submissions update these control-thread-local markers.
+This raw Console explanation is a fixed 80x25 status surface, independent of
+guest text frames (which may have up to 50 rows) and the cooked monitor.
+Its injected text supports printable ASCII, ignores CR and starts a new row
+on LF. Other bytes display as spaces; there is no UTF-8 decoding or automatic
+line wrapping. Characters outside the 80x25 surface are omitted. Products
+must supply status/help text within this existing bounded contract.
 
 Session owns one pending cooked line until its normal/rejected event is consumed
 or the broker confirms cancellation/handoff. Frame events never request input.

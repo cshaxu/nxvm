@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "x86/core/entry_plan_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/media_interface.h"
@@ -115,9 +114,9 @@ lib_i32 main(void)
     x86_rtc_destroy(fixture.rtc);
     core_machine_media_registry_destroy(fixture.media);
     if (failed) {
-        printf("mantle shape failed=%x reason=%u\n", failed, result.reason);
+        lib_c_printf("mantle shape failed=%x reason=%u\n", failed, result.reason);
         return 1;
     }
-    puts("M5:T274:S2:MANTLE-SHAPE:OK");
+    lib_c_printf("%s\n", "M5:T274:S2:MANTLE-SHAPE:OK");
     return 0;
 }

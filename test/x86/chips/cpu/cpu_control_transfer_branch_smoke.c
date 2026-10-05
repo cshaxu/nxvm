@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 
 typedef struct control_transfer_jcc_case {
@@ -288,26 +288,26 @@ int main(void)
     if (!control_transfer_test_loop_and_jcxz()) goto fail_loop;
     if (!control_transfer_test_386_address_forms()) goto fail_address;
     if (!control_transfer_test_fault_atomicity_and_profile()) goto fail_fault;
-    puts("M5:T401:S43:LOOP-JCXZ-PROFILES:OK");
-    puts("M5:T401:S59:NEAR-JCC-PROFILES:OK");
-    puts("M5:T539:S49:CPU-CONTROL-TRANSFER-BRANCH:OK");
+    lib_c_printf("%s\n", "M5:T401:S43:LOOP-JCXZ-PROFILES:OK");
+    lib_c_printf("%s\n", "M5:T401:S59:NEAR-JCC-PROFILES:OK");
+    lib_c_printf("%s\n", "M5:T539:S49:CPU-CONTROL-TRANSFER-BRANCH:OK");
     return 0;
 
 fail_short_jcc:
-    fputs("short-jcc: ", stderr);
+    lib_c_fprintf(lib_c_stderr, "%s", "short-jcc: ");
     goto fail;
 fail_near_jcc:
-    fputs("near-jcc: ", stderr);
+    lib_c_fprintf(lib_c_stderr, "%s", "near-jcc: ");
     goto fail;
 fail_loop:
-    fputs("loop: ", stderr);
+    lib_c_fprintf(lib_c_stderr, "%s", "loop: ");
     goto fail;
 fail_address:
-    fputs("address: ", stderr);
+    lib_c_fprintf(lib_c_stderr, "%s", "address: ");
     goto fail;
 fail_fault:
-    fputs("fault: ", stderr);
+    lib_c_fprintf(lib_c_stderr, "%s", "fault: ");
 fail:
-    fputs("M5:T539:S49:CPU-CONTROL-TRANSFER-BRANCH:FAIL\n", stderr);
+    lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S49:CPU-CONTROL-TRANSFER-BRANCH:FAIL\n");
     return 1;
 }

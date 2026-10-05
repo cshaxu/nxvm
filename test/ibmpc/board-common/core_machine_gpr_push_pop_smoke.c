@@ -1,11 +1,11 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include <stdio.h>
-
 typedef struct gpr_push_pop_machine {
     core_machine *machine;
     core_machine_board_state *board;
@@ -181,25 +181,25 @@ static lib_i32 gpr_push_pop_test_protected_faults(void)
     if (!gpr_push_pop_protected_fault(push, sizeof(push), 0u, 0xffffu,
         LIB_TRUE))
     {
-        printf("protected push\n");
+        lib_c_printf("protected push\n");
         return 0;
     }
     if (!gpr_push_pop_protected_fault(pop, sizeof(pop), 0u, 0x7fffu,
         LIB_FALSE))
     {
-        printf("protected pop\n");
+        lib_c_printf("protected pop\n");
         return 0;
     }
     if (!gpr_push_pop_protected_fault(push_source, sizeof(push_source), 1u,
         0x0fu, LIB_FALSE))
     {
-        printf("protected push-source\n");
+        lib_c_printf("protected push-source\n");
         return 0;
     }
     if (!gpr_push_pop_protected_fault(pop_dest, sizeof(pop_dest), 1u, 0x0fu,
         LIB_FALSE))
     {
-        printf("protected pop-dest\n");
+        lib_c_printf("protected pop-dest\n");
         return 0;
     }
     return 1;
@@ -305,16 +305,16 @@ lib_i32 main(void)
 {
     if (!gpr_push_pop_test_protected_faults())
     {
-        printf("GPR-PUSH-POP stage=protected\n");
+        lib_c_printf("GPR-PUSH-POP stage=protected\n");
         return 1;
     }
     if (!gpr_push_pop_test_irq_no_shadow())
     {
-        printf("GPR-PUSH-POP stage=irq\n");
+        lib_c_printf("GPR-PUSH-POP stage=irq\n");
         return 1;
     }
-    printf("M5:T316:S44:GPR-PUSH-POP:OK\n");
-    printf("M5:T401:S40:GPR-PUSH-POP-PROFILES:OK\n");
-    printf("M5:T401:S10:GROUP5-PUSH-RM-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S44:GPR-PUSH-POP:OK\n");
+    lib_c_printf("M5:T401:S40:GPR-PUSH-POP-PROFILES:OK\n");
+    lib_c_printf("M5:T401:S10:GROUP5-PUSH-RM-PROFILES:OK\n");
     return 0;
 }

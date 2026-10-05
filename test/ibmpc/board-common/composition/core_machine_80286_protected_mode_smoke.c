@@ -1,5 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
@@ -209,7 +209,7 @@ static lib_i32 protected_mode_test_positive(void)
             cpu.cs != TEST_CODE_SELECTOR ||
             cpu.cs_base != TEST_CODE_ADDRESS;
         if (failed) {
-            fprintf(stderr,
+            lib_c_fprintf(lib_c_stderr,
                 "T257 positive ran=%d fault=%u/%08x at=%04x:%08x eax=%08x first=%04x second=%04x ds=%04x/%08x ss=%04x/%08x cpu=%d %04x/%08x\n",
                 ran, diagnostic.first_fault.valid,
                 diagnostic.first_fault.exception_mask,
@@ -517,14 +517,14 @@ lib_i32 main(void)
     if (positive || invalid_selector || nonpresent_code || nonpresent_stack ||
         stack_fault_delivery || task_fault_delivery ||
         protected_lidt || configured_idt || rejects_386) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "M5:T257:S6:80286-PROTECTED-MODE:FAIL positive=%d selector=%d npcode=%d npstack=%d stackdelivery=%d taskdelivery=%d lidt=%d idt=%d i386=%d\n",
             positive, invalid_selector, nonpresent_code, nonpresent_stack,
             stack_fault_delivery, task_fault_delivery, protected_lidt,
             configured_idt, rejects_386);
         return 1;
     }
-    printf("M5:T257:S6:80286-PROTECTED-MODE:OK\n");
-    printf("M5:T358:S2:EXCEPTION-IRQ:OK\n");
+    lib_c_printf("M5:T257:S6:80286-PROTECTED-MODE:OK\n");
+    lib_c_printf("M5:T358:S2:EXCEPTION-IRQ:OK\n");
     return 0;
 }

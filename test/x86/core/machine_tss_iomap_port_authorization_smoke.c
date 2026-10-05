@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "x86/core/device_support_interface.h"
 
 #include "x86/chips/cpu/cpu_interface.h"
@@ -253,7 +253,7 @@ static lib_i32 iomap_run_case(core_machine_cpu_profile profile, iomap_case test_
                 diagnostic.last_delivered_exception.valid;
         }
         if (failed) {
-            fprintf(stderr,
+            lib_c_fprintf(lib_c_stderr,
                 "T260 case=%u result=%u reads=%u writes=%u marker=%04x/%04x/%04x delivered=%d/%u code=%04x\n",
                 (unsigned)test_case, (unsigned)result.reason,
                 (unsigned)state.port.reads, (unsigned)state.port.writes,
@@ -283,7 +283,7 @@ int main(void)
     failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80286,
         IOMAP_CASE_DENY_IN);
     if (failed) return 1;
-    printf("M5:T260:S3:TSS-IOMAP:CORPUS:OK\n");
-    printf("M5:T539:S63:TSS-IOMAP:OK\n");
+    lib_c_printf("M5:T260:S3:TSS-IOMAP:CORPUS:OK\n");
+    lib_c_printf("M5:T539:S63:TSS-IOMAP:OK\n");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #define VM86_GDT_BASE 0x0300u
 #define VM86_IDT_BASE 0x0400u
@@ -297,6 +297,6 @@ lib_i32 main(void)
         !vm86_delivery_bad_ss0(0x0010u, 0x12u, VM86_STACK_TOP) ||
         !vm86_delivery_bad_ss0(0x0010u, 0x90u, VM86_STACK_TOP) ||
         !vm86_delivery_short_stack()) return 1;
-    printf("M5:T540:S93:VM86-FULL-ROLLBACK:OK\n");
+    lib_c_printf("M5:T540:S93:VM86-FULL-ROLLBACK:OK\n");
     return 0;
 }

@@ -1,7 +1,6 @@
+#include "lib/types/file.h"
 #include "cpu_board_limit_fixture.h"
 #include "x86/core/debug_interface.h"
-#include <stdio.h>
-
 static lib_i32 setcc_test_limit_nonpublication(void)
 {
     static const lib_u8 limit_code[] = {0x67u, 0x0fu, 0x94u, 0x05u,
@@ -48,7 +47,7 @@ static lib_i32 setcc_test_limit_nonpublication(void)
 lib_i32 main(void)
 {
     if (!setcc_test_limit_nonpublication()) return 1;
-    printf("M5:T310:S3:SETCC:OK\n");
-    printf("M5:T401:S60:SETCC-PROFILES:OK\n");
+    lib_c_printf("M5:T310:S3:SETCC:OK\n");
+    lib_c_printf("M5:T401:S60:SETCC-PROFILES:OK\n");
     return 0;
 }

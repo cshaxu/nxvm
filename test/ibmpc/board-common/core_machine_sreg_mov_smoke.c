@@ -1,10 +1,10 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
-#include <stdio.h>
-
 typedef struct sreg_mov_machine { core_machine *machine;
     core_machine_board_state *board; } sreg_mov_machine;
 
@@ -163,7 +163,7 @@ static lib_i32 sreg_mov_test_protected_faults(void)
         }
         core_machine_destroy(state.machine);
         if (!passed) {
-            fprintf(stderr, "M5:T539:S28:SREG-MOV protected fault form=%u\n",
+            lib_c_fprintf(lib_c_stderr, "M5:T539:S28:SREG-MOV protected fault form=%u\n",
                 (unsigned)form);
             return 0;
         }
@@ -271,6 +271,6 @@ lib_i32 main(void)
 {
     if (!sreg_mov_test_protected_faults()) return 1;
     if (!sreg_mov_test_irq_shadow()) return 1;
-    printf("M5:T539:S28:SREG-MOV-BOARD:OK\n");
+    lib_c_printf("M5:T539:S28:SREG-MOV-BOARD:OK\n");
     return 0;
 }

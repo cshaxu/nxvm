@@ -1,5 +1,5 @@
 #include "support/cpu_bus_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 typedef struct cpu_lifecycle_reset_case {
     core_machine_cpu_profile profile;
@@ -187,6 +187,6 @@ lib_i32 main(void)
     core_machine_cpu_execution_finalize(&context);
     if (result != 0) return 1;
 
-    puts("M5:T539:S88:CPU-EXECUTION-LIFECYCLE:OK");
+    lib_c_printf("%s\n", "M5:T539:S88:CPU-EXECUTION-LIFECYCLE:OK");
     return 0;
 }

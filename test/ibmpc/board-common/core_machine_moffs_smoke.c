@@ -1,11 +1,11 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include <stdio.h>
-
 typedef struct moffs_machine { core_machine *machine;
     core_machine_board_state *board; } moffs_machine;
 
@@ -126,7 +126,7 @@ static lib_i32 moffs_test_protected_read_limit(void)
         core_machine_destroy(state.machine);
         if (failed)
         {
-            printf("MOFFS protected-limit form=%u\n", form);
+            lib_c_printf("MOFFS protected-limit form=%u\n", form);
             return 0;
         }
     }
@@ -196,7 +196,7 @@ static lib_i32 moffs_test_irq_no_shadow(void)
         core_machine_destroy(state.machine);
         if (failed)
         {
-            printf("MOFFS irq form=%u\n", form);
+            lib_c_printf("MOFFS irq form=%u\n", form);
             return 0;
         }
     }
@@ -207,7 +207,7 @@ lib_i32 main(void)
 {
     if (!moffs_test_protected_read_limit() ||
         !moffs_test_irq_no_shadow()) return 1;
-    printf("M5:T316:S30:MOFFS:OK\n");
-    printf("M5:T401:S14:MOFFS-MOV-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S30:MOFFS:OK\n");
+    lib_c_printf("M5:T401:S14:MOFFS-MOV-PROFILES:OK\n");
     return 0;
 }

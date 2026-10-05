@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "x86/core/device_support_interface.h"
 
 #include "support/cpu_instruction_fixture.h"
@@ -155,6 +155,6 @@ lib_i32 main(void)
         !vm86_iret_success((const lib_u8[]){ 0x67u, 0xcfu }, 2u) ||
         !vm86_iret_stack_atomic() || !vm86_iret_paging_success())
         return 1;
-    printf("M5:T540:S93:VM86-IRET-CPU-STATE:OK\n");
+    lib_c_printf("M5:T540:S93:VM86-IRET-CPU-STATE:OK\n");
     return 0;
 }

@@ -1,13 +1,14 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
 #include "x86/chips/cpu/cpu_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
-#include "../../x86/core/debug_fixture.h"
+#include "../core/debug_fixture.h"
 #include "core_machine_board_fixture.h"
 
 #define VM86_GDT_BASE 0x0300u
@@ -26,7 +27,7 @@ static core_machine_debug_cpu_snapshot vm86_capture(const core_machine *machine)
 {
     core_machine_debug_cpu_snapshot snapshot = {0};
     if (core_machine_debug_capture_cpu_snapshot(machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT,
-            &snapshot) != LIB_STATUS_OK) exit(EXIT_FAILURE);
+            &snapshot) != LIB_STATUS_OK) lib_test_assert(LIB_FALSE);
     return snapshot;
 }
 
@@ -315,6 +316,6 @@ lib_i32 main(void)
         !vm86_delivery_fault(7u, nm, sizeof(nm), 0) || !vm86_delivery_debug_tf() ||
         !vm86_delivery_irq0() || !vm86_delivery_irq0_iret_round_trip() ||
         !vm86_delivery_paging_composition()) return 1;
-    printf("M5:T320:S1:VM86-DELIVERY:OK\n");
-    printf("M5:T539:S67:VM86:OK\n"); return 0;
+    lib_c_printf("M5:T320:S1:VM86-DELIVERY:OK\n");
+    lib_c_printf("M5:T539:S67:VM86:OK\n"); return 0;
 }

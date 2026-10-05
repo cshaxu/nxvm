@@ -1,5 +1,5 @@
 #include "support/cpu_port_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: rejected string ports stay CPU-owned. */
 
 static void port_strings_seed(cpu_port_instruction_fixture *state)
@@ -217,14 +217,14 @@ static lib_i32 port_strings_test_rejections(void)
 
     for (form = 0u; form != 6u; ++form)
         if (!port_strings_expect_ud(CORE_MACHINE_CPU_PROFILE_8086,
-            forms[form], bytes[form])) { printf("UD 8086 %u\n",form); return 0; }
+            forms[form], bytes[form])) { lib_c_printf("UD 8086 %u\n",form); return 0; }
     for (profile = 0u; profile != sizeof(pre386) / sizeof(pre386[0]); ++profile)
         for (form = 6u; form != 9u; ++form)
             if (!port_strings_expect_ud(pre386[profile], forms[form],
-                bytes[form])) { printf("UD old %u %u\n",profile,form); return 0; }
+                bytes[form])) { lib_c_printf("UD old %u %u\n",profile,form); return 0; }
     for (form = 9u; form != sizeof(bytes); ++form)
         if (!port_strings_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
-            forms[form], bytes[form])) { printf("UD 386 %u\n",form); return 0; }
+            forms[form], bytes[form])) { lib_c_printf("UD 386 %u\n",form); return 0; }
     return 1;
 }
 
@@ -319,24 +319,24 @@ static lib_i32 port_strings_protected_case(lib_bool input, lib_bool repeated)
 lib_i32 main(void)
 {
     if (!port_strings_test_single_and_rep()) {
-        printf("PORT-STRINGS stage=single-rep\n");
+        lib_c_printf("PORT-STRINGS stage=single-rep\n");
         return 1;
     }
     if (!port_strings_test_boundaries()) {
-        printf("PORT-STRINGS stage=boundaries\n");
+        lib_c_printf("PORT-STRINGS stage=boundaries\n");
         return 1;
     }
     if (!port_strings_test_rejections()) {
-        printf("PORT-STRINGS stage=rejections\n");
+        lib_c_printf("PORT-STRINGS stage=rejections\n");
         return 1;
     }
     if (!port_strings_protected_case(LIB_TRUE, LIB_FALSE) ||
         !port_strings_protected_case(LIB_FALSE, LIB_FALSE) ||
         !port_strings_protected_case(LIB_TRUE, LIB_TRUE) ||
         !port_strings_protected_case(LIB_FALSE, LIB_TRUE)) {
-        printf("PORT-STRINGS stage=protected\n");
+        lib_c_printf("PORT-STRINGS stage=protected\n");
         return 1;
     }
-    printf("M5:T316:S38:PORT-STRINGS:OK\n");
+    lib_c_printf("M5:T316:S38:PORT-STRINGS:OK\n");
     return 0;
 }

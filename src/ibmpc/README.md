@@ -2,7 +2,7 @@
 
 IBM PC board mechanisms and PC product adaptation live here, separately from
 neutral x86 chips/Core/tools. No App-private header or native platform API is
-allowed. Existing C symbols/ABI and hardware algorithms remain unchanged.
+allowed. Product-facing opaque ABI and hardware algorithms remain unchanged.
 
 | Component | Sole responsibility |
 | --- | --- |
@@ -53,6 +53,10 @@ duplicate file backend.
 
 Headers ending in _interface.h are public; all other headers are owner-local.
 Machine's media subdirectory is the same owner, not another component.
+Executor run/reset atomics belong directly to private control storage; their
+operations preserve ordering without a separately allocated lifetime. Product
+teardown checks UI destruction before releasing callback dependencies; failed
+UI cleanup retains the existing owning pointer, including failed UI binding.
 Machine's input_interface.h owns copied construction options and borrowed asset
 byte views, without a model identifier or concrete Profile declaration.
 The App selects a constructor before preparation; its specific observation

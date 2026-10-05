@@ -1,9 +1,105 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
 #include "lib/types/file.h"
-#include "machine_fixture.h"
+#include "common/machine/machine_interface.h"
 #include "x86/debug/debug_interface.h"
 
+/* Only the driver behavior needed by Debug's paused-lease integration.
+ * Common owns the sole executor; this fixture creates no thread or runner. */
+typedef struct machine_fake {
+    lib_win32_handle stopped, wake, running, reset_completed;
+    common_machine_executor_callback callback;
+    void *callback_context;
+    common_machine_debug_execute debug;
+    void *debug_context;
+    lib_win32_dword executor_thread;
+    lib_win32_long debug_calls;
+} machine_fake;
+
+static lib_bool fixture_reset(void *opaque)
+{
+    machine_fake *fake = opaque;
+    lib_win32_reset_event(fake->stopped);
+    lib_win32_reset_event(fake->wake);
+    return LIB_TRUE;
+}
+
+static lib_bool fixture_run(void *opaque)
+{
+    machine_fake *fake = opaque;
+    lib_win32_handle events[] = { fake->stopped, fake->wake };
+    fake->executor_thread = lib_win32_get_current_thread_id();
+    if (fake->callback != LIB_NULL) fake->callback(fake->callback_context);
+    for (;;) {
+        lib_win32_dword result = lib_win32_wait_for_multiple_objects(2u, events,
+            LIB_WIN32_FALSE, 5000u);
+        if (result == LIB_WIN32_WAIT_OBJECT_0) return LIB_TRUE;
+        if (result != LIB_WIN32_WAIT_OBJECT_0 + 1u) return LIB_FALSE;
+        lib_win32_reset_event(fake->wake);
+        if (fake->callback != LIB_NULL) fake->callback(fake->callback_context);
+    }
+}
+
+static void fixture_stop(void *opaque)
+{ lib_win32_set_event(((machine_fake *)opaque)->stopped); }
+static void fixture_wake(void *opaque)
+{ lib_win32_set_event(((machine_fake *)opaque)->wake); }
+static void fixture_heartbeat(void *opaque, lib_bool enabled)
+{ (void)opaque; (void)enabled; }
+static void fixture_callback(void *opaque,
+    common_machine_executor_callback callback, void *context)
+{
+    machine_fake *fake = opaque;
+    fake->callback = callback;
+    fake->callback_context = context;
+}
+static void fixture_input(void *opaque, const kvm_input_event *event)
+{ (void)opaque; (void)event; }
+static lib_status fixture_frame(void *opaque, common_machine_frame *frame)
+{
+    (void)opaque;
+    frame->window.valid = LIB_FALSE;
+    return LIB_STATUS_OK;
+}
+static lib_status fixture_debug(void *opaque, const void *request, lib_size size,
+    void *response, lib_size capacity, lib_size *response_size)
+{
+    machine_fake *fake = opaque;
+    lib_test_assert(lib_win32_get_current_thread_id() == fake->executor_thread);
+    lib_win32_interlocked_increment(&fake->debug_calls);
+    return fake->debug(fake->debug_context, request, size, response, capacity,
+        response_size);
+}
+static void machine_fake_note_state(void *opaque, common_machine_state state,
+    lib_u32 generation)
+{
+    machine_fake *fake = opaque;
+    (void)generation;
+    if (state == COMMON_MACHINE_RUNNING) lib_win32_set_event(fake->running);
+    if (state == COMMON_MACHINE_RESET_COMPLETED)
+        lib_win32_set_event(fake->reset_completed);
+}
+static void machine_fake_initialize(machine_fake *fake,
+    common_machine_driver *driver)
+{
+    fake->stopped = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    fake->wake = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    fake->running = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    fake->reset_completed = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    lib_test_assert(fake->stopped && fake->wake && fake->running && fake->reset_completed);
+    *driver = (common_machine_driver) { .context = fake, .reset = fixture_reset,
+        .run = fixture_run, .request_stop = fixture_stop,
+        .request_wake = fixture_wake, .set_heartbeat = fixture_heartbeat,
+        .set_executor_callback = fixture_callback, .deliver_input = fixture_input,
+        .copy_frame = fixture_frame, .execute_debug = fixture_debug };
+}
+static void machine_fake_dispose(machine_fake *fake)
+{
+    lib_win32_close_handle(fake->reset_completed);
+    lib_win32_close_handle(fake->running);
+    lib_win32_close_handle(fake->wake);
+    lib_win32_close_handle(fake->stopped);
+}
 
 typedef struct debug_fake {
     lib_bool register_fixture;

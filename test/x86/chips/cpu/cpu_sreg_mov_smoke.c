@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static lib_i32 sreg_mov_prepare(cpu_instruction_fixture *state,
@@ -562,22 +562,22 @@ static lib_i32 sreg_mov_test_protected(void)
 lib_i32 main(void)
 {
     if (!sreg_mov_test_real_forms()) {
-        printf("SREG-MOV stage=real\n");
+        lib_c_printf("SREG-MOV stage=real\n");
         return 1;
     }
     if (!sreg_mov_test_386_extensions()) {
-        printf("SREG-MOV stage=extensions\n");
+        lib_c_printf("SREG-MOV stage=extensions\n");
         return 1;
     }
     if (!sreg_mov_test_rejections_and_attributes()) {
-        printf("SREG-MOV stage=reject\n");
+        lib_c_printf("SREG-MOV stage=reject\n");
         return 1;
     }
     if (!sreg_mov_test_protected()) {
-        printf("SREG-MOV stage=protected\n");
+        lib_c_printf("SREG-MOV stage=protected\n");
         return 1;
     }
-    printf("M5:T316:S32:SREG-MOV:OK\n");
-    printf("M5:T401:S48:SREG-MOV-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S32:SREG-MOV:OK\n");
+    lib_c_printf("M5:T401:S48:SREG-MOV-PROFILES:OK\n");
     return 0;
 }

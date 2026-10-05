@@ -1,9 +1,8 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/machine_board_state.h"
-#include "../../x86/core/plan_core_fixture.h"
+#include "../core/plan_core_fixture.h"
 
 static const core_machine_timing_seam plan_expected_seams[
     CORE_MACHINE_TIMING_CAPABILITY_COUNT] = {
@@ -418,19 +417,19 @@ lib_i32 main(void)
         plan_source_dma_deadline_is_schedulable()) {
         return 1;
     }
-    puts("M5:T434:S1:PLAN-DECLARATIONS:OK");
-    puts("M5:T434:S1:PLAN-VALIDATION:OK");
-    puts("M5:T434:S1:PLAN-COPY:OK");
-    puts("M5:T434:S2:ROLLBACK-EQUIVALENCE:OK");
-    puts("M5:T434:S3:ALL-DECLARATIONS:OK");
-    puts("M5:T449:S2:TRANSACTION-CONTRACT:OK");
-    puts("M5:T462:S2:CONTROLLER-RULE-PLAN:OK");
-    puts("M5:T462:S2:CONTROLLER-RULE-REJECTION:OK");
-    puts("M5:T462:S4:PIC-L2-BOUNDARY:OK");
-    puts("M5:T462:S4:CONTROLLER-LEDGER-CLOSURE:OK");
-    puts("M5:T484:S5:XT-B2-PLAN:OK");
-    puts("M5:T484:S5:XT-NO-AT-TOPOLOGY:OK");
-    puts("M5:T499:S3:L2-PIT-DEADLINE:OK");
-    puts("M5:T540:S81:BOARD-HANDLE-PUBLICATION:OK");
+    lib_c_printf("%s\n", "M5:T434:S1:PLAN-DECLARATIONS:OK");
+    lib_c_printf("%s\n", "M5:T434:S1:PLAN-VALIDATION:OK");
+    lib_c_printf("%s\n", "M5:T434:S1:PLAN-COPY:OK");
+    lib_c_printf("%s\n", "M5:T434:S2:ROLLBACK-EQUIVALENCE:OK");
+    lib_c_printf("%s\n", "M5:T434:S3:ALL-DECLARATIONS:OK");
+    lib_c_printf("%s\n", "M5:T449:S2:TRANSACTION-CONTRACT:OK");
+    lib_c_printf("%s\n", "M5:T462:S2:CONTROLLER-RULE-PLAN:OK");
+    lib_c_printf("%s\n", "M5:T462:S2:CONTROLLER-RULE-REJECTION:OK");
+    lib_c_printf("%s\n", "M5:T462:S4:PIC-L2-BOUNDARY:OK");
+    lib_c_printf("%s\n", "M5:T462:S4:CONTROLLER-LEDGER-CLOSURE:OK");
+    lib_c_printf("%s\n", "M5:T484:S5:XT-B2-PLAN:OK");
+    lib_c_printf("%s\n", "M5:T484:S5:XT-NO-AT-TOPOLOGY:OK");
+    lib_c_printf("%s\n", "M5:T499:S3:L2-PIT-DEADLINE:OK");
+    lib_c_printf("%s\n", "M5:T540:S81:BOARD-HANDLE-PUBLICATION:OK");
     return 0;
 }

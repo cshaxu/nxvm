@@ -1,5 +1,5 @@
 #include "support/cpu_task_switch16_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_bool cpu_task32_expect_decode(cpu_task16_case test_case,
     lib_u16 expected_saved_ip)
@@ -17,7 +17,7 @@ static lib_bool cpu_task32_expect_decode(cpu_task16_case test_case,
         after.data.flagHalt && after.data.tr.selector == 0x30u &&
         after.data.eax == 0xffff2222u && saved_ip == expected_saved_ip)
         return LIB_TRUE;
-    fprintf(stderr, "task32 decode case=%u halt=%u tr=%04x eax=%08x saved=%04x fault=%u delivered=%u\n",
+    lib_c_fprintf(lib_c_stderr, "task32 decode case=%u halt=%u tr=%04x eax=%08x saved=%04x fault=%u delivered=%u\n",
         (unsigned)test_case, (unsigned)after.data.flagHalt,
         after.data.tr.selector, (unsigned)after.data.eax,
         saved_ip, (unsigned)fixture.fault.valid,
@@ -41,9 +41,9 @@ int main(void)
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
         if (!cpu_task32_expect_decode(cases[index].test_case,
                 cases[index].expected_saved_ip)) {
-            fputs("M5:T539:S56:TASK32-DECODE:FAIL\n", stderr);
+            lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S56:TASK32-DECODE:FAIL\n");
             return 1;
         }
-    puts("M5:T539:S56:TASK32-DECODE:OK");
+    lib_c_printf("%s\n", "M5:T539:S56:TASK32-DECODE:OK");
     return 0;
 }

@@ -12,7 +12,6 @@ extern "C" {
 
 #include "ibmpc/machine/machine_interface.h"
 #include "ibmpc/machine/control.h"
-#include "ibmpc/machine/executor_state_interface.h"
 
 lib_status vm_machine_reset(vm_machine *machine);
 lib_status vm_machine_finish_reset(vm_machine *machine, lib_status status);

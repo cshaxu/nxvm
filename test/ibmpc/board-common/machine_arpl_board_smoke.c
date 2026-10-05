@@ -1,10 +1,10 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "core_machine_board_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "pic_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 static lib_i32 arpl_board_prepare(core_machine **out_machine,
     core_machine_cpu_profile profile, const lib_u8 *code, lib_size bytes,
     lib_u16 ds_limit,
@@ -283,10 +283,10 @@ lib_i32 main(void)
     lib_i32 irq = arpl_board_irq();
 
     if (!memory || !limit || !irq) {
-        fprintf(stderr, "M5:T539:S40:ARPL board failed memory=%d limit=%d irq=%d\n",
+        lib_c_fprintf(lib_c_stderr, "M5:T539:S40:ARPL board failed memory=%d limit=%d irq=%d\n",
             memory, limit, irq);
         return 1;
     }
-    printf("M5:T539:S40:ARPL-BOARD:OK\n");
+    lib_c_printf("M5:T539:S40:ARPL-BOARD:OK\n");
     return 0;
 }

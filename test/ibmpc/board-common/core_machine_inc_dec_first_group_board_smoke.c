@@ -1,5 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine_interface.h"
 #include "cpu_board_fault_fixture.h"
@@ -67,7 +67,7 @@ static lib_i32 inc_dec_first_group_divide_delivery(void)
             .flags = CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_OF
         };
         if (!test_cpu_board_de_delivery(&entry)) {
-            fprintf(stderr, "S33 divide delivery case %u/%u failed\n",
+            lib_c_fprintf(lib_c_stderr, "S33 divide delivery case %u/%u failed\n",
                 (unsigned)fault_case, (unsigned)form);
             return 0;
         }
@@ -79,9 +79,9 @@ int main(void)
 {
     if (!inc_dec_first_group_protected_faults() ||
         !inc_dec_first_group_divide_delivery()) {
-        fputs("M5:T539:S33:BOARD-INC-DEC-GROUP:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S33:BOARD-INC-DEC-GROUP:FAIL\n");
         return 1;
     }
-    puts("M5:T539:S33:BOARD-INC-DEC-GROUP:OK");
+    lib_c_printf("%s\n", "M5:T539:S33:BOARD-INC-DEC-GROUP:OK");
     return 0;
 }

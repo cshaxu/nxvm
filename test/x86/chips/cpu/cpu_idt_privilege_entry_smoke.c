@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #define IDT_GDT_BASE 0x0300u
 #define IDT_IDT_BASE 0x0400u
@@ -290,6 +290,6 @@ int main(void)
         if (!idt_test_delivery_cache_rollback(failure)) return 1;
     for (lib_u8 negative = 0u; negative < 6u; ++negative)
         if (!idt_test_software_full_rollback(negative)) return 1;
-    puts("M5:T307:IDT-PRIVILEGE-ENTRY:CPU:OK");
+    lib_c_printf("%s\n", "M5:T307:IDT-PRIVILEGE-ENTRY:CPU:OK");
     return 0;
 }

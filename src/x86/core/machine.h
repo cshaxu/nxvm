@@ -128,8 +128,6 @@ struct core_machine {
     core_machine_attachment attachment;
 };
 
-lib_status core_machine_bus_initialize(core_machine *machine);
-void core_machine_bus_finalize(core_machine *machine);
 #if CORE_MACHINE_RUNTIME_TRACE_ENABLED || defined(CORE_MACHINE_TRACE_IMPLEMENTATION)
 void core_machine_trace_initialize(core_machine *machine);
 void core_machine_trace_finalize(core_machine *machine);

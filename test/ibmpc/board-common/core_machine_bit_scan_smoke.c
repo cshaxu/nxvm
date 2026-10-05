@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "cpu_board_limit_fixture.h"
-#include <stdio.h>
-
 static lib_i32 scan_test_read_failure(void)
 {
     static const lib_u8 codes[][5] = {
@@ -49,7 +48,7 @@ static lib_i32 scan_test_read_failure(void)
 lib_i32 main(void)
 {
     if (!scan_test_read_failure()) return 1;
-    printf("M5:T310:S7:BIT-SCAN:OK\n");
-    printf("M5:T401:S63:BIT-SCAN-PROFILES:OK\n");
+    lib_c_printf("M5:T310:S7:BIT-SCAN:OK\n");
+    lib_c_printf("M5:T401:S63:BIT-SCAN-PROFILES:OK\n");
     return 0;
 }

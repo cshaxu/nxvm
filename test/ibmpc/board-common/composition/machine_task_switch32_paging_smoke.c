@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "x86/core/debug_interface.h"
 #include "x86/core/entry_plan_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
@@ -185,7 +184,7 @@ int main(void)
         run_case(LIB_TRUE, LIB_FALSE, LIB_FALSE) ||
         run_case(LIB_FALSE, LIB_TRUE, LIB_FALSE) ||
         run_case(LIB_FALSE, LIB_TRUE, LIB_TRUE)) return 1;
-    puts("M5:T539:S59:TASK32-PAGING:OK");
-    puts("M5:T539:S61:TASK32-PENDING-IRQ:OK");
+    lib_c_printf("%s\n", "M5:T539:S59:TASK32-PAGING:OK");
+    lib_c_printf("%s\n", "M5:T539:S61:TASK32-PENDING-IRQ:OK");
     return 0;
 }

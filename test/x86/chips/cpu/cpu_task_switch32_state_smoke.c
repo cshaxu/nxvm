@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #define TASK32_GDT_BASE 0x0300u
 #define TASK32_IDT_BASE 0x0400u
@@ -449,7 +449,7 @@ static lib_bool task32_expect(task32_case test_case)
             fixture.memory[TASK32_GDT_BASE + 0x35u] ==
             (test_case == TASK32_NESTED_TARGET_BUSY ? 0x8bu : 0x89u))))
         return LIB_TRUE;
-    fprintf(stderr, "task32 state case=%u halt=%u tr=%04x eip=%08x fault=%u/%x/%04x delivered=%u/%x/%04x outgoing=%08x busy=%02x/%02x\n",
+    lib_c_fprintf(lib_c_stderr, "task32 state case=%u halt=%u tr=%04x eip=%08x fault=%u/%x/%04x delivered=%u/%x/%04x outgoing=%08x busy=%02x/%02x\n",
         (unsigned)test_case, (unsigned)after.data.flagHalt, after.data.tr.selector,
         (unsigned)after.data.eip, (unsigned)fixture.fault.valid,
         (unsigned)fixture.fault.exception_mask, fixture.fault.exception_code,
@@ -482,11 +482,11 @@ int main(void)
 
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
         if (!task32_expect(cases[index])) {
-            fprintf(stderr, "task32 failed case=%u\n", (unsigned)cases[index]);
-            fputs("M5:T539:S57:TASK32-STATE:FAIL\n", stderr);
+            lib_c_fprintf(lib_c_stderr, "task32 failed case=%u\n", (unsigned)cases[index]);
+            lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S57:TASK32-STATE:FAIL\n");
             return 1;
         }
-    puts("M5:T539:S57:TASK32-STATE:OK");
-    puts("M5:T539:S60:TASK32-NESTING:OK");
+    lib_c_printf("%s\n", "M5:T539:S57:TASK32-STATE:OK");
+    lib_c_printf("%s\n", "M5:T539:S60:TASK32-NESTING:OK");
     return 0;
 }

@@ -1,8 +1,7 @@
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/machine_board_state.h"
 #include "cpu_pic_lifecycle_fixture.h"
 
@@ -35,6 +34,6 @@ lib_i32 main(void)
 
     core_machine_destroy(machine);
     if (failed != 0) return 1;
-    printf("M5:T295:S3:CORE-CPU-PIC-LIFECYCLE:OK\n");
+    lib_c_printf("M5:T295:S3:CORE-CPU-PIC-LIFECYCLE:OK\n");
     return 0;
 }

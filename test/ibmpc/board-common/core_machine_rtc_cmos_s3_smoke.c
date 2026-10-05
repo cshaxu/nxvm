@@ -1,7 +1,6 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 #include "x86/core/machine_interface.h"
 #include "ibmpc/board-common/pic_bus_interface.h"
 #include "x86/chips/rtc146818/rtc146818_interface.h"
@@ -175,6 +174,6 @@ lib_i32 main(void)
     failed |= rtc_cmos_s3_test_events_and_irq8();
     failed |= rtc_cmos_s3_test_cmos_adapter();
     if (failed != 0) return 1;
-    printf("M5:T350:S3:RTC-CMOS:OK\n");
+    lib_c_printf("M5:T350:S3:RTC-CMOS:OK\n");
     return 0;
 }

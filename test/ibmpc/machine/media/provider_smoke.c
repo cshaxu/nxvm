@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/media_interface.h"
 #include "ibmpc/machine/media/fdd_interface.h"
 #include "ibmpc/machine/media/hdd_interface.h"
@@ -115,7 +114,7 @@ lib_i32 main(void)
     if (fdd != LIB_NULL || hdd != LIB_NULL) failed = LIB_TRUE;
     vm_machine_fdd_destroy(&fdd);
     vm_machine_hdd_destroy(&hdd);
-    (void)remove(vm_media_fdd_path);
-    (void)remove(vm_media_hdd_path);
+    (void)lib_c_remove(vm_media_fdd_path);
+    (void)lib_c_remove(vm_media_hdd_path);
     return failed;
 }

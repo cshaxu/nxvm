@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: invalid DTTR stops at the CPU. */
 /* DTTR instructions own descriptor interpretation; this fixture owns only CPU state. */
@@ -159,10 +159,10 @@ lib_i32 main(void)
     lib_i32 rejections = dttr_test_rejections();
 
     if (!registers || !forms || !rejections) {
-        fprintf(stderr, "M5:T539:S42:DTTR CPU failed register=%d forms=%d reject=%d\n",
+        lib_c_fprintf(lib_c_stderr, "M5:T539:S42:DTTR CPU failed register=%d forms=%d reject=%d\n",
             registers, forms, rejections);
         return 1;
     }
-    puts("M5:T539:S42:DTTR-CPU:OK");
+    lib_c_printf("%s\n", "M5:T539:S42:DTTR-CPU:OK");
     return 0;
 }

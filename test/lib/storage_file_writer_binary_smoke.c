@@ -1,7 +1,6 @@
 #include "lib/types/test.h"
 #include "lib/types/file.h"
 #include "lib/storage/file_interface.h"
-#include "lib/types/file.h"
 #include "cleanup.h"
 
 
@@ -72,14 +71,14 @@ static lib_i32 flush_stream(lib_c_file *stream)
 
 static void medium_fill(void)
 {
-    lib_storage_medium medium = { .file = { tmpfile() },
+    lib_storage_medium medium = { .file = { lib_c_tmpfile() },
         .byte_count = 1024u * 1024u + 7u, .mode = LIB_STORAGE_MEDIUM_DIRECT };
     lib_u8 actual[513];
     lib_test_assert(medium.file.stream != LIB_NULL);
     write_calls = flush_calls = 0;
     lib_test_assert(lib_storage_medium_fill_at(&medium, 0, medium.byte_count, 0x5a) == LIB_STATUS_OK);
     lib_test_assert(write_calls == 2049u && flush_calls == 1u);
-    rewind(medium.file.stream);
+    lib_c_rewind(medium.file.stream);
     for (lib_size left = medium.byte_count; left != 0u;) {
         lib_size count = left > sizeof(actual) ? sizeof(actual) : left;
         lib_test_assert(lib_c_fread(actual, 1u, count, medium.file.stream) == count);
@@ -196,7 +195,7 @@ static void overlay_index(const char *path)
 
 int main(void)
 {
-    lib_storage_file positioned = { tmpfile() };
+    lib_storage_file positioned = { lib_c_tmpfile() };
     lib_i64 measured = -1;
     lib_test_assert(positioned.stream != LIB_NULL);
     lib_test_assert(lib_storage_file_byte_count(&positioned, &measured) == LIB_STATUS_OK && measured == 0);

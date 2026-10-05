@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: LODS prefix rejection is CPU-owned. */
 
 static void lods_seed(cpu_instruction_fixture *state)
@@ -43,7 +43,7 @@ static lib_i32 lods_case(core_machine_cpu_profile profile, const lib_u8 *code,
         ((before.data.esi & 0xffff0000u) | (lib_u16)((lib_u16)before.data.esi +
         (decrement ? -(lib_i32)width : width))));
     lib_memory_copy(&source_after, state.memory + address, width);
-    if (failed) printf("LODS case code=%02x width=%u address=%u eip=%u fault=%u\n",
+    if (failed) lib_c_printf("LODS case code=%02x width=%u address=%u eip=%u fault=%u\n",
         code[0], width, address, after.data.eip, state.fault.valid);
     return !failed && (width == 1u ? (source_after & 0xffu) == (source & 0xffu) :
         width == 2u ? (source_after & 0xffffu) == (source & 0xffffu) :
@@ -102,7 +102,7 @@ static lib_i32 lods_rep_case(core_machine_cpu_profile profile,
             (source_after & 0xffffu) != (source[index] & 0xffffu) :
             source_after != source[index];
     }
-    if (failed) printf("LODS rep code=%02x width=%u count=%u eip=%u fault=%u\n",
+    if (failed) lib_c_printf("LODS rep code=%02x width=%u count=%u eip=%u fault=%u\n",
         code[0], width, count, after.data.eip, state.fault.valid);
     return !failed;
 }
@@ -122,7 +122,7 @@ static lib_i32 lods_expect_ud(core_machine_cpu_profile profile,
     before = state.cpu;
     (void)cpu_instruction_run(&state, code, bytes, &after);
     lib_memory_copy(&source_after, state.memory + 0x10010u, sizeof(source));
-    if (!state.fault.valid) printf("LODS UD missing code=%02x profile=%u\n", code[0], profile);
+    if (!state.fault.valid) lib_c_printf("LODS UD missing code=%02x profile=%u\n", code[0], profile);
     return state.fault.valid &&
         (state.fault.exception_mask & VCPUINS_EXCEPT_UD) != 0u &&
         after.data.eip == 0u && after.data.eax == before.data.eax &&
@@ -292,7 +292,7 @@ lib_i32 main(void)
             rep_ac, 2u, 1u, LIB_FALSE, LIB_FALSE, 1u, byte_source) ||
             !lods_rep_case(profiles[profile], rep_ad, 2u, 2u, LIB_FALSE,
             LIB_FALSE, 3u, word_source)) {
-            printf("LODS stage=profile profile=%u\n", profile);
+            lib_c_printf("LODS stage=profile profile=%u\n", profile);
             return 1;
         }
     if (!lods_case(CORE_MACHINE_CPU_PROFILE_80386, dword, 2u, 4u, LIB_FALSE,
@@ -322,10 +322,10 @@ lib_i32 main(void)
         !lods_rep_case(CORE_MACHINE_CPU_PROFILE_80386, rep_ac, 2u, 1u,
         LIB_FALSE, LIB_TRUE, 3u, byte_source) || !lods_test_rejections() ||
         !lods_test_protected_limits()) {
-        printf("LODS stage=extended\n");
+        lib_c_printf("LODS stage=extended\n");
         return 1;
     }
-    printf("M5:T316:S35:LODS:OK\n");
-    printf("M5:T401:S18:LODS-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S35:LODS:OK\n");
+    lib_c_printf("M5:T401:S18:LODS-PROFILES:OK\n");
     return 0;
 }

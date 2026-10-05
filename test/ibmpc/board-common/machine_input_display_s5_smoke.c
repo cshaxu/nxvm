@@ -1,8 +1,7 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
-#include "../../x86/core/composition_fixture.h"
+#include "../core/composition_fixture.h"
 #include "x86/core/trace_interface.h"
 #include "core_machine_board_fixture.h"
 
@@ -182,7 +181,7 @@ lib_i32 main(void)
 
     core_machine_destroy(machine);
     if (failed) return 1;
-    printf("M5:T346:S5:INPUT-DISPLAY-TIMELINE:OK\n");
-    printf("M5:T540:S83:BOARD-INPUT-HANDLE:OK\n");
+    lib_c_printf("M5:T346:S5:INPUT-DISPLAY-TIMELINE:OK\n");
+    lib_c_printf("M5:T540:S83:BOARD-INPUT-HANDLE:OK\n");
     return 0;
 }

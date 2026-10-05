@@ -1,6 +1,4 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "video_fixture.h"
 #include "ibmpc/board-common/vadp.h"

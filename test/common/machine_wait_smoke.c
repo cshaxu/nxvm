@@ -451,7 +451,26 @@ static void check_publication(void)
     candidate.window.text.base.cells[0].glyph_index = 'Y';
     lib_test_assert(common_machine_publish(active) == LIB_STATUS_OK);
     lib_test_assert(common_machine_published_frame_sequence(active) == LIB_UINT32_MAX);
+    /* Restart invalidates ownership, not inactive payload storage. Both slots
+     * may still contain earlier frames, even when the generation is zero. */
+    for (lib_u32 slot = 0u; slot < 2u; ++slot) {
+        active->frame_buffers[slot]->window.valid = LIB_TRUE;
+        active->frame_buffers[slot]->window.image.pixels[100] = 0xa5u;
+    }
     common_machine_begin_cold_run(active, LIB_FALSE);
+    for (lib_u32 slot = 0u; slot < 2u; ++slot) {
+        lib_test_assert(!active->frame_buffers[slot]->window.valid);
+        lib_test_assert(active->frame_buffers[slot]->window.image.pixels[100] == 0xa5u);
+    }
+    lib_test_assert(!common_machine_copy_published_frame(active, &captured, 0u));
+    lib_test_assert(!common_machine_copy_published_frame(active, &captured,
+        common_machine_run_generation(active)));
+    lib_test_assert(captured.sequence == 12u &&
+        captured.window.text.base.cells[3999].glyph_index == 'Z');
+    candidate.window.valid = LIB_FALSE;
+    lib_test_assert(common_machine_publish(active) == LIB_STATUS_OK);
+    lib_test_assert(common_machine_published_frame_sequence(active) == LIB_UINT32_MAX);
+    candidate.window.valid = LIB_TRUE;
     lib_test_assert(common_machine_publish(active) == LIB_STATUS_OK);
     lib_test_assert(common_machine_copy_published_frame(active, &captured,
         common_machine_run_generation(active)));

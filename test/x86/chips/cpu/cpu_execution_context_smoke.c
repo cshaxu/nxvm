@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 
 
@@ -82,6 +82,6 @@ lib_i32 main(void)
 
     if (result != 0) return 1;
 
-    puts("M5:T66:S1:CPU-CONTEXT:OK");
+    lib_c_printf("%s\n", "M5:T66:S1:CPU-CONTEXT:OK");
     return 0;
 }

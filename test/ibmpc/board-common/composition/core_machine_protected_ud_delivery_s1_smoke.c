@@ -1,5 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
@@ -421,13 +421,13 @@ lib_i32 main(void)
         !ud_s1_protected_invalid_gate()) {
         return 1;
     }
-    printf("M5:T326:S1:PROTECTED-UD-DELIVERY:OK\n");
-    printf("M5:T401:S2:0F25-METADATA:OK\n");
-    printf("M5:T401:S3:0F-METADATA-MATRIX:OK\n");
-    printf("M5:T401:S4:F1-METADATA:OK\n");
-    printf("M5:T401:S4:PRIMARY-METADATA-MATRIX:OK\n");
-    printf("M5:T401:S5:LEXEME-8086-POP-CS:OK\n");
-    printf("M5:T401:S5:LEXEME-PRIMARY-GROUPS:OK\n");
-    printf("M5:T401:S5:LEXEME-MEMORY-FORMS:OK\n");
+    lib_c_printf("M5:T326:S1:PROTECTED-UD-DELIVERY:OK\n");
+    lib_c_printf("M5:T401:S2:0F25-METADATA:OK\n");
+    lib_c_printf("M5:T401:S3:0F-METADATA-MATRIX:OK\n");
+    lib_c_printf("M5:T401:S4:F1-METADATA:OK\n");
+    lib_c_printf("M5:T401:S4:PRIMARY-METADATA-MATRIX:OK\n");
+    lib_c_printf("M5:T401:S5:LEXEME-8086-POP-CS:OK\n");
+    lib_c_printf("M5:T401:S5:LEXEME-PRIMARY-GROUPS:OK\n");
+    lib_c_printf("M5:T401:S5:LEXEME-MEMORY-FORMS:OK\n");
     return 0;
 }

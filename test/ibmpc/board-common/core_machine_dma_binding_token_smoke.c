@@ -1,7 +1,6 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/board-common/machine_board_state.h"
 #include "ibmpc/board-common/media_interface.h"
 
@@ -88,6 +87,6 @@ done:
     core_machine_destroy(first);
     core_machine_media_registry_destroy(media);
     if (failed) return 1;
-    puts("M5:T300:S4:DMA-BINDING-TOKEN:OK");
+    lib_c_printf("%s\n", "M5:T300:S4:DMA-BINDING-TOKEN:OK");
     return 0;
 }

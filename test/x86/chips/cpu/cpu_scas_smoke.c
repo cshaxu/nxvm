@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: SCAS prefix rejection is CPU-owned. */
 
 #define SCAS_CMP_FLAGS (VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF | \
@@ -70,7 +70,7 @@ static lib_i32 scas_single(core_machine_cpu_profile profile,
         (lib_u16)(index + (decrement ? -(lib_i32)width : width))) ||
         !scas_flags_match(profile, &before, &after,
         VCPU_EFLAGS_PF | VCPU_EFLAGS_AF)) {
-        printf("SCAS single code=%02x profile=%u width=%u\n",
+        lib_c_printf("SCAS single code=%02x profile=%u width=%u\n",
             code[0], profile, width);
         return 0;
     }
@@ -127,7 +127,7 @@ static lib_i32 scas_rep(core_machine_cpu_profile profile,
         after.data.edi != ((before.data.edi & 0xffff0000u) | expected_di) ||
         !scas_flags_match(profile, &before, &after, expected_flags) ||
         lib_memory_compare(state.memory + 0x20020u, image, 3u) != 0) {
-        printf("SCAS REP profile=%u code=%02x count=%u\n",
+        lib_c_printf("SCAS REP profile=%u code=%02x count=%u\n",
             profile, code[0], count);
         return 0;
     }
@@ -307,7 +307,7 @@ lib_i32 main(void)
                 1u, 0x22u, VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) ||
             !scas_rep(profiles[profile], repne, 2u, 3u, unequal,
                 1u, 0x22u, VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF)) {
-            printf("SCAS stage=profile %u\n", profile);
+            lib_c_printf("SCAS stage=profile %u\n", profile);
             return 1;
         }
     if (!scas_single(CORE_MACHINE_CPU_PROFILE_80386, dword, 2u, 4u,
@@ -322,7 +322,7 @@ lib_i32 main(void)
             LIB_FALSE, LIB_FALSE) ||
         !scas_single(CORE_MACHINE_CPU_PROFILE_80386, fs, 2u, 1u,
             LIB_FALSE, LIB_FALSE)) {
-        printf("SCAS stage=attributes\n");
+        lib_c_printf("SCAS stage=attributes\n");
         return 1;
     }
     if (!scas_flag_case(0x10u, 0x01u, VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) ||
@@ -331,10 +331,10 @@ lib_i32 main(void)
             VCPU_EFLAGS_AF | VCPU_EFLAGS_SF) ||
         !scas_flag_case(0x80u, 0x01u, VCPU_EFLAGS_AF | VCPU_EFLAGS_OF) ||
         !scas_test_rejections() || !scas_test_protected()) {
-        printf("SCAS stage=flags/rejections/protected\n");
+        lib_c_printf("SCAS stage=flags/rejections/protected\n");
         return 1;
     }
-    printf("M5:T316:S36:SCAS:OK\n");
-    printf("M5:T401:S19:SCAS-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S36:SCAS:OK\n");
+    lib_c_printf("M5:T401:S19:SCAS-PROFILES:OK\n");
     return 0;
 }

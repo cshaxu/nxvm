@@ -1,7 +1,6 @@
+#include "lib/types/file.h"
 #include "support/protected_16_bootstrap_fixture.h"
 #include "x86/chips/cpu/cpu_interface.h"
-#include <stdio.h>
-
 #define S47_S6_STACK_POINTER 0x12348000u
 #define S47_S6_USER_STACK 0x4000u
 
@@ -43,7 +42,7 @@ static lib_i32 s47_s6_run_same(core_machine_cpu_profile profile,
             snapshot.eflags != expected_eflags;
     }
     if (failed) {
-        printf("same profile=%u ip=%08x cs=%04x ss=%04x sp=%08x fl=%08x reason=%u\n",
+        lib_c_printf("same profile=%u ip=%08x cs=%04x ss=%04x sp=%08x fl=%08x reason=%u\n",
             profile, snapshot.eip, snapshot.cs.selector, snapshot.ss.selector,
             snapshot.esp, snapshot.eflags, result.reason);
     }
@@ -83,7 +82,7 @@ static lib_i32 s47_s6_run_outer_retf(lib_u8 immediate)
             snapshot.esp != (immediate ? 0x12344004u : 0x12344000u);
     }
     if (failed) {
-        printf("retf immediate=%d ip=%08x cs=%04x ss=%04x sp=%08x reason=%u\n",
+        lib_c_printf("retf immediate=%d ip=%08x cs=%04x ss=%04x sp=%08x reason=%u\n",
             immediate, snapshot.eip, snapshot.cs.selector, snapshot.ss.selector,
             snapshot.esp, result.reason);
     }
@@ -146,6 +145,6 @@ int main(void)
     if (!s47_s6_run_outer_iret(CORE_MACHINE_CPU_PROFILE_80286, LIB_FALSE)) return 5;
     if (!s47_s6_run_outer_iret(CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE)) return 6;
     if (!s47_s6_run_outer_iret(CORE_MACHINE_CPU_PROFILE_80386, LIB_TRUE)) return 7;
-    printf("M5:T323:S6:PROTECTED-16-OUTER-IRET:OK\n");
+    lib_c_printf("M5:T323:S6:PROTECTED-16-OUTER-IRET:OK\n");
     return 0;
 }

@@ -1,6 +1,4 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "ibmpc/machine/frame_interface.h"
 
 lib_i32 main(void)

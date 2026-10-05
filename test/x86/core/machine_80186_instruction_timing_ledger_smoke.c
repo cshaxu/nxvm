@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/core/machine_interface.h"
 #include "x86/core/machine.h"
@@ -247,7 +247,7 @@ static lib_i32 timing_80186_alu_matrix(void)
                 !timing_80186_run(machine, &state, 1u, ticks[form]);
             core_machine_destroy(machine);
             if (failed) {
-                printf("I186 ALU timing case failed: operation=%u form=%u\n",
+                lib_c_printf("I186 ALU timing case failed: operation=%u form=%u\n",
                     (lib_u32)operation, (lib_u32)form);
                 return 1;
             }
@@ -289,7 +289,7 @@ static lib_i32 timing_80186_cmp_test_matrix(void)
 
         core_machine_destroy(machine);
         if (failed) {
-            printf("I186 CMP/TEST timing case failed: index=%u\n",
+            lib_c_printf("I186 CMP/TEST timing case failed: index=%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -798,6 +798,6 @@ lib_i32 main(void)
     if (timing_80186_control_ports()) return 3;
     if (timing_80186_boundaries()) return 4;
     if (timing_80186_enter_full_level()) return 5;
-    printf("M5:T357:S5:80186-INSTRUCTION-TIMING-LEDGER:OK\n");
+    lib_c_printf("M5:T357:S5:80186-INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

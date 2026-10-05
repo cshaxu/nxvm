@@ -1,5 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/machine_interface.h"
@@ -65,6 +65,6 @@ static lib_i32 vm86_lgdt_lidt_s5_case(lib_u8 reg)
 lib_i32 main(void)
 {
     if (!vm86_lgdt_lidt_s5_case(2u) || !vm86_lgdt_lidt_s5_case(3u)) return 1;
-    printf("M5:T321:S5:VM86-LGDT-LIDT:OK\n");
+    lib_c_printf("M5:T321:S5:VM86-LGDT-LIDT:OK\n");
     return 0;
 }

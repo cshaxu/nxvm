@@ -1,5 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
@@ -67,7 +67,7 @@ lib_i32 main(void)
         diagnostic.first_fault.point.bytes[0] != 0xd6u ||
         diagnostic.first_fault.point.bytes[1] != 0x90u) goto fail;
     core_machine_destroy(machine);
-    printf("M5:T152:S1:CPU-FAULT-DIAGNOSTIC:OK\n");
+    lib_c_printf("M5:T152:S1:CPU-FAULT-DIAGNOSTIC:OK\n");
     return 0;
 
 fail:

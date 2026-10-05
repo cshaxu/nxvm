@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine_interface.h"
@@ -137,6 +137,6 @@ int main(void)
     }
     core_machine_destroy(machine);
     if (failed) return 1;
-    puts("M5:T292:S1:REP-STRING:OK");
+    lib_c_printf("%s\n", "M5:T292:S1:REP-STRING:OK");
     return 0;
 }

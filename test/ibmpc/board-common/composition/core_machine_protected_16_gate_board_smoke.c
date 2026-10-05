@@ -1,7 +1,6 @@
+#include "lib/types/file.h"
 #include "support/protected_16_bootstrap_fixture.h"
 #include "x86/chips/cpu/cpu_interface.h"
-#include <stdio.h>
-
 #define S47_VECTOR 0x30u
 #define S47_HANDLER 0x0100u
 
@@ -53,7 +52,7 @@ static lib_i32 s47_gate_entry(core_machine_cpu_profile profile, lib_u8 type)
                 CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF);
     }
     if (failed) {
-        printf("profile=%u type=%u reason=%u ip=%08x sp=%08x frame=%04x/%04x/%04x\n",
+        lib_c_printf("profile=%u type=%u reason=%u ip=%08x sp=%08x frame=%04x/%04x/%04x\n",
             profile, type, result.reason, snapshot.eip, snapshot.esp,
             frame[0], frame[1], frame[2]);
     }
@@ -138,6 +137,6 @@ int main(void)
     if (!s47_rejected_encoding(CORE_MACHINE_CPU_PROFILE_80386, lock,
             sizeof(lock))) return 9;
     if (!s47_not_present_gate()) return 10;
-    printf("M5:T323:S3:PROTECTED-16-GATE:OK\n");
+    lib_c_printf("M5:T323:S3:PROTECTED-16-GATE:OK\n");
     return 0;
 }

@@ -24,6 +24,10 @@ Before a new native input stream starts, the broker synchronously delivers INPUT
 The callback clears the existing held-key ledger, unfinished UTF-16 and mouse
 baseline; registrations and pending output survive. It neither renders nor
 retires the source. The next mouse record establishes a zero-motion baseline.
+Native mouse positions are Console cell coordinates. Subsequent differences
+use a fixed logical scale of 8 units horizontally and 16 vertically per cell;
+these are not measured host-font pixels or guest-device coordinates. The
+product adapter owns conversion to its guest input protocol.
 
 Successful broker binding delivers a neutral Console activation event. The callback
 only signals the existing worker's wake; it neither renders nor reenters the broker.

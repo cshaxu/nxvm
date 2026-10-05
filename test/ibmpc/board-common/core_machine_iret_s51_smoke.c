@@ -1,11 +1,9 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "pic_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 #include "x86/core/device_support_interface.h"
-#define main protected_iret_s2_main
-#include "../../x86/core/machine_protected_iret_smoke.c"
-#undef main
 
 #define main cli_sti_s22_main
 #include "machine_cli_sti_interrupt_smoke.c"
@@ -52,7 +50,7 @@ static void iret_s51_seed(cli_sti_machine *state, lib_u32 flags)
         }
     };
     if (core_machine_debug_patch_registers(state->machine, &seed) != LIB_STATUS_OK)
-        exit(EXIT_FAILURE);
+        lib_test_assert(LIB_FALSE);
 }
 
 static lib_u32 iret_s51_real_flags_load(
@@ -193,20 +191,6 @@ static lib_i32 iret_s51_test_real(void)
     return 1;
 }
 
-static lib_i32 iret_s51_test_protected(void)
-{
-    return iret_test_success(0u, 0, 0, 0) &&
-        iret_test_success(0x66u, 1, 0, 0) &&
-        iret_test_success(0x67u, 0, 0, 0) &&
-        iret_test_success(0x66u, 1, 1, 0) &&
-        iret_test_user_flags() &&
-        iret_test_failure(IRET_NEGATIVE_NONPRESENT, VCPUINS_EXCEPT_DF, 0u) &&
-        iret_test_failure(IRET_NEGATIVE_LIMIT, VCPUINS_EXCEPT_DF, 0u) &&
-        iret_test_failure(IRET_NEGATIVE_CODE_TYPE, VCPUINS_EXCEPT_DF, 0u) &&
-        iret_test_failure(IRET_NEGATIVE_CODE_DPL, VCPUINS_EXCEPT_DF, 0u) &&
-        iret_test_failure(IRET_NEGATIVE_STACK_LIMIT, VCPUINS_EXCEPT_DF, 0u);
-}
-
 static lib_i32 iret_s51_test_pic(void)
 {
     static const lib_u8 code[] = { 0xcfu, 0x90u };
@@ -288,9 +272,9 @@ static lib_i32 iret_s51_test_pic(void)
 lib_i32 main(void)
 {
     if (!iret_s51_test_real() ||
-        !iret_s51_test_protected() || !iret_s51_test_pic())
+        !iret_s51_test_pic())
         return 1;
-    printf("M5:T316:S51:IRET:OK\n");
-    printf("M5:T401:S27:IRET-PROFILES:OK\n");
+    lib_c_printf("M5:T316:S51:IRET:OK\n");
+    lib_c_printf("M5:T401:S27:IRET-PROFILES:OK\n");
     return 0;
 }

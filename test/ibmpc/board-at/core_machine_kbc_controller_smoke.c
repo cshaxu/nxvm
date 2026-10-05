@@ -1,9 +1,8 @@
+#include "lib/types/file.h"
 #include "kbc_fixture.h"
 #include "controller_fixture.h"
 #include "../board-common/pic_fixture.h"
 #include "../board-common/kbc_irq_fixture.h"
-#include <stdio.h>
-
 lib_status test_kbc_initialize(t_kbc *kbc, core_machine *machine)
 {
     return core_machine_kbc_initialize(kbc, machine);
@@ -246,7 +245,7 @@ static lib_i32 core_machine_kbc_set2_break_cancels_typematic(void)
     failed |= core_machine_kbc_submit_native_bytes(&kbc, break_return,
         sizeof(break_return)) != LIB_STATUS_OK || keyboard_has_repeat(&kbc);
     if (keyboard_has_repeat(&kbc))
-        fprintf(stderr, "KBC unmatched Return break incorrectly started typematic\n");
+        lib_c_fprintf(lib_c_stderr, "KBC unmatched Return break incorrectly started typematic\n");
     failed |= core_machine_kbc_submit_native_bytes(&kbc, make_b,
         sizeof(make_b)) != LIB_STATUS_OK || !keyboard_has_repeat(&kbc);
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != LIB_STATUS_OK ||
@@ -453,7 +452,7 @@ static lib_i32 core_machine_kbc_typematic_output_boundary(void)
     (void)core_machine_kbc_read_byte(port, 0x0064u);
     interface_result = core_machine_kbc_read_byte(port, 0x0060u);
     failed |= lines != 0u || ack != 0xfau || interface_result != 0u;
-    if (failed) fprintf(stderr, "KBC output/inhibit replay: E0=%02X FF=%02X AB=%02X\n",
+    if (failed) lib_c_fprintf(lib_c_stderr, "KBC output/inhibit replay: E0=%02X FF=%02X AB=%02X\n",
         (unsigned int)lines, (unsigned int)ack, (unsigned int)interface_result);
     core_machine_kbc_finalize(&kbc);
     core_machine_destroy(port);
@@ -774,7 +773,7 @@ lib_i32 main(void)
     core_machine_pic_finalize(pic_master, pic_slave);
     core_machine_destroy(port);
     if (failed) {
-        fprintf(stderr,
+        lib_c_fprintf(lib_c_stderr,
             "M5:T464:S2:KBC:FAIL:mixed=%d:translation=%d:self-flush=%d:typematic=%d:line-bat=%d:enable-bat=%d:self-enable-bat=%d:reset-enable-bat=%d:ibm-post=%d:cpu-irq1=%d\n",
             mixed_failed, translation_failed, self_test_flush_failed,
             typematic_break_failed, line_bat_failed, controller_enable_bat_failed,
@@ -782,6 +781,6 @@ lib_i32 main(void)
             ibm_5170_post_contract_failed, cpu_reset_irq1_failed);
         return 1;
     }
-    printf("M5:T464:S2:KBC:OK\n");
+    lib_c_printf("M5:T464:S2:KBC:OK\n");
     return 0;
 }

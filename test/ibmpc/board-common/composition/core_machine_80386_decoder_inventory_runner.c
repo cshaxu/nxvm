@@ -1,6 +1,5 @@
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
 #include "x86/chips/cpu/cpu_interface.h"
 
 /* S8 records the 80386DX lexical decoder universe.  It is audit evidence,
@@ -16,7 +15,7 @@ lib_i32 main(void)
     lib_u32 pairs = 0u;
     lib_u32 primary_count = 0u;
     lib_u32 escaped_count = 0u;
-    FILE *file;
+    lib_c_file *file;
 
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         for (modrm = 0u; modrm <= 0xffu; ++modrm) {
@@ -48,9 +47,9 @@ lib_i32 main(void)
         if (primary_seen[opcode]) ++primary_count;
     }
     if (pairs != 63021u || primary_count != 253u) return 1;
-    file = fopen(path, "wb");
+    file = lib_c_fopen(path, "wb");
     if (file == LIB_NULL) return 1;
-    if (fprintf(file,
+    if (lib_c_fprintf(file,
             "{\n  \"schema\": \"nxvm.80386-decoder-inventory.v1\",\n"
             "  \"lexeme_opcode_modrm_candidates\": %u,\n"
             "  \"lexeme_primary_opcode_count\": %u,\n"
@@ -58,20 +57,20 @@ lib_i32 main(void)
     for (opcode = 0u, primary_count = 0u; opcode <= 0xffu; ++opcode) {
         lib_u16 byte;
         if (!primary_seen[opcode]) continue;
-        if ((primary_count != 0u && fprintf(file, ",") < 0) ||
-            fprintf(file, "\n    \"%02X\":\"", opcode) < 0) goto fail;
+        if ((primary_count != 0u && lib_c_fprintf(file, ",") < 0) ||
+            lib_c_fprintf(file, "\n    \"%02X\":\"", opcode) < 0) goto fail;
         for (byte = 0u; byte < 32u; ++byte) {
             lib_u8 bits = 0u;
             lib_u8 bit;
             for (bit = 0u; bit < 8u; ++bit) {
                 if (primary_masks[opcode][byte * 8u + bit]) bits |= 1u << bit;
             }
-            if (fprintf(file, "%02X", bits) < 0) goto fail;
+            if (lib_c_fprintf(file, "%02X", bits) < 0) goto fail;
         }
-        if (fprintf(file, "\"") < 0) goto fail;
+        if (lib_c_fprintf(file, "\"") < 0) goto fail;
         ++primary_count;
     }
-    if (fprintf(file, "\n  },\n  \"accepted_0f_modrm_masks\": {") < 0) goto fail;
+    if (lib_c_fprintf(file, "\n  },\n  \"accepted_0f_modrm_masks\": {") < 0) goto fail;
     for (opcode = 0u, escaped_count = 0u; opcode <= 0xffu; ++opcode) {
         lib_u16 byte;
         lib_u8 any = LIB_FALSE;
@@ -79,25 +78,25 @@ lib_i32 main(void)
             if (escaped_masks[opcode][modrm]) any = LIB_TRUE;
         }
         if (!any) continue;
-        if ((escaped_count != 0u && fprintf(file, ",") < 0) ||
-            fprintf(file, "\n    \"%02X\":\"", opcode) < 0) goto fail;
+        if ((escaped_count != 0u && lib_c_fprintf(file, ",") < 0) ||
+            lib_c_fprintf(file, "\n    \"%02X\":\"", opcode) < 0) goto fail;
         for (byte = 0u; byte < 32u; ++byte) {
             lib_u8 bits = 0u;
             lib_u8 bit;
             for (bit = 0u; bit < 8u; ++bit) {
                 if (escaped_masks[opcode][byte * 8u + bit]) bits |= 1u << bit;
             }
-            if (fprintf(file, "%02X", bits) < 0) goto fail;
+            if (lib_c_fprintf(file, "%02X", bits) < 0) goto fail;
         }
-        if (fprintf(file, "\"") < 0) goto fail;
+        if (lib_c_fprintf(file, "\"") < 0) goto fail;
         ++escaped_count;
     }
-    if (fprintf(file, "\n  }\n}\n") < 0) goto fail;
-    if (fclose(file) != 0) return 1;
-    printf("M5:T435:S8:I386-DECODER-LEXEME:%u:%u\n", pairs, primary_count);
+    if (lib_c_fprintf(file, "\n  }\n}\n") < 0) goto fail;
+    if (lib_c_fclose(file) != 0) return 1;
+    lib_c_printf("M5:T435:S8:I386-DECODER-LEXEME:%u:%u\n", pairs, primary_count);
     return 0;
 
 fail:
-    fclose(file);
+    lib_c_fclose(file);
     return 1;
 }

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/core/machine_interface.h"
 
@@ -84,7 +84,7 @@ lib_i32 main(void)
         sizeof(observed)) != LIB_STATUS_OK || observed != rom ||
         core_machine_install_memory_device_routes(machine, &provider, 1u,
             LIB_NULL, LIB_NULL, &overlay) != LIB_STATUS_INVALID_STATE;
-    if (!failed) printf("M5:T386:S16:CORE-MEMORY-DEVICE:OK\n");
+    if (!failed) lib_c_printf("M5:T386:S16:CORE-MEMORY-DEVICE:OK\n");
     core_machine_destroy(machine);
     return failed ? 1 : 0;
 }

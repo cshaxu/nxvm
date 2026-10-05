@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 
 typedef struct direct_flags_case {
@@ -247,27 +247,27 @@ static lib_i32 direct_flags_test_real_identity(void)
 int main(void)
 {
     if (!direct_flags_test_default()) {
-        fputs("M5:T539:S36:CPU-DIRECT-FLAGS:DEFAULT:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-DIRECT-FLAGS:DEFAULT:FAIL\n");
         return 1;
     }
     if (!direct_flags_test_attributes()) {
-        fputs("M5:T539:S36:CPU-DIRECT-FLAGS:ATTRIBUTES:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-DIRECT-FLAGS:ATTRIBUTES:FAIL\n");
         return 1;
     }
     if (!direct_flags_test_386_attributes()) {
-        fputs("M5:T539:S36:CPU-DIRECT-FLAGS:386-ATTRIBUTES:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-DIRECT-FLAGS:386-ATTRIBUTES:FAIL\n");
         return 1;
     }
     if (!direct_flags_test_vm86()) {
-        fputs("M5:T539:S36:CPU-DIRECT-FLAGS:VM86:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-DIRECT-FLAGS:VM86:FAIL\n");
         return 1;
     }
     if (!direct_flags_test_real_identity()) {
-        fputs("M5:T539:S36:CPU-DIRECT-FLAGS:REAL-IDENTITY:FAIL\n", stderr);
+        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-DIRECT-FLAGS:REAL-IDENTITY:FAIL\n");
         return 1;
     }
-    puts("M5:T316:S40:DIRECT-FLAGS:OK");
-    puts("M5:T401:S42:DIRECT-FLAGS-PROFILES:OK");
-    puts("M5:T539:S36:CPU-DIRECT-FLAGS:OK");
+    lib_c_printf("%s\n", "M5:T316:S40:DIRECT-FLAGS:OK");
+    lib_c_printf("%s\n", "M5:T401:S42:DIRECT-FLAGS-PROFILES:OK");
+    lib_c_printf("%s\n", "M5:T539:S36:CPU-DIRECT-FLAGS:OK");
     return 0;
 }

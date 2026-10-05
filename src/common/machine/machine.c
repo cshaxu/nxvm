@@ -72,8 +72,8 @@ static void common_machine_invalidate_published_frame(common_machine *machine)
 {
     if (machine == NULL) return;
     base_sync_mutex_lock(machine->frame_lock);
-    lib_memory_set(machine->frame_buffers[0], 0, sizeof(*machine->frame_buffers[0]));
-    lib_memory_set(machine->frame_buffers[1], 0, sizeof(*machine->frame_buffers[1]));
+    machine->frame_buffers[0]->window.valid = LIB_FALSE;
+    machine->frame_buffers[1]->window.valid = LIB_FALSE;
     machine->published_frame_index = 0;
     machine->published_frame_run_generation = 0u;
     base_sync_mutex_unlock(machine->frame_lock);

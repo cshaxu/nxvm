@@ -54,20 +54,20 @@ void vm_machine_control_start(vm_machine_control_state *control) {
     if (control == LIB_NULL) return;
     machine = control->machine;
     if (machine == LIB_NULL || machine->core_machine == LIB_NULL) return;
-    vm_machine_executor_state_start(control->state);
+    vm_machine_executor_state_start(&control->state);
     vm_machine_runner_run(machine);
 }
 
 /* Request reset at the bounded executor boundary. */
 lib_status vm_machine_control_reset(vm_machine_control_state *control) {
     if (control == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (vm_machine_executor_state_is_active(control->state)) {
-        vm_machine_executor_state_request_reset(control->state);
+    if (vm_machine_executor_state_is_active(&control->state)) {
+        vm_machine_executor_state_request_reset(&control->state);
         return LIB_STATUS_OK;
     } else {
         lib_status status = vm_machine_control_reset_machine(control->machine);
 
-        (void)vm_machine_executor_state_take_reset(control->state);
+        (void)vm_machine_executor_state_take_reset(&control->state);
         return status;
     }
 }
@@ -81,13 +81,13 @@ void vm_machine_control_stop(vm_machine_control_state *control)  {
     if (machine != LIB_NULL && machine->core_machine != LIB_NULL) {
         core_machine_request_stop(machine->core_machine);
     }
-    vm_machine_executor_state_stop(control->state);
+    vm_machine_executor_state_stop(&control->state);
 }
 
 void vm_machine_control_fault(vm_machine_control_state *control)
 {
     if (control == LIB_NULL) return;
-    vm_machine_executor_state_stop(control->state);
+    vm_machine_executor_state_stop(&control->state);
 }
 
 lib_status vm_machine_control_reset_at_boundary(vm_machine_control_state *control)
@@ -110,8 +110,8 @@ lib_status vm_machine_control_initialize(vm_machine_control_state *control,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     lib_memory_set((void *)(control), 0u, sizeof(*control));
-    status = vm_machine_executor_state_create(&control->state);
-    if (status != LIB_STATUS_OK) return status;
+    lib_atomic_i32_initialize(&control->state.active, LIB_FALSE);
+    lib_atomic_i32_initialize(&control->state.reset_requested, LIB_FALSE);
     control->machine = machine;
     vm_machine_debug_initialize(&machine->debug);
     status = vm_machine_devices_initialize_media(machine);
@@ -131,11 +131,9 @@ void vm_machine_control_finalize(vm_machine_control_state *control,
     if (control == LIB_NULL || machine == LIB_NULL) return;
     vm_machine_devices_finalize(machine);
     vm_machine_debug_finalize(&machine->debug);
-    vm_machine_executor_state_destroy(control->state);
-    control->state = LIB_NULL;
 }
 
 lib_bool vm_machine_control_is_running(const vm_machine_control_state *control)
 {
-    return control != LIB_NULL && vm_machine_executor_state_is_active(control->state);
+    return control != LIB_NULL && vm_machine_executor_state_is_active(&control->state);
 }

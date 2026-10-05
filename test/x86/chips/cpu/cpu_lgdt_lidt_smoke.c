@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: invalid LGDT/LIDT stops at the CPU. */
 static void lgdt_lidt_image(lib_u8 image[6], lib_u16 limit, lib_u32 base)
@@ -141,9 +141,9 @@ static lib_i32 lgdt_lidt_test_rejections(void)
 lib_i32 main(void)
 {
     if (!lgdt_lidt_test_values() || !lgdt_lidt_test_rejections()) {
-        fprintf(stderr, "M5:T539:S42:LGDT-LIDT CPU failed\n");
+        lib_c_fprintf(lib_c_stderr, "M5:T539:S42:LGDT-LIDT CPU failed\n");
         return 1;
     }
-    puts("M5:T539:S42:LGDT-LIDT-CPU:OK");
+    lib_c_printf("%s\n", "M5:T539:S42:LGDT-LIDT-CPU:OK");
     return 0;
 }

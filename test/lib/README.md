@@ -1,8 +1,10 @@
 # Shared Lib tests
 
-Transfer `src/lib`, `src/common`, `test/lib`, and `test/common` unchanged.
-Include the shared `test/register.cmake` when transferring any test package.
-This suite requires only `src/lib`, `test/lib`, that helper, a C11 compiler and system
+Transfer `src/lib`, `test/lib` and the shared CMake tools directly in `test/`.
+This suite needs no other source or test package. Neutral products may also
+adopt src/common and test/common independently.
+Transfer all five shared CMake tools directly in `test/` with any test package.
+This suite requires only `src/lib`, `test/lib`, those tools, a C11 compiler and system
 libraries. No product target, firmware, INI or media is required.
 
 ```text

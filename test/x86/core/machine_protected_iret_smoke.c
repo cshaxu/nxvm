@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
@@ -27,7 +27,7 @@ static core_machine_debug_cpu_snapshot iret_capture(const core_machine *machine)
 {
     core_machine_debug_cpu_snapshot snapshot = {0};
     if (core_machine_debug_capture_cpu_snapshot(machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT,
-            &snapshot) != LIB_STATUS_OK) exit(EXIT_FAILURE);
+            &snapshot) != LIB_STATUS_OK) lib_test_assert(LIB_FALSE);
     return snapshot;
 }
 
@@ -232,7 +232,7 @@ lib_i32 main(void)
         !iret_test_failure(IRET_NEGATIVE_CODE_TYPE, VCPUINS_EXCEPT_DF, 0u) ||
         !iret_test_failure(IRET_NEGATIVE_CODE_DPL, VCPUINS_EXCEPT_DF, 0u) ||
         !iret_test_failure(IRET_NEGATIVE_STACK_LIMIT, VCPUINS_EXCEPT_DF, 0u)) return 1;
-    printf("M5:T306:S2:SAME-CPL-IRET:OK\n");
-    printf("M5:T539:S65:PROTECTED-IRET:OK\n");
+    lib_c_printf("M5:T306:S2:SAME-CPL-IRET:OK\n");
+    lib_c_printf("M5:T539:S65:PROTECTED-IRET:OK\n");
     return 0;
 }

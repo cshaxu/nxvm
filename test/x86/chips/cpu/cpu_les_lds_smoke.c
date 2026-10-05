@@ -1,5 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static lib_i32 lld_test_real(void)
@@ -267,6 +267,6 @@ lib_i32 main(void)
             !lld_test_80286_operand32_ud() || !lld_test_protected() ||
             !lld_test_source_fault_atomicity())
         return 1;
-    printf("M5:T316:S25:LES-LDS:OK\n");
+    lib_c_printf("M5:T316:S25:LES-LDS:OK\n");
     return 0;
 }

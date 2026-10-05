@@ -1,8 +1,8 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "../core_machine_board_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/core/device_support_interface.h"
-#include <stdio.h>
-
 typedef struct fs_gs_machine { core_machine *machine; } fs_gs_machine;
 
 static lib_i32 fs_gs_prepare(core_machine_cpu_profile profile, fs_gs_machine *state)
@@ -102,6 +102,6 @@ static lib_i32 fs_gs_test_pop_stack_fault(void)
 lib_i32 main(void)
 {
     if (!fs_gs_test_pop_stack_fault()) return 1;
-    printf("M5:T539:S26:FS-GS-BOARD-FAULT:OK\n");
+    lib_c_printf("M5:T539:S26:FS-GS-BOARD-FAULT:OK\n");
     return 0;
 }
