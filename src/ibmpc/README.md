@@ -29,6 +29,10 @@ second queue, native presenter or duplicate file backend is introduced.
 
 Headers ending in _interface.h are public; all other headers are owner-local.
 Machine's media subdirectory is the same owner, not another component.
+Machine's input_interface.h owns copied construction options and borrowed asset
+byte views, without a model identifier or concrete Profile declaration.
+The App selects a constructor before preparation; its specific observation
+contracts do not enter this neutral value boundary.
 
 Keep src/ibmpc beside src/x86, src/common and src/lib. Standalone verification:
 
