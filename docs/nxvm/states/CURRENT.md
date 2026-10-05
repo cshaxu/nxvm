@@ -9,7 +9,7 @@ unadmitted until the corrective ledger is exhausted.
 
 | Work | Progress |
 | --- | --- |
-| T542 S17 | ROM preparation classification and consolidation admitted; S18-S19 remain planned. |
+| T542 S17 | Accepted and pushed; S18-S19 remain planned. |
 
 S12 delivery `0d8c3d712` defines the [corrective ledger and sequence](../proposals/m5-pc-composition-completion.md).
 S13 delivers Shared `05ca27ff2` and NXVM `c7a296138`; its coordinator review
@@ -21,40 +21,20 @@ automatic sequential-S approval covers the remaining plan; T542 remains open.
 
 ## Next Work
 
-S16 is accepted after separate coordinator review of Shared e2df2d0d4 and
-NXVM 66eb9c1cb. S17 must classify/consolidate ROM preparation; S18 must finish
-selected-build/embed/deploy ownership. S19 retains whole-ledger actual-diff
+S17 is accepted after separate coordinator review of Shared b3bbf61e3 and
+NXVM b02743cce. S18 must finish selected-build/embed/deploy ownership.
+S19 retains whole-ledger actual-diff
 review and all 58 external integration contexts once before T542 closure.
 Each numeric S requires its own admission packet before implementation.
 
-## Active S17 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T542 S17 after accepted S16 2dbd26280; next unused numeric S. |
-| Admission And Approval | Owner reopening plus automatic sequential-S approval, 2026-10-04. Shared ibmpc and NXVM four fixed products are allowed; one target per P, immediate origin/master push. |
-| Objective | Consume the ROM ledger row: classify all four preparation/mapping paths; consolidate identical even/odd interleave in board-common and bounded byte copies through existing Machine preparation; preserve distinct model layouts and candidate lifetime. |
-| Non-goals | No Lib/Common/x86 algorithms, MyNES, timing, firmware behavior, owner INIs, external assets, App split or build-selection cutover. No new ROM registry, backing store, host BIOS service or generic loader framework. |
-| Reference Baseline | Clean 2dbd26280; accepted S16 with 503/503 units per width and eight current optimized stripped 0542 EXEs. |
-| Candidate Proposal | [Composition completion](../proposals/m5-pc-composition-completion.md), ROM preparation ledger row and S17. |
-| Files And ABI Surface | Existing board-common ROM validation adds one checked byte-interleave operation; default/5170 and Model40 consume it. XT/default/Model40 copy callers use existing Machine asset preparation. App retains chip sizes, regions, alias declarations, optional ROM eligibility, allocations and provider/reset policy. Tests/gates/manifests and eight EXEs follow actual owners. |
-| Applicable Rules | Task Reading Set; Execution, CONTRIBUTING, shared Architecture/Coding/Document, NXVM Architecture/Coding/source policy; architecture-governance then coding-governance skills. One copied candidate owner, no Shared-to-App edge or second ROM backing; exact dependency/source review and failure/layout regressions prove these invariants. No import or exception. |
-| Verification | Full run-unit-tests and verify-current-specialized-gates in build/t542-s13/unit-x64 and unit-x86; standalone test/ibmpc ROM regression/ibmpc-verify; independent manifests/corpus/negative/DAG checks; eight retained Release vm-0-5-0542 builds; PE/stripping/hash; documentation governance and git diff --check. All 58 external integration contexts remain once-only S19 acceptance. |
-| Expected Markers | Full dual-width unit/gates pass; original ROM reset/alias/read-only checks preserved; interleave has no App duplicate; malformed input leaves destination untouched and construction publishes no failed candidate; all eight artifacts current. |
-| Asset Needs | Existing compiled immutable firmware build inputs only. Unit/regression bytes are code-owned; no external master, media, ROM acquisition or INI edit. |
-| Reporting Requirements | Confirm concrete shared/retained classification before implementation; record exact commands/results, actual source/test counts, all mapping differences, failure proof, code review, commit identities and eight hashes; coordinator independently reviews actual diff. |
-| Stop Conditions | Required excluded edit, changed valid ROM bytes/regions/aliases or firmware semantics, lost original predicate, second lifetime/backing owner or reverse dependency. Bounded malformed-input copying errors are in scope and must be covered, not hidden as extraction. |
-| Exit Criteria | One checked even/odd interleave implementation used by default/5170/Model40, original output order/layout identical. Exact-size copy remains one existing mechanism; optional video copies only validated supplied bytes, never a maximum beyond source length. Every retained provider/allocation/layout path has a concrete semantic reason and regression; no generic loader copied per future App. Full required verification/artifacts/push and coordinator audit complete. |
-| Original Owner Request | Correctly separate all four models' shared logic into x86/ibmpc before App splitting; share mechanisms, retain real board-specific definitions, automatically admit sequential numeric S tasks. |
-| Similar-Issue Sweep | Inspect all profiles/*/machine_plan.c and ROM providers, ROM validation/Machine preparation, firmware/register/alias callers, all direct memory_copy/interleave loops and their unit/static/build callers. Default/5170 flat or chip image, Model40 chip image/aliases/video prefix exclusion and XT system/Xebec/variable video each receive explicit disposition. Check bounded video lengths and allocation/rollback in every constructor. |
 
 ## Retained Runnable Evidence
 
-S16's source and eight rebuilt 0542 artifacts pass complete units 503/503 per
+S17's source and eight rebuilt 0542 artifacts pass complete units 503/503 per
 width, independent package checks, specialized and documentation gates. The
 [T542 evidence](../history/M5-T542-shared-pc-machine-adapter.md) records source
 deliveries, actual-diff review, counts and current hashes. S11's 58 once-only
-optimized integration passes remain historical; they are not fresh S15 results.
+optimized integration passes remain historical; they are not fresh S17 results.
 Whole-task S19 must run all 58 contexts once on the completed extraction.
 Lib/Common, MyNES, INIs and external masters remain unchanged. The Common
 wake-failure contract and Shared vocabulary follow-up remain in [TODO](TODO.md),
@@ -74,6 +54,8 @@ not authorized or claimed repaired by this relocation.
   model ID. App owns fixed constructor declarations and Model40 observations.
   S16 moves immutable AT grammar to board-at and its copied contract projection
   to board-common; default, 5170 and Model40 independently supply inputs.
+  S17 shares checked chip-byte interleave at board-common and reuses Machine
+  asset copying across all four. App retains genuine ROM mapping/alias policy.
 - Eight optimized stripped 0542 EXEs reside only in `assets/nxvm/<profile>/`,
   with the runtime debugger and unchanged owner INIs. MyNES retains its unchanged
   0043 pair and does not link Product. Lib/Common remain unchanged. S2 moves

@@ -1924,3 +1924,24 @@ accompanying NXVM S17 delivery.
 
 Only the ROM ledger row is submitted for acceptance. S18 build ownership and
 S19 whole-ledger/58-context acceptance remain required; T542 remains open.
+
+### S17 Coordinator Acceptance
+
+Accept Shared b3bbf61e3 and NXVM b02743cce after actual-change review against
+the packet and entire ROM ledger row. Both commits are pushed and have one
+target each. The new operation derives safe equal-chip bounds without an
+overflowing size multiplication and writes nothing before validation; its two
+production consumers preserve their previous byte order. All remaining ROM
+providers have the concrete layout/reset/lifetime distinction recorded above.
+Existing Machine copy is reused without a forwarding compatibility wrapper or
+board-common-to-Machine dependency. Model40's maximum-copy defect is corrected
+at its source-length boundary, not via altered mapping/BIOS behavior. The new
+regression observes the real candidate; every previous mapping/alias/reset
+predicate remains. No excluded target, owner INI or external asset is modified.
+
+Complete dual-width unit/strict/specialized, independent package/manifest/DAG,
+standalone ROM and artifact proof agree with delivered source. Counts and PE
+hashes were checked against actual paths; no fresh external boot result is
+claimed. Worktree was clean before this acceptance-only record. Documentation
+and diff gates pass. Close S17 and remove its packet. Only ROM preparation is
+accepted here: S18 and S19 remain required and the four-App split is unadmitted.
