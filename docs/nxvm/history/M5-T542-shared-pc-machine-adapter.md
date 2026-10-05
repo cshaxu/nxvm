@@ -1693,3 +1693,25 @@ All owned build/test handles are terminal. Ignored build/t542-s13 and
 build/t542-s15-package are retained for immediately following S16 incremental
 and standalone package verification; unrelated processes/trees are untouched.
 This delivery exhausts only candidate finishing. S16-S19 and T542 remain open.
+
+### S15 Coordinator Acceptance
+
+Accept Shared 778f6b2f5 and NXVM 0ff7726d7 after reviewing both actual changes
+against the active S15 packet and original six-row corrective ledger. Each
+commit has one declared target. Shared finishing has no model lookup or App
+dependency; App keeps only real context/callback preparation and eligibility.
+The existing Machine transaction is the sole owner after success. Every
+failure clears publication and releases the real candidate once. Optional
+asset semantics and all four media policies match the previous behavior.
+Test-only selectors/views do not leak back into production contracts.
+
+Reproduce the original-baseline C/H count and inspect every fixture/integration
+hunk: no hardware predicate is weakened; the moved XT identity check is
+enforced at the real fixed build binding. Full final units, standalone package,
+manifest/strict/DAG/specialized gates and eight PE/hash records agree with the
+delivery. Excluded roots and INIs are unchanged; both implementation commits
+are pushed and the worktree is clean before this pure acceptance record.
+Documentation governance and diff checks pass. Close S15 and remove its packet.
+S16 must still replace the three-consumer AT coupling; S17/S18 and once-only
+58-context S19 acceptance remain required. T542 and the App split are not closed
+or newly admitted respectively.
