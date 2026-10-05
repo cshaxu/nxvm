@@ -4,7 +4,8 @@
 
 | Work | Progress |
 | --- | --- |
-| T544 | S1-S7 read-only CPU audits accepted; qualification remains open for concrete Shared repair review. No other task is admitted. |
+| T544 | Closed as a completed CPU audit by owner direction; all CPU repair/proof gaps transferred to the first queued proposal. No implementation task is active. |
+| M5 Td S177 | Complete: audit closure, full CPU repair transfer, proposal archive and queue/reference reconciliation. NXVM documentation only. |
 
 ## Accepted Audit Baseline
 
@@ -12,18 +13,21 @@ Coordinator actual-change review accepts S7 P1 `a3b9951c8` and the complete
 [five-family convergence](../etc/evidence/t544-s7-five-family-convergence.md).
 All retained instruction/function/timing classes have source, implementation,
 gap and regression dispositions; eighteen coherent repair/proof receivers
-remain inside T544. Fresh full units pass once per width: x64 506/506 in
-260.54s and x86 506/506 in 245.60s. All 58 original integration contexts
+transfer intact to the queued repair proposal. Fresh full units pass once per
+width: x64 506/506 in 260.54s and x86 506/506 in 245.60s. All 58 original integration contexts
 pass once, without altered checkpoints. Shared, App and artifacts remain
 unchanged. No active packet is retained between accepted subtasks.
 
-The [proposal](../proposals/m5-retained-cpu-qualification.md) owns scope;
+The [archived proposal](../history/M5-T544-retained-cpu-qualification-proposal.md)
+retains audit scope;
 the [convergence ledger](../history/M5-T544-retained-cpu-qualification.md)
 retains batch dispositions and acceptance evidence.
 
 S1-S7 inventories are accepted, not repaired or qualified CPU behavior.
 The convergence report and earlier family evidence retain all confirmed
-mechanism defects, missing contexts and source conflicts inside T544.
+mechanism defects, missing contexts and source conflicts. The owner-approved
+successor [CPU repair proposal](../proposals/m5-cpu-audit-gap-repair.md) owns
+the complete transferred implementation scope; it is queued, not admitted.
 Coordinator acceptance covers read-only inventory, not Shared edits or CPU
 qualification. Docs-only work needs no EXE rebuild; concrete Shared repairs
 still require owner review before implementation.
@@ -69,9 +73,12 @@ qualification successor; they are not deployed artifacts or new source paths.
 
 ## Next Work
 
-T544 stays open for concrete review and repair of its eighteen coherent
-mechanism/proof receivers; no Shared repair is approved by audit acceptance.
-No other queued task may execute before the owner's T544 requirement is met.
+The first candidate is [CPU gap repair](../proposals/m5-cpu-audit-gap-repair.md),
+with eighteen mechanism/proof batches and final qualification. Its numeric T
+is allocated only on admission; concrete Shared edits require owner review.
+T544 is closed as audit, not CPU qualification. Actual-change review accepts
+the complete transfer, archived proposal and reconciled references; governance
+and link/diff checks pass. No executable inputs changed, so no rebuild is due.
 The remaining candidates stay in
 [Queue](QUEUE.md). Common wake-failure and Shared vocabulary follow-ups remain in
 [TODO](TODO.md). This structural split does not qualify new hardware or timing.

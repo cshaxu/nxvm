@@ -4,13 +4,18 @@ Ordered unnumbered candidates; no numeric implementation task is admitted here.
 
 ## M5 Candidates
 
-1. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
-2. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-3. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+1. [CPU audit gap repair and qualification](../proposals/m5-cpu-audit-gap-repair.md)
+2. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
+3. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+4. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 
-The former first candidate is admitted as [T544 CPU qualification](../proposals/m5-retained-cpu-qualification.md).
-Current owns its active S; the [convergence ledger](../history/M5-T544-retained-cpu-qualification.md)
-owns detailed coverage, not a second active queue.
+[T544](../history/M5-T544-retained-cpu-qualification.md) is closed as a
+completed CPU audit by owner direction. Its eighteen complete repair/proof
+receivers and linked family findings transfer to the first candidate above,
+not to a claim of CPU correctness. The repair candidate is not yet admitted
+and consumes no numeric T identifier; concrete Shared changes still require
+owner review. The [archived audit proposal](../history/M5-T544-retained-cpu-qualification-proposal.md)
+preserves original scope and the ledger preserves historical findings.
 
 Independent chips are closed as [T539](../history/M5-T539-independent-shared-chips.md).
 Common board integration is closed as [T540](../history/M5-T540-shared-ibmpc-integration.md);

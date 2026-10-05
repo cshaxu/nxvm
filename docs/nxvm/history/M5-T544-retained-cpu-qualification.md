@@ -1,5 +1,29 @@
 # M5 T544 Retained CPU Qualification
 
+## Final Status
+
+Closed as a completed five-family CPU audit by explicit owner direction after
+S7 acceptance at 7a759c20d. This is not successful CPU implementation or timing
+qualification. The owner asked to queue the repairs first and close this audit;
+that request supersedes the earlier requirement to keep every residual inside
+T544. All eighteen mechanism/proof receivers, linked S2-S6 findings, source
+conflicts, incorrect oracles and missing contexts transfer together to the
+[CPU gap repair proposal](../proposals/m5-cpu-audit-gap-repair.md). Nothing is
+marked repaired by that transfer. The original
+[proposal](M5-T544-retained-cpu-qualification-proposal.md) is archived.
+
+M5 Td S177 records this owner-approved scope/closure disposition. The audit
+delivers source identities/page comparisons, whole-owner inspections and
+finite family/context dispositions, with complete x64/x86 units 506/506 each
+and all 58 original integration contexts passing once. These results prove
+the unchanged regression baseline, not absence of the documented defects.
+The repair receiver is queued, not admitted, and concrete Shared review remains
+required. No source/test/ABI/manifest, App/INI/media, MyNES or binary changes
+are included. Existing 0543 PC artifacts remain current; no docs-only rebuild
+is manufactured. Research scratch and receiving caches remain required by the
+immediate queued repair work. All earlier open/no-transfer statements below
+are historical batch decisions, superseded only by this explicit closure.
+
 ## Admission And Baseline
 
 Owner approved the first queued candidate on 2026-10-05. T543 is closed at

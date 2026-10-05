@@ -1,5 +1,15 @@
 # Retained CPU Family Qualification
 
+## Closure Disposition
+
+Archived at owner-directed T544 audit closure. S1-S7 complete the manual/code
+audit; they do not satisfy the original implementation qualification claim.
+The owner explicitly transfers all eighteen mechanism/proof receivers and
+linked family findings to the queued
+[CPU gap repair proposal](../proposals/m5-cpu-audit-gap-repair.md).
+The original proposal below remains historical; the new proposal owns future
+repair scope and Queue owns its priority. No Shared edits are authorized here.
+
 ## Goal
 
 Preserve every existing CPU implementation, profile and selection table while

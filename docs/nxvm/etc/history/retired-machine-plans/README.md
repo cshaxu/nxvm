@@ -28,16 +28,16 @@ labels or product commitments. New proposals and principal design take precedenc
 | Retained document | Disposition / receiver |
 | --- | --- |
 | [ibm-5160-xt-keyboard-device](ibm-5160-xt-keyboard-device.md) | Old board scope withdrawn; reusable CPU/chip evidence is input to fixed-product retention audit. |
-| [m5-80286-protected-mode-closure](m5-80286-protected-mode-closure.md) | [CPU qualification](../../../proposals/m5-retained-cpu-qualification.md); preserve all CPU models, not old board menus. |
-| [m5-80286-retirement-timing-closure](m5-80286-retirement-timing-closure.md) | [CPU qualification](../../../proposals/m5-retained-cpu-qualification.md); preserve all CPU models, not old board menus. |
+| [m5-80286-protected-mode-closure](m5-80286-protected-mode-closure.md) | [CPU repair/qualification](../../../proposals/m5-cpu-audit-gap-repair.md); preserve all CPU models, not old board menus. |
+| [m5-80286-retirement-timing-closure](m5-80286-retirement-timing-closure.md) | [CPU repair/qualification](../../../proposals/m5-cpu-audit-gap-repair.md); preserve all CPU models, not old board menus. |
 | [m5-80386-deskpro-386-l3-baseline](m5-80386-deskpro-386-l3-baseline.md) | Old board scope withdrawn; reusable CPU/chip evidence is input to fixed-product retention audit. |
-| [m5-80386dx-candidate-policy](m5-80386dx-candidate-policy.md) | [CPU qualification](../../../proposals/m5-retained-cpu-qualification.md); preserve all CPU models, not old board menus. |
-| [m5-80386dx-extended-state-closure](m5-80386dx-extended-state-closure.md) | [CPU qualification](../../../proposals/m5-retained-cpu-qualification.md); preserve all CPU models, not old board menus. |
-| [m5-8088-cpu-profile](m5-8088-cpu-profile.md) | [CPU qualification](../../../proposals/m5-retained-cpu-qualification.md); preserve all CPU models, not old board menus. |
+| [m5-80386dx-candidate-policy](m5-80386dx-candidate-policy.md) | [CPU repair/qualification](../../../proposals/m5-cpu-audit-gap-repair.md); preserve all CPU models, not old board menus. |
+| [m5-80386dx-extended-state-closure](m5-80386dx-extended-state-closure.md) | [CPU repair/qualification](../../../proposals/m5-cpu-audit-gap-repair.md); preserve all CPU models, not old board menus. |
+| [m5-8088-cpu-profile](m5-8088-cpu-profile.md) | [CPU repair/qualification](../../../proposals/m5-cpu-audit-gap-repair.md); preserve all CPU models, not old board menus. |
 | [m5-bochs-instruction-differential-debug-bridge](m5-bochs-instruction-differential-debug-bridge.md) | [Differential/tests](../../../proposals/m5-differential-and-unit-evidence.md). |
 | [m5-controller-board-integration-reclosure-program](m5-controller-board-integration-reclosure-program.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
 | [m5-core-controller-device-phase-contracts](m5-core-controller-device-phase-contracts.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
-| [m5-core-cpu-instruction-timing-program](m5-core-cpu-instruction-timing-program.md) | [CPU qualification](../../../proposals/m5-retained-cpu-qualification.md); preserve all CPU models, not old board menus. |
+| [m5-core-cpu-instruction-timing-program](m5-core-cpu-instruction-timing-program.md) | [CPU repair/qualification](../../../proposals/m5-cpu-audit-gap-repair.md); preserve all CPU models, not old board menus. |
 | [m5-core-l3-integration-vm-contract-export](m5-core-l3-integration-vm-contract-export.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
 | [m5-cross-mode-mechanism-coherence](m5-cross-mode-mechanism-coherence.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
 | [m5-current-product-device-l3-closure](m5-current-product-device-l3-closure.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
@@ -47,7 +47,7 @@ labels or product commitments. New proposals and principal design take precedenc
 | [m5-dos-protected-mode-extender-corpus](m5-dos-protected-mode-extender-corpus.md) | [Retained guest qualification](../../../proposals/m5-retained-guest-qualification.md); old machine selection superseded. |
 | [m5-fdc-board-integration-reclosure](m5-fdc-board-integration-reclosure.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
 | [m5-final-l3-windows-closure-audit](m5-final-l3-windows-closure-audit.md) | [Retained guest qualification](../../../proposals/m5-retained-guest-qualification.md); old machine selection superseded. |
-| [m5-four-profile-cpu-completeness-program](m5-four-profile-cpu-completeness-program.md) | [CPU qualification](../../../proposals/m5-retained-cpu-qualification.md); preserve all CPU models, not old board menus. |
+| [m5-four-profile-cpu-completeness-program](m5-four-profile-cpu-completeness-program.md) | [CPU repair/qualification](../../../proposals/m5-cpu-audit-gap-repair.md); preserve all CPU models, not old board menus. |
 | [m5-generic-pc-backbone-foundation](m5-generic-pc-backbone-foundation.md) | [Fixed products](../../../history/M5-T533-fixed-machine-products.md); no old profile inheritance or runtime selector. |
 | [m5-hdc-board-integration-reclosure](m5-hdc-board-integration-reclosure.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
 | [m5-instruction-timed-execution](m5-instruction-timed-execution.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |

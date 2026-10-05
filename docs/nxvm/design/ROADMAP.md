@@ -37,8 +37,11 @@ tests and assets are parallel; PC-family docs, tools, version and MTSP remain
 unified. [Current](../states/CURRENT.md) records the accepted baseline;
 the T543 ledger retains the four deliveries and full verification.
 Retained qualification work follows the new owners without reduced coverage.
-T544 admits retained CPU-family qualification first; its proposal and task
-convergence ledger distinguish inventory, direct proof and unresolved forms.
+T544 closes the retained CPU-family audit, not instruction/timing qualification.
+Its complete gaps transfer by owner direction to the first queued
+[CPU repair proposal](../proposals/m5-cpu-audit-gap-repair.md); the audit ledger
+distinguishes direct proof, source conflicts and unresolved implementation.
+CPU repair/qualification precedes controller and guest qualification.
 
 Retain all implemented XT, AT, DeskPro 386 and default PC/AT variants; inventory
 PC110 prerequisites without making a new Standard-board choice a dependency.

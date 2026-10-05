@@ -1,5 +1,14 @@
 # T544 S7 Five-Family Audit Convergence
 
+## Subsequent Owner Disposition
+
+After S7 acceptance, the owner explicitly requested T544 audit closure and
+CPU repairs first in Queue. All eighteen receivers below and their linked
+family findings transfer intact to the
+[CPU repair proposal](../../proposals/m5-cpu-audit-gap-repair.md).
+The original audit-time no-transfer/open-task statements remain historical,
+not current status. Closure does not repair, qualify or erase any finding.
+
 ## Scope And Meaning
 
 Read-only convergence against 8295ff789, carrying the complete accepted
