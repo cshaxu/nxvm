@@ -1,5 +1,8 @@
 # Residual AT Composition Extraction
 
+Accepted as T542 S20 on 2026-10-04. See the
+[task ledger and evidence](M5-T542-shared-pc-machine-adapter.md).
+
 Owner-approved T542 corrective S20, baseline 398fa5a1a. Retain all four PC
 products and their current 0542 identity. No Lib/Common, MyNES, firmware/media
 master, INI, chip algorithm, timing qualification or independent-App split.

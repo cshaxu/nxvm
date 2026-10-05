@@ -4,59 +4,40 @@
 
 | Work | Progress |
 | --- | --- |
-| T542 S20 | Active corrective extraction of remaining AT construction mechanisms and shared PC version. |
+| T542 | Closed after accepted corrective S20; shared PC composition and version extraction complete. |
 
-## Active S Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective: latest closed numeric T542; next unused S20 after S19. |
-| Admission And Approval | Owner request on 2026-10-04 approves extraction described in the preceding source audit. Shared ibmpc and NXVM consumers default/5170/DeskPro/XT are authorized; no MyNES, Lib/Common or chip changes. |
-| Objective | Share remaining equivalent AT endpoint/topology/controller and ROM registration mechanisms; move the four PC products' version definition into ibmpc/product. |
-| Non-goals | No App split, universal Profile, new hardware/timing, runtime model registry, Lib/Common/MyNES/INI/external-master change. |
-| Reference Baseline | Accepted T542 S19 commit 398fa5a1a; existing eight 0542 products and preserved boot predicates. |
-| Candidate Proposal | [Residual AT composition](../proposals/m5-at-composition-residual.md); original T542 extraction ledger remains historical evidence. |
-| Files And ABI Surface | ibmpc board-at endpoint lookup, board-common explicit AT/ROM materialization, product version interface, corresponding test/ibmpc tests/build/manifests; NXVM profile callers/tests/main, observation-test build links, matching construction closure checks and affected artifacts. |
-| Applicable Rules | Task Reading Set, Architecture/Coding/Document/Execution, source policy and local corpus boundaries: sole owners, neutral inputs, no reverse imports, failure-before-publication, full test/artifact proof and single-target commits. |
-| Verification | Full NXVM repository-only units on x64/x86; relevant shared and all three AT composition regressions; eight selected product builds; once-only existing integration suite across eight profile/width contexts; manifest/corpus/DAG/docs/diff checks. |
-| Expected Markers | No private default lookup implementation; three AT callers use shared assembly; ROM aliases and original topology remain unchanged; version has one shared header and no App duplicate. |
-| Asset Needs | Existing approved embedded firmware and external integration inputs only; no acquisition or master writes. |
-| Reporting Requirements | Confirm design before execution, report meaningful progress, actual-diff review and counted source/test delta; pushed delivery and artifact hashes before closure. |
-| Stop Conditions | Required excluded edit, changed hardware value/timing grade, capability loss or failed regression; diagnose at shared owner rather than add profile workaround. |
-| Exit Criteria | All proposal ledger members have source/caller/failure/regression proof; full units and original integration pass; eight optimized stripped 0542 artifacts current; actual-change coordinator review and clean pushed tree. |
-| Original Owner Request | Extract the audited common logic and other justified common mechanisms in a new S; all four PC models share version. |
-| Similar-Issue Sweep | All four constructors/ROM providers, all three AT topology/controller builders and live lookup tests, build version/entry/binding callers. Release verification found a mixed production-Board/observable-Core pair and a Model40 trace-asserting test linked to production Core; align existing observable test libraries and inspect every trace-provider consumer. Production trace remains disabled. |
-
-The earlier S12-S19 composition batch is accepted. [T542 evidence](../history/M5-T542-shared-pc-machine-adapter.md)
-maps every corrective member to its actual owner, callers, failure handling and
-regressions. The [corrective proposal](../history/M5-T542-pc-composition-completion-proposal.md)
-is archived. S19 delivery 6e1de211f is accepted after separate coordinator review.
-S19 is historical acceptance; S20 corrects the additional residual identified by the owner-directed source audit.
+Shared delivery eb5882c21 and NXVM delivery b10fc0540 pass separate actual-change
+coordinator review. The [S20 ledger and verification](../history/M5-T542-shared-pc-machine-adapter.md)
+record all six members, test/build corrections, source accounting and current
+artifact hashes. Its [proposal](../history/M5-T542-at-composition-residual-proposal.md)
+is archived. No S packet or successor admission remains active.
 
 ## Next Work
 
 [Four independent PC Apps](../proposals/m5-independent-pc-apps.md) is the first
-[Queue](QUEUE.md) candidate. Its shared-composition prerequisite awaits S20 correction acceptance,
+[Queue](QUEUE.md) candidate. Its shared-composition prerequisite is accepted,
 but the App split is not admitted and has no allocated task identifier.
 Its separate naming/scope governance prerequisite remains.
 
 ## Retained Runnable Evidence
 
-Source-changing S18 deliveries are Shared f1086b3bf and NXVM 844950505.
+Current source deliveries are Shared eb5882c21 and NXVM b10fc0540.
 Eight optimized stripped 0.5.0542 EXEs remain in assets/nxvm/<profile>, with
 unchanged owner INIs and runtime Debug. Their current SHA-256 values are in
-T542's S18 table and independently confirmed unchanged during S19.
+T542's S20 table; PE widths and absence of compiler debug sections are verified.
 
-Fresh final acceptance: full units 504/504 per width; strict matrix 520/520,
-zero deferred; all 58 external integration contexts pass once across four
-profiles and two widths. Standalone ibmpc, canonical manifests, corpus/DAG,
-specialized and documentation checks pass. These fresh S19 results supersede
-historical S11 passes for this extraction. Owned temporary build/test trees
-are cleaned; EXEs and external masters remain intact.
+Fresh S20 acceptance: full units 506/506 per width; all 58 original external
+integration contexts pass once across four profiles and two widths. The 17
+manifest/corpus/DAG/negative cases, both specialized aggregates, documentation
+and diff checks pass. Cached Make compile flags cover 521 strict inventory rows,
+zero deferred, plus the explicit observation test object; this is not a claim
+that the Ninja-only direct-command gate ran. Pre-existing build caches were
+reused and preserved; no new owned temporary package tree or active test process
+remains. This evidence supersedes S19 for the changed runnable source.
 
-Lib/Common/x86 algorithms, MyNES, root rules/README and owner configurations
-have no corrective-batch diff. The Common wake-failure and Shared vocabulary
-follow-ups remain in [TODO](TODO.md); they are not claimed repaired here.
+Lib/Common/x86 source/test, MyNES, root rules/README and owner configurations
+have no S20 diff. The Common wake-failure and Shared vocabulary follow-ups
+remain in [TODO](TODO.md); they are not claimed repaired here.
 
 ## Current Technical Baseline
 
