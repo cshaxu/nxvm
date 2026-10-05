@@ -6,7 +6,7 @@
 | --- | --- |
 | T544 | Closed as a completed CPU audit by owner direction; all CPU repair/proof gaps transferred to the first queued proposal. No implementation task is active. |
 | M5 Td S177 | Complete: audit closure, full CPU repair transfer, proposal archive and queue/reference reconciliation. NXVM documentation only. |
-| T545 S2 | Accepted: exact eight-corpus import and receiver batch delivered; full units and all ten artifacts verified. S3 external qualification remains; no active packet. |
+| T545 S2 | Accepted: exact eight-corpus import and receiver batch delivered; full units and all ten artifacts verified. Planned S3-S6 complete Lib/Common/x86/IBMPC tests; S7 retains final qualification. No active packet. |
 
 ## Accepted T545 Import
 
@@ -32,10 +32,14 @@ assets/nxvm. MyNES keeps its rebuilt `mynes-0-0-0043` pair (S2 P2
 `f010812fd`). All ten PE widths and absence of compiler debug sections
 are verified; runtime Debug remains. Superseded PC 0543 EXEs are retained only
 in Git history. All owned build/test processes have exited. Receiving caches
-and ignored immutable source snapshots remain needed by S3 qualification.
+and ignored immutable source snapshots remain needed by final qualification.
 
-No S is active between accepted subtasks. S3 will run the retained external
-integration contexts before T closure; CPU gap repair stays queued.
+No S is active between accepted subtasks. The owner adds four ordered test-owner
+batches: S3 Lib, S4 Common, S5 x86 and S6 IBMPC. Their
+[planned briefs](../proposals/m5-softpc-eight-corpus-refresh.md) require direct
+component-owned proof and independent suites without foreign test fixtures.
+The never-admitted final qualification moves from S3 to S7, retaining all
+external integration contexts before T closure. CPU gap repair stays queued.
 
 ## Accepted Audit Baseline
 
@@ -103,7 +107,8 @@ qualification successor; they are not deployed artifacts or new source paths.
 
 ## Next Work
 
-T545 S2 is accepted; S3 external qualification remains before T closure.
+T545 S2 is accepted; planned S3-S6 complete owner-local tests before S7 external
+qualification and T closure. This planning change admits no implementation S.
 The first candidate remains [CPU gap repair](../proposals/m5-cpu-audit-gap-repair.md),
 with eighteen mechanism/proof batches and final qualification. Its numeric T
 is allocated only on admission; concrete Shared edits require owner review.

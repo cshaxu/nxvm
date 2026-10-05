@@ -95,3 +95,24 @@ Documentation governance and actual reference/status review pass. S2 closes
 after target-correct P delivery/push; T stays open for S3. All 58 original PC
 external integration contexts and the receiving MyNES integration suite remain
 required, not represented as freshly passed by this import.
+
+## Owner-Approved Test Completion Plan
+
+After S2 acceptance, the owner requests four additional bounded S tasks for
+clean, self-sufficient Lib, Common, x86 and IBMPC testing. Read-only review
+found owner-local gaps in Lib medium replacement, Common public Session
+construction/ingress, neutral x86 Core contracts and generic IBMPC Machine
+contracts currently demonstrated by App fixtures. API reference counts are
+diagnostic only, not branch-coverage proof.
+
+Coordinator plans S3 Lib, S4 Common, S5 x86 and S6 IBMPC in that order. The
+original S3 final qualification was never admitted and moves to S7 without
+discarding any original external predicate. The proposal owns the bounded
+briefs and common gates; no implementation packet is active yet. S2 stays
+accepted and its exact SoftPC baseline is unchanged. Later owner-approved test
+revisions require new manifests and truthful identity, not an unchanged-import
+claim. Production repairs require further concrete review; sibling repositories
+remain read-only.
+
+This planning-only follow-up changes NXVM task records, not source, tests,
+configuration or executable inputs. Current verified EXEs need no rebuild.
