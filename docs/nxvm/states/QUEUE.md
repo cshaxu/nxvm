@@ -4,10 +4,13 @@ Ordered unnumbered candidates; no numeric implementation task is admitted here.
 
 ## M5 Candidates
 
-1. [Retained CPU-family qualification](../proposals/m5-retained-cpu-qualification.md)
-2. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
-3. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-4. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+1. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
+2. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+3. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+
+The former first candidate is admitted as [T544 CPU qualification](../proposals/m5-retained-cpu-qualification.md).
+Current owns its active S; the [convergence ledger](../history/M5-T544-retained-cpu-qualification.md)
+owns detailed coverage, not a second active queue.
 
 Independent chips are closed as [T539](../history/M5-T539-independent-shared-chips.md).
 Common board integration is closed as [T540](../history/M5-T540-shared-ibmpc-integration.md);
