@@ -1415,3 +1415,20 @@ and explicit stop conditions. S12 delivers this design and truthful Current,
 Queue, Roadmap and successor prerequisites only; no implementation is claimed.
 The source/test/build/assets corpus is unchanged, so the eight accepted S11
 EXEs remain current and no fresh runtime pass is claimed.
+
+### S12 Coordinator Acceptance
+
+Accept pushed P1 `0d8c3d712` after actual review of all six changed NXVM documents
+against the owner request and S12 packet. The six residual classes have concrete
+receivers, retained machine-specific owners, sequential S13-S18 exits and the
+S19 closure predicate. 5170/default/DeskPro are all AT mechanism consumers;
+XT retains its family distinction. Queue and successor now require corrective
+completion instead of claiming the whole prerequisite is finished.
+
+`Verify-DocumentationGovernance.ps1 -RepositoryRoot . -Product nxvm` passes;
+`git diff --check` passes. Manual review verifies changed relative links,
+six-member coverage, linear identifiers and single NXVM target. No source,
+test, build, INI, artifact, Lib/Common, MyNES or external master changed.
+Design-only verification is applicable; unchanged executable inputs require
+no rebuilt EXE or new runtime test claim. Close S12, remove its active packet
+and retain T542 open; S13-S19 are planned, not concurrently admitted.
