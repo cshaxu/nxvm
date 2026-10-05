@@ -9,7 +9,7 @@ unadmitted until the corrective ledger is exhausted.
 
 | Work | Progress |
 | --- | --- |
-| T542 S17 | Accepted and pushed; S18-S19 remain planned. |
+| T542 S18 | Admitted: selected-build/embed/deploy ownership; S19 remains planned. |
 
 S12 delivery `0d8c3d712` defines the [corrective ledger and sequence](../proposals/m5-pc-composition-completion.md).
 S13 delivers Shared `05ca27ff2` and NXVM `c7a296138`; its coordinator review
@@ -26,6 +26,27 @@ NXVM b02743cce. S18 must finish selected-build/embed/deploy ownership.
 S19 retains whole-ledger actual-diff
 review and all 58 external integration contexts once before T542 closure.
 Each numeric S requires its own admission packet before implementation.
+
+## Active Subtask Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, M5 T542 S18 after accepted S17. |
+| Admission And Approval | Owner's T542 corrective approval and automatic sequential-S admission; coordinator admits Shared ibmpc build mechanics and NXVM bindings for all four PC consumers on 2026-10-04. |
+| Objective | Close the corrective ledger's build/test row: one shared embed/deploy recipe; production consumes only selected composition, while explicit test aggregation retains all regressions. |
+| Non-goals | No App split, hardware/timing change, Lib/Common/x86 algorithm or MyNES edit, root README/rules change, INI or external-master rewrite. |
+| Reference Baseline | Clean S17 acceptance 7c3c5036b; eight 0542 artifacts; 503 complete units per width. |
+| Candidate Proposal | ../proposals/m5-pc-composition-completion.md, S18 and finite corrective build ledger. |
+| Files And ABI Surface | Shared src/ibmpc and test/ibmpc build helpers/manifests; NXVM cmake, selected-profile source/bindings, build gates, docs and eight EXEs. No runtime public ABI change; build-only selection may exclude alternate constructors in the existing cohesive AT translation units. |
+| Applicable Rules | Guide reading set; EXECUTION scope/P/artifact/closure; ARCHITECTURE sole owner and inward dependencies; CODING cohesive shared mechanics; DOCUMENT truthful retained state; NXVM Architecture/Coding/source policy; architecture-governance then coding-governance skills. |
+| Verification | Complete run-unit-tests and verify-current-specialized-gates in build/t542-s13/unit-x64 and unit-x86; standalone ibmpc build/verify; independent manifest/corpus checks; all eight release trees build vm-0-5-0542; inspect selected dependency/source graph and symbols; documentation governance and diff check. Transient focus: product build isolation, embedding/deployment and preserved construction regressions. |
+| Expected Markers | Both full units green; package/strict/document gates green; production graph excludes test profile aggregate and unselected Model40 D4; eight correct PE widths with no compiler debug sections; INIs/MyNES/excluded roots unchanged. |
+| Asset Needs | Existing approved BYOB roots embedded unchanged; repository-owned firmware builder only. Retain incremental build trees for S19; no new media/ROM acquisition. |
+| Reporting Requirements | Executor confirms contract; report source-graph/helper progress and verification; history records actual diff, code counts, scoped P revisions and eight hashes. |
+| Stop Conditions | Required excluded edit, lost assertion/capability, firmware shortcut, altered INI/master or unproven selected graph blocks delivery; coordinator revises packet before continuing. |
+| Exit Criteria | Shared independently builds without App; four selected products link one composition with no production test aggregation; shared recipes replace obsolete paths; all required tests/artifacts and actual-change review pass before S acceptance. |
+| Original Owner Request | Reopen T and repair missing extraction; AT assembly is shared by 5170/default/DeskPro, not only two machines; preserve XT and all four capabilities. |
+| Similar-Issue Sweep | Inspect all cmake/nxvm production/test source lists, firmware generators/deployment references, profile constructors and static gates; classify every aggregate/peer dependency and reject recurrence through build isolation checks. |
 
 
 ## Retained Runnable Evidence

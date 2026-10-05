@@ -52,6 +52,7 @@ static lib_status vm_profile_machine_plan_pc_at_rom(vm_profile_pc_at_machine_pla
     return LIB_STATUS_OK;
 }
 
+#if !defined(VM_PROFILE_BUILD_5170)
 static lib_status vm_profile_machine_plan_default(vm_profile_pc_at_machine_plan *plan,
     const vm_machine_config *config, const vm_machine_assets *assets)
 {
@@ -89,6 +90,8 @@ static lib_status vm_profile_machine_plan_default(vm_profile_pc_at_machine_plan 
     return LIB_STATUS_OK;
 }
 
+#endif
+#if !defined(VM_PROFILE_BUILD_DEFAULT)
 static lib_status vm_profile_machine_plan_5170(vm_profile_pc_at_machine_plan *plan,
     const vm_machine_config *config, const vm_machine_assets *assets)
 {
@@ -110,6 +113,7 @@ static lib_status vm_profile_machine_plan_5170(vm_profile_pc_at_machine_plan *pl
     return LIB_STATUS_OK;
 }
 
+#endif
 static lib_status vm_profile_machine_plan_materialize_pc_at(
     const vm_profile_pc_at_machine_plan *plan, core_machine_plan *core_plan)
 {
@@ -187,6 +191,7 @@ static void vm_profile_pc_at_release(void *context)
     lib_release(context);
 }
 
+#if !defined(VM_PROFILE_BUILD_5170)
 lib_status vm_profile_machine_plan_create_default(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine_construction *out_construction)
 {
@@ -202,6 +207,8 @@ lib_status vm_profile_machine_plan_create_default(const vm_machine_config *confi
     return vm_machine_construction_finish(&plan->construction, config, assets, status, out_construction);
 }
 
+#endif
+#if !defined(VM_PROFILE_BUILD_DEFAULT)
 lib_status vm_profile_machine_plan_create_5170(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine_construction *out_construction)
 {
@@ -216,3 +223,4 @@ lib_status vm_profile_machine_plan_create_5170(const vm_machine_config *config,
     status = vm_profile_machine_plan_5170(plan, config, assets);
     return vm_machine_construction_finish(&plan->construction, config, assets, status, out_construction);
 }
+#endif

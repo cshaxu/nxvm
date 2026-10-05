@@ -21,23 +21,8 @@ default_pc_at_firmware_services[] = {
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIC_POST, 0u }
 };
 
-static const vm_profile_default_pc_at_firmware_service
-ibm_5170_model_339_firmware_services[] = {
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_POST, 0u },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_IRQ0, 0x08u },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_INT1A, 0x1au },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_IRQ1, 0x09u },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_INT16, 0x16u },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_DMA_POST, 0u },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_POST, 0u },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_IRQ6, 0x0eu },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_INT13, 0x13u },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_INT40, 0x40u },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_HDC_INT13, 0x13u },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIT_POST, 0u },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIC_POST, 0u }
-};
-
+/* Production compiles one fixed AT composition; the test aggregate compiles both. */
+#if !defined(VM_PROFILE_BUILD_5170)
 static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     "default-pc-at",
     1u,
@@ -111,6 +96,8 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     0x01u, 0x01u, {80u, 0u, 0u, 0u}, 0u, 0u, 0u
 };
 
+#endif
+#if !defined(VM_PROFILE_BUILD_DEFAULT)
 static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor = {
     "ibm-5170-model-339",
     1u,
@@ -196,9 +183,9 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
             .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
             .alternate_status_device_control_port = 0x03f6u,
             .lba28_supported = LIB_FALSE, .clock_ticks_per_second = 8000000u }},
-    ibm_5170_model_339_firmware_services,
-    sizeof(ibm_5170_model_339_firmware_services) /
-        sizeof(ibm_5170_model_339_firmware_services[0]),
+    default_pc_at_firmware_services,
+    sizeof(default_pc_at_firmware_services) /
+        sizeof(default_pc_at_firmware_services[0]),
     /* IBM 5170 Technical Reference: A: is a 96-TPI, 80-cylinder 1.2 MB
      * physical unit. A 360 KB disk changes only the mounted medium. */
     /* PCjs corroborates that the Rev-3 ROM reads this D/S/P-board endpoint
@@ -207,20 +194,25 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     0x01u, 0x01u, {80u, 0u, 0u, 0u}, 0u, 0x03f1u, 0x50u
 };
 
+#endif
 static const lib_u32 ibm_5170_contract_ids[] = {1u};
 
+#if !defined(VM_PROFILE_BUILD_5170)
 const vm_profile_default_pc_at_descriptor *
 vm_profile_default_pc_at_descriptor_get(void)
 {
     return &default_pc_at_descriptor;
 }
 
+#endif
+#if !defined(VM_PROFILE_BUILD_DEFAULT)
 const vm_profile_default_pc_at_descriptor *
 vm_profile_ibm_5170_model_339_descriptor_get(void)
 {
     return &ibm_5170_model_339_descriptor;
 }
 
+#endif
 static lib_i32 vm_profile_default_pc_at_cpu_profile_is_valid(
     core_machine_cpu_profile profile)
 {
@@ -518,6 +510,7 @@ static lib_status vm_profile_default_pc_at_snapshot_copy(
         &out_profile->topology);
 }
 
+#if !defined(VM_PROFILE_BUILD_DEFAULT)
 lib_status vm_profile_ibm_5170_values_create(lib_size memory_bytes,
     vm_profile_contract_values *out_values)
 {
@@ -546,6 +539,7 @@ lib_status vm_profile_ibm_5170_values_create(lib_size memory_bytes,
     return LIB_STATUS_OK;
 }
 
+#endif
 static lib_i32 vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes)
 {
     if (memory_bytes == 0u || memory_bytes == 512u * 1024u ||
@@ -554,6 +548,7 @@ static lib_i32 vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes)
         (memory_bytes - 1024u * 1024u) % (512u * 1024u) == 0u;
 }
 
+#if !defined(VM_PROFILE_BUILD_DEFAULT)
 lib_status vm_profile_ibm_5170_plan_create_memory(lib_size memory_bytes,
     vm_profile_default_pc_at_plan_snapshot *out_profile)
 {
@@ -587,6 +582,8 @@ lib_status vm_profile_ibm_5170_plan_create(
     return vm_profile_ibm_5170_plan_create_memory(0u, out_profile);
 }
 
+#endif
+#if !defined(VM_PROFILE_BUILD_5170)
 static lib_status vm_profile_default_at_request_select(
     const vm_profile_default_at_request *request,
     core_machine_cpu_profile *out_cpu, x86_fpu_profile *out_fpu,
@@ -670,6 +667,7 @@ lib_status vm_profile_default_at_plan_create(
             vm_profile_default_pc_at_descriptor_get()->cmos.floppy_type);
 }
 
+#endif
 const vm_at_port_leaf *
 vm_profile_default_pc_at_port_leaf_find(
     const vm_profile_default_pc_at_descriptor *descriptor,
@@ -804,11 +802,11 @@ lib_i32 vm_profile_default_pc_at_descriptor_is_valid(
             descriptor->hdc.bus.task_file.clock_ticks_per_second == 8000000u &&
             descriptor->firmware_services != LIB_NULL &&
             descriptor->firmware_service_count ==
-                sizeof(ibm_5170_model_339_firmware_services) /
-                    sizeof(ibm_5170_model_339_firmware_services[0]) &&
+                sizeof(default_pc_at_firmware_services) /
+                    sizeof(default_pc_at_firmware_services[0]) &&
             lib_memory_compare(descriptor->firmware_services,
-                ibm_5170_model_339_firmware_services,
-                sizeof(ibm_5170_model_339_firmware_services)) == 0;
+                default_pc_at_firmware_services,
+                sizeof(default_pc_at_firmware_services)) == 0;
     }
     return descriptor->firmware_slot == VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC &&
         vm_profile_default_pc_at_cpu_profile_is_valid(descriptor->cpu_profile) &&

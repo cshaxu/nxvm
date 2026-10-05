@@ -119,21 +119,8 @@ file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/app-nxvm/product")
 configure_file("${CMAKE_SOURCE_DIR}/cmake/nxvm/profile_binding.h.in"
     "${CMAKE_BINARY_DIR}/generated/app-nxvm/product/profile_binding.h" @ONLY)
 
-set(nxvm_firmware_inputs)
-set(nxvm_firmware_arguments)
-foreach(role IN ITEMS BIOS_0 BIOS_1 VIDEO CMOS FONT)
-    list(APPEND nxvm_firmware_arguments "-DINPUT_${role}=${NXVM_PROFILE_${role}}")
-    if(NOT NXVM_PROFILE_${role} STREQUAL "LIB_NULL")
-        list(APPEND nxvm_firmware_inputs "${NXVM_PROFILE_${role}}")
-    endif()
-endforeach()
-set(nxvm_firmware_source "${CMAKE_BINARY_DIR}/generated/app-nxvm/product/firmware.c")
-add_custom_command(OUTPUT "${nxvm_firmware_source}"
-    COMMAND "${CMAKE_COMMAND}" ${nxvm_firmware_arguments}
-        "-DOUTPUT=${nxvm_firmware_source}"
-        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/embed_firmware.cmake"
-    DEPENDS ${nxvm_firmware_inputs} "${CMAKE_SOURCE_DIR}/cmake/nxvm/embed_firmware.cmake"
-    COMMENT "Embedding selected NXVM firmware" VERBATIM)
 # Only products and external integration link this target; unit fixtures do not.
-add_library(nxvm-product-firmware STATIC EXCLUDE_FROM_ALL "${nxvm_firmware_source}")
-target_include_directories(nxvm-product-firmware PRIVATE "${CMAKE_SOURCE_DIR}/src")
+ibmpc_embed_firmware(nxvm-product-firmware
+    "${CMAKE_BINARY_DIR}/generated/app-nxvm/product/firmware.c"
+    "${NXVM_PROFILE_BIOS_0}" "${NXVM_PROFILE_BIOS_1}" "${NXVM_PROFILE_VIDEO}"
+    "${NXVM_PROFILE_CMOS}" "${NXVM_PROFILE_FONT}")

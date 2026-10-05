@@ -59,7 +59,8 @@ endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_text)
 file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" product_cmake_text)
 if(product_cmake_text MATCHES "configure_file\\([^)]*NXVM\\.ini" OR
-   NOT product_cmake_text MATCHES "assets/nxvm/\\$\\{NXVM_PRODUCT_PROFILE\\}/\\$\\{task_artifact_filename\\}" OR
+   NOT product_cmake_text MATCHES "set\\(directory \"\\$\\{CMAKE_SOURCE_DIR\\}/assets/nxvm/\\$\\{NXVM_PRODUCT_PROFILE\\}\"\\)" OR
+   NOT product_cmake_text MATCHES "set\\(PROJECT_CURRENT_VM_RUNTIME_PATH \"\\$\\{directory\\}/\\$\\{task_artifact_filename\\}\"" OR
    NOT product_cmake_text MATCHES "project_add_test\\(\\$\\{target\\} integration[ \t\r\n]+\"\\$\\{project_t533_runtime_directory\\}\"")
     message(FATAL_ERROR
         "Console integration must launch the deployed EXE beside its owner INI, not a copied build-tree INI.")

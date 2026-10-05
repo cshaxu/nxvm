@@ -4,6 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" project_cmake)
 file(READ "${PROJECT_SOURCE_DIR}/src/lib/CMakeLists.txt" library_cmake)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/product/build.cmake" product_build)
 
 foreach(forbidden "VM_RUNTIME_SOURCES")
     string(FIND "${project_cmake}" "${forbidden}" position)
@@ -32,9 +33,10 @@ if(NOT vm_native_bypass EQUAL -1)
 endif()
 
 string(REGEX MATCH
-    "add_executable\\(\\$\\{target\\} EXCLUDE_FROM_ALL[ \t\r\n]+src/app-nxvm/product/main\\.c\\)"
+    "ibmpc_add_product\\(\\$\\{target\\} \"\\$\\{CMAKE_SOURCE_DIR\\}/src/app-nxvm/product/main\\.c\""
     artifact_source "${project_cmake}")
-if(NOT artifact_source)
+if(NOT artifact_source OR NOT product_build MATCHES
+        "add_executable\\(\\$\\{target\\} EXCLUDE_FROM_ALL \"\\$\\{entry\\}\"\\)")
     message(FATAL_ERROR "T447 artifact must compile only app/main.c directly")
 endif()
 

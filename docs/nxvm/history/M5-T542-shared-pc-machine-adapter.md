@@ -1945,3 +1945,67 @@ hashes were checked against actual paths; no fresh external boot result is
 claimed. Worktree was clean before this acceptance-only record. Documentation
 and diff gates pass. Close S17 and remove its packet. Only ROM preparation is
 accepted here: S18 and S19 remain required and the four-App split is unadmitted.
+
+## S18 Selected Build And Shared Recipes
+
+Executor confirms the S18 packet against accepted baseline 7c3c5036b.
+Shared Product now owns build.cmake and the relocated embed, deployment, PE
+architecture and optimized-build scripts. App supplies explicit firmware roles,
+entry, identity, architecture, destination and link inputs. Shared does not
+select a model, rewrite INIs or import App source. Obsolete NXVM script paths
+are deleted; no forwarding wrappers remain.
+
+Production vm-app links vm-profile-selected. The explicit vm-profile-tests
+aggregate remains exclusively for original multi-profile unit/integration
+fixtures. The selected-source dependency gate traverses actual CMake link
+targets, rejects that test aggregate and rejects Model40 D4 outside Model40.
+The existing cohesive default/5170 translation units use build-only selection
+guards: each selected archive exports one fixed constructor, not both. Their
+identical firmware service table is shared. This is not an App split or runtime
+registry. XT and Model40 retain their own source groups. All original validation,
+hardware values, test assertions and fixture coverage are preserved.
+
+Similar-issue sweep covers cmake/nxvm firmware/deploy references, production and
+test source lists, all four constructors and associated source-shape gates.
+Every production consumer now uses selected composition plus shared inputs;
+all remaining aggregation has an explicit test owner. Updated gates track the
+new injected-entry/helper boundary while retaining GUI, optimized artifact,
+owner-INI adjacency and no-INI-write constraints. Lib/Common/x86, MyNES,
+root README/rules, owner INIs and external masters have no diff.
+
+Actual C/H diff against 7c3c5036b is +30/-24, net +6. Build/test CMake changes,
+including relocated scripts but excluding manifests/docs/EXEs, are +265/-151,
+net +114: one shared recipe, one selected-graph gate and one repository-only
+embedding/deployment regression replace App mechanics. No runtime ABI or
+device algorithm changes.
+
+### S18 Verification And Artifacts
+
+- Complete run-unit-tests plus verify-current-specialized-gates: x64 504/504,
+  102.82 s; x86 504/504, 90.01 s. Strict matrix is 520/520, zero deferred.
+- Standalone ibmpc build/verify and registered construction/build/package cases:
+  6/6, 5.78 s. Generated tiny internal inputs are removed after the regression;
+  no App or external ROM is required.
+- Independent manifest/corpus/negative/DAG checks: 15/15, 26.69 s. All six
+  canonical manifests and both ibmpc manifests pass.
+- All eight Release products build vm-0-5-0542 and pass deployed PE-width
+  checks. Independent objdump inspection finds no debug/zdebug/stab sections;
+  nm inspection confirms one selected constructor per archive. Runtime Debug
+  remains present. Existing INIs are not rewritten.
+- Documentation governance and diff checks pass before scoped delivery.
+  No fresh external integration is claimed here: S19 runs all 58 contexts once.
+
+Source identity is accepted S17 7c3c5036b plus Shared f1086b3bf and the
+accompanying scoped NXVM delivery. Build trees are retained for immediate
+S19 verification; all owned S18 commands are terminal and no raw trace remains.
+
+| Executable | SHA-256 |
+| --- | --- |
+| nxvm_default_0_5_0542_x64.exe | 616C39F306730A9671B690265A0165F304F9BDAD7FE143CEDC662CFACFD92A89 |
+| nxvm_default_0_5_0542_x86.exe | BE6F5F0CAE9B9E714D5C2975D781341BA38F826EC2E32F72D81EF8A28EAF2D8B |
+| nxvm_xt_0_5_0542_x64.exe | 9BC9EFB404CF3C01B1FB0E96109A806CC110AA701F8CD4126A48EA55FD1084C0 |
+| nxvm_xt_0_5_0542_x86.exe | 29CC4122C75C687F4055895A3CBEF35D09FC437121CFAF6684B7C2313A64041B |
+| nxvm_at_0_5_0542_x64.exe | 4D92AAC973CE42366048E4F9B1A4B1903A647DD897929E378A93122F97669276 |
+| nxvm_at_0_5_0542_x86.exe | 51F0C9D466F61B744B486F498ED055F2AB8BD68BE3ACA7CD75EDBC0AB30FF62C |
+| nxvm_model40_0_5_0542_x64.exe | F3626EC3272D66AC3D449C075EED59FDE9FA0008EF55CDB1124F2B98BA3F8C1C |
+| nxvm_model40_0_5_0542_x86.exe | 09410D0A481B81775F009A9494287C227F3D74E37A559FC9B4F05F8726D41A4B |
