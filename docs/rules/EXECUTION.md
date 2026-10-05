@@ -281,6 +281,12 @@ exactly one declared target.
   surface.
 - `Shared` owns the six shared source/test components (`lib`, `common`, and
   `x86`), shared configuration, and shared governance documents.
+
+The four PC-family Apps `app-my5160`, `app-my5170`, `app-mydeskpro386` and
+`app-nxvm` remain one `NXVM` change target and MTSP sequence. Their source,
+test and artifact roots are independent; they share `docs/nxvm`, `tools/nxvm`
+and the PC Product version declaration. This does not add commit-target names
+or permit NXVM changes to MyNES or Shared-owned mechanisms.
 - An S may name more than one target only when its packet identifies the
   cross-target mechanism, every affected consumer, each boundary, and the
   verification for every target. It delivers one P per target; no P or commit
@@ -531,6 +537,15 @@ no protected media or Microsoft binaries, and are replaced only by a newly
 verified build of the same named task.
 
 A current product artifact is a stripped Release build with no compiler debug information; this never removes an admitted runtime debugger, and Debug builds are for development and gates only.
+
+At the four-PC-App cutover, each accepted App instead deploys its existing
+machine-named pair and adjacent owner INI under `assets/<app>/<profile>/`, with
+App keys `my5160`, `my5170`, `mydeskpro386`, `nxvm`. The retained profile
+subdirectory preserves relative media-path depth without changing INI values.
+An App not yet migrated retains its previous `assets/nxvm/<profile>/` pair;
+move its owner INI unchanged and retire the old EXEs only after verification.
+All four retain the one task revision; original default-386 hardware becomes
+the NXVM App, not a separately branded default-at product.
 
 ## Build Tree Hygiene
 
