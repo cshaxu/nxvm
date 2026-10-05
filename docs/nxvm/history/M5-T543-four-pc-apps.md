@@ -19,8 +19,8 @@ This record is evidence and convergence inventory, not another current status.
 
 | Batch | Existing source owner | Receiving source/test owner | Admission disposition |
 | --- | --- | --- | --- |
-| S1 XT | app-nxvm/profiles/xt and XT binding/firmware composition assertions | app-my5160 and test/app-my5160 | Admitted; no implementation acceptance yet. |
-| S2 IBM AT | app-nxvm/profiles/at and shared-with-default translation units, IBM AT assertions | app-my5170 and test/app-my5170 | Planned; reconcile shared mechanisms rather than copy a peer App. |
+| S1 XT | app-nxvm/profiles/xt and XT binding/firmware composition assertions | app-my5160 and test/app-my5160 | Accepted after pushed cd173acb7 and fed7049b3, full verification and actual-change review. |
+| S2 IBM AT | IBM AT definitions inside app-nxvm/profiles/default_profile, IBM AT assertions | app-my5170 and test/app-my5170 | Admitted sequentially after S1; reconcile shared mechanisms rather than copy a peer App. |
 | S3 DeskPro | app-nxvm/profiles/model40, D4, ROM and copied observations, Model40 assertions | app-mydeskpro386 and test/app-mydeskpro386 | Planned; retain actual Compaq-specific ownership. |
 | S4 NXVM | app-nxvm/profiles/default_profile, project-owned firmware and remaining shell | app-nxvm and test/app-nxvm | Planned; retains original default hardware, not a new board. |
 
@@ -147,5 +147,29 @@ Lib/Common/x86/ibmpc corpus or MyNES diff; no raw vendor asset is added. Both
 specialized aggregates exit 0; documentation governance and diff checks pass.
 The six remaining PC EXEs keep their baseline identities. No active owned build
 or test process remains; reused build caches are retained for later App rows.
-Implementation is ready for separate target delivery and coordinator review;
-this record does not yet claim accepted S1 or whole-T closure.
+Shared delivery cd173acb7 changes only the artifact-root ignore exceptions.
+NXVM delivery fed7049b3 contains the complete App cutover. Both are pushed;
+the worktree is clean. Separate coordinator actual-change review confirms
+unchanged XT algorithms, four mechanical include substitutions in the moved
+349-line corpus, original test predicates, independent selected production
+graph, unchanged INI identity and unaffected peer artifacts. S1 is accepted;
+this does not claim whole-T closure.
+
+## S2 Admission And Source Inventory
+
+S2 follows accepted S1 under the original owner-approved sequence. The IBM AT
+definitions are actually inside profiles/default_profile, not the empty
+profiles/at directory. Two fixed descriptors and their constructors share
+pc_at_profile.c, machine_plan.c and the external PC/AT ROM provider. Copying
+these files into app-my5170 would duplicate validation, snapshot construction,
+ROM preparation and board materialization, or retain a peer-App dependency.
+
+S2 must separate immutable 5170 values and model constraints into My5170,
+retain default-specific choices in NXVM, and give genuine shared PC mechanisms
+one ibmpc owner. The existing AT grammar and materializer remain authoritative;
+no chip, timing, firmware or media behavior is redesigned. The receiving map
+must account for the descriptor declarations, plan helpers, ROM provider,
+test-only matrices, build gates and exact original IBM AT boot checks before
+source changes. Necessary ibmpc changes receive a separate Shared delivery and
+the affected PC consumers' rebuild/verification; Lib/Common/x86 and MyNES
+remain out of scope. No S2 implementation or artifact is claimed by admission.

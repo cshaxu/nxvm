@@ -5,7 +5,8 @@
 | Work | Progress |
 | --- | --- |
 | T542 | Closed after accepted corrective S20; shared PC composition and version extraction complete. |
-| T543 S1 | Delivery verified: My5160 split complete; pending pushed implementation and coordinator acceptance. |
+| T543 S1 | Accepted: My5160 source/test/artifact split, complete verification and pushed actual-change review. |
+| T543 S2 | Admitted: separate My5170 definitions from the mixed default/5170 translation units. |
 
 Shared delivery eb5882c21 and NXVM delivery b10fc0540 pass separate actual-change
 coordinator review. The [S20 ledger and verification](../history/M5-T542-shared-pc-machine-adapter.md)
@@ -13,31 +14,31 @@ record all six members, test/build corrections, source accounting and current
 artifact hashes. Its [proposal](../history/M5-T542-at-composition-residual-proposal.md)
 is archived. T543 now owns the next implementation packet below.
 
-## Active S1 Packet
+## Active S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New: M5 T543 S1; latest numeric T542 closed at 4c0c2db16, no identifier reused. |
+| Identifier Mode | New: M5 T543 S2; S1 accepted at pushed cd173acb7 and fed7049b3, no identifier reused. |
 | Admission And Approval | Human owner approved the four-App split and exact names on 2026-10-04, then required one App per S in order: My5160, My5170, MyDeskPro386, NXVM. Parallel src/test/assets ownership, unified docs/nxvm, tools/nxvm, version and MTSP sequence are approved. Allowed targets are NXVM and Shared PC build/ibmpc only; separate one-target commits. |
-| Objective | Deliver the complete My5160 source/test/build owner, using the existing shared PC Product/Machine and XT board path without peer-App production dependency. |
-| Non-goals | No AT/DeskPro/default source cutover in S1, no chip algorithms or timing grades, no Lib/Common/x86 source/test or MyNES changes, no external masters or unsolicited INI rewrites, no new runtime framework. |
-| Reference Baseline | Clean pushed 4c0c2db16; accepted T542 S20 and current eight 0542 artifacts with history hashes. |
-| Candidate Proposal | [Four PC Apps](../proposals/m5-independent-pc-apps.md); [T543 ledger](../history/M5-T543-four-pc-apps.md), S1 row. |
-| Files And ABI Surface | Move app-nxvm/profiles/xt to app-my5160; XT-specific test/App binding/build/docs/tool references follow their owner. Inspect cmake/nxvm/NxvmProductProfile.cmake and NxvmProduct.cmake, root product selection, existing ibmpc/product build contracts and integration support. Reuse current opaque/copy ABIs; do not invent a registry or cross-App forwarding facade. |
-| Applicable Rules | Read NXVM guide, CONTRIBUTING, rules/EXECUTION, ARCHITECTURE, CODING, DOCUMENT, NXVM design/ARCHITECTURE, CODING, UI, ROADMAP and source policy. Unique mutable owner, neutral dependency direction, complete App batch, numeric S/P, separate target commits, no protected raw assets, complete verification and actual-diff review. Architecture/coding skills apply; accepted Td S175 governs the new roots and preserves one NXVM scope/sequence. No S1 edits of docs/rules. |
-| Verification | Full run-unit-tests aggregates on x64 and x86; original XT integration checkpoint on both widths once; independent selected XT product builds; manifests/corpus/DAG/static composition gates; Verify-DocumentationGovernance.ps1 -Product nxvm; git diff --check; PE widths, stripped optimization flags, retained Debug and SHA-256. All 58 original integration contexts remain mandatory at T exit. |
-| Expected Markers | Units retain every baseline assertion; affected original boot acceptance passes; selected XT graph excludes peer-App production source; both usable XT EXEs at revision 0.5.0543; no obsolete XT source owner or duplicated Product/Machine. |
-| Asset Needs | Existing owner-provided XT ROM/CMOS/font build inputs and external media only, unchanged. Reuse ignored build caches while needed. No new ROM acquisition or media copies; accepted Td S175 permits assets/my5160/<profile> with the identical INI and relative-path depth. |
+| Objective | Deliver My5170's fixed composition, entry, build, tests and artifacts without importing NXVM's default profile or copying shared AT mechanisms. |
+| Non-goals | No DeskPro/default App cutover yet, no chip algorithms or timing grades, no Lib/Common/x86 source/test or MyNES changes, no external masters or unsolicited INI rewrites, no new runtime framework. |
+| Reference Baseline | Clean pushed fed7049b3 and cd173acb7; accepted S1 My5160 0543 pair and unchanged six legacy PC 0542 artifacts. |
+| Candidate Proposal | [Four PC Apps](../proposals/m5-independent-pc-apps.md); [T543 ledger](../history/M5-T543-four-pc-apps.md), S2 row and inventory. |
+| Files And ABI Surface | Inspect complete default_profile/pc_at_profile.c, its descriptor declarations, machine_plan.c and external_pc_at_rom.c/h; move concrete IBM AT values/constraints into app-my5170 and genuinely shared plan/ROM/materialization mechanisms to ibmpc. Corresponding tests, CMake graph, binding, tools/docs and assets follow ownership. Preserve existing opaque/copy ABIs; no registry, peer-App facade or copied Product runtime. |
+| Applicable Rules | Read NXVM guide, CONTRIBUTING, rules/EXECUTION, ARCHITECTURE, CODING, DOCUMENT, NXVM design/ARCHITECTURE, CODING, UI, ROADMAP and source policy. Unique mutable owner, neutral dependency direction, complete App batch, numeric S/P, separate target commits, no protected raw assets, complete verification and actual-diff review. Architecture/coding skills apply; accepted Td S175 governs the new roots and preserves one NXVM scope/sequence. No S2 edits of docs/rules. |
+| Verification | Full run-unit-tests aggregates on x64 and x86; original IBM AT integration checks on both widths once; independent selected AT product builds; affected shared PC consumers' builds/boot checks if their executable inputs change; manifests/corpus/DAG/static composition gates; documentation governance; git diff --check; PE widths, optimization/stripping, retained Debug and SHA-256. All 58 original integration contexts remain mandatory at T exit. |
+| Expected Markers | Every original assertion and affected boot predicate retained; selected AT graph excludes peer-App production source; verified My5170 0.5.0543 pair; no duplicate AT preparation/materialization or Product/Machine. |
+| Asset Needs | Existing owner-provided IBM AT ROM/CMOS/font inputs and external media, unchanged. Reuse ignored caches. No new ROM acquisition or media copies; assets/my5170/<profile> preserves identical INI and relative-path depth. |
 | Reporting Requirements | Confirm scope before code; report actual missing shared prerequisites before expansion. Delivery records moves, source/test added/removed/net count, sole runtime owners, complete results and artifact hashes; coordinator reviews actual diff before separate governance acceptance. |
 | Stop Conditions | Missing or mismatched BYOB inputs/toolchain, lost original test/capability, peer-App production dependency, required Lib/Common/x86/MyNES edit, or unapproved INI/path/packaging policy change. Collect safe evidence; revise scope or obtain the named governance prerequisite rather than bypass a gate. |
-| Exit Criteria | S1 ledger row fully accepted: XT composition and matching tests/build/references migrated, no copy/legacy production route, required full units and affected integration pass, dual usable artifacts verified and pushed with source identity, manifests/docs/boundaries pass, actual-change review complete. |
+| Exit Criteria | S2 ledger row accepted: IBM AT composition and matching tests/build/references migrated, no copy/legacy production route, required full units and affected integration pass, dual usable artifacts verified and pushed with source identity, shared PC receivers verified, manifests/docs/boundaries pass, actual-change review complete. |
 | Original Owner Request | Admit the four-machine App split as app-my5160, app-my5170, app-mydeskpro386 and app-nxvm; original default hardware becomes NXVM itself. Each S extracts one App sequentially, with parallel src/test/assets but shared docs, tools, version and MTSP numbering. |
-| Similar-Issue Sweep | Search src, test, cmake, tools and current docs for app-nxvm/profiles/xt, old App names and fixed-binding/source-selection references. Classify all production hits as migrated XT, shared mechanism, test-only aggregation or later App row; preserve historical evidence. Gate against peer-App production includes/links and stale selected-XT paths. |
+| Similar-Issue Sweep | Search src/test/cmake/tools/current docs for IBM AT definitions, mixed default/5170 compilation guards, external PC/AT ROM provider and descriptor/materialization callers. Classify model values, shared mechanisms and test-only matrices before moves. Gate against peer-App production dependencies; preserve My5160 independence and historical evidence. |
 
 ## Next Work
 
-T543 S1 is active. Planned S2, S3 and S4 extract My5170, MyDeskPro386 and NXVM,
-respectively; each is admitted only after the preceding App delivery is accepted.
+T543 S1 is accepted; S2 is active. Planned S3 and S4 extract MyDeskPro386 and
+NXVM, respectively; each follows the preceding accepted App delivery.
 Later qualification candidates remain in [Queue](QUEUE.md). Td S175 reconciles
 the approved parallel App artifact roots with shared scope/version/numbering.
 Shared rule delivery e49f6ac5e passes actual-change review and both product
@@ -45,8 +46,8 @@ documentation checks; no source, INI or binary changes were made by that Td.
 
 ## Retained Runnable Evidence
 
-The accepted source baseline is Shared eb5882c21 and NXVM b10fc0540. T543 S1
-now prepares a verified My5160 0.5.0543 pair under assets/my5160, with its
+The current accepted delivery is Shared cd173acb7 and NXVM fed7049b3. T543 S1
+provides a verified My5160 0.5.0543 pair under assets/my5160, with its
 unchanged owner INI and runtime Debug. Six unmigrated PC EXEs remain 0.5.0542
 under assets/nxvm. S1 hashes and proof are in the
 [T543 ledger](../history/M5-T543-four-pc-apps.md); baseline hashes remain in
@@ -55,7 +56,8 @@ T542 S20. PE widths and absence of compiler debug sections are verified.
 S1 verification: full units 506/506 per width; original XT integration reaches
 installer-running once per width (18.46/24.77 seconds); 17 manifest/corpus/DAG/
 negative checks, both specialized aggregates, documentation and diff checks
-pass. No shared six-corpus or MyNES modification. S1 is not accepted yet.
+pass. No shared six-corpus or MyNES modification. S1 actual-change review is
+complete and accepted; S2 admission makes no new runtime or artifact claim.
 
 Fresh S20 acceptance: full units 506/506 per width; all 58 original external
 integration contexts pass once across four profiles and two widths. The 17
