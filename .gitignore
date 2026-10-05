@@ -8,6 +8,9 @@
 # editable startup configuration. Protected firmware, media and ROM inputs
 # remain external and ignored by their own paths.
 !/assets/nxvm/**
+!/assets/my5160/**
+!/assets/my5170/**
+!/assets/mydeskpro386/**
 !/assets/mynes/**
 
 # MyNES integration ROM fixtures are owner-local BYOROM inputs.  Tests may
