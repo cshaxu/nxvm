@@ -539,11 +539,13 @@ verified build of the same named task.
 A current product artifact is a stripped Release build with no compiler debug information; this never removes an admitted runtime debugger, and Debug builds are for development and gates only.
 
 At the four-PC-App cutover, each accepted App instead deploys its existing
-machine-named pair and adjacent owner INI under `assets/<app>/<profile>/`, with
+machine-named pair and adjacent owner INI directly under `assets/<app>/`, with
 App keys `my5160`, `my5170`, `mydeskpro386`, `nxvm`. The retained profile
-subdirectory preserves relative media-path depth without changing INI values.
+is compiled into the EXE, not another artifact subdirectory. Rebase relative
+media references when removing that directory level; they must resolve to the
+same external master and preserve access mode and all other INI settings.
 An App not yet migrated retains its previous `assets/nxvm/<profile>/` pair;
-move its owner INI unchanged and retire the old EXEs only after verification.
+move its owner INI with only that path rebase and retire old EXEs after verification.
 All four retain the one task revision; original default-386 hardware becomes
 the NXVM App, not a separately branded default-at product.
 
