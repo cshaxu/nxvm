@@ -24,8 +24,11 @@ and `-DPROJECT_ARTIFACT_ARCHITECTURE=x86`.  Select exactly one of the four
 documented fixed profiles through `NXVM_PRODUCT_PROFILE`; CMake validates the
 matching manifest, hashes and firmware slots before it builds.
 
-The resulting versioned executable is deployed only below
-`assets/nxvm/<profile>/`, beside its existing owner-maintained `NXVM.ini`.
+The My5160 versioned executable is deployed below
+`assets/my5160/ibm-5160-model-268-360k/`; the three not-yet-migrated Apps still
+use `assets/nxvm/<profile>/`. Each pair remains beside its existing
+owner-maintained `NXVM.ini`. These PC Apps share this tool tree and task/version
+sequence; they do not share private App composition sources.
 Deployment never rewrites that INI. Runtime media paths in that INI
 refer to the external `nxvm-assets/media-nxvm` archive; no protected asset is
 copied into this repository.

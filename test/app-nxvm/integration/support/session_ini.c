@@ -6,7 +6,7 @@
 
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "ibmpc/product/factory_interface.h"
-#include "app-nxvm/product/profile_binding.h"
+#include VM_PRODUCT_BINDING_HEADER
 #include "ibmpc/machine/machine_private.h"
 #include "lib/base/sync_interface.h"
 

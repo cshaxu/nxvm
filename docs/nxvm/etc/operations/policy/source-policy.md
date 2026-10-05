@@ -7,7 +7,7 @@
 ## Historical NXVM Foundation
 
 The following records the pre-consolidation ntvdm64 import context, not a second
-current repository or product line. Current NXVM lives in `src/app-nxvm` under
+current repository or product line. The PC family uses App-owned compositions under
 the root MIT license; the VDM direction is retired. The original authorization
 and per-unit provenance obligations below remain preserved.
 
@@ -81,7 +81,8 @@ workflow. Asset masters and local manifests remain in `nxvm-assets`.
 Award, Phoenix, IBM, Compaq and other third-party firmware originals remain
 owner-supplied BYOB inputs. The owner has approved embedding those inputs into
 machine EXEs at build time and explicitly requires the resulting EXEs under
-`assets/nxvm/<profile>/` to be committed and pushed. This is the owner's
+`assets/<app>/<profile>/` to be committed and pushed. My5160 uses assets/my5160;
+unmigrated PC Apps retain assets/nxvm until their sequential cutover. This is the owner's
 specific artifact-publication authorization, superseding the earlier blanket
 exclusion of embedded firmware. It does not establish a third-party license
 grant or authorize acquiring new ROMs. Raw ROM originals stay external;
@@ -100,8 +101,10 @@ binary payloads. Repository templates use portable references, never tracked
 machine-local absolute paths. Embedded ROMs supply immutable bytes through the
 single Core ROM mapping path.
 
-For XT, AT, DeskPro, default and PC110, `src/app-nxvm/profiles` owns board C,
-ROM slot/mapping declarations. Owner-authorized, project-authored BIOS source
+For XT, `src/app-my5160/profiles` owns board C and ROM slot/mapping declarations;
+AT, DeskPro and default still use `src/app-nxvm/profiles` until their cutover.
+PC110 remains a future machine, not an implemented asset set.
+Owner-authorized, project-authored BIOS source
 and offline construction tools belong to `src/app-nxvm/firmware` and are
 committed under the project's license. Generated candidates remain under
 `build/` until qualified and are linked into the selected product executable.

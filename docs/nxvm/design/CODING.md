@@ -5,8 +5,9 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 
 ## Current Tree
 
-The product/shared-corpus layout is current. `product` and `profiles`
-are NXVM runtime roots below `app-nxvm`; `firmware` owns
+The product/shared-corpus layout is current. My5160 owns its `product` and
+`profiles` roots; the three remaining PC compositions still live below
+`app-nxvm` during the sequential cutover. `firmware` owns
 project-authored guest firmware source and its build tools. `pc110` remains a
 future Profile only when its separate evidence task admits real source files.
 
@@ -16,11 +17,13 @@ src/
   common/{session,machine,ui}/
   x86/{chips,core,xasm32,debug}/
   ibmpc/{board-common,board-xt,board-at,machine,product}/
+  app-my5160/           fixed IBM 5160 App
+    product/            thin main and fixed XT binding
+    profiles/           IBM 5160 composition and firmware slots
   app-nxvm/             NXVM product implementation
     product/            thin main and fixed composition binding
     firmware/           project-owned BIOS source and offline ROM construction
     profiles/
-      xt/               IBM 5160 board composition and firmware slots
       at/               IBM 5170 board composition and firmware slots
       model40/          retained DeskPro 386 composition and firmware slots
       default_profile/  retained default PC/AT composition and firmware slots
@@ -57,11 +60,12 @@ objects remain ignored under `build/`, not tracked source. The runtime ROM
 contract carries immutable bytes, not external file paths. This is the approved
 target; Current records cutover verification and acceptance status.
 Documentation changes do not move assets. Each versioned local product EXE and its
-adjacent NXVM.ini live only in `assets/nxvm/<profile>/`; relative
+adjacent NXVM.ini live only in `assets/<app>/<profile>/`; My5160 uses
+`assets/my5160`, while unmigrated Apps retain `assets/nxvm`. Relative
 runtime-media paths resolve from that file. It has no firmware/CMOS/font asset
 path keys. NXVM.ini is the sole
 product runtime configuration route; repository-only tests do not load it.
-The owner explicitly requires the embedded-ROM EXEs in `assets/nxvm/<profile>/`
+The owner explicitly requires the embedded-ROM EXEs in `assets/<app>/<profile>/`
 to be committed with their product delivery. Raw vendor ROMs and generated
 byte sources/objects remain outside tracked source.
 Do not rename/move external assets merely to match target source directory names.

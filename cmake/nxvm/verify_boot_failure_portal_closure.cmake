@@ -37,7 +37,9 @@ endforeach()
 # Profiles map supplied immutable bytes; only the build may open ROM files.
 file(GLOB_RECURSE profile_sources
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/*.h")
 list(APPEND profile_sources "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/rom_mapping.c")
 foreach(path IN LISTS profile_sources)
     file(READ "${path}" text)

@@ -1,6 +1,6 @@
 #include "ibmpc/machine/preparation_interface.h"
-#include "app-nxvm/profiles/xt/construction_interface.h"
-#include "app-nxvm/profiles/xt/xt_5160_268.h"
+#include "app-my5160/profiles/construction_interface.h"
+#include "app-my5160/profiles/xt_5160_268.h"
 
 typedef struct vm_profile_xt_machine_plan {
     vm_machine_construction construction;

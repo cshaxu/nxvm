@@ -5,7 +5,7 @@
 | Work | Progress |
 | --- | --- |
 | T542 | Closed after accepted corrective S20; shared PC composition and version extraction complete. |
-| T543 S1 | Admitted: extract My5160 first; one complete App per sequential S. |
+| T543 S1 | Delivery verified: My5160 split complete; pending pushed implementation and coordinator acceptance. |
 
 Shared delivery eb5882c21 and NXVM delivery b10fc0540 pass separate actual-change
 coordinator review. The [S20 ledger and verification](../history/M5-T542-shared-pc-machine-adapter.md)
@@ -45,10 +45,17 @@ documentation checks; no source, INI or binary changes were made by that Td.
 
 ## Retained Runnable Evidence
 
-Current source deliveries are Shared eb5882c21 and NXVM b10fc0540.
-Eight optimized stripped 0.5.0542 EXEs remain in assets/nxvm/<profile>, with
-unchanged owner INIs and runtime Debug. Their current SHA-256 values are in
-T542's S20 table; PE widths and absence of compiler debug sections are verified.
+The accepted source baseline is Shared eb5882c21 and NXVM b10fc0540. T543 S1
+now prepares a verified My5160 0.5.0543 pair under assets/my5160, with its
+unchanged owner INI and runtime Debug. Six unmigrated PC EXEs remain 0.5.0542
+under assets/nxvm. S1 hashes and proof are in the
+[T543 ledger](../history/M5-T543-four-pc-apps.md); baseline hashes remain in
+T542 S20. PE widths and absence of compiler debug sections are verified.
+
+S1 verification: full units 506/506 per width; original XT integration reaches
+installer-running once per width (18.46/24.77 seconds); 17 manifest/corpus/DAG/
+negative checks, both specialized aggregates, documentation and diff checks
+pass. No shared six-corpus or MyNES modification. S1 is not accepted yet.
 
 Fresh S20 acceptance: full units 506/506 per width; all 58 original external
 integration contexts pass once across four profiles and two widths. The 17
@@ -83,7 +90,8 @@ remain in [TODO](TODO.md); they are not claimed repaired here.
   No DeskPro-to-default/5170 private dependency remains.
 - Production links only the selected composition. Multi-profile aggregation
   is explicit test-only input. Default/5170 retain cohesive translation units
-  with build-only constructor selection; four top-level Apps are not yet built.
+  with build-only constructor selection. My5160 now has its own fixed entry,
+  composition and selected graph; the other three App cutovers remain planned.
 - NXVM retains runnable XT, AT, Model40 and default fixed products. PC110 is
   unimplemented. MyNES retains its unchanged 0043 pair and does not consume ibmpc.
 

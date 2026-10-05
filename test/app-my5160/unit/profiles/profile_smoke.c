@@ -1,15 +1,26 @@
-#include "../../../support/profile.h"
+#include "app-my5160/profiles/construction_interface.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "../../../../x86/core/composition_fixture.h"
-#include "../../../../ibmpc/board-common/composition_fixture.h"
-#include "../../../../ibmpc/board-common/controller_fixture.h"
+#include "../../../x86/core/composition_fixture.h"
+#include "../../../ibmpc/board-common/composition_fixture.h"
+#include "../../../ibmpc/board-common/controller_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "ibmpc/machine/machine_private.h"
-#include "app-nxvm/profiles/xt/xt_5160_268.h"
+#include "app-my5160/profiles/xt_5160_268.h"
+
+static lib_status vm_xt_test_create(const vm_machine_config *config,
+    const vm_machine_assets *assets, vm_machine **out_machine)
+{
+    vm_machine_construction construction;
+    lib_status status = vm_profile_machine_plan_create_xt(config, assets, &construction);
+
+    *out_machine = LIB_NULL;
+    return status == LIB_STATUS_OK ?
+        vm_machine_create(config, &construction, out_machine) : status;
+}
 
 static core_machine_media_result vm_xt_5160_268_fdd_query(void *context,
     core_machine_media_info *out_info)
@@ -206,7 +217,7 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
     lib_u8 observed[2] = {0};
     lib_i32 failed = 1;
 
-    if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5160_MODEL_268,
+    if (vm_xt_test_create(
             &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || session->core_machine == LIB_NULL ||
         vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
@@ -216,13 +227,13 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.bios_count = 2u;
-    if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5160_MODEL_268,
+    if (vm_xt_test_create(
         &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) goto done;
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
-    failed = vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5160_MODEL_268,
+    failed = vm_xt_test_create(
         &config, &assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
 done:

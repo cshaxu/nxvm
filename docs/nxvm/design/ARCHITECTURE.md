@@ -197,9 +197,11 @@ and parser, not a promise that every memory size or disk fits every board.
 Omitted values use selected-profile defaults; explicit unsupported values fail
 clearly rather than selecting another board or silently changing hardware.
 
-Each selected product deploys once to the versioned
-`assets/nxvm/<profile>/` directory, alongside its owner-maintained `NXVM.ini`.
-That is the only current executable location; `build/` remains compiler state
+Each selected product deploys once to its App's
+`assets/<app>/<profile>/` directory, alongside its owner-maintained `NXVM.ini`.
+My5160 now owns `assets/my5160/ibm-5160-model-268-360k`; the three remaining
+App cutovers still use `assets/nxvm/<profile>` until their sequential delivery.
+These are the current executable locations; `build/` remains compiler state
 apart from historical evidence. The tracked executable/INI pair is adjacent
 and used by deployed-product integration. EXE deployment never rewrites or
 relocates the owner INI: its relative media paths belong to that directory.

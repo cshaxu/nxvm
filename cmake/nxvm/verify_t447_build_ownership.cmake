@@ -33,7 +33,7 @@ if(NOT vm_native_bypass EQUAL -1)
 endif()
 
 string(REGEX MATCH
-    "ibmpc_add_product\\(\\$\\{target\\} \"\\$\\{CMAKE_SOURCE_DIR\\}/src/app-nxvm/product/main\\.c\""
+    "ibmpc_add_product\\(\\$\\{target\\} \"\\$\\{NXVM_PRODUCT_ENTRY\\}\""
     artifact_source "${project_cmake}")
 if(NOT artifact_source OR NOT product_build MATCHES
         "add_executable\\(\\$\\{target\\} EXCLUDE_FROM_ALL \"\\$\\{entry\\}\"\\)")

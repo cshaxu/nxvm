@@ -48,7 +48,9 @@ file(GLOB_RECURSE unit_sources
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/machine/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/machine/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/profiles/*.h")
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/profiles/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-my5160/unit/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-my5160/unit/*.h")
 foreach(source IN LISTS unit_sources)
     file(READ "${source}" text)
     if(text MATCHES "GetFileAttributesA|CopyFileA|CreateFile")
@@ -59,7 +61,7 @@ endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_text)
 file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" product_cmake_text)
 if(product_cmake_text MATCHES "configure_file\\([^)]*NXVM\\.ini" OR
-   NOT product_cmake_text MATCHES "set\\(directory \"\\$\\{CMAKE_SOURCE_DIR\\}/assets/nxvm/\\$\\{NXVM_PRODUCT_PROFILE\\}\"\\)" OR
+   NOT product_cmake_text MATCHES "set\\(directory \"\\$\\{NXVM_PRODUCT_ARTIFACT_ROOT\\}/\\$\\{NXVM_PRODUCT_PROFILE\\}\"\\)" OR
    NOT product_cmake_text MATCHES "set\\(PROJECT_CURRENT_VM_RUNTIME_PATH \"\\$\\{directory\\}/\\$\\{task_artifact_filename\\}\"" OR
    NOT product_cmake_text MATCHES "project_add_test\\(\\$\\{target\\} integration[ \t\r\n]+\"\\$\\{project_t533_runtime_directory\\}\"")
     message(FATAL_ERROR
@@ -69,9 +71,11 @@ if(cmake_text MATCHES "project_add_test\\([^\\n]*integration[^\\n]*(PROJECT_FDD_
     message(FATAL_ERROR
         "T533 integration must be registered through the INI helper, not a media path.")
 endif()
-file(GLOB session_documents "${PROJECT_SOURCE_DIR}/assets/nxvm/*/NXVM.ini")
+file(GLOB session_documents
+    "${PROJECT_SOURCE_DIR}/assets/nxvm/*/NXVM.ini"
+    "${PROJECT_SOURCE_DIR}/assets/my5160/*/NXVM.ini")
 set(expected_session_documents
-    "${PROJECT_SOURCE_DIR}/assets/nxvm/ibm-5160-model-268-360k/NXVM.ini"
+    "${PROJECT_SOURCE_DIR}/assets/my5160/ibm-5160-model-268-360k/NXVM.ini"
     "${PROJECT_SOURCE_DIR}/assets/nxvm/ibm-5170-model-339-1200k/NXVM.ini"
     "${PROJECT_SOURCE_DIR}/assets/nxvm/compaq-deskpro-386-model-40-1200k/NXVM.ini"
     "${PROJECT_SOURCE_DIR}/assets/nxvm/default-pc-at-80386-1440k-hdd/NXVM.ini")

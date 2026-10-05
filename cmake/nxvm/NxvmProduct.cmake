@@ -264,12 +264,12 @@ add_executable(vm-ibm-5170-direct-plan-smoke
 target_link_libraries(vm-ibm-5170-direct-plan-smoke PRIVATE
     vm-profile-tests ibmpc-board-common x86-core)
 add_executable(vm-xt-5160-268-profile-smoke
-    test/app-nxvm/unit/core/machine/vm_xt_5160_268_profile_smoke.c)
+    test/app-my5160/unit/profiles/profile_smoke.c)
 target_sources(vm-xt-5160-268-profile-smoke PRIVATE
     test/x86/core/composition_fixture.c
     test/ibmpc/board-common/composition_fixture.c
     test/ibmpc/board-common/controller_fixture.c)
-target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE vm-profile-tests)
+target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE my5160-profile)
 
 
 
@@ -786,10 +786,6 @@ set(NXVM_PC_AT_COMPOSITION_SOURCES
     src/app-nxvm/profiles/default_profile/machine_plan.c
     src/app-nxvm/profiles/default_profile/pc_at_profile.c
     src/app-nxvm/profiles/default_profile/external_pc_at_rom.c)
-set(NXVM_XT_COMPOSITION_SOURCES
-    src/app-nxvm/profiles/xt/xt_5160_268.c
-    src/app-nxvm/profiles/xt/rom/xt_5160_268_rom.c
-    src/app-nxvm/profiles/xt/machine_plan.c)
 set(NXVM_MODEL40_COMPOSITION_SOURCES
     src/app-nxvm/profiles/model40/machine_plan.c
     src/app-nxvm/profiles/model40/model40.c
@@ -808,7 +804,6 @@ target_link_libraries(core-machine PUBLIC ibmpc-board-common ibmpc-board-at ibmp
 # Explicit multi-profile fixtures never feed a production product.
 add_library(vm-profile-tests STATIC
     ${NXVM_PC_AT_COMPOSITION_SOURCES}
-    ${NXVM_XT_COMPOSITION_SOURCES}
     ${NXVM_MODEL40_COMPOSITION_SOURCES})
 target_include_directories(vm-profile-tests PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -817,17 +812,19 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-profile-tests PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 target_link_libraries(vm-profile-tests PUBLIC
+    my5160-profile
     core-machine
     storage
     ibmpc-machine)
 
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40")
     set(nxvm_selected_sources ${NXVM_MODEL40_COMPOSITION_SOURCES})
-elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
-    set(nxvm_selected_sources ${NXVM_XT_COMPOSITION_SOURCES})
 else()
     set(nxvm_selected_sources ${NXVM_PC_AT_COMPOSITION_SOURCES})
 endif()
+if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
+    add_library(vm-profile-selected ALIAS my5160-profile)
+else()
 add_library(vm-profile-selected STATIC ${nxvm_selected_sources})
 target_include_directories(vm-profile-selected PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(vm-profile-selected PUBLIC ibmpc-machine ibmpc-board-common x86-core)
@@ -840,6 +837,7 @@ elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "at")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-profile-selected PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 endif()
 
 add_executable(vm-keyboard-host-ingress-smoke
@@ -856,13 +854,15 @@ target_link_libraries(vm-host-cancellation-smoke PRIVATE
 
 
 
-add_library(vm-app STATIC src/app-nxvm/product/machine_binding.c)
+add_library(vm-app STATIC ${NXVM_PRODUCT_BINDING})
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-app PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 target_compile_definitions(vm-app PRIVATE
     VM_PROFILE_PLAN_CREATE=${NXVM_PROFILE_PLAN_CREATE}
     VM_PROFILE_CONSTRUCTION_HEADER="${NXVM_PROFILE_CONSTRUCTION_HEADER}")
+target_compile_definitions(vm-app PUBLIC
+    VM_PRODUCT_BINDING_HEADER="${NXVM_PRODUCT_BINDING_HEADER}")
 target_include_directories(vm-app PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
     "${CMAKE_BINARY_DIR}/generated"
@@ -1884,7 +1884,7 @@ endfunction()
 function(project_add_t515_ini_boot_case session_file)
     string(REGEX REPLACE "\\.ini$" "/NXVM.ini"
         project_t515_session_path "${session_file}")
-    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/assets/nxvm/${project_t515_session_path}")
+    if(NOT EXISTS "${NXVM_PRODUCT_ARTIFACT_ROOT}/${project_t515_session_path}")
         message(FATAL_ERROR "T515 INI boot session is missing: ${session_file}")
     endif()
     set(project_t515_test_suffix "vm-profile-floppy-boot-matrix.${session_file}")
@@ -1908,7 +1908,7 @@ function(project_add_t515_ini_boot_case session_file)
     file(MAKE_DIRECTORY "${project_t515_workspace}")
     add_test(NAME "${project_t515_test}"
         COMMAND "$<TARGET_FILE:vm-profile-floppy-boot-matrix>"
-            "${CMAKE_SOURCE_DIR}/assets/nxvm" "${project_t515_session_path}")
+            "${NXVM_PRODUCT_ARTIFACT_ROOT}" "${project_t515_session_path}")
     set_tests_properties("${project_t515_test}" PROPERTIES
         LABELS integration
         SKIP_RETURN_CODE 77
@@ -1924,12 +1924,12 @@ function(project_add_t515_ini_integration_test target session_file)
     string(REGEX REPLACE "\\.ini$" "/NXVM.ini"
         project_t515_session_path "${session_file}")
     if(NOT EXISTS
-       "${CMAKE_SOURCE_DIR}/assets/nxvm/${project_t515_session_path}")
+       "${NXVM_PRODUCT_ARTIFACT_ROOT}/${project_t515_session_path}")
         message(FATAL_ERROR
             "T515 INI integration session is missing: ${session_file}")
     endif()
     file(MAKE_DIRECTORY "${project_t515_workspace}")
-    project_add_test(${target} integration "${CMAKE_SOURCE_DIR}/assets/nxvm"
+    project_add_test(${target} integration "${NXVM_PRODUCT_ARTIFACT_ROOT}"
         "${project_t515_session_path}" ${ARGN})
     set_tests_properties("${project_t515_test}" PROPERTIES
         SKIP_RETURN_CODE 77
@@ -2080,15 +2080,20 @@ function(add_current_vm_artifact target version)
     if(task_artifact_filename STREQUAL version)
         message(FATAL_ERROR "Invalid NXVM current artifact version: ${version}")
     endif()
-    set(directory "${CMAKE_SOURCE_DIR}/assets/nxvm/${NXVM_PRODUCT_PROFILE}")
+    set(directory "${NXVM_PRODUCT_ARTIFACT_ROOT}/${NXVM_PRODUCT_PROFILE}")
     set(PROJECT_CURRENT_VM_RUNTIME_PATH "${directory}/${task_artifact_filename}" PARENT_SCOPE)
-    ibmpc_add_product(${target} "${CMAKE_SOURCE_DIR}/src/app-nxvm/product/main.c"
+    ibmpc_add_product(${target} "${NXVM_PRODUCT_ENTRY}"
         "${version}" "${task_artifact_filename}" "${PROJECT_ARTIFACT_ARCHITECTURE}"
         "${directory}" vm-app nxvm-product-firmware)
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0542)
-add_current_vm_artifact(vm-0-5-0542 "0.5.0542")
+if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
+    set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0543)
+    add_current_vm_artifact(vm-0-5-0543 "0.5.0543")
+else()
+    set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0542)
+    add_current_vm_artifact(vm-0-5-0542 "0.5.0542")
+endif()
 include("${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_selected_composition.cmake")
 
 function(project_add_t533_console_integration_test target)
@@ -2112,9 +2117,13 @@ elseif(NXVM_PRODUCT_PROFILE STREQUAL "ibm-5170-model-339-1200k")
         ibm-5170-model-339-1200k.ini)
 endif()
 
+if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
+    include("${CMAKE_SOURCE_DIR}/test/app-my5160/integration/register.cmake")
+else()
 foreach(project_t515_session IN ITEMS ${NXVM_PRODUCT_PROFILE}.ini)
     project_add_t515_ini_boot_case(${project_t515_session})
 endforeach()
+endif()
 if(NXVM_PRODUCT_PROFILE STREQUAL "default-pc-at-80386-1440k-hdd")
     set_tests_properties("integration.vm-windows31-checkpoint" PROPERTIES
         TIMEOUT 130)
@@ -2396,6 +2405,8 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
 
     add_custom_target(verify-current-artifact-target
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -DPROJECT_CURRENT_ARTIFACT_GRAPH:FILEPATH=${CMAKE_BINARY_DIR}/selected-composition-targets.txt
+            -DPROJECT_CURRENT_PROFILE:STRING=${NXVM_PRODUCT_PROFILE}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_current_artifact_target.cmake"
         COMMENT "Verifying current artifact target truthfulness"
         VERBATIM)

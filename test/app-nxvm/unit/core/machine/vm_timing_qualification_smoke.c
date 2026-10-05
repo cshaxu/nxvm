@@ -6,7 +6,7 @@
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
-#include "app-nxvm/profiles/xt/xt_5160_268.h"
+#include "app-my5160/profiles/xt_5160_268.h"
 
 typedef lib_i32 vm_timing_qualification_configure(
     core_machine_config *out_configuration);

@@ -44,6 +44,12 @@ nxvm_require_manifest(ibm-mda)
 nxvm_require_profile_asset("ibm-mda/firmware/ibm-mda-cp437-character-generator.rom" 8192
     "37527f661580e5a09710051cec67422abfadf31c61b841537a91e7f27be19304")
 
+set(NXVM_PRODUCT_ENTRY "${CMAKE_SOURCE_DIR}/src/app-nxvm/product/main.c")
+set(NXVM_PRODUCT_BINDING src/app-nxvm/product/machine_binding.c)
+set(NXVM_PRODUCT_BINDING_HEADER app-nxvm/product/profile_binding.h)
+set(NXVM_PRODUCT_ARTIFACT_ROOT "${CMAKE_SOURCE_DIR}/assets/nxvm")
+include("${CMAKE_SOURCE_DIR}/src/app-my5160/CMakeLists.txt")
+
 if(NXVM_PRODUCT_PROFILE STREQUAL "default-pc-at-80386-1440k-hdd")
     set(NXVM_PRODUCT_MACHINE_KEY default)
     set(NXVM_PROFILE_MONITOR_NAME "default-pc-at")
@@ -62,20 +68,7 @@ if(NXVM_PRODUCT_PROFILE STREQUAL "default-pc-at-80386-1440k-hdd")
     set(cmos_hash 6b02de39b0dbd9ce2516c94545b89b4d1883df4cf6714876c60bef3fd6f93d0d)
     nxvm_require_profile_asset("default-pc-at/cmos/default-pc-at-${product_asset_key}.cmos" 64 "${cmos_hash}")
 elseif(NXVM_PRODUCT_PROFILE STREQUAL "ibm-5160-model-268-360k")
-    set(NXVM_PRODUCT_MACHINE_KEY xt)
-    set(NXVM_PROFILE_MONITOR_NAME "ibm-5160-model-268")
-    set(NXVM_PROFILE_PLAN_CREATE vm_profile_machine_plan_create_xt)
-    set(NXVM_PROFILE_CONSTRUCTION_HEADER app-nxvm/profiles/xt/construction_interface.h)
-    set(NXVM_PROFILE_CPU CORE_MACHINE_CPU_PROFILE_DEFAULT)
-    set(NXVM_PROFILE_FPU X86_FPU_PROFILE_NONE)
-    set(NXVM_PROFILE_FLOPPY_FORMAT VM_MACHINE_FLOPPY_FORMAT_360K)
-    set(NXVM_PROFILE_BIOS_COUNT 1)
-    set(NXVM_PROFILE_BIOS_0 "${NXVM_PROFILE_ASSETS_ROOT}/ibm-5160/firmware/ibm-5160-16aug82-logical-f0000-fffff.rom")
-    set(NXVM_PROFILE_BIOS_1 LIB_NULL)
-    set(NXVM_PROFILE_VIDEO LIB_NULL)
-    set(NXVM_PROFILE_CMOS LIB_NULL)
-    nxvm_require_manifest(ibm-5160)
-    nxvm_require_profile_asset("ibm-5160/firmware/ibm-5160-16aug82-logical-f0000-fffff.rom" 65536 "becff9b23527e20cfb48c7362f315fd099723e9d1e371d2a782a1640a54e1a0a")
+    # My5160's own entry supplied the immutable XT selection and assets above.
 elseif(NXVM_PRODUCT_PROFILE STREQUAL "ibm-5170-model-339-1200k")
     set(NXVM_PRODUCT_MACHINE_KEY at)
     set(NXVM_PROFILE_MONITOR_NAME "ibm-5170-model-339")
@@ -116,11 +109,18 @@ else()
 endif()
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/app-nxvm/product")
+include("${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_my5160_boundary.cmake")
 configure_file("${CMAKE_SOURCE_DIR}/cmake/nxvm/profile_binding.h.in"
     "${CMAKE_BINARY_DIR}/generated/app-nxvm/product/profile_binding.h" @ONLY)
 
+if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
+    set(nxvm_generated_product app-my5160)
+else()
+    set(nxvm_generated_product app-nxvm)
+endif()
+
 # Only products and external integration link this target; unit fixtures do not.
 ibmpc_embed_firmware(nxvm-product-firmware
-    "${CMAKE_BINARY_DIR}/generated/app-nxvm/product/firmware.c"
+    "${CMAKE_BINARY_DIR}/generated/${nxvm_generated_product}/product/firmware.c"
     "${NXVM_PROFILE_BIOS_0}" "${NXVM_PROFILE_BIOS_1}" "${NXVM_PROFILE_VIDEO}"
     "${NXVM_PROFILE_CMOS}" "${NXVM_PROFILE_FONT}")

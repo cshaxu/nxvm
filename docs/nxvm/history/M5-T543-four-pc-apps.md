@@ -56,3 +56,96 @@ remain under the four-profile app-nxvm shell. S1 moves rather than forks the XT
 owner and consumes the accepted shared PC runtime. Later App deliveries are
 not admitted simultaneously. Planning documents create no 0543 artifact or
 claim a completed source migration.
+
+## S1 Delivery Review
+
+The XT constructor, plan, ROM provider and declarations move to
+src/app-my5160/profiles; their C bodies change only include paths. The new
+14-line process entry and immutable XT binding consume ibmpc/product, not a
+copied command loop. src/app-my5160/CMakeLists.txt owns the fixed source list,
+BYOB roles and manifest checks. The family build selects that entry; this is
+not a claim of a standalone `cmake -S src/app-my5160` project. The selected
+transitive production graph rejects peer-App sources/includes, and the old
+app-nxvm/profiles/xt owner is removed rather than retained as a forwarding path.
+
+The original XT profile smoke moves to test/app-my5160/unit/profiles and links
+only the XT composition plus declared shared fixtures. All original predicates
+and markers remain; its local construction helper replaces the multi-profile
+test selector. test/app-my5160/integration/register.cmake owns the original XT
+boot case. The existing cross-profile boot observer and INI fixture remain
+single family test-only implementations during cutover under test/app-nxvm;
+they do not enter any production graph or create another acceptance predicate.
+The timing qualification matrix remains a multi-App test and follows the moved
+XT header. Final family test-owner reconciliation belongs to S4's already
+admitted complete cutover, not a deferred broken XT test.
+
+assets/my5160/ibm-5160-model-268-360k preserves the original INI contents and
+directory depth. Its Git blob remains 946ca0c1774ef7d6a52be6ef7bbc689da024802b;
+the relative floppy reference resolves to the same external 368640-byte master.
+No external master or other App configuration is edited. Only the XT pair is
+rebuilt at 0.5.0543; other six PC EXEs and MyNES remain at their accepted source
+identity. Shared .gitignore admits the parallel PC roots, without changing a
+shared executable input or requiring a MyNES rebuild.
+
+No chip, timing formula, Product/Machine runtime owner, Lib/Common/x86 source
+or test changes. Configuration carries the same CPU/FPU, topology and firmware
+values. New App code declares its own fixed composition root, not a new parser,
+worker, lifecycle queue, registry or platform wrapper.
+
+The old current-artifact verifier counted literal CMake calls, so the two
+mutually exclusive revision branches during App cutover caused a false
+two-target failure. It now checks the actual selected target graph for exactly
+one versioned EXE and its declaration. The GCC preset assertion still applies
+to the default PC configuration that those presets select; its retained 0542
+graph passes the same verifier. Custom XT configuration must not be required
+to masquerade as the repository's default preset.
+
+Repository-only unit aggregates completed without skips: x64 506/506 in
+264.93 seconds, x86 506/506 in 270.91 seconds, using the existing four-job
+bounded runner and separate build-tree outputs. These runs include all retained
+cross-profile assertions, not just the relocated XT smoke. x64 XT integration
+passes the unchanged `installer-running` predicate in 18.46 seconds; x86
+passes the same original case in 24.77 seconds. Six shared
+corpus and ibmpc manifest/corpus/DAG/negative checks pass 17/17. Specialized
+aggregates pass on both widths after the build-graph correction. The gate-only
+correction does not change the
+compiled source, registered unit set or tested runtime predicates.
+
+Initial cache-generation/build overlap attempts failed before test execution;
+waiting for complete Make generation repaired the stale dependency graph
+without modifying Core or its observation object. The two completed full unit
+runs supersede those build-only failures. No failed runtime predicate is being
+hidden or relabelled as a pass.
+
+Source accounting uses rename-aware `git diff --cached --numstat` against the
+admission baseline, without counting whole moved files as additions. The five
+XT C/H files retain 349 original lines; only four include lines are replaced.
+Production C/H: 39 added, 4 removed, net +35 (the 14-line App entry, 12-line
+fixed binding and 9-line binding header). Test C/H: 22 added, 11 removed, net
++11 for the direct XT fixture and include migration. New App/test CMake entries
+are counted separately, not disguised as C code reduction. This positive
+increase purchases a real independent composition root while leaving all
+runtime behavior in its one shared owner.
+
+| My5160 artifact | SHA-256 |
+| --- | --- |
+| nxvm_xt_0_5_0543_x64.exe | 89FEDEDA7851F10688EEB0E30806B019A4FBF11B9D52955AADD7A2508C6CD8A4 |
+| nxvm_xt_0_5_0543_x86.exe | 4BF917EEC2DB9B3AE6E5E4673F71E5043948607CBC6CD5C347E1F282D9D68972 |
+
+Both are deployed beside the unchanged owner INI in assets/my5160. PE machine
+types are x86-64 and i386; compile flags are -O3 -DNDEBUG with strict warnings,
+linking uses --strip-debug and neither artifact contains debug/stab sections.
+The selected graph retains x86-debug; production Core trace is explicitly 0.
+The superseded XT 0542 pair is removed only after replacement build and boot
+verification; it remains recoverable from Git history. There are exactly ten
+current repository EXEs again: two MyNES, two My5160 and six remaining PC Apps.
+
+Executor review confirms every S1 ledger member: five relocated XT files,
+fixed App binding/entry/build, retained unit/boot assertions, include and gate
+receivers, family documentation/tools and verified artifact/INI mapping. No
+Lib/Common/x86/ibmpc corpus or MyNES diff; no raw vendor asset is added. Both
+specialized aggregates exit 0; documentation governance and diff checks pass.
+The six remaining PC EXEs keep their baseline identities. No active owned build
+or test process remains; reused build caches are retained for later App rows.
+Implementation is ready for separate target delivery and coordinator review;
+this record does not yet claim accepted S1 or whole-T closure.
