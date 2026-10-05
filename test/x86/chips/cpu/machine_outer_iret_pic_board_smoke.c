@@ -1,6 +1,6 @@
 #include "support/cpu_outer_return_fixture.h"
-#include "../../ibmpc-common/pic_fixture.h"
-#include "x86/ibmpc-common/pic_bus_interface.h"
+#include "../../../ibmpc/board-common/pic_fixture.h"
+#include "ibmpc/board-common/pic_bus_interface.h"
 #include "../../core/composition_fixture.h"
 #include <stdio.h>
 

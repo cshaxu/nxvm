@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "x86/core/machine.h"
-#include "../ibmpc-common/board_binding_fixture.h"
+#include "../../ibmpc/board-common/board_binding_fixture.h"
 
 lib_i32 main(void)
 {

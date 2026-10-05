@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/ibmpc-common/dma_bus_interface.h"
+#include "ibmpc/board-common/dma_bus_interface.h"
 #include "x86/core/machine.h"
 #include "x86/core/transaction.h"
-#include "../ibmpc-common/dma_competition_fixture.h"
+#include "../../ibmpc/board-common/dma_competition_fixture.h"
 #include "memory_alias_fixture.h"
 
 typedef struct competition_probe {

@@ -1,4 +1,4 @@
-#include "../ibmpc-at/controller_fixture.h"
+#include "../../ibmpc/board-at/controller_fixture.h"
 #include "x86/core/machine.h"
 
 static void kbc_existing_port(t_port *port, lib_u16 address, void *owner)

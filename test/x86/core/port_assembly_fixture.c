@@ -1,9 +1,9 @@
 #include "port_assembly_fixture.h"
 #include "construction_fixture.h"
-#include "x86/ibmpc-common/pic_bus_interface.h"
-#include "x86/ibmpc-common/pit_bus_interface.h"
+#include "ibmpc/board-common/pic_bus_interface.h"
+#include "ibmpc/board-common/pit_bus_interface.h"
 #include "x86/core/debug_interface.h"
-#include "../ibmpc-common/port_assembly_board_fixture.h"
+#include "../../ibmpc/board-common/port_assembly_board_fixture.h"
 #include <stdio.h>
 
 lib_status port_assembly_read(void *owner, lib_u16 port, lib_u64 tick,

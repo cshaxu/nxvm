@@ -1,7 +1,7 @@
 #ifndef TEST_X86_CORE_CONSTRUCTION_FIXTURE_H
 #define TEST_X86_CORE_CONSTRUCTION_FIXTURE_H
 #include "x86/core/machine.h"
-#include "../ibmpc-common/board_construction_fixture.h"
+#include "../../ibmpc/board-common/board_construction_fixture.h"
 
 typedef struct test_core_allocation {
     core_machine_memory_test_allocation *memory;

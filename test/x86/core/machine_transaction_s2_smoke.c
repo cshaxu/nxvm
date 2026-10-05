@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 #include "x86/chips/cpu/cpu_interface.h"
-#include "x86/ibmpc-common/dma_bus_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/dma_bus_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/core/memory.h"
 #include "x86/core/memory_interface.h"
 #include "x86/core/port.h"

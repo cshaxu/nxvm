@@ -18,39 +18,6 @@ if(X86_BUILD_TOOLS AND NOT TARGET common-machine)
     add_subdirectory("${X86_COMMON_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/common")
 endif()
 
-add_library(x86-product-config STATIC product/ini.c product/startup.c)
-target_include_directories(x86-product-config PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(x86-product-config PUBLIC types storage base)
-
-add_library(x86-product-media STATIC product/machine/media/fdd.c
-    product/machine/media/hdd.c)
-target_include_directories(x86-product-media PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(x86-product-media PUBLIC types storage x86-ibmpc-common)
-
-add_library(x86-product-conversion STATIC product/machine/frame.c
-    product/machine/keyboard_mapper.c product/machine/mouse_mapper.c)
-target_include_directories(x86-product-conversion PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(x86-product-conversion PUBLIC types x86-ibmpc-common)
-
-if(X86_BUILD_TOOLS)
-add_library(x86-product-machine STATIC product/machine/debug.c
-    product/machine/executor_state.c
-    product/machine/debug_adapter.c
-    product/machine/display.c
-    product/machine/lifecycle.c
-    product/machine/machine.c
-    product/machine/control.c
-    product/machine/fault.c
-    product/machine/runner.c
-    product/machine/waiting.c
-    product/machine/machine_devices.c
-    product/machine/machine_info.c)
-target_include_directories(x86-product-machine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(x86-product-machine PUBLIC types base storage
-    common-machine x86-product-media x86-product-conversion
-    x86-ibmpc-common x86-core)
-endif()
-
 add_library(x86-pit825x STATIC chips/pit825x/pit.c)
 target_include_directories(x86-pit825x PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-pit825x PUBLIC types)
@@ -141,41 +108,6 @@ target_link_libraries(x86-core-observable PUBLIC types x86-cpu-shared x86-fpu)
 target_compile_definitions(x86-core-observable PUBLIC
     CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
-set(x86_ibmpc_common_sources
-    ibmpc-common/floppy.c ibmpc-common/rom_validation.c
-    ibmpc-common/profile_contract.c
-    ibmpc-common/media_interface.c ibmpc-common/display.c
-    ibmpc-common/pit_bus.c ibmpc-common/pic_bus.c ibmpc-common/dma_bus.c
-    ibmpc-common/fdc.c ibmpc-common/hdc.c ibmpc-common/vadp.c
-    ibmpc-common/board_advance.c ibmpc-common/board_deadline.c
-    ibmpc-common/machine_board.c ibmpc-common/machine_plan.c
-    ibmpc-common/machine_display.c)
-add_library(x86-ibmpc-common STATIC ${x86_ibmpc_common_sources})
-target_include_directories(x86-ibmpc-common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-# Composition selects the Core implementation, including observation tests.
-target_link_libraries(x86-ibmpc-common PUBLIC types x86-pit825x x86-pic8259
-    x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-rtc146818 x86-xtkeyboard
-    x86-ibmpc-at x86-ibmpc-xt)
-target_compile_definitions(x86-ibmpc-common PUBLIC
-    CORE_MACHINE_RUNTIME_TRACE_ENABLED=$<IF:$<CONFIG:Debug>,1,0>)
-
-# Trace-contract tests select this variant instead of the production board.
-# Neither variant selects a Core implementation; composition owns that choice.
-add_library(x86-ibmpc-common-observable STATIC EXCLUDE_FROM_ALL ${x86_ibmpc_common_sources})
-target_include_directories(x86-ibmpc-common-observable PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(x86-ibmpc-common-observable PUBLIC types x86-pit825x x86-pic8259
-    x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-rtc146818 x86-xtkeyboard
-    x86-ibmpc-at x86-ibmpc-xt)
-target_compile_definitions(x86-ibmpc-common-observable PUBLIC CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
-
-add_library(x86-ibmpc-at STATIC ibmpc-at/kbc.c ibmpc-at/parity.c)
-target_include_directories(x86-ibmpc-at PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(x86-ibmpc-at PUBLIC types x86-kbc8042 x86-keyboard x86-ps2mouse x86-pit825x)
-
-add_library(x86-ibmpc-xt STATIC ibmpc-xt/xt_ppi_keyboard.c)
-target_include_directories(x86-ibmpc-xt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(x86-ibmpc-xt PUBLIC types x86-ppi8255)
-
 if(X86_BUILD_TOOLS)
 add_library(x86-xasm32 STATIC xasm32/xasm32.c xasm32/aasm32.c xasm32/dasm32.c)
 target_include_directories(x86-xasm32 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
@@ -189,10 +121,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(x86-debug PRIVATE -Wno-error=format-truncation)
 endif()
 
-add_library(x86-product STATIC product/command.c product/composition.c product/keyboard.c
-    product/entry.c)
-target_include_directories(x86-product PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(x86-product PUBLIC x86-product-config common-session common-ui x86-debug types)
 endif()
 
 add_custom_target(x86-verify

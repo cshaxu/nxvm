@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include <stdio.h>
 
 #include "x86/core/machine.h"
 #include "x86/core/machine_interface.h"
-#include "../ibmpc-common/core_machine_board_fixture.h"
+#include "../../ibmpc/board-common/core_machine_board_fixture.h"
 #include "exception_fixture.h"
 
 #define TIMING_LEDGER_RESET_LINEAR 0xfffffff0u

@@ -3,7 +3,7 @@
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/machine.h"
-#include "../ibmpc-common/core_machine_board_fixture.h"
+#include "../../ibmpc/board-common/core_machine_board_fixture.h"
 #include "exception_fixture.h"
 
 typedef struct fpu_interface_s65_machine {

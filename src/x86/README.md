@@ -9,16 +9,12 @@ Those target-local settings live here and in test/x86, including standalone buil
 Architecture-specific copied protocols, chip mechanisms and DOS-style debug/assembly tools.
 Products explicitly add this corpus; Common and Lib never depend on it.
 Core owns the guest executor; it has no host worker, Console or product state
-machine. Product consumes existing Common/Lib contracts rather than owning a
-second lifecycle reducer, native presenter or input loop.
+machine. IBM PC board, Machine adapter and Product integration instead live
+in the independent sibling `src/ibmpc`; x86 does not depend on that package.
 
 | Component | Responsibility | Public interface |
 | --- | --- | --- |
-| product | Shared PC entry/banner, INI, Console/Debug/hotkey policy and atomic Common composition; immutable identity, frozen factory, fixed hardware/firmware projection and copied INFO/speed facts stay App-bound | entry_interface.h, ini_interface.h, request_interface.h, startup_interface.h, machine_interface.h, composition_interface.h, command_interface.h |
 | core | Neutral CPU/FPU execution, guest timeline, bus transactions, RAM/port/ROM routes and bounded debug operations | machine_interface.h and adjacent *_interface.h contracts |
-| ibmpc-common | Board construction/reset/time/deadline/teardown, media/display providers, floppy geometry/channel, Option ROM and profile-contract validation, PIT/PIC/DMA buses and opaque FDC/HDC/video adapters | machine_board_interface.h and adjacent *_interface.h contracts |
-| ibmpc-at | AT KBC/AUX/A20/reset wiring and planar parity/Port B | kbc_interface.h, parity_interface.h |
-| ibmpc-xt | XT PPI keyboard, DIP, IRQ/NMI and speaker wiring | xt_ppi_keyboard_interface.h |
 | debug | Original DOS/X command implementation and copied x86 protocol | debug_interface.h, protocol_interface.h |
 | xasm32 | x86 byte/text assembly and disassembly | xasm32_interface.h |
 | chips/cpu | 8086 through 80386 execution state, instruction decoding and CPU-local timing | cpu_interface.h |
@@ -37,21 +33,8 @@ second lifecycle reducer, native presenter or input loop.
 | chips/fpu | Existing partial 8087 arithmetic and 8087/287/387 extension completion model | fpu_interface.h |
 
 Debug depends on Common Machine, xasm32, Lib Storage and Types. xasm32 depends
-only on Types. ibmpc-common composes public chip and AT/XT family contracts;
-the families depend on Types, their chips and neutral Core, never back on
-common-board layouts. Core selection remains the composition root's decision.
-The board owns one attachment lifetime; optional product-specific state uses
-one construction-frozen profile binding, not a registry or model-name branch.
-Its display value ABI uses the public video-values header. Media
-providers and their contexts are borrowed until registry destruction; freeze
-prevents rebinding. The display slot likewise borrows contexts, freezes binding,
-and captures copied snapshots. Neither component opens files, owns media bytes,
-selects a profile, or schedules guest execution. Calls are serialized by the
-owning board/driver; destruction must not overlap a provider call. PIC owns
-opaque endpoints and IRQ source leases for the pair's lifetime. Producers
-borrow leases; reset/reconnect uses the same pair, and finalize invalidates all
-leases after producers stop. Copied IRR/IMR/ISR observation does not program
-OCW3; guest reads, writes and acknowledgement retain their actual side effects.
+only on Types. PC wiring and attachment/media-provider lifetimes belong to
+the independent ibmpc package, not this architecture-neutral corpus.
 Public tool names use x86_debug_/X86_DEBUG_ and x86_xasm32_/X86_XASM32_.
 Core depends only on Types, CPU and FPU. `x86-core` is its production target;
 `x86-core-observable` compiles the same implementation for trace-contract tests.
@@ -217,5 +200,6 @@ source/build gate checks allowed edges and private/platform boundaries. It needs
 no importing-product paths. Tests and x86 negative probes live in test/x86.
 The shared set is src/lib, src/common, src/x86, test/lib, test/common, test/x86.
 The four-directory neutral subset omits both x86 directories entirely. Each
-test suite builds independently; test/x86 reuses the neutral machine fixture
-from test/common. No receiving emulator is implemented here.
+test suite has its own entry; test/x86 reuses test/common's neutral machine
+fixture and explicitly imports test/ibmpc for its retained PC-composition
+regressions. Chip/Core production builds never require ibmpc. No receiving emulator is implemented here.

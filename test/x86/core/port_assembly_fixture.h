@@ -1,7 +1,7 @@
 #ifndef TEST_CORE_PORT_ASSEMBLY_FIXTURE_H
 #define TEST_CORE_PORT_ASSEMBLY_FIXTURE_H
 #include "lib/types/types_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 
 typedef struct port_assembly_probe_state {
     lib_u32 value;

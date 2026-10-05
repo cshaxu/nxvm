@@ -1,11 +1,11 @@
 #include "lib/types/types_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include <stdio.h>
 
 #include "x86/core/machine.h"
 #include "x86/core/machine_interface.h"
 #include "x86/core/timeline.h"
-#include "../ibmpc-common/core_machine_board_fixture.h"
+#include "../../ibmpc/board-common/core_machine_board_fixture.h"
 
 typedef struct timeline_probe {
     core_machine_timeline *timeline;

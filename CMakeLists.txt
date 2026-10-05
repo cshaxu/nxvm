@@ -42,8 +42,10 @@ option(REPOSITORY_BUILD_MYNES "Configure MyNES product targets" ON)
 add_subdirectory(src/lib)
 add_subdirectory(src/common)
 add_subdirectory(src/x86)
+add_subdirectory(src/ibmpc)
 add_subdirectory(test/lib)
 add_subdirectory(test/common)
+add_subdirectory(test/ibmpc)
 add_subdirectory(test/x86)
 
 # The native capture fixture needs its existing larger stack.

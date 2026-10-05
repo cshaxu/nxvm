@@ -1,4 +1,4 @@
-#include "../ibmpc-common/pic_fixture.h"
+#include "../../ibmpc/board-common/pic_fixture.h"
 #include "x86/core/machine_interface.h"
 #include "x86/core/attachment_interface.h"
 #include "lib/types/types_interface.h"
@@ -7,7 +7,7 @@
 
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine.h"
-#include "x86/ibmpc-common/pic_bus_interface.h"
+#include "ibmpc/board-common/pic_bus_interface.h"
 
 typedef struct pic_phase_s2_state {
     core_machine *machine;

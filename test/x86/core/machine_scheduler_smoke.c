@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include <stdio.h>
 
 #include "x86/core/machine.h"
-#include "../ibmpc-common/core_machine_board_fixture.h"
+#include "../../ibmpc/board-common/core_machine_board_fixture.h"
 
 typedef struct scheduler_provider_probe {
     lib_u32 advances;

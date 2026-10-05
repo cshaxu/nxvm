@@ -1,7 +1,7 @@
 #ifndef TEST_X86_CORE_PLAN_CORE_FIXTURE_H
 #define TEST_X86_CORE_PLAN_CORE_FIXTURE_H
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "x86/ibmpc-common/dma_bus_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "ibmpc/board-common/dma_bus_interface.h"
 
 /* Core-owned assertions; no Board layout is read by this source. */
 lib_i32 test_plan_core_attachment(core_machine *machine,

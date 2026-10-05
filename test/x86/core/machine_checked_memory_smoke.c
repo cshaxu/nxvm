@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 #include "x86/core/machine_interface.h"
-#include "../ibmpc-common/executor_fixture.h"
-#include "../ibmpc-common/core_machine_board_fixture.h"
+#include "../../ibmpc/board-common/executor_fixture.h"
+#include "../../ibmpc/board-common/core_machine_board_fixture.h"
 
 typedef struct checked_memory_provider {
     lib_u32 read_count;

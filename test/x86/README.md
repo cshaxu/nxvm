@@ -3,8 +3,9 @@
 This package selects C11 without extensions in standalone and embedded builds.
 GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
 
-Keep the six directories `src/lib`, `src/common`, `src/x86`, `test/lib`,
-`test/common`, `test/x86` and shared `test/register.cmake` together.
+Keep the six architecture/common/library directories `src/lib`, `src/common`, `src/x86`, `test/lib`,
+`test/common`, `test/x86` and shared `test/register.cmake` together. The retained PC-composition tests
+also require sibling `src/ibmpc` and `test/ibmpc`; x86 production itself does not.
 Each test package has its own CMake entry
 and manifest; no importing-product sources, configuration, firmware or images
 are required. Lib and Common can instead use their four-directory neutral set.
@@ -26,7 +27,7 @@ without duplicating the fixture's thread loop or neutral lifecycle scenarios.
 App library: construction rejection, memory aliases, routes, firmware mapping,
 CPU execution, time, debug observation and reset/stop. The standalone test entry
 builds and runs it together with chip contracts. Shared board contract tests
-live under ibmpc-common/ibmpc-at/ibmpc-xt and build without an App. Actual
+live under test/ibmpc/board-common, board-at and board-xt and build without an App. Actual
 machine-profile, firmware and external-media scenarios remain product-owned.
 
 `chips/pit825x` covers 8253 read-back exclusion, 8254 register read-back,

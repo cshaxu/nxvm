@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include "x86/core/memory.h"
 #include "x86/core/machine.h"
-#include "../ibmpc-common/video_registration_fixture.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "../../ibmpc/board-common/video_registration_fixture.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 
 static void ignored_write(void *owner, lib_u32 physical,
     lib_uptr bytes)

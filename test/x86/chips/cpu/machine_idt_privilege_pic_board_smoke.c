@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
-#include "../../ibmpc-common/pic_fixture.h"
+#include "../../../ibmpc/board-common/pic_fixture.h"
 #include "x86/core/device_support_interface.h"
-#include "x86/ibmpc-common/pic_bus_interface.h"
+#include "ibmpc/board-common/pic_bus_interface.h"
 #include "../../core/composition_fixture.h"
 #include <stdio.h>
 

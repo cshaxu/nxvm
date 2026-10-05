@@ -5,7 +5,7 @@
 #include "x86/core/machine_interface.h"
 #include "x86/core/rom_mapping_interface.h"
 #include "x86/core/machine.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 
 typedef struct firmware_probe {
     core_machine *machine;

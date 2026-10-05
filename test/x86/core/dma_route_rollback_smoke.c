@@ -1,5 +1,5 @@
 #include "x86/core/machine.h"
-#include "x86/ibmpc-common/dma_bus_interface.h"
+#include "ibmpc/board-common/dma_bus_interface.h"
 
 static lib_status conflicting_write(void *owner, lib_u16 port, lib_u32 value)
 {

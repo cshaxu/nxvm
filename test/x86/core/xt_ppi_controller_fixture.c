@@ -1,4 +1,4 @@
-#include "../ibmpc-xt/controller_fixture.h"
+#include "../../ibmpc/board-xt/controller_fixture.h"
 #include "x86/core/machine.h"
 
 static void xt_existing_port(t_port *port, lib_u16 address, void *owner)

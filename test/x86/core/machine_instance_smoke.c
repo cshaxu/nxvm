@@ -6,7 +6,7 @@
 
 #include "x86/core/machine_interface.h"
 #include "x86/core/machine.h"
-#include "../ibmpc-common/executor_fixture.h"
+#include "../../ibmpc/board-common/executor_fixture.h"
 
 typedef struct port_fixture {
     lib_u16 last_port;

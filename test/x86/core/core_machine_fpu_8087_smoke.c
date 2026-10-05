@@ -4,7 +4,7 @@
 
 #include "x86/core/debug_interface.h"
 #include "x86/chips/fpu/fpu_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/core/machine.h"
 
 #define FPU_TEST_ONE 0x00000100u

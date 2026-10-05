@@ -2,9 +2,9 @@
 #define TEST_PROTECTED_PIC_BOARD_FIXTURE_H
 
 #include "cpu_protected_fixture.h"
-#include "../../../ibmpc-common/pic_fixture.h"
+#include "../../../../ibmpc/board-common/pic_fixture.h"
 #include "x86/core/device_support_interface.h"
-#include "x86/ibmpc-common/pic_bus_interface.h"
+#include "ibmpc/board-common/pic_bus_interface.h"
 #include "../../../core/composition_fixture.h"
 
 typedef struct protected_pic_board_fixture {

@@ -3,8 +3,8 @@
 
 #include "x86/core/firmware_interface.h"
 #include "x86/core/machine.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "../ibmpc-common/absent_memory_fixture.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "../../ibmpc/board-common/absent_memory_fixture.h"
 
 static lib_status reset_rom_configure(void *opaque,
     core_machine_firmware_context *firmware)
