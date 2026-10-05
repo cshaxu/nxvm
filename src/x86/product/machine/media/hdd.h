@@ -14,19 +14,15 @@ extern "C" {
 
 
 typedef struct {
-    lib_u16 cyl;     /* vfdc.C; cylinder id (0 to 79) */
-    lib_u16 head;    /* vfdc.H; head id (0 or 1) */
-    lib_u16 sector;  /* vfdc.R; sector id (1 to 18) */
-    lib_u8  gpl;     /* vfdc.GPL; gap length of sector (default is 3) */
     lib_u32 ncyl;            /* compatibility CHS cylinders; LBA capacity is authoritative */
-    lib_u16 nhead;   /* number of heads, should be 16 here */
-    lib_u16 nsector; /* vfdc.EOT; should be 63 here */
-    lib_u16 nbyte;   /* vfdc.N; bytes per sector (default is 512) */
+    lib_u16 nhead;   /* heads per cylinder */
+    lib_u16 nsector; /* sectors per track */
+    lib_u16 nbyte;   /* bytes per sector */
 } t_hdd_data;
 
 typedef struct {
-    lib_u8 flagReadOnly;  /* write protect status */
-    lib_u8 flagDiskExist; /* flag of floppy disk existance */
+    lib_bool flagReadOnly;  /* write protect status */
+    lib_bool flagDiskExist; /* medium presence */
 
     lib_storage_medium *medium;      /* sole owner of file or overlay bytes */
     lib_size raw_byte_count; /* exact bytes read from the backing image */

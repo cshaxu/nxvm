@@ -12,7 +12,7 @@
 
 #define VM_MACHINE_DISPLAY_CADENCE_MILLISECONDS 16u
 
-static lib_i32 vm_machine_display_publish_is_due(vm_machine *machine, lib_i32 force)
+static lib_bool vm_machine_display_publish_is_due(vm_machine *machine, lib_bool force)
 {
     lib_u64 now;
 
@@ -38,11 +38,11 @@ static lib_i32 vm_machine_capture_display_snapshot(void *context,
 }
 
 x86_video_kind vm_machine_publish_display(vm_machine *machine,
-    lib_i32 force)
+    lib_bool force)
 {
     x86_video_snapshot_observation observation;
-    lib_i32 buffer_changed;
-    lib_i32 cursor_changed;
+    lib_bool buffer_changed;
+    lib_bool cursor_changed;
 
     x86_video_snapshot snapshot;
 

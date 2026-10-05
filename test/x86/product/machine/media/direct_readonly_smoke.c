@@ -63,7 +63,7 @@ lib_i32 main(void)
             LIB_STORAGE_MEDIUM_READONLY) != LIB_FALSE ||
         !fdd.connect.flagReadOnly || vm_machine_fdd_read_byte(&fdd, 0u, 0u, 1u, 0u,
             &byte) != LIB_FALSE || byte != 0xa5u ||
-        vm_machine_fdd_write_byte(&fdd, 0u, 0u, 1u, 0u, 0u) != LIB_TRUE ||
+        vm_machine_fdd_write_byte(&fdd, 0u, 0u, 1u, 0u, 0u) != LIB_STATUS_INVALID_STATE ||
         vm_machine_hdd_insert(&hdd, vm_media_direct_hdd_path,
             LIB_STORAGE_MEDIUM_READONLY) != LIB_FALSE ||
         !hdd.connect.flagReadOnly || vm_machine_hdd_media_provider()->write_bytes(&hdd,
@@ -72,6 +72,36 @@ lib_i32 main(void)
             CORE_MACHINE_MEDIA_RESULT_OK || byte != 0x5au) {
         failed = 1;
     }
+    /* Failed candidates preserve the installed medium and its protection. */
+    if (!failed && (vm_machine_fdd_replace_bytes(&fdd, hdd_bytes,
+            sizeof(hdd_bytes)) != LIB_STATUS_INVALID_ARGUMENT ||
+        !fdd.connect.flagReadOnly ||
+        vm_machine_hdd_replace_bytes(&hdd, LIB_NULL, 1u) != LIB_STATUS_INVALID_ARGUMENT ||
+        !hdd.connect.flagReadOnly ||
+        vm_machine_fdd_insert_for(&fdd, "missing-medium.img",
+            LIB_STORAGE_MEDIUM_OVERLAY) != LIB_STATUS_IO_ERROR ||
+        !fdd.connect.flagReadOnly)) failed = 1;
+    /* Install commits protection as well as bytes; no eject is needed. */
+    if (!failed && (vm_machine_fdd_replace_bytes(&fdd, vm_media_direct_fdd_bytes,
+            sizeof(vm_media_direct_fdd_bytes)) != LIB_STATUS_OK ||
+        fdd.connect.flagReadOnly ||
+        vm_machine_fdd_write_byte(&fdd, 0u, 0u, 1u, 0u, direct_value) != LIB_STATUS_OK ||
+        vm_machine_hdd_replace_bytes(&hdd, hdd_bytes, sizeof(hdd_bytes)) != LIB_STATUS_OK ||
+        hdd.connect.flagReadOnly ||
+        vm_machine_hdd_media_provider()->write_bytes(&hdd, 0u, &direct_value, 1u) !=
+            CORE_MACHINE_MEDIA_RESULT_OK)) failed = 1;
+    if (!failed && (vm_machine_hdd_insert(&hdd, vm_media_direct_hdd_path,
+            LIB_STORAGE_MEDIUM_READONLY) != LIB_STATUS_OK ||
+        vm_machine_hdd_set_geometry(&hdd, 1u, 1u, 1u) != LIB_STATUS_OK ||
+        vm_machine_hdd_create(&hdd, 1u) != LIB_STATUS_OK ||
+        hdd.connect.flagReadOnly ||
+        hdd.data.nhead != 16u || hdd.data.nsector != 63u ||
+        vm_machine_hdd_media_provider()->write_bytes(&hdd, 0u, &direct_value, 1u) !=
+            CORE_MACHINE_MEDIA_RESULT_OK)) failed = 1;
+#if !LIB_UPTR_IS_64_BIT
+    if (!failed && (vm_machine_hdd_create(&hdd, 8323u) != LIB_STATUS_LIMIT_EXCEEDED ||
+        vm_machine_hdd_image_size(&hdd) != 16u * 63u * 512u)) failed = 1;
+#endif
     if (vm_machine_fdd_remove_for(&fdd) != LIB_FALSE ||
         vm_machine_hdd_remove(&hdd) != LIB_FALSE) failed = 1;
     if (!failed && (vm_machine_fdd_insert_for(&fdd, vm_media_direct_fdd_path,
@@ -85,6 +115,10 @@ lib_i32 main(void)
         vm_machine_hdd_remove(&hdd) != LIB_FALSE ||
         vm_media_direct_read_first(vm_media_direct_fdd_path, direct_value) ||
         vm_media_direct_read_first(vm_media_direct_hdd_path, direct_value))) failed = 1;
+    /* Extreme geometry must not wrap to the empty medium's zero capacity. */
+    if (!failed && (vm_machine_hdd_replace_bytes(&hdd, LIB_NULL, 0u) != LIB_STATUS_OK ||
+        vm_machine_hdd_set_geometry(&hdd, 0x80000000u, 0x8000u, 0x8000u) !=
+            LIB_STATUS_INVALID_ARGUMENT)) failed = 1;
     vm_machine_fdd_finalize(&fdd);
     vm_machine_hdd_finalize(&hdd);
     (void)remove(vm_media_direct_fdd_path);

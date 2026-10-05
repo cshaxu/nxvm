@@ -13,10 +13,6 @@ extern "C" {
 #include "x86/product/machine/media/fdd_interface.h"
 
 typedef struct {
-    lib_u16 cyl;     /* vfdc.C; cylinder id */
-    lib_u16 head;    /* vfdc.H; head id */
-    lib_u16 sector;  /* vfdc.R; sector id */
-    lib_u8  gpl;     /* vfdc.GPL; gap length of sector */
     lib_u16 ncyl;    /* configured number of cylinders */
     lib_u16 nhead;   /* configured number of heads */
     lib_u16 nsector; /* configured sectors per track */
@@ -24,11 +20,11 @@ typedef struct {
 } t_fdd_data;
 
 typedef struct {
-    lib_u8 flagReadOnly;  /* write protect status */
-    lib_u8 flagDiskExist; /* flag of floppy disk existance */
+    lib_bool flagReadOnly;  /* write protect status */
+    lib_bool flagDiskExist; /* medium presence */
 
     lib_storage_medium *medium;      /* sole owner of file or overlay bytes */
-    lib_uptr pAddressMarks; /* one Deleted-Data flag per logical sector */
+    lib_u8 *address_marks; /* one Deleted-Data flag per logical sector */
     lib_u32 media_generation; /* advances on every insert/remove/create */
 } t_fdd_connect;
 
@@ -38,7 +34,7 @@ struct t_fdd {
     t_fdd_connect connect;
 };
 
-lib_i32 vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
+lib_status vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
     const core_machine_media_geometry *geometry);
 void vm_machine_fdd_finalize(t_fdd *fdd);
 

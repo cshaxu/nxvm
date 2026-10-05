@@ -7,7 +7,7 @@
 #include "x86/product/machine/machine_interface.h"
 
 lib_status vm_machine_waiting_advance(vm_machine *session,
-    const core_machine_run_result *result, lib_i32 *out_advanced);
+    const core_machine_run_result *result, lib_bool *out_advanced);
 lib_i32 vm_machine_pacing_ratio_compare(lib_u64 left_numerator,
     lib_u64 left_denominator, lib_u64 right_numerator,
     lib_u64 right_denominator);

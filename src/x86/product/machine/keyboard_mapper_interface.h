@@ -14,11 +14,11 @@ typedef struct vm_profile_default_keyboard_sequence {
 } vm_profile_default_keyboard_sequence;
 
 lib_status vm_profile_default_keyboard_map_host_key(lib_u16 host_scan_code,
-    lib_u16 host_virtual_key, lib_i32 pressed,
+    lib_u16 host_virtual_key, lib_bool pressed,
     vm_profile_default_keyboard_sequence *out_sequence);
 lib_status vm_profile_default_keyboard_map_host_key_for_scan_set(
     lib_u16 host_scan_code, lib_u16 host_virtual_key,
-    lib_i32 pressed, lib_u8 native_scan_set,
+    lib_bool pressed, lib_u8 native_scan_set,
     vm_profile_default_keyboard_sequence *out_sequence);
 
 #endif

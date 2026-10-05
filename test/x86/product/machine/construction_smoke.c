@@ -156,5 +156,19 @@ lib_i32 main(void)
     check_transaction(LIB_STATUS_OK, LIB_STATUS_OK);
     check_transaction(LIB_STATUS_INVALID_ARGUMENT, LIB_STATUS_OK);
     check_transaction(LIB_STATUS_OK, LIB_STATUS_INVALID_STATE);
+    probe = (construction_probe) {0};
+    construction = prepare(&probe);
+    const vm_machine_runtime_config missing_media = {
+        .floppy_image = {"missing-construction-medium.img"}
+    };
+    lib_test_assert(vm_machine_create(&missing_media, &construction, &machine) ==
+        LIB_STATUS_IO_ERROR);
+    lib_test_assert(machine == LIB_NULL && probe.release_count == 1u);
+    probe = (construction_probe) {0};
+    construction = prepare(&probe);
+    construction.media_kind = (vm_profile_floppy_kind)LIB_UINT32_MAX;
+    lib_test_assert(vm_machine_create(&runtime, &construction, &machine) ==
+        LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(machine == LIB_NULL && probe.release_count == 1u);
     return 0;
 }

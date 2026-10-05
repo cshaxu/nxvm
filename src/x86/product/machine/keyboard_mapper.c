@@ -29,7 +29,7 @@ static lib_u8 vm_profile_default_keyboard_map_ascii(lib_u16 value)
 }
 
 static lib_u8 vm_profile_default_keyboard_set1_to_set2(
-    lib_u8 set1, lib_u8 *out_known)
+    lib_u8 set1, lib_bool *out_known)
 {
     static const lib_u8 map[0x59] = {
         [0x01] = 0x76u, [0x02] = 0x16u, [0x03] = 0x1eu, [0x04] = 0x26u,
@@ -63,10 +63,10 @@ static lib_u8 vm_profile_default_keyboard_set1_to_set2(
 
 lib_status vm_profile_default_keyboard_map_host_key_for_scan_set(
     lib_u16 host_scan_code, lib_u16 host_virtual_key,
-    lib_i32 pressed, lib_u8 native_scan_set,
+    lib_bool pressed, lib_u8 native_scan_set,
     vm_profile_default_keyboard_sequence *out_sequence)
 {
-    lib_u8 known;
+    lib_bool known;
     lib_u8 scan_code;
 
     if (out_sequence == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -120,7 +120,7 @@ lib_status vm_profile_default_keyboard_map_host_key_for_scan_set(
 }
 
 lib_status vm_profile_default_keyboard_map_host_key(lib_u16 host_scan_code,
-    lib_u16 host_virtual_key, lib_i32 pressed,
+    lib_u16 host_virtual_key, lib_bool pressed,
     vm_profile_default_keyboard_sequence *out_sequence)
 {
     return vm_profile_default_keyboard_map_host_key_for_scan_set(host_scan_code,

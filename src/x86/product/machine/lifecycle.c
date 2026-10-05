@@ -1,6 +1,6 @@
 /* Copyright 2012-2014 Neko. */
 
-/* MACHINE controls machine status. */
+/* Adapt machine lifecycle to the Common owner. */
 #include "lib/types/types_interface.h"
 
 
@@ -151,7 +151,7 @@ lib_status vm_machine_finish_reset(vm_machine *machine, lib_status status)
         machine->construction.profile.notify(machine->construction.profile.context,
             VM_MACHINE_PROFILE_RESET_COMPLETED);
     if (!vm_machine_control_is_running(&machine->control)) {
-        vm_machine_publish_display(machine, 1);
+        vm_machine_publish_display(machine, LIB_TRUE);
     }
     return LIB_STATUS_OK;
 }
@@ -242,7 +242,7 @@ lib_status vm_machine_initialize(vm_machine *machine) {
         vm_machine_finalize(machine);
         return status;
     }
-    machine->active = 1;
+    machine->active = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 
@@ -250,7 +250,7 @@ void vm_machine_finalize(vm_machine *machine) {
     if (machine == LIB_NULL) return;
     vm_machine_stop(machine);
     machine->executor = LIB_NULL;
-    machine->active = 0;
+    machine->active = LIB_FALSE;
     /* Revoke Core routes before freeing their borrowed provider contexts. */
     vm_machine_storage_finalize(machine);
     vm_machine_control_finalize(&machine->control, machine);

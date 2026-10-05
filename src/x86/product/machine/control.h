@@ -27,7 +27,7 @@ lib_status vm_machine_control_initialize(vm_machine_control_state *control,
     vm_machine *machine);
 void vm_machine_control_finalize(vm_machine_control_state *control,
     vm_machine *machine);
-lib_i32 vm_machine_control_is_running(const vm_machine_control_state *control);
+lib_bool vm_machine_control_is_running(const vm_machine_control_state *control);
 
 #ifdef __cplusplus
 }

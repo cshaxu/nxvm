@@ -27,7 +27,7 @@ typedef struct {
     lib_u64 remaining;
     lib_u64 executed;
     lib_u32 breakpoint_linear;
-    lib_u8 completion_pending;
+    lib_bool completion_pending;
     vm_machine_debug_stop_reason completion_reason;
     lib_u64 completion_executed;
 } t_debug_execution_plan;
@@ -35,7 +35,7 @@ typedef struct {
 typedef struct {
     t_debug_execution_plan plan;
     core_machine_debug_instruction_observation observation;
-    lib_u8 observation_valid;
+    lib_bool observation_valid;
 } t_debug;
 
 void vm_machine_debug_initialize(t_debug *debug);
@@ -48,14 +48,14 @@ lib_status vm_machine_debug_set_execution_plan(t_debug *debug,
 void vm_machine_debug_clear_execution_plan(t_debug *debug);
 lib_u64 vm_machine_debug_limit_instruction_budget(
     const t_debug *debug, lib_u64 requested);
-lib_i32 vm_machine_debug_breakpoint_due(const t_debug *debug);
+lib_bool vm_machine_debug_breakpoint_due(const t_debug *debug);
 void vm_machine_debug_complete_breakpoint(t_debug *debug);
 void vm_machine_debug_complete_watchpoint(t_debug *debug);
 void vm_machine_debug_complete_run(t_debug *debug,
     lib_u64 executed);
-lib_i32 vm_machine_debug_completion_pending(const t_debug *debug,
+lib_bool vm_machine_debug_completion_pending(const t_debug *debug,
     vm_machine_debug_stop_reason *out_reason);
-lib_i32 vm_machine_debug_take_completion(t_debug *debug,
+lib_bool vm_machine_debug_take_completion(t_debug *debug,
     vm_machine_debug_stop_reason *out_reason, lib_u64 *out_executed);
 
 #ifdef __cplusplus

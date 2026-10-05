@@ -19,19 +19,19 @@ typedef struct t_hdd t_hdd;
 lib_size vm_machine_hdd_image_size(const t_hdd *hdd);
 lib_size vm_machine_hdd_raw_byte_count(const t_hdd *hdd);
 lib_u32 vm_machine_hdd_cylinders(const t_hdd *hdd);
-lib_i32 vm_machine_hdd_has_media(const t_hdd *hdd);
+lib_bool vm_machine_hdd_has_media(const t_hdd *hdd);
 /* Same ownership, failure and serialization contract as the FDD object. */
 lib_status vm_machine_hdd_allocate(t_hdd **out_hdd);
 void vm_machine_hdd_destroy(t_hdd **hdd);
 void vm_machine_hdd_reset(t_hdd *hdd);
-lib_i32 vm_machine_hdd_create(t_hdd *hdd, lib_u16 cylinders);
-lib_i32 vm_machine_hdd_replace_bytes(t_hdd *hdd, const void *bytes,
+lib_status vm_machine_hdd_create(t_hdd *hdd, lib_u16 cylinders);
+lib_status vm_machine_hdd_replace_bytes(t_hdd *hdd, const void *bytes,
     lib_size raw_byte_count);
-lib_i32 vm_machine_hdd_insert(t_hdd *hdd, const char *file_name,
+lib_status vm_machine_hdd_insert(t_hdd *hdd, const char *file_name,
     lib_storage_medium_mode mode);
-lib_i32 vm_machine_hdd_set_geometry(t_hdd *hdd, lib_u32 cylinders,
+lib_status vm_machine_hdd_set_geometry(t_hdd *hdd, lib_u32 cylinders,
     lib_u16 heads, lib_u16 sectors_per_track);
-lib_i32 vm_machine_hdd_remove(t_hdd *hdd);
+lib_status vm_machine_hdd_remove(t_hdd *hdd);
 const core_machine_media_provider *vm_machine_hdd_media_provider(void);
 
 #ifdef __cplusplus

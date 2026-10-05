@@ -11,7 +11,7 @@ lib_i32 vm_machine_pacing_ratio_compare(lib_u64 left_numerator,
     lib_u64 left_denominator, lib_u64 right_numerator,
     lib_u64 right_denominator)
 {
-    lib_i32 inverted = 0;
+    lib_bool inverted = LIB_FALSE;
 
     if (left_denominator == 0u || right_denominator == 0u) return 0;
     for (;;) {
@@ -49,16 +49,16 @@ void vm_machine_pacing_reset(vm_machine *session)
     session->pacing_core_origin_ticks = 0u;
 }
 
-static lib_i32 vm_machine_pacing_waits_at_least_millisecond(
+static lib_bool vm_machine_pacing_waits_at_least_millisecond(
     const vm_machine *session, const core_machine_time_observation *observation,
     lib_u64 target_tick, lib_u64 host_units)
 {
     lib_u64 host_lead;
 
     if (session == LIB_NULL || observation == LIB_NULL ||
-        session->pacing_host_units_per_second < 1000u) return 0;
+        session->pacing_host_units_per_second < 1000u) return LIB_FALSE;
     host_lead = session->pacing_host_units_per_second / 1000u;
-    if (host_units > UINT64_MAX - host_lead) return 0;
+    if (host_units > LIB_UINT64_MAX - host_lead) return LIB_FALSE;
     return vm_machine_pacing_ratio_compare(target_tick -
             session->pacing_core_origin_ticks,
             observation->pacing_ticks_per_second, host_units -
@@ -66,7 +66,7 @@ static lib_i32 vm_machine_pacing_waits_at_least_millisecond(
             session->pacing_host_units_per_second) > 0;
 }
 
-static lib_i32 vm_machine_pacing_target_due(vm_machine *session,
+static lib_bool vm_machine_pacing_target_due(vm_machine *session,
     const core_machine_time_observation *observation,
     lib_u64 target_tick)
 {
@@ -132,7 +132,7 @@ lib_status vm_machine_pacing_wait(vm_machine *session)
 }
 
 lib_status vm_machine_waiting_advance(vm_machine *session,
-    const core_machine_run_result *result, lib_i32 *out_advanced)
+    const core_machine_run_result *result, lib_bool *out_advanced)
 {
     core_machine_time_observation observation;
     lib_u8 advanced;
@@ -140,7 +140,7 @@ lib_status vm_machine_waiting_advance(vm_machine *session,
 
     if (session == LIB_NULL || result == LIB_NULL || out_advanced == LIB_NULL ||
         session->core_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_advanced = 0;
+    *out_advanced = LIB_FALSE;
     if (result->reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
         return LIB_STATUS_INVALID_STATE;
     }
@@ -162,7 +162,7 @@ lib_status vm_machine_waiting_advance(vm_machine *session,
             !vm_machine_pacing_target_due(session, &observation,
                 observation.elapsed_ticks)) return LIB_STATUS_OK;
         status = core_machine_advance_l1_compatibility(session->core_machine, &advanced);
-        if (status == LIB_STATUS_OK && advanced) *out_advanced = 1;
+        if (status == LIB_STATUS_OK && advanced) *out_advanced = LIB_TRUE;
         return status;
     }
     if (session->speed == VM_MACHINE_SPEED_STANDARD &&
@@ -171,6 +171,6 @@ lib_status vm_machine_waiting_advance(vm_machine *session,
         return LIB_STATUS_OK;
     }
     status = core_machine_advance_to_next_deadline(session->core_machine, &advanced);
-    if (status == LIB_STATUS_OK && advanced) *out_advanced = 1;
+    if (status == LIB_STATUS_OK && advanced) *out_advanced = LIB_TRUE;
     return status;
 }

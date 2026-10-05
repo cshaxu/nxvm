@@ -62,7 +62,7 @@ lib_u64 vm_machine_debug_limit_instruction_budget(
     return requested;
 }
 
-lib_i32 vm_machine_debug_breakpoint_due(const t_debug *debug)
+lib_bool vm_machine_debug_breakpoint_due(const t_debug *debug)
 {
     if (debug == LIB_NULL || !debug->observation_valid ||
         (debug->plan.kind != X86_DEBUG_EXECUTION_BREAK_REAL &&
@@ -116,7 +116,7 @@ void vm_machine_debug_complete_run(t_debug *debug, lib_u64 executed)
     debug->plan.kind = X86_DEBUG_EXECUTION_NONE;
 }
 
-lib_i32 vm_machine_debug_completion_pending(const t_debug *debug,
+lib_bool vm_machine_debug_completion_pending(const t_debug *debug,
     vm_machine_debug_stop_reason *out_reason)
 {
     if (debug == LIB_NULL || out_reason == LIB_NULL ||
@@ -125,7 +125,7 @@ lib_i32 vm_machine_debug_completion_pending(const t_debug *debug,
     return LIB_TRUE;
 }
 
-lib_i32 vm_machine_debug_take_completion(t_debug *debug,
+lib_bool vm_machine_debug_take_completion(t_debug *debug,
     vm_machine_debug_stop_reason *out_reason, lib_u64 *out_executed)
 {
     if (debug == LIB_NULL || out_reason == LIB_NULL || out_executed == LIB_NULL ||

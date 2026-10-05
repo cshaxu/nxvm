@@ -106,7 +106,7 @@ void vm_machine_runner_run(vm_machine *session)
             vm_machine_control_stop(control);
         }
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            lib_i32 advanced = 0;
+            lib_bool advanced = LIB_FALSE;
             lib_status time_status = vm_machine_waiting_advance(
                 session, &result, &advanced);
 

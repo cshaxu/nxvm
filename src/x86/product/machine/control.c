@@ -1,8 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
 /*
- * DEVICE provides the device interface to drive the device thread
- * and access the virtual devices.
+ * Adapt Core execution/reset to Common's sole worker and control queue.
  */
 #include "lib/types/types_interface.h"
 
@@ -59,7 +58,7 @@ void vm_machine_control_start(vm_machine_control_state *control) {
     vm_machine_runner_run(machine);
 }
 
-/* Issues resetting signal to device thread */
+/* Request reset at the bounded executor boundary. */
 lib_status vm_machine_control_reset(vm_machine_control_state *control) {
     if (control == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (vm_machine_executor_state_is_active(control->state)) {
@@ -73,7 +72,7 @@ lib_status vm_machine_control_reset(vm_machine_control_state *control) {
     }
 }
 
-/* Issues stopping signal to device thread */
+/* Cancel bounded execution and any pending reset. */
 void vm_machine_control_stop(vm_machine_control_state *control)  {
     vm_machine *machine;
 
@@ -136,7 +135,7 @@ void vm_machine_control_finalize(vm_machine_control_state *control,
     control->state = LIB_NULL;
 }
 
-lib_i32 vm_machine_control_is_running(const vm_machine_control_state *control)
+lib_bool vm_machine_control_is_running(const vm_machine_control_state *control)
 {
     return control != LIB_NULL && vm_machine_executor_state_is_active(control->state);
 }

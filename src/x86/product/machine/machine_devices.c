@@ -11,17 +11,20 @@
 
 lib_status vm_machine_devices_initialize_media(vm_machine *session)
 {
+    lib_status status;
+
     if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (vm_machine_fdd_allocate(vm_profile_floppy_geometry_get(
-            session->construction.media_kind), &session->fdd) != LIB_STATUS_OK)
-        return LIB_STATUS_INTERNAL_ERROR;
-    if (session->construction.floppy_slot_count > 1u &&
-        vm_machine_fdd_allocate(vm_profile_floppy_geometry_get(
-            session->construction.media_kind), &session->floppy[1u]) != LIB_STATUS_OK)
-        return LIB_STATUS_INTERNAL_ERROR;
+    status = vm_machine_fdd_allocate(vm_profile_floppy_geometry_get(
+        session->construction.media_kind), &session->fdd);
+    if (status != LIB_STATUS_OK) return status;
+    if (session->construction.floppy_slot_count > 1u) {
+        status = vm_machine_fdd_allocate(vm_profile_floppy_geometry_get(
+            session->construction.media_kind), &session->floppy[1u]);
+        if (status != LIB_STATUS_OK) return status;
+    }
     if (session->construction.hdc_present) {
-        if (vm_machine_hdd_allocate(&session->hdd) != LIB_STATUS_OK)
-            return LIB_STATUS_INTERNAL_ERROR;
+        status = vm_machine_hdd_allocate(&session->hdd);
+        if (status != LIB_STATUS_OK) return status;
     }
     return LIB_STATUS_OK;
 }
