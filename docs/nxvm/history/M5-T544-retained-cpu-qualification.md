@@ -574,3 +574,34 @@ convergence; no Shared repair is authorized by acceptance, and no residual
 form is silently transferred to another T. No duplicate runtime gate or EXE
 rebuild is warranted for purely documentary acceptance. Receiving caches and
 original/render research scratch remain needed for the next family audit.
+
+## S6 80386DX Audit Batch
+
+S6 starts against a8527a828. Its [working audit](../etc/evidence/t544-s6-80386-family-audit.md)
+freezes the complete F01-F14 80386 form/state/time batch, not just new 0F
+opcodes. Size/address/stack combinations, real/protected/paged/VM86 contexts,
+task/gate/exception/debug and reference/failure timing must be reconciled.
+All S2-S5 confirmed defects, source conflicts and regression receivers stay
+inside T544. No Shared code edit is admitted, and the 1,413 timing keys do
+not independently qualify either 386 product. The original selected source
+is Intel 386DX 1990, order 230985-003, with fresh identity/page inspections
+recorded in the audit. Current owns the one active packet.
+
+The finite S6 inventory now maps all fifteen partitions to fresh source,
+actual handler/helper/selector inspection and precise existing regression
+receivers. Confirmed gaps include gate width versus instruction width,
+ring-specific stacks/conforming/LDT targets, incoming-task fault context,
+VM86 delivery/FLAGS, real/VM and expand-down spans, post-instruction
+endpoint checks, RF/TF/NMI/DF handling, host signed arithmetic and
+branch/task/conversion/segment-POP/DIV-width clock selection. The record
+also withdraws unsupported POP-SP alias and VM far-pointer suspicions
+after reading the entire helper and effective-mode predicate. Originals
+with internally contradictory operations/tables and 1986/1990 clock
+differences remain explicit source receivers, not automatic code changes.
+
+Fresh complete units on the unchanged production baseline pass once each
+width: x64 506/506 in 68.14s; x86 506/506 in 83.88s. These are regression
+observations, not qualification of the newly identified missing contexts.
+No Shared source/test/ABI, manifest, App/INI/media, MyNES or binary changes
+are part of S6. T544 remains open for complete cross-family/source/tier
+convergence and concrete mechanism repair review; no gap moves to another T.

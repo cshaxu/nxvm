@@ -4,9 +4,28 @@
 
 | Work | Progress |
 | --- | --- |
-| T544 S5 | Accepted and closed: 80286 audit delivery 083a8946c; all unresolved source/repair/regression receivers remain open in T544. |
+| T544 S6 | Active: complete 80386DX function/state/timing audit, including inherited forms, widths, paging and VM86. Shared implementation remains read-only. |
 
-There is no active subtask packet between accepted subtasks.
+## Active Subtask Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T544 S6, next numeric S after accepted S5. |
+| Admission And Approval | Owner CPU audit admission and automatic sequential S authorization, reaffirmed 2026-10-05: finish T544 original-manual versus implementation instruction/timing audits before any other task. NXVM documentation and read-only Shared inspection only. |
+| Objective | Reconcile the whole 80386DX F01-F14 form/state/time batch: 16/32-bit execution/address/stack, inherited and new instructions, real/protected/paged/VM86 modes, descriptors/tasks/delivery/debug and successful/faulted time. |
+| Non-goals | No Shared source/test/ABI edit without concrete review; no Lib/Common/App/INI/MyNES/artifact change, new CPU, board physical clock or qualification from a green catalog. |
+| Reference Baseline | a8527a828; accepted S1-S5 inventories, List 1 and retained Intel 386DX 1990 original (230985-003); hardware/original-edition cross-checks only when identified and freshly inspected. |
+| Candidate Proposal | [T544 proposal](../proposals/m5-retained-cpu-qualification.md); consume the 80386 batch in the [convergence ledger](../history/M5-T544-retained-cpu-qualification.md), retaining every S2-S5 receiver. |
+| Files And ABI Surface | NXVM Current, T544 ledger and t544-s6-80386-family-audit.md; read-only x86 CPU/Core, current CPU/composition fixtures and timing catalogs. Source/test/ABI change zero. |
+| Applicable Rules | Task Reading Set, Execution/Documentation/source policy, Architecture/Coding one-owner invariants and PDF original-page verification; preserve original table-style handlers and separate source facts from deductions. |
+| Verification | Entire finite batch source/code/test disposition or precise retained receiver; selected current predicates only as baseline observations; complete repository-only units once each width at delivery, governance/links/packet/diff and coordinator actual-change review. |
+| Expected Markers | Every family, size/mode/privilege/reference and failure class has an explicit source and implementation disposition. Exact values/formulas L3, ranges/models L2; no falsely qualified success or silent L1/downgrade. |
+| Asset Needs | Read-only manuals-nxvm/cpu originals; ignored build/t544-s2-research render/extraction scratch and retained default receiving caches; no asset import or redistribution. |
+| Reporting Requirements | Confirm scope, report source/implementation/oracle discrepancies and whole-mechanism repair proposals; complete inventory delivery, original identities/pages and verification, not partial P milestones or T closure. |
+| Stop Conditions | Unavailable authority, unupgradable L1 or false higher labels must be reported. Stop Shared edits pending concrete owner review while continuing safe audit; preserve unrelated work and remain inside T544. |
+| Exit Criteria | Entire finite 80386 batch mapped to direct proof, non-applicability or exact source/code/regression receivers; full units and document checks, executor complete P push and coordinator actual-diff governance acceptance. T544 qualification remains open. |
+| Original Owner Request | Complete CPU original-manual versus actual instruction/function/timing correctness audit across all retained CPUs, without switching tasks or first-failure patching. |
+| Similar-Issue Sweep | Pair widths/defaults/prefixes, real/protected/VM86/paging, CPL/RPL/DPL, code/data/stack/gates/tasks, arithmetic/count/bit/repeat/ports/debug/FPU, fetch/operand/delivery/retirement and producer/oracle attribution; retain cross-family receivers. |
 
 The [proposal](../proposals/m5-retained-cpu-qualification.md) owns scope;
 the [convergence ledger](../history/M5-T544-retained-cpu-qualification.md)
@@ -64,7 +83,7 @@ qualification successor; they are not deployed artifacts or new source paths.
 
 ## Next Work
 
-T544 remains open after accepted S5. Its next numeric S needs an active packet;
+T544 remains open after accepted S5. S6 has the active packet above;
 no Shared repair is approved by audit acceptance. The remaining candidates stay in
 [Queue](QUEUE.md). Common wake-failure and Shared vocabulary follow-ups remain in
 [TODO](TODO.md). This structural split does not qualify new hardware or timing.
