@@ -282,3 +282,102 @@ qualification. Current removes its active packet and retains compact progress.
 The next numeric S requires its own admitted packet; the later-family audits
 must carry all cross-family receivers forward. The ignored research scratch and
 existing receiving caches remain needed for that immediate successor.
+
+## S4 80186 Audit Batch
+
+S4 starts against 946f7a737 and consumes additions plus the inherited
+F01-F10/F14 surface, not only the new-opcode list. Its
+[working audit](../etc/evidence/t544-s4-80186-family-audit.md) freezes the finite
+form/state/timing batch and carries S2/S3 cross-family receivers forward.
+First rendered original pages corroborate PUSHA's original-SP order, immediate
+sign extension, 186 modulo-32 shifts and full-byte ENTER level. Existing ENTER
+regressions already include 186 level 255; no invented missing-path repair is
+proposed. Exact stack base clocks match the inspected source rows under their
+prefetch/no-wait/even-word assumptions. Complete timing, failure, delivery,
+source exclusions and unit verification remain pending. Shared edits and
+qualification are not admitted by this partial audit.
+
+Further original-page and selector/oracle inspection reconciles the MUL,
+IMUL and BOUND range choices as L2, DIV's exact clocks as L3, and ENTER's
+level-dependent formula as L3. Selector origin names are not grade labels;
+the legacy records already distinguish exact DIV and midpoint BOUND. The
+segment MOV reversed bases also occur in the existing regression oracle and
+derived override/odd-word expectations, so green catalogs are not independent
+proof. These findings and the attribution/source-conflict receivers remain
+in the S4 audit; no Shared repair or full S4 verification is claimed.
+
+Group-2 follow-through reconciles five-bit masking, checked element publication
+and selected timing formulas, while recording the missing 186 boundary/FLAGS
+matrix and no-consumer undefined-flag metadata distinction. Immediate IMUL's
+word arithmetic and existing normal register/memory cases are reconciled;
+the later 32-by-8 signed intermediate overflow is assigned to S6, not falsely
+reported as a 186 defect. Two corresponding tests pass once each width;
+complete S4 inventory and full delivery gates remain pending.
+
+BOUND follow-through includes the existing board-level 186 vector-five/frame
+test, passing once each width; source-qualified nonzero/prefix return-IP and
+read-failure/wrap contexts remain pending. Its second-word offset increment
+is distinguished from the logical helper's within-transfer wrap, widening the
+effective-offset receiver rather than claiming that helper proves all cases.
+ENTER/LEAVE publication and level-255 test assertions are inspected; selective
+transfer failures, full copied-slot image and allocation/wrap contexts remain
+explicit stack receivers. No Shared edit or whole-family qualification follows.
+
+REP follow-through distinguishes normal FIRST/CONTINUATION/ZERO modifier tests
+from the missing interrupt/restart/publication contexts. The timing identity and
+ExecInit-before-observation path stay in one shared retirement receiver. ESC
+inspection finds no 186 relocation-bit control input, while the existing board
+NM test fixes the CPU to 386. The missing optional 186 control capability has
+an explicit admission/delivery and integrated-control-input receiver; generic
+CR0 behavior is not accepted as its implementation. Shared changes remain
+unapproved, and complete S4 verification/qualification remains outstanding.
+
+Inherited branch review visually checks the unambiguous generic JCXZ/LOOP
+rows against the displaced dedicated table, retaining LOOP/LOOPNE clock
+conflicts instead of guessing from OCR. The final-PC branch-decision inference
+and unchecked below-386 JCXZ calls join the existing cross-family receivers.
+FFFF already has an undefined handler; lexical inventory counts are not proof
+of all unused-encoding exception frames. These distinctions are recorded in
+S4 without Shared edits or a claim of complete unit/source qualification.
+
+ALU/movement/port follow-through reconciles adjustment, exchange, LEA and
+ordinary port base clocks. It finds that legacy accumulator-immediate and
+immediate-MOV midpoint descriptions omit the dedicated table's 8/16-bit
+annotation; width-selected source data must not be mistaken for a latency
+range. Concrete byte/word selection and attribution receivers are retained.
+Ordinary MOV's generic/dedicated direction conflict and XLAT's prefixed-clock
+boundary stay separate from the corroborated segment-MOV defect. No timing
+grade or Shared source is silently changed by this read-only finding.
+
+The logical width sweep confirms individual AND/OR/XOR/TEST rows and includes
+them in the paired-width receiver. IDIV's genuine ranges and midpoint L2
+classification are reconciled separately; its quotient-source, signed-host
+bookkeeping and 186 fault/state coverage remain pending. Three existing ALU,
+divide/form and normalization tests pass once each width (3/3, x64 0.23s,
+x86 0.25s), without implying a completed S4 full-unit or source gate.
+
+Stack follow-through confirms actual 186 complete normal PUSHA/POPA image
+assertions and negative-byte immediate PUSH coverage, while preserving wrap
+and selective-transfer gaps. Current 186 reset/FLAGS still contradict the
+S2 source record; a test expecting cleared high bits does not supersede that
+source. Inhibition, return-IP and integrated-control capability remain named
+generation-specific receivers rather than inherited assumptions.
+
+S4's complete thirteen-partition audit inventory is delivered for coordinator
+review. Each partition names source/code/regression evidence and complete
+remaining contexts; none is represented as whole-instruction qualification.
+The final generic-table review distinguishes the corroborated three-clock
+NEG/NOT bases from the non-repeat MOVS nine/fourteen source conflict. Numeric
+width annotations, source direction conflicts and genuine latency ranges
+remain separate at the sole timing owner. S2/S3 mechanism receivers remain
+inside T544; no missing context is transferred out or erased by a green oracle.
+
+Fresh S4 complete units pass once per width: x64 506/506 in 142.71s and
+x86 506/506 in 63.31s, eight jobs with bounded 300-second aggregates. Both
+owned process handles are terminal with exit zero. Source/test/artifact diff
+is zero; no MyNES, INI, firmware or manifest changes occurred, and no EXE
+rebuild is required. The three changed NXVM documents comprise this delivery.
+Executor self-review checks the original packet, finite batch, source versus
+deduction wording, pending receivers and the full-unit/documentation gates.
+This delivers the read-only S4 brief; coordinator actual-change acceptance
+and governance push are still required before S4 closes. T544 stays open.
