@@ -101,8 +101,9 @@ static lib_status bind(void *opaque, common_machine *common)
     return LIB_STATUS_OK;
 }
 
-static lib_status information(const void *machine, vm_app_information *out_info)
+static lib_status information(const void *context, const void *machine, vm_app_information *out_info)
 {
+    (void)context;
     (void)machine;
     *out_info = (vm_app_information){0};
     return LIB_STATUS_OK;

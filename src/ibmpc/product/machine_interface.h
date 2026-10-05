@@ -33,7 +33,7 @@ typedef struct vm_app_factory {
         void **out_machine, common_machine_driver *out_driver);
     lib_status (*bind)(void *machine, common_machine *common);
     void (*destroy)(void *machine);
-    lib_status (*information)(const void *machine, vm_app_information *out_info);
+    lib_status (*information)(const void *context, const void *machine, vm_app_information *out_info);
     lib_status (*get_speed)(const void *machine, vm_app_speed *out_speed);
     lib_status (*set_speed)(void *machine, vm_app_speed speed);
 } vm_app_factory;

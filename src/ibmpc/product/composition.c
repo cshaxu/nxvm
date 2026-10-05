@@ -161,7 +161,7 @@ lib_status vm_app_compose_ui(vm_app *app, const common_ui_options *options)
 lib_status vm_app_information_read(const vm_app *app, vm_app_information *out_info)
 {
     return app == LIB_NULL || app->machine == LIB_NULL ? LIB_STATUS_INVALID_STATE :
-        app->factory.information(app->machine, out_info);
+        app->factory.information(app->factory.context, app->machine, out_info);
 }
 
 lib_status vm_app_speed_read(const vm_app *app, vm_app_speed *out_speed)

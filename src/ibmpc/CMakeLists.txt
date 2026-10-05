@@ -83,9 +83,9 @@ target_include_directories(ibmpc-board-xt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(ibmpc-board-xt PUBLIC types x86-ppi8255)
 
 add_library(ibmpc-product STATIC product/command.c product/composition.c product/keyboard.c
-    product/entry.c)
+    product/entry.c product/factory.c)
 target_include_directories(ibmpc-product PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(ibmpc-product PUBLIC ibmpc-product-config common-session common-ui x86-debug types)
+target_link_libraries(ibmpc-product PUBLIC ibmpc-product-config common-session common-ui x86-debug ibmpc-machine types)
 
 add_custom_target(ibmpc-verify
     COMMAND "${CMAKE_COMMAND}" -DCOMMON_ROOT=${CMAKE_CURRENT_SOURCE_DIR}

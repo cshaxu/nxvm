@@ -11,15 +11,6 @@
 #define VM_MACHINE_FIXED_DISK_SLOT_COUNT 2u
 #define VM_MACHINE_CMOS_SEED_BYTES 64u
 
-typedef struct vm_machine_runtime_config {
-    const char *floppy_image[VM_MACHINE_FLOPPY_SLOT_COUNT];
-    const char *fixed_disk_image[VM_MACHINE_FIXED_DISK_SLOT_COUNT];
-    lib_storage_medium_mode floppy_mode[VM_MACHINE_FLOPPY_SLOT_COUNT];
-    lib_storage_medium_mode fixed_disk_mode[VM_MACHINE_FIXED_DISK_SLOT_COUNT];
-    lib_bool create_fdd;
-    lib_u16 create_hdd_cylinders;
-} vm_machine_runtime_config;
-
 typedef enum vm_machine_profile_event {
     VM_MACHINE_PROFILE_RESET_COMPLETED,
     VM_MACHINE_PROFILE_BOARD_DETACHED

@@ -110,7 +110,7 @@ static void check_transaction(lib_status configure_status,
         .configure_status = configure_status, .reset_status = reset_status
     };
     vm_machine_construction construction = prepare(&probe);
-    const vm_machine_runtime_config runtime = {0};
+    const vm_machine_config runtime = {0};
     vm_machine *machine = LIB_NULL;
     common_machine_driver driver;
     vm_machine_information information;
@@ -145,7 +145,7 @@ lib_i32 main(void)
 {
     construction_probe probe = {0};
     vm_machine_construction construction = prepare(&probe);
-    const vm_machine_runtime_config runtime = {0};
+    const vm_machine_config runtime = {0};
     vm_machine *machine = LIB_NULL;
 
     lib_test_assert(vm_machine_create(LIB_NULL, &construction, &machine) ==
@@ -158,7 +158,7 @@ lib_i32 main(void)
     check_transaction(LIB_STATUS_OK, LIB_STATUS_INVALID_STATE);
     probe = (construction_probe) {0};
     construction = prepare(&probe);
-    const vm_machine_runtime_config missing_media = {
+    const vm_machine_config missing_media = {
         .floppy_image = {"missing-construction-medium.img"}
     };
     lib_test_assert(vm_machine_create(&missing_media, &construction, &machine) ==

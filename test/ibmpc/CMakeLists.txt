@@ -64,6 +64,7 @@ shared_register_test(ibmpc machine/construction ibmpc-machine)
 shared_register_test(ibmpc machine/input types)
 if(X86_BUILD_TOOLS)
     shared_register_test(ibmpc product/command ibmpc-product)
+    shared_register_test(ibmpc product/factory types)
     add_executable(ibmpc-test-composition product/composition_smoke.c
         "${IBMPC_ROOT}/product/composition.c")
     target_link_libraries(ibmpc-test-composition PRIVATE types)

@@ -22,10 +22,11 @@ freeze/publication/rollback path. Concrete topology, firmware, immutable
 identity and genuine model-specific state remain App-owned.
 
 Machine consumes board-common, x86/Core/debug, Common Machine and Lib services.
-It also consumes Product's copied request/factory contracts, not Product's CLI.
-Product consumes Common Session/UI and x86 Debug, not a concrete Machine
-implementation. App binds these two contracts; no reverse x86 dependency,
-second queue, native presenter or duplicate file backend is introduced.
+Product adapts its copied request to the neutral Machine input and consumes
+Machine's public creation/INFO/speed APIs. App supplies only fixed values and
+its actual Profile preparation operation; Machine does not depend on Product.
+There is no reverse x86 dependency, second queue, native presenter or
+duplicate file backend.
 
 Headers ending in _interface.h are public; all other headers are owner-local.
 Machine's media subdirectory is the same owner, not another component.

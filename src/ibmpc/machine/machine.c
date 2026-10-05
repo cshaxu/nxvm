@@ -92,14 +92,14 @@ static lib_status vm_machine_copy_path(char *destination, lib_size capacity,
     return LIB_STATUS_OK;
 }
 
-static const char *vm_machine_config_floppy(const vm_machine_runtime_config *config,
+static const char *vm_machine_config_floppy(const vm_machine_config *config,
     lib_size slot)
 {
     if (config == LIB_NULL || slot >= VM_MACHINE_FLOPPY_SLOT_COUNT) return LIB_NULL;
     return config->floppy_image[slot];
 }
 
-static const char *vm_machine_config_fixed_disk(const vm_machine_runtime_config *config,
+static const char *vm_machine_config_fixed_disk(const vm_machine_config *config,
     lib_size slot)
 {
     if (config == LIB_NULL || slot >= VM_MACHINE_FIXED_DISK_SLOT_COUNT) return LIB_NULL;
@@ -107,14 +107,14 @@ static const char *vm_machine_config_fixed_disk(const vm_machine_runtime_config 
 }
 
 static lib_storage_medium_mode vm_machine_config_floppy_mode(
-    const vm_machine_runtime_config *config, lib_size slot)
+    const vm_machine_config *config, lib_size slot)
 {
     return config != LIB_NULL && slot < VM_MACHINE_FLOPPY_SLOT_COUNT ?
         config->floppy_mode[slot] : LIB_STORAGE_MEDIUM_OVERLAY;
 }
 
 static lib_storage_medium_mode vm_machine_config_fixed_disk_mode(
-    const vm_machine_runtime_config *config, lib_size slot)
+    const vm_machine_config *config, lib_size slot)
 {
     return config != LIB_NULL && slot < VM_MACHINE_FIXED_DISK_SLOT_COUNT ?
         config->fixed_disk_mode[slot] : LIB_STORAGE_MEDIUM_OVERLAY;
@@ -312,7 +312,7 @@ void vm_machine_storage_finalize(vm_machine *machine)
     machine->core_machine_plan = LIB_NULL;
 }
 
-lib_status vm_machine_create(const vm_machine_runtime_config *config,
+lib_status vm_machine_create(const vm_machine_config *config,
     const vm_machine_construction *construction, vm_machine **out_session)
 {
     vm_machine *session;

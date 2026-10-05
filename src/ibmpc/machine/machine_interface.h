@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "ibmpc/machine/construction_interface.h"
+#include "ibmpc/machine/input_interface.h"
 #include "ibmpc/board-common/rom_validation_interface.h"
 #include "common/machine/machine_interface.h"
 #include "lib/storage/medium_interface.h"
@@ -46,7 +46,7 @@ typedef struct vm_machine_information {
 /* With three non-NULL arguments, construction.profile ownership transfers
  * on entry, including failure. Missing arguments do not transfer ownership.
  * The output stays NULL until the full creation/reset transaction succeeds. */
-lib_status vm_machine_create(const vm_machine_runtime_config *config,
+lib_status vm_machine_create(const vm_machine_config *config,
     const vm_machine_construction *construction, vm_machine **out_session);
 void vm_machine_destroy(vm_machine *session);
 /* vm/machine supplies this value-only driver; App composition owns the Common

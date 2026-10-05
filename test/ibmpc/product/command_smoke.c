@@ -19,9 +19,10 @@ static lib_status command_set_speed(void *machine, vm_app_speed value)
     return LIB_STATUS_OK;
 }
 
-static lib_status console_info_get_information(const void *machine,
+static lib_status console_info_get_information(const void *context, const void *machine,
     vm_app_information *information)
 {
+    (void)context;
     (void)machine;
     *information = (vm_app_information){ .machine_name = "fixture", .cpu_name = "80386" };
     return LIB_STATUS_OK;
