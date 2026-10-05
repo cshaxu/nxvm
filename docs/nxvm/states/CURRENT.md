@@ -4,18 +4,51 @@
 
 | Work | Progress |
 | --- | --- |
-| T544 S1 | Accepted and closed: finite retained-CPU inventory and fresh x64/x86 complete unit baseline. T544 remains open. |
+| T544 S2 | Audit delivery: finite cross-family boundary inventory and four coherent repair proposals; awaiting coordinator actual-change review. |
 
 T543 is closed at dd9af8951; its history retains the accepted four-App baseline.
 T544 consumes the former first Queue candidate, not another structural split.
 
-There is no active packet between accepted subtasks. S1's complete delivery is
+S1's complete delivery is
 742c31f23; its immutable packet and the [T544 ledger](../history/M5-T544-retained-cpu-qualification.md)
 record the inventory, source boundaries and unresolved proof receivers.
 Both fresh complete unit suites pass 506/506. No production input changed,
 so all eight 0543 PC artifacts and the MyNES pair remain current and untouched.
 The [proposal](../proposals/m5-retained-cpu-qualification.md) names the initial
-sequence; the next eligible batch is S2 cross-family state/delivery boundaries.
+sequence; S2 now consumes the cross-family state/delivery batch.
+
+The [S2 audit](../etc/evidence/t544-s2-cross-family-boundary-audit.md)
+records original-page/current-code discrepancies in divide-error return IP,
+reset CS limit, SS/debug/NMI arbitration, instruction length and outgoing
+FLAGS image, 286 POPF/nested faults and 386 RF fault-frame handling. The
+retirement observer ordering is reconciled with its explicit contract and
+existing rejection regression, not classified as a defect. Fresh S2 complete
+units pass 506/506 per width (x64 60.41s, x86 60.39s), once each.
+Remaining generation/source contexts are explicitly pending inside T544,
+with their family/repair receivers named in the audit. The inventory is not
+whole-CPU qualification. Four coherent repair mechanisms await owner review.
+Shared repairs have not been admitted or implemented; S2 is not closed.
+
+### Active S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T544 S2, after accepted S1 at 7393eabaf. |
+| Admission And Approval | Owner admitted T544 and automatic sequential S admission; current CPU-audit continuation, 2026-10-05. NXVM-owned audit evidence only; Shared source/test edits require concrete owner approval before implementation. |
+| Objective | Trace all five CPUs through the finite cross-family reset, metadata/prefix, FLAGS, interrupt inhibition/delivery, exception restart and successful-time publication contracts; identify actual defects and exact missing proof batches. |
+| Non-goals | No instruction-family qualification shortcut; no 80188/486 implementation, Lib/Common/MyNES edit, INI/media change, new API, timing downgrade or source import. |
+| Reference Baseline | 7393eabaf; S1 five-CPU inventory and two fresh 506/506 unit suites. All eight 0543 PC artifacts unchanged. |
+| Candidate Proposal | [T544 proposal](../proposals/m5-retained-cpu-qualification.md); [ledger](../history/M5-T544-retained-cpu-qualification.md), S2 boundary batch. |
+| Files And ABI Surface | Read x86/chips/cpu, x86/core execution/retirement, CPU/Core regressions and PC composition; write NXVM Current, task ledger and S2 evidence only. No public ABI or executable input change. |
+| Applicable Rules | Execution finite-batch convergence, full unit S gate and actual-change review; Documentation sole Current; architecture/coding skills, project Architecture/Coding one-owner and table-style constraints; source policy and PDF skill for read-only original manuals, OCR navigation plus rendered-page proof. |
+| Verification | Direct source/caller/test review for every S2 row; original manual hash and selected page review; complete units once per x64/x86 with RunTestAggregate.ps1, jobs 4, 300-second deadline each, sequential native runs; documentation governance, links and diff check. |
+| Expected Markers | Every S2 boundary row has source/callers/regression, scope-limited disposition and repair receiver; observed defects distinguished from unverified hypotheses; no unsupported whole-CPU claim. |
+| Asset Needs | Existing original manuals located under external manuals-nxvm/cpu and matched against recorded SHA-256. No asset master write. Ignored build/t544-s2-research holds disposable extraction/render outputs. |
+| Reporting Requirements | Confirm scope; report concrete findings with code/manual/test evidence and minimal owner-local repair proposal. Report final audit batch and known unresolved work, not only green tests. |
+| Stop Conditions | Do not mutate Shared without concrete approval; report new unupgradable L1 or grade correction; absent/uncertain source stays unqualified; preserve unrelated work and all existing artifacts/configuration. |
+| Exit Criteria | Complete S2 boundary inventory reconciled with exact findings/receivers, mandatory verification and actual-diff review; no found defect hidden behind baseline pass. T remains open. |
+| Original Owner Request | Continue full CPU audit under T544; preserve five CPU implementations and manual L3/model L2 distinctions, correct shared mechanisms rather than profile workarounds. |
+| Similar-Issue Sweep | All five CPU identities, all reset callers and FLAGS image/load callers; prefix admission, interrupt inhibit/NMI/HLT transitions; all fault-versus-retirement and timing publication paths. Named family-specific semantic contexts stay pending S3-S6. |
 
 ## Current Technical Baseline
 

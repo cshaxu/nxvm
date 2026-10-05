@@ -129,3 +129,42 @@ the one-owner boundary and rejection of a duplicate decoder/timing path.
 The entire S1 inventory batch is accepted; unresolved manual/state proof stays
 explicitly pending in S2-S6, not silently qualified. S1 is closed; T544 is open.
 No owned test process remains active. The next S requires its own packet.
+
+## S2 Boundary Audit Delivery
+
+The [S2 evidence](../etc/evidence/t544-s2-cross-family-boundary-audit.md) records
+confirmed divide-error return-address, reset-CS-limit, SS/debug/NMI arbitration,
+runtime length and outgoing FLAGS-image mismatches against rendered original
+manual pages and actual source/delivery chains. It distinguishes remaining
+generation/source contexts from those specific discrepancies and records an
+8086 IDIV arithmetic lead for S3. Immediate/delayed successful-time publication
+and the fault-delivery early return were inspected; no complete physical-time
+qualification claim is made. Further original-page review confirms a 386 RF
+fault-frame gap and reconciles the retirement observer's pre-qualification
+notification as an intentional, tested contract rather than a clock bug.
+Fresh S2 complete units pass once per width: x64 506/506 in 60.41 seconds;
+x86 506/506 in 60.39 seconds. This is a read-only audit delivery, not
+Shared repair approval or whole-CPU qualification.
+Further rendered 286/early-family pages establish the 286 10-byte/UD length
+contract, 286 NMI/priority requirements, early-family interrupt differences
+and early reset selector/offset mismatches. The separately read 80186 reset
+table confirms FFFF:0000 and qualifies the status-word/image distinction.
+The evidence now maps the finite structural paths to findings and remaining
+source/regression receivers; no early/186 peripheral completeness is claimed.
+
+S2's complete boundary inventory is delivered for coordinator review. It
+classifies reset, admission, FLAGS images/loads, arbitration, exception
+completion and immediate/delayed retirement, naming exact code paths,
+existing regression limits and remaining family/repair receivers. Missing
+source contexts remain pending inside T544; no implemented-family form is
+accepted merely from catalog or boot success. Four coherent mechanisms are
+proposed for owner review before Shared edits. No source/test/build/asset
+changed; code diff is zero and existing EXEs remain current.
+
+Executor review checked the full evidence against the active S2 scope:
+all nine structural rows have an observed disposition and receiver, directly
+confirmed claims name rendered original pages/current paths, uncertain contexts
+are not called correct, the observer ordering is reconciled with its actual
+contract, and the complete units passed once per width. Documentation structure,
+changed-document relative links, packet shape and diff checks are the delivery
+gates; S2 is not closed until coordinator actual-change acceptance and push.
