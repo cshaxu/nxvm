@@ -7,7 +7,7 @@
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "app-nxvm/product/config.h"
 #include "app-nxvm/product/profile_binding.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/machine_private.h"
 #include "lib/base/sync_interface.h"
 
 static lib_i32 integration_ini_session_find(const char *directory,

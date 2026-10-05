@@ -2,7 +2,7 @@
 #define NXVM_TEST_PROFILE_H
 
 #include "app-nxvm/profiles/machine_factory_interface.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/machine_private.h"
 
 /* App fixtures prepare this actual Profile context; the Shared adapter owns
  * its lifetime. This borrowed test view adds no registry or mirrored state. */

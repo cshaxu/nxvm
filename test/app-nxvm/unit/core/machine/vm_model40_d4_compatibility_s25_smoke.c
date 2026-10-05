@@ -4,10 +4,10 @@
 #include <stdio.h>
 
 #include "x86/core/machine_interface.h"
-#include "../../../../x86/ibmpc-common/composition_fixture.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "x86/product/machine/machine_private.h"
-#include "x86/product/machine/machine_interface.h"
+#include "../../../../ibmpc/board-common/composition_fixture.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "ibmpc/machine/machine_private.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
 
 static lib_i32 vm_model40_d4_read(core_machine *machine,

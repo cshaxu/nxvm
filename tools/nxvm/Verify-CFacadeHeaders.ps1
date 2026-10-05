@@ -22,16 +22,18 @@ foreach ($directory in @('src', 'test')) {
         Where-Object { $_.FullName -notmatch '[\\/]nxvm-baseline[\\/]' } |
         ForEach-Object {
             $file = $_.FullName.Replace('\', '/')
-            # The canonical shared Lib/Common/x86 corpora and their neutral
+            # The canonical shared Lib/Common/x86/ibmpc corpora and their neutral
             # conformance tests are independently consumable. Their C-runtime
             # choices are owned and verified with the imported source, not by
             # NXVM's product facade gate.
             if ($file -like "$($root.Replace('\', '/'))/src/lib/*" -or
                 $file -like "$($root.Replace('\', '/'))/src/common/*" -or
                 $file -like "$($root.Replace('\', '/'))/src/x86/*" -or
+                $file -like "$($root.Replace('\', '/'))/src/ibmpc/*" -or
                 $file -like "$($root.Replace('\', '/'))/test/lib/*" -or
                 $file -like "$($root.Replace('\', '/'))/test/common/*" -or
-                $file -like "$($root.Replace('\', '/'))/test/x86/*") {
+                $file -like "$($root.Replace('\', '/'))/test/x86/*" -or
+                $file -like "$($root.Replace('\', '/'))/test/ibmpc/*") {
                 return
             }
             if ($allowed -contains $file) {

@@ -6,10 +6,10 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_pro
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/external_pc_at_rom.c"
     firmware_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine_devices.c"
     devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/rtc146818/rtc.c" rtc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/fdc.c" fdc_source)
 
 foreach(required IN ITEMS
     "default-pc-at"

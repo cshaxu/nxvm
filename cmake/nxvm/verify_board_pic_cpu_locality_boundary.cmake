@@ -3,9 +3,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/cpu_bus.c" core)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_advance.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_advance.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/model40/d4_platform.c" wiring)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" creation)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" creation)
 foreach(forbidden "machine->shared_pic_master" "machine->shared_pic_slave"
     "machine->board->shared_pic_master" "machine->board->shared_pic_slave"
     "core_machine_pic_scan_interrupt(" "core_machine_pic_get_interrupt(")

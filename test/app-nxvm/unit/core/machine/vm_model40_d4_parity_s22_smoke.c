@@ -5,8 +5,8 @@
 
 #include "../../../../x86/core/composition_fixture.h"
 #include "x86/core/memory_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "ibmpc/machine/machine_private.h"
 #include "support/rom/model40_session_assets.h"
 
 static lib_i32 read_byte(core_machine *machine, lib_u32 physical,

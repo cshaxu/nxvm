@@ -3,10 +3,10 @@
 #ifndef TEST_INTEGRATION_SUPPORT_SESSION_INI_H
 #define TEST_INTEGRATION_SUPPORT_SESSION_INI_H
 
-#include "x86/ibmpc-common/media_interface.h"
-#include "x86/product/machine/media/media_interface.h"
-#include "x86/product/machine/machine_interface.h"
-#include "x86/product/ini_interface.h"
+#include "ibmpc/board-common/media_interface.h"
+#include "ibmpc/machine/media/media_interface.h"
+#include "ibmpc/machine/machine_interface.h"
+#include "ibmpc/product/ini_interface.h"
 
 typedef struct integration_ini_session integration_ini_session;
 

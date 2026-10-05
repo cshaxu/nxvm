@@ -5,7 +5,7 @@
 
 
 #include "guest_display.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/machine_private.h"
 
 /* Test-only view of the one production Common frame. It never publishes or
  * stores a frame, so production has no second presentation route. */

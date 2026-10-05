@@ -1,14 +1,14 @@
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/media.h"
 #include "lib/types/types_interface.h"
-#include "../../../../x86/ibmpc-common/controller_fixture.h"
+#include "../../../../ibmpc/board-common/controller_fixture.h"
 #include <stdio.h>
 
-#include "x86/ibmpc-common/pic_bus_interface.h"
-#include "x86/product/machine/lifecycle.h"
-#include "x86/product/machine/machine_interface.h"
-#include "x86/product/machine/machine_private.h"
-#include "x86/product/machine/media/fdd_interface.h"
+#include "ibmpc/board-common/pic_bus_interface.h"
+#include "ibmpc/machine/lifecycle.h"
+#include "ibmpc/machine/machine_interface.h"
+#include "ibmpc/machine/machine_private.h"
+#include "ibmpc/machine/media/fdd_interface.h"
 #include "support/rom/session_assets.h"
 #include "lib/storage/file_interface.h"
 

@@ -2,19 +2,19 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_plan.c" core_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_display.c" core_display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_plan.c" core_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_display.c" core_display_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.h" machine_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board_state.h" board_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board_state.h" board_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
 if(machine_header MATCHES "t_vadp[ \t]+\\*?[ \t]*shared_vadp;" OR
     NOT board_header MATCHES "t_vadp[ \t]+\\*shared_vadp;" OR
     scheduler_source MATCHES "board->shared_vadp")
     message(FATAL_ERROR "VADP instance must have one board owner")
 endif()
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/vadp.c" board_display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/vadp.c" board_display_source)
 set(core_source "${core_plan_source}${core_display_source}${board_display_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board_interface.h" core_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_interface.h" neutral_header)
 foreach(operation IN ITEMS capture_display_snapshot observe_display_snapshot configure_display)
     foreach(source IN ITEMS core_display_source core_header)
@@ -39,9 +39,9 @@ endif()
 file(GLOB_RECURSE display_callers
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c" "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86/core/*.c" "${PROJECT_SOURCE_DIR}/test/x86/core/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.c" "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-common/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.c" "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.c" "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-xt/*.c")
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c" "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/*.c"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.c" "${PROJECT_SOURCE_DIR}/test/ibmpc/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.c" "${PROJECT_SOURCE_DIR}/test/ibmpc/board-xt/*.c")
 foreach(caller IN LISTS display_callers)
     file(READ "${caller}" caller_source)
     if(caller_source MATCHES
@@ -49,11 +49,11 @@ foreach(caller IN LISTS display_callers)
         message(FATAL_ERROR "Display caller retains a Core receiver: ${caller}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/lifecycle.c" lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/display.c" display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/lifecycle.c" lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/display.c" display_source)
 
 foreach(required IN ITEMS "core_machine_display_config"
     "core_machine_configure_display" "core_machine_display_ports_are_vadp"
@@ -80,9 +80,9 @@ endif()
 foreach(forbidden IN ITEMS "core_machine_profile_binding_configure_"
     "core_machine_vadp_configure_" "x86_video_configure_" "core_machine_install_port_provider")
     foreach(vm_source IN ITEMS
-        "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine.c"
-        "${PROJECT_SOURCE_DIR}/src/x86/product/machine/display.c")
-        if(vm_source STREQUAL "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine.c")
+        "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine.c"
+        "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/display.c")
+        if(vm_source STREQUAL "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine.c")
             set(vm_source_text "${machine_source}")
         else()
             set(vm_source_text "${display_source}")

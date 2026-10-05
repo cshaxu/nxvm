@@ -3,7 +3,7 @@
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 
 /* T337_REAL_UD_VECTOR6_DELIVERY: this owner proves the shared real #UD path. */
 

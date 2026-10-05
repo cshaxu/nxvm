@@ -4,6 +4,11 @@ Only unplanned debt belongs here; [Queue](QUEUE.md) owns admitted candidate
 receivers. The [former debt disposition](../etc/history/retired-machine-plans/README.md)
 preserves every old entry and its retirement/transfer, not an assertion of repair.
 
+- [ ] **Shared package vocabulary (`TODO(Low)`).** Shared rules still enumerate
+  the historical six corpora. Owner-approved T542 S11 separates src/ibmpc and
+  test/ibmpc, with NXVM as the sole current receiver. Admit a separate Td to
+  reconcile this scope vocabulary; S11 does not modify docs/rules or Lib/Common.
+
 ## CPU, Time, And Debugging Debt
 
 - [ ] **Internal descriptor vocabulary (`TODO(Low)`).** Preserve data layout

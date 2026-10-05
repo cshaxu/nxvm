@@ -2,13 +2,13 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/ibmpc-common/dma_bus_interface.h"
+#include "ibmpc/board-common/dma_bus_interface.h"
 #include "../../../../x86/core/composition_fixture.h"
 #include "../../../../x86/core/time_fixture.h"
-#include "../../../../x86/ibmpc-common/composition_fixture.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "../../../../ibmpc/board-common/composition_fixture.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/core/trace_interface.h"
-#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
+#include "../../../../ibmpc/board-common/core_machine_board_fixture.h"
 
 typedef struct competition_probe {
     core_machine_trace_event events[256];

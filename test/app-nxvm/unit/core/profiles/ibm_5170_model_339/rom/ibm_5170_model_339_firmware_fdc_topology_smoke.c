@@ -3,9 +3,9 @@
 #include <stdio.h>
 
 #include "../../../../../../x86/core/composition_fixture.h"
-#include "../../../../../../x86/ibmpc-common/composition_fixture.h"
-#include "x86/product/machine/machine_private.h"
-#include "x86/product/machine/machine_interface.h"
+#include "../../../../../../ibmpc/board-common/composition_fixture.h"
+#include "ibmpc/machine/machine_private.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "../../../machine/support/rom/session_assets.h"
 

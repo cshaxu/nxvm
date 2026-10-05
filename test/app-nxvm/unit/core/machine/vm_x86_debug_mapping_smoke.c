@@ -4,9 +4,9 @@
 
 #include "x86/core/debug_interface.h"
 #include "x86/debug/protocol_interface.h"
-#include "x86/product/machine/lifecycle.h"
-#include "x86/product/machine/debug_adapter.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/lifecycle.h"
+#include "ibmpc/machine/debug_adapter.h"
+#include "ibmpc/machine/machine_private.h"
 #include "support/common_machine_fixture.h"
 #include "support/rom/session_assets.h"
 

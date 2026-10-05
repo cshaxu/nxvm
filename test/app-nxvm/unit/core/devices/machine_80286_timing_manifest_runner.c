@@ -3,9 +3,9 @@
 #include <stdio.h>
 
 #include "x86/chips/cpu/cpu_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/core/retirement_observation_interface.h"
-#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
+#include "../../../../ibmpc/board-common/core_machine_board_fixture.h"
 #include "support/protected_16_bootstrap_fixture.h"
 
 

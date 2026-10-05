@@ -4,11 +4,11 @@
 #include <stdio.h>
 
 #include "../../../../x86/core/composition_fixture.h"
-#include "../../../../x86/ibmpc-common/composition_fixture.h"
-#include "../../../../x86/ibmpc-common/controller_fixture.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "x86/product/machine/machine_interface.h"
-#include "x86/product/machine/machine_private.h"
+#include "../../../../ibmpc/board-common/composition_fixture.h"
+#include "../../../../ibmpc/board-common/controller_fixture.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "ibmpc/machine/machine_interface.h"
+#include "ibmpc/machine/machine_private.h"
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
 
 static core_machine_media_result vm_xt_5160_268_fdd_query(void *context,

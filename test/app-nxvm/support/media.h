@@ -2,8 +2,8 @@
 #define NXVM_TEST_MEDIA_H
 
 #include <assert.h>
-#include "x86/product/machine/media/fdd_interface.h"
-#include "x86/product/machine/media/hdd_interface.h"
+#include "ibmpc/machine/media/fdd_interface.h"
+#include "ibmpc/machine/media/hdd_interface.h"
 
 /* Composition tests observe the same copied provider contract as controllers. */
 static inline core_machine_media_info vm_test_media_info(

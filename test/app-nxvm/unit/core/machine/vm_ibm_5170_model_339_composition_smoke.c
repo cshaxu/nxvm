@@ -4,15 +4,15 @@
 #include "../../../support/media.h"
 #include "lib/types/types_interface.h"
 #include "../../../../x86/core/composition_fixture.h"
-#include "../../../../x86/ibmpc-common/composition_fixture.h"
-#include "../../../../x86/ibmpc-common/kbc_state_fixture.h"
+#include "../../../../ibmpc/board-common/composition_fixture.h"
+#include "../../../../ibmpc/board-common/kbc_state_fixture.h"
 #include <stdio.h>
 
 #include "x86/core/debug_interface.h"
 #include "../../../../x86/core/bus_fixture.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "x86/product/machine/machine_private.h"
-#include "x86/product/machine/machine_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "ibmpc/machine/machine_private.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 
 #include "support/rom/session_assets.h"

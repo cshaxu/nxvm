@@ -3,7 +3,7 @@
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 
 #define UD_S1_GDT_BASE 0x0300u
 #define UD_S1_IDT_BASE 0x0400u

@@ -6,9 +6,9 @@
 
 #include <windows.h>
 
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "x86/product/machine/machine_private.h"
-#include "x86/product/machine/waiting.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "ibmpc/machine/machine_private.h"
+#include "ibmpc/machine/waiting.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define VM_MOUSE_DOS_BOOT_BUDGET 6000000u

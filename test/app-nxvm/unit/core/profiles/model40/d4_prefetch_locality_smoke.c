@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/profiles/model40/d4_platform.h"
 #include "app-nxvm/profiles/model40/d4_platform_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/core/debug_interface.h"
 #include <stdio.h>
 

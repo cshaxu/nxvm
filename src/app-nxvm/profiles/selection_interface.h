@@ -6,7 +6,7 @@
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/chips/fpu/fpu_interface.h"
 #include "lib/storage/medium_interface.h"
-#include "x86/product/machine/construction_interface.h"
+#include "ibmpc/machine/construction_interface.h"
 
 typedef enum vm_machine_profile_kind {
     VM_MACHINE_PROFILE_DEFAULT_PC_AT,

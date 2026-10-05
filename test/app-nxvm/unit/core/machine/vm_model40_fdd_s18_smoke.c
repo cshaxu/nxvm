@@ -3,11 +3,11 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "../../../../x86/ibmpc-common/controller_fixture.h"
-#include "x86/ibmpc-common/media_interface.h"
-#include "x86/product/machine/lifecycle.h"
-#include "x86/product/machine/media/media_interface.h"
-#include "x86/product/machine/machine_private.h"
+#include "../../../../ibmpc/board-common/controller_fixture.h"
+#include "ibmpc/board-common/media_interface.h"
+#include "ibmpc/machine/lifecycle.h"
+#include "ibmpc/machine/media/media_interface.h"
+#include "ibmpc/machine/machine_private.h"
 #include "support/rom/model40_session_assets.h"
 #include "support/rom/session_assets.h"
 

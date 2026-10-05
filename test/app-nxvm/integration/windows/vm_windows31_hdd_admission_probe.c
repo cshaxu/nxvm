@@ -1,6 +1,6 @@
 #include "../../support/profile.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
-#include "../../../x86/ibmpc-common/controller_fixture.h"
+#include "../../../ibmpc/board-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -9,8 +9,8 @@
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "x86/product/machine/machine_private.h"
-#include "x86/product/machine/waiting.h"
+#include "ibmpc/machine/machine_private.h"
+#include "ibmpc/machine/waiting.h"
 
 #define VM_T287_PROBE_FDD_BYTES (1440u * 1024u)
 #define VM_T287_PROBE_BUDGET 500000u

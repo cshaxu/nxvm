@@ -5,8 +5,8 @@
 
 #include "x86/core/entry_plan_interface.h"
 #include "x86/core/machine_interface.h"
-#include "x86/product/machine/machine_interface.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/machine_interface.h"
+#include "ibmpc/machine/machine_private.h"
 #include "support/rom/session_assets.h"
 
 #define VM_KBC_AUX_BOOT_BUDGET 500000u

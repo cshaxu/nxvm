@@ -57,7 +57,8 @@ add_custom_target(cpu-timing-manifest-catalog
 set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     shared-lib-tests
     shared-common-tests
-    shared-x86-tests)
+    shared-x86-tests
+    shared-ibmpc-tests)
 
 add_library(core-machine STATIC
     src/app-nxvm/profiles/model40/d4_memory.c
@@ -85,7 +86,7 @@ add_library(core-machine-observable STATIC ${PROJECT_CORE_MACHINE_SOURCES})
 target_include_directories(core-machine-observable PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-observable PUBLIC x86-ibmpc-common-observable x86-ibmpc-at x86-ibmpc-xt
+target_link_libraries(core-machine-observable PUBLIC ibmpc-board-common-observable ibmpc-board-at ibmpc-board-xt
     x86-core-observable)
 target_compile_definitions(core-machine-observable PUBLIC
     CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
@@ -147,8 +148,8 @@ add_executable(vm-model40-d4-parity-s22-smoke
 target_link_libraries(vm-model40-d4-parity-s22-smoke PRIVATE vm-profile)
 add_executable(vm-model40-fdc-s24-smoke
     test/app-nxvm/unit/core/machine/vm_model40_fdc_s24_smoke.c
-    test/x86/ibmpc-common/controller_fixture.c
-    test/x86/ibmpc-common/composition_fixture.c)
+    test/ibmpc/board-common/controller_fixture.c
+    test/ibmpc/board-common/composition_fixture.c)
 target_link_libraries(vm-model40-fdc-s24-smoke PRIVATE vm-profile)
 add_executable(vm-model40-d4-skey-s23-smoke
     test/app-nxvm/unit/core/machine/vm_model40_d4_skey_s23_smoke.c
@@ -166,7 +167,7 @@ target_link_libraries(vm-model40-byob-s20-smoke PRIVATE vm-profile)
 add_executable(vm-model40-byob-retirement-capture
     test/app-nxvm/integration/model40/vm_model40_retirement_capture.c
     test/x86/core/composition_fixture.c
-    test/x86/ibmpc-common/cmos_fixture.c)
+    test/ibmpc/board-common/cmos_fixture.c)
 target_link_libraries(vm-model40-byob-retirement-capture PRIVATE
     integration-session-ini-support)
 add_executable(vm-model40-byob-boot-media-s5-smoke
@@ -184,16 +185,16 @@ target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-app vm-profile)
 add_executable(vm-model-339-clock-contract-smoke
     test/app-nxvm/unit/core/machine/vm_model_339_clock_contract_smoke.c)
 target_sources(vm-model-339-clock-contract-smoke PRIVATE
-    test/x86/ibmpc-common/composition_fixture.c
-    test/x86/ibmpc-common/kbc_state_fixture.c
-    test/x86/ibmpc-at/state_fixture.c)
+    test/ibmpc/board-common/composition_fixture.c
+    test/ibmpc/board-common/kbc_state_fixture.c
+    test/ibmpc/board-at/state_fixture.c)
 target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-profile)
 add_executable(vm-ibm-5170-model-339-cga-topology-smoke
     test/app-nxvm/unit/core/machine/vm_ibm_5170_model_339_cga_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-profile)
 target_sources(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE
     test/x86/core/video_topology_fixture.c
-    test/x86/ibmpc-common/video_topology_fixture.c)
+    test/ibmpc/board-common/video_topology_fixture.c)
 add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     test/app-nxvm/unit/core/profiles/ibm_5170_model_339/rom/ibm_5170_model_339_firmware_fdc_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-profile)
@@ -201,7 +202,7 @@ add_executable(vm-hdc-port-smoke test/app-nxvm/unit/core/machine/vm_hdc_port_smo
 target_link_libraries(vm-hdc-port-smoke PRIVATE vm-profile)
 add_executable(vm-hdc-hdd-boot-smoke
     test/app-nxvm/integration/hdd/vm_hdc_hdd_boot_smoke.c
-    test/x86/ibmpc-common/controller_fixture.c)
+    test/ibmpc/board-common/controller_fixture.c)
 target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-default-pc-at-apply-smoke
     test/app-nxvm/unit/core/machine/vm_default_pc_at_apply_smoke.c)
@@ -242,7 +243,7 @@ target_link_libraries(vm-app-session-smoke PRIVATE vm-profile)
 add_executable(vm-machine-initialization-atomicity-smoke
     test/app-nxvm/unit/core/machine/vm_machine_initialization_atomicity_smoke.c)
 target_sources(vm-machine-initialization-atomicity-smoke PRIVATE
-    test/x86/ibmpc-common/composition_fixture.c)
+    test/ibmpc/board-common/composition_fixture.c)
 target_link_libraries(vm-machine-initialization-atomicity-smoke PRIVATE vm-profile)
 add_executable(vm-machine-reconfigure-smoke
     test/app-nxvm/unit/core/machine/nxvm_machine_reconfigure_smoke.c)
@@ -259,13 +260,13 @@ target_link_libraries(vm-timing-qualification-smoke PRIVATE vm-profile)
 add_executable(vm-ibm-5170-direct-plan-smoke
     test/app-nxvm/unit/core/machine/vm_ibm_5170_direct_plan_smoke.c)
 target_link_libraries(vm-ibm-5170-direct-plan-smoke PRIVATE
-    vm-profile x86-ibmpc-common x86-core)
+    vm-profile ibmpc-board-common x86-core)
 add_executable(vm-xt-5160-268-profile-smoke
     test/app-nxvm/unit/core/machine/vm_xt_5160_268_profile_smoke.c)
 target_sources(vm-xt-5160-268-profile-smoke PRIVATE
     test/x86/core/composition_fixture.c
-    test/x86/ibmpc-common/composition_fixture.c
-    test/x86/ibmpc-common/controller_fixture.c)
+    test/ibmpc/board-common/composition_fixture.c
+    test/ibmpc/board-common/controller_fixture.c)
 target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE vm-profile)
 
 
@@ -287,7 +288,7 @@ add_executable(core-machine-competition-s3-smoke
     test/app-nxvm/unit/core/devices/machine_competition_s3_smoke.c
     test/x86/core/composition_fixture.c
     test/x86/core/time_fixture.c
-    test/x86/ibmpc-common/composition_fixture.c)
+    test/ibmpc/board-common/composition_fixture.c)
 target_link_libraries(core-machine-competition-s3-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-d4-refresh-hold-smoke
@@ -295,7 +296,7 @@ add_executable(core-machine-d4-refresh-hold-smoke
     test/app-nxvm/unit/core/profiles/model40/d4_refresh_fixture.c
     test/x86/core/composition_fixture.c
     test/x86/core/time_fixture.c
-    test/x86/ibmpc-common/composition_fixture.c)
+    test/ibmpc/board-common/composition_fixture.c)
 target_link_libraries(core-machine-d4-refresh-hold-smoke PRIVATE core-machine-observable)
 
 
@@ -588,8 +589,8 @@ endforeach()
 # evidence of strict compilation for a smoke source.
 function(project_configure_t317_strict_cpu_smokes)
 set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
-    "core-machine-cli-sti-s48-smoke|test/x86/ibmpc-common/core_machine_cli_sti_s48_smoke.c"
-    "machine-cli-sti-interrupt-smoke|test/x86/ibmpc-common/machine_cli_sti_interrupt_smoke.c"
+    "core-machine-cli-sti-s48-smoke|test/ibmpc/board-common/core_machine_cli_sti_s48_smoke.c"
+    "machine-cli-sti-interrupt-smoke|test/ibmpc/board-common/machine_cli_sti_interrupt_smoke.c"
     "x86-test-cpu_control_state|chips/cpu/cpu_control_state_smoke.c"
     "x86-test-cpu_control_transfer_branch|chips/cpu/cpu_control_transfer_branch_smoke.c"
     "x86-test-cpu_control_transfer_near|chips/cpu/cpu_control_transfer_near_smoke.c"
@@ -603,35 +604,35 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "x86-test-cpu_lar_lsl|chips/cpu/cpu_lar_lsl_smoke.c"
     "x86-test-cpu_verr_verw|chips/cpu/cpu_verr_verw_smoke.c"
     "x86-test-cpu_eflags_local|chips/cpu/cpu_eflags_local_smoke.c"
-    "core-machine-enter-leave-smoke|test/x86/ibmpc-common/core_machine_enter_leave_smoke.c"
+    "core-machine-enter-leave-smoke|test/ibmpc/board-common/core_machine_enter_leave_smoke.c"
     "machine-fpu-interface-s65-smoke|test/x86/core/machine_fpu_interface_s65_smoke.c"
     "core-machine-fs-gs-stack-smoke|test/app-nxvm/unit/core/devices/core_machine_fs_gs_stack_smoke.c"
-    "core-machine-gpr-mov-smoke|test/x86/ibmpc-common/core_machine_gpr_mov_smoke.c"
-    "core-machine-gpr-push-pop-smoke|test/x86/ibmpc-common/core_machine_gpr_push_pop_smoke.c"
-    "core-machine-hlt-s49-smoke|test/x86/ibmpc-common/core_machine_hlt_s49_smoke.c"
-    "core-machine-imul-immediate-s56-smoke|test/x86/ibmpc-common/core_machine_imul_immediate_s56_smoke.c"
+    "core-machine-gpr-mov-smoke|test/ibmpc/board-common/core_machine_gpr_mov_smoke.c"
+    "core-machine-gpr-push-pop-smoke|test/ibmpc/board-common/core_machine_gpr_push_pop_smoke.c"
+    "core-machine-hlt-s49-smoke|test/ibmpc/board-common/core_machine_hlt_s49_smoke.c"
+    "core-machine-imul-immediate-s56-smoke|test/ibmpc/board-common/core_machine_imul_immediate_s56_smoke.c"
     "x86-test-cpu_outer_return|chips/cpu/cpu_outer_return_smoke.c"
     "x86-test-cpu_task_switch16|chips/cpu/cpu_task_switch16_smoke.c"
     "x86-test-cpu_task_switch32_decode|chips/cpu/cpu_task_switch32_decode_smoke.c"
     "x86-test-cpu_task_switch32_state|chips/cpu/cpu_task_switch32_state_smoke.c"
-    "core-machine-iret-s51-smoke|test/x86/ibmpc-common/core_machine_iret_s51_smoke.c"
+    "core-machine-iret-s51-smoke|test/ibmpc/board-common/core_machine_iret_s51_smoke.c"
     "x86-test-cpu_lgdt_lidt|chips/cpu/cpu_lgdt_lidt_smoke.c"
-    "core-machine-lea-smoke|test/x86/ibmpc-common/core_machine_lea_smoke.c"
-    "core-machine-legacy-sreg-stack-smoke|test/x86/ibmpc-common/core_machine_legacy_sreg_stack_smoke.c"
-    "core-machine-les-lds-s41-smoke|test/x86/ibmpc-common/core_machine_les_lds_s41_smoke.c"
-    "core-machine-les-lds-smoke|test/x86/ibmpc-common/core_machine_les_lds_smoke.c"
-    "core-machine-lss-lfs-lgs-smoke|test/x86/ibmpc-common/core_machine_lss_lfs_lgs_smoke.c"
-    "core-machine-moffs-smoke|test/x86/ibmpc-common/core_machine_moffs_smoke.c"
-    "core-machine-prefix-attributes-s64-smoke|test/x86/ibmpc-common/core_machine_prefix_attributes_s64_smoke.c"
-    "core-machine-push-immediate-smoke|test/x86/ibmpc-common/core_machine_push_immediate_smoke.c"
-    "core-machine-pusha-popa-smoke|test/x86/ibmpc-common/core_machine_pusha_popa_smoke.c"
-    "core-machine-rotate-smoke|test/x86/ibmpc-common/core_machine_rotate_smoke.c"
-    "core-machine-sign-extend-smoke|test/x86/ibmpc-common/core_machine_sign_extend_smoke.c"
-    "core-machine-software-int-s50-smoke|test/x86/ibmpc-common/core_machine_software_int_s50_smoke.c"
-    "core-machine-sreg-mov-smoke|test/x86/ibmpc-common/core_machine_sreg_mov_smoke.c"
+    "core-machine-lea-smoke|test/ibmpc/board-common/core_machine_lea_smoke.c"
+    "core-machine-legacy-sreg-stack-smoke|test/ibmpc/board-common/core_machine_legacy_sreg_stack_smoke.c"
+    "core-machine-les-lds-s41-smoke|test/ibmpc/board-common/core_machine_les_lds_s41_smoke.c"
+    "core-machine-les-lds-smoke|test/ibmpc/board-common/core_machine_les_lds_smoke.c"
+    "core-machine-lss-lfs-lgs-smoke|test/ibmpc/board-common/core_machine_lss_lfs_lgs_smoke.c"
+    "core-machine-moffs-smoke|test/ibmpc/board-common/core_machine_moffs_smoke.c"
+    "core-machine-prefix-attributes-s64-smoke|test/ibmpc/board-common/core_machine_prefix_attributes_s64_smoke.c"
+    "core-machine-push-immediate-smoke|test/ibmpc/board-common/core_machine_push_immediate_smoke.c"
+    "core-machine-pusha-popa-smoke|test/ibmpc/board-common/core_machine_pusha_popa_smoke.c"
+    "core-machine-rotate-smoke|test/ibmpc/board-common/core_machine_rotate_smoke.c"
+    "core-machine-sign-extend-smoke|test/ibmpc/board-common/core_machine_sign_extend_smoke.c"
+    "core-machine-software-int-s50-smoke|test/ibmpc/board-common/core_machine_software_int_s50_smoke.c"
+    "core-machine-sreg-mov-smoke|test/ibmpc/board-common/core_machine_sreg_mov_smoke.c"
     "x86-test-cpu_sgdt_sidt|chips/cpu/cpu_sgdt_sidt_smoke.c"
-    "machine-debug-state-board-smoke|test/x86/ibmpc-common/machine_debug_state_board_smoke.c"
-    "core-machine-xchg-smoke|test/x86/ibmpc-common/core_machine_xchg_smoke.c")
+    "machine-debug-state-board-smoke|test/ibmpc/board-common/machine_debug_state_board_smoke.c"
+    "core-machine-xchg-smoke|test/ibmpc/board-common/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
 if(NOT project_t317_inventory_count EQUAL 44)
@@ -796,7 +797,7 @@ add_library(x86-cpu ALIAS x86-cpu-shared)
 
 target_link_libraries(core-machine PUBLIC x86-pit825x x86-rtc146818 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
 target_link_libraries(core-machine-observable PUBLIC x86-pit825x x86-rtc146818 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
-target_link_libraries(core-machine PUBLIC x86-ibmpc-common x86-ibmpc-at x86-ibmpc-xt x86-core)
+target_link_libraries(core-machine PUBLIC ibmpc-board-common ibmpc-board-at ibmpc-board-xt x86-core)
 
 add_library(vm-profile STATIC ${VM_PROFILE_SOURCES})
 target_compile_definitions(vm-profile PRIVATE
@@ -810,7 +811,7 @@ endif()
 target_link_libraries(vm-profile PUBLIC
     core-machine
     storage
-    x86-product-machine)
+    ibmpc-machine)
 
 add_executable(vm-keyboard-host-ingress-smoke
     test/app-nxvm/unit/core/machine/vm_keyboard_host_ingress_smoke.c
@@ -832,7 +833,7 @@ target_include_directories(vm-app PUBLIC
     "${CMAKE_BINARY_DIR}/generated"
 )
 target_link_libraries(vm-app PUBLIC
-    x86-product
+    ibmpc-product
     common-session
     common-ui
     x86-debug
@@ -886,11 +887,11 @@ add_executable(vm-byob-dos-boot-probe
     test/app-nxvm/integration/dos/vm_byob_dos_boot_probe.c
     test/x86/core/boot_fixture.c
     test/x86/core/composition_fixture.c
-    test/x86/ibmpc-common/boot_fixture.c
-    test/x86/ibmpc-common/controller_fixture.c
-    test/x86/ibmpc-common/composition_fixture.c
-    test/x86/ibmpc-at/boot_fixture.c
-    test/x86/ibmpc-xt/boot_fixture.c
+    test/ibmpc/board-common/boot_fixture.c
+    test/ibmpc/board-common/controller_fixture.c
+    test/ibmpc/board-common/composition_fixture.c
+    test/ibmpc/board-at/boot_fixture.c
+    test/ibmpc/board-xt/boot_fixture.c
 )
 target_link_libraries(vm-byob-dos-boot-probe PRIVATE integration-session-ini-support)
 add_library(integration-session-ini-support STATIC
@@ -913,7 +914,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 add_executable(vm-windows31-checkpoint
     test/app-nxvm/integration/windows/vm_windows31_checkpoint.c
-    test/x86/ibmpc-common/controller_fixture.c
+    test/ibmpc/board-common/controller_fixture.c
 )
 target_link_libraries(vm-windows31-checkpoint PRIVATE integration-session-ini-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -921,7 +922,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 add_executable(vm-windows31-setup-probe
     test/app-nxvm/integration/windows/vm_windows31_setup_probe.c
-    test/x86/ibmpc-common/controller_fixture.c
+    test/ibmpc/board-common/controller_fixture.c
 )
 target_link_libraries(vm-windows31-setup-probe PRIVATE integration-session-ini-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -943,7 +944,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 add_executable(vm-windows31-hdd-admission-probe
     test/app-nxvm/integration/windows/vm_windows31_hdd_admission_probe.c
-    test/x86/ibmpc-common/controller_fixture.c
+    test/ibmpc/board-common/controller_fixture.c
 )
 target_link_libraries(vm-windows31-hdd-admission-probe PRIVATE integration-session-ini-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -990,47 +991,47 @@ target_compile_definitions(vm-rom-ega-int10-dos-smoke PRIVATE
 target_link_libraries(vm-rom-ega-int10-dos-smoke PRIVATE integration-session-ini-support)
 
 add_executable(vm-cmos-rtc-port-smoke test/app-nxvm/unit/core/machine/vm_cmos_rtc_port_smoke.c)
-target_sources(vm-cmos-rtc-port-smoke PRIVATE test/x86/ibmpc-common/cmos_fixture.c)
+target_sources(vm-cmos-rtc-port-smoke PRIVATE test/ibmpc/board-common/cmos_fixture.c)
 target_sources(vm-default-pc-at-apply-smoke PRIVATE
     test/x86/core/time_fixture.c
-    test/x86/ibmpc-common/composition_fixture.c
-    test/x86/ibmpc-common/cmos_fixture.c)
+    test/ibmpc/board-common/composition_fixture.c
+    test/ibmpc/board-common/cmos_fixture.c)
 foreach(_pcat_composition_target IN ITEMS vm-pcat-topology-s2-smoke
         vm-pcat-composition-s4-smoke vm-ibm-5170-model-339-composition-smoke)
     target_sources(${_pcat_composition_target} PRIVATE
         test/x86/core/composition_fixture.c
-        test/x86/ibmpc-common/composition_fixture.c
-        test/x86/ibmpc-common/kbc_state_fixture.c
-        test/x86/ibmpc-at/state_fixture.c)
+        test/ibmpc/board-common/composition_fixture.c
+        test/ibmpc/board-common/kbc_state_fixture.c
+        test/ibmpc/board-at/state_fixture.c)
 endforeach()
 target_link_libraries(vm-cmos-rtc-port-smoke PRIVATE vm-profile)
 target_sources(vm-model40-fdd-s18-smoke PRIVATE
-    test/x86/ibmpc-common/controller_fixture.c)
+    test/ibmpc/board-common/controller_fixture.c)
 target_sources(vm-model40-hdc-s26-smoke PRIVATE
-    test/x86/ibmpc-common/controller_fixture.c)
+    test/ibmpc/board-common/controller_fixture.c)
 target_sources(vm-model40-dma-s17-smoke PRIVATE
     test/x86/core/composition_fixture.c
-    test/x86/ibmpc-common/composition_fixture.c)
+    test/ibmpc/board-common/composition_fixture.c)
 target_sources(vm-model40-d4-compatibility-s25-smoke PRIVATE
-    test/x86/ibmpc-common/composition_fixture.c)
+    test/ibmpc/board-common/composition_fixture.c)
 target_sources(vm-model40-byob-s20-smoke PRIVATE
     test/x86/core/composition_fixture.c
     test/x86/core/time_fixture.c
-    test/x86/ibmpc-common/composition_fixture.c)
+    test/ibmpc/board-common/composition_fixture.c)
 foreach(_model40_composition_target IN ITEMS vm-model40-private-composition-s7-smoke
         vm-model40-integration-s8-smoke)
     target_sources(${_model40_composition_target} PRIVATE
         test/x86/core/composition_fixture.c
-        test/x86/ibmpc-common/composition_fixture.c
-        test/x86/ibmpc-common/cmos_fixture.c
-        test/x86/ibmpc-common/kbc_state_fixture.c
-        test/x86/ibmpc-at/state_fixture.c)
+        test/ibmpc/board-common/composition_fixture.c
+        test/ibmpc/board-common/cmos_fixture.c
+        test/ibmpc/board-common/kbc_state_fixture.c
+        test/ibmpc/board-at/state_fixture.c)
 endforeach()
 target_sources(vm-model40-integration-s8-smoke PRIVATE
-    test/x86/ibmpc-common/controller_fixture.c)
+    test/ibmpc/board-common/controller_fixture.c)
 target_sources(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE
     test/x86/core/composition_fixture.c
-    test/x86/ibmpc-common/composition_fixture.c)
+    test/ibmpc/board-common/composition_fixture.c)
 add_executable(vm-pcat-ownership-smoke test/app-nxvm/unit/core/machine/vm_pcat_ownership_smoke.c)
 target_link_libraries(vm-pcat-ownership-smoke PRIVATE vm-profile)
 add_executable(vm-fdc-authority-smoke test/app-nxvm/unit/core/machine/vm_fdc_authority_smoke.c)
@@ -1043,7 +1044,7 @@ target_link_libraries(vm-fdc-t242-corpus-port-smoke PRIVATE vm-profile)
 foreach(_controller_composition_target IN ITEMS vm-fdc-authority-smoke
         vm-fdc-port-smoke vm-fdc-t242-corpus-port-smoke vm-hdc-port-smoke)
     target_sources(${_controller_composition_target} PRIVATE
-        test/x86/ibmpc-common/controller_fixture.c)
+        test/ibmpc/board-common/controller_fixture.c)
 endforeach()
 add_executable(vm-boot-failure-lifecycle-smoke
     test/app-nxvm/unit/core/machine/vm_boot_failure_lifecycle_smoke.c)
@@ -1118,9 +1119,9 @@ add_custom_target(core-machine-lifecycle-ownership-closure
 add_executable(vm-two-session-isolation-smoke
     test/app-nxvm/unit/core/machine/vm_two_session_isolation_smoke.c
     test/x86/core/composition_fixture.c
-    test/x86/ibmpc-common/composition_fixture.c)
+    test/ibmpc/board-common/composition_fixture.c)
 target_sources(vm-timing-qualification-smoke PRIVATE
-    test/x86/ibmpc-common/composition_fixture.c)
+    test/ibmpc/board-common/composition_fixture.c)
 target_link_libraries(vm-two-session-isolation-smoke PRIVATE
     vm-profile)
 add_executable(vm-debug-pause-boundary-smoke
@@ -1154,8 +1155,8 @@ add_executable(core-machine-port-assembly-smoke
 target_link_libraries(core-machine-port-assembly-smoke PRIVATE core-machine)
 target_sources(core-machine-port-assembly-smoke PRIVATE
     test/x86/core/port_assembly_fixture.c
-    test/x86/ibmpc-common/port_assembly_board_fixture.c
-    test/x86/ibmpc-common/board_construction_fixture.c)
+    test/ibmpc/board-common/port_assembly_board_fixture.c
+    test/ibmpc/board-common/board_construction_fixture.c)
 
 set(PROJECT_UNIT_TEST_TARGETS
     nxvm-firmware-floppy-smoke
@@ -1901,6 +1902,8 @@ function(project_add_t515_ini_integration_test target session_file)
 endfunction()
 
 get_property(shared_x86_test_names DIRECTORY "${PROJECT_SOURCE_DIR}/test/x86" PROPERTY TESTS)
+get_property(shared_ibmpc_test_names DIRECTORY "${PROJECT_SOURCE_DIR}/test/ibmpc" PROPERTY TESTS)
+list(APPEND shared_x86_test_names ${shared_ibmpc_test_names})
 foreach(target IN LISTS PROJECT_UNIT_TEST_TARGETS)
     if(NOT "unit.${target}" IN_LIST shared_x86_test_names)
         project_add_test(${target} unit)
@@ -3017,17 +3020,17 @@ file(GENERATE
 # substitutes for the direct compile command of a smoke source.
 set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine
-    x86-product-config
-    x86-product
-    x86-ibmpc-common
+    ibmpc-product-config
+    ibmpc-product
+    ibmpc-board-common
     x86-core
     x86-cpu-shared
     common-machine
     x86-xasm32
     x86-debug
     vm-profile
-    x86-product-media
-    x86-product-machine
+    ibmpc-machine-media
+    ibmpc-machine
     common-session
     vm-app
     common-ui

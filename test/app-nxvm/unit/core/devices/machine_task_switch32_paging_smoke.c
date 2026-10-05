@@ -3,7 +3,7 @@
 
 #include "x86/core/debug_interface.h"
 #include "x86/core/entry_plan_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 
 #define GDT_POINTER 0x0100u
 #define GDT_BASE 0x0300u

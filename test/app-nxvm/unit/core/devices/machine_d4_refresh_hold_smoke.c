@@ -3,13 +3,13 @@
 #include <stdio.h>
 #include "../profiles/model40/d4_refresh_fixture.h"
 
-#include "x86/ibmpc-common/dma_bus_interface.h"
+#include "ibmpc/board-common/dma_bus_interface.h"
 #include "../../../../x86/core/composition_fixture.h"
 #include "../../../../x86/core/time_fixture.h"
-#include "../../../../x86/ibmpc-common/composition_fixture.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "../../../../ibmpc/board-common/composition_fixture.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/core/trace_interface.h"
-#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
+#include "../../../../ibmpc/board-common/core_machine_board_fixture.h"
 
 #define REFRESH_PROBE_EVENT_CAPACITY 1024u
 

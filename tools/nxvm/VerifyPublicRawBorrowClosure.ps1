@@ -25,7 +25,7 @@ foreach ($file in $sourceFiles) {
 foreach ($file in $publicHeaders) {
     $relative = $file.FullName.Substring($root.Length + 1).Replace('\', '/')
     $text = Get-Content -LiteralPath $file.FullName -Raw
-    if ($text -match '#\s*include\s*[<"](?:app-nxvm/devices|x86/(?:core|ibmpc-common|ibmpc-at|ibmpc-xt))/(?:cpu|cpu_instructions|dma|fdc|hdc|kbc|machine|machine_board_state|memory|pic|pit|port|rtc|vadp)\.h[>"]') {
+    if ($text -match '#\s*include\s*[<"](?:app-nxvm/devices|x86/core|ibmpc/(?:board-common|board-at|board-xt))/(?:cpu|cpu_instructions|dma|fdc|hdc|kbc|machine|machine_board_state|memory|pic|pit|port|rtc|vadp)\.h[>"]') {
         $failures += "$relative includes a private core-machine header"
     }
     # Opaque declarations and pointer parameters do not publish the layout.

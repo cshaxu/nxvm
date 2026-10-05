@@ -3,7 +3,7 @@
 #ifndef NXVM_TEST_MODEL40_H
 #define NXVM_TEST_MODEL40_H
 
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/machine_private.h"
 
 /* Test views capture the actual Profile owner; they maintain no live state. */
 static inline vm_profile_model40_observation vm_test_model40_observation(

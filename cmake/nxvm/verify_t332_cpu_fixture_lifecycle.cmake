@@ -14,55 +14,55 @@ if(NOT project_t332_count EQUAL 44)
 endif()
 
 set(project_t332_wrapper_sources
-    "test/x86/ibmpc-common/core_machine_cli_sti_s48_smoke.c"
-    "test/x86/ibmpc-common/core_machine_hlt_s49_smoke.c"
-    "test/x86/ibmpc-common/core_machine_iret_s51_smoke.c"
-    "test/x86/ibmpc-common/core_machine_software_int_s50_smoke.c")
+    "test/ibmpc/board-common/core_machine_cli_sti_s48_smoke.c"
+    "test/ibmpc/board-common/core_machine_hlt_s49_smoke.c"
+    "test/ibmpc/board-common/core_machine_iret_s51_smoke.c"
+    "test/ibmpc/board-common/core_machine_software_int_s50_smoke.c")
 set(project_t332_inherited_sources
-    "test/x86/ibmpc-common/machine_interrupt_entry_smoke.c"
-    "test/x86/ibmpc-common/machine_cli_sti_interrupt_smoke.c"
+    "test/ibmpc/board-common/machine_interrupt_entry_smoke.c"
+    "test/ibmpc/board-common/machine_cli_sti_interrupt_smoke.c"
     "test/x86/core/machine_protected_iret_smoke.c")
 set(project_t332_public_board_sources
     "test/x86/core/machine_protected_iret_smoke.c"
-    "test/x86/ibmpc-common/machine_interrupt_entry_smoke.c"
-    "test/x86/ibmpc-common/machine_cli_sti_interrupt_smoke.c"
-    "test/x86/ibmpc-common/machine_debug_state_board_smoke.c"
+    "test/ibmpc/board-common/machine_interrupt_entry_smoke.c"
+    "test/ibmpc/board-common/machine_cli_sti_interrupt_smoke.c"
+    "test/ibmpc/board-common/machine_debug_state_board_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_legacy_alu_s2_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_legacy_lock_s1_smoke.c"
-    "test/x86/ibmpc-common/core_machine_bit_scan_smoke.c"
-    "test/x86/ibmpc-common/core_machine_bit_test_smoke.c"
-    "test/x86/ibmpc-common/core_machine_double_shift_smoke.c"
-    "test/x86/ibmpc-common/core_machine_imul2_smoke.c"
-    "test/x86/ibmpc-common/core_machine_imul_immediate_s56_smoke.c"
-    "test/x86/ibmpc-common/core_machine_rotate_smoke.c"
-    "test/x86/ibmpc-common/core_machine_setcc_smoke.c"
-    "test/x86/ibmpc-common/core_machine_sign_extend_smoke.c"
-    "test/x86/ibmpc-common/core_machine_les_lds_s41_smoke.c"
-    "test/x86/ibmpc-common/core_machine_les_lds_smoke.c"
-    "test/x86/ibmpc-common/core_machine_lss_lfs_lgs_smoke.c"
-    "test/x86/ibmpc-common/core_machine_legacy_sreg_stack_smoke.c"
+    "test/ibmpc/board-common/core_machine_bit_scan_smoke.c"
+    "test/ibmpc/board-common/core_machine_bit_test_smoke.c"
+    "test/ibmpc/board-common/core_machine_double_shift_smoke.c"
+    "test/ibmpc/board-common/core_machine_imul2_smoke.c"
+    "test/ibmpc/board-common/core_machine_imul_immediate_s56_smoke.c"
+    "test/ibmpc/board-common/core_machine_rotate_smoke.c"
+    "test/ibmpc/board-common/core_machine_setcc_smoke.c"
+    "test/ibmpc/board-common/core_machine_sign_extend_smoke.c"
+    "test/ibmpc/board-common/core_machine_les_lds_s41_smoke.c"
+    "test/ibmpc/board-common/core_machine_les_lds_smoke.c"
+    "test/ibmpc/board-common/core_machine_lss_lfs_lgs_smoke.c"
+    "test/ibmpc/board-common/core_machine_legacy_sreg_stack_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_fs_gs_stack_smoke.c"
-    "test/x86/ibmpc-common/core_machine_enter_leave_smoke.c"
-    "test/x86/ibmpc-common/core_machine_xchg_smoke.c"
-    "test/x86/ibmpc-common/core_machine_gpr_push_pop_smoke.c"
-    "test/x86/ibmpc-common/core_machine_push_immediate_smoke.c"
-    "test/x86/ibmpc-common/core_machine_pusha_popa_smoke.c"
-    "test/x86/ibmpc-common/core_machine_gpr_mov_smoke.c"
-    "test/x86/ibmpc-common/core_machine_moffs_smoke.c"
-    "test/x86/ibmpc-common/core_machine_lea_smoke.c"
+    "test/ibmpc/board-common/core_machine_enter_leave_smoke.c"
+    "test/ibmpc/board-common/core_machine_xchg_smoke.c"
+    "test/ibmpc/board-common/core_machine_gpr_push_pop_smoke.c"
+    "test/ibmpc/board-common/core_machine_push_immediate_smoke.c"
+    "test/ibmpc/board-common/core_machine_pusha_popa_smoke.c"
+    "test/ibmpc/board-common/core_machine_gpr_mov_smoke.c"
+    "test/ibmpc/board-common/core_machine_moffs_smoke.c"
+    "test/ibmpc/board-common/core_machine_lea_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_segment_selector_smoke.c"
-    "test/x86/ibmpc-common/core_machine_sreg_mov_smoke.c"
+    "test/ibmpc/board-common/core_machine_sreg_mov_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_operand_address_smoke.c"
-    "test/x86/ibmpc-common/core_machine_prefix_attributes_s64_smoke.c")
+    "test/ibmpc/board-common/core_machine_prefix_attributes_s64_smoke.c")
 set(project_t332_public_limit_sources
-    "test/x86/ibmpc-common/core_machine_bit_scan_smoke.c"
-    "test/x86/ibmpc-common/core_machine_bit_test_smoke.c"
-    "test/x86/ibmpc-common/core_machine_double_shift_smoke.c"
-    "test/x86/ibmpc-common/core_machine_imul2_smoke.c"
-    "test/x86/ibmpc-common/core_machine_imul_immediate_s56_smoke.c"
-    "test/x86/ibmpc-common/core_machine_rotate_smoke.c"
-    "test/x86/ibmpc-common/core_machine_setcc_smoke.c")
+    "test/ibmpc/board-common/core_machine_bit_scan_smoke.c"
+    "test/ibmpc/board-common/core_machine_bit_test_smoke.c"
+    "test/ibmpc/board-common/core_machine_double_shift_smoke.c"
+    "test/ibmpc/board-common/core_machine_imul2_smoke.c"
+    "test/ibmpc/board-common/core_machine_imul_immediate_s56_smoke.c"
+    "test/ibmpc/board-common/core_machine_rotate_smoke.c"
+    "test/ibmpc/board-common/core_machine_setcc_smoke.c")
 set(project_t332_cpu_instruction_fixture_sources
     "chips/cpu/cpu_debug_state_smoke.c"
     "chips/cpu/cpu_control_state_smoke.c"
@@ -94,7 +94,7 @@ set(project_t332_descriptor_query_fixture_sources
     "chips/cpu/cpu_lar_lsl_smoke.c"
     "chips/cpu/cpu_verr_verw_smoke.c")
 
-file(READ "${PROJECT_T332_SOURCE_DIR}/test/x86/ibmpc-common/cpu_board_limit_fixture.h"
+file(READ "${PROJECT_T332_SOURCE_DIR}/test/ibmpc/board-common/cpu_board_limit_fixture.h"
     project_t332_limit_helper)
 foreach(operation core_machine_create core_machine_freeze_execution_providers
         core_machine_reset core_machine_debug_patch_registers)

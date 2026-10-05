@@ -3,9 +3,9 @@
 #include "lib/types/types_interface.h"
 
 #include "x86/core/firmware_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include "app-nxvm/profiles/model40/model40.h"
-#include "x86/ibmpc-common/profile_contract_interface.h"
+#include "ibmpc/board-common/profile_contract_interface.h"
 
 #define VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES (2u * VM_PROFILE_MODEL40_ROM_CHIP_BYTES)
 #define VM_PROFILE_MODEL40_ROM_WINDOW_BYTES VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES

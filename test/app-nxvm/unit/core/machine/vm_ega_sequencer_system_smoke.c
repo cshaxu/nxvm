@@ -4,11 +4,11 @@
 
 #include "x86/core/machine_interface.h"
 #include "x86/core/debug_interface.h"
-#include "x86/ibmpc-common/vadp_interface.h"
-#include "x86/product/machine/lifecycle.h"
-#include "x86/product/machine/machine_interface.h"
+#include "ibmpc/board-common/vadp_interface.h"
+#include "ibmpc/machine/lifecycle.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/machine_private.h"
 
 lib_i32 main(void)
 {

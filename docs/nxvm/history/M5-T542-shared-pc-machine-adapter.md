@@ -1275,3 +1275,106 @@ record retains the actual results and artifact identities.
 
 Accept and close S10/T542, remove the active packet and keep its proposal in
 history. Do not admit the queued successor automatically.
+
+## Corrective S11: IBM PC Package Boundary
+
+The owner approves separating the already extracted PC domain from neutral x86.
+This completes the T542 ownership boundary; it does not admit the App split.
+The frozen relocation ledger is:
+
+| Existing owner | Sole new owner | Required proof |
+| --- | --- | --- |
+| x86/ibmpc-common | ibmpc/board-common | Same ports, clock conversion and wiring; no selected Core dependency. |
+| x86/ibmpc-xt | ibmpc/board-xt | Same XT PPI/keyboard wiring. |
+| x86/ibmpc-at | ibmpc/board-at | Same KBC/parity wiring. |
+| x86/product/machine | ibmpc/machine | Same executor, debug binding, conversion and media ownership. |
+| remaining x86/product | ibmpc/product | Same INI, composition, commands and entry. |
+
+All five are delivered by Shared `51a6d209e`. Acceptance requires mechanical normalized comparison,
+all original tests retained, complete dual-width units and optimized integration,
+independent package gates/manifests and eight current products. Production x86
+must remain independent of ibmpc; cross-domain test composition is explicit.
+No compatibility directory, forwarding API, new device framework or copied
+state is allowed. Lib/Common, MyNES, owner INIs and external masters are excluded.
+
+### S11 Actual-Diff Review And Verification
+
+The five source owners and their matching tests move once; the old directories
+and target names have no production caller or compatibility alias. NXVM consumes
+the new public includes/targets. Independent source/build DAG gates reject
+reverse x86-to-ibmpc dependencies, private Core/board borrowing, native platform
+code and a board-selected Core implementation. PC negative probes move with
+their owner; they are not deleted. Mixed Core/board tests explicitly compose
+the two test packages without introducing a production dependency.
+
+Against accepted S10 `ee440d463`, all 223 production C/H files below
+src/x86 and src/app-nxvm compare identically after mapping filenames, removing
+include lines and normalizing line endings. The same comparison covers all
+539 test C/H files below test/x86 and test/app-nxvm with zero non-include
+differences. Hardware algorithms, C symbols, assertions and guest timing are
+unchanged. Actual review also checks the CMake source-list partition, aggregate
+targets, complete test registration and migrated verification/fixture paths.
+
+Rename-aware `git diff ee440d463 --numstat` counts 121 source paths
+(+418/-322, net +96) and 329 test paths (+1174/-1120, net +54), excluding README
+and manifest files. CMake/tools/root entry add net +9; total counted
+source/test/build/tool changes are +2071/-1912, net +159. This small positive
+increase is independent package entries and boundary/negative verification,
+not a new executor, device framework, mirrored state or forwarding layer.
+
+Final complete unit results are x64 499/499 (281.07 s, during other builds)
+and x86 499/499 (66.83 s, after desktop integration finished). These are
+verification durations, not a controlled performance comparison. One earlier
+x86 run with concurrent native integration failed library.kvm_window_modal's
+exited-event assertion; its full final rerun passes unchanged. No Lib code,
+assertion, timeout, skip or test selection was changed. That earlier failure
+is recorded rather than presented as a successful run or a proven code cause.
+
+Standalone test/ibmpc builds without an App and passes 118/118: all 114 retained
+units plus four package gates. The independent neutral x86 Core build with
+X86_BUILD_TOOLS=OFF passes its source/manifest gates without Common/ibmpc.
+All eight source/test manifests and both package DAG/negative checks pass
+(14 package checks). All 82 NXVM specialized checks, documentation governance
+and diff whitespace checks pass. Intermediate failures identified stale fixture
+paths and the test-registration/VADP verifiers' old package location; their
+references were corrected without weakening checks.
+
+Final optimized integration retains all 58 original contexts:
+
+| Fixed profile | x64 | x86 |
+| --- | --- | --- |
+| default | 22/22, 25.83 s | 22/22, 24.12 s |
+| XT | 1/1, 21.17 s | 1/1, 23.67 s |
+| AT | 3/3, 35.56 s | 3/3, 42.35 s |
+| Model40 | 3/3, 64.15 s | 3/3, 74.26 s |
+
+Each context runs once on the relocated source. Inputs, terminal predicates,
+timeouts and serialization remain unchanged; boot rows retain their DOS prompt
+or installer markers. No new hardware/Windows/timing qualification is claimed.
+
+### S11 Deployed Artifacts
+
+The eight optimized stripped 0.5.0542 executables replace the S10 artifact
+baseline. They use Shared `51a6d209e94bacfa529f2ac218079314abf0be1a` and the
+accompanying NXVM P2 caller relocation. Runtime Debug remains present;
+post-link checks pass, independent PE inspection finds no debug/zdebug sections,
+and machine codes are 8664/x64 and 014C/x86. Deployment stays exclusively in
+assets/nxvm/<profile>; owner INIs, external master assets and MyNES's pair
+have no diff from S10. No MyNES target was built.
+
+| Executable | SHA-256 |
+| --- | --- |
+| nxvm_default_0_5_0542_x64.exe | DD7B8E5CBAFD86BB9D5CD05C7E24FC43F4C89C75BD9BAFE05385B20A69D7CD22 |
+| nxvm_default_0_5_0542_x86.exe | 1EAE33B5AD2D549A727F135F6799E109F2D394330D4A77E41205332FCF98AE93 |
+| nxvm_xt_0_5_0542_x64.exe | 0FDF9FC4EE362316C9D1B8628C3508AE5A55029FD7C3A6A9FA0EE2DB1F80CD76 |
+| nxvm_xt_0_5_0542_x86.exe | BEC218F866A1BE70F108F047777A880B50285E9BAD832072D5A09A833E6294E1 |
+| nxvm_at_0_5_0542_x64.exe | DEDC768A7D7BF692AC145CFFCA89CA4ADFA4639FE2BCFDCCBA93DDF61F071466 |
+| nxvm_at_0_5_0542_x86.exe | E7B0C727C91F8550F2146748EDB8EAA941DD0641EE572CC285A10B8E671B9063 |
+| nxvm_model40_0_5_0542_x64.exe | 9CDA689344531EE8F075CA256CB1EBE93A9259A671C1DD4B0A97169AA3DE7C10 |
+| nxvm_model40_0_5_0542_x86.exe | BC6AF0B8DDE04FE2EB4BE35DB89897C9B725FAA12E636C9017D8058AD587C536 |
+
+Active architecture/layout and queued proposals consume the new PC package;
+historical owner paths remain evidence. Shared rules retain the prior six-corpus
+vocabulary pending a separately admitted Td recorded in TODO; S11 does not edit
+that independently governed authority. The existing Common wake-failure TODO
+also remains outside this approved relocation. Neither is claimed repaired.

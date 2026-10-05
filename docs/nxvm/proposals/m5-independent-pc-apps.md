@@ -22,7 +22,7 @@ This task does not reimplement them, T541 Product or T542's shared adapter.
 
 Each App owns immutable identity, board composition, firmware/build binding
 and its product-local documentation, tests, tools and artifacts. All four
-consume the same accepted x86/product command/API/INI/startup/UX implementation,
+consume the same accepted ibmpc/product command/API/INI/startup/UX implementation,
 x86 Core/chips, the sole T542 PC Machine adapter and appropriate IBM-PC board
 contracts. Apps supply fixed composition, not copies of app-nxvm/machine.
 No App imports a peer

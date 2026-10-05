@@ -6,7 +6,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "x86/product/machine/machine_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 
 static inline void vm_test_default_pc_at_assets(vm_machine_assets *assets,
     lib_u8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES])

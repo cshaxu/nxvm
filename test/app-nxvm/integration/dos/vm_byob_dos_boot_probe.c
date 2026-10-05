@@ -2,7 +2,7 @@
 #include "../../support/profile.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../support/model40.h"
-#include "../../../x86/ibmpc-common/boot_fixture.h"
+#include "../../../ibmpc/board-common/boot_fixture.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -13,17 +13,17 @@
 #undef exception_code
 #endif
 
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include "../../../x86/core/boot_fixture.h"
 #include "../../../x86/core/composition_fixture.h"
 #include "x86/core/retirement_observation_interface.h"
 #include "x86/core/trace_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "x86/product/machine/control.h"
-#include "x86/product/machine/lifecycle.h"
+#include "ibmpc/machine/control.h"
+#include "ibmpc/machine/lifecycle.h"
 #include "x86/core/machine_interface.h"
-#include "x86/product/machine/machine_private.h"
-#include "x86/product/machine/waiting.h"
+#include "ibmpc/machine/machine_private.h"
+#include "ibmpc/machine/waiting.h"
 
 #define VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS 90000u
 #define VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS 15000u

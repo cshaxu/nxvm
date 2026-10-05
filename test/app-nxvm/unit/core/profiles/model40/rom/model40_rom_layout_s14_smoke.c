@@ -4,9 +4,9 @@
 #include <stdio.h>
 
 #include "x86/core/machine_interface.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/machine_private.h"
 #include "../../../machine/support/rom/model40_session_assets.h"
-#include "x86/product/machine/machine_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 
 static lib_i32 vm_model40_rom_read(core_machine *machine,
     lib_u32 physical, lib_u8 expected)

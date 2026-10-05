@@ -4,7 +4,7 @@
 
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/core/debug_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 
 #define GDT_PTR 0x0100u
 #define IDT_PTR 0x0110u

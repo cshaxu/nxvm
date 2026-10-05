@@ -2,7 +2,7 @@
 #include "../../support/model40.h"
 #include "../../support/media.h"
 #include "lib/types/types_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include <ctype.h>
 #include <stdio.h>
 
@@ -11,9 +11,9 @@
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
 #include "x86/core/machine_interface.h"
 #include "x86/core/debug_interface.h"
-#include "x86/product/machine/lifecycle.h"
-#include "x86/product/machine/machine_private.h"
-#include "x86/ibmpc-common/floppy_interface.h"
+#include "ibmpc/machine/lifecycle.h"
+#include "ibmpc/machine/machine_private.h"
+#include "ibmpc/board-common/floppy_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define BOOT_TIMEOUT 180000u

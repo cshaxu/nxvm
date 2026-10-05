@@ -5,9 +5,9 @@
 
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/chips/fpu/fpu_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "x86/ibmpc-common/vadp_interface.h"
-#include "x86/ibmpc-common/profile_contract_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "ibmpc/board-common/vadp_interface.h"
+#include "ibmpc/board-common/profile_contract_interface.h"
 
 typedef enum vm_profile_default_pc_at_device_role {
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC,

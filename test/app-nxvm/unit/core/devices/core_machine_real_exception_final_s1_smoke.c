@@ -3,8 +3,8 @@
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "../../../../ibmpc/board-common/core_machine_board_fixture.h"
 
 #define REAL_FINAL_CODE_OFFSET 0x0200u
 #define REAL_FINAL_HANDLER_OFFSET 0x0100u

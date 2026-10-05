@@ -6,12 +6,12 @@
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine_interface.h"
 #include "x86/core/memory_interface.h"
-#include "x86/product/machine/control.h"
-#include "x86/product/machine/fault.h"
-#include "x86/product/machine/lifecycle.h"
-#include "x86/product/machine/machine_interface.h"
+#include "ibmpc/machine/control.h"
+#include "ibmpc/machine/fault.h"
+#include "ibmpc/machine/lifecycle.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/machine_private.h"
 
 static lib_i32 vm_fault_outcome_prepare(vm_machine *session)
 {

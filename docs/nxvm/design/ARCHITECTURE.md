@@ -31,14 +31,14 @@ The following map describes the implemented baseline. The queued successor
 target is specified under **Queued Shared-Hardware And App Split** below;
 it does not change runtime ownership before the corresponding cutover.
 
-- `x86/product` owns shared INI syntax, copied runtime request, path construction,
+- `ibmpc/product` owns shared INI syntax, copied runtime request, path construction,
   Console/Debug/hotkey policy and atomic Common Session/UI/Machine composition.
   App supplies one frozen factory with copied INFO/speed operations; it owns
   fixed hardware/firmware projection. The PC Machine adapter's S6 receiver is
-  `x86/product/machine`; Current records its acceptance status.
+  `ibmpc/machine`; Current records its acceptance status.
 - `app-nxvm/product` supplies fixed configuration/factory binding and immutable
-  identity to the sole `x86/product` process entry, banner and cleanup body.
-- `x86/product/machine` is that driver: asset/media lifetime, bounded execution,
+  identity to the sole `ibmpc/product` process entry, banner and cleanup body.
+- `ibmpc/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name
   switch, independent lifecycle queue or guest-device state.
   App prepares copied construction values and transfers its genuine Profile
@@ -55,7 +55,7 @@ it does not change runtime ownership before the corresponding cutover.
   guest timeline, memory/port routes and plan transaction live in `x86/core`.
   Its production target depends only on Types, CPU and FPU; NXVM links that
   sole implementation. Accepted S89 puts the complete media registry
-  and display-provider slot in `x86/ibmpc-common`, consumed through public
+  and display-provider slot in `ibmpc/board-common`, consumed through public
   contracts. The common PIT adapter installs four copied routes against a
   board-owned opaque chip; composition alone selects the Core implementation.
   The common PIC aggregation owns opaque controller endpoints and IRQ source
@@ -63,9 +63,9 @@ it does not change runtime ownership before the corresponding cutover.
   producers borrow sources for that aggregation's lifetime; copied register
   diagnostics do not expose a chip or mutable layout. Current records its
   verification and acceptance status.
-  `x86/ibmpc-common` also owns the complete board construction, reset,
+  `ibmpc/board-common` also owns the complete board construction, reset,
   clock/deadline reduction and teardown, plus opaque FDC/HDC/video adapters.
-  `x86/ibmpc-at` owns KBC and planar parity; `x86/ibmpc-xt` owns PPI keyboard
+  `ibmpc/board-at` owns KBC and planar parity; `ibmpc/board-xt` owns PPI keyboard
   wiring. Common composition integrates their public contracts; neither
   family reads the common board layout. Model40 alone owns D4 memory,
   Port B and refresh state through one frozen board-profile binding.
@@ -78,8 +78,8 @@ it does not change runtime ownership before the corresponding cutover.
 - `x86/debug` owns Debug CLI continuations; `x86/xasm32` owns assembly and
   disassembly. Paused Debug operations go through Common Machine and the NXVM
   driver to Core, not a second machine path.
-- `lib` owns platform/C-runtime services. Lib/Common/x86 remain product-neutral
-  and source-shareable with SoftPC.
+- `lib` owns platform/C-runtime services. Lib/Common/x86 retain their existing neutral boundaries. The separate
+  ibmpc package contains only shared PC integration, never App-private definitions.
 - `app-nxvm/firmware` owns project-authored guest BIOS source and offline ROM
   construction. Its build tool may consume x86 assembly and Lib file services,
   but the construction tool is not linked into the machine executable. Its
@@ -226,25 +226,26 @@ and [queued App split](../proposals/m5-independent-pc-apps.md):
    host executor, firmware workaround or peer chip's internals. Composition
    connects public memory/I/O cycles, signals and interrupt acknowledgement.
 2. `x86/core` owns the neutral x86 machine executor and plan transaction;
-   `x86/ibmpc-common`, `x86/ibmpc-at` and `x86/ibmpc-xt` own the four machines'
+   `ibmpc/board-common`, `ibmpc/board-at` and `ibmpc/board-xt` own the four machines'
    proven common/family-specific PC board routing and
    wiring. Both use independent chip contracts; product-specific topology and
    asset selection stay in the App. No mirrored device state, product policy or
    second Common lifecycle loop is introduced.
-3. `x86/product` receives the four PC products' identical Console command/API,
+3. `ibmpc/product` receives the four PC products' identical Console command/API,
    INI/startup/composition and UX implementation. Common/Lib keep their
    existing reducer, queue and native presentation owners. The complete
    Product-to-Machine boundary uses the existing Common driver plus a frozen
    typed App factory and copied INFO/speed operations, never an App-private
    include. The shared board/media/execution adapter now lives in
-   `x86/product/machine`; App retains frozen identity,
+   `ibmpc/machine`; App retains frozen identity,
    hardware construction and firmware definitions, with no per-machine console copy or new
    generic App framework is introduced.
    T541 keeps the four current builds and deployment paths intact. Lib/Common
    and existing x86 components are not implementation-change targets.
 4. Closed [T542](../history/M5-T542-shared-pc-machine-adapter.md) delivers
-   the remaining shared PC Machine adapter into x86/product and proven
-   construction helpers into ibmpc-common. S2-S6 delivered those receivers;
+   the remaining shared PC Machine adapter into ibmpc/machine and proven
+   construction helpers into ibmpc/board-common. Corrective S11 separates
+   this PC package from x86 without changing algorithms. S2-S6 delivered those receivers;
    S7 replaced the App's all-profile plan unions and runtime construction
    dispatch with build-selected constructors. App retains fixed profile/firmware rules and genuine
    D4; no Lib/Common change, extra queue or profile registry is introduced.
@@ -255,8 +256,8 @@ and [queued App split](../proposals/m5-independent-pc-apps.md):
    `app-nxvm` (default 386). Later PC110 belongs to `app-mypc110` after its
    separate hardware qualification. No App depends on another App.
 
-The x86 package therefore expands beyond tools to hardware and reusable PC
-integration, while Lib/Common stay neutral. Chip and shared-board tests follow
+The x86 package owns neutral chips/Core/tools; ibmpc owns reusable PC
+integration. Lib/Common stay neutral and no x86 component depends on ibmpc. Chip and shared-board tests follow
 their shared owner; product firmware/boot/INI tests follow their App. Preserve
 existing CPU families, personalities and tests. Structural moves are not V30,
 Raiden II, 486 or PC110 implementation and do not upgrade timing evidence.

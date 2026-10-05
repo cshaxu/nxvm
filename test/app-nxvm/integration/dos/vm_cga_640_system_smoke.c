@@ -2,9 +2,9 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "x86/product/machine/machine_private.h"
-#include "x86/product/machine/waiting.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "ibmpc/machine/machine_private.h"
+#include "ibmpc/machine/waiting.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define VM_CGA254_BOOT_BUDGET 500000u

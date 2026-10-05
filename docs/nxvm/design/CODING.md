@@ -14,7 +14,8 @@ future Profile only when its separate evidence task admits real source files.
 src/
   lib/                  shared C and platform services
   common/{session,machine,ui}/
-  x86/{chips,core,ibmpc-common,ibmpc-at,ibmpc-xt,xasm32,debug,product}/
+  x86/{chips,core,xasm32,debug}/
+  ibmpc/{board-common,board-xt,board-at,machine,product}/
   app-nxvm/             NXVM product implementation
     product/            main and fixed config/factory projection
     firmware/           project-owned BIOS source and offline ROM construction
@@ -27,15 +28,15 @@ src/
 
 Keep machine-specific profile declarations at the profiles root. Common
 floppy geometry/channel, Option ROM validation and profile-contract validation
-live in flat `x86/ibmpc-common`, with their independent tests under `test/x86`.
-The shared execution/debug adapter lives in `x86/product/machine`; App profiles
+live in flat `ibmpc/board-common`, with their independent tests under `test/ibmpc`.
+The shared execution/debug adapter lives in `ibmpc/machine`; App profiles
 prepare copied construction values and transfer their real context lifetime.
 Shared owns candidate publication and rollback, never an App layout or model ID.
 The shared Product INI, command/hotkey and Common composition files and their
-reusable assertions live in x86/product and test/x86/product. Shared process
+reusable assertions live in ibmpc/product and test/ibmpc/product. Shared process
 entry/banner formatting consumes App-owned immutable identity and factory values. The
 former `app-nxvm/devices` implementation is removed. Shared board mechanisms
-live in the flat `x86/ibmpc-*` receivers; genuine D4 state stays in
+live in the flat `ibmpc/board-*` receivers; genuine D4 state stays in
 `app-nxvm/profiles/model40`. Current records delivery acceptance, not this layout.
 The
 former singular `core/profile` root is retired; do not restore a compatibility
@@ -80,10 +81,10 @@ from actual construction requirements during implementation.
 
 ## Source Organization
 
-Repository-only shared tests remain `test/{lib,common,x86}`. NXVM-only tests
+Repository-only shared tests remain `test/{lib,common,x86,ibmpc}`. NXVM-only tests
 live below `test/app-nxvm/`, mirroring `app-nxvm` beneath `unit/`.
-Shared board and family tests live in `test/x86/ibmpc-common`,
-`test/x86/ibmpc-at` and `test/x86/ibmpc-xt`, with their actual source owners.
+Shared board and family tests live in `test/ibmpc/board-common`,
+`test/ibmpc/board-at` and `test/ibmpc/board-xt`, with their actual source owners.
 Profile tests mirror their real `src/app-nxvm/profiles/` owner when
 implemented. The current product roots are `xt`, `default_profile`, and `model40`;
 the former helper-only `device` and `byob` roots are retired. Do not create
@@ -108,7 +109,8 @@ The queued [App split](../states/QUEUE.md) targets:
 src/
   lib/
   common/
-  x86/{chips,core,ibmpc-common,ibmpc-at,ibmpc-xt,xasm32,debug,product}/
+  x86/{chips,core,xasm32,debug}/
+  ibmpc/{board-common,board-xt,board-at,machine,product}/
   app-mypcxt/
   app-mypcat/
   app-mypcdeskpro386/
@@ -117,12 +119,12 @@ src/
 
 `app-mypc110` is future work, not an empty directory to create now. The neutral
 x86 machine executor lives in `x86/core`; real chip responsibilities live in
-`x86/chips`; common PC board mechanisms live in the flat `x86/ibmpc-*`
+`x86/chips`; common PC board mechanisms live in the flat `ibmpc/board-*`
 components; product-specific assembly
 remains App-owned. Existing CPU implementation style and coherent file
 boundaries are preserved, not rewritten for renaming.
 Matching shared tests live in
-`test/x86/{chips,core,ibmpc-common,ibmpc-at,ibmpc-xt}`; each App owns its
+`test/x86/{chips,core}` and `test/ibmpc/{board-common,board-at,board-xt}`; each App owns its
 `test/app-<product>` unit/integration tree, documentation, tools and build entry.
 No source, test, firmware, INI or executable is relocated by this proposal-only
 governance. Deployment identities/paths are separately governed at App cutover.
@@ -132,14 +134,14 @@ in place. The separate queued split creates the four App roots afterward.
 Neither stage modifies Lib or Common under the current owner restriction.
 
 Before the App split, accepted T542 delivers the remaining shared adapter in
-`x86/product/machine` (with its real media subresponsibility) and common
-construction helpers in flat `x86/ibmpc-common`. Matching independent tests
+`ibmpc/machine` (with its real media subresponsibility) and common
+construction helpers in flat `ibmpc/board-common`. Matching independent tests
 follow those owners. Current and the T542 ledger distinguish working source
 from accepted delivery.
-S3 relocates media implementation/tests to x86/product/machine/media and
-test/x86/product/machine/media; App keeps only opaque media handles and its
+S3 relocates media implementation/tests to ibmpc/machine/media and
+test/ibmpc/machine/media; App keeps only opaque media handles and its
 composition assertions, not the shared media layouts.
-S4 places pure mapper/frame conversion in flat x86/product/machine. The
+S4 places pure mapper/frame conversion in flat ibmpc/machine. The
 shared display orchestration directly converts the video snapshot;
 the old guest-frame view lives only in test support, not production source.
 The prepared Profile context retains Model40 D4 and terminal observations;
@@ -147,8 +149,8 @@ generic Machine holds neither. App probes consume copied Profile values, with
 their stateless views under test/app-nxvm/support.
 No App can retain another App's shared Machine implementation as its library.
 
-The owner-required x86/product receiver owns the identical PC Console/API,
-INI/startup/UX implementation once, with matching test/x86/product coverage.
+The owner-required ibmpc/product receiver owns the identical PC Console/API,
+INI/startup/UX implementation once, with matching test/ibmpc/product coverage.
 Its final flat file set and minimum typed Machine binding are determined by
 T541 S1's actual-source inventory and T542's construction ledger. Each App retains real
 product identity, fixed board/firmware composition and build binding; no App

@@ -4,9 +4,9 @@
 #include "x86/core/device_support_interface.h"
 
 #include "../../../../x86/core/composition_fixture.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/core/retirement_observation_interface.h"
-#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
+#include "../../../../ibmpc/board-common/core_machine_board_fixture.h"
 #include "support/protected_16_bootstrap_fixture.h"
 
 #define S3_GDT_BASE 0x0300u

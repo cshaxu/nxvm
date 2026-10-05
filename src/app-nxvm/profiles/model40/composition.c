@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include "app-nxvm/profiles/model40/composition_interface.h"
 
-#include "x86/ibmpc-common/vadp_interface.h"
-#include "x86/ibmpc-common/floppy_interface.h"
+#include "ibmpc/board-common/vadp_interface.h"
+#include "ibmpc/board-common/floppy_interface.h"
 
 static lib_status vm_profile_model40_materialize_controllers(core_machine_plan *plan,
     core_machine_fdc_terminal_observation_provider terminal_observation)

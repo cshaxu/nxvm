@@ -1,8 +1,8 @@
 #include "../../support/profile.h"
 /* Repository guest firmware and synthetic media only; no external asset files. */
 #include "app-nxvm/profiles/machine_plan_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "x86/ibmpc-common/media_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "ibmpc/board-common/media_interface.h"
 #include "lib/types/file.h"
 
 extern const vm_machine_assets vm_app_firmware;

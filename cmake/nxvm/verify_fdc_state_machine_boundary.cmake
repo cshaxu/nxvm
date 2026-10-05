@@ -2,18 +2,18 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/fdc.c" fdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/fdc.h" fdc_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/fdc.h" fdc_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc.c" chip_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc.h" chip_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc8272_interface.h" chip_interface)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_deadline.c" board_deadline_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_deadline.c" board_deadline_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-common/core_machine_fdc_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/core_machine_fdc_smoke.c"
     core_fixture)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/fdd_interface.h" fdd_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/fdd.c" fdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/media/fdd_interface.h" fdd_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/media/fdd.c" fdd_source)
 
 if(scheduler_source MATCHES "board->fdc|core_machine_fdc_")
     message(FATAL_ERROR "Core scheduler directly owns board FDC")
@@ -95,12 +95,12 @@ file(GLOB_RECURSE app_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
     "${PROJECT_SOURCE_DIR}/src/x86/core/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86/core/*.h"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.h"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.h"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.h")
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.h"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.h")
 foreach(path IN LISTS app_sources)
     file(READ "${path}" source)
     if(source MATCHES "x86/chips/fdc8272/fdc\\.[ch]" OR

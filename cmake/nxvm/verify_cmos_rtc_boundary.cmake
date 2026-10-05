@@ -4,9 +4,9 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/rtc146818/rtc.c" rtc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_advance.c" advance_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_advance.c" advance_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine_devices.c"
     devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)

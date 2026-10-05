@@ -3,8 +3,8 @@
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "../../../../ibmpc/board-common/core_machine_board_fixture.h"
 
 #define TEST_GDT_ADDRESS 0x0300u
 #define TEST_GDT_POINTER_ADDRESS 0x0100u

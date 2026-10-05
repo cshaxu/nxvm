@@ -3,7 +3,7 @@
 
 #include "app-nxvm/profiles/selection_interface.h"
 #include "app-nxvm/profiles/machine_plan_interface.h"
-#include "x86/product/machine/machine_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 
 /* Resolve actual App firmware/topology before the neutral Machine takes
  * ownership. Failure leaves the output empty and destroys the candidate. */

@@ -3,9 +3,9 @@
 #include <stdio.h>
 
 #include "x86/core/machine_interface.h"
-#include "x86/product/machine/machine_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/machine_private.h"
 
 lib_i32 main(void)
 {

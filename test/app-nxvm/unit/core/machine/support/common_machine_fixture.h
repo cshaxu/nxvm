@@ -3,8 +3,8 @@
 #ifndef TEST_VM_COMMON_MACHINE_FIXTURE_H
 #define TEST_VM_COMMON_MACHINE_FIXTURE_H
 
-#include "x86/product/machine/machine_private.h"
-#include "x86/product/machine/machine_interface.h"
+#include "ibmpc/machine/machine_private.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "lib/base/clock_interface.h"
 #include "lib/base/sync_interface.h"
 

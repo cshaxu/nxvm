@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
-#include "x86/ibmpc-common/machine_board_interface.h"
-#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "../../../../ibmpc/board-common/core_machine_board_fixture.h"
 
 #define MOVX_SOURCE_MEMORY 0x5000u
 

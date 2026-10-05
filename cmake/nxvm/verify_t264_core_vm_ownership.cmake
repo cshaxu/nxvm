@@ -5,12 +5,12 @@ endif()
 file(GLOB_RECURSE core_sources
     "${PROJECT_SOURCE_DIR}/src/x86/core/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86/core/*.h"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.h"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.h"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.h")
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.h"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.h")
 foreach(source IN LISTS core_sources)
     file(READ "${source}" source_text)
     string(REGEX MATCH "#include[ \t]*[\"<](vm/|app-nxvm/)" core_depends_on_vm
@@ -20,7 +20,7 @@ foreach(source IN LISTS core_sources)
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine_devices.c"
     machine_devices)
 foreach(forbidden "x86_rtc_create" "x86_rtc_reset"
         "x86_rtc_advance" "x86_rtc_destroy")
@@ -37,7 +37,7 @@ foreach(source IN LISTS vm_sources)
     file(READ "${source}" source_text)
     string(FIND "${source_text}" "core_machine_run(" run_position)
     if(NOT run_position EQUAL -1 AND
-        NOT source STREQUAL "${PROJECT_SOURCE_DIR}/src/x86/product/machine/runner.c")
+        NOT source STREQUAL "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/runner.c")
         message(FATAL_ERROR "VM-side CPU execution path: ${source}")
     endif()
 endforeach()

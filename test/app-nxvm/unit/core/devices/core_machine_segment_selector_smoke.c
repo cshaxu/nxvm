@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
-#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
+#include "../../../../ibmpc/board-common/core_machine_board_fixture.h"
 
 #define SEG_GDT_POINTER 0x0100u
 #define SEG_GDT_ADDRESS 0x0300u

@@ -2,16 +2,16 @@
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/media.h"
 #include "lib/types/types_interface.h"
-#include "../../../../x86/ibmpc-common/composition_fixture.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "../../../../ibmpc/board-common/composition_fixture.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include <stdio.h>
 
 #include "x86/core/debug_interface.h"
-#include "x86/product/machine/lifecycle.h"
-#include "x86/product/machine/machine_interface.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/lifecycle.h"
+#include "ibmpc/machine/machine_interface.h"
+#include "ibmpc/machine/machine_private.h"
 #include "../../../../x86/core/time_fixture.h"
-#include "../../../../x86/ibmpc-common/cmos_fixture.h"
+#include "../../../../ibmpc/board-common/cmos_fixture.h"
 #include "support/rom/session_assets.h"
 
 static lib_i32 vm_default_pc_at_fdd_format_is_valid(

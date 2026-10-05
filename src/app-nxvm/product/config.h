@@ -4,8 +4,8 @@
 
 
 #include "app-nxvm/profiles/machine_factory_interface.h"
-#include "x86/product/request_interface.h"
-#include "x86/product/machine_interface.h"
+#include "ibmpc/product/request_interface.h"
+#include "ibmpc/product/machine_interface.h"
 
 /* Combine an INI runtime request with the one generated build Profile binding.
  * The App validates user policy; Profiles alone interpret board construction. */

@@ -4,7 +4,7 @@
  * Repository: https://github.com/cshaxu/nxvm
  * Start:      01/25/2012
  */
-#include "x86/product/entry_interface.h"
+#include "ibmpc/product/entry_interface.h"
 #include "app-nxvm/product/version.h"
 #include "app-nxvm/product/config.h"
 #include "app-nxvm/product/profile_binding.h"

@@ -5,7 +5,7 @@
 #define VM_PROFILE_EXTERNAL_PC_AT_ROM_H
 
 #include "x86/core/firmware_interface.h"
-#include "x86/ibmpc-common/rom_validation_interface.h"
+#include "ibmpc/board-common/rom_validation_interface.h"
 
 #define VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES (64u * 1024u)
 #define VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES (32u * 1024u)

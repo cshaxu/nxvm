@@ -4,11 +4,11 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/ibmpc-common/media_interface.h"
-#include "x86/product/machine/media/media_interface.h"
-#include "x86/product/machine/machine_interface.h"
-#include "x86/product/machine/machine_private.h"
-#include "x86/product/machine/media/fdd_interface.h"
+#include "ibmpc/board-common/media_interface.h"
+#include "ibmpc/machine/media/media_interface.h"
+#include "ibmpc/machine/machine_interface.h"
+#include "ibmpc/machine/machine_private.h"
+#include "ibmpc/machine/media/fdd_interface.h"
 #include "support/rom/model40_session_assets.h"
 
 #define MODEL40_FDD_BYTES (80u * 2u * 15u * 512u)

@@ -1,6 +1,6 @@
 #include "../../support/guest_input.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
-#include "../../../x86/ibmpc-common/controller_fixture.h"
+#include "../../../ibmpc/board-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -11,10 +11,10 @@
 #include "x86/core/machine_interface.h"
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "x86/product/machine/control.h"
-#include "x86/product/machine/fault.h"
-#include "x86/product/machine/lifecycle.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/control.h"
+#include "ibmpc/machine/fault.h"
+#include "ibmpc/machine/lifecycle.h"
+#include "ibmpc/machine/machine_private.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)
 #define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u

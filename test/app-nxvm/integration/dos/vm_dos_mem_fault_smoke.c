@@ -10,9 +10,9 @@
 
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/core/machine_interface.h"
-#include "x86/product/machine/control.h"
-#include "x86/product/machine/lifecycle.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/control.h"
+#include "ibmpc/machine/lifecycle.h"
+#include "ibmpc/machine/machine_private.h"
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 

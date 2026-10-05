@@ -5,9 +5,9 @@
 
 #include "lib/storage/file_interface.h"
 
-#include "x86/product/machine/control.h"
-#include "x86/product/machine/machine_private.h"
-#include "x86/product/machine/machine_interface.h"
+#include "ibmpc/machine/control.h"
+#include "ibmpc/machine/machine_private.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "support/common_machine_fixture.h"
 #include "support/rom/session_assets.h"
 

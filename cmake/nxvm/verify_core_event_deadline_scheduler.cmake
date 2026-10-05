@@ -5,21 +5,21 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c"
     scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_deadline.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_deadline.c"
     board_deadline_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_advance.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_advance.c"
     board_advance_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/execution_provider_interface.h"
     execution_provider_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_interface.h"
     machine_interface_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/kbc.c" kbc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/kbc.c" kbc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine_devices.c"
     machine_devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/fdd.c" fdd_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/hdd.c" hdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/media/fdd.c" fdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/media/hdd.c" hdd_source)
 set(core_source "${machine_source}${scheduler_source}${board_deadline_source}${board_advance_source}${kbc_source}")
 
 foreach(forbidden IN ITEMS "core_machine_arbitration_tick"

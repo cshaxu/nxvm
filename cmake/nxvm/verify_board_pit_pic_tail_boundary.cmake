@@ -3,8 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" core)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_advance.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" creation)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_advance.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" creation)
 foreach(forbidden "machine->pit_clock" "machine->auxiliary_pit_clock"
     "machine->board->pit_clock" "machine->board->auxiliary_pit_clock"
     "machine->shared_pit" "machine->auxiliary_pit"

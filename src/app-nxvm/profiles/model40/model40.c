@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"

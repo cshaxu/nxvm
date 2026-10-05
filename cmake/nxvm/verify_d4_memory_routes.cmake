@@ -6,10 +6,10 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/model40/d4_memory.c" d4)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core)
 
 file(GLOB_RECURSE generic_machine_sources
-    "${PROJECT_SOURCE_DIR}/src/x86/product/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/product/machine/*.h"
-    "${PROJECT_SOURCE_DIR}/src/x86/product/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/product/machine/*.h")
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/*.h"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/*.h")
 foreach(source_file IN LISTS generic_machine_sources)
     file(READ "${source_file}" source_text)
     if(source_text MATCHES "model40_board|model40_fdc_terminal_observation|core_machine_d4_platform[ \t]*\\*")
@@ -42,8 +42,8 @@ foreach(forbidden "core_machine_register_memory_replacement_device("
 endforeach()
 
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/parity.c" parity)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/parity.c" parity)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/model40/d4_platform.c" d4_platform)
 if(d4_platform MATCHES "machine_board_state.h|->board")
     message(FATAL_ERROR "D4 platform retains private common-board dependency")

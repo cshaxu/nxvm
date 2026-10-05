@@ -3,7 +3,7 @@
 
 #include "x86/core/machine_interface.h"
 #include "x86/chips/pit825x/pit825x_interface.h"
-#include "x86/ibmpc-common/board_profile_interface.h"
+#include "ibmpc/board-common/board_profile_interface.h"
 #include "app-nxvm/profiles/model40/d4_memory_interface.h"
 
 typedef struct core_machine_d4_platform core_machine_d4_platform;

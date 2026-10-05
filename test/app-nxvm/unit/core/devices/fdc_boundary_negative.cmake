@@ -7,20 +7,20 @@ endif()
 # media/assembly boundaries; it is not a standalone Shared mechanism test.
 # An owned build-tree fixture, not edits to the source tree under audit.
 set(paths
-    src/x86/ibmpc-common/fdc.c
-    src/x86/ibmpc-common/fdc.h
+    src/ibmpc/board-common/fdc.c
+    src/ibmpc/board-common/fdc.h
     src/x86/core/machine_scheduler.c
-    src/x86/ibmpc-common/board_deadline.c
-    src/x86/ibmpc-common/machine_board.c
-    src/x86/ibmpc-common/dma_bus.c
+    src/ibmpc/board-common/board_deadline.c
+    src/ibmpc/board-common/machine_board.c
+    src/ibmpc/board-common/dma_bus.c
     src/x86/core/memory_interface.c
-    src/x86/product/machine/machine_devices.c
-    src/x86/product/machine/media/fdd.c
-    src/x86/product/machine/media/fdd_interface.h
+    src/ibmpc/machine/machine_devices.c
+    src/ibmpc/machine/media/fdd.c
+    src/ibmpc/machine/media/fdd_interface.h
     src/x86/chips/fdc8272/fdc.c
     src/x86/chips/fdc8272/fdc.h
     src/x86/chips/fdc8272/fdc8272_interface.h
-    test/x86/ibmpc-common/core_machine_fdc_smoke.c)
+    test/ibmpc/board-common/core_machine_fdc_smoke.c)
 foreach(path IN LISTS paths)
     get_filename_component(directory "${WORK}/${path}" DIRECTORY)
     file(MAKE_DIRECTORY "${directory}")
@@ -47,7 +47,7 @@ foreach(case RANGE 0 6)
         set(injection "struct x86_fdc { lib_u8 phase; };")
         set(expected "Shared FDC public layout is not opaque")
     elseif(case EQUAL 2)
-        set(path src/x86/ibmpc-common/fdc.c)
+        set(path src/ibmpc/board-common/fdc.c)
         set(injection "void obsolete(void) { core_machine_fdc_PHASE_COMMAND; }")
         set(expected "NXVM crosses the opaque FDC boundary")
     elseif(case EQUAL 3)
@@ -55,12 +55,12 @@ foreach(case RANGE 0 6)
         set(injection "#include \"x86/chips/fdc8272/fdc.h\"")
         set(expected "NXVM crosses the opaque FDC boundary")
     elseif(case EQUAL 4)
-        set(path src/x86/ibmpc-common/fdc.c)
+        set(path src/ibmpc/board-common/fdc.c)
         set(injection "void bypass(void) { core_machine_dma_set_drq(); }")
         set(gate "${dma_gate}")
         set(expected "FDC retains forbidden raw DMA or RAM access")
     elseif(case EQUAL 5)
-        set(path src/x86/product/machine/media/fdd_interface.h)
+        set(path src/ibmpc/machine/media/fdd_interface.h)
         set(injection "lib_u32 transCount;")
         set(expected "FDD retains a controller-owned transfer cursor")
     else()

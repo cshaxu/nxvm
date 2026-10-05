@@ -1,5 +1,5 @@
 #include "app-nxvm/profiles/model40/d4_platform.h"
-#include "x86/ibmpc-common/machine_board_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
 
 static lib_status d4_port_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value);

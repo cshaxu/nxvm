@@ -1,7 +1,7 @@
 #ifndef NXVM_TEST_GUEST_INPUT_H
 #define NXVM_TEST_GUEST_INPUT_H
 #include "lib/types/types_interface.h"
-#include "x86/product/machine/machine_private.h"
+#include "ibmpc/machine/machine_private.h"
 
 
 typedef enum core_machine_guest_input_kind {
