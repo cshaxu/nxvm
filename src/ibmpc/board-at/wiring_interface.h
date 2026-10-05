@@ -20,6 +20,7 @@ typedef enum vm_at_device_role {
 } vm_at_device_role;
 
 #define VM_AT_NO_DMA_CHANNEL 0xffu
+#define VM_AT_DEVICE_MASK_ALL ((1u << (VM_AT_DEVICE_BOARD + 1u)) - 1u)
 
 typedef struct vm_at_port_leaf {
     vm_at_device_role device;
@@ -48,5 +49,13 @@ typedef struct vm_at_route {
 extern const vm_at_port_leaf vm_at_port_leaves[VM_AT_PORT_LEAF_COUNT];
 extern const vm_at_route vm_at_routes_with_aux[5u];
 extern const vm_at_route vm_at_routes_without_aux[4u];
+
+/* Borrowed immutable results. Enabled roles are explicit composition input. */
+const vm_at_port_leaf *vm_at_port_leaf_find(const vm_at_port_leaf *leaves,
+    lib_size count, lib_u32 enabled, vm_at_device_role device, lib_u16 port);
+const vm_at_port_leaf *vm_at_port_leaf_at(const vm_at_port_leaf *leaves,
+    lib_size count, lib_u32 enabled, vm_at_device_role device, lib_size ordinal);
+const vm_at_route *vm_at_route_find(const vm_at_route *routes,
+    lib_size count, vm_at_route_source source);
 
 #endif

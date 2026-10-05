@@ -48,8 +48,8 @@ target_link_libraries(ibmpc-machine PUBLIC types base storage
     ibmpc-board-common x86-core)
 
 set(ibmpc_board_common_sources
-    board-common/floppy.c board-common/rom_validation.c
-    board-common/profile_contract.c
+    board-common/floppy.c board-common/rom_validation.c board-common/rom_mapping.c
+    board-common/profile_contract.c board-common/at_assembly.c
     board-common/media_interface.c board-common/display.c
     board-common/pit_bus.c board-common/pic_bus.c board-common/dma_bus.c
     board-common/fdc.c board-common/hdc.c board-common/vadp.c

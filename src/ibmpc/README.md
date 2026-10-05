@@ -10,7 +10,7 @@ allowed. Existing C symbols/ABI and hardware algorithms remain unchanged.
 | board-xt | XT PPI/keyboard, DIP and speaker/NMI wiring. |
 | board-at | Immutable AT endpoint grammar, KBC/AUX/A20/reset and planar parity/Port B wiring. |
 | machine | Construction finishing/publication, bounded executor, pacing, copied input/frame/debug adaptation and Storage-backed media lifetime. |
-| product | INI syntax/request, entry/banner, command/hotkey policy and Common composition with an injected App factory. |
+| product | Shared PC version/identity, INI syntax/request, entry/banner, command/hotkey policy and Common composition with an injected App factory. |
 
 Board families consume only public x86/Core/chip contracts and Types; they
 never read board-common private layouts. Board-common composes their public
@@ -19,7 +19,17 @@ production or observation-enabled Core/board pair. Core alone advances guest
 time and owns the board attachment teardown; the Machine adapter borrows it.
 Media/display provider contexts remain borrowed until teardown, with one
 freeze/publication/rollback path. Concrete topology, firmware, immutable
-identity and genuine model-specific state remain App-owned.
+machine binding and genuine model-specific state remain App-owned. The four PC
+products share product identity/version declarations in product/version_interface.h;
+build callers inject the single current revision into each fixed executable.
+
+AT endpoint lookup belongs to board-at. board-common/at_assembly projects those
+explicit endpoints into existing display/RTC/DMA/FDC configurations, preserving
+all other copied values and publishing only after complete endpoint validation.
+It does not infer memory decode, video personality, media IDs or device timing.
+board-common/rom_mapping registers explicit ROM regions followed by declared
+aliases; Core remains the backing owner and the existing construction transaction
+owns rollback after a registration error. App declares each genuine ROM layout.
 
 Product's build.cmake shares byte embedding, optimized product linking, PE
 width verification and deployment mechanics. The App supplies source entry,

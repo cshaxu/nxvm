@@ -1,5 +1,41 @@
 #include "ibmpc/board-at/wiring_interface.h"
 
+const vm_at_port_leaf *vm_at_port_leaf_find(const vm_at_port_leaf *leaves,
+    lib_size count, lib_u32 enabled, vm_at_device_role device, lib_u16 port)
+{
+    if (leaves == LIB_NULL || device < VM_AT_DEVICE_PIC || device > VM_AT_DEVICE_BOARD ||
+        (enabled & (1u << device)) == 0u) return LIB_NULL;
+    for (lib_size index = 0u; index < count; ++index) {
+        if (leaves[index].device == device && leaves[index].port == port)
+            return &leaves[index];
+    }
+    return LIB_NULL;
+}
+
+const vm_at_port_leaf *vm_at_port_leaf_at(const vm_at_port_leaf *leaves,
+    lib_size count, lib_u32 enabled, vm_at_device_role device, lib_size ordinal)
+{
+    if (leaves == LIB_NULL || device < VM_AT_DEVICE_PIC || device > VM_AT_DEVICE_BOARD ||
+        (enabled & (1u << device)) == 0u) return LIB_NULL;
+    for (lib_size index = 0u; index < count; ++index) {
+        if (leaves[index].device == device) {
+            if (ordinal == 0u) return &leaves[index];
+            --ordinal;
+        }
+    }
+    return LIB_NULL;
+}
+
+const vm_at_route *vm_at_route_find(const vm_at_route *routes,
+    lib_size count, vm_at_route_source source)
+{
+    if (routes == LIB_NULL) return LIB_NULL;
+    for (lib_size index = 0u; index < count; ++index) {
+        if (routes[index].source == source) return &routes[index];
+    }
+    return LIB_NULL;
+}
+
 const vm_at_port_leaf vm_at_port_leaves[] = {
     { VM_AT_DEVICE_PIC, 0x0020u, LIB_TRUE, LIB_TRUE },
     { VM_AT_DEVICE_PIC, 0x0021u, LIB_TRUE, LIB_TRUE },

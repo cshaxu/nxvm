@@ -25,6 +25,18 @@ set_tests_properties(unit.vm-profile-contract-smoke PROPERTIES LABELS "unit;ibmp
 list(APPEND SHARED_IBMPC_TEST_TARGETS vm-profile-contract-smoke)
 shared_register_test(ibmpc board-common/construction_helpers ibmpc-board-common)
 shared_register_test(ibmpc board-at/contract ibmpc-board-common)
+shared_register_test(ibmpc board-at/assembly ibmpc-board-common)
+add_executable(ibmpc-rom-mapping-test board-common/rom_mapping_smoke.c
+    "${IBMPC_ROOT}/board-common/rom_mapping.c")
+target_link_libraries(ibmpc-rom-mapping-test PRIVATE types)
+if(MSVC)
+    target_compile_options(ibmpc-rom-mapping-test PRIVATE /UNDEBUG)
+else()
+    target_compile_options(ibmpc-rom-mapping-test PRIVATE -UNDEBUG)
+endif()
+add_test(NAME ibmpc.rom-mapping COMMAND ibmpc-rom-mapping-test)
+set_tests_properties(ibmpc.rom-mapping PROPERTIES LABELS "unit;ibmpc" TIMEOUT 30)
+list(APPEND SHARED_IBMPC_TEST_TARGETS ibmpc-rom-mapping-test)
 
 foreach(media_case IN ITEMS provider direct_readonly)
     if(media_case STREQUAL "provider")
@@ -292,7 +304,7 @@ list(APPEND SHARED_IBMPC_TEST_TARGETS machine-fpu-irq-s65-smoke)
 add_executable(core-machine-cpu-timing-preview-smoke
     board-common/core_machine_cpu_timing_preview_smoke.c
     ../x86/core/composition_fixture.c)
-target_link_libraries(core-machine-cpu-timing-preview-smoke PRIVATE ibmpc-board-common x86-core-observable)
+target_link_libraries(core-machine-cpu-timing-preview-smoke PRIVATE ibmpc-board-common-observable x86-core-observable)
 add_test(NAME unit.core-machine-cpu-timing-preview-smoke COMMAND core-machine-cpu-timing-preview-smoke)
 set_tests_properties(unit.core-machine-cpu-timing-preview-smoke PROPERTIES LABELS "unit;ibmpc" TIMEOUT 30)
 list(APPEND SHARED_IBMPC_TEST_TARGETS core-machine-cpu-timing-preview-smoke)
