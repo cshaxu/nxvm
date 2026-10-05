@@ -67,6 +67,13 @@ int main(void)
     lib_u64 identity;
     lib_u32 index;
 
+    event.type = KVM_EVENT_TEXT;
+    event.data.text.scalar = 'X';
+    kvm_input_event_set_source(LIB_NULL, &probe, 7u);
+    kvm_input_event_set_source(&event, &probe, 7u);
+    lib_test_assert(event.source == &probe && event.source_identity == 7u &&
+        event.type == KVM_EVENT_TEXT && event.data.text.scalar == 'X');
+
     probe.accept_input = LIB_TRUE;
     kvm_hotkey_registry_initialize(&hotkeys);
     lib_test_assert(kvm_hotkey_registry_register(&hotkeys, 'P',
@@ -93,6 +100,20 @@ int main(void)
     lib_test_assert(second.source_identity != 0u);
     lib_test_assert(first.source_identity != second.source_identity);
 
+    /* Component publication copies the frame and wakes its selected consumer. */
+    lib_u8 frame = 0x5au, captured = 0u;
+    lib_u32 generation = 0u;
+    lib_test_assert(kvm_component_publish_frame(LIB_NULL, &frame, 1u) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(kvm_component_publish_frame(&first, LIB_NULL, 1u) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(kvm_component_publish_frame(&first, &frame, 0u) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(kvm_component_publish_frame(&first, &frame, 2u) == LIB_STATUS_LIMIT_EXCEEDED);
+    lib_test_assert(kvm_component_publish_frame(&first, &frame, 1u) == LIB_STATUS_OK);
+    frame = 0u;
+    lib_test_assert(base_sync_event_wait(first.mailboxes.wake, 0u) == BASE_SYNC_WAIT_SIGNALED);
+    lib_test_assert(kvm_component_mailboxes_capture_frame(&first.mailboxes, &generation, &captured, 1u));
+    lib_test_assert(captured == 0x5au);
+    kvm_component_mailboxes_acknowledge_frame(&first.mailboxes, generation);
+
     /* The transport cannot restrict consumer opcodes or interpret payloads.
        Copy every byte (including embedded zeroes) before the caller mutates it. */
     control.kind = LIB_UINT32_MAX;
@@ -118,7 +139,7 @@ int main(void)
     lib_test_assert(lib_atomic_u64_load_explicit(&identity_next,
         LIB_MEMORY_ORDER_RELAXED) == 0u);
 
-    event.type = KVM_EVENT_KEY;
+    event = (kvm_input_event){ .type = KVM_EVENT_KEY };
     event.data.key.key = 'A';
     event.data.key.pressed = LIB_TRUE;
     lib_test_assert(kvm_component_emit(&first, &event));
@@ -129,6 +150,7 @@ int main(void)
     lib_test_assert(probe.failure_count == 1u);
     lib_test_assert(!kvm_component_emit(&first, &event));
     kvm_component_retire(&first, LIB_STATUS_OK);
+    lib_test_assert(kvm_component_publish_frame(&first, &frame, 1u) == LIB_STATUS_INVALID_STATE);
     lib_test_assert(probe.failure_count == 1u);
     lib_test_assert(probe.last_failure == LIB_STATUS_IO_ERROR);
     kvm_component_mailboxes_destroy(&first.mailboxes);
@@ -149,6 +171,11 @@ int main(void)
     event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL;
     lib_test_assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
         &probe, LIB_TRUE));
+    const kvm_input_event *held = kvm_hotkey_matcher_held_key(&first.hotkey_matcher,
+        KVM_HOTKEY_KEY_CONTROL);
+    lib_test_assert(held != LIB_NULL && held->data.key.scan_code == 0x1du);
+    lib_test_assert(kvm_hotkey_matcher_held_key(&first.hotkey_matcher, 'Z') == LIB_NULL);
+    lib_test_assert(kvm_hotkey_matcher_held_key(LIB_NULL, 'Z') == LIB_NULL);
     event.data.key.key = KVM_HOTKEY_KEY_ALT;
     event.data.key.scan_code = 0x38u;
     event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL |

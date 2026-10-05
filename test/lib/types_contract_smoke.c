@@ -32,6 +32,25 @@ int main(void)
     CHECK(lib_text_length(copy) == 3u);
     CHECK(lib_memory_find(copy, 'b', 4u) == copy + 1);
     lib_release(copy);
+    char overlap[] = "abcde";
+    CHECK(lib_memory_move(overlap + 1, overlap, 4u) == overlap + 1);
+    CHECK(lib_memory_compare(overlap, "aabcd", 6u) == 0);
+    CHECK(lib_memory_move(overlap, overlap + 1, 4u) == overlap);
+    CHECK(lib_memory_compare(overlap, "abcdd", 6u) == 0);
+    CHECK(lib_text_compare_n("abc", "abd", 2u) == 0);
+    CHECK(lib_text_compare_n("abc", "abd", 3u) == -1);
+    CHECK(lib_text_compare_n("abd", "abc", 3u) == 1);
+    CHECK(lib_text_compare_n("", "abc", 0u) == 0);
+    CHECK(lib_text_find_character(bytes, 'b') == bytes + 1);
+    CHECK(lib_text_find_character(bytes, 'z') == LIB_NULL);
+    CHECK(lib_text_find_character(bytes, 0) == bytes + 3);
+    CHECK(lib_text_find_substring(bytes, "bc") == bytes + 1);
+    CHECK(lib_text_find_substring(bytes, "") == bytes);
+    CHECK(lib_text_find_substring(bytes, "bd") == LIB_NULL);
+    char tokens[] = ",a,,b;";
+    CHECK(lib_text_compare(lib_text_token(tokens, ",;"), "a") == 0);
+    CHECK(lib_text_compare(lib_text_token(LIB_NULL, ",;"), "b") == 0);
+    CHECK(lib_text_token(LIB_NULL, ",;") == LIB_NULL);
     CHECK(lib_pointer_to_uptr(bytes) != 0u);
     CHECK(lib_uptr_to_pointer(lib_pointer_to_uptr(bytes)) == bytes);
     CHECK(LIB_STATUS_OK == 0 && LIB_STATUS_INVALID_ARGUMENT == 1 &&

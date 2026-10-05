@@ -69,6 +69,135 @@ static lib_i32 flush_stream(lib_c_file *stream)
 #include "lib/storage/file.c"
 #include "lib/storage/medium.c"
 
+static void stream_modes(const char *path)
+{
+    static const lib_u8 payload[] = { 'A', 0u, 'B', '\n' };
+    lib_u8 actual[sizeof(payload) * 2u];
+    lib_storage_file_writer *writer = LIB_NULL;
+    lib_storage_file_reader *reader = LIB_NULL;
+    for (lib_i32 mode = LIB_STORAGE_FILE_WRITER_TRUNCATE;
+            mode <= LIB_STORAGE_FILE_WRITER_APPEND; ++mode) {
+        lib_test_assert(lib_storage_file_writer_open(path,
+            (lib_storage_file_writer_mode)mode, &writer) == LIB_STATUS_OK);
+        lib_test_assert(lib_storage_file_writer_write(writer, LIB_NULL, 0u) == LIB_STATUS_OK);
+        lib_test_assert(lib_storage_file_writer_write(writer, LIB_NULL, 1u) == LIB_STATUS_INVALID_ARGUMENT);
+        lib_test_assert(lib_storage_file_writer_write(writer, payload, sizeof(payload)) == LIB_STATUS_OK);
+        lib_test_assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
+        writer = LIB_NULL;
+        lib_test_assert(lib_storage_file_reader_open(path, &reader) == LIB_STATUS_OK);
+        lib_test_assert(lib_storage_file_reader_read(reader, LIB_NULL, 0u) == LIB_STATUS_OK);
+        lib_test_assert(lib_storage_file_reader_read(reader, LIB_NULL, 1u) == LIB_STATUS_INVALID_ARGUMENT);
+        lib_size count = mode == LIB_STORAGE_FILE_WRITER_APPEND ? sizeof(actual) : sizeof(payload);
+        lib_test_assert(lib_storage_file_reader_read(reader, actual, count) == LIB_STATUS_OK);
+        for (lib_size offset = 0u; offset < count; offset += sizeof(payload))
+            lib_test_assert(lib_memory_compare(actual + offset, payload, sizeof(payload)) == 0);
+        lib_test_assert(lib_storage_file_reader_close(reader) == LIB_STATUS_OK);
+        reader = LIB_NULL;
+    }
+    /* Restore the four-byte fixture; later medium cases do not inherit append state. */
+    lib_test_assert(lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) == LIB_STATUS_OK);
+    lib_test_assert(lib_storage_file_writer_write(writer, payload, sizeof(payload)) == LIB_STATUS_OK);
+    reject_close = LIB_TRUE;
+    lib_u32 closed = close_calls;
+    lib_test_assert(lib_storage_file_writer_close(writer) == LIB_STATUS_IO_ERROR);
+    writer = LIB_NULL;
+    lib_test_assert(close_calls == closed + 1u && live_allocations == 0u);
+    lib_test_assert(lib_storage_file_reader_open(path, &reader) == LIB_STATUS_OK);
+    lib_test_assert(lib_storage_file_reader_close(reader) == LIB_STATUS_IO_ERROR);
+    reader = LIB_NULL;
+    reject_close = LIB_FALSE;
+    lib_test_assert(live_allocations == 0u);
+    reject_allocation = LIB_TRUE;
+    lib_test_assert(lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_APPEND, &writer) == LIB_STATUS_NO_MEMORY);
+    lib_test_assert(lib_storage_file_reader_open(path, &reader) == LIB_STATUS_NO_MEMORY);
+    reject_allocation = LIB_FALSE;
+    lib_test_assert(writer == LIB_NULL && reader == LIB_NULL);
+    lib_test_assert(lib_storage_file_writer_open(path, (lib_storage_file_writer_mode)99, &writer) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(lib_storage_file_reader_open(LIB_NULL, &reader) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(lib_storage_file_reader_open(path, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_APPEND, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(lib_storage_file_reader_read(LIB_NULL, actual, 1u) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(lib_storage_file_writer_write(LIB_NULL, payload, 1u) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(lib_storage_file_reader_close(LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(lib_storage_file_writer_close(LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(writer == LIB_NULL && reader == LIB_NULL && live_allocations == 0u);
+}
+
+static void medium_lock_modes(const char *path)
+{
+    for (lib_i32 first_mode = LIB_STORAGE_MEDIUM_DIRECT;
+            first_mode <= LIB_STORAGE_MEDIUM_OVERLAY; ++first_mode) {
+        lib_storage_medium *first = LIB_NULL;
+        lib_test_assert(lib_storage_medium_open(path,
+            (lib_storage_medium_mode)first_mode, &first) == LIB_STATUS_OK);
+        for (lib_i32 next_mode = LIB_STORAGE_MEDIUM_DIRECT;
+                next_mode <= LIB_STORAGE_MEDIUM_OVERLAY; ++next_mode) {
+            lib_storage_medium *next = LIB_NULL;
+            lib_bool shared = first_mode != LIB_STORAGE_MEDIUM_DIRECT &&
+                next_mode != LIB_STORAGE_MEDIUM_DIRECT;
+            lib_test_assert(lib_storage_medium_open(path,
+                (lib_storage_medium_mode)next_mode, &next) ==
+                (shared ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR));
+            lib_test_assert((next != LIB_NULL) == shared);
+            lib_test_assert(lib_storage_medium_destroy(&next) == LIB_STATUS_OK);
+        }
+        lib_test_assert(lib_storage_medium_destroy(&first) == LIB_STATUS_OK);
+        /* Closing the owning handle releases the restriction, regardless of mode. */
+        lib_test_assert(lib_storage_medium_open(path, LIB_STORAGE_MEDIUM_DIRECT,
+            &first) == LIB_STATUS_OK);
+        lib_test_assert(lib_storage_medium_destroy(&first) == LIB_STATUS_OK);
+        lib_test_assert(live_allocations == 0u);
+    }
+}
+
+static void medium_replace(const char *path)
+{
+    lib_test_assert(lib_storage_medium_byte_count(LIB_NULL) == 0u);
+    lib_test_assert(lib_storage_medium_destroy(LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    for (lib_i32 mode = LIB_STORAGE_MEDIUM_DIRECT; mode <= LIB_STORAGE_MEDIUM_OVERLAY; ++mode) {
+        lib_storage_medium *lease = LIB_NULL, *replacement = LIB_NULL, *retired = LIB_NULL;
+        lib_test_assert(lib_storage_medium_open(path, (lib_storage_medium_mode)mode, &lease) == LIB_STATUS_OK);
+        lib_test_assert(lib_storage_medium_byte_count(lease) == 4u);
+        lib_test_assert(lib_storage_medium_create_zero_overlay(4097u, &replacement) == LIB_STATUS_OK);
+        lib_test_assert(lib_storage_medium_byte_count(replacement) == 4097u);
+        lib_storage_medium *original = lease;
+        lib_u32 closed = close_calls, live = live_allocations;
+
+        /* Every rejected transfer leaves both leases and the output untouched. */
+        lib_test_assert(lib_storage_medium_replace(LIB_NULL, replacement, &retired) == LIB_STATUS_INVALID_ARGUMENT);
+        lib_test_assert(lib_storage_medium_replace(&lease, replacement, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+        lib_test_assert(lib_storage_medium_replace(&lease, replacement, &lease) == LIB_STATUS_INVALID_ARGUMENT);
+        lib_test_assert(lib_storage_medium_replace(&lease, lease, &retired) == LIB_STATUS_INVALID_ARGUMENT);
+        retired = replacement;
+        lib_test_assert(lib_storage_medium_replace(&lease, replacement, &retired) == LIB_STATUS_INVALID_ARGUMENT);
+        lib_test_assert(lease == original && retired == replacement);
+        retired = LIB_NULL;
+        lib_test_assert(close_calls == closed && live_allocations == live);
+        lib_test_assert(lib_storage_medium_replace(&lease, replacement, &retired) == LIB_STATUS_OK);
+        lib_test_assert(lease == replacement && retired == original);
+        replacement = LIB_NULL; /* Ownership has moved; this is no second lease. */
+        lib_test_assert(close_calls == closed && live_allocations == live);
+        lib_test_assert(lib_storage_medium_byte_count(retired) == 4u &&
+            retired->mode == (lib_storage_medium_mode)mode);
+        lib_u8 byte = 0xffu;
+        lib_test_assert(lib_storage_medium_read_at(lease, 4096u, &byte, 1u) == LIB_STATUS_OK && byte == 0u);
+        lib_test_assert(lib_storage_medium_read_at(retired, 0u, &byte, 1u) == LIB_STATUS_OK && byte == 'A');
+        lib_test_assert(lib_storage_medium_destroy(&retired) == LIB_STATUS_OK && retired == LIB_NULL);
+
+        lib_test_assert(lib_storage_medium_replace(&lease, LIB_NULL, &retired) == LIB_STATUS_OK);
+        lib_test_assert(lease == LIB_NULL && lib_storage_medium_byte_count(retired) == 4097u);
+        lib_test_assert(lib_storage_medium_destroy(&retired) == LIB_STATUS_OK);
+        lib_test_assert(lib_storage_medium_replace(&lease, LIB_NULL, &retired) == LIB_STATUS_OK);
+        lib_test_assert(lease == LIB_NULL && retired == LIB_NULL && live_allocations == 0u);
+        lib_test_assert(lib_storage_medium_open(path, (lib_storage_medium_mode)mode, &replacement) == LIB_STATUS_OK);
+        lib_test_assert(lib_storage_medium_replace(&lease, replacement, &retired) == LIB_STATUS_OK);
+        replacement = LIB_NULL;
+        lib_test_assert(lease != LIB_NULL && retired == LIB_NULL);
+        lib_test_assert(lib_storage_medium_destroy(&lease) == LIB_STATUS_OK && lease == LIB_NULL);
+        lib_test_assert(live_allocations == 0u);
+    }
+}
+
 static void medium_fill(void)
 {
     lib_storage_medium medium = { .file = { lib_c_tmpfile() },
@@ -300,6 +429,9 @@ int main(void)
     lib_test_assert(lib_storage_file_read_owned(path, sizeof(payload), &owned, &length) == LIB_STATUS_IO_ERROR);
     lib_test_assert(owned == LIB_NULL && live_allocations == 0u);
     reject_close = LIB_FALSE;
+    stream_modes(path);
+    medium_lock_modes(path);
+    medium_replace(path);
     medium_fill();
     overlay_index(path);
     lib_test_assert(shared_test_remove_file(path));

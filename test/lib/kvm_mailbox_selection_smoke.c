@@ -77,6 +77,20 @@ int main(void)
     lib_test_assert(kvm_component_mailboxes_select_notify(&mailbox, notify, &token) == LIB_STATUS_INVALID_STATE);
     lib_test_assert(kvm_component_mailboxes_notify(&mailbox) == LIB_STATUS_OK);
     lib_test_assert(signals == 1u && notifications == 1u && creates == 2u);
+    kvm_component_control control = { .kind = 1u }, taken;
+    lib_u32 generation = 0u, captured = 0u, value = 0x12345678u;
+    lib_test_assert(kvm_component_mailboxes_publish_frame(&mailbox, &value, sizeof(value)) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_mailboxes_enqueue_control(&mailbox, &control) == LIB_STATUS_OK);
+    kvm_component_mailboxes_close(&mailbox);
+    kvm_component_mailboxes_close(&mailbox);
+    lib_test_assert(kvm_component_mailboxes_publish_frame(&mailbox, &value, sizeof(value)) == LIB_STATUS_INVALID_STATE);
+    lib_test_assert(kvm_component_mailboxes_enqueue_control(&mailbox, &control) == LIB_STATUS_INVALID_STATE);
+    lib_test_assert(kvm_component_mailboxes_take_control(&mailbox, &taken) && taken.kind == 1u);
+    lib_test_assert(!kvm_component_mailboxes_take_control(&mailbox, &taken));
+    lib_test_assert(kvm_component_mailboxes_capture_frame(&mailbox, &generation, &captured, sizeof(captured)));
+    lib_test_assert(captured == value); /* Closing admission does not erase accepted state. */
+    kvm_component_mailboxes_acknowledge_frame(&mailbox, generation);
+    lib_test_assert(!kvm_component_mailboxes_capture_frame(&mailbox, &generation, &captured, sizeof(captured)));
     kvm_component_mailboxes_destroy(&mailbox);
     lib_test_assert(destroys == 1u);
     return 0;

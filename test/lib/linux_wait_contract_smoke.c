@@ -128,8 +128,10 @@ int main(void)
         2, 1, &signaled, &index) == LIB_STATUS_IO_ERROR);
     lib_test_assert(!base_sync_lock.locked && sleep_calls == 0);
     interrupt_sleep = 1;
-    base_sync_platform_sleep_milliseconds(250);
+    base_sync_sleep_milliseconds(250);
     lib_test_assert(sleep_calls == 2);
+    base_sync_yield();
+    lib_test_assert(yield_calls == 1u);
     base_sync_platform_event_destroy(events[0]);
     base_sync_platform_event_destroy(events[1]);
     lib_test_assert(console_broker_backend_create(&backend) == LIB_STATUS_UNSUPPORTED && !backend);

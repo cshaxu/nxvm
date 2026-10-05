@@ -24,9 +24,11 @@ that hide a window only after creating it. Run these explicitly with `-L desktop
 -j 1` when the desktop is reserved for testing. Mocked input/rendering tests
 remain in the background suite. An unfiltered CTest run includes both groups.
 
-Coverage: Types/atomic/clock and vocabulary; logical Console event/output gates;
+Coverage: Types/atomic/clock, overlapping moves and text vocabulary; logical Console event/output gates;
 Console broker, display and reader failure; Base sync lifetime and Linux waits; Storage
-binary writer, medium and consumed-close failure; KVM physical/text input,
+binary truncate/append writer, mode lock matrix, medium lease replacement/failure preservation and consumed-close
+failure; KVM physical/text input,
 matcher/frozen admission, frame damage, geometry/motion, control FIFO,
-capture, modal wake, failures and retirement. Native GUI smoke does not prove
+capture, component frame publication, terminal mailbox admission, modal wake,
+failures and retirement; Audio queue, cancellation, partial delivery and backend lifetime. Native GUI smoke does not prove
 every terminal host or interactive product scenario.

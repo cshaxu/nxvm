@@ -89,7 +89,8 @@ static inline lib_i32 lib_linux_nanosleep(const lib_linux_timespec *duration, li
     lib_test_assert(duration->tv_sec == 0 && duration->tv_nsec == 1);
     return 0;
 }
-static inline lib_i32 lib_linux_sched_yield(void) { return 0; }
+static lib_u32 yield_calls;
+static inline lib_i32 lib_linux_sched_yield(void) { ++yield_calls; return 0; }
 static inline lib_i32 lib_linux_pthread_create(lib_linux_pthread_t *t, const void *a, void *(*fn)(void *), void *ctx)
 {
     (void)a;
