@@ -29,5 +29,17 @@ Types/inward ownership, source DAG/corpus checks and independent strict-warning
 IBMPC build and 155/155 runtime aggregate pass (98.09s). The documentation
 governance gate and diff check pass. The source/test change count in this S is
 zero; no binary inputs changed and no product artifact is rebuilt for S1.
-S1 executor self-review accepts the complete audit/receiver map; coordinator
-actual-change acceptance follows the pushed NXVM documentation delivery.
+S1 P1 78b30bca7 is pushed. Coordinator actual-diff review accepts its complete
+fixed identity, semantic review, removed-test map, verification and target-only
+document changes. S1 closes after its governance P; S2 is admitted under the
+owner's conditional import authorization. Latest uncommitted source is not
+included in the accepted baseline.
+
+## S2 Import And Receiving Batch
+
+Import exact accepted eight trees and six explicit test-root helpers. Retain
+44 product files at the mapped NXVM receivers, mechanically repair registrations
+and includes, then verify all consumers and affected dual-width artifacts.
+Shared, NXVM and MyNES deliveries have separate target-correct P commits.
+Original 58 integration predicates remain T/S3 verification; CPU repairs and
+owner INI/media/snapshot changes are excluded.

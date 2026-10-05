@@ -6,28 +6,28 @@
 | --- | --- |
 | T544 | Closed as a completed CPU audit by owner direction; all CPU repair/proof gaps transferred to the first queued proposal. No implementation task is active. |
 | M5 Td S177 | Complete: audit closure, full CPU repair transfer, proposal archive and queue/reference reconciliation. NXVM documentation only. |
-| T545 S1 | Active: audit SoftPC eight shared corpora and all receiving boundaries before conditional unchanged import. |
+| T545 S2 | Active: S1 audit accepted; exact committed eight-corpus import, retained product tests, receiver verification and artifacts. |
 
 ## Active Subtask Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New: M5 T545 S1 after owner-closed T544; no CPU repair task is admitted. |
-| Admission And Approval | Owner requests a new T to audit SoftPC's eight corpora and import/update if acceptable. S1 authorizes read-only source/consumer audit and NXVM task documentation; exact unchanged import is conditional on acceptance. |
-| Objective | Establish complete reproducible eight-root difference, source/quality/contract and preserved-coverage evidence; decide importability without masking dirty source or receiver gaps. |
-| Non-goals | No S1 Shared/App source/test/API/binary edits, sibling mutation, unrelated CPU fixes, owner configuration or media change. |
-| Reference Baseline | NXVM 826eccc93; accepted SoftPC eight-root snapshot 03c979c7 (identical to later committed 9291c8cc). Subsequent uncommitted IBMPC work is excluded. |
-| Candidate Proposal | [Refresh proposal](../proposals/m5-softpc-eight-corpus-refresh.md) and [convergence ledger](../history/M5-T545-softpc-eight-corpus-refresh.md). |
-| Files And ABI Surface | S1 changes only NXVM proposal/history/evidence/Current/Queue; inspect src/test lib/common/x86/ibmpc, shared test helpers and all five receiving Apps read-only. |
-| Applicable Rules | Full NXVM Task Reading Set, source policy, Architecture/Coding and local governance skills; sole owners, neutral public boundary, exact provenance, one target per P and approved conditional import. |
-| Verification | Compare tracked files/normalized and exact bytes; validate eight manifests and required support scripts; inspect all semantic diffs and removed-test receivers; review contracts against existing consumers; full units and documentation checks for S closure. |
-| Expected Markers | Eight-root ledger has no unexplained deletion/dependency/contract change; fixed source identity and clear accepted/blocked decision; no 'green equals semantically identical' claim. |
-| Asset Needs | Existing source and receiving caches only; no external asset edits or new firmware/media acquisition. |
-| Reporting Requirements | Report corpus identities, diff scope, real architecture/quality gaps, unchanged-import decision and required receiving adaptations. |
-| Stop Conditions | Lost coverage, unacceptable source/manifest, unstable identity or required unapproved Shared repair blocks import; continue safe independent audit. |
-| Exit Criteria | Whole eight-root audit and receiver map complete with direct evidence, concrete decision, full units, actual-diff review and pushed target-correct delivery. |
-| Original Owner Request | Admit a new T; audit whether SoftPC's eight components can be imported unchanged; import/update if acceptable. |
-| Similar-Issue Sweep | All changed/new/removed corpus files, tests, build registrations and support scripts; compare every affected public contract across NXVM/MyNES, not only the first compilation failure. |
+| Identifier Mode | Continuation: M5 T545 S2 after accepted S1; CPU repair remains queued. |
+| Admission And Approval | Owner admits audit and conditional unchanged eight-corpus import; S1 accepts fixed SoftPC 03c979c7. Targets are Shared source/tests/root helpers, NXVM receiver tests/build/docs/eight artifacts and MyNES receiving artifact pair only. No sibling or owner configuration edit. |
+| Objective | Import the accepted exact eight trees, retain all 44 product-owned files and reconcile every test/helper receiver; verify all consumers and rebuild affected artifacts before accepting the import. |
+| Non-goals | No changes inside imported corpora, CPU gap repair, new API/shim/runtime, MyNES product semantics, source/media/INI/snapshot change or uncommitted upstream IBMPC import. |
+| Reference Baseline | S1 P1 78b30bca7; SoftPC 03c979c7 pinned archive with eight bytes identical to 9291c8cc. S1 baseline full units 506/506 per width and standalone IBMPC 155/155. |
+| Candidate Proposal | [Refresh proposal](../proposals/m5-softpc-eight-corpus-refresh.md), [ledger](../history/M5-T545-softpc-eight-corpus-refresh.md), [audit](../etc/evidence/t545-s1-eight-corpus-audit.md) and complete receiver map. |
+| Files And ABI Surface | Exact src/test lib/common/x86/ibmpc plus six test-root helpers; NXVM test ownership/includes, cmake/nxvm receiving paths/version override and task docs; all five Apps' affected dual-width artifacts. Public APIs unchanged except retirement of unused private bus wrapper. |
+| Applicable Rules | NXVM/MyNES reading sets; Shared Architecture/Coding/source and execution rules, approved embedding/artifact exception, sole owners, inward tests, exact source identity, target-separated P commits; imported bytes may not be locally patched. |
+| Verification | Preserve source test predicates/target coverage through all mapped moves; exact eight-tree hash/path equality and manifests, Types/DAG/corpus/negative checks; full NXVM/MyNES repository-only units x64/x86; affected product-target builds, PE/stripped identity/hash and sole artifact paths; documentation/link/diff and actual-change review. |
+| Expected Markers | No unexplained lost test, all eight corpora equal fixed source, no duplicate receiver/shim, passing full units and current eight PC 0545 plus MyNES 0043 dual-width products with unchanged owner configuration. |
+| Asset Needs | Existing BYOB firmware/media remain external and read-only; existing receiving caches and ignored immutable import snapshot; no new protected acquisition. |
+| Reporting Requirements | Record exact import revision, all mechanical receiver changes, counted code diff, verification and hashes, one pushed P per target, gaps instead of false compatibility claims. |
+| Stop Conditions | Unapproved Shared repair, missing coverage/asset/toolchain or source identity mismatch blocks acceptance; repair only approved receiver-side path/build adaptation. |
+| Exit Criteria | Complete imported corpus and receiver batch; all required units/gates/artifacts pass; target-correct commits pushed and coordinator actual-diff acceptance. Original external integration is T/S3 qualification, not silently removed. |
+| Original Owner Request | Admit a new T; audit whether SoftPC eight components can be imported unchanged; import/update if acceptable. |
+| Similar-Issue Sweep | Every old-only path, incoming fixture/register dependency, historical path check and all five receiving Apps; no App reaches a peer App or recreates Shared behavior. |
 
 ## Accepted Audit Baseline
 
