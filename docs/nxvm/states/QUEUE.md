@@ -18,6 +18,8 @@ four-App split into the first candidate; it has no allocated numeric T yet.
 Closed [T542](../history/M5-T542-shared-pc-machine-adapter.md) delivers the
 remaining shared Machine adapter/helpers before that split. Current owns
 task acceptance; the split is still an unnumbered Queue candidate.
+Its accepted corrective S11 places board-common/XT/AT, Machine and Product
+under the separate ibmpc package consumed by that candidate.
 The later candidates retain their semantic qualification scope against the
 resulting owners; extraction alone does not qualify new hardware or timing.
 
