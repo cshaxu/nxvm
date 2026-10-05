@@ -10,6 +10,23 @@ static lib_size output_used;
 static lib_u32 writes, fail_write;
 static lib_u32 waits;
 static lib_bool fail_wait;
+static lib_bool fail_session_allocation;
+static lib_bool fail_session_queue;
+static lib_u32 session_allocations, session_releases;
+static void *allocate_session(lib_size count, lib_size size)
+{
+    if (fail_session_allocation) return LIB_NULL;
+    void *memory = lib_allocate_zero(count, size);
+    if (memory != LIB_NULL) ++session_allocations;
+    return memory;
+}
+static void release_session(void *memory)
+{
+    if (memory != LIB_NULL) ++session_releases;
+    lib_release(memory);
+}
+static lib_bool initialize_session_queue(common_session_queue *queue)
+{ return !fail_session_queue && common_session_queue_initialize(queue); }
 static lib_bool take_event(common_session_queue *queue, common_session_event *event,
     lib_u32 timeout_ms)
 {
@@ -24,17 +41,26 @@ static lib_bool take_event(common_session_queue *queue, common_session_event *ev
 static lib_u32 run(const common_machine *m) { (void)m; return 1; }
 static lib_bool copy_frame(common_machine *m, common_machine_frame *f, lib_u32 g)
 { (void)m; (void)f; (void)g; return LIB_FALSE; }
-static lib_bool machine_request(common_machine *m) { (void)m; ++commands; return LIB_TRUE; }
+static lib_u32 lifecycle_calls[COMMON_SESSION_REQUEST_RESET + 1u];
+static common_session_request opened_request;
+static lib_bool machine_request(common_machine *m, common_session_request request)
+{ (void)m; ++commands; ++lifecycle_calls[request]; return LIB_TRUE; }
 #define common_machine_run_generation run
 #define common_machine_copy_published_frame copy_frame
-#define common_machine_start machine_request
-#define common_machine_resume machine_request
-#define common_machine_pause machine_request
-#define common_machine_reset machine_request
-#define common_machine_stop machine_request
+#define common_machine_start(machine) machine_request(machine, COMMON_SESSION_REQUEST_START)
+#define common_machine_resume(machine) machine_request(machine, COMMON_SESSION_REQUEST_RESUME)
+#define common_machine_pause(machine) machine_request(machine, COMMON_SESSION_REQUEST_PAUSE)
+#define common_machine_reset(machine) machine_request(machine, COMMON_SESSION_REQUEST_RESET)
+#define common_machine_stop(machine) machine_request(machine, COMMON_SESSION_REQUEST_STOP)
 #define common_session_queue_take take_event
+#define lib_allocate_zero allocate_session
+#define lib_release release_session
+#define common_session_queue_initialize initialize_session_queue
 #include "common/session/session.c"
 #undef common_session_queue_take
+#undef lib_allocate_zero
+#undef lib_release
+#undef common_session_queue_initialize
 
 static common_session *active;
 lib_status common_ui_cancel_monitor_line(common_ui *ui, lib_bool *out_completed)
@@ -82,7 +108,7 @@ static void monitor(void *p, lib_bool current, common_session_command_result *ou
     out->arm_prompt = LIB_TRUE;
     lib_memory_copy(out->prompt, "> ", 3);
 }
-static void opened(void *p, common_session_command_result *out) { (void)p; (void)out; }
+static void opened(void *p, common_session_command_result *out) { (void)p; out->request = opened_request; }
 static void rejected(void *p, common_session_command_result *out)
 {
     (void)p;
@@ -104,8 +130,142 @@ static void runtime(void *p, common_session_machine_state a,
     lib_memory_copy(out->text, "notice", 7);
     out->request = COMMON_SESSION_REQUEST_PAUSE;
 }
+
+static void public_session_contract(void)
+{
+    common_session_options options = {
+        .display = COMMON_SESSION_DISPLAY_WINDOW,
+        .console_control = LIB_TRUE,
+        .machine = (common_machine *)&options,
+        .command = { .open = opened, .submit_line = submitted,
+            .note_runtime = runtime, .note_monitor_current = monitor }
+    };
+    common_session *session = LIB_NULL;
+    lib_test_assert(common_session_create(LIB_NULL, &options) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(common_session_create(&session, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT && session == LIB_NULL);
+    for (lib_u32 missing = 0u; missing < 5u; ++missing) {
+        common_session_options invalid = options;
+        switch (missing) {
+        case 0u: invalid.machine = LIB_NULL; break;
+        case 1u: invalid.command.open = LIB_NULL; break;
+        case 2u: invalid.command.submit_line = LIB_NULL; break;
+        case 3u: invalid.command.note_runtime = LIB_NULL; break;
+        default: invalid.command.note_monitor_current = LIB_NULL; break;
+        }
+        lib_test_assert(common_session_create(&session, &invalid) == LIB_STATUS_INVALID_ARGUMENT && session == LIB_NULL);
+    }
+    fail_session_allocation = LIB_TRUE;
+    lib_test_assert(common_session_create(&session, &options) == LIB_STATUS_NO_MEMORY && session == LIB_NULL);
+    fail_session_allocation = LIB_FALSE;
+    fail_session_queue = LIB_TRUE;
+    lib_test_assert(common_session_create(&session, &options) == LIB_STATUS_NO_MEMORY && session == LIB_NULL);
+    lib_test_assert(session_allocations == session_releases);
+    fail_session_queue = LIB_FALSE;
+    lib_test_assert(common_session_create(&session, &options) == LIB_STATUS_OK);
+    lib_test_assert(session_allocations == session_releases + 1u && session->machine == options.machine &&
+        session->state.display == options.display && session->ui == LIB_NULL);
+    lib_test_assert(!common_session_run(session) && !common_session_run(LIB_NULL));
+    lib_test_assert(common_session_bind_ui(LIB_NULL, (common_ui *)&options) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(common_session_bind_ui(session, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(common_session_bind_ui(session, (common_ui *)&options) == LIB_STATUS_OK);
+    lib_test_assert(common_session_bind_ui(session, (common_ui *)session) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(session->ui == (common_ui *)&options);
+
+    common_ui_event input = { .run_generation = 1u };
+    common_session_event taken;
+    lib_test_assert(!common_session_enqueue_ui_event(LIB_NULL, &input));
+    lib_test_assert(!common_session_enqueue_ui_event(session, LIB_NULL));
+    input.kind = (common_ui_event_kind)99;
+    lib_test_assert(!common_session_enqueue_ui_event(session, &input) && session->queue.count == 0u);
+    input.kind = COMMON_UI_EVENT_KVM_INPUT;
+    input.value.kvm.type = KVM_EVENT_TEXT;
+    input.value.kvm.data.text.scalar = 'X';
+    lib_test_assert(common_session_enqueue_ui_event(session, &input));
+    input.value.kvm.data.text.scalar = 'Y';
+    lib_test_assert(common_session_queue_take(&session->queue, &taken, 0u));
+    lib_test_assert(taken.kind == COMMON_SESSION_EVENT_KVM_INPUT &&
+        taken.run_generation == 1u && taken.value.kvm.data.text.scalar == 'X');
+    input = (common_ui_event){ .kind = COMMON_UI_EVENT_MONITOR_LINE,
+        .monitor_line_rejected = LIB_TRUE };
+    lib_memory_copy(input.value.line.text, "abc", 4u);
+    input.value.line.length = 3u;
+    lib_test_assert(common_session_enqueue_ui_event(session, &input));
+    input.value.line.text[0] = 'z';
+    lib_test_assert(common_session_queue_take(&session->queue, &taken, 0u));
+    lib_test_assert(taken.kind == COMMON_SESSION_EVENT_MONITOR_LINE && taken.monitor_line_rejected &&
+        taken.value.line.length == 3u && lib_text_compare(taken.value.line.text, "abc") == 0);
+    for (lib_u32 component = 0u; component < 2u; ++component) {
+        input = (common_ui_event){ .kind = COMMON_UI_EVENT_COMPONENT_COMPLETED,
+            .run_generation = 7u };
+        input.value.component.component = component == 0u ?
+            COMMON_UI_COMPONENT_WINDOW : COMMON_UI_COMPONENT_VM_CONSOLE;
+        input.value.component.exists = LIB_TRUE;
+        lib_test_assert(common_session_enqueue_ui_event(session, &input));
+        lib_test_assert(common_session_queue_take(&session->queue, &taken, 0u));
+        lib_test_assert(taken.kind == COMMON_SESSION_EVENT_COMPONENT_COMPLETED &&
+            taken.run_generation == 7u && taken.value.component.exists &&
+            taken.value.component.component == (component == 0u ?
+                COMMON_SESSION_EVENT_COMPONENT_WINDOW : COMMON_SESSION_EVENT_COMPONENT_VM_CONSOLE));
+    }
+    input = (common_ui_event){ .kind = COMMON_UI_EVENT_BROKER_COMPLETED, .run_generation = 8u };
+    input.value.broker_vm_console_current = LIB_TRUE;
+    lib_test_assert(common_session_enqueue_ui_event(session, &input));
+    lib_test_assert(common_session_queue_take(&session->queue, &taken, 0u));
+    lib_test_assert(taken.kind == COMMON_SESSION_EVENT_BROKER_COMPLETED &&
+        taken.run_generation == 8u && taken.value.broker_vm_console_current);
+    input = (common_ui_event){ .kind = COMMON_UI_EVENT_KVM_DELIVERY_FAILED, .run_generation = 9u };
+    input.value.delivery_failure.source_identity = 12u;
+    input.value.delivery_failure.status = LIB_STATUS_IO_ERROR;
+    lib_test_assert(common_session_enqueue_ui_event(session, &input));
+    lib_test_assert(common_session_queue_take(&session->queue, &taken, 0u));
+    lib_test_assert(taken.kind == COMMON_SESSION_EVENT_KVM_DELIVERY_FAILED &&
+        taken.run_generation == 9u && taken.value.delivery_failure.source_identity == 12u &&
+        taken.value.delivery_failure.status == LIB_STATUS_IO_ERROR);
+    input = (common_ui_event){ .kind = COMMON_UI_EVENT_CONSOLE_FAILED };
+    lib_test_assert(common_session_enqueue_ui_event(session, &input));
+    lib_test_assert(common_session_queue_take(&session->queue, &taken, 0u));
+    lib_test_assert(taken.kind == COMMON_SESSION_EVENT_CONSOLE_FAILED);
+    lib_test_assert(!common_session_enqueue_runtime_completed(LIB_NULL, COMMON_SESSION_MACHINE_PAUSED, 1u));
+    lib_test_assert(!common_session_enqueue_frame_completed(LIB_NULL, 1u, LIB_TRUE, 1u));
+    lib_test_assert(common_session_enqueue_runtime_completed(session, COMMON_SESSION_MACHINE_PAUSED, 10u));
+    lib_test_assert(common_session_queue_take(&session->queue, &taken, 0u));
+    lib_test_assert(taken.kind == COMMON_SESSION_EVENT_RUNTIME_COMPLETED &&
+        taken.run_generation == 10u && taken.value.runtime_state == COMMON_SESSION_MACHINE_PAUSED);
+    lib_test_assert(common_session_enqueue_frame_completed(session, 5u, LIB_TRUE, 11u));
+    lib_test_assert(common_session_queue_take(&session->queue, &taken, 0u));
+    lib_test_assert(taken.kind == COMMON_SESSION_EVENT_FRAME_COMPLETED &&
+        taken.run_generation == 11u && taken.value.frame.sequence == 5u && taken.value.frame.graphics);
+
+    active = session;
+    exit_on_request = LIB_TRUE;
+    lib_test_assert(common_session_run(session) && commands == 1u && waits == 1u);
+    /* Product requests are injected through the real public run loop; each
+     * must reach its corresponding Machine API, not merely some lifecycle API. */
+    for (lib_u32 request = COMMON_SESSION_REQUEST_START;
+            request <= COMMON_SESSION_REQUEST_RESET; ++request) {
+        lib_u32 before_calls[COMMON_SESSION_REQUEST_RESET + 1u];
+        lib_memory_copy(before_calls, lifecycle_calls, sizeof(before_calls));
+        opened_request = (common_session_request)request;
+        lib_test_assert(common_session_run(session));
+        for (lib_u32 kind = COMMON_SESSION_REQUEST_START;
+                kind <= COMMON_SESSION_REQUEST_RESET; ++kind)
+            lib_test_assert(lifecycle_calls[kind] == before_calls[kind] +
+                (kind == request ? 1u : 0u) + (kind == COMMON_SESSION_REQUEST_STOP ? 1u : 0u));
+    }
+    opened_request = (common_session_request)99;
+    lib_u32 before_invalid = commands;
+    lib_test_assert(!common_session_run(session) && commands == before_invalid);
+    opened_request = COMMON_SESSION_REQUEST_NONE;
+    lib_test_assert(common_session_destroy(session) == LIB_STATUS_OK);
+    lib_test_assert(common_session_destroy(LIB_NULL) == LIB_STATUS_OK && session_releases == session_allocations);
+    requests = prompts = notices = callbacks = cancellations = commands = waits = 0u;
+    exit_on_request = LIB_FALSE;
+    active = LIB_NULL;
+}
+
 int main(void)
 {
+    public_session_contract();
     static common_session s;
     common_session_event event = {0};
     common_session_command_result notice = {0};

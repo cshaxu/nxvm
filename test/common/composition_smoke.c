@@ -8,12 +8,48 @@
 static lib_u32 status_builds, unfreezes, freezes, console_frames, window_frames;
 static lib_u32 received, received_run;
 static lib_status publish_status = LIB_STATUS_OK;
+static lib_status control_status = LIB_STATUS_OK;
+static lib_size monitor_bytes;
+static lib_console_event_sink monitor_sink;
+static void *monitor_context;
+static lib_bool capture_event;
+static common_ui_event captured_event;
 static kvm_console_text_frame last_console;
 static common_ui *tracked_ui;
 static lib_u32 released_ui, destroy_failure, broker_destroys, window_destroys, console_destroys;
+static lib_u32 creation_failure, allocated_objects, released_objects, released_monitors;
+static void *allocate_ui(lib_size count, lib_size size)
+{
+    if (creation_failure == 1u) return LIB_NULL;
+    void *memory = lib_allocate_zero(count, size);
+    if (memory != LIB_NULL) ++allocated_objects;
+    return memory;
+}
+static lib_status create_monitor(lib_console **out)
+{
+    if (creation_failure == 2u) { *out = LIB_NULL; return LIB_STATUS_IO_ERROR; }
+    return lib_console_create(out);
+}
+static lib_status bind_monitor_sink(lib_console *console, lib_console_event_sink sink,
+    void *context)
+{
+    if (creation_failure == 3u && sink != LIB_NULL) return LIB_STATUS_IO_ERROR;
+    lib_status status = lib_console_set_event_sink(console, sink, context);
+    if (status == LIB_STATUS_OK) { monitor_sink = sink; monitor_context = context; }
+    return status;
+}
+static void release_monitor(lib_console *console)
+{ if (console != LIB_NULL) ++released_monitors; lib_console_release(console); }
+static lib_status write_monitor(lib_console *console, const char *text, lib_size count)
+{
+    monitor_bytes = count;
+    return control_status != LIB_STATUS_OK ? control_status :
+        lib_console_write_text(console, text, count);
+}
 static void counted_release(void *memory)
 {
     if (memory == tracked_ui) ++released_ui;
+    if (memory != LIB_NULL) ++released_objects;
     lib_release(memory);
 }
 static void *counted_set(void *destination, lib_i32 value, lib_size size)
@@ -23,9 +59,19 @@ static void *counted_set(void *destination, lib_i32 value, lib_size size)
 }
 #define lib_memory_set counted_set
 #define lib_release counted_release
+#define lib_allocate_zero allocate_ui
+#define lib_console_create create_monitor
+#define lib_console_set_event_sink bind_monitor_sink
+#define lib_console_release release_monitor
+#define lib_console_write_text write_monitor
 #include "common/ui/ui.c"
 #undef lib_memory_set
 #undef lib_release
+#undef lib_allocate_zero
+#undef lib_console_create
+#undef lib_console_set_event_sink
+#undef lib_console_release
+#undef lib_console_write_text
 
 struct kvm_window { kvm_window_options options; };
 struct kvm_console { lib_console *object; kvm_console_options options; };
@@ -46,7 +92,7 @@ lib_status kvm_window_freeze(kvm_window *window)
 lib_status kvm_window_unfreeze(kvm_window *window)
 { lib_test_assert(window == &window_fake); ++unfreezes; return LIB_STATUS_OK; }
 lib_status kvm_window_release_mouse(kvm_window *window)
-{ lib_test_assert(window == &window_fake); return LIB_STATUS_OK; }
+{ lib_test_assert(window == &window_fake); return control_status; }
 lib_status kvm_window_publish_frame(kvm_window *window, const kvm_window_frame *frame)
 { lib_test_assert(window == &window_fake && frame->valid); ++window_frames; return publish_status; }
 lib_status kvm_console_create(kvm_console **out, const kvm_console_options *options)
@@ -73,26 +119,32 @@ lib_status kvm_console_publish_frame(kvm_console *console, const kvm_console_tex
 }
 lib_status console_broker_create(console_broker **out,
     lib_console *initial, console_broker_mode mode)
-{ lib_test_assert(mode == CONSOLE_BROKER_COOKED_LINES); broker_fake.current = initial;
+{ if (creation_failure == 4u) { *out = LIB_NULL; return LIB_STATUS_IO_ERROR; }
+  lib_test_assert(mode == CONSOLE_BROKER_COOKED_LINES); broker_fake.current = initial;
   *out = &broker_fake; return LIB_STATUS_OK; }
 lib_status console_broker_replace(console_broker *broker,
     lib_console *expected, lib_console *next, console_broker_mode mode)
 { (void)mode; lib_test_assert(broker->current == expected); broker->current = next; return LIB_STATUS_OK; }
 lib_status console_broker_request_cooked_line(console_broker *broker,
     lib_console *expected)
-{ lib_test_assert(broker->current == expected); return LIB_STATUS_OK; }
+{ return broker->current != expected ? LIB_STATUS_INVALID_STATE : control_status; }
 lib_status console_broker_destroy(console_broker *broker)
 { lib_test_assert(broker == &broker_fake); ++broker_destroys;
   return destroy_failure == 1u ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK; }
 lib_status console_broker_cancel_cooked_line(console_broker *broker,
     lib_console *expected, lib_bool *out_completed)
-{ lib_test_assert(broker->current == expected); *out_completed = LIB_FALSE; return LIB_STATUS_OK; }
+{ if (out_completed == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+  if (broker->current != expected) return LIB_STATUS_INVALID_STATE;
+  *out_completed = LIB_FALSE; return control_status; }
 
 static lib_bool receive(void *context, const common_ui_event *event)
 {
     (void)context;
-    lib_test_assert(event->run_generation == 11u || event->run_generation == 12u ||
+    if (event->kind == COMMON_UI_EVENT_MONITOR_LINE || event->kind == COMMON_UI_EVENT_CONSOLE_FAILED)
+        lib_test_assert(event->run_generation == 0u);
+    else lib_test_assert(event->run_generation == 11u || event->run_generation == 12u ||
         event->run_generation == LIB_UINT32_MAX);
+    if (capture_event) captured_event = *event;
     received_run = event->run_generation;
     ++received;
     return LIB_TRUE;
@@ -157,11 +209,63 @@ int main(void)
     options.running_window_title = "running";
     options.paused_window_title = "paused";
     options.graphics_console_status_text = "Window active\n\nHotkeys\n\n";
+    for (creation_failure = 1u; creation_failure <= 4u; ++creation_failure) {
+        lib_u32 allocations_before = allocated_objects, releases_before = released_objects;
+        lib_u32 monitors_before = released_monitors;
+        ui = (common_ui *)&options;
+        lib_test_assert(common_ui_create(&ui, &options) ==
+            (creation_failure == 1u ? LIB_STATUS_NO_MEMORY : LIB_STATUS_IO_ERROR));
+        lib_test_assert(ui == LIB_NULL);
+        lib_test_assert(allocated_objects - allocations_before == (creation_failure == 1u ? 0u : 1u));
+        lib_test_assert(released_objects - releases_before == (creation_failure == 1u ? 0u : 1u));
+        lib_test_assert(released_monitors - monitors_before == (creation_failure >= 3u ? 1u : 0u));
+    }
+    creation_failure = 0u;
     lib_test_assert(common_ui_create(&ui, &options) == LIB_STATUS_OK);
+    lib_test_assert(monitor_sink != LIB_NULL && monitor_context == ui);
+    capture_event = LIB_TRUE;
+    lib_console_event incoming = { .kind = LIB_CONSOLE_EVENT_COOKED_LINE };
+    incoming.value.line.length = 3u;
+    lib_memory_copy(incoming.value.line.text, "abc", 4u);
+    for (lib_u32 rejected = 0u; rejected < 2u; ++rejected) {
+        incoming.kind = rejected ? LIB_CONSOLE_EVENT_REJECTED_LINE : LIB_CONSOLE_EVENT_COOKED_LINE;
+        monitor_sink(monitor_context, &incoming);
+        lib_test_assert(captured_event.kind == COMMON_UI_EVENT_MONITOR_LINE &&
+            captured_event.monitor_line_rejected == rejected && captured_event.value.line.length == 3u &&
+            lib_text_compare(captured_event.value.line.text, "abc") == 0);
+    }
+    lib_u32 before_raw = received;
+    incoming.kind = LIB_CONSOLE_EVENT_RAW_KEY;
+    monitor_sink(monitor_context, &incoming);
+    lib_test_assert(received == before_raw);
+    incoming.kind = LIB_CONSOLE_EVENT_IO_FAILURE;
+    monitor_sink(monitor_context, &incoming);
+    lib_test_assert(captured_event.kind == COMMON_UI_EVENT_CONSOLE_FAILED);
+    capture_event = LIB_FALSE;
+    lib_bool line_completed = LIB_TRUE;
+    lib_test_assert(common_ui_release_window_mouse(LIB_NULL) == LIB_STATUS_OK);
+    lib_test_assert(common_ui_release_window_mouse(ui) == LIB_STATUS_OK);
+    lib_test_assert(common_ui_write_monitor(LIB_NULL, "hello") == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(common_ui_write_monitor(ui, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(common_ui_write_monitor(ui, "hello") == LIB_STATUS_OK && monitor_bytes == 5u);
+    lib_test_assert(common_ui_request_monitor_line(LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(common_ui_cancel_monitor_line(LIB_NULL, &line_completed) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(common_ui_request_monitor_line(ui) == LIB_STATUS_OK);
+    lib_test_assert(common_ui_cancel_monitor_line(ui, &line_completed) == LIB_STATUS_OK && !line_completed);
+    lib_test_assert(common_ui_cancel_monitor_line(ui, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    control_status = LIB_STATUS_IO_ERROR;
+    lib_test_assert(common_ui_write_monitor(ui, "hello") == LIB_STATUS_IO_ERROR);
+    lib_test_assert(common_ui_request_monitor_line(ui) == LIB_STATUS_IO_ERROR);
+    lib_test_assert(common_ui_cancel_monitor_line(ui, &line_completed) == LIB_STATUS_IO_ERROR);
+    control_status = LIB_STATUS_OK;
     common_ui_set_run_generation(ui, 11u);
     lib_test_assert(common_ui_apply_action(ui, COMMON_UI_ACTION_CREATE_WINDOW,
         COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
     lib_test_assert(!window_fake.options.initial_frozen && unfreezes == 0u);
+    control_status = LIB_STATUS_IO_ERROR;
+    lib_test_assert(common_ui_release_window_mouse(ui) == LIB_STATUS_IO_ERROR);
+    control_status = LIB_STATUS_OK;
+    lib_test_assert(common_ui_release_window_mouse(ui) == LIB_STATUS_OK);
     lib_test_assert(common_ui_set_state(ui, COMMON_UI_STATE_PAUSED) == LIB_STATUS_OK);
     lib_test_assert(common_ui_set_state(ui, COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
     lib_test_assert(freezes == 1u && unfreezes == 1u);

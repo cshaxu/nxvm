@@ -70,8 +70,42 @@ static void monitor(void *context, lib_bool current, common_session_command_resu
     lib_test_assert(!result->arm_prompt);
 }
 
+static void publication_value_contract(void)
+{
+    static common_machine_frame source, copy;
+    source.sequence = 5u;
+    source.window.valid = LIB_TRUE;
+    source.window.text.base.text_columns = source.window.text.base.text_rows = 1u;
+    source.window.text.base.font_height = 16u;
+    source.window.text.base.cells[0].glyph_index = 'X';
+    source.characters.primary['X'] = 0x263au;
+    source.characters.secondary['X'] = 0x2665u;
+    lib_test_assert(!common_machine_frame_copy(LIB_NULL, &source));
+    lib_test_assert(!common_machine_frame_copy(&copy, LIB_NULL));
+    lib_test_assert(common_machine_frame_copy(&copy, &source));
+    source.characters.primary['X'] = 'Y';
+    lib_test_assert(copy.sequence == 5u && copy.window.text.base.cells[0].glyph_index == 'X' &&
+        copy.characters.primary['X'] == 0x263au && copy.characters.secondary['X'] == 0x2665u);
+    lib_test_assert(common_machine_frame_copy(&copy, &copy));
+    source.sequence = 6u;
+    source.window.graphics = LIB_TRUE;
+    source.window.image.width = source.window.image.height = source.window.image.stride = 1u;
+    source.window.image.pixels[0] = 1u;
+    source.window.image.palette[1] = 0x123456u;
+    lib_test_assert(common_machine_frame_copy(&copy, &source));
+    lib_test_assert(copy.sequence == 6u && copy.window.graphics && copy.window.image.pixels[0] == 1u &&
+        copy.window.image.palette[1] == 0x123456u && copy.characters.primary['X'] == 0x263au);
+    /* Invalid Window payload cannot overwrite the publication's serial/map. */
+    source.sequence = 7u;
+    source.window.image.width = 0u;
+    lib_test_assert(!common_machine_frame_copy(&copy, &source));
+    lib_test_assert(copy.sequence == 6u && copy.window.image.width == 1u &&
+        copy.characters.primary['X'] == 0x263au);
+}
+
 int main(void)
 {
+    publication_value_contract();
     static common_session session;
     common_session_event event = { 0 };
     common_session *output = &session;

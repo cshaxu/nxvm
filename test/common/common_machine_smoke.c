@@ -93,6 +93,8 @@ int main(void)
     machine_fake_initialize(&fake, &driver);
     fake.debug = execute_token;
     lib_test_assert(common_machine_create(&machine, &driver) == LIB_STATUS_OK);
+    lib_test_assert(common_machine_published_frame_run_generation(LIB_NULL) == 0u);
+    lib_test_assert(common_machine_published_frame_run_generation(machine) == 0u);
     frame.window.valid = LIB_TRUE;
     frame.sequence = 77u;
     lib_test_assert(!common_machine_copy_published_frame(machine, &frame,
@@ -105,6 +107,7 @@ int main(void)
     lib_test_assert(lib_win32_wait_for_single_object(fake.frame, 5000u) == LIB_WIN32_WAIT_OBJECT_0);
     lib_test_assert(lib_win32_interlocked_compare_exchange(&fake.resets, 0, 0) == 1);
     generation = common_machine_run_generation(machine);
+    lib_test_assert(common_machine_published_frame_run_generation(machine) == generation);
     lib_memory_set(&frame.window, 0xa5, sizeof(frame.window));
     lib_test_assert(common_machine_copy_published_frame(machine, &frame, generation));
     lib_test_assert(frame.window.valid == 1u && generation == common_machine_run_generation(machine));

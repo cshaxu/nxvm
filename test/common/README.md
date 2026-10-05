@@ -15,7 +15,9 @@ cmake --build build/common-tests
 ctest --test-dir build/common-tests --output-on-failure
 ```
 
-Coverage: session FIFO/wake, derived presentation/state matrix, input admission
+Coverage: public Session create/bind/destroy, copied UI/runtime/frame ingress;
+UI initialization cleanup and monitor/control status propagation; publication
+value copy and run identity; session FIFO/wake, derived presentation/state matrix, input admission
 and retirement, source-local physical-key identity, machine input FIFO,
 machine/executor/debug byte-transport lease contracts with a fake driver,
 and independent source manifest/DAG negative probes. Common sync
