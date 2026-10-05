@@ -20,8 +20,6 @@ typedef struct vm_profile_pc_at_machine_plan {
 static lib_status vm_profile_machine_plan_pc_at_rom(vm_profile_pc_at_machine_plan *plan,
     const vm_machine_config *config, const vm_machine_assets *assets)
 {
-    lib_size index;
-
     if (plan == LIB_NULL || config == LIB_NULL || assets == LIB_NULL ||
         config->bios_count == 0u || config->bios_count > 2u) {
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -32,20 +30,17 @@ static lib_status vm_profile_machine_plan_pc_at_rom(vm_profile_pc_at_machine_pla
             return LIB_STATUS_INVALID_ARGUMENT;
         }
     } else {
-        if (assets->bios[0u].data == LIB_NULL || assets->bios[1u].data == LIB_NULL ||
-            assets->bios[0u].bytes != VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES ||
-            assets->bios[1u].bytes != VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES) {
+        if (vm_profile_rom_interleave(plan->firmware.image, sizeof(plan->firmware.image),
+            assets->bios[0u].data, assets->bios[0u].bytes,
+            assets->bios[1u].data, assets->bios[1u].bytes) != LIB_STATUS_OK) {
             return LIB_STATUS_INVALID_ARGUMENT;
-        }
-        for (index = 0u; index < VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES; ++index) {
-            plan->firmware.image[index * 2u] = assets->bios[0u].data[index];
-            plan->firmware.image[index * 2u + 1u] = assets->bios[1u].data[index];
         }
     }
     if (assets->video.data != LIB_NULL) {
         if (assets->video.bytes == 0u || assets->video.bytes >
             VM_PROFILE_EXTERNAL_PC_AT_VIDEO_ROM_MAX_BYTES) return LIB_STATUS_INVALID_ARGUMENT;
-        lib_memory_copy(plan->firmware.video, assets->video.data, assets->video.bytes);
+        if (vm_machine_asset_copy(plan->firmware.video, assets->video.bytes,
+            assets->video) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
         plan->firmware.video_bytes = assets->video.bytes;
     } else if (assets->video.bytes != 0u) return LIB_STATUS_INVALID_ARGUMENT;
     plan->firmware.context = (vm_profile_external_pc_at_rom_context) {

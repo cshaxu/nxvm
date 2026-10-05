@@ -23,6 +23,35 @@ static lib_bool refresh_count_matches(core_machine *machine, lib_u16 expected)
         (lib_u16)(low | (high << 8u)) == expected;
 }
 
+static lib_bool short_video_copy_is_bounded(void)
+{
+    static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    lib_u8 video[VM_PROFILE_MODEL40_VIDEO_ROM_BYTES];
+    const vm_machine_config config = {.bios_count = 2u};
+    vm_machine_assets assets = {.bios = {{even, sizeof(even)}, {odd, sizeof(odd)}},
+        .video = {video, 512u}};
+    vm_machine_construction construction = {0};
+    lib_bool valid;
+
+    lib_memory_set(video, 0xcc, sizeof(video));
+    lib_memory_set(video, 0, assets.video.bytes);
+    video[0] = 0x55u;
+    video[1] = 0xaau;
+    video[2] = 1u;
+    if (vm_profile_machine_plan_create_model40(&config, &assets, &construction) != LIB_STATUS_OK)
+        return LIB_FALSE;
+    const vm_profile_model40_external_rom *rom = vm_test_profile_model40_rom(&construction);
+    valid = rom != LIB_NULL && rom->video_byte_count == assets.video.bytes &&
+        lib_memory_compare(rom->video_bytes, video, assets.video.bytes) == 0;
+    /* The real candidate owns the maximum-size zeroed video buffer. Bytes
+     * beyond the declared source must not be read/copied into its tail. */
+    for (lib_size index = assets.video.bytes; valid && index < sizeof(video); ++index)
+        valid = rom->video_bytes[index] == 0u;
+    construction.profile.release(construction.profile.context);
+    return valid;
+}
+
 lib_i32 main(void)
 {
     lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
@@ -111,7 +140,7 @@ lib_i32 main(void)
         &config, &assets, &session) != LIB_STATUS_INVALID_ARGUMENT ||
         session != LIB_NULL) goto done;
     config.memory_bytes = 0u;
-    failed = 0;
+    failed = !short_video_copy_is_bounded();
 done:
     vm_machine_destroy(session);
     if (!failed) printf("M5:T386:S20:MODEL40-BYOB-MANIFEST:OK\nM5:T386:S20:MODEL40-BYOB-VALIDATION:OK\nM5:T386:S20:MODEL40-PUBLIC-COMPOSITION:OK\nM5:T424:S1:MODEL40-BYOB-RESET-LIFECYCLE:OK\nM5:T440:S1:MODEL40-IMMUTABLE-CONFIGURATION:OK\n");

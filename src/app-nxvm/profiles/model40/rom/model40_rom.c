@@ -31,19 +31,6 @@ lib_status vm_profile_model40_external_rom_create(
     return LIB_STATUS_OK;
 }
 
-static void vm_profile_model40_rom_materialize(
-    const vm_profile_model40_external_rom *rom, lib_u8 *window)
-{
-    lib_size index;
-
-    for (index = 0u; index < VM_PROFILE_MODEL40_ROM_WINDOW_BYTES; ++index) {
-        lib_size logical = index % VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES;
-
-        window[index] = (logical & 1u) == 0u ? rom->even_bytes[logical >> 1u] :
-            rom->odd_bytes[logical >> 1u];
-    }
-}
-
 static lib_status vm_profile_model40_firmware_configure(void *opaque,
     core_machine_firmware_context *firmware)
 {
@@ -53,7 +40,9 @@ static lib_status vm_profile_model40_firmware_configure(void *opaque,
     lib_status status;
 
     if (!vm_profile_model40_external_rom_is_valid(rom)) return LIB_STATUS_INVALID_ARGUMENT;
-    vm_profile_model40_rom_materialize(rom, window);
+    status = vm_profile_rom_interleave(window, sizeof(window),
+        rom->even_bytes, rom->chip_byte_count, rom->odd_bytes, rom->chip_byte_count);
+    if (status != LIB_STATUS_OK) return status;
     status = core_machine_firmware_register_immutable_rom(firmware,
         VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START, window, sizeof(window));
     if (status != LIB_STATUS_OK) return status;

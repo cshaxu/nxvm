@@ -43,12 +43,12 @@ static lib_status vm_profile_machine_plan_xt(vm_profile_xt_machine_plan *plan,
         (source.video_bytes != LIB_NULL && plan->firmware.video == LIB_NULL)) {
         return LIB_STATUS_NO_MEMORY;
     }
-    lib_memory_copy(plan->firmware.system, source.system_bytes,
-        VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES);
-    if (source.xebec_present) lib_memory_copy(plan->firmware.xebec, source.xebec_bytes,
-        VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES);
-    if (source.video_bytes != LIB_NULL) lib_memory_copy(plan->firmware.video,
-        source.video_bytes, source.video_byte_count);
+    if (vm_machine_asset_copy(plan->firmware.system, VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES,
+            assets->bios[0u]) != LIB_STATUS_OK ||
+        (source.xebec_present && vm_machine_asset_copy(plan->firmware.xebec,
+            VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES, assets->bios[1u]) != LIB_STATUS_OK) ||
+        (source.video_bytes != LIB_NULL && vm_machine_asset_copy(plan->firmware.video,
+            source.video_byte_count, assets->video) != LIB_STATUS_OK)) return LIB_STATUS_INVALID_ARGUMENT;
     plan->firmware.context = source;
     plan->firmware.context.system_bytes = plan->firmware.system;
     plan->firmware.context.xebec_bytes = source.xebec_present ? plan->firmware.xebec : LIB_NULL;

@@ -1820,3 +1820,107 @@ changes. Both implementation commits are pushed; worktree was clean before
 this acceptance-only record. Documentation and diff checks pass. Close S16
 and remove its packet. ROM/build inventory and complete once-only integration
 acceptance remain S17-S19; T542 is not closed and the App split is not admitted.
+
+## S17 Executor: ROM Preparation Ledger
+
+Baseline 2dbd26280. The complete asset-to-ROM preparation inventory is:
+
+- Default/5170 machine_plan.c: one flat 64 KiB image, or two equal 32 KiB
+  even/odd chips, plus optional validated video up to 32 KiB. The exact copy
+  uses existing Machine asset preparation; chip interleave now uses the one
+  checked board-common operation. Candidate-local buffers/lifetime and App
+  chip/window-size declarations remain. Their single shared provider maps
+  system at F0000 and optional video at C0000; its reset is intentionally noop.
+- Model40 machine_plan.c and rom/model40_rom.c: two 16 KiB chips, one 32 KiB
+  window at F8000 and the existing F0000/FFFF0000/FFFF8000 aliases. Its old
+  modulo loop never repeated bytes because WINDOW_BYTES equals LOGICAL_BYTES;
+  the same equal-chip interleave now produces that exact window. The configure
+  stack buffer is preparation-only; Core copies it into the one immutable ROM
+  store. No new backing, alias owner or lifetime is introduced.
+- Model40 video: header/checksum/declared length is validated up to 16 KiB;
+  C0000 is the original mapping and E0003 the original body-only compatibility
+  alias (the first three header bytes stay excluded). Previously the candidate
+  copied the 16 KiB maximum even for a shorter accepted source, potentially
+  reading past it. It now copies only source.video_byte_count. The new 512-byte
+  valid fixture fills the undeclared source tail with CC and verifies the real
+  candidate's tail remains zero. It would reject the original maximum copy;
+  no pre-fix executable replay is claimed. Mapping sizes and valid bytes remain
+  unchanged. Its system reset validation remains distinct from AT's noop.
+- XT machine_plan.c and rom/xt_5160_268_rom.c: flat 64 KiB system at F0000,
+  optional 8 KiB Xebec at C8000 and optional validated video up to 32 KiB at
+  C0000. There is no interleave to extract. Exact owned system/Xebec/video
+  copies use the existing Machine helper. The real candidate retains its heap
+  buffers and sole release callback, including partial-allocation cleanup;
+  source presence and Xebec hardware eligibility remain XT-owned. Its reset
+  checks optional Xebec/video requirements, unlike either AT provider.
+
+Thus byte interleave and Option ROM validation belong once to board-common;
+exact copied Machine-asset preparation already belongs once to Machine from
+S15 and is reused rather than moved or wrapped again. Board-common does not
+depend on Machine's asset type. Guest addresses, aliases, sizes, ROM presence,
+provider configure/reset policies and heap-versus-inline candidate layout have
+specific App owners. Firmware registration already uses Core's sole bounded
+mapping operations; another generic registration wrapper would not remove a
+distinct owner or policy. The providers are not parallel host BIOS routes.
+
+Similar-issue queries cover every profiles C/H file, all firmware provider,
+ROM register/alias and memory_copy/asset_copy/interleave callers, existing
+Machine preparation, build sources and original ROM/constructor fixtures.
+No other unchecked maximum-length video copy or duplicate chip interleave
+remains in App. Remaining memory_copy sites copy descriptor/route/FDC arrays,
+not ROM bytes. A static owner gate rejects the retired App interleave shapes.
+No Lib/Common/x86 implementation, INI, external master or MyNES is changed.
+
+The independent existing construction-helper test now covers both real chip
+sizes, a one-byte boundary, exact output order, mismatched/zero/null/odd-length/
+capacity/overflow-shaped inputs and an entirely untouched destination after
+failure. All original floppy/Option ROM predicates remain. The Model40 BYOB
+test retains its original mapping/alias/reset/time/hardware assertions and adds
+the bounded short-video candidate test; no test is removed or downgraded.
+
+Actual tracked C/H diff against 2dbd26280, excluding docs/manifests/CMake/EXEs:
+eight paths, +93/-34, net +59. Production is +35/-32, net +3; regression
+extensions are +58/-2, net +56. One minimal shared operation replaces both
+loops; there is no loader framework, compatibility alias or new ROM state.
+
+### S17 Verification And Artifacts
+
+Final source commands and results:
+
+- `cmake --build build/t542-s13/unit-x64 --target run-unit-tests verify-current-specialized-gates --parallel 4`:
+  503/503 units, 200.15 s; all strict/specialized gates pass.
+- Same command in unit-x86: 503/503 units, 82.13 s; gates pass.
+- Standalone build/t542-s15-package builds `ibmpc-test-construction_helpers ibmpc-verify`;
+  `ctest --test-dir build/t542-s15-package -R '^ibmpc.construction_helpers$' --output-on-failure`:
+  1/1, 0.15 s total. No external file or App source is used.
+- Independent root manifest/corpus/negative checks and library.component-dag:
+  15/15, 61.02 s. All six canonical manifests and both ibmpc manifests pass.
+- All eight existing Release trees build `vm-0-5-0542`, independently inspected
+  for correct 8664/x64 or 014C/x86 PE and absence of debug/zdebug/stab sections.
+  Runtime Debug remains. No required artifact is missing or superseded.
+- NXVM documentation governance and Git diff checks pass. Actual source/gate
+  review confirms every original assertion is retained, interleave output is
+  identical for the real chip sizes, and Core mapping/alias/state paths are
+  untouched. The short-video regression targets the candidate copy boundary,
+  not a fabricated BIOS checkpoint. No fresh external integration is claimed.
+
+The final per-width and per-profile s17 logs are under build/t542-s13. All
+owned build/test handles are terminal; the incremental and standalone trees
+remain needed by immediately following S18. No separate raw trace or temporary
+artifact is retained. MyNES and all owner INIs/external masters are unchanged.
+Source identity is accepted S16 2dbd26280 plus Shared b3bbf61e3 and the
+accompanying NXVM S17 delivery.
+
+| Executable | SHA-256 |
+| --- | --- |
+| nxvm_default_0_5_0542_x64.exe | C2DE87502B0E0251C353624DF987BC0195E2E7575AE0A14D367C38BE17EBB042 |
+| nxvm_default_0_5_0542_x86.exe | F6B96FC4CAE49AAF62F719651B21BFA61711F824F43C9C1577C704B5BE5D1190 |
+| nxvm_xt_0_5_0542_x64.exe | 6E6CC5C0ED1DB704F326C1A3FED53C070C310B3577F35A52EBDBBBED86EB23C5 |
+| nxvm_xt_0_5_0542_x86.exe | B66EECEEBDC708F4469CCB5A18D315A5D3E180A3C52D29DA137A3B6BF615B58E |
+| nxvm_at_0_5_0542_x64.exe | 51FBBEB750EB1750A5120A9DF1B564C9CAAA18B012A8BF96614E12CB35C719C2 |
+| nxvm_at_0_5_0542_x86.exe | 0C472FF663E269E42D06F042B7511DC5E905D1C9E3ADEE8795C50EE05E09C646 |
+| nxvm_model40_0_5_0542_x64.exe | B02F0C7A1A3203B82BDBB572441EB8DE458A65F9364CF0ADFA1EC1D7EB2C2B80 |
+| nxvm_model40_0_5_0542_x86.exe | D2C44C679742D10AAED7BA843E0B247E5C69932A4E02783C78B2D2C66D72D643 |
+
+Only the ROM ledger row is submitted for acceptance. S18 build ownership and
+S19 whole-ledger/58-context acceptance remain required; T542 remains open.

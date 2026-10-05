@@ -39,8 +39,8 @@ static lib_status vm_profile_machine_plan_model40(vm_profile_model40_machine_pla
             VM_PROFILE_MODEL40_ROM_CHIP_BYTES, assets->bios[1u]) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (assets->video.data != LIB_NULL) lib_memory_copy(plan->firmware.video,
-        assets->video.data, VM_PROFILE_MODEL40_VIDEO_ROM_BYTES);
+    if (assets->video.data != LIB_NULL && vm_machine_asset_copy(plan->firmware.video,
+        source.video_byte_count, assets->video) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
     plan->firmware.context = source;
     plan->firmware.context.even_bytes = plan->firmware.even;
     plan->firmware.context.odd_bytes = plan->firmware.odd;
