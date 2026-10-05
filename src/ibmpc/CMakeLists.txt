@@ -31,6 +31,7 @@ target_include_directories(ibmpc-machine-conversion PUBLIC ${CMAKE_CURRENT_SOURC
 target_link_libraries(ibmpc-machine-conversion PUBLIC types ibmpc-board-common)
 
 add_library(ibmpc-machine STATIC machine/preparation.c machine/debug.c
+    machine/pc_at_preparation.c
     machine/executor_state.c
     machine/debug_adapter.c
     machine/display.c
@@ -49,6 +50,8 @@ target_link_libraries(ibmpc-machine PUBLIC types base storage
 
 set(ibmpc_board_common_sources
     board-common/floppy.c board-common/rom_validation.c board-common/rom_mapping.c
+    board-common/pc_at_rom.c
+    board-common/pc_at_profile.c
     board-common/profile_contract.c board-common/at_assembly.c
     board-common/media_interface.c board-common/display.c
     board-common/pit_bus.c board-common/pic_bus.c board-common/dma_bus.c
