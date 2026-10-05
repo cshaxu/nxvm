@@ -183,3 +183,78 @@ and an implementation packet before changes. No additional unit/integration
 rerun or EXE rebuild is needed for this documentation-only acceptance.
 The ignored research render/extraction directory is retained for the immediate
 family reconciliation successor; it is not a source/artifact baseline.
+
+## S3 Early-Family Audit Delivery
+
+The host-arithmetic sweep distinguishes safe early one-bit unsigned shift
+loops from three unsafe DX:AX word concatenations. Later-only signed-one
+bit masks have a named S6 receiver; SAR's signed-right-shift portability and
+Group 2 failed-write rollback remain explicit proof contexts. These are
+read-only source dispositions, not runtime failure or Shared repair claims.
+The checked-write investigation confirms the existing whole-CPU restoration
+owner, so pre-write FLAGS calculation alone is not a defect. Ordered split
+writes and selective provider rejection retain a separate proof receiver;
+register rollback is not claimed to undo arbitrary RAM/MMIO side effects.
+The admission sweep distinguishes blocked later forms from unproved early
+undefined-encoding behavior. List 1's 8086-only POP-CS wording differs from
+the both-early implementation; negative UD assertions and lexeme LOCK
+rejection are not independent hardware authority. These source/policy
+contexts remain in the same finite S3 receiver matrix.
+
+S3 consumes F01-F10/F14 for both 8086 and 8088. Its
+[working evidence](../etc/evidence/t544-s3-8086-8088-family-audit.md) retains
+the complete family partition with unresolved source/code/regression contexts.
+Fresh rendered Intel 1981 pages identify an early-IDIV quotient-bound discrepancy:
+the common helper permits -128/-32768 rather than -127/-32767. Existing early
+Group 3 recipes are acknowledged, but do not cover those excluded minima or
+the early type-0 frame. The inspected IDIV/IMUL range literals and word-transfer
+addition agree with the cited table; their model choices remain L2, unchanged.
+The later cross-edition check does not independently resolve the exact minimum;
+this remains a source/code discrepancy, not a demonstrated silicon defect.
+A helper-local generation rule is conditional on that source reconciliation;
+the coherent S2 delivery repair is also proposed, not implemented.
+Source/test diff remains zero. S3 is not closed;
+qualification remains pending. The S3 audit inventory and its thirteen
+receiver batches are delivered with fresh complete units, 506/506 per width:
+x64 61.92 seconds and x86 62.56 seconds. Documentation, link and diff checks
+pass. The three NXVM records are the only change surface; Shared implementation,
+tests, App configuration and all artifacts are untouched. The active packet
+remains in the implementation delivery for coordinator acceptance.
+F02's shared arithmetic/forms and base-clock rows are now reconciled in the
+working evidence, with original encoding conflicts and test limits retained.
+The broader direct decoder-call sweep names thirteen sites across F01/F02/F03/F05,
+including LEA's effective-address helper omitted by the narrower first search;
+runtime failure proof and coherent repair remain pending. Two selected existing
+ALU tests pass per width, not a full S delivery. No Shared code changed.
+F03's normal transfer/address/pointer paths and selected base-clock rows are
+now partially reconciled. Five existing data/segment/unary tests pass once per
+width; source legality, bus/failure ordering and both-early-profile coverage
+remain explicit receivers, not qualification claims.
+F04/F10 source and normal-path inspection distinguishes stack publication,
+PUSH SP generation behavior and direct flag operations from unproved
+wrap/provider effects, unspecified image bits and S2 inhibition/FLAGS defects.
+Four selected existing tests pass each width; their masks/profile coverage
+are recorded rather than treated as full early-family proof. S3 remains open.
+F08 adds normal repeat/index/compare reconciliation and the source-defined
+early multi-prefix interrupt limitation. Whole-start rewinding and unchecked
+below-386 element calls have named delivery/failure proof receivers; the
+existing timing owner already distinguishes setup and continuation. Five
+string tests pass once per width, with absent 8088 contexts recorded. No
+Shared repair or complete family qualification is claimed.
+F09/F14 source/code inspection records the early TEST sampling formula and
+no-FPU memory ESC read omission, without inventing a second wait/completion
+owner. I/O provider completion, HLT wake and XLAT boundary contexts retain
+named proof receivers. Four selected tests pass each width; no Shared code,
+timing grade or artifact changes and no S3 closure are claimed.
+F05 reconciles normal predicates, return addresses and frames while retaining
+S2 FLAGS/inhibition and multi-write failure receivers. A source/code
+zero-displacement counterexample exposes final-PC-based branch timing
+selection; the cross-family selector sweep and one-outcome-owner repair
+proposal are recorded. Five existing transfer tests pass each width, without
+qualifying that uncovered case or closing S3.
+F07 adds normal count/flag and selected L3 formula reconciliation; the actual
+rotate test passes both widths but its early matrix omits 8088/extreme counts.
+An original 16-bit-offset rule exposes XLAT's unmasked promoted BX+AL sum;
+the receiver distinguishes effective-address truncation from memory transfer
+wrap and keeps 386 address-size-four intact. Runtime boundary proof and
+concrete Shared repair remain pending, not an S3 acceptance claim.
