@@ -58,7 +58,34 @@ static lib_i32 option_rom_contract(void)
     return vm_profile_byob_option_rom_is_valid(bytes, sizeof(bytes), sizeof(bytes));
 }
 
+static lib_i32 interleave_contract(void)
+{
+    static lib_u8 even[32768u], odd[32768u], image[65536u];
+    const lib_size sizes[] = {1u, 16384u, 32768u};
+    for (lib_size index = 0u; index < sizeof(even); ++index) {
+        even[index] = (lib_u8)index;
+        odd[index] = (lib_u8)(index ^ 0xa5u);
+    }
+    for (lib_size test = 0u; test < sizeof(sizes) / sizeof(sizes[0]); ++test) {
+        if (vm_profile_rom_interleave(image, sizes[test] * 2u,
+            even, sizes[test], odd, sizes[test]) != LIB_STATUS_OK) return 1;
+        for (lib_size index = 0u; index < sizes[test]; ++index)
+            if (image[index * 2u] != even[index] || image[index * 2u + 1u] != odd[index]) return 1;
+    }
+    lib_memory_set(image, 0xcc, sizeof(image));
+    if (vm_profile_rom_interleave(LIB_NULL, sizeof(image), even, sizeof(even), odd, sizeof(odd)) != LIB_STATUS_INVALID_ARGUMENT ||
+        vm_profile_rom_interleave(image, sizeof(image), LIB_NULL, sizeof(even), odd, sizeof(odd)) != LIB_STATUS_INVALID_ARGUMENT ||
+        vm_profile_rom_interleave(image, sizeof(image), even, sizeof(even), LIB_NULL, sizeof(odd)) != LIB_STATUS_INVALID_ARGUMENT ||
+        vm_profile_rom_interleave(image, sizeof(image), even, 0u, odd, 0u) != LIB_STATUS_INVALID_ARGUMENT ||
+        vm_profile_rom_interleave(image, sizeof(image), even, sizeof(even), odd, sizeof(odd) - 1u) != LIB_STATUS_INVALID_ARGUMENT ||
+        vm_profile_rom_interleave(image, sizeof(image) - 1u, even, sizeof(even), odd, sizeof(odd)) != LIB_STATUS_INVALID_ARGUMENT ||
+        vm_profile_rom_interleave(image, sizeof(image) - 2u, even, sizeof(even), odd, sizeof(odd)) != LIB_STATUS_INVALID_ARGUMENT ||
+        vm_profile_rom_interleave(image, sizeof(image), even, (lib_size)-1, odd, (lib_size)-1) != LIB_STATUS_INVALID_ARGUMENT) return 1;
+    for (lib_size index = 0u; index < sizeof(image); ++index) if (image[index] != 0xccu) return 1;
+    return 0;
+}
+
 lib_i32 main(void)
 {
-    return floppy_contract() || option_rom_contract();
+    return floppy_contract() || option_rom_contract() || interleave_contract();
 }

@@ -1,6 +1,19 @@
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/rom_validation_interface.h"
 
+lib_status vm_profile_rom_interleave(lib_u8 *destination, lib_size destination_bytes,
+    const lib_u8 *even, lib_size even_bytes, const lib_u8 *odd, lib_size odd_bytes)
+{
+    if (destination == LIB_NULL || even == LIB_NULL || odd == LIB_NULL ||
+        even_bytes == 0u || even_bytes != odd_bytes || (destination_bytes & 1u) != 0u ||
+        destination_bytes / 2u != even_bytes) return LIB_STATUS_INVALID_ARGUMENT;
+    for (lib_size index = 0u; index < even_bytes; ++index) {
+        destination[index * 2u] = even[index];
+        destination[index * 2u + 1u] = odd[index];
+    }
+    return LIB_STATUS_OK;
+}
+
 lib_i32 vm_profile_byob_option_rom_is_valid(const lib_u8 *bytes,
     lib_size byte_count, lib_size maximum_bytes)
 {
