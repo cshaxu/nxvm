@@ -4,7 +4,8 @@
 #include "ibmpc/board-common/dma_bus_interface.h"
 #include "../../../../ibmpc/board-common/composition_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-#include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
+#include "app-nxvm/profiles/default_profile/profile_interface.h"
+#include "app-my5170/profiles/profile_interface.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 #include "app-my5160/profiles/xt_5160_268.h"
 

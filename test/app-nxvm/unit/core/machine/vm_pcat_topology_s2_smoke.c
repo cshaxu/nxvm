@@ -8,7 +8,7 @@
 #include "ibmpc/machine/lifecycle.h"
 #include "ibmpc/machine/machine_private.h"
 #include "ibmpc/machine/machine_interface.h"
-#include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
+#include "app-nxvm/profiles/default_profile/profile_interface.h"
 
 #include "support/rom/session_assets.h"
 

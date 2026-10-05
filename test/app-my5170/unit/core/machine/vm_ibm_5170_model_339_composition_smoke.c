@@ -1,7 +1,7 @@
-#include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
-#include "../../../support/profile.h"
+#include "ibmpc/board-common/pc_at_rom_interface.h"
+#include "../../../../app-nxvm/support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
-#include "../../../support/media.h"
+#include "../../../../app-nxvm/support/media.h"
 #include "lib/types/types_interface.h"
 #include "../../../../x86/core/composition_fixture.h"
 #include "../../../../ibmpc/board-common/composition_fixture.h"
@@ -13,9 +13,9 @@
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/machine/machine_private.h"
 #include "ibmpc/machine/machine_interface.h"
-#include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
+#include "app-my5170/profiles/profile_interface.h"
 
-#include "support/rom/session_assets.h"
+#include "../../../../app-nxvm/unit/core/machine/support/rom/session_assets.h"
 
 static lib_status vm_test_create_5170(const vm_machine_config *config,
     vm_machine **out_session)

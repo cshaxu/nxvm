@@ -4,6 +4,7 @@
 
 #include "test/x86/core/composition_fixture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
+#include VM_PRODUCT_BINDING_HEADER
 #include "ibmpc/machine/machine_private.h"
 
 static lib_i32 vm_ini_cmos_seed_matches(const char *directory,
@@ -25,12 +26,12 @@ static lib_i32 vm_ini_cmos_seed_matches(const char *directory,
 lib_i32 main(lib_i32 argc, char **argv)
 {
     if (argc != 3) return 1;
-    if (!lib_text_compare(argv[2], "compaq-deskpro-386-model-40-1200k/NXVM.ini")) {
+    if (!lib_text_compare(vm_app_machine.name, "compaq-deskpro-386-model-40")) {
         if (!vm_ini_cmos_seed_matches(argv[1], argv[2], 0x31u, 0x04u) ||
             !vm_ini_cmos_seed_matches(argv[1], argv[2], 0x33u, 0x80u) ||
             !vm_ini_cmos_seed_matches(argv[1], argv[2], 0x2eu, 0x01u) ||
             !vm_ini_cmos_seed_matches(argv[1], argv[2], 0x2fu, 0x69u)) return 1;
-    } else if (!lib_text_compare(argv[2], "ibm-5170-model-339-1200k/NXVM.ini")) {
+    } else if (!lib_text_compare(vm_app_machine.name, "ibm-5170-model-339")) {
         if (!vm_ini_cmos_seed_matches(argv[1], argv[2], 0x12u, 0x00u) ||
             !vm_ini_cmos_seed_matches(argv[1], argv[2], 0x2fu, 0x43u)) return 1;
     } else return 1;

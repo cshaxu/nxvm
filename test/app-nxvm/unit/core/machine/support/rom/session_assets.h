@@ -1,5 +1,5 @@
 #include "../../../../../support/profile.h"
-#include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
+#include "ibmpc/board-common/pc_at_rom_interface.h"
 #include "ibmpc/machine/machine_interface.h"
 #ifndef TEST_VM_SUPPORT_ROM_SESSION_ASSETS_H
 #define TEST_VM_SUPPORT_ROM_SESSION_ASSETS_H

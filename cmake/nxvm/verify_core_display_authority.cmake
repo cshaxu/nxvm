@@ -50,7 +50,7 @@ foreach(caller IN LISTS display_callers)
     endif()
 endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine.c" machine_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/pc_at_profile.c"
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/lifecycle.c" lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/display.c" display_source)

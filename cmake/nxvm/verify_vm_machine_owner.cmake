@@ -99,7 +99,8 @@ endforeach()
 file(GLOB_RECURSE profile_plans
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.[ch]"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*/machine_plan.c"
-    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/machine_plan.c")
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/machine_plan.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/profiles/machine_plan.c")
 foreach(source IN LISTS profile_plans)
     file(READ "${source}" plan_text)
     if(plan_text MATCHES "union[ \t\r\n]*\\{|VM_PROFILE_MACHINE_PLAN_(DEFAULT|IBM|XT|MODEL40)|config->profile_kind")
@@ -113,7 +114,8 @@ if(NOT factory_text MATCHES "\\.prepare = VM_PROFILE_PLAN_CREATE" OR
 endif()
 file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProductProfile.cmake" profile_build)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-my5160/CMakeLists.txt" xt_build)
-string(APPEND profile_build "\n${xt_build}")
+file(READ "${PROJECT_SOURCE_DIR}/src/app-my5170/CMakeLists.txt" at_build)
+string(APPEND profile_build "\n${xt_build}\n${at_build}")
 foreach(constructor IN ITEMS default 5170 xt model40)
     if(NOT profile_build MATCHES "set\\(NXVM_PROFILE_PLAN_CREATE vm_profile_machine_plan_create_${constructor}\\)")
         message(FATAL_ERROR "Build does not bind the ${constructor} constructor")
@@ -143,7 +145,9 @@ file(GLOB_RECURSE app_profile_sources
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/profiles/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/profiles/*.h")
 foreach(source IN LISTS app_profile_sources)
     file(READ "${source}" source_text)
     if(source_text MATCHES "vm_profile_model40_rom_materialize|image\\[index \\* 2u\\]|even_bytes\\[logical >> 1u\\]")

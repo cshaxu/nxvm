@@ -12,7 +12,7 @@
 #include "../../../../ibmpc/board-common/composition_fixture.h"
 #include "ibmpc/machine/input_interface.h"
 #include "ibmpc/board-common/rom_validation_interface.h"
-#include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
+#include "app-nxvm/profiles/default_profile/profile_interface.h"
 #include "support/rom/session_assets.h"
 
 static lib_i32 verify_recovery(void);

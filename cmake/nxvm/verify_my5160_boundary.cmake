@@ -10,7 +10,8 @@ foreach(source IN LISTS my5160_sources)
     endif()
 endforeach()
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt" AND
-        NOT NXVM_PRODUCT_ARTIFACT_ROOT STREQUAL "${CMAKE_SOURCE_DIR}/assets/my5160")
+        (NOT NXVM_PRODUCT_ARTIFACT_ROOT STREQUAL "${CMAKE_SOURCE_DIR}/assets/my5160" OR
+         NOT NXVM_PRODUCT_ARTIFACT_DIRECTORY STREQUAL NXVM_PRODUCT_ARTIFACT_ROOT))
     message(FATAL_ERROR "My5160 uses another App artifact root")
 endif()
 message(STATUS "My5160 independent App boundary: OK")

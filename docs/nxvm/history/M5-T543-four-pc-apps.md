@@ -182,3 +182,176 @@ by one directory level. S2 includes build/test receiving-path verification;
 prior S1 path and INI hashes above remain historical evidence, not the new
 deployment contract. My5170, MyDeskPro386 and NXVM use the same flat layout
 at their respective sequential cutovers.
+
+S2 packaging receiver verified: the owner's My5160 directory move is kept;
+the build now receives one explicit artifact directory, and both original INI
+integration helpers load NXVM.ini from that same directory instead of deriving
+a child directory from a test-case name. The My5160 boundary checks the flat
+root. The INI boundary still requires exactly four canonical configurations,
+and EXE deployment still cannot write an INI. Unmigrated products retain their
+existing computed artifact directories; their source cutovers remain separate.
+
+Both 0543 XT product targets rebuild and deploy directly to assets/my5160,
+without recreating a profile child. The original XT integration case passes
+once per width at the flat receiving path: x64 19.66 seconds, x86 23.91 seconds.
+The external master remains DE271368874209C07A2FC25C81C17529D4BDD7718B2731B86C49A2DA923A256E,
+368640 bytes; only the relative path loses one ../ level. Re-linked artifact
+hashes are x64 5B5A4FE62563D2BF5DACF6AD328A0770216AC59B3BB31FDBA5B11083A452EF2A
+and x86 8F47004386F6526C3FDC03D97B24120333C68A12D64045E15D5AD586EE1E5E93.
+These packaging checks are in-progress S2 evidence, not acceptance of the
+unimplemented My5170 source cutover or a substitute for its complete units.
+
+The first S2 source move puts the shared immutable PC/AT ROM provider in
+ibmpc/board-common/pc_at_rom.c and pc_at_rom_interface.h. Both existing consumers
+and repository-only fixtures follow the new header; the App source list drops
+the old provider instead of compiling it again. The shared Board's production
+and observable variants use the same source list. Region addresses, bytes,
+validation and reset behavior are unchanged; only include/guard ownership and
+LF normalization change. The existing default-ROM test remains App-owned
+because it verifies default machine construction, not an independent provider
+fixture. Static immutable-ROM gates follow the shared implementation and still
+reject runtime asset-file loading. ibmpc manifest and component boundaries pass.
+This move is work in progress; receiving product rebuilds, complete units and
+the remaining descriptor/construction split are still required before S2 push.
+After that move, x64 strict compilation of the shared provider, XT product and
+both default/5170 construction tests succeeds; the two original ROM mapping
+and IBM AT composition unit cases pass. The x64 re-link is now in-progress
+source output, not the earlier packaging-only hash above. Complete dual-width
+and receiving-product evidence will replace this partial proof at S2 exit.
+
+S2 implementation continues: My5170 now owns its immutable descriptor,
+memory/media constraints, preparation callback, fixed binding and process entry.
+The shared AT descriptor/materialization lives in board-common/pc_at_profile;
+the single allocated candidate, ROM preparation, controller projection and
+finish/rollback live in machine/pc_at_preparation. AUX presence is an explicit
+copied board input; the immutable App validator retains model constraints.
+There are no mixed default/5170 build guards or compatibility headers.
+
+The original 5170 composition, CGA topology and firmware/FDC unit sources move
+to test/app-my5170 with their assertions intact. Cross-profile comparisons and
+the one family fixture remain test-only until S4 reconciles the final shared
+test receiver. Original AT console/CMOS/boot registration now belongs to that
+App's integration/register.cmake. The INI moves to assets/my5170/NXVM.ini;
+only one ../ is removed. Its SHA-256 is
+F4D85EE2E7BFF403F8C19588DA8416CC96FE5AC72FE7A1764817EDDDC9B76F19;
+the unchanged 1.2MB external media hash is
+0F51D92B482253FC468A2B470FFAB82DB43898D1C8B44E504808B7A3EF3D4BDE.
+
+Both selected AT 0543 product targets compile with strict warnings and deploy
+at the flat root, with PE width checks passing. The x64 three migrated unit
+cases pass 3/3 (0.96 seconds). Twelve affected owner/clock/ROM/INI static gates,
+ibmpc manifest and component boundaries, and documentation governance pass.
+One attempted build named an absent vm-default-composition-smoke target;
+that command is not a successful aggregate proof. Complete run-unit-tests
+is now being rebuilt instead. None of these partial checks accepts S2:
+full units on both widths, original integrations, receiving product rebuilds,
+source accounting and actual-diff review are still outstanding. Old AT 0542
+EXEs remain until their verified replacement is accepted. No P is formed yet.
+
+The x86 migrated trio also passes 3/3 (2.82 seconds). Its 0543 product hash is
+C66A2739964B82C86CDBF4F94975ABF720B3BD5EA301EF9CDF5185857DB85BBB;
+x64 is 343D0BDC5A3723FD4CD9CAB180CADCC8D256C6832509941B7B8B8A33D86CA2C5.
+These identify in-progress outputs, not an accepted delivery. Source review
+compares the original mixed translation unit with all three receivers: fourteen
+function bodies are unchanged apart from removal of static where shared;
+the remaining changes replace the model-based AUX decision by its copied input,
+keep the existing single contract id 1, rename the unchanged memory option bit,
+and move fixed validator branches to their App owners. Memory eligibility,
+clock values, ROM bytes/mappings and controller algorithms are not upgraded.
+The x64 full-unit aggregate passes 506/506 in 258.58 seconds. The x86
+per-target dependency build was deliberately stopped after verifying its
+owned process tree: repeated Make dependency traversal was unnecessarily
+expensive. One default build reuses its objects and visits the graph once;
+this changes neither the registered test set nor any assertion. Native test
+execution remains serialized across widths. The x86 full suite has not yet
+run; original AT integrations, specialized gates and receiving-product builds
+are still in progress, so S2 remains unaccepted and no P is formed.
+
+The x64 specialized aggregate passes. Original AT boot reaches the installer
+in 38.57 seconds and its Console lifecycle passes in 0.98 seconds. The CMOS
+integration initially fails before observing any register: its expected-row
+selection compares the old profile-directory filename against NXVM.ini at
+the new flat root. The family fixture now selects its original expected row
+from the already compiled immutable machine binding, not an artifact path.
+Both Model40 and AT predicates and all CMOS assertions are retained. A sweep
+of integration source finds these two comparisons as the complete instance
+set; no firmware, seed or production behavior is changed. The focused rerun
+passes in 0.14 seconds after strict recompilation. The original failed attempt
+remains recorded above; it is not counted as a passing result. All three
+original AT integration predicates now have direct x64 passing evidence.
+
+Both specialized aggregates pass; the additional 19 manifest/corpus/DAG,
+layout and controlled-negative cases pass on x64 (177.26 seconds under build
+load). Shared PC manifest/corpus and documentation governance also pass.
+The AT link commands use -O3 -DNDEBUG and --strip-debug on both widths;
+objdump finds no .debug sections in either deployed 0543 AT EXE. The x64
+receiving product job completes XT/default/Model40 builds with PE checks;
+their final boot observations and the x86 receiving job remain pending.
+
+Current source-size review uses git diff HEAD --numstat for src/test C/H
+paths with rename detection, plus every untracked C/H receiver's line count;
+documentation, manifests, build scripts, binaries and generated files are
+excluded. It counts 1031 added, 949 removed, net +82 lines. The additional
+surface is the independent App entry/binding and public owner contracts;
+there is no second parser, executor, ROM provider or AT candidate lifetime.
+Including CMake/build verifier changes gives +1166/-1022/net +144. These
+numbers are pre-commit inventory, to be reconciled with the final staged diff.
+
+The x86 complete unit aggregate passes 506/506 in 217.91 seconds; both widths
+now retain the full original suite. The rebased CMOS seed integration also
+passes on x86 (0.07 seconds). The remaining AT boot/Console checks and receiving
+machine checkpoints are run once per changed context, not in repeated rounds.
+
+Both receiving-product jobs complete: XT at 0543 and default/Model40 at their
+retained 0542 identities, on x64 and x86, with architecture checks passing.
+The original x86 AT Console and boot checks pass (0.37 and 43.35 seconds).
+Final-source x64 XT/default boot checks pass in 19.95/3.77 seconds. Model40
+and x86 receiving boot checks remain pending. All configurations still use
+the same external masters; unaccepted builds do not establish a new baseline.
+
+The remaining x64 Model40 boot and CMOS checks pass (65.33 and 0.17 seconds).
+The x86 19 manifest/corpus/DAG/layout/negative cases pass in 86.55 seconds.
+Final-source x86 XT/default boot checks pass in 23.53/2.74 seconds; Model40's
+last x86 boot/CMOS checks are running. Documentation and diff checks pass after
+the source-layout/provenance receiver correction. No six-corpus or MyNES
+source, test, configuration or artifact changes appear in Git status.
+
+Final receiving verification passes: Model40 x86 boot reaches its installer
+in 63.21 seconds, and the unchanged CMOS predicates pass in 0.07 seconds.
+S2's full original unit set passes 506/506 on each width; original AT
+Console/CMOS/boot predicates pass on each width; every affected PC receiving
+product is built with a passing original boot checkpoint on both widths.
+Both specialized aggregates and all 19 additional corpus/layout checks pass
+per width. No new timing grade, controller behavior or external master is
+claimed. All eight PC EXEs and the two unchanged MyNES EXEs are retained;
+My5170's superseded 0542 pair is removed, recoverable from Git history.
+
+Executor actual-change review covers the added/removed/relocated C/H owners,
+fixed bindings, selected graph, build registration, original test predicates,
+INI rebase, manifest and documentation changes. The App definitions contain
+only model values and constraints. Shared ROM/candidate projection retains
+the sole resource owner and cleanup path. No peer-App production include or
+Lib/Common/x86/MyNES diff remains. Family test support and cross-profile
+assertions are live test-only receivers explicitly assigned to S4, not a
+second production route. S2 is ready for separate Shared and NXVM P delivery;
+coordinator acceptance follows the pushed actual diff, not this report alone.
+
+Shared implementation P1 is pushed at e9bb0dc55. Final deployed SHA-256:
+
+| App / width | SHA-256 |
+| --- | --- |
+| My5160 x64 0543 | CE4B0E79B07DA5C44AB5E347BEC879BEEBCA2FCD972F89C8E343AA473354FDCA |
+| My5160 x86 0543 | AFD22833FD248022313566E0709DFE30D81433B7DFBEDCE57A3154DE50A57C8E |
+| My5170 x64 0543 | 343D0BDC5A3723FD4CD9CAB180CADCC8D256C6832509941B7B8B8A33D86CA2C5 |
+| My5170 x86 0543 | C66A2739964B82C86CDBF4F94975ABF720B3BD5EA301EF9CDF5185857DB85BBB |
+| NXVM default x64 0542 | 67B47DB1444A1126677961FECA359EFCAC9743428E19F4B5EA9411BC4444E0B4 |
+| NXVM default x86 0542 | 41445E21DCB9D9FDF9F6B32C733BF5D658B17A85DB5070C214BBC7F39CB98145 |
+| DeskPro386 x64 0542 | 4F68B2ADB6FDEEE59FAE22284AF0FA716C46B5D6853D9C99B96A200D46E0F089 |
+| DeskPro386 x86 0542 | 03756414CEDC6DE800C59FCE6728A85ACEEC2EA87AF46F7AB572B7D1BBEDF77E |
+
+My5160 and My5170 deploy directly in assets/my5160 and assets/my5170.
+Their INI hashes are EC2AFB0E89421ED4BDA95D8B1797864D19EC360A3AD57237D2256DCE78950338
+and F4D85EE2E7BFF403F8C19588DA8416CC96FE5AC72FE7A1764817EDDDC9B76F19,
+respectively. The INI diff only removes one relative path level; original
+media bytes, access modes and other settings are preserved. These hashes
+supersede intermediate S2 output hashes, not the historical S1 evidence.

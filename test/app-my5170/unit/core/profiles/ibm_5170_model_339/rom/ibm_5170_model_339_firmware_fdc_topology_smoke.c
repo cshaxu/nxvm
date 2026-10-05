@@ -6,8 +6,8 @@
 #include "../../../../../../ibmpc/board-common/composition_fixture.h"
 #include "ibmpc/machine/machine_private.h"
 #include "ibmpc/machine/machine_interface.h"
-#include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
-#include "../../../machine/support/rom/session_assets.h"
+#include "app-my5170/profiles/profile_interface.h"
+#include "../../../../../../app-nxvm/unit/core/machine/support/rom/session_assets.h"
 
 int main(void)
 {

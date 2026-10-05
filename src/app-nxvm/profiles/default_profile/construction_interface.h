@@ -5,7 +5,5 @@
 
 lib_status vm_profile_machine_plan_create_default(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine_construction *out_construction);
-lib_status vm_profile_machine_plan_create_5170(const vm_machine_config *config,
-    const vm_machine_assets *assets, vm_machine_construction *out_construction);
 
 #endif

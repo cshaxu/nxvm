@@ -1,4 +1,4 @@
-#include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
+#include "ibmpc/board-common/pc_at_rom_interface.h"
 #include "../../../../../support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "lib/types/types_interface.h"

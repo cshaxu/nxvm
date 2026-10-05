@@ -2,7 +2,7 @@
 #include "ibmpc/board-common/machine_board_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
+#include "app-nxvm/profiles/default_profile/profile_interface.h"
 
 lib_i32 main(void)
 {

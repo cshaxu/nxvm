@@ -13,7 +13,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/lifecycle.c"
     lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile_private.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/pc_at_profile_interface.h"
     profile_header)
 
 foreach(required IN ITEMS "dma_clock" "pit_clock" "vadp_clock" "kbc_clock"

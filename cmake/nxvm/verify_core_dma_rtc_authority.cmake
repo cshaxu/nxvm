@@ -9,7 +9,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_advance.c" board_a
 set(core_source "${core_plan_source}${core_board_source}${core_scheduler_source}${board_advance_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board_interface.h" core_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine.c" machine_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/pc_at_profile.c"
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/at_assembly.c" assembly_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/lifecycle.c"

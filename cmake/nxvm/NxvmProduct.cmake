@@ -103,7 +103,7 @@ add_executable(vm-pcat-composition-s4-smoke
     test/app-nxvm/unit/core/machine/vm_pcat_composition_s4_smoke.c)
 target_link_libraries(vm-pcat-composition-s4-smoke PRIVATE vm-profile-tests)
 add_executable(vm-ibm-5170-model-339-composition-smoke
-    test/app-nxvm/unit/core/machine/vm_ibm_5170_model_339_composition_smoke.c)
+    test/app-my5170/unit/core/machine/vm_ibm_5170_model_339_composition_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-private-composition-s7-smoke
     test/app-nxvm/unit/core/machine/vm_model40_private_composition_s7_smoke.c)
@@ -192,13 +192,13 @@ target_sources(vm-model-339-clock-contract-smoke PRIVATE
     test/ibmpc/board-at/state_fixture.c)
 target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-profile-tests)
 add_executable(vm-ibm-5170-model-339-cga-topology-smoke
-    test/app-nxvm/unit/core/machine/vm_ibm_5170_model_339_cga_topology_smoke.c)
+    test/app-my5170/unit/core/machine/vm_ibm_5170_model_339_cga_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-profile-tests)
 target_sources(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE
     test/x86/core/video_topology_fixture.c
     test/ibmpc/board-common/video_topology_fixture.c)
 add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
-    test/app-nxvm/unit/core/profiles/ibm_5170_model_339/rom/ibm_5170_model_339_firmware_fdc_topology_smoke.c)
+    test/app-my5170/unit/core/profiles/ibm_5170_model_339/rom/ibm_5170_model_339_firmware_fdc_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-profile-tests)
 add_executable(vm-hdc-port-smoke test/app-nxvm/unit/core/machine/vm_hdc_port_smoke.c)
 target_link_libraries(vm-hdc-port-smoke PRIVATE vm-profile-tests)
@@ -784,8 +784,7 @@ endif()
 
 set(NXVM_PC_AT_COMPOSITION_SOURCES
     src/app-nxvm/profiles/default_profile/machine_plan.c
-    src/app-nxvm/profiles/default_profile/pc_at_profile.c
-    src/app-nxvm/profiles/default_profile/external_pc_at_rom.c)
+    src/app-nxvm/profiles/default_profile/pc_at_profile.c)
 set(NXVM_MODEL40_COMPOSITION_SOURCES
     src/app-nxvm/profiles/model40/machine_plan.c
     src/app-nxvm/profiles/model40/model40.c
@@ -813,6 +812,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 target_link_libraries(vm-profile-tests PUBLIC
     my5160-profile
+    my5170-profile
     core-machine
     storage
     ibmpc-machine)
@@ -824,16 +824,14 @@ else()
 endif()
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
     add_library(vm-profile-selected ALIAS my5160-profile)
+elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "at")
+    add_library(vm-profile-selected ALIAS my5170-profile)
 else()
 add_library(vm-profile-selected STATIC ${nxvm_selected_sources})
 target_include_directories(vm-profile-selected PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(vm-profile-selected PUBLIC ibmpc-machine ibmpc-board-common x86-core)
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40")
     target_link_libraries(vm-profile-selected PUBLIC core-machine)
-elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "default")
-    target_compile_definitions(vm-profile-selected PRIVATE VM_PROFILE_BUILD_DEFAULT=1)
-elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "at")
-    target_compile_definitions(vm-profile-selected PRIVATE VM_PROFILE_BUILD_5170=1)
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-profile-selected PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1882,9 +1880,8 @@ function(project_add_test target route)
 endfunction()
 
 function(project_add_t515_ini_boot_case session_file)
-    string(REGEX REPLACE "\\.ini$" "/NXVM.ini"
-        project_t515_session_path "${session_file}")
-    if(NOT EXISTS "${NXVM_PRODUCT_ARTIFACT_ROOT}/${project_t515_session_path}")
+    set(project_t515_session_path "NXVM.ini")
+    if(NOT EXISTS "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}/${project_t515_session_path}")
         message(FATAL_ERROR "T515 INI boot session is missing: ${session_file}")
     endif()
     set(project_t515_test_suffix "vm-profile-floppy-boot-matrix.${session_file}")
@@ -1908,7 +1905,7 @@ function(project_add_t515_ini_boot_case session_file)
     file(MAKE_DIRECTORY "${project_t515_workspace}")
     add_test(NAME "${project_t515_test}"
         COMMAND "$<TARGET_FILE:vm-profile-floppy-boot-matrix>"
-            "${NXVM_PRODUCT_ARTIFACT_ROOT}" "${project_t515_session_path}")
+            "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}" "${project_t515_session_path}")
     set_tests_properties("${project_t515_test}" PROPERTIES
         LABELS integration
         SKIP_RETURN_CODE 77
@@ -1921,15 +1918,14 @@ function(project_add_t515_ini_integration_test target session_file)
     set(project_t515_test "integration.${target}")
     set(project_t515_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/${project_t515_test}")
 
-    string(REGEX REPLACE "\\.ini$" "/NXVM.ini"
-        project_t515_session_path "${session_file}")
+    set(project_t515_session_path "NXVM.ini")
     if(NOT EXISTS
-       "${NXVM_PRODUCT_ARTIFACT_ROOT}/${project_t515_session_path}")
+       "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}/${project_t515_session_path}")
         message(FATAL_ERROR
             "T515 INI integration session is missing: ${session_file}")
     endif()
     file(MAKE_DIRECTORY "${project_t515_workspace}")
-    project_add_test(${target} integration "${NXVM_PRODUCT_ARTIFACT_ROOT}"
+    project_add_test(${target} integration "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}"
         "${project_t515_session_path}" ${ARGN})
     set_tests_properties("${project_t515_test}" PROPERTIES
         SKIP_RETURN_CODE 77
@@ -2071,7 +2067,7 @@ endif()
 
 
 # CMake builds the current source artifact only.  Each current product is
-# deployed once beneath assets/nxvm; historical artifacts are never
+# deployed once beneath its fixed App root; historical artifacts are never
 # regenerated from newer source under their former task/version names.
 function(add_current_vm_artifact target version)
     string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9][0-9][0-9][0-9])$"
@@ -2080,14 +2076,14 @@ function(add_current_vm_artifact target version)
     if(task_artifact_filename STREQUAL version)
         message(FATAL_ERROR "Invalid NXVM current artifact version: ${version}")
     endif()
-    set(directory "${NXVM_PRODUCT_ARTIFACT_ROOT}/${NXVM_PRODUCT_PROFILE}")
+    set(directory "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}")
     set(PROJECT_CURRENT_VM_RUNTIME_PATH "${directory}/${task_artifact_filename}" PARENT_SCOPE)
     ibmpc_add_product(${target} "${NXVM_PRODUCT_ENTRY}"
         "${version}" "${task_artifact_filename}" "${PROJECT_ARTIFACT_ARCHITECTURE}"
         "${directory}" vm-app nxvm-product-firmware)
 endfunction()
 
-if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
+if(NXVM_PRODUCT_MACHINE_KEY MATCHES "^(xt|at)$")
     set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0543)
     add_current_vm_artifact(vm-0-5-0543 "0.5.0543")
 else()
@@ -2111,14 +2107,12 @@ if(NXVM_PRODUCT_PROFILE STREQUAL "compaq-deskpro-386-model-40-1200k")
     project_add_t533_console_integration_test(vm-model40-console-s20-smoke)
     project_add_t515_ini_integration_test(vm-ini-cmos-seed-smoke
         compaq-deskpro-386-model-40-1200k.ini)
-elseif(NXVM_PRODUCT_PROFILE STREQUAL "ibm-5170-model-339-1200k")
-    project_add_t533_console_integration_test(vm-app-console-lifecycle-smoke)
-    project_add_t515_ini_integration_test(vm-ini-cmos-seed-smoke
-        ibm-5170-model-339-1200k.ini)
 endif()
 
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
     include("${CMAKE_SOURCE_DIR}/test/app-my5160/integration/register.cmake")
+elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "at")
+    include("${CMAKE_SOURCE_DIR}/test/app-my5170/integration/register.cmake")
 else()
 foreach(project_t515_session IN ITEMS ${NXVM_PRODUCT_PROFILE}.ini)
     project_add_t515_ini_boot_case(${project_t515_session})

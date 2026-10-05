@@ -5,6 +5,7 @@
 #include "selection.h"
 #include "app-nxvm/profiles/default_profile/construction_interface.h"
 #include "app-my5160/profiles/construction_interface.h"
+#include "app-my5170/profiles/construction_interface.h"
 #include "app-nxvm/profiles/model40/construction_interface.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 #include "ibmpc/machine/machine_private.h"
