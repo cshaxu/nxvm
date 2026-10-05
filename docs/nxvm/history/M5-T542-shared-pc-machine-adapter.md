@@ -1496,3 +1496,18 @@ All owned S13 verification processes have ended. The ignored build/t542-s13
 trees are retained for immediately next S14 incremental verification; no
 unrelated tree or sibling process is removed. They must be cleaned when that
 recorded reuse ends. This acceptance does not close T542 or admit the App split.
+
+### S13 Coordinator Acceptance
+
+Accept Shared 05ca27ff2 and NXVM c7a296138 after actual change review against
+the S13 packet and original four-machine extraction request. Both deliveries
+are single-target; all moved declarations have one owner and live callers.
+Fixed constructor selection does not introduce runtime dispatch. Test selector
+changes preserve every original route and assertion; manifests and eight
+current artifact hashes agree. The completed units/package/specialized checks
+prove this contracts row, not the unfinished AT assembly or whole-task runtime
+coverage. Current, proposal, Queue and successor still require S14-S19.
+
+Documentation governance and diff checks pass. No excluded component, INI,
+external master or MyNES artifact changed. Close S13 and remove its active
+packet; retain T542 open with S14 next planned, not already admitted.
