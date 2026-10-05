@@ -1,9 +1,9 @@
 #include "app-mydeskpro386/profiles/observation_interface.h"
-#include "../../../ibmpc/machine/support/profile.h"
+#include "../../../app-nxvm/unit/support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "../../support/model40.h"
-#include "../../../ibmpc/board-common/controller_fixture.h"
-#include "../../../ibmpc/board-common/composition_fixture.h"
+#include "../../../app-nxvm/unit/support/ibmpc/board-common/controller_fixture.h"
+#include "../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -114,7 +114,7 @@ lib_i32 main(void)
     image[511u] = 0xaau;
     image[(15u - 1u) * 512u] = 0xa5u;
     if (vm_model40_fixture_create_bytes(even, odd, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || vm_machine_fdd_replace_bytes(session->fdd, image,
+        session == LIB_NULL || vm_machine_fdd_replace_bytes(session->floppy[0u], image,
             sizeof(image)) != LIB_FALSE) goto done;
     {
         board = session->board;
@@ -191,7 +191,7 @@ lib_i32 main(void)
             vm_test_model40_observation(session).fdc_terminal.successful ||
             vm_test_model40_observation(session).fdc_terminal.result[0] != result[0] ||
             vm_test_model40_observation(session).fdc_terminal.result[1] != result[1] ||
-            vm_machine_fdd_remove_for(session->fdd) != LIB_FALSE) goto done;
+            vm_machine_fdd_remove_for(session->floppy[0u]) != LIB_FALSE) goto done;
         test_board_fdc_refresh(board);
         if (!model40_fdc_command(board, machine, read_last, sizeof(read_last)) ||
             core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
@@ -234,7 +234,7 @@ lib_i32 main(void)
             {{0x4au, 0u}, 2u},
             {{0x4du, 0u, 2u, 15u, 0x54u, 0xf6u}, 6u}
         };
-        if (vm_machine_fdd_replace_bytes(session->fdd, image, sizeof(image))) goto done;
+        if (vm_machine_fdd_replace_bytes(session->floppy[0u], image, sizeof(image))) goto done;
         for (lib_u8 rate = 1u; rate <= 3u; ++rate) {
             for (lib_size command = 0u; command < sizeof(commands) / sizeof(commands[0]); ++command) {
                 test_board_fdc_reset(board);

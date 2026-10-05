@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "test/x86/core/composition_fixture.h"
+#include "test/ibmpc/core/composition_fixture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include VM_PRODUCT_BINDING_HEADER
 #include "ibmpc/machine/machine_private.h"

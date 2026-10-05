@@ -1,8 +1,8 @@
-#include "../../../ibmpc/machine/support/guest_input.h"
-#include "../../../ibmpc/machine/support/profile.h"
+#include "../../unit/support/ibmpc/machine/support/guest_input.h"
+#include "../../unit/support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "../../../app-mydeskpro386/support/model40.h"
-#include "../../../ibmpc/board-common/boot_fixture.h"
+#include "../../unit/support/ibmpc/board-common/boot_fixture.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -14,8 +14,8 @@
 #endif
 
 #include "ibmpc/board-common/machine_board_interface.h"
-#include "../../../x86/core/boot_fixture.h"
-#include "../../../x86/core/composition_fixture.h"
+#include "../../unit/support/core/boot_fixture.h"
+#include "../../../ibmpc/core/composition_fixture.h"
 #include "x86/core/retirement_observation_interface.h"
 #include "x86/core/trace_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
@@ -1806,7 +1806,7 @@ int main(lib_i32 argc, char **argv)
             goto done;
         }
     }
-    vm_machine_executor_state_start(session->control.state);
+    vm_machine_executor_state_start(&session->control.state);
     started = GetTickCount64();
     progress = started;
     next_display_capture = started;

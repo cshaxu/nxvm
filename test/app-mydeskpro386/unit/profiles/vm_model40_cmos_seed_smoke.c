@@ -1,11 +1,11 @@
-#include "../../../ibmpc/machine/support/profile.h"
+#include "../../../app-nxvm/unit/support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
-#include "../../../x86/core/composition_fixture.h"
+#include "../../../ibmpc/core/composition_fixture.h"
 #include "x86/chips/rtc146818/rtc146818_interface.h"
 #include "ibmpc/machine/lifecycle.h"
 #include "ibmpc/machine/machine_private.h"

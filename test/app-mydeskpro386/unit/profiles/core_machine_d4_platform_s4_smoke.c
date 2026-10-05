@@ -2,8 +2,8 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "../../../x86/core/composition_fixture.h"
-#include "../../../x86/core/time_fixture.h"
+#include "../../../ibmpc/core/composition_fixture.h"
+#include "../../../ibmpc/core/time_fixture.h"
 #include "x86/core/debug_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 

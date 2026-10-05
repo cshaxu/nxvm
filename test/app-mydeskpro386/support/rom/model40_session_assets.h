@@ -1,4 +1,4 @@
-#include "../../../ibmpc/machine/support/profile.h"
+#include "../../../app-nxvm/unit/support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
 #ifndef TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 #define TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H

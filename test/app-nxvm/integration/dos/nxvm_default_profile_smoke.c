@@ -24,8 +24,8 @@ static lib_i32 verify(const char *directory, const char *file_name)
         return 1;
     }
     vm_machine_reset(session);
-    if (vm_machine_fdd_remove_for(session->fdd) ||
-        vm_machine_hdd_remove(session->hdd) ||
+    if (vm_machine_fdd_remove_for(session->floppy[0u]) ||
+        vm_machine_hdd_remove(session->fixed_disk[0u]) ||
         vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         integration_ini_session_close(&ini_session);

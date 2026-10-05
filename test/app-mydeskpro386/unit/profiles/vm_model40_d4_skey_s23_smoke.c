@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "../../../x86/core/composition_fixture.h"
+#include "../../../ibmpc/core/composition_fixture.h"
 #include "x86/core/memory_interface.h"
 #include "x86/core/machine_interface.h"
 #include "ibmpc/machine/machine_private.h"

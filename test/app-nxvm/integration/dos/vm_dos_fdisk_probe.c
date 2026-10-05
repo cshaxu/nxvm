@@ -5,7 +5,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "test/ibmpc/machine/support/vm_presentation_capture.h"
+#include "test/app-nxvm/unit/support/ibmpc/machine/support/vm_presentation_capture.h"
 #include "ibmpc/machine/control.h"
 #include "ibmpc/machine/lifecycle.h"
 #include "ibmpc/machine/machine_private.h"

@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "ibmpc/board-common/vadp_interface.h"
-#include "../../../x86/core/bus_fixture.h"
+#include "../../../ibmpc/core/bus_fixture.h"
 #include "ibmpc/machine/lifecycle.h"
 #include "ibmpc/machine/machine_private.h"
 #include "ibmpc/machine/machine_interface.h"

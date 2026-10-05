@@ -1,6 +1,6 @@
 #include "ibmpc/machine/machine_interface.h"
-#include "../../../ibmpc/machine/support/media.h"
-#include "../../../ibmpc/board-common/controller_fixture.h"
+#include "../../unit/support/ibmpc/machine/support/media.h"
+#include "../../unit/support/ibmpc/board-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -76,7 +76,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
             &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
-    if (!vm_test_hdd_info(session->hdd).present) goto fail;
+    if (!vm_test_hdd_info(session->fixed_disk[0u]).present) goto fail;
     /* The canonical product INI intentionally supplies its normal floppy.
      * This probe's distinct subject is HDD firmware handoff, so remove that
      * declared removable medium through the production owner and reset before

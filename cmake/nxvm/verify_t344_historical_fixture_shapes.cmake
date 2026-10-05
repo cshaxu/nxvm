@@ -44,13 +44,13 @@ set(project_t344_retained_sources
     "test/ibmpc/board-common/core_machine_fdc_topology_port_smoke.c"
     "test/ibmpc/board-common/core_machine_hdc_smoke.c"
     "test/ibmpc/board-common/core_machine_imul_immediate_s56_smoke.c"
-    "test/x86/core/machine_instruction_timing_ledger_smoke.c"
+    "test/ibmpc/core/machine_instruction_timing_ledger_smoke.c"
     "test/x86/core/machine_8086_instruction_timing_ledger_smoke.c"
     "test/x86/core/machine_80186_instruction_timing_ledger_smoke.c"
     "test/x86/core/machine_80286_instruction_timing_ledger_smoke.c"
     "test/x86/core/machine_80386_protected_io_timing_smoke.c"
     "test/ibmpc/board-common/composition/core_machine_legacy_lock_s1_smoke.c"
-    "test/x86/core/port_assembly_fixture.c"
+    "test/ibmpc/core/port_assembly_fixture.c"
     "test/ibmpc/board-common/machine_port_io_board_smoke.c"
     "test/ibmpc/board-common/machine_port_ownership_board_smoke.c"
     "test/ibmpc/board-common/machine_port_strings_board_smoke.c"
@@ -62,11 +62,11 @@ set(project_t344_retained_sources
     "test/x86/core/core_machine_real_mode_corpus_smoke.c"
     "test/x86/core/core_machine_real_mode_tick_smoke.c"
     "test/ibmpc/board-common/core_machine_rtc_cmos_s3_smoke.c"
-    "test/x86/core/machine_t359_s2_timing_smoke.c"
-    "test/x86/core/machine_t359_s3_timing_smoke.c"
+    "test/ibmpc/core/machine_t359_s2_timing_smoke.c"
+    "test/ibmpc/core/machine_t359_s3_timing_smoke.c"
     "test/x86/core/machine_t359_s4_timing_smoke.c"
     "test/x86/core/machine_t359_s6_timing_smoke.c"
-    "test/x86/core/machine_legacy_timing_normalization_s2_smoke.c"
+    "test/ibmpc/core/machine_legacy_timing_normalization_s2_smoke.c"
     "test/ibmpc/board-common/core_machine_xebec_wiring_smoke.c"
     "test/ibmpc/board-common/core_machine_xt_ppi_keyboard_smoke.c"
     "test/ibmpc/board-common/machine_provider_composition_smoke.c"
@@ -75,26 +75,26 @@ set(project_t344_retained_sources
     "test/x86/core/cpu_int_ivt_smoke.c"
     "test/ibmpc/board-common/machine_arbitration_s3_smoke.c"
     "test/ibmpc/board-common/dma_competition_fixture.c"
-    "test/ibmpc/board-common/composition/machine_competition_s3_smoke.c"
+    "test/app-nxvm/unit/board/machine_competition_s3_smoke.c"
     "test/x86/core/machine_configuration_smoke.c"
     "test/ibmpc/board-common/machine_cpu_pic_lifecycle_smoke.c"
     "test/app-mydeskpro386/unit/profiles/machine_d4_refresh_hold_smoke.c"
     "test/ibmpc/board-common/machine_entry_plan_smoke.c"
-    "test/x86/core/machine_explicit_time_s4_smoke.c"
+    "test/ibmpc/core/machine_explicit_time_s4_smoke.c"
     "test/x86/core/machine_immutable_rom_mapping_smoke.c"
     "test/ibmpc/board-common/machine_input_display_s5_smoke.c"
     "test/x86/core/machine_memory_device_registration_s16_smoke.c"
     "test/ibmpc/board-common/core_machine_pit_divider_smoke.c"
     "test/x86/core/machine_rational_clock_smoke.c"
-    "test/x86/core/machine_reset_rom_alias_smoke.c"
-    "test/x86/core/machine_retirement_observation_s3_smoke.c"
+    "test/ibmpc/core/machine_reset_rom_alias_smoke.c"
+    "test/ibmpc/core/machine_retirement_observation_s3_smoke.c"
     "test/ibmpc/board-common/machine_rtc_storage_s4_smoke.c"
-    "test/x86/core/machine_scheduler_smoke.c"
-    "test/ibmpc/board-common/composition/machine_time_smoke.c"
-    "test/x86/core/machine_timeline_s2_smoke.c"
+    "test/ibmpc/core/machine_scheduler_smoke.c"
+    "test/app-nxvm/unit/board/machine_time_smoke.c"
+    "test/ibmpc/core/machine_timeline_s2_smoke.c"
     "test/ibmpc/board-common/machine_timing_checkpoint_smoke.c"
-    "test/x86/core/machine_transaction_lifecycle_s4_smoke.c"
-    "test/x86/core/machine_transaction_s2_smoke.c")
+    "test/ibmpc/core/machine_transaction_lifecycle_s4_smoke.c"
+    "test/ibmpc/core/machine_transaction_s2_smoke.c")
 set(project_t344_core_owner_sources
     "test/x86/core/machine_prefetch_locality_smoke.c"
     "test/x86/core/machine_task_switch_cross_width_smoke.c"
@@ -106,7 +106,7 @@ set(project_t344_core_owner_sources
     "test/x86/core/machine_instruction_timing_smoke.c"
     "test/x86/core/core_machine_descriptor_system_smoke.c"
     "test/x86/core/core_machine_80386_paging_smoke.c"
-    "test/x86/core/core_machine_fpu_8087_smoke.c")
+    "test/ibmpc/core/core_machine_fpu_8087_smoke.c")
 set(project_t344_inventory ${project_t344_migrated_sources}
     ${project_t344_core_owner_sources}
     ${project_t344_retained_sources})
@@ -125,10 +125,10 @@ endif()
 # historical fixture shapes.  Name them here so a new direct constructor
 # cannot hide behind the historical count.
 set(project_t344_timing_manifest_sources
-    "test/ibmpc/board-common/composition/machine_8086_timing_manifest_runner.c"
-    "test/ibmpc/board-common/composition/machine_80186_timing_manifest_runner.c"
-    "test/ibmpc/board-common/composition/machine_80286_timing_manifest_runner.c"
-    "test/ibmpc/board-common/composition/machine_80386_timing_manifest_runner.c")
+    "test/app-nxvm/unit/board/machine_8086_timing_manifest_runner.c"
+    "test/app-nxvm/unit/board/machine_80186_timing_manifest_runner.c"
+    "test/app-nxvm/unit/board/machine_80286_timing_manifest_runner.c"
+    "test/app-nxvm/unit/board/machine_80386_timing_manifest_runner.c")
 set(project_t344_constructor_sources ${project_t344_inventory}
     # S93 separates attachment phases from controller wiring; the original
     # joint binding-identity constructor remains classified in the inventory.
@@ -138,7 +138,7 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     "test/ibmpc/board-common/video_fixture.h"
     "test/ibmpc/board-at/kbc_fixture.h"
     "test/ibmpc/board-common/core_machine_rtc_smoke.c"
-    "test/x86/core/machine_fpu_interface_s65_smoke.c"
+    "test/ibmpc/core/machine_fpu_interface_s65_smoke.c"
     ${project_t344_timing_manifest_sources}
     # Model40 owns the real refresh/preload latch; neutral Core keeps bus internals.
     "test/app-mydeskpro386/unit/profiles/d4_prefetch_locality_smoke.c"
@@ -149,7 +149,7 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     "test/ibmpc/board-common/composition/core_machine_protected_ud_delivery_s1_smoke.c"
     "test/ibmpc/board-common/composition/core_machine_real_ud_delivery_s1_smoke.c"
     # Core CPU-bus INTA admission/cascade proof with an opaque real PIC pair.
-    "test/x86/core/core_machine_pic_phase_s2_smoke.c"
+    "test/ibmpc/core/core_machine_pic_phase_s2_smoke.c"
     # S37 string transfer keeps real PIC and descriptor delivery board-owned.
     "test/ibmpc/board-common/machine_lods_board_smoke.c"
     "test/ibmpc/board-common/machine_movs_board_smoke.c"
@@ -164,13 +164,13 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     # S59 owns public Core paging and page-fault delivery.
     "test/ibmpc/board-common/composition/machine_task_switch32_paging_smoke.c"
     # S18 exercises firmware ROM rollback against a real Core instance.
-    "test/x86/core/core_machine_rom_route_transaction_smoke.c"
+    "test/ibmpc/core/core_machine_rom_route_transaction_smoke.c"
     "test/ibmpc/board-common/machine_board_timing_qualification_smoke.c"
-    "test/x86/core/machine_cpu_reset_identity_smoke.c"
+    "test/ibmpc/core/machine_cpu_reset_identity_smoke.c"
     # S65 adds public null-input checks beside retained allocation failure tests.
-    "test/x86/core/core_machine_ram_create_smoke.c"
+    "test/ibmpc/core/core_machine_ram_create_smoke.c"
     # Control/PIC composition installs the negative vector before freeze.
-    "test/x86/core/planar_parity_fixture.c"
+    "test/ibmpc/core/planar_parity_fixture.c"
     "test/ibmpc/board-common/machine_control_state_board_smoke.c"
     "test/ibmpc/board-common/machine_cli_sti_interrupt_smoke.c"
     "test/ibmpc/board-common/machine_interrupt_entry_smoke.c"
@@ -188,18 +188,19 @@ endif()
 
 file(GLOB project_t344_machine_sources
     RELATIVE "${PROJECT_T344_SOURCE_DIR}"
-    "${PROJECT_T344_SOURCE_DIR}/test/ibmpc/board-common/composition/*.c")
+    "${PROJECT_T344_SOURCE_DIR}/test/ibmpc/board-common/composition/*.c"
+    "${PROJECT_T344_SOURCE_DIR}/test/app-nxvm/unit/board/*.c")
 list(APPEND project_t344_machine_sources
     "test/app-mydeskpro386/unit/profiles/core_machine_d4_platform_s4_smoke.c"
     "test/app-mydeskpro386/unit/profiles/machine_d4_refresh_hold_smoke.c")
 list(APPEND project_t344_machine_sources
-    "test/x86/core/machine_reset_rom_alias_smoke.c"
-    "test/x86/core/port_assembly_fixture.c"
-    "test/x86/core/planar_parity_fixture.c"
+    "test/ibmpc/core/machine_reset_rom_alias_smoke.c"
+    "test/ibmpc/core/port_assembly_fixture.c"
+    "test/ibmpc/core/planar_parity_fixture.c"
     "test/ibmpc/board-common/core_machine_planar_parity_nmi_s3_smoke.c"
     "test/ibmpc/board-common/composition/support/protected_16_bootstrap_fixture.h"
-    "test/x86/core/machine_fpu_interface_s65_smoke.c"
-    "test/x86/core/machine_instruction_timing_ledger_smoke.c"
+    "test/ibmpc/core/machine_fpu_interface_s65_smoke.c"
+    "test/ibmpc/core/machine_instruction_timing_ledger_smoke.c"
     "test/x86/core/machine_prefetch_locality_smoke.c"
     "test/app-mydeskpro386/unit/profiles/d4_prefetch_locality_smoke.c"
     "test/x86/core/machine_80286_instruction_timing_ledger_smoke.c"
@@ -221,12 +222,12 @@ list(APPEND project_t344_machine_sources
     "test/x86/core/machine_cpu_profile_gate_smoke.c"
     "test/x86/core/machine_instruction_timing_smoke.c"
     "test/x86/core/core_machine_descriptor_system_smoke.c"
-    "test/x86/core/machine_t359_s2_timing_smoke.c"
-    "test/x86/core/machine_t359_s3_timing_smoke.c"
-    "test/x86/core/machine_legacy_timing_normalization_s2_smoke.c"
+    "test/ibmpc/core/machine_t359_s2_timing_smoke.c"
+    "test/ibmpc/core/machine_t359_s3_timing_smoke.c"
+    "test/ibmpc/core/machine_legacy_timing_normalization_s2_smoke.c"
     "test/ibmpc/board-common/machine_port_ownership_board_smoke.c"
-    "test/x86/core/machine_retirement_observation_s3_smoke.c"
-    "test/x86/core/core_machine_fpu_8087_smoke.c"
+    "test/ibmpc/core/machine_retirement_observation_s3_smoke.c"
+    "test/ibmpc/core/core_machine_fpu_8087_smoke.c"
     "test/x86/core/core_machine_80386_paging_smoke.c"
     "test/ibmpc/board-common/core_machine_pit_divider_smoke.c"
     "test/ibmpc/board-common/core_machine_xebec_wiring_smoke.c"
@@ -287,15 +288,15 @@ list(APPEND project_t344_machine_sources
 )
 list(APPEND project_t344_machine_sources
     "test/ibmpc/board-common/machine_input_display_s5_smoke.c"
-    "test/x86/core/machine_transaction_s2_smoke.c"
+    "test/ibmpc/core/machine_transaction_s2_smoke.c"
     "test/ibmpc/board-common/core_machine_cpu_timing_preview_smoke.c"
     "test/x86/core/core_machine_memory_inspection_smoke.c"
     "test/x86/core/machine_attachment_phases_smoke.c"
-    "test/x86/core/core_machine_ram_create_smoke.c"
+    "test/ibmpc/core/core_machine_ram_create_smoke.c"
     "test/ibmpc/board-common/dma_competition_fixture.c"
     "test/ibmpc/board-common/board_binding_fixture.c"
     "test/ibmpc/board-common/core_machine_controller_authority_smoke.c"
-    "test/x86/core/core_machine_pic_phase_s2_smoke.c"
+    "test/ibmpc/core/core_machine_pic_phase_s2_smoke.c"
     "test/x86/core/core_machine_real_mode_386_address_smoke.c"
     "test/x86/core/core_machine_real_mode_386_rep_cmps_smoke.c"
     "test/x86/core/core_machine_real_mode_corpus_smoke.c"
@@ -306,14 +307,14 @@ list(APPEND project_t344_machine_sources
     "test/x86/core/machine_immutable_rom_mapping_smoke.c"
     "test/x86/core/machine_memory_device_registration_s16_smoke.c"
     "test/x86/core/machine_rational_clock_smoke.c"
-    "test/x86/core/machine_cpu_reset_identity_smoke.c"
+    "test/ibmpc/core/machine_cpu_reset_identity_smoke.c"
     "test/ibmpc/board-common/machine_cpu_pic_lifecycle_smoke.c"
-    "test/x86/core/machine_scheduler_smoke.c"
+    "test/ibmpc/core/machine_scheduler_smoke.c"
     "test/ibmpc/board-common/machine_board_timing_qualification_smoke.c"
-    "test/x86/core/machine_transaction_lifecycle_s4_smoke.c"
-    "test/x86/core/machine_explicit_time_s4_smoke.c"
-    "test/x86/core/core_machine_rom_route_transaction_smoke.c"
-    "test/x86/core/machine_timeline_s2_smoke.c"
+    "test/ibmpc/core/machine_transaction_lifecycle_s4_smoke.c"
+    "test/ibmpc/core/machine_explicit_time_s4_smoke.c"
+    "test/ibmpc/core/core_machine_rom_route_transaction_smoke.c"
+    "test/ibmpc/core/machine_timeline_s2_smoke.c"
     "test/ibmpc/board-common/video_fixture.h"
     "test/ibmpc/board-common/machine_timing_checkpoint_smoke.c"
     "test/ibmpc/board-common/core_machine_dma_rtc_authority_smoke.c"

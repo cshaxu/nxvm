@@ -2,12 +2,12 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "../../../../x86/core/composition_fixture.h"
-#include "../../../../ibmpc/board-common/composition_fixture.h"
+#include "../../../../ibmpc/core/composition_fixture.h"
+#include "../../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
 #include "ibmpc/machine/machine_private.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "app-my5170/profiles/profile_interface.h"
-#include "../../../../ibmpc/machine/support/rom/session_assets.h"
+#include "../../../../app-nxvm/unit/support/rom/session_assets.h"
 
 int main(void)
 {

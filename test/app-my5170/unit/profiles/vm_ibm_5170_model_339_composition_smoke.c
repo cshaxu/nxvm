@@ -1,21 +1,21 @@
 #include "ibmpc/board-common/pc_at_rom_interface.h"
-#include "../../../ibmpc/machine/support/profile.h"
+#include "../../../app-nxvm/unit/support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
-#include "../../../ibmpc/machine/support/media.h"
+#include "../../../app-nxvm/unit/support/ibmpc/machine/support/media.h"
 #include "lib/types/types_interface.h"
-#include "../../../x86/core/composition_fixture.h"
-#include "../../../ibmpc/board-common/composition_fixture.h"
-#include "../../../ibmpc/board-common/kbc_state_fixture.h"
+#include "../../../ibmpc/core/composition_fixture.h"
+#include "../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
+#include "../../../app-nxvm/unit/support/ibmpc/board-common/kbc_state_fixture.h"
 #include <stdio.h>
 
 #include "x86/core/debug_interface.h"
-#include "../../../x86/core/bus_fixture.h"
+#include "../../../ibmpc/core/bus_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/machine/machine_private.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "app-my5170/profiles/profile_interface.h"
 
-#include "../../../ibmpc/machine/support/rom/session_assets.h"
+#include "../../../app-nxvm/unit/support/rom/session_assets.h"
 
 static lib_status vm_test_create_5170(const vm_machine_config *config,
     vm_machine **out_session)
@@ -142,16 +142,16 @@ static lib_i32 vm_model_339_floppy_contract(void)
     vm_machine *session = LIB_NULL;
     lib_i32 failed = vm_test_create_5170(&native, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || session->construction.floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
-        vm_test_fdd_info(session->fdd).geometry.cylinders != 80u || vm_test_fdd_info(session->fdd).geometry.heads != 2u ||
-        vm_test_fdd_info(session->fdd).geometry.sectors_per_track != 15u;
+        vm_test_fdd_info(session->floppy[0u]).geometry.cylinders != 80u || vm_test_fdd_info(session->floppy[0u]).geometry.heads != 2u ||
+        vm_test_fdd_info(session->floppy[0u]).geometry.sectors_per_track != 15u;
 
     vm_machine_destroy(session);
     session = LIB_NULL;
     failed |= vm_test_create_5170(&compatible, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || session->construction.floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
         session->construction.media_kind != VM_PROFILE_FLOPPY_525_360K ||
-        vm_test_fdd_info(session->fdd).geometry.cylinders != 40u || vm_test_fdd_info(session->fdd).geometry.heads != 2u ||
-        vm_test_fdd_info(session->fdd).geometry.sectors_per_track != 9u ||
+        vm_test_fdd_info(session->floppy[0u]).geometry.cylinders != 40u || vm_test_fdd_info(session->floppy[0u]).geometry.heads != 2u ||
+        vm_test_fdd_info(session->floppy[0u]).geometry.sectors_per_track != 9u ||
         test_board_capture_composition(session->board).drive_cylinders != 80u;
     vm_machine_destroy(session);
     session = LIB_NULL;

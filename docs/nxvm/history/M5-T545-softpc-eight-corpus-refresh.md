@@ -43,3 +43,55 @@ and includes, then verify all consumers and affected dual-width artifacts.
 Shared, NXVM and MyNES deliveries have separate target-correct P commits.
 Original 58 integration predicates remain T/S3 verification; CPU repairs and
 owner INI/media/snapshot changes are excluded.
+
+### Owner-Requested IBMPC Refresh
+
+The owner explicitly requested the newer IBMPC src/test pair during S2.
+The pinned source advances to `8124e551e841ccdec2ceb7f6a0f6ae5b513a7951`;
+both IBMPC source paths are clean upstream. The six other roots have no Git
+diff since `03c979c7`, so the refreshed eight-root set is one committed source,
+not a mixed uncommitted snapshot. Old-source builds were stopped before copying;
+their results do not qualify the new pair.
+
+Actual review accepts owner-local embedded run/reset atomics, removal of
+first-media-slot union aliases and failure-preserving Product teardown/binding.
+Atomic operations and hardware algorithms remain unchanged. New composition
+tests exercise failed UI destruction and failed Machine cleanup, including
+retry without releasing still-borrowed callbacks.
+
+The newer source removes 28 test files. Twenty-seven are retained at NXVM-only
+receivers: both historical CPU timing generators remain under unit/board;
+25 helper files move together under unit/support/ibmpc, preserving their local
+relative topology. Registrations, includes and historical gates follow them.
+The remaining unregistered vm_debug_authority_smoke used removed flagTrace/
+traceCount APIs; it is retired, not represented as a lost passing regression.
+Its current execution-plan behavior is covered by the imported
+machine/debug_budget_smoke, with trace counts 1/10/4096, breakpoint/watchpoint
+completion and reset assertions. All original registered product predicates
+remain required. Receiver tests use slot-zero arrays and the address of the
+embedded control state; no imported source is patched or shimmed.
+
+Fresh raw path/hash comparison passes for all eight roots: src counts
+109/23/95/125 and test counts 49/20/180/241 for Lib/Common/x86/IBMPC.
+All eight complete manifests pass independently. Shared P1 fc3c73aa1 fixes
+the exact imported Git blobs and root helpers; MyNES P2 f010812fd delivers only
+its rebuilt 0043 pair. NXVM P3 delivers retained receivers, link/build paths,
+all eight 0545 PC artifacts and this acceptance record, with no owner INI edit.
+
+Fresh complete units pass 531/531 per width (223.46s x64, 147.44s x86), and
+MyNES product units pass 43/43 per width (23.97s x64, 40.43s x86). Both widths
+pass all 23 supplemental manifest/corpus/Types/DAG/layout/naming/negative
+checks; the x64 specialized aggregate passes. All ten optimized stripped
+artifacts pass PE-width and compiler-debug-section checks; hashes and source
+provenance are in the [refresh evidence](../etc/evidence/t545-s2-ibmpc-refresh.md).
+Superseded PC 0543 artifacts are retired only after verified replacement.
+
+Coordinator actual-change review accepts the full S1 universe, latest 46-path
+IBMPC diff, all 71 retained product files, mechanical receiver layout/include
+changes and selected board/Core fixture archive closure. No Shared local patch,
+new runtime/API, device algorithm or test predicate is introduced. One retired
+unregistered obsolete Debug API test has an explicit current-coverage receiver.
+Documentation governance and actual reference/status review pass. S2 closes
+after target-correct P delivery/push; T stays open for S3. All 58 original PC
+external integration contexts and the receiving MyNES integration suite remain
+required, not represented as freshly passed by this import.

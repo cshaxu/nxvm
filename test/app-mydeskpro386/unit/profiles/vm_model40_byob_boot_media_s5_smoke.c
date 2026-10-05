@@ -1,6 +1,6 @@
-#include "../../../ibmpc/machine/support/profile.h"
+#include "../../../app-nxvm/unit/support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
-#include "../../../ibmpc/machine/support/media.h"
+#include "../../../app-nxvm/unit/support/ibmpc/machine/support/media.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -38,10 +38,10 @@ lib_i32 main(void)
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
     failed |= vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
         &config, &assets, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || vm_machine_fdd_replace_bytes(session->fdd, image,
-            sizeof(image)) != LIB_FALSE || !vm_test_fdd_info(session->fdd).present ||
-        vm_test_fdd_info(session->fdd).geometry.cylinders != 80u || vm_test_fdd_info(session->fdd).geometry.heads != 2u ||
-        vm_test_fdd_info(session->fdd).geometry.sectors_per_track != 15u || vm_test_fdd_info(session->fdd).geometry.bytes_per_sector != 512u ||
+        session == LIB_NULL || vm_machine_fdd_replace_bytes(session->floppy[0u], image,
+            sizeof(image)) != LIB_FALSE || !vm_test_fdd_info(session->floppy[0u]).present ||
+        vm_test_fdd_info(session->floppy[0u]).geometry.cylinders != 80u || vm_test_fdd_info(session->floppy[0u]).geometry.heads != 2u ||
+        vm_test_fdd_info(session->floppy[0u]).geometry.sectors_per_track != 15u || vm_test_fdd_info(session->floppy[0u]).geometry.bytes_per_sector != 512u ||
         core_machine_media_query(session->media_registry, VM_MACHINE_MEDIA_FDD_ID,
             &info, &result) != LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         !info.present || info.geometry.logical_sector_count != 2400u ||

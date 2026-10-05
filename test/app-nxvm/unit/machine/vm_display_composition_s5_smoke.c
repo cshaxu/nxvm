@@ -1,0 +1,159 @@
+#include "ibmpc/machine/machine_interface.h"
+#include "lib/types/types_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include <stdio.h>
+
+#include "ibmpc/board-common/vadp_interface.h"
+#include "../../../ibmpc/core/bus_fixture.h"
+#include "ibmpc/machine/display.h"
+#include "ibmpc/machine/lifecycle.h"
+#include "ibmpc/machine/machine_interface.h"
+#include "../support/ibmpc/machine/support/vm_presentation_capture.h"
+#include "../support/rom/session_assets.h"
+#include "ibmpc/machine/machine_private.h"
+
+static void vm_display_s5_port_write(vm_machine *session, lib_u16 port,
+    lib_u8 value)
+{
+    test_core_machine_fixture_write_port(session->core_machine, port, value);
+}
+
+static lib_i32 vm_display_s5_capture(vm_machine *session,
+    core_machine_guest_display_frame *frame, x86_video_kind expected_kind)
+{
+    return vm_machine_publish_display(session, LIB_TRUE) == expected_kind &&
+        test_vm_machine_capture_presentation(session, frame) == LIB_STATUS_OK;
+}
+
+static lib_i32 vm_display_s5_enable_planar(vm_machine *session)
+{
+    vm_display_s5_port_write(session, 0x03c4u, 2u);
+    vm_display_s5_port_write(session, 0x03c5u, 0x0fu);
+    vm_display_s5_port_write(session, 0x03ceu, 5u);
+    vm_display_s5_port_write(session, 0x03cfu, 0x00u);
+    vm_display_s5_port_write(session, 0x03ceu, 6u);
+    vm_display_s5_port_write(session, 0x03cfu, 0x05u);
+    vm_display_s5_port_write(session, 0x03c2u, 0x01u);
+    (void)test_core_machine_fixture_read_bus(session->core_machine, 0x03dau);
+    vm_display_s5_port_write(session, 0x03c0u, 0x30u);
+    vm_display_s5_port_write(session, 0x03c0u, 0x01u);
+    vm_display_s5_port_write(session, 0x03d4u, 0x01u);
+    vm_display_s5_port_write(session, 0x03d5u, 0x27u);
+    vm_display_s5_port_write(session, 0x03d4u, 0x07u);
+    vm_display_s5_port_write(session, 0x03d5u, 0x00u);
+    vm_display_s5_port_write(session, 0x03d4u, 0x12u);
+    vm_display_s5_port_write(session, 0x03d5u, 0xc7u);
+    vm_display_s5_port_write(session, 0x03d4u, 0x13u);
+    vm_display_s5_port_write(session, 0x03d5u, 0x14u);
+    return 1;
+}
+
+lib_i32 main(void)
+{
+    vm_machine *session = LIB_NULL;
+    static core_machine_guest_display_frame frame;
+    static x86_video_snapshot snapshot;
+    static x86_video_snapshot_observation observation;
+    core_machine_timeline_observation timeline;
+    lib_u8 cga_even = 0x1bu;
+    lib_u8 cga_odd = 0xe4u;
+    lib_u8 ega_pixel = 0xa5u;
+    lib_u64 text_generation;
+    lib_u64 cga_generation;
+    lib_u64 ega_snapshot_generation;
+    lib_i32 failed = 0;
+
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
+        session == LIB_NULL) {
+        return 1;
+    }
+    lib_memory_set(&frame, 0, sizeof(frame));
+    failed |= !vm_display_s5_capture(session, &frame, X86_VIDEO_KIND_TEXT) ||
+        frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
+        frame.rows != 25u || frame.palette_rgb[0u] != 0x000000u ||
+        frame.palette_rgb[15u] != 0xffffffu;
+    text_generation = frame.generation;
+
+    vm_display_s5_port_write(session, 0x03d8u, 0x0au);
+    vm_display_s5_port_write(session, 0x03d9u, 0x00u);
+    failed |= core_machine_memory_write(session->core_machine,
+        0x000b8000u, &cga_even, sizeof(cga_even)) != LIB_STATUS_OK ||
+        core_machine_memory_write(session->core_machine,
+            0x000b8000u + 0x2000u, &cga_odd,
+            sizeof(cga_odd)) != LIB_STATUS_OK;
+    failed |= !vm_display_s5_capture(session, &frame,
+        X86_VIDEO_KIND_CGA_320X200X4) ||
+        frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS ||
+        frame.pixel_width != 320u || frame.pixel_height != 200u ||
+        frame.pixels[0] != 0u || frame.pixels[1] != 1u ||
+        frame.pixels[2] != 2u || frame.pixels[3] != 3u ||
+        frame.pixels[320u] != 3u || frame.generation <= text_generation;
+    cga_generation = frame.generation;
+    cga_even = 0xffu;
+    failed |= core_machine_memory_write(session->core_machine,
+        0x000b8000u, &cga_even, sizeof(cga_even)) != LIB_STATUS_OK ||
+        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
+        frame.generation != cga_generation ||
+        frame.pixels[0] != 0u || frame.pixels[1] != 1u || frame.pixels[2] != 2u;
+
+    failed |= !vm_display_s5_enable_planar(session) ||
+        core_machine_memory_write(session->core_machine,
+            CORE_MACHINE_VADP_EGA_APERTURE_BASE, &ega_pixel,
+            sizeof(ega_pixel)) != LIB_STATUS_OK ||
+        !vm_display_s5_capture(session, &frame,
+            X86_VIDEO_KIND_EGA_320X200X16) ||
+        frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS ||
+        frame.pixel_width != 320u || frame.pixel_height != 200u ||
+        frame.pixels[0] != 15u || frame.pixels[1] != 0u ||
+        frame.pixels[2] != 15u || frame.palette_rgb[15] != 0xffffffu ||
+        frame.generation <= cga_generation;
+    ega_snapshot_generation = session->display_snapshot_generation;
+    failed |= !session->display_snapshot_generation_valid ||
+        core_machine_observe_display_snapshot(session->board, LIB_TRUE,
+            ega_snapshot_generation, &observation) != LIB_STATUS_OK ||
+        !observation.generation_reliable || observation.capture_required ||
+        observation.generation != ega_snapshot_generation;
+    session->last_display_publish_milliseconds = 0u;
+    failed |= vm_machine_publish_display(session, LIB_FALSE) !=
+        X86_VIDEO_KIND_EGA_320X200X16 ||
+        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
+        frame.generation <= cga_generation ||
+        session->display_snapshot_generation != ega_snapshot_generation;
+    ega_pixel = 0x5au;
+    failed |= core_machine_memory_write(session->core_machine,
+        CORE_MACHINE_VADP_EGA_APERTURE_BASE, &ega_pixel,
+        sizeof(ega_pixel)) != LIB_STATUS_OK ||
+        core_machine_observe_display_snapshot(session->board, LIB_TRUE,
+            ega_snapshot_generation, &observation) != LIB_STATUS_OK ||
+        !observation.generation_reliable || !observation.capture_required ||
+        observation.generation == ega_snapshot_generation;
+    session->last_display_publish_milliseconds = 0u;
+    failed |= vm_machine_publish_display(session, LIB_FALSE) !=
+        X86_VIDEO_KIND_EGA_320X200X16 ||
+        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
+        frame.generation <= cga_generation ||
+        frame.pixels[0] != 0u || session->display_snapshot_generation !=
+        observation.generation;
+
+    vm_machine_reset(session);
+    failed |= core_machine_get_timeline_observation(session->core_machine,
+        &timeline) != LIB_STATUS_OK || timeline.now != 0u ||
+        timeline.pending_events != 0u ||
+        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
+        frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
+        frame.rows != 25u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
+        frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xffffffu ||
+        core_machine_capture_display_snapshot(session->board, &snapshot) !=
+            LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT;
+
+    failed |= !vm_display_s5_enable_planar(session) ||
+        !vm_display_s5_capture(session, &frame,
+            X86_VIDEO_KIND_EGA_320X200X16) ||
+        frame.pixels[0] != 0u || frame.pixel_width != 320u ||
+        frame.pixel_height != 200u;
+
+    vm_machine_destroy(session);
+    if (failed) return 1;
+    printf("M5:T352:S5:DISPLAY-COMPOSITION:OK\n");
+    return 0;
+}

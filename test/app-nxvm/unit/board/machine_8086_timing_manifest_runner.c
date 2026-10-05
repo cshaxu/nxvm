@@ -1,0 +1,4492 @@
+#include "lib/types/types_interface.h"
+#include "lib/types/file.h"
+#include "x86/core/device_support_interface.h"
+
+#include "x86/core/machine_interface.h"
+#include "x86/core/retirement_observation_interface.h"
+#include "x86/core/debug_interface.h"
+
+#define TIMING_MANIFEST_RESET_LINEAR 0x000ffff0u
+#define TIMING_MANIFEST_RESET_PHYSICAL 0x000ffff0u
+#define TIMING_MANIFEST_WINDOW_BYTES 16u
+
+#ifndef PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE
+#define PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE CORE_MACHINE_CPU_PROFILE_8086
+#define PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME "8086"
+#define PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX "I86-"
+#define PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH PROJECT_TEST_8086_RESULTS_PATH
+#endif
+
+#ifndef PROJECT_TEST_TIMING_MANIFEST_DECODER_INVENTORY_PATH
+#define PROJECT_TEST_TIMING_MANIFEST_DECODER_INVENTORY_PATH \
+    PROJECT_TEST_8086_DECODER_INVENTORY_PATH
+#endif
+
+/* This runner is deliberately not a passing CTest target until every I86 key
+ * has a real recipe.  Its generated metadata prevents handwritten provenance
+ * from drifting from the T435 S2 manifest. */
+typedef struct timing_manifest_record {
+    const char *key_id;
+    const char *profile;
+    const char *level;
+    const char *source_rule;
+    const char *context;
+} timing_manifest_record;
+
+typedef struct timing_manifest_capture {
+    core_machine_retirement_observation observation;
+    lib_u32 count;
+} timing_manifest_capture;
+
+typedef struct timing_manifest_recipe {
+    const char *key_id;
+    lib_u8 program[8];
+    lib_u8 program_bytes;
+    lib_u64 expected_ticks;
+    core_machine_retirement_timing_origin expected_origin;
+} timing_manifest_recipe;
+
+static lib_i32 timing_manifest_text_contains(const char *text,
+    const char *needle);
+
+static void timing_manifest_execution_reset(void *opaque)
+{
+    (void)opaque;
+}
+
+static const core_machine_execution_provider timing_manifest_execution_provider = {
+    timing_manifest_execution_reset, LIB_NULL
+};
+
+static lib_status timing_manifest_port_read(void *owner, lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
+{
+    (void)tick;
+    (void)owner;
+    if (out_value == LIB_NULL || port != 0x00e0u) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_value = 0x5au;
+    return LIB_STATUS_OK;
+}
+
+static lib_status timing_manifest_port_write(void *owner, lib_u16 port,
+    lib_u32 value)
+{
+    (void)owner;
+    return port == 0x00e0u && value <= 0xffffu ? LIB_STATUS_OK :
+        LIB_STATUS_INVALID_ARGUMENT;
+}
+
+static const core_machine_port_provider timing_manifest_port_provider = {
+    timing_manifest_port_read, timing_manifest_port_write
+};
+
+static const timing_manifest_record timing_manifest_records[] = {
+#include "cpu_timing_manifest_metadata_catalog.inc"
+};
+_Static_assert(sizeof(timing_manifest_records) /
+    sizeof(timing_manifest_records[0]) == 4906u,
+    "CPU timing canonical manifest count drifted");
+static lib_i32 timing_manifest_covered[sizeof(timing_manifest_records) /
+    sizeof(timing_manifest_records[0])];
+static core_machine_retirement_observation timing_manifest_results[
+    sizeof(timing_manifest_records) / sizeof(timing_manifest_records[0])];
+static lib_i32 timing_manifest_observed[sizeof(timing_manifest_records) /
+    sizeof(timing_manifest_records[0])];
+static lib_i32 timing_manifest_current_index = -1;
+
+static lib_i32 timing_manifest_has_prefix(const char *text, const char *prefix)
+{
+    lib_size index = 0u;
+
+    if (text == LIB_NULL || prefix == LIB_NULL) return 0;
+    while (prefix[index] != '\0') {
+        if (text[index] != prefix[index]) return 0;
+        ++index;
+    }
+    return 1;
+}
+
+static lib_i32 timing_manifest_is_active(const timing_manifest_record *record)
+{
+    return record != LIB_NULL && timing_manifest_has_prefix(record->key_id,
+        PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX);
+}
+
+/* Table 2-21 charges the 8088 for every word transfer, independent of the
+ * address parity that differentiates the 8086 rows. */
+static lib_u32 timing_manifest_required_inputs_for_profile(
+    lib_u32 inputs)
+{
+    return PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE ==
+        CORE_MACHINE_CPU_PROFILE_8088 ?
+        inputs & ~CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD : inputs;
+}
+
+/* The frozen recipes carry the exact 8086 table values.  8088 executes the
+ * identical opcode/context corpus, but Table 2-21 derives its values from
+ * each form's word-transfer plan.  That plan is verified by the dedicated
+ * 8088 result contract; this shared executor must not duplicate it beside
+ * the sole Core timing owner. */
+static lib_i32 timing_manifest_ticks_match(lib_u64 actual,
+    lib_u64 expected)
+{
+    return PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE ==
+        CORE_MACHINE_CPU_PROFILE_8088 || actual == expected;
+}
+
+static lib_i32 timing_manifest_origin_match(
+    core_machine_retirement_timing_origin actual,
+    core_machine_retirement_timing_origin expected)
+{
+    return PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE ==
+        CORE_MACHINE_CPU_PROFILE_8088 ? actual !=
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED : actual == expected;
+}
+
+static lib_i32 timing_manifest_requires_classified(
+    const timing_manifest_record *record)
+{
+    return record != LIB_NULL;
+}
+
+static lib_i32 timing_manifest_disposition_matches(
+    const timing_manifest_record *record,
+    core_machine_retirement_timing_disposition disposition)
+{
+    return disposition == (timing_manifest_requires_classified(record) ?
+        CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED :
+        CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED);
+}
+
+static const timing_manifest_record *timing_manifest_find(const char *key_id)
+{
+    char active_key[160];
+    lib_size index;
+
+    timing_manifest_current_index = -1;
+    if (key_id == LIB_NULL) return LIB_NULL;
+    if (!timing_manifest_has_prefix(key_id, "I86-") ||
+        lib_c_snprintf(active_key, sizeof(active_key), "%s%s",
+            PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX, key_id + 4u) < 0) {
+        return LIB_NULL;
+    }
+    for (index = 0u; index < sizeof(timing_manifest_records) /
+            sizeof(timing_manifest_records[0]); ++index) {
+        const timing_manifest_record *record = &timing_manifest_records[index];
+
+        if (lib_text_compare(record->key_id, active_key) == 0) {
+            timing_manifest_covered[index] = 1;
+            timing_manifest_current_index = (lib_i32)index;
+            return record;
+        }
+    }
+    return LIB_NULL;
+}
+
+static void timing_manifest_capture_retirement(void *opaque,
+    const core_machine_retirement_observation *observation)
+{
+    timing_manifest_capture *capture = (timing_manifest_capture *)opaque;
+
+    if (capture == LIB_NULL || observation == LIB_NULL) return;
+    if (capture->count == 0u) capture->observation = *observation;
+    if (timing_manifest_current_index >= 0 &&
+            (!timing_manifest_observed[timing_manifest_current_index] ||
+             (observation->formula_inputs & timing_manifest_results[
+                 timing_manifest_current_index].formula_inputs) ==
+                 timing_manifest_results[timing_manifest_current_index].formula_inputs)) {
+        timing_manifest_results[timing_manifest_current_index] = *observation;
+        timing_manifest_observed[timing_manifest_current_index] = 1;
+    }
+    /* A record selection applies to exactly one real retirement.  Leaving it
+     * live let later semantic-only probes overwrite an unrelated result row. */
+    timing_manifest_current_index = -1;
+    ++capture->count;
+}
+
+static lib_i32 timing_manifest_prepare(core_machine **out_machine,
+    timing_manifest_capture *capture, const lib_u8 *program,
+    lib_size program_bytes)
+{
+    const core_machine_executor_config config = {
+        .cpu_profile = PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE,
+        .ticks_per_instruction = 29u,
+        .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
+    };
+    const core_machine_retirement_observation_provider provider = {
+        timing_manifest_capture_retirement, capture
+    };
+    core_machine *machine = LIB_NULL;
+    lib_status status = LIB_STATUS_OK;
+
+    if (out_machine == LIB_NULL || capture == LIB_NULL || program == LIB_NULL ||
+        program_bytes == 0u) return 0;
+    status = core_machine_neutral_create(&config, &machine);
+    if (status == LIB_STATUS_OK && machine == LIB_NULL) return 0;
+    if (status == LIB_STATUS_OK) {
+        const core_machine_memory_alias_config alias = {
+            TIMING_MANIFEST_RESET_LINEAR, TIMING_MANIFEST_RESET_PHYSICAL,
+            TIMING_MANIFEST_WINDOW_BYTES
+        };
+        status = core_machine_install_memory_aliases(machine, &alias, 1u, LIB_FALSE);
+    }
+    if (status == LIB_STATUS_OK) {
+        status = core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
+            &timing_manifest_port_provider, LIB_NULL);
+    }
+    if (status == LIB_STATUS_OK) {
+        status = core_machine_bind_execution_provider(machine,
+            &timing_manifest_execution_provider, LIB_NULL);
+    }
+    if (status == LIB_STATUS_OK) {
+        status = core_machine_freeze_execution_providers(machine);
+    }
+    if (status == LIB_STATUS_OK) {
+        status = core_machine_reset(machine);
+    }
+    if (status == LIB_STATUS_OK) {
+        status = core_machine_set_a20(machine, 1);
+    }
+    if (status == LIB_STATUS_OK) {
+        status = core_machine_memory_write(machine, TIMING_MANIFEST_RESET_LINEAR,
+            program, program_bytes);
+    }
+    if (status == LIB_STATUS_OK) {
+        status = core_machine_set_retirement_observation_provider(machine, &provider);
+    }
+    if (status != LIB_STATUS_OK) {
+        core_machine_destroy(machine);
+        return 0;
+    }
+    *out_machine = machine;
+    return 1;
+}
+
+/* Historical word seeds preserve the upper half of the register. */
+static lib_status timing_manifest_seed_word(core_machine *machine,
+    core_machine_debug_register register_id, lib_u16 value)
+{
+    lib_u32 previous = 0u;
+    lib_status status = core_machine_debug_read_register(machine, register_id,
+        &previous);
+
+    if (status == LIB_STATUS_OK) {
+        status = core_machine_debug_write_register(machine, register_id,
+            (previous & 0xffff0000u) | value);
+    }
+    return status;
+}
+
+static lib_status timing_manifest_seed_es_from_ds(core_machine *machine)
+{
+    lib_u32 selector = 0u;
+    lib_status status = core_machine_debug_read_register(machine,
+        CORE_MACHINE_DEBUG_DS, &selector);
+
+    if (status == LIB_STATUS_OK) {
+        status = core_machine_debug_write_register(machine,
+            CORE_MACHINE_DEBUG_ES, selector);
+    }
+    return status;
+}
+
+/* Each S1 base instruction gains one 8086 LOCK context.  Callers invoke this
+ * after proving their unprefixed recipe so the companion is a second real
+ * retirement, never a synthesized result. */
+static lib_i32 timing_manifest_run_lock_companion(
+    const timing_manifest_record *base_record, const char *base_key,
+    const lib_u8 *program, lib_u8 program_bytes,
+    lib_u64 expected_ticks,
+    core_machine_retirement_timing_origin expected_origin,
+    lib_u32 initial_eflags, lib_u16 initial_cx,
+    lib_u16 initial_dx, lib_u32 required_formula_inputs,
+    core_machine_retirement_control_outcome expected_control_outcome)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    char key[160];
+    lib_u8 locked_program[9];
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    const timing_manifest_record *record;
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed;
+
+    if (base_record == LIB_NULL || base_key == LIB_NULL || program == LIB_NULL ||
+        lib_text_compare(base_record->context, "BASE") != 0) return 0;
+    if (program_bytes == 0u || program_bytes >= sizeof(locked_program) ||
+        lib_c_snprintf(key, sizeof(key), "%s-LOCK", base_key) < 0) return 1;
+    locked_program[0] = 0xf0u;
+    lib_memory_copy(locked_program + 1u, program, program_bytes);
+    record = timing_manifest_find(key);
+    if (record == LIB_NULL) return 0;
+    failed = !timing_manifest_prepare(&machine, &capture, locked_program,
+        program_bytes + 1u);
+    if (!failed) {
+        failed = core_machine_debug_write_register(machine,
+                CORE_MACHINE_DEBUG_EFLAGS, initial_eflags) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_ECX,
+                initial_cx) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_EDX,
+                initial_dx) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            !timing_manifest_ticks_match(run.ticks, expected_ticks + 2u) || capture.count != 1u ||
+            !timing_manifest_ticks_match(capture.observation.source_ticks, expected_ticks + 2u) ||
+            !timing_manifest_disposition_matches(record,
+                capture.observation.timing_disposition) ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, expected_origin) ||
+            (capture.observation.formula_inputs &
+                timing_manifest_required_inputs_for_profile(
+                    required_formula_inputs | CORE_MACHINE_CPU_TIMING_INPUT_LOCK)) !=
+                timing_manifest_required_inputs_for_profile(
+                    required_formula_inputs | CORE_MACHINE_CPU_TIMING_INPUT_LOCK) ||
+            capture.observation.control_outcome != expected_control_outcome;
+    }
+    core_machine_destroy(machine);
+    if (failed) {
+        lib_c_printf("I86 LOCK result ticks=%llu source=%llu origin=%d inputs=%u control=%d count=%u\n",
+            run.ticks, capture.observation.source_ticks,
+            capture.observation.timing_origin, capture.observation.formula_inputs,
+            capture.observation.control_outcome, capture.count);
+        lib_c_printf("M5:T435:S5:I86-LOCK-COMPANION:FAIL:%s\n", key);
+    }
+    return failed;
+}
+
+static lib_i32 timing_manifest_run_exact_recipe_with_inputs_and_formula(
+    const timing_manifest_recipe *recipe, lib_u32 initial_eflags,
+    lib_u16 initial_cx, lib_u16 initial_dx,
+    lib_u32 required_formula_inputs,
+    core_machine_retirement_control_outcome expected_control_outcome)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    const timing_manifest_record *record = recipe == LIB_NULL ? LIB_NULL :
+        timing_manifest_find(recipe->key_id);
+    core_machine_run_result run = { 0 };
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 prepared = recipe != LIB_NULL && timing_manifest_prepare(&machine,
+        &capture, recipe->program, recipe->program_bytes);
+    lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+        lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+        lib_text_compare(record->level, "L3") != 0 ||
+        record->source_rule[0] == '\0' ||
+        !prepared;
+
+    if (!failed) {
+        failed = core_machine_debug_write_register(machine,
+                CORE_MACHINE_DEBUG_EFLAGS, initial_eflags) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_ECX,
+                initial_cx) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_EDX,
+                initial_dx) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        lib_status status = core_machine_run(machine, budget, &run);
+
+        failed |= status != LIB_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+            capture.observation.cpu_profile != PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE ||
+            !timing_manifest_ticks_match(capture.observation.source_ticks, recipe->expected_ticks) ||
+            !timing_manifest_disposition_matches(record,
+                capture.observation.timing_disposition) ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, recipe->expected_origin) ||
+            (timing_manifest_requires_classified(record) &&
+                (capture.observation.source_timing_form_id ==
+                    CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+                 capture.observation.timing_key_id ==
+                    CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED)) ||
+            (timing_manifest_required_inputs_for_profile(required_formula_inputs) != 0u &&
+                (capture.observation.formula_inputs &
+                    timing_manifest_required_inputs_for_profile(
+                        required_formula_inputs)) !=
+                    timing_manifest_required_inputs_for_profile(
+                        required_formula_inputs)) ||
+            capture.observation.control_outcome !=
+                expected_control_outcome;
+    }
+    if (failed) {
+        lib_c_printf("I86 result ticks=%llu source=%llu origin=%d form=%u key=%u count=%u control=%d disposition=%d\n",
+            run.ticks, capture.observation.source_ticks,
+            capture.observation.timing_origin,
+            capture.observation.source_timing_form_id,
+            capture.observation.timing_key_id, capture.count,
+            capture.observation.control_outcome,
+            capture.observation.timing_disposition);
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n",
+            recipe == LIB_NULL ? "<null>" : recipe->key_id);
+    }
+    if (!failed && timing_manifest_run_lock_companion(record, recipe->key_id,
+            recipe->program, recipe->program_bytes, recipe->expected_ticks,
+            recipe->expected_origin, initial_eflags, initial_cx, initial_dx,
+            required_formula_inputs, expected_control_outcome)) {
+        failed = 1;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 timing_manifest_run_exact_recipe_with_inputs(
+    const timing_manifest_recipe *recipe, lib_u32 initial_eflags,
+    lib_u16 initial_cx, lib_u16 initial_dx,
+    core_machine_retirement_control_outcome expected_control_outcome)
+{
+    return timing_manifest_run_exact_recipe_with_inputs_and_formula(recipe,
+        initial_eflags, initial_cx, initial_dx, 0u, expected_control_outcome);
+}
+
+static lib_i32 timing_manifest_run_exact_recipe_with_control(
+    const timing_manifest_recipe *recipe, lib_u32 initial_eflags,
+    lib_u16 initial_cx,
+    core_machine_retirement_control_outcome expected_control_outcome)
+{
+    return timing_manifest_run_exact_recipe_with_inputs(recipe, initial_eflags,
+        initial_cx, 0u, expected_control_outcome);
+}
+
+static lib_i32 timing_manifest_run_exact_recipe(
+    const timing_manifest_recipe *recipe)
+{
+    return timing_manifest_run_exact_recipe_with_control(recipe, 0u, 0u,
+        CORE_MACHINE_RETIREMENT_CONTROL_NONE);
+}
+
+typedef struct timing_manifest_memory_recipe {
+    const char *key_id;
+    lib_u8 program[9];
+    lib_u8 program_bytes;
+    lib_u64 expected_ticks;
+    core_machine_retirement_timing_origin expected_origin;
+    lib_u16 initial_ax;
+    lib_u16 initial_cx;
+    lib_u16 memory_value;
+    lib_u16 expected_ax;
+    lib_u16 expected_cx;
+    lib_u16 expected_memory_value;
+} timing_manifest_memory_recipe;
+
+static lib_i32 timing_manifest_lock_key_for_context(const timing_manifest_record *record,
+    const char *base_key, char *out_key, lib_size out_size)
+{
+    static const char segment[] = "-SEGMENT";
+    static const char odd[] = "-ODD-WORD";
+    static const char segment_odd[] = "-SEGMENT-ODD-WORD";
+    lib_size base_length;
+
+    if (record == LIB_NULL || base_key == LIB_NULL || out_key == LIB_NULL ||
+        timing_manifest_text_contains(record->context, "LOCK")) return 0;
+    if (lib_text_compare(record->context, "BASE") == 0) {
+        return lib_c_snprintf(out_key, out_size, "%s-LOCK", base_key) >= 0;
+    }
+    base_length = lib_text_length(base_key);
+    if (lib_text_compare(record->context, "SEGMENT") == 0 &&
+        base_length > lib_text_length(segment)) {
+        return lib_c_snprintf(out_key, out_size, "%.*s-LOCK-SEGMENT",
+            (lib_i32)(base_length - lib_text_length(segment)), base_key) >= 0;
+    }
+    if (lib_text_compare(record->context, "ODD-WORD") == 0 &&
+        base_length > lib_text_length(odd)) {
+        return lib_c_snprintf(out_key, out_size, "%.*s-LOCK-ODD-WORD",
+            (lib_i32)(base_length - lib_text_length(odd)), base_key) >= 0;
+    }
+    if (lib_text_compare(record->context, "SEGMENT-ODD-WORD") == 0 &&
+        base_length > lib_text_length(segment_odd)) {
+        return lib_c_snprintf(out_key, out_size, "%.*s-LOCK-SEGMENT-ODD-WORD",
+            (lib_i32)(base_length - lib_text_length(segment_odd)), base_key) >= 0;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_run_l3_memory_recipe_with_inputs_internal(
+    const timing_manifest_memory_recipe *recipe, lib_u32 extra_required_inputs,
+    lib_i32 run_lock_companion)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    const timing_manifest_record *record = recipe == LIB_NULL ? LIB_NULL :
+        timing_manifest_find(recipe->key_id);
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine *machine = LIB_NULL;
+    lib_u16 memory_value = 0u;
+    lib_u32 ax = 0u;
+    lib_u32 cx = 0u;
+    lib_u32 required_inputs = CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
+    lib_u8 opcode = recipe == LIB_NULL ? 0u : recipe->program[0];
+    lib_u8 opcode_index = 0u;
+    lib_u32 memory_linear = 0u;
+    lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+        lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+        lib_text_compare(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
+        !timing_manifest_prepare(&machine, &capture, recipe->program,
+            recipe->program_bytes);
+
+    while (recipe != LIB_NULL && opcode_index < recipe->program_bytes) {
+        opcode = recipe->program[opcode_index];
+        if (opcode == 0x26u || opcode == 0x2eu || opcode == 0x36u ||
+            opcode == 0x3eu) {
+            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
+        } else if (opcode == 0xf0u) {
+            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_LOCK;
+        } else {
+            break;
+        }
+        ++opcode_index;
+    }
+    if (recipe != LIB_NULL && opcode != 0xa0u && opcode != 0xa1u &&
+        opcode != 0xa2u && opcode != 0xa3u) {
+        required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_MODRM;
+    }
+    if (!failed) memory_linear = (opcode == 0xa0u || opcode == 0xa1u || opcode == 0xa2u ||
+        opcode == 0xa3u) ? (lib_u32)recipe->program[opcode_index + 1u] |
+            ((lib_u32)recipe->program[opcode_index + 2u] << 8u) :
+        (lib_u32)recipe->program[opcode_index + 2u] |
+            ((lib_u32)recipe->program[opcode_index + 3u] << 8u);
+    if (!failed) {
+        failed = timing_manifest_seed_es_from_ds(machine) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, memory_linear, &recipe->memory_value,
+            sizeof(recipe->memory_value)) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        failed = timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_EAX,
+                recipe->initial_ax) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_ECX,
+                recipe->initial_cx) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+            !timing_manifest_ticks_match(capture.observation.source_ticks, recipe->expected_ticks) ||
+            !timing_manifest_disposition_matches(record,
+                capture.observation.timing_disposition) ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, recipe->expected_origin) ||
+            (capture.observation.formula_inputs &
+                timing_manifest_required_inputs_for_profile(
+                    required_inputs | extra_required_inputs)) !=
+                timing_manifest_required_inputs_for_profile(
+                    required_inputs | extra_required_inputs) ||
+            core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX,
+                &ax) != LIB_STATUS_OK || (lib_u16)ax != recipe->expected_ax ||
+            core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_ECX,
+                &cx) != LIB_STATUS_OK || (lib_u16)cx != recipe->expected_cx ||
+            core_machine_memory_read(machine, memory_linear, &memory_value,
+                sizeof(memory_value)) != LIB_STATUS_OK ||
+            memory_value != recipe->expected_memory_value;
+    }
+    if (failed) {
+        lib_c_printf("I86 memory ticks=%llu source=%llu origin=%d inputs=%u ax=%u cx=%u mem=%u count=%u\n",
+            run.ticks, capture.observation.source_ticks,
+            capture.observation.timing_origin, capture.observation.formula_inputs,
+            (lib_u16)ax, (lib_u16)cx,
+            memory_value, capture.count);
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n",
+            recipe == LIB_NULL ? "<null>" : recipe->key_id);
+    }
+    core_machine_destroy(machine);
+    if (!failed && run_lock_companion && record != LIB_NULL &&
+        !timing_manifest_text_contains(record->context, "LOCK")) {
+        timing_manifest_memory_recipe locked = *recipe;
+        char key[160];
+        lib_size index;
+
+        if (locked.program_bytes >= sizeof(locked.program) ||
+            !timing_manifest_lock_key_for_context(record, recipe->key_id, key,
+                sizeof(key))) {
+            return 1;
+        }
+        for (index = locked.program_bytes; index != 0u; --index) {
+            locked.program[index] = locked.program[index - 1u];
+        }
+        locked.program[0] = 0xf0u;
+        ++locked.program_bytes;
+        locked.expected_ticks += 2u;
+        locked.key_id = key;
+        return timing_manifest_run_l3_memory_recipe_with_inputs_internal(&locked,
+            extra_required_inputs, 0);
+    }
+    return failed;
+}
+
+static lib_i32 timing_manifest_run_l3_memory_recipe_with_inputs(
+    const timing_manifest_memory_recipe *recipe, lib_u32 extra_required_inputs)
+{
+    return timing_manifest_run_l3_memory_recipe_with_inputs_internal(recipe,
+        extra_required_inputs, 1);
+}
+
+static lib_i32 timing_manifest_run_l3_memory_recipe(
+    const timing_manifest_memory_recipe *recipe)
+{
+    return timing_manifest_run_l3_memory_recipe_with_inputs(recipe, 0u);
+}
+
+static lib_i32 timing_manifest_run_lock_memory_context(
+    const timing_manifest_memory_recipe *base_recipe, const char *key_id,
+    lib_i32 segment_override, lib_i32 odd_word)
+{
+    timing_manifest_memory_recipe recipe = *base_recipe;
+    lib_size index;
+    lib_size address_index;
+
+    recipe.key_id = key_id;
+    if (segment_override) {
+        for (index = recipe.program_bytes; index > 1u; --index) {
+            recipe.program[index] = recipe.program[index - 1u];
+        }
+        recipe.program[1] = 0x26u;
+        ++recipe.program_bytes;
+        recipe.expected_ticks += 2u;
+    }
+    if (odd_word) {
+        address_index = segment_override ? 4u : 3u;
+        recipe.program[address_index] = 1u;
+        recipe.expected_ticks += 8u;
+    }
+    return timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+        odd_word ? CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD : 0u);
+}
+
+typedef struct timing_manifest_string_recipe {
+    const char *key_id;
+    lib_u8 opcode;
+    lib_u64 expected_ticks;
+} timing_manifest_string_recipe;
+
+static lib_i32 timing_manifest_run_string_primitive_with_prefix_internal(
+    const timing_manifest_string_recipe *recipe, lib_u8 prefix,
+    lib_i32 odd_addresses, lib_u32 extra_required_inputs,
+    lib_i32 run_lock_companion, lib_i32 lock_prefix)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    const timing_manifest_record *record = recipe == LIB_NULL ? LIB_NULL :
+        timing_manifest_find(recipe->key_id);
+    const lib_u16 source_word = 0x5aa5u;
+    lib_u16 destination_word = 0u;
+    lib_u32 ax = 0u;
+    lib_u32 si = 0u;
+    lib_u32 di = 0u;
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine *machine = LIB_NULL;
+    lib_u8 program[3];
+    lib_u8 program_bytes = 0u;
+    const lib_u32 source_linear = odd_addresses ? 0x1001u : 0x1000u;
+    const lib_u32 destination_linear = odd_addresses ? 0x1101u : 0x1100u;
+    lib_i32 word = recipe != LIB_NULL && (recipe->opcode & 1u) != 0u;
+    if (lock_prefix) program[program_bytes++] = 0xf0u;
+    if (prefix != 0u) program[program_bytes++] = prefix;
+    program[program_bytes++] = recipe == LIB_NULL ? 0u : recipe->opcode;
+    lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+        lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+        lib_text_compare(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
+        !timing_manifest_prepare(&machine, &capture, program, program_bytes);
+
+    if (!failed) {
+        failed = timing_manifest_seed_es_from_ds(machine) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, source_linear, &source_word,
+            sizeof(source_word)) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        failed = timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_ESI,
+                (lib_u16)source_linear) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_EDI,
+                (lib_u16)destination_linear) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_EAX,
+                0x1234u) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+            !timing_manifest_ticks_match(capture.observation.source_ticks, recipe->expected_ticks) ||
+            !timing_manifest_disposition_matches(record,
+                capture.observation.timing_disposition) ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+            capture.observation.repeat_phase !=
+                CORE_MACHINE_RETIREMENT_REPEAT_PRIMITIVE ||
+            (capture.observation.formula_inputs &
+                CORE_MACHINE_CPU_TIMING_INPUT_REPEAT) != 0u;
+        failed |= (capture.observation.formula_inputs &
+            timing_manifest_required_inputs_for_profile(extra_required_inputs)) !=
+            timing_manifest_required_inputs_for_profile(extra_required_inputs);
+        if (!failed && (recipe->opcode == 0xa4u || recipe->opcode == 0xa5u ||
+            recipe->opcode == 0xaau || recipe->opcode == 0xabu)) {
+            failed = core_machine_memory_read(machine, destination_linear,
+                &destination_word,
+                sizeof(destination_word)) != LIB_STATUS_OK ||
+                destination_word != (recipe->opcode == 0xa4u ?
+                    (source_word & 0x00ffu) : recipe->opcode == 0xa5u ?
+                    source_word : recipe->opcode == 0xaau ? 0x0034u : 0x1234u);
+        }
+        if (!failed) {
+            failed = core_machine_debug_read_register(machine,
+                    CORE_MACHINE_DEBUG_EAX, &ax) != LIB_STATUS_OK ||
+                core_machine_debug_read_register(machine,
+                    CORE_MACHINE_DEBUG_ESI, &si) != LIB_STATUS_OK ||
+                core_machine_debug_read_register(machine,
+                    CORE_MACHINE_DEBUG_EDI, &di) != LIB_STATUS_OK;
+        }
+        if (!failed && (recipe->opcode == 0xacu || recipe->opcode == 0xadu)) {
+            failed = (lib_u16)ax != (word ? source_word :
+                (lib_u16)(0x1200u | (source_word & 0x00ffu)));
+        }
+        if (!failed) {
+            const lib_u16 step = word ? 2u : 1u;
+            const lib_u16 expected_si = recipe->opcode == 0xaau ||
+                recipe->opcode == 0xabu || recipe->opcode == 0xae ||
+                recipe->opcode == 0xafu ? (lib_u16)source_linear :
+                (lib_u16)(source_linear + step);
+            const lib_u16 expected_di = recipe->opcode == 0xacu ||
+                recipe->opcode == 0xadu ? (lib_u16)destination_linear :
+                (lib_u16)(destination_linear + step);
+            failed = (lib_u16)si != expected_si ||
+                (lib_u16)di != expected_di;
+        }
+    }
+    if (failed) {
+        lib_c_printf("I86 string ticks=%llu source=%llu inputs=%u phase=%d ax=%u si=%u di=%u\n",
+            run.ticks, capture.observation.source_ticks,
+            capture.observation.formula_inputs, capture.observation.repeat_phase,
+            (lib_u16)ax,
+            (lib_u16)si,
+            (lib_u16)di);
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n",
+            recipe == LIB_NULL ? "<null>" : recipe->key_id);
+    }
+    core_machine_destroy(machine);
+    if (!failed && run_lock_companion && record != LIB_NULL &&
+        !timing_manifest_text_contains(record->context, "LOCK")) {
+        timing_manifest_string_recipe locked = *recipe;
+        char key[160];
+
+        if (!timing_manifest_lock_key_for_context(record, recipe->key_id, key,
+                sizeof(key))) {
+            return 1;
+        }
+        locked.key_id = key;
+        locked.expected_ticks += 2u;
+        return timing_manifest_run_string_primitive_with_prefix_internal(&locked,
+            prefix, odd_addresses,
+            extra_required_inputs | CORE_MACHINE_CPU_TIMING_INPUT_LOCK, 0, 1);
+    }
+    return failed;
+}
+
+static lib_i32 timing_manifest_run_string_primitive_with_prefix(
+    const timing_manifest_string_recipe *recipe, lib_u8 prefix,
+    lib_i32 odd_addresses, lib_u32 extra_required_inputs)
+{
+    return timing_manifest_run_string_primitive_with_prefix_internal(recipe, prefix,
+        odd_addresses, extra_required_inputs, 1, 0);
+}
+
+static lib_i32 timing_manifest_run_string_primitive(
+    const timing_manifest_string_recipe *recipe)
+{
+    return timing_manifest_run_string_primitive_with_prefix(recipe, 0u, 0,
+        0u);
+}
+
+typedef struct timing_manifest_repeat_recipe {
+    const char *key_id;
+    lib_u8 prefix;
+    lib_u8 opcode;
+    lib_u64 first_ticks;
+    lib_u64 continuation_ticks;
+    lib_u64 zero_ticks;
+    lib_u8 segment_prefix;
+    lib_i32 odd_addresses;
+    lib_u32 required_formula_inputs;
+} timing_manifest_repeat_recipe;
+
+static lib_i32 timing_manifest_run_repeat_step(core_machine *machine,
+    timing_manifest_capture *capture, const timing_manifest_repeat_recipe *recipe,
+    core_machine_retirement_repeat_phase expected_phase,
+    lib_u64 expected_ticks)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result run = { 0 };
+    lib_i32 failed;
+
+    if (machine == LIB_NULL || capture == LIB_NULL || recipe == LIB_NULL) return 1;
+    capture->count = 0u;
+    lib_memory_set(&capture->observation, 0, sizeof(capture->observation));
+    failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+        run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+        !timing_manifest_ticks_match(run.ticks, expected_ticks) || capture->count != 1u ||
+        !timing_manifest_ticks_match(capture->observation.source_ticks, expected_ticks) ||
+        capture->observation.timing_disposition !=
+            CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+        !timing_manifest_origin_match(capture->observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+        capture->observation.repeat_phase != expected_phase ||
+        (capture->observation.formula_inputs &
+            (CORE_MACHINE_CPU_TIMING_INPUT_REPEAT |
+             CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE)) !=
+            (CORE_MACHINE_CPU_TIMING_INPUT_REPEAT |
+             CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE);
+    if (failed) {
+        lib_c_printf("I86 repeat ticks=%llu expected=%llu phase=%d expected_phase=%d inputs=%u\n",
+            run.ticks, expected_ticks, capture->observation.repeat_phase,
+            expected_phase, capture->observation.formula_inputs);
+    }
+    return failed;
+}
+
+static lib_i32 timing_manifest_run_repeat_recipe(
+    const timing_manifest_repeat_recipe *recipe)
+{
+    const timing_manifest_record *record = recipe == LIB_NULL ? LIB_NULL :
+        timing_manifest_find(recipe->key_id);
+    lib_u8 program[4];
+    lib_size program_bytes;
+    const lib_u16 source_word = 0x5aa5u;
+    lib_u16 destination_word = 0u;
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine *machine = LIB_NULL;
+    lib_u32 required_formula_inputs;
+    lib_i32 failed;
+
+    if (recipe == LIB_NULL) return 1;
+    required_formula_inputs = timing_manifest_required_inputs_for_profile(
+        recipe->required_formula_inputs);
+    program_bytes = 0u;
+    if (timing_manifest_text_contains(recipe->key_id, "-LOCK")) {
+        program[program_bytes++] = 0xf0u;
+    }
+    if (recipe->segment_prefix != 0u) program[program_bytes++] = recipe->segment_prefix;
+    program[program_bytes++] = recipe->prefix;
+    program[program_bytes++] = recipe->opcode;
+    failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+        lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+        lib_text_compare(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
+        !timing_manifest_prepare(&machine, &capture, program, program_bytes);
+
+    if (!failed) {
+        failed = timing_manifest_seed_es_from_ds(machine) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, recipe->odd_addresses ? 0x1001u :
+            0x1000u, &source_word,
+            sizeof(source_word)) != LIB_STATUS_OK;
+    }
+    if (!failed && (recipe->opcode == 0xa6u || recipe->opcode == 0xa7u)) {
+        destination_word = recipe->prefix == 0xf3u ? source_word : 0u;
+        failed = core_machine_memory_write(machine, recipe->odd_addresses ? 0x1101u :
+            0x1100u, &destination_word,
+            sizeof(destination_word)) != LIB_STATUS_OK;
+    }
+    if (!failed && (recipe->opcode == 0xaeu || recipe->opcode == 0xafu)) {
+        destination_word = recipe->prefix == 0xf3u ? 0x1234u : 0u;
+        failed = core_machine_memory_write(machine, recipe->odd_addresses ? 0x1101u :
+            0x1100u, &destination_word,
+            sizeof(destination_word)) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        failed = timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_ESI,
+                recipe->odd_addresses ? 0x1001u : 0x1000u) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_EDI,
+                recipe->odd_addresses ? 0x1101u : 0x1100u) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_EAX,
+                0x1234u) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_ECX,
+                2u) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        failed = timing_manifest_run_repeat_step(machine, &capture, recipe,
+            CORE_MACHINE_RETIREMENT_REPEAT_FIRST, recipe->first_ticks) ||
+            timing_manifest_run_repeat_step(machine, &capture, recipe,
+            CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION,
+                recipe->continuation_ticks) ||
+            (capture.observation.formula_inputs & required_formula_inputs) !=
+                required_formula_inputs;
+    }
+    core_machine_destroy(machine);
+    machine = LIB_NULL;
+    if (!failed) {
+        capture.count = 0u;
+        failed = !timing_manifest_prepare(&machine, &capture, program, program_bytes);
+    }
+    if (!failed) {
+        failed = timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_ECX,
+                0u) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        failed = timing_manifest_run_repeat_step(machine, &capture, recipe,
+            CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT, recipe->zero_ticks);
+    }
+    if (failed) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+/* This is only a scanner smoke: an opcode without ModRM is intentionally
+ * accepted once for each filler byte, so its count is not an instruction-form
+ * cardinality and must never be used as a closure denominator. */
+static lib_i32 timing_manifest_probe_decoder_lexeme_candidates(void)
+{
+    const char *const path = PROJECT_TEST_TIMING_MANIFEST_DECODER_INVENTORY_PATH;
+    lib_u16 opcode;
+    lib_u16 modrm;
+    lib_u32 accepted = 0u;
+    lib_u32 accepted_pairs;
+    lib_u32 accepted_opcodes = 0u;
+    lib_u8 opcode_seen[0x100] = { LIB_FALSE };
+    lib_c_file *file;
+    lib_i32 failed;
+
+    for (opcode = 0u; opcode <= 0xffu; ++opcode) {
+        for (modrm = 0u; modrm <= 0xffu; ++modrm) {
+            const lib_u8 bytes[15] = {
+                (lib_u8)opcode, (lib_u8)modrm
+            };
+            core_machine_cpu_instruction_lexeme lexeme;
+
+            if (!core_machine_cpu_instruction_lexeme_scan(bytes, sizeof(bytes),
+                    CORE_MACHINE_CPU_PROFILE_8086, LIB_FALSE, &lexeme) ||
+                !lexeme.available || lexeme.byte_count == 0u) continue;
+            ++accepted;
+            opcode_seen[opcode] = LIB_TRUE;
+        }
+    }
+    for (opcode = 0u; opcode <= 0xffu; ++opcode) {
+        if (opcode_seen[opcode]) ++accepted_opcodes;
+    }
+    /* This is a decoder-boundary sentinel, not the form denominator: six
+     * segment/repeat prefix bytes are accepted only before another opcode and
+     * LOCK is rejected by this lexical helper because its target legality is
+     * semantic.  The form contract must refine these 233 opcode candidates. */
+    if (accepted == 0u || accepted_opcodes != 233u) return 1;
+    accepted_pairs = accepted;
+    file = lib_c_fopen(path, "wb");
+    if (file == LIB_NULL || lib_c_fprintf(file,
+            "{\n  \"schema\": \"nxvm.8086-decoder-inventory.v1\",\n"
+            "  \"lexeme_opcode_modrm_candidates\": %u,\n"
+            "  \"lexeme_primary_opcodes\": [", accepted_pairs) < 0) {
+        if (file != LIB_NULL) lib_c_fclose(file);
+        return 1;
+    }
+    accepted = 0u;
+    for (opcode = 0u; opcode <= 0xffu; ++opcode) {
+        if (!opcode_seen[opcode]) continue;
+        if ((accepted != 0u && lib_c_fprintf(file, ",") < 0) ||
+                lib_c_fprintf(file, "\"%02X\"", opcode) < 0) {
+            lib_c_fclose(file);
+            return 1;
+        }
+        ++accepted;
+    }
+    failed = lib_c_fprintf(file, "],\n  \"semantic_only_prefixes\": "
+        "[\"F0\"]\n}\n") < 0;
+    if (lib_c_fclose(file) != 0) failed = 1;
+    if (failed) return 1;
+    lib_c_printf("M5:T435:S5:I86-DECODER-LEXEME-CANDIDATES:%u:%u\n", accepted,
+        accepted_opcodes);
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_decoder_form_rejections(void)
+{
+    static const lib_u8 invalid_forms[][2] = {
+        { 0xd0u, 0xf0u }, { 0x8cu, 0xe0u }, { 0x8eu, 0xc8u }
+    };
+    static const lib_u8 valid_forms[][2] = {
+        { 0xd0u, 0xd0u }, { 0x8cu, 0xd8u }, { 0x8eu, 0xd0u }
+    };
+    core_machine_cpu_instruction_lexeme lexeme;
+    lib_size index;
+
+    for (index = 0u; index < sizeof(invalid_forms) / sizeof(invalid_forms[0]);
+        ++index) {
+        if (core_machine_cpu_instruction_lexeme_scan(invalid_forms[index], 2u,
+                CORE_MACHINE_CPU_PROFILE_8086, LIB_FALSE, &lexeme)) return 1;
+    }
+    for (index = 0u; index < sizeof(valid_forms) / sizeof(valid_forms[0]);
+        ++index) {
+        if (!core_machine_cpu_instruction_lexeme_scan(valid_forms[index], 2u,
+                CORE_MACHINE_CPU_PROFILE_8086, LIB_FALSE, &lexeme) ||
+            !lexeme.available) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_xlat_function(void)
+{
+    static const lib_u8 program[] = { 0xd7u };
+    const timing_manifest_record *record = timing_manifest_find("I86-XLAT");
+    const core_machine_run_budget budget = { 1u, 0u };
+    const lib_u8 expected_value = 0xa5u;
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine_debug_cpu_snapshot snapshot = { 0 };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = record == LIB_NULL || !timing_manifest_prepare(&machine,
+        &capture, program, sizeof(program));
+
+    if (!failed) {
+        failed = timing_manifest_seed_word(machine, CORE_MACHINE_DEBUG_EBX,
+                0x0010u) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EAX,
+                (snapshot.eax & 0xffffff00u) | 0x04u) != LIB_STATUS_OK;
+        if (!failed) failed = core_machine_memory_write(machine, 0x0014u, &expected_value,
+                sizeof(expected_value)) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            !timing_manifest_ticks_match(run.ticks, 11u) || capture.count != 1u ||
+            (lib_u8)snapshot.eax != expected_value ||
+            !timing_manifest_ticks_match(capture.observation.source_ticks, 11u) ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY);
+    }
+    if (failed) lib_c_printf("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-XLAT-FUNCTION\n");
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 timing_manifest_probe_pop_cs_function(void)
+{
+    static const lib_u8 program[] = { 0x0fu };
+    static const lib_u8 new_cs[] = { 0x34u, 0x12u };
+    const timing_manifest_record *record = timing_manifest_find("I86-POP-SEG-CS");
+    const core_machine_run_budget budget = { 1u, 0u };
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine_debug_cpu_snapshot snapshot = {0};
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = record == LIB_NULL || !timing_manifest_prepare(&machine,
+        &capture, program, sizeof(program));
+
+    if (!failed) {
+        failed = timing_manifest_seed_word(machine,
+                CORE_MACHINE_DEBUG_ESP, 0x0200u) != LIB_STATUS_OK;
+        if (!failed) failed = core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine,
+                snapshot.ss.base + 0x0200u, new_cs,
+                sizeof(new_cs)) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            !timing_manifest_ticks_match(run.ticks, 8u) || capture.count != 1u ||
+            snapshot.cs.selector != 0x1234u ||
+            snapshot.cs.base != 0x12340u ||
+            (lib_u16)snapshot.esp != 0x0202u ||
+            !timing_manifest_ticks_match(capture.observation.source_ticks, 8u) ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY);
+    }
+    if (failed) lib_c_printf("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-POP-SEG-CS-FUNCTION\n");
+    core_machine_destroy(machine);
+    return failed;
+}
+
+/* Functional predicates are deliberately separate from the timing recipes:
+ * a classified retirement alone cannot establish the 8086 architectural
+ * result. These are the first semantic family checks in the S5 runner. */
+static lib_i32 timing_manifest_probe_alu_function(void)
+{
+    typedef struct timing_manifest_alu_function_recipe {
+        lib_u8 program[2];
+        lib_u16 ax;
+        lib_u16 bx;
+        lib_u32 eflags;
+        lib_u16 expected_ax;
+        lib_u32 expected_flags;
+    } timing_manifest_alu_function_recipe;
+    static const timing_manifest_alu_function_recipe recipes[] = {
+        { { 0x03u, 0xc3u }, 1u, 2u, 0u, 3u, 0u },
+        { { 0x13u, 0xc3u }, 1u, 2u, CORE_MACHINE_DEBUG_EFLAGS_CF, 4u, 0u },
+        { { 0x2bu, 0xc3u }, 1u, 2u, 0u, 0xffffu,
+            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_SF },
+        { { 0x1bu, 0xc3u }, 4u, 2u, CORE_MACHINE_DEBUG_EFLAGS_CF, 1u, 0u },
+        { { 0x0bu, 0xc3u }, 0x00f0u, 0x0f00u, 0u, 0x0ff0u, 0u },
+        { { 0x23u, 0xc3u }, 0x00f0u, 0x0f00u, 0u, 0u, CORE_MACHINE_DEBUG_EFLAGS_ZF },
+        { { 0x33u, 0xc3u }, 0x00f0u, 0x0f00u, 0u, 0x0ff0u, 0u }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        const lib_u32 observed_mask = CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_ZF |
+            CORE_MACHINE_DEBUG_EFLAGS_SF;
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, sizeof(recipes[index].program));
+
+        if (!failed) {
+            failed = timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EAX, recipes[index].ax) != LIB_STATUS_OK ||
+                timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EBX, recipes[index].bx) != LIB_STATUS_OK ||
+                core_machine_debug_write_register(machine,
+                    CORE_MACHINE_DEBUG_EFLAGS, recipes[index].eflags) != LIB_STATUS_OK;
+            if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.executed != 1u || (lib_u16)snapshot.eax !=
+                    recipes[index].expected_ax ||
+                (snapshot.eflags & observed_mask) !=
+                    recipes[index].expected_flags;
+        }
+        core_machine_destroy(machine);
+        if (failed) {
+            lib_c_printf("M5:T435:S5:I86-FUNCTION:FAIL:ALU:%u\n", (unsigned)index);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_adjustment_function(void)
+{
+    typedef struct timing_manifest_adjustment_function_recipe {
+        lib_u8 program[2];
+        lib_u8 bytes;
+        lib_u16 ax;
+        lib_u16 expected_ax;
+        lib_u16 expected_dx;
+        lib_u32 observed_flags;
+        lib_u32 expected_flags;
+    } timing_manifest_adjustment_function_recipe;
+    static const timing_manifest_adjustment_function_recipe recipes[] = {
+        { { 0x37u, 0u }, 1u, 0x000bu, 0x0101u, 0u, CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_AF,
+            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_AF },
+        { { 0x3fu, 0u }, 1u, 0x010bu, 0x0005u, 0u, CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_AF,
+            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_AF },
+        { { 0x27u, 0u }, 1u, 0x000au, 0x0010u, 0u, CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_AF,
+            CORE_MACHINE_DEBUG_EFLAGS_AF },
+        { { 0x2fu, 0u }, 1u, 0x000au, 0x0004u, 0u, CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_AF,
+            CORE_MACHINE_DEBUG_EFLAGS_AF },
+        { { 0xd5u, 0x0au }, 2u, 0x0203u, 0x0017u, 0u, 0u, 0u },
+        { { 0xd4u, 0x0au }, 2u, 0x0023u, 0x0305u, 0u, 0u, 0u },
+        { { 0x98u, 0u }, 1u, 0x0080u, 0xff80u, 0u, 0u, 0u },
+        { { 0x99u, 0u }, 1u, 0x8000u, 0x8000u, 0xffffu, 0u, 0u }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, recipes[index].bytes);
+
+        if (!failed) {
+            failed = timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EAX, recipes[index].ax) != LIB_STATUS_OK;
+            if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.executed != 1u || (lib_u16)snapshot.eax !=
+                    recipes[index].expected_ax || (lib_u16)snapshot.edx !=
+                    recipes[index].expected_dx ||
+                (snapshot.eflags & recipes[index].observed_flags) !=
+                    recipes[index].expected_flags;
+        }
+        core_machine_destroy(machine);
+        if (failed) {
+            lib_c_printf("M5:T435:S5:I86-FUNCTION:FAIL:ADJUST:%u\n", (unsigned)index);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_data_stack_function(void)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    const lib_u8 mov[] = { 0xb8u, 0x34u, 0x12u };
+    const lib_u8 xchg[] = { 0x93u };
+    const lib_u8 push[] = { 0x50u };
+    const lib_u8 pop[] = { 0x5bu };
+    const lib_u16 pushed = 0x4a3cu;
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine_debug_cpu_snapshot snapshot = { 0 };
+    core_machine *machine = LIB_NULL;
+    lib_u16 observed = 0u;
+    lib_i32 failed = !timing_manifest_prepare(&machine, &capture, mov, sizeof(mov));
+
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            (lib_u16)snapshot.eax != 0x1234u;
+    }
+    core_machine_destroy(machine);
+    machine = LIB_NULL;
+    if (!failed && timing_manifest_prepare(&machine, &capture, xchg, sizeof(xchg))) {
+        failed = timing_manifest_seed_word(machine,
+                CORE_MACHINE_DEBUG_EAX, 0x1234u) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine,
+                CORE_MACHINE_DEBUG_EBX, 0x5678u) != LIB_STATUS_OK;
+        if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            (lib_u16)snapshot.eax != 0x5678u ||
+            (lib_u16)snapshot.ebx != 0x1234u;
+    } else if (!failed) failed = 1;
+    core_machine_destroy(machine);
+    machine = LIB_NULL;
+    if (!failed && timing_manifest_prepare(&machine, &capture, push, sizeof(push))) {
+        failed = timing_manifest_seed_word(machine,
+                CORE_MACHINE_DEBUG_EAX, pushed) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine,
+                CORE_MACHINE_DEBUG_ESP, 0x8000u) != LIB_STATUS_OK;
+        if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            (lib_u16)snapshot.esp != 0x7ffeu ||
+            core_machine_memory_read(machine, 0x7ffeu, &observed, sizeof(observed)) !=
+                LIB_STATUS_OK || observed != pushed;
+    } else if (!failed) failed = 1;
+    core_machine_destroy(machine);
+    machine = LIB_NULL;
+    if (!failed && timing_manifest_prepare(&machine, &capture, pop, sizeof(pop))) {
+        failed = timing_manifest_seed_word(machine,
+                CORE_MACHINE_DEBUG_ESP, 0x8000u) != LIB_STATUS_OK;
+        if (!failed) failed = core_machine_memory_write(machine, 0x8000u, &pushed, sizeof(pushed)) !=
+                LIB_STATUS_OK || core_machine_run(machine, budget, &run) !=
+                LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK || (lib_u16)snapshot.ebx != pushed ||
+            (lib_u16)snapshot.esp != 0x8002u;
+    } else if (!failed) failed = 1;
+    core_machine_destroy(machine);
+    if (failed) lib_c_printf("M5:T435:S5:I86-FUNCTION:FAIL:DATA-STACK\n");
+    return failed;
+}
+
+static lib_i32 timing_manifest_probe_group3_function(void)
+{
+    typedef struct timing_manifest_group3_function_recipe {
+        lib_u8 program[2];
+        lib_u16 ax;
+        lib_u16 bx;
+        lib_u16 expected_ax;
+        lib_u16 expected_dx;
+    } timing_manifest_group3_function_recipe;
+    static const timing_manifest_group3_function_recipe recipes[] = {
+        { { 0xf6u, 0xe3u }, 2u, 3u, 6u, 0u },
+        { { 0xf6u, 0xebu }, 0xfffeu, 3u, 0xfffau, 0u },
+        { { 0xf6u, 0xf3u }, 7u, 3u, 0x0102u, 0u },
+        { { 0xf6u, 0xfbu }, 0xfff9u, 3u, 0xfffeu, 0u },
+        { { 0xf7u, 0xe3u }, 2u, 3u, 6u, 0u },
+        { { 0xf7u, 0xebu }, 0xfffeu, 3u, 0xfffau, 0xffffu },
+        { { 0xf7u, 0xf3u }, 7u, 3u, 2u, 1u },
+        { { 0xf7u, 0xfbu }, 0xfff9u, 3u, 0xfffeu, 0xffffu }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, sizeof(recipes[index].program));
+
+        if (!failed) {
+            failed = timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EAX, recipes[index].ax) != LIB_STATUS_OK ||
+                timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EBX, recipes[index].bx) != LIB_STATUS_OK ||
+                timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EDX, recipes[index].program[0] == 0xf7u &&
+                recipes[index].program[1] == 0xfbu ? 0xffffu : 0u) != LIB_STATUS_OK;
+            if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.executed != 1u || (lib_u16)snapshot.eax !=
+                    recipes[index].expected_ax || (lib_u16)snapshot.edx !=
+                    recipes[index].expected_dx;
+        }
+        core_machine_destroy(machine);
+        if (failed) {
+            lib_c_printf("M5:T435:S5:I86-FUNCTION:FAIL:GROUP3:%u\n", (unsigned)index);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_branch_function(void)
+{
+    typedef struct timing_manifest_branch_function_recipe {
+        lib_u8 program[2];
+        lib_u16 cx;
+        lib_u32 eflags;
+        lib_u16 expected_ip;
+        lib_u16 expected_cx;
+    } timing_manifest_branch_function_recipe;
+    static const timing_manifest_branch_function_recipe recipes[] = {
+        { { 0x74u, 0x02u }, 0u, CORE_MACHINE_DEBUG_EFLAGS_ZF, 0xfff4u, 0u },
+        { { 0x74u, 0x02u }, 0u, 0u, 0xfff2u, 0u },
+        { { 0xe2u, 0x02u }, 2u, 0u, 0xfff4u, 1u },
+        { { 0xe2u, 0x02u }, 1u, 0u, 0xfff2u, 0u },
+        { { 0xe3u, 0x02u }, 0u, 0u, 0xfff4u, 0u }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, sizeof(recipes[index].program));
+
+        if (!failed) {
+            failed = timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_ECX, recipes[index].cx) != LIB_STATUS_OK ||
+                core_machine_debug_write_register(machine,
+                    CORE_MACHINE_DEBUG_EFLAGS, recipes[index].eflags) != LIB_STATUS_OK;
+            if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.executed != 1u || (lib_u16)snapshot.eip !=
+                    recipes[index].expected_ip || (lib_u16)snapshot.ecx !=
+                    recipes[index].expected_cx;
+        }
+        if (failed) {
+            lib_c_printf("M5:T435:S5:I86-FUNCTION:FAIL:BRANCH:%u:ip=%u:cx=%u\n",
+                (unsigned)index, (lib_u16)snapshot.eip,
+                (lib_u16)snapshot.ecx);
+            core_machine_destroy(machine);
+            return 1;
+        }
+        core_machine_destroy(machine);
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_flag_function(void)
+{
+    typedef struct timing_manifest_flag_function_recipe {
+        lib_u8 opcode;
+        lib_u32 initial_flags;
+        lib_u32 expected_flags;
+    } timing_manifest_flag_function_recipe;
+    static const timing_manifest_flag_function_recipe recipes[] = {
+        { 0xf8u, CORE_MACHINE_DEBUG_EFLAGS_CF, 0u },
+        { 0xf9u, 0u, CORE_MACHINE_DEBUG_EFLAGS_CF },
+        { 0xf5u, CORE_MACHINE_DEBUG_EFLAGS_CF, 0u },
+        { 0xfcu, CORE_MACHINE_DEBUG_EFLAGS_DF, 0u },
+        { 0xfdu, 0u, CORE_MACHINE_DEBUG_EFLAGS_DF },
+        { 0xfau, CORE_MACHINE_DEBUG_EFLAGS_IF, 0u },
+        { 0xfbu, 0u, CORE_MACHINE_DEBUG_EFLAGS_IF }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const lib_u32 observed = CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_DF |
+        CORE_MACHINE_DEBUG_EFLAGS_IF;
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
+            &recipes[index].opcode, 1u);
+
+        if (!failed) {
+            failed = core_machine_debug_write_register(machine,
+                    CORE_MACHINE_DEBUG_EFLAGS, recipes[index].initial_flags) != LIB_STATUS_OK;
+            if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.executed != 1u || (snapshot.eflags & observed) !=
+                    recipes[index].expected_flags;
+        }
+        core_machine_destroy(machine);
+        if (failed) {
+            lib_c_printf("M5:T435:S5:I86-FUNCTION:FAIL:FLAGS:%u\n", (unsigned)index);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_compare_function(void)
+{
+    typedef struct timing_manifest_compare_function_recipe {
+        lib_u8 program[2];
+        lib_u16 ax;
+        lib_u16 bx;
+        lib_u32 expected_flags;
+    } timing_manifest_compare_function_recipe;
+    static const timing_manifest_compare_function_recipe recipes[] = {
+        { { 0x3bu, 0xc3u }, 1u, 2u, CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_SF },
+        { { 0x3bu, 0xc3u }, 2u, 2u, CORE_MACHINE_DEBUG_EFLAGS_ZF },
+        { { 0x85u, 0xc3u }, 0x00f0u, 0x0f00u, CORE_MACHINE_DEBUG_EFLAGS_ZF }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const lib_u32 observed = CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_ZF |
+        CORE_MACHINE_DEBUG_EFLAGS_SF | CORE_MACHINE_DEBUG_EFLAGS_OF;
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, sizeof(recipes[index].program));
+
+        if (!failed) {
+            failed = timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EAX, recipes[index].ax) != LIB_STATUS_OK ||
+                timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EBX, recipes[index].bx) != LIB_STATUS_OK;
+            if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.executed != 1u || (lib_u16)snapshot.eax !=
+                    recipes[index].ax || (snapshot.eflags & observed) !=
+                    recipes[index].expected_flags;
+        }
+        core_machine_destroy(machine);
+        if (failed) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_unary_function(void)
+{
+    typedef struct timing_manifest_unary_function_recipe {
+        lib_u8 program[2];
+        lib_u16 ax;
+        lib_u16 expected_ax;
+        lib_u32 initial_flags;
+        lib_u32 expected_flags;
+    } timing_manifest_unary_function_recipe;
+    static const timing_manifest_unary_function_recipe recipes[] = {
+        { { 0x40u, 0u }, 0xffffu, 0u, CORE_MACHINE_DEBUG_EFLAGS_CF, CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_ZF },
+        { { 0x48u, 0u }, 0u, 0xffffu, CORE_MACHINE_DEBUG_EFLAGS_CF, CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_SF },
+        { { 0xf7u, 0xd0u }, 0x00f0u, 0xff0fu, 0u, 0u },
+        { { 0xf7u, 0xd8u }, 1u, 0xffffu, 0u, CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_SF }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const lib_u32 observed = CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_ZF |
+        CORE_MACHINE_DEBUG_EFLAGS_SF;
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, recipes[index].program[1] == 0u ? 1u : 2u);
+
+        if (!failed) {
+            failed = timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EAX, recipes[index].ax) != LIB_STATUS_OK ||
+                core_machine_debug_write_register(machine,
+                    CORE_MACHINE_DEBUG_EFLAGS, recipes[index].initial_flags) != LIB_STATUS_OK;
+            if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                (lib_u16)snapshot.eax != recipes[index].expected_ax ||
+                (snapshot.eflags & observed) != recipes[index].expected_flags;
+        }
+        core_machine_destroy(machine);
+        if (failed) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_lahf_sahf_function(void)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    const lib_u8 lahf = 0x9fu;
+    const lib_u8 sahf = 0x9eu;
+    const lib_u32 flags = CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_PF |
+        CORE_MACHINE_DEBUG_EFLAGS_AF | CORE_MACHINE_DEBUG_EFLAGS_ZF | CORE_MACHINE_DEBUG_EFLAGS_SF;
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine_debug_cpu_snapshot snapshot = { 0 };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !timing_manifest_prepare(&machine, &capture, &lahf, 1u);
+
+    if (!failed) {
+        failed = timing_manifest_seed_word(machine,
+                CORE_MACHINE_DEBUG_EAX, 0x1200u) != LIB_STATUS_OK ||
+            core_machine_debug_write_register(machine,
+                CORE_MACHINE_DEBUG_EFLAGS, flags) != LIB_STATUS_OK;
+        if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            (lib_u16)snapshot.eax != 0xd700u;
+    }
+    core_machine_destroy(machine);
+    machine = LIB_NULL;
+    if (!failed && timing_manifest_prepare(&machine, &capture, &sahf, 1u)) {
+        failed = timing_manifest_seed_word(machine,
+                CORE_MACHINE_DEBUG_EAX, 0xd700u) != LIB_STATUS_OK;
+        if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            (snapshot.eflags & flags) != flags;
+    } else if (!failed) failed = 1;
+    core_machine_destroy(machine);
+    return failed;
+}
+
+/* LOCK is an 8086 prefix, not an RMW-form whitelist.  These representatives
+ * deliberately cross the legacy, primary, control-stack and string owners;
+ * each must retire once with the documented two-clock additive term. */
+static lib_i32 timing_manifest_probe_general_lock_prefix(void)
+{
+    static const timing_manifest_recipe recipes[] = {
+        { "LOCK-NOP", { 0xf0u, 0x90u }, 2u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "LOCK-MOV-RI", { 0xf0u, 0xb8u, 0x34u, 0x12u }, 4u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "LOCK-PUSH-R", { 0xf0u, 0x50u }, 2u, 13u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "LOCK-MOVSB", { 0xf0u, 0xa4u }, 2u, 20u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    lib_size index;
+
+    /* The 8086 corpus deliberately includes the historical broad LOCK
+     * surface.  Table 2-21's 8088 row is verified through source-backed
+     * memory-form entries, so these 8086-only representatives do not become
+     * accidental 8088 timing claims. */
+    if (PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE ==
+        CORE_MACHINE_CPU_PROFILE_8088) return 0;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, recipes[index].program_bytes);
+
+        if (!failed) {
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipes[index].expected_ticks) || capture.count != 1u ||
+                !timing_manifest_ticks_match(capture.observation.source_ticks, recipes[index].expected_ticks) ||
+                capture.observation.timing_disposition !=
+                    CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, recipes[index].expected_origin) ||
+                (capture.observation.formula_inputs &
+                    CORE_MACHINE_CPU_TIMING_INPUT_LOCK) == 0u;
+        }
+        core_machine_destroy(machine);
+        if (failed) {
+            lib_c_printf("M5:T435:S5:I86-LOCK-GENERAL:FAIL:%s\n",
+                recipes[index].key_id);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_adjustments(void)
+{
+    static const timing_manifest_recipe recipes[] = {
+        { "I86-ADJ-AAA", { 0x37u, 0u }, 1u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-ADJ-AAS", { 0x3fu, 0u }, 1u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-ADJ-DAA", { 0x27u, 0u }, 1u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-ADJ-DAS", { 0x2fu, 0u }, 1u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-ADJ-AAD", { 0xd5u, 0x0au }, 2u, 60u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-ADJ-AAM", { 0xd4u, 0x0au }, 2u, 83u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-CONV-CBW", { 0x98u, 0u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-CONV-CWD", { 0x99u, 0u }, 1u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-XLAT", { 0xd7u, 0u }, 1u, 11u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-FLAG-CLC", { 0xf8u, 0u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-FLAG-CLD", { 0xfcu, 0u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-FLAG-CLI", { 0xfau, 0u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-FLAG-CMC", { 0xf5u, 0u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-FLAG-STC", { 0xf9u, 0u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-FLAG-STD", { 0xfdu, 0u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-FLAG-STI", { 0xfbu, 0u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-FLAG-LAHF", { 0x9fu, 0u }, 1u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-FLAG-SAHF", { 0x9eu, 0u }, 1u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-FLAG-NOP", { 0x90u, 0u }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_exact_recipe(&recipes[index])) {
+            lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:%s\n",
+                recipes[index].key_id);
+            return 1;
+        }
+    }
+    {
+        static const timing_manifest_recipe segment_recipe = {
+            "I86-XLAT-SEGMENT", { 0x26u, 0xd7u }, 2u, 13u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY
+        };
+        static const timing_manifest_recipe locked_segment_recipe = {
+            "I86-XLAT-LOCK-SEGMENT", { 0xf0u, 0x26u, 0xd7u }, 3u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY
+        };
+
+        if (timing_manifest_run_exact_recipe_with_inputs_and_formula(
+                &segment_recipe, 0u, 0u, 0u,
+                CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,
+                CORE_MACHINE_RETIREMENT_CONTROL_NONE)) return 1;
+        if (timing_manifest_run_exact_recipe_with_inputs_and_formula(
+                &locked_segment_recipe, 0u, 0u, 0u,
+                CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+                CORE_MACHINE_CPU_TIMING_INPUT_LOCK,
+                CORE_MACHINE_RETIREMENT_CONTROL_NONE)) return 1;
+    }
+    if (timing_manifest_probe_xlat_function()) return 1;
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_alu_register_forms(void)
+{
+    static const char *const rr_keys[] = {
+        "I86-ALU-ADD-RR", "I86-ALU-OR-RR", "I86-ALU-ADC-RR",
+        "I86-ALU-SBB-RR", "I86-ALU-AND-RR", "I86-ALU-SUB-RR",
+        "I86-ALU-XOR-RR"
+    };
+    static const char *const ri_keys[] = {
+        "I86-ALU-ADD-RI", "I86-ALU-OR-RI", "I86-ALU-ADC-RI",
+        "I86-ALU-SBB-RI", "I86-ALU-AND-RI", "I86-ALU-SUB-RI",
+        "I86-ALU-XOR-RI"
+    };
+    static const char *const ai_keys[] = {
+        "I86-ALU-ADD-AI", "I86-ALU-OR-AI", "I86-ALU-ADC-AI",
+        "I86-ALU-SBB-AI", "I86-ALU-AND-AI", "I86-ALU-SUB-AI",
+        "I86-ALU-XOR-AI"
+    };
+    static const lib_u8 bases[] = {
+        0x00u, 0x08u, 0x10u, 0x18u, 0x20u, 0x28u, 0x30u
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(bases) / sizeof(bases[0]); ++index) {
+        timing_manifest_recipe recipe = {
+            rr_keys[index], { (lib_u8)(bases[index] + 3u), 0xc1u }, 2u,
+            3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY
+        };
+
+        if (timing_manifest_run_exact_recipe(&recipe)) return 1;
+        recipe.key_id = ri_keys[index];
+        recipe.program[0] = 0x81u;
+        recipe.program[1] = (lib_u8)(0xc0u | (index << 3u));
+        recipe.program[2] = 0x01u;
+        recipe.program[3] = 0u;
+        recipe.program_bytes = 4u;
+        recipe.expected_ticks = 4u;
+        if (timing_manifest_run_exact_recipe(&recipe)) return 1;
+        recipe.key_id = ai_keys[index];
+        recipe.program[0] = (lib_u8)(bases[index] + 5u);
+        recipe.program[1] = 0x01u;
+        recipe.program[2] = 0u;
+        recipe.program_bytes = 3u;
+        if (timing_manifest_run_exact_recipe(&recipe)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_compare_and_test_register_forms(void)
+{
+    static const timing_manifest_recipe recipes[] = {
+        { "I86-CMP-RR", { 0x3bu, 0xc1u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-CMP-RI", { 0x81u, 0xf8u, 0x01u, 0u }, 4u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-CMP-AI", { 0x3du, 0x01u, 0u }, 3u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-TEST-RR", { 0x85u, 0xc1u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-TEST-RI", { 0xf7u, 0xc0u, 0x01u, 0u }, 4u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-TEST-AI", { 0xa9u, 0x01u, 0u }, 3u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+    };
+    {
+        lib_size index;
+
+        for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+            if (timing_manifest_run_exact_recipe(&recipes[index])) return 1;
+        }
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_register_data_forms(void)
+{
+    static const timing_manifest_recipe recipes[] = {
+        { "I86-INC-R16", { 0x40u, 0u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-INC-R8", { 0xfeu, 0xc0u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-DEC-R16", { 0x48u, 0u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-DEC-R8", { 0xfeu, 0xc8u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-NOT-R", { 0xf7u, 0xd0u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-NEG-R", { 0xf7u, 0xd8u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-XCHG-AXR", { 0x91u, 0u }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-XCHG-RR", { 0x87u, 0xc1u }, 2u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-MOV-RR", { 0x8bu, 0xc1u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-MOV-RI", { 0xb8u, 0x34u, 0x12u }, 3u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_exact_recipe(&recipes[index])) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_stack_register_forms(void)
+{
+    static const timing_manifest_recipe recipes[] = {
+        { "I86-PUSH-R", { 0x50u, 0u }, 1u, 11u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-PUSH-SEG-ES", { 0x06u, 0u }, 1u, 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-PUSH-SEG-CS", { 0x0eu, 0u }, 1u, 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-PUSH-SEG-SS", { 0x16u, 0u }, 1u, 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-PUSH-SEG-DS", { 0x1eu, 0u }, 1u, 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-PUSH-F", { 0x9cu, 0u }, 1u, 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-POP-R", { 0x58u, 0u }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-POP-SEG-ES", { 0x07u, 0u }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-POP-SEG-CS", { 0x0fu, 0u }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-POP-SEG-SS", { 0x17u, 0u }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-POP-SEG-DS", { 0x1fu, 0u }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-POP-F", { 0x9du, 0u }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_exact_recipe(&recipes[index])) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_conditional_branches(void)
+{
+    static const char *const taken_keys[] = {
+        "I86-JCC-JO-TAKEN", "I86-JCC-JNO-TAKEN", "I86-JCC-JB-TAKEN",
+        "I86-JCC-JAE-TAKEN", "I86-JCC-JE-TAKEN", "I86-JCC-JNE-TAKEN",
+        "I86-JCC-JBE-TAKEN", "I86-JCC-JA-TAKEN", "I86-JCC-JS-TAKEN",
+        "I86-JCC-JNS-TAKEN", "I86-JCC-JP-TAKEN", "I86-JCC-JNP-TAKEN",
+        "I86-JCC-JL-TAKEN", "I86-JCC-JGE-TAKEN", "I86-JCC-JLE-TAKEN",
+        "I86-JCC-JG-TAKEN"
+    };
+    static const char *const not_keys[] = {
+        "I86-JCC-JO-NOT", "I86-JCC-JNO-NOT", "I86-JCC-JB-NOT",
+        "I86-JCC-JAE-NOT", "I86-JCC-JE-NOT", "I86-JCC-JNE-NOT",
+        "I86-JCC-JBE-NOT", "I86-JCC-JA-NOT", "I86-JCC-JS-NOT",
+        "I86-JCC-JNS-NOT", "I86-JCC-JP-NOT", "I86-JCC-JNP-NOT",
+        "I86-JCC-JL-NOT", "I86-JCC-JGE-NOT", "I86-JCC-JLE-NOT",
+        "I86-JCC-JG-NOT"
+    };
+    static const lib_u32 taken_flags[] = {
+        CORE_MACHINE_DEBUG_EFLAGS_OF, 0u, CORE_MACHINE_DEBUG_EFLAGS_CF, 0u,
+        CORE_MACHINE_DEBUG_EFLAGS_ZF, 0u, CORE_MACHINE_DEBUG_EFLAGS_CF, 0u,
+        CORE_MACHINE_DEBUG_EFLAGS_SF, 0u, CORE_MACHINE_DEBUG_EFLAGS_PF, 0u,
+        CORE_MACHINE_DEBUG_EFLAGS_SF, 0u, CORE_MACHINE_DEBUG_EFLAGS_ZF, 0u
+    };
+    static const lib_u32 not_flags[] = {
+        0u, CORE_MACHINE_DEBUG_EFLAGS_OF, 0u, CORE_MACHINE_DEBUG_EFLAGS_CF,
+        0u, CORE_MACHINE_DEBUG_EFLAGS_ZF, 0u, CORE_MACHINE_DEBUG_EFLAGS_CF,
+        0u, CORE_MACHINE_DEBUG_EFLAGS_SF, 0u, CORE_MACHINE_DEBUG_EFLAGS_PF,
+        0u, CORE_MACHINE_DEBUG_EFLAGS_SF, 0u, CORE_MACHINE_DEBUG_EFLAGS_ZF
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(taken_keys) / sizeof(taken_keys[0]); ++index) {
+        timing_manifest_recipe recipe = {
+            taken_keys[index], { (lib_u8)(0x70u + index), 0x01u },
+            2u, 16u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY
+        };
+
+        if (timing_manifest_run_exact_recipe_with_control(&recipe,
+                taken_flags[index], 0u,
+                CORE_MACHINE_RETIREMENT_CONTROL_TAKEN)) return 1;
+        recipe.key_id = not_keys[index];
+        recipe.expected_ticks = 4u;
+        if (timing_manifest_run_exact_recipe_with_control(&recipe,
+                not_flags[index], 0u,
+                CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_counted_branches(void)
+{
+    static const timing_manifest_recipe recipes[] = {
+        { "I86-JCXZ-TAKEN", { 0xe3u, 0x01u }, 2u, 18u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-JCXZ-NOT", { 0xe3u, 0x01u }, 2u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-LOOP-TAKEN", { 0xe2u, 0x01u }, 2u, 17u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-LOOP-NOT", { 0xe2u, 0x01u }, 2u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-LOOPE-TAKEN", { 0xe1u, 0x01u }, 2u, 18u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-LOOPE-NOT", { 0xe1u, 0x01u }, 2u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-LOOPNE-TAKEN", { 0xe0u, 0x01u }, 2u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-LOOPNE-NOT", { 0xe0u, 0x01u }, 2u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
+    };
+    static const lib_u32 flags[] = {
+        0u, 0u, 0u, 0u, CORE_MACHINE_DEBUG_EFLAGS_ZF, CORE_MACHINE_DEBUG_EFLAGS_ZF, 0u, 0u
+    };
+    static const lib_u16 cx[] = {
+        0u, 1u, 2u, 1u, 2u, 1u, 2u, 1u
+    };
+    static const core_machine_retirement_control_outcome outcomes[] = {
+        CORE_MACHINE_RETIREMENT_CONTROL_TAKEN,
+        CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,
+        CORE_MACHINE_RETIREMENT_CONTROL_TAKEN,
+        CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,
+        CORE_MACHINE_RETIREMENT_CONTROL_TAKEN,
+        CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,
+        CORE_MACHINE_RETIREMENT_CONTROL_TAKEN,
+        CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_exact_recipe_with_control(&recipes[index],
+                flags[index], cx[index], outcomes[index])) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_wait_and_escape(void)
+{
+    static const timing_manifest_recipe recipes[] = {
+        { "I86-WAIT", { 0x9bu, 0u }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-ESC-R", { 0xd8u, 0xc0u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_exact_recipe(&recipes[index])) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_escape_memory_forms(void)
+{
+    static const timing_manifest_memory_recipe recipes[] = {
+        { "I86-ESC-M", { 0xd8u, 0x06u, 0u, 0x10u }, 4u, 14u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 0u, 0u, 0u, 0u },
+        { "I86-ESC-M-SEGMENT", { 0x26u, 0xd8u, 0x06u, 0u, 0x10u }, 5u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 0u, 0u, 0u, 0u }
+    };
+
+    return timing_manifest_run_l3_memory_recipe_with_inputs(&recipes[0],
+        CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+        CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS) ||
+        timing_manifest_run_l3_memory_recipe_with_inputs(&recipes[1],
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE);
+}
+
+static lib_i32 timing_manifest_probe_group2_register_one(void)
+{
+    static const char *const keys[] = {
+        "I86-ROL-R1", "I86-ROR-R1", "I86-RCL-R1", "I86-RCR-R1",
+        "I86-SHL-R1", "I86-SHR-R1", "I86-SAR-R1"
+    };
+    static const lib_u8 extensions[] = { 0u, 1u, 2u, 3u, 4u, 5u, 7u };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
+        timing_manifest_recipe recipe = {
+            keys[index], { 0xd1u, (lib_u8)(0xc0u |
+                (extensions[index] << 3u)) },
+            2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY
+        };
+
+        if (timing_manifest_run_exact_recipe(&recipe)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_group2_register_cl(void)
+{
+    static const char *const keys[] = {
+        "I86-ROL-RCL", "I86-ROR-RCL", "I86-RCL-RCL", "I86-RCR-RCL",
+        "I86-SHL-RCL", "I86-SHR-RCL", "I86-SAR-RCL"
+    };
+    static const lib_u8 extensions[] = { 0u, 1u, 2u, 3u, 4u, 5u, 7u };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
+        timing_manifest_recipe recipe = {
+            keys[index], { 0xd3u, (lib_u8)(0xc0u |
+                (extensions[index] << 3u)) }, 2u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY
+        };
+
+        if (timing_manifest_run_exact_recipe_with_control(&recipe, 0u, 1u,
+                CORE_MACHINE_RETIREMENT_CONTROL_NONE)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_immediate_port_io(void)
+{
+    static const timing_manifest_recipe recipes[] = {
+        { "I86-IN-IMM", { 0xe4u, 0xe0u }, 2u, 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I86-OUT-IMM", { 0xe6u, 0xe0u }, 2u, 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_exact_recipe(&recipes[index])) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_dx_port_io(void)
+{
+    static const timing_manifest_recipe recipes[] = {
+        { "I86-IN-DX", { 0xecu, 0u }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I86-OUT-DX", { 0xeeu, 0u }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_exact_recipe_with_inputs(&recipes[index], 0u,
+                0u, 0x00e0u, CORE_MACHINE_RETIREMENT_CONTROL_NONE)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_near_control_transfers(void)
+{
+    static const timing_manifest_recipe recipes[] = {
+        { "I86-CALL-NEAR", { 0xe8u, 0u, 0u }, 3u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-JMP-NEAR", { 0xe9u, 0u, 0u }, 3u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
+    };
+    return timing_manifest_run_exact_recipe(&recipes[0]) ||
+        timing_manifest_run_exact_recipe_with_control(&recipes[1], 0u, 0u,
+            CORE_MACHINE_RETIREMENT_CONTROL_TAKEN);
+}
+
+/* Group 3 is deliberately a named L2 model, not an L3 value.  Keep its
+ * verification separate so this runner can require the ledger's exact model
+ * identity and still exercise the instruction's arithmetic result. */
+static lib_i32 timing_manifest_probe_group3_l2(void)
+{
+    static const timing_manifest_recipe recipes[] = {
+        { "I86-MUL-R8", { 0xf6u, 0xe3u }, 2u, 71u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
+        { "I86-MUL-R16", { 0xf7u, 0xe3u }, 2u, 119u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
+        { "I86-IMUL-R8", { 0xf6u, 0xebu }, 2u, 91u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
+        { "I86-IMUL-R16", { 0xf7u, 0xebu }, 2u, 139u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
+        { "I86-DIV-R8", { 0xf6u, 0xf3u }, 2u, 81u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
+        { "I86-DIV-R16", { 0xf7u, 0xf3u }, 2u, 145u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
+        { "I86-IDIV-R8", { 0xf6u, 0xfbu }, 2u, 111u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
+        { "I86-IDIV-R16", { 0xf7u, 0xfbu }, 2u, 175u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC }
+    };
+    static const char *const memory_keys[] = {
+        "I86-MUL-M8", "I86-MUL-M16", "I86-IMUL-M8", "I86-IMUL-M16",
+        "I86-DIV-M8", "I86-DIV-M16", "I86-IDIV-M8", "I86-IDIV-M16"
+    };
+    static const lib_u8 memory_extensions[] = {
+        4u, 4u, 5u, 5u, 6u, 6u, 7u, 7u
+    };
+    static const lib_u64 memory_ticks[] = {
+        83u, 131u, 103u, 151u, 93u, 157u, 123u, 187u
+    };
+    const lib_u8 operand8 = 3u;
+    const lib_u16 operand16 = 3u;
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]) +
+            sizeof(memory_keys) / sizeof(memory_keys[0]); ++index) {
+        timing_manifest_recipe recipe;
+        const timing_manifest_record *record;
+        const core_machine_run_budget budget = { 1u, 0u };
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 memory_operand = index >= sizeof(recipes) / sizeof(recipes[0]);
+        lib_i32 division = (index >= 4u && index < 8u) || index >= 12u;
+        lib_i32 failed;
+
+        if (memory_operand) {
+            lib_size memory_index = index - sizeof(recipes) / sizeof(recipes[0]);
+
+            recipe.key_id = memory_keys[memory_index];
+            recipe.program[0] = memory_index & 1u ? 0xf7u : 0xf6u;
+            recipe.program[1] = (lib_u8)(0x06u |
+                (memory_extensions[memory_index] << 3u));
+            recipe.program[2] = 0x00u;
+            recipe.program[3] = 0x10u;
+            recipe.program_bytes = 4u;
+            recipe.expected_ticks = memory_ticks[memory_index];
+            recipe.expected_origin =
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC;
+        } else {
+            recipe = recipes[index];
+        }
+        record = timing_manifest_find(recipe.key_id);
+        failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+            lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+            lib_text_compare(record->level, "L2:G3") != 0 ||
+            lib_text_compare(record->source_rule, "S1:L2-86BOX-8086-G3 bounds") != 0 ||
+            !timing_manifest_prepare(&machine, &capture, recipe.program,
+                recipe.program_bytes);
+        if (!failed && memory_operand) {
+            failed = core_machine_memory_write(machine, 0x1000u,
+                (index & 1u) != 0u ? (const void *)&operand16 :
+                (const void *)&operand8, (index & 1u) != 0u ?
+                sizeof(operand16) : sizeof(operand8)) != LIB_STATUS_OK;
+        }
+        if (!failed) {
+            failed = timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EAX, 2u) != LIB_STATUS_OK ||
+                timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EBX, 3u) != LIB_STATUS_OK ||
+                timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EDX, 0u) != LIB_STATUS_OK;
+            if (!failed && division) {
+                failed = timing_manifest_seed_word(machine,
+                        CORE_MACHINE_DEBUG_EAX, 6u) != LIB_STATUS_OK;
+            }
+            if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe.expected_ticks) || capture.count != 1u ||
+                (lib_u16)snapshot.eax != (division ? 2u : 6u) ||
+                !timing_manifest_ticks_match(capture.observation.source_ticks, recipe.expected_ticks) ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, recipe.expected_origin) ||
+                (capture.observation.formula_inputs &
+                    CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND) == 0u ||
+                (memory_operand && (capture.observation.formula_inputs &
+                    (CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+                     CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS)) == 0u);
+        }
+        if (failed) {
+            lib_c_printf("I86 G3 ticks=%llu source=%llu origin=%d inputs=%u ax=%u dx=%u count=%u\n",
+                run.ticks, capture.observation.source_ticks,
+                capture.observation.timing_origin, capture.observation.formula_inputs,
+                (lib_u16)snapshot.eax,
+                (lib_u16)snapshot.edx,
+                capture.count);
+            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe.key_id);
+            core_machine_destroy(machine);
+            return 1;
+        }
+        core_machine_destroy(machine);
+    }
+    /* The L2:G3 rows have operand-sensitive inputs, so execute their LOCK
+     * companions with the same operands rather than borrowing an L3 helper. */
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]) +
+            sizeof(memory_keys) / sizeof(memory_keys[0]); ++index) {
+        timing_manifest_recipe recipe;
+        char key[160];
+        const timing_manifest_record *record;
+        const core_machine_run_budget budget = { 1u, 0u };
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 memory_operand = index >= sizeof(recipes) / sizeof(recipes[0]);
+        lib_i32 division = (index >= 4u && index < 8u) || index >= 12u;
+        lib_i32 failed;
+
+        if (memory_operand) {
+            lib_size memory_index = index - sizeof(recipes) / sizeof(recipes[0]);
+
+            recipe.key_id = memory_keys[memory_index];
+            recipe.program[0] = memory_index & 1u ? 0xf7u : 0xf6u;
+            recipe.program[1] = (lib_u8)(0x06u |
+                (memory_extensions[memory_index] << 3u));
+            recipe.program[2] = 0x00u;
+            recipe.program[3] = 0x10u;
+            recipe.program_bytes = 4u;
+            recipe.expected_ticks = memory_ticks[memory_index];
+            recipe.expected_origin =
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC;
+        } else {
+            recipe = recipes[index];
+        }
+        if (recipe.program_bytes >= sizeof(recipe.program) ||
+            lib_c_snprintf(key, sizeof(key), "%s-LOCK", recipe.key_id) < 0) {
+            return 1;
+        }
+        {
+            lib_size byte_index;
+            for (byte_index = recipe.program_bytes; byte_index != 0u; --byte_index) {
+                recipe.program[byte_index] = recipe.program[byte_index - 1u];
+            }
+        }
+        recipe.program[0] = 0xf0u;
+        ++recipe.program_bytes;
+        recipe.expected_ticks += 2u;
+        recipe.key_id = key;
+        record = timing_manifest_find(recipe.key_id);
+        failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+            lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+            lib_text_compare(record->level, "L2:G3") != 0 ||
+            !timing_manifest_prepare(&machine, &capture, recipe.program,
+                recipe.program_bytes);
+        if (!failed && memory_operand) {
+            failed = core_machine_memory_write(machine, 0x1000u,
+                (index & 1u) != 0u ? (const void *)&operand16 :
+                (const void *)&operand8, (index & 1u) != 0u ?
+                sizeof(operand16) : sizeof(operand8)) != LIB_STATUS_OK;
+        }
+        if (!failed) {
+            failed = timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EAX, division ? 6u : 2u) != LIB_STATUS_OK ||
+                timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EBX, 3u) != LIB_STATUS_OK ||
+                timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EDX, 0u) != LIB_STATUS_OK;
+            if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe.expected_ticks) || capture.count != 1u ||
+                (lib_u16)snapshot.eax != (division ? 2u : 6u) ||
+                !timing_manifest_ticks_match(capture.observation.source_ticks, recipe.expected_ticks) ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, recipe.expected_origin) ||
+                (capture.observation.formula_inputs &
+                    (CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND |
+                     CORE_MACHINE_CPU_TIMING_INPUT_LOCK)) !=
+                    (CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND |
+                     CORE_MACHINE_CPU_TIMING_INPUT_LOCK);
+        }
+        core_machine_destroy(machine);
+        if (failed) {
+            lib_c_printf("M5:T435:S5:I86-G3-LOCK:FAIL:%s\n", recipe.key_id);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_group3_memory_contexts(void)
+{
+    typedef struct timing_manifest_group3_context_recipe {
+        const char *key_id;
+        lib_u8 extension;
+        lib_u8 word;
+        lib_u8 prefix;
+        lib_u16 address;
+        lib_u64 expected_ticks;
+        lib_i32 division;
+        lib_u32 required_formula_inputs;
+    } timing_manifest_group3_context_recipe;
+    static const timing_manifest_group3_context_recipe recipes[] = {
+        { "I86-MUL-M8-SEGMENT", 4u, 0u, 0x26u, 0x1000u, 85u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-MUL-M16-SEGMENT", 4u, 1u, 0x26u, 0x1000u, 133u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-IMUL-M8-SEGMENT", 5u, 0u, 0x26u, 0x1000u, 105u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-IMUL-M16-SEGMENT", 5u, 1u, 0x26u, 0x1000u, 153u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-DIV-M8-SEGMENT", 6u, 0u, 0x26u, 0x1000u, 95u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-DIV-M16-SEGMENT", 6u, 1u, 0x26u, 0x1000u, 159u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-IDIV-M8-SEGMENT", 7u, 0u, 0x26u, 0x1000u, 125u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-IDIV-M16-SEGMENT", 7u, 1u, 0x26u, 0x1000u, 189u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-MUL-M16-ODD-WORD", 4u, 1u, 0u, 0x1001u, 135u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-IMUL-M16-ODD-WORD", 5u, 1u, 0u, 0x1001u, 155u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-DIV-M16-ODD-WORD", 6u, 1u, 0u, 0x1001u, 161u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-IDIV-M16-ODD-WORD", 7u, 1u, 0u, 0x1001u, 191u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-MUL-M16-SEGMENT-ODD-WORD", 4u, 1u, 0x26u, 0x1001u, 137u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-IMUL-M16-SEGMENT-ODD-WORD", 5u, 1u, 0x26u, 0x1001u, 157u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-DIV-M16-SEGMENT-ODD-WORD", 6u, 1u, 0x26u, 0x1001u, 163u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-IDIV-M16-SEGMENT-ODD-WORD", 7u, 1u, 0x26u, 0x1001u, 193u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const lib_u8 operand8 = 3u;
+    const lib_u16 operand16 = 3u;
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        const timing_manifest_group3_context_recipe *recipe = &recipes[index];
+        const timing_manifest_record *record = timing_manifest_find(recipe->key_id);
+        lib_u8 program[] = { 0xf6u, 0x06u, 0u, 0x10u, 0u };
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 failed;
+
+        program[0] = recipe->word ? 0xf7u : 0xf6u;
+        program[1] = (lib_u8)(0x06u | (recipe->extension << 3u));
+        program[2] = CORE_MACHINE_MASK_U8(recipe->address);
+        program[3] = CORE_MACHINE_MASK_U8(recipe->address >> 8u);
+        if (recipe->prefix != 0u) {
+            program[4] = program[3]; program[3] = program[2]; program[2] = program[1];
+            program[1] = program[0]; program[0] = recipe->prefix;
+        }
+        failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+            lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+            lib_text_compare(record->level, "L2:G3") != 0 || record->source_rule[0] == '\0' ||
+            !timing_manifest_prepare(&machine, &capture, program,
+                recipe->prefix == 0u ? 4u : 5u);
+        if (!failed) {
+            failed = core_machine_memory_write(machine, recipe->address,
+                recipe->word ? (const void *)&operand16 : (const void *)&operand8,
+                recipe->word ? sizeof(operand16) : sizeof(operand8)) != LIB_STATUS_OK;
+        }
+        if (!failed) {
+            failed = timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EAX, recipe->division ? 6u : 2u) != LIB_STATUS_OK ||
+                timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_EDX, 0u) != LIB_STATUS_OK;
+            if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+                (lib_u16)snapshot.eax != (recipe->division ? 2u : 6u) ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC) ||
+                (capture.observation.formula_inputs &
+                    (CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND |
+                     CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+                     CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+                     recipe->required_formula_inputs)) !=
+                    (CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND |
+                     CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+                     CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+                     recipe->required_formula_inputs);
+        }
+        if (failed) {
+            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            core_machine_destroy(machine);
+            return 1;
+        }
+        core_machine_destroy(machine);
+        {
+            const timing_manifest_record *base_record =
+                timing_manifest_find(recipe->key_id);
+            char key[160];
+            lib_u8 locked_program[6];
+            lib_u8 locked_bytes = 0u;
+            timing_manifest_capture locked_capture = { { 0 }, 0u };
+            core_machine_run_result locked_run = { 0 };
+            core_machine_debug_cpu_snapshot locked_snapshot = { 0 };
+            core_machine *locked_machine = LIB_NULL;
+            lib_i32 locked_failed = base_record == LIB_NULL ||
+                !timing_manifest_lock_key_for_context(base_record, recipe->key_id,
+                    key, sizeof(key));
+
+            if (!locked_failed) {
+                locked_program[locked_bytes++] = 0xf0u;
+                if (recipe->prefix != 0u) locked_program[locked_bytes++] = recipe->prefix;
+                locked_program[locked_bytes++] = recipe->word ? 0xf7u : 0xf6u;
+                locked_program[locked_bytes++] = (lib_u8)(0x06u |
+                    (recipe->extension << 3u));
+                locked_program[locked_bytes++] = CORE_MACHINE_MASK_U8(recipe->address);
+                locked_program[locked_bytes++] = CORE_MACHINE_MASK_U8(recipe->address >> 8u);
+                locked_failed = timing_manifest_find(key) == LIB_NULL ||
+                    !timing_manifest_prepare(&locked_machine,
+                    &locked_capture, locked_program, locked_bytes);
+            }
+            if (!locked_failed) {
+                locked_failed = core_machine_memory_write(locked_machine, recipe->address,
+                    recipe->word ? (const void *)&operand16 :
+                    (const void *)&operand8, recipe->word ? sizeof(operand16) :
+                    sizeof(operand8)) != LIB_STATUS_OK;
+            }
+            if (!locked_failed) {
+                locked_failed = timing_manifest_seed_word(locked_machine,
+                        CORE_MACHINE_DEBUG_EAX, recipe->division ? 6u : 2u) != LIB_STATUS_OK ||
+                    timing_manifest_seed_word(locked_machine,
+                        CORE_MACHINE_DEBUG_EDX, 0u) != LIB_STATUS_OK;
+                if (!locked_failed) locked_failed = core_machine_run(locked_machine, budget, &locked_run) !=
+                        LIB_STATUS_OK ||
+                    core_machine_debug_capture_cpu_snapshot(locked_machine,
+                        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &locked_snapshot) != LIB_STATUS_OK ||
+                    locked_run.reason != CORE_MACHINE_STOP_BUDGET ||
+                    locked_run.executed != 1u ||
+                    !timing_manifest_ticks_match(locked_run.ticks,
+                        recipe->expected_ticks + 2u) ||
+                    locked_capture.count != 1u ||
+                    (lib_u16)locked_snapshot.eax !=
+                        (recipe->division ? 2u : 6u) ||
+                    !timing_manifest_origin_match(locked_capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC) ||
+                    (locked_capture.observation.formula_inputs &
+                        (CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND |
+                         CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+                         CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+                         CORE_MACHINE_CPU_TIMING_INPUT_LOCK |
+                         recipe->required_formula_inputs)) !=
+                        (CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND |
+                         CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+                         CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+                         CORE_MACHINE_CPU_TIMING_INPUT_LOCK |
+                         recipe->required_formula_inputs);
+            }
+            core_machine_destroy(locked_machine);
+            if (locked_failed) {
+                lib_c_printf("M5:T435:S5:I86-G3-CONTEXT-LOCK:FAIL:%s\n", key);
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_alu_memory_forms(void)
+{
+    static const char *const rm_keys[] = {
+        "I86-ALU-ADD-RM", "I86-ALU-OR-RM", "I86-ALU-ADC-RM",
+        "I86-ALU-SBB-RM", "I86-ALU-AND-RM", "I86-ALU-SUB-RM",
+        "I86-ALU-XOR-RM"
+    };
+    static const char *const mr_keys[] = {
+        "I86-ALU-ADD-MR", "I86-ALU-OR-MR", "I86-ALU-ADC-MR",
+        "I86-ALU-SBB-MR", "I86-ALU-AND-MR", "I86-ALU-SUB-MR",
+        "I86-ALU-XOR-MR"
+    };
+    static const char *const mi_keys[] = {
+        "I86-ALU-ADD-MI", "I86-ALU-OR-MI", "I86-ALU-ADC-MI",
+        "I86-ALU-SBB-MI", "I86-ALU-AND-MI", "I86-ALU-SUB-MI",
+        "I86-ALU-XOR-MI"
+    };
+    static const lib_u8 bases[] = {
+        0x00u, 0x08u, 0x10u, 0x18u, 0x20u, 0x28u, 0x30u
+    };
+    static const lib_u16 expected_rm[] = {
+        3u, 3u, 3u, 0xffffu, 0u, 0xffffu, 3u
+    };
+    static const lib_u16 expected_mr[] = {
+        3u, 3u, 3u, 1u, 0u, 1u, 3u
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(bases) / sizeof(bases[0]); ++index) {
+        timing_manifest_memory_recipe recipe = {
+            rm_keys[index], { (lib_u8)(bases[index] + 3u), 0x0eu,
+                0x00u, 0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, expected_rm[index], 2u
+        };
+
+        if (timing_manifest_run_l3_memory_recipe(&recipe)) return 1;
+        recipe.key_id = mr_keys[index];
+        recipe.program[0] = (lib_u8)(bases[index] + 1u);
+        recipe.expected_ticks = 22u;
+        recipe.expected_cx = 1u;
+        recipe.expected_memory_value = expected_mr[index];
+        if (timing_manifest_run_l3_memory_recipe(&recipe)) return 1;
+        recipe.key_id = mi_keys[index];
+        recipe.program[0] = 0x81u;
+        recipe.program[1] = (lib_u8)(0x06u | (index << 3u));
+        recipe.program[2] = 0x00u;
+        recipe.program[3] = 0x10u;
+        recipe.program[4] = 0x01u;
+        recipe.program[5] = 0x00u;
+        recipe.program_bytes = 6u;
+        recipe.expected_ticks = 23u;
+        recipe.expected_memory_value = expected_mr[index];
+        if (timing_manifest_run_l3_memory_recipe(&recipe)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_primary_memory_forms(void)
+{
+    static const timing_manifest_memory_recipe recipes[] = {
+        { "I86-CMP-RM", { 0x3bu, 0x0eu, 0u, 0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 1u, 2u },
+        { "I86-CMP-MR", { 0x39u, 0x0eu, 0u, 0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 1u, 2u },
+        { "I86-CMP-MI", { 0x81u, 0x3eu, 0u, 0x10u, 1u, 0u }, 6u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, 2u },
+        { "I86-TEST-RM", { 0x85u, 0x0eu, 0u, 0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 1u, 2u },
+        { "I86-TEST-MI", { 0xf7u, 0x06u, 0u, 0x10u, 1u, 0u }, 6u, 17u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, 2u },
+        { "I86-INC-M", { 0xffu, 0x06u, 0u, 0x10u }, 4u, 21u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, 3u },
+        { "I86-DEC-M", { 0xffu, 0x0eu, 0u, 0x10u }, 4u, 21u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, 1u },
+        { "I86-NOT-M", { 0xf7u, 0x16u, 0u, 0x10u }, 4u, 22u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, 0xfffdu },
+        { "I86-NEG-M", { 0xf7u, 0x1eu, 0u, 0x10u }, 4u, 22u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, 0xfffeu },
+        { "I86-XCHG-MR", { 0x87u, 0x0eu, 0u, 0x10u }, 4u, 23u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 2u, 1u },
+        { "I86-MOV-RM", { 0x8bu, 0x0eu, 0u, 0x10u }, 4u, 14u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 2u, 2u },
+        { "I86-MOV-MR", { 0x89u, 0x0eu, 0u, 0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 1u, 1u },
+        { "I86-MOV-MI", { 0xc7u, 0x06u, 0u, 0x10u, 0x34u, 0x12u },
+            6u, 16u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, 0x1234u },
+        { "I86-MOV-MOFFS-W", { 0xa1u, 0u, 0x10u }, 3u, 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 2u, 0u, 2u },
+        { "I86-MOV-MOFFS-R", { 0xa3u, 0u, 0x10u }, 3u, 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            1u, 0u, 2u, 1u, 0u, 1u }
+    };
+    static const char *const segment_keys[] = {
+        "I86-CMP-RM-SEGMENT", "I86-CMP-MR-SEGMENT", "I86-CMP-MI-SEGMENT",
+        "I86-TEST-RM-SEGMENT", "I86-TEST-MI-SEGMENT", "I86-INC-M-SEGMENT",
+        "I86-DEC-M-SEGMENT", "I86-NOT-M-SEGMENT", "I86-NEG-M-SEGMENT",
+        LIB_NULL, "I86-MOV-RM-SEGMENT", "I86-MOV-MR-SEGMENT",
+        "I86-MOV-MI-SEGMENT", "I86-MOV-MOFFS-W-SEGMENT",
+        "I86-MOV-MOFFS-R-SEGMENT"
+    };
+    static const char *const odd_keys[] = {
+        "I86-CMP-RM-ODD-WORD", "I86-CMP-MR-ODD-WORD", "I86-CMP-MI-ODD-WORD",
+        "I86-TEST-RM-ODD-WORD", "I86-TEST-MI-ODD-WORD", "I86-INC-M-ODD-WORD",
+        "I86-DEC-M-ODD-WORD", "I86-NOT-M-ODD-WORD", "I86-NEG-M-ODD-WORD",
+        LIB_NULL, "I86-MOV-RM-ODD-WORD", "I86-MOV-MR-ODD-WORD",
+        "I86-MOV-MI-ODD-WORD", "I86-MOV-MOFFS-W-ODD-WORD",
+        "I86-MOV-MOFFS-R-ODD-WORD"
+    };
+    static const char *const combined_keys[] = {
+        "I86-CMP-RM-SEGMENT-ODD-WORD", "I86-CMP-MR-SEGMENT-ODD-WORD",
+        "I86-CMP-MI-SEGMENT-ODD-WORD", "I86-TEST-RM-SEGMENT-ODD-WORD",
+        "I86-TEST-MI-SEGMENT-ODD-WORD", "I86-INC-M-SEGMENT-ODD-WORD",
+        "I86-DEC-M-SEGMENT-ODD-WORD", "I86-NOT-M-SEGMENT-ODD-WORD",
+        "I86-NEG-M-SEGMENT-ODD-WORD", LIB_NULL,
+        "I86-MOV-RM-SEGMENT-ODD-WORD", "I86-MOV-MR-SEGMENT-ODD-WORD",
+        "I86-MOV-MI-SEGMENT-ODD-WORD", "I86-MOV-MOFFS-W-SEGMENT-ODD-WORD",
+        "I86-MOV-MOFFS-R-SEGMENT-ODD-WORD"
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_l3_memory_recipe(&recipes[index])) return 1;
+    }
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        const char *const keys[] = { segment_keys[index], odd_keys[index],
+            combined_keys[index] };
+        lib_size context;
+
+        for (context = 0u; context < sizeof(keys) / sizeof(keys[0]); ++context) {
+            timing_manifest_memory_recipe recipe;
+            lib_u8 opcode_index;
+            lib_u8 address_index;
+            lib_i32 segment = context == 0u || context == 2u;
+            lib_i32 odd = context == 1u || context == 2u;
+            lib_u64 odd_ticks = index >= 5u && index <= 8u ? 8u : 4u;
+
+            if (keys[context] == LIB_NULL) continue;
+            recipe = recipes[index];
+            recipe.key_id = keys[context];
+            recipe.expected_ticks += segment ? 2u : 0u;
+            recipe.expected_ticks += odd ? odd_ticks : 0u;
+            if (segment) {
+                lib_u8 byte_index;
+                for (byte_index = recipe.program_bytes; byte_index > 0u; --byte_index) {
+                    recipe.program[byte_index] = recipe.program[byte_index - 1u];
+                }
+                recipe.program[0] = 0x26u;
+                ++recipe.program_bytes;
+            }
+            opcode_index = segment ? 1u : 0u;
+            address_index = (recipe.program[opcode_index] == 0xa0u ||
+                recipe.program[opcode_index] == 0xa1u ||
+                recipe.program[opcode_index] == 0xa2u ||
+                recipe.program[opcode_index] == 0xa3u) ? opcode_index + 1u :
+                opcode_index + 2u;
+            if (odd) {
+                recipe.program[address_index] = 1u;
+                recipe.program[address_index + 1u] = 0x10u;
+            }
+            if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                    odd ? CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD : 0u)) return 1;
+        }
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_alu_segment_contexts(void)
+{
+    static const char *const rm_keys[] = {
+        "I86-ALU-ADD-RM-SEGMENT", "I86-ALU-OR-RM-SEGMENT",
+        "I86-ALU-ADC-RM-SEGMENT", "I86-ALU-SBB-RM-SEGMENT",
+        "I86-ALU-AND-RM-SEGMENT", "I86-ALU-SUB-RM-SEGMENT",
+        "I86-ALU-XOR-RM-SEGMENT"
+    };
+    static const char *const mr_keys[] = {
+        "I86-ALU-ADD-MR-SEGMENT", "I86-ALU-OR-MR-SEGMENT",
+        "I86-ALU-ADC-MR-SEGMENT", "I86-ALU-SBB-MR-SEGMENT",
+        "I86-ALU-AND-MR-SEGMENT", "I86-ALU-SUB-MR-SEGMENT",
+        "I86-ALU-XOR-MR-SEGMENT"
+    };
+    static const char *const mi_keys[] = {
+        "I86-ALU-ADD-MI-SEGMENT", "I86-ALU-OR-MI-SEGMENT",
+        "I86-ALU-ADC-MI-SEGMENT", "I86-ALU-SBB-MI-SEGMENT",
+        "I86-ALU-AND-MI-SEGMENT", "I86-ALU-SUB-MI-SEGMENT",
+        "I86-ALU-XOR-MI-SEGMENT"
+    };
+    static const lib_u8 bases[] = {
+        0x00u, 0x08u, 0x10u, 0x18u, 0x20u, 0x28u, 0x30u
+    };
+    static const lib_u16 expected_rm[] = {
+        3u, 3u, 3u, 0xffffu, 0u, 0xffffu, 3u
+    };
+    static const lib_u16 expected_mr[] = {
+        3u, 3u, 3u, 1u, 0u, 1u, 3u
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(bases) / sizeof(bases[0]); ++index) {
+        timing_manifest_memory_recipe recipe = {
+            rm_keys[index], { 0x26u, (lib_u8)(bases[index] + 3u),
+                0x0eu, 0x00u, 0x10u }, 5u, 17u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, expected_rm[index], 2u
+        };
+
+        if (timing_manifest_run_l3_memory_recipe(&recipe)) return 1;
+        recipe.key_id = mr_keys[index];
+        recipe.program[1] = (lib_u8)(bases[index] + 1u);
+        recipe.expected_ticks = 24u;
+        recipe.expected_cx = 1u;
+        recipe.expected_memory_value = expected_mr[index];
+        if (timing_manifest_run_l3_memory_recipe(&recipe)) return 1;
+        recipe.key_id = mi_keys[index];
+        recipe.program[1] = 0x81u;
+        recipe.program[2] = (lib_u8)(0x06u | (index << 3u));
+        recipe.program[3] = 0x00u;
+        recipe.program[4] = 0x10u;
+        recipe.program[5] = 0x01u;
+        recipe.program[6] = 0x00u;
+        recipe.program_bytes = 7u;
+        recipe.expected_ticks = 25u;
+        recipe.expected_memory_value = expected_mr[index];
+        if (timing_manifest_run_l3_memory_recipe(&recipe)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_alu_odd_word_contexts(void)
+{
+    static const char *const rm_keys[] = {
+        "I86-ALU-ADD-RM-ODD-WORD", "I86-ALU-OR-RM-ODD-WORD",
+        "I86-ALU-ADC-RM-ODD-WORD", "I86-ALU-SBB-RM-ODD-WORD",
+        "I86-ALU-AND-RM-ODD-WORD", "I86-ALU-SUB-RM-ODD-WORD",
+        "I86-ALU-XOR-RM-ODD-WORD"
+    };
+    static const char *const mr_keys[] = {
+        "I86-ALU-ADD-MR-ODD-WORD", "I86-ALU-OR-MR-ODD-WORD",
+        "I86-ALU-ADC-MR-ODD-WORD", "I86-ALU-SBB-MR-ODD-WORD",
+        "I86-ALU-AND-MR-ODD-WORD", "I86-ALU-SUB-MR-ODD-WORD",
+        "I86-ALU-XOR-MR-ODD-WORD"
+    };
+    static const char *const mi_keys[] = {
+        "I86-ALU-ADD-MI-ODD-WORD", "I86-ALU-OR-MI-ODD-WORD",
+        "I86-ALU-ADC-MI-ODD-WORD", "I86-ALU-SBB-MI-ODD-WORD",
+        "I86-ALU-AND-MI-ODD-WORD", "I86-ALU-SUB-MI-ODD-WORD",
+        "I86-ALU-XOR-MI-ODD-WORD"
+    };
+    static const lib_u8 bases[] = {
+        0x00u, 0x08u, 0x10u, 0x18u, 0x20u, 0x28u, 0x30u
+    };
+    static const lib_u16 expected_rm[] = {
+        3u, 3u, 3u, 0xffffu, 0u, 0xffffu, 3u
+    };
+    static const lib_u16 expected_mr[] = {
+        3u, 3u, 3u, 1u, 0u, 1u, 3u
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(bases) / sizeof(bases[0]); ++index) {
+        timing_manifest_memory_recipe recipe = {
+            rm_keys[index], { (lib_u8)(bases[index] + 3u), 0x0eu,
+                0x01u, 0x10u }, 4u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, expected_rm[index], 2u
+        };
+
+        if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
+        recipe.key_id = mr_keys[index];
+        recipe.program[0] = (lib_u8)(bases[index] + 1u);
+        recipe.expected_ticks = 30u;
+        recipe.expected_cx = 1u;
+        recipe.expected_memory_value = expected_mr[index];
+        if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
+        recipe.key_id = mi_keys[index];
+        recipe.program[0] = 0x81u;
+        recipe.program[1] = (lib_u8)(0x06u | (index << 3u));
+        recipe.program[2] = 0x01u;
+        recipe.program[3] = 0x10u;
+        recipe.program[4] = 0x01u;
+        recipe.program[5] = 0x00u;
+        recipe.program_bytes = 6u;
+        recipe.expected_ticks = 31u;
+        recipe.expected_memory_value = expected_mr[index];
+        if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_lock_contexts(void)
+{
+    static const char *const mr_keys[] = {
+        "I86-ALU-ADD-MR-LOCK", "I86-ALU-OR-MR-LOCK",
+        "I86-ALU-ADC-MR-LOCK", "I86-ALU-SBB-MR-LOCK",
+        "I86-ALU-AND-MR-LOCK", "I86-ALU-SUB-MR-LOCK",
+        "I86-ALU-XOR-MR-LOCK"
+    };
+    static const char *const mi_keys[] = {
+        "I86-ALU-ADD-MI-LOCK", "I86-ALU-OR-MI-LOCK",
+        "I86-ALU-ADC-MI-LOCK", "I86-ALU-SBB-MI-LOCK",
+        "I86-ALU-AND-MI-LOCK", "I86-ALU-SUB-MI-LOCK",
+        "I86-ALU-XOR-MI-LOCK"
+    };
+    static const char *const mr_context_keys[][7] = {
+        { "I86-ALU-ADD-MR-LOCK-SEGMENT", "I86-ALU-OR-MR-LOCK-SEGMENT",
+            "I86-ALU-ADC-MR-LOCK-SEGMENT", "I86-ALU-SBB-MR-LOCK-SEGMENT",
+            "I86-ALU-AND-MR-LOCK-SEGMENT", "I86-ALU-SUB-MR-LOCK-SEGMENT",
+            "I86-ALU-XOR-MR-LOCK-SEGMENT" },
+        { "I86-ALU-ADD-MR-LOCK-ODD-WORD", "I86-ALU-OR-MR-LOCK-ODD-WORD",
+            "I86-ALU-ADC-MR-LOCK-ODD-WORD", "I86-ALU-SBB-MR-LOCK-ODD-WORD",
+            "I86-ALU-AND-MR-LOCK-ODD-WORD", "I86-ALU-SUB-MR-LOCK-ODD-WORD",
+            "I86-ALU-XOR-MR-LOCK-ODD-WORD" },
+        { "I86-ALU-ADD-MR-LOCK-SEGMENT-ODD-WORD",
+            "I86-ALU-OR-MR-LOCK-SEGMENT-ODD-WORD",
+            "I86-ALU-ADC-MR-LOCK-SEGMENT-ODD-WORD",
+            "I86-ALU-SBB-MR-LOCK-SEGMENT-ODD-WORD",
+            "I86-ALU-AND-MR-LOCK-SEGMENT-ODD-WORD",
+            "I86-ALU-SUB-MR-LOCK-SEGMENT-ODD-WORD",
+            "I86-ALU-XOR-MR-LOCK-SEGMENT-ODD-WORD" }
+    };
+    static const char *const mi_context_keys[][7] = {
+        { "I86-ALU-ADD-MI-LOCK-SEGMENT", "I86-ALU-OR-MI-LOCK-SEGMENT",
+            "I86-ALU-ADC-MI-LOCK-SEGMENT", "I86-ALU-SBB-MI-LOCK-SEGMENT",
+            "I86-ALU-AND-MI-LOCK-SEGMENT", "I86-ALU-SUB-MI-LOCK-SEGMENT",
+            "I86-ALU-XOR-MI-LOCK-SEGMENT" },
+        { "I86-ALU-ADD-MI-LOCK-ODD-WORD", "I86-ALU-OR-MI-LOCK-ODD-WORD",
+            "I86-ALU-ADC-MI-LOCK-ODD-WORD", "I86-ALU-SBB-MI-LOCK-ODD-WORD",
+            "I86-ALU-AND-MI-LOCK-ODD-WORD", "I86-ALU-SUB-MI-LOCK-ODD-WORD",
+            "I86-ALU-XOR-MI-LOCK-ODD-WORD" },
+        { "I86-ALU-ADD-MI-LOCK-SEGMENT-ODD-WORD",
+            "I86-ALU-OR-MI-LOCK-SEGMENT-ODD-WORD",
+            "I86-ALU-ADC-MI-LOCK-SEGMENT-ODD-WORD",
+            "I86-ALU-SBB-MI-LOCK-SEGMENT-ODD-WORD",
+            "I86-ALU-AND-MI-LOCK-SEGMENT-ODD-WORD",
+            "I86-ALU-SUB-MI-LOCK-SEGMENT-ODD-WORD",
+            "I86-ALU-XOR-MI-LOCK-SEGMENT-ODD-WORD" }
+    };
+    static const char *const scalar_context_keys[][4] = {
+        { "I86-INC-M-LOCK-SEGMENT", "I86-DEC-M-LOCK-SEGMENT",
+            "I86-NOT-M-LOCK-SEGMENT", "I86-NEG-M-LOCK-SEGMENT" },
+        { "I86-INC-M-LOCK-ODD-WORD", "I86-DEC-M-LOCK-ODD-WORD",
+            "I86-NOT-M-LOCK-ODD-WORD", "I86-NEG-M-LOCK-ODD-WORD" },
+        { "I86-INC-M-LOCK-SEGMENT-ODD-WORD",
+            "I86-DEC-M-LOCK-SEGMENT-ODD-WORD",
+            "I86-NOT-M-LOCK-SEGMENT-ODD-WORD",
+            "I86-NEG-M-LOCK-SEGMENT-ODD-WORD" }
+    };
+    static const lib_u8 bases[] = {
+        0x00u, 0x08u, 0x10u, 0x18u, 0x20u, 0x28u, 0x30u
+    };
+    static const lib_u16 expected_mr[] = {
+        3u, 3u, 3u, 1u, 0u, 1u, 3u
+    };
+    static const timing_manifest_memory_recipe scalar_recipes[] = {
+        { "I86-INC-M-LOCK", { 0xf0u, 0xffu, 0x06u, 0u, 0x10u }, 5u, 23u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, 3u },
+        { "I86-DEC-M-LOCK", { 0xf0u, 0xffu, 0x0eu, 0u, 0x10u }, 5u, 23u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, 1u },
+        { "I86-NOT-M-LOCK", { 0xf0u, 0xf7u, 0x16u, 0u, 0x10u }, 5u, 24u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, 0xfffdu },
+        { "I86-NEG-M-LOCK", { 0xf0u, 0xf7u, 0x1eu, 0u, 0x10u }, 5u, 24u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, 0xfffeu },
+        { "I86-XCHG-MR-LOCK", { 0xf0u, 0x87u, 0x0eu, 0u, 0x10u }, 5u, 25u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 2u, 1u }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(bases) / sizeof(bases[0]); ++index) {
+        timing_manifest_memory_recipe recipe = {
+            mr_keys[index], { 0xf0u, (lib_u8)(bases[index] + 1u),
+                0x0eu, 0x00u, 0x10u }, 5u, 24u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 1u, expected_mr[index]
+        };
+
+        if (timing_manifest_run_l3_memory_recipe(&recipe)) return 1;
+        recipe.key_id = mi_keys[index];
+        recipe.program[1] = 0x81u;
+        recipe.program[2] = (lib_u8)(0x06u | (index << 3u));
+        recipe.program[3] = 0x00u;
+        recipe.program[4] = 0x10u;
+        recipe.program[5] = 0x01u;
+        recipe.program[6] = 0x00u;
+        recipe.program_bytes = 7u;
+        recipe.expected_ticks = 25u;
+        recipe.expected_memory_value = expected_mr[index];
+        if (timing_manifest_run_l3_memory_recipe(&recipe)) return 1;
+    }
+    for (index = 0u; index < sizeof(scalar_recipes) / sizeof(scalar_recipes[0]);
+            ++index) {
+        if (timing_manifest_run_l3_memory_recipe(&scalar_recipes[index])) return 1;
+    }
+    for (index = 0u; index < sizeof(bases) / sizeof(bases[0]); ++index) {
+        timing_manifest_memory_recipe mr_recipe = {
+            mr_keys[index], { 0xf0u, (lib_u8)(bases[index] + 1u),
+                0x0eu, 0u, 0x10u }, 5u, 24u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 1u, expected_mr[index]
+        };
+        timing_manifest_memory_recipe mi_recipe = mr_recipe;
+        lib_size context;
+
+        mi_recipe.program[1] = 0x81u;
+        mi_recipe.program[2] = (lib_u8)(0x06u | (index << 3u));
+        mi_recipe.program[5] = 1u;
+        mi_recipe.program[6] = 0u;
+        mi_recipe.program_bytes = 7u;
+        mi_recipe.expected_ticks = 25u;
+        mi_recipe.expected_cx = 1u;
+        for (context = 0u; context < 3u; ++context) {
+            lib_i32 segment_override = context == 0u || context == 2u;
+            lib_i32 odd_word = context == 1u || context == 2u;
+
+            if (timing_manifest_run_lock_memory_context(&mr_recipe,
+                    mr_context_keys[context][index], segment_override,
+                    odd_word)) return 1;
+            if (timing_manifest_run_lock_memory_context(&mi_recipe,
+                    mi_context_keys[context][index], segment_override,
+                    odd_word)) return 1;
+        }
+    }
+    for (index = 0u; index < 4u; ++index) {
+        lib_size context;
+
+        for (context = 0u; context < 3u; ++context) {
+            lib_i32 segment_override = context == 0u || context == 2u;
+            lib_i32 odd_word = context == 1u || context == 2u;
+
+            if (timing_manifest_run_lock_memory_context(&scalar_recipes[index],
+                    scalar_context_keys[context][index], segment_override,
+                    odd_word)) return 1;
+        }
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_alu_segment_odd_word_contexts(void)
+{
+    static const char *const rm_keys[] = {
+        "I86-ALU-ADD-RM-SEGMENT-ODD-WORD",
+        "I86-ALU-OR-RM-SEGMENT-ODD-WORD",
+        "I86-ALU-ADC-RM-SEGMENT-ODD-WORD",
+        "I86-ALU-SBB-RM-SEGMENT-ODD-WORD",
+        "I86-ALU-AND-RM-SEGMENT-ODD-WORD",
+        "I86-ALU-SUB-RM-SEGMENT-ODD-WORD",
+        "I86-ALU-XOR-RM-SEGMENT-ODD-WORD"
+    };
+    static const char *const mr_keys[] = {
+        "I86-ALU-ADD-MR-SEGMENT-ODD-WORD",
+        "I86-ALU-OR-MR-SEGMENT-ODD-WORD",
+        "I86-ALU-ADC-MR-SEGMENT-ODD-WORD",
+        "I86-ALU-SBB-MR-SEGMENT-ODD-WORD",
+        "I86-ALU-AND-MR-SEGMENT-ODD-WORD",
+        "I86-ALU-SUB-MR-SEGMENT-ODD-WORD",
+        "I86-ALU-XOR-MR-SEGMENT-ODD-WORD"
+    };
+    static const char *const mi_keys[] = {
+        "I86-ALU-ADD-MI-SEGMENT-ODD-WORD",
+        "I86-ALU-OR-MI-SEGMENT-ODD-WORD",
+        "I86-ALU-ADC-MI-SEGMENT-ODD-WORD",
+        "I86-ALU-SBB-MI-SEGMENT-ODD-WORD",
+        "I86-ALU-AND-MI-SEGMENT-ODD-WORD",
+        "I86-ALU-SUB-MI-SEGMENT-ODD-WORD",
+        "I86-ALU-XOR-MI-SEGMENT-ODD-WORD"
+    };
+    static const lib_u8 bases[] = {
+        0x00u, 0x08u, 0x10u, 0x18u, 0x20u, 0x28u, 0x30u
+    };
+    static const lib_u16 expected_rm[] = {
+        3u, 3u, 3u, 0xffffu, 0u, 0xffffu, 3u
+    };
+    static const lib_u16 expected_mr[] = {
+        3u, 3u, 3u, 1u, 0u, 1u, 3u
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(bases) / sizeof(bases[0]); ++index) {
+        timing_manifest_memory_recipe recipe = {
+            rm_keys[index], { 0x26u, (lib_u8)(bases[index] + 3u),
+                0x0eu, 0x01u, 0x10u }, 5u, 21u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, expected_rm[index], 2u
+        };
+
+        if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
+        recipe.key_id = mr_keys[index];
+        recipe.program[1] = (lib_u8)(bases[index] + 1u);
+        recipe.expected_ticks = 32u;
+        recipe.expected_cx = 1u;
+        recipe.expected_memory_value = expected_mr[index];
+        if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
+        recipe.key_id = mi_keys[index];
+        recipe.program[1] = 0x81u;
+        recipe.program[2] = (lib_u8)(0x06u | (index << 3u));
+        recipe.program[3] = 0x01u;
+        recipe.program[4] = 0x10u;
+        recipe.program[5] = 0x01u;
+        recipe.program[6] = 0x00u;
+        recipe.program_bytes = 7u;
+        recipe.expected_ticks = 33u;
+        recipe.expected_memory_value = expected_mr[index];
+        if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_group2_memory_forms(void)
+{
+    static const char *const one_keys[] = {
+        "I86-ROL-M1", "I86-ROR-M1", "I86-RCL-M1", "I86-RCR-M1",
+        "I86-SHL-M1", "I86-SHR-M1", "I86-SAR-M1"
+    };
+    static const char *const cl_keys[] = {
+        "I86-ROL-MCL", "I86-ROR-MCL", "I86-RCL-MCL", "I86-RCR-MCL",
+        "I86-SHL-MCL", "I86-SHR-MCL", "I86-SAR-MCL"
+    };
+    static const lib_u8 extensions[] = { 0u, 1u, 2u, 3u, 4u, 5u, 7u };
+    static const lib_u16 one_results[] = {
+        4u, 1u, 4u, 1u, 4u, 1u, 1u
+    };
+    static const lib_u16 cl_results[] = {
+        8u, 0x8000u, 8u, 0u, 8u, 0u, 0u
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(extensions) / sizeof(extensions[0]); ++index) {
+        timing_manifest_memory_recipe recipe = {
+            one_keys[index], { 0xd1u, (lib_u8)(0x06u |
+                (extensions[index] << 3u)), 0u, 0x10u }, 4u, 21u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, one_results[index]
+        };
+
+        if (timing_manifest_run_l3_memory_recipe(&recipe)) return 1;
+        recipe.key_id = cl_keys[index];
+        recipe.program[0] = 0xd3u;
+        recipe.expected_ticks = 34u;
+        recipe.initial_cx = 2u;
+        recipe.expected_cx = 2u;
+        recipe.expected_memory_value = cl_results[index];
+        if (timing_manifest_run_l3_memory_recipe(&recipe)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_group2_segment_contexts(void)
+{
+    static const char *const one_keys[] = {
+        "I86-ROL-M1-SEGMENT", "I86-ROR-M1-SEGMENT",
+        "I86-RCL-M1-SEGMENT", "I86-RCR-M1-SEGMENT",
+        "I86-SHL-M1-SEGMENT", "I86-SHR-M1-SEGMENT",
+        "I86-SAR-M1-SEGMENT"
+    };
+    static const char *const cl_keys[] = {
+        "I86-ROL-MCL-SEGMENT", "I86-ROR-MCL-SEGMENT",
+        "I86-RCL-MCL-SEGMENT", "I86-RCR-MCL-SEGMENT",
+        "I86-SHL-MCL-SEGMENT", "I86-SHR-MCL-SEGMENT",
+        "I86-SAR-MCL-SEGMENT"
+    };
+    static const lib_u8 extensions[] = { 0u, 1u, 2u, 3u, 4u, 5u, 7u };
+    static const lib_u16 one_results[] = {
+        4u, 1u, 4u, 1u, 4u, 1u, 1u
+    };
+    static const lib_u16 cl_results[] = {
+        8u, 0x8000u, 8u, 0u, 8u, 0u, 0u
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(extensions) / sizeof(extensions[0]); ++index) {
+        timing_manifest_memory_recipe recipe = {
+            one_keys[index], { 0x26u, 0xd1u, (lib_u8)(0x06u |
+                (extensions[index] << 3u)), 0u, 0x10u }, 5u, 23u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, one_results[index]
+        };
+
+        if (timing_manifest_run_l3_memory_recipe(&recipe)) return 1;
+        recipe.key_id = cl_keys[index];
+        recipe.program[1] = 0xd3u;
+        recipe.expected_ticks = 36u;
+        recipe.initial_cx = 2u;
+        recipe.expected_cx = 2u;
+        recipe.expected_memory_value = cl_results[index];
+        if (timing_manifest_run_l3_memory_recipe(&recipe)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_group2_odd_word_contexts(void)
+{
+    static const char *const one_keys[] = {
+        "I86-ROL-M1-ODD-WORD", "I86-ROR-M1-ODD-WORD",
+        "I86-RCL-M1-ODD-WORD", "I86-RCR-M1-ODD-WORD",
+        "I86-SHL-M1-ODD-WORD", "I86-SHR-M1-ODD-WORD",
+        "I86-SAR-M1-ODD-WORD"
+    };
+    static const char *const cl_keys[] = {
+        "I86-ROL-MCL-ODD-WORD", "I86-ROR-MCL-ODD-WORD",
+        "I86-RCL-MCL-ODD-WORD", "I86-RCR-MCL-ODD-WORD",
+        "I86-SHL-MCL-ODD-WORD", "I86-SHR-MCL-ODD-WORD",
+        "I86-SAR-MCL-ODD-WORD"
+    };
+    static const lib_u8 extensions[] = { 0u, 1u, 2u, 3u, 4u, 5u, 7u };
+    static const lib_u16 one_results[] = {
+        4u, 1u, 4u, 1u, 4u, 1u, 1u
+    };
+    static const lib_u16 cl_results[] = {
+        8u, 0x8000u, 8u, 0u, 8u, 0u, 0u
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(extensions) / sizeof(extensions[0]); ++index) {
+        timing_manifest_memory_recipe recipe = {
+            one_keys[index], { 0xd1u, (lib_u8)(0x06u |
+                (extensions[index] << 3u)), 1u, 0x10u }, 4u, 29u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, one_results[index]
+        };
+
+        if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
+        recipe.key_id = cl_keys[index];
+        recipe.program[0] = 0xd3u;
+        recipe.expected_ticks = 42u;
+        recipe.initial_cx = 2u;
+        recipe.expected_cx = 2u;
+        recipe.expected_memory_value = cl_results[index];
+        if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_group2_segment_odd_word_contexts(void)
+{
+    static const char *const one_keys[] = {
+        "I86-ROL-M1-SEGMENT-ODD-WORD", "I86-ROR-M1-SEGMENT-ODD-WORD",
+        "I86-RCL-M1-SEGMENT-ODD-WORD", "I86-RCR-M1-SEGMENT-ODD-WORD",
+        "I86-SHL-M1-SEGMENT-ODD-WORD", "I86-SHR-M1-SEGMENT-ODD-WORD",
+        "I86-SAR-M1-SEGMENT-ODD-WORD"
+    };
+    static const char *const cl_keys[] = {
+        "I86-ROL-MCL-SEGMENT-ODD-WORD", "I86-ROR-MCL-SEGMENT-ODD-WORD",
+        "I86-RCL-MCL-SEGMENT-ODD-WORD", "I86-RCR-MCL-SEGMENT-ODD-WORD",
+        "I86-SHL-MCL-SEGMENT-ODD-WORD", "I86-SHR-MCL-SEGMENT-ODD-WORD",
+        "I86-SAR-MCL-SEGMENT-ODD-WORD"
+    };
+    static const lib_u8 extensions[] = { 0u, 1u, 2u, 3u, 4u, 5u, 7u };
+    static const lib_u16 one_results[] = {
+        4u, 1u, 4u, 1u, 4u, 1u, 1u
+    };
+    static const lib_u16 cl_results[] = {
+        8u, 0x8000u, 8u, 0u, 8u, 0u, 0u
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(extensions) / sizeof(extensions[0]); ++index) {
+        timing_manifest_memory_recipe recipe = {
+            one_keys[index], { 0x26u, 0xd1u, (lib_u8)(0x06u |
+                (extensions[index] << 3u)), 1u, 0x10u }, 5u, 31u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 2u, 0u, 0u, one_results[index]
+        };
+
+        if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
+        recipe.key_id = cl_keys[index];
+        recipe.program[1] = 0xd3u;
+        recipe.expected_ticks = 44u;
+        recipe.initial_cx = 2u;
+        recipe.expected_cx = 2u;
+        recipe.expected_memory_value = cl_results[index];
+        if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_string_primitives(void)
+{
+    static const timing_manifest_string_recipe recipes[] = {
+        { "I86-STRING-MOVS-B-NONE", 0xa4u, 18u },
+        { "I86-STRING-MOVS-W-NONE", 0xa5u, 18u },
+        { "I86-STRING-CMPS-B-NONE", 0xa6u, 22u },
+        { "I86-STRING-CMPS-W-NONE", 0xa7u, 22u },
+        { "I86-STRING-STOS-B-NONE", 0xaau, 11u },
+        { "I86-STRING-STOS-W-NONE", 0xabu, 11u },
+        { "I86-STRING-LODS-B-NONE", 0xacu, 12u },
+        { "I86-STRING-LODS-W-NONE", 0xadu, 12u },
+        { "I86-STRING-SCAS-B-NONE", 0xaeu, 15u },
+        { "I86-STRING-SCAS-W-NONE", 0xafu, 15u }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_string_primitive(&recipes[index])) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_repeat_base_forms(void)
+{
+    static const timing_manifest_repeat_recipe recipes[] = {
+        { "I86-REP-MOVS-B", 0xf3u, 0xa4u, 26u, 17u, 9u, 0u, 0, 0u },
+        { "I86-REP-MOVS-W", 0xf3u, 0xa5u, 26u, 17u, 9u, 0u, 0, 0u },
+        { "I86-REP-CMPS-REPE-B", 0xf3u, 0xa6u, 31u, 22u, 9u, 0u, 0, 0u },
+        { "I86-REP-CMPS-REPE-W", 0xf3u, 0xa7u, 31u, 22u, 9u, 0u, 0, 0u },
+        { "I86-REP-CMPS-REPNE-B", 0xf2u, 0xa6u, 31u, 22u, 9u, 0u, 0, 0u },
+        { "I86-REP-CMPS-REPNE-W", 0xf2u, 0xa7u, 31u, 22u, 9u, 0u, 0, 0u },
+        { "I86-REP-STOS-B", 0xf3u, 0xaau, 19u, 10u, 9u, 0u, 0, 0u },
+        { "I86-REP-STOS-W", 0xf3u, 0xabu, 19u, 10u, 9u, 0u, 0, 0u },
+        { "I86-REP-LODS-B", 0xf3u, 0xacu, 22u, 13u, 9u, 0u, 0, 0u },
+        { "I86-REP-LODS-W", 0xf3u, 0xadu, 22u, 13u, 9u, 0u, 0, 0u },
+        { "I86-REP-SCAS-REPE-B", 0xf3u, 0xaeu, 24u, 15u, 9u, 0u, 0, 0u },
+        { "I86-REP-SCAS-REPE-W", 0xf3u, 0xafu, 24u, 15u, 9u, 0u, 0, 0u },
+        { "I86-REP-SCAS-REPNE-B", 0xf2u, 0xaeu, 24u, 15u, 9u, 0u, 0, 0u },
+        { "I86-REP-SCAS-REPNE-W", 0xf2u, 0xafu, 24u, 15u, 9u, 0u, 0, 0u }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_repeat_recipe(&recipes[index])) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_text_contains(const char *text, const char *needle)
+{
+    lib_size offset;
+    lib_size index;
+
+    if (text == LIB_NULL || needle == LIB_NULL || needle[0] == '\0') return 0;
+    for (offset = 0u; text[offset] != '\0'; ++offset) {
+        for (index = 0u; needle[index] != '\0' && text[offset + index] != '\0' &&
+                text[offset + index] == needle[index]; ++index) {}
+        if (needle[index] == '\0') return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_repeat_manifest_contexts(void)
+{
+    lib_size index;
+
+    for (index = 0u; index < sizeof(timing_manifest_records) /
+            sizeof(timing_manifest_records[0]); ++index) {
+        const timing_manifest_record *record = &timing_manifest_records[index];
+        timing_manifest_repeat_recipe recipe = { 0 };
+        lib_u64 odd_addition = 0u;
+        lib_i32 segment;
+        lib_i32 odd;
+
+        if (!timing_manifest_text_contains(record->key_id, "I86-REP-")) continue;
+        recipe.key_id = record->key_id;
+        recipe.prefix = timing_manifest_text_contains(record->key_id, "REPNE") ?
+            0xf2u : 0xf3u;
+        if (timing_manifest_text_contains(record->key_id, "MOVS-B")) {
+            recipe.opcode = 0xa4u; recipe.first_ticks = 26u;
+            recipe.continuation_ticks = 17u; recipe.zero_ticks = 9u;
+        } else if (timing_manifest_text_contains(record->key_id, "MOVS-W")) {
+            recipe.opcode = 0xa5u; recipe.first_ticks = 26u;
+            recipe.continuation_ticks = 17u; recipe.zero_ticks = 9u; odd_addition = 8u;
+        } else if (timing_manifest_text_contains(record->key_id, "CMPS-REPE-B") ||
+                timing_manifest_text_contains(record->key_id, "CMPS-REPNE-B")) {
+            recipe.opcode = 0xa6u; recipe.first_ticks = 31u;
+            recipe.continuation_ticks = 22u; recipe.zero_ticks = 9u;
+        } else if (timing_manifest_text_contains(record->key_id, "CMPS-REPE-W") ||
+                timing_manifest_text_contains(record->key_id, "CMPS-REPNE-W")) {
+            recipe.opcode = 0xa7u; recipe.first_ticks = 31u;
+            recipe.continuation_ticks = 22u; recipe.zero_ticks = 9u; odd_addition = 8u;
+        } else if (timing_manifest_text_contains(record->key_id, "STOS-B")) {
+            recipe.opcode = 0xaau; recipe.first_ticks = 19u;
+            recipe.continuation_ticks = 10u; recipe.zero_ticks = 9u;
+        } else if (timing_manifest_text_contains(record->key_id, "STOS-W")) {
+            recipe.opcode = 0xabu; recipe.first_ticks = 19u;
+            recipe.continuation_ticks = 10u; recipe.zero_ticks = 9u; odd_addition = 4u;
+        } else if (timing_manifest_text_contains(record->key_id, "LODS-B")) {
+            recipe.opcode = 0xacu; recipe.first_ticks = 22u;
+            recipe.continuation_ticks = 13u; recipe.zero_ticks = 9u;
+        } else if (timing_manifest_text_contains(record->key_id, "LODS-W")) {
+            recipe.opcode = 0xadu; recipe.first_ticks = 22u;
+            recipe.continuation_ticks = 13u; recipe.zero_ticks = 9u; odd_addition = 4u;
+        } else if (timing_manifest_text_contains(record->key_id, "SCAS-REPE-B") ||
+                timing_manifest_text_contains(record->key_id, "SCAS-REPNE-B")) {
+            recipe.opcode = 0xaeu; recipe.first_ticks = 24u;
+            recipe.continuation_ticks = 15u; recipe.zero_ticks = 9u;
+        } else if (timing_manifest_text_contains(record->key_id, "SCAS-REPE-W") ||
+                timing_manifest_text_contains(record->key_id, "SCAS-REPNE-W")) {
+            recipe.opcode = 0xafu; recipe.first_ticks = 24u;
+            recipe.continuation_ticks = 15u; recipe.zero_ticks = 9u; odd_addition = 4u;
+        } else {
+            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:UNMAPPED-REP:%s\n",
+                record->key_id);
+            return 1;
+        }
+        segment = timing_manifest_text_contains(record->key_id, "-SEGMENT");
+        odd = timing_manifest_text_contains(record->key_id, "-ODD-WORD");
+        if (timing_manifest_text_contains(record->key_id, "-LOCK")) {
+            recipe.first_ticks += 2u;
+            recipe.continuation_ticks += 2u;
+            recipe.zero_ticks += 2u;
+            recipe.required_formula_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_LOCK;
+        }
+        if (segment) {
+            recipe.segment_prefix = 0x26u;
+            recipe.first_ticks += 2u;
+            recipe.continuation_ticks += 2u;
+            recipe.zero_ticks += 2u;
+            recipe.required_formula_inputs |=
+                CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
+        }
+        if (odd) {
+            recipe.odd_addresses = 1;
+            recipe.first_ticks += odd_addition;
+            recipe.continuation_ticks += odd_addition;
+            recipe.required_formula_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
+        }
+        if (timing_manifest_run_repeat_recipe(&recipe)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_string_segment_contexts(void)
+{
+    static const timing_manifest_string_recipe recipes[] = {
+        { "I86-STRING-MOVS-B-NONE-SEGMENT", 0xa4u, 20u },
+        { "I86-STRING-MOVS-W-NONE-SEGMENT", 0xa5u, 20u },
+        { "I86-STRING-CMPS-B-NONE-SEGMENT", 0xa6u, 24u },
+        { "I86-STRING-CMPS-W-NONE-SEGMENT", 0xa7u, 24u },
+        { "I86-STRING-LODS-B-NONE-SEGMENT", 0xacu, 14u },
+        { "I86-STRING-LODS-W-NONE-SEGMENT", 0xadu, 14u }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_string_primitive_with_prefix(&recipes[index],
+                0x26u, 0, CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_string_odd_word_contexts(void)
+{
+    static const timing_manifest_string_recipe recipes[] = {
+        { "I86-STRING-MOVS-W-NONE-ODD-WORD", 0xa5u, 26u },
+        { "I86-STRING-CMPS-W-NONE-ODD-WORD", 0xa7u, 30u },
+        { "I86-STRING-STOS-W-NONE-ODD-WORD", 0xabu, 15u },
+        { "I86-STRING-LODS-W-NONE-ODD-WORD", 0xadu, 16u },
+        { "I86-STRING-SCAS-W-NONE-ODD-WORD", 0xafu, 19u }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_string_primitive_with_prefix(&recipes[index],
+                0u, 1, CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_string_segment_odd_word_contexts(void)
+{
+    static const timing_manifest_string_recipe recipes[] = {
+        { "I86-STRING-MOVS-W-NONE-SEGMENT-ODD-WORD", 0xa5u, 28u },
+        { "I86-STRING-CMPS-W-NONE-SEGMENT-ODD-WORD", 0xa7u, 32u },
+        { "I86-STRING-LODS-W-NONE-SEGMENT-ODD-WORD", 0xadu, 18u }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_string_primitive_with_prefix(&recipes[index],
+                0x26u, 1, CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_pointer_load_forms(void)
+{
+    typedef struct timing_manifest_pointer_recipe {
+        const char *key_id;
+        lib_u8 opcode;
+        lib_u8 prefix;
+        lib_u16 pointer_address;
+        lib_u64 expected_ticks;
+        lib_u32 required_formula_inputs;
+    } timing_manifest_pointer_recipe;
+    static const timing_manifest_pointer_recipe recipes[] = {
+        { "I86-LDS-M", 0xc5u, 0u, 0x1000u, 22u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS },
+        { "I86-LES-M", 0xc4u, 0u, 0x1000u, 22u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS },
+        { "I86-LDS-M-SEGMENT", 0xc5u, 0x26u, 0x1000u, 24u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-LES-M-SEGMENT", 0xc4u, 0x26u, 0x1000u, 24u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-LDS-M-ODD-WORD", 0xc5u, 0u, 0x1001u, 30u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-LES-M-ODD-WORD", 0xc4u, 0u, 0x1001u, 30u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-LDS-M-SEGMENT-ODD-WORD", 0xc5u, 0x26u, 0x1001u, 32u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-LES-M-SEGMENT-ODD-WORD", 0xc4u, 0x26u, 0x1001u, 32u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-LDS-M-LOCK", 0xc5u, 0xf0u, 0x1000u, 24u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-LES-M-LOCK", 0xc4u, 0xf0u, 0x1000u, 24u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-LDS-M-LOCK-SEGMENT", 0xc5u, 0x26u, 0x1000u, 26u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-LES-M-LOCK-SEGMENT", 0xc4u, 0x26u, 0x1000u, 26u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-LDS-M-LOCK-ODD-WORD", 0xc5u, 0xf0u, 0x1001u, 32u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-LES-M-LOCK-ODD-WORD", 0xc4u, 0xf0u, 0x1001u, 32u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-LDS-M-LOCK-SEGMENT-ODD-WORD", 0xc5u, 0x26u, 0x1001u, 34u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-LES-M-LOCK-SEGMENT-ODD-WORD", 0xc4u, 0x26u, 0x1001u, 34u,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK }
+    };
+    const lib_u16 pointer[] = { 0x2000u, 0x0800u };
+    const core_machine_run_budget budget = { 1u, 0u };
+    lib_size index;
+
+    {
+        const timing_manifest_record *record = timing_manifest_find("I86-LEA-M");
+        const lib_u8 program[] = { 0x8du, 0x1eu, 0u, 0x10u };
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 failed = record == LIB_NULL || lib_text_compare(record->level, "L3") != 0 ||
+            !timing_manifest_prepare(&machine, &capture, program, sizeof(program));
+
+        if (!failed) {
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+                !timing_manifest_ticks_match(run.ticks, 8u) || capture.count != 1u ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+                (capture.observation.formula_inputs &
+                    (CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+                     CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS)) !=
+                    (CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+                     CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS) ||
+                (lib_u16)snapshot.ebx != 0x1000u;
+        }
+        if (failed) {
+            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:I86-LEA-M\n");
+            core_machine_destroy(machine);
+            return 1;
+        }
+        core_machine_destroy(machine);
+    }
+    {
+        const timing_manifest_memory_recipe recipe = {
+            "I86-LEA-M-LOCK", { 0xf0u, 0x8du, 0x1eu, 0u, 0x10u }, 5u, 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 0u, 0u, 0u, 0u
+        };
+        if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                CORE_MACHINE_CPU_TIMING_INPUT_LOCK)) return 1;
+    }
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        const timing_manifest_pointer_recipe *recipe = &recipes[index];
+        const timing_manifest_record *record = timing_manifest_find(recipe->key_id);
+        lib_u8 program[] = { recipe->opcode, 0x1eu,
+            CORE_MACHINE_MASK_U8(recipe->pointer_address),
+            CORE_MACHINE_MASK_U8(recipe->pointer_address >> 8u), 0u, 0u };
+        lib_size program_bytes = 4u;
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 failed;
+
+        if (recipe->prefix != 0u) {
+            program[4] = program[3]; program[3] = program[2]; program[2] = program[1];
+            program[1] = program[0]; program[0] = recipe->prefix;
+        }
+        if (lib_text_compare(recipe->key_id, "I86-LDS-M-LOCK-SEGMENT") == 0 ||
+            lib_text_compare(recipe->key_id, "I86-LES-M-LOCK-SEGMENT") == 0 ||
+            lib_text_compare(recipe->key_id, "I86-LDS-M-LOCK-SEGMENT-ODD-WORD") == 0 ||
+            lib_text_compare(recipe->key_id, "I86-LES-M-LOCK-SEGMENT-ODD-WORD") == 0) {
+            program[5] = program[4]; program[4] = program[3]; program[3] = program[2];
+            program[2] = program[1]; program[1] = program[0]; program[0] = 0xf0u;
+        }
+        failed = record == LIB_NULL || lib_text_compare(record->level, "L3") != 0 ||
+            !timing_manifest_prepare(&machine, &capture, program,
+                recipe->prefix == 0u ? program_bytes :
+                    (timing_manifest_text_contains(recipe->key_id, "-LOCK-SEGMENT") ?
+                        program_bytes + 2u : program_bytes + 1u));
+        if (!failed) {
+            failed = core_machine_memory_write(machine, recipe->pointer_address, pointer,
+                sizeof(pointer)) != LIB_STATUS_OK;
+        }
+        if (!failed) {
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+                (capture.observation.formula_inputs & recipe->required_formula_inputs) !=
+                    recipe->required_formula_inputs ||
+                (lib_u16)snapshot.ebx != 0x2000u ||
+                (recipe->opcode == 0xc5u &&
+                    snapshot.ds.selector != 0x0800u) ||
+                (recipe->opcode == 0xc4u &&
+                    snapshot.es.selector != 0x0800u);
+        }
+        if (failed) {
+            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            core_machine_destroy(machine);
+            return 1;
+        }
+        core_machine_destroy(machine);
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_segment_mov_forms(void)
+{
+    static const timing_manifest_recipe register_recipes[] = {
+        { "I86-MOV-SREG-TO-R", { 0x8cu, 0xc0u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-MOV-SREG-FROM-R", { 0x8eu, 0xc0u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+    };
+    static const timing_manifest_memory_recipe memory_recipes[] = {
+        { "I86-MOV-SREG-TO-M", { 0x8cu, 0x06u, 0u, 0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 0u, 0u, 0u, 0u },
+        { "I86-MOV-SREG-FROM-M", { 0x8eu, 0x06u, 0u, 0x10u }, 4u, 14u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 0u, 0u, 0u, 0u, 0u }
+    };
+    static const char *const context_keys[][2] = {
+        { "I86-MOV-SREG-TO-M-SEGMENT", "I86-MOV-SREG-FROM-M-SEGMENT" },
+        { "I86-MOV-SREG-TO-M-ODD-WORD", "I86-MOV-SREG-FROM-M-ODD-WORD" },
+        { "I86-MOV-SREG-TO-M-SEGMENT-ODD-WORD",
+            "I86-MOV-SREG-FROM-M-SEGMENT-ODD-WORD" }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(register_recipes) / sizeof(register_recipes[0]);
+            ++index) {
+        if (timing_manifest_run_exact_recipe(&register_recipes[index])) return 1;
+    }
+    for (index = 0u; index < sizeof(memory_recipes) / sizeof(memory_recipes[0]);
+            ++index) {
+        if (timing_manifest_run_l3_memory_recipe(&memory_recipes[index])) return 1;
+    }
+    for (index = 0u; index < 3u; ++index) {
+        lib_i32 segment_override = index == 0u || index == 2u;
+        lib_i32 odd_word = index == 1u || index == 2u;
+        lib_size recipe_index;
+
+        for (recipe_index = 0u; recipe_index < sizeof(memory_recipes) /
+                sizeof(memory_recipes[0]); ++recipe_index) {
+            timing_manifest_memory_recipe recipe = memory_recipes[recipe_index];
+            lib_size byte_index;
+
+            recipe.key_id = context_keys[index][recipe_index];
+            if (segment_override) {
+                for (byte_index = recipe.program_bytes; byte_index > 0u;
+                        --byte_index) {
+                    recipe.program[byte_index] = recipe.program[byte_index - 1u];
+                }
+                recipe.program[0] = 0x26u;
+                ++recipe.program_bytes;
+                recipe.expected_ticks += 2u;
+            }
+            if (odd_word) {
+                recipe.program[segment_override ? 3u : 2u] = 1u;
+                recipe.expected_ticks += 4u;
+            }
+            if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipe,
+                    odd_word ? CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD : 0u)) return 1;
+        }
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_far_direct_control_transfers(void)
+{
+    static const timing_manifest_recipe recipes[] = {
+        { "I86-CALL-FAR", { 0x9au, 0u, 0u, 0u, 0u }, 5u, 28u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-JMP-FAR", { 0xeau, 0u, 0u, 0u, 0u }, 5u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
+    };
+
+    return timing_manifest_run_exact_recipe(&recipes[0]) ||
+        timing_manifest_run_exact_recipe_with_control(&recipes[1], 0u, 0u,
+            CORE_MACHINE_RETIREMENT_CONTROL_TAKEN);
+}
+
+typedef struct timing_manifest_indirect_control_recipe {
+    const char *key_id;
+    lib_u8 program[8];
+    lib_u8 program_bytes;
+    lib_u64 expected_ticks;
+    lib_u16 target_ip;
+    lib_u16 target_cs;
+    lib_u16 expected_sp;
+    lib_u16 pointer_address;
+    lib_i32 pointer_is_far;
+    lib_u32 required_formula_inputs;
+} timing_manifest_indirect_control_recipe;
+
+static lib_i32 timing_manifest_write_word(core_machine *machine,
+    lib_u32 address, lib_u16 value)
+{
+    lib_u8 bytes[2];
+
+    bytes[0] = CORE_MACHINE_MASK_U8(value);
+    bytes[1] = CORE_MACHINE_MASK_U8(value >> 8u);
+    return core_machine_memory_write(machine, address, bytes, sizeof(bytes)) ==
+        LIB_STATUS_OK;
+}
+
+static lib_i32 timing_manifest_run_indirect_control_recipe(
+    const timing_manifest_indirect_control_recipe *recipe)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    const timing_manifest_record *record = recipe == LIB_NULL ? LIB_NULL :
+        timing_manifest_find(recipe->key_id);
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine_debug_cpu_snapshot snapshot = { 0 };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = recipe == LIB_NULL || record == LIB_NULL ||
+        !timing_manifest_is_active(record) || lib_text_compare(record->level, "L3") != 0 ||
+        !timing_manifest_prepare(&machine, &capture, recipe->program,
+            recipe->program_bytes);
+
+    if (!failed) {
+        failed = timing_manifest_seed_word(machine,
+                CORE_MACHINE_DEBUG_EAX, recipe->target_ip) != LIB_STATUS_OK ||
+            timing_manifest_seed_word(machine,
+                CORE_MACHINE_DEBUG_ESP, 0x8000u) != LIB_STATUS_OK;
+        if (!failed && recipe->pointer_address != 0u) {
+            failed = !timing_manifest_write_word(machine, recipe->pointer_address,
+                recipe->target_ip);
+            if (!failed && recipe->pointer_is_far) {
+                failed = !timing_manifest_write_word(machine,
+                    recipe->pointer_address + 2u, recipe->target_cs);
+            }
+        }
+    }
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+            capture.observation.timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            capture.observation.source_timing_form_id ==
+                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+            capture.observation.timing_key_id ==
+                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+            (recipe->required_formula_inputs != 0u &&
+                (capture.observation.formula_inputs &
+                    recipe->required_formula_inputs) !=
+                    recipe->required_formula_inputs) ||
+            snapshot.eip != recipe->target_ip ||
+            (recipe->target_cs != 0u &&
+                snapshot.cs.selector != recipe->target_cs) ||
+            (lib_u16)snapshot.esp != recipe->expected_sp;
+    }
+    if (failed) {
+        lib_c_printf("I86 indirect ticks=%llu origin=%d ip=%u cs=%u sp=%u form=%u key=%u\n",
+            run.ticks, capture.observation.timing_origin,
+            snapshot.eip,
+            snapshot.cs.selector,
+            (lib_u16)snapshot.esp,
+            capture.observation.source_timing_form_id,
+            capture.observation.timing_key_id);
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n",
+            recipe == LIB_NULL ? "<null>" : recipe->key_id);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 timing_manifest_probe_indirect_control_transfers(void)
+{
+    static const timing_manifest_indirect_control_recipe recipes[] = {
+        { "I86-CALL-RM16", { 0xffu, 0xd0u }, 2u, 16u, 0x0200u, 0u, 0x7ffeu,
+            0u, 0, 0u },
+        { "I86-CALL-M1616", { 0xffu, 0x1eu, 0u, 0x10u }, 4u, 43u,
+            0x0200u, 0xf000u, 0x7ffcu, 0x1000u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS },
+        { "I86-JMP-RM16", { 0xffu, 0xe0u }, 2u, 11u, 0x0200u, 0u, 0x8000u,
+            0u, 0, 0u },
+        { "I86-JMP-M1616", { 0xffu, 0x2eu, 0u, 0x10u }, 4u, 30u,
+            0x0200u, 0xf000u, 0x8000u, 0x1000u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS },
+        { "I86-CALL-RM16-SEGMENT", { 0x26u, 0xffu, 0x16u, 0u, 0x10u }, 5u,
+            29u, 0x0200u, 0u, 0x7ffeu, 0x1000u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-CALL-M1616-SEGMENT", { 0x26u, 0xffu, 0x1eu, 0u, 0x10u }, 5u,
+            45u, 0x0200u, 0xf000u, 0x7ffcu, 0x1000u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-JMP-RM16-SEGMENT", { 0x26u, 0xffu, 0x26u, 0u, 0x10u }, 5u,
+            26u, 0x0200u, 0u, 0x8000u, 0x1000u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-JMP-M1616-SEGMENT", { 0x26u, 0xffu, 0x2eu, 0u, 0x10u }, 5u,
+            32u, 0x0200u, 0xf000u, 0x8000u, 0x1000u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-CALL-RM16-ODD-WORD", { 0xffu, 0x16u, 1u, 0x10u }, 4u, 31u,
+            0x0200u, 0u, 0x7ffeu, 0x1001u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-CALL-M1616-ODD-WORD", { 0xffu, 0x1eu, 1u, 0x10u }, 4u, 51u,
+            0x0200u, 0xf000u, 0x7ffcu, 0x1001u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-JMP-RM16-ODD-WORD", { 0xffu, 0x26u, 1u, 0x10u }, 4u, 28u,
+            0x0200u, 0u, 0x8000u, 0x1001u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-JMP-M1616-ODD-WORD", { 0xffu, 0x2eu, 1u, 0x10u }, 4u, 38u,
+            0x0200u, 0xf000u, 0x8000u, 0x1001u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-CALL-RM16-SEGMENT-ODD-WORD", { 0x26u, 0xffu, 0x16u, 1u, 0x10u },
+            5u, 33u, 0x0200u, 0u, 0x7ffeu, 0x1001u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-CALL-M1616-SEGMENT-ODD-WORD", { 0x26u, 0xffu, 0x1eu, 1u, 0x10u },
+            5u, 53u, 0x0200u, 0xf000u, 0x7ffcu, 0x1001u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-JMP-RM16-SEGMENT-ODD-WORD", { 0x26u, 0xffu, 0x26u, 1u, 0x10u },
+            5u, 30u, 0x0200u, 0u, 0x8000u, 0x1001u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-JMP-M1616-SEGMENT-ODD-WORD", { 0x26u, 0xffu, 0x2eu, 1u, 0x10u },
+            5u, 40u, 0x0200u, 0xf000u, 0x8000u, 0x1001u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD }
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_indirect_control_recipe(&recipes[index])) return 1;
+        {
+            timing_manifest_indirect_control_recipe locked = recipes[index];
+            const timing_manifest_record *base_record =
+                timing_manifest_find(locked.key_id);
+            char key[160];
+            lib_size byte_index;
+
+            if (base_record != LIB_NULL &&
+                !timing_manifest_text_contains(base_record->context, "LOCK")) {
+                if (locked.program_bytes >= sizeof(locked.program) ||
+                    !timing_manifest_lock_key_for_context(base_record, locked.key_id,
+                        key, sizeof(key))) return 1;
+                for (byte_index = locked.program_bytes; byte_index != 0u;
+                        --byte_index) {
+                    locked.program[byte_index] = locked.program[byte_index - 1u];
+                }
+                locked.program[0] = 0xf0u;
+                ++locked.program_bytes;
+                locked.expected_ticks += 2u;
+                locked.required_formula_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_LOCK;
+                locked.key_id = key;
+                if (timing_manifest_run_indirect_control_recipe(&locked)) return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+typedef struct timing_manifest_return_recipe {
+    const char *key_id;
+    lib_u8 program[4];
+    lib_u8 program_bytes;
+    lib_u64 expected_ticks;
+    lib_u16 target_ip;
+    lib_u16 target_cs;
+    lib_u16 expected_sp;
+    lib_u16 frame_words[3];
+    lib_u8 frame_word_count;
+    core_machine_retirement_timing_origin expected_origin;
+} timing_manifest_return_recipe;
+
+static lib_i32 timing_manifest_probe_return_forms(void)
+{
+    static const timing_manifest_return_recipe recipes[] = {
+        { "I86-RET-NEAR", { 0xc3u }, 1u, 8u, 0x0200u, 0u, 0x8002u,
+            { 0x0200u, 0u, 0u }, 1u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-RET-NEAR-IMM", { 0xc2u, 4u, 0u }, 3u, 12u, 0x0200u, 0u,
+            0x8006u, { 0x0200u, 0u, 0u }, 1u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-RET-FAR", { 0xcbu }, 1u, 18u, 0x0200u, 0xf000u, 0x8004u,
+            { 0x0200u, 0xf000u, 0u }, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-RET-FAR-IMM", { 0xcau, 4u, 0u }, 3u, 17u, 0x0200u, 0xf000u,
+            0x8008u, { 0x0200u, 0xf000u, 0u }, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-RET-IRET", { 0xcfu }, 1u, 24u, 0x0200u, 0xf000u, 0x8006u,
+            { 0x0200u, 0xf000u, 0x0002u }, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-RET-NEAR-LOCK", { 0xf0u, 0xc3u }, 2u, 10u, 0x0200u, 0u,
+            0x8002u, { 0x0200u, 0u, 0u }, 1u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-RET-NEAR-IMM-LOCK", { 0xf0u, 0xc2u, 4u, 0u }, 4u, 14u,
+            0x0200u, 0u, 0x8006u, { 0x0200u, 0u, 0u }, 1u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I86-RET-FAR-LOCK", { 0xf0u, 0xcbu }, 2u, 20u, 0x0200u, 0xf000u,
+            0x8004u, { 0x0200u, 0xf000u, 0u }, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-RET-FAR-IMM-LOCK", { 0xf0u, 0xcau, 4u, 0u }, 4u, 19u,
+            0x0200u, 0xf000u, 0x8008u, { 0x0200u, 0xf000u, 0u }, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-RET-IRET-LOCK", { 0xf0u, 0xcfu }, 2u, 26u, 0x0200u, 0xf000u,
+            0x8006u, { 0x0200u, 0xf000u, 0x0002u }, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        const timing_manifest_return_recipe *recipe = &recipes[index];
+        const timing_manifest_record *record = timing_manifest_find(recipe->key_id);
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_u8 word_index;
+        lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+            lib_text_compare(record->level, "L3") != 0 ||
+            !timing_manifest_prepare(&machine, &capture, recipe->program,
+                recipe->program_bytes);
+
+        if (!failed) {
+            failed = timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_ESP, 0x8000u) != LIB_STATUS_OK;
+            for (word_index = 0u; !failed && word_index < recipe->frame_word_count;
+                    ++word_index) {
+                failed = !timing_manifest_write_word(machine,
+                    0x8000u + (lib_u32)word_index * 2u,
+                    recipe->frame_words[word_index]);
+            }
+        }
+        if (!failed) {
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+                capture.observation.timing_disposition !=
+                    CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, recipe->expected_origin) ||
+                capture.observation.source_timing_form_id ==
+                    CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+                capture.observation.timing_key_id ==
+                    CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+                snapshot.eip != recipe->target_ip ||
+                (recipe->target_cs != 0u &&
+                    snapshot.cs.selector != recipe->target_cs) ||
+                (lib_u16)snapshot.esp != recipe->expected_sp;
+        }
+        if (failed) {
+            lib_c_printf("I86 return ticks=%llu origin=%d ip=%u cs=%u sp=%u form=%u key=%u\n",
+                run.ticks, capture.observation.timing_origin,
+                snapshot.eip,
+                snapshot.cs.selector,
+                (lib_u16)snapshot.esp,
+                capture.observation.source_timing_form_id,
+                capture.observation.timing_key_id);
+            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            core_machine_destroy(machine);
+            return 1;
+        }
+        core_machine_destroy(machine);
+    }
+    return 0;
+}
+
+typedef struct timing_manifest_interrupt_recipe {
+    const char *key_id;
+    lib_u8 program[3];
+    lib_u8 program_bytes;
+    lib_u32 initial_eflags;
+    lib_u16 vector;
+    lib_u64 expected_ticks;
+    lib_u16 expected_ip;
+    lib_u16 expected_sp;
+} timing_manifest_interrupt_recipe;
+
+static lib_i32 timing_manifest_probe_software_interrupt_forms(void)
+{
+    static const timing_manifest_interrupt_recipe recipes[] = {
+        { "I86-INT3", { 0xccu, 0u }, 1u, 0u, 3u, 52u, 0x0200u, 0x7ffau },
+        { "I86-INT-IMM", { 0xcdu, 4u }, 2u, 0u, 4u, 51u, 0x0200u, 0x7ffau },
+        { "I86-INTO-TAKEN", { 0xceu, 0u }, 1u, CORE_MACHINE_DEBUG_EFLAGS_OF, 4u, 53u,
+            0x0200u, 0x7ffau },
+        { "I86-INTO-NOT", { 0xceu, 0u }, 1u, 0u, 0u, 4u, 0xfff1u, 0x8000u },
+        { "I86-INT3-LOCK", { 0xf0u, 0xccu }, 2u, 0u, 3u, 54u, 0x0200u,
+            0x7ffau },
+        { "I86-INT-IMM-LOCK", { 0xf0u, 0xcdu, 4u }, 3u, 0u, 4u, 53u,
+            0x0200u, 0x7ffau },
+        { "I86-INTO-TAKEN-LOCK", { 0xf0u, 0xceu }, 2u, CORE_MACHINE_DEBUG_EFLAGS_OF,
+            4u, 55u, 0x0200u, 0x7ffau },
+        { "I86-INTO-NOT-LOCK", { 0xf0u, 0xceu }, 2u, 0u, 0u, 6u, 0xfff2u,
+            0x8000u }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        const timing_manifest_interrupt_recipe *recipe = &recipes[index];
+        const timing_manifest_record *record = timing_manifest_find(recipe->key_id);
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+            lib_text_compare(record->level, "L3") != 0 ||
+            !timing_manifest_prepare(&machine, &capture, recipe->program,
+                recipe->program_bytes);
+
+        if (!failed) {
+            failed = timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_ESP, 0x8000u) != LIB_STATUS_OK ||
+                core_machine_debug_write_register(machine,
+                    CORE_MACHINE_DEBUG_EFLAGS, recipe->initial_eflags) != LIB_STATUS_OK;
+            if (!failed && recipe->vector != 0u) {
+                failed = !timing_manifest_write_word(machine,
+                    (lib_u32)recipe->vector * 4u, recipe->expected_ip) ||
+                    !timing_manifest_write_word(machine,
+                        (lib_u32)recipe->vector * 4u + 2u, 0xf000u);
+            }
+        }
+        if (!failed) {
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+                capture.observation.timing_disposition !=
+                    CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+                capture.observation.source_timing_form_id ==
+                    CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+                capture.observation.timing_key_id ==
+                    CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+                snapshot.eip != recipe->expected_ip ||
+                (lib_u16)snapshot.esp != recipe->expected_sp ||
+                (recipe->vector != 0u &&
+                    snapshot.cs.selector != 0xf000u);
+        }
+        if (failed) {
+            lib_c_printf("I86 int ticks=%llu origin=%d ip=%u cs=%u sp=%u control=%d form=%u key=%u\n",
+                run.ticks, capture.observation.timing_origin,
+                snapshot.eip,
+                snapshot.cs.selector,
+                (lib_u16)snapshot.esp,
+                capture.observation.control_outcome,
+                capture.observation.source_timing_form_id,
+                capture.observation.timing_key_id);
+            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            core_machine_destroy(machine);
+            return 1;
+        }
+        core_machine_destroy(machine);
+    }
+    return 0;
+}
+
+typedef struct timing_manifest_memory_stack_recipe {
+    const char *key_id;
+    lib_u8 program[6];
+    lib_u8 program_bytes;
+    lib_u16 memory_address;
+    lib_u64 expected_ticks;
+    lib_i32 push;
+    lib_u32 required_formula_inputs;
+} timing_manifest_memory_stack_recipe;
+
+static lib_i32 timing_manifest_probe_memory_stack_forms(void)
+{
+    static const timing_manifest_memory_stack_recipe recipes[] = {
+        { "I86-PUSH-M", { 0xffu, 0x36u, 0u, 0x10u }, 4u, 0x1000u, 22u, 1,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS },
+        { "I86-POP-M", { 0x8fu, 0x06u, 0u, 0x10u }, 4u, 0x1000u, 23u, 0,
+            CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS },
+        { "I86-PUSH-M-SEGMENT", { 0x26u, 0xffu, 0x36u, 0u, 0x10u }, 5u,
+            0x1000u, 24u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-POP-M-SEGMENT", { 0x26u, 0x8fu, 0x06u, 0u, 0x10u }, 5u,
+            0x1000u, 25u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
+        { "I86-PUSH-M-ODD-WORD", { 0xffu, 0x36u, 1u, 0x10u }, 4u, 0x1001u,
+            26u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-POP-M-ODD-WORD", { 0x8fu, 0x06u, 1u, 0x10u }, 4u, 0x1001u,
+            27u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-PUSH-M-SEGMENT-ODD-WORD", { 0x26u, 0xffu, 0x36u, 1u, 0x10u },
+            5u, 0x1001u, 28u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-POP-M-SEGMENT-ODD-WORD", { 0x26u, 0x8fu, 0x06u, 1u, 0x10u },
+            5u, 0x1001u, 29u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
+        { "I86-PUSH-M-LOCK", { 0xf0u, 0xffu, 0x36u, 0u, 0x10u }, 5u,
+            0x1000u, 24u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-POP-M-LOCK", { 0xf0u, 0x8fu, 0x06u, 0u, 0x10u }, 5u,
+            0x1000u, 25u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-PUSH-M-LOCK-SEGMENT", { 0xf0u, 0x26u, 0xffu, 0x36u, 0u, 0x10u }, 6u,
+            0x1000u, 26u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-POP-M-LOCK-SEGMENT", { 0xf0u, 0x26u, 0x8fu, 0x06u, 0u, 0x10u }, 6u,
+            0x1000u, 27u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-PUSH-M-LOCK-ODD-WORD", { 0xf0u, 0xffu, 0x36u, 1u, 0x10u }, 5u,
+            0x1001u, 28u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-POP-M-LOCK-ODD-WORD", { 0xf0u, 0x8fu, 0x06u, 1u, 0x10u }, 5u,
+            0x1001u, 29u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-PUSH-M-LOCK-SEGMENT-ODD-WORD", { 0xf0u, 0x26u, 0xffu, 0x36u, 1u, 0x10u }, 6u,
+            0x1001u, 30u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
+        { "I86-POP-M-LOCK-SEGMENT-ODD-WORD", { 0xf0u, 0x26u, 0x8fu, 0x06u, 1u, 0x10u }, 6u,
+            0x1001u, 31u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD |
+            CORE_MACHINE_CPU_TIMING_INPUT_LOCK }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const lib_u16 transfer_word = 0x4a3cu;
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        const timing_manifest_memory_stack_recipe *recipe = &recipes[index];
+        const timing_manifest_record *record = timing_manifest_find(recipe->key_id);
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine_debug_cpu_snapshot snapshot = { 0 };
+        core_machine *machine = LIB_NULL;
+        lib_u16 observed = 0u;
+        lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+            lib_text_compare(record->level, "L3") != 0 ||
+            !timing_manifest_prepare(&machine, &capture, recipe->program,
+                recipe->program_bytes);
+
+        if (!failed) {
+            failed = timing_manifest_seed_word(machine,
+                    CORE_MACHINE_DEBUG_ESP, 0x8000u) != LIB_STATUS_OK;
+            if (!failed) failed = !timing_manifest_write_word(machine,
+                recipe->push ? recipe->memory_address : 0x8000u, transfer_word);
+        }
+        if (!failed) {
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+                capture.observation.timing_disposition !=
+                    CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+                (capture.observation.formula_inputs & recipe->required_formula_inputs) !=
+                    recipe->required_formula_inputs ||
+                (lib_u16)snapshot.esp != (recipe->push ? 0x7ffeu : 0x8002u) ||
+                core_machine_memory_read(machine,
+                    recipe->push ? 0x7ffeu : recipe->memory_address,
+                    &observed, sizeof(observed)) != LIB_STATUS_OK ||
+                observed != transfer_word;
+        }
+        if (failed) {
+            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            core_machine_destroy(machine);
+            return 1;
+        }
+        core_machine_destroy(machine);
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_probe_hlt(void)
+{
+    const timing_manifest_record *record = timing_manifest_find("I86-FLAG-HLT");
+    const lib_u8 program[] = { 0xf4u };
+    const core_machine_run_budget budget = { 1u, 0u };
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine_cpu_state cpu = {0};
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+        lib_text_compare(record->level, "L3") != 0 ||
+        !timing_manifest_prepare(&machine, &capture, program, sizeof(program));
+
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            run.executed != 1u || !timing_manifest_ticks_match(run.ticks, 2u) || capture.count != 1u ||
+            capture.observation.timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            core_machine_debug_read_cpu(machine, &cpu) != LIB_STATUS_OK || !cpu.halted;
+    }
+    if (failed) lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:I86-FLAG-HLT\n");
+    core_machine_destroy(machine);
+    if (failed) return 1;
+    {
+        const timing_manifest_record *locked_record =
+            timing_manifest_find("I86-FLAG-HLT-LOCK");
+        const lib_u8 locked_program[] = { 0xf0u, 0xf4u };
+        timing_manifest_capture locked_capture = { { 0 }, 0u };
+        core_machine_run_result locked_run = { 0 };
+        core_machine_cpu_state locked_cpu = {0};
+        core_machine *locked_machine = LIB_NULL;
+        lib_i32 locked_failed = locked_record == LIB_NULL ||
+            !timing_manifest_prepare(&locked_machine, &locked_capture,
+                locked_program, sizeof(locked_program));
+
+        if (!locked_failed) {
+            locked_failed = core_machine_run(locked_machine, budget, &locked_run) !=
+                    LIB_STATUS_OK ||
+                locked_run.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                locked_run.executed != 1u || !timing_manifest_ticks_match(locked_run.ticks, 4u) ||
+                locked_capture.count != 1u ||
+                locked_capture.observation.timing_disposition !=
+                    CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+                !timing_manifest_origin_match(locked_capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+                (locked_capture.observation.formula_inputs &
+                    CORE_MACHINE_CPU_TIMING_INPUT_LOCK) == 0u ||
+                core_machine_debug_read_cpu(locked_machine, &locked_cpu) != LIB_STATUS_OK ||
+                !locked_cpu.halted;
+        }
+        core_machine_destroy(locked_machine);
+        if (locked_failed) {
+            lib_c_printf("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-FLAG-HLT-LOCK\n");
+        }
+        return locked_failed;
+    }
+}
+
+static lib_i32 timing_manifest_probe_xchg_memory_contexts(void)
+{
+    static const timing_manifest_memory_recipe recipes[] = {
+        { "I86-XCHG-MR-SEGMENT", { 0x26u, 0x87u, 0x0eu, 0u, 0x10u }, 5u,
+            25u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 2u, 1u },
+        { "I86-XCHG-MR-ODD-WORD", { 0x87u, 0x0eu, 1u, 0x10u }, 4u,
+            31u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 2u, 1u },
+        { "I86-XCHG-MR-LOCK-SEGMENT", { 0xf0u, 0x26u, 0x87u, 0x0eu, 0u, 0x10u },
+            6u, 27u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 2u, 1u },
+        { "I86-XCHG-MR-LOCK-ODD-WORD", { 0xf0u, 0x87u, 0x0eu, 1u, 0x10u },
+            5u, 33u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 2u, 1u },
+        { "I86-XCHG-MR-SEGMENT-ODD-WORD", { 0x26u, 0x87u, 0x0eu, 1u, 0x10u },
+            5u, 33u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 2u, 1u },
+        { "I86-XCHG-MR-LOCK-SEGMENT-ODD-WORD",
+            { 0xf0u, 0x26u, 0x87u, 0x0eu, 1u, 0x10u }, 6u, 35u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            0u, 1u, 2u, 0u, 2u, 1u }
+    };
+    static const lib_u32 required_inputs[] = {
+        CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,
+        CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD,
+        CORE_MACHINE_CPU_TIMING_INPUT_LOCK |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,
+        CORE_MACHINE_CPU_TIMING_INPUT_LOCK |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD,
+        CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD,
+        CORE_MACHINE_CPU_TIMING_INPUT_LOCK |
+            CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
+            CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_manifest_run_l3_memory_recipe_with_inputs(&recipes[index],
+                required_inputs[index])) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 timing_manifest_write_results(void)
+{
+    const char *const path = PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH;
+    lib_c_file *file = lib_c_fopen(path, "wb");
+    lib_size index;
+    lib_size written = 0u;
+    lib_i32 failed;
+
+    if (file == LIB_NULL) return 1;
+    if (lib_c_fprintf(file, "{\n  \"schema\": \"nxvm.cpu-timing-results.v1\",\n"
+            "  \"profile\": \"%s\",\n  \"results\": [\n",
+            PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) < 0) {
+        lib_c_fclose(file);
+        return 1;
+    }
+    for (index = 0u; index < sizeof(timing_manifest_records) /
+            sizeof(timing_manifest_records[0]); ++index) {
+        const timing_manifest_record *record = &timing_manifest_records[index];
+        const core_machine_retirement_observation *observation =
+            &timing_manifest_results[index];
+
+        if (!timing_manifest_is_active(record)) continue;
+        if (!timing_manifest_observed[index]) {
+            lib_c_fclose(file);
+            return 1;
+        }
+        if ((written != 0u && lib_c_fprintf(file, ",\n") < 0) ||
+                lib_c_fprintf(file, "    {\"key_id\":\"%s\","
+                "\"profile\":\"%s\",\"level\":\"%s\","
+                "\"source_rule\":\"%s\",\"context\":\"%s\","
+                "\"ticks\":%llu,\"formula_inputs\":%u,"
+                "\"form_id\":%u,\"retirement_origin\":%d,"
+                "\"source_timing_unallocated\":%s,\"passed\":true}",
+                record->key_id, record->profile, record->level,
+                record->source_rule, record->context, observation->source_ticks,
+                observation->formula_inputs, observation->source_timing_form_id,
+                observation->timing_origin,
+                observation->source_timing_form_id ==
+                    CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ?
+                    "true" : "false") < 0) {
+            lib_c_fclose(file);
+            return 1;
+        }
+        ++written;
+    }
+    failed = lib_c_fprintf(file, "\n  ]\n}\n") < 0;
+    if (lib_c_fclose(file) != 0) failed = 1;
+    if (failed) return 1;
+    return written == 1053u ? 0 : 1;
+}
+
+lib_i32 main(void)
+{
+    lib_size index;
+    lib_size i86_count = 0u;
+    lib_size covered_count = 0u;
+
+    for (index = 0u; index < sizeof(timing_manifest_records) /
+            sizeof(timing_manifest_records[0]); ++index) {
+        const timing_manifest_record *record = &timing_manifest_records[index];
+
+        if (!timing_manifest_is_active(record)) continue;
+        if (lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+            record->level[0] == '\0' || record->source_rule[0] == '\0' ||
+            record->context[0] == '\0') return 1;
+        ++i86_count;
+    }
+    if (i86_count != 1053u || timing_manifest_probe_decoder_lexeme_candidates() ||
+            timing_manifest_probe_decoder_form_rejections() ||
+            timing_manifest_probe_pop_cs_function() ||
+            timing_manifest_probe_alu_function() ||
+            timing_manifest_probe_adjustment_function() ||
+            timing_manifest_probe_data_stack_function() ||
+            timing_manifest_probe_group3_function() ||
+            timing_manifest_probe_branch_function() ||
+            timing_manifest_probe_flag_function() ||
+            timing_manifest_probe_compare_function() ||
+            timing_manifest_probe_unary_function() ||
+            timing_manifest_probe_lahf_sahf_function() ||
+            timing_manifest_probe_general_lock_prefix() ||
+            timing_manifest_probe_adjustments()) return 1;
+    if (timing_manifest_probe_alu_register_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-REGISTER\n");
+        return 1;
+    }
+    if (timing_manifest_probe_compare_and_test_register_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:CMP-TEST-REGISTER\n");
+        return 1;
+    }
+    if (timing_manifest_probe_register_data_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:REGISTER-DATA\n");
+        return 1;
+    }
+    if (timing_manifest_probe_stack_register_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STACK-REGISTER\n");
+        return 1;
+    }
+    if (timing_manifest_probe_conditional_branches()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:JCC\n");
+        return 1;
+    }
+    if (timing_manifest_probe_counted_branches()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:LOOP\n");
+        return 1;
+    }
+    if (timing_manifest_probe_wait_and_escape()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:WAIT-ESC\n");
+        return 1;
+    }
+    if (timing_manifest_probe_escape_memory_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ESC-MEMORY\n");
+        return 1;
+    }
+    if (timing_manifest_probe_group2_register_one()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-R1\n");
+        return 1;
+    }
+    if (timing_manifest_probe_group2_register_cl()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-RCL\n");
+        return 1;
+    }
+    if (timing_manifest_probe_immediate_port_io()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:PORT-IMM\n");
+        return 1;
+    }
+    if (timing_manifest_probe_dx_port_io()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:PORT-DX\n");
+        return 1;
+    }
+    if (timing_manifest_probe_near_control_transfers()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:NEAR-CONTROL\n");
+        return 1;
+    }
+    if (timing_manifest_probe_group3_l2()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP3-L2\n");
+        return 1;
+    }
+    if (timing_manifest_probe_group3_memory_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP3-CONTEXT\n");
+        return 1;
+    }
+    if (timing_manifest_probe_alu_memory_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-MEMORY\n");
+        return 1;
+    }
+    if (timing_manifest_probe_primary_memory_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:PRIMARY-MEMORY\n");
+        return 1;
+    }
+    if (timing_manifest_probe_alu_segment_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-SEGMENT\n");
+        return 1;
+    }
+    if (timing_manifest_probe_alu_odd_word_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-ODD-WORD\n");
+        return 1;
+    }
+    if (timing_manifest_probe_lock_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:LOCK\n");
+        return 1;
+    }
+    if (timing_manifest_probe_alu_segment_odd_word_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-SEGMENT-ODD-WORD\n");
+        return 1;
+    }
+    if (timing_manifest_probe_group2_memory_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-MEMORY\n");
+        return 1;
+    }
+    if (timing_manifest_probe_group2_segment_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-SEGMENT\n");
+        return 1;
+    }
+    if (timing_manifest_probe_group2_odd_word_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-ODD-WORD\n");
+        return 1;
+    }
+    if (timing_manifest_probe_group2_segment_odd_word_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-SEGMENT-ODD\n");
+        return 1;
+    }
+    if (timing_manifest_probe_string_primitives()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-PRIMITIVE\n");
+        return 1;
+    }
+    if (timing_manifest_probe_repeat_base_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:REP-BASE\n");
+        return 1;
+    }
+    if (timing_manifest_probe_repeat_manifest_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:REP-CONTEXT\n");
+        return 1;
+    }
+    if (timing_manifest_probe_string_segment_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-SEGMENT\n");
+        return 1;
+    }
+    if (timing_manifest_probe_string_odd_word_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-ODD-WORD\n");
+        return 1;
+    }
+    if (timing_manifest_probe_string_segment_odd_word_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-SEGMENT-ODD\n");
+        return 1;
+    }
+    if (timing_manifest_probe_pointer_load_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:POINTER-LOAD\n");
+        return 1;
+    }
+    if (timing_manifest_probe_segment_mov_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:MOV-SREG\n");
+        return 1;
+    }
+    if (timing_manifest_probe_far_direct_control_transfers()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:FAR-DIRECT\n");
+        return 1;
+    }
+    if (timing_manifest_probe_indirect_control_transfers()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:INDIRECT-CONTROL\n");
+        return 1;
+    }
+    if (timing_manifest_probe_return_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:RETURN\n");
+        return 1;
+    }
+    if (timing_manifest_probe_software_interrupt_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:SOFTWARE-INT\n");
+        return 1;
+    }
+    if (timing_manifest_probe_memory_stack_forms()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:MEMORY-STACK\n");
+        return 1;
+    }
+    if (timing_manifest_probe_hlt()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:HLT\n");
+        return 1;
+    }
+    if (timing_manifest_probe_xchg_memory_contexts()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:XCHG-CONTEXT\n");
+        return 1;
+    }
+    for (index = 0u; index < sizeof(timing_manifest_records) /
+            sizeof(timing_manifest_records[0]); ++index) {
+        if (timing_manifest_is_active(&timing_manifest_records[index]) &&
+                timing_manifest_covered[index]) ++covered_count;
+        else if (timing_manifest_is_active(&timing_manifest_records[index])) {
+            lib_c_printf("M5:T435:S4:I86-MANIFEST-MISSING:%s\n",
+                timing_manifest_records[index].key_id);
+        }
+    }
+    if (covered_count != i86_count) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:PARTIAL:%llu/%llu\n",
+            (unsigned long long)covered_count, (unsigned long long)i86_count);
+        return 1;
+    }
+    if (timing_manifest_write_results()) {
+        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:RESULTS\n");
+        return 1;
+    }
+    lib_c_printf("M5:T435:S5:I86-MANIFEST-PROBE:PASS:%llu/%llu\n", (unsigned long long)covered_count,
+        (unsigned long long)i86_count);
+    return 0;
+}

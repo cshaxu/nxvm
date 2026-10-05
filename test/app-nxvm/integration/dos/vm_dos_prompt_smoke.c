@@ -12,7 +12,7 @@
 
 
 #include "x86/core/debug_interface.h"
-#include "test/ibmpc/machine/support/vm_presentation_capture.h"
+#include "test/app-nxvm/unit/support/ibmpc/machine/support/vm_presentation_capture.h"
 #include "x86/core/machine_interface.h"
 
 #include "ibmpc/machine/lifecycle.h"

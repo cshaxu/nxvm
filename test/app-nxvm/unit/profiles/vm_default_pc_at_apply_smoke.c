@@ -1,8 +1,8 @@
-#include "../../../ibmpc/machine/support/profile.h"
+#include "../support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
-#include "../../../ibmpc/machine/support/media.h"
+#include "../support/ibmpc/machine/support/media.h"
 #include "lib/types/types_interface.h"
-#include "../../../ibmpc/board-common/composition_fixture.h"
+#include "../support/ibmpc/board-common/composition_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include <stdio.h>
 
@@ -10,9 +10,9 @@
 #include "ibmpc/machine/lifecycle.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "ibmpc/machine/machine_private.h"
-#include "../../../x86/core/time_fixture.h"
-#include "../../../ibmpc/board-common/cmos_fixture.h"
-#include "../../../ibmpc/machine/support/rom/session_assets.h"
+#include "../../../ibmpc/core/time_fixture.h"
+#include "../support/ibmpc/board-common/cmos_fixture.h"
+#include "../support/rom/session_assets.h"
 
 static lib_i32 vm_default_pc_at_fdd_format_is_valid(
     vm_machine_floppy_format format, lib_u16 cylinders,
@@ -33,8 +33,8 @@ static lib_i32 vm_default_pc_at_fdd_format_is_valid(
         session == LIB_NULL) goto done;
     observed_type = test_board_cmos_read_register(session->board,
         CORE_MACHINE_RTC_TYPE_DISK_FLOPPY);
-    if (vm_test_fdd_info(session->fdd).geometry.cylinders != cylinders || vm_test_fdd_info(session->fdd).geometry.heads != 2u ||
-        vm_test_fdd_info(session->fdd).geometry.sectors_per_track != sectors || vm_test_fdd_info(session->fdd).geometry.bytes_per_sector != 512u ||
+    if (vm_test_fdd_info(session->floppy[0u]).geometry.cylinders != cylinders || vm_test_fdd_info(session->floppy[0u]).geometry.heads != 2u ||
+        vm_test_fdd_info(session->floppy[0u]).geometry.sectors_per_track != sectors || vm_test_fdd_info(session->floppy[0u]).geometry.bytes_per_sector != 512u ||
         observed_type != cmos_type) {
         printf("FDD setup format=%u cmos=%02x expected=%02x\n",
             (unsigned int)format, (unsigned int)observed_type,

@@ -3,9 +3,9 @@
 #include "ibmpc/board-common/machine_board_interface.h"
 #include <stdio.h>
 
-#include "../../../x86/core/bus_fixture.h"
-#include "../../../x86/core/composition_fixture.h"
-#include "../../../ibmpc/board-common/composition_fixture.h"
+#include "../../../ibmpc/core/bus_fixture.h"
+#include "../../../ibmpc/core/composition_fixture.h"
+#include "../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
 #include "ibmpc/machine/lifecycle.h"
 #include "ibmpc/machine/machine_private.h"
 #include "ibmpc/machine/machine_interface.h"
