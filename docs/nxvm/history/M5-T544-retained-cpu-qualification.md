@@ -120,4 +120,12 @@ unchanged; no new EXE is needed for this inventory/design-only S. Source/test
 code diff is zero. Full external integration and new artifact production are
 reserved for actual runnable changes/T closure, not fabricated design proof.
 Incremental baseline caches are retained for the next qualification S.
-The executor delivery is complete; coordinator acceptance is not yet recorded.
+Executor P1 is 742c31f23, pushed to origin/master. Coordinator actual-change
+review checked all five changed documents against the immutable S1 packet:
+five CPU enum/bindings, finite catalog/context distinction, exact source/test
+owners, deferred 80188/486 prerequisites, initial receiver partition and both
+fresh complete suites are present. Only NXVM documents changed. Skills informed
+the one-owner boundary and rejection of a duplicate decoder/timing path.
+The entire S1 inventory batch is accepted; unresolved manual/state proof stays
+explicitly pending in S2-S6, not silently qualified. S1 is closed; T544 is open.
+No owned test process remains active. The next S requires its own packet.

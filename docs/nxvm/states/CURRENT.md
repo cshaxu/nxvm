@@ -4,31 +4,18 @@
 
 | Work | Progress |
 | --- | --- |
-| T544 S1 | Active: inventory retained CPU-family qualification and establish its finite convergence ledger and fresh unit baseline. |
+| T544 S1 | Accepted and closed: finite retained-CPU inventory and fresh x64/x86 complete unit baseline. T544 remains open. |
 
 T543 is closed at dd9af8951; its history retains the accepted four-App baseline.
 T544 consumes the former first Queue candidate, not another structural split.
 
-### Active S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New: M5 T544 S1, after task-level T543 closure and immutable Git subject reconciliation. |
-| Admission And Approval | Owner's current request, "admit and execute the first T task", 2026-10-05; NXVM-owned planning/inventory records admitted. Read Shared source/tests only; no Shared implementation changes until concrete owner review. |
-| Objective | Freeze the five implemented CPU models, legal-form/state/timing audit units, source and regression owners, and initial repair batches; collect a fresh complete repository-only unit baseline. |
-| Non-goals | No CPU instruction fix, new 80188/486 implementation, board/INI/UX change, MyNES change, Lib/Common edit, sibling import, or claim of complete CPU conformance from tests alone. |
-| Reference Baseline | dd9af8951; T543 closed, eight verified 0543 PC artifacts unchanged. Existing ignored receiving build caches retained for incremental qualification. |
-| Candidate Proposal | [Retained CPU qualification](../proposals/m5-retained-cpu-qualification.md); [T544 ledger](../history/M5-T544-retained-cpu-qualification.md), S1 inventory batch. |
-| Files And ABI Surface | NXVM docs proposal, Current, Queue, Roadmap and task ledger only. Read src/x86/chips/cpu, x86/core, test/x86, test/ibmpc composition, four App profiles, cmake/nxvm and tools/nxvm. No public ABI or runnable input change. |
-| Applicable Rules | Execution: one numeric S/packet, complete P, actual-change coordinator review; Documentation: Current sole status and finite ledger; Architecture/Coding skills and project authorities: one CPU/time owner, neutral dependencies and original table style; source policy: external manuals/references read-only. |
-| Verification | Verify-CpuTimingManifestContract.ps1; complete unit suite once per x64/x86 receiving baseline via RunTestAggregate.ps1, jobs 4, deadline 300 seconds each, sequential native runs; documentation governance, packet/link review and git diff --check. No integration or EXE rebuild needed for this design-only S. |
-| Expected Markers | Five actual CPU models; 4,906 canonical timing keys structurally accounted for; historical planning statuses distinguished from fresh generated results; both complete unit suites exit 0; unresolved semantic/source proof not labelled accepted. |
-| Asset Needs | No asset changes. Prior five-CPU original-manual identity/source record used as evidence index, not fresh page verification; manuals stay external. Units use repository inputs only. |
-| Reporting Requirements | Confirm scope, report actual inventory and any newly demonstrated gap; final delivery links ledger and pushed P, verification and remaining proof batches. Never infer L1 from a historical planning status. |
-| Stop Conditions | Preserve unrelated work; report missing executable tests, failed baseline, new unupgradable L1 or proposed downgrade; no Shared mutation without owner-reviewed repair, no false CPU or physical-time claim. |
-| Exit Criteria | Complete inventory batch has finite disposition, exact owners/receivers and initial S plan; required baseline/gates pass; coordinator reviews actual documentation diff and pushes acceptance. T remains open. |
-| Original Owner Request | Admit and execute the first queued T; retain all CPU families and correctly classify exact/manual L3, model/range L2 and order-only L1 without unnecessary code or duplicate paths. |
-| Similar-Issue Sweep | Reconcile every retained CPU enum/binding, all five manifest expansions, decoder producer/runner locations and prior source/state/timing evidence. Check stale proposal paths; do not modify historical records merely for old path names. |
+There is no active packet between accepted subtasks. S1's complete delivery is
+742c31f23; its immutable packet and the [T544 ledger](../history/M5-T544-retained-cpu-qualification.md)
+record the inventory, source boundaries and unresolved proof receivers.
+Both fresh complete unit suites pass 506/506. No production input changed,
+so all eight 0543 PC artifacts and the MyNES pair remain current and untouched.
+The [proposal](../proposals/m5-retained-cpu-qualification.md) names the initial
+sequence; the next eligible batch is S2 cross-family state/delivery boundaries.
 
 ## Current Technical Baseline
 
