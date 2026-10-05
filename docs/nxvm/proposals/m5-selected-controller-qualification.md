@@ -17,7 +17,7 @@ execution path.
 
 This candidate follows [chip extraction](m5-shared-chip-extraction.md),
 [common PC integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and
-[independent Apps](m5-independent-pc-apps.md). Its ledgers must address the
+[independent Apps](../history/M5-T543-four-pc-apps-proposal.md). Its ledgers must address the
 resulting `x86/chips` chip owners, the flat `ibmpc/board-*` shared-board mechanisms and
 App-specific compositions, using the admitted deployment map. Migration does
 not replace the source/function/timing qualification required here.

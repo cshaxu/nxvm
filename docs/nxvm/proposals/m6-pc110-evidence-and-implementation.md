@@ -8,7 +8,7 @@ through the existing Core and Common runtime.
 ## Current Product Context
 
 PC110 is a later fifth independent App, `app-mypc110`, after the
-[four-App migration](m5-independent-pc-apps.md), not a runtime option of XT, AT,
+[four-App migration](../history/M5-T543-four-pc-apps-proposal.md), not a runtime option of XT, AT,
 DeskPro or default PC/AT. It retains one fixed composition, a lawful external
 BYOB asset root and an adjacent INI for runtime media/presentation. Its product
 scope and sole artifact directory must be admitted under the App cutover

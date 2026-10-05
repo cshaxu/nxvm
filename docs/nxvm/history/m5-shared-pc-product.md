@@ -10,7 +10,7 @@ logic of the four existing PC builds into `src/x86/product` before splitting
 their Apps. [Current](../states/CURRENT.md) owns admission and progress;
 [T541 history](../history/M5-T541-independent-pc-apps.md) preserves the original
 request and this scope change. The separate
-[four-App split](../proposals/m5-independent-pc-apps.md) is the first queued successor.
+[four-App split](../history/M5-T543-four-pc-apps-proposal.md) is the first queued successor.
 
 The existing XT, AT, Model40 and default builds remain under app-nxvm and keep
 their identities, fixed compositions, deployed directories and adjacent INIs.

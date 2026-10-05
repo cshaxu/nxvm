@@ -408,4 +408,4 @@ Shared plus NXVM, with other receivers explicitly admitted if affected; one
 target per commit. Stop for a contract/behavior change beyond extraction,
 unresolved shared ownership, or a requirement to import protected material.
 
-Next: [four independent PC Apps](../proposals/m5-independent-pc-apps.md).
+Next: [four independent PC Apps](../history/M5-T543-four-pc-apps-proposal.md).

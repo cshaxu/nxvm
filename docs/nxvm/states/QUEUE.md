@@ -13,13 +13,13 @@ Independent chips are closed as [T539](../history/M5-T539-independent-shared-chi
 Common board integration is closed as [T540](../history/M5-T540-shared-ibmpc-integration.md);
 [T541](../history/M5-T541-independent-pc-apps.md) delivers the shared
 [PC Product](../history/m5-shared-pc-product.md). The owner separated the
-four-App split into its own successor; it is now admitted as
+four-App split into its own successor; it is now closed as
 [T543](../history/M5-T543-four-pc-apps.md), not another Queue candidate.
 [T542](../history/M5-T542-shared-pc-machine-adapter.md), closed after corrective S20, completes the
 [residual composition extraction](../history/M5-T542-pc-composition-completion-proposal.md)
 before that split. The shared AT mechanism covers 5170, default and DeskPro;
 model-specific definitions stay local. Current owns task acceptance; the split
-is active under Current with one App per S; its prerequisite includes the accepted
+completed with one App per S; its prerequisite includes the accepted
 [AT composition correction](../history/M5-T542-at-composition-residual-proposal.md).
 Its accepted corrective S11 places board-common/XT/AT, Machine and Product
 under the separate ibmpc package consumed by that candidate.

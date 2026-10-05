@@ -13,7 +13,7 @@ presentation, and deployment only in `assets/nxvm/<profile>/`. This task
 extends that production behavior; it does not use retired YAML/catalog
 construction or manufacture firmware/CMOS/media substitutes.
 
-After the preceding [App split](m5-independent-pc-apps.md), run these same
+After the preceding [App split](../history/M5-T543-four-pc-apps-proposal.md), run these same
 scenarios against mypcxt, mypcat, mypcdeskpro386 and default-386 nxvm using
 their admitted artifact/INI map. Preserve scenario identities and checkpoints;
 do not interpret changed executable paths as permission to drop coverage.

@@ -30,12 +30,12 @@ The structural sequence is closed T539 independent chips at `x86/chips`,
 closed T540 neutral `x86/core` and flat `ibmpc/board-*` board extraction, then
 the implemented T541 shared `ibmpc/product` extraction, then
 [T542 shared Machine/helper extraction](../history/M5-T542-shared-pc-machine-adapter.md)
-and its [composition completion](../history/M5-T542-pc-composition-completion-proposal.md), then the queued
+and its [composition completion](../history/M5-T542-pc-composition-completion-proposal.md), then the completed
 `app-my5160`, `app-my5170`, `app-mydeskpro386` and original default-386
-`app-nxvm` split, admitted as T543 with one App per sequential S. Source,
+`app-nxvm` split, closed as T543 after one App per sequential S. Source,
 tests and assets are parallel; PC-family docs, tools, version and MTSP remain
-unified. [Current](../states/CURRENT.md) records the accepted S
-boundaries and the remaining implementation work.
+unified. [Current](../states/CURRENT.md) records the accepted baseline;
+the T543 ledger retains the four deliveries and full verification.
 Retained qualification work follows the new owners without reduced coverage.
 
 Retain all implemented XT, AT, DeskPro 386 and default PC/AT variants; inventory

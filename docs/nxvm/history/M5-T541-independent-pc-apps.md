@@ -20,7 +20,7 @@ implementation still follows its design and separate governance prerequisite.
 ## Owner Scope Revision
 
 On 2026-10-04 the owner separates the four-App split into an unnumbered
-queue-head [successor proposal](../proposals/m5-independent-pc-apps.md).
+queue-head [successor proposal](../history/M5-T543-four-pc-apps-proposal.md).
 T541 instead extracts all common Product logic of the four current PC builds
 into src/x86/product. Its [revised design](m5-shared-pc-product.md)
 owns the current target. Lib/Common and existing x86 mechanisms are excluded;

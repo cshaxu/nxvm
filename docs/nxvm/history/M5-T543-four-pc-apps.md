@@ -13,7 +13,7 @@ The target artifact roots are assets/my5160, assets/my5170,
 assets/mydeskpro386 and assets/nxvm. No new per-App governance queue or counter
 is created; the existing NXVM commit target continues to own these four Apps.
 
-The [proposal](../proposals/m5-independent-pc-apps.md) owns the sequential
+The [proposal](../history/M5-T543-four-pc-apps-proposal.md) owns the sequential
 delivery design. [Current](../states/CURRENT.md) owns the one active packet.
 This record is evidence and convergence inventory, not another current status.
 
@@ -658,3 +658,25 @@ non-include differences. Net scaffolding expresses the fourth independent
 App and complete four-owner checks, not a new runtime abstraction. It
 removes duplicate default compilation, the generated profile binding and
 24 unused configuration declarations while preserving shared mechanisms.
+
+## Coordinator Acceptance And Whole-T Closure
+
+After executor delivery, coordinator actual-change review accepts pushed
+Shared 4b1948c31 and NXVM c8da42e91 against S4's original packet and
+02dd73093 baseline. It explicitly covers newly added CMake/header/gate files,
+removed generated selection, all test moves and include repairs, broadened
+four-App checks, the real selected production graph, external integration
+registration/harness boundary, all eight artifacts and preserved INI inputs.
+All four batches are accepted: S1/S2/S3 retain their recorded reviewed
+deliveries, and S4 finishes default and cross-cutting ownership. The complete
+58-context replay and dual-width units exhaust the frozen original domain.
+No unclassified migration residue or new hardware/timing claim remains.
+
+The proposal is archived as M5-T543-four-pc-apps-proposal.md; all live
+references, Current, Queue and Roadmap follow the accepted closure. Current
+holds the compact T543 closure row with no active packet or next admission.
+Existing ignored configuration caches are retained for the immediate
+qualification successor's incremental verification; no owned process or
+new disposable execution experiment remains. The prevention action is the
+four actual fixed-binding and transitive selected-source gates, not a second
+model registry. Lib/Common/x86, MyNES and external masters remain unchanged.
