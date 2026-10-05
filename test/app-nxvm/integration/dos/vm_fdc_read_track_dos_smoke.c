@@ -152,7 +152,7 @@ static lib_i32 vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
     core_machine_run_budget budget = {quantum, 0u}; core_machine_run_result result;
     x86_video_snapshot snapshot; lib_u32 used = 0u;
     while (used < limit) {
-        lib_i32 advanced = 0;
+            lib_bool advanced = LIB_FALSE;
 
         if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT) return 0;

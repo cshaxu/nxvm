@@ -1105,3 +1105,146 @@ Generated trees can be recreated from source, not recovered as retained logs.
 Accept and close S9/T542, remove its active packet, and retain the proposal in
 history. The four-App split remains queued, not admitted. No new hardware,
 timing grade or guest-software qualification is claimed by this extraction.
+
+## S10: Corrective Quality Convergence
+
+Read-only Lib/Common sweep: Common Machine lifecycle/input submission still
+ignores event-signal failures at `machine.c` start/resume/stop/reset/input paths,
+debug cancellation and shutdown wakes before worker join.
+This is a separately reported error-handling gap, not authorized for this S.
+Storage medium size/range checks and operation-status propagation did not show
+the PC media owner's protection-residue defect. Atomic flags are not ordinary
+boolean-type violations. Lib/Common source and tests remain unchanged.
+
+Owner-approved narrow correction from closed T542 at 881063639 on 2026-10-04.
+No successor task is admitted. This finite post-extraction audit supplements,
+not replaces, the accepted migration ledger. Lib/Common and MyNES are excluded.
+
+| Batch | Defect and complete repair boundary | Required proof | Disposition |
+| --- | --- | --- | --- |
+| Protection | FDD/HDD medium installation and all file/in-memory replacement callers | readonly to writable overlay without remove; failed replacement preserves old state | Verified by media regression |
+| Capacity | HDD create multiplication and related size calculations | x86 8323-cylinder rejection and extreme geometry rejection, no truncated publication; valid creation unchanged | Verified on both widths |
+| Status | Media allocation/open/create/replace and Machine construction/media callers | exact allocation/file/argument statuses survive; rollback unchanged | Verified by construction/media regressions |
+| Dead state | FDD/HDD cursor fields and copied floppy comments | no live field caller lost; controller positions remain chip-owned | Verified by actual diff and full units |
+| Vocabulary | Ordinary adapter/media/input/debug/display boolean declarations and old thread comments | lib_bool and named truth values, atomic flags unchanged; unit and actual-diff proof | Verified by caller builds and full units |
+
+Each candidate install commits handle, capacity/geometry, protection, marks and
+generation in one serialized owner operation. Do not introduce getters,
+parallel wrappers, another status enum or Lib changes. Remove obsolete state
+instead of adding a framework. Existing API names remain; operation failures
+use lib_status and predicates use lib_bool. Direct callers/tests migrate with
+that semantic distinction. Complete S10 delivery must satisfy its CURRENT
+packet, then coordinator actual-change review accepts and recloses T542.
+
+### S10 Implementation And Review
+
+Shared P1 `42a2c2178` implements the finite five-batch repair and was pushed
+immediately. The installer is the sole publication point for protection,
+geometry, capacity, address marks and generation. HDD replacement also resets
+the actual query geometry, not only its construction metadata. File/open,
+allocation and argument failures retain their lib_status at the existing
+operation names; failed candidates preserve the installed lease. Startup
+construction keeps the same rollback owner and now returns the original error.
+Existing Common boolean driver contracts remain boolean: no Common API change
+or competing result family was added.
+
+Capacity checks happen before multiplication. The x86 create reproducer is
+8323 cylinders; geometry additionally rejects the 2^31 by 2^15 by 2^15 by 512
+product instead of wrapping to an empty medium's zero capacity. The smaller
+head/sector stride is representable in u64, and the capacity division bounds
+the final multiplication. Both regressions preserve valid geometry behavior.
+
+Ordinary flags/predicates now use lib_bool and named truth values. Atomic
+storage retains its atomic type; the Core display callback's existing i32 ABI,
+Core advance byte ABI, scan/address-mark bytes and tri-state ratio comparator
+are not redefined as booleans. Thirteen NXVM direct test callers change only
+their advanced local variable to the new predicate output type (fourteen
+declarations including the mouse runner). FDC's live CHS/GPL state remains
+chip-owned; only unused media cursor mirrors were removed. The old independent
+device-thread comments now name Common's sole worker.
+
+The similar-issue sweep searched all Product media install/create/replace
+operations, related geometry multiplication, construction status folding,
+ordinary flag declarations and obsolete cursor/thread references. Commands
+included `rg` for media operation callers, `lib_(i32|u8)` flag declarations,
+`device thread`, and `data.(cyl|head|sector|gpl)` in x86/product/machine, plus
+the complete actual diff. Core/chip ABI hits above are retained for their real
+contracts. Lib/Common were read only; the separately reported wake failure is
+tracked in NXVM TODO with a Shared admission boundary, not silently fixed.
+Storage media's range/status owner did not show the PC protection-residue defect.
+
+Single-person implementer/reviewer inspection checked every changed C/H hunk,
+candidate cleanup, failure publication, caller ABI and original assertions.
+No chip waveform, instruction, timing, firmware, scheduler or guest-software
+predicate changed. There is no new worker, queue, backend, wrapper family or
+parallel state owner. Architecture/coding governance guided owner-local
+publication and removal rather than layered compatibility fixes.
+
+Final C/H counts against accepted `881063639`: production 334 added / 325
+removed (net +9); tests 63 added / 15 removed (net +48). These counts exclude
+manifests, docs and EXEs. Most replacements are type/status vocabulary; net
+growth is checked failure handling and regressions, not an extraction framework.
+
+### S10 Verification
+
+The final source passes complete repository-only units 499/499 on x64
+(66.87 seconds) and 499/499 on x86 (65.91 seconds), serial between host widths
+to avoid cross-process native-desktop interference. The standalone tools-on
+x86 tree built and passed its complete 313/313 corpus; after the final geometry
+guard its rebuilt media regression and four manifest/corpus/negative gates
+passed 5/5. All 82 current specialized verifiers passed, as did the six complete
+manifests, documentation governance and actual diff whitespace checks.
+
+Exploratory failures are retained honestly: the initial full Release test build
+hit an existing trace-macro definition conflict in a CPU preview target, so
+full units use Debug trees and product/integration targets use optimized Release.
+An initial Debug x86 DOS-prompt run exceeded its unchanged five-second budget;
+the optimized final run passed in 4.32 seconds. This establishes final success,
+not a proven diagnosis of every contribution to that exploratory timeout.
+The first Model40 x64 list had an unbuilt console runner (Not Run); after building
+that required target it passed. No predicate, timeout, skip or serial policy
+was weakened to obtain success. Earlier intermediate revision successes do not
+substitute for the final guarded source's complete integration run.
+
+Final optimized integration preserves all 58 original contexts (29 per width):
+
+| Fixed profile | x64 | x86 |
+| --- | --- | --- |
+| default | 22/22, 21.30 s | 22/22, 24.47 s |
+| XT | 1/1, 18.50 s | 1/1, 22.53 s |
+| AT | 3/3, 32.61 s | 3/3, 42.54 s |
+| Model40 | 3/3, 57.04 s | 3/3, 69.77 s |
+
+Each final context runs once after the guarded source rebuild. Revalidation
+after that last code correction is distinct from repeating a passing unchanged
+context for confidence. No final failure or skip remains. INI/external media
+inputs, terminal predicates, timeouts and resource serialization are unchanged.
+The four boot-matrix rows reach their original DOS prompt/installer markers;
+this is preserved boot evidence, not new timing or Windows qualification.
+
+### S10 Current Artifacts
+
+The eight rebuilt optimized stripped 0.5.0542 products below use Shared source
+`42a2c217869fceb7bfcc93ae624f9efd8ffc8c44` and unchanged App production at
+accepted `881063639`. NXVM's P2 caller edits are test-only. Build-time firmware
+uses the existing qualified embedding route and unchanged BYOB inputs; no raw
+ROM is added. Every pre-link Release check and post-link PE check passed;
+independent section inspection found no debug/zdebug sections. Runtime Debug
+remains part of the product. Paths are under `assets/nxvm/<profile>/` only.
+
+| Current executable | SHA-256 |
+| --- | --- |
+| nxvm_default_0_5_0542_x64.exe | C72081A5B0D0F1848DEDD4A0C5264228574A8294CE7A899F026ED7CF0B77B8B2 |
+| nxvm_default_0_5_0542_x86.exe | 2E6E677755F1121C130CD86A8EE2093DE01AC4F9473D5EB18BC022E44842FB41 |
+| nxvm_xt_0_5_0542_x64.exe | E97FDCAEC34FFC4B47A9C6092BBEE8BF6A7E0302F6B0337FEC0AFC1CAD7979ED |
+| nxvm_xt_0_5_0542_x86.exe | 05F64052C901F58568669012022CA65FA6D3A5E9177E58619EF5D9E05D8E266C |
+| nxvm_at_0_5_0542_x64.exe | 1904E86D287BBAEE545325880EEDDEE538135972321FF401D9CB61CC3DE20ECC |
+| nxvm_at_0_5_0542_x86.exe | D3566DE3F35CD5FBCC8DA76DCBE200A00BDECF864C66641A3F31C8A24F975A2A |
+| nxvm_model40_0_5_0542_x64.exe | 860A4D555754252EC94BBCD73E6DF4208BDCCD5BDFD561CFAC03A936A0C5A97C |
+| nxvm_model40_0_5_0542_x86.exe | A031490C68CDFC4A20D5D3679B5093FEA478256E9F9A17454BDC91A85AC59FCE |
+
+PE machine is 8664 for each x64 product and 014C for each x86 product.
+The deployment hash check covers all eight files. MyNES source/test/EXEs,
+Lib/Common source/tests and all owner INIs have no diff against `881063639`.
+No MyNES target was built, no external master was written, and the four-App
+successor remains queued rather than admitted.

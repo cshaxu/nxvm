@@ -1926,7 +1926,7 @@ int main(lib_i32 argc, char **argv)
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             core_machine_cpu_state cpu;
             core_machine_time_observation observation;
-            lib_i32 advanced = 0;
+            lib_bool advanced = LIB_FALSE;
 
             if (core_machine_capture_time_observation(session->core_machine,
                     &observation) != LIB_STATUS_OK ||

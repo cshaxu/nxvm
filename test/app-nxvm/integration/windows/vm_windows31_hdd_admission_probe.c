@@ -141,7 +141,7 @@ lib_i32 main(lib_i32 argc, char **argv)
                 session->core_machine, VM_T287_PROBE_RESULT, values,
                 sizeof(values)) != LIB_STATUS_OK) goto done;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            lib_i32 advanced = 0;
+            lib_bool advanced = LIB_FALSE;
 
             if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) goto done;

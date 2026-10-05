@@ -1313,7 +1313,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         status = core_machine_run(session->core_machine, budget, &result);
         if (status != LIB_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) break;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            lib_i32 advanced = 0;
+            lib_bool advanced = LIB_FALSE;
 
             status = vm_machine_waiting_advance(session, &result, &advanced);
             if (status != LIB_STATUS_OK || !advanced) break;

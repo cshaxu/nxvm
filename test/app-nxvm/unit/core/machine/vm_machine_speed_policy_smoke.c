@@ -27,7 +27,7 @@ static lib_i32 verify_wait_speed(vm_machine *session, vm_machine_speed speed)
     lib_u64 before;
     lib_u64 after;
     core_machine_time_observation observation;
-    lib_i32 advanced = 0;
+            lib_bool advanced = LIB_FALSE;
 
     if (vm_machine_set_speed(session, speed) != LIB_STATUS_OK ||
         core_machine_get_elapsed_ticks(session->core_machine, &before) != LIB_STATUS_OK) {

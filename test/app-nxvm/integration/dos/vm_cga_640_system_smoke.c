@@ -63,7 +63,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             core_machine_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK) goto done;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            lib_i32 advanced = 0;
+            lib_bool advanced = LIB_FALSE;
 
             if (vm_machine_waiting_advance(session, &result, &advanced) !=
                     LIB_STATUS_OK || !advanced) goto done;

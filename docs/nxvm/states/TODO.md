@@ -41,6 +41,16 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
 
 ## Architecture And Portability Debt
 
+- [ ] **Common Machine wake failure (`TODO(Medium)`).** T542 S10's read-only
+  sweep found ignored event-signal failures in start/resume/stop/reset/input
+  and debug-cancel submission, plus shutdown's two wakes before worker join.
+  State or queued work can be published while
+  success is reported without a successful wake; shutdown may wait on an
+  unwoken worker. Common owns the repair;
+  admit a separate Shared failure-contract review with injected event failures
+  and all receiving consumers. Lib/Common changes were explicitly excluded
+  from S10; this is a reported gap, not a claimed fix.
+
 - [ ] **Shared native-test desktop isolation (`TODO(Medium)`).** During T539
   S21, concurrent x64/x86 unit suites produced one unchanged
   `library.kvm_window_modal` failure: the native move loop exited before the
