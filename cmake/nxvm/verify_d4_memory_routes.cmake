@@ -98,7 +98,13 @@ foreach(operation IN ITEMS
 endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" executor)
 file(GLOB_RECURSE callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c" "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-my5160/*.c" "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-my5170/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.h")

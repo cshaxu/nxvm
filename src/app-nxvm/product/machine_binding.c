@@ -1,12 +1,12 @@
-#include "app-nxvm/product/profile_binding.h"
-#include VM_PROFILE_CONSTRUCTION_HEADER
+#include "app-nxvm/product/binding_interface.h"
+#include "app-nxvm/profiles/construction_interface.h"
 
 const vm_app_machine_binding vm_app_machine = {
-    .name = VM_APP_PROFILE_MONITOR_NAME,
-    .cpu = VM_APP_PROFILE_CPU,
-    .fpu = VM_APP_PROFILE_FPU,
-    .floppy_format = VM_APP_PROFILE_FLOPPY_FORMAT,
-    .bios_count = VM_APP_PROFILE_BIOS_COUNT,
+    .name = "default-pc-at",
+    .cpu = CORE_MACHINE_CPU_PROFILE_80386,
+    .fpu = X86_FPU_PROFILE_NONE,
+    .floppy_format = VM_MACHINE_FLOPPY_FORMAT_1440K,
+    .bios_count = 1u,
     .firmware = &vm_app_firmware,
-    .prepare = VM_PROFILE_PLAN_CREATE
+    .prepare = vm_profile_machine_plan_create_default
 };

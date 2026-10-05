@@ -125,7 +125,11 @@ if(NOT refresh_binding_count EQUAL 2)
     message(FATAL_ERROR "Construction and cold reset must both bind board refresh")
 endif()
 file(GLOB_RECURSE controller_callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86/core/*.c" "${PROJECT_SOURCE_DIR}/test/x86/core/*.c"

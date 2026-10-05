@@ -6,8 +6,7 @@
  */
 #include "ibmpc/product/entry_interface.h"
 #include "ibmpc/product/version_interface.h"
-#include "ibmpc/product/factory_interface.h"
-#include "app-nxvm/product/profile_binding.h"
+#include "app-nxvm/product/binding_interface.h"
 
 lib_i32 main(void)
 {

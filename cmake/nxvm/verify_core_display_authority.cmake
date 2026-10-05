@@ -37,7 +37,11 @@ if(NOT core_plan_source MATCHES "core_machine_configure_display\\(board," OR
     message(FATAL_ERROR "Topology must consume the constructed board rather than recover private state")
 endif()
 file(GLOB_RECURSE display_callers
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c" "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c" "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c" "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86/core/*.c" "${PROJECT_SOURCE_DIR}/test/x86/core/*.c"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c" "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/*.c"

@@ -13,7 +13,13 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/dma_bus.c" OR
 endif()
 file(GLOB_RECURSE app_dma_consumers
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h")
 foreach(path IN LISTS app_dma_consumers)
     file(READ "${path}" consumer)
     if(consumer MATCHES "shared_dma_(primary|secondary|latch)|ibmpc/board-common/dma_bus\\.h|x86/chips/dma8237/dma\\.h")

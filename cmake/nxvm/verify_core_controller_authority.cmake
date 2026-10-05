@@ -109,6 +109,8 @@ foreach(source IN ITEMS "${machine_source}" "${machine_plan_source}")
     endif()
 endforeach()
 file(GLOB_RECURSE nxvm_signal_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86/core/*.c"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c"

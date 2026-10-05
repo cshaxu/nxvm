@@ -1,6 +1,6 @@
 #include "ibmpc/machine/machine_interface.h"
 #include "../../../app-mydeskpro386/support/model40.h"
-#include "../../support/media.h"
+#include "../../../ibmpc/machine/support/media.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include <ctype.h>
@@ -8,7 +8,7 @@
 
 #include <windows.h>
 
-#include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
+#include "test/ibmpc/machine/support/vm_presentation_capture.h"
 #include "x86/core/machine_interface.h"
 #include "x86/core/debug_interface.h"
 #include "ibmpc/machine/lifecycle.h"

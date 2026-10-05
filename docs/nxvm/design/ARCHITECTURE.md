@@ -27,15 +27,14 @@ release behavior remains the baseline until an implemented, verified cutover.
 
 ## Modules, Ownership, And Assembly
 
-The following map describes the implemented baseline. The queued successor
-target is specified under **Queued Shared-Hardware And App Split** below;
-it does not change runtime ownership before the corresponding cutover.
+The following map describes the four-App implementation. Current records
+verification and acceptance; the task history retains the cutover sequence.
 
 - `ibmpc/product` owns shared INI syntax, copied runtime request, path construction,
   Console/Debug/hotkey policy and atomic Common Session/UI/Machine composition.
   App supplies one frozen factory with copied INFO/speed operations; it owns
-  fixed hardware/firmware projection. The PC Machine adapter's S6 receiver is
-  `ibmpc/machine`; Current records its acceptance status.
+  fixed hardware/firmware projection. The shared PC Machine adapter lives in
+  `ibmpc/machine`.
 - Each `app-*/product` consumes the shared PC identity/version and supplies its
   fixed binding to the sole `ibmpc/product`
   process entry, banner and cleanup body. Its fixed composition binding selects
@@ -199,9 +198,9 @@ clearly rather than selecting another board or silently changing hardware.
 
 Each selected product deploys once to its App's
 `assets/<app>/` directory, alongside its owner-maintained `NXVM.ini`.
-My5160, My5170 and the S3 MyDeskPro386 receiver use `assets/my5160`,
-`assets/my5170` and `assets/mydeskpro386` directly. The remaining NXVM default
-cutover retains its legacy pair until S4 verifies the direct `assets/nxvm` delivery.
+My5160, My5170, MyDeskPro386 and NXVM use `assets/my5160`,
+`assets/my5170`, `assets/mydeskpro386` and `assets/nxvm` directly;
+there is no profile child directory.
 These are the current executable locations; `build/` remains compiler state
 apart from historical evidence. The tracked executable/INI pair is adjacent
 and used by deployed-product integration. EXE deployment never rewrites or
@@ -221,61 +220,30 @@ choice, never a fallback for a missing IBM or Compaq ROM.
 implemented status. The [T533 consolidation record](../history/M5-T533-fixed-machine-products.md)
 maps this design to observed code and bounded migration evidence.
 
-## Queued Shared-Hardware And App Split
+## Shared-Hardware And App Ownership
 
-The owner-approved planning direction has five ordered stages. The first is
-[closed T539](../history/M5-T539-independent-shared-chips.md), followed by
-the closed T540 board receiver, [delivered Product extraction](../history/m5-shared-pc-product.md)
-and [queued App split](../proposals/m5-independent-pc-apps.md):
+The dependency direction is App composition -> ibmpc PC integration -> x86
+Core/chips and neutral Lib/Common capabilities. No x86 component depends on
+ibmpc; no App production graph links a peer App. Each App supplies a fixed
+binding, not another parser, executor, lifecycle queue, presenter or debugger.
+The App-local build entry selects firmware inputs and a flat assets/<app>
+root, while shared Product provides the sole embed/deploy recipe.
 
-1. `x86/chips` is the target owner of independent chips, including CPU, PIC, PIT and DMA;
-   each retains its state and internal timing. It does not own a PC profile,
-   host executor, firmware workaround or peer chip's internals. Composition
-   connects public memory/I/O cycles, signals and interrupt acknowledgement.
-2. `x86/core` owns the neutral x86 machine executor and plan transaction;
-   `ibmpc/board-common`, `ibmpc/board-at` and `ibmpc/board-xt` own the four machines'
-   proven common/family-specific PC board routing and
-   wiring. Both use independent chip contracts; product-specific topology and
-   asset selection stay in the App. No mirrored device state, product policy or
-   second Common lifecycle loop is introduced.
-3. `ibmpc/product` receives the four PC products' identical Console command/API,
-   INI/startup/composition and UX implementation. Common/Lib keep their
-   existing reducer, queue and native presentation owners. The complete
-   Product-to-Machine boundary uses the existing Common driver plus a frozen
-   typed App factory and copied INFO/speed operations, never an App-private
-   include. The shared board/media/execution adapter now lives in
-   `ibmpc/machine`; App retains frozen identity,
-   hardware construction and firmware definitions, with no per-machine console copy or new
-   generic App framework is introduced.
-   T541 keeps the four current builds and deployment paths intact. Lib/Common
-   and existing x86 components are not implementation-change targets.
-4. Reopened [T542](../history/M5-T542-shared-pc-machine-adapter.md) delivers
-   the remaining shared PC Machine adapter into ibmpc/machine and proven
-   construction helpers into ibmpc/board-common. Corrective S11 separates
-   this PC package from x86 without changing algorithms. S2-S6 delivered those receivers;
-   S7 replaced the App's all-profile plan unions and runtime construction
-   dispatch with build-selected constructors. App retains fixed profile/firmware rules and genuine
-   D4; no Lib/Common change, extra queue or profile registry is introduced.
-   The [S1 receiver ledger](../history/M5-T542-shared-pc-machine-adapter.md)
-   owns the task-specific migration contract and evidence.
-   Its corrective composition batch finishes the remaining factory, asset and
-   shared AT assembly mechanisms before App splitting. The AT mechanism has
-   three consumers (5170, default and DeskPro), not three identical machine
-   definitions; each model retains its own hardware values and genuine behavior.
-5. Admitted T543 makes four independent Apps compose these capabilities: `app-my5160`
-   (5160), `app-my5170` (5170), `app-mydeskpro386` (Model 40), and
-   `app-nxvm` (the original default 386 hardware, now the NXVM product).
-   Their source/test/assets owners are parallel; docs/nxvm, tools/nxvm,
-   PC version declarations and the NXVM task sequence remain unified.
-   Later PC110 belongs to `app-mypc110` after its
-   separate hardware qualification. No App depends on another App.
+The accepted prerequisites are [T539 chips](../history/M5-T539-independent-shared-chips.md),
+[T540 boards](../history/M5-T540-shared-ibmpc-integration.md),
+[T541 Product](../history/m5-shared-pc-product.md) and
+[T542 Machine/composition](../history/M5-T542-shared-pc-machine-adapter.md).
+[T543](../history/M5-T543-four-pc-apps.md) records the four fixed App cutover:
+app-my5160, app-my5170, app-mydeskpro386 and app-nxvm. Current owns acceptance.
+Their source/test/assets owners are parallel; the PC-family documentation,
+tools, version and task sequence remain unified. Later PC110 requires its
+own hardware qualification before an App is created.
 
-The x86 package owns neutral chips/Core/tools; ibmpc owns reusable PC
-integration. Lib/Common stay neutral and no x86 component depends on ibmpc. Chip and shared-board tests follow
-their shared owner; product firmware/boot/INI tests follow their App. Preserve
-existing CPU families, personalities and tests. Structural moves are not V30,
-Raiden II, 486 or PC110 implementation and do not upgrade timing evidence.
-Accepted Td S176 requires flat assets/<app> delivery as each App is extracted,
-superseding S175's profile subdirectory. Only relative media paths are rebased;
-their external master identities and all other INI values remain unchanged. The existing
-NXVM scope, docs/tools, PC version and MTSP remain shared across the four Apps.
+Shared tests follow their source owner; model-specific assertions and external
+integration cases follow their App. One external test observer and INI fixture
+remain in the PC-family integration harness, selected by the tested App's real
+binding. They are not another App's production library or a unit-test input.
+Preserve all existing CPU families, personalities and original predicates.
+Structural moves do not implement V30, Raiden II, 486 or PC110, nor upgrade
+hardware or timing evidence. Flat deployment rebases only relative media paths,
+preserving external master identities, access modes and other INI values.

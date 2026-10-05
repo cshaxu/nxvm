@@ -1,4 +1,4 @@
-#include "../../support/profile.h"
+#include "../../../ibmpc/machine/support/profile.h"
 /* Repository guest firmware and synthetic media only; no external asset files. */
 #include "ibmpc/machine/input_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"

@@ -3,21 +3,21 @@ if(NOT DEFINED PROJECT_T344_SOURCE_DIR)
 endif()
 
 set(project_t344_migrated_sources
-    "test/app-nxvm/unit/core/devices/core_machine_80286_protected_mode_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_80286_protected_mode_smoke.c"
     "test/ibmpc/board-common/machine_vm86_delivery_smoke.c"
-    "test/app-nxvm/unit/core/devices/machine_fpu_escape_smoke.c")
+    "test/ibmpc/board-common/composition/machine_fpu_escape_smoke.c")
 set(project_t344_retained_sources
     "test/ibmpc/board-common/core_machine_sign_extend_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_operand_address_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_operand_address_smoke.c"
     "test/ibmpc/board-common/core_machine_prefix_attributes_s64_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_segment_selector_smoke.c"
-    "test/app-nxvm/unit/core/devices/machine_protected_privilege_board_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_segment_selector_smoke.c"
+    "test/ibmpc/board-common/composition/machine_protected_privilege_board_smoke.c"
     "test/ibmpc/board-common/core_machine_sreg_mov_smoke.c"
     "test/ibmpc/board-common/core_machine_les_lds_s41_smoke.c"
     "test/ibmpc/board-common/core_machine_les_lds_smoke.c"
     "test/ibmpc/board-common/core_machine_lss_lfs_lgs_smoke.c"
     "test/ibmpc/board-common/core_machine_legacy_sreg_stack_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_fs_gs_stack_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_fs_gs_stack_smoke.c"
     "test/ibmpc/board-common/core_machine_enter_leave_smoke.c"
     "test/ibmpc/board-common/core_machine_xchg_smoke.c"
     "test/ibmpc/board-common/core_machine_gpr_push_pop_smoke.c"
@@ -26,13 +26,13 @@ set(project_t344_retained_sources
     "test/ibmpc/board-common/core_machine_gpr_mov_smoke.c"
     "test/ibmpc/board-common/core_machine_moffs_smoke.c"
     "test/ibmpc/board-common/core_machine_lea_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_movx_smoke.c"
     "test/ibmpc/board-common/machine_bound_board_smoke.c"
     "test/ibmpc/board-common/board_binding_fixture.c"
     "test/ibmpc/board-common/core_machine_auxiliary_pit_s3_smoke.c"
     "test/ibmpc/board-common/core_machine_compaq_hdc_machine_s5_smoke.c"
     "test/ibmpc/board-common/core_machine_compaq_cecg_s9_smoke.c"
-    "test/app-mydeskpro386/unit/core/devices/core_machine_d4_platform_s4_smoke.c"
+    "test/app-mydeskpro386/unit/profiles/core_machine_d4_platform_s4_smoke.c"
     "test/ibmpc/board-common/core_machine_cpu_timing_preview_smoke.c"
     "test/x86/core/core_machine_memory_inspection_smoke.c"
     "test/ibmpc/board-common/core_machine_display_authority_smoke.c"
@@ -49,14 +49,14 @@ set(project_t344_retained_sources
     "test/x86/core/machine_80186_instruction_timing_ledger_smoke.c"
     "test/x86/core/machine_80286_instruction_timing_ledger_smoke.c"
     "test/x86/core/machine_80386_protected_io_timing_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_legacy_lock_s1_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_legacy_lock_s1_smoke.c"
     "test/x86/core/port_assembly_fixture.c"
     "test/ibmpc/board-common/machine_port_io_board_smoke.c"
     "test/ibmpc/board-common/machine_port_ownership_board_smoke.c"
     "test/ibmpc/board-common/machine_port_strings_board_smoke.c"
     "test/ibmpc/board-common/core_machine_planar_parity_nmi_s3_smoke.c"
     # The final timing receiver executes the public descriptor bootstrap.
-    "test/app-nxvm/unit/core/devices/support/protected_16_bootstrap_fixture.h"
+    "test/ibmpc/board-common/composition/support/protected_16_bootstrap_fixture.h"
     "test/x86/core/core_machine_real_mode_386_address_smoke.c"
     "test/x86/core/core_machine_real_mode_386_rep_cmps_smoke.c"
     "test/x86/core/core_machine_real_mode_corpus_smoke.c"
@@ -70,15 +70,15 @@ set(project_t344_retained_sources
     "test/ibmpc/board-common/core_machine_xebec_wiring_smoke.c"
     "test/ibmpc/board-common/core_machine_xt_ppi_keyboard_smoke.c"
     "test/ibmpc/board-common/machine_provider_composition_smoke.c"
-    "test/app-nxvm/unit/core/devices/cpu_fault_diagnostic_smoke.c"
-    "test/app-nxvm/unit/core/devices/cpu_fpu_profile_smoke.c"
+    "test/ibmpc/board-common/composition/cpu_fault_diagnostic_smoke.c"
+    "test/ibmpc/board-common/composition/cpu_fpu_profile_smoke.c"
     "test/x86/core/cpu_int_ivt_smoke.c"
     "test/ibmpc/board-common/machine_arbitration_s3_smoke.c"
     "test/ibmpc/board-common/dma_competition_fixture.c"
-    "test/app-nxvm/unit/core/devices/machine_competition_s3_smoke.c"
+    "test/ibmpc/board-common/composition/machine_competition_s3_smoke.c"
     "test/x86/core/machine_configuration_smoke.c"
     "test/ibmpc/board-common/machine_cpu_pic_lifecycle_smoke.c"
-    "test/app-mydeskpro386/unit/core/devices/machine_d4_refresh_hold_smoke.c"
+    "test/app-mydeskpro386/unit/profiles/machine_d4_refresh_hold_smoke.c"
     "test/ibmpc/board-common/machine_entry_plan_smoke.c"
     "test/x86/core/machine_explicit_time_s4_smoke.c"
     "test/x86/core/machine_immutable_rom_mapping_smoke.c"
@@ -90,7 +90,7 @@ set(project_t344_retained_sources
     "test/x86/core/machine_retirement_observation_s3_smoke.c"
     "test/ibmpc/board-common/machine_rtc_storage_s4_smoke.c"
     "test/x86/core/machine_scheduler_smoke.c"
-    "test/app-nxvm/unit/core/devices/machine_time_smoke.c"
+    "test/ibmpc/board-common/composition/machine_time_smoke.c"
     "test/x86/core/machine_timeline_s2_smoke.c"
     "test/ibmpc/board-common/machine_timing_checkpoint_smoke.c"
     "test/x86/core/machine_transaction_lifecycle_s4_smoke.c"
@@ -125,10 +125,10 @@ endif()
 # historical fixture shapes.  Name them here so a new direct constructor
 # cannot hide behind the historical count.
 set(project_t344_timing_manifest_sources
-    "test/app-nxvm/unit/core/devices/machine_8086_timing_manifest_runner.c"
-    "test/app-nxvm/unit/core/devices/machine_80186_timing_manifest_runner.c"
-    "test/app-nxvm/unit/core/devices/machine_80286_timing_manifest_runner.c"
-    "test/app-nxvm/unit/core/devices/machine_80386_timing_manifest_runner.c")
+    "test/ibmpc/board-common/composition/machine_8086_timing_manifest_runner.c"
+    "test/ibmpc/board-common/composition/machine_80186_timing_manifest_runner.c"
+    "test/ibmpc/board-common/composition/machine_80286_timing_manifest_runner.c"
+    "test/ibmpc/board-common/composition/machine_80386_timing_manifest_runner.c")
 set(project_t344_constructor_sources ${project_t344_inventory}
     # S93 separates attachment phases from controller wiring; the original
     # joint binding-identity constructor remains classified in the inventory.
@@ -141,13 +141,13 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     "test/x86/core/machine_fpu_interface_s65_smoke.c"
     ${project_t344_timing_manifest_sources}
     # Model40 owns the real refresh/preload latch; neutral Core keeps bus internals.
-    "test/app-mydeskpro386/unit/core/profiles/model40/d4_prefetch_locality_smoke.c"
+    "test/app-mydeskpro386/unit/profiles/d4_prefetch_locality_smoke.c"
     # S32 retains the ALU divide-vector frame at the public machine boundary.
-    "test/app-nxvm/unit/core/devices/core_machine_legacy_alu_s2_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_legacy_alu_s2_smoke.c"
     # These public CPU tests now execute guest table loads with the built-in
     # provider, rather than mutating CPU caches through a firmware fixture.
-    "test/app-nxvm/unit/core/devices/core_machine_protected_ud_delivery_s1_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_real_ud_delivery_s1_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_protected_ud_delivery_s1_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_real_ud_delivery_s1_smoke.c"
     # Core CPU-bus INTA admission/cascade proof with an opaque real PIC pair.
     "test/x86/core/core_machine_pic_phase_s2_smoke.c"
     # S37 string transfer keeps real PIC and descriptor delivery board-owned.
@@ -162,7 +162,7 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     # S42 retains real table loads, privilege delivery and IRQ routing.
     "test/ibmpc/board-common/machine_table_register_board_smoke.c"
     # S59 owns public Core paging and page-fault delivery.
-    "test/app-nxvm/unit/core/devices/machine_task_switch32_paging_smoke.c"
+    "test/ibmpc/board-common/composition/machine_task_switch32_paging_smoke.c"
     # S18 exercises firmware ROM rollback against a real Core instance.
     "test/x86/core/core_machine_rom_route_transaction_smoke.c"
     "test/ibmpc/board-common/machine_board_timing_qualification_smoke.c"
@@ -188,18 +188,20 @@ endif()
 
 file(GLOB project_t344_machine_sources
     RELATIVE "${PROJECT_T344_SOURCE_DIR}"
-    "${PROJECT_T344_SOURCE_DIR}/test/app-nxvm/unit/core/devices/*.c"
-    "${PROJECT_T344_SOURCE_DIR}/test/app-mydeskpro386/unit/core/devices/*.c")
+    "${PROJECT_T344_SOURCE_DIR}/test/ibmpc/board-common/composition/*.c")
+list(APPEND project_t344_machine_sources
+    "test/app-mydeskpro386/unit/profiles/core_machine_d4_platform_s4_smoke.c"
+    "test/app-mydeskpro386/unit/profiles/machine_d4_refresh_hold_smoke.c")
 list(APPEND project_t344_machine_sources
     "test/x86/core/machine_reset_rom_alias_smoke.c"
     "test/x86/core/port_assembly_fixture.c"
     "test/x86/core/planar_parity_fixture.c"
     "test/ibmpc/board-common/core_machine_planar_parity_nmi_s3_smoke.c"
-    "test/app-nxvm/unit/core/devices/support/protected_16_bootstrap_fixture.h"
+    "test/ibmpc/board-common/composition/support/protected_16_bootstrap_fixture.h"
     "test/x86/core/machine_fpu_interface_s65_smoke.c"
     "test/x86/core/machine_instruction_timing_ledger_smoke.c"
     "test/x86/core/machine_prefetch_locality_smoke.c"
-    "test/app-mydeskpro386/unit/core/profiles/model40/d4_prefetch_locality_smoke.c"
+    "test/app-mydeskpro386/unit/profiles/d4_prefetch_locality_smoke.c"
     "test/x86/core/machine_80286_instruction_timing_ledger_smoke.c"
     "test/x86/core/machine_task_switch_cross_width_smoke.c"
     "test/x86/core/machine_call_gate_smoke.c"
@@ -384,12 +386,12 @@ endforeach()
 # S47/S48 public protected-mode receivers share one architectural bootstrap;
 # they must not recreate a private CPU or memory setup in each smoke source.
 set(project_t344_protected_bootstrap_sources
-    "test/app-nxvm/unit/core/devices/core_machine_protected_16_call_gate_board_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_protected_16_external_board_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_protected_16_gate_board_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_protected_16_outer_board_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_protected_16_outer_iret_board_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_call_gate_privilege_entry_board_smoke.c")
+    "test/ibmpc/board-common/composition/core_machine_protected_16_call_gate_board_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_protected_16_external_board_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_protected_16_gate_board_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_protected_16_outer_board_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_protected_16_outer_iret_board_smoke.c"
+    "test/ibmpc/board-common/composition/core_machine_call_gate_privilege_entry_board_smoke.c")
 foreach(project_t344_source IN LISTS project_t344_protected_bootstrap_sources)
     file(READ "${PROJECT_T344_SOURCE_DIR}/${project_t344_source}"
         project_t344_content)

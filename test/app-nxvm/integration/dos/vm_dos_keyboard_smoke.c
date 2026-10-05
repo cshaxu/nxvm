@@ -1,4 +1,4 @@
-#include "../../support/guest_input.h"
+#include "../../../ibmpc/machine/support/guest_input.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
@@ -13,7 +13,7 @@
 #include "ibmpc/machine/display.h"
 #include "ibmpc/machine/lifecycle.h"
 #include "ibmpc/machine/machine_private.h"
-#include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
+#include "test/ibmpc/machine/support/vm_presentation_capture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u

@@ -7,7 +7,7 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 
 The product/shared-corpus layout is current. My5160 owns its `product` and
 `profiles` roots; My5170 owns those same roots after accepted S2.
-MyDeskPro386 owns its relocated composition during S3 verification;
+MyDeskPro386 owns its relocated composition after accepted S3;
 Current records runnable acceptance. Only default remains below `app-nxvm`.
 `firmware` owns
 project-authored guest firmware source and its build tools. `pc110` remains a
@@ -31,8 +31,7 @@ src/
   app-nxvm/             NXVM product implementation
     product/            thin main and fixed composition binding
     firmware/           project-owned BIOS source and offline ROM construction
-    profiles/
-      default_profile/  retained default PC/AT composition and firmware slots
+    profiles/           retained default PC/AT composition and firmware slots
 ```
 
 Keep machine-specific profile declarations at the profiles root. Common
@@ -105,11 +104,13 @@ Shared board and family tests live in `test/ibmpc/board-common`,
 `test/ibmpc/board-at` and `test/ibmpc/board-xt`, with their actual source owners.
 Profile tests follow their real `src/app-*/profiles/` owner. The independent
 My5160, My5170 and MyDeskPro386 test roots preserve their original assertions;
-default remains in `test/app-nxvm`. Final legacy unit-directory alignment and
-the single mixed-family test fixture are S4 receivers;
-the former helper-only `device` and `byob` roots are retired. Do not create
+default remains in `test/app-nxvm`. PC-family composition tests and their
+single mixed-family fixture live in `test/ibmpc/machine/composition` and
+`test/ibmpc/machine/support`; board-wiring tests live in
+`test/ibmpc/board-common/composition`.
+The former helper-only `device` and `byob` roots are retired. Do not create
 empty future-profile directories. Retained
-NXVM composition/firmware tests live in `test/app-nxvm/unit/core/` with their
+NXVM composition/firmware tests live in `test/app-nxvm/unit/profiles/` with their
 product owner. CPU mechanism and retained board-timing recipe tests live under
 `test/x86`, preserving all CPU models. Neutral Core tests live
 in `test/x86/core` and build independently of NXVM board composition.
@@ -121,61 +122,23 @@ Preserve every implemented board's tests and boot scenarios. Rehome CPU, chip,
 transaction, lifecycle and failure regressions with their owner. Factoring
 fixtures or removing duplicate machinery must not reduce behavior coverage.
 
-## Queued Successor Layout
+## Shared PC Family
 
-The admitted [T543 App split](../proposals/m5-independent-pc-apps.md) targets:
+The four fixed Apps consume the sole ibmpc Machine/Product implementation;
+they do not supply libraries to one another. CPU/Core tooling remains in x86,
+PC mechanisms in ibmpc, and immutable model choices and D4 in each App.
+PC110 remains future work, not an empty source/test directory.
 
-```text
-src/
-  lib/
-  common/
-  x86/{chips,core,xasm32,debug}/
-  ibmpc/{board-common,board-xt,board-at,machine,product}/
-  app-my5160/
-  app-my5170/
-  app-mydeskpro386/
-  app-nxvm/             original default 386 hardware, named NXVM after cutover
-```
+Each App has its own source, profile assertions, integration registration and
+flat artifact root. PC-family docs/nxvm, tools/nxvm, version and MTSP stay
+unified. The external integration suite retains one family observer and INI
+fixture under test/app-nxvm/integration. These are test harnesses compiled
+against the selected App binding, never production dependencies or
+repository-only unit inputs. Concrete XT/AT/DeskPro cases are registered in
+their own test/app-*/integration trees; default scenarios stay in NXVM's.
+This preserves the original predicates without copying a boot observer or
+moving external-asset scenarios into test/ibmpc's unit corpus.
 
-`app-mypc110` is future work, not an empty directory to create now. The neutral
-x86 machine executor lives in `x86/core`; real chip responsibilities live in
-`x86/chips`; common PC board mechanisms live in the flat `ibmpc/board-*`
-components; product-specific assembly
-remains App-owned. Existing CPU implementation style and coherent file
-boundaries are preserved, not rewritten for renaming.
-Matching shared tests live in
-`test/x86/{chips,core}` and `test/ibmpc/{board-common,board-at,board-xt}`; each App owns its
-`test/app-<product>` unit/integration tree, assets/<product> and build entry.
-The four PC Apps continue to share docs/nxvm, tools/nxvm, version declarations
-and one MTSP sequence; do not copy these into four independently maintained
-hierarchies.
-No source, test, firmware, INI or executable is relocated by this proposal-only
-governance. Deployment identities/paths are separately governed at App cutover.
-
-T541 first extracts Product while the existing App/profile directories stay
-in place. The separate queued split creates the four App roots afterward.
-Neither stage modifies Lib or Common under the current owner restriction.
-
-Before the App split, accepted T542 delivers the remaining shared adapter in
-`ibmpc/machine` (with its real media subresponsibility) and common
-construction helpers in flat `ibmpc/board-common`. Matching independent tests
-follow those owners. Current and the T542 ledger distinguish working source
-from accepted delivery.
-S3 relocates media implementation/tests to ibmpc/machine/media and
-test/ibmpc/machine/media; App keeps only opaque media handles and its
-composition assertions, not the shared media layouts.
-S4 places pure mapper/frame conversion in flat ibmpc/machine. The
-shared display orchestration directly converts the video snapshot;
-the old guest-frame view lives only in test support, not production source.
-The prepared Profile context retains Model40 D4 and terminal observations;
-generic Machine holds neither. App probes consume copied Profile values, with
-their stateless views under test/app-nxvm/support.
-No App can retain another App's shared Machine implementation as its library.
-
-The owner-required ibmpc/product receiver owns the identical PC Console/API,
-INI/startup/UX implementation once, with matching test/ibmpc/product coverage.
-Its final flat file set and minimum typed Machine binding are determined by
-T541 S1's actual-source inventory and T542's construction ledger. Each App retains real
-machine identity, fixed board/firmware composition and build binding; PC version
-declarations are shared in ibmpc/product/version_interface.h. No App
-is the source library of another App or the shared Product implementation.
+[T543](../history/M5-T543-four-pc-apps.md) records the ownership cutover;
+[T542](../history/M5-T542-shared-pc-machine-adapter.md) records the prerequisite
+Machine/composition extraction. Current alone records acceptance.

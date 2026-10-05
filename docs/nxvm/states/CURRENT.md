@@ -8,7 +8,7 @@
 | T543 S1 | Accepted: My5160 source/test/artifact split with complete verification and pushed actual-change review. |
 | T543 S2 | Accepted: My5170 source/test/artifact split; Shared e9bb0dc55 and NXVM fe4ca8107 reviewed against the original request and complete S2 evidence. |
 | T543 S3 | Accepted at pushed 13f5b5192: independent MyDeskPro386, complete units and original integration pass on both widths, flat 0543 pair. |
-| T543 S4 | Admitted final NXVM cutover and family source/test/artifact reconciliation; verification outstanding. |
+| T543 S4 | Final NXVM cutover implemented; complete dual-width units, all 58 original integrations, manifests and gates pass. Scoped delivery and coordinator acceptance pending. |
 
 T543 remains open. S4 is the sole active packet and finishes NXVM and the family cutover.
 The [proposal](../proposals/m5-independent-pc-apps.md) and
@@ -23,7 +23,7 @@ four-App scope and all 58 integration contexts required at T exit.
 | Admission And Approval | Human owner approved four Apps one per S, automatic continuation and flat assets/<app>. S4 completes the original NXVM proposal; necessary PC-family test-owner relocation is a separate Shared P under test/ibmpc. No six-corpus, MyNES, shared rules or external-master edits. |
 | Objective | Finish the retained default 386 NXVM App, remove the obsolete multi-profile shell and exhaust the original four-App cutover ledger. |
 | Non-goals | No new hardware/timing, firmware behavior, INI policy, Lib/Common/x86 source/test, MyNES, PC110 stub or external master change. |
-| Reference Baseline | Accepted pushed S3 13f5b5192; whole-T baseline 4c0c2db16. First three Apps retain verified 0543 pairs; default retains 0542 until replacement proof. |
+| Reference Baseline | Accepted pushed S3 13f5b5192; whole-T baseline 4c0c2db16. All four Apps now have working verified 0543 pairs at flat roots; final S4 delivery remains uncommitted. |
 | Candidate Proposal | [Four PC Apps](../proposals/m5-independent-pc-apps.md), S4 and [coverage ledger](../history/M5-T543-four-pc-apps.md), NXVM and cross-cutting batches. |
 | Files And ABI Surface | App-owned default build/fixed binding, retirement of generated multi-profile binding; align App tests with source owners and move genuine family fixtures/tests to test/ibmpc without copying assertions. Repair CMake/gates/tools/current docs. Flat assets/nxvm pair and owner INI; existing construction/execution/Debug/UX ABI unchanged. |
 | Applicable Rules | NXVM guide, CONTRIBUTING, rules/EXECUTION, ARCHITECTURE, CODING, DOCUMENT; NXVM design/ARCHITECTURE, CODING, UI, GOAL, ROADMAP, Queue and source policy. Architecture/coding skills; unique owner/cleanup, neutral dependencies, original coverage, numeric identifiers, separate target commits, honest evidence and actual-diff review. |
@@ -48,9 +48,9 @@ four-App scope and all 58 integration contexts required at T exit.
   ROM mapping and candidate lifetime. Model constraints remain App-owned.
   No default/5170 mixed production translation unit remains.
 - Accepted S3 puts DeskPro composition and sole D4 state/copied
-  observations in app-mydeskpro386; default remains in app-nxvm. S3 has not
-  yet received coordinator acceptance; runtime verification passes. Test-only family
-  fixtures and cross-profile matrices remain live with S4 as their receiver;
+  observations in app-mydeskpro386; default remains in app-nxvm. S4 working
+  source gives default its independent fixed binding and App build entry.
+  Test-only family fixtures and cross-profile matrices now live in test/ibmpc;
   they are not production dependencies between Apps.
 - Four PC machines remain runnable. PC110 is not implemented. MyNES retains its
   unchanged 0043 pair and does not consume ibmpc.
@@ -62,9 +62,10 @@ My5170 retain optimized stripped 0.5.0543 x64/x86 pairs and adjacent owner INI
 directly in assets/my5160 and assets/my5170. Accepted Td S176 requires no profile
 subdirectory; rebased INI paths retain identical external masters, access modes
 and non-path settings. DeskPro's verified 0543 pair and INI now live directly in
-assets/mydeskpro386; default retains its 0542 pair at its legacy assets/nxvm
-profile root until S4. All eight PC hashes and INI hashes are in
-the T543 ledger. Runtime Debug remains present.
+assets/mydeskpro386. S4's working 0543 default pair and owner INI now live
+directly in assets/nxvm; its superseded 0542 pair and empty profile directory
+are removed after both default integration suites pass. Final deployed hashes
+will be recorded in the T543 ledger before delivery. Runtime Debug remains present.
 
 S2 proof: full units pass 506/506 per width; original AT Console, CMOS and boot
 predicates pass on both widths; every affected receiving PC product is rebuilt
@@ -77,16 +78,17 @@ path-independent identity correction remain recorded in history.
 Coordinator actual-change review accepts the moved algorithms and unique
 owners, original test predicates/configuration semantics, scoped commits and
 deployed files. This is S2 acceptance, not a whole-T integration claim.
-The latest complete 58-context integration proof remains T542 S20; T543 must
-rerun every original context at final exit. Earlier proof and source accounting
-remain in indexed history. No active owned test/build process remains from S2.
+S4 now retains a complete 58-context integration replay with all original
+predicates, once per context, plus 506/506 units per width. Earlier proof and
+source accounting remain in indexed history. No active owned test/build
+process remains from S2.
 
 S3 verification passes complete units 506/506 per width, the three original
 Model40 Console/CMOS/boot cases per width, both specialized aggregates and 19
 supplemental corpus checks per width. Both products are optimized stripped
 PE files with runtime Debug. The old Model40 pair is retired after replacement
 proof. Executor review/evidence is in the T543 ledger; coordinator actual-change
-review and acceptance remain required.
+review and acceptance are recorded below in the T543 ledger.
 
 ## Next Work
 

@@ -6,7 +6,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/hdc/hdc.c" hdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/hdc.c" hdc_adapter)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/pc_at_profile_interface.h"
     profile_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/pc_at_profile.c"
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/pc_at_preparation.c"
     plan_source)

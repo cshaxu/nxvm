@@ -1,4 +1,4 @@
-#include "../../app-nxvm/support/profile.h"
+#include "../../ibmpc/machine/support/profile.h"
 #include "app-mydeskpro386/profiles/observation_interface.h"
 #include "ibmpc/machine/machine_interface.h"
 #ifndef NXVM_TEST_MODEL40_H

@@ -15,7 +15,7 @@ function Require-Pattern {
 $root = (Resolve-Path $RepositoryRoot).Path
 $machine = Join-Path $root 'src/x86/core/machine.c'
 $scheduler = Join-Path $root 'src/x86/core/machine_scheduler.c'
-$profile = Join-Path $root 'src/app-nxvm/profiles/default_profile/pc_at_profile.c'
+$profile = Join-Path $root 'src/app-nxvm/profiles/pc_at_profile.c'
 
 Require-Pattern $profile '596591u, 4000000u' 'Model-339 PIT rational clock'
 Require-Pattern $profile '64u, 15625u' 'Model-339 RTC rational clock'

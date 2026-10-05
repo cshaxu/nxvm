@@ -1,5 +1,5 @@
-#include "../../support/guest_input.h"
-#include "../../support/profile.h"
+#include "../../../ibmpc/machine/support/guest_input.h"
+#include "../../../ibmpc/machine/support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "../../../app-mydeskpro386/support/model40.h"
 #include "../../../ibmpc/board-common/boot_fixture.h"

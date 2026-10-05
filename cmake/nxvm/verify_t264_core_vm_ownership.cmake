@@ -32,7 +32,13 @@ endforeach()
 
 file(GLOB_RECURSE vm_sources
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h")
 foreach(source IN LISTS vm_sources)
     file(READ "${source}" source_text)
     string(FIND "${source_text}" "core_machine_run(" run_position)

@@ -92,7 +92,11 @@ if(chip_interface MATCHES "struct[ \t\r\n]+x86_fdc[ \t\r\n]*\\{")
     message(FATAL_ERROR "Shared FDC public layout is not opaque")
 endif()
 file(GLOB_RECURSE app_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h"
     "${PROJECT_SOURCE_DIR}/src/x86/core/*.c"

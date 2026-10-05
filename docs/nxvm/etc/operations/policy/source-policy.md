@@ -82,8 +82,8 @@ Award, Phoenix, IBM, Compaq and other third-party firmware originals remain
 owner-supplied BYOB inputs. The owner has approved embedding those inputs into
 machine EXEs at build time and explicitly requires the resulting EXEs under
 `assets/<app>/` to be committed and pushed. My5160 uses assets/my5160;
-My5170 uses assets/my5170; MyDeskPro386 uses assets/mydeskpro386. Unmigrated PC Apps retain
-assets/nxvm until their sequential cutover. This is the owner's
+My5170 uses assets/my5170; MyDeskPro386 uses assets/mydeskpro386;
+NXVM uses assets/nxvm directly. No profile child directory is used. This is the owner's
 specific artifact-publication authorization, superseding the earlier blanket
 exclusion of embedded firmware. It does not establish a third-party license
 grant or authorize acquiring new ROMs. Raw ROM originals stay external;

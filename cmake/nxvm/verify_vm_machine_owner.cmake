@@ -86,6 +86,10 @@ endforeach()
 file(GLOB_RECURSE app_sources
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/product/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/product/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/product/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/product/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/product/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/product/*.h")
 foreach(source IN LISTS app_sources)
@@ -111,18 +115,17 @@ foreach(source IN LISTS profile_plans)
     endif()
 endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/machine_binding.c" factory_text)
-if(NOT factory_text MATCHES "\\.prepare = VM_PROFILE_PLAN_CREATE" OR
-        factory_text MATCHES "config->profile_kind|vm_profile_machine_plan_create\\(")
-    message(FATAL_ERROR "Machine factory does not use its fixed build constructor")
-endif()
-file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProductProfile.cmake" profile_build)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-my5160/CMakeLists.txt" xt_build)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-my5170/CMakeLists.txt" at_build)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/CMakeLists.txt" model40_build)
-string(APPEND profile_build "\n${xt_build}\n${at_build}\n${model40_build}")
-foreach(constructor IN ITEMS default 5170 xt model40)
-    if(NOT profile_build MATCHES "set\\(NXVM_PROFILE_PLAN_CREATE vm_profile_machine_plan_create_${constructor}\\)")
-        message(FATAL_ERROR "Build does not bind the ${constructor} constructor")
+set(binding_apps app-nxvm app-my5160 app-my5170 app-mydeskpro386)
+set(binding_constructors default xt 5170 model40)
+foreach(app constructor IN ZIP_LISTS binding_apps binding_constructors)
+    file(READ "${PROJECT_SOURCE_DIR}/src/${app}/product/machine_binding.c" binding)
+    if(NOT binding MATCHES "\\.prepare = vm_profile_machine_plan_create_${constructor}([ \t\r\n]|$)" OR
+            binding MATCHES "config->profile_kind|vm_profile_machine_plan_create\\(")
+        message(FATAL_ERROR "${app} does not bind its fixed ${constructor} constructor")
+    endif()
+    if(app STREQUAL "app-my5160" AND
+            NOT binding MATCHES "\\.name = \"ibm-5160-model-268\"")
+        message(FATAL_ERROR "XT fixed Product identity is not preserved")
     endif()
 endforeach()
 file(GLOB_RECURSE model40_sources
@@ -130,7 +133,7 @@ file(GLOB_RECURSE model40_sources
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/*.h")
 foreach(source IN LISTS model40_sources)
     file(READ "${source}" model40_text)
-    if(model40_text MATCHES "app-nxvm/profiles/default_profile/|vm_profile_ibm_5170_(values|plan)_create")
+    if(model40_text MATCHES "app-nxvm/profiles/|vm_profile_ibm_5170_(values|plan)_create")
         message(FATAL_ERROR "Model40 depends on another AT model's construction: ${source}")
     endif()
 endforeach()
@@ -140,7 +143,7 @@ if(input_contract MATCHES "profile_kind|VM_MACHINE_PROFILE_(DEFAULT|IBM|COMPAQ)|
     message(FATAL_ERROR "Machine value contract retains identity or model-specific observations")
 endif()
 
-foreach(retired IN ITEMS machine_plan.c machine_plan.h machine_plan_interface.h selection_interface.h)
+foreach(retired IN ITEMS machine_plan.h machine_plan_interface.h selection_interface.h)
     if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/${retired}")
         message(FATAL_ERROR "Generic App construction mechanism remains: ${retired}")
     endif()
@@ -163,9 +166,6 @@ foreach(source IN LISTS app_profile_sources)
         message(FATAL_ERROR "Retired shared App plan path remains: ${source}")
     endif()
 endforeach()
-if(NOT profile_build MATCHES "set\\(NXVM_PROFILE_MONITOR_NAME \"ibm-5160-model-268\"\\)")
-    message(FATAL_ERROR "XT fixed Product identity is not preserved")
-endif()
 if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/config.c" OR
         EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_factory.c" OR
         EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_factory_interface.h" OR

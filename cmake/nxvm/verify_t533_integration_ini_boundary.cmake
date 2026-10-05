@@ -51,10 +51,12 @@ endforeach()
 file(GLOB_RECURSE unit_sources
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/product/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/product/*.h"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/machine/*.h"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/profiles/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/profiles/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/profiles/*.h"
+    "${PROJECT_SOURCE_DIR}/test/ibmpc/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/test/ibmpc/machine/*.h"
+    "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/*.c"
+    "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-my5160/unit/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-my5160/unit/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-my5170/unit/*.c"
@@ -82,7 +84,7 @@ if(cmake_text MATCHES "project_add_test\\([^\\n]*integration[^\\n]*(PROJECT_FDD_
         "T533 integration must be registered through the INI helper, not a media path.")
 endif()
 file(GLOB session_documents
-    "${PROJECT_SOURCE_DIR}/assets/nxvm/*/NXVM.ini"
+    "${PROJECT_SOURCE_DIR}/assets/nxvm/NXVM.ini"
     "${PROJECT_SOURCE_DIR}/assets/my5160/NXVM.ini"
     "${PROJECT_SOURCE_DIR}/assets/my5170/NXVM.ini"
     "${PROJECT_SOURCE_DIR}/assets/mydeskpro386/NXVM.ini")
@@ -90,7 +92,7 @@ set(expected_session_documents
     "${PROJECT_SOURCE_DIR}/assets/my5160/NXVM.ini"
     "${PROJECT_SOURCE_DIR}/assets/my5170/NXVM.ini"
     "${PROJECT_SOURCE_DIR}/assets/mydeskpro386/NXVM.ini"
-    "${PROJECT_SOURCE_DIR}/assets/nxvm/default-pc-at-80386-1440k-hdd/NXVM.ini")
+    "${PROJECT_SOURCE_DIR}/assets/nxvm/NXVM.ini")
 list(LENGTH session_documents session_document_count)
 if(NOT session_document_count EQUAL 4)
     message(FATAL_ERROR

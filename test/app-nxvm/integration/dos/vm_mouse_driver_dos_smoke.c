@@ -1,4 +1,4 @@
-#include "../../support/guest_input.h"
+#include "../../../ibmpc/machine/support/guest_input.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>

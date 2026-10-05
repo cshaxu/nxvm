@@ -500,3 +500,161 @@ default source/firmware declarations, artifact child directory, legacy unit
 nesting, single mixed-family fixture and incomplete four-App scans. Necessary
 PC-family test relocation is a separate Shared target; six-corpus and MyNES
 remain excluded. Preserve every original assertion and 58 integration contexts.
+
+## S4 Working Cutover And Review
+
+Default now has its own App CMake entry and fixed binding. The generated
+multi-profile binding is removed; default composition lives directly in
+app-nxvm/profiles. Product, Machine and board mechanisms retain their sole
+shared implementation. All four artifact roots are flat; default's 0542
+pair remains temporarily until the 0543 replacement is verified.
+
+112 existing source/test units are relocated by owner. Comparing the 110
+moved C/H files with HEAD, excluding include directives and line endings,
+finds no body differences. Original test assertions are retained. Family
+composition tests and fixtures move to test/ibmpc; concrete App tests follow
+their profiles. Lib/Common/x86 source/tests and MyNES have no diff.
+
+Both default full builds remain live at this checkpoint. The configured
+default integration inventory still contains all 22 original cases. Direct
+machine-owner, historical 133-constructor, integration-INI and PC test
+manifest checks pass. The first specialized aggregate exposed the stale
+0542 GCC preset target; all three NXVM preset references now name 0543.
+Full unit, integration, final specialized and whole-T proof remain pending.
+
+Both specialized aggregates pass after the preset correction. The x86
+complete build succeeds and its 506-case bounded unit execution is active.
+The first x64 full build ended on the Model40 private-composition link target;
+its isolated rebuild succeeds without source changes. A complete incremental
+build is still required and active; no original failure cause is claimed.
+Receiving AT/DeskPro/XT configurations and product/integration-target builds
+are active on both widths. Registration inspection confirms 22 default,
+3 AT, 3 DeskPro and 1 XT case per width: all 58 original contexts.
+
+The removed generated binding also leaves six unused build-value variables
+per App, two of which survive only as static-verifier text. Final S4 cleanup
+must remove this duplicate declaration and check the actual fixed bindings
+instead; this remains inside the admitted obsolete-shell reconciliation.
+
+x86's complete bounded unit run passes 506/506 in 226.23 seconds. This is
+the original full suite, not a fixed focused subset. The x86 0543 product
+rebuild and specialized aggregate both succeed. x64 complete build/unit and
+the final 58-context integration replay remain outstanding.
+
+The 24 unused per-App build-value declarations are removed. The machine-owner
+gate now reads each actual C binding and checks its fixed constructor and
+retained XT identity; direct verification passes. The empty central selection
+branches and obsolete nested-profile graph check are retired, while actual
+transitive peer-App rejection remains. Generated firmware ownership derives
+from the selected entry path, not a second model-to-App table.
+
+Default x86 integration passes all 22 original cases once in 21.91 seconds,
+including the Windows 3.1 checkpoint. Comparing all four INIs against HEAD
+after resolving their media paths proves identical external master identities,
+access modes and all non-path settings. No six-corpus or MyNES diff exists.
+
+x64's complete build and 0543 product rebuild succeed. The complete bounded
+unit run passes 506/506 in 193.13 seconds. Supplemental manifest/corpus,
+dependency, vocabulary-layout and negative checks pass 19/19 per width:
+123.24 seconds on x86 and 101.71 seconds on x64. These verify the relocated
+PC test manifest as well as the unchanged six corpora. Remaining original
+integration contexts and final ownership/deployment audit are still required.
+
+Default x64 integration passes all 22 original cases once in 17.88 seconds.
+The original AT suites pass 3/3 per width (35.75 seconds x64, 46.59 seconds
+x86). Both receiving build loops complete AT, DeskPro and XT configuration,
+integration targets and optimized 0543 products successfully. DeskPro and XT
+integration execution remains active at this checkpoint; no success is assumed.
+
+After verified default replacement on both widths, its two superseded 0542
+EXEs and the now-empty default-pc-at-80386-1440k-hdd directory are removed.
+All four Apps place their pair and NXVM.ini directly in assets/<app>, with
+no profile child directory. The repository retains exactly ten deployed EXEs:
+eight PC products and the unchanged MyNES pair. Superseded EXEs remain
+recoverable from Git history. Final S4 review, hashes and pushed delivery
+are still outstanding.
+
+The original DeskPro integrations pass 3/3 on each width: 53.58 seconds x64
+and 76.29 seconds x86. XT's original once-per-width replay is active.
+An additional empty legacy ibm-5170-model-339-1200k directory under
+assets/nxvm is removed after confirming it contains no files. All four
+App roots are checked for absence of child directories and presence of the
+adjacent INI. No six-corpus or MyNES file has changed.
+
+The working deployed 0543 PC pairs have the following SHA-256 identities;
+all eight PE headers match their x64 (8664) or x86 (014C) suffix:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| my5160/nxvm_xt_0_5_0543_x64.exe | 98785E447681DECCF61D6D3D0392A6B151FC7DA9F17DFCA693025F0AE60FF24A |
+| my5160/nxvm_xt_0_5_0543_x86.exe | E5DC5491B346E9F07875557C416FADCD4B25DC802D9B8232A1CE9BCEEAADFA64 |
+| my5170/nxvm_at_0_5_0543_x64.exe | 78F8ABC7876AC13865E54A48D44AA054A37147019821BB99B35C19496A168EE4 |
+| my5170/nxvm_at_0_5_0543_x86.exe | 16F26AE1D6E2C7BFEDD102A925E0D8D836316B5BCEA43956F7835175C8618FBD |
+| mydeskpro386/nxvm_model40_0_5_0543_x64.exe | 03DE022E5456C0F2862E79F3E879D09DC78979FF81D694B956AA863F4835A240 |
+| mydeskpro386/nxvm_model40_0_5_0543_x86.exe | 7B44C7C44BC3D91105271ED144705FEA4040B5D612FC97A6BD60F022A9B61E3C |
+| nxvm/nxvm_default_0_5_0543_x64.exe | 0379C7D088FC7B458BCE36A6812834E27B4DFE9759EBCB7A543220EBE66D4708 |
+| nxvm/nxvm_default_0_5_0543_x86.exe | 2E14F3FC0F68EFD4FDA1FE17D897B7DF3CD1EC1DBD67F0368311602A62BFD72F |
+
+Final ownership audit must also reconcile the still-shared integration
+observer/INI support under test/app-nxvm, without creating four copies or
+moving externally driven scenarios into repository-only unit registration.
+This remains an explicit S4 test-owner member, not a completion claim.
+
+## S4 Final Verification And Ownership Review
+
+XT's original external boot case passes once on x64 (20.78 seconds) and
+x86 (26.84 seconds). Together with default 22/22, AT 3/3 and DeskPro 3/3
+per width, all 58 original integration contexts pass. No predicate or case
+is removed and no repeated-success round is required. Complete units retain
+506/506 per width; the 19 supplemental corpus checks pass per width.
+
+The integration-support member is reconciled without relocation: shared
+repository-only PC fixtures move to test/ibmpc, while externally driven
+scenarios remain in the selected App's integration registration. The single
+family boot observer, Console observer and INI fixture remain in
+test/app-nxvm/integration as external integration harnesses and compile
+against the selected real App binding/firmware. They never link into a
+product or enter unit registration. Four copies would duplicate predicates;
+moving external scenarios into test/ibmpc's unit corpus would violate the
+test boundary. The App test/source/artifact owners are parallel without
+creating four separate family harness implementations. Source Layout and
+System Architecture document this retained responsibility; temporary-cutover
+comments are retired. No production peer-App dependency is retained.
+
+The whole-domain audit maps all four source/composition/test/artifact batches
+to their fixed owners, preserving hardware, firmware inputs, D4 lifetime,
+runtime Debug, INI values and external media identities. All 110 moved C/H
+bodies retain their original statements/assertions aside from includes.
+The generated multi-profile header and its duplicate CMake values are
+removed; the closure gate checks real fixed bindings and transitive product
+dependencies. Current documents are reconciled with the final layout rather
+than retaining a competing queued layout. Lib/Common/x86, MyNES, shared
+rules and external masters have no changes. Pushed source identity and
+coordinator acceptance remain required before closure.
+
+Both final specialized aggregates pass after the fixed-binding/value cleanup;
+the standalone documentation governance gate also passes. Eight product
+graphs retain x86-debug and exclude the test-only multi-profile aggregate.
+All eight caches are Release with -O3 -DNDEBUG, and all eight deployed PE
+files contain no compiler debug sections. Adjacent configuration/media
+identities remain unchanged. The prior T345 self-test's intentionally failing
+negative fixture is contained by its passing self-test; it is not a failed
+specialized aggregate. All known owned test/build handles are terminal.
+
+Shared P1 is pushed as 4b1948c31: PC-family repository-only test ownership
+and its complete test/ibmpc manifest. This ownership-transfer P includes the
+original App-test paths' deletion and new Shared paths, not an unrelated
+product change. The remaining fixed App/build/direct-reference/deployment
+repair is the separate NXVM P2. Coordinator review reads the actual complete
+S4 diff against 02dd73093, including all moves, new files, deleted generated
+binding, CMake graph/gates, original assertions and artifact/configuration
+changes; test summaries alone are not acceptance.
+
+S4 rename-aware accounting against 02dd73093, including new files and
+excluding documents/binaries: source/test/build/tools add 630 lines and
+remove 533 (net +97); production src adds 48 and removes 31 (net +17,
+including the App-local CMake entry). The 110 moved C/H bodies have zero
+non-include differences. Net scaffolding expresses the fourth independent
+App and complete four-owner checks, not a new runtime abstraction. It
+removes duplicate default compilation, the generated profile binding and
+24 unused configuration declarations while preserving shared mechanisms.

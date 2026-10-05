@@ -1,0 +1,17 @@
+file(GLOB_RECURSE nxvm_sources "${CMAKE_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${CMAKE_SOURCE_DIR}/src/app-nxvm/*.h")
+foreach(source IN LISTS nxvm_sources)
+    file(READ "${source}" text)
+    if(text MATCHES "#[ \t]*include[^\n]*app-(my5160|my5170|mydeskpro386)/")
+        message(FATAL_ERROR "NXVM includes a peer App: ${source}")
+    endif()
+endforeach()
+if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "default" AND
+        (NOT NXVM_PRODUCT_ARTIFACT_ROOT STREQUAL "${CMAKE_SOURCE_DIR}/assets/nxvm" OR
+         NOT NXVM_PRODUCT_ARTIFACT_DIRECTORY STREQUAL NXVM_PRODUCT_ARTIFACT_ROOT))
+    message(FATAL_ERROR "NXVM uses a profile child artifact directory")
+endif()
+if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/nxvm/profile_binding.h.in")
+    message(FATAL_ERROR "Retired generated multi-profile binding remains")
+endif()
+message(STATUS "NXVM independent App boundary: OK")

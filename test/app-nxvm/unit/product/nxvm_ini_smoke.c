@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 #include "ibmpc/product/factory_interface.h"
-#include "app-nxvm/product/profile_binding.h"
+#include VM_PRODUCT_BINDING_HEADER
 
 const vm_machine_assets vm_app_firmware = {0};
 

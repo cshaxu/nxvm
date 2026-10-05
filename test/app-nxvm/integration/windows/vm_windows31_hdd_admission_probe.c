@@ -1,4 +1,4 @@
-#include "../../support/profile.h"
+#include "../../../ibmpc/machine/support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "../../../ibmpc/board-common/controller_fixture.h"
 #include "lib/types/types_interface.h"

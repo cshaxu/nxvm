@@ -1,5 +1,5 @@
 #include "ibmpc/machine/machine_interface.h"
-#include "../../support/media.h"
+#include "../../../ibmpc/machine/support/media.h"
 #include "../../../ibmpc/board-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>

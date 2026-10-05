@@ -72,7 +72,11 @@ foreach(old_file cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions
     endif()
 endforeach()
 file(GLOB_RECURSE board_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c"
@@ -109,7 +113,7 @@ foreach(board_test core_machine_lea_smoke.c core_machine_movx_smoke.c
         core_machine_operand_address_smoke.c core_machine_prefix_attributes_s64_smoke.c)
     set(board_test_path "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/${board_test}")
     if(NOT EXISTS "${board_test_path}")
-        set(board_test_path "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/${board_test}")
+        set(board_test_path "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/composition/${board_test}")
     endif()
     file(READ "${board_test_path}" contents)
     if(contents MATCHES "executor_cpu|machine_cpu_fixture|x86/chips/cpu/cpu(_instructions)?\\.h")
@@ -118,9 +122,19 @@ foreach(board_test core_machine_lea_smoke.c core_machine_movx_smoke.c
 endforeach()
 file(GLOB_RECURSE pic_consumers
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-my5170/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.h"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.c"
