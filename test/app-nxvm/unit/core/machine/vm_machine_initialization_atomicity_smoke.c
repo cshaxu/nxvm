@@ -1,4 +1,4 @@
-#include "app-nxvm/profiles/model40/observation_interface.h"
+#include "app-mydeskpro386/profiles/observation_interface.h"
 #include "../../../support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "lib/types/types_interface.h"

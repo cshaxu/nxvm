@@ -1,5 +1,5 @@
 #include "ibmpc/machine/machine_interface.h"
-#include "../../support/model40.h"
+#include "../../../app-mydeskpro386/support/model40.h"
 #include "../../support/media.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"

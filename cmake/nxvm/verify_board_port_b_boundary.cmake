@@ -6,7 +6,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" board_s
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory.c" memory_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" memory_boundary)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/parity.c" parity_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/model40/d4_platform.c" d4_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/d4_platform.c" d4_source)
 foreach(personality IN ITEMS planar_parity d4_platform)
     if(personality STREQUAL "planar_parity")
         set(owner_source "${parity_source}")

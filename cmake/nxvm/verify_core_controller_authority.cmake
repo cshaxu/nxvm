@@ -109,13 +109,14 @@ foreach(source IN ITEMS "${machine_source}" "${machine_plan_source}")
     endif()
 endforeach()
 file(GLOB_RECURSE nxvm_signal_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86/core/*.c"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.c"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.c")
 foreach(source IN LISTS nxvm_signal_sources)
     file(READ "${source}" source_text)
-    if(source MATCHES "/src/(app-nxvm|ibmpc/board-(common|at|xt))/" AND
+    if(source MATCHES "/src/(app-nxvm|app-mydeskpro386|ibmpc/board-(common|at|xt))/" AND
        source_text MATCHES "#[ \t]*include[ \t]*[<\"]x86/core/(machine|memory|port|transaction|timeline)\\.h[>\"]")
         message(FATAL_ERROR "Board source imports private Core layout: ${source}")
     endif()

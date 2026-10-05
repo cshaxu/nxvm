@@ -12,7 +12,9 @@ foreach(retired IN ITEMS fdd.c fdd.h fdd_private.h hdd.c hdd.h hdd_private.h med
     endif()
 endforeach()
 file(GLOB_RECURSE app_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h")
 foreach(app_source IN LISTS app_sources)
     file(READ "${app_source}" source)
     if(source MATCHES "ibmpc/machine/media/(fdd|hdd)\\.h")

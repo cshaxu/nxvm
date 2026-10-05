@@ -1,7 +1,7 @@
 #include "../../support/guest_input.h"
 #include "../../support/profile.h"
 #include "ibmpc/machine/machine_interface.h"
-#include "../../support/model40.h"
+#include "../../../app-mydeskpro386/support/model40.h"
 #include "../../../ibmpc/board-common/boot_fixture.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>

@@ -73,6 +73,8 @@ foreach(old_file cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions
 endforeach()
 file(GLOB_RECURSE board_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.h"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.c"

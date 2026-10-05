@@ -7,8 +7,9 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 
 The product/shared-corpus layout is current. My5160 owns its `product` and
 `profiles` roots; My5170 owns those same roots after accepted S2.
-Current records runnable acceptance. DeskPro and default still
-live below `app-nxvm` during the sequential cutover. `firmware` owns
+MyDeskPro386 owns its relocated composition during S3 verification;
+Current records runnable acceptance. Only default remains below `app-nxvm`.
+`firmware` owns
 project-authored guest firmware source and its build tools. `pc110` remains a
 future Profile only when its separate evidence task admits real source files.
 
@@ -24,11 +25,13 @@ src/
   app-my5170/           fixed IBM 5170 App
     product/            thin main and fixed AT binding
     profiles/           IBM 5170 values, constraints and preparation
+  app-mydeskpro386/     fixed DeskPro 386 App
+    product/            thin main and fixed Model40 binding
+    profiles/           Model40 composition, D4 and firmware slots
   app-nxvm/             NXVM product implementation
     product/            thin main and fixed composition binding
     firmware/           project-owned BIOS source and offline ROM construction
     profiles/
-      model40/          retained DeskPro 386 composition and firmware slots
       default_profile/  retained default PC/AT composition and firmware slots
 ```
 
@@ -47,7 +50,7 @@ reusable assertions live in ibmpc/product and test/ibmpc/product. Shared process
 entry/banner formatting consumes shared PC identity/version and App-owned factory values. The
 former `app-nxvm/devices` implementation is removed. Shared board mechanisms
 live in the flat `ibmpc/board-*` receivers; genuine D4 state stays in
-`app-nxvm/profiles/model40`. Current records delivery acceptance, not this layout.
+`app-mydeskpro386/profiles`. Current records delivery acceptance, not this layout.
 The
 former singular `core/profile` root is retired; do not restore a compatibility
 directory. Preserve existing machine identities and
@@ -68,8 +71,8 @@ contract carries immutable bytes, not external file paths. This is the approved
 target; Current records cutover verification and acceptance status.
 Documentation changes do not move assets. Each versioned local product EXE and its
 adjacent NXVM.ini live only in `assets/<app>/`, without a profile subdirectory; My5160 uses
-`assets/my5160`; My5170 uses `assets/my5170`, while
-unmigrated Apps retain `assets/nxvm`. Relative
+`assets/my5160`; My5170 uses `assets/my5170`; MyDeskPro386 uses
+`assets/mydeskpro386`. The final NXVM cutover uses `assets/nxvm` directly. Relative
 runtime-media paths resolve from that file. It has no firmware/CMOS/font asset
 path keys. NXVM.ini is the sole
 product runtime configuration route; repository-only tests do not load it.
@@ -100,8 +103,10 @@ Repository-only shared tests remain `test/{lib,common,x86,ibmpc}`. NXVM-only tes
 live below `test/app-nxvm/`, mirroring `app-nxvm` beneath `unit/`.
 Shared board and family tests live in `test/ibmpc/board-common`,
 `test/ibmpc/board-at` and `test/ibmpc/board-xt`, with their actual source owners.
-Profile tests mirror their real `src/app-nxvm/profiles/` owner when
-implemented. The current product roots are `xt`, `default_profile`, and `model40`;
+Profile tests follow their real `src/app-*/profiles/` owner. The independent
+My5160, My5170 and MyDeskPro386 test roots preserve their original assertions;
+default remains in `test/app-nxvm`. Final legacy unit-directory alignment and
+the single mixed-family test fixture are S4 receivers;
 the former helper-only `device` and `byob` roots are retired. Do not create
 empty future-profile directories. Retained
 NXVM composition/firmware tests live in `test/app-nxvm/unit/core/` with their

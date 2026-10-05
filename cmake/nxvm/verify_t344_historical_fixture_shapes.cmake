@@ -32,7 +32,7 @@ set(project_t344_retained_sources
     "test/ibmpc/board-common/core_machine_auxiliary_pit_s3_smoke.c"
     "test/ibmpc/board-common/core_machine_compaq_hdc_machine_s5_smoke.c"
     "test/ibmpc/board-common/core_machine_compaq_cecg_s9_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_d4_platform_s4_smoke.c"
+    "test/app-mydeskpro386/unit/core/devices/core_machine_d4_platform_s4_smoke.c"
     "test/ibmpc/board-common/core_machine_cpu_timing_preview_smoke.c"
     "test/x86/core/core_machine_memory_inspection_smoke.c"
     "test/ibmpc/board-common/core_machine_display_authority_smoke.c"
@@ -78,7 +78,7 @@ set(project_t344_retained_sources
     "test/app-nxvm/unit/core/devices/machine_competition_s3_smoke.c"
     "test/x86/core/machine_configuration_smoke.c"
     "test/ibmpc/board-common/machine_cpu_pic_lifecycle_smoke.c"
-    "test/app-nxvm/unit/core/devices/machine_d4_refresh_hold_smoke.c"
+    "test/app-mydeskpro386/unit/core/devices/machine_d4_refresh_hold_smoke.c"
     "test/ibmpc/board-common/machine_entry_plan_smoke.c"
     "test/x86/core/machine_explicit_time_s4_smoke.c"
     "test/x86/core/machine_immutable_rom_mapping_smoke.c"
@@ -141,7 +141,7 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     "test/x86/core/machine_fpu_interface_s65_smoke.c"
     ${project_t344_timing_manifest_sources}
     # Model40 owns the real refresh/preload latch; neutral Core keeps bus internals.
-    "test/app-nxvm/unit/core/profiles/model40/d4_prefetch_locality_smoke.c"
+    "test/app-mydeskpro386/unit/core/profiles/model40/d4_prefetch_locality_smoke.c"
     # S32 retains the ALU divide-vector frame at the public machine boundary.
     "test/app-nxvm/unit/core/devices/core_machine_legacy_alu_s2_smoke.c"
     # These public CPU tests now execute guest table loads with the built-in
@@ -188,7 +188,8 @@ endif()
 
 file(GLOB project_t344_machine_sources
     RELATIVE "${PROJECT_T344_SOURCE_DIR}"
-    "${PROJECT_T344_SOURCE_DIR}/test/app-nxvm/unit/core/devices/*.c")
+    "${PROJECT_T344_SOURCE_DIR}/test/app-nxvm/unit/core/devices/*.c"
+    "${PROJECT_T344_SOURCE_DIR}/test/app-mydeskpro386/unit/core/devices/*.c")
 list(APPEND project_t344_machine_sources
     "test/x86/core/machine_reset_rom_alias_smoke.c"
     "test/x86/core/port_assembly_fixture.c"
@@ -198,7 +199,7 @@ list(APPEND project_t344_machine_sources
     "test/x86/core/machine_fpu_interface_s65_smoke.c"
     "test/x86/core/machine_instruction_timing_ledger_smoke.c"
     "test/x86/core/machine_prefetch_locality_smoke.c"
-    "test/app-nxvm/unit/core/profiles/model40/d4_prefetch_locality_smoke.c"
+    "test/app-mydeskpro386/unit/core/profiles/model40/d4_prefetch_locality_smoke.c"
     "test/x86/core/machine_80286_instruction_timing_ledger_smoke.c"
     "test/x86/core/machine_task_switch_cross_width_smoke.c"
     "test/x86/core/machine_call_gate_smoke.c"

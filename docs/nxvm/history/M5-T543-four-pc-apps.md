@@ -21,7 +21,7 @@ This record is evidence and convergence inventory, not another current status.
 | --- | --- | --- | --- |
 | S1 XT | app-nxvm/profiles/xt and XT binding/firmware composition assertions | app-my5160 and test/app-my5160 | Accepted after pushed cd173acb7 and fed7049b3, full verification and actual-change review. |
 | S2 IBM AT | IBM AT definitions inside app-nxvm/profiles/default_profile, IBM AT assertions | app-my5170 and test/app-my5170 | Accepted after pushed e9bb0dc55 and fe4ca8107, complete verification and actual-change coordinator review. |
-| S3 DeskPro | app-nxvm/profiles/model40, D4, ROM and copied observations, Model40 assertions | app-mydeskpro386 and test/app-mydeskpro386 | Planned; retain actual Compaq-specific ownership. |
+| S3 DeskPro | app-nxvm/profiles/model40, D4, ROM and copied observations, Model40 assertions | app-mydeskpro386 and test/app-mydeskpro386 | Admitted after accepted S2; migrate the whole original owner without hardware/timing changes. |
 | S4 NXVM | app-nxvm/profiles/default_profile, project-owned firmware and remaining shell | app-nxvm and test/app-nxvm | Planned; retains original default hardware, not a new board. |
 
 Each row consumes source, public/private includes, fixed composition/binding,
@@ -372,3 +372,114 @@ INI rebase, artifact retirement and absence of six-corpus/MyNES changes.
 The complete unit, affected integration and gate results satisfy S2, not T exit.
 S2 is accepted and closed; S3/S4 remain unaccepted. App-boundary and flat-root
 checks guard the new fixed My5170 route against regression.
+
+## S3 Admission Inventory
+
+Reference 1eb905a85 is clean and pushed. Model40 has 15 tracked source/header
+files: composition, construction, machine_plan, model40 definition, D4 memory,
+D4 platform, copied observation and ROM mapping. They form one existing owner,
+not a new shared mechanism. The family CMake currently lists its D4 in runtime
+and observation graphs and its composition as the selected Model40 library;
+all those lists must follow the same moved implementation. Model40-specific
+unit/ROM/refresh fixtures and external integration source/registration follow
+the new App; mixed-family support remains a single test-only S4 receiver.
+The immutable entry and firmware roles become App-owned. No chip algorithm,
+Compaq personality, CMOS seed, original assertion or external master changes.
+
+S3 executor confirms the packet. The 15 source files and 30 Model40-specific
+test/fixture files move with git mv; all direct includes and family build paths
+are repaired. The App owns a thin entry/fixed binding, composition source list,
+D4 source list and original Compaq BYOB declarations. The first selected
+Model40 configure passes the independent-App and transitive production graph
+checks; generation/build are not yet complete and no runtime pass is claimed.
+The original INI moves to assets/mydeskpro386 with only a one-level path rebase;
+the previous 0542 pair remains until replacement verification. Mixed-family
+test support remains a single live S4 receiver, not copied into the new App.
+
+The x64 selected product configure and build finish successfully, including
+the MyDeskPro386 source-only composition library, firmware embedding, thin
+binding/entry and PE x64 verification. Its 0543 EXE is deployed directly under
+assets/mydeskpro386. This is build proof only: full unit and integration runs
+and the x86 product remain outstanding. A post-move include sweep corrects
+relative fixture references, including the moved model40.h's bare profile.h;
+the original multi-family helper remains single-owned until S4.
+
+The resumed S3 actual-source check compares all 15 relocated source/header
+files against 1eb905a85 after normalizing only the moved include prefix: no
+other difference remains. Tracked source/test changes likewise contain only
+include repairs; the new fixed entry/binding does not copy Product behavior.
+All relative includes resolve. The family INI gate follows each relocated
+integration/unit tree and the direct MyDeskPro386 INI; it passes without
+weakening predicates. The obsolete unreachable Model40 selected-library
+branch is removed. The two INI path changes still resolve to the original
+1,228,800-byte floppy and 40,256,000-byte hard-disk masters with the same
+overlay mode. Full x64/x86 test builds are in progress; runtime acceptance is
+not yet established.
+
+Both complete test builds and the selected 0543 products now compile on x64
+and x86. The first x64 test build exposed one remaining bare fixture include
+in the relocated FDD test; its include now points to the existing single
+family fixture, and the complete retry passes. No assertion or fixture bytes
+changed. Both product flags are -O3/-DNDEBUG, runtime trace is disabled and
+the linker strips compiler debug information; objdump confirms PE x64/x86
+and no debug sections. Runtime Debug remains linked through x86-debug.
+The current product hashes are ED2267E129A56ED64278878C4C6E8A54798B1AF3847AC6DE059A3B67F0EAD86A
+(x64) and 5F63FE5B853623E41C339E58EFCB8B4BF5C80AAEC526E59BAA3F004DD3D1D72D
+(x86). Full unit and original integration execution remains outstanding;
+these are build identities, not acceptance evidence.
+
+The supplemental manifest/corpus/DAG/layout/negative CTest selection passes
+19/19 on x64 (138.50 seconds) and x86 (112.52 seconds). Its expression selects
+only those checks, not the shared runtime units, which remain in the complete
+unit aggregate. Documentation governance passes for NXVM. The six shared
+source/test corpora, ibmpc and MyNES paths have no S3 diff. Flat deployment's
+owner INI hash is C812A0C99D258C19CA8BB4BED584617DF2F4D25F17372583EB58BBD71D378599.
+
+The x64 complete run-unit-tests target passes 506/506 in 216.96 seconds;
+its dependency build and bounded aggregate both exit successfully. The x86
+unit and original Model40 integration executions are still required.
+
+The x86 complete bounded unit aggregate passes 506/506 in 213.04 seconds,
+reusing the successful full test build with the identical run-unit-tests
+command. A relative TestDirectory attempt failed before starting any test;
+the successful invocation uses its resolved absolute build path. x64's three
+original Model40 integration checks pass (55.25 seconds total, boot 54.84
+seconds). Both specialized gate aggregates now pass. Their first attempts
+exposed two migration omissions: the historical constructor glob lost the
+two moved D4 tests, and the fixed-constructor verifier did not read the new
+App CMake. Both retain their original requirements; the 133-constructor
+predicate is unchanged. The same scan repairs Model40 coverage in firmware,
+media, controller, display, CPU/PIC, D4 and machine-owner verifiers. Direct
+checks of those repaired gates pass. Expected negative-probe diagnostics
+remain part of a passing self-test, not unreported gate failures.
+
+Final source comparison: all 15 moved C/H bodies match the baseline after
+only include-prefix normalization. No tracked test content changes beyond
+include directives remain. Runtime publication, D4 lifetime, Compaq protocol,
+CMOS and media configuration are unchanged; the new thin entry/binding uses
+the sole shared Product path. The x86 integration run remains outstanding.
+
+## S3 Executor Delivery
+
+x86's original integration checks pass 3/3 in 68.33 seconds, with boot reaching
+the installer in 67.81 seconds. Each original context ran once per width;
+there is no repeated-success qualification or changed terminal predicate.
+The replacement identities above match both deployed files. The previous
+Model40 0542 pair is retired after verification, recoverable from Git history;
+assets retains ten EXEs: eight PC-family and two unchanged MyNES artifacts.
+MyDeskPro386 now deploys its pair and unchanged-policy INI directly at its root.
+
+Code accounting uses rename-aware git diff HEAD --numstat under src/test/cmake,
+plus complete line counts of newly added files, excluding docs and artifacts.
+Production C/H: +51/-16, net +35; test C/H: +42/-42, net zero; build/registration
+and verifiers: +165/-95, net +70. The 35 production lines are the independent
+thin entry, fixed binding and public declarations, not another runtime.
+The build increase relocates model values and extends existing owner checks
+to the receiving App; it adds no device, parser or execution framework.
+
+Executor self-review covers actual source/test relocations, fixed source graph,
+BYOB declarations, D4 ownership and lifetime, every repaired gate, original
+test predicates, artifact/INI identities, documentation and excluded targets.
+All S3 criteria are proven; coordinator acceptance must still review the
+pushed actual change. Family-wide fixture/registration reconciliation and
+the complete 58-context replay remain the original S4 receiver, not S3 proof.

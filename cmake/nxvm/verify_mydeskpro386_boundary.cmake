@@ -1,0 +1,17 @@
+if(EXISTS "${CMAKE_SOURCE_DIR}/src/app-nxvm/profiles/model40")
+    message(FATAL_ERROR "Retired Model40 App source root remains")
+endif()
+file(GLOB_RECURSE deskpro_sources "${CMAKE_SOURCE_DIR}/src/app-mydeskpro386/*.c"
+    "${CMAKE_SOURCE_DIR}/src/app-mydeskpro386/*.h")
+foreach(source IN LISTS deskpro_sources)
+    file(READ "${source}" text)
+    if(text MATCHES "#[ \t]*include[^\n]*app-(nxvm|my5160|my5170)/")
+        message(FATAL_ERROR "MyDeskPro386 includes a peer App: ${source}")
+    endif()
+endforeach()
+if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40" AND
+        (NOT NXVM_PRODUCT_ARTIFACT_ROOT STREQUAL "${CMAKE_SOURCE_DIR}/assets/mydeskpro386" OR
+         NOT NXVM_PRODUCT_ARTIFACT_DIRECTORY STREQUAL NXVM_PRODUCT_ARTIFACT_ROOT))
+    message(FATAL_ERROR "MyDeskPro386 uses another App artifact root")
+endif()
+message(STATUS "MyDeskPro386 independent App boundary: OK")

@@ -4,7 +4,13 @@ endif()
 
 file(GLOB_RECURSE integration_sources
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/integration/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/integration/*.h")
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/integration/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-my5160/integration/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-my5160/integration/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-my5170/integration/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-my5170/integration/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/integration/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/integration/*.h")
 foreach(source IN LISTS integration_sources)
     file(READ "${source}" text)
     if(text MATCHES "CopyFileA|session-floppy-[^\"]*\\.img|session-fixed-disk-[^\"]*\\.img|open_with_media_transform")
@@ -52,7 +58,9 @@ file(GLOB_RECURSE unit_sources
     "${PROJECT_SOURCE_DIR}/test/app-my5160/unit/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-my5160/unit/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-my5170/unit/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app-my5170/unit/*.h")
+    "${PROJECT_SOURCE_DIR}/test/app-my5170/unit/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/unit/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/unit/*.h")
 foreach(source IN LISTS unit_sources)
     file(READ "${source}" text)
     if(text MATCHES "GetFileAttributesA|CopyFileA|CreateFile")
@@ -76,11 +84,12 @@ endif()
 file(GLOB session_documents
     "${PROJECT_SOURCE_DIR}/assets/nxvm/*/NXVM.ini"
     "${PROJECT_SOURCE_DIR}/assets/my5160/NXVM.ini"
-    "${PROJECT_SOURCE_DIR}/assets/my5170/NXVM.ini")
+    "${PROJECT_SOURCE_DIR}/assets/my5170/NXVM.ini"
+    "${PROJECT_SOURCE_DIR}/assets/mydeskpro386/NXVM.ini")
 set(expected_session_documents
     "${PROJECT_SOURCE_DIR}/assets/my5160/NXVM.ini"
     "${PROJECT_SOURCE_DIR}/assets/my5170/NXVM.ini"
-    "${PROJECT_SOURCE_DIR}/assets/nxvm/compaq-deskpro-386-model-40-1200k/NXVM.ini"
+    "${PROJECT_SOURCE_DIR}/assets/mydeskpro386/NXVM.ini"
     "${PROJECT_SOURCE_DIR}/assets/nxvm/default-pc-at-80386-1440k-hdd/NXVM.ini")
 list(LENGTH session_documents session_document_count)
 if(NOT session_document_count EQUAL 4)

@@ -126,6 +126,8 @@ if(NOT refresh_binding_count EQUAL 2)
 endif()
 file(GLOB_RECURSE controller_callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86/core/*.c" "${PROJECT_SOURCE_DIR}/test/x86/core/*.c"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c" "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/*.c"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.c" "${PROJECT_SOURCE_DIR}/test/ibmpc/board-at/*.c"

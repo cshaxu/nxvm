@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/model40/d4_memory.c" d4)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/d4_memory.c" d4)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core)
 
 file(GLOB_RECURSE generic_machine_sources
@@ -44,7 +44,7 @@ endforeach()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/parity.c" parity)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/model40/d4_platform.c" d4_platform)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/d4_platform.c" d4_platform)
 if(d4_platform MATCHES "machine_board_state.h|->board")
     message(FATAL_ERROR "D4 platform retains private common-board dependency")
 endif()
@@ -98,7 +98,10 @@ foreach(operation IN ITEMS
 endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" executor)
 file(GLOB_RECURSE callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c" "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.h")
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c" "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.h")
 foreach(caller IN LISTS callers)
     file(READ "${caller}" source)
     if(source MATCHES

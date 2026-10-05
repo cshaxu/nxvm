@@ -39,7 +39,9 @@ file(GLOB_RECURSE profile_sources
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/*.h")
 list(APPEND profile_sources "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/rom_mapping.c"
     "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/pc_at_rom.c")
 foreach(path IN LISTS profile_sources)

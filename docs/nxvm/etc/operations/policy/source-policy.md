@@ -82,7 +82,7 @@ Award, Phoenix, IBM, Compaq and other third-party firmware originals remain
 owner-supplied BYOB inputs. The owner has approved embedding those inputs into
 machine EXEs at build time and explicitly requires the resulting EXEs under
 `assets/<app>/` to be committed and pushed. My5160 uses assets/my5160;
-My5170 uses assets/my5170. Unmigrated PC Apps retain
+My5170 uses assets/my5170; MyDeskPro386 uses assets/mydeskpro386. Unmigrated PC Apps retain
 assets/nxvm until their sequential cutover. This is the owner's
 specific artifact-publication authorization, superseding the earlier blanket
 exclusion of embedded firmware. It does not establish a third-party license
@@ -104,8 +104,9 @@ single Core ROM mapping path.
 
 For XT, `src/app-my5160/profiles` owns board C and ROM slot/mapping declarations.
 The IBM AT owner is `src/app-my5170/profiles`; common PC/AT ROM
-mapping lives once in ibmpc/board-common/pc_at_rom. DeskPro and default still
-use `src/app-nxvm/profiles` until their cutover. Current alone records delivery
+mapping lives once in ibmpc/board-common/pc_at_rom. DeskPro declarations now
+belong to `src/app-mydeskpro386/profiles`; default remains in
+`src/app-nxvm/profiles`. Current alone records delivery
 acceptance; a working source relocation does not certify runnable artifacts.
 PC110 remains a future machine, not an implemented asset set.
 Owner-authorized, project-authored BIOS source

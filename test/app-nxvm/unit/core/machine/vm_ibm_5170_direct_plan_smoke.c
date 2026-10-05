@@ -4,7 +4,7 @@
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "app-my5170/profiles/profile_interface.h"
 #include "app-nxvm/profiles/default_profile/profile_interface.h"
-#include "app-nxvm/profiles/model40/model40_private.h"
+#include "app-mydeskpro386/profiles/model40_private.h"
 
 static lib_i32 vm_ibm_5170_direct_plan_is_complete(void)
 {

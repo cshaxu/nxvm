@@ -36,7 +36,7 @@ it does not change runtime ownership before the corresponding cutover.
   App supplies one frozen factory with copied INFO/speed operations; it owns
   fixed hardware/firmware projection. The PC Machine adapter's S6 receiver is
   `ibmpc/machine`; Current records its acceptance status.
-- `app-nxvm/product` consumes the shared PC identity/version and supplies its
+- Each `app-*/product` consumes the shared PC identity/version and supplies its
   fixed binding to the sole `ibmpc/product`
   process entry, banner and cleanup body. Its fixed composition binding selects
   one Profile's frozen values/assets and preparation for Product's shared factory.
@@ -48,7 +48,7 @@ it does not change runtime ownership before the corresponding cutover.
   App prepares copied construction values and transfers its genuine Profile
   context. The adapter owns publication/rollback and releases the context only
   after Core routes, providers and media cease borrowing it.
-- `app-nxvm/profiles` owns each board's actual composition: device construction,
+- Each `app-*/profiles` owns its board's actual composition: device construction,
   wiring, clocks, memory constraints, firmware slots, fixed relative asset names
   and board-specific behavior.
   It constructs and destroys the selected machine through neutral device
@@ -199,8 +199,9 @@ clearly rather than selecting another board or silently changing hardware.
 
 Each selected product deploys once to its App's
 `assets/<app>/` directory, alongside its owner-maintained `NXVM.ini`.
-My5160 and My5170 use `assets/my5160` and `assets/my5170` directly; the two remaining
-App cutovers still use `assets/nxvm/<profile>` until their sequential delivery.
+My5160, My5170 and the S3 MyDeskPro386 receiver use `assets/my5160`,
+`assets/my5170` and `assets/mydeskpro386` directly. The remaining NXVM default
+cutover retains its legacy pair until S4 verifies the direct `assets/nxvm` delivery.
 These are the current executable locations; `build/` remains compiler state
 apart from historical evidence. The tracked executable/INI pair is adjacent
 and used by deployed-product integration. EXE deployment never rewrites or

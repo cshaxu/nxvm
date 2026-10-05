@@ -6,6 +6,7 @@ set(project_artifact_roots
     "assets/nxvm"
     "assets/my5160"
     "assets/my5170"
+    "assets/mydeskpro386"
     "assets/mynes")
 foreach(project_artifact_root IN LISTS project_artifact_roots)
     if(NOT IS_DIRECTORY "${PROJECT_SOURCE_DIR}/${project_artifact_root}")

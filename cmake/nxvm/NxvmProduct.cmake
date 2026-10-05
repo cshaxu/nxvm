@@ -63,8 +63,7 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     shared-ibmpc-tests)
 
 add_library(core-machine STATIC
-    src/app-nxvm/profiles/model40/d4_memory.c
-    src/app-nxvm/profiles/model40/d4_platform.c
+    ${MYDESKPRO386_D4_SOURCES}
 )
 # NXVM owns only its concrete Model40 extension; the board is Shared-owned.
 add_library(core-machine-runtime ALIAS core-machine)
@@ -106,80 +105,80 @@ add_executable(vm-ibm-5170-model-339-composition-smoke
     test/app-my5170/unit/core/machine/vm_ibm_5170_model_339_composition_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-private-composition-s7-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_private_composition_s7_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_private_composition_s7_smoke.c)
 target_link_libraries(vm-model40-private-composition-s7-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cmos-seed-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_cmos_seed_smoke.c
+    test/app-mydeskpro386/unit/core/machine/vm_model40_cmos_seed_smoke.c
     test/x86/core/composition_fixture.c)
 target_link_libraries(vm-model40-cmos-seed-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-integration-s8-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_integration_s8_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_integration_s8_smoke.c)
 target_link_libraries(vm-model40-integration-s8-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cecg-s9-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_cecg_s9_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_cecg_s9_smoke.c)
 target_link_libraries(vm-model40-cecg-s9-smoke PRIVATE vm-profile-tests)
 target_sources(vm-model40-cecg-s9-smoke PRIVATE test/x86/core/video_topology_fixture.c)
 add_executable(vm-model40-cecg-s10-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_cecg_s10_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_cecg_s10_smoke.c)
 target_link_libraries(vm-model40-cecg-s10-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cecg-s11-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_cecg_s11_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_cecg_s11_smoke.c)
 target_link_libraries(vm-model40-cecg-s11-smoke PRIVATE vm-profile-tests)
 target_sources(vm-model40-cecg-s11-smoke PRIVATE test/x86/core/video_topology_fixture.c)
 add_executable(vm-model40-cecg-s12-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_cecg_s12_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_cecg_s12_smoke.c)
 target_link_libraries(vm-model40-cecg-s12-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cecg-s13-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_cecg_s13_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_cecg_s13_smoke.c)
 target_link_libraries(vm-model40-cecg-s13-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cecg-s28-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_cecg_s28_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_cecg_s28_smoke.c)
 target_link_libraries(vm-model40-cecg-s28-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-rom-layout-s14-smoke
-    test/app-nxvm/unit/core/profiles/model40/rom/model40_rom_layout_s14_smoke.c)
+    test/app-mydeskpro386/unit/core/profiles/model40/rom/model40_rom_layout_s14_smoke.c)
 target_link_libraries(vm-model40-rom-layout-s14-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-d4-compatibility-s25-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_d4_compatibility_s25_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_d4_compatibility_s25_smoke.c)
 target_link_libraries(vm-model40-d4-compatibility-s25-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-d4-map-s16-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_d4_map_s16_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_d4_map_s16_smoke.c)
 target_link_libraries(vm-model40-d4-map-s16-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-d4-parity-s22-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_d4_parity_s22_smoke.c
+    test/app-mydeskpro386/unit/core/machine/vm_model40_d4_parity_s22_smoke.c
     test/x86/core/composition_fixture.c)
 target_link_libraries(vm-model40-d4-parity-s22-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-fdc-s24-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_fdc_s24_smoke.c
+    test/app-mydeskpro386/unit/core/machine/vm_model40_fdc_s24_smoke.c
     test/ibmpc/board-common/controller_fixture.c
     test/ibmpc/board-common/composition_fixture.c)
 target_link_libraries(vm-model40-fdc-s24-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-d4-skey-s23-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_d4_skey_s23_smoke.c
+    test/app-mydeskpro386/unit/core/machine/vm_model40_d4_skey_s23_smoke.c
     test/x86/core/composition_fixture.c)
 target_link_libraries(vm-model40-d4-skey-s23-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-dma-s17-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_dma_s17_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_dma_s17_smoke.c)
 target_link_libraries(vm-model40-dma-s17-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-fdd-s18-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_fdd_s18_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_fdd_s18_smoke.c)
 target_link_libraries(vm-model40-fdd-s18-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-byob-s20-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_byob_s20_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_byob_s20_smoke.c)
 target_link_libraries(vm-model40-byob-s20-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-byob-retirement-capture
-    test/app-nxvm/integration/model40/vm_model40_retirement_capture.c
+    test/app-mydeskpro386/integration/model40/vm_model40_retirement_capture.c
     test/x86/core/composition_fixture.c
     test/ibmpc/board-common/cmos_fixture.c)
 target_link_libraries(vm-model40-byob-retirement-capture PRIVATE
     integration-session-ini-support)
 add_executable(vm-model40-byob-boot-media-s5-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_byob_boot_media_s5_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_byob_boot_media_s5_smoke.c)
 target_link_libraries(vm-model40-byob-boot-media-s5-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-hdc-s26-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_hdc_s26_smoke.c)
+    test/app-mydeskpro386/unit/core/machine/vm_model40_hdc_s26_smoke.c)
 target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-console-s20-smoke
-    test/app-nxvm/integration/product/vm_model40_console_s20_smoke.c
+    test/app-mydeskpro386/integration/product/vm_model40_console_s20_smoke.c
     test/app-nxvm/integration/support/nxvm_console_process.c)
 target_include_directories(vm-model40-console-s20-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
@@ -278,7 +277,7 @@ add_executable(core-machine-time-smoke test/app-nxvm/unit/core/devices/machine_t
 target_sources(core-machine-time-smoke PRIVATE
     test/x86/core/composition_fixture.c
     test/x86/core/time_fixture.c
-    test/app-nxvm/unit/core/profiles/model40/d4_refresh_fixture.c)
+    test/app-mydeskpro386/unit/core/profiles/model40/d4_refresh_fixture.c)
 target_link_libraries(core-machine-time-smoke PRIVATE core-machine)
 
 add_library(model40-d4-prefetch-scheduler-test OBJECT src/x86/core/machine_scheduler.c)
@@ -290,7 +289,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(model40-d4-prefetch-locality-smoke
-    test/app-nxvm/unit/core/profiles/model40/d4_prefetch_locality_smoke.c)
+    test/app-mydeskpro386/unit/core/profiles/model40/d4_prefetch_locality_smoke.c)
 target_link_libraries(model40-d4-prefetch-locality-smoke PRIVATE
     model40-d4-prefetch-scheduler-test core-machine-observable)
 
@@ -302,8 +301,8 @@ add_executable(core-machine-competition-s3-smoke
 target_link_libraries(core-machine-competition-s3-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-d4-refresh-hold-smoke
-    test/app-nxvm/unit/core/devices/machine_d4_refresh_hold_smoke.c
-    test/app-nxvm/unit/core/profiles/model40/d4_refresh_fixture.c
+    test/app-mydeskpro386/unit/core/devices/machine_d4_refresh_hold_smoke.c
+    test/app-mydeskpro386/unit/core/profiles/model40/d4_refresh_fixture.c
     test/x86/core/composition_fixture.c
     test/x86/core/time_fixture.c
     test/ibmpc/board-common/composition_fixture.c)
@@ -785,11 +784,6 @@ endif()
 set(NXVM_PC_AT_COMPOSITION_SOURCES
     src/app-nxvm/profiles/default_profile/machine_plan.c
     src/app-nxvm/profiles/default_profile/pc_at_profile.c)
-set(NXVM_MODEL40_COMPOSITION_SOURCES
-    src/app-nxvm/profiles/model40/machine_plan.c
-    src/app-nxvm/profiles/model40/model40.c
-    src/app-nxvm/profiles/model40/composition.c
-    src/app-nxvm/profiles/model40/rom/model40_rom.c)
 
 # The Shared CPU target is the sole CPU implementation linked by NXVM.  The
 # compatibility alias retains the established consumer target name without a
@@ -802,8 +796,7 @@ target_link_libraries(core-machine PUBLIC ibmpc-board-common ibmpc-board-at ibmp
 
 # Explicit multi-profile fixtures never feed a production product.
 add_library(vm-profile-tests STATIC
-    ${NXVM_PC_AT_COMPOSITION_SOURCES}
-    ${NXVM_MODEL40_COMPOSITION_SOURCES})
+    ${NXVM_PC_AT_COMPOSITION_SOURCES})
 target_include_directories(vm-profile-tests PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -813,26 +806,22 @@ endif()
 target_link_libraries(vm-profile-tests PUBLIC
     my5160-profile
     my5170-profile
+    mydeskpro386-profile
     core-machine
     storage
     ibmpc-machine)
 
-if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40")
-    set(nxvm_selected_sources ${NXVM_MODEL40_COMPOSITION_SOURCES})
-else()
-    set(nxvm_selected_sources ${NXVM_PC_AT_COMPOSITION_SOURCES})
-endif()
+set(nxvm_selected_sources ${NXVM_PC_AT_COMPOSITION_SOURCES})
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
     add_library(vm-profile-selected ALIAS my5160-profile)
 elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "at")
     add_library(vm-profile-selected ALIAS my5170-profile)
+elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40")
+    add_library(vm-profile-selected ALIAS mydeskpro386-profile)
 else()
 add_library(vm-profile-selected STATIC ${nxvm_selected_sources})
 target_include_directories(vm-profile-selected PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(vm-profile-selected PUBLIC ibmpc-machine ibmpc-board-common x86-core)
-if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40")
-    target_link_libraries(vm-profile-selected PUBLIC core-machine)
-endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-profile-selected PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
@@ -890,13 +879,13 @@ target_link_libraries(core-machine-cpu-fault-diagnostic-smoke PRIVATE
 )
 
 add_executable(core-machine-d4-platform-s4-smoke
-    test/app-nxvm/unit/core/devices/core_machine_d4_platform_s4_smoke.c
+    test/app-mydeskpro386/unit/core/devices/core_machine_d4_platform_s4_smoke.c
     test/x86/core/composition_fixture.c
     test/x86/core/time_fixture.c
 )
 target_link_libraries(core-machine-d4-platform-s4-smoke PRIVATE core-machine)
 add_executable(core-machine-d4-memory-transaction-smoke
-    test/app-nxvm/unit/core/profiles/model40/d4_memory_transaction_smoke.c
+    test/app-mydeskpro386/unit/core/profiles/model40/d4_memory_transaction_smoke.c
     test/x86/core/composition_fixture.c
     test/x86/core/memory_registration_fixture.c)
 target_link_libraries(core-machine-d4-memory-transaction-smoke PRIVATE core-machine)
@@ -2083,7 +2072,7 @@ function(add_current_vm_artifact target version)
         "${directory}" vm-app nxvm-product-firmware)
 endfunction()
 
-if(NXVM_PRODUCT_MACHINE_KEY MATCHES "^(xt|at)$")
+if(NXVM_PRODUCT_MACHINE_KEY MATCHES "^(xt|at|model40)$")
     set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0543)
     add_current_vm_artifact(vm-0-5-0543 "0.5.0543")
 else()
@@ -2103,16 +2092,12 @@ function(project_add_t533_console_integration_test target)
         SKIP_RETURN_CODE 77
         WORKING_DIRECTORY "${project_t533_workspace}")
 endfunction()
-if(NXVM_PRODUCT_PROFILE STREQUAL "compaq-deskpro-386-model-40-1200k")
-    project_add_t533_console_integration_test(vm-model40-console-s20-smoke)
-    project_add_t515_ini_integration_test(vm-ini-cmos-seed-smoke
-        compaq-deskpro-386-model-40-1200k.ini)
-endif()
-
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
     include("${CMAKE_SOURCE_DIR}/test/app-my5160/integration/register.cmake")
 elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "at")
     include("${CMAKE_SOURCE_DIR}/test/app-my5170/integration/register.cmake")
+elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40")
+    include("${CMAKE_SOURCE_DIR}/test/app-mydeskpro386/integration/register.cmake")
 else()
 foreach(project_t515_session IN ITEMS ${NXVM_PRODUCT_PROFILE}.ini)
     project_add_t515_ini_boot_case(${project_t515_session})

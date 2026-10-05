@@ -6,8 +6,8 @@
 #include "app-nxvm/profiles/default_profile/construction_interface.h"
 #include "app-my5160/profiles/construction_interface.h"
 #include "app-my5170/profiles/construction_interface.h"
-#include "app-nxvm/profiles/model40/construction_interface.h"
-#include "app-nxvm/profiles/model40/model40_private.h"
+#include "app-mydeskpro386/profiles/construction_interface.h"
+#include "app-mydeskpro386/profiles/model40_private.h"
 #include "ibmpc/machine/machine_private.h"
 
 /* Borrow the actual Machine-owned construction. This test view adds no
