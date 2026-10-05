@@ -31,7 +31,10 @@ closed T540 neutral `x86/core` and flat `ibmpc/board-*` board extraction, then
 the implemented T541 shared `ibmpc/product` extraction, then
 [T542 shared Machine/helper extraction](../history/M5-T542-shared-pc-machine-adapter.md)
 and its [composition completion](../history/M5-T542-pc-composition-completion-proposal.md), then the queued
-`app-mypcxt`, `app-mypcat`, `app-mypcdeskpro386` and default-386 `app-nxvm` split. [Current](../states/CURRENT.md) records the accepted S
+`app-my5160`, `app-my5170`, `app-mydeskpro386` and original default-386
+`app-nxvm` split, admitted as T543 with one App per sequential S. Source,
+tests and assets are parallel; PC-family docs, tools, version and MTSP remain
+unified. [Current](../states/CURRENT.md) records the accepted S
 boundaries and the remaining implementation work.
 Retained qualification work follows the new owners without reduced coverage.
 

@@ -106,7 +106,7 @@ fixtures or removing duplicate machinery must not reduce behavior coverage.
 
 ## Queued Successor Layout
 
-The queued [App split](../states/QUEUE.md) targets:
+The admitted [T543 App split](../proposals/m5-independent-pc-apps.md) targets:
 
 ```text
 src/
@@ -114,10 +114,10 @@ src/
   common/
   x86/{chips,core,xasm32,debug}/
   ibmpc/{board-common,board-xt,board-at,machine,product}/
-  app-mypcxt/
-  app-mypcat/
-  app-mypcdeskpro386/
-  app-nxvm/             default 386 only after cutover
+  app-my5160/
+  app-my5170/
+  app-mydeskpro386/
+  app-nxvm/             original default 386 hardware, named NXVM after cutover
 ```
 
 `app-mypc110` is future work, not an empty directory to create now. The neutral
@@ -128,7 +128,10 @@ remains App-owned. Existing CPU implementation style and coherent file
 boundaries are preserved, not rewritten for renaming.
 Matching shared tests live in
 `test/x86/{chips,core}` and `test/ibmpc/{board-common,board-at,board-xt}`; each App owns its
-`test/app-<product>` unit/integration tree, documentation, tools and build entry.
+`test/app-<product>` unit/integration tree, assets/<product> and build entry.
+The four PC Apps continue to share docs/nxvm, tools/nxvm, version declarations
+and one MTSP sequence; do not copy these into four independently maintained
+hierarchies.
 No source, test, firmware, INI or executable is relocated by this proposal-only
 governance. Deployment identities/paths are separately governed at App cutover.
 

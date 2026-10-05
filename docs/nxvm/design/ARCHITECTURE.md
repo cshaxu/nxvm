@@ -259,9 +259,12 @@ and [queued App split](../proposals/m5-independent-pc-apps.md):
    shared AT assembly mechanisms before App splitting. The AT mechanism has
    three consumers (5170, default and DeskPro), not three identical machine
    definitions; each model retains its own hardware values and genuine behavior.
-5. The separate queued task makes four independent Apps compose these capabilities: `app-mypcxt`
-   (5160), `app-mypcat` (5170), `app-mypcdeskpro386` (Model 40), and
-   `app-nxvm` (default 386). Later PC110 belongs to `app-mypc110` after its
+5. Admitted T543 makes four independent Apps compose these capabilities: `app-my5160`
+   (5160), `app-my5170` (5170), `app-mydeskpro386` (Model 40), and
+   `app-nxvm` (the original default 386 hardware, now the NXVM product).
+   Their source/test/assets owners are parallel; docs/nxvm, tools/nxvm,
+   PC version declarations and the NXVM task sequence remain unified.
+   Later PC110 belongs to `app-mypc110` after its
    separate hardware qualification. No App depends on another App.
 
 The x86 package owns neutral chips/Core/tools; ibmpc owns reusable PC
@@ -269,5 +272,6 @@ integration. Lib/Common stay neutral and no x86 component depends on ibmpc. Chip
 their shared owner; product firmware/boot/INI tests follow their App. Preserve
 existing CPU families, personalities and tests. Structural moves are not V30,
 Raiden II, 486 or PC110 implementation and do not upgrade timing evidence.
-New product scope names and deployment rules require separate Td governance
-before the final App cutover; current names/locations remain valid.
+Accepted Td S175 permits parallel assets/<app>/<profile> delivery as each App
+is extracted, preserving owner INI bytes and relative-path depth. The existing
+NXVM scope, docs/tools, PC version and MTSP remain shared across the four Apps.
