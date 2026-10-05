@@ -345,3 +345,7 @@ add_test(NAME ibmpc.verifier-negative COMMAND "${CMAKE_COMMAND}"
     "-DIBMPC_ROOT=${IBMPC_ROOT}" "-DPROBE_ROOT=${CMAKE_CURRENT_BINARY_DIR}/verifier-probe"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/verify_negative.cmake")
 add_custom_target(shared-ibmpc-tests DEPENDS ${SHARED_IBMPC_TEST_TARGETS})
+add_test(NAME unit.ibmpc-build-smoke COMMAND "${CMAKE_COMMAND}"
+    "-DIBMPC_ROOT=${IBMPC_ROOT}" "-DPROBE_ROOT=${CMAKE_CURRENT_BINARY_DIR}/build-smoke"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/product/build_smoke.cmake")
+set_tests_properties(unit.ibmpc-build-smoke PROPERTIES LABELS "unit;ibmpc" TIMEOUT 30)

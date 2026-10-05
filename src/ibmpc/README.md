@@ -21,6 +21,12 @@ Media/display provider contexts remain borrowed until teardown, with one
 freeze/publication/rollback path. Concrete topology, firmware, immutable
 identity and genuine model-specific state remain App-owned.
 
+Product's build.cmake shares byte embedding, optimized product linking, PE
+width verification and deployment mechanics. The App supplies source entry,
+firmware roles, identity, selected libraries and destination; the helper never
+selects a machine or writes its INI. Cross-model test aggregation is not a
+production dependency.
+
 AT port/IRQ/DRQ grammar is shared by three independently configured consumers.
 Board-common projects it into its existing copied profile-contract values,
 with one structural validator and atomic publication; firmware/media policy
