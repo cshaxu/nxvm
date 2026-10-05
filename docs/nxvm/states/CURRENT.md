@@ -9,7 +9,7 @@ unadmitted until the corrective ledger is exhausted.
 
 | Work | Progress |
 | --- | --- |
-| T542 S18 | Admitted: selected-build/embed/deploy ownership; S19 remains planned. |
+| T542 S19 | Admitted: whole-ledger acceptance and all 58 external contexts once. |
 
 S12 delivery `0d8c3d712` defines the [corrective ledger and sequence](../proposals/m5-pc-composition-completion.md).
 S13 delivers Shared `05ca27ff2` and NXVM `c7a296138`; its coordinator review
@@ -21,41 +21,39 @@ automatic sequential-S approval covers the remaining plan; T542 remains open.
 
 ## Next Work
 
-S17 is accepted after separate coordinator review of Shared b3bbf61e3 and
-NXVM b02743cce. S18 must finish selected-build/embed/deploy ownership.
-S19 retains whole-ledger actual-diff
-review and all 58 external integration contexts once before T542 closure.
+S18 is accepted after actual-change review of Shared f1086b3bf and NXVM
+844950505. S19 now owns whole-ledger review and all 58 external integration
+contexts once before T542 closure.
 Each numeric S requires its own admission packet before implementation.
 
 ## Active Subtask Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation, M5 T542 S18 after accepted S17. |
-| Admission And Approval | Owner's T542 corrective approval and automatic sequential-S admission; coordinator admits Shared ibmpc build mechanics and NXVM bindings for all four PC consumers on 2026-10-04. |
-| Objective | Close the corrective ledger's build/test row: one shared embed/deploy recipe; production consumes only selected composition, while explicit test aggregation retains all regressions. |
-| Non-goals | No App split, hardware/timing change, Lib/Common/x86 algorithm or MyNES edit, root README/rules change, INI or external-master rewrite. |
-| Reference Baseline | Clean S17 acceptance 7c3c5036b; eight 0542 artifacts; 503 complete units per width. |
-| Candidate Proposal | ../proposals/m5-pc-composition-completion.md, S18 and finite corrective build ledger. |
-| Files And ABI Surface | Shared src/ibmpc and test/ibmpc build helpers/manifests; NXVM cmake, selected-profile source/bindings, build gates, docs and eight EXEs. No runtime public ABI change; build-only selection may exclude alternate constructors in the existing cohesive AT translation units. |
-| Applicable Rules | Guide reading set; EXECUTION scope/P/artifact/closure; ARCHITECTURE sole owner and inward dependencies; CODING cohesive shared mechanics; DOCUMENT truthful retained state; NXVM Architecture/Coding/source policy; architecture-governance then coding-governance skills. |
-| Verification | Complete run-unit-tests and verify-current-specialized-gates in build/t542-s13/unit-x64 and unit-x86; standalone ibmpc build/verify; independent manifest/corpus checks; all eight release trees build vm-0-5-0542; inspect selected dependency/source graph and symbols; documentation governance and diff check. Transient focus: product build isolation, embedding/deployment and preserved construction regressions. |
-| Expected Markers | Both full units green; package/strict/document gates green; production graph excludes test profile aggregate and unselected Model40 D4; eight correct PE widths with no compiler debug sections; INIs/MyNES/excluded roots unchanged. |
-| Asset Needs | Existing approved BYOB roots embedded unchanged; repository-owned firmware builder only. Retain incremental build trees for S19; no new media/ROM acquisition. |
-| Reporting Requirements | Executor confirms contract; report source-graph/helper progress and verification; history records actual diff, code counts, scoped P revisions and eight hashes. |
-| Stop Conditions | Required excluded edit, lost assertion/capability, firmware shortcut, altered INI/master or unproven selected graph blocks delivery; coordinator revises packet before continuing. |
-| Exit Criteria | Shared independently builds without App; four selected products link one composition with no production test aggregation; shared recipes replace obsolete paths; all required tests/artifacts and actual-change review pass before S acceptance. |
-| Original Owner Request | Reopen T and repair missing extraction; AT assembly is shared by 5170/default/DeskPro, not only two machines; preserve XT and all four capabilities. |
-| Similar-Issue Sweep | Inspect all cmake/nxvm production/test source lists, firmware generators/deployment references, profile constructors and static gates; classify every aggregate/peer dependency and reject recurrence through build isolation checks. |
-
+| Identifier Mode | Continuation, M5 T542 S19 after accepted S18. |
+| Admission And Approval | Owner's reopened T542 and automatic sequential numeric-S approval; coordinator admits final NXVM verification on 2026-10-04. No App split is admitted. |
+| Objective | Prove every corrective ledger row, all four consumers, original regressions and all eight deployed artifacts; close T542 only if no residual reusable mechanism or required failing check remains. |
+| Non-goals | No App split, algorithm or timing change, Lib/Common/x86/MyNES/rules/root README edit, INI or external-master rewrite. |
+| Reference Baseline | S18 Shared f1086b3bf and NXVM 844950505; eight optimized stripped 0542 artifacts; 504/504 units per width. |
+| Candidate Proposal | ../proposals/m5-pc-composition-completion.md, S19 and all six finite corrective ledger rows. |
+| Files And ABI Surface | NXVM Current, Queue, successor prerequisite, task proposal/history and verification evidence; no runtime ABI change. A discovered implementation gap requires revised packet before code editing. |
+| Applicable Rules | Guide and named reading set; EXECUTION scoped delivery, once-only integration, source/artifact/closure review; ARCHITECTURE sole owner/inward dependencies; CODING minimal cohesive ownership; DOCUMENT authority and truthful retention; NXVM source policy. |
+| Verification | Complete run-unit-tests plus verify-current-specialized-gates on unit-x64/x86; run-integration-tests on both trees, 29 contexts each once; standalone ibmpc build/verify, manifest/DAG/package and document gates; inspect actual baseline-to-final source/call/test/build diff and eight PE hashes/selected constructor symbols. |
+| Expected Markers | 504 complete units per width; all 58 external contexts pass once with unchanged predicates/inputs; all package/document gates pass; source graph preserves one owner and three independent AT definitions; eight deployed artifacts match S18. |
+| Asset Needs | Existing approved external inputs and immutable owner INIs only; integration uses existing isolated overlays. Aggregate deadline follows configured bounded runner and child-process cleanup. Retain immediate verification trees until closure; no raw recorder output. |
+| Reporting Requirements | Executor confirms packet, reports matrix progress and actual gaps; history maps every row to source/consumer/failure/regression/build proof and records full checks, source revisions, hashes, cleanup and coordinator review. |
+| Stop Conditions | Any lost assertion, failing required scenario, residual shared production path, excluded edit, altered input or false owner/source claim blocks closure; no repeated blanket matrix runs. |
+| Exit Criteria | Whole ledger discharged with concrete retained App differences, complete unit/integration/package/document evidence, eight usable artifacts and actual-change coordinator audit; then scoped commit/push and clean worktree. |
+| Original Owner Request | AT assembly must serve 5170/default/DeskPro; reopen T and repair extraction gaps before independent Apps, preserving XT and all existing capabilities. |
+| Similar-Issue Sweep | Review every construction/factory/finishing/AT/ROM/build source, caller and fixture across four consumers; classify every remaining model-specific difference and test aggregate; mechanically reject production peer/test-aggregate dependencies. |
 
 ## Retained Runnable Evidence
 
-S17's source and eight rebuilt 0542 artifacts pass complete units 503/503 per
+S18's source and eight rebuilt 0542 artifacts pass complete units 504/504 per
 width, independent package checks, specialized and documentation gates. The
 [T542 evidence](../history/M5-T542-shared-pc-machine-adapter.md) records source
 deliveries, actual-diff review, counts and current hashes. S11's 58 once-only
-optimized integration passes remain historical; they are not fresh S17 results.
+optimized integration passes remain historical; they are not fresh S18 results.
 Whole-task S19 must run all 58 contexts once on the completed extraction.
 Lib/Common, MyNES, INIs and external masters remain unchanged. The Common
 wake-failure contract and Shared vocabulary follow-up remain in [TODO](TODO.md),

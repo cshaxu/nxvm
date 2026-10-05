@@ -2009,3 +2009,16 @@ S19 verification; all owned S18 commands are terminal and no raw trace remains.
 | nxvm_at_0_5_0542_x86.exe | 51F0C9D466F61B744B486F498ED055F2AB8BD68BE3ACA7CD75EDBC0AB30FF62C |
 | nxvm_model40_0_5_0542_x64.exe | F3626EC3272D66AC3D449C075EED59FDE9FA0008EF55CDB1124F2B98BA3F8C1C |
 | nxvm_model40_0_5_0542_x86.exe | 09410D0A481B81775F009A9494287C227F3D74E37A559FC9B4F05F8726D41A4B |
+
+### S18 Coordinator Acceptance
+
+Accept Shared f1086b3bf and NXVM 844950505 after actual-diff, scope and packet
+review. The Shared recipe is parameterized, selected source graph and one
+constructor per archive are inspected, and multi-profile fixtures remain on
+their explicit test aggregate. Existing gates retain their real owner and
+failure assertions instead of checking obsolete paths. Both commits are
+pushed; pre-acceptance worktree is clean. Complete dual-width unit/specialized,
+standalone/package/manifest/DAG, eight artifact and documentation proof pass.
+No owner input or excluded component has changed. Close S18 and admit S19
+under the owner's automatic sequential approval; T542 and the App split remain
+open/unadmitted respectively. No historical integration pass is relabeled fresh.
