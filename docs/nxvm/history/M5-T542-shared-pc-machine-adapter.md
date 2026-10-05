@@ -1396,3 +1396,22 @@ removes its disposable trees/logs. Committed source and this result record
 recreate the verification; deployed products and external masters remain.
 Accept and close S11/T542, remove the active packet, retain this history and
 do not automatically admit the queued four-App successor.
+
+## S12 Corrective Composition Design
+
+The owner subsequently reopens T542 to complete the construction/factory
+residuals identified in the original S1 inventory. S11's relocation and
+verification remain valid, but are not proof of complete pre-split extraction.
+Baseline is a6f81ad8f. Readonly inspection confirms Model40 imports default's
+private AT header and calls `vm_profile_ibm_5170_values_create`; shared AT
+materialization must serve 5170, default and DeskPro without inheriting a
+peer model's defaults. XT remains a separate electrical family.
+
+The [corrective proposal](../proposals/m5-pc-composition-completion.md) freezes
+six residual classes: neutral contracts, factory/Product adaptation, candidate
+finishing, three-consumer AT assembly, ROM preparation and build/test ownership.
+It assigns S13-S18 and whole-task acceptance S19, with retained model differences
+and explicit stop conditions. S12 delivers this design and truthful Current,
+Queue, Roadmap and successor prerequisites only; no implementation is claimed.
+The source/test/build/assets corpus is unchanged, so the eight accepted S11
+EXEs remain current and no fresh runtime pass is claimed.

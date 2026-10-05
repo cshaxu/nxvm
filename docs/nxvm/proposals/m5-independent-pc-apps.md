@@ -15,7 +15,11 @@ the existing four-machine NXVM shell into four top-level products:
 
 PC110 remains a separate [future task](m6-pc110-evidence-and-implementation.md),
 not an empty fifth App. T539 chips and T540 shared board integration remain
-accepted dependencies; T542 is also an accepted prerequisite.
+accepted dependencies; T542's S11 relocation is accepted, but its reopened
+[composition completion](m5-pc-composition-completion.md) must finish before
+this split is admitted. Shared AT materialization serves all three AT models;
+no future App may import a peer profile or copy the remaining generic factory,
+asset-finishing or build machinery.
 This task does not reimplement them, T541 Product or T542's shared adapter.
 
 ## Design And Cutover

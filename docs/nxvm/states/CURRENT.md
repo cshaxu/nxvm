@@ -2,9 +2,37 @@
 
 ## Current Work
 
-M5 T542 corrective S11 is accepted and closed. The separate IBM PC package
-completes the shared extraction boundary without changing implementation
-behavior. No S is active; the four-App split remains queued and unadmitted.
+M5 T542 is reopened for residual composition extraction. S11's package
+relocation remains accepted; it did not finish every construction/factory
+member of the original inventory. The four-App split remains queued and
+unadmitted until the corrective ledger is exhausted.
+
+| Work | Progress |
+| --- | --- |
+| T542 S12 | Corrective design reconciliation; S13-S19 planned, not active. |
+
+## Active S12 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; latest closed numeric T542, next unused S12; S1-S11 remain immutable. |
+| Admission And Approval | Owner request on 2026-10-04 to reopen this T, plan the remaining gaps and include DeskPro in the shared AT mechanism. NXVM documentation target only for S12. |
+| Objective | Reconcile all remaining pre-split extraction members and plan bounded S13-S19 with receivers, retained differences and exits. |
+| Non-goals | No source/build/test/artifact edits, App split, Lib/Common/MyNES change, INI/external asset change or hardware/timing qualification. |
+| Reference Baseline | a6f81ad8f; accepted S11 Shared 51a6d209e and NXVM 8c24462b3; source observations indexed in the corrective proposal. |
+| Candidate Proposal | [Composition completion](../proposals/m5-pc-composition-completion.md), finite ledger and S12 design batch. |
+| Files And ABI Surface | docs/nxvm Current, Queue, Roadmap, successor proposal, corrective proposal and T542 history; no ABI changes. |
+| Applicable Rules | NXVM guide, shared Execution/Document, CONTRIBUTING; original T542 proposal and four-App proposal. Existing architecture/coding boundaries constrain the planned owners. |
+| Verification | NXVM documentation governance; git diff --check; manual actual-diff, link, allocation and six-ledger-member review. No executable inputs change, so no fresh units/integration or EXE rebuild is required for this design-only S. |
+| Expected Markers | T542 open; all three AT consumers named; six residual classes mapped to S13-S18; S19 whole-task gate; successor blocked on completion. |
+| Asset Needs | None; accepted 0542 artifacts and owner INIs remain untouched. |
+| Reporting Requirements | Explain three-consumer AT boundary, corrective rather than new scope, planned linear S exits and documentation delivery. |
+| Stop Conditions | Required code change or new construction/hardware authority during S12; revise/admit the appropriate implementation packet first. |
+| Exit Criteria | Complete reviewed ledger, truthful task/queue/dependency status, documentation gate pass, pushed complete P and coordinator acceptance. |
+| Original Owner Request | Shared AT assembly should serve 5170/default/DeskPro; other audit findings accepted; reopen this T and plan new S tasks to fix gaps. |
+| Similar-Issue Sweep | Reconcile four constructors and their common contracts, factories, finishing, ROM preparation and build/test consumers; this S records the class, implementation proof follows S13-S19. |
+
+## Retained Runnable Evidence
 
 Shared delivery is `51a6d209e`; NXVM callers, gates and eight current artifacts
 are `8c24462b3`. Complete units pass 499/499 per width, all 58 once-only optimized
