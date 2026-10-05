@@ -401,3 +401,155 @@ S4 is accepted and closed by this governance delivery; T544 remains open.
 The next family audit requires its own numeric packet and must retain all
 S2-S4 repair/source/regression receivers. Shared edits still require concrete
 owner review; audit acceptance grants no such approval.
+
+## S5 80286 Audit Batch
+
+S5 starts against ebdb40098 and consumes F12 plus inherited F01-F11/F14.
+The [working audit](../etc/evidence/t544-s5-80286-family-audit.md) freezes ten
+form/state/timing partitions, including real/protected and privilege/failure
+contexts. Source identity/page inspection, handler/publication chains and
+actual regression coverage remain to reconcile. All S2-S4 pending receivers
+remain inside T544. This admission is not permission to edit Shared source,
+tests or ABI, nor a claim that the existing 771 green timing keys qualify 286.
+
+The working query/layout audit now reconciles Appendix B and Chapter 11 with
+Figures 6-3/6-4 and the actual query/load/task-cache consumers. It retains the
+four-query Present assumption and generation-qualified type/layout/publication
+batch, including LTR's unqualified type-one/type-nine mask. Existing query
+tests execute on both widths but encode some disputed assumptions; no repair
+or complete 286 qualification is claimed. S5 remains active and undelivered.
+
+The far-control follow-through adds source-confirmed conforming CALL/JMP/RET,
+local-table selector, ring-specific TSS-stack and outer-return DS/ES receivers.
+It distinguishes the legal 286 zero-parameter machine gate fixture from outer
+error tests that select 286 but install a 386 TSS. Existing far/outer cases pass
+once per width; missing contexts remain explicit in the working audit. This is
+additional inventory evidence, not a Shared repair or S5 acceptance.
+
+Task-switch Appendix reconciliation resolves the incoming TSS inclusive 2Bh
+limit and confirms TS for a non-present task LDT, SS for an otherwise valid
+non-present task stack, and late faults in the incoming task. The current
+task16 oracle retains old TR for its LDT failure; changing only its exception
+mask would be insufficient. The audit also retains the outgoing static-LDT
+overwrite/dynamic-save-span receiver. S5 remains active and read-only.
+
+Interrupt-source reconciliation additionally retains 286 DF/shutdown recovery,
+EXT error provenance, NT clearing, task-gate error-word delivery and common
+gate stack/selector validation. The inspected DF fixtures select 386; their
+green status does not qualify the 286 delivery matrix.
+
+IRET reconciliation adds original-page proof for FLAGS privileges and the
+17/31/55/169 plus next-byte timing formula, while retaining outer-return
+local-table/conforming admission, SS-before-IP priority and DS/ES invalidation
+receivers. The actual 286 real-boundary and board-level same/outer-return
+fixtures pass once each width; the dedicated protected CPU fixture is 386.
+Legal 286 returns are covered narrowly, not the whole return-context matrix.
+The original outer conforming predicate remains a named source discrepancy,
+not an OCR guess. S5 remains active with Shared source/tests unchanged.
+
+Asynchronous-source reconciliation now identifies missing NMI-in-service
+inhibition through IRET and NMI-before-single-step ordering against the 286
+original. Existing five-profile signal tests cover external mask/pending/wake,
+not nested service or simultaneous TF/NMI. Their once-per-width passes are
+retained narrowly; SS shadow and STI distinctions stay in the shared
+delivery/return receiver. No board-specific workaround is proposed.
+
+Inherited MUL/IMUL/DIV/IDIV reconciliation confirms the exact 286 base clocks
+and normal word-product rules, while extending the S3 unsafe DX:AX capture
+receiver to 286. Actual signed-division arithmetic and its earlier operand
+capture have different widening behavior; a safe later calculation does not
+erase the earlier undefined shift. Immediate IMUL has real 286 regression
+coverage, but the legacy Group-3 matrix selects 8086/186 only. Undefined FLAGS,
+signed extrema, memory exceptions and complete #DE delivery remain explicit
+contexts; matching timing bases do not close the inherited arithmetic batch.
+
+Stack/frame reconciliation retains the 286 whole-span early-limit and ENTER
+final-allocation checks, PUSHA real shutdown/exception distinctions and legal
+286 regression contexts. Normal default matrices actually include 286, but
+protected-failure fixtures select 386 and can bless earlier external writes.
+Original LEAVE B-64 and the t435 source ledger give five clocks; production
+and the manifest oracle both use eight. This is a source/producer/oracle
+repair receiver, not a reason to downgrade an exact manual term. S5 remains
+read-only and active; existing stack cases passed once each host width.
+
+Count/branch reconciliation confirms the five-bit 286 count rule and retains
+the distinction between RCL/RCR result-cycle reduction, FLAGS definedness and
+raw timing count. Taken Jcc lacks its original next-byte timing term; IP-only
+taken inference also misclassifies zero-displacement branches across the
+shared Jcc/LOOP/JCXZ receiver. Existing 286 matrices cover ordinary conditions
+and selected count forms, not the timing/failed-operand context matrix. Their
+once-per-width passes are recorded narrowly; Shared remains unchanged.
+
+String/restart reconciliation confirms the original 286 REP iteration order
+and exact printed repeat bases, while mapping unchecked pre-386 ordinary
+string calls to the existing propagation/retirement receiver. ExecFinal's
+oldcpu restoration prevents claiming the intermediate CX decrement necessarily
+survives a fault; failed provider effects and attribution still need proof.
+Checked INS/OUTS have distinct memory-before-port ordering and generation-qualified
+privilege denial. Existing normal string fixtures include 286, but protected
+failure fixtures select 386 and legal port-string success selects 186/386.
+The current Appendix-B claim for REP LODS has no row on B-92 or formula on
+B-69; retain an exact-authority/model-disposition receiver, not a speculative
+illegal-encoding claim or automatic downgrade. Seven existing cases pass once
+each width; Shared and product artifacts remain unchanged and S5 stays active.
+
+External-cycle reconciliation adds original-page proof for HLT/WAIT bases,
+LOCK privilege/zero-prefix clocks and the MSW MP/TS matrix. It retains WAIT's
+atomic completion versus interruptible BUSY ordering, EM-qualified WAIT error
+testing and ESC error exemptions, 286/287 operand-transfer/protection delivery,
+and physical versus merely transparent LOCK contexts. Abbreviated TS-only
+WAIT prose is not used to delete the explicit MP rule. Existing actual 286
+handoff/deadline tests and real LOCK execution pass once each width but do not
+qualify every external signal interval. Shared remains read-only; the owner
+explicitly reaffirmed that all T544 CPU audit work precedes any other task.
+
+Ordinary ALU/decimal reconciliation confirms the original 286 base clocks,
+including CMP's distinct seven/six memory directions, and normal width/FLAGS
+rules. It retains unchecked AAM/AAD immediate fetches in the shared propagation
+receiver and source-undefined/nondecimal contexts without inventing legal forms.
+Actual 286 binary/accumulator/decimal fixtures are distinguished from Group-1,
+TEST and unary matrices that still select 8086/186. Three existing cases pass
+once per width; source/test changes remain zero and S5 stays active.
+
+Movement/bounds/FLAGS reconciliation extends fetch/offset/whole-span receivers
+and confirms normal 286 base rows. It identifies a concrete POPF producer/oracle
+gap: the pre-386 loader ignores real NT/IOPL preservation and protected
+CPL/current-IOPL restrictions, while the existing real-image test expects the
+incorrect 286 7002 image. This joins the one generation/mode FLAGS owner,
+not a global mask change. PUSHF shutdown/failure propagation and XCHG bus
+atomicity remain explicit receivers. Four normal movement cases pass once
+each width without qualifying their missing protected/failure contexts.
+
+Simple-FLAGS/hardware reconciliation confirms normal CF/DF/NOP and base rows,
+but protected 286 CLI/STI skip CPL/IOPL checking in the pre-386 branch.
+They join POPF's generation/mode FLAGS privilege receiver. The independently
+inspected hardware original confirms NMI inhibition until IRET, reset image
+and explicit/automatic LOCK bus intervals; observing a prefix is not those
+intervals. Its doubled-clock HOLD formulas are not instruction costs.
+Appendix-B assumptions retain exact EA/odd/read-wait terms separately from
+the L2 five-to-ten-percent fetch range. Modifier/reference and neutral Core
+wait/overlap attribution still need coherent closure; S5 remains active,
+Shared read-only, with no product or artifact change.
+
+### S5 Complete Inventory Delivery
+
+All ten finite partitions in the [S5 audit](../etc/evidence/t544-s5-80286-family-audit.md)
+now map to source/code/regression dispositions and complete retained receiver
+classes. Admission/reset, query/layout, system tables, segment access,
+gates/returns, tasks, delivery/arbitration, inherited instructions, strings/
+external cycles and timing are not reduced to newly introduced 286 opcodes.
+The 1985 original resolves STI's abbreviated IRQ prose but does not resolve
+outer IRET or the programmer/hardware IDT reset conflict. Exact numeric/formula
+rules, range models, source conflicts and unknown contexts remain distinct.
+No residual is moved outside T544 or hidden by a green oracle; source-producer
+and oracle corrections require concrete Shared review before implementation.
+
+Fresh complete repository-only units pass once each width: x64 506/506 in
+174.97s and x86 506/506 in 145.33s, eight jobs and 300-second deadlines,
+both exit zero. The negative-boundary build fixture is the long item;
+no repeat run is used to choose a preferred duration. Documentation governance,
+changed-document relative links, the sixteen-field packet and actual diff
+checks pass. Source/test/ABI/manifests/App configuration/MyNES/artifacts have
+zero changes; docs-only work needs no EXE rebuild. No owned process remains.
+Executor delivery completes the inventory brief, not CPU qualification;
+coordinator actual-change acceptance/governance push still precedes S5 closure.
