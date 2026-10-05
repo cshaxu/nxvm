@@ -54,7 +54,7 @@ lib_i32 main(void)
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
     if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
         &config, &assets, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || !vm_profile_machine_plan_is_model40(vm_test_profile_plan(session))) goto done;
+        session == LIB_NULL || !vm_test_profile_is_model40(vm_test_profile_construction(session))) goto done;
     const test_board_plan_observation plan = test_board_capture_plan(session->core_machine_plan);
     if (plan.memory_bytes != 2u * 1024u * 1024u ||
         plan.retirement_time_contract !=
@@ -65,7 +65,7 @@ lib_i32 main(void)
         plan.fpu_profile != X86_FPU_PROFILE_NONE || !plan.cpu_80386_cr_mov_ignores_mod)
         goto done;
     const vm_profile_model40_external_rom *rom =
-        vm_profile_machine_plan_model40_rom_get(vm_test_profile_plan(session));
+        vm_test_profile_model40_rom(vm_test_profile_construction(session));
     if (rom == LIB_NULL || rom->even_bytes == LIB_NULL || rom->even_bytes[0] != 0u ||
         rom->odd_bytes == LIB_NULL || rom->odd_bytes[0] != 1u ||
         rom->video_bytes == LIB_NULL || rom->video_bytes[0u] != 0x55u) goto done;

@@ -49,7 +49,7 @@ lib_i32 main(void)
         const test_board_plan_observation plan =
             test_board_capture_plan(session->core_machine_plan);
 
-        failed = !vm_profile_machine_plan_is_model40(vm_test_profile_plan(session)) ||
+        failed = !vm_test_profile_is_model40(vm_test_profile_construction(session)) ||
         test_core_retirement_contract(session->core_machine) !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         transaction.external_cycle_timing.page_bytes != 2048u ||

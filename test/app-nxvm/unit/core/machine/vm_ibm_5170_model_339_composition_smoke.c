@@ -299,8 +299,8 @@ static lib_i32 vm_model_339_external_rom_route(void)
     assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
     failed = vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5170_MODEL_339,
         &config, &assets, &session) !=
-            LIB_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_external_firmware(
-                vm_test_profile_plan(session)) ||
+            LIB_STATUS_OK || session == LIB_NULL ||
+        vm_test_profile_construction(session)->firmware_provider == LIB_NULL ||
         core_machine_memory_read(session->core_machine, 0x000f0000u, observed,
             sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x12u ||
             observed[1u] != 0x34u ||
@@ -325,7 +325,7 @@ lib_i32 main(void)
     const lib_i32 rom = vm_model_339_external_rom_route();
     const lib_i32 default_create = vm_test_create_default(&default_config,
         &default_session) != LIB_STATUS_OK || default_session == LIB_NULL ||
-        !vm_profile_machine_plan_hdc_present(vm_test_profile_plan(default_session));
+        !vm_test_profile_construction(default_session)->hdc_present;
     lib_i32 failed = selected || floppy || refresh || refresh_post || dma_word_io || rom || default_create;
 
     vm_machine_destroy(default_session);

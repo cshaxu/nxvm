@@ -31,7 +31,7 @@ can share code; unequal values are explicit inputs, not hidden model branches.
 App-owned policy checks must remain App-owned, even when they currently sit
 beside reusable structural validation.
 
-Use existing `vm_machine_construction`, runtime configuration and profile
+Use existing `vm_machine_construction`, neutral Machine input and profile
 configure/release boundaries. One prepared candidate owns resources until
 successful publication; failure releases that candidate once. Core/chips keep
 their sole state/time ownership. Do not add a second plan, state cache,
@@ -48,7 +48,7 @@ special. Test/build consumers are part of each row's coverage.
 | --- | --- | --- |
 | `profiles/selection_interface.h`, `machine_plan_interface.h`: neutral values mixed with model IDs and Model40 D4 declarations | Machine/board value contracts in ibmpc; fixed identity, constructors and D4 stay App-owned | S13: all four constructors use one neutral contract; no generic header exposes a Model40 observation or imports an App |
 | `product/config.c`, `profiles/machine_factory.c`: common prepare/bind/release, INFO/speed and runtime-media adaptation | ibmpc Product/Machine at the existing binding boundary; App supplies fixed identity, assets and constructor | S14: one working factory path for all four; prepare/describe failure rollback; no runtime model lookup or permanent forwarding shim |
-| `profiles/machine_plan.c`: CMOS/font preparation, floppy selection, validation/publication/release and test-only getters | common byte/board validation in board-common; candidate publication at Machine; genuine device constraints remain explicit App inputs | S15: optional/malformed assets, media bounds, failed publication and release covered; old shared helpers/getters removed or justified by a real production caller |
+| `profiles/machine_plan.c`: CMOS/font preparation, floppy selection, validation/publication/release and test-only getters | Machine owns finishing coupled to its existing config/assets/construction; board-common retains physical geometry/ROM validation; genuine device constraints remain explicit App inputs | S15: optional/malformed assets, media bounds, failed publication and release covered; old shared helpers/getters removed or justified by a real production caller |
 | `default_profile/pc_at_profile.c`, `machine_plan.c`; `model40/model40.c` imports default private header and calls `vm_profile_ibm_5170_values_create` | common AT materialization/structural validation in board-at; three independently specified App compositions | S16: all three AT consumers connected; Model40 has no dependency on default/5170 constructor or private header; original values/routes and D4 preserved |
 | ROM preparation in default/5170, Model40 and XT construction | proven identical bounded copy/interleave/validation in board-common; ROM regions, aliases, chip sizes and model interpretation remain App-owned | S17: classify every preparation path; extract only matching semantics, preserve genuine layouts and fail malformed inputs without a second ROM backing/host BIOS route |
 | `cmake/nxvm` source lists, firmware embedding and deployment; associated tests/gates | common build mechanics in a shared ibmpc build helper; fixed product selection/firmware declarations remain App-owned | S18: production links only its selected composition plus shared inputs; no sibling composition dependency; tests may aggregate profiles explicitly without becoming production inputs |
@@ -83,6 +83,11 @@ simultaneous packets.
    floppy/media bounds and publication/release. Retire test-only plan getters
    through existing copied construction/fixtures. Exit: exactly one owner
    through success/failure, no double release and no lost media/asset rules.
+   The existing Machine config/assets contract makes Machine the cohesive
+   finishing receiver, avoiding a board-common-to-Machine dependency cycle.
+   Four constructors return copied construction directly; their genuine context
+   and configure/release callbacks remain App-owned. Floppy eligibility is an
+   explicit input, never inferred from a model or another model's defaults.
 5. **S16: Three-consumer AT construction.** Extract parameterized AT mechanisms
    and connect 5170/default/Model40 together, removing peer-profile coupling.
    Exit: independent model definitions produce unchanged electrical contracts;

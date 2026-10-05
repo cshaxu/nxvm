@@ -45,7 +45,7 @@ lib_i32 main(void)
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL ||
         vm_model40_fixture_create_bytes(even, odd, &session) !=
         LIB_STATUS_OK || session == LIB_NULL || session->core_machine == LIB_NULL ||
-        !vm_profile_machine_plan_is_model40(vm_test_profile_plan(session)) ||
+        !vm_test_profile_is_model40(vm_test_profile_construction(session)) ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
             LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=

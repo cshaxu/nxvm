@@ -13,7 +13,7 @@ static inline vm_profile_model40_observation vm_test_model40_observation(
     vm_profile_model40_observation observation = {0};
 
     if (machine != LIB_NULL)
-        (void)vm_profile_machine_plan_observe_model40(vm_test_profile_plan(machine), &observation);
+        (void)vm_profile_model40_observe(vm_test_profile_construction(machine), &observation);
     return observation;
 }
 
@@ -24,7 +24,7 @@ static inline lib_status vm_test_model40_d4_observe(const vm_machine *machine,
     lib_status status;
 
     if (machine == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = vm_profile_machine_plan_observe_model40(vm_test_profile_plan(machine), &observation);
+    status = vm_profile_model40_observe(vm_test_profile_construction(machine), &observation);
     if (status == LIB_STATUS_OK) *out_observation = observation.d4;
     return status;
 }

@@ -27,8 +27,8 @@ int main(void)
     assets.bios[0u] = (vm_machine_asset_bytes) { image, sizeof(image) };
     failed = vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         &config, &assets, &session) !=
-            LIB_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_external_firmware(
-                vm_test_profile_plan(session));
+            LIB_STATUS_OK || session == LIB_NULL ||
+        vm_test_profile_construction(session)->firmware_provider == LIB_NULL;
     if (!failed) {
         failed |= core_machine_memory_query(session->core_machine, 0x000f0000u,
             1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||

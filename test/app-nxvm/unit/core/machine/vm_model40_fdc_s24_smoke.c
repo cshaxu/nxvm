@@ -259,7 +259,7 @@ lib_i32 main(void)
             vm_machine_finish_reset(session, LIB_STATUS_INTERNAL_ERROR) != LIB_STATUS_INTERNAL_ERROR ||
             !vm_test_model40_observation(session).fdc_terminal_valid) goto done;
         vm_machine_finalize(session);
-        if (vm_profile_machine_plan_observe_model40(vm_test_profile_plan(session), &detached) !=
+        if (vm_profile_model40_observe(vm_test_profile_construction(session), &detached) !=
                 LIB_STATUS_OK || detached.d4.configured || detached.fdc_terminal_valid ||
             !captured.d4.configured || !captured.fdc_terminal_valid) goto done;
     }

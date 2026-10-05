@@ -1,6 +1,6 @@
 #include "../../support/profile.h"
 /* Repository guest firmware and synthetic media only; no external asset files. */
-#include "app-nxvm/profiles/machine_plan_interface.h"
+#include "ibmpc/machine/input_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "ibmpc/board-common/media_interface.h"
 #include "lib/types/file.h"
@@ -137,7 +137,7 @@ static lib_bool check(lib_u16 ax, lib_u16 cx, lib_u16 dx, lib_u8 expected,
         .set_address_mark = set_mark, .get_address_mark = get_mark
     };
     vm_machine_config config = {.bios_count = 1u};
-    vm_profile_machine_plan *profile = LIB_NULL;
+    vm_machine_construction profile = {0};
     core_machine_plan *plan = LIB_NULL;
     core_machine_media_registry *registry = LIB_NULL;
     core_machine_display_provider_slot *display = LIB_NULL;
@@ -177,14 +177,13 @@ static lib_bool check(lib_u16 ax, lib_u16 cx, lib_u16 dx, lib_u8 expected,
     media->bytes[offset++] = 0xfau; media->bytes[offset++] = 0xf4u;
     if (offset > 510u) goto done;
     media->bytes[510u] = 0x55u; media->bytes[511u] = 0xaau;
-    if (vm_test_profile_plan_create(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+    if (vm_test_profile_construction_create(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         &config, &vm_app_firmware, &profile) != LIB_STATUS_OK ||
-        profile == LIB_NULL ||
-        core_machine_plan_create(vm_profile_machine_plan_core_config_get(profile), &plan) != LIB_STATUS_OK ||
+        core_machine_plan_create(&profile.core_config, &plan) != LIB_STATUS_OK ||
         plan == LIB_NULL ||
         core_machine_plan_set_controller_timing_rules(plan,
-            vm_profile_machine_plan_timing_rules_get(profile)) != LIB_STATUS_OK ||
-        core_machine_plan_set_topology(plan, vm_profile_machine_plan_topology_get(profile)) != LIB_STATUS_OK ||
+            &profile.timing_rules) != LIB_STATUS_OK ||
+        core_machine_plan_set_topology(plan, &profile.topology) != LIB_STATUS_OK ||
         core_machine_media_registry_create(&registry) != LIB_STATUS_OK ||
         registry == LIB_NULL ||
         core_machine_media_registry_bind(registry, 1u, media, &provider) != LIB_STATUS_OK ||
@@ -194,12 +193,12 @@ static lib_bool check(lib_u16 ax, lib_u16 cx, lib_u16 dx, lib_u8 expected,
         display == LIB_NULL ||
         core_machine_plan_bind_display_provider(plan, display) != LIB_STATUS_OK ||
         core_machine_plan_bind_media_registry(plan, registry) != LIB_STATUS_OK ||
-        vm_profile_machine_plan_materialize(profile, plan) != LIB_STATUS_OK ||
+        profile.profile.configure(profile.profile.context, plan) != LIB_STATUS_OK ||
         core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK ||
         machine == LIB_NULL || board == LIB_NULL ||
         core_machine_bind_firmware_provider(machine,
-            vm_profile_machine_plan_firmware_provider_get(profile),
-            vm_profile_machine_plan_firmware_context_get(profile)) != LIB_STATUS_OK ||
+            profile.firmware_provider,
+            profile.firmware_context) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         !run_to(machine, 0x7c00u, 1000000u)) goto done;
@@ -249,7 +248,7 @@ done:
     core_machine_display_provider_slot_destroy(display);
     core_machine_media_registry_destroy(registry);
     core_machine_plan_destroy(plan);
-    vm_profile_machine_plan_destroy(profile);
+    if (profile.profile.release != LIB_NULL) profile.profile.release(profile.profile.context);
     lib_release(empty); lib_release(media);
     return ok;
 }

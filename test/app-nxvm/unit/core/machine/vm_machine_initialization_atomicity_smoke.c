@@ -10,7 +10,7 @@
 #include "ibmpc/machine/machine_private.h"
 #include "ibmpc/machine/machine_interface.h"
 #include "../../../../ibmpc/board-common/composition_fixture.h"
-#include "app-nxvm/profiles/machine_plan_interface.h"
+#include "ibmpc/machine/input_interface.h"
 #include "ibmpc/board-common/rom_validation_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "support/rom/session_assets.h"
@@ -55,15 +55,22 @@ static lib_i32 verify_constructor_output_contract(void)
 {
     const vm_machine_assets assets = {0};
     vm_machine *session = (vm_machine *)(lib_uptr)1u;
-    vm_profile_machine_plan *plan =
-        (vm_profile_machine_plan *)(lib_uptr)1u;
+    const vm_machine_config config = {.bios_count = 1u};
 
     if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         LIB_NULL, &assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL) return 1;
-    if (vm_test_profile_plan_create(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
-        LIB_NULL, &assets, &plan) !=
-        LIB_STATUS_INVALID_ARGUMENT || plan != LIB_NULL) return 1;
+    for (vm_machine_profile_kind kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT;
+            kind <= VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40; ++kind) {
+        vm_machine_construction construction = {.profile.context = (void *)(lib_uptr)1u};
+
+        if (vm_test_profile_construction_create(kind, LIB_NULL, &assets, &construction) !=
+                LIB_STATUS_INVALID_ARGUMENT || construction.profile.context != LIB_NULL) return 1;
+        if (vm_test_profile_construction_create(kind, &config, LIB_NULL, &construction) !=
+                LIB_STATUS_INVALID_ARGUMENT || construction.profile.context != LIB_NULL) return 1;
+        if (vm_test_profile_construction_create(kind, &config, &assets, &construction) !=
+                LIB_STATUS_INVALID_ARGUMENT || construction.profile.context != LIB_NULL) return 1;
+    }
     return 0;
 }
 
@@ -196,11 +203,11 @@ static lib_i32 verify_recovery(void)
     {
         vm_profile_model40_observation observation = { .fdc_terminal_valid = LIB_TRUE };
 
-        if (vm_profile_machine_plan_observe_model40(vm_test_profile_plan(session), &observation) !=
+        if (vm_profile_model40_observe(vm_test_profile_construction(session), &observation) !=
                 LIB_STATUS_UNSUPPORTED || !observation.fdc_terminal_valid ||
-            vm_profile_machine_plan_observe_model40(LIB_NULL, &observation) !=
+            vm_profile_model40_observe(LIB_NULL, &observation) !=
                 LIB_STATUS_INVALID_ARGUMENT ||
-            vm_profile_machine_plan_observe_model40(vm_test_profile_plan(session), LIB_NULL) !=
+            vm_profile_model40_observe(vm_test_profile_construction(session), LIB_NULL) !=
                 LIB_STATUS_INVALID_ARGUMENT) {
             vm_machine_destroy(session);
             return 1;

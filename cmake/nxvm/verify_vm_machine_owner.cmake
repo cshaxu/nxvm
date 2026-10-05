@@ -106,7 +106,7 @@ foreach(source IN LISTS profile_plans)
     endif()
 endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/machine_binding.c" factory_text)
-if(NOT factory_text MATCHES "VM_PROFILE_PLAN_CREATE\\(config, assets, &plan\\)" OR
+if(NOT factory_text MATCHES "\\.prepare = VM_PROFILE_PLAN_CREATE" OR
         factory_text MATCHES "config->profile_kind|vm_profile_machine_plan_create\\(")
     message(FATAL_ERROR "Machine factory does not use its fixed build constructor")
 endif()
@@ -118,12 +118,26 @@ foreach(constructor IN ITEMS default 5170 xt model40)
 endforeach()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/input_interface.h" input_contract)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/selection_interface.h" selection_contract)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan_interface.h" plan_contract)
-if(input_contract MATCHES "profile_kind|VM_MACHINE_PROFILE_(DEFAULT|IBM|COMPAQ)|app-nxvm/" OR
-        selection_contract MATCHES "typedef struct vm_machine_(config|assets|asset_bytes)" OR
-        plan_contract MATCHES "model40|d4_platform")
+if(input_contract MATCHES "profile_kind|VM_MACHINE_PROFILE_(DEFAULT|IBM|COMPAQ)|app-nxvm/")
     message(FATAL_ERROR "Machine value contract retains identity or model-specific observations")
+endif()
+
+foreach(retired IN ITEMS machine_plan.c machine_plan.h machine_plan_interface.h selection_interface.h)
+    if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/${retired}")
+        message(FATAL_ERROR "Generic App construction mechanism remains: ${retired}")
+    endif()
+endforeach()
+file(GLOB_RECURSE app_profile_sources
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.h")
+foreach(source IN LISTS app_profile_sources)
+    file(READ "${source}" source_text)
+    if(source_text MATCHES "vm_profile_machine_plan_(validate|publish|destroy|describe|core_config_get|timing_rules_get|topology_get|firmware_provider_get|firmware_context_get|materialize\\(|hdc_present|external_firmware)|vm_profile_name\\(")
+        message(FATAL_ERROR "Retired shared App plan path remains: ${source}")
+    endif()
+endforeach()
+if(NOT profile_build MATCHES "set\\(NXVM_PROFILE_MONITOR_NAME \"ibm-5160-model-268\"\\)")
+    message(FATAL_ERROR "XT fixed Product identity is not preserved")
 endif()
 if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/config.c" OR
         EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_factory.c" OR

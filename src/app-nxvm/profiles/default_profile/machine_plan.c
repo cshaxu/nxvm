@@ -1,4 +1,4 @@
-#include "app-nxvm/profiles/machine_plan.h"
+#include "ibmpc/machine/preparation_interface.h"
 #include "app-nxvm/profiles/default_profile/construction_interface.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
@@ -7,7 +7,7 @@
 #define VM_PROFILE_MACHINE_HDD_MEDIA_ID 2u
 
 typedef struct vm_profile_pc_at_machine_plan {
-    vm_profile_machine_plan common;
+    vm_machine_construction construction;
     vm_profile_default_pc_at_plan_snapshot profile;
     struct {
         lib_u8 image[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
@@ -27,7 +27,7 @@ static lib_status vm_profile_machine_plan_pc_at_rom(vm_profile_pc_at_machine_pla
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (config->bios_count == 1u) {
-        if (vm_profile_machine_plan_copy(plan->firmware.image,
+        if (vm_machine_asset_copy(plan->firmware.image,
                 VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES, assets->bios[0u]) != LIB_STATUS_OK) {
             return LIB_STATUS_INVALID_ARGUMENT;
         }
@@ -52,8 +52,8 @@ static lib_status vm_profile_machine_plan_pc_at_rom(vm_profile_pc_at_machine_pla
         plan->firmware.image,
         plan->firmware.video_bytes == 0u ? LIB_NULL : plan->firmware.video,
         plan->firmware.video_bytes};
-    plan->common.construction.firmware_provider = vm_profile_external_pc_at_rom_provider();
-    plan->common.construction.firmware_context = &plan->firmware.context;
+    plan->construction.firmware_provider = vm_profile_external_pc_at_rom_provider();
+    plan->construction.firmware_context = &plan->firmware.context;
     return LIB_STATUS_OK;
 }
 
@@ -62,8 +62,10 @@ static lib_status vm_profile_machine_plan_default(vm_profile_pc_at_machine_plan 
 {
     vm_profile_default_at_request request = {0};
 
-    if (vm_profile_machine_plan_floppy(config, VM_PROFILE_FLOPPY_35_1440K,
-            LIB_TRUE, &plan->common.construction.media_kind) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
+    if (vm_machine_floppy_select(config, VM_PROFILE_FLOPPY_35_1440K,
+            (1u << VM_PROFILE_FLOPPY_35_1440K) | (1u << VM_PROFILE_FLOPPY_35_720K) |
+            (1u << VM_PROFILE_FLOPPY_525_1200K) | (1u << VM_PROFILE_FLOPPY_525_360K),
+            &plan->construction.media_kind) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
     if (config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
         config->fpu_profile != X86_FPU_PROFILE_NONE) {
         request.requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU;
@@ -74,41 +76,42 @@ static lib_status vm_profile_machine_plan_default(vm_profile_pc_at_machine_plan 
         request.requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY;
         request.memory_bytes = config->memory_bytes;
     }
-    if (plan->common.construction.media_kind != VM_PROFILE_FLOPPY_35_1440K) {
+    if (plan->construction.media_kind != VM_PROFILE_FLOPPY_35_1440K) {
         request.requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY;
-        request.floppy_cmos_type = vm_profile_floppy_cmos_type_get(plan->common.construction.media_kind);
+        request.floppy_cmos_type = vm_profile_floppy_cmos_type_get(plan->construction.media_kind);
     }
     if (vm_profile_default_at_plan_create(&request, &plan->profile) != LIB_STATUS_OK ||
         vm_profile_machine_plan_pc_at_rom(plan, config, assets) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    plan->common.construction.core_config = plan->profile.values.core.configuration;
-    plan->common.construction.timing_rules = plan->profile.values.core.controller_timing_rules;
-    plan->common.construction.topology = plan->profile.topology;
-    plan->common.construction.floppy_kind = plan->common.construction.media_kind;
-    plan->common.construction.floppy_slot_count = 1u;
-    plan->common.construction.hdc_present = plan->profile.descriptor.hdc_present;
-    plan->common.construction.memory_reconfigurable = LIB_TRUE;
+    plan->construction.core_config = plan->profile.values.core.configuration;
+    plan->construction.timing_rules = plan->profile.values.core.controller_timing_rules;
+    plan->construction.topology = plan->profile.topology;
+    plan->construction.floppy_kind = plan->construction.media_kind;
+    plan->construction.floppy_slot_count = 1u;
+    plan->construction.hdc_present = plan->profile.descriptor.hdc_present;
+    plan->construction.memory_reconfigurable = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 
 static lib_status vm_profile_machine_plan_5170(vm_profile_pc_at_machine_plan *plan,
     const vm_machine_config *config, const vm_machine_assets *assets)
 {
-    if (vm_profile_machine_plan_floppy(config, VM_PROFILE_FLOPPY_525_1200K,
-            LIB_TRUE, &plan->common.construction.media_kind) != LIB_STATUS_OK ||
+    if (vm_machine_floppy_select(config, VM_PROFILE_FLOPPY_525_1200K,
+            (1u << VM_PROFILE_FLOPPY_525_1200K) | (1u << VM_PROFILE_FLOPPY_525_360K),
+            &plan->construction.media_kind) != LIB_STATUS_OK ||
         vm_profile_ibm_5170_plan_create_memory(config->memory_bytes,
             &plan->profile) != LIB_STATUS_OK ||
         vm_profile_machine_plan_pc_at_rom(plan, config, assets) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    plan->common.construction.core_config = plan->profile.values.core.configuration;
-    plan->common.construction.timing_rules = plan->profile.values.core.controller_timing_rules;
-    plan->common.construction.topology = plan->profile.topology;
-    plan->common.construction.floppy_kind = VM_PROFILE_FLOPPY_525_1200K;
-    plan->common.construction.floppy_slot_count = 1u;
-    plan->common.construction.hdc_present = plan->profile.descriptor.hdc_present;
-    plan->common.construction.memory_reconfigurable = LIB_TRUE;
+    plan->construction.core_config = plan->profile.values.core.configuration;
+    plan->construction.timing_rules = plan->profile.values.core.controller_timing_rules;
+    plan->construction.topology = plan->profile.topology;
+    plan->construction.floppy_kind = VM_PROFILE_FLOPPY_525_1200K;
+    plan->construction.floppy_slot_count = 1u;
+    plan->construction.hdc_present = plan->profile.descriptor.hdc_present;
+    plan->construction.memory_reconfigurable = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 
@@ -155,7 +158,7 @@ static lib_status vm_profile_machine_plan_materialize_pc_at(
     fdc.irq = route->irq;
     fdc.dma_channel = route->dma_channel;
     fdc.ready_mask = profile->fdc_ready_mask;
-    fdc.clock_ticks_per_second = plan->common.construction.core_config.time_axis.ticks_per_second;
+    fdc.clock_ticks_per_second = plan->construction.core_config.time_axis.ticks_per_second;
     drives.installed_mask = profile->fdc_installed_mask;
     drives.double_sided_mask = profile->fdc_double_sided_mask;
     lib_memory_copy(drives.cylinder_count, profile->fdc_cylinder_count,
@@ -190,31 +193,31 @@ static void vm_profile_pc_at_release(void *context)
 }
 
 lib_status vm_profile_machine_plan_create_default(const vm_machine_config *config,
-    const vm_machine_assets *assets, vm_profile_machine_plan **out_plan)
+    const vm_machine_assets *assets, vm_machine_construction *out_construction)
 {
     vm_profile_pc_at_machine_plan *plan;
-    lib_status status = vm_profile_machine_plan_validate(config, assets, out_plan);
+    lib_status status = vm_machine_construction_begin(config, assets, out_construction);
 
     if (status != LIB_STATUS_OK) return status;
     plan = (vm_profile_pc_at_machine_plan *)lib_allocate_zero(1u, sizeof(*plan));
     if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    plan->common.construction.profile = (vm_machine_profile_binding) {
+    plan->construction.profile = (vm_machine_profile_binding) {
         plan, vm_profile_pc_at_configure, LIB_NULL, vm_profile_pc_at_release };
     status = vm_profile_machine_plan_default(plan, config, assets);
-    return vm_profile_machine_plan_publish(&plan->common, config, assets, status, out_plan);
+    return vm_machine_construction_finish(&plan->construction, config, assets, status, out_construction);
 }
 
 lib_status vm_profile_machine_plan_create_5170(const vm_machine_config *config,
-    const vm_machine_assets *assets, vm_profile_machine_plan **out_plan)
+    const vm_machine_assets *assets, vm_machine_construction *out_construction)
 {
     vm_profile_pc_at_machine_plan *plan;
-    lib_status status = vm_profile_machine_plan_validate(config, assets, out_plan);
+    lib_status status = vm_machine_construction_begin(config, assets, out_construction);
 
     if (status != LIB_STATUS_OK) return status;
     plan = (vm_profile_pc_at_machine_plan *)lib_allocate_zero(1u, sizeof(*plan));
     if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    plan->common.construction.profile = (vm_machine_profile_binding) {
+    plan->construction.profile = (vm_machine_profile_binding) {
         plan, vm_profile_pc_at_configure, LIB_NULL, vm_profile_pc_at_release };
     status = vm_profile_machine_plan_5170(plan, config, assets);
-    return vm_profile_machine_plan_publish(&plan->common, config, assets, status, out_plan);
+    return vm_machine_construction_finish(&plan->construction, config, assets, status, out_construction);
 }

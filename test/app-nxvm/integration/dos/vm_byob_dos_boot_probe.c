@@ -1753,7 +1753,7 @@ int main(lib_i32 argc, char **argv)
     }
     trace.machine = session->core_machine;
     trace.board = session->board;
-    if (vm_profile_machine_plan_is_model40(vm_test_profile_plan(session))) {
+    if (vm_test_profile_is_model40(vm_test_profile_construction(session))) {
         if (!test_core_boot_bind_write_observer(session->core_machine,
                 vm_byob_model40_memory_write_observe, &trace)) {
             printf("BOOT-PROBE=setup-failed\n");

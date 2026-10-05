@@ -193,8 +193,7 @@ done:
             values[3], values[4], values[5], values[6], values[7], lba, cylinder,
             head, sector, entry == LIB_NULL ? 0u : entry[4], (lib_u32)mbr_mismatch,
             (lib_u32)vbr_mismatch, int13_vector[1], int13_vector[0],
-            session == LIB_NULL ? 0u : (lib_u32)vm_profile_machine_plan_external_firmware(
-                vm_test_profile_plan(session)), values[9],
+            session == LIB_NULL ? 0u : (lib_u32)(vm_test_profile_construction(session)->firmware_provider != LIB_NULL), values[9],
             values[10], values[11], first_sector_number,
             first_cylinder_low, first_cylinder_high, first_drive_head, first_command_count,
             guest_mbr[0], guest_mbr[1], guest_mbr[2], guest_mbr[3],

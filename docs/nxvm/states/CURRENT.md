@@ -9,13 +9,34 @@ unadmitted until the corrective ledger is exhausted.
 
 | Work | Progress |
 | --- | --- |
-| T542 S14 | Factory/Product adaptation accepted; S15-S19 remain planned. |
+| T542 S15 | Candidate finishing and ownership admitted; S16-S19 remain planned. |
 
 S12 delivery `0d8c3d712` defines the [corrective ledger and sequence](../proposals/m5-pc-composition-completion.md).
 S13 delivers Shared `05ca27ff2` and NXVM `c7a296138`; its coordinator review
 accepts the neutral contracts row. S14 delivers Shared `07820fd58` and NXVM
 `277b0800d`; coordinator review accepts the factory/Product row only. S15 is
-next planned, not yet admitted; T542 remains open.
+now admitted under the owner's automatic sequential-S approval; T542 remains open.
+
+## Active S15 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T542 S15, after accepted S14 at `92d8242ed`; no reused S or P. |
+| Admission And Approval | Owner's T542 reopening and automatic sequential-S approval, reaffirmed 2026-10-04. Targets Shared and NXVM; four PC consumers only. Lib/Common/MyNES are excluded. One target per P with immediate origin/master push. |
+| Objective | Consume the candidate-finishing ledger row: one neutral construction publication/rollback mechanism, optional CMOS/font preparation and explicit floppy/media constraints; retire generic App plan and test-only production getters. |
+| Non-goals | No AT electrical materialization (S16), ROM layout consolidation (S17), build-selection restructuring (S18), App split, chip/Core/timing changes, new hardware, INI or external asset edits. |
+| Reference Baseline | Clean `92d8242ed`; S14 units 501/501 per width and eight 0542 artifacts. S11 integration is historical, not current proof. |
+| Candidate Proposal | [Composition completion](../proposals/m5-pc-composition-completion.md), S15 row; retain the three-consumer AT decision. |
+| Files And ABI Surface | Shared ibmpc/machine preparation and tests/manifests; NXVM four constructors, fixed Product binding, direct fixtures/callers, build/static references, evidence and eight affected EXEs. Existing copied construction replaces opaque generic App plan; Model40 observation consumes its construction binding, not a private prefix. |
+| Applicable Rules | Task Reading Set, CONTRIBUTING, shared Execution/Architecture/Coding/Document, NXVM Architecture/Coding/source policy; local architecture/coding governance skills. One owner/path, neutral dependency direction and no mutable public layout proven by source/DAG checks; preserved behavior by units; one-target commits and artifact identity by actual diff/PE/hash review. No exception or third-party import. |
+| Verification | Full `run-unit-tests` and `verify-current-specialized-gates` in retained build/t542-s13/unit-x64 then unit-x86; independent ibmpc source/test package, DAG/negative and manifest checks; focused repository-only preparation failures and four constructor regressions; build `vm-0-5-0542` in all eight retained Release trees; PE/stripping/hash review; documentation governance nxvm; git diff --check and actual-change audit. Complete external integration remains S19, all 58 once. |
+| Expected Markers | All registered units pass on both widths, specialized/package/manifest/document gates pass, all eight EXEs have correct PE architecture and no compiler debug sections; no generic App plan/getters, no changed excluded files or INIs. |
+| Asset Needs | Existing compiled firmware inputs and retained local build roots only; units use code-owned bytes. No acquisition, master mutation or protected raw-file commit. |
+| Reporting Requirements | Executor confirms packet; reports interface cutover and verification nodes; delivery indexes source/test added/removed/net, ownership/failure proof, exact commands/results, source identities and eight hashes. Coordinator separately reviews actual changes then records acceptance. |
+| Stop Conditions | Required excluded mutation, changed hardware/timing behavior, lost test/asset/media rule or new reverse dependency; revise the packet before continuing. Failed verification blocks acceptance, not diagnosis. |
+| Exit Criteria | All four constructors return the existing copied construction through one finishing boundary; failure publishes no context and releases exactly once; success transfers existing lifetime to Machine. Optional/malformed seed/glyph and media bounds covered; floppy policy is explicit App input; old generic plan/getters and forwarding binding removed, no production fixture API remains. All required checks/artifacts and target-scoped pushes complete. |
+| Original Owner Request | Correctly extract all four machines' shared logic into x86/ibmpc before App splitting; common AT construction covers 5170/default/DeskPro. Reopen T542 and plan bounded numeric S tasks, then automatically execute them. |
+| Similar-Issue Sweep | Search all tracked src/app-nxvm, src/ibmpc, matching tests and cmake/nxvm for vm_profile_machine_plan, vm_test_profile_plan, validation/publication/release and asset/media preparation. Map every hit to shared finishing, direct copied fixture, genuine Model40 observation or S16/S17 retained mechanism. Add a static retired-path rejection; preserve assertions and validate all four callers. |
 
 ## Retained Runnable Evidence
 

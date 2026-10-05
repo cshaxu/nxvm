@@ -775,7 +775,6 @@ endif()
 set(VM_PROFILE_SOURCES
     src/app-nxvm/profiles/xt/xt_5160_268.c
     src/app-nxvm/profiles/xt/rom/xt_5160_268_rom.c
-    src/app-nxvm/profiles/machine_plan.c
     src/app-nxvm/profiles/default_profile/machine_plan.c
     src/app-nxvm/profiles/xt/machine_plan.c
     src/app-nxvm/profiles/model40/machine_plan.c

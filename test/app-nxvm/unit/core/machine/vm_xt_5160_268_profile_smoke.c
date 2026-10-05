@@ -204,11 +204,9 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
     vm_machine *session = LIB_NULL;
     vm_machine_reset_vector vector;
     lib_u8 observed[2] = {0};
-    const char *name = vm_profile_name(VM_MACHINE_PROFILE_IBM_5160_MODEL_268);
     lib_i32 failed = 1;
 
-    if (name == LIB_NULL || lib_text_compare(name, "ibm-5160-model-268") != 0 ||
-        vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5160_MODEL_268,
+    if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5160_MODEL_268,
             &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || session->core_machine == LIB_NULL ||
         vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||

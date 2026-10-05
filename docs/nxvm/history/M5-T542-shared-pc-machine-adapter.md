@@ -1611,3 +1611,85 @@ prerequisites agree. Documentation governance and diff checks pass; the worktree
 is clean before this pure acceptance record. Close S14 and remove its packet.
 T542 remains open: candidate finishing, three-consumer AT materialization,
 ROM and build ownership are S15-S18, with full acceptance in S19.
+
+### S15 Executor Delivery
+
+The neutral candidate finishing boundary now lives in ibmpc/machine,
+alongside its existing copied config/assets/construction contract. It clears
+publication before allocation, prepares optional exact-size CMOS and MDA
+glyph bytes, checks media bounds, and either releases the actual App candidate
+once on failure or publishes that construction for the sole Machine creation
+transaction to own. Board-common still owns geometry/ROM validation; no
+dependency reversal, extra plan object or second lifetime owner is introduced.
+App supplies explicit floppy eligibility: default supports four formats,
+5170/Model40 support 1.2 MB and 360 KB, XT supports 360 KB. Fixed identities,
+electrical values, real firmware contexts and callbacks are unchanged.
+
+All four constructors return the copied construction directly. Product binds
+the selected constructor rather than a prepare/describe forwarding wrapper.
+The generic App plan implementation, layout and getters are deleted. The
+multi-model selector moves to test support; production no longer carries its
+unused model enum/macro. Model40 observation remains at the real App context,
+using its firmware binding identity rather than a generic context prefix.
+Its peer-AT coupling remains explicitly unaccepted until S16.
+
+The independent preparation regression covers absent and valid assets, all
+256 glyphs, malformed sizes/pointers, upstream failure, exactly-once release,
+cleared failed publication, one/two floppy slots, unsupported second fixed
+disk and all explicit format masks. The original initialization regression
+now checks invalid inputs and empty firmware for all four constructors.
+Existing assertion meanings and hardware checks are preserved. XT's obsolete
+runtime-name getter assertion is replaced by an exact fixed monitor-name
+check at its build owner. Two integration callers only change their borrowed
+construction views; no acceptance predicate or asset changes.
+
+Final commands and results on the delivered source:
+
+- `cmake --build build/t542-s13/unit-x64 --target run-unit-tests verify-current-specialized-gates --parallel 4`:
+  complete units 502/502, 69.79 s; specialized gates pass.
+- The same command in `unit-x86`: complete units 502/502, 65.02 s;
+  specialized gates pass. One preparation regression is added, none removed.
+- Independent root package/manifest/corpus/negative checks: 14/14, 28.80 s;
+  separately `library.component-dag`: 1/1, 0.27 s. Logs remain in
+  build/t542-s13/s15-packages.log and the final per-width logs.
+- Standalone test/ibmpc configuration in build/t542-s15-package builds
+  `ibmpc-test-preparation ibmpc-verify` (128 steps), then runs
+  `ctest --test-dir build/t542-s15-package -R '^ibmpc.preparation$' --output-on-failure`:
+  1/1, 0.27 s. No App source or firmware input is needed by this package proof.
+- All eight retained Release trees build `vm-0-5-0542`; post-link checks and
+  independent inspection pass for 8664/x64 or 014C/x86 and no debug/zdebug/stab
+  sections. Runtime Debug remains. An initial artifact-check command quoting
+  failure was corrected and rerun; it was not an artifact defect.
+- Strict compilation, manifests, dependency and owner gates pass. NXVM
+  documentation governance and Git diff checks pass. No excluded roots,
+  MyNES artifacts, owner INIs or external masters change.
+
+Actual C/H diff against 92d8242ed, Git move detection, excluding docs,
+manifests/CMake/EXEs: 29 paths, +449/-418, net +31. The 159-line independent
+regression accounts for the positive net; without it code is net -128.
+Every source and test hunk was reviewed, including success/failure transfer,
+direct copied fixture access, Model40 binding, firmware teardown ordering,
+fixed identity and preserved acceptance checks. No external integration
+result is claimed here: S19 still owes all 58 contexts once.
+
+### S15 Deployed Artifacts
+
+Source identity is accepted S14 92d8242ed plus Shared 778f6b2f5 and the
+accompanying NXVM S15 delivery. All eight optimized stripped products are at their
+existing assets/nxvm profile locations; MyNES is neither built nor deployed.
+
+| Executable | SHA-256 |
+| --- | --- |
+| nxvm_default_0_5_0542_x64.exe | 00171E5935AF134C15A01744FE6FF8FE92FE48282F5DFB660AEE0D3832C2B82B |
+| nxvm_default_0_5_0542_x86.exe | 7F142C4001C9CD925E13EEE791FF536DB0574D7F2C3D6C856B2007B8C40638AD |
+| nxvm_xt_0_5_0542_x64.exe | DF89D8F10BE8A89AFDAE482D8A4B27643D225287141ACAC90F99F27C1D373668 |
+| nxvm_xt_0_5_0542_x86.exe | 979F7D4ED7FB01BE28FA619165729A87FE318F52172F65158F74015A602153CB |
+| nxvm_at_0_5_0542_x64.exe | 0CD8EFBC218B8ADB33D0AA3178643BB9A0C0A9FDED3C170E148AABF8C1FC7C81 |
+| nxvm_at_0_5_0542_x86.exe | 65402192A393FAEEACFB39DBB3E8790362E51D9DA6F82864126E6E8DCB1FB68D |
+| nxvm_model40_0_5_0542_x64.exe | 37B6D9B5A9684FE48F8C9A1B3D488A947215E30AAEF8122A7AA98153DE49D43C |
+| nxvm_model40_0_5_0542_x86.exe | BBA396D8A5777E3DB61BC338E2D2D8E12622EB5582EF8D3AF57EFA59851C367E |
+
+All owned build/test handles are terminal. Ignored build/t542-s13 and
+build/t542-s15-package are retained for immediately following S16 incremental
+and standalone package verification; unrelated processes/trees are untouched.
+This delivery exhausts only candidate finishing. S16-S19 and T542 remain open.

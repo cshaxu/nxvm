@@ -136,7 +136,7 @@ lib_i32 main(void)
         return 1;
     }
     board = test_board_capture_composition(session->board);
-    if (!session->active || vm_test_profile_plan(session) == LIB_NULL ||
+    if (!session->active || vm_test_profile_construction(session)->profile.context == LIB_NULL ||
         board.fdc.dor_port != 0x03f2u ||
         board.fdc.status_port != 0x03f4u ||
         board.fdc.data_port != 0x03f5u ||
