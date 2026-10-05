@@ -50,8 +50,10 @@ The NXVM change target continues to own all four PC-family Apps; Shared remains
 the separate target for reusable PC/build mechanisms. These are not four new
 commit-target or task-number sequences. Accepted Td S175 reconciles the shared
 rule's old deployment mapping with the owner's parallel assets layout.
-Each migrated App uses assets/<app>/<profile>; unchanged profile subdirectory
-depth preserves INI relative media references. An unmigrated App keeps its
+Each migrated App uses assets/<app> directly, without a profile subdirectory.
+Owner-approved Td S176 supersedes S175's directory-depth choice: rebase
+relative media references one level while retaining the same external master,
+access mode and all other INI settings. An unmigrated App keeps its
 existing assets/nxvm/<profile> pair and adjacent owner INI.
 Relative media paths must retain their meaning; no machine/media setting or
 external master may be changed merely to accommodate a directory move.
@@ -60,7 +62,7 @@ external master may be changed merely to accommodate a directory move.
 
 All four Apps independently configure/build using only their own and declared
 shared inputs. Tests mirror test/app-<product>, with separate integration trees;
-assets/<product>/<profile> holds each App's own current pair and adjacent INI. Family
+assets/<product> holds each App's own current pair and adjacent INI. Family
 documentation/tools and version/MTSP ownership remain unified.
 No obsolete cross-App reference, duplicate shared Product implementation or
 orphaned build/tool/document path remains. Preserve every existing integration
@@ -107,5 +109,6 @@ Lib/Common/x86 source and tests, MyNES and external masters are not change
 targets. Necessary common PC work is confined to ibmpc and its tests with
 separate Shared commits. Accepted deployment Td S175 governs the cutover;
 approved relocation must
-preserve INI values and resolve to the same external media. The four Apps are
+preserve all non-path INI values and resolve rebased paths to the same external
+media. The four Apps are
 not four copies of the Product runtime, tools or governance.

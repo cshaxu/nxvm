@@ -198,8 +198,8 @@ Omitted values use selected-profile defaults; explicit unsupported values fail
 clearly rather than selecting another board or silently changing hardware.
 
 Each selected product deploys once to its App's
-`assets/<app>/<profile>/` directory, alongside its owner-maintained `NXVM.ini`.
-My5160 now owns `assets/my5160/ibm-5160-model-268-360k`; the three remaining
+`assets/<app>/` directory, alongside its owner-maintained `NXVM.ini`.
+My5160 uses `assets/my5160` directly; the three remaining
 App cutovers still use `assets/nxvm/<profile>` until their sequential delivery.
 These are the current executable locations; `build/` remains compiler state
 apart from historical evidence. The tracked executable/INI pair is adjacent
@@ -274,6 +274,7 @@ integration. Lib/Common stay neutral and no x86 component depends on ibmpc. Chip
 their shared owner; product firmware/boot/INI tests follow their App. Preserve
 existing CPU families, personalities and tests. Structural moves are not V30,
 Raiden II, 486 or PC110 implementation and do not upgrade timing evidence.
-Accepted Td S175 permits parallel assets/<app>/<profile> delivery as each App
-is extracted, preserving owner INI bytes and relative-path depth. The existing
+Accepted Td S176 requires flat assets/<app> delivery as each App is extracted,
+superseding S175's profile subdirectory. Only relative media paths are rebased;
+their external master identities and all other INI values remain unchanged. The existing
 NXVM scope, docs/tools, PC version and MTSP remain shared across the four Apps.

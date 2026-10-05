@@ -173,3 +173,12 @@ test-only matrices, build gates and exact original IBM AT boot checks before
 source changes. Necessary ibmpc changes receive a separate Shared delivery and
 the affected PC consumers' rebuild/verification; Lib/Common/x86 and MyNES
 remain out of scope. No S2 implementation or artifact is claimed by admission.
+
+Owner packaging correction after S1: assets/<app> directly holds each fixed
+App's EXEs and INI, with no profile child directory. Td S176 reconciles this
+with shared rule delivery f65685e35 and product authorities. The owner's
+My5160 relocation keeps both EXE bytes intact and rebases its floppy reference
+by one directory level. S2 includes build/test receiving-path verification;
+prior S1 path and INI hashes above remain historical evidence, not the new
+deployment contract. My5170, MyDeskPro386 and NXVM use the same flat layout
+at their respective sequential cutovers.

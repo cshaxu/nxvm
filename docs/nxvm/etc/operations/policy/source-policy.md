@@ -81,7 +81,7 @@ workflow. Asset masters and local manifests remain in `nxvm-assets`.
 Award, Phoenix, IBM, Compaq and other third-party firmware originals remain
 owner-supplied BYOB inputs. The owner has approved embedding those inputs into
 machine EXEs at build time and explicitly requires the resulting EXEs under
-`assets/<app>/<profile>/` to be committed and pushed. My5160 uses assets/my5160;
+`assets/<app>/` to be committed and pushed. My5160 uses assets/my5160;
 unmigrated PC Apps retain assets/nxvm until their sequential cutover. This is the owner's
 specific artifact-publication authorization, superseding the earlier blanket
 exclusion of embedded firmware. It does not establish a third-party license

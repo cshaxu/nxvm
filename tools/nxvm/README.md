@@ -25,7 +25,7 @@ documented fixed profiles through `NXVM_PRODUCT_PROFILE`; CMake validates the
 matching manifest, hashes and firmware slots before it builds.
 
 The My5160 versioned executable is deployed below
-`assets/my5160/ibm-5160-model-268-360k/`; the three not-yet-migrated Apps still
+`assets/my5160/` directly; the three not-yet-migrated Apps still
 use `assets/nxvm/<profile>/`. Each pair remains beside its existing
 owner-maintained `NXVM.ini`. These PC Apps share this tool tree and task/version
 sequence; they do not share private App composition sources.
