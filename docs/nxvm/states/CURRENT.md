@@ -7,33 +7,34 @@
 | T542 | Closed after accepted corrective S20; shared PC composition and version extraction complete. |
 | T543 S1 | Accepted: My5160 source/test/artifact split with complete verification and pushed actual-change review. |
 | T543 S2 | Accepted: My5170 source/test/artifact split; Shared e9bb0dc55 and NXVM fe4ca8107 reviewed against the original request and complete S2 evidence. |
-| T543 S3 | Verified delivery awaiting coordinator review: independent MyDeskPro386, complete units and original integration pass on both widths, usable flat 0543 pair. |
+| T543 S3 | Accepted at pushed 13f5b5192: independent MyDeskPro386, complete units and original integration pass on both widths, flat 0543 pair. |
+| T543 S4 | Admitted final NXVM cutover and family source/test/artifact reconciliation; verification outstanding. |
 
-T543 remains open. S3 is the sole active packet; S4 finishes NXVM and the family cutover.
+T543 remains open. S4 is the sole active packet and finishes NXVM and the family cutover.
 The [proposal](../proposals/m5-independent-pc-apps.md) and
 [convergence ledger](../history/M5-T543-four-pc-apps.md) retain the original
 four-App scope and all 58 integration contexts required at T exit.
 
-## Active S3 Packet
+## Active S4 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: M5 T543 S3 after accepted S2 at pushed 1eb905a85; numeric S/P only, no identifier reused. |
-| Admission And Approval | Human owner approved the four-App split, one App per S in My5160/My5170/MyDeskPro386/NXVM order, automatic continuation and flat assets/<app> deployment. S3 changes NXVM only: source/test/App CMake, family build verifiers and NXVM docs/tools/artifacts. No Shared mechanism or six-corpus edit is admitted. |
-| Objective | Move all Model40 composition, genuine D4, ROM declarations and copied observations into MyDeskPro386 with an independent fixed entry, matching tests and usable flat dual-width artifacts. |
-| Non-goals | No new chipset/timing behavior, no default App cutover, no Lib/Common/x86/MyNES or external master changes, no duplicate Product/Machine runtime or unsolicited INI settings. |
-| Reference Baseline | Clean pushed 1eb905a85; Shared e9bb0dc55 and NXVM fe4ca8107 implement accepted S2. Model40 keeps its verified 0542 pair until replacement proof. |
-| Candidate Proposal | [Four PC Apps](../proposals/m5-independent-pc-apps.md), S3 row; [T543 coverage ledger](../history/M5-T543-four-pc-apps.md), complete DeskPro batch. |
-| Files And ABI Surface | Move the 15 files under app-nxvm/profiles/model40 to app-mydeskpro386/profiles; repair every direct source/test/CMake/tool reference, move Model40-specific tests and integration registration, add thin fixed binding/entry and App-owned firmware build selection. Retain existing opaque D4 and copied observation contracts, lifetime and algorithms. Flat assets/mydeskpro386 owns NXVM.ini and pair. Shared family fixtures remain single test-only implementations with final ownership reconciliation at S4. |
-| Applicable Rules | Read NXVM guide, CONTRIBUTING, rules/EXECUTION, ARCHITECTURE, CODING, DOCUMENT; NXVM design/ARCHITECTURE, CODING, UI, ROADMAP, Queue and source policy. Apply architecture/coding skills, unique state/cleanup owner, neutral dependencies, numeric identifiers, whole original test corpus, honest evidence and actual-diff review. No rules edit or protected raw ROM/media commit. |
-| Verification | Complete repository-only unit aggregates on x64/x86; original Model40 Console/CMOS/boot integration predicates once per width. Reuse the completed test builds with the identical bounded RunTestAggregate command owned by run-unit-tests/run-integration-tests rather than repeat an unchanged dependency walk; do not narrow the registered suite. Selected product optimized stripped builds, PE width and SHA-256; relevant specialized/static graph and documentation gates, manifests/corpus checks and git diff --check. Build/test unchanged receivers if executable inputs change. Preserve every original test and all 58 T-exit integration contexts. |
-| Expected Markers | Model40 original boot reaches its installer; same D4, Compaq HDC, CMOS and physical FDD assertions; no peer-App production include/source, no old Model40 source route; verified 0.5.0543 x64/x86 pair retaining runtime Debug. |
-| Asset Needs | Reuse existing owner-provided Compaq ROM/CMOS/font and external media. Move INI and rebase only one relative path level to the same master, modes and other settings. Retire 0542 EXEs only after verified replacement. Reuse ignored caches, not external media copies. |
-| Reporting Requirements | Confirm scope, report owner map and meaningful progress, then exact source/test moves and added/removed/net count, original test results, hashes, pushed source identity and coordinator actual-change review. |
-| Stop Conditions | Required Shared/six-corpus/MyNES change, altered hardware or INI policy, missing BYOB/toolchain, lost assertion/capability, peer-App production dependency, or publication/lifetime mismatch. Report evidence and revise the packet before expansion. |
-| Exit Criteria | Entire S3 coverage batch migrated with one D4/state owner and no obsolete production route; independent selected graph, original predicates and full units pass both widths; usable pair and path-preserved INI, truthful docs/manifests/line accounting, reviewed and pushed delivery plus coordinator acceptance. |
-| Original Owner Request | Split into app-my5160, app-my5170, app-mydeskpro386 and app-nxvm, one App per S; parallel source/test/assets, unified docs/tools/version/MTSP; assets/<app> directly without profile subdirectory. |
-| Similar-Issue Sweep | Search src/test/cmake/tools and current NXVM docs for app-nxvm/profiles/model40, Model40 bindings, D4 source lists, artifact roots and old INI filename assumptions; classify every live hit as repaired or explicit test-only S4 receiver. Historical evidence retains original paths. Peer-App graph/static checks prevent recurrence. |
+| Identifier Mode | Continuation: M5 T543 S4 after accepted S3 13f5b5192; next numeric S, no identifier reused. |
+| Admission And Approval | Human owner approved four Apps one per S, automatic continuation and flat assets/<app>. S4 completes the original NXVM proposal; necessary PC-family test-owner relocation is a separate Shared P under test/ibmpc. No six-corpus, MyNES, shared rules or external-master edits. |
+| Objective | Finish the retained default 386 NXVM App, remove the obsolete multi-profile shell and exhaust the original four-App cutover ledger. |
+| Non-goals | No new hardware/timing, firmware behavior, INI policy, Lib/Common/x86 source/test, MyNES, PC110 stub or external master change. |
+| Reference Baseline | Accepted pushed S3 13f5b5192; whole-T baseline 4c0c2db16. First three Apps retain verified 0543 pairs; default retains 0542 until replacement proof. |
+| Candidate Proposal | [Four PC Apps](../proposals/m5-independent-pc-apps.md), S4 and [coverage ledger](../history/M5-T543-four-pc-apps.md), NXVM and cross-cutting batches. |
+| Files And ABI Surface | App-owned default build/fixed binding, retirement of generated multi-profile binding; align App tests with source owners and move genuine family fixtures/tests to test/ibmpc without copying assertions. Repair CMake/gates/tools/current docs. Flat assets/nxvm pair and owner INI; existing construction/execution/Debug/UX ABI unchanged. |
+| Applicable Rules | NXVM guide, CONTRIBUTING, rules/EXECUTION, ARCHITECTURE, CODING, DOCUMENT; NXVM design/ARCHITECTURE, CODING, UI, GOAL, ROADMAP, Queue and source policy. Architecture/coding skills; unique owner/cleanup, neutral dependencies, original coverage, numeric identifiers, separate target commits, honest evidence and actual-diff review. |
+| Verification | Independent optimized stripped product graphs on x64/x86; complete 506-unit suites on both widths and all 58 original integration contexts once with original predicates. Reuse completed builds through identical bounded RunTestAggregate commands. Both specialized aggregates, six manifests/corpus and ibmpc boundaries, documentation, PE width, Debug retention, hashes, INI/master identity and diff checks. No repeated-success rounds. |
+| Expected Markers | Original default DOS/Windows and all other machine predicates; fixed independent bindings, no obsolete shell/peer-App production route, eight current 0543 PC EXEs at flat roots plus unchanged MyNES pair. |
+| Asset Needs | Existing project-authored default BIOS and owner BYOB firmware/CMOS/font/media. Move default INI and remove exactly one ../ level, preserving master identities/modes/non-path settings. Retire old EXEs only after verified replacement; ignored caches remain needed for final verification. |
+| Reporting Requirements | Owner map, real moves/retained responsibilities, complete original results, added/removed/net lines, deployed hashes, pushed source identities and coordinator review. |
+| Stop Conditions | Six-corpus/MyNES change, hardware/INI semantic change, missing BYOB/toolchain, lost assertion/context, owner cycle, failed original checkpoint or publication/lifetime mismatch; reconcile packet/evidence before expansion. |
+| Exit Criteria | All four original batches accepted; independent fixed App composition/build and matching tests; one Product/Machine path; complete dual-width units and 58 integration contexts; correct flat artifacts/INI/manifests/docs; no obsolete live route or unclassified residue; pushed scoped delivery and actual-diff acceptance. |
+| Original Owner Request | Four Apps one per S: My5160, My5170, MyDeskPro386, NXVM; parallel src/test/assets, unified docs/tools/version/MTSP, no artifact profile subdirectory. |
+| Similar-Issue Sweep | Search tracked src/test/cmake/tools/current docs for old profile/binding paths, incomplete four-App globs, child artifact paths and cross-App tests. Repair each live hit at its real owner; history keeps original paths. Verify original registration counts/predicates. |
 
 ## Current Technical Baseline
 
@@ -46,7 +47,7 @@ four-App scope and all 58 integration contexts required at T exit.
   Shared pc_at_profile, pc_at_rom and pc_at_preparation own common AT projection,
   ROM mapping and candidate lifetime. Model constraints remain App-owned.
   No default/5170 mixed production translation unit remains.
-- Working S3 source puts DeskPro composition and sole D4 state/copied
+- Accepted S3 puts DeskPro composition and sole D4 state/copied
   observations in app-mydeskpro386; default remains in app-nxvm. S3 has not
   yet received coordinator acceptance; runtime verification passes. Test-only family
   fixtures and cross-profile matrices remain live with S4 as their receiver;
@@ -89,7 +90,7 @@ review and acceptance remain required.
 
 ## Next Work
 
-S3 delivers its verified receiver for coordinator review. S4 retains default
+S3 is accepted and closed. Admitted S4 retains default
 hardware as app-nxvm, reconciles all
 family test owners and finishes references and independent builds.
 Only an admitted packet may execute either delivery.

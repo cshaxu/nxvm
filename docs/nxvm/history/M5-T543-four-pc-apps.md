@@ -21,8 +21,8 @@ This record is evidence and convergence inventory, not another current status.
 | --- | --- | --- | --- |
 | S1 XT | app-nxvm/profiles/xt and XT binding/firmware composition assertions | app-my5160 and test/app-my5160 | Accepted after pushed cd173acb7 and fed7049b3, full verification and actual-change review. |
 | S2 IBM AT | IBM AT definitions inside app-nxvm/profiles/default_profile, IBM AT assertions | app-my5170 and test/app-my5170 | Accepted after pushed e9bb0dc55 and fe4ca8107, complete verification and actual-change coordinator review. |
-| S3 DeskPro | app-nxvm/profiles/model40, D4, ROM and copied observations, Model40 assertions | app-mydeskpro386 and test/app-mydeskpro386 | Admitted after accepted S2; migrate the whole original owner without hardware/timing changes. |
-| S4 NXVM | app-nxvm/profiles/default_profile, project-owned firmware and remaining shell | app-nxvm and test/app-nxvm | Planned; retains original default hardware, not a new board. |
+| S3 DeskPro | app-nxvm/profiles/model40, D4, ROM and copied observations, Model40 assertions | app-mydeskpro386 and test/app-mydeskpro386 | Accepted at pushed 13f5b5192 after complete verification and coordinator actual-change review. |
+| S4 NXVM | app-nxvm/profiles/default_profile, project-owned firmware and remaining shell | app-nxvm, test/app-nxvm and genuine family fixtures in test/ibmpc | Admitted final cutover; original default hardware retained. |
 
 Each row consumes source, public/private includes, fixed composition/binding,
 CMake selection/link graph, repository-only tests, external integration
@@ -483,3 +483,20 @@ test predicates, artifact/INI identities, documentation and excluded targets.
 All S3 criteria are proven; coordinator acceptance must still review the
 pushed actual change. Family-wide fixture/registration reconciliation and
 the complete 58-context replay remain the original S4 receiver, not S3 proof.
+
+## S3 Coordinator Acceptance And S4 Admission
+
+Reviewed pushed 13f5b5192 source, moved tests, CMake, verifiers, documentation
+and artifacts against the packet and frozen DeskPro batch. All 15 moved C/H
+units retain their bodies after include-prefix normalization; test differences
+only repair includes and registration. D4 and copied observations remain
+Model40-owned, with no second runtime or lifecycle owner. Deployed hashes and
+path-only INI rebase match the recorded originals. Complete verification
+proves S3, not whole-T exit. S3 is accepted and closed; S4 is admitted under
+the original automatic-continuation approval.
+
+S4 inventory includes the remaining generated profile binding and central
+default source/firmware declarations, artifact child directory, legacy unit
+nesting, single mixed-family fixture and incomplete four-App scans. Necessary
+PC-family test relocation is a separate Shared target; six-corpus and MyNES
+remain excluded. Preserve every original assertion and 58 integration contexts.
