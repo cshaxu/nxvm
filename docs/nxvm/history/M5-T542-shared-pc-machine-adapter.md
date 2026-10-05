@@ -1799,3 +1799,24 @@ All owned build/test handles are terminal. The retained incremental
 build/t542-s13 and standalone build/t542-s15-package trees are required by
 immediately following S17; no raw traces or separate temporary products exist.
 Only S16 is submitted for acceptance. S17-S19 and T542 remain open.
+
+### S16 Coordinator Acceptance
+
+Accept Shared e2df2d0d4 and NXVM 66eb9c1cb after actual-change review against
+the active packet and original corrective ledger. Each P contains one target.
+Port/route constants and enum ordering agree with the old App source;
+role-sorted publication, five timing inputs and each effective enabled mask
+are preserved. Model40 no longer depends on either peer AT constructor.
+The existing common-to-AT direction is acyclic; one contract-value owner
+validates/publishes, with no second live device state or model inheritance.
+Retained model-specific topology and the pre-existing Model40 admission-video
+distinction are explicitly recorded above, not presented as newly verified
+hardware behavior. Fixtures keep all prior assertions; new failure cases
+exercise the new boundary without changing production acceptance predicates.
+
+Independent package checks, complete dual-width units and eight artifact
+identities agree with the executor record. No excluded target or owner INI
+changes. Both implementation commits are pushed; worktree was clean before
+this acceptance-only record. Documentation and diff checks pass. Close S16
+and remove its packet. ROM/build inventory and complete once-only integration
+acceptance remain S17-S19; T542 is not closed and the App split is not admitted.
