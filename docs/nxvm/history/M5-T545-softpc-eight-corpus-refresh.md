@@ -98,6 +98,15 @@ required, not represented as freshly passed by this import.
 
 ## Owner-Approved Test Completion Plan
 
+S3 delivers Shared P1 `bd68089a8`: direct Lib contract tests in existing fixtures,
+with no production/API change. The [S3 proof ledger](../etc/evidence/t545-s3-lib-test-completion.md)
+maps all contract families and records the initial corrected manifest failure,
+standalone 51-case proof per width, full 531/531 units per width and 19 gates
+per width. Coordinator actual-change review accepts original assertion retention,
+own-suite independence and failure/lifetime coverage. Test source +198/-3,
+README +5/-3, manifest +8/-8; unchanged executable inputs need no artifact rebuild.
+S3 closes with its NXVM acceptance P. S4-S7 remain planned and T stays open.
+
 After S2 acceptance, the owner requests four additional bounded S tasks for
 clean, self-sufficient Lib, Common, x86 and IBMPC testing. Read-only review
 found owner-local gaps in Lib medium replacement, Common public Session

@@ -6,7 +6,20 @@
 | --- | --- |
 | T544 | Closed as a completed CPU audit by owner direction; all CPU repair/proof gaps transferred to the first queued proposal. No implementation task is active. |
 | M5 Td S177 | Complete: audit closure, full CPU repair transfer, proposal archive and queue/reference reconciliation. NXVM documentation only. |
-| T545 S2 | Accepted: exact eight-corpus import and receiver batch delivered; full units and all ten artifacts verified. Planned S3-S6 complete Lib/Common/x86/IBMPC tests; S7 retains final qualification. No active packet. |
+| T545 S3 | Accepted: Lib owner-local test completion, independent suites and full dual-width units. S4-S6 and final S7 remain planned. |
+
+## Accepted S3 Lib Test Completion
+
+Shared P1 `bd68089a8` completes the Lib-owned contract inventory and missing
+test proof without changing production source/API or executable inputs.
+Standalone Lib has passing proof for all 51 cases per width; final repository
+units pass 531/531 per width and 19 supplemental gates pass per width.
+The initial x86 manifest mismatch was corrected and reverified, not ignored.
+Sequential executor/coordinator actual-change review accepts original assertion
+preservation, direct owner-local coverage, failure/lifetime rules and strict
+warning builds. See [S3 evidence](../etc/evidence/t545-s3-lib-test-completion.md).
+Current 0545/0043 EXEs remain unchanged because no executable input changed.
+S3 closes with its NXVM governance P; T remains open and S4-S7 stay planned.
 
 ## Accepted T545 Import
 
@@ -34,7 +47,7 @@ are verified; runtime Debug remains. Superseded PC 0543 EXEs are retained only
 in Git history. All owned build/test processes have exited. Receiving caches
 and ignored immutable source snapshots remain needed by final qualification.
 
-No S is active between accepted subtasks. The owner adds four ordered test-owner
+S3 is accepted under the continuing owner objective. The owner adds four ordered test-owner
 batches: S3 Lib, S4 Common, S5 x86 and S6 IBMPC. Their
 [planned briefs](../proposals/m5-softpc-eight-corpus-refresh.md) require direct
 component-owned proof and independent suites without foreign test fixtures.
@@ -108,7 +121,7 @@ qualification successor; they are not deployed artifacts or new source paths.
 ## Next Work
 
 T545 S2 is accepted; planned S3-S6 complete owner-local tests before S7 external
-qualification and T closure. This planning change admits no implementation S.
+qualification and T closure. S3 is admitted; the later planned batches are not active.
 The first candidate remains [CPU gap repair](../proposals/m5-cpu-audit-gap-repair.md),
 with eighteen mechanism/proof batches and final qualification. Its numeric T
 is allocated only on admission; concrete Shared edits require owner review.
