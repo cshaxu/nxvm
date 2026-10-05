@@ -258,3 +258,27 @@ An original 16-bit-offset rule exposes XLAT's unmasked promoted BX+AL sum;
 the receiver distinguishes effective-address truncation from memory transfer
 wrap and keeps 386 address-size-four intact. Runtime boundary proof and
 concrete Shared repair remain pending, not an S3 acceptance claim.
+
+### S3 Coordinator Acceptance
+
+The executor delivery is ebe0603e7. Coordinator actual-change review reads
+the three changed NXVM documents, including the new audit, rather than accepting
+the unit summary as semantic proof. All eleven early-family partitions have
+source/code/regression dispositions; thirteen complete pending receivers remain
+inside T544. The review corrected an overstrong IDIV cross-edition statement
+before P1: the signed minimum is a source conflict, not an independently proven
+silicon-generation rule. No pending context is marked repaired or qualified.
+
+The 16-field packet, original request, finite receiver mapping, source-versus-
+deduction wording, same-owner repair proposals, changed-document links,
+documentation governance and actual diff checks satisfy the read-only S3
+delivery contract. Source/test/artifact changes are zero. Fresh complete units
+pass once per width as recorded above; no additional run or EXE rebuild is
+required for this documentation-only acceptance. The source/repair proof
+requirements and concrete Shared approval remain outstanding in T544.
+
+S3 is accepted and closed as an audit inventory, not whole-family CPU
+qualification. Current removes its active packet and retains compact progress.
+The next numeric S requires its own admitted packet; the later-family audits
+must carry all cross-family receivers forward. The ignored research scratch and
+existing receiving caches remain needed for that immediate successor.
