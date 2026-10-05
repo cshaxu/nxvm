@@ -9,7 +9,7 @@ unadmitted until the corrective ledger is exhausted.
 
 | Work | Progress |
 | --- | --- |
-| T542 S19 | Admitted: whole-ledger acceptance and all 58 external contexts once. |
+| T542 S19 | Verified: complete units and 58/58 once-only integration; coordinator acceptance pending. |
 
 S12 delivery `0d8c3d712` defines the [corrective ledger and sequence](../proposals/m5-pc-composition-completion.md).
 S13 delivers Shared `05ca27ff2` and NXVM `c7a296138`; its coordinator review
@@ -38,7 +38,7 @@ Each numeric S requires its own admission packet before implementation.
 | Candidate Proposal | ../proposals/m5-pc-composition-completion.md, S19 and all six finite corrective ledger rows. |
 | Files And ABI Surface | NXVM Current, Queue, successor prerequisite, task proposal/history and verification evidence; no runtime ABI change. A discovered implementation gap requires revised packet before code editing. |
 | Applicable Rules | Guide and named reading set; EXECUTION scoped delivery, once-only integration, source/artifact/closure review; ARCHITECTURE sole owner/inward dependencies; CODING minimal cohesive ownership; DOCUMENT authority and truthful retention; NXVM source policy. |
-| Verification | Complete run-unit-tests plus verify-current-specialized-gates on unit-x64/x86; run-integration-tests on both trees, 29 contexts each once; standalone ibmpc build/verify, manifest/DAG/package and document gates; inspect actual baseline-to-final source/call/test/build diff and eight PE hashes/selected constructor symbols. |
+| Verification | Complete run-unit-tests plus verify-current-specialized-gates on unit-x64/x86; run-integration-tests in each of the eight release-x64/x86 profile trees: default 22, XT one, AT three, Model40 three per width, each context once; standalone ibmpc build/verify, manifest/DAG/package and document gates; inspect actual baseline-to-final source/call/test/build diff and eight PE hashes/selected constructor symbols. |
 | Expected Markers | 504 complete units per width; all 58 external contexts pass once with unchanged predicates/inputs; all package/document gates pass; source graph preserves one owner and three independent AT definitions; eight deployed artifacts match S18. |
 | Asset Needs | Existing approved external inputs and immutable owner INIs only; integration uses existing isolated overlays. Aggregate deadline follows configured bounded runner and child-process cleanup. Retain immediate verification trees until closure; no raw recorder output. |
 | Reporting Requirements | Executor confirms packet, reports matrix progress and actual gaps; history maps every row to source/consumer/failure/regression/build proof and records full checks, source revisions, hashes, cleanup and coordinator review. |

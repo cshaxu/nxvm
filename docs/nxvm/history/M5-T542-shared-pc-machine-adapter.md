@@ -2022,3 +2022,90 @@ standalone/package/manifest/DAG, eight artifact and documentation proof pass.
 No owner input or excluded component has changed. Close S18 and admit S19
 under the owner's automatic sequential approval; T542 and the App split remain
 open/unadmitted respectively. No historical integration pass is relabeled fresh.
+
+## S19 Whole Corrective Ledger Review
+
+Executor confirms the final packet at 3c213d215. Review compares actual source,
+caller, fixture and build changes from reopened baseline a6f81ad8f through
+S18 844950505, rather than accepting earlier completion language as proof.
+
+| Corrective member | Final receiver and concrete proof |
+| --- | --- |
+| Neutral contracts | ibmpc/machine input/construction and board-common electrical values have no model ID or App include. Fixed constructor headers and Model40 observations remain App-owned; original fixtures consume copied construction. |
+| Factory/Product | ibmpc/product/factory.c is the only request-to-Machine preparation, binding, INFO and speed path. App main supplies the immutable binding. Factory regression proves prepare/create/describe failure, cleared publication, one release and media-mode preservation. Integration's INI support now invokes that same factory. |
+| Finishing | ibmpc/machine/preparation.c owns CMOS/font copying, explicit floppy eligibility and finish/publication. All four constructors call begin/finish. Malformed/optional asset and slot cases preserve status, clear output and release once; genuine XT restrictions and Model40 geometry remain App inputs. |
+| Three AT consumers | board-at owns shared endpoint/route grammar; board-common projects explicit Core inputs through vm_at_contract_materialize. Default/5170 and Model40 call it independently. Model40 imports no default private header or 5170 constructor. The three-case contract regression and original topology/clock/D4 tests retain electrical values and failure assertions. |
+| ROM preparation | board-common owns checked interleave/Option ROM validation; Machine owns exact asset copy. Default/5170 and Model40 use the same byte-order operation. XT optional Xebec/video windows, AT mapping and Model40 aliases/reset observation are genuine App firmware differences, not duplicate generic loaders. Short-video and original ROM/mapping tests remain. |
+| Build/test | ibmpc/product owns one injected embed/deploy recipe. Eight actual target graphs and nm archives contain selected construction only; explicit vm-profile-tests is fixture-only. Shared standalone verification needs no App source. Owner INIs and artifact locations are unchanged. |
+
+Remaining App files are concrete firmware layout/provider, immutable machine
+values/constraints, constructor binding, Model40 D4 and its copied observation.
+Default/5170 still occupy cohesive source files selected by compile definitions;
+that is explicitly recorded and not misrepresented as four independent Apps.
+Their controller materialization interprets those frozen descriptor values;
+Model40 instead binds its two mechanisms, shared 3F7/HDC protocol and terminal
+observation. These unequal board responsibilities are not forced through a new
+inheritance or forwarding framework. Shared execution/media/state/queue owners
+have no peer-profile dependency. No reusable member of the finite ledger is
+left for the successor to copy.
+
+Exact sweep includes tracked source/test/build diff, factory and begin/finish
+callers, vm_at_contract_materialize and interleave callers, App includes/model
+identifiers under src/ibmpc, and default/5170 private dependencies under Model40.
+The last two searches have no production hits. Static corpus/DAG and selected
+composition gates prevent those forbidden directions. The excluded Lib/Common/
+x86/MyNES/rules/root README and owner INI surfaces have no baseline-to-final diff.
+No assertions, external media or acceptance checkpoints are removed.
+
+Corrective tracked C/H diff against a6f81ad8f: production 35 paths +755/-841,
+net -86; tests 100 paths +784/-272, net +512; combined +1539/-1113, net +426.
+These counts exclude CMake, manifests, documentation and EXEs and recognize
+renames. Test additions cover the actual new ownership/failure boundaries;
+production does not add another executor, state store, loader or generic framework.
+
+Fresh complete unit/specialized runs pass x64 504/504 in 100.30 s and x86
+504/504 in 93.56 s; strict compilation is 520/520 with zero deferred. Standalone
+ibmpc build/package proof is 6/6 in 3.60 s. Independent manifest/corpus/negative/
+DAG checks are 15/15 in 25.71 s; all six canonical manifests and both ibmpc
+manifests pass. Fresh once-only external integration and final coordinator
+acceptance are recorded below only after the bounded eight-tree run completes.
+
+### S19 Fresh Integration And Delivery
+
+The final eight Release trees build and execute run-integration-tests through
+the existing bounded aggregate runner. Each registered context executes once;
+none fails or is retried. Firmware/media/INI inputs, checkpoints and individual
+timeouts are unchanged. Profile fixtures intentionally aggregate in test targets;
+the deployed product keeps its inspected selected-only graph.
+
+| Profile | Width | Passed contexts | Aggregate wall time |
+| --- | --- | --- | --- |
+| default | x64 | 22/22 | 27.34 s |
+| XT | x64 | 1/1 | 19.88 s |
+| 5170 | x64 | 3/3 | 33.30 s |
+| Model40 | x64 | 3/3 | 53.30 s |
+| default | x86 | 22/22 | 24.53 s |
+| XT | x86 | 1/1 | 23.87 s |
+| 5170 | x86 | 3/3 | 39.61 s |
+| Model40 | x86 | 3/3 | 70.95 s |
+
+Total 58/58. Both Model40 cases reach the unchanged BIOS/media terminal;
+default retains DOS, storage/video/input/debug/lifecycle and Windows checkpoint
+coverage. These are compatibility regressions, not new physical timing claims.
+All eight deployed EXE hashes remain exactly the S18 table; no executable input
+changes in S19, so no artificial binary rebuild/diff is needed. Independent
+PE-section/architecture/constructor proof remains valid. No INI or MyNES change.
+
+The final documentation/diff check, owned build-tree cleanup and separate
+coordinator actual-change acceptance complete the task gate. Only those checks
+can transition Current to T542 closed; the independent Apps remain unadmitted.
+
+Documentation and diff checks pass. Independent final CTest logs account for
+exactly 58 Test Passed entries across the eight profile/width trees. All owned
+test/process commands are terminal, and native process inspection finds no
+remaining executable from either owned tree. Resolved absolute cleanup targets
+are verified beneath build before deletion: t542-s13 and t542-s15-package are
+removed, including generated byte/test inputs, objects and obsolete logs.
+The eight product EXEs, owner configurations and external firmware/media
+masters remain intact. Compact commands/results/hashes above retain evidence;
+disposable build state is not a product artifact.
