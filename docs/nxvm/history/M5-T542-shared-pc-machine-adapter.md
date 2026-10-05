@@ -1591,3 +1591,23 @@ trees are retained for the immediately next S15's incremental reuse; unrelated
 trees/processes are untouched. This factory delivery is not shared AT
 materialization: Model40's peer-profile coupling remains the explicit S16
 ledger gap. S15-S19 and the whole T remain open; App splitting is not admitted.
+
+### S14 Coordinator Acceptance
+
+Accept Shared 07820fd58 and NXVM 277b0800d after reviewing both actual commits
+against the S14 packet, six-row corrective ledger and original four-machine
+extraction request. The commits contain only their declared Shared/NXVM
+surfaces. The new factory is the sole request/publication/INFO/speed path;
+App binding retains actual constructor work, not generic runtime adaptation.
+The sole Machine creation transaction still owns every transferred candidate
+through reset, publication and failure; driver failure leaves no candidate or
+borrowed partial binding. Original hardware checks and test predicates remain.
+
+The code count is independently reproduced against aa86bba32. Final-source
+full units, strict/dependency/manifest and artifact results match the evidence.
+Deleted symbols occur only in retirement guards; no compatibility implementation
+remains. Documentation links, status, planned identifiers and successor
+prerequisites agree. Documentation governance and diff checks pass; the worktree
+is clean before this pure acceptance record. Close S14 and remove its packet.
+T542 remains open: candidate finishing, three-consumer AT materialization,
+ROM and build ownership are S15-S18, with full acceptance in S19.
