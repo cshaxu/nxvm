@@ -1,7 +1,7 @@
 #ifndef NXVM_TEST_PROFILE_H
 #define NXVM_TEST_PROFILE_H
 
-#include "app-nxvm/profiles/machine_factory_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "app-nxvm/profiles/selection_interface.h"
 #include "app-nxvm/profiles/default_profile/construction_interface.h"
 #include "app-nxvm/profiles/xt/construction_interface.h"
@@ -44,13 +44,19 @@ static inline lib_status vm_test_machine_create_from_assets(vm_machine_profile_k
     const vm_machine_assets *assets, vm_machine **out_machine)
 {
     vm_profile_machine_plan *plan = LIB_NULL;
+    vm_machine_construction construction;
     lib_status status;
 
     if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_machine = LIB_NULL;
     status = vm_test_profile_plan_create(kind, config, assets, &plan);
-    return status == LIB_STATUS_OK ?
-        vm_machine_create_from_plan(config, plan, out_machine) : status;
+    if (status != LIB_STATUS_OK) return status;
+    status = vm_profile_machine_plan_describe(plan, &construction);
+    if (status != LIB_STATUS_OK) {
+        vm_profile_machine_plan_destroy(plan);
+        return status;
+    }
+    return vm_machine_create(config, &construction, out_machine);
 }
 
 #endif

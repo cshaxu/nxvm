@@ -1,6 +1,6 @@
 #include "../../../../../support/profile.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
-#include "app-nxvm/profiles/machine_factory_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 #ifndef TEST_VM_SUPPORT_ROM_SESSION_ASSETS_H
 #define TEST_VM_SUPPORT_ROM_SESSION_ASSETS_H
 #include "lib/types/types_interface.h"

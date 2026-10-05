@@ -1,5 +1,5 @@
 #include "../../../../../support/profile.h"
-#include "app-nxvm/profiles/machine_factory_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 #ifndef TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 #define TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 #include "lib/types/types_interface.h"

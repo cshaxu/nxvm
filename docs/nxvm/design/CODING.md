@@ -17,7 +17,7 @@ src/
   x86/{chips,core,xasm32,debug}/
   ibmpc/{board-common,board-xt,board-at,machine,product}/
   app-nxvm/             NXVM product implementation
-    product/            main and fixed config/factory projection
+    product/            main, identity and fixed composition binding
     firmware/           project-owned BIOS source and offline ROM construction
     profiles/
       xt/               IBM 5160 board composition and firmware slots
@@ -78,6 +78,9 @@ One build-selected profile entry supplies the existing factory. Prefer direct
 construction and small immutable descriptions over string dispatch, recursive
 inheritance or duplicated build source lists. Define the concrete interface
 from actual construction requirements during implementation.
+The shared Product factory consumes Machine's neutral input directly. App's
+selected binding supplies fixed values, compiled assets and actual Profile
+preparation; it has no second runtime-media projection or factory body.
 
 ## Source Organization
 

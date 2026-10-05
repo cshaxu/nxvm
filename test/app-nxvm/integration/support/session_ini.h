@@ -1,4 +1,4 @@
-#include "app-nxvm/profiles/machine_factory_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #ifndef TEST_INTEGRATION_SUPPORT_SESSION_INI_H
 #define TEST_INTEGRATION_SUPPORT_SESSION_INI_H

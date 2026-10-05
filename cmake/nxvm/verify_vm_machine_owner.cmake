@@ -105,7 +105,7 @@ foreach(source IN LISTS profile_plans)
         message(FATAL_ERROR "Fixed composition retains model dispatch/storage: ${source}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_factory.c" factory_text)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/machine_binding.c" factory_text)
 if(NOT factory_text MATCHES "VM_PROFILE_PLAN_CREATE\\(config, assets, &plan\\)" OR
         factory_text MATCHES "config->profile_kind|vm_profile_machine_plan_create\\(")
     message(FATAL_ERROR "Machine factory does not use its fixed build constructor")
@@ -125,9 +125,11 @@ if(input_contract MATCHES "profile_kind|VM_MACHINE_PROFILE_(DEFAULT|IBM|COMPAQ)|
         plan_contract MATCHES "model40|d4_platform")
     message(FATAL_ERROR "Machine value contract retains identity or model-specific observations")
 endif()
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/config.c" product_config)
-if(product_config MATCHES "profile_kind")
-    message(FATAL_ERROR "Fixed product must not inject a model ID into construction values")
+if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/config.c" OR
+        EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_factory.c" OR
+        EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_factory_interface.h" OR
+        factory_text MATCHES "vm_machine_create|vm_machine_runtime_config|vm_app_read_(information|speed)")
+    message(FATAL_ERROR "App retains shared factory/Product adaptation")
 endif()
 
 message(STATUS "M5 NXVM machine Common-owner and copied-fact boundary verified")

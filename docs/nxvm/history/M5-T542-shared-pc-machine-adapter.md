@@ -1511,3 +1511,83 @@ coverage. Current, proposal, Queue and successor still require S14-S19.
 Documentation governance and diff checks pass. No excluded component, INI,
 external master or MyNES artifact changed. Close S13 and remove its active
 packet; retain T542 open with S14 next planned, not already admitted.
+
+## S14 Shared Factory And Product Adaptation
+
+The factory/Product ledger row is delivered by Shared 07820fd58 and its
+accompanying NXVM S14 P2. Product owns the sole request projection,
+prepare/create/describe rollback and INFO/speed adaptation in
+ibmpc/product/factory.c. Machine directly consumes input_interface.h's config;
+the duplicate runtime_config and media-copy loops are deleted. Product depends
+on Machine's public contract; Machine does not depend on Product. A frozen
+binding supplies existing factory context and model identity, without storing
+a second machine name/state in the driver or adding a registry.
+
+App product/machine_binding.c is a genuine composition boundary: it binds one
+build-selected constructor, fixed CPU/FPU/floppy/BIOS values and compiled
+firmware, then describes the prepared Profile and releases it on failed
+description. The old App config implementation and machine_factory interface
+are removed. Unit fixture selection remains test-only and calls the one
+Machine transaction with copied construction. Integration restart now uses
+the same Product factory as production, not an independent runtime projection.
+The Shared factory regression covers request/media projection, preparation,
+creation and description failures, exactly-once release, cleared candidate
+and driver outputs, INFO and both speed modes. Existing Machine transaction
+regressions retain configure/reset/media failure coverage.
+
+Actual source/build review found and corrected two migration defects: the
+fixed binding belonged to App Product composition, not Profile's lower layer;
+and firmware must follow its referencing library in the static link order.
+The binding's original target now compiles only that real composition source
+with strict warnings. No forwarding-only aggregate, dependency exemption or
+new firmware path is retained. The direct compile audit reports 517/517 strict
+rows, zero deferred; the obsolete App config residual row is removed.
+Review also clears the driver after failed description, so rollback cannot
+publish a dangling partial binding. The regression deliberately writes a
+partial driver before failure to prove that rule.
+
+Final complete units pass x64 501/501 in 60.21 s and x86 501/501 in 64.06 s;
+one factory regression is added and none removed. Specialized gates pass on
+both widths. An independent 15-case package/manifest/DAG/negative check passes
+in 43.42 s. Expected verifier-negative/self-test rejection diagnostics are
+not failed gates. Documentation governance and Git diff checks pass. Earlier
+link/dependency/strict-target failures are superseded by these final results,
+not omitted from the migration review. No external integration result is
+claimed in this S; S19 still owes all 58 contexts once on the completed batch.
+
+The original-baseline-to-delivery C/H numstat (104 changed/new paths, Git move
+detection, excluding docs/manifests/CMake/EXEs) is +313/-202, net +111. The
+133-line independent factory failure/projection regression accounts for the
+positive net; without it the changed code is net -22. Review of every App test
+hunk confirms only three non-include adaptations: the fixture publication
+helper, INI integration factory caller and code-owned INI unit binding. No
+acceptance predicate or assertion is removed. The sweep includes deleted
+factory/config/runtime symbols, all live INFO callbacks, generated binding,
+firmware link inputs and ownership/dependency/strict-compilation verifiers.
+Historical paths remain evidence and negative forbidden-include probes only.
+
+### S14 Deployed Artifacts
+
+All eight 0.5.0542 stripped Release products are rebuilt from accepted S13
+aa86bba32 plus Shared 07820fd58 and the accompanying NXVM S14 P2 sources.
+Post-link optimization/deployment checks and independent PE inspection prove
+8664/x64 or 014C/x86 and no debug/zdebug sections. Runtime Debug remains.
+Lib/Common/x86 chip/Core algorithms, MyNES, owner INIs and external masters
+are unchanged; MyNES is neither rebuilt nor deployed.
+
+| Executable | SHA-256 |
+| --- | --- |
+| nxvm_default_0_5_0542_x64.exe | 2972D0AD8CF16C2B1F708F565BF108735C9EE0A8C372A935C16FC82D87790300 |
+| nxvm_default_0_5_0542_x86.exe | ABB561BC0E6E6DD9964F163EEA34A56262506842C8D58ABBDCEFA66AA04CCBFE |
+| nxvm_xt_0_5_0542_x64.exe | B0104B3A3717CC3B19DCA9401FCE0B6E69E47B90E229C4780B96C115A40B43AC |
+| nxvm_xt_0_5_0542_x86.exe | 9DF10024250891D85F9FD96CF2022CC8051713043B2030F220D3CB3011EFF6C3 |
+| nxvm_at_0_5_0542_x64.exe | 3E1C523FF3E1CC734580BD0CA8E6A5729D5924DEFA4C74B3262AA9FC687D4A05 |
+| nxvm_at_0_5_0542_x86.exe | 7994ABB570B17E53CA3E677AF21956DFEB03D6B1FF3AF1B2AC39D82D2E586FDE |
+| nxvm_model40_0_5_0542_x64.exe | C7AE42569FA7DB1F5DCF78C17D86E5EEC201A01160DF7107D5FA8AC7723842F1 |
+| nxvm_model40_0_5_0542_x86.exe | 47017C2FF3EE261EDB46597C0E4752E9F92CC57EFCCA71B70E786919CFE72478 |
+
+All owned verification/build handles are terminal. Ignored build/t542-s13
+trees are retained for the immediately next S15's incremental reuse; unrelated
+trees/processes are untouched. This factory delivery is not shared AT
+materialization: Model40's peer-profile coupling remains the explicit S16
+ledger gap. S15-S19 and the whole T remain open; App splitting is not admitted.

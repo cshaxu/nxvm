@@ -1,6 +1,6 @@
 #include "../../support/guest_input.h"
 #include "../../support/profile.h"
-#include "app-nxvm/profiles/machine_factory_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "../../support/model40.h"
 #include "../../../ibmpc/board-common/boot_fixture.h"
 #include "lib/types/types_interface.h"

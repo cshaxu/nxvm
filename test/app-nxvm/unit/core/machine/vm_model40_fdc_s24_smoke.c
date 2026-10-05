@@ -1,6 +1,6 @@
 #include "app-nxvm/profiles/model40/observation_interface.h"
 #include "../../../support/profile.h"
-#include "app-nxvm/profiles/machine_factory_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "../../../support/model40.h"
 #include "../../../../ibmpc/board-common/controller_fixture.h"
 #include "../../../../ibmpc/board-common/composition_fixture.h"

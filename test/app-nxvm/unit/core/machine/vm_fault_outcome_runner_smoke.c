@@ -1,4 +1,4 @@
-#include "app-nxvm/profiles/machine_factory_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"

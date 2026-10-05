@@ -1,4 +1,4 @@
-#include "app-nxvm/profiles/machine_factory_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #ifndef TEST_VM_COMMON_MACHINE_FIXTURE_H
 #define TEST_VM_COMMON_MACHINE_FIXTURE_H

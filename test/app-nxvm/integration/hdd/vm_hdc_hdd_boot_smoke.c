@@ -1,4 +1,4 @@
-#include "app-nxvm/profiles/machine_factory_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "../../support/media.h"
 #include "../../../ibmpc/board-common/controller_fixture.h"
 #include "lib/types/types_interface.h"

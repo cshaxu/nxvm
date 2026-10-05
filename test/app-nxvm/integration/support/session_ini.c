@@ -1,11 +1,11 @@
-#include "app-nxvm/profiles/machine_factory_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include <windows.h>
 
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "app-nxvm/product/config.h"
+#include "ibmpc/product/factory_interface.h"
 #include "app-nxvm/product/profile_binding.h"
 #include "ibmpc/machine/machine_private.h"
 #include "lib/base/sync_interface.h"
@@ -43,7 +43,9 @@ lib_i32 integration_ini_session_assets_present(
 
 lib_status integration_ini_session_restart(integration_ini_session *session)
 {
-    vm_machine_config configuration;
+    vm_app_factory factory;
+    common_machine_driver driver;
+    void *machine = LIB_NULL;
     lib_status status;
 
     if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -57,10 +59,9 @@ lib_status integration_ini_session_restart(integration_ini_session *session)
         vm_machine_destroy(session->session);
         session->session = LIB_NULL;
     }
-    status = vm_app_configure_machine(&session->request, &configuration);
-    if (status == LIB_STATUS_OK)
-        status = vm_machine_create_from_assets(&configuration, &vm_app_firmware,
-            &session->session);
+    vm_app_configure_factory(&vm_app_machine, &factory);
+    status = factory.prepare(factory.context, &session->request, &machine, &driver);
+    session->session = machine;
     if (status != LIB_STATUS_OK || session->session == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
     if (session->transform != LIB_NULL && session->transform(session,
             session->transform_opaque) != LIB_STATUS_OK) {

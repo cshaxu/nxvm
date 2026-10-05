@@ -776,7 +776,6 @@ set(VM_PROFILE_SOURCES
     src/app-nxvm/profiles/xt/xt_5160_268.c
     src/app-nxvm/profiles/xt/rom/xt_5160_268_rom.c
     src/app-nxvm/profiles/machine_plan.c
-    src/app-nxvm/profiles/machine_factory.c
     src/app-nxvm/profiles/default_profile/machine_plan.c
     src/app-nxvm/profiles/xt/machine_plan.c
     src/app-nxvm/profiles/model40/machine_plan.c
@@ -787,9 +786,6 @@ set(VM_PROFILE_SOURCES
     src/app-nxvm/profiles/model40/rom/model40_rom.c
 )
 
-set(VM_APP_SOURCES
-    src/app-nxvm/product/config.c
-)
 # The Shared CPU target is the sole CPU implementation linked by NXVM.  The
 # compatibility alias retains the established consumer target name without a
 # forwarding library or a second compiled source set.
@@ -800,9 +796,6 @@ target_link_libraries(core-machine-observable PUBLIC x86-pit825x x86-rtc146818 x
 target_link_libraries(core-machine PUBLIC ibmpc-board-common ibmpc-board-at ibmpc-board-xt x86-core)
 
 add_library(vm-profile STATIC ${VM_PROFILE_SOURCES})
-target_compile_definitions(vm-profile PRIVATE
-    VM_PROFILE_PLAN_CREATE=${NXVM_PROFILE_PLAN_CREATE}
-    VM_PROFILE_CONSTRUCTION_HEADER="${NXVM_PROFILE_CONSTRUCTION_HEADER}")
 target_include_directories(vm-profile PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -828,7 +821,13 @@ target_link_libraries(vm-host-cancellation-smoke PRIVATE
 
 
 
-add_library(vm-app STATIC ${VM_APP_SOURCES})
+add_library(vm-app STATIC src/app-nxvm/product/machine_binding.c)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-app PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+target_compile_definitions(vm-app PRIVATE
+    VM_PROFILE_PLAN_CREATE=${NXVM_PROFILE_PLAN_CREATE}
+    VM_PROFILE_CONSTRUCTION_HEADER="${NXVM_PROFILE_CONSTRUCTION_HEADER}")
 target_include_directories(vm-app PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
     "${CMAKE_BINARY_DIR}/generated"
@@ -2057,8 +2056,8 @@ function(add_current_vm_artifact target version)
         "${CMAKE_SOURCE_DIR}/src")
     target_link_libraries(${target} PRIVATE
         vm-app
-        nxvm-product-firmware
-        vm-profile)
+        vm-profile
+        nxvm-product-firmware)
 
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3008,8 +3007,7 @@ file(GENERATE
 # mixing inherited/runtime ownership.  This exact source ledger is consumed by
 # the verifier; the supporting evidence and TODO define each domain's risk and
 # next admission condition.
-set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
-    "vm-app|src/app-nxvm/product/config.c|session-composition")
+set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES)
 string(REPLACE ";" "\n" project_t345_s4_residual_contents
     "${PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES}")
 file(GENERATE

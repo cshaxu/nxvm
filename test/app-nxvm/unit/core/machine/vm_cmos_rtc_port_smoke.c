@@ -1,6 +1,6 @@
 #include "../../../support/profile.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
-#include "app-nxvm/profiles/machine_factory_interface.h"
+#include "ibmpc/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include <stdio.h>

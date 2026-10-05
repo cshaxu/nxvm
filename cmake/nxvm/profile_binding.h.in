@@ -1,8 +1,10 @@
 #ifndef VM_APP_PROFILE_BINDING_H
 #define VM_APP_PROFILE_BINDING_H
 
+#include "ibmpc/product/factory_interface.h"
 #include "app-nxvm/profiles/selection_interface.h"
 
+#define VM_APP_PROFILE_MONITOR_NAME "@NXVM_PROFILE_MONITOR_NAME@"
 #define VM_APP_PROFILE_NAME "@NXVM_PRODUCT_PROFILE@"
 #define VM_APP_PROFILE_KIND @NXVM_PROFILE_KIND@
 #define VM_APP_PROFILE_CPU @NXVM_PROFILE_CPU@
@@ -11,5 +13,6 @@
 #define VM_APP_PROFILE_BIOS_COUNT @NXVM_PROFILE_BIOS_COUNT@u
 
 extern const vm_machine_assets vm_app_firmware;
+extern const vm_app_machine_binding vm_app_machine;
 
 #endif

@@ -6,7 +6,7 @@
  */
 #include "ibmpc/product/entry_interface.h"
 #include "app-nxvm/product/version.h"
-#include "app-nxvm/product/config.h"
+#include "ibmpc/product/factory_interface.h"
 #include "app-nxvm/product/profile_binding.h"
 
 lib_i32 main(void)
@@ -16,6 +16,6 @@ lib_i32 main(void)
         .copyright = PRODUCT_COPYRIGHT, .build_time = __DATE__ " " __TIME__
     };
 
-    vm_app_configure_factory(&vm_app_firmware, &definition.factory);
+    vm_app_configure_factory(&vm_app_machine, &definition.factory);
     return vm_app_run(&definition);
 }
