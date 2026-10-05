@@ -623,3 +623,43 @@ units passed once per width. This governance P accepts and closes S6, not
 T544, CPU qualification or any Shared repair. No source/test/ABI, manifest,
 App/INI/media, MyNES or artifact change is included. Original/render research
 scratch and receiving caches remain needed for cross-family convergence.
+
+## S7 Five-Family Convergence
+
+S7 consumes the accepted S1-S6 audits against 8295ff789. The
+[convergence report](../etc/evidence/t544-s7-five-family-convergence.md)
+maps the complete early, 186, 286 and 386 batches to eighteen coherent
+mechanism/proof receivers. Source conflicts, confirmed code mismatches,
+implementation-derived oracles and missing contexts stay distinct; all
+CPU residuals remain in T544, with no transfer to another queued task.
+
+Actual producer-precedence inspection confirms successful VM86 FS/GS POP
+can return source-unallocated one-tick fallback. Its exact source remains
+Manual-L3; this is an existing implementation L1 hole requiring allocation,
+not a downgrade of the manual. LFS/LGS/LSS instead reaches its existing
+nonprotected cost. The report retains default32 DIV/IDIV width, CWD/CDQ,
+primary segment POP, branch-outcome, task-matrix and 186 width/source-label
+corrections at the one timing owner. Existing green recipes omit or encode
+some of these incorrect assumptions and cannot independently settle them.
+
+Fresh visual 1987 system-guide pages corroborate restrictive PDE.U/S and
+VM86 IOPL=3 IRET, avoiding changes based on contradictory 1990 local prose.
+Fresh 1991 hardware page corroborates NMI-in-service/IRET and one pending
+NMI. Other original-edition and undefined-input conflicts keep explicit
+source dispositions; none is averaged into an invented exact cost.
+
+Fresh complete units pass once each width, x64 506/506 in 260.54s and
+x86 506/506 in 245.60s, eight jobs and 300-second deadlines. Both generated
+catalogs retain 4,906 successful recipes and the original reported tier
+counts, without claiming untested contexts. The eight deployed PC PE widths
+and hashes still match accepted T543 identities. Audit-only source/test/ABI,
+manifest, App/INI/media, MyNES and binary changes remain zero.
+
+All 58 original integration contexts pass once: default 22/22 per width,
+AT and Model40 3/3 per width, XT 1/1 per width. Exact durations and the
+non-repeated invocation accounting are in the report. Source predicates,
+external assets and required checkpoints are unchanged. Documentation,
+relative links, sixteen-field packet and diff checks pass; no owned process
+remains. Complete audit delivery does not authorize Shared implementation,
+qualify the identified defects or close T544. Its eighteen coherent repair
+boundaries require concrete review before changing Shared source/tests.
