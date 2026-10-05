@@ -4,7 +4,7 @@
 
 | Work | Progress |
 | --- | --- |
-| T544 S2 | Audit delivery: finite cross-family boundary inventory and four coherent repair proposals; awaiting coordinator actual-change review. |
+| T544 S2 | Accepted and closed: cross-family boundary audit at be44d5be0; qualification and four Shared repair mechanisms remain open in T544. |
 
 T543 is closed at dd9af8951; its history retains the accepted four-App baseline.
 T544 consumes the former first Queue candidate, not another structural split.
@@ -27,28 +27,10 @@ units pass 506/506 per width (x64 60.41s, x86 60.39s), once each.
 Remaining generation/source contexts are explicitly pending inside T544,
 with their family/repair receivers named in the audit. The inventory is not
 whole-CPU qualification. Four coherent repair mechanisms await owner review.
-Shared repairs have not been admitted or implemented; S2 is not closed.
-
-### Active S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T544 S2, after accepted S1 at 7393eabaf. |
-| Admission And Approval | Owner admitted T544 and automatic sequential S admission; current CPU-audit continuation, 2026-10-05. NXVM-owned audit evidence only; Shared source/test edits require concrete owner approval before implementation. |
-| Objective | Trace all five CPUs through the finite cross-family reset, metadata/prefix, FLAGS, interrupt inhibition/delivery, exception restart and successful-time publication contracts; identify actual defects and exact missing proof batches. |
-| Non-goals | No instruction-family qualification shortcut; no 80188/486 implementation, Lib/Common/MyNES edit, INI/media change, new API, timing downgrade or source import. |
-| Reference Baseline | 7393eabaf; S1 five-CPU inventory and two fresh 506/506 unit suites. All eight 0543 PC artifacts unchanged. |
-| Candidate Proposal | [T544 proposal](../proposals/m5-retained-cpu-qualification.md); [ledger](../history/M5-T544-retained-cpu-qualification.md), S2 boundary batch. |
-| Files And ABI Surface | Read x86/chips/cpu, x86/core execution/retirement, CPU/Core regressions and PC composition; write NXVM Current, task ledger and S2 evidence only. No public ABI or executable input change. |
-| Applicable Rules | Execution finite-batch convergence, full unit S gate and actual-change review; Documentation sole Current; architecture/coding skills, project Architecture/Coding one-owner and table-style constraints; source policy and PDF skill for read-only original manuals, OCR navigation plus rendered-page proof. |
-| Verification | Direct source/caller/test review for every S2 row; original manual hash and selected page review; complete units once per x64/x86 with RunTestAggregate.ps1, jobs 4, 300-second deadline each, sequential native runs; documentation governance, links and diff check. |
-| Expected Markers | Every S2 boundary row has source/callers/regression, scope-limited disposition and repair receiver; observed defects distinguished from unverified hypotheses; no unsupported whole-CPU claim. |
-| Asset Needs | Existing original manuals located under external manuals-nxvm/cpu and matched against recorded SHA-256. No asset master write. Ignored build/t544-s2-research holds disposable extraction/render outputs. |
-| Reporting Requirements | Confirm scope; report concrete findings with code/manual/test evidence and minimal owner-local repair proposal. Report final audit batch and known unresolved work, not only green tests. |
-| Stop Conditions | Do not mutate Shared without concrete approval; report new unupgradable L1 or grade correction; absent/uncertain source stays unqualified; preserve unrelated work and all existing artifacts/configuration. |
-| Exit Criteria | Complete S2 boundary inventory reconciled with exact findings/receivers, mandatory verification and actual-diff review; no found defect hidden behind baseline pass. T remains open. |
-| Original Owner Request | Continue full CPU audit under T544; preserve five CPU implementations and manual L3/model L2 distinctions, correct shared mechanisms rather than profile workarounds. |
-| Similar-Issue Sweep | All five CPU identities, all reset callers and FLAGS image/load callers; prefix admission, interrupt inhibit/NMI/HLT transitions; all fault-versus-retirement and timing publication paths. Named family-specific semantic contexts stay pending S3-S6. |
+Shared repairs have not been admitted or implemented. S2's immutable packet is
+retained in be44d5be0. There is no active packet between accepted subtasks;
+the next numeric S needs its own packet. Audit closure is not defect repair or
+CPU qualification, and does not remove any unresolved row from T544.
 
 ## Current Technical Baseline
 
