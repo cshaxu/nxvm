@@ -4,38 +4,19 @@
 
 | Work | Progress |
 | --- | --- |
-| T544 S5 | Delivered for review: complete 80286 ten-partition audit; full units pass both widths. CPU qualification and concrete Shared repairs remain open. |
+| T544 S5 | Accepted and closed: 80286 audit delivery 083a8946c; all unresolved source/repair/regression receivers remain open in T544. |
 
-## Active Subtask Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T544 S5, next numeric S after accepted S4. |
-| Admission And Approval | Owner's CPU audit admission and automatic sequential S authorization, reaffirmed on 2026-10-05 by the explicit instruction to finish all T544 original-manual versus implementation function/timing audits before any other task; NXVM audit documents and read-only Shared inspection only. |
-| Objective | Reconcile 80286 F12 protected forms/transitions and inherited F01-F11/F14, including admission, state publication, exception/task delivery and numeric/formula timing. |
-| Non-goals | No Shared code/test/ABI change, new CPU, board clock, product configuration, MyNES or EXE change; no complete qualification from a green catalog. |
-| Reference Baseline | ebdb40098; accepted S1-S4 inventories, five-family List 1 and owner archive Intel 80286/80287 1987 programmer and 80286 hardware manuals. |
-| Candidate Proposal | [T544 proposal](../proposals/m5-retained-cpu-qualification.md); consume the 80286 batch in the [convergence ledger](../history/M5-T544-retained-cpu-qualification.md). |
-| Files And ABI Surface | NXVM Current, T544 ledger and t544-s5-80286-family-audit.md; read-only CPU/Core and existing CPU/composition tests. No ABI change. |
-| Applicable Rules | Task Reading Set, shared Execution/Documentation and source policy; one decoder/state/timing/delivery owner, original table-style handlers, source versus deduction distinction and visual original-PDF inspection. |
-| Verification | Complete finite batch dispositions with source/code/regression proof or named pending receivers; fresh complete repository-only units once each width at delivery; document/link/packet/diff checks and actual-change review. |
-| Expected Markers | F12 and all inherited families have explicit mode/privilege/form/failure dispositions; manual numbers/formulas remain L3, ranges/models L2; S2-S4 receivers retained. |
-| Asset Needs | Read-only manuals-nxvm/cpu originals; ignored build/t544-s2-research scratch and existing receiving caches; no asset import/publication. |
-| Reporting Requirements | Confirm scope, report substantive source/implementation discrepancies and coherent repair proposals; deliver only the complete audit brief, identity and verification record with source/test diff zero. |
-| Stop Conditions | Report unavailable authority, unupgradable L1 or false higher-grade corrections; stop Shared edits until concrete approval and continue safe audit. Preserve unrelated work. |
-| Exit Criteria | Entire finite 80286 inventory reconciled or retained with exact source/code/regression receivers; full units/documentation checks, executor delivery and coordinator actual-diff acceptance. T544 qualification remains open. |
-| Original Owner Request | CPU function/state/timing audit across retained profiles, coherent all-family mechanisms and no first-failure patching. |
-| Similar-Issue Sweep | Real/protected mode, CPL/RPL/DPL, selector/table bounds/type/present, register/memory, inherited count/width/prefix, task/gate/stack paths and failures; carry reset/FLAGS/arithmetic/decode/retirement receivers from S2-S4. |
+There is no active subtask packet between accepted subtasks.
 
 The [proposal](../proposals/m5-retained-cpu-qualification.md) owns scope;
 the [convergence ledger](../history/M5-T544-retained-cpu-qualification.md)
 retains batch dispositions and acceptance evidence.
 
-S1-S4 inventories are accepted, not repaired or qualified CPU behavior.
+S1-S5 inventories are accepted, not repaired or qualified CPU behavior.
 The latest [80286 audit](../etc/evidence/t544-s5-80286-family-audit.md) maps
 all ten partitions to source/code/regression evidence and retained receivers.
-Source conflicts and S2-S5 mechanism gaps remain inside T544. S5 executor
-delivery awaits coordinator actual-change acceptance; it grants no Shared edits.
+Source conflicts and S2-S5 mechanism gaps remain inside T544. Coordinator
+actual-change review accepts the read-only inventory only, not Shared edits.
 Fresh S5 complete units pass once each width: x64 506/506 in 174.97s,
 x86 506/506 in 145.33s. Documentation, links, packet and diff checks pass.
 Shared source/tests, App configuration, MyNES and artifacts are unchanged;
@@ -83,7 +64,7 @@ qualification successor; they are not deployed artifacts or new source paths.
 
 ## Next Work
 
-T544 remains open after accepted S4. S5 has the active packet above;
+T544 remains open after accepted S5. Its next numeric S needs an active packet;
 no Shared repair is approved by audit acceptance. The remaining candidates stay in
 [Queue](QUEUE.md). Common wake-failure and Shared vocabulary follow-ups remain in
 [TODO](TODO.md). This structural split does not qualify new hardware or timing.
