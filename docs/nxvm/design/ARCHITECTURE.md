@@ -242,7 +242,7 @@ and [queued App split](../proposals/m5-independent-pc-apps.md):
    generic App framework is introduced.
    T541 keeps the four current builds and deployment paths intact. Lib/Common
    and existing x86 components are not implementation-change targets.
-4. Closed [T542](../history/M5-T542-shared-pc-machine-adapter.md) delivers
+4. Reopened [T542](../history/M5-T542-shared-pc-machine-adapter.md) delivers
    the remaining shared PC Machine adapter into ibmpc/machine and proven
    construction helpers into ibmpc/board-common. Corrective S11 separates
    this PC package from x86 without changing algorithms. S2-S6 delivered those receivers;
@@ -251,6 +251,10 @@ and [queued App split](../proposals/m5-independent-pc-apps.md):
    D4; no Lib/Common change, extra queue or profile registry is introduced.
    The [S1 receiver ledger](../history/M5-T542-shared-pc-machine-adapter.md)
    owns the task-specific migration contract and evidence.
+   Its corrective composition batch finishes the remaining factory, asset and
+   shared AT assembly mechanisms before App splitting. The AT mechanism has
+   three consumers (5170, default and DeskPro), not three identical machine
+   definitions; each model retains its own hardware values and genuine behavior.
 5. The separate queued task makes four independent Apps compose these capabilities: `app-mypcxt`
    (5160), `app-mypcat` (5170), `app-mypcdeskpro386` (Model 40), and
    `app-nxvm` (default 386). Later PC110 belongs to `app-mypc110` after its

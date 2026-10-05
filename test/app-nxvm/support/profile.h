@@ -2,6 +2,10 @@
 #define NXVM_TEST_PROFILE_H
 
 #include "app-nxvm/profiles/machine_factory_interface.h"
+#include "app-nxvm/profiles/selection_interface.h"
+#include "app-nxvm/profiles/default_profile/construction_interface.h"
+#include "app-nxvm/profiles/xt/construction_interface.h"
+#include "app-nxvm/profiles/model40/construction_interface.h"
 #include "ibmpc/machine/machine_private.h"
 
 /* App fixtures prepare this actual Profile context; the Shared adapter owns
@@ -14,13 +18,14 @@ static inline vm_profile_machine_plan *vm_test_profile_plan(
 }
 
 /* Multi-profile selection belongs to fixtures, never to a product EXE. */
-static inline lib_status vm_test_profile_plan_create(const vm_machine_config *config,
+static inline lib_status vm_test_profile_plan_create(vm_machine_profile_kind kind,
+    const vm_machine_config *config,
     const vm_machine_assets *assets, vm_profile_machine_plan **out_plan)
 {
     if (out_plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_plan = LIB_NULL;
     if (config == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    switch (config->profile_kind) {
+    switch (kind) {
     case VM_MACHINE_PROFILE_DEFAULT_PC_AT:
         return vm_profile_machine_plan_create_default(config, assets, out_plan);
     case VM_MACHINE_PROFILE_IBM_5170_MODEL_339:
@@ -34,7 +39,8 @@ static inline lib_status vm_test_profile_plan_create(const vm_machine_config *co
     }
 }
 
-static inline lib_status vm_test_machine_create_from_assets(const vm_machine_config *config,
+static inline lib_status vm_test_machine_create_from_assets(vm_machine_profile_kind kind,
+    const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine **out_machine)
 {
     vm_profile_machine_plan *plan = LIB_NULL;
@@ -42,7 +48,7 @@ static inline lib_status vm_test_machine_create_from_assets(const vm_machine_con
 
     if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_machine = LIB_NULL;
-    status = vm_test_profile_plan_create(config, assets, &plan);
+    status = vm_test_profile_plan_create(kind, config, assets, &plan);
     return status == LIB_STATUS_OK ?
         vm_machine_create_from_plan(config, plan, out_machine) : status;
 }

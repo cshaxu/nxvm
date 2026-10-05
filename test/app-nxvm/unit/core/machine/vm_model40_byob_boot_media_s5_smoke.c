@@ -31,13 +31,13 @@ lib_i32 main(void)
     image[1] = 0x3cu;
     image[510] = 0x55u;
     image[511] = 0xaau;
-    config.profile_kind = VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.bios_count = 2u;
     vm_model40_fixture_cmos_seed(cmos_seed);
     assets.bios[0u] = (vm_machine_asset_bytes) { even, sizeof(even) };
     assets.bios[1u] = (vm_machine_asset_bytes) { odd, sizeof(odd) };
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
-    failed |= vm_test_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
+    failed |= vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
+        &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || vm_machine_fdd_replace_bytes(session->fdd, image,
             sizeof(image)) != LIB_FALSE || !vm_test_fdd_info(session->fdd).present ||
         vm_test_fdd_info(session->fdd).geometry.cylinders != 80u || vm_test_fdd_info(session->fdd).geometry.heads != 2u ||

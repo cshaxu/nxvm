@@ -64,7 +64,6 @@ lib_i32 main(void)
                 sizeof(compatible_media)) != LIB_FALSE) goto done;
     }
 
-    model339_config.profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339;
     if (vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != LIB_STATUS_OK ||
         default_session == LIB_NULL ||
         vm_test_ibm_5170_session_create(&model339_config, &model339) != LIB_STATUS_OK ||

@@ -14,9 +14,7 @@
 
 static lib_i32 vm_model_339_cga_topology(void)
 {
-    const vm_machine_config config = {
-        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339
-    };
+    const vm_machine_config config = {0};
     x86_video_snapshot snapshot;
     lib_u8 value = 0x5au;
     vm_machine *session = LIB_NULL;

@@ -12,7 +12,6 @@ int main(void)
 {
     lib_u8 image[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES] = {0};
     const vm_machine_config config = {
-        .profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         .bios_count = 1u
     };
     vm_machine_assets assets = {0};
@@ -26,7 +25,8 @@ int main(void)
     image[1u] = 0x78u;
     image[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES - 16u] = 0xf4u;
     assets.bios[0u] = (vm_machine_asset_bytes) { image, sizeof(image) };
-    failed = vm_test_machine_create_from_assets(&config, &assets, &session) !=
+    failed = vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+        &config, &assets, &session) !=
             LIB_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_external_firmware(
                 vm_test_profile_plan(session));
     if (!failed) {

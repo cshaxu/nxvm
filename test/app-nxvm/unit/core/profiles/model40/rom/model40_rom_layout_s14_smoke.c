@@ -21,9 +21,7 @@ lib_i32 main(void)
 {
     static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    vm_machine_config invalid_config = {
-        .profile_kind = VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
-    };
+    vm_machine_config invalid_config = {0};
     vm_machine_assets missing_assets = {0};
     vm_machine *session = LIB_NULL;
     core_machine_run_result result;
@@ -34,7 +32,8 @@ lib_i32 main(void)
     odd[0u] = 0x22u;
     even[0x3ff8u] = 0xf4u;
 
-    failed |= vm_test_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
+    failed |= vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
+        &invalid_config, &missing_assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT ||
         session != LIB_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=

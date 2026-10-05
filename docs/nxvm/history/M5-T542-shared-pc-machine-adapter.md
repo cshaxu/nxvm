@@ -1432,3 +1432,67 @@ test, build, INI, artifact, Lib/Common, MyNES or external master changed.
 Design-only verification is applicable; unchanged executable inputs require
 no rebuilt EXE or new runtime test claim. Close S12, remove its active packet
 and retain T542 open; S13-S19 are planned, not concurrently admitted.
+
+## S13 Neutral Construction Contracts
+
+The contracts ledger row now has direct implementation and caller proof.
+ibmpc/machine/input_interface.h owns config, floppy format and borrowed asset
+values, without a model identifier. All four fixed constructors consume it.
+App retains identity and concrete constructor declarations; Model40 observations
+and D4 declarations move to its own observation interface, not a generic plan
+header. The compile-selected constructor header follows the same fixed build
+binding as the constructor symbol. Generated firmware includes the neutral
+contract. No runtime registry, second plan, wrapper or mirrored state is added.
+
+Production only wrote config.profile_kind and never read it; it is removed.
+Multi-profile unit fixtures pass their selector separately. Review checks every
+changed fixture selector, including mixed default/5170 callers and Model40
+failure paths, against the original route. Existing assertions, including XT's
+name assertion, are preserved. The new independent input smoke links Types
+only and includes no App header. The owner gate rejects renewed identity,
+duplicate value declarations or Model40 leakage at the generic boundary.
+
+Final complete units pass x64 500/500 in 64.88 s and x86 500/500 in 67.04 s.
+The increase from 499 is the one neutral-input regression; no test was removed.
+All 14 package/manifest/negative checks, the specialized aggregate target,
+ibmpc dependency check, documentation governance and diff checks pass. The
+specialized aggregate's expected negative self-test diagnostics are not gate
+failures. Initial sandbox try-compile processes stalled; only confirmed owned
+processes were stopped, then configure/build succeeded outside the sandbox.
+Intermediate complete runs also passed, but final-source acceptance uses the
+two final results above. No fresh external integration claim is made in S13;
+all 58 contexts remain required once each at whole-task S19 acceptance.
+
+Staged numstat counts all 38 changed/new C/H source/test paths: +214/-143,
+net +71, excluding documentation, manifests, CMake and EXEs. The positive net
+is relocated declarations' explicit header boundaries, fixture selector call
+sites and the 27-line independent regression, not duplicated production logic.
+Actual review confirms contracts alone are consumed here: factory adaptation,
+candidate finishing, true three-consumer AT extraction, ROM classification
+and build ownership remain S14-S18; S19 closes the whole ledger. In particular,
+Model40's current borrowing of 5170 construction remains an explicit S16 gap.
+
+### S13 Deployed Artifacts
+
+All eight optimized stripped 0.5.0542 products are rebuilt from Shared
+05ca27ff2 and the accompanying NXVM S13 P2 delivery on baseline 6d0ae9b60.
+Post-link checks and independent PE inspection confirm 8664/x64 or 014C/x86
+and no debug/zdebug sections; runtime Debug is retained. Deployment remains
+assets/nxvm/<profile>. No owner INI, external master, Lib/Common/x86 algorithm,
+MyNES source/test or MyNES artifact changes. MyNES was not rebuilt.
+
+| Executable | SHA-256 |
+| --- | --- |
+| nxvm_default_0_5_0542_x64.exe | A54626A0C5E22EDFD413B769340FEEE5216B153E0BD025944AB6FCA40C6723FD |
+| nxvm_default_0_5_0542_x86.exe | DE70D26A681262B249EB061019EFBCF3D3FCB4FBE05AFCD5E7DF284DBEEAC347 |
+| nxvm_xt_0_5_0542_x64.exe | 7CC33826723937BD68D118E722A258DE8B0D6ED22619B857B6FB9622EF6D85F7 |
+| nxvm_xt_0_5_0542_x86.exe | 4D65F8615331586355D895BC76F584AEB269CB5869283190175DCDE4AACEB9D8 |
+| nxvm_at_0_5_0542_x64.exe | 74DF7C7CB8B9B8A27676EE4255CB4FF2CBA34B5AE75FD1B3C633EFF0ED7D848C |
+| nxvm_at_0_5_0542_x86.exe | 7A01D287F7238D2E0D334ACD70F51A1E1A04E7142835A696858EFA0BD4999A3B |
+| nxvm_model40_0_5_0542_x64.exe | BC550C74A96E279BB296486D00B78591F5909AA86E4B40E11461D6700BAAFC5B |
+| nxvm_model40_0_5_0542_x86.exe | 6523323B3DD5DDDF193BACED60039A09CDDCA192D7A6F5CDBBCF59C797EE219C |
+
+All owned S13 verification processes have ended. The ignored build/t542-s13
+trees are retained for immediately next S14 incremental verification; no
+unrelated tree or sibling process is removed. They must be cleaned when that
+recorded reuse ends. This acceptance does not close T542 or admit the App split.

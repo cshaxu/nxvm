@@ -1,4 +1,5 @@
 #include "app-nxvm/profiles/machine_plan.h"
+#include "app-nxvm/profiles/selection_interface.h"
 
 const char *vm_profile_name(vm_machine_profile_kind kind)
 {

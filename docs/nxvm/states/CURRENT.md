@@ -9,20 +9,42 @@ unadmitted until the corrective ledger is exhausted.
 
 | Work | Progress |
 | --- | --- |
-| T542 S12 | Design accepted; T542 remains open. S13-S19 planned; no S active. |
+| T542 S13 | Neutral construction contracts in progress; S14-S19 planned. |
 
 S12 delivery `0d8c3d712` defines the [corrective ledger and sequence](../proposals/m5-pc-composition-completion.md).
-Next is S13 neutral construction contracts. S12 changed documentation only;
+S13 implements neutral construction contracts. S12 changed documentation only;
 no new runtime evidence or artifact build is claimed. Its coordinator review
-is recorded in the T542 history. Implementation requires the next S packet.
+is recorded in the T542 history.
+
+## Active S13 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; open T542, next unused S13. |
+| Admission And Approval | Owner approved completion of remaining four-machine extraction and automatic sequential S admission; current goal continuation confirms execution. Targets Shared and NXVM, with separate P commits. |
+| Objective | Consume corrective ledger contracts row: move neutral config/assets/formats to ibmpc, remove model ID from construction values and isolate Model40 observation API. |
+| Non-goals | No Lib/Common/MyNES edits, hardware/timing/ROM algorithm change, INI/master rewrite, App split or factory/AT extraction assigned to later S. |
+| Reference Baseline | S12 accepted 6d0ae9b60; S11 runnable/source evidence retained. |
+| Candidate Proposal | [Composition completion](../proposals/m5-pc-composition-completion.md), S13 contracts row. |
+| Files And ABI Surface | Shared ibmpc Machine input contract, package manifest/tests; NXVM profile/Product includes, Model40 observation header, tests, directly affected build/gates and eight artifacts. Config loses unused production model ID; test selection becomes explicit fixture input. |
+| Applicable Rules | NXVM guide; Execution, Document, Architecture, Coding; NXVM architecture/layout and source policy; architecture/coding governance skills. One candidate/state owner, neutral dependency direction and Types vocabulary. |
+| Verification | Full repository-only units x64/x86; independent ibmpc contract/dependency/manifest gates; existing construction, failure and Model40 regressions; build eight optimized stripped 0542 EXEs, compare deployment hashes; documentation governance and actual-diff review. |
+| Expected Markers | One neutral value definition, all four constructors consume it, Model40 declarations absent from generic header, no production profile_kind field or dispatch and preserved assertions. |
+| Asset Needs | Existing approved BYOB build inputs only; preserve owner INIs and external masters. |
+| Reporting Requirements | Report contract decisions, relevant discovery/build results, actual source/test added/removed/net counts, separate pushed targets, artifacts and acceptance. |
+| Stop Conditions | Required excluded component changes, source/asset authority change, lost assertions/capability or timing downgrade; revise packet before proceeding. |
+| Exit Criteria | Entire contracts row proven by live callers and tests; full units/gates and product builds pass, manifests correct, actual-diff reviewed, complete target-scoped P deliveries pushed, coordinator acceptance. |
+| Original Owner Request | Correctly separate four-machine common app-nxvm logic into x86/ibmpc; shared AT applies to 5170/default/DeskPro; complete remaining T542 gaps before App split. |
+| Similar-Issue Sweep | All config/assets/format declarations, four constructors, generated firmware/binding, Model40 observation callers and test selector consumers; remove old definitions in the same delivery. |
 
 ## Retained Runnable Evidence
 
-Shared delivery is `51a6d209e`; NXVM callers, gates and eight current artifacts
-are `8c24462b3`. Complete units pass 499/499 per width, all 58 once-only optimized
-integration contexts pass, and independent package, manifest, specialized and
-documentation checks pass. The [S11 evidence](../history/M5-T542-shared-pc-machine-adapter.md)
-records actual-diff review, counts, intermediate failures and current hashes.
+S13's source and eight rebuilt 0542 artifacts pass complete units 500/500 per
+width, 14 package checks, specialized and documentation gates. The
+[T542 evidence](../history/M5-T542-shared-pc-machine-adapter.md) records source
+deliveries, actual-diff review, counts and current hashes. S11's 58 once-only
+optimized integration passes remain historical; they are not fresh S13 results.
+Whole-task S19 must run all 58 contexts again on the completed extraction.
 Lib/Common, MyNES, INIs and external masters remain unchanged. The Common
 wake-failure contract and Shared vocabulary follow-up remain in [TODO](TODO.md),
 not authorized or claimed repaired by this relocation.
@@ -37,6 +59,9 @@ not authorized or claimed repaired by this relocation.
   identity, fixed config/factory and genuine Profile/firmware composition.
 - NXVM retains four fixed implemented products under app-nxvm: XT, AT, Model40
   and default. PC110 is not runnable. The independent App split is queued.
+- S13 places neutral construction config/assets in ibmpc/machine without a
+  model ID. App owns fixed constructor declarations and Model40 observations.
+  Shared three-consumer AT materialization remains the S16 corrective scope.
 - Eight optimized stripped 0542 EXEs reside only in `assets/nxvm/<profile>/`,
   with the runtime debugger and unchanged owner INIs. MyNES retains its unchanged
   0043 pair and does not link Product. Lib/Common remain unchanged. S2 moves

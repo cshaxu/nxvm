@@ -16,9 +16,7 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         vm_profile_ibm_5170_model_339_descriptor_get();
     const vm_profile_default_pc_at_descriptor *generic =
         vm_profile_default_pc_at_descriptor_get();
-    const vm_machine_config config = {
-        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339
-    };
+    const vm_machine_config config = {0};
     vm_machine *session = LIB_NULL;
     core_machine_time_observation time_observation;
     test_board_plan_observation plan;

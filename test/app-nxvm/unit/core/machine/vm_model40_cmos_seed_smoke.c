@@ -85,14 +85,14 @@ static lib_status vm_model40_cmos_seed_session_create(
     vm_machine_assets assets = {0};
 
     lib_memory_set(odd_bytes, 1, sizeof(odd_bytes));
-    config.profile_kind = VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.bios_count = 2u;
     assets.bios[0u] = (vm_machine_asset_bytes) { even_bytes, sizeof(even_bytes) };
     assets.bios[1u] = (vm_machine_asset_bytes) { odd_bytes, sizeof(odd_bytes) };
     vm_model40_fixture_cmos_seed(default_seed);
     assets.cmos_seed = (vm_machine_asset_bytes) { seed == LIB_NULL ? default_seed : seed,
         VM_MACHINE_CMOS_SEED_BYTES };
-    return vm_test_machine_create_from_assets(&config, &assets, out_session);
+    return vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
+        &config, &assets, out_session);
 }
 
 lib_i32 main(void)

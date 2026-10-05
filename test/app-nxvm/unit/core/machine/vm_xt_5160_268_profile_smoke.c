@@ -196,7 +196,6 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
     static lib_u8 xebec[VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES];
     static lib_u8 video[512] = {0x55u, 0xaau, 1u};
     vm_machine_config config = {
-        .profile_kind = VM_MACHINE_PROFILE_IBM_5160_MODEL_268,
         .bios_count = 1u
     };
     vm_machine_assets assets = { .bios = {
@@ -205,11 +204,12 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
     vm_machine *session = LIB_NULL;
     vm_machine_reset_vector vector;
     lib_u8 observed[2] = {0};
-    const char *name = vm_profile_name(config.profile_kind);
+    const char *name = vm_profile_name(VM_MACHINE_PROFILE_IBM_5160_MODEL_268);
     lib_i32 failed = 1;
 
     if (name == LIB_NULL || lib_text_compare(name, "ibm-5160-model-268") != 0 ||
-        vm_test_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
+        vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5160_MODEL_268,
+            &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || session->core_machine == LIB_NULL ||
         vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
         core_machine_memory_read(session->core_machine, 0x000c0000u,
@@ -218,12 +218,14 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.bios_count = 2u;
-    if (vm_test_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
+    if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5160_MODEL_268,
+        &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) goto done;
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
-    failed = vm_test_machine_create_from_assets(&config, &assets, &session) !=
+    failed = vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5160_MODEL_268,
+        &config, &assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
 done:
     vm_machine_destroy(session);

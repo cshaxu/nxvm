@@ -1,3 +1,4 @@
+#include "app-nxvm/profiles/model40/observation_interface.h"
 #include "../../../support/profile.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
@@ -37,14 +38,14 @@ static lib_i32 verify_partial_media_cleanup(void)
 static lib_i32 verify_missing_firmware_rejection(void)
 {
     const vm_machine_config config = {
-        .profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         .bios_count = 1u
     };
     const vm_machine_assets missing_assets = {0};
     vm_machine *session = LIB_NULL;
     lib_i32 failed;
 
-    failed = vm_test_machine_create_from_assets(&config, &missing_assets, &session) !=
+    failed = vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+        &config, &missing_assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
     vm_machine_destroy(session);
     return failed;
@@ -57,9 +58,11 @@ static lib_i32 verify_constructor_output_contract(void)
     vm_profile_machine_plan *plan =
         (vm_profile_machine_plan *)(lib_uptr)1u;
 
-    if (vm_test_machine_create_from_assets(LIB_NULL, &assets, &session) !=
+    if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+        LIB_NULL, &assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL) return 1;
-    if (vm_test_profile_plan_create(LIB_NULL, &assets, &plan) !=
+    if (vm_test_profile_plan_create(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+        LIB_NULL, &assets, &plan) !=
         LIB_STATUS_INVALID_ARGUMENT || plan != LIB_NULL) return 1;
     return 0;
 }

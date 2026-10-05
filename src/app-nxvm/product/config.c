@@ -20,7 +20,6 @@ lib_status vm_app_configure_machine(const vm_session_request *request,
     lib_memory_set(out_config, 0, sizeof(*out_config));
     if (request == LIB_NULL || (!vm_app_config_text_equal(request->display, "console") &&
          !vm_app_config_text_equal(request->display, "window"))) return LIB_STATUS_INVALID_ARGUMENT;
-    out_config->profile_kind = VM_APP_PROFILE_KIND;
     out_config->cpu_profile = VM_APP_PROFILE_CPU;
     out_config->fpu_profile = VM_APP_PROFILE_FPU;
     out_config->floppy_format = VM_APP_PROFILE_FLOPPY_FORMAT;

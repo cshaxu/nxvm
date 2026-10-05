@@ -1,5 +1,5 @@
 # Build-only conversion: no vendor bytes or absolute input paths enter source.
-set(source "#include \"app-nxvm/profiles/selection_interface.h\"\n\n")
+set(source "#include \"ibmpc/machine/input_interface.h\"\n\n")
 foreach(role IN ITEMS BIOS_0 BIOS_1 VIDEO CMOS FONT)
     set(path "${INPUT_${role}}")
     if(path STREQUAL "LIB_NULL")

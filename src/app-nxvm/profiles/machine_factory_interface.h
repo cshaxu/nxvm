@@ -1,7 +1,7 @@
 #ifndef VM_PROFILE_MACHINE_FACTORY_INTERFACE_H
 #define VM_PROFILE_MACHINE_FACTORY_INTERFACE_H
 
-#include "app-nxvm/profiles/selection_interface.h"
+#include "ibmpc/machine/input_interface.h"
 #include "app-nxvm/profiles/machine_plan_interface.h"
 #include "ibmpc/machine/machine_interface.h"
 

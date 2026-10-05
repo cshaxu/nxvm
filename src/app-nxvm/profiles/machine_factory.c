@@ -1,4 +1,5 @@
 #include "app-nxvm/profiles/machine_factory_interface.h"
+#include VM_PROFILE_CONSTRUCTION_HEADER
 #include "app-nxvm/profiles/machine_plan_interface.h"
 
 lib_status vm_machine_create_from_assets(const vm_machine_config *config,

@@ -29,7 +29,8 @@ static lib_status vm_test_create_5170(const vm_machine_config *config,
     font['A' * 8u] = 0x81u;
     font[2048u + 'A' * 8u] = 0x42u;
     assets.font = (vm_machine_asset_bytes) { font, sizeof(font) };
-    return vm_test_machine_create_from_assets(config, &assets, out_session);
+    return vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5170_MODEL_339,
+        config, &assets, out_session);
 }
 
 static lib_status vm_test_create_default(const vm_machine_config *config,
@@ -39,7 +40,8 @@ static lib_status vm_test_create_default(const vm_machine_config *config,
     vm_machine_assets assets;
 
     vm_test_default_pc_at_assets(&assets, rom);
-    return vm_test_machine_create_from_assets(config, &assets, out_session);
+    return vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+        config, &assets, out_session);
 }
 
 static lib_i32 vm_model_339_selected_contract(void)
@@ -47,7 +49,6 @@ static lib_i32 vm_model_339_selected_contract(void)
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_ibm_5170_model_339_descriptor_get();
     const vm_machine_config config = {
-        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339,
         .bios_count = 2u
     };
     test_board_composition_observation board;
@@ -127,14 +128,14 @@ static lib_i32 vm_model_339_selected_contract(void)
 static lib_i32 vm_model_339_floppy_contract(void)
 {
     const vm_machine_config native = {
-        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
+        .bios_count = 2u
     };
     const vm_machine_config compatible = {
-        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u,
+        .bios_count = 2u,
         .floppy_format = VM_MACHINE_FLOPPY_FORMAT_360K
     };
     const vm_machine_config rejected = {
-        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u,
+        .bios_count = 2u,
         .floppy_format = VM_MACHINE_FLOPPY_FORMAT_720K
     };
     vm_machine *session = LIB_NULL;
@@ -184,7 +185,7 @@ static lib_i32 vm_model_339_refresh_polling_is_live(void)
         0x3au, 0xc4u, 0x74u, 0xf8u, 0xf4u
     };
     const vm_machine_config config = {
-        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
+        .bios_count = 2u
     };
     core_machine_run_result result = {0};
     vm_machine *session = LIB_NULL;
@@ -216,7 +217,7 @@ static lib_i32 vm_model_339_refresh_post_loop_is_calibrated(void)
         0xfeu, 0xcbu, 0x75u, 0xf0u, 0xf4u
     };
     const vm_machine_config config = {
-        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
+        .bios_count = 2u
     };
     core_machine_run_result result = {0};
     core_machine_debug_cpu_snapshot cpu = {0};
@@ -252,7 +253,7 @@ static lib_i32 vm_model_339_dma_page_word_io_is_converted(void)
         0xe4u, 0x82u, 0x86u, 0xc4u, 0xe4u, 0x83u, 0xf4u
     };
     const vm_machine_config config = {
-        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
+        .bios_count = 2u
     };
     core_machine_run_result result = {0};
     const core_machine_debug_register_patch entry = {
@@ -286,7 +287,7 @@ static lib_i32 vm_model_339_external_rom_route(void)
     lib_u8 video[512] = {0x55u, 0xaau, 1u};
     vm_machine_assets assets;
     const vm_machine_config config = {
-        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
+        .bios_count = 2u
     };
     vm_machine *session = LIB_NULL;
     lib_u8 observed[2] = {0};
@@ -296,7 +297,8 @@ static lib_i32 vm_model_339_external_rom_route(void)
     even[0u] = 0x12u;
     odd[0u] = 0x34u;
     assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
-    failed = vm_test_machine_create_from_assets(&config, &assets, &session) !=
+    failed = vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5170_MODEL_339,
+        &config, &assets, &session) !=
             LIB_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_external_firmware(
                 vm_test_profile_plan(session)) ||
         core_machine_memory_read(session->core_machine, 0x000f0000u, observed,
@@ -312,7 +314,7 @@ static lib_i32 vm_model_339_external_rom_route(void)
 lib_i32 main(void)
 {
     const vm_machine_config default_config = {
-        .profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT, .bios_count = 1u
+        .bios_count = 1u
     };
     vm_machine *default_session = LIB_NULL;
     const lib_i32 selected = vm_model_339_selected_contract();

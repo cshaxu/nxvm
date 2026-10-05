@@ -63,9 +63,9 @@ static lib_i32 default_at_cmos_seed_is_loaded(void)
         (lib_u8[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES]) {0});
     /* The helper's ROM array must outlive composition only; session copies it. */
     assets.cmos_seed = (vm_machine_asset_bytes) { seed, sizeof(seed) };
-    config.profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT;
     config.bios_count = 1u;
-    failed |= vm_test_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
+    failed |= vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+        &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
     if (!failed) {
         core_machine *core = session->core_machine;

@@ -801,7 +801,8 @@ target_link_libraries(core-machine PUBLIC ibmpc-board-common ibmpc-board-at ibmp
 
 add_library(vm-profile STATIC ${VM_PROFILE_SOURCES})
 target_compile_definitions(vm-profile PRIVATE
-    VM_PROFILE_PLAN_CREATE=${NXVM_PROFILE_PLAN_CREATE})
+    VM_PROFILE_PLAN_CREATE=${NXVM_PROFILE_PLAN_CREATE}
+    VM_PROFILE_CONSTRUCTION_HEADER="${NXVM_PROFILE_CONSTRUCTION_HEADER}")
 target_include_directories(vm-profile PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )

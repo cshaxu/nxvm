@@ -1,6 +1,8 @@
 #include "app-nxvm/profiles/machine_plan.h"
+#include "app-nxvm/profiles/model40/construction_interface.h"
 #include "app-nxvm/profiles/model40/composition_interface.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
+#include "app-nxvm/profiles/model40/observation_interface.h"
 
 typedef struct vm_profile_model40_machine_plan {
     vm_profile_machine_plan common;

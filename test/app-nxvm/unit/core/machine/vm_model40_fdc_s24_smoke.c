@@ -1,3 +1,4 @@
+#include "app-nxvm/profiles/model40/observation_interface.h"
 #include "../../../support/profile.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/model40.h"

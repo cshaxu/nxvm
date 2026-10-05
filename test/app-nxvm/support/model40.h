@@ -1,4 +1,5 @@
 #include "profile.h"
+#include "app-nxvm/profiles/model40/observation_interface.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #ifndef NXVM_TEST_MODEL40_H
 #define NXVM_TEST_MODEL40_H

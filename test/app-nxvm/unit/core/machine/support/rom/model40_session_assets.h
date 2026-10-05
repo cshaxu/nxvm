@@ -45,10 +45,10 @@ static inline lib_status vm_model40_fixture_create_bytes_with_floppy_format(
     /* Unit fixtures deliberately keep their bytes in process memory. */
     vm_model40_fixture_cmos_seed(cmos_seed);
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
-    config.profile_kind = VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.bios_count = 2u;
     config.floppy_format = floppy_format;
-    return vm_test_machine_create_from_assets(&config, &assets, out_session);
+    return vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
+        &config, &assets, out_session);
 }
 
 static inline lib_status vm_model40_fixture_create_bytes(

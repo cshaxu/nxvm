@@ -1,3 +1,4 @@
+#include "app-nxvm/profiles/model40/observation_interface.h"
 #include "../../../support/profile.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/media.h"
@@ -45,14 +46,14 @@ lib_i32 main(void)
     video[1u] = 0xaau;
     video[2u] = 0x20u;
     video[sizeof(video) - 1u] = 0xe1u;
-    config.profile_kind = VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.bios_count = 2u;
     vm_model40_fixture_cmos_seed(cmos_seed);
     assets.bios[0u] = (vm_machine_asset_bytes) { even, sizeof(even) };
     assets.bios[1u] = (vm_machine_asset_bytes) { odd, sizeof(odd) };
     assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
-    if (vm_test_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
+    if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
+        &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || !vm_profile_machine_plan_is_model40(vm_test_profile_plan(session))) goto done;
     const test_board_plan_observation plan = test_board_capture_plan(session->core_machine_plan);
     if (plan.memory_bytes != 2u * 1024u * 1024u ||
@@ -106,7 +107,8 @@ lib_i32 main(void)
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.memory_bytes = 2u * 1024u * 1024u;
-    if (vm_test_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_INVALID_ARGUMENT ||
+    if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
+        &config, &assets, &session) != LIB_STATUS_INVALID_ARGUMENT ||
         session != LIB_NULL) goto done;
     config.memory_bytes = 0u;
     failed = 0;

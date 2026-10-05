@@ -117,4 +117,17 @@ foreach(constructor IN ITEMS default 5170 xt model40)
     endif()
 endforeach()
 
+file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/input_interface.h" input_contract)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/selection_interface.h" selection_contract)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan_interface.h" plan_contract)
+if(input_contract MATCHES "profile_kind|VM_MACHINE_PROFILE_(DEFAULT|IBM|COMPAQ)|app-nxvm/" OR
+        selection_contract MATCHES "typedef struct vm_machine_(config|assets|asset_bytes)" OR
+        plan_contract MATCHES "model40|d4_platform")
+    message(FATAL_ERROR "Machine value contract retains identity or model-specific observations")
+endif()
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/config.c" product_config)
+if(product_config MATCHES "profile_kind")
+    message(FATAL_ERROR "Fixed product must not inject a model ID into construction values")
+endif()
+
 message(STATUS "M5 NXVM machine Common-owner and copied-fact boundary verified")

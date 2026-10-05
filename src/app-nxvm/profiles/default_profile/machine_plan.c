@@ -1,4 +1,5 @@
 #include "app-nxvm/profiles/machine_plan.h"
+#include "app-nxvm/profiles/default_profile/construction_interface.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 

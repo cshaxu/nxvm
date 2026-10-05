@@ -11,9 +11,7 @@
 
 int main(void)
 {
-    const vm_machine_config config = {
-        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339
-    };
+    const vm_machine_config config = {0};
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_ibm_5170_model_339_descriptor_get();
     const vm_profile_default_pc_at_route *route;

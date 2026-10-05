@@ -28,7 +28,6 @@ static lib_i32 vm_default_pc_at_fdd_format_is_valid(
     lib_u8 observed_type;
     lib_i32 valid = 0;
 
-    config.profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT;
     config.floppy_format = format;
     if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) goto done;
@@ -78,7 +77,6 @@ static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
         0x3au, 0xc4u, 0x74u, 0xf8u, 0xf4u
     };
     vm_machine_config config = {
-        .profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80186
     };
     vm_machine *session = LIB_NULL;

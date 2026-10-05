@@ -177,7 +177,8 @@ static lib_bool check(lib_u16 ax, lib_u16 cx, lib_u16 dx, lib_u8 expected,
     media->bytes[offset++] = 0xfau; media->bytes[offset++] = 0xf4u;
     if (offset > 510u) goto done;
     media->bytes[510u] = 0x55u; media->bytes[511u] = 0xaau;
-    if (vm_test_profile_plan_create(&config, &vm_app_firmware, &profile) != LIB_STATUS_OK ||
+    if (vm_test_profile_plan_create(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+        &config, &vm_app_firmware, &profile) != LIB_STATUS_OK ||
         profile == LIB_NULL ||
         core_machine_plan_create(vm_profile_machine_plan_core_config_get(profile), &plan) != LIB_STATUS_OK ||
         plan == LIB_NULL ||

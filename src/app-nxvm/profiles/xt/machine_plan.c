@@ -1,4 +1,5 @@
 #include "app-nxvm/profiles/machine_plan.h"
+#include "app-nxvm/profiles/xt/construction_interface.h"
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
 
 typedef struct vm_profile_xt_machine_plan {
