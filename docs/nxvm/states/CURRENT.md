@@ -6,7 +6,20 @@
 | --- | --- |
 | T544 | Closed as a completed CPU audit by owner direction; all CPU repair/proof gaps transferred to the first queued proposal. No implementation task is active. |
 | M5 Td S177 | Complete: audit closure, full CPU repair transfer, proposal archive and queue/reference reconciliation. NXVM documentation only. |
-| T545 S3 | Accepted: Lib owner-local test completion, independent suites and full dual-width units. S4-S6 and final S7 remain planned. |
+| T545 S4 | Accepted: Common-owned test completion, independent suites and full dual-width units. S3 accepted; S5-S7 remain planned. |
+
+## Accepted S4 Common Test Completion
+
+Shared P1 `6955f7093` completes public Session lifecycle/ingress and checked
+lifecycle dispatch, UI creation/monitor/event/control paths, copied publication
+and run identity. Original test assertions and registrations are retained;
+no App/foreign test fixture, production/API or executable input changes.
+Standalone Common has passing proof for all 20 cases per width, including
+final changed-case reruns; current full units pass 531/531 per width and six
+Common gates pass per width. Strict-warning builds, manifests, documentation
+and diff review pass. See [S4 evidence](../etc/evidence/t545-s4-common-test-completion.md).
+Sequential coordinator/executor review accepts this complete test-only batch.
+S4 closes with its NXVM governance P; T stays open for planned S5-S7.
 
 ## Accepted S3 Lib Test Completion
 
@@ -30,6 +43,10 @@ all original registered assertions and 58 external contexts remain required.
 No imported file is locally patched, and owner INI/media/snapshot inputs are
 unchanged. Receiver paths, private-layout access and fixture link closure
 follow the same owners without a shim or second production path.
+
+This paragraph records the historical S2 exact import. S3/S4 subsequently
+revise only authorized Lib/Common test corpora and manifests, as accepted
+above; current test bytes are not claimed identical to the old SoftPC pin.
 
 Fresh complete units pass 531/531 per width (223.46s x64, 147.44s x86),
 MyNES product units pass 43/43 per width, and 23 supplemental gates pass per

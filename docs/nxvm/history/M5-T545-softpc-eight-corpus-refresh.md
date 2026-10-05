@@ -98,6 +98,15 @@ required, not represented as freshly passed by this import.
 
 ## Owner-Approved Test Completion Plan
 
+S4 delivers Shared P1 `6955f7093`: public Session lifecycle/ingress and specific
+lifecycle dispatch, UI failure cleanup/control/event mapping, publication copy
+and run identity. The [S4 ledger](../etc/evidence/t545-s4-common-test-completion.md)
+records the complete owner-local inventory, retained assertions and standalone
+20-case proof per width, current full 531/531 units per width and six Common
+gates per width. Coordinator review accepts four reused tests +313/-12,
+README +3/-1 and manifest +6/-6, with no production/API or executable change.
+S4 closes with NXVM acceptance; S5-S7 remain planned and T stays open.
+
 S3 delivers Shared P1 `bd68089a8`: direct Lib contract tests in existing fixtures,
 with no production/API change. The [S3 proof ledger](../etc/evidence/t545-s3-lib-test-completion.md)
 maps all contract families and records the initial corrected manifest failure,
