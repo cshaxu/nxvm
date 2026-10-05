@@ -61,6 +61,7 @@ set_tests_properties(unit.vm-machine-executor-state-smoke PROPERTIES LABELS "uni
 list(APPEND SHARED_IBMPC_TEST_TARGETS vm-machine-executor-state-smoke)
 shared_register_test(ibmpc machine/debug_budget ibmpc-machine)
 shared_register_test(ibmpc machine/construction ibmpc-machine)
+shared_register_test(ibmpc machine/preparation ibmpc-machine)
 shared_register_test(ibmpc machine/input types)
 if(X86_BUILD_TOOLS)
     shared_register_test(ibmpc product/command ibmpc-product)

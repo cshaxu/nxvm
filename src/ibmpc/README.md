@@ -9,7 +9,7 @@ allowed. Existing C symbols/ABI and hardware algorithms remain unchanged.
 | board-common | Common board construction/reset/teardown, ports, guest-clock conversion, deadlines, IRQ aggregation, media/display providers and floppy/ROM/profile validation. |
 | board-xt | XT PPI/keyboard, DIP and speaker/NMI wiring. |
 | board-at | AT KBC/AUX/A20/reset and planar parity/Port B wiring. |
-| machine | Bounded executor, pacing, copied input/frame/debug adaptation and Storage-backed media lifetime. |
+| machine | Construction finishing/publication, bounded executor, pacing, copied input/frame/debug adaptation and Storage-backed media lifetime. |
 | product | INI syntax/request, entry/banner, command/hotkey policy and Common composition with an injected App factory. |
 
 Board families consume only public x86/Core/chip contracts and Types; they
@@ -34,6 +34,10 @@ Machine's input_interface.h owns copied construction options and borrowed asset
 byte views, without a model identifier or concrete Profile declaration.
 The App selects a constructor before preparation; its specific observation
 contracts do not enter this neutral value boundary.
+Preparation consumes one candidate: failure releases its actual App context,
+success publishes the existing copied construction for Machine creation.
+CMOS/font conversion and media bounds have one finishing path. Floppy
+eligibility is an explicit App value, not a model or default-kind inference.
 
 Keep src/ibmpc beside src/x86, src/common and src/lib. Standalone verification:
 

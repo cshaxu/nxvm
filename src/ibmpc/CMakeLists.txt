@@ -30,7 +30,7 @@ add_library(ibmpc-machine-conversion STATIC machine/frame.c
 target_include_directories(ibmpc-machine-conversion PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(ibmpc-machine-conversion PUBLIC types ibmpc-board-common)
 
-add_library(ibmpc-machine STATIC machine/debug.c
+add_library(ibmpc-machine STATIC machine/preparation.c machine/debug.c
     machine/executor_state.c
     machine/debug_adapter.c
     machine/display.c
