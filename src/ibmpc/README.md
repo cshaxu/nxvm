@@ -8,7 +8,7 @@ allowed. Existing C symbols/ABI and hardware algorithms remain unchanged.
 | --- | --- |
 | board-common | Common board construction/reset/teardown, ports, guest-clock conversion, deadlines, IRQ aggregation, media/display providers and floppy/ROM/profile validation. |
 | board-xt | XT PPI/keyboard, DIP and speaker/NMI wiring. |
-| board-at | AT KBC/AUX/A20/reset and planar parity/Port B wiring. |
+| board-at | Immutable AT endpoint grammar, KBC/AUX/A20/reset and planar parity/Port B wiring. |
 | machine | Construction finishing/publication, bounded executor, pacing, copied input/frame/debug adaptation and Storage-backed media lifetime. |
 | product | INI syntax/request, entry/banner, command/hotkey policy and Common composition with an injected App factory. |
 
@@ -20,6 +20,13 @@ time and owns the board attachment teardown; the Machine adapter borrows it.
 Media/display provider contexts remain borrowed until teardown, with one
 freeze/publication/rollback path. Concrete topology, firmware, immutable
 identity and genuine model-specific state remain App-owned.
+
+AT port/IRQ/DRQ grammar is shared by three independently configured consumers.
+Board-common projects it into its existing copied profile-contract values,
+with one structural validator and atomic publication; firmware/media policy
+and enabled endpoints are explicit App inputs. Board-at does not depend back
+on board-common. Memory decode, display personality and genuine D4 remain
+model-specific composition, not a 5170 profile inherited and overridden.
 
 Machine consumes board-common, x86/Core/debug, Common Machine and Lib services.
 Product adapts its copied request to the neutral Machine input and consumes

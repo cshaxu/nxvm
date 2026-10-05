@@ -24,6 +24,7 @@ add_test(NAME unit.vm-profile-contract-smoke COMMAND vm-profile-contract-smoke)
 set_tests_properties(unit.vm-profile-contract-smoke PROPERTIES LABELS "unit;ibmpc" TIMEOUT 30)
 list(APPEND SHARED_IBMPC_TEST_TARGETS vm-profile-contract-smoke)
 shared_register_test(ibmpc board-common/construction_helpers ibmpc-board-common)
+shared_register_test(ibmpc board-at/contract ibmpc-board-common)
 
 foreach(media_case IN ITEMS provider direct_readonly)
     if(media_case STREQUAL "provider")

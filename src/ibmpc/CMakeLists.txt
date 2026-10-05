@@ -74,7 +74,7 @@ target_link_libraries(ibmpc-board-common-observable PUBLIC types x86-pit825x x86
     ibmpc-board-at ibmpc-board-xt)
 target_compile_definitions(ibmpc-board-common-observable PUBLIC CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
-add_library(ibmpc-board-at STATIC board-at/kbc.c board-at/parity.c)
+add_library(ibmpc-board-at STATIC board-at/kbc.c board-at/parity.c board-at/wiring.c)
 target_include_directories(ibmpc-board-at PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(ibmpc-board-at PUBLIC types x86-kbc8042 x86-keyboard x86-ps2mouse x86-pit825x)
 
