@@ -1,0 +1,43 @@
+#include "ibmpc/machine/machine_interface.h"
+#include "lib/types/types_interface.h"
+#include <stdio.h>
+
+#include "x86/core/machine_interface.h"
+#include "x86/core/debug_interface.h"
+#include "ibmpc/board-common/vadp_interface.h"
+#include "ibmpc/machine/lifecycle.h"
+#include "ibmpc/machine/machine_interface.h"
+#include "../support/rom/session_assets.h"
+#include "ibmpc/machine/machine_private.h"
+
+lib_i32 main(void)
+{
+    vm_machine *session = LIB_NULL;
+    lib_u8 aperture_value = 0x5au;
+    lib_u8 read_value = 0u;
+    lib_u32 port_value = 0u;
+    lib_i32 failed = 0;
+
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
+        session == LIB_NULL || !session->active || session->core_machine == LIB_NULL) {
+        failed = 1;
+        goto done;
+    }
+    failed = vm_machine_reset(session) != LIB_STATUS_OK ||
+        core_machine_debug_read_port(session->core_machine, 0x03c4u, &port_value) != LIB_STATUS_OK || port_value != 0u ||
+        core_machine_debug_read_port(session->core_machine, 0x03c5u, &port_value) != LIB_STATUS_OK || port_value != 0x03u ||
+        core_machine_debug_write_port(session->core_machine, 0x03c4u, 4u) != LIB_STATUS_OK || core_machine_debug_write_port(session->core_machine, 0x03c5u, 0xffu) != LIB_STATUS_OK ||
+        core_machine_debug_read_port(session->core_machine, 0x03c5u, &port_value) != LIB_STATUS_OK || port_value != 0x0eu ||
+        core_machine_memory_write(session->core_machine,
+        CORE_MACHINE_VADP_EGA_APERTURE_BASE, &aperture_value,
+        sizeof(aperture_value)) != LIB_STATUS_OK ||
+        core_machine_memory_read(session->core_machine,
+        CORE_MACHINE_VADP_EGA_APERTURE_BASE, &read_value,
+        sizeof(read_value)) != LIB_STATUS_OK || read_value != aperture_value;
+
+done:
+    vm_machine_destroy(session);
+    if (failed) return 1;
+    printf("M5:T235:S3:EGA-SEQUENCER:SYSTEM:OK\n");
+    return 0;
+}
