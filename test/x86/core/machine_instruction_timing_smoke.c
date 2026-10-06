@@ -222,6 +222,7 @@ static lib_i32 timing_test_stop(void)
 typedef struct timing_qualification_probe {
     core_machine_retirement_eligibility_key key;
     lib_u8 captured;
+    lib_u32 count;
 } timing_qualification_probe;
 
 static void timing_qualification_record(void *context,
@@ -232,6 +233,7 @@ static void timing_qualification_record(void *context,
     if (probe != LIB_NULL && observation != LIB_NULL) {
         probe->key = observation->eligibility_key;
         probe->captured = LIB_TRUE;
+        ++probe->count;
     }
 }
 
@@ -243,7 +245,7 @@ static lib_i32 timing_capture_qualification(const lib_u8 *program,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u }
     };
-    timing_qualification_probe probe = { { 0 }, LIB_FALSE };
+    timing_qualification_probe probe = {0};
     const core_machine_retirement_observation_provider provider = {
         timing_qualification_record, &probe
     };
@@ -363,6 +365,59 @@ static lib_i32 timing_test_physical_contract(void)
     core_machine_destroy(machine);
     return failed;
 }
+static lib_i32 timing_test_next_fetch_publication(void)
+{
+    const core_machine_executor_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .ticks_per_instruction = 1u
+    };
+    const lib_u8 jump[] = {0xebu,0x0du};
+    const lib_u8 incomplete_mov = 0xb8u;
+    timing_qualification_probe probe = {0};
+    const core_machine_retirement_observation_provider provider = {
+        timing_qualification_record, &probe
+    };
+    const core_machine_run_budget budget = {1u,0u};
+    core_machine_run_result result = {0};
+    core_machine_cpu_diagnostic diagnostic = {0};
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+        timing_map_reset(machine) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_set_retirement_observation_provider(machine, &provider) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, TIMING_RESET_LINEAR, jump, sizeof(jump)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0xffffffffu, &incomplete_mov, 1u) != LIB_STATUS_OK;
+
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+            result.ticks != 8u || result.elapsed_ticks != 8u || probe.count != 1u ||
+            probe.key.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL ||
+            probe.key.next_lexeme_components != CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ||
+            core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
+            diagnostic.first_fault.valid || diagnostic.last_delivered_exception.valid;
+    }
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+            result.executed != 0u || result.ticks != 0u ||
+            result.elapsed_ticks != 8u || probe.count != 1u ||
+            core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
+            !diagnostic.last_delivered_exception.valid ||
+            diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_GP ||
+            diagnostic.last_delivered_exception.point.eip != 0xffffu;
+    }
+    if (failed) {
+        lib_c_printf("NEXT-FETCH-PUBLICATION:executed=%llu:ticks=%llu:elapsed=%llu:count=%u:origin=%u:next=%u:fault=%u:eip=%x\n",
+            result.executed, result.ticks, result.elapsed_ticks, probe.count,
+            probe.key.timing_origin, probe.key.next_lexeme_components,
+            diagnostic.last_delivered_exception.valid,
+            diagnostic.last_delivered_exception.point.eip);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     static const lib_u8 nop[] = { 0x90u };
@@ -391,6 +446,7 @@ lib_i32 main(void)
     if (timing_test_stop()) return 7;
     if (timing_test_invalid_qualification()) return 8;
     if (timing_test_physical_contract()) return 9;
+    if (timing_test_next_fetch_publication()) return 10;
     lib_c_printf("M5:T265:S3:INSTRUCTION-TIMING:OK\n");
     return 0;
 }

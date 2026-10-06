@@ -192,6 +192,7 @@ shared_register_test(x86 chips/cpu/cpu_execution_paging x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_execution_fault_event x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_decode_admission x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_address_span x86-cpu-shared)
+shared_register_test(x86 chips/cpu/cpu_transfer_boundary x86-cpu-shared)
 add_test(NAME x86.address-span-boundary COMMAND "${CMAKE_COMMAND}"
     "-DX86_ROOT=${X86_ROOT}" -P "${CMAKE_CURRENT_LIST_DIR}/verify_address_span.cmake")
 set_tests_properties(x86.address-span-boundary PROPERTIES LABELS "unit;x86" TIMEOUT 30)

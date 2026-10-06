@@ -3364,7 +3364,7 @@ static void _ser_call_far_call_gate_32(core_machine_cpu_execution_context *conte
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
         &newcs_cache, &code_desc));
-    CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+    CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         X86_CPU_MASK_U32(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
     if (target_cpl < oldcpl) {
@@ -3485,7 +3485,7 @@ static void _ser_call_far_call_gate(core_machine_cpu_execution_context *context,
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
         &newcs_cache, &code_desc));
-    CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+    CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         X86_CPU_MASK_U16(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
     if (target_cpl < oldcpl) {
@@ -3736,7 +3736,7 @@ static void _ser_int_protected_16(core_machine_cpu_execution_context *context,
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
         &newcs_cache, &code_desc));
-    CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+    CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         X86_CPU_MASK_U16(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
     frame_words = (lib_u8)(3u + (error_frame ? 1u : 0u));
@@ -3907,7 +3907,7 @@ static void _ser_int_protected_32_outer(core_machine_cpu_execution_context *cont
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
         &newcs_cache, &code_desc));
-    CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+    CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         X86_CPU_MASK_U32(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
     newss_cache = cpu_state.data.ss;
@@ -4001,7 +4001,7 @@ static void _ser_int_protected_32_same(core_machine_cpu_execution_context *conte
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, oldcpl,
         &newcs_cache, &code_desc));
-    CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+    CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         X86_CPU_MASK_U32(_GetDescGate_Offset(gate_desc)), 1u, 0,
         oldcpl, 1));
     CPU_TRACE_CHECK_RETURN(_s_test_ss_push(context, error_frame ? 16u : 12u));
@@ -4141,7 +4141,7 @@ static void _ser_ret_far_outer(core_machine_cpu_execution_context *context,
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
         &newcs_cache, &code_desc));
-    CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+    CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         neweip, 1u, 0, target_cpl, 1));
     CPU_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
         X86_CPU_REFERENCE_OF(ss_desc)));
@@ -4258,7 +4258,7 @@ static void _ser_jmp_far_call_gate(core_machine_cpu_execution_context *context,
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, target_selector,
         cpl, &newcs_cache, &code_desc));
-    CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+    CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache,
         gate32 ? X86_CPU_MASK_U32(_GetDescGate_Offset(gate_desc)) :
         X86_CPU_MASK_U16(_GetDescGate_Offset(gate_desc)), 1u, 0, cpl, 1));
     CPU_TRACE_CHECK_RETURN(_s_write_xdt(context, target_selector,
@@ -4420,7 +4420,7 @@ static void _s_task_validate_code_selector(
         CPU_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
     }
     _s_task_cache_descriptor(out_cache, selector, descriptor, SREG_CODE);
-    CPU_TRACE_CHECK_RETURN(_kma_test_access(context, out_cache, eip, 1u,
+    CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, out_cache, eip, 1u,
         LIB_FALSE, 0u, LIB_TRUE));
     CPU_TRACE_CALL_END;
 }
@@ -5279,7 +5279,7 @@ static void _ser_iret_protected_outer(core_machine_cpu_execution_context *contex
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, newcpl,
         &newcs_cache, &code_desc));
-    CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache, neweip,
+    CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache, neweip,
         1u, 0, newcpl, 1));
     newss_cache = cpu_state.data.ss;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss, newcpl,
@@ -5358,7 +5358,7 @@ static void _ser_iret_protected_same(core_machine_cpu_execution_context *context
     newcs_cache = cpu_state.data.cs;
     CPU_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, cpl,
         &newcs_cache, &code_desc));
-    CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache, neweip,
+    CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &newcs_cache, neweip,
         1u, 0, cpl, 1));
     if (cpl) {
         mask |= VCPU_EFLAGS_IOPL | VCPU_EFLAGS_VM;
