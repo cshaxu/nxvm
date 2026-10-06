@@ -101,6 +101,65 @@ static lib_i32 verify_board_phases(const core_machine_executor_config *config)
         rejected.calls[0] != 0u || rejected.calls[3] != 0u;
 }
 
+typedef struct deadline_probe {
+    lib_u64 due, l1_until;
+    lib_bool blocked;
+    lib_u32 finalized;
+} deadline_probe;
+
+static void probe_deadline(void *owner, lib_u64 now, lib_bool qualified,
+    core_machine_attachment_deadline_observation *out)
+{
+    deadline_probe *probe = owner;
+    (void)qualified;
+    *out = (core_machine_attachment_deadline_observation){
+        .source_ticks = probe->due > now ? probe->due - now : 0u,
+        .immediate_due = probe->due <= now,
+        .l1_compatibility = now < probe->l1_until,
+        .fast_advance_blocked = probe->blocked
+    };
+}
+static void deadline_finalize(void *owner) { ++((deadline_probe *)owner)->finalized; }
+
+static lib_i32 verify_deadline_admission(void)
+{
+    const core_machine_executor_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS
+    };
+    deadline_probe probe = {.due = 5u, .l1_until = 3u};
+    const core_machine_attachment binding = {.deadline = probe_deadline,
+        .finalize_devices = deadline_finalize, .context = &probe};
+    core_machine *machine = LIB_NULL;
+    core_machine_time_observation observed;
+    lib_u8 advanced = LIB_FALSE;
+    lib_u64 ticks = 0u;
+    lib_i32 failed = 1;
+    if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_bind_attachment(machine, &binding) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_capture_time_observation(machine, &observed) != LIB_STATUS_OK ||
+        observed.progress_disposition != CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY || observed.next_deadline_valid ||
+        core_machine_advance_l1_compatibility(machine, &advanced) != LIB_STATUS_OK || !advanced ||
+        core_machine_get_elapsed_ticks(machine, &ticks) != LIB_STATUS_OK || ticks != 3u) goto done;
+    probe.blocked = LIB_TRUE;
+    if (core_machine_advance_to_next_deadline(machine, &advanced) != LIB_STATUS_OK || advanced ||
+        core_machine_get_elapsed_ticks(machine, &ticks) != LIB_STATUS_OK || ticks != 3u) goto done;
+    probe.blocked = LIB_FALSE;
+    if (core_machine_advance_to_next_deadline(machine, &advanced) != LIB_STATUS_OK || !advanced ||
+        core_machine_get_elapsed_ticks(machine, &ticks) != LIB_STATUS_OK || ticks != 5u) goto done;
+    probe.l1_until = probe.due = LIB_UINT64_MAX;
+    /* The existing 16-step control bound is not an emulated device duration. */
+    if (core_machine_advance_l1_compatibility(machine, &advanced) != LIB_STATUS_OK || !advanced ||
+        core_machine_get_elapsed_ticks(machine, &ticks) != LIB_STATUS_OK || ticks != 21u) goto done;
+    failed = 0;
+done:
+    core_machine_destroy(machine);
+    return failed || probe.finalized != 1u;
+}
+
 lib_i32 main(void)
 {
     const core_machine_executor_config config = {
@@ -108,7 +167,7 @@ lib_i32 main(void)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
         .ticks_per_instruction = 1u
     };
-    if (verify_board_phases(&config)) return 1;
+    if (verify_board_phases(&config) || verify_deadline_admission()) return 1;
     lib_c_printf("%s\n", "M5:T540:S93:CORE-ATTACHMENT-PHASES:OK");
     return 0;
 }

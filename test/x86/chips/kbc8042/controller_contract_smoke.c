@@ -1,4 +1,5 @@
 #include "x86/chips/kbc8042/kbc8042_interface.h"
+#include "x86/chips/kbc8042/controller.h"
 #include "x86/chips/keyboard/keyboard_interface.h"
 #include "x86/chips/ps2mouse/ps2mouse_interface.h"
 
@@ -264,6 +265,50 @@ static lib_bool packet_saturation(controller_fixture *f)
     return failed;
 }
 
+static lib_bool configuration_and_serial(controller_fixture *f)
+{
+    static const lib_u8 pin_values[] = {0u, 3u, 0xa5u, 0xffu};
+    const lib_u8 keys[] = {0x1cu, 0x32u};
+    const lib_u8 overflow[KBC_KEYBOARD_SERIAL_CAPACITY + 1u] = {0};
+    x86_kbc8042 *c = f->controller;
+    lib_u64 ticks = 0u;
+    lib_bool failed = LIB_FALSE;
+    x86_keyboard_reset(f->keyboard);
+    x86_kbc8042_reset(c);
+    for (lib_size i = 0u; i < sizeof(pin_values); ++i) {
+        x86_kbc8042_set_input_port(c, pin_values[i]);
+        x86_kbc8042_write_command(c, 0xc0u);
+        failed |= x86_kbc8042_read_data(c) != pin_values[i];
+        x86_kbc8042_set_test_inputs(c, pin_values[i]);
+        x86_kbc8042_write_command(c, 0xe0u);
+        failed |= x86_kbc8042_read_data(c) != (pin_values[i] & 3u);
+    }
+    x86_kbc8042_set_reset_output_port(c, 3u);
+    x86_kbc8042_set_command_response_status_polls(c, 2u);
+    x86_kbc8042_reset(c);
+    failed |= f->output != 3u;
+    x86_kbc8042_write_command(c, 0x20u);
+    failed |= (x86_kbc8042_read_status(c) & 1u) != 0u;
+    failed |= (x86_kbc8042_read_status(c) & 1u) != 0u;
+    failed |= (x86_kbc8042_read_status(c) & 1u) == 0u || x86_kbc8042_read_data(c) != 0x43u;
+    x86_kbc8042_set_command_response_status_polls(c, 0u);
+    x86_kbc8042_set_serial_delivery_timing(c, 3u);
+    x86_kbc8042_reset(c); /* Configured serial delay survives reset. */
+    failed |= x86_kbc8042_receive_keyboard_bytes(c, LIB_NULL, 1u) != LIB_STATUS_INVALID_ARGUMENT;
+    failed |= x86_kbc8042_receive_keyboard_bytes(c, LIB_NULL, 0u) != LIB_STATUS_OK;
+    failed |= x86_kbc8042_receive_keyboard_bytes(c, keys, sizeof(keys)) != LIB_STATUS_OK;
+    failed |= x86_kbc8042_receive_keyboard_bytes(c, overflow, sizeof(overflow)) != LIB_STATUS_NO_MEMORY;
+    failed |= x86_kbc8042_ticks_until_event(c, &ticks) != LIB_STATUS_OK || ticks != 3u;
+    x86_kbc8042_advance(c, 2u);
+    failed |= (x86_kbc8042_read_status(c) & 1u) != 0u;
+    x86_kbc8042_advance(c, 1u);
+    failed |= x86_kbc8042_read_data(c) != 0x1eu;
+    x86_kbc8042_advance(c, 3u);
+    failed |= x86_kbc8042_read_data(c) != 0x30u || (x86_kbc8042_read_status(c) & 1u) != 0u;
+    x86_kbc8042_set_serial_delivery_timing(c, 0u);
+    return failed;
+}
+
 int main(void)
 {
     controller_fixture fixture = { 0 };
@@ -275,6 +320,7 @@ int main(void)
     failed = transport(&fixture);
     failed |= parameter_interleaving(&fixture);
     failed |= packet_saturation(&fixture);
+    failed |= configuration_and_serial(&fixture);
     destroy(&fixture);
     failed |= fixture.irq[0] || fixture.irq[1];
     return failed ? 1 : 0;

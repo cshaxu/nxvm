@@ -4,7 +4,7 @@
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/machine.h"
-#include "../board-common/core_machine_board_fixture.h"
+#include "debug_fixture.h"
 #include "exception_fixture.h"
 
 typedef struct fpu_interface_s65_machine {
@@ -24,6 +24,8 @@ static lib_i32 fpu_interface_s65_prepare(core_machine_cpu_profile profile,
         .cpu_profile = profile,
         .fpu_profile = fpu_profile
     };
+    x86_fpu_profile selected = X86_FPU_PROFILE_NONE;
+    x86_fpu_state observed = {0};
 
     if (state == LIB_NULL) {
         return 0;
@@ -39,8 +41,14 @@ static lib_i32 fpu_interface_s65_prepare(core_machine_cpu_profile profile,
     };
     /* T337_REAL_UD_TERMINAL_IVT_REJECT: producer failures cannot deliver vector 6. */
     return core_machine_neutral_create(&config, &state->machine) == LIB_STATUS_OK &&
+        core_machine_get_fpu_profile(state->machine, &selected) == LIB_STATUS_OK && selected == fpu_profile &&
+        core_machine_get_fpu_state(state->machine, &observed) == LIB_STATUS_OK &&
+        core_machine_get_fpu_profile(state->machine, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT &&
+        core_machine_get_fpu_state(state->machine, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT &&
         test_core_exception_block_vector(state->machine, 6u, state) == LIB_STATUS_OK &&
-        test_core_machine_fixture_bind_freeze_reset(state->machine, LIB_NULL, LIB_NULL) &&
+        core_machine_bind_execution_provider(state->machine, LIB_NULL, LIB_NULL) == LIB_STATUS_OK &&
+        core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
+        core_machine_reset(state->machine) == LIB_STATUS_OK &&
         core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
 }
 

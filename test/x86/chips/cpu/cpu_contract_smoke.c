@@ -44,6 +44,22 @@ lib_i32 main(void)
     core_machine_cpu_state state = {0};
     const core_machine_instruction_timing timing = { .base_ticks = 1u };
 
+    const struct { core_machine_cpu_profile profile; const char *name; lib_bool early; } profiles[] = {
+        {CORE_MACHINE_CPU_PROFILE_8086, "8086", LIB_TRUE},
+        {CORE_MACHINE_CPU_PROFILE_8088, "8088", LIB_TRUE},
+        {CORE_MACHINE_CPU_PROFILE_80186, "80186", LIB_FALSE},
+        {CORE_MACHINE_CPU_PROFILE_80286, "80286", LIB_FALSE},
+        {CORE_MACHINE_CPU_PROFILE_80386, "80386", LIB_FALSE}
+    };
+    for (lib_size i = 0u; i < sizeof(profiles) / sizeof(profiles[0]); ++i)
+        if (lib_text_compare(core_machine_cpu_profile_name(profiles[i].profile), profiles[i].name) != 0 ||
+            core_machine_cpu_profile_has_8086_semantics(profiles[i].profile) != profiles[i].early) return 1;
+    const core_machine_instruction_timing bounded = {.base_ticks = 2u, .prefix_surcharge = 3u,
+        .taken_branch_surcharge = 4u, .data_memory_surcharge = 5u,
+        .io_surcharge = 6u, .rep_iteration_surcharge = 7u};
+    if (core_machine_cpu_timing_maximum_ticks(CORE_MACHINE_CPU_PROFILE_8088, &bounded) != 69u ||
+        core_machine_cpu_timing_maximum_ticks(CORE_MACHINE_CPU_PROFILE_8088, LIB_NULL) != 0u) return 1;
+
     if (core_machine_cpu_create(&cpu_contract_bus_provider, &bus,
             &cpu) != LIB_STATUS_OK) return 1;
     core_machine_cpu_execution_context_bind_profiles(cpu,
@@ -53,6 +69,17 @@ lib_i32 main(void)
     core_machine_cpu_state_reset(cpu);
     core_machine_cpu_capture_state(cpu, &state);
     if (state.cs != 0xf000u || state.eip != 0xfff0u) {
+        core_machine_cpu_destroy(cpu);
+        return 1;
+    }
+    if (core_machine_cpu_execution_consume_shutdown_request(cpu)) {
+        core_machine_cpu_destroy(cpu);
+        return 1;
+    }
+    core_machine_cpu_execution_request_shutdown(cpu);
+    core_machine_cpu_execution_request_shutdown(cpu);
+    if (!core_machine_cpu_execution_consume_shutdown_request(cpu) ||
+        core_machine_cpu_execution_consume_shutdown_request(cpu)) {
         core_machine_cpu_destroy(cpu);
         return 1;
     }

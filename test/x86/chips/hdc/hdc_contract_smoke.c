@@ -149,6 +149,42 @@ static lib_i32 run_xebec(lib_bool write, lib_bool destroy)
     return failed;
 }
 
+static lib_i32 run_xebec_dma(lib_bool write, lib_bool abort)
+{
+    fixture f = {0};
+    x86_hdc *hdc = LIB_NULL;
+    lib_u8 byte = 0xa5u;
+    lib_u32 response = 99u;
+    lib_i32 failed = 0;
+    if (create(X86_HDC_PROTOCOL_XEBEC_XT, &f, &hdc) != LIB_STATUS_OK) return 1;
+    x86_hdc_dma_read(hdc, &byte);
+    x86_hdc_terminal_count(hdc);
+    if (byte != 0xa5u || f.drq || f.irq ||
+        x86_hdc_write(hdc, X86_HDC_REGISTER_XEBEC_MASK, 3u) != LIB_STATUS_OK ||
+        !send_dcb(hdc, write)) failed = 1;
+    x86_hdc_advance_at(hdc, 0u);
+    if (!f.drq || f.irq) failed = 1;
+    for (lib_u32 i = 0u; i < (abort ? 17u : 512u); ++i) {
+        if (!f.drq) failed = 1;
+        if (write) x86_hdc_dma_write(hdc, 0x5au);
+        else {
+            byte = 0u;
+            x86_hdc_dma_read(hdc, &byte);
+            if (byte != 0x5au) failed = 1;
+        }
+    }
+    if (abort) x86_hdc_terminal_count(hdc);
+    if (f.drq || !f.irq || f.reads != (write ? 0u : 1u) ||
+        f.writes != (write && !abort ? 1u : 0u) ||
+        x86_hdc_read(hdc, X86_HDC_REGISTER_DATA, &response) != LIB_STATUS_OK ||
+        response != (abort ? 2u : 0u)) failed = 1;
+    byte = 0xa5u;
+    x86_hdc_dma_read(hdc, &byte);
+    if (byte != 0xa5u) failed = 1; /* No bytes leak after response. */
+    x86_hdc_destroy(hdc);
+    return failed || f.drq || f.irq;
+}
+
 static lib_i32 run_xebec_record_bounds(lib_bool write, lib_u32 bytes, lib_u64 sectors)
 {
     /* The provider accepts sector zero even for an incompatible description;
@@ -273,6 +309,8 @@ lib_i32 main(void)
         for (lib_u32 destroy = 0u; destroy < 2u; ++destroy)
             failed |= run_xebec((lib_bool)write, (lib_bool)destroy);
     for (lib_u32 write = 0u; write < 2u; ++write) {
+        for (lib_u32 abort = 0u; abort < 2u; ++abort)
+            failed |= run_xebec_dma((lib_bool)write, (lib_bool)abort);
         failed |= run_xebec_record_bounds((lib_bool)write, 512u, 0u);
         failed |= run_xebec_record_bounds((lib_bool)write, 256u, 2u);
         failed |= run_xebec_record_bounds((lib_bool)write, 1024u, 2u);

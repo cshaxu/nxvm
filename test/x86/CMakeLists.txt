@@ -239,6 +239,30 @@ endif()
 
 endif()
 
+foreach(profile IN ITEMS 80186 80286 80386)
+    set(target "x86-decoder-${profile}")
+    add_executable(${target}
+        "chips/cpu/core_machine_${profile}_decoder_inventory_runner.c")
+    target_link_libraries(${target} PRIVATE x86-cpu-shared)
+    target_compile_definitions(${target} PRIVATE
+        PROJECT_TEST_${profile}_DECODER_PATH="${CMAKE_CURRENT_BINARY_DIR}/decoder-${profile}.json")
+    add_test(NAME "x86.decoder-${profile}" COMMAND ${target})
+    set_tests_properties("x86.decoder-${profile}" PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+    list(APPEND SHARED_X86_TEST_TARGETS ${target})
+endforeach()
+
+shared_register_test(x86 core/timeline x86-core)
+add_executable(machine-fpu-interface-s65-smoke core/machine_fpu_interface_s65_smoke.c)
+target_link_libraries(machine-fpu-interface-s65-smoke PRIVATE x86-core)
+add_test(NAME unit.machine-fpu-interface-s65-smoke COMMAND machine-fpu-interface-s65-smoke)
+set_tests_properties(unit.machine-fpu-interface-s65-smoke PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+list(APPEND SHARED_X86_TEST_TARGETS machine-fpu-interface-s65-smoke)
+add_executable(core-machine-entry-plan-smoke core/machine_entry_plan_smoke.c)
+target_link_libraries(core-machine-entry-plan-smoke PRIVATE x86-core)
+add_test(NAME unit.core-machine-entry-plan-smoke COMMAND core-machine-entry-plan-smoke)
+set_tests_properties(unit.core-machine-entry-plan-smoke PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+list(APPEND SHARED_X86_TEST_TARGETS core-machine-entry-plan-smoke)
+
 add_test(NAME x86.manifest COMMAND "${CMAKE_COMMAND}"
     "-DCOMMON_ROOT=${X86_ROOT}" -P "${COMMON_ROOT}/verify_manifest.cmake")
 add_test(NAME x86.corpus COMMAND "${CMAKE_COMMAND}"

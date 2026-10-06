@@ -1,11 +1,11 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "x86/core/machine_interface.h"
 
 static lib_i32 prepare_machine(core_machine **out_machine)
 {
     static const lib_u8 rom[] = { 0xf4u };
-    const core_machine_config config = {
+    const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE,
@@ -13,7 +13,7 @@ static lib_i32 prepare_machine(core_machine **out_machine)
     };
     core_machine *machine = LIB_NULL;
 
-    if (out_machine == LIB_NULL || core_machine_create(&config, &machine, LIB_NULL) !=
+    if (out_machine == LIB_NULL || core_machine_neutral_create(&config, &machine) !=
             LIB_STATUS_OK || core_machine_register_immutable_rom_mapping(machine,
             0x1000u, rom, sizeof(rom)) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||

@@ -26,6 +26,12 @@ static lib_bool single_chip(void)
     if (x86_pic_create(LIB_TRUE, &pic) != LIB_STATUS_OK) return LIB_TRUE;
     program(pic, 0x20u, 0u, 1u);
     x86_pic_set_inputs(pic, 0u, 0x22u, 0u);
+    x86_pic_register_state registers = {0u, 0xa5u, 0u};
+    failed |= x86_pic_capture_registers(LIB_NULL, &registers) != LIB_STATUS_INVALID_ARGUMENT || registers.imr != 0xa5u;
+    failed |= x86_pic_capture_registers(pic, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT;
+    failed |= x86_pic_capture_registers(pic, &registers) != LIB_STATUS_OK ||
+        registers.irr != 0x22u || registers.imr != 0u || registers.isr != 0u;
+    registers.irr = 0u; /* Mutating the copied snapshot cannot mask chip requests. */
     failed |= x86_pic_select(pic, &request) != LIB_STATUS_OK;
     failed |= request.vector != 0x21u || request.cascade;
     request = x86_pic_acknowledge(pic);

@@ -13,6 +13,42 @@ static lib_status debug_port_read(void *owner, lib_u16 port, lib_u64 tick,
 static lib_status debug_port_write(void *owner, lib_u16 port, lib_u32 value)
 { debug_port_probe *probe = owner; (void)port; if (probe->status != LIB_STATUS_OK) return probe->status; probe->value = value; return LIB_STATUS_OK; }
 
+static lib_i32 debug_observation_contract(core_machine *machine)
+{
+    const lib_u8 bytes[2] = {0x12u, 0x34u};
+    lib_u8 actual[2] = {0};
+    lib_u32 base = 0u, address = 0u;
+    lib_i32 size = -1;
+    lib_u8 enabled = LIB_FALSE;
+    if (core_machine_debug_get_code_base(machine, &base) != LIB_STATUS_OK || base != 0xffff0000u ||
+        core_machine_debug_get_code_default_size(machine, &size) != LIB_STATUS_OK || size != 0 ||
+        core_machine_debug_get_code_base(machine, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_debug_get_code_default_size(machine, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_debug_write_linear(machine, 0x100u, bytes, 1u) != LIB_STATUS_OK ||
+        core_machine_debug_read_real(machine, 0x10u, 0u, actual, 1u) != LIB_STATUS_OK || actual[0] != bytes[0] ||
+        core_machine_debug_write_real(machine, 0x10u, 1u, bytes + 1u, 1u) != LIB_STATUS_OK ||
+        core_machine_debug_read_linear(machine, 0x100u, actual, 2u) != LIB_STATUS_OK ||
+        lib_memory_compare(actual, bytes, sizeof(bytes)) != 0) return 1;
+    for (lib_u32 kind = CORE_MACHINE_DEBUG_WATCH_READ; kind <= CORE_MACHINE_DEBUG_WATCH_EXECUTE; ++kind) {
+        const core_machine_debug_watch_kind watch = (core_machine_debug_watch_kind)kind;
+        if (core_machine_debug_set_watchpoint(machine, watch, 0x12340000u + kind) != LIB_STATUS_OK ||
+            core_machine_debug_get_watchpoint(machine, watch, &enabled, &address) != LIB_STATUS_OK ||
+            !enabled || address != 0x12340000u + kind ||
+            core_machine_debug_clear_watchpoint(machine, watch) != LIB_STATUS_OK ||
+            core_machine_debug_get_watchpoint(machine, watch, &enabled, &address) != LIB_STATUS_OK ||
+            enabled || address != 0x12340000u + kind) return 1;
+    }
+    address = 0xfeedu;
+    enabled = LIB_TRUE;
+    if (core_machine_debug_get_watchpoint(machine, (core_machine_debug_watch_kind)3,
+            &enabled, &address) != LIB_STATUS_INVALID_ARGUMENT || !enabled || address != 0xfeedu ||
+        core_machine_debug_get_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_READ,
+            LIB_NULL, &address) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_debug_get_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_READ,
+            &enabled, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT) return 1;
+    return 0;
+}
+
 lib_i32 main(void)
 {
     core_machine *machine = LIB_NULL;
@@ -59,6 +95,10 @@ lib_i32 main(void)
         return 1;
     }
 
+    if (debug_observation_contract(machine)) {
+        core_machine_destroy(machine);
+        return 1;
+    }
     port_probe.status = LIB_STATUS_INTERNAL_ERROR;
     value = 0xdeadbeefu;
     if (core_machine_debug_read_port(machine, 0x00e0u, &value) !=

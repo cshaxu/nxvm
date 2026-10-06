@@ -89,6 +89,32 @@ static lib_i32 rational_clock_run(core_machine *machine, lib_u32 quantum)
     return 1;
 }
 
+static lib_i32 rational_clock_deadline_contract(void)
+{
+    const struct { core_machine_clock_ratio ratio; lib_u64 delivered, source; } cases[] = {
+        {{3u, 2u, 1u}, 1u, 1u}, {{3u, 2u, 1u}, 2u, 1u},
+        {{3u, 2u, 1u}, 3u, 2u}, {{1u, 3u, 2u}, 1u, 1u},
+        {{1u, 3u, 2u}, 2u, 4u}, {{0u, 0u, 0u}, 5u, 5u}
+    };
+    core_machine_clock_domain domain = {0};
+    lib_u64 source = 99u;
+    if (core_machine_clock_ratio_is_valid(LIB_NULL) ||
+        core_machine_clock_domain_source_ticks_until(LIB_NULL, 1u, &source) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_clock_domain_source_ticks_until(&domain, 1u, &source) != LIB_STATUS_INVALID_ARGUMENT ||
+        source != 99u) return 1;
+    for (lib_size i = 0u; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        if (!core_machine_clock_ratio_is_valid(&cases[i].ratio) ||
+            core_machine_clock_domain_initialize(&domain, &cases[i].ratio) != LIB_STATUS_OK ||
+            core_machine_clock_domain_source_ticks_until(&domain, cases[i].delivered, &source) != LIB_STATUS_OK ||
+            source != cases[i].source || domain.phase != domain.reset_phase || domain.delivered_ticks != 0u ||
+            core_machine_clock_domain_source_ticks_until(&domain, 1u, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT) return 1;
+    }
+    if (core_machine_clock_domain_initialize(&domain, &cases[0].ratio) != LIB_STATUS_OK) return 1;
+    source = 99u;
+    return core_machine_clock_domain_source_ticks_until(&domain, LIB_UINT64_MAX, &source) !=
+        LIB_STATUS_INVALID_ARGUMENT || source != 99u;
+}
+
 lib_i32 main(void)
 {
     core_machine_clock_domain domain;
@@ -100,7 +126,7 @@ lib_i32 main(void)
     rational_clock_probe reset = { { 0u }, 0u };
     rational_clock_probe split = { { 0u }, 0u };
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = 0;
+    lib_i32 failed = rational_clock_deadline_contract();
 
     failed |= core_machine_clock_domain_initialize(&domain, &ratio) !=
         LIB_STATUS_OK;

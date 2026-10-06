@@ -20,6 +20,25 @@ lib_i32 main(void)
         X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != LIB_STATUS_OK ||
         x86_video_configure_cecg(vadp, &config) != LIB_STATUS_OK;
 
+    failed |= x86_video_cecg_config_is_valid(LIB_NULL) || !x86_video_cecg_config_is_valid(&config);
+    for (lib_u32 field = 0u; field < 5u; ++field) {
+        x86_video_cecg_config invalid = config;
+        switch (field) {
+        case 0u: invalid.control_mode = 0u; break;
+        case 1u: invalid.display_type |= 0x04u; break;
+        case 2u: invalid.initial_mode = 0u; break;
+        case 3u: invalid.sw1_closed_mask = 0x10u; break;
+        default: invalid.clock_switch_select = 4u; break;
+        }
+        failed |= x86_video_cecg_config_is_valid(&invalid) ||
+            x86_video_configure_cecg(vadp, &invalid) != LIB_STATUS_INVALID_ARGUMENT ||
+            vadp->data.cecg.control_mode != config.control_mode ||
+            vadp->data.cecg.display_type != config.display_type ||
+            vadp->data.cecg.initial_mode != config.initial_mode ||
+            vadp->data.cecg.sw1_closed_mask != config.sw1_closed_mask ||
+            vadp->data.cecg.clock_switch_select != config.clock_switch_select;
+    }
+
     failed |= video_test_read(vadp,
         X86_VIDEO_REGISTER_AUXILIARY_CONTROL) != 0x50u ||
         video_test_read(vadp,

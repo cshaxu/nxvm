@@ -96,11 +96,6 @@ add_test(NAME unit.core-mantle-shape-smoke COMMAND core-mantle-shape-smoke)
 set_tests_properties(unit.core-mantle-shape-smoke PROPERTIES LABELS "unit;ibmpc" TIMEOUT 30)
 list(APPEND SHARED_IBMPC_TEST_TARGETS core-mantle-shape-smoke)
 
-add_executable(core-machine-entry-plan-smoke board-common/machine_entry_plan_smoke.c)
-target_link_libraries(core-machine-entry-plan-smoke PRIVATE ibmpc-board-common x86-core)
-add_test(NAME unit.core-machine-entry-plan-smoke COMMAND core-machine-entry-plan-smoke)
-set_tests_properties(unit.core-machine-entry-plan-smoke PROPERTIES LABELS "unit;ibmpc" TIMEOUT 30)
-list(APPEND SHARED_IBMPC_TEST_TARGETS core-machine-entry-plan-smoke)
 
 add_executable(core-machine-arbitration-s3-smoke board-common/machine_arbitration_s3_smoke.c)
 target_link_libraries(core-machine-arbitration-s3-smoke PRIVATE
@@ -360,7 +355,6 @@ add_test(NAME ibmpc.verifier-negative COMMAND "${CMAKE_COMMAND}"
 # PC-composition cases formerly registered by the inner x86 suite.
 shared_register_test(ibmpc core/dma_route_rollback x86-core ibmpc-board-common)
 foreach(core_case IN ITEMS
-    "machine-fpu-interface-s65-smoke|core/machine_fpu_interface_s65_smoke.c|ibmpc-board-common"
     "machine-instruction-timing-ledger-smoke|core/machine_instruction_timing_ledger_smoke.c|ibmpc-board-common"
     "core-machine-input-display-s5-smoke|board-common/machine_input_display_s5_smoke.c|ibmpc-board-common-observable"
     "core-machine-controller-authority-smoke|board-common/core_machine_controller_authority_smoke.c|ibmpc-board-common"
@@ -399,7 +393,6 @@ foreach(core_case IN ITEMS
     set_tests_properties("unit.${core_target}" PROPERTIES LABELS "unit;ibmpc" TIMEOUT 30)
     list(APPEND SHARED_IBMPC_TEST_TARGETS ${core_target})
 endforeach()
-target_link_libraries(machine-fpu-interface-s65-smoke PRIVATE x86-core)
 target_link_libraries(machine-instruction-timing-ledger-smoke PRIVATE x86-core)
 target_sources(core-machine-input-display-s5-smoke PRIVATE core/composition_fixture.c)
 target_link_libraries(core-machine-transaction-s2-smoke PRIVATE x86-core-observable)
@@ -480,17 +473,6 @@ shared_register_test(ibmpc board-common/composition/cpu_fpu_profile ibmpc-board-
 shared_register_test(ibmpc board-common/composition/machine_fpu_escape ibmpc-board-common x86-core)
 shared_register_test(ibmpc board-common/composition/machine_protected_privilege_board ibmpc-board-common x86-core)
 shared_register_test(ibmpc board-common/composition/machine_task_switch32_paging ibmpc-board-common x86-core)
-foreach(profile IN ITEMS 80186 80286 80386)
-    set(target "ibmpc-decoder-${profile}")
-    add_executable(${target}
-        "board-common/composition/core_machine_${profile}_decoder_inventory_runner.c")
-    target_link_libraries(${target} PRIVATE x86-cpu-shared)
-    target_compile_definitions(${target} PRIVATE
-        PROJECT_TEST_${profile}_DECODER_PATH="${CMAKE_CURRENT_BINARY_DIR}/decoder-${profile}.json")
-    add_test(NAME "ibmpc.decoder-${profile}" COMMAND ${target})
-    set_tests_properties("ibmpc.decoder-${profile}" PROPERTIES LABELS "unit;ibmpc" TIMEOUT 30)
-    list(APPEND SHARED_IBMPC_TEST_TARGETS ${target})
-endforeach()
 foreach(target IN LISTS SHARED_IBMPC_TEST_TARGETS)
     if(MSVC)
         target_compile_options(${target} PRIVATE /UNDEBUG)
