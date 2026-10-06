@@ -15,8 +15,10 @@ remains open; all T544 findings remain retained. Current owns progress and the n
 [T544](../history/M5-T544-retained-cpu-qualification.md) is closed as a
 completed CPU audit by owner direction. Its eighteen complete repair/proof
 receivers and linked family findings transfer to admitted T546,
-not to a claim of CPU correctness. Concrete Shared changes still require
-owner review. The [archived audit proposal](../history/M5-T544-retained-cpu-qualification-proposal.md)
+not to a claim of CPU correctness. Shared repairs follow the owner-approved
+automatic boundary in the [active repair proposal](../proposals/m5-cpu-audit-gap-repair.md);
+other Shared domains and explicit exceptions still require review.
+The [archived audit proposal](../history/M5-T544-retained-cpu-qualification-proposal.md)
 preserves original scope and the ledger preserves historical findings.
 
 Independent chips are closed as [T539](../history/M5-T539-independent-shared-chips.md).

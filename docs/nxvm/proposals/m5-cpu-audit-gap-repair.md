@@ -8,8 +8,12 @@ owners. The owner requested this receiver first in Queue and closed T544 as an
 audit, not as CPU qualification. Owner admits M5 T546 after verified T545
 closure at 966249c20. S1-S2 are accepted; Current owns the next active packet and the
 [task ledger](../history/M5-T546-cpu-audit-gap-repair.md) preserves the full
-transferred universe. General admission is not concrete Shared review;
-each concrete repair still receives the owner's review before code changes.
+transferred universe. On 2026-10-06 the owner explicitly includes x86/chips,
+x86/core and ibmpc in automatic approval. The nonexistent x86/devices is
+explicitly excluded; no new directory or alias is implied. Concrete existing-owner
+repairs in these domains may proceed with their recorded scheme and complete
+verification; this does not include Lib/Common/MyNES, new public APIs, scope
+expansion or silent source/L1/downgrade exceptions.
 
 The baseline is 7a759c20d and the accepted
 [T544 ledger](../history/M5-T544-retained-cpu-qualification.md),
@@ -67,7 +71,7 @@ bus and interrupt contracts already found by T544 are included, not x87 work.
 
 These are proposed numeric-only S batches, not active packets. Before each S,
 confirm its complete affected variants and dependencies against the imported
-ledger and obtain concrete Shared review. Evidence may split a large batch
+ledger and apply the automatic-approval boundary above. Evidence may split a large batch
 into later consecutive S numbers; no letter suffixes or omitted receivers.
 Regression corrections travel with the owning repair, not only with the final
 test review. Each S exits with its complete batch disposition and full units.

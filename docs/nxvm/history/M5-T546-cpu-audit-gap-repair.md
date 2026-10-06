@@ -29,7 +29,7 @@ semantic proof. Every new finding joins the whole owning batch before repair.
 | --- | --- | --- |
 | S1 | Reset and architectural images | Accepted: Shared P1 fc9a8b725, NXVM P2 912579a98, complete source/receiver/unit/boot/artifact proof in S1 evidence. |
 | S2 | Runtime decode/admission | Accepted: Shared P1 34867b960 and NXVM P2 01709c418, complete source/receiver/unit/boot/artifact proof in S2 evidence. |
-| S3 | Effective address and segment spans | Pending full source/context/caller batch. |
+| S3 | Effective address and segment spans | Existing-owner implementation automatically authorized on 2026-10-06 for x86/chips, x86/core and ibmpc; complete verification pending. |
 | S4 | Admission versus next fetch | Pending full source/context/caller batch. |
 | S5 | Host arithmetic/count | Pending full source/context/caller batch. |
 | S6 | Stack/frame publication | Pending full source/context/caller batch. |
@@ -190,3 +190,66 @@ artifact identities/hashes, unchanged INIs/media/MyNES and applicable gates
 exhaust this S's exit. Documentation/status/queue/source truth are reconciled;
 the remaining source and mechanism qualifications stay in S3-S19. This pure
 governance delivery accepts/closes S2 only; no next S is admitted here.
+
+## S3 Effective Address And Segment-Span Reconciliation
+
+Continuation against c3c9fd550 under the complete CPU repair goal. The
+[S3 design](../etc/evidence/t546-s3-address-span-design.md) maps the original
+family address/span findings to current owners, twenty-one offset additions,
+the real/VM widening and empty expand-down branches. The same sweep finds
+bit-memory immediates incorrectly shifting EA and contradicted existing test
+oracles; original Intel notes and read-only Bochs corroboration agree.
+Keep physical scalar phases, prepare the full segment span once, and avoid
+global address truncation or MMIO rollback claims. Required negative dword
+bit arithmetic and ordinary SS fault semantics are named dependencies, not
+silently left in another owner. Full frame/task/paging/delivery qualification
+remains in the complete later ledger. No Shared code, test, manifest or product
+input changes, new runtime proof or P delivery occur before concrete review.
+
+Source sweep additionally retains the unused bit-helper write argument and
+the whole ALU/bit RMW permission-versus-bus-effects contract in S13/S15.
+It is not silently considered qualified by the address repair or patched
+only for one bit instruction; ordinary CPU rollback is not MMIO rollback.
+
+Owner explicitly authorizes x86/chips, x86/core and ibmpc on 2026-10-06;
+only the nonexistent x86/devices authorization is then withdrawn. The
+presented S3 scheme now proceeds automatically
+under this boundary; corresponding owned tests/manifests and receiving
+verification travel with it. Lib/Common/MyNES, new public APIs, expanded
+scope and unresolved L1/downgrade/source dispositions still need review.
+
+S3 whole-suite verification exposes ten x64 failing registrations (eight
+distinct bodies/producers); x86 reproduces the same classes before its
+unchanged aggregate deadline. The implementation evidence records the full
+batch, not a partial acceptance. Existing far-transfer timing consumers require
+the original selector-only crm value after paired-field decoding; all four
+bodies restore that contract without changing any source timing row. Old
+real-mode success fixtures are corrected against actual segment limits and
+retained cached descriptors, preserving their functional assertions. Rebuilt
+x64 tests for the complete failure batch plus the span matrix pass 9/9.
+Final dual-width builds, complete unit and original external qualification
+still precede any P delivery or S3 closure.
+
+The S3 caller sweep retains an additional host-reference finding for S5:
+_m_read_ref and _m_write_ref each contain an impossible interval conjunction,
+so their nominal internal-object guard never rejects. Inspect decoder-derived
+reference eligibility and host-width/overflow together before either removing
+redundant guards or replacing them at their sole owner. This ref-helper class
+is not qualified by guest-segment-span tests and cannot disappear at T closure.
+
+S3 executor verification completes against the GP-preserved production hash:
+final formatted-source units 536/536 per width (127.02 s/118.02 s), original
+external integration 58/58, supplemental checks 33/33 per width and both
+specialized aggregates, including explicit negative self-tests. Eight stripped
+PC 0546 artifacts, manifests and final Types/documentation checks are qualified;
+INIs, external media masters and the exact MyNES pair remain unchanged.
+Source/test/build descriptions count eleven paths +596/-113, net +483;
+production alone is +82/-89, net -7. The implementation evidence preserves
+source decisions, failure/retest chronology, all candidate identities and the
+final actual-diff review map. Target-separated P delivery and coordinator
+acceptance still precede S3 closure; the complete T546 ledger remains open.
+
+Shared implementation P1 is 15a2399d0, pushed to origin/master, containing
+the complete CPU/source-test/manifest batch only. NXVM P2 delivers the full
+evidence/source decisions, scope records and eight verified PC replacements.
+No extra implementation or scope is introduced by that delivery.
