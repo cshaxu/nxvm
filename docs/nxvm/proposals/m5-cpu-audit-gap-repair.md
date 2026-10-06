@@ -6,7 +6,7 @@ Repair the complete implemented-family instruction/function/timing gaps found
 by T544, preserving 8086, 8088, 80186, 80286 and 80386 and their sole chip/Core
 owners. The owner requested this receiver first in Queue and closed T544 as an
 audit, not as CPU qualification. Owner admits M5 T546 after verified T545
-closure at 966249c20. S1 is accepted; Current owns the next active packet and the
+closure at 966249c20. S1-S2 are accepted; Current owns the next active packet and the
 [task ledger](../history/M5-T546-cpu-audit-gap-repair.md) preserves the full
 transferred universe. General admission is not concrete Shared review;
 each concrete repair still receives the owner's review before code changes.

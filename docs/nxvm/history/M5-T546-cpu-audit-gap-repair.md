@@ -28,7 +28,7 @@ semantic proof. Every new finding joins the whole owning batch before repair.
 | Planned S | Complete receiver | Current disposition |
 | --- | --- | --- |
 | S1 | Reset and architectural images | Accepted: Shared P1 fc9a8b725, NXVM P2 912579a98, complete source/receiver/unit/boot/artifact proof in S1 evidence. |
-| S2 | Runtime decode/admission | Complete approved mechanism and Model40 clock-input dependency implemented; final dual-width units 534/534, original receiving contexts 58/58 and artifact/gate proof pass. P delivery and acceptance pending. |
+| S2 | Runtime decode/admission | Accepted: Shared P1 34867b960 and NXVM P2 01709c418, complete source/receiver/unit/boot/artifact proof in S2 evidence. |
 | S3 | Effective address and segment spans | Pending full source/context/caller batch. |
 | S4 | Admission versus next fetch | Pending full source/context/caller batch. |
 | S5 | Host arithmetic/count | Pending full source/context/caller batch. |
@@ -177,3 +177,16 @@ Shared implementation P1 is 34867b960, pushed to origin/master: the existing
 CPU owner and its x86/IBMPC test receivers/manifests only. NXVM delivery owns
 Model40 frozen input reconciliation, App fixtures, bounded integration
 diagnostics, complete evidence and all eight verified 0546 PC replacements.
+
+### S2 Coordinator Acceptance
+
+NXVM implementation P2 is 01709c418, pushed. Coordinator switches roles and
+inspects both actual commits against the original request, complete approved
+packet, source conflict dispositions and similar-issue sweep. It accepts the
+single fetch/admission owner, source-conditioned receiver corrections and
+Model40-only input reconciliation without altered CPU costs or a BIOS path.
+Final dual-width units 534/534, all 58 original external contexts, eight current
+artifact identities/hashes, unchanged INIs/media/MyNES and applicable gates
+exhaust this S's exit. Documentation/status/queue/source truth are reconciled;
+the remaining source and mechanism qualifications stay in S3-S19. This pure
+governance delivery accepts/closes S2 only; no next S is admitted here.

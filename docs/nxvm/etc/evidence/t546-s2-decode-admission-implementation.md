@@ -310,3 +310,8 @@ pure governance P records coordinator acceptance and closes S2 only.
 Shared implementation P1 is 34867b960, pushed. The current artifacts contain
 that exact CPU source plus the reviewed Model40 App input diff; source commit
 and the recorded binary hashes identify them independently of build timestamps.
+
+NXVM implementation P2 is 01709c418, pushed. Coordinator actual-change review
+accepts both target-separated deliveries and every assigned exit above. The
+retained 186/source-conflict and full later mechanism receivers are not hidden
+by unit/boot success. Governance acceptance closes S2 only; T546 stays open.
