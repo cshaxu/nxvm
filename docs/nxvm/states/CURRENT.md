@@ -7,8 +7,35 @@
 | T544 | Closed as CPU audit; complete repair/proof findings transferred to the first queued proposal, not claimed repaired. |
 | M5 Td S177 | Complete: CPU audit closure and full repair transfer, archive/queue/reference reconciliation. |
 | T545 | Closed after S7 actual-change acceptance: fixed eight-corpus import, preserved receivers, four owner-local test packages and full receiving qualification. No active S packet. |
+| T546 S1 | Complete executor proof: Shared P1 fc9a8b725 pushed; NXVM receivers/artifacts/evidence delivered next, then coordinator acceptance. |
+
+## Active T546 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New: M5 T546 S1 after closed T545 S7 P2 966249c20; numeric allocation reconciled with Git/current history. |
+| Admission And Approval | Owner requested CPU repair after T545 closure and explicitly approves the listed S1 component changes on 2026-10-05. Approved: Shared CPU reset/FLAGS/MSW and matching owner tests/manifests; NXVM evidence, necessary receiver assertions and eight PC 0546 artifacts. No Lib/Common/MyNES or INI changes. |
+| Objective | Consume the complete reset/architectural-image batch: early CS:IP/base, family cache/control reset, 286 MSW readout and generation-specific internal/load/outgoing FLAGS; repair after reviewed Shared design and verify the whole batch. |
+| Non-goals | Board/BIOS reset overrides, new CPU families, Lib/Common/MyNES edits, global FLAGS mask for unrelated POPF/IRET/task privilege rules, timing guesses or premature task closure. |
+| Reference Baseline | 966249c20; [T546 convergence ledger](../history/M5-T546-cpu-audit-gap-repair.md), T544 boundary and all five-family audits linked there. T545 complete runtime baseline remains accepted. |
+| Candidate Proposal | [CPU repair proposal](../proposals/m5-cpu-audit-gap-repair.md), initial S1 and original eighteen repair/proof receivers plus final qualification. |
+| Files And ABI Surface | Approved sole src/x86/chips/cpu reset/FLAGS/MSW owners; matching test/x86 reset/FLAGS/system/Core cases and three test/ibmpc oracle/setup receivers, manifests. NXVM timing fixture, current recipe/preset revision, packet/queue/history/evidence and eight verified PC artifacts. No new public API or App workaround. |
+| Applicable Rules | Execution: whole-batch convergence, concrete Shared review, full dual-width units, separate targets and artifacts. Architecture skill/rules: one CPU state/time owner, no App repair. Coding skill/rules: original table handlers, Types vocabulary, no duplicate path. Documentation: truthful tier and status. Source policy/PDF skill: original identities and visually confirmed tables, external/ignored scratch only. |
+| Verification | Read and render original reset/FLAGS/MSW source pages, inspect all load/image/reset callers and oracle assumptions; transient reset/FLAGS/system tests then complete 532-case receiving units both widths. After approved code changes, rebuild all four receiving PC x64/x86 pairs at 0546, retain INIs, verify PE/hash/strip and run affected boot groups once. All eight manifests and applicable corpus/Types/specialized/documentation gates. |
+| Expected Markers | Source-conditioned reset/FLAGS/MSW matrices, retained first physical fetch, full unit zero failures, no required skipped boot/gate, all changed receiving artifacts current; source-undefined fields excluded from precise claims. |
+| Asset Needs | Existing archived original CPU manuals; code-defined unit fixtures only. Existing external INI/media for receiving boot regression; no new ROM/media acquisition or master modification. |
+| Reporting Requirements | Report whole S1 source/code/regression map and concrete pseudocode/diff estimate before Shared edits; report conflicts/L1/false-grade changes; deliver complete proof/artifacts/commits after implementation and actual-change review. |
+| Stop Conditions | Unresolved original authority, unupgradable L1 or necessary downgrade requires owner disposition. Do not equate 286 IDT programmer/hardware source conflict with proven defect. Changes beyond this approved CPU batch require concrete review. |
+| Exit Criteria | All S1 fields/forms/callers have direct repaired or source-proven non-applicable disposition, sources/regressions agree, full units/receiving artifacts/gates pass and target-correct P deliveries pushed; no pending reset/image member hidden in S7 privilege work. |
+| Original Owner Request | Admit next T and correctly repair CPU instructions and timing according to the full audit list; finish previous T first. |
+| Similar-Issue Sweep | All five implementations plus DEFAULT resolution, cold/processor resets, CPU contexts/opaque instances/Core/board callers; outgoing PUSHF and interrupt frames versus incoming POPF/IRET/task paths; no universal saved/writable mask. |
 
 ## Accepted T545 Baseline
+
+Active T546 developer target is vm-0-5-0546 (0.5.0546), optimized stripped
+x64/x86 pairs for all four fixed PC Apps. They are rebuilt and verified;
+the former accepted 0545 baseline is retained in T545 history, not assets.
+MyNES remains 0043 and is not rebuilt for CPU-only changes.
 
 S7 implementation P1 is `90e91d721`, pushed to origin/master. Coordinator
 actual-change review accepts the entire original request, S1-S6 ledgers and
@@ -43,22 +70,22 @@ the S1/S2 inventory and S3-S6 evidence linked by task history.
   alone owns D4. No App production graph links a peer App.
 - Shared tests follow their owners; actual model assertions stay App-local.
   The one external family harness executes each real fixed binding and its INI.
-- Eight optimized stripped PC 0.5.0545 EXEs remain directly in assets/my5160,
+- Eight optimized stripped PC 0.5.0546 EXEs remain directly in assets/my5160,
   assets/my5170, assets/mydeskpro386 and assets/nxvm, with unchanged adjacent
   owner INIs. MyNES retains its two 0.0.0043 EXEs in assets/mynes. All ten
-  hashes match S2 evidence; PE widths and absence of compiler debug sections
-  are verified. Runtime Debug remains. No test-only rebuild is manufactured.
+  hashes are in [S1 evidence](../etc/evidence/t546-s1-reset-images.md); PE widths,
+  current identity and absence of compiler debug sections are verified.
+  Runtime Debug remains; only CPU-dependent PC products are rebuilt.
 - External media masters remain unchanged after overlay integration. No owned
   build/test process remains. Ignored receiving caches remain needed for the
-  immediate CPU repair's incremental regression checks.
+  next decode/admission batch's incremental regression checks.
 
 ## Next Work And Qualification Boundary
 
-The owner requests CPU instruction/function/timing repair next. The first
-[Queue candidate](QUEUE.md) is [CPU gap repair](../proposals/m5-cpu-audit-gap-repair.md),
-with eighteen coherent mechanism/proof batches and final qualification.
-Its next numeric T and S1 packet are not allocated by T545 closure.
-Concrete Shared repair review remains required by that proposal.
+The owner-requested CPU instruction/function/timing repair is now admitted as
+T546 S1 above, with eighteen coherent mechanism/proof batches and final
+qualification. Remaining candidates stay in [Queue](QUEUE.md). Concrete
+Shared repair review remains required by the [proposal](../proposals/m5-cpu-audit-gap-repair.md).
 
 T544's [complete audit](../etc/evidence/t544-s7-five-family-convergence.md)
 and family findings remain intact. T545 imports/tests/boot qualification do

@@ -245,6 +245,16 @@ static lib_i32 timing_manifest_prepare(core_machine **out_machine,
         status = core_machine_reset(machine);
     }
     if (status == LIB_STATUS_OK) {
+        /* Recipes select F000:FFF0; they do not define the hardware reset image. */
+        const core_machine_debug_register_patch entry = {
+            .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+            .values = { [CORE_MACHINE_DEBUG_CS] = 0xf000u,
+                [CORE_MACHINE_DEBUG_EIP] = 0xfff0u }
+        };
+        status = core_machine_debug_patch_registers(machine, &entry);
+    }
+    if (status == LIB_STATUS_OK) {
         status = core_machine_set_a20(machine, 1);
     }
     if (status == LIB_STATUS_OK) {

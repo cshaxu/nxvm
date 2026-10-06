@@ -5,19 +5,17 @@ Ordered unnumbered candidates; no numeric implementation task is admitted here.
 ## M5 Candidates
 
 The separately admitted [T545 eight-corpus refresh](../history/M5-T545-softpc-eight-corpus-refresh.md)
-is closed after full receiving verification. The CPU repair candidate below
-remains first and all T544 findings remain retained; Current owns admission.
+is closed after full receiving verification. [T546 CPU repair](../history/M5-T546-cpu-audit-gap-repair.md)
+is now admitted; all T544 findings remain retained. Current owns its S1 packet.
 
-1. [CPU audit gap repair and qualification](../proposals/m5-cpu-audit-gap-repair.md)
-2. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
-3. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-4. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+1. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
+2. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+3. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 
 [T544](../history/M5-T544-retained-cpu-qualification.md) is closed as a
 completed CPU audit by owner direction. Its eighteen complete repair/proof
-receivers and linked family findings transfer to the first candidate above,
-not to a claim of CPU correctness. The repair candidate is not yet admitted
-and consumes no numeric T identifier; concrete Shared changes still require
+receivers and linked family findings transfer to admitted T546,
+not to a claim of CPU correctness. Concrete Shared changes still require
 owner review. The [archived audit proposal](../history/M5-T544-retained-cpu-qualification-proposal.md)
 preserves original scope and the ledger preserves historical findings.
 
