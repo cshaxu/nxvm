@@ -7,28 +7,28 @@
 | T544 | Closed as CPU audit; complete repair/proof findings transferred to the first queued proposal, not claimed repaired. |
 | M5 Td S177 | Complete: CPU audit closure and full repair transfer, archive/queue/reference reconciliation. |
 | T545 | Closed after S7 actual-change acceptance: fixed eight-corpus import, preserved receivers, four owner-local test packages and full receiving qualification. No active S packet. |
-| T546 S4 | Shared implementation P1 2d9929742 is pushed after complete source/caller/receiver qualification: 121-context CPU probe, 537/537 units and 33/33 supplemental per width, both gates, eight products and all original 58 external contexts pass. Final hashes/inputs and scoped self-review pass. NXVM receiving/artifact P2 and coordinator acceptance remain pending. |
+| T546 S4 | Accepted after coordinator actual-change review of pushed Shared P1 2d9929742 and NXVM P2 ca016635d: complete source/caller/receiver proof, 537/537 units per width, original 58/58 external contexts and eight qualified 0546 PC artifacts. S4 closed; no active S packet. |
 
-## Active T546 S4 Packet
+## Accepted S4 Admission Versus Next Fetch
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T546 S4 after accepted S3 P3 97c5028e2; next unused numeric S. |
-| Admission And Approval | Owner approved complete T546 CPU repair and automatic numeric S admission. The 2026-10-06 automatic boundary covers x86/chips, x86/core and ibmpc plus corresponding tests/manifests/receiving proof; all timing-accuracy upgrades are automatically approved, downgrades require approval. S4's existing timing-origin enum append has explicit approval. The nonexistent x86/devices remains excluded. Shared Lib/Common, MyNES, other new public API, scope expansion and unresolved source/unupgradable L1 remain outside approval. |
-| Objective | Resolve the complete admission-versus-next-fetch batch: preserve required current-instruction logical target/frame/access checks, remove unjustified unused-EIP/ESP and speculative target-page checks, and prove that completed instructions/transfers are not rolled back for a later fetch fault. |
-| Non-goals | New CPU/API/decoder/executor/event framework, App/firmware/INI/media/clock changes, Lib/Common/MyNES, full frame/gate/task/exception/paging or physical-time qualification, silently changing fault priority or timing tiers. |
-| Reference Baseline | 97c5028e2; accepted Shared CPU/test 15a2399d0 and NXVM artifacts d875a72fe. Complete T544 cross-family/family/convergence records and T546 ledger remain authoritative; S2 removed generic postchecks, S3 repaired range geometry without completing this batch. |
-| Candidate Proposal | [CPU repair](../proposals/m5-cpu-audit-gap-repair.md), S4; [S4 design inventory](../etc/evidence/t546-s4-admission-next-fetch-design.md) reconciles ordinary, branch/return, gate/interrupt and task-code target consumers. |
-| Files And ABI Surface | Existing CPU access/transfer/init/preview/timing-consumer owners in x86/chips/cpu and necessary x86/core seam; owner-local test/x86/test/ibmpc with manifests, receiving test/app-nxvm/unit/board/machine_80386_timing_manifest_runner.c and cmake/nxvm/verify_t435_s3_cpu_timing_seam.cmake oracle batches. The whole next-term sweep also corrects false m additions on fixed 386 protected IRET/INT/INTO and task CALL/JMP rows, using the original task-format table. NXVM task evidence and actually affected eight PC 0546 products. Owner explicitly approved appending L2_CONTROL_MODEL to the existing timing-origin enum without renumbering or new functions/types; accuracy upgrades are automatically approved, downgrades require approval. Lib/Common, MyNES and firmware remain excluded. |
-| Applicable Rules | Execution full batch/actual-diff review, numeric allocation and target-separated pushed P lifecycle; architecture/coding skills and rules preserve one access/retirement owner and original tables; documentation/source/PDF rules require original-page evidence and truthful pending qualification. |
-| Verification | Original family prefetch/target/return pages, complete caller and regression sweep, current-body commit versus next-fetch diagnostic/CPU/time/publication predicates. All applicable families, sizes, modes and transfer outcomes. Complete final x64/x86 units, manifests/Types/corpus and affected gates; receiving optimized stripped dual-width PC artifacts and original 58 external contexts once for final production. Unit inputs remain code-owned. |
-| Expected Markers | Last legal current byte may retire; unused ESP is not accessed; invalid current logical target/frame rejects in its source-defined phase; valid target with unavailable fetch page does not publish an early PF/A-D side effect. The subsequent attempted fetch owns its return address/context and fault. |
-| Asset Needs | Existing owner CPU original manuals and retained ignored research/build caches; no new acquisition or copied third-party implementation. Existing unchanged external INI/media only for receiving integration, with overlay and final master/hash verification. |
-| Reporting Requirements | Confirm the whole mechanism and concrete scheme before edits; report every caller disposition, retained dependency, changed source/timing grade or unupgradable L1. Complete delivery includes actual source/test counts, all final proof and artifact/source identities, not a narrow smoke summary. |
-| Stop Conditions | Stop/report unresolved original-source rule, unsupported necessary interface, material scope expansion or unupgradable L1/downgrade. Do not weaken an oracle or remove a real operand/frame/descriptor access merely to make a transfer pass. No production edits before original-source/caller reconciliation. |
-| Exit Criteria | Every admitted post-body/target-reference member is repaired with direct source/context proof or source-proven non-applicable; existing S2 removals and retained logical targets have direct regressions. Required final verification/artifact delivery and coordinator review accept; full S6/S9/S11-S13/S16-S17 contracts remain explicitly retained. |
-| Original Owner Request | Repair the complete CPU instruction/function/timing audit list with minimal correct owner-level mechanisms and original table style; automatically admit consecutive S tasks without narrowing the whole T to early passing cases. |
-| Similar-Issue Sweep | All _kma_test_logical/_kma_test_access code-target callers, obsolete postcheck names, ordinary ESP/EIP setters, near/far/gate/interrupt/IRET/RET/task targets, preview/lookahead/time consumers and Core retirement/fault publication. Distinguish actual stack/descriptor references and retain their owning complete batches. |
+Coordinator actual-change review accepts pushed Shared P1 `2d9929742` and
+NXVM P2 `ca016635d` against the complete S4 packet and
+[direct proof](../etc/evidence/t546-s4-admission-next-fetch-design.md).
+Ten target checks retain logical admission without speculative page faults;
+one preview model distinguishes missing-input L2 from exact m/ts source rows.
+Original handlers, real frame/descriptor checks and single retirement/time
+owners remain. The only public extension is the explicitly approved enum append.
+
+Final complete units pass 537/537 per width (117.63 s/221.41 s), original
+integration 58/58 once, supplemental 33/33 per width, both full gates, final
+manifests/Types and eight optimized stripped 0546 artifact checks. Production
+net +23 lines; source/test/build net +627 supplies the missing 121-case chip
+matrix, Core publication proof and source-derived receiving oracle/gate fixes.
+INIs, five master images, Lib/Common and exact MyNES EXEs remain unchanged.
+Unrelated MyNES documentation is preserved outside this task.
+
+S4 is closed with no active packet. T546 remains open for S5-S19, including
+full frame/gate/task/paging/delivery/NPX/RMW and remaining timing contexts.
 
 ## Accepted S3 Effective Address And Segment Spans
 
@@ -43,8 +43,8 @@ Final units pass 536/536 per width (127.02 s/118.02 s), original integration
 58/58, supplemental 33/33 per width, both specialized aggregates, final
 manifests/Types/documentation and eight artifact checks. Production net -7
 lines; counted source/test/build net +483 supplies the missing matrix proof.
-INIs, external masters and MyNES remain unchanged. S3 is closed with no active
-packet; T546 remains open for S4-S19. Complete frame/task/paging/delivery/RMW
+INIs, external masters and MyNES remain unchanged. S3 remains accepted; S4's subsequent closure is recorded above.
+T546 remains open for S5-S19. Complete frame/task/paging/delivery/RMW
 and the two inherited host-reference guards retain their explicit later owners.
 
 ## Accepted S2 Decode/Admission And Model40 Inputs
@@ -58,7 +58,7 @@ and eight verified optimized stripped 0546 PC artifacts. INIs, external masters
 and the exact MyNES pair are unchanged. No public API or parallel owner is added;
 production net +1 line. The Model40 conversion is L2, not physical L3.
 
-S1-S3 are closed; T546 remains open for S4-S19. The owner-authorized
+S1-S4 are closed; T546 remains open for S5-S19. The owner-authorized
 automatic boundary remains unchanged for the next admission. S1's
 accepted reset/image proof remains in the [task history](../history/M5-T546-cpu-audit-gap-repair.md).
 
@@ -94,10 +94,10 @@ the S1/S2 inventory and S3-S6 evidence linked by task history.
 
 ## Current Technical And Runnable Baseline
 
-Accepted implementation baseline is S3: Shared CPU/tests `15a2399d0` and
-NXVM evidence/artifacts `d875a72fe`. The eight 0546 PC EXEs use the corrected
-production hash and final artifact identities in S3 evidence, not the retired
-S2 or pre-review candidate hashes. Governance adds no executable input.
+Accepted implementation baseline is S4: Shared CPU/tests `2d9929742` and
+NXVM evidence/artifacts `ca016635d`. The eight 0546 PC EXEs use the corrected
+production hashes and final artifact identities in S4 evidence, not the
+retired S3 or earlier candidate hashes. Governance adds no executable input.
 
 - Independent chips and sole CPU implementation live in x86/chips; neutral
   execution, memory/ports and guest time live in x86/core.
@@ -110,18 +110,18 @@ S2 or pre-review candidate hashes. Governance adds no executable input.
 - Eight optimized stripped PC 0.5.0546 EXEs remain directly in assets/my5160,
   assets/my5170, assets/mydeskpro386 and assets/nxvm, with unchanged adjacent
   owner INIs. MyNES retains its two 0.0.0043 EXEs in assets/mynes. PC hashes
-  are in [S3 evidence](../etc/evidence/t546-s3-address-span-implementation.md),
+  are in [S4 evidence](../etc/evidence/t546-s4-admission-next-fetch-design.md),
   unchanged MyNES hashes in [S1 evidence](../etc/evidence/t546-s1-reset-images.md); PE widths,
   current identity and absence of compiler debug sections are verified.
   Runtime Debug remains; only CPU-dependent PC products are rebuilt.
-- External media masters remain unchanged after final S3 overlay integration.
+- External media masters remain unchanged after final S4 overlay integration.
   All recorded owned build/test handles are terminal. Ignored receiving caches
   remain needed for the next CPU repair batch's incremental regression checks.
 
 ## Next Work And Qualification Boundary
 
 The owner-requested CPU instruction/function/timing repair remains open as
-T546 after accepted S3, with S4-S19 mechanism/proof batches and final
+T546 after accepted S4, with S5-S19 mechanism/proof batches and final
 qualification pending. Remaining candidates stay in [Queue](QUEUE.md). Concrete
 Shared changes follow the automatic-approval boundary recorded in the
 [proposal](../proposals/m5-cpu-audit-gap-repair.md).

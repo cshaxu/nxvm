@@ -527,3 +527,15 @@ approved appended timing-origin value with every old value preserved. NXVM
 receiving checker/oracle, task evidence and eight artifact paths are the
 separate P2 target. Unrelated MyNES documentation is excluded, and no force
 push, history rewrite or destructive worktree cleanup occurs.
+
+Coordinator post-delivery review reads the actual immutable Shared P1
+2d9929742 and NXVM P2 ca016635d diffs, not just these result tables. Changed
+source/test bytes match their reviewed commit objects and final run sources.
+The original request and sixteen-field S4 packet map to the ten caller
+matrix, negative admission/real-frame cases, endpoint/RET-immediate rules,
+non-mutating preview, explicit L2 origin, exact fixed/task clocks, Core
+retirement/time publication and all receiving proof. All named exit markers
+have direct evidence; S6/S9/S11-S13/S15-S17 residual contracts remain explicit
+and are not certified by this seam closure. Review accepts both delivered P
+targets. Pure NXVM governance P3 closes S4 and removes its active packet;
+T546 stays open. Only unrelated MyNES documentation remains in the worktree.

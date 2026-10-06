@@ -30,7 +30,7 @@ semantic proof. Every new finding joins the whole owning batch before repair.
 | S1 | Reset and architectural images | Accepted: Shared P1 fc9a8b725, NXVM P2 912579a98, complete source/receiver/unit/boot/artifact proof in S1 evidence. |
 | S2 | Runtime decode/admission | Accepted: Shared P1 34867b960 and NXVM P2 01709c418, complete source/receiver/unit/boot/artifact proof in S2 evidence. |
 | S3 | Effective address and segment spans | Accepted: Shared P1 15a2399d0, NXVM P2 d875a72fe, governance P3 97c5028e2; complete source/receiver/unit/boot/artifact proof in S3 evidence. |
-| S4 | Admission versus next fetch | Executor complete: pushed Shared P1 2d9929742; ten code-target preflights repaired, next-term consumers consolidated with approved L2 origin, fixed m/ts rows restored. S4 evidence proves complete double-width units/gates/eight artifacts and 58/58 original external contexts. NXVM P2 and coordinator acceptance pending. |
+| S4 | Admission versus next fetch | Accepted after coordinator actual-change review: pushed Shared P1 2d9929742 and NXVM P2 ca016635d; ten code-target owners, m/ts and L2 attribution, complete dual-width units/gates/eight artifacts and 58/58 original external contexts are proven in S4 evidence. S4 closes through governance P3, with S5-S19 retained. |
 | S5 | Host arithmetic/count | Pending full source/context/caller batch. |
 | S6 | Stack/frame publication | Pending full source/context/caller batch. |
 | S7 | FLAGS privilege and return | Pending full source/context/caller batch; distinct from S1 image/load classification. |
