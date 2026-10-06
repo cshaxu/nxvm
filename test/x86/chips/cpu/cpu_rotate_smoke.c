@@ -1,6 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
+#include "x86/chips/cpu/cpu_timing.h"
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: unsupported Group-2 forms are CPU-owned. */
 
 typedef cpu_instruction_fixture rotate_fixture;
@@ -122,7 +123,7 @@ static lib_i32 rotate_test_forms(void)
         }
         if (mode == 0u)
             code[bytes++] = count;
-        if (effective == 1u)
+        if ((count & 0x1fu) == 1u)
             flag_mask |= VCPU_EFLAGS_OF;
         state.cpu.data.eax = initial;
         state.cpu.data.ecx = source;
@@ -141,7 +142,7 @@ static lib_i32 rotate_test_forms(void)
         failed |= (width == 8u ? (observed & 0xffu) : width == 16u ?
             (observed & 0xffffu) : observed) != expected ||
             (after.data.eflags & VCPU_EFLAGS_CF) != (carry ? VCPU_EFLAGS_CF : 0u) ||
-            (effective == 1u && (after.data.eflags & VCPU_EFLAGS_OF) !=
+            ((count & 0x1fu) == 1u && (after.data.eflags & VCPU_EFLAGS_OF) !=
                 (rotate_overflow(operation, width, expected, carry) ? VCPU_EFLAGS_OF : 0u)) ||
             (after.data.eflags & (flag_mask & ~VCPU_EFLAGS_CF & ~VCPU_EFLAGS_OF)) !=
                 (flags & (flag_mask & ~VCPU_EFLAGS_CF & ~VCPU_EFLAGS_OF)) ||
@@ -638,8 +639,175 @@ static lib_i32 rotate_test_80186_immediate_extensions(void)
     return 1;
 }
 
+/* Intel count rules apply before reduction of the carry ring's loop steps.
+ * The closed-form oracle rotates a width+1-bit value, not the CPU's loop. */
+static lib_bool rotate_test_carry_ring_boundaries(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const lib_u8 counts[] = {0u, 1u, 8u, 9u, 10u, 16u,
+        17u, 18u, 31u, 32u, 33u, 255u};
+    const lib_u32 preserved = VCPU_EFLAGS_AF | VCPU_EFLAGS_PF |
+        VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF;
+    lib_u8 profile, width_index, direction, count_index, carry, memory;
+
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (width_index = 0u; width_index < (profile == 4u ? 3u : 2u); ++width_index)
+    for (direction = 0u; direction < 2u; ++direction)
+    for (count_index = 0u; count_index < sizeof(counts); ++count_index)
+    for (carry = 0u; carry < 2u; ++carry)
+    for (memory = 0u; memory < 2u; ++memory) {
+        const lib_u8 width = width_index == 0u ? 8u : width_index == 1u ? 16u : 32u;
+        const lib_u8 count = profile < 2u ? counts[count_index] :
+            (lib_u8)(counts[count_index] & 0x1fu);
+        const lib_u8 steps = (lib_u8)(count % (width + 1u));
+        const lib_u32 mask = rotate_mask(width);
+        const lib_u32 initial = 0x8123a581u;
+        const lib_u32 flags = preserved | VCPU_EFLAGS_OF |
+            (carry ? VCPU_EFLAGS_CF : 0u);
+        const lib_u64 ring_mask = (UINT64_C(1) << (width + 1u)) - 1u;
+        lib_u64 ring = ((lib_u64)carry << width) | (initial & mask);
+        lib_u8 code[7] = {0};
+        lib_u8 bytes = 0u;
+        lib_u32 observed = 0u, expected, expected_cf;
+        rotate_fixture state;
+        t_cpu after;
+
+        if (steps != 0u)
+            ring = direction ? ((ring >> steps) | (ring << (width + 1u - steps))) :
+                ((ring << steps) | (ring >> (width + 1u - steps)));
+        ring &= ring_mask;
+        expected = (lib_u32)ring & mask;
+        expected_cf = (lib_u32)(ring >> width);
+        if (width == 32u) code[bytes++] = 0x66u;
+        code[bytes++] = width == 8u ? 0xd2u : 0xd3u;
+        code[bytes++] = (lib_u8)((direction ? 3u : 2u) << 3u) |
+            (memory ? 0x06u : 0xc0u);
+        if (memory) { code[bytes++] = 0u; code[bytes++] = 0x40u; }
+        cpu_instruction_prepare(&state, profiles[profile]);
+        state.cpu.data.eax = initial;
+        state.cpu.data.ecx = 0x55667700u | counts[count_index];
+        state.cpu.data.eflags = flags;
+        if (memory && cpu_instruction_write(&state, 0x4000u, &initial,
+                width / 8u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK)
+            return LIB_FALSE;
+        if (cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK ||
+                state.fault.valid) return LIB_FALSE;
+        if (memory) {
+            if (cpu_instruction_read(&state, 0x4000u, &observed, width / 8u,
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                    LIB_STATUS_OK) return LIB_FALSE;
+        } else observed = after.data.eax;
+        if ((observed & mask) != expected ||
+                (after.data.eflags & VCPU_EFLAGS_CF) !=
+                    (expected_cf ? VCPU_EFLAGS_CF : 0u) ||
+                (after.data.eflags & preserved) != preserved ||
+                state.instructions.data.opr2 != count ||
+                (count == 0u && after.data.eflags != flags) ||
+                (count == 1u && (after.data.eflags & VCPU_EFLAGS_OF) !=
+                    (rotate_overflow(direction ? 3u : 2u, width, expected,
+                        expected_cf) ? VCPU_EFLAGS_OF : 0u)) ||
+                ((state.instructions.data.udf & VCPU_EFLAGS_OF) != 0u) !=
+                    (count > 1u) ||
+                after.data.ecx != (0x55667700u | counts[count_index]) ||
+                after.data.eip != bytes ||
+                (memory ? after.data.eax != initial :
+                    after.data.eax != ((initial & ~mask) | expected))) {
+            lib_c_fprintf(lib_c_stderr,
+                "carry ring profile=%u width=%u direction=%u count=%u cf=%u memory=%u\n",
+                (unsigned)profile, (unsigned)width, (unsigned)direction,
+                (unsigned)counts[count_index], (unsigned)carry, (unsigned)memory);
+            return LIB_FALSE;
+        }
+        if (!memory && profile != 1u && profile != 4u) {
+            core_machine_cpu_timing_result timing;
+            const lib_u64 expected_ticks = profile == 0u ?
+                8u + 4u * count : 5u + count;
+            if (!core_machine_cpu_timing_select(&state.execution, &timing) ||
+                    timing.source_timing_unallocated || timing.ticks != expected_ticks)
+                return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool rotate_test_sar_extremes(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const lib_u8 counts[] = {0u, 1u, 7u, 8u, 15u, 16u, 31u, 32u, 33u, 255u};
+    lib_u8 profile, width_index, count_index, negative, memory;
+
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (width_index = 0u; width_index < (profile == 4u ? 3u : 2u); ++width_index)
+    for (count_index = 0u; count_index < sizeof(counts); ++count_index)
+    for (negative = 0u; negative < 2u; ++negative)
+    for (memory = 0u; memory < 2u; ++memory) {
+        const lib_u8 width = width_index == 0u ? 8u : width_index == 1u ? 16u : 32u;
+        const lib_u8 count = profile < 2u ? counts[count_index] :
+            (lib_u8)(counts[count_index] & 0x1fu);
+        const lib_u32 mask = rotate_mask(width);
+        const lib_u32 sign = UINT32_C(1) << (width - 1u);
+        const lib_u32 initial = negative ? mask - 2u : sign - 3u;
+        /* Division with explicit floor is independent of the shift loop. */
+        const lib_i64 value = negative ? (lib_i64)initial - (INT64_C(1) << width) : initial;
+        const lib_i64 divisor = INT64_C(1) << (count < width ? count : width);
+        const lib_i64 quotient = value / divisor - (value < 0 && value % divisor != 0);
+        const lib_u32 expected = (lib_u32)quotient & mask;
+        const lib_u32 result_flags = shift_parity(expected) |
+            (expected & sign ? VCPU_EFLAGS_SF : 0u) |
+            (expected == 0u ? VCPU_EFLAGS_ZF : 0u);
+        const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF | VCPU_EFLAGS_IF;
+        lib_u8 code[6] = {0};
+        lib_u8 bytes = 0u;
+        lib_u32 observed = 0u;
+        cpu_instruction_fixture state;
+        t_cpu after;
+
+        if (width == 32u) code[bytes++] = 0x66u;
+        code[bytes++] = width == 8u ? 0xd2u : 0xd3u;
+        code[bytes++] = memory ? 0x3eu : 0xf8u;
+        if (memory) { code[bytes++] = 0u; code[bytes++] = 0x40u; }
+        cpu_instruction_prepare(&state, profiles[profile]);
+        state.cpu.data.eax = initial;
+        state.cpu.data.ecx = counts[count_index];
+        state.cpu.data.eflags = flags;
+        if (memory && cpu_instruction_write(&state, 0x4000u, &initial,
+                width / 8u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK)
+            return LIB_FALSE;
+        if (cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK ||
+                state.fault.valid) return LIB_FALSE;
+        if (memory) {
+            if (cpu_instruction_read(&state, 0x4000u, &observed, width / 8u,
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                    LIB_STATUS_OK) return LIB_FALSE;
+        } else observed = after.data.eax;
+        if ((observed & mask) != expected || state.instructions.data.opr2 != count ||
+                after.data.eip != bytes || after.data.ecx != counts[count_index] ||
+                !(after.data.eflags & VCPU_EFLAGS_IF) ||
+                (count == 0u && (after.data.eflags != flags ||
+                    (state.instructions.data.udf & VCPU_EFLAGS_OF))) ||
+                (count == 1u && (after.data.eflags & VCPU_EFLAGS_OF)) ||
+                (count != 0u && (after.data.eflags &
+                    (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF)) != result_flags) ||
+                (count != 0u && (after.data.eflags & VCPU_EFLAGS_CF) !=
+                    (((count > width ? negative :
+                        (initial >> (count - 1u)) & 1u)) ? VCPU_EFLAGS_CF : 0u)) ||
+                (memory && after.data.eax != initial)) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
+    if (!rotate_test_carry_ring_boundaries()) return 1;
+    if (!rotate_test_sar_extremes()) return 1;
     if (!rotate_test_forms()) { lib_c_fprintf(lib_c_stderr, "forms\n"); return 1; }
     if (!rotate_test_count_zero()) { lib_c_fprintf(lib_c_stderr, "zero\n"); return 1; }
     if (!rotate_test_non_one()) { lib_c_fprintf(lib_c_stderr, "non-one\n"); return 1; }

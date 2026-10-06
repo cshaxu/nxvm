@@ -780,6 +780,79 @@ static lib_i32 inc_dec_test_div_idiv_attribute_and_profile(void)
     return !failed;
 }
 
+static lib_bool inc_dec_test_word_dividend_capture(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const struct {
+        lib_u16 high, low, divisor, quotient, remainder;
+        lib_bool signed_divide, fault;
+    } cases[] = {
+        {0x8000u, 0u, 0xffffu, 0x8000u, 0x8000u, LIB_FALSE, LIB_FALSE},
+        {0xfffeu, 0xffffu, 0xffffu, 0xffffu, 0xfffeu, LIB_FALSE, LIB_FALSE},
+        {0xffffu, 0xffffu, 2u, 0u, 0xffffu, LIB_TRUE, LIB_FALSE},
+        {0xffffu, 0xfffbu, 2u, 0xfffeu, 0xffffu, LIB_TRUE, LIB_FALSE},
+        {0xffffu, 0xfffbu, 0xfffeu, 2u, 0xffffu, LIB_TRUE, LIB_FALSE},
+        {0x8000u, 0u, 0xffffu, 0u, 0u, LIB_TRUE, LIB_TRUE},
+        {0xffffu, 0xffffu, 0xffffu, 0u, 0u, LIB_FALSE, LIB_TRUE},
+        {0x8000u, 0u, 0u, 0u, 0u, LIB_FALSE, LIB_TRUE}
+    };
+    lib_u8 profile, case_index, memory;
+
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (case_index = 0u; case_index < sizeof(cases) / sizeof(cases[0]); ++case_index)
+    for (memory = 0u; memory < 2u; ++memory) {
+        lib_u8 code[4] = {0xf7u};
+        lib_u8 bytes = 2u;
+        const lib_u32 dividend = ((lib_u32)cases[case_index].high << 16u) |
+            cases[case_index].low;
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+
+        code[1] = cases[case_index].signed_divide ? (memory ? 0x3eu : 0xf9u) :
+            (memory ? 0x36u : 0xf1u);
+        if (memory) { code[bytes++] = 0u; code[bytes++] = 0x50u; }
+        cpu_instruction_prepare(&state, profiles[profile]);
+        state.cpu.data.eax = 0xaabb0000u | cases[case_index].low;
+        state.cpu.data.edx = 0xccdd0000u | cases[case_index].high;
+        state.cpu.data.ecx = 0x11220000u | cases[case_index].divisor;
+        if (memory && cpu_instruction_write(&state, INC_DEC_MEMORY,
+                &cases[case_index].divisor, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+                LIB_STATUS_OK) return LIB_FALSE;
+        if (!inc_dec_run(&state, code, bytes, LIB_FALSE, &after,
+                &diagnostic)) {
+            lib_c_fprintf(lib_c_stderr, "div run profile=%u case=%u memory=%u fault=%u/%x stop=%u\n",
+                (unsigned)profile, (unsigned)case_index, (unsigned)memory,
+                (unsigned)diagnostic.first_fault.valid,
+                (unsigned)diagnostic.first_fault.exception_mask,
+                (unsigned)state.execution.stop_requested);
+            return LIB_FALSE;
+        }
+        if (cases[case_index].fault) {
+            if (!state.delivered_exception.valid ||
+                    !X86_CPU_BIT_IS_SET(state.delivered_exception.exception_mask,
+                        VCPUINS_EXCEPT_DE)) return LIB_FALSE;
+            /* Exact failed-frame/register publication belongs to S9. */
+        } else if (state.instructions.data.opr1 != dividend ||
+                after.data.eax != (0xaabb0000u | cases[case_index].quotient) ||
+                after.data.edx != (0xccdd0000u | cases[case_index].remainder) ||
+                after.data.ecx != (0x11220000u | cases[case_index].divisor) ||
+                after.data.eip != bytes || diagnostic.first_fault.valid)
+        {
+            lib_c_fprintf(lib_c_stderr, "div result profile=%u case=%u memory=%u opr1=%llx eax=%x edx=%x\n",
+                (unsigned)profile, (unsigned)case_index, (unsigned)memory,
+                (unsigned long long)state.instructions.data.opr1,
+                (unsigned)after.data.eax, (unsigned)after.data.edx);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
     if (!inc_dec_test_register_forms() ||
@@ -794,7 +867,8 @@ int main(void)
         !inc_dec_test_imul_sign_extension_profiles() ||
         !inc_dec_test_mul_imul_address_and_profile() ||
         !inc_dec_test_div_idiv_forms() ||
-        !inc_dec_test_div_idiv_attribute_and_profile()) {
+        !inc_dec_test_div_idiv_attribute_and_profile() ||
+        !inc_dec_test_word_dividend_capture()) {
         lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S33:CPU-INC-DEC-GROUP:FAIL\n");
         return 1;
     }
