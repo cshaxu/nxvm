@@ -419,7 +419,7 @@ endif()
 # These runners generate reproducible decoder-boundary artifacts under the
 # build tree; the ledger verifiers consume those artifacts separately.
 add_executable(core-machine-80186-decoder-inventory-runner
-    test/ibmpc/board-common/composition/core_machine_80186_decoder_inventory_runner.c)
+    test/x86/chips/cpu/core_machine_80186_decoder_inventory_runner.c)
 target_link_libraries(core-machine-80186-decoder-inventory-runner PRIVATE
     core-machine)
 target_compile_definitions(core-machine-80186-decoder-inventory-runner PRIVATE
@@ -430,7 +430,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-80286-decoder-inventory-runner
-    test/ibmpc/board-common/composition/core_machine_80286_decoder_inventory_runner.c)
+    test/x86/chips/cpu/core_machine_80286_decoder_inventory_runner.c)
 target_link_libraries(core-machine-80286-decoder-inventory-runner PRIVATE
     core-machine)
 target_compile_definitions(core-machine-80286-decoder-inventory-runner PRIVATE
@@ -441,7 +441,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-80386-decoder-inventory-runner
-    test/ibmpc/board-common/composition/core_machine_80386_decoder_inventory_runner.c)
+    test/x86/chips/cpu/core_machine_80386_decoder_inventory_runner.c)
 target_link_libraries(core-machine-80386-decoder-inventory-runner PRIVATE
     core-machine)
 target_compile_definitions(core-machine-80386-decoder-inventory-runner PRIVATE
@@ -614,7 +614,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "x86-test-cpu_verr_verw|chips/cpu/cpu_verr_verw_smoke.c"
     "x86-test-cpu_eflags_local|chips/cpu/cpu_eflags_local_smoke.c"
     "core-machine-enter-leave-smoke|test/ibmpc/board-common/core_machine_enter_leave_smoke.c"
-    "machine-fpu-interface-s65-smoke|test/ibmpc/core/machine_fpu_interface_s65_smoke.c"
+    "machine-fpu-interface-s65-smoke|test/x86/core/machine_fpu_interface_s65_smoke.c"
     "core-machine-fs-gs-stack-smoke|test/ibmpc/board-common/composition/core_machine_fs_gs_stack_smoke.c"
     "core-machine-gpr-mov-smoke|test/ibmpc/board-common/core_machine_gpr_mov_smoke.c"
     "core-machine-gpr-push-pop-smoke|test/ibmpc/board-common/core_machine_gpr_push_pop_smoke.c"

@@ -6,7 +6,28 @@
 | --- | --- |
 | T544 | Closed as a completed CPU audit by owner direction; all CPU repair/proof gaps transferred to the first queued proposal. No implementation task is active. |
 | M5 Td S177 | Complete: audit closure, full CPU repair transfer, proposal archive and queue/reference reconciliation. NXVM documentation only. |
-| T545 S4 | Accepted: Common-owned test completion, independent suites and full dual-width units. S3 accepted; S5-S7 remain planned. |
+| T545 S5 | Active: x86-owned test inventory, neutral Core proof and pure CPU test relocation. S3/S4 accepted; S6/S7 remain planned. |
+
+## Active S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, M5 T545 S5; coordinator/executor roles sequential in this session. |
+| Admission And Approval | Owner's four-package completion goal and approved S5 brief, 2026-10-05; Shared tests/build registration and NXVM test receivers/records only. |
+| Objective | Complete x86-local chip/CPU/Core test ownership and direct proof without IBMPC/App test dependencies. |
+| Non-goals | No production/API/algorithm change, queued CPU repairs, new framework, App configuration/binary/media change or sibling writes. |
+| Reference Baseline | 05427402a, clean accepted S4; deployed 0545/0043 inputs unchanged. |
+| Candidate Proposal | [S5 brief](../proposals/m5-softpc-eight-corpus-refresh.md); [S5 ledger](../etc/evidence/t545-s5-x86-test-completion.md). |
+| Files And ABI Surface | test/x86 and affected test/ibmpc relocation/registrations/manifests; NXVM build/test consumers and records; production ABI unchanged. |
+| Applicable Rules | Execution complete P/full units; Architecture neutral inward ownership; Coding Types/C11/local fixture reuse and original assertion preservation; Document truthful convergence evidence. |
+| Verification | Independent x86 Release suites on x64/x86, full repository units per width, decoder output/count predicates, applicable Types/corpus/manifest/boundary gates, documentation and actual diff review. |
+| Expected Markers | Old assertions have preserved owner-local receivers; x86 suite needs no IBMPC/App source/test; all inventoried contracts have explicit dispositions and required checks pass. |
+| Asset Needs | Code-owned instruction/data bytes and temporary decoder outputs; no external ROM/INI/CMOS/font/media. |
+| Reporting Requirements | Report inventory and relocation map, code-size/actual review, complete target-separated pushed delivery and acceptance. |
+| Stop Conditions | Production defect/new API needs owner review; report failures, never weaken predicates or invent hardware qualification. |
+| Exit Criteria | Complete bounded inventory and missing eligible proofs; independent suites, historical consumers and full units pass both widths; manifests/documentation match actual ownership; reviewed P deliveries pushed. |
+| Original Owner Request | Third of four S tasks completes clean independent x86 tests; a callee must not depend on App tests for its contract. |
+| Similar-Issue Sweep | Inspect chip/CPU/Core/xasm/Debug contracts and local assertions; find neutral Core/CPU tests in IBMPC/App, preserve board wiring separately and document every retained distinction. |
 
 ## Accepted S4 Common Test Completion
 
