@@ -65,7 +65,7 @@ lib_i32 main(void)
 
     if (!failed) {
         failed = failed || core_machine_get_cpu_state(machine, &state) != LIB_STATUS_OK ||
-            state.cs != 0xf000u || state.eip != 0x0000fff0u;
+            state.cs != 0xffffu || state.eip != 0u;
         plan = make_plan(0u, 0x1000u, 0x1000u,
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER, LIB_NULL, 0u);
         failed = failed || core_machine_apply_entry_plan(machine, &plan) != LIB_STATUS_OK;
@@ -80,7 +80,7 @@ lib_i32 main(void)
         failed = failed || core_machine_memory_read(machine, 0x0200u, &observed,
             sizeof(observed)) != LIB_STATUS_OK || observed != 0u;
         failed = failed || core_machine_get_cpu_state(machine, &state) != LIB_STATUS_OK ||
-            state.cs != 0xf000u || state.eip != 0x0000fff0u;
+            state.cs != 0xffffu || state.eip != 0u;
 
         plan = make_plan(0u, 0x0200u, 0x0200u,
             CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM, overlapping_preloads, 2u);
@@ -88,7 +88,7 @@ lib_i32 main(void)
         failed = failed || core_machine_memory_read(machine, 0x0200u, &observed,
             sizeof(observed)) != LIB_STATUS_OK || observed != 0u;
         failed = failed || core_machine_get_cpu_state(machine, &state) != LIB_STATUS_OK ||
-            state.cs != 0xf000u || state.eip != 0x0000fff0u;
+            state.cs != 0xffffu || state.eip != 0u;
 
         plan = make_plan(0u, 0x0200u, 0x0200u,
             CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM, invalid_preloads, 1u);
@@ -97,7 +97,7 @@ lib_i32 main(void)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed = failed || core_machine_reset(machine) != LIB_STATUS_OK;
         failed = failed || core_machine_get_cpu_state(machine, &state) != LIB_STATUS_OK ||
-            state.cs != 0xf000u || state.eip != 0x0000fff0u;
+            state.cs != 0xffffu || state.eip != 0u;
     }
     core_machine_destroy(machine);
     if (failed) return 1;

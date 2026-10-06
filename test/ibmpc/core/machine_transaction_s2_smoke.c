@@ -306,15 +306,14 @@ lib_i32 main(void)
         CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT,
         CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH, &external_commit);
     failed |= external_begin >= external_commit;
-    /* The control transfer starts a second logical window. Its 15-byte range
-     * crosses the reset-vector 32-bit wrap, so observation records three
-     * physical prefetch cycles: initial, destination, and wrapped tail. */
+    /* Reset CS ends at FFFF. The branch starts a second window, clamped at
+     * that limit; it must not publish a wrapped tail outside the segment. */
     failed |= transaction_count_external_cycles(&probe,
         CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 3u;
+        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 2u;
     failed |= transaction_count_external_cycles(&probe,
         CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 3u;
+        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 2u;
     failed |= !transaction_has_provenance_pair(&probe,
         CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
     failed |= transaction_has_provenance_pair(&probe,

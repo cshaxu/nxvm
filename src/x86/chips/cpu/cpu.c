@@ -367,7 +367,7 @@ static lib_u32 core_machine_cpu_reset_code_base(
     case CORE_MACHINE_CPU_PROFILE_8086:
     case CORE_MACHINE_CPU_PROFILE_8088:
     case CORE_MACHINE_CPU_PROFILE_80186:
-        return 0x000f0000u;
+        return 0x000ffff0u;
     case CORE_MACHINE_CPU_PROFILE_80286:
         return 0x00ff0000u;
     case CORE_MACHINE_CPU_PROFILE_DEFAULT:
@@ -495,6 +495,8 @@ void core_machine_cpu_state_initialize(
 void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
     if (context == LIB_NULL || context->cpu == LIB_NULL ||
         context->instructions == LIB_NULL) return;
+    const lib_bool early = core_machine_cpu_profile_has_8086_semantics(
+        context->cpu_profile) || context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186;
     context->source_repeat_active = LIB_FALSE;
     context->source_repeat_cs = 0u;
     context->source_repeat_eip = 0u;
@@ -518,7 +520,7 @@ void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
         context->prefetch_reservation_count = 0u;
     }
 
-    cpu_state.data.eip = 0x0000fff0;
+    cpu_state.data.eip = early ? 0u : 0x0000fff0u;
     cpu_state.data.eflags = 0x00000002;
     /* Intel 80386 PRM 10.1 defines DH=3 after RESET# for the 386DX.
      * The selected zero revision keeps the documented device identifier
@@ -528,13 +530,13 @@ void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
 
     cpu_state.data.cs.base = core_machine_cpu_reset_code_base(context->cpu_profile);
     cpu_state.data.cs.dpl = 0u;
-    cpu_state.data.cs.limit = LIB_UINT32_MAX;
+    cpu_state.data.cs.limit = 0xffffu;
     cpu_state.data.cs.seg.accessed = LIB_TRUE;
     cpu_state.data.cs.seg.executable = LIB_TRUE;
     cpu_state.data.cs.seg.exec.conform = LIB_FALSE;
     cpu_state.data.cs.seg.exec.defsize = LIB_FALSE;
     cpu_state.data.cs.seg.exec.readable = LIB_TRUE;
-    cpu_state.data.cs.selector = 0xf000;
+    cpu_state.data.cs.selector = early ? 0xffffu : 0xf000u;
     cpu_state.data.cs.sregtype = SREG_CODE;
     cpu_state.data.cs.flagValid = LIB_TRUE;
 

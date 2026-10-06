@@ -871,30 +871,30 @@ static lib_i32 timing_80286_smsw(void)
         sizeof(register_form)) || (!timing_80286_patch_register(machine,
         CORE_MACHINE_DEBUG_CR0, 0xffffffffu, 0x000cu) ||
         !timing_80286_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffffffu, 0u)) || !timing_80286_run(machine,
-        &state, 1u, 2u) || !timing_80286_register_matches(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 0x000cu);
+        &state, 1u, 2u) || !timing_80286_register_matches(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 0xfffcu);
     if (!failed) failed |= !timing_80286_load(machine, direct, sizeof(direct)) ||
         (!timing_80286_patch_register(machine,
         CORE_MACHINE_DEBUG_CR0, 0xffffffffu, 0x000cu)) || !timing_80286_run(machine,
         &state, 1u, 3u) || core_machine_memory_read(machine, 0x1000u, &msw,
-        sizeof(msw)) != LIB_STATUS_OK || msw != 0x000cu;
+        sizeof(msw)) != LIB_STATUS_OK || msw != 0xfffcu;
     if (!failed) failed |= !timing_80286_load(machine, indexed, sizeof(indexed)) ||
         (!timing_80286_patch_register(machine, CORE_MACHINE_DEBUG_CR0, 0xffffffffu, 0x000cu) ||
         !timing_80286_patch_register(machine, CORE_MACHINE_DEBUG_EBP, 0xffffffffu, 0x1000u) ||
         !timing_80286_patch_register(machine, CORE_MACHINE_DEBUG_ESI, 0xffffffffu, 0u)) || !timing_80286_run(machine,
         &state, 1u, 4u) || core_machine_memory_read(machine, 0x1001u, &msw,
-        sizeof(msw)) != LIB_STATUS_OK || msw != 0x000cu;
+        sizeof(msw)) != LIB_STATUS_OK || msw != 0xfffcu;
     if (!failed) failed |= !timing_80286_boot_protected(machine, &state) ||
         core_machine_memory_write(machine, 0x2000u, register_form,
         sizeof(register_form)) != LIB_STATUS_OK || (!timing_80286_patch_register(machine,
         CORE_MACHINE_DEBUG_EAX, 0xffffffffu, 0u)) || (!timing_80286_resume(machine, 0u) ||
         !timing_80286_run(machine, &state, 1u, 2u)) ||
-        !timing_80286_register_matches(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 0x0001u);
+        !timing_80286_register_matches(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 0xfff1u);
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, direct,
         sizeof(direct)) != LIB_STATUS_OK || (!timing_80286_resume(
         machine, 0u) ||
         !timing_80286_run(machine, &state, 1u, 3u)) ||
         core_machine_memory_read(machine, 0x4000u, &msw, sizeof(msw)) !=
-        LIB_STATUS_OK || msw != 0x0001u;
+        LIB_STATUS_OK || msw != 0xfff1u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, indexed,
         sizeof(indexed)) != LIB_STATUS_OK || (!timing_80286_patch_register(machine,
         CORE_MACHINE_DEBUG_EBP, 0xffffffffu, 0x1000u) ||
@@ -902,7 +902,7 @@ static lib_i32 timing_80286_smsw(void)
         machine, 0u) ||
         !timing_80286_run(machine, &state, 1u, 4u)) ||
         core_machine_memory_read(machine, 0x4001u, &msw, sizeof(msw)) !=
-        LIB_STATUS_OK || msw != 0x0001u;
+        LIB_STATUS_OK || msw != 0xfff1u;
     core_machine_destroy(machine);
     return failed;
 }

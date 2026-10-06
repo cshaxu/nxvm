@@ -69,9 +69,19 @@ static lib_i32 t359_s3_run(core_machine *machine,
 {
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
+    core_machine_cpu_profile profile;
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+        .values = { [CORE_MACHINE_DEBUG_CS] = 0xf000u,
+            [CORE_MACHINE_DEBUG_EIP] = 0xfff0u }
+    };
 
     return machine != LIB_NULL && program != LIB_NULL && state != LIB_NULL &&
         core_machine_reset(machine) == LIB_STATUS_OK &&
+        core_machine_get_cpu_profile(machine, &profile) == LIB_STATUS_OK &&
+        (profile >= CORE_MACHINE_CPU_PROFILE_80286 ||
+            core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK) &&
         (setup == LIB_NULL || setup(machine, opaque)) &&
         core_machine_memory_write(machine, T359_S3_RESET_LINEAR, program,
             program_bytes) == LIB_STATUS_OK &&

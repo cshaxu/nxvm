@@ -26,13 +26,19 @@ static lib_i32 cpu_bus_cases(const cpu_bus_reset_case *reset)
     if (!core_machine_cpu_execution_preview_lexeme(&fixture.execution, &lexeme) ||
         fixture.observations == 0u || fixture.cpu.data.eip != 0x100u ||
         fixture.completions != 0u || fixture.instruction_count != 0u) return 1;
-    fixture.cpu.data.cs.base = reset->code_base;
-    fixture.cpu.data.cs.selector = 0xf000u;
-    fixture.cpu.data.eip = 0xfff0u;
+    core_machine_cpu_state_reset(&fixture.execution);
+    if (fixture.cpu.data.cs.base != reset->code_base ||
+        fixture.cpu.data.cs.limit != 0xffffu) return 1;
     fixture.memory[reset->first_fetch % sizeof(fixture.memory)] = 0x90u;
     if (!core_machine_cpu_execution_preview_lexeme(&fixture.execution, &lexeme) ||
         (fixture.reset_fetches != 0u) !=
             (reset->profile >= CORE_MACHINE_CPU_PROFILE_80286)) return 1;
+    core_machine_cpu_execution_refresh(&fixture.execution);
+    if (fixture.faults != 0u || fixture.cpu.data.cs.base != reset->code_base ||
+        fixture.instruction.point.cs_base + fixture.instruction.point.eip !=
+            reset->first_fetch ||
+        fixture.cpu.data.eip != (reset->profile <= CORE_MACHINE_CPU_PROFILE_80186 ?
+            1u : 0xfff1u)) return 1;
 
     /* A synchronous write observer sees the consumed operand's PC, not the
      * previous instruction or its entry PC. The copy outlives this callback. */
@@ -106,6 +112,25 @@ static lib_i32 cpu_bus_cases(const cpu_bus_reset_case *reset)
     core_machine_cpu_execution_refresh(&fixture.execution);
     if (fixture.acknowledgements != 1u || fixture.cpu.data.eip != 0x200u ||
         fixture.cpu.data.sp != 0x6fau || fixture.instructions.data.except != 0u) return 1;
+    {
+        lib_u16 flags = 0u;
+        const lib_u16 expected = reset->profile <= CORE_MACHINE_CPU_PROFILE_80186 ?
+            0xf202u : 0x0202u;
+
+        lib_memory_copy(&flags, fixture.memory + 0x6feu, sizeof(flags));
+        if (flags != expected || (fixture.cpu.data.eflags & VCPU_EFLAGS_IF) != 0u)
+            return 1;
+        cpu_bus_prepare(&fixture, reset->profile);
+        fixture.memory[0x100u] = 0xcdu;
+        fixture.memory[0x101u] = 0x30u;
+        fixture.memory[0xc1u] = 0x02u;
+        fixture.cpu.data.eflags |= VCPU_EFLAGS_IF;
+        core_machine_cpu_execution_refresh(&fixture.execution);
+        lib_memory_copy(&flags, fixture.memory + 0x6feu, sizeof(flags));
+        if (flags != expected || fixture.cpu.data.eip != 0x200u ||
+            fixture.cpu.data.sp != 0x6fau || fixture.acknowledgements != 0u ||
+            fixture.faults != 0u) return 1;
+    }
     cpu_bus_prepare(&fixture, reset->profile);
     fixture.memory[0x100u] = 0x90u;
     fixture.cpu.data.eflags |= VCPU_EFLAGS_IF;
@@ -122,9 +147,9 @@ static lib_i32 cpu_bus_cases(const cpu_bus_reset_case *reset)
 lib_i32 main(void)
 {
     static const cpu_bus_reset_case cases[] = {
-        {CORE_MACHINE_CPU_PROFILE_8086, 0x000f0000u, 0x000ffff0u},
-        {CORE_MACHINE_CPU_PROFILE_8088, 0x000f0000u, 0x000ffff0u},
-        {CORE_MACHINE_CPU_PROFILE_80186, 0x000f0000u, 0x000ffff0u},
+        {CORE_MACHINE_CPU_PROFILE_8086, 0x000ffff0u, 0x000ffff0u},
+        {CORE_MACHINE_CPU_PROFILE_8088, 0x000ffff0u, 0x000ffff0u},
+        {CORE_MACHINE_CPU_PROFILE_80186, 0x000ffff0u, 0x000ffff0u},
         {CORE_MACHINE_CPU_PROFILE_80286, 0x00ff0000u, 0x00fffff0u},
         {CORE_MACHINE_CPU_PROFILE_80386, 0xffff0000u, 0xfffffff0u}
     };

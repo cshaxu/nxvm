@@ -494,7 +494,8 @@ lib_i32 main(void)
     failed |= !run_read(&disabled, &read_baseline_ticks);
     failed |= !run_read(&timing, &read_timing_ticks);
     /* Completed adjacency is not overlap, so every normal synchronous cycle misses. */
-    failed |= timing_ticks != baseline_ticks + 6u;
+    /* Two reset-segment windows; no speculative wrapped tail past CS.limit. */
+    failed |= timing_ticks != baseline_ticks + 4u;
     failed |= port_wait_ticks != baseline_ticks + 1u;
     failed |= write_timing_ticks != write_baseline_ticks + 4u;
     failed |= read_timing_ticks != read_baseline_ticks + 4u;

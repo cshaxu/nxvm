@@ -122,10 +122,8 @@ static void _debug_record_watchpoint(
     core_machine_cpu_execution_request_debug_pause(context);
 }
 
-/* The FLAGS image and a FLAGS load are distinct architectural operations, but
- * share one profile-owned set of defined 16-bit fields. An undefined bit is
- * canonicalized to zero in Core; that is a deterministic implementation
- * value, not a claim about a processor's externally observable bit image. */
+/* Incoming writable fields remain canonical; an outgoing FLAGS image also
+ * carries the family's fixed bits. Reserved image bits are not stored state. */
 static lib_u16 _e_real_flags_defined_mask(
     const core_machine_cpu_execution_context *context)
 {
@@ -146,8 +144,11 @@ static lib_u16 _e_real_flags_load_16(
 static lib_u16 _e_real_flags_image_16(
     const core_machine_cpu_execution_context *context, lib_u16 flags)
 {
-    return X86_CPU_MASK_U16((flags &
-        _e_real_flags_defined_mask(context)) | 0x02u);
+    const lib_u16 fixed = context != LIB_NULL &&
+        (core_machine_cpu_profile_has_8086_semantics(context->cpu_profile) ||
+         context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) ? 0xf000u : 0u;
+
+    return X86_CPU_MASK_U16(_e_real_flags_load_16(context, flags) | fixed);
 }
 
 static lib_u32 _e_eflags_load(
@@ -17053,6 +17054,8 @@ static void INS_0F_01(core_machine_cpu_execution_context *context)
         CPU_TRACE_BLOCK_BEGIN("SMSW_RM16");
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         instruction_state.data.crm = X86_CPU_MASK_U16(cpu_state.data.cr0);
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286)
+            instruction_state.data.crm = (instruction_state.data.crm & 0x000fu) | 0xfff0u;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
         CPU_TRACE_BLOCK_END;
         break;

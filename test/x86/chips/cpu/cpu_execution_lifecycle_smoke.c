@@ -5,6 +5,8 @@ typedef struct cpu_lifecycle_reset_case {
     core_machine_cpu_profile profile;
     lib_u32 code_base;
     lib_u32 first_fetch;
+    lib_u16 selector;
+    lib_u16 offset;
 } cpu_lifecycle_reset_case;
 
 static lib_i32 cpu_timing_case(core_machine_cpu_profile profile)
@@ -50,11 +52,16 @@ static lib_i32 cpu_execution_context_reset_case(
     const core_machine_instruction_timing timing = { .base_ticks = 1u };
 
     if (context == LIB_NULL || cpu == LIB_NULL || test_case == LIB_NULL) return 1;
+    const lib_u32 flags_mask = test_case->profile < CORE_MACHINE_CPU_PROFILE_80286 ?
+        0x0fffu : test_case->profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0xffffu : 0x3ffffu;
     core_machine_cpu_execution_context_bind_profiles(context, test_case->profile,
         X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
     core_machine_cpu_state_reset(context);
-    return cpu->data.cs.selector != 0xf000u || cpu->data.eip != 0x0000fff0u ||
+    return cpu->data.cs.selector != test_case->selector || cpu->data.eip != test_case->offset ||
         cpu->data.cs.base != test_case->code_base ||
+        cpu->data.cs.limit != 0xffffu || (cpu->data.eflags & flags_mask) != 0x02u ||
+        (cpu->data.cr0 & (VCPU_CR0_PE | VCPU_CR0_MP | VCPU_CR0_EM |
+            VCPU_CR0_TS | VCPU_CR0_PG)) != 0u ||
         cpu->data.cs.base + cpu->data.eip != test_case->first_fetch ||
         (test_case->profile == CORE_MACHINE_CPU_PROFILE_80386 &&
          cpu->data.edx != 0x00000300u);
@@ -91,7 +98,8 @@ static lib_i32 cpu_instance_case(const cpu_lifecycle_reset_case *test_case)
     core_machine_cpu_state_reset(second);
     core_machine_cpu_capture_state(first, &first_state);
     core_machine_cpu_capture_state(second, &second_state);
-    failed |= first_state.cs != 0xf000u || second_state.cs != 0xf000u ||
+    failed |= first_state.cs != test_case->selector || second_state.cs != test_case->selector ||
+        first_state.eip != test_case->offset || second_state.eip != test_case->offset ||
         first_state.cs_base != test_case->code_base ||
         second_state.cs_base != test_case->code_base ||
         core_machine_cpu_linear_pc(first) != test_case->first_fetch ||
@@ -163,11 +171,11 @@ static lib_i32 cpu_context_isolation_case(void)
 lib_i32 main(void)
 {
     static const cpu_lifecycle_reset_case reset_cases[] = {
-        {CORE_MACHINE_CPU_PROFILE_8086, 0x000f0000u, 0x000ffff0u},
-        {CORE_MACHINE_CPU_PROFILE_8088, 0x000f0000u, 0x000ffff0u},
-        {CORE_MACHINE_CPU_PROFILE_80186, 0x000f0000u, 0x000ffff0u},
-        {CORE_MACHINE_CPU_PROFILE_80286, 0x00ff0000u, 0x00fffff0u},
-        {CORE_MACHINE_CPU_PROFILE_80386, 0xffff0000u, 0xfffffff0u}
+        {CORE_MACHINE_CPU_PROFILE_8086, 0x000ffff0u, 0x000ffff0u, 0xffffu, 0u},
+        {CORE_MACHINE_CPU_PROFILE_8088, 0x000ffff0u, 0x000ffff0u, 0xffffu, 0u},
+        {CORE_MACHINE_CPU_PROFILE_80186, 0x000ffff0u, 0x000ffff0u, 0xffffu, 0u},
+        {CORE_MACHINE_CPU_PROFILE_80286, 0x00ff0000u, 0x00fffff0u, 0xf000u, 0xfff0u},
+        {CORE_MACHINE_CPU_PROFILE_80386, 0xffff0000u, 0xfffffff0u, 0xf000u, 0xfff0u}
     };
     t_cpu cpu = {0};
     t_cpuins instructions = {0};

@@ -68,7 +68,7 @@ lib_i32 main(void)
     core_machine_cpu_state_initialize(cpu);
     core_machine_cpu_state_reset(cpu);
     core_machine_cpu_capture_state(cpu, &state);
-    if (state.cs != 0xf000u || state.eip != 0xfff0u) {
+    if (state.cs != 0xffffu || state.eip != 0u) {
         core_machine_cpu_destroy(cpu);
         return 1;
     }

@@ -5,7 +5,8 @@
 static lib_u16 pushf_real_flags_image(core_machine_cpu_profile profile,
     lib_u16 flags)
 {
-    if (profile < CORE_MACHINE_CPU_PROFILE_80286) flags &= 0x0fffu;
+    if (profile < CORE_MACHINE_CPU_PROFILE_80286)
+        return (lib_u16)((flags & 0x0fd5u) | 0xf002u);
     return (lib_u16)((flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
 }
 
@@ -73,6 +74,9 @@ static lib_i32 pushf_test_defaults(void)
                 0x8000u;
             lib_u16 observed = 0u;
             lib_u16 mask = pushf_real_flags_known_mask(profiles[profile]);
+
+            if (form == 0u && profiles[profile] < CORE_MACHINE_CPU_PROFILE_80286)
+                mask |= 0xf000u;
 
             cpu_instruction_prepare(&state, profiles[profile]);
             state.cpu.data.esp = 0x12348000u;

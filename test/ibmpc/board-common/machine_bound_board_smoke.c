@@ -86,7 +86,8 @@ static lib_i32 bound_board_real_br(core_machine_cpu_profile profile,
                 VCPUINS_EXCEPT_BR) ||
             after.eip != 0x0100u || after.eax != before.eax ||
             frame[0] != 0u || frame[1] != 0u ||
-            frame[2] != (lib_u16)before.eflags;
+            frame[2] != ((lib_u16)before.eflags |
+                (profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0xf000u : 0u));
     if (!failed)
         failed = core_machine_run(machine,
             (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||

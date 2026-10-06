@@ -128,11 +128,17 @@ static lib_i32 control_test_msw(void)
         lib_u32 image = 0x11223344u;
 
         cpu_instruction_prepare(&fixture, profiles[profile]);
+        fixture.cpu.data.eax = 0xdead0000u;
+        before = fixture.cpu;
+        if (!control_run(&fixture, smsw, sizeof(smsw), &after) ||
+            after.data.eax != (profile == 0u ? 0xdeadfff0u : 0xdead0000u) ||
+            after.data.cr0 != 0u || after.data.eflags != before.data.eflags) return 0;
+        cpu_instruction_prepare(&fixture, profiles[profile]);
         control_seed(&fixture);
         fixture.cpu.data.cr0 = 0x00a5000du;
         before = fixture.cpu;
         if (!control_run(&fixture, smsw, sizeof(smsw), &after) ||
-            after.data.eax != 0xdead000du || after.data.cr0 !=
+            after.data.eax != (profile == 0u ? 0xdeadfffdu : 0xdead000du) || after.data.cr0 !=
             before.data.cr0 || after.data.eflags != before.data.eflags) return 0;
         cpu_instruction_prepare(&fixture, profiles[profile]);
         control_seed(&fixture);
@@ -142,7 +148,13 @@ static lib_i32 control_test_msw(void)
         if (!control_run(&fixture, lmsw, sizeof(lmsw), &after) ||
             !control_state_equal(&before, &after) || after.data.cr0 !=
             0x00a5000du) return 0;
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        fixture.cpu.data.eip = 0u;
+        before = fixture.cpu;
+        if (!control_run(&fixture, smsw, sizeof(smsw), &after) ||
+            after.data.eax != (profile == 0u ? 0xdeadfffdu : 0xdead000du) ||
+            after.data.cr0 != before.data.cr0 || after.data.eflags != before.data.eflags)
+            return 0;
+        cpu_instruction_prepare(&fixture, profiles[profile]);
         control_seed(&fixture);
         fixture.cpu.data.cr0 = 0x00a5000cu;
         lib_memory_copy(fixture.memory + 0x0400u, &image, sizeof(image));
@@ -150,8 +162,8 @@ static lib_i32 control_test_msw(void)
         if (!control_run(&fixture, smsw_memory, sizeof(smsw_memory), &after) ||
             !control_state_equal(&before, &after)) return 0;
         lib_memory_copy(&image, fixture.memory + 0x0400u, sizeof(image));
-        if (image != 0x1122000cu) return 0;
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        if (image != (profile == 0u ? 0x1122fffcu : 0x1122000cu)) return 0;
+        cpu_instruction_prepare(&fixture, profiles[profile]);
         control_seed(&fixture);
         fixture.cpu.data.cr0 = 0x00a50000u;
         image = 0x1122000cu;
