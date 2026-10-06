@@ -52,18 +52,16 @@ void vm_profile_model40_core_config_initialize(core_machine_config *out_config)
         .dma_controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS,
         .kbc_serial_delivery_ticks = 1u,
-        /* The Core elapsed axis is still deterministic instruction/event
-         * time, not the D3PE oscillator.  Hardware frequencies therefore
-         * remain board evidence for a future physical axis; applying them
-         * here would distort device progress relative to CPU execution. */
+        /* D3PE pp. 4-5 and schematic sheets 5-6 supply the input clocks.
+         * Ratios against the 16 MHz macro axis remain L2, not physical L3.
+         * DCLK uses the nominal 4 MHz approximation; bus resynchronization
+         * makes its real average lower. RTC consumes its 32768 Hz crystal.
+         * KBC/video/provider ticks are service units, not oscillator edges. */
         .clock_plan = {
-            .dma = {1u, 1u, 0u},
-            .pit = {1u, 1u, 0u},
-            /* The second 8254 is driven by DCLK.  The selected board derives
-             * DCLK by dividing its approximately 10 MHz BCLK twice, while
-             * the processor/memory interface is 16 MHz: 5/16. */
-            .auxiliary_pit = {5u, 16u, 0u},
-            .rtc = {1u, 1u, 0u},
+            .dma = {1u, 4u, 0u},
+            .pit = {715909u, 9600000u, 0u},
+            .auxiliary_pit = {1u, 4u, 0u},
+            .rtc = {256u, 125000u, 0u},
             .vadp = {1u, 1u, 0u},
             .kbc = {1u, 1u, 0u},
             .provider = {1u, 1u, 0u}},

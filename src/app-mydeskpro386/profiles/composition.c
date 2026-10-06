@@ -27,7 +27,8 @@ static lib_status vm_profile_model40_materialize_controllers(core_machine_plan *
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     fdc.ready_mask = 0x0fu;
-    fdc.clock_ticks_per_second = 8000000u;
+    /* FDC deadlines use the Core source axis, not the controller crystal. */
+    fdc.clock_ticks_per_second = 16000000u;
     if (vm_at_fdc_materialize(vm_at_port_leaves, VM_AT_PORT_LEAF_COUNT,
             vm_at_routes_without_aux, 4u, &fdc) != LIB_STATUS_OK)
         return LIB_STATUS_INVALID_ARGUMENT;

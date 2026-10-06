@@ -125,9 +125,10 @@ lib_i32 main(void)
             value != 0xb4u) goto done;
         const core_machine_fdc_config config = test_board_fdc_connection_config(board);
         const core_machine_fdc_drive_bindings drives = test_board_fdc_drive_bindings(board);
+        const lib_u64 byte_ticks = config.clock_ticks_per_second / 1000000u * 15u;
         if (config.irq != 6u || config.dma_channel != 2u ||
             config.ready_mask != 0x0fu ||
-            config.clock_ticks_per_second != 8000000u ||
+            config.clock_ticks_per_second != 16000000u ||
             drives.installed_mask != 0x03u ||
             drives.track_zero_active_low_mask != 0u ||
             session->construction.floppy_kind != VM_PROFILE_FLOPPY_525_1200K) goto done;
@@ -157,7 +158,7 @@ lib_i32 main(void)
             core_machine_bus_read(machine, 0x03f5u, &value) != LIB_STATUS_OK ||
             value != 0xa5u) goto done;
         for (index = 1u; index < 512u; ++index) {
-            if (!test_board_fdc_advance_ticks(board, 128u) ||
+            if (!test_board_fdc_advance_ticks(board, byte_ticks) ||
                 core_machine_bus_read(machine, 0x03f5u, &value) != LIB_STATUS_OK) goto done;
         }
         if (!model40_fdc_result(board, machine, result, sizeof(result)) ||
@@ -172,7 +173,7 @@ lib_i32 main(void)
             !model40_fdc_command(board, machine, read_last, sizeof(read_last))) goto done;
         for (index = 0u; index < 512u; ++index) {
             test_board_dma_transfers(board, machine, 1u, 2u);
-            if (index + 1u < 512u && !test_board_fdc_advance_ticks(board, 128u)) goto done;
+            if (index + 1u < 512u && !test_board_fdc_advance_ticks(board, byte_ticks)) goto done;
         }
         if (core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
             value != TEST_FDC_MSR_CB ||

@@ -6,7 +6,7 @@ Repair the complete implemented-family instruction/function/timing gaps found
 by T544, preserving 8086, 8088, 80186, 80286 and 80386 and their sole chip/Core
 owners. The owner requested this receiver first in Queue and closed T544 as an
 audit, not as CPU qualification. Owner admits M5 T546 after verified T545
-closure at 966249c20. Current owns its active S1 packet; the
+closure at 966249c20. S1 is accepted; Current owns the next active packet and the
 [task ledger](../history/M5-T546-cpu-audit-gap-repair.md) preserves the full
 transferred universe. General admission is not concrete Shared review;
 each concrete repair still receives the owner's review before code changes.
@@ -102,6 +102,26 @@ delivery contract. S18 is a convergence check, not a repository-wide test
 rewrite or a place to postpone regressions required by S1-S17.
 
 ## Verification, Artifacts And Closure
+
+### Approved S2 Model40 Clock-Input Dependency Review
+
+The corrected captured opcode facts expose Model40's refresh-poll sampling
+dependency: existing PIT input is one per guest tick, counter 1 reloads 18,
+and measured CPU poll-loop retirements total 32 ticks while every 61h sample
+remains high. CPU source clocks must not be changed to evade this alignment.
+The owner separately approves profile clock-input reconciliation on 2026-10-06;
+this expansion does not authorize CPU timing perturbations or new shared APIs.
+
+Original D3PE page 5 gives 14.31818 MHz OSC divided by twelve for TIMCLK;
+the current App already declares a 16 MHz macro axis. The proposed primary
+PIT estimate is therefore `{715909, 9600000, 0}` (OSC/(12*16 MHz)), labelled
+L2 macro conversion, not verified physical L3. Audit other Model40 clock
+inputs and actual counter pin sources in the same data-owner batch; an
+approximately-under-8 MHz BCLK/DCLK description cannot silently justify the
+current 5/16 auxiliary input. Do not guess a phase, perturb instruction ticks,
+add a BIOS condition or invent a new shared clock interface without review.
+The approved batch also checks RTC and media duration units against the same
+existing macro axis, distinguishing service ticks from physical input clocks.
 
 Each implementation S reads its original source pages and whole current owner,
 records its similar-issue sweep, corrects/adds owner-local code-defined unit

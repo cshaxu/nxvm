@@ -2,11 +2,13 @@
 #include "../../../app-mydeskpro386/support/model40.h"
 #include "../../unit/support/ibmpc/machine/support/media.h"
 #include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include <ctype.h>
 #include <stdio.h>
 
 #include <windows.h>
+#undef exception_code
 
 #include "test/app-nxvm/unit/support/ibmpc/machine/support/vm_presentation_capture.h"
 #include "x86/core/machine_interface.h"
@@ -30,12 +32,23 @@ typedef struct boot_trace_kbc_transaction {
     lib_u8 kind;
 } boot_trace_kbc_transaction;
 
+typedef struct boot_retirement_sample {
+    lib_u64 tick;
+    lib_u64 source;
+    lib_u32 eip;
+    lib_u32 eax;
+    lib_u16 port;
+    lib_u32 value;
+} boot_retirement_sample;
+
 typedef struct boot_trace_probe {
     lib_u64 cpu_retires;
     lib_u64 external_cycle_commits;
     lib_u64 port61_reads;
     lib_u64 port61_refresh_low_reads;
     lib_u64 port61_refresh_high_reads;
+    lib_u32 retirement_sample_count;
+    boot_retirement_sample retirement_samples[32];
     lib_u32 pit_writes;
     lib_u32 kbc_writes;
     lib_u32 last_pit_address;
@@ -54,6 +67,20 @@ typedef struct boot_trace_probe {
     lib_u32 post_code_count;
     lib_u8 post_codes[BOOT_TRACE_POST_CODES];
 } boot_trace_probe;
+
+static void boot_retirement_observe(void *opaque,
+    const core_machine_retirement_observation *observation)
+{
+    boot_trace_probe *probe = opaque;
+
+    if (observation->instruction_entry_cpu.cs.selector != 0xf000u ||
+        observation->instruction_entry_cpu.eip < 0xd120u ||
+        observation->instruction_entry_cpu.eip >= 0xd140u) return;
+    probe->retirement_samples[probe->retirement_sample_count++ % 32u] =
+        (boot_retirement_sample) {observation->elapsed_ticks, observation->source_ticks,
+            observation->instruction_entry_cpu.eip, observation->current_cpu.eax,
+            observation->io_port, observation->io_value};
+}
 
 static void boot_trace_observe(void *opaque, const core_machine_trace_event *event)
 {
@@ -255,6 +282,15 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 printf("T539:INI-BOOT:%s:A20=%u\n", name, (unsigned int)a20);
         }
         if (trace_probe != LIB_NULL) {
+            const lib_u32 retained_samples = trace_probe->retirement_sample_count < 32u ?
+                trace_probe->retirement_sample_count : 32u;
+            for (lib_u32 sample = trace_probe->retirement_sample_count - retained_samples;
+                sample < trace_probe->retirement_sample_count; ++sample) {
+                const boot_retirement_sample *value = &trace_probe->retirement_samples[sample % 32u];
+                lib_c_printf("BOOT-DIAG:RETIRE:pc=%04X:tick=%llu:source=%llu:eax=%08X:port=%04X:value=%02X\n",
+                    value->eip, value->tick, value->source, value->eax,
+                    (lib_u32)value->port, value->value);
+            }
             printf("T516:INI-BOOT:%s:TRACE:retired=%llu:external=%llu:port61=%llu:low=%llu:high=%llu:ports-pit=%u:last=%04X/%02X:kbc=%u:last=%04X/%02X\n",
                 name, (unsigned long long)trace_probe->cpu_retires,
                 (unsigned long long)trace_probe->external_cycle_commits,
@@ -341,6 +377,12 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
             printf("T516:INI-BOOT:%s:PC-BYTES:%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X\n",
                 name, pc_bytes[0u], pc_bytes[1u], pc_bytes[2u], pc_bytes[3u],
                 pc_bytes[4u], pc_bytes[5u], pc_bytes[6u], pc_bytes[7u]);
+        }
+        if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
+                LIB_STATUS_OK && diagnostic.first_fault.valid) {
+            lib_c_printf("BOOT-DIAG:%s:FIRST-FAULT:mask=%08X:code=%08X:pc=%04X:%08X\n",
+                name, diagnostic.first_fault.exception_mask, diagnostic.first_fault.exception_code,
+                diagnostic.first_fault.point.cs, diagnostic.first_fault.point.eip);
         }
         if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
                 LIB_STATUS_OK && diagnostic.recent_count != 0u) {
@@ -436,6 +478,9 @@ int main(int argc, char **argv)
     }
     session = ini_session.session;
     if (trace_enabled) {
+        if (core_machine_set_retirement_observation_provider(session->core_machine,
+                &(core_machine_retirement_observation_provider) {boot_retirement_observe,
+                    &trace_probe}) != LIB_STATUS_OK) goto done;
         if (core_machine_set_trace_provider(session->core_machine,
                 &(core_machine_trace_provider) {boot_trace_observe, &trace_probe}) !=
                 LIB_STATUS_OK) {

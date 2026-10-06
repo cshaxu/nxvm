@@ -28,7 +28,7 @@ semantic proof. Every new finding joins the whole owning batch before repair.
 | Planned S | Complete receiver | Current disposition |
 | --- | --- | --- |
 | S1 | Reset and architectural images | Accepted: Shared P1 fc9a8b725, NXVM P2 912579a98, complete source/receiver/unit/boot/artifact proof in S1 evidence. |
-| S2 | Runtime decode/admission | Pending full source/context/caller batch. |
+| S2 | Runtime decode/admission | Complete approved mechanism and Model40 clock-input dependency implemented; final dual-width units 534/534, original receiving contexts 58/58 and artifact/gate proof pass. P delivery and acceptance pending. |
 | S3 | Effective address and segment spans | Pending full source/context/caller batch. |
 | S4 | Admission versus next fetch | Pending full source/context/caller batch. |
 | S5 | Host arithmetic/count | Pending full source/context/caller batch. |
@@ -121,3 +121,59 @@ are not overstated. Source/function/timing residuals remain in S2-S19; no T or
 whole-family qualification claim is made. Documentation/link/identifier and
 actual-diff review pass. This governance delivery accepts/closes S1 only;
 the next numeric S requires its own packet and concrete Shared design review.
+
+## S2 Runtime Decode/Admission Design
+
+Admitted continuation against 55348a583. Current packet consumes all B05a,
+thirteen unchecked-decode sites and linked family admission/fetch findings.
+Actual source still uses _s_read_cs -> _kdf_code/_kdf_skip and ExecIns prefix
+dispatch, with no cumulative family byte limit; the observation window is
+not runtime enforcement. Thirteen direct _d_* calls match the complete old
+inventory, not a guessed defect count. S1 approval is not reused as concrete
+S2 Shared approval. No source/test/artifact changes occur at this stage.
+
+Cursor wrapping, eager prefetch and post-instruction endpoint validation share
+required boundaries with planned S3/S4/S13. The design must account for them
+before requesting one coherent reviewed patch, not declare isolated callers
+correct while legal boundary/first-fault publication remains incorrect.
+
+The [concrete S2 design](../etc/evidence/t546-s2-decode-admission-design.md)
+records all thirteen unchecked decode sites and 224 direct IP advances, the
+required prefetch/preview and post-publication dependency, and current
+LGDT/LIDT versus LLDT/LTR dispositions. Original 1987 286 B-9 conflicts with
+C-2; visually checked 1985 section 9.6.1 corroborates the proposed UD choice.
+The source conflict and unproven 186 length rule remain explicit review items,
+not accepted qualifications. No Shared implementation or runtime proof exists
+for S2 yet; general task admission is not concrete patch approval.
+
+Owner explicitly approves the concrete S2 design on 2026-10-05 after the review
+report. It includes necessary next-fetch postcheck removal without cancelling
+S4's complete later transfer/frame qualification, and settles the 286 excessive
+length exception as UD using the specific 1985 source. CPU/test implementation
+and full receiving qualification now proceed; no Lib/Common/MyNES/INI change.
+
+The [S2 implementation ledger](../etc/evidence/t546-s2-decode-admission-implementation.md)
+maps all approved mechanisms to existing-owner edits and direct tests. First
+new x64 regression and static checks pass; final-source complete dual-width
+unit, artifacts and external proof remain pending. No partial P or acceptance.
+
+Owner approves the Model40 clock-input dependency expansion on 2026-10-06.
+Keep CPU timings correct and reconcile original D3PE input frequencies with
+the existing 16 MHz L2 macro axis; include related RTC/media unit mismatches.
+No Lib/Common/MyNES/INI change or unreviewed shared API is admitted. Earlier
+CPU-source verification remains evidence, not acceptance of the changed board.
+
+Final complete units pass 534/534 per width, x64 107.68 s/x86 107.07 s;
+all 58 original external contexts pass without relaxed checkpoints or budgets.
+Eight manifest checks, CPU-source supplemental/specialized gates, final static
+sweeps, documentation and artifact checks pass. The clock expansion corrects
+only Model40 frozen inputs; three old App fixture assumptions are repaired at
+their source-conditioned units, not with another production patch. Detailed
+source, failure/retest chronology and hashes remain in S2 implementation
+evidence. Executor actual-change review accepts the complete batch for
+target-separated delivery; coordinator acceptance still precedes closure.
+
+Shared implementation P1 is 34867b960, pushed to origin/master: the existing
+CPU owner and its x86/IBMPC test receivers/manifests only. NXVM delivery owns
+Model40 frozen input reconciliation, App fixtures, bounded integration
+diagnostics, complete evidence and all eight verified 0546 PC replacements.

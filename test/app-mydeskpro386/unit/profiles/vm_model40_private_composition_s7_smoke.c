@@ -15,6 +15,43 @@
 #include "ibmpc/machine/machine_interface.h"
 #include "ibmpc/board-at/kbc_interface.h"
 #include "../../support/rom/model40_session_assets.h"
+#include "x86/core/clock_interface.h"
+
+static lib_bool model40_clock_inputs_match(void)
+{
+    core_machine_config config;
+    core_machine_clock_domain clock;
+    x86_pit *pit = LIB_NULL;
+    lib_bool saw_low = LIB_FALSE;
+    lib_bool valid;
+
+    vm_profile_model40_core_config_initialize(&config);
+    if (core_machine_clock_domain_initialize(&clock, &config.clock_plan.pit) !=
+            LIB_STATUS_OK || x86_pit_create(X86_PIT_PERSONALITY_8254, &pit) !=
+            LIB_STATUS_OK) return LIB_FALSE;
+    valid = x86_pit_write_register(pit, 3u, 0x74u) == LIB_STATUS_OK &&
+        x86_pit_write_register(pit, 1u, 18u) == LIB_STATUS_OK &&
+        x86_pit_write_register(pit, 1u, 0u) == LIB_STATUS_OK;
+    x86_pit_set_gate(pit, 1u, LIB_TRUE);
+    /* The source-backed ratio must not hide every low pulse from this
+     * 32-source-tick poll. The old 1:1 input aliases this observation. */
+    for (lib_u32 sample = 0u; valid && sample < 256u; ++sample) {
+        x86_pit_advance(pit, core_machine_clock_domain_advance(&clock, 32u));
+        if (!x86_pit_get_output(pit, 1u)) saw_low = LIB_TRUE;
+    }
+    x86_pit_destroy(pit);
+    if (!valid || !saw_low ||
+        core_machine_clock_domain_initialize(&clock, &config.clock_plan.rtc) !=
+            LIB_STATUS_OK ||
+        core_machine_clock_domain_advance(&clock, 16000000u) != 32768u ||
+        core_machine_clock_domain_initialize(&clock, &config.clock_plan.dma) !=
+            LIB_STATUS_OK ||
+        core_machine_clock_domain_advance(&clock, 64u) != 16u ||
+        core_machine_clock_domain_initialize(&clock,
+            &config.clock_plan.auxiliary_pit) != LIB_STATUS_OK ||
+        core_machine_clock_domain_advance(&clock, 64u) != 16u) return LIB_FALSE;
+    return LIB_TRUE;
+}
 
 lib_i32 main(void)
 {
@@ -31,12 +68,12 @@ lib_i32 main(void)
     lib_u8 rom_byte = 0u;
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    lib_i32 failed = 0;
+    lib_i32 failed = !model40_clock_inputs_match();
 
     even[0x3ff8u] = 0x26u;
     odd[0x3ff8u] = 0x90u;
 
-    failed = vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
+    if (!failed) failed = vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
         &invalid_config, &missing_assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
     if (!failed) failed = vm_model40_fixture_create_bytes(even, odd, &session) !=
@@ -71,13 +108,13 @@ lib_i32 main(void)
         transaction.external_cycle_timing.overlap_policy !=
             CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL ||
         composition.dma_clock.numerator != 1u ||
-        composition.dma_clock.denominator != 1u ||
-        composition.pit_clock.numerator != 1u ||
-        composition.pit_clock.denominator != 1u ||
-        composition.auxiliary_pit_clock.numerator != 5u ||
-        composition.auxiliary_pit_clock.denominator != 16u ||
-        composition.rtc_clock.numerator != 1u ||
-        composition.rtc_clock.denominator != 1u ||
+        composition.dma_clock.denominator != 4u ||
+        composition.pit_clock.numerator != 715909u ||
+        composition.pit_clock.denominator != 9600000u ||
+        composition.auxiliary_pit_clock.numerator != 1u ||
+        composition.auxiliary_pit_clock.denominator != 4u ||
+        composition.rtc_clock.numerator != 256u ||
+        composition.rtc_clock.denominator != 125000u ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
             LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=

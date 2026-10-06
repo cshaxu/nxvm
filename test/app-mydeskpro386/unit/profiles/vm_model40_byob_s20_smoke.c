@@ -119,6 +119,11 @@ lib_i32 main(void)
         vm_machine_get_reset_vector(session, &reset_vector) != LIB_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u) goto done;
     retained_memory_bytes = session->construction.core_config.memory_bytes;
+    const core_machine_clock_ratio refresh_clock =
+        session->construction.core_config.clock_plan.pit;
+    const lib_u64 first_pit_tick =
+        ((lib_u64)refresh_clock.denominator + refresh_clock.numerator - 1u) /
+            refresh_clock.numerator;
     if (vm_machine_reconfigure_memory(session, 2u * 1024u * 1024u) !=
         LIB_STATUS_INVALID_STATE || core_machine_get_memory_bytes(session->core_machine,
         &memory_bytes) != LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
@@ -127,7 +132,7 @@ lib_i32 main(void)
         (core_machine_run_budget) {1u, 0u}, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
         core_machine_reset(session->core_machine) != LIB_STATUS_OK ||
-        test_core_machine_advance_time(session->core_machine, 1u) != LIB_STATUS_OK ||
+        test_core_machine_advance_time(session->core_machine, first_pit_tick) != LIB_STATUS_OK ||
         !refresh_count_matches(session->core_machine, 18u) ||
         vm_machine_get_reset_vector(session, &reset_vector) != LIB_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u) goto done;
