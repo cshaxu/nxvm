@@ -98,6 +98,18 @@ required, not represented as freshly passed by this import.
 
 ## Owner-Approved Test Completion Plan
 
+S5 Shared P1 `d610343e2` and NXVM receiver P2 `302aa18f6` deliver owner-local
+Core/chip/CPU tests and five preserved relocations. The [S5 ledger](../etc/evidence/t545-s5-x86-test-completion.md)
+maps contract families, old assertions and discovered/corrected verification
+failures. Independent x86 passes 173/173 and full units 532/532 per width;
+twelve relevant gates pass per width. Decoder source bytes/count/output remain
+identical across standalone and historical receivers. Actual review accepts
+neutral dependencies, no lost predicates and no production/API/App asset change.
+Shared tracked C/H/CMake: nineteen paths, +712/-107 (net +605), with direct
+missing proof added to existing fixtures and one split timeline executable.
+NXVM build receiver: four path replacements (+4/-4). Current EXEs need no
+rebuild. S5 closes with its governance P; S6/S7 remain planned and T stays open.
+
 S4 delivers Shared P1 `6955f7093`: public Session lifecycle/ingress and specific
 lifecycle dispatch, UI failure cleanup/control/event mapping, publication copy
 and run identity. The [S4 ledger](../etc/evidence/t545-s4-common-test-completion.md)
