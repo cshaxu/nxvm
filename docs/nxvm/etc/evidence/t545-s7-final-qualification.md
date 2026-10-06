@@ -3,7 +3,7 @@
 ## Frozen Requirement Map
 
 Baseline is 43e9700e6. Owner requests complete T545 closure before CPU repair.
-The original [proposal](../../proposals/m5-softpc-eight-corpus-refresh.md) and
+The original [archived proposal](../../history/M5-T545-softpc-eight-corpus-refresh-proposal.md) and
 [history](../../history/M5-T545-softpc-eight-corpus-refresh.md) retain scope.
 This is final receiving qualification, not CPU instruction/manual qualification.
 
@@ -100,3 +100,9 @@ coding skills confirm one owner and no parallel path; they drove the receiving
 checker correction rather than a Shared implementation patch. Source/build/test
 predicate and artifact identities remain preserved. Implementation delivery is
 ready for coordinator actual-change review; no T closure is asserted here.
+
+Coordinator acceptance subsequently reviews P1 `90e91d721` and the full
+requirement/evidence map. Every pending verification is exhausted; the only
+S7 changes are the two NXVM checker receivers and task evidence. Governance
+delivery records S7/T545 closure and archives the proposal; the separate CPU
+repair remains first in Queue and is not implemented or qualified here.

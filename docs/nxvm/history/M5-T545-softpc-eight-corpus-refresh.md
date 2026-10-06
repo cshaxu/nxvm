@@ -7,7 +7,7 @@ NXVM baseline is 826eccc93. The source is the read-only owner-authored SoftPC
 sibling. Initial HEAD 3537e87a advanced to 03c979c7 and then governance-only
 9291c8cc. The accepted eight-root snapshot is 03c979c7; the later committed
 HEAD has identical corpus bytes. Subsequent dirty IBMPC work is excluded.
-The [proposal](../proposals/m5-softpc-eight-corpus-refresh.md) owns scope.
+The [archived proposal](M5-T545-softpc-eight-corpus-refresh-proposal.md) retains scope.
 CPU audit repairs remain first in the candidate Queue, not admitted here.
 
 ## S1 Audit Batch
@@ -182,3 +182,19 @@ diff is manufactured for test/governance-only input changes.
 Executor delivery completes original S7 verification. Coordinator actual-change
 review and governance delivery must still accept S7 and close T545. T544 CPU
 findings and separate queued repair remain intact, not qualified by boot green.
+
+## S7 Coordinator Acceptance And T Closure
+
+Coordinator switches roles and reviews pushed P1 `90e91d721`, each changed
+checker predicate/path, the immutable packet and all recorded outcomes against
+the original request. The two missing relocation receivers are correctly
+repaired at NXVM's checkers, not by restoring foreign fixtures or reducing
+inventories. Accepted S1-S6 actual-change and assertion/provenance records,
+fresh complete units, all 58 PC contexts and both MyNES integration suites
+exhaust the T ledger. Original identities/predicates and external assets are
+preserved. No new API, duplicate path or production/binary input is introduced.
+
+Governance/link/diff review accepts closure and proposal archive. Existing
+out-of-scope TODO and complete T544 CPU receivers remain explicit; no CPU
+correctness or physical-timing upgrade is claimed. S7 and T545 close with
+this governance delivery. No successor task is admitted by this closure.

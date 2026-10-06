@@ -4,9 +4,9 @@ Ordered unnumbered candidates; no numeric implementation task is admitted here.
 
 ## M5 Candidates
 
-The owner separately admitted [T545 eight-corpus refresh](../proposals/m5-softpc-eight-corpus-refresh.md)
-ahead of candidate execution. Current owns its active packet; the CPU repair
-candidate below remains first and all T544 findings remain retained.
+The separately admitted [T545 eight-corpus refresh](../history/M5-T545-softpc-eight-corpus-refresh.md)
+is closed after full receiving verification. The CPU repair candidate below
+remains first and all T544 findings remain retained; Current owns admission.
 
 1. [CPU audit gap repair and qualification](../proposals/m5-cpu-audit-gap-repair.md)
 2. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
