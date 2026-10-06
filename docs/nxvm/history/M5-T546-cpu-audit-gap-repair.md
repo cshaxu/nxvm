@@ -31,7 +31,7 @@ semantic proof. Every new finding joins the whole owning batch before repair.
 | S2 | Runtime decode/admission | Accepted: Shared P1 34867b960 and NXVM P2 01709c418, complete source/receiver/unit/boot/artifact proof in S2 evidence. |
 | S3 | Effective address and segment spans | Accepted: Shared P1 15a2399d0, NXVM P2 d875a72fe, governance P3 97c5028e2; complete source/receiver/unit/boot/artifact proof in S3 evidence. |
 | S4 | Admission versus next fetch | Accepted after coordinator actual-change review: pushed Shared P1 2d9929742 and NXVM P2 ca016635d; ten code-target owners, m/ts and L2 attribution, complete dual-width units/gates/eight artifacts and 58/58 original external contexts are proven in S4 evidence. S4 closes through governance P3, with S5-S19 retained. |
-| S5 | Host arithmetic/count | Pending full source/context/caller batch. |
+| S5 | Host arithmetic/count | Executor-qualified: Shared P1 bdfe3b938 pushed; complete final 539/539 units per width, original 58/58 integration, both gates/33 supplemental checks, eight manifests and eight stripped 0546 products. Source/caller/self-review and preserved early failures are in S5 evidence. Target-separated NXVM delivery and coordinator actual-change acceptance remain pending. |
 | S6 | Stack/frame publication | Pending full source/context/caller batch. |
 | S7 | FLAGS privilege and return | Pending full source/context/caller batch; distinct from S1 image/load classification. |
 | S8 | Asynchronous arbiter | Pending full source/context/caller batch. |

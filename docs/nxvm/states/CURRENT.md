@@ -8,6 +8,28 @@
 | M5 Td S177 | Complete: CPU audit closure and full repair transfer, archive/queue/reference reconciliation. |
 | T545 | Closed after S7 actual-change acceptance: fixed eight-corpus import, preserved receivers, four owner-local test packages and full receiving qualification. No active S packet. |
 | T546 S4 | Accepted after coordinator actual-change review of pushed Shared P1 2d9929742 and NXVM P2 ca016635d: complete source/caller/receiver proof, 537/537 units per width, original 58/58 external contexts and eight qualified 0546 PC artifacts. S4 closed; no active S packet. |
+| T546 S5 | Executor-qualified against S4 ef30f1fc3: Shared P1 bdfe3b938 is pushed; final complete units 539/539 per width (116.97 s/118.33 s), original integration 58/58, supplemental 33/33 per width, full gates/manifests and eight stripped 0546 products pass. NXVM artifact/evidence delivery follows; coordinator actual-change acceptance remains pending. Earlier incomplete x86 containment evidence is retained, not waived. |
+
+## Active T546 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T546 S5 after accepted S4 governance ef30f1fc3, next unused numeric S. |
+| Admission And Approval | Owner approved full T546 CPU repair and automatic consecutive S admission; existing x86/chips, x86/core and ibmpc plus corresponding tests/manifests/receiving proof are automatically approved. Timing accuracy upgrades are automatic; downgrades require approval. Lib/Common/MyNES, new public APIs and unresolved source/unupgradable L1 are excluded. |
+| Objective | Close the complete host arithmetic/count batch: safe pre-widening, unsigned masks, portable SAR, original guest count versus carry-ring steps, undefined-result initialization/exclusions and inherited internal-reference interval guards. |
+| Non-goals | New CPU/executor/decoder/arithmetic framework or public API, App/firmware/INI/media/clock policy changes, Lib/Common/MyNES, whole frame/task/paging/delivery/NPX/retirement contracts or silently resolving disputed guest quotient/timing grades. |
+| Reference Baseline | ef30f1fc3; accepted Shared S4 P1 2d9929742 and NXVM P2 ca016635d, qualified eight 0546 products. T544 complete family/convergence records and T546 durable ledger retain the full transferred universe. |
+| Candidate Proposal | [CPU repair](../proposals/m5-cpu-audit-gap-repair.md), S5; [S5 batch design](../etc/evidence/t546-s5-host-arithmetic-count-design.md) records source/caller inventory and decisions before edits. |
+| Files And ABI Surface | Existing x86/chips/cpu arithmetic/count/reference owners and necessary Core seam; matching test/x86, manifests and necessary receiving oracle/gates. NXVM task evidence and eight affected PC 0546 products. No public header/function/type change, Lib/Common, MyNES or firmware modification. |
+| Applicable Rules | Execution full-batch/source-to-proof and target-separated pushed P lifecycle; architecture/coding skills preserve sole CPU owner and original table style, C11/lib types and minimal real helpers; documentation/source/PDF rules preserve original authority and external inputs. |
+| Verification | Original relevant family MUL/IMUL/DIV/IDIV/count/bit/double-shift pages plus host-language safety and complete caller sweep. Code-owned owner-local matrices cover all applicable five families, 8/16/32 widths, count boundaries, flags, alias/register/memory and failures; assert only source-defined values. Final complete x64/x86 units, manifests/Types/corpus/gates, affected stripped dual products and original 58 external contexts once for final production. |
+| Expected Markers | No shift/product UB before a cast; sign fill independent of host signed shift; guest count retained for flags/timing while loop steps may reduce; count zero preserves defined state; undefined double-shift output never reads stale scratch. Reference guards are either proven unnecessary and removed or whole-span-safe at their sole owner. |
+| Asset Needs | Existing archived CPU originals and ignored research/receiving caches only. Unit values remain code-owned; original external INI/media with overlay only for receiving qualification. No new protected acquisition/import. |
+| Reporting Requirements | Confirm entire affected mechanism and concrete design before edits; report each hit/disposition, source conflict or unupgradable L1/downgrade. Full delivery records counted code-size change, retained owner/path, final logs/artifacts and actual-change review. |
+| Stop Conditions | Stop/report unresolved necessary source authority, material scope expansion, new public interface need or unupgradable L1/proposed downgrade. Never invent an exact undefined output or weaken an oracle to match current code. |
+| Exit Criteria | Every admitted host/count/reference member has direct source/caller/implementation/regression proof or source-proven non-applicability. Final complete verification, receiving products and coordinator actual-diff acceptance precede closure; later whole frame/fault/task/paging/timing contracts remain named receivers, not waived. |
+| Original Owner Request | Repair the complete CPU function/instruction/timing audit list with owner-level minimal correct mechanisms and original table style; automatically admit numeric S tasks without first-failure-only or early test-based closure. |
+| Similar-Issue Sweep | Entire CPU source/timing/types and owner/receiving tests: promoted word concatenation, signed product/shift/masks, count reduction/flags/timing readers, SAR, SHLD/SHRD undefined branches, internal ref provenance/width/host overflow and all callers. Distinguish guest-defined behavior from host UB and undefined architectural results. |
 
 ## Accepted S4 Admission Versus Next Fetch
 
