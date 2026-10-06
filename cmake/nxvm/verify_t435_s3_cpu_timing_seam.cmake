@@ -26,8 +26,15 @@ t435_require_count("${machine_text}" "core_machine_retirement_observation_publis
     "machine.c must have one raw retirement publication")
 t435_require_count("${timing_text}" "lib_i32 core_machine_cpu_timing_select\\(" 1
     "cpu_timing.c must own one selector")
-t435_require_count("${timing_text}" "context->timing_result.retirement_origin =" 2
-    "cpu_timing.c must reset and assign origin once")
+t435_require_count("${timing_text}"
+    "context->timing_result.retirement_origin[ \t]*=[^=]" 3
+    "cpu_timing.c must own its two resets and one successful assignment")
+t435_require_count("${timing_text}"
+    "context->timing_result.retirement_origin[ \t]*=[ \t\r\n]*CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED" 2
+    "selector and candidate admission must clear stale timing origin")
+t435_require_count("${timing_text}"
+    "context->timing_result.retirement_origin[ \t]*=[ \t]*origin" 1
+    "successful selection must assign one final timing origin")
 if("${timing_text}" MATCHES "machine->|#include \".*machine[.]h\"")
     message(FATAL_ERROR "CPU timing must own its result without a board-state dependency")
 endif()

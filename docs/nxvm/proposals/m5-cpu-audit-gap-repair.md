@@ -12,8 +12,11 @@ transferred universe. On 2026-10-06 the owner explicitly includes x86/chips,
 x86/core and ibmpc in automatic approval. The nonexistent x86/devices is
 explicitly excluded; no new directory or alias is implied. Concrete existing-owner
 repairs in these domains may proceed with their recorded scheme and complete
-verification; this does not include Lib/Common/MyNES, new public APIs, scope
-expansion or silent source/L1/downgrade exceptions.
+verification; this does not include Lib/Common/MyNES, new public APIs or scope
+expansion without approval. The owner automatically approves all timing-accuracy
+upgrades; downgrades require approval. S4 has explicit approval to append
+L2_CONTROL_MODEL to the existing timing-origin enum without renumbering or new
+functions/types. Unupgradable L1 and unresolved source conflicts remain reportable.
 
 The baseline is 7a759c20d and the accepted
 [T544 ledger](../history/M5-T544-retained-cpu-qualification.md),

@@ -29,8 +29,8 @@ semantic proof. Every new finding joins the whole owning batch before repair.
 | --- | --- | --- |
 | S1 | Reset and architectural images | Accepted: Shared P1 fc9a8b725, NXVM P2 912579a98, complete source/receiver/unit/boot/artifact proof in S1 evidence. |
 | S2 | Runtime decode/admission | Accepted: Shared P1 34867b960 and NXVM P2 01709c418, complete source/receiver/unit/boot/artifact proof in S2 evidence. |
-| S3 | Effective address and segment spans | Existing-owner implementation automatically authorized on 2026-10-06 for x86/chips, x86/core and ibmpc; complete verification pending. |
-| S4 | Admission versus next fetch | Pending full source/context/caller batch. |
+| S3 | Effective address and segment spans | Accepted: Shared P1 15a2399d0, NXVM P2 d875a72fe, governance P3 97c5028e2; complete source/receiver/unit/boot/artifact proof in S3 evidence. |
+| S4 | Admission versus next fetch | Executor complete: pushed Shared P1 2d9929742; ten code-target preflights repaired, next-term consumers consolidated with approved L2 origin, fixed m/ts rows restored. S4 evidence proves complete double-width units/gates/eight artifacts and 58/58 original external contexts. NXVM P2 and coordinator acceptance pending. |
 | S5 | Host arithmetic/count | Pending full source/context/caller batch. |
 | S6 | Stack/frame publication | Pending full source/context/caller batch. |
 | S7 | FLAGS privilege and return | Pending full source/context/caller batch; distinct from S1 image/load classification. |

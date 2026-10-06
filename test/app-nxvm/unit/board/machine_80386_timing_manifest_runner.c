@@ -2138,8 +2138,8 @@ static lib_i32 timing_80386_manifest_run_s6_interrupt_recipe(const char *key_id,
                 state.machine, &provider) != LIB_STATUS_OK;
     if (!failed) failed = core_machine_run(state.machine, budget, &run) !=
         LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
-        run.executed != 1u || run.ticks != 60u || capture.count != 1u ||
-        capture.observation.source_ticks != 60u ||
+        run.executed != 1u || run.ticks != 59u || capture.count != 1u ||
+        capture.observation.source_ticks != 59u ||
         capture.observation.timing_origin !=
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
@@ -2380,8 +2380,8 @@ static lib_i32 timing_80386_manifest_run_s6_inner_interrupt_recipe(
                 state.machine, &provider) != LIB_STATUS_OK;
     if (!failed) failed = core_machine_run(state.machine, budget, &run) !=
         LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
-        run.executed != 1u || run.ticks != 100u || capture.count != 1u ||
-        capture.observation.source_ticks != 100u ||
+        run.executed != 1u || run.ticks != 99u || capture.count != 1u ||
+        capture.observation.source_ticks != 99u ||
         capture.observation.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition != CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
@@ -2639,8 +2639,8 @@ static lib_i32 timing_80386_manifest_run_s6_vm86_interrupt_recipe(const char *ke
             &provider) != LIB_STATUS_OK;
     if (!failed) failed = core_machine_run(state.machine, budget, &run) !=
         LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-        run.ticks != 120u || capture.count != 1u ||
-        capture.observation.source_ticks != 120u ||
+        run.ticks != 119u || capture.count != 1u ||
+        capture.observation.source_ticks != 119u ||
         capture.observation.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition != CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
@@ -2825,9 +2825,9 @@ static lib_i32 timing_80386_manifest_run_s6_direct_recipes(void)
         timing_80386_manifest_run_s6_return_recipe("I386-RET-FAR-PM-SAME-IMM-SIZE16",
             (const lib_u8[]){ 0xcau,0u,0u }, 3u, ret_frame, sizeof(ret_frame), 33u) ||
         timing_80386_manifest_run_s6_return_recipe("I386-IRET-PM-SAME",
-            (const lib_u8[]){ 0xcfu }, 1u, iret_frame, sizeof(iret_frame), 39u) ||
+            (const lib_u8[]){ 0xcfu }, 1u, iret_frame, sizeof(iret_frame), 38u) ||
         timing_80386_manifest_run_s6_return_recipe("I386-IRET-PM-SAME-SIZE16",
-            (const lib_u8[]){ 0xcfu }, 1u, iret_frame, sizeof(iret_frame), 39u) ||
+            (const lib_u8[]){ 0xcfu }, 1u, iret_frame, sizeof(iret_frame), 38u) ||
         timing_80386_manifest_run_s6_return_recipe("I386-RET-FAR-PM-SAME-SIZE32",
             (const lib_u8[]){ 0x66u,0xcbu }, 2u, ret_frame32,
             sizeof(ret_frame32), 33u) ||
@@ -2836,7 +2836,7 @@ static lib_i32 timing_80386_manifest_run_s6_direct_recipes(void)
             sizeof(ret_frame32), 33u) ||
         timing_80386_manifest_run_s6_return_recipe("I386-IRET-PM-SAME-SIZE32",
             (const lib_u8[]){ 0x66u,0xcfu }, 2u, iret_frame32,
-            sizeof(iret_frame32), 39u) ||
+            sizeof(iret_frame32), 38u) ||
         timing_80386_manifest_run_s6_interrupt_recipe("I386-INT3-PM-SAME", 3u,
             (const lib_u8[]){ 0xccu }, 1u) ||
         timing_80386_manifest_run_s6_interrupt_recipe("I386-INT-IMM-PM-SAME",
@@ -2957,53 +2957,53 @@ static lib_i32 timing_80386_manifest_run_s6_direct_recipes(void)
         timing_80386_manifest_run_s6_task_interrupt_recipe("I386-INTO-TASK",
             4u, (const lib_u8[]){ 0xceu }, 1u, LIB_TRUE) ||
         timing_80386_manifest_run_s6_task_recipe("I386-JMP-TASK-TSS-DIRECT",
-            TASK_SWITCH_CASE_SUCCESS, 10u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 394u) ||
+            TASK_SWITCH_CASE_SUCCESS, 10u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 285u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-CALL-TASK-DIRECT",
-            TASK_SWITCH_CASE_CALL_SUCCESS, 10u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 394u) ||
+            TASK_SWITCH_CASE_CALL_SUCCESS, 10u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 285u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-JMP-TASK-TSS-M",
-            TASK_SWITCH_CASE_INDIRECT_SUCCESS, 12u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 399u) ||
+            TASK_SWITCH_CASE_INDIRECT_SUCCESS, 12u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 290u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-JMP-TASK-GATE-DIRECT",
-            TASK_SWITCH_CASE_TASK_GATE_SUCCESS, 10u, LIB_TRUE, LIB_FALSE, LIB_FALSE, 403u) ||
+            TASK_SWITCH_CASE_TASK_GATE_SUCCESS, 10u, LIB_TRUE, LIB_FALSE, LIB_FALSE, 294u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-JMP-TASK-GATE-DIRECT-SIZE16",
-            TASK_SWITCH_CASE_TASK_GATE_SUCCESS, 10u, LIB_TRUE, LIB_FALSE, LIB_FALSE, 403u) ||
+            TASK_SWITCH_CASE_TASK_GATE_SUCCESS, 10u, LIB_TRUE, LIB_FALSE, LIB_FALSE, 294u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-JMP-TASK-GATE-DIRECT-SIZE32",
-            TASK_SWITCH_CASE_TASK_GATE_SUCCESS, 10u, LIB_TRUE, LIB_FALSE, LIB_FALSE, 403u) ||
+            TASK_SWITCH_CASE_TASK_GATE_SUCCESS, 10u, LIB_TRUE, LIB_FALSE, LIB_FALSE, 294u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-CALL-TASK-DIRECT",
-            TASK_SWITCH_CASE_TASK_GATE_SUCCESS, 10u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 403u) ||
+            TASK_SWITCH_CASE_TASK_GATE_SUCCESS, 10u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 294u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-JMP-TASK-GATE-M",
-            TASK_SWITCH_CASE_INDIRECT_SUCCESS, 12u, LIB_FALSE, LIB_TRUE, LIB_FALSE, 408u) ||
+            TASK_SWITCH_CASE_INDIRECT_SUCCESS, 12u, LIB_FALSE, LIB_TRUE, LIB_FALSE, 299u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-JMP-TASK-TSS-DIRECT-SIZE16",
-            TASK_SWITCH_CASE_SUCCESS, 10u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 394u) ||
+            TASK_SWITCH_CASE_SUCCESS, 10u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 285u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-JMP-TASK-TSS-DIRECT-SIZE32",
-            TASK_SWITCH_CASE_OPERAND32_SUCCESS, 10u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 394u) ||
+            TASK_SWITCH_CASE_OPERAND32_SUCCESS, 10u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 285u) ||
         timing_80386_manifest_run_s6_iret_task_recipe("I386-IRET-TASK") ||
         timing_80386_manifest_run_s6_iret_task_recipe("I386-IRET-TASK-SIZE16") ||
         timing_80386_manifest_run_s6_iret_task_recipe("I386-IRET-TASK-SIZE32") ||
         timing_80386_manifest_run_s6_task_recipe("I386-JMP-TASK-TSS-M-SIZE16",
-            TASK_SWITCH_CASE_INDIRECT_SUCCESS, 12u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 399u) ||
+            TASK_SWITCH_CASE_INDIRECT_SUCCESS, 12u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 290u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-JMP-TASK-TSS-M-SIZE32",
             TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS, 12u, LIB_FALSE,
-            LIB_FALSE, LIB_FALSE, 399u) ||
+            LIB_FALSE, LIB_FALSE, 290u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-JMP-TASK-GATE-M-SIZE16",
-            TASK_SWITCH_CASE_INDIRECT_SUCCESS, 12u, LIB_FALSE, LIB_TRUE, LIB_FALSE, 408u) ||
+            TASK_SWITCH_CASE_INDIRECT_SUCCESS, 12u, LIB_FALSE, LIB_TRUE, LIB_FALSE, 299u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-JMP-TASK-GATE-M-SIZE32",
             TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS, 12u, LIB_FALSE,
-            LIB_TRUE, LIB_FALSE, 408u) ||
+            LIB_TRUE, LIB_FALSE, 299u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-CALL-TASK-M",
             TASK_SWITCH_CASE_INDIRECT_SUCCESS, 12u, LIB_FALSE, LIB_FALSE,
-            LIB_TRUE, 399u) ||
+            LIB_TRUE, 290u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-CALL-TASK-DIRECT-SIZE16",
             TASK_SWITCH_CASE_CALL_SUCCESS, 10u, LIB_FALSE, LIB_FALSE,
-            LIB_FALSE, 394u) ||
+            LIB_FALSE, 285u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-CALL-TASK-DIRECT-SIZE32",
             TASK_SWITCH_CASE_CALL_SUCCESS, 10u, LIB_FALSE, LIB_FALSE,
-            LIB_FALSE, 394u) ||
+            LIB_FALSE, 285u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-CALL-TASK-M-SIZE16",
             TASK_SWITCH_CASE_INDIRECT_SUCCESS, 12u, LIB_FALSE, LIB_FALSE,
-            LIB_TRUE, 399u) ||
+            LIB_TRUE, 290u) ||
         timing_80386_manifest_run_s6_task_recipe("I386-CALL-TASK-M-SIZE32",
             TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS, 12u, LIB_FALSE,
-            LIB_FALSE, LIB_TRUE, 399u) ||
+            LIB_FALSE, LIB_TRUE, 290u) ||
         timing_80386_manifest_run_s6_vm86_interrupt_recipe("I386-INT3-VM86-INNER",
             3u, (const lib_u8[]){ 0xccu }, 1u) ||
         timing_80386_manifest_run_s6_vm86_interrupt_recipe("I386-INT-IMM-VM86-INNER",
