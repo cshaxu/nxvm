@@ -253,3 +253,23 @@ Shared implementation P1 is 15a2399d0, pushed to origin/master, containing
 the complete CPU/source-test/manifest batch only. NXVM P2 delivers the full
 evidence/source decisions, scope records and eight verified PC replacements.
 No extra implementation or scope is introduced by that delivery.
+
+### S3 Coordinator Acceptance
+
+NXVM P2 d875a72fe is pushed. Coordinator actual-change review inspects the
+pushed CPU/test/manifest and NXVM evidence/artifact commits against the original
+request, complete S3 packet and source/caller convergence ledger. It accepts
+the one range owner, table-style EA corrections, full-span paired preparation
+with original scalar phases, correct copied field decoding and original GP
+mask plus ordinary SS route. Source-conditioned fixture corrections preserve
+all original predicates; no public API, second state or production path is
+added. Final direct logs and artifact identities prove the whole S3 exits:
+units 536/536 per width, original external 58/58, supplemental 33/33 per width,
+both specialized aggregates and final manifest/Types/documentation gates.
+INIs, external masters and MyNES remain unchanged.
+
+Pure governance P3 accepts/closes S3, removes its active packet and records the
+accepted S3 implementation/artifact baseline. The inherited host-reference
+guards remain with S5; complete frame/task/paging/delivery/RMW contracts remain
+with their original S batches. T546's full S4-S19 repair and final convergence
+remain open; no future admission, implementation or T-level closure is added.
