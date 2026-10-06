@@ -1,13 +1,9 @@
 #include "ibmpc/machine/machine_interface.h"
-#include "../support/ibmpc/machine/support/media.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "lib/storage/file_interface.h"
 
-#include "ibmpc/machine/control.h"
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/machine/machine_interface.h"
 #include "../support/ibmpc/machine/support/common_machine_fixture.h"
 #include "../support/rom/session_assets.h"
 
@@ -30,7 +26,7 @@ static lib_i32 vm_machine_media_create_floppy(const char *path)
         remaining -= chunk;
     }
     if (lib_storage_file_writer_close(writer) != LIB_STATUS_OK) failed = 1;
-    if (failed) (void)remove(path);
+    if (failed) (void)lib_c_remove(path);
     return failed ? -1 : 0;
 }
 
@@ -41,7 +37,7 @@ lib_i32 main(void)
         .create_hdd_cylinders = 1u
     };
     vm_machine *session = LIB_NULL;
-    lib_u64 fdd_generation;
+    vm_machine_information information;
     static const char floppy_path[] = "t531-media-lifecycle.img";
     lib_i32 failed = 0;
 
@@ -50,28 +46,19 @@ lib_i32 main(void)
         session == LIB_NULL || vm_test_common_machine_bind(session) != LIB_STATUS_OK) {
         vm_test_common_machine_unbind(session);
         vm_machine_destroy(session);
-        (void)remove(floppy_path);
+        (void)lib_c_remove(floppy_path);
         return 1;
     }
-    fdd_generation = vm_test_fdd_info(session->floppy[0u]).generation;
+    /* App owns the selected default factory/media combination, not generic
+     * generation or running-admission rules now proven in test/ibmpc. */
     failed |= vm_machine_insert_fdd(session, floppy_path) != 0 ||
-        vm_test_fdd_info(session->floppy[0u]).generation != fdd_generation + 1u ||
-        session->floppy_image_path[0u][0] == '\0';
-    fdd_generation = vm_test_fdd_info(session->floppy[0u]).generation;
-    vm_machine_executor_state_start(&session->control.state);
-    failed |= vm_machine_insert_fdd(session, "t404-running-removable.img") == 0 ||
-        vm_test_fdd_info(session->floppy[0u]).generation != fdd_generation ||
-        session->floppy_image_path[0u][0] == '\0';
-    failed |= vm_machine_eject_fdd(session) == 0 ||
-        vm_test_fdd_info(session->floppy[0u]).generation != fdd_generation ||
-        session->floppy_image_path[0u][0] == '\0';
-    vm_machine_executor_state_stop(&session->control.state);
-    failed |= vm_machine_eject_fdd(session) != 0 ||
-        vm_test_fdd_info(session->floppy[0u]).present || session->floppy_image_path[0u][0] != '\0';
+        vm_machine_get_information(session, &information) != LIB_STATUS_OK ||
+        !information.floppy_media_inserted || information.floppy_image_bytes != 1440u * 1024u ||
+        !information.fixed_disk_present;
     vm_test_common_machine_unbind(session);
     vm_machine_destroy(session);
-    (void)remove(floppy_path);
+    (void)lib_c_remove(floppy_path);
     if (failed) return 1;
-    printf("M5:T404:S3:MEDIA-LIFECYCLE:OK\n");
+    lib_c_printf("M5:T404:S3:MEDIA-LIFECYCLE:OK\n");
     return 0;
 }
