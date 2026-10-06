@@ -360,6 +360,33 @@ and the identical same-width CPU objects above. NXVM artifact/evidence P2 is
 the receiving delivery, not a CPU fork. Coordinator review is still pending;
 this executor self-review does not close S5 or T546.
 
+## Coordinator Immutable-Change Acceptance
+
+The session switches from executor to coordinator and reviews actual Shared
+P1 bdfe3b938 and NXVM P2 04f0278ad against the original owner request, complete
+S5 packet, seven-member batch and applicable rules. The committed CPU blob
+matches the qualified source exactly; the diff retains handlers/call arguments,
+corrects only the admitted arithmetic/count/definedness mechanisms and removes
+the two pure reference wrappers. Five changed owner-local C tests, two guard
+scripts and their registration/manifest changes supply direct proof rather
+than another production path. The late BSF bit-31 proof gap is actually fixed
+and included in the final full-unit logs, not merely promised.
+
+Review checks both P scopes and their real diffs: Shared contains only X86
+source/test; NXVM contains eight existing artifact paths and task evidence/status.
+No public headers, Lib/Common/MyNES code/assets, INIs or raw protected inputs
+appear. Counts, final 539/539 units per width, 58/58 original integration, both
+33/33 supplemental/full gates, all eight manifests, PE/hash/object identities,
+preserved failed/early diagnostics and terminal owned handles match the evidence.
+The T345 fatal is an intentional passing negative probe. Rule/document review
+confirms Current alone owns active status and the ledger still retains S6-S19.
+
+Coordinator accepts the complete S5 batch and closes it through pure governance
+P3. No active S packet remains until the next automatic admission. T546 and the
+whole CPU repair goal remain open; no complete CPU, physical timing or later
+frame/task/paging/delivery contract is claimed. NXVM/Shared implementation is
+clean; unrelated MyNES documentation is preserved outside these commits.
+
 Full dual-width units, gates, eight products, original receiving 58 contexts
 and coordinator actual-diff acceptance are pending. No implementation P or
 S5 closure follows from these early tests.
