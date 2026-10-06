@@ -79,7 +79,7 @@ set(project_t344_retained_sources
     "test/x86/core/machine_configuration_smoke.c"
     "test/ibmpc/board-common/machine_cpu_pic_lifecycle_smoke.c"
     "test/app-mydeskpro386/unit/profiles/machine_d4_refresh_hold_smoke.c"
-    "test/ibmpc/board-common/machine_entry_plan_smoke.c"
+    "test/x86/core/machine_entry_plan_smoke.c"
     "test/ibmpc/core/machine_explicit_time_s4_smoke.c"
     "test/x86/core/machine_immutable_rom_mapping_smoke.c"
     "test/ibmpc/board-common/machine_input_display_s5_smoke.c"
@@ -138,7 +138,7 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     "test/ibmpc/board-common/video_fixture.h"
     "test/ibmpc/board-at/kbc_fixture.h"
     "test/ibmpc/board-common/core_machine_rtc_smoke.c"
-    "test/ibmpc/core/machine_fpu_interface_s65_smoke.c"
+    "test/x86/core/machine_fpu_interface_s65_smoke.c"
     ${project_t344_timing_manifest_sources}
     # Model40 owns the real refresh/preload latch; neutral Core keeps bus internals.
     "test/app-mydeskpro386/unit/profiles/d4_prefetch_locality_smoke.c"
@@ -199,7 +199,7 @@ list(APPEND project_t344_machine_sources
     "test/ibmpc/core/planar_parity_fixture.c"
     "test/ibmpc/board-common/core_machine_planar_parity_nmi_s3_smoke.c"
     "test/ibmpc/board-common/composition/support/protected_16_bootstrap_fixture.h"
-    "test/ibmpc/core/machine_fpu_interface_s65_smoke.c"
+    "test/x86/core/machine_fpu_interface_s65_smoke.c"
     "test/ibmpc/core/machine_instruction_timing_ledger_smoke.c"
     "test/x86/core/machine_prefetch_locality_smoke.c"
     "test/app-mydeskpro386/unit/profiles/d4_prefetch_locality_smoke.c"
@@ -240,7 +240,7 @@ list(APPEND project_t344_machine_sources
     "test/ibmpc/board-common/core_machine_dma_binding_token_smoke.c"
     "test/ibmpc/board-common/machine_provider_composition_smoke.c"
     "test/ibmpc/board-common/machine_arbitration_s3_smoke.c"
-    "test/ibmpc/board-common/machine_entry_plan_smoke.c")
+    "test/x86/core/machine_entry_plan_smoke.c")
 list(APPEND project_t344_machine_sources
     "test/ibmpc/board-common/core_machine_xt_ppi_keyboard_smoke.c"
     "test/ibmpc/board-common/core_machine_gpr_mov_smoke.c"

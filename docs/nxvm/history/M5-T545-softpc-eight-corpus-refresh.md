@@ -158,3 +158,27 @@ remain read-only.
 
 This planning-only follow-up changes NXVM task records, not source, tests,
 configuration or executable inputs. Current verified EXEs need no rebuild.
+
+## S7 Final Receiving Qualification Delivery
+
+Owner on 2026-10-05 requests complete T545 closure before CPU repair. The
+[S7 evidence](../etc/evidence/t545-s7-final-qualification.md) maps the entire
+S1-S6 ledger to fresh receiving verification. All 58 original PC integration
+contexts pass once; MyNES integration passes 12/12 each width, including native
+desktop cases. Complete PC/shared units pass 532/532 per width; MyNES product
+units pass 43/43 per width. All eight manifests, 33 supplemental checks per
+width, both specialized aggregates, artifact-root/INI and documentation checks
+pass. Ten deployed PE/hash/debug identities match accepted S2 artifacts.
+
+Final review found omitted S5 static receiver adaptation: T332 required a board
+fixture for the moved neutral FPU case; T344 retained four old path entries for
+the FPU/entry-plan tests. NXVM-only CMake corrections follow the actual owners
+without removing the 44/133 case inventories or changing Shared bytes. Two
+tracked checker paths change +22/-4, net +18. Production/API/INI/media and EXE
+inputs are unchanged. Before/after hashes prove external overlay masters remain
+unchanged. No required runtime test is skipped or relaxed, and no new binary
+diff is manufactured for test/governance-only input changes.
+
+Executor delivery completes original S7 verification. Coordinator actual-change
+review and governance delivery must still accept S7 and close T545. T544 CPU
+findings and separate queued repair remain intact, not qualified by boot green.

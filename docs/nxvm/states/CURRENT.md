@@ -6,7 +6,28 @@
 | --- | --- |
 | T544 | Closed as a completed CPU audit by owner direction; all CPU repair/proof gaps transferred to the first queued proposal. No implementation task is active. |
 | M5 Td S177 | Complete: audit closure, full CPU repair transfer, proposal archive and queue/reference reconciliation. NXVM documentation only. |
-| T545 S6 | Accepted: all four owner-local test batches S3-S6 verified and delivered. Original final S7 remains planned; T545 stays open. |
+| T545 S7 | Admitted: final receiving-product, external integration and task closure verification. S1-S6 remain accepted; no CPU repair is admitted. |
+
+## Active S7 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T545 S7; next unused S after accepted S6 P3 43e9700e6. |
+| Admission And Approval | Owner on 2026-10-05 requests complete closure of the previous T before CPU repair. This admits original S7 verification and NXVM evidence/governance updates; no unreviewed Shared production edit or MyNES product edit. |
+| Objective | Exhaust T545's eight-corpus/receiver ledger and verify all existing receiving products before truthful T closure. |
+| Non-goals | CPU instruction/timing repairs, new APIs, upstream refresh, owner INI/media changes and manufactured binary diffs. |
+| Reference Baseline | 43e9700e6; accepted S1-S6 deliveries and T545 history; deployed PC 0545 and MyNES 0043 pairs. [S7 evidence](../etc/evidence/t545-s7-final-qualification.md) maps final proof. |
+| Candidate Proposal | [T545 proposal](../proposals/m5-softpc-eight-corpus-refresh.md), original S7 and convergence exits. |
+| Files And ABI Surface | NXVM CURRENT/QUEUE/history/proposal/evidence and obsolete NXVM fixture-checker receiver paths/ownership predicates; existing build/test execution. No Shared production, ABI or executable input change. Receiving consumers: four fixed PC Apps and MyNES. |
+| Applicable Rules | Execution: complete units, original integration, target-separated P and actual-change review. Architecture/coding: sole owners, inward dependencies, no parallel receiver; inspect S1-S6 actual diffs. Documentation: truthful current/queue/archive links. Source policy: external master inputs remain external, unchanged. |
+| Verification | Incremental receiving builds; complete unit suites on default x64/x86 with eight jobs; all original PC integration cases on default/AT/Model40/XT both widths once; MyNES integration both widths, native desktop checks sequential. Eight manifest/corpus/Types/dependency checks, documentation governance, diff/link review and all ten PE/hash/debug-section checks. |
+| Expected Markers | Zero failing or skipped required cases: 532 units per width, 58 PC integration contexts in total, all registered MyNES integration cases per width; eight matching manifests and unchanged artifact identities unless an approved repair changes inputs. |
+| Asset Needs | Existing owner-managed nxvm-assets inputs and adjacent deployed INIs; do not copy or mutate media masters. Code-owned temporary output stays ignored in build/. |
+| Reporting Requirements | Confirm brief; report matrix/gate failures and actual causes; final evidence maps every T requirement, exact outcomes, artifact hashes, retained boundaries and pushed commits. |
+| Stop Conditions | Missing assets, changed protected input, failing invariant or required production repair beyond reviewed scope: report and obtain concrete authority; no weakened predicate or ignored skip. |
+| Exit Criteria | All S1-S6 dispositions and original S7 requirements directly verified; receiving artifacts current; no lost tests or duplicate owner; documentation/actual-change review passes; target-correct deliveries pushed and worktree clean. |
+| Original Owner Request | Import suitable SoftPC eight corpora unchanged, adapt receivers and complete four owner-local test packages; now: thoroughly close the previous T. |
+| Similar-Issue Sweep | Check every fixed App and both widths, MyNES receiving edges, all eight corpora and original test registration/asset routes; a local passing boot does not qualify the other consumers. |
 
 ## Accepted S6 IBMPC Test Completion
 
@@ -163,8 +184,8 @@ qualification successor; they are not deployed artifacts or new source paths.
 
 ## Next Work
 
-T545 S2 is accepted; planned S3-S6 complete owner-local tests before S7 external
-qualification and T closure. S3 is admitted; the later planned batches are not active.
+T545 S1-S6 are accepted. S7 is admitted for original external qualification,
+receiving-product verification and complete T closure before CPU repair.
 The first candidate remains [CPU gap repair](../proposals/m5-cpu-audit-gap-repair.md),
 with eighteen mechanism/proof batches and final qualification. Its numeric T
 is allocated only on admission; concrete Shared edits require owner review.

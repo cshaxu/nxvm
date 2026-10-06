@@ -18,6 +18,8 @@ set(project_t332_wrapper_sources
     "test/ibmpc/board-common/core_machine_hlt_s49_smoke.c"
     "test/ibmpc/board-common/core_machine_iret_s51_smoke.c"
     "test/ibmpc/board-common/core_machine_software_int_s50_smoke.c")
+set(project_t332_neutral_core_sources
+    "test/x86/core/machine_fpu_interface_s65_smoke.c")
 set(project_t332_inherited_sources
     "test/ibmpc/board-common/machine_interrupt_entry_smoke.c"
     "test/ibmpc/board-common/machine_cli_sti_interrupt_smoke.c"
@@ -118,6 +120,21 @@ function(project_t332_require_shared_lifecycle source)
         message(FATAL_ERROR "T332 CPU fixture source is missing: ${source}")
     endif()
     file(READ "${path}" content)
+    if(source IN_LIST project_t332_neutral_core_sources)
+        foreach(operation core_machine_neutral_create core_machine_bind_execution_provider
+                core_machine_freeze_execution_providers core_machine_reset
+                core_machine_debug_patch_registers)
+            if(NOT content MATCHES "${operation}[ \t\r\n]*\\(")
+                message(FATAL_ERROR "Neutral Core fixture misses ${operation}: ${source}")
+            endif()
+        endforeach()
+        if(NOT content MATCHES "debug_fixture[.]h" OR
+           NOT content MATCHES "exception_fixture[.]h" OR
+           content MATCHES "ibmpc/|machine_cpu_fixture|executor_cpu")
+            message(FATAL_ERROR "Neutral Core fixture restores board/private setup: ${source}")
+        endif()
+        return()
+    endif()
     if(source IN_LIST project_t332_public_board_sources)
         if(source IN_LIST project_t332_public_limit_sources)
             if(NOT content MATCHES "cpu_board_limit_fixture[.]h" OR
@@ -224,6 +241,7 @@ foreach(project_t332_entry IN LISTS project_t332_inventory)
             "T332 CPU fixture wrapper omits its inherited lifecycle owner: ${project_t332_source}")
     endif()
     if(NOT project_t332_source IN_LIST project_t332_public_board_sources AND
+       NOT project_t332_source IN_LIST project_t332_neutral_core_sources AND
        ("${project_t332_content}" MATCHES "core_machine_bind_execution_provider" OR
         "${project_t332_content}" MATCHES "core_machine_freeze_execution_providers"))
         message(FATAL_ERROR
