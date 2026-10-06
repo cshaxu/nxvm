@@ -98,6 +98,18 @@ required, not represented as freshly passed by this import.
 
 ## Owner-Approved Test Completion Plan
 
+S6 Shared P1 `f785e71a9` and NXVM receiver P2 `efc153d22` complete IBMPC's
+generic Machine memory/media and shared AT preparation proof. The [S6 ledger](../etc/evidence/t545-s6-ibmpc-test-completion.md)
+records the complete contract/assertion map and corrected fixture failures.
+Standalone suites pass 181/181 and full units 532/532 per width, with six gates
+per width. Coordinator review accepts original registrations/markers, generic
+assertions moved to their owner and preserved actual App model choices. Three
+Shared C tests add 207 lines; two App tests change +16/-50 (combined net +173).
+No production/API/configuration/assets/EXE input changes. S6 closes with its
+governance P; all four requested test batches are accepted. Original S7 remains
+planned for external qualification; neither this acceptance nor unit green
+claims T closure, new CPU manual qualification or fresh integration success.
+
 S5 Shared P1 `d610343e2` and NXVM receiver P2 `302aa18f6` deliver owner-local
 Core/chip/CPU tests and five preserved relocations. The [S5 ledger](../etc/evidence/t545-s5-x86-test-completion.md)
 maps contract families, old assertions and discovered/corrected verification

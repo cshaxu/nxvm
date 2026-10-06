@@ -6,28 +6,21 @@
 | --- | --- |
 | T544 | Closed as a completed CPU audit by owner direction; all CPU repair/proof gaps transferred to the first queued proposal. No implementation task is active. |
 | M5 Td S177 | Complete: audit closure, full CPU repair transfer, proposal archive and queue/reference reconciliation. NXVM documentation only. |
-| T545 S6 | Active: IBMPC-owned test inventory, generic Machine lifecycle/media proof and shared AT preparation contracts. S3-S5 accepted; S7 remains planned. |
+| T545 S6 | Accepted: all four owner-local test batches S3-S6 verified and delivered. Original final S7 remains planned; T545 stays open. |
 
-## Active S6 Packet
+## Accepted S6 IBMPC Test Completion
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, M5 T545 S6; sequential coordinator/executor roles. |
-| Admission And Approval | Owner's four-package completion request and continuing goal, 2026-10-05; Shared test completion plus necessary NXVM test receivers/records only. |
-| Objective | Complete IBMPC-local Board/Machine/Product contract proof without App fixture dependency. |
-| Non-goals | No production/API change, Lib/Common/x86 repair, new framework, App configuration/assets/binary changes or sibling writes; no hardware/manual qualification claim. |
-| Reference Baseline | e7ac6ce4d, clean accepted S5; deployed 0545/0043 remain unchanged. |
-| Candidate Proposal | [S6 brief](../proposals/m5-softpc-eight-corpus-refresh.md); [S6 proof ledger](../etc/evidence/t545-s6-ibmpc-test-completion.md). |
-| Files And ABI Surface | test/ibmpc owned cases/build/manifests, affected NXVM unit receivers and records; no production ABI change. |
-| Applicable Rules | Execution complete P/full units; Architecture owner-local inward boundaries; Coding C11/Types/fixture reuse and retained assertion map; Document truthful evidence and single active packet. |
-| Verification | Independent IBMPC builds/tests and complete repository units on x64/x86; manifests, Types/corpus/ownership checks, retained App predicates, documentation and actual diff review. |
-| Expected Markers | Generic Machine lifecycle/media and AT assembly/materialization have direct IBMPC proof; no App/foreign-test fixture dependency and no lost original test/integration predicate. |
-| Asset Needs | Code-owned firmware/media bytes and isolated temporary files only; no external ROM, INI, CMOS/font or protected media input. |
-| Reporting Requirements | Report inventory/gaps, assertion map, actual code-size/review and target-separated pushed complete delivery/acceptance. |
-| Stop Conditions | Production defect/new API needs owner review; diagnose failures without weakening assertions or inventing passes. |
-| Exit Criteria | All inventoried contracts have direct proof or justified disposition; required standalone/full/gate checks pass both widths; manifests/receivers match ownership; complete reviewed P deliveries pushed. Unchanged executable inputs need no EXE rebuild. |
-| Original Owner Request | Fourth S completes clean self-sufficient IBM PC tests, including gaps currently supported only by App tests. |
-| Similar-Issue Sweep | Inspect generic Board/Machine/Product lifecycle, ownership, publication, failure and configuration claims in all four App/IBMPC test paths; preserve genuine model choices and external integration at their owners. |
+Shared P1 `f785e71a9` completes owner-local generic memory/media lifecycle,
+AT descriptor/CPU/snapshot and PC/AT ROM candidate preparation tests. NXVM
+P2 `efc153d22` retains actual default-profile predicates and records the full
+assertion/contract map in [S6 evidence](../etc/evidence/t545-s6-ibmpc-test-completion.md).
+Coordinator actual-change review accepts retained App targets/markers, direct
+owner-local coverage, inward-only independent fixtures and lifecycle/failure
+proof. Standalone IBMPC passes 181/181 per width; current full units pass
+532/532 per width and six IBMPC gates pass per width. Production/API/INI/EXE
+inputs are unchanged. S6 closes with governance acceptance. All four owner
+test-completion batches S3-S6 are accepted; original final S7 stays planned,
+so this is not T545 closure or fresh external qualification.
 
 ## Accepted S5 x86 Test Completion
 
