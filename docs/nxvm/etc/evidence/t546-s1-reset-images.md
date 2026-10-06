@@ -266,3 +266,11 @@ Verified 0546 builds contain that exact CPU source plus the task's receiving
 version declaration; hashes identify the builds independently of compiler
 timestamps. NXVM delivery carries only its preset/recipe, explicit timing
 fixture context, task records and the eight qualified product replacements.
+
+NXVM implementation P2 is 912579a98, pushed. Coordinator actual-change review
+accepts both deliveries and the complete requirement-to-proof map, including
+source-defined versus canonical/undefined state and all receiver corrections.
+Eight artifact identities and scope boundaries are rechecked against actual
+files. Governance acceptance closes S1 only, with T546 and all remaining
+instruction/function/timing batches open. No unsafe source exclusion or new
+unupgradable L1 is introduced by this batch.

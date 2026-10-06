@@ -7,28 +7,22 @@
 | T544 | Closed as CPU audit; complete repair/proof findings transferred to the first queued proposal, not claimed repaired. |
 | M5 Td S177 | Complete: CPU audit closure and full repair transfer, archive/queue/reference reconciliation. |
 | T545 | Closed after S7 actual-change acceptance: fixed eight-corpus import, preserved receivers, four owner-local test packages and full receiving qualification. No active S packet. |
-| T546 S1 | Complete executor proof: Shared P1 fc9a8b725 pushed; NXVM receivers/artifacts/evidence delivered next, then coordinator acceptance. |
+| T546 S1 | Accepted and closed: approved CPU reset/FLAGS/MSW batch and all receiving proof delivered. T stays open; no active S packet. |
 
-## Active T546 S1 Packet
+## Accepted S1 CPU Reset And Images
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New: M5 T546 S1 after closed T545 S7 P2 966249c20; numeric allocation reconciled with Git/current history. |
-| Admission And Approval | Owner requested CPU repair after T545 closure and explicitly approves the listed S1 component changes on 2026-10-05. Approved: Shared CPU reset/FLAGS/MSW and matching owner tests/manifests; NXVM evidence, necessary receiver assertions and eight PC 0546 artifacts. No Lib/Common/MyNES or INI changes. |
-| Objective | Consume the complete reset/architectural-image batch: early CS:IP/base, family cache/control reset, 286 MSW readout and generation-specific internal/load/outgoing FLAGS; repair after reviewed Shared design and verify the whole batch. |
-| Non-goals | Board/BIOS reset overrides, new CPU families, Lib/Common/MyNES edits, global FLAGS mask for unrelated POPF/IRET/task privilege rules, timing guesses or premature task closure. |
-| Reference Baseline | 966249c20; [T546 convergence ledger](../history/M5-T546-cpu-audit-gap-repair.md), T544 boundary and all five-family audits linked there. T545 complete runtime baseline remains accepted. |
-| Candidate Proposal | [CPU repair proposal](../proposals/m5-cpu-audit-gap-repair.md), initial S1 and original eighteen repair/proof receivers plus final qualification. |
-| Files And ABI Surface | Approved sole src/x86/chips/cpu reset/FLAGS/MSW owners; matching test/x86 reset/FLAGS/system/Core cases and three test/ibmpc oracle/setup receivers, manifests. NXVM timing fixture, current recipe/preset revision, packet/queue/history/evidence and eight verified PC artifacts. No new public API or App workaround. |
-| Applicable Rules | Execution: whole-batch convergence, concrete Shared review, full dual-width units, separate targets and artifacts. Architecture skill/rules: one CPU state/time owner, no App repair. Coding skill/rules: original table handlers, Types vocabulary, no duplicate path. Documentation: truthful tier and status. Source policy/PDF skill: original identities and visually confirmed tables, external/ignored scratch only. |
-| Verification | Read and render original reset/FLAGS/MSW source pages, inspect all load/image/reset callers and oracle assumptions; transient reset/FLAGS/system tests then complete 532-case receiving units both widths. After approved code changes, rebuild all four receiving PC x64/x86 pairs at 0546, retain INIs, verify PE/hash/strip and run affected boot groups once. All eight manifests and applicable corpus/Types/specialized/documentation gates. |
-| Expected Markers | Source-conditioned reset/FLAGS/MSW matrices, retained first physical fetch, full unit zero failures, no required skipped boot/gate, all changed receiving artifacts current; source-undefined fields excluded from precise claims. |
-| Asset Needs | Existing archived original CPU manuals; code-defined unit fixtures only. Existing external INI/media for receiving boot regression; no new ROM/media acquisition or master modification. |
-| Reporting Requirements | Report whole S1 source/code/regression map and concrete pseudocode/diff estimate before Shared edits; report conflicts/L1/false-grade changes; deliver complete proof/artifacts/commits after implementation and actual-change review. |
-| Stop Conditions | Unresolved original authority, unupgradable L1 or necessary downgrade requires owner disposition. Do not equate 286 IDT programmer/hardware source conflict with proven defect. Changes beyond this approved CPU batch require concrete review. |
-| Exit Criteria | All S1 fields/forms/callers have direct repaired or source-proven non-applicable disposition, sources/regressions agree, full units/receiving artifacts/gates pass and target-correct P deliveries pushed; no pending reset/image member hidden in S7 privilege work. |
-| Original Owner Request | Admit next T and correctly repair CPU instructions and timing according to the full audit list; finish previous T first. |
-| Similar-Issue Sweep | All five implementations plus DEFAULT resolution, cold/processor resets, CPU contexts/opaque instances/Core/board callers; outgoing PUSHF and interrupt frames versus incoming POPF/IRET/task paths; no universal saved/writable mask. |
+Shared P1 `fc9a8b725` and NXVM P2 `912579a98` are pushed. Coordinator actual-change
+review accepts the complete approved S1 source/context/receiver batch and
+[direct proof](../etc/evidence/t546-s1-reset-images.md). Complete units pass
+532/532 per width; all 58 original external contexts pass once; eight manifests,
+33 supplemental checks per width, both specialized and documentation gates pass.
+The nine discovered receiving failures are corrected at their actual test
+context/oracle, without another production patch or weakened timing numbers.
+Production remains two CPU C owners, net +5 lines; no API or parallel state.
+Four PC 0546 x64/x86 pairs replace 0545; INIs, external masters and MyNES are unchanged.
+
+S1 closes with governance acceptance. T546 stays open for its complete S2-S19
+ledger; S2 decode/admission is next planned, not admitted by this closure.
 
 ## Accepted T545 Baseline
 

@@ -27,7 +27,7 @@ semantic proof. Every new finding joins the whole owning batch before repair.
 
 | Planned S | Complete receiver | Current disposition |
 | --- | --- | --- |
-| S1 | Reset and architectural images | Active reconciliation/concrete review; code unchanged. |
+| S1 | Reset and architectural images | Accepted: Shared P1 fc9a8b725, NXVM P2 912579a98, complete source/receiver/unit/boot/artifact proof in S1 evidence. |
 | S2 | Runtime decode/admission | Pending full source/context/caller batch. |
 | S3 | Effective address and segment spans | Pending full source/context/caller batch. |
 | S4 | Admission versus next fetch | Pending full source/context/caller batch. |
@@ -102,3 +102,22 @@ target content. NXVM receiving delivery contains its timing fixture entry,
 0546 recipe/presets, complete evidence and eight verified artifact replacements.
 Full original boot/unit predicates survive the source-conditioned corrections.
 S1 still awaits coordinator actual-change acceptance; the task remains open.
+
+### S1 Coordinator Acceptance
+
+Coordinator switches roles and inspects both pushed commits against the
+original owner request, approved packet and complete reset/image batch. Each
+production change stays in the existing CPU owner; every added/corrected test
+predicate is source-conditioned and mapped to its real context. In particular,
+ordinary timing fixtures explicitly choose entry state, while reset/entry
+rollback tests prove actual reset state; invalid unlimited-reset prefetch
+assumptions are replaced by legal bounded-window predicates. No extra
+production patch, lost valid clock predicate, new API or duplicate owner.
+
+Complete dual-width units, all 58 original boot contexts, unchanged media/INI/
+MyNES hashes, eight current artifact identities and manifest/gate proof exhaust
+S1's approved exit. Source-undefined fields and the original IDT disagreement
+are not overstated. Source/function/timing residuals remain in S2-S19; no T or
+whole-family qualification claim is made. Documentation/link/identifier and
+actual-diff review pass. This governance delivery accepts/closes S1 only;
+the next numeric S requires its own packet and concrete Shared design review.
