@@ -2,6 +2,9 @@
 #include "ibmpc/machine/machine_interface.h"
 #include "ibmpc/machine/lifecycle.h"
 #include "ibmpc/machine/media/media_interface.h"
+#include "ibmpc/machine/machine_private.h"
+#include "lib/storage/file_interface.h"
+#include "lib/types/file.h"
 
 typedef struct construction_probe {
     lib_status configure_status;
@@ -96,11 +99,72 @@ static vm_machine_construction prepare(construction_probe *probe)
                 .clock_ticks_per_second = 1000000u }
         },
         .floppy_slot_count = 1u,
+        .memory_reconfigurable = LIB_TRUE,
         .firmware_provider = &firmware,
         .firmware_context = probe,
         .profile = {probe, configure_plan, notify_profile, release_profile}
     };
     return value;
+}
+
+static void check_memory_replacement(vm_machine *machine)
+{
+    vm_machine *identity = machine;
+    core_machine *core = machine->core_machine;
+    t_fdd *floppy = machine->floppy[0u];
+    t_hdd *disk = machine->fixed_disk[0u];
+    t_debug *debug = &machine->debug;
+    vm_machine_reset_vector vector;
+    lib_size bytes = 0u;
+    lib_test_assert(vm_machine_reconfigure_memory(machine, 32u * 1024u * 1024u) == LIB_STATUS_OK);
+    lib_test_assert(machine == identity && machine->core_machine == core &&
+        machine->floppy[0u] == floppy && machine->fixed_disk[0u] == disk && &machine->debug == debug);
+    lib_test_assert(core_machine_get_memory_bytes(core, &bytes) == LIB_STATUS_OK && bytes == 32u * 1024u * 1024u);
+    lib_test_assert(vm_machine_get_reset_vector(LIB_NULL, &vector) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(vm_machine_get_reset_vector(machine, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+}
+
+static void check_floppy_lifecycle(void)
+{
+    static const char path[] = "machine-owned-lifecycle.img";
+    static const lib_u8 zeroes[4096u];
+    lib_storage_file_writer *writer = LIB_NULL;
+    construction_probe probe = {0};
+    vm_machine_construction construction = prepare(&probe);
+    const vm_machine_config runtime = {.create_fdd = 1};
+    vm_machine *machine = LIB_NULL;
+    common_machine *executor = LIB_NULL;
+    common_machine_driver driver;
+    core_machine_media_info before, after;
+    const core_machine_media_provider *media = vm_machine_fdd_media_provider();
+    lib_test_assert(lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) == LIB_STATUS_OK);
+    for (lib_size remaining = 1440u * 1024u; remaining != 0u; remaining -= sizeof(zeroes))
+        lib_test_assert(lib_storage_file_writer_write(writer, zeroes, sizeof(zeroes)) == LIB_STATUS_OK);
+    lib_test_assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
+    lib_test_assert(vm_machine_create(&runtime, &construction, &machine) == LIB_STATUS_OK);
+    lib_test_assert(vm_machine_describe_common_driver(machine, &driver) == LIB_STATUS_OK);
+    lib_test_assert(common_machine_create(&executor, &driver) == LIB_STATUS_OK);
+    lib_test_assert(vm_machine_bind_common_machine(machine, executor) == LIB_STATUS_OK);
+    lib_test_assert(media->query(machine->floppy[0u], &before) == CORE_MACHINE_MEDIA_RESULT_OK);
+    lib_test_assert(vm_machine_insert_fdd(machine, path) == 0);
+    lib_test_assert(media->query(machine->floppy[0u], &after) == CORE_MACHINE_MEDIA_RESULT_OK &&
+        after.generation == before.generation + 1u && machine->floppy_image_path[0u][0] != '\0');
+    before = after;
+    vm_machine_executor_state_start(&machine->control.state);
+    lib_test_assert(vm_machine_insert_fdd(machine, path) != 0);
+    lib_test_assert(media->query(machine->floppy[0u], &after) == CORE_MACHINE_MEDIA_RESULT_OK &&
+        after.generation == before.generation && machine->floppy_image_path[0u][0] != '\0');
+    lib_test_assert(vm_machine_eject_fdd(machine) != 0);
+    lib_test_assert(media->query(machine->floppy[0u], &after) == CORE_MACHINE_MEDIA_RESULT_OK &&
+        after.generation == before.generation && machine->floppy_image_path[0u][0] != '\0');
+    vm_machine_executor_state_stop(&machine->control.state);
+    lib_test_assert(vm_machine_eject_fdd(machine) == 0);
+    lib_test_assert(media->query(machine->floppy[0u], &after) == CORE_MACHINE_MEDIA_RESULT_ABSENT &&
+        !after.present && machine->floppy_image_path[0u][0] == '\0');
+    lib_test_assert(common_machine_destroy(executor) == LIB_STATUS_OK);
+    lib_test_assert(vm_machine_bind_common_machine(machine, LIB_NULL) == LIB_STATUS_OK);
+    vm_machine_destroy(machine);
+    lib_test_assert(probe.released && lib_c_remove(path) == 0);
 }
 
 static void check_transaction(lib_status configure_status,
@@ -136,6 +200,7 @@ static void check_transaction(lib_status configure_status,
     lib_test_assert(driver.context == machine && driver.reset(driver.context));
     lib_test_assert(probe.configure_count == 1u && probe.firmware_count == 1u);
     lib_test_assert(probe.reset_count == 2u && probe.reset_notice_count == 2u);
+    check_memory_replacement(machine);
     vm_machine_destroy(machine);
     lib_test_assert(probe.released && probe.release_count == 1u);
     lib_test_assert(probe.detach_count == 1u);
@@ -156,6 +221,7 @@ lib_i32 main(void)
     check_transaction(LIB_STATUS_OK, LIB_STATUS_OK);
     check_transaction(LIB_STATUS_INVALID_ARGUMENT, LIB_STATUS_OK);
     check_transaction(LIB_STATUS_OK, LIB_STATUS_INVALID_STATE);
+    check_floppy_lifecycle();
     probe = (construction_probe) {0};
     construction = prepare(&probe);
     const vm_machine_config missing_media = {

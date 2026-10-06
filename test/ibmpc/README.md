@@ -18,10 +18,14 @@ original assertions and independent source/test manifest, DAG and negative
 probes. test/x86 remains the owner of chip, neutral Core and Debug/xasm32
 regressions and does not consume this outer package. Protected IRET assertions
 remain there once; this suite retains its distinct real-mode/PIC composition.
-Distinct board exception/paging regressions and three bounded decoder
-inventories are registered. Unused helper clusters, two historical timing
+Distinct board exception/paging regressions remain registered. Pure decoder
+inventories, neutral Core entry and CPU/FPU interface tests belong to test/x86.
+This suite directly covers neutral Machine memory replacement/media lifecycle
+and shared AT descriptor/CPU-contract and ROM-candidate preparation.
+Unused helper clusters, two historical timing
 generators lacking their catalog, and an obsolete trace-API test are removed;
 current trace-plan coverage remains in machine/debug_budget_smoke.c.
 The frozen import/disposition ledgers are in the importing project's T85
-S7 evidence and S10 proposal. Decoder JSON stays in the suite build directory.
+S7 evidence and S10 proposal; these are historical import records, not current
+test ownership. Decoder JSON now belongs to the x86 suite build directory.
 No product boot coverage is substituted by these units.

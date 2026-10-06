@@ -1,6 +1,76 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/test.h"
 #include "ibmpc/machine/preparation_interface.h"
+#include "ibmpc/machine/pc_at_preparation_interface.h"
+#include "ibmpc/board-common/pc_at_rom_interface.h"
+
+static lib_status at_prepare_status;
+static lib_u32 at_prepare_calls;
+static lib_i32 accept_at_descriptor(const vm_profile_default_pc_at_descriptor *descriptor)
+{ return descriptor != LIB_NULL; }
+static lib_status prepare_at_candidate(const vm_machine_config *config,
+    vm_profile_default_pc_at_plan_snapshot *profile, vm_machine_construction *construction)
+{
+    ++at_prepare_calls;
+    lib_test_assert(config != LIB_NULL && profile != LIB_NULL && construction->profile.release != LIB_NULL);
+    construction->floppy_slot_count = 1u;
+    construction->floppy_kind = construction->media_kind = VM_PROFILE_FLOPPY_35_1440K;
+    if (at_prepare_status != LIB_STATUS_OK) return at_prepare_status;
+    const vm_profile_default_pc_at_descriptor descriptor = {
+        .identity = "preparation-at", .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .ticks_per_instruction = 1u, .default_memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .fdc_bounce_segment = 0x600u, .kbc_aux_absent = LIB_TRUE,
+        .port_leaves = vm_at_port_leaves, .port_leaf_count = VM_AT_PORT_LEAF_COUNT,
+        .routes = vm_at_routes_without_aux, .route_count = 4u,
+        .firmware_services = vm_pc_at_firmware_services, .firmware_service_count = 13u,
+        .cmos = {.floppy_type = 0x40u}, .fdc_installed_mask = 1u, .fdc_double_sided_mask = 1u,
+        .fdc_cylinder_count = {80u}, .fdc_ready_mask = 1u, .validate = accept_at_descriptor
+    };
+    lib_status status = vm_profile_default_pc_at_values_create(&descriptor,
+        CORE_MACHINE_CPU_PROFILE_DEFAULT, X86_FPU_PROFILE_NONE, &profile->values);
+    if (status == LIB_STATUS_OK) status = vm_profile_default_pc_at_snapshot_copy(profile, &descriptor,
+        descriptor.identity, 0x40u);
+    if (status == LIB_STATUS_OK) {
+        construction->core_config = profile->values.core.configuration;
+        construction->topology = profile->topology;
+    }
+    return status;
+}
+
+static void pc_at_preparation_contract(void)
+{
+    static lib_u8 bios[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
+    static lib_u8 low[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES / 2u];
+    static lib_u8 high[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES / 2u];
+    const vm_machine_config single = {.bios_count = 1u};
+    vm_machine_assets assets = {.bios = {{bios, sizeof(bios)}}};
+    vm_machine_construction candidate = {0};
+    for (lib_size i = 0u; i < sizeof(bios); ++i) bios[i] = (lib_u8)i;
+    lib_test_assert(vm_pc_at_construction_create(&single, &assets, LIB_NULL, &candidate) == LIB_STATUS_INVALID_ARGUMENT);
+    at_prepare_status = LIB_STATUS_UNSUPPORTED;
+    lib_test_assert(vm_pc_at_construction_create(&single, &assets, prepare_at_candidate, &candidate) == LIB_STATUS_UNSUPPORTED &&
+        candidate.profile.context == LIB_NULL);
+    at_prepare_status = LIB_STATUS_OK;
+    assets.bios[0].bytes = sizeof(bios) - 1u;
+    lib_test_assert(vm_pc_at_construction_create(&single, &assets, prepare_at_candidate, &candidate) == LIB_STATUS_INVALID_ARGUMENT &&
+        candidate.profile.context == LIB_NULL);
+    assets.bios[0].bytes = sizeof(bios);
+    lib_test_assert(vm_pc_at_construction_create(&single, &assets, prepare_at_candidate, &candidate) == LIB_STATUS_OK);
+    const vm_profile_external_pc_at_rom_context *rom = candidate.firmware_context;
+    lib_test_assert(rom != LIB_NULL && rom->image != bios && lib_memory_compare(rom->image, bios, sizeof(bios)) == 0);
+    bios[17] ^= 0xffu;
+    lib_test_assert(rom->image[17] == 17u && candidate.firmware_provider == vm_profile_external_pc_at_rom_provider());
+    candidate.profile.release(candidate.profile.context);
+    for (lib_size i = 0u; i < sizeof(low); ++i) { low[i] = 0x12u; high[i] = 0x34u; }
+    const vm_machine_config split = {.bios_count = 2u};
+    assets = (vm_machine_assets){.bios = {{low, sizeof(low)}, {high, sizeof(high)}}};
+    lib_test_assert(vm_pc_at_construction_create(&split, &assets, prepare_at_candidate, &candidate) == LIB_STATUS_OK);
+    rom = candidate.firmware_context;
+    for (lib_size i = 0u; i < VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES; ++i)
+        lib_test_assert(rom->image[i] == (i % 2u == 0u ? 0x12u : 0x34u));
+    candidate.profile.release(candidate.profile.context);
+    lib_test_assert(at_prepare_calls == 4u);
+}
 
 static void release_candidate(void *context)
 {
@@ -156,5 +226,6 @@ lib_i32 main(void)
     finishing();
     failures();
     floppy_policy();
+    pc_at_preparation_contract();
     return 0;
 }
