@@ -307,6 +307,8 @@ static lib_i32 prefix_attributes_s64_test_attributes_and_lock(void)
     if (!failed) {
         byte_image = 0x6du;
         other_byte = 0x2bu;
+        /* Retained PE-clear cache, not an implicit 67h segment extension. */
+        state.chip.cpu.data.ds.limit = 0xffffffffu;
         state.chip.cpu.data.eax = 0xaabbcc00u;
         state.chip.cpu.data.esi = 0x00010100u;
         before = state.chip.cpu;
@@ -340,6 +342,7 @@ static lib_i32 prefix_attributes_s64_test_attributes_and_lock(void)
     if (!failed) {
         byte_image = 0x22u;
         other_byte = 0x33u;
+        state.chip.cpu.data.ds.limit = 0xffffffffu;
         state.chip.cpu.data.eax = 0xaabbcc6du;
         state.chip.cpu.data.esi = 0x00010100u;
         before = state.chip.cpu;
@@ -591,6 +594,7 @@ static lib_i32 prefix_attributes_s64_test_repeated_width_prefixes(void)
     failed = !prefix_attributes_s64_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &state);
     if (!failed) {
+        state.chip.cpu.data.ds.limit = 0xffffffffu;
         state.chip.cpu.data.eax = 0xaabbcc00u;
         state.chip.cpu.data.esi = 0x00010100u;
         before = state.chip.cpu;

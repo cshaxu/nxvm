@@ -9,8 +9,8 @@
 #define T292_RESET_LINEAR 0xfffffff0u
 #define T292_RESET_PHYSICAL 0x000ffff0u
 #define T292_RESET_WINDOW 16u
-#define T292_SOURCE 0x00020000u
-#define T292_DESTINATION 0x00030000u
+#define T292_SOURCE 0x0001fffdu
+#define T292_DESTINATION 0x0002fffdu
 
 static lib_i32 t292_prepare(core_machine_cpu_profile profile, core_machine **out_machine)
 {
@@ -41,26 +41,29 @@ static lib_i32 t292_prepare(core_machine_cpu_profile profile, core_machine **out
 int main(void)
 {
     static const lib_u8 program[] = {
-        0xb8u, 0u, 0u, 0x8eu, 0xd8u, 0x8eu, 0xc0u,
-        0x66u, 0xbeu, 0u, 0u, 0x02u, 0u,
-        0x66u, 0xbfu, 0u, 0u, 0x03u, 0u,
+        /* Distinct physical regions, with all current-element offsets inside
+         * their real-mode 64K segment limits. */
+        0xb8u, 0u, 0x10u, 0x8eu, 0xd8u,
+        0xb8u, 0u, 0x20u, 0x8eu, 0xc0u,
+        0x66u, 0xbeu, 0xfdu, 0xffu, 0u, 0u,
+        0x66u, 0xbfu, 0xfdu, 0xffu, 0u, 0u,
         0x66u, 0xb9u, 0x03u, 0u, 0u, 0u,
         0xfcu, 0xf3u, 0x67u, 0xa6u, 0xf4u
     };
     static const lib_u8 source[] = {0x11u, 0x22u, 0x33u};
     static const lib_u8 destination[] = {0x11u, 0xffu, 0x33u};
     static const lib_u8 scas_program[] = {
-        0xb8u, 0u, 0u, 0x8eu, 0xc0u,
-        0x66u, 0xbfu, 0u, 0u, 0x02u, 0u,
+        0xb8u, 0u, 0x10u, 0x8eu, 0xc0u,
+        0x66u, 0xbfu, 0xfdu, 0xffu, 0u, 0u,
         0x66u, 0xb9u, 0x03u, 0u, 0u, 0u,
         0xb0u, 0x22u, 0xfcu, 0xf2u, 0x67u, 0xaeu, 0xf4u
     };
     static const lib_u8 scas_bytes[] = {0x11u, 0x22u, 0x33u};
     static const lib_u8 segment_program[] = {
         0xb8u, 0x00u, 0x10u, 0x8eu, 0xd8u,
-        0x31u, 0xc0u, 0x8eu, 0xc0u,
+        0xb8u, 0u, 0x20u, 0x8eu, 0xc0u,
         0x66u, 0xbeu, 0u, 0x10u, 0u, 0u,
-        0x66u, 0xbfu, 0u, 0u, 0x03u, 0u,
+        0x66u, 0xbfu, 0xfdu, 0xffu, 0u, 0u,
         0x66u, 0xb9u, 0x01u, 0u, 0u, 0u,
         0xfcu, 0x2eu, 0xf3u, 0x67u, 0xa6u, 0xf4u
     };
@@ -87,8 +90,8 @@ int main(void)
             core_machine_debug_capture_cpu_snapshot(machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
             snapshot.ecx != 1u ||
-            snapshot.esi != T292_SOURCE + 2u ||
-            snapshot.edi != T292_DESTINATION + 2u ||
+            snapshot.esi != 0xffffu ||
+            snapshot.edi != 0xffffu ||
             (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_ZF) != 0u;
     }
     core_machine_destroy(machine);
@@ -106,7 +109,7 @@ int main(void)
             core_machine_debug_capture_cpu_snapshot(machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
             snapshot.ecx != 1u ||
-            snapshot.edi != T292_SOURCE + 2u ||
+            snapshot.edi != 0xffffu ||
             (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_ZF) == 0u;
     }
     core_machine_destroy(machine);
@@ -132,7 +135,7 @@ int main(void)
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
             snapshot.ecx != 0u ||
             snapshot.esi != 0x00001001u ||
-            snapshot.edi != T292_DESTINATION + 1u ||
+            snapshot.edi != 0xfffeu ||
             (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_ZF) == 0u;
     }
     core_machine_destroy(machine);

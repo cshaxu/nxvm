@@ -105,6 +105,9 @@ static lib_i32 moffs_test_386_attributes(void)
         lib_i32 failed = 0;
 
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        /* 386 manual 14.5: PE-clear execution can retain a wide cached DS.
+         * Address-size alone does not extend an ordinary real-mode segment. */
+        state.cpu.data.ds.limit = 0xffffffffu;
         moffs_set_registers(&state);
         if (!write[form])
             failed |= cpu_instruction_write(&state, 0x10000u, &image, widths[form],

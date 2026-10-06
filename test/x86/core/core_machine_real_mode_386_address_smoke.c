@@ -9,8 +9,8 @@
 #define TEST_RESET_LINEAR 0xfffffff0u
 #define TEST_RESET_PHYSICAL 0x000ffff0u
 #define TEST_RESET_WINDOW 16u
-#define TEST_SOURCE 0x00020000u
-#define TEST_DESTINATION 0x00030000u
+#define TEST_SOURCE 0x0001fffcu
+#define TEST_DESTINATION 0x0002fffcu
 
 static lib_i32 real_mode_386_prepare(core_machine **out_machine)
 {
@@ -41,11 +41,14 @@ static lib_i32 real_mode_386_prepare(core_machine **out_machine)
 lib_i32 main(void)
 {
     static const lib_u8 program[] = {
-        0xb8u, 0x00u, 0x00u,
+        /* Legal last dword in distinct real-mode segments; 67h preserves
+         * the post-transfer 10000h indices without granting a wider limit. */
+        0xb8u, 0x00u, 0x10u,
         0x8eu, 0xd8u,
+        0xb8u, 0x00u, 0x20u,
         0x8eu, 0xc0u,
-        0x66u, 0xbeu, 0x00u, 0x00u, 0x02u, 0x00u,
-        0x66u, 0xbfu, 0x00u, 0x00u, 0x03u, 0x00u,
+        0x66u, 0xbeu, 0xfcu, 0xffu, 0x00u, 0x00u,
+        0x66u, 0xbfu, 0xfcu, 0xffu, 0x00u, 0x00u,
         0x66u, 0xb9u, 0x01u, 0x00u, 0x00u, 0x00u,
         0xfcu,
         0xf3u, 0x67u, 0x66u, 0xa5u,
@@ -54,6 +57,7 @@ lib_i32 main(void)
     static const lib_u8 source[] = {0x41u, 0x42u, 0x43u, 0x44u};
     lib_u8 destination[sizeof(source)] = {0};
     core_machine_cpu_state state;
+    core_machine_debug_cpu_snapshot snapshot;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     const core_machine_run_budget budget = {256u, 0u};
@@ -70,10 +74,13 @@ lib_i32 main(void)
             core_machine_memory_read(machine, TEST_DESTINATION, destination,
             sizeof(destination)) != LIB_STATUS_OK ||
             core_machine_debug_read_cpu(machine, &state) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid ||
             lib_memory_compare(destination, source, sizeof(source)) != 0 ||
-            state.eip == 0u;
+            state.eip == 0u || snapshot.esi != 0x10000u ||
+            snapshot.edi != 0x10000u || snapshot.ecx != 0u;
     }
     core_machine_destroy(machine);
     if (failed) return 1;

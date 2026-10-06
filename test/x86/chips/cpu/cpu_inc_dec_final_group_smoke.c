@@ -1111,6 +1111,9 @@ static lib_i32 inc_dec_test_xlat(void)
         lib_i32 failed = !inc_dec_prepare(form == 0u ? CORE_MACHINE_CPU_PROFILE_80186 : CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
+            /* The address32 success case requires a retained wide DS cache;
+             * 67h does not itself enlarge the real-mode segment limit. */
+            if (form == 1u) state.cpu.data.ds.limit = 0xffffffffu;
             state.cpu.data.ebx = base;
             state.cpu.data.eax = 0x11223304u;
             state.cpu.data.ecx = 0x55667788u;

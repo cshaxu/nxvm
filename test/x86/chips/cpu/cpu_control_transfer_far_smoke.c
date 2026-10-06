@@ -325,10 +325,22 @@ static lib_i32 far_test_real_mode(core_machine_cpu_profile profile)
     if (!far_step(&state, indirect_jump, sizeof(indirect_jump), &after) ||
         after.data.cs.selector != 0x100u || after.data.cs.base != 0x1000u) return 0;
     cpu_instruction_prepare(&state, profile);
-    lib_memory_copy(state.memory + 0xfffeu, (const lib_u8[]){0u,0u}, 2u);
+    /* Separate DS from CS so wrapped pointer bytes cannot alias the opcode.
+     * Early CPUs wrap the second word; 286/386 reject the full four-byte span. */
+    state.cpu.data.ds.base = 0x10000u;
+    lib_memory_copy(state.memory + 0x1fffeu, (const lib_u8[]){0u,0u}, 2u);
     lib_memory_copy(state.memory + 0x10000u, (const lib_u8[]){0u,2u}, 2u);
-    if (!far_step(&state, indirect_jump_boundary, sizeof(indirect_jump_boundary), &after) ||
-        after.data.cs.selector != 0x200u || after.data.cs.base != 0x2000u) return 0;
+    if (profile < CORE_MACHINE_CPU_PROFILE_80286) {
+        if (!far_step(&state, indirect_jump_boundary, sizeof(indirect_jump_boundary), &after) ||
+            after.data.cs.selector != 0x200u || after.data.cs.base != 0x2000u) return 0;
+    } else {
+        state.cpu.data.idtr.limit = 0x17u;
+        if (cpu_instruction_run(&state, indirect_jump_boundary,
+                sizeof(indirect_jump_boundary), &after) != LIB_STATUS_INTERNAL_ERROR ||
+            !state.fault.valid ||
+            (state.fault.exception_mask & VCPUINS_EXCEPT_GP) == 0u ||
+            after.data.cs.selector != 0u || after.data.eip != 0u) return 0;
+    }
     cpu_instruction_prepare(&state, profile);
     state.cpu.data.esp = 0x8000u;
     lib_memory_copy(state.memory + 0x0100u, (const lib_u8[]){0u,0u,0u,1u}, 4u);
