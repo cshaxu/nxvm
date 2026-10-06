@@ -1249,7 +1249,7 @@ static lib_i32 paging_test_cross_fetch(void)
         !paging_cross_entries(state.machine, TEST_PAGE_DIRECTORY,
             TEST_PAGE_TABLE + 7u * 4u, TEST_PAGE_TABLE + 8u * 4u,
             pde | TEST_PAGE_ACCESSED,
-            code_first, TEST_CROSS_CODE_PHYSICAL | TEST_PAGE_WRITABLE);
+            code_first | TEST_PAGE_ACCESSED, TEST_CROSS_CODE_PHYSICAL | TEST_PAGE_WRITABLE);
     core_machine_destroy(state.machine);
     if (failed) return 1;
     return failed;

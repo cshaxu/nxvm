@@ -1499,6 +1499,7 @@ static lib_i32 preview_test_cpu_fetch_nonpublication(void)
 static lib_i32 preview_test_limited_fetch_nonpublication(void)
 {
     static const lib_u8 program[] = { 0x0fu, 0x84u, 0x78u, 0x56u };
+    static const lib_u8 incomplete[] = { 0x66u, 0x0fu, 0x84u, 0x78u };
     /* Load a real 16-bit code descriptor at the last four bytes of RAM. */
     static const lib_u8 load_gdt[] = { 0x0fu, 0x01u, 0x16u, 0x00u, 0x03u };
     static const lib_u8 gdtr[] = { 0x0fu, 0u, 0u, 0x04u, 0u, 0u };
@@ -1553,7 +1554,10 @@ static lib_i32 preview_test_limited_fetch_nonpublication(void)
 
     if (!failed) {
         publication = test_core_capture_preview_publication(machine);
-        failed |= test_core_preview_lexeme(machine, &lexeme) || lexeme.available ||
+        /* Four real bytes are enough for this complete 16-bit Jcc; no read
+         * beyond RAM is necessary just to fill a diagnostic window. */
+        failed |= !test_core_preview_lexeme(machine, &lexeme) || !lexeme.available ||
+            lexeme.byte_count != sizeof(program) ||
             core_machine_capture_observation(machine, &after) != LIB_STATUS_OK ||
             lib_memory_compare(&before, &after, sizeof(before)) != 0;
         if (!failed) {
@@ -1562,6 +1566,19 @@ static lib_i32 preview_test_limited_fetch_nonpublication(void)
                 publication_after.cancelled != publication.cancelled ||
                 publication_after.trace_count != publication.trace_count;
         }
+    }
+    if (!failed) failed |= core_machine_memory_write(machine, 0x00fffffcu,
+        incomplete, sizeof(incomplete)) != LIB_STATUS_OK ||
+        core_machine_capture_observation(machine, &before) != LIB_STATUS_OK;
+    if (!failed) {
+        publication = test_core_capture_preview_publication(machine);
+        failed |= test_core_preview_lexeme(machine, &lexeme) || lexeme.available ||
+            core_machine_capture_observation(machine, &after) != LIB_STATUS_OK ||
+            lib_memory_compare(&before, &after, sizeof(before)) != 0;
+        publication_after = test_core_capture_preview_publication(machine);
+        failed |= publication_after.committed != publication.committed ||
+            publication_after.cancelled != publication.cancelled ||
+            publication_after.trace_count != publication.trace_count;
     }
     core_machine_destroy(machine);
     return failed;

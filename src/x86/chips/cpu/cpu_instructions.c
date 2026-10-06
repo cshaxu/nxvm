@@ -1481,7 +1481,17 @@ static void _s_read_cs(core_machine_cpu_execution_context *context, lib_u32 offs
         context->memory_access_provenance;
     lib_u32 linear = cpu_state.data.cs.base + offset;
     lib_u32 prefetch_offset;
+    lib_u32 instruction_offset = offset - instruction_state.data.receip;
+    lib_u8 length_limit = context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+        10u : context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 ? 15u : 0u;
     CPU_TRACE_CALL_BEGIN("_s_read_cs");
+    if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80286)
+        instruction_offset = X86_CPU_MASK_U16(instruction_offset);
+    if (length_limit != 0u && (lib_u64)instruction_offset + byte > length_limit) {
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286)
+            CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+    }
     if (context->prefetch_valid && linear >= context->prefetch_linear &&
         (prefetch_offset = linear - context->prefetch_linear) <=
             context->prefetch_count && byte <= context->prefetch_count -
@@ -1494,6 +1504,13 @@ static void _s_read_cs(core_machine_cpu_execution_context *context, lib_u32 offs
             _GetCPL, 1);
     }
     context->memory_access_provenance = previous;
+    if (!instruction_state.data.except &&
+        (lib_u64)instruction_offset + byte <= sizeof(instruction_state.data.opcodes)) {
+        lib_memory_copy(instruction_state.data.opcodes + instruction_offset,
+            (const void *)rdata, byte);
+        if (instruction_state.data.oplen < instruction_offset + byte)
+            instruction_state.data.oplen = instruction_offset + byte;
+    }
     CPU_TRACE_CALL_END;
 }
 static void _s_read_ss(core_machine_cpu_execution_context *context, lib_u32 offset, lib_uptr rdata, lib_u8 byte)
@@ -1908,33 +1925,6 @@ static void _s_load_gs(core_machine_cpu_execution_context *context, lib_u16 newg
     CPU_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.gs, newgs));
     CPU_TRACE_CALL_END;
 }
-static void _s_test_eip(core_machine_cpu_execution_context *context)
-{
-    CPU_TRACE_CALL_BEGIN("_s_test_eip");
-    CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, &cpu_state.data.cs,
-        cpu_state.data.eip, 0x01, 0, _GetCPL, 1));
-    CPU_TRACE_CALL_END;
-}
-static void _s_test_esp(core_machine_cpu_execution_context *context)
-{
-    lib_u32 cesp;
-    CPU_TRACE_CALL_BEGIN("_s_test_esp");
-    switch (_GetStackSize)
-    {
-    case 2:
-        cesp = X86_CPU_MASK_U16(cpu_state.data.esp);
-        break;
-    case 4:
-        cesp = X86_CPU_MASK_U32(cpu_state.data.esp);
-        break;
-    default:
-        CPU_TRACE_IMPOSSIBLE_RETURN;
-        break;
-    }
-    CPU_TRACE_CHECK_RETURN(_m_test_logical(context, &cpu_state.data.ss, cesp, 0x00, 0));
-    CPU_TRACE_CALL_END;
-}
-
 /* portid accessing unit */
 /* kernel portid accessing */
 _______todo _kpa_test_iomap(core_machine_cpu_execution_context *context, lib_u16 portid, lib_u8 byte)
@@ -2112,7 +2102,7 @@ static lib_u8 _kdf_check_prefix(core_machine_cpu_execution_context *context, lib
 static void _kdf_skip(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
     CPU_TRACE_CALL_BEGIN("_kdf_skip");
-    if (cpu_state.data.cs.seg.exec.defsize)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286)
         CPU_TRACE_CHECK_RETURN(cpu_state.data.eip += byte);
     else
         CPU_TRACE_CHECK_RETURN(cpu_state.data.eip = X86_CPU_MASK_U16(
@@ -8324,7 +8314,7 @@ static void ADD_RM8_R8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -8347,7 +8337,7 @@ static void ADD_RM32_R32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, 16));
@@ -8365,7 +8355,7 @@ static void ADD_R8_RM8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -8386,7 +8376,7 @@ static void ADD_R32_RM32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.cr, instruction_state.data.crm, 16));
@@ -8403,7 +8393,7 @@ static void ADD_AL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_add(context, cpu_state.data.al, instruction_state.data.cimm, 8));
@@ -8439,7 +8429,7 @@ static void ADD_EAX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_add(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
         cpu_state.data.ax = X86_CPU_MASK_U16(instruction_state.data.result);
@@ -8456,7 +8446,7 @@ static void PUSH_ES(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     xs_sel = cpu_state.data.es.selector;
     CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(xs_sel), _GetOperandSize));
@@ -8471,7 +8461,7 @@ static void POP_ES(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_e_pop_sreg(context, &cpu_state.data.es,
         _GetOperandSize));
@@ -8486,7 +8476,7 @@ static void OR_RM8_R8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -8509,7 +8499,7 @@ static void OR_RM32_R32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, 16));
@@ -8527,7 +8517,7 @@ static void OR_R8_RM8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -8548,7 +8538,7 @@ static void OR_R32_RM32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.cr, instruction_state.data.crm, 16));
@@ -8565,7 +8555,7 @@ static void OR_AL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_or(context, cpu_state.data.al, instruction_state.data.cimm, 8));
@@ -8601,7 +8591,7 @@ static void OR_EAX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_or(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
         cpu_state.data.ax = X86_CPU_MASK_U16(instruction_state.data.result);
@@ -8618,7 +8608,7 @@ static void PUSH_CS(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     xs_sel = cpu_state.data.cs.selector;
     CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(xs_sel), _GetOperandSize));
@@ -8636,7 +8626,7 @@ static void POP_CS(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(xs_sel), _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_s_load_cs(context, X86_CPU_MASK_U16(xs_sel)));
@@ -8680,7 +8670,7 @@ static void ADC_RM8_R8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -8703,7 +8693,7 @@ static void ADC_RM32_R32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, 16));
@@ -8721,7 +8711,7 @@ static void ADC_R8_RM8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -8742,7 +8732,7 @@ static void ADC_R32_RM32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.cr, instruction_state.data.crm, 16));
@@ -8759,7 +8749,7 @@ static void ADC_AL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_adc(context, cpu_state.data.al, instruction_state.data.cimm, 8));
@@ -8795,7 +8785,7 @@ static void ADC_EAX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_adc(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
         cpu_state.data.ax = X86_CPU_MASK_U16(instruction_state.data.result);
@@ -8812,7 +8802,7 @@ static void PUSH_SS(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     xs_sel = cpu_state.data.ss.selector;
     CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(xs_sel), _GetOperandSize));
@@ -8827,7 +8817,7 @@ static void POP_SS(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_e_pop_sreg(context, &cpu_state.data.ss,
         _GetOperandSize));
@@ -8842,7 +8832,7 @@ static void SBB_RM8_R8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -8865,7 +8855,7 @@ static void SBB_RM32_R32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, 16));
@@ -8883,7 +8873,7 @@ static void SBB_R8_RM8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -8904,7 +8894,7 @@ static void SBB_R32_RM32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.cr, instruction_state.data.crm, 16));
@@ -8921,7 +8911,7 @@ static void SBB_AL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_sbb(context, cpu_state.data.al, instruction_state.data.cimm, 8));
@@ -8957,7 +8947,7 @@ static void SBB_EAX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_sbb(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
         cpu_state.data.ax = X86_CPU_MASK_U16(instruction_state.data.result);
@@ -8974,7 +8964,7 @@ static void PUSH_DS(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     xs_sel = cpu_state.data.ds.selector;
     CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(xs_sel), _GetOperandSize));
@@ -8989,7 +8979,7 @@ static void POP_DS(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_e_pop_sreg(context, &cpu_state.data.ds,
         _GetOperandSize));
@@ -9004,7 +8994,7 @@ static void AND_RM8_R8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -9027,7 +9017,7 @@ static void AND_RM32_R32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, 16));
@@ -9045,7 +9035,7 @@ static void AND_R8_RM8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -9066,7 +9056,7 @@ static void AND_R32_RM32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.cr, instruction_state.data.crm, 16));
@@ -9083,7 +9073,7 @@ static void AND_AL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_and(context, cpu_state.data.al, instruction_state.data.cimm, 8));
@@ -9119,7 +9109,7 @@ static void AND_EAX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_and(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
         cpu_state.data.ax = X86_CPU_MASK_U16(instruction_state.data.result);
@@ -9137,7 +9127,7 @@ static void PREFIX_ES(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.roverds = &cpu_state.data.es;
         instruction_state.data.roverss = &cpu_state.data.es;
     }
@@ -9150,7 +9140,7 @@ static void DAA(core_machine_cpu_execution_context *context)
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
         _adv;
     else
-        cpu_state.data.ip++;
+        _adv;
     if (((cpu_state.data.al & 0x0f) > 0x09) || _GetEFLAGS_AF)
     {
         cpu_state.data.al += 0x06;
@@ -9182,7 +9172,7 @@ static void SUB_RM8_R8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -9205,7 +9195,7 @@ static void SUB_RM32_R32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, 16));
@@ -9223,7 +9213,7 @@ static void SUB_R8_RM8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -9244,7 +9234,7 @@ static void SUB_R32_RM32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.cr, instruction_state.data.crm, 16));
@@ -9261,7 +9251,7 @@ static void SUB_AL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_sub(context, cpu_state.data.al, instruction_state.data.cimm, 8));
@@ -9297,7 +9287,7 @@ static void SUB_EAX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_sub(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
         cpu_state.data.ax = X86_CPU_MASK_U16(instruction_state.data.result);
@@ -9315,7 +9305,7 @@ static void PREFIX_CS(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.roverds = &cpu_state.data.cs;
         instruction_state.data.roverss = &cpu_state.data.cs;
     }
@@ -9328,7 +9318,7 @@ static void DAS(core_machine_cpu_execution_context *context)
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
         _adv;
     else
-        cpu_state.data.ip++;
+        _adv;
     if (((cpu_state.data.al & 0x0f) > 0x09) || _GetEFLAGS_AF)
     {
         cpu_state.data.al -= 0x06;
@@ -9360,7 +9350,7 @@ static void XOR_RM8_R8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -9383,7 +9373,7 @@ static void XOR_RM32_R32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, 16));
@@ -9401,7 +9391,7 @@ static void XOR_R8_RM8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -9422,7 +9412,7 @@ static void XOR_R32_RM32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.cr, instruction_state.data.crm, 16));
@@ -9439,7 +9429,7 @@ static void XOR_AL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_xor(context, cpu_state.data.al, instruction_state.data.cimm, 8));
@@ -9475,7 +9465,7 @@ static void XOR_EAX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_xor(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
         cpu_state.data.ax = X86_CPU_MASK_U16(instruction_state.data.result);
@@ -9493,7 +9483,7 @@ static void PREFIX_SS(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.roverds = &cpu_state.data.ss;
         instruction_state.data.roverss = &cpu_state.data.ss;
     }
@@ -9508,7 +9498,7 @@ static void AAA(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     if (((cpu_state.data.al & 0x0f) > 0x09) || _GetEFLAGS_AF)
     {
@@ -9535,7 +9525,7 @@ static void CMP_RM8_R8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -9554,7 +9544,7 @@ static void CMP_RM32_R32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cr, 16));
@@ -9570,7 +9560,7 @@ static void CMP_R8_RM8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -9589,7 +9579,7 @@ static void CMP_R32_RM32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.cr, instruction_state.data.crm, 16));
@@ -9605,7 +9595,7 @@ static void CMP_AL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_cmp(context, cpu_state.data.al, instruction_state.data.cimm, 8));
@@ -9638,7 +9628,7 @@ static void CMP_EAX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_cmp(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
     }
@@ -9655,7 +9645,7 @@ static void PREFIX_DS(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.roverds = &cpu_state.data.ds;
         instruction_state.data.roverss = &cpu_state.data.ds;
     }
@@ -9670,7 +9660,7 @@ static void AAS(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     if (((cpu_state.data.al & 0x0f) > 0x09) || _GetEFLAGS_AF)
     {
@@ -9715,7 +9705,7 @@ static void INC_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.ax, 16));
         cpu_state.data.ax = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -9748,7 +9738,7 @@ static void INC_ECX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.cx, 16));
         cpu_state.data.cx = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -9781,7 +9771,7 @@ static void INC_EDX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.dx, 16));
         cpu_state.data.dx = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -9814,7 +9804,7 @@ static void INC_EBX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.bx, 16));
         cpu_state.data.bx = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -9847,7 +9837,7 @@ static void INC_ESP(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.sp, 16));
         cpu_state.data.sp = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -9880,7 +9870,7 @@ static void INC_EBP(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.bp, 16));
         cpu_state.data.bp = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -9913,7 +9903,7 @@ static void INC_ESI(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.si, 16));
         cpu_state.data.si = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -9946,7 +9936,7 @@ static void INC_EDI(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.di, 16));
         cpu_state.data.di = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -9979,7 +9969,7 @@ static void DEC_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.ax, 16));
         cpu_state.data.ax = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -10012,7 +10002,7 @@ static void DEC_ECX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.cx, 16));
         cpu_state.data.cx = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -10045,7 +10035,7 @@ static void DEC_EDX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.dx, 16));
         cpu_state.data.dx = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -10078,7 +10068,7 @@ static void DEC_EBX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.bx, 16));
         cpu_state.data.bx = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -10111,7 +10101,7 @@ static void DEC_ESP(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.sp, 16));
         cpu_state.data.sp = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -10144,7 +10134,7 @@ static void DEC_EBP(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.bp, 16));
         cpu_state.data.bp = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -10177,7 +10167,7 @@ static void DEC_ESI(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.si, 16));
         cpu_state.data.si = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -10210,7 +10200,7 @@ static void DEC_EDI(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.di, 16));
         cpu_state.data.di = X86_CPU_MASK_U16(instruction_state.data.result);
     }
@@ -10241,7 +10231,7 @@ static void PUSH_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(cpu_state.data.ax), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10271,7 +10261,7 @@ static void PUSH_ECX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(cpu_state.data.cx), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10301,7 +10291,7 @@ static void PUSH_EDX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(cpu_state.data.dx), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10331,7 +10321,7 @@ static void PUSH_EBX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10361,7 +10351,7 @@ static void PUSH_ESP(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         /* 8086/8088 and 80186/80188 expose the decremented SP when SP is
          * the PUSH source.  The 80286 changes this one observable case to
          * push the pre-instruction value. */
@@ -10402,7 +10392,7 @@ static void PUSH_EBP(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10432,7 +10422,7 @@ static void PUSH_ESI(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(cpu_state.data.si), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10462,7 +10452,7 @@ static void PUSH_EDI(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(cpu_state.data.di), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10492,7 +10482,7 @@ static void POP_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ax), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10522,7 +10512,7 @@ static void POP_ECX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.cx), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10552,7 +10542,7 @@ static void POP_EDX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.dx), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10582,7 +10572,7 @@ static void POP_EBX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10612,7 +10602,7 @@ static void POP_ESP(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.sp), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10642,7 +10632,7 @@ static void POP_EBP(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10672,7 +10662,7 @@ static void POP_ESI(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.si), 2));
     }
     CPU_TRACE_CALL_END;
@@ -10702,7 +10692,7 @@ static void POP_EDI(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.di), 2));
     }
     CPU_TRACE_CALL_END;
@@ -11209,7 +11199,7 @@ static void JO_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, _GetEFLAGS_OF));
@@ -11224,7 +11214,7 @@ static void JNO_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, !_GetEFLAGS_OF));
@@ -11239,7 +11229,7 @@ static void JC_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, _GetEFLAGS_CF));
@@ -11254,7 +11244,7 @@ static void JNC_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, !_GetEFLAGS_CF));
@@ -11269,7 +11259,7 @@ static void JZ_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, _GetEFLAGS_ZF));
@@ -11284,7 +11274,7 @@ static void JNZ_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, !_GetEFLAGS_ZF));
@@ -11299,7 +11289,7 @@ static void JNA_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1,
@@ -11315,7 +11305,7 @@ static void JA_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1,
@@ -11331,7 +11321,7 @@ static void JS_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, _GetEFLAGS_SF));
@@ -11346,7 +11336,7 @@ static void JNS_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, !_GetEFLAGS_SF));
@@ -11362,7 +11352,7 @@ static void JP_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, _GetEFLAGS_PF));
@@ -11378,7 +11368,7 @@ static void JNP_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, !_GetEFLAGS_PF));
@@ -11393,7 +11383,7 @@ static void JL_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
@@ -11408,7 +11398,7 @@ static void JNL_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
@@ -11423,7 +11413,7 @@ static void JNG_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1,
@@ -11439,7 +11429,7 @@ static void JG_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1,
@@ -11455,7 +11445,7 @@ static void INS_80(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
@@ -11596,7 +11586,7 @@ static void INS_81(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
@@ -11738,7 +11728,7 @@ static void INS_83(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
@@ -11815,7 +11805,7 @@ static void TEST_RM8_R8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -11834,8 +11824,8 @@ static void TEST_RM32_R32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_modrm(context, 2, 2);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         _a_test(context, instruction_state.data.crm, instruction_state.data.cr, 16);
     }
@@ -11850,7 +11840,7 @@ static void XCHG_RM8_R8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -11873,8 +11863,8 @@ static void XCHG_RM32_R32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_modrm(context, 2, 2);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(instruction_state.data.crm), 2));
         instruction_state.data.crm = instruction_state.data.cr;
@@ -11891,7 +11881,7 @@ static void MOV_RM8_R8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     instruction_state.data.crm = instruction_state.data.cr;
@@ -11910,8 +11900,8 @@ static void MOV_RM32_R32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_modrm(context, 2, 2);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         instruction_state.data.crm = instruction_state.data.cr;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
@@ -11926,7 +11916,7 @@ static void MOV_R8_RM8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -11945,8 +11935,8 @@ static void MOV_R32_RM32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_modrm(context, 2, 2);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         CPU_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(instruction_state.data.crm), 2));
     }
@@ -11961,7 +11951,7 @@ static void MOV_RM16_SREG(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
     instruction_state.data.crm = instruction_state.data.rmovsreg->selector;
@@ -11994,8 +11984,8 @@ static void LEA_R32_M32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_modrm_ea(context, 2, 2);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_modrm_ea(context, 2, 2));
         _m_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(instruction_state.data.mrm.offset), 2);
     }
     CPU_TRACE_CALL_END;
@@ -12010,7 +12000,7 @@ static void MOV_SREG_RM16(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
     }
     if (instruction_state.data.rmovsreg->sregtype == SREG_CODE)
@@ -12088,7 +12078,7 @@ static void INS_8F(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.ip,
             X86_CPU_REFERENCE_OF(modrm), 1));
         if (instruction_state.data.flagLock)
@@ -12154,7 +12144,7 @@ static void NOP(core_machine_cpu_execution_context *context)
         _adv;
     }
     else
-        cpu_state.data.ip++;
+        _adv;
     CPU_TRACE_CALL_END;
 }
 static void XCHG_ECX_EAX(core_machine_cpu_execution_context *context)
@@ -12187,7 +12177,7 @@ static void XCHG_ECX_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.cx;
         cpu_state.data.cx = X86_CPU_MASK_U16(instruction_state.data.cr);
@@ -12224,7 +12214,7 @@ static void XCHG_EDX_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.dx;
         cpu_state.data.dx = X86_CPU_MASK_U16(instruction_state.data.cr);
@@ -12261,7 +12251,7 @@ static void XCHG_EBX_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.bx;
         cpu_state.data.bx = X86_CPU_MASK_U16(instruction_state.data.cr);
@@ -12299,7 +12289,7 @@ static void XCHG_ESP_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.sp;
         cpu_state.data.sp = X86_CPU_MASK_U16(instruction_state.data.cr);
@@ -12336,7 +12326,7 @@ static void XCHG_EBP_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.bp;
         cpu_state.data.bp = X86_CPU_MASK_U16(instruction_state.data.cr);
@@ -12373,7 +12363,7 @@ static void XCHG_ESI_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.si;
         cpu_state.data.si = X86_CPU_MASK_U16(instruction_state.data.cr);
@@ -12410,7 +12400,7 @@ static void XCHG_EDI_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.di;
         cpu_state.data.di = X86_CPU_MASK_U16(instruction_state.data.cr);
@@ -12438,7 +12428,7 @@ static void CBW(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         cpu_state.data.ax = (lib_i8)cpu_state.data.al;
     }
     CPU_TRACE_CALL_END;
@@ -12464,7 +12454,7 @@ static void CWD(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         if (cpu_state.data.ax & 0x8000)
             cpu_state.data.dx = 0xffff;
         else
@@ -12505,8 +12495,8 @@ static void CALL_PTR16_32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_imm(context, 4);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_imm(context, 4));
         neweip = X86_CPU_MASK_U16(instruction_state.data.cimm);
         newcs = X86_CPU_MASK_U16(instruction_state.data.cimm >> 16);
         _e_call_far(context, newcs, neweip, 2);
@@ -12576,7 +12566,7 @@ static void PUSHF(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         ceflags = _e_real_flags_image_16(context, cpu_state.data.flags);
         _e_push(context, X86_CPU_REFERENCE_OF(ceflags), 2);
     }
@@ -12689,7 +12679,7 @@ static void POPF(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(ceflags), 2));
         cpu_state.data.eflags = _e_eflags_load(context, ceflags);
     }
@@ -12706,7 +12696,7 @@ static void SAHF(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     cpu_state.data.eflags = (cpu_state.data.ah & mask) | (cpu_state.data.eflags & ~mask);
     CPU_TRACE_CALL_END;
@@ -12720,7 +12710,7 @@ static void LAHF(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     cpu_state.data.ah = X86_CPU_MASK_U8(cpu_state.data.flags) | 0x02u;
     CPU_TRACE_CALL_END;
@@ -12734,7 +12724,7 @@ static void MOV_AL_MOFFS8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_moffs(context, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -12764,7 +12754,7 @@ static void MOV_EAX_MOFFS32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_moffs(context, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         cpu_state.data.ax = X86_CPU_MASK_U16(instruction_state.data.crm);
@@ -12780,7 +12770,7 @@ static void MOV_MOFFS8_AL(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_moffs(context, 1));
     instruction_state.data.result = cpu_state.data.al;
@@ -12812,7 +12802,7 @@ static void MOV_MOFFS32_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_moffs(context, 2));
         instruction_state.data.crm = cpu_state.data.ax;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -12871,7 +12861,7 @@ static void MOVSB(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
             _m_movs(context, 1);
         else
@@ -12939,7 +12929,7 @@ static void MOVSW(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
             _m_movs(context, 2);
         else
@@ -13011,7 +13001,7 @@ static void CMPSB(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
             _a_cmps(context, 8);
         else
@@ -13085,7 +13075,7 @@ static void CMPSW(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
             _a_cmps(context, 16);
         else
@@ -13112,7 +13102,7 @@ static void TEST_AL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_test(context, cpu_state.data.al, instruction_state.data.cimm, 8));
@@ -13146,7 +13136,7 @@ static void TEST_EAX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_test(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
     }
@@ -13204,7 +13194,7 @@ static void STOSB(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
             _m_stos(context, 1);
         else
@@ -13272,7 +13262,7 @@ static void STOSW(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
             _m_stos(context, 2);
         else
@@ -13340,7 +13330,7 @@ static void LODSB(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
             _m_lods(context, 1);
         else
@@ -13408,7 +13398,7 @@ static void LODSW(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
             _m_lods(context, 2);
         else
@@ -13480,7 +13470,7 @@ static void SCASB(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
             _a_scas(context, 8);
         else
@@ -13554,7 +13544,7 @@ static void SCASW(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
             _a_scas(context, 16);
         else
@@ -13581,7 +13571,7 @@ static void MOV_AL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     cpu_state.data.al = X86_CPU_MASK_U8(instruction_state.data.cimm);
@@ -13596,7 +13586,7 @@ static void MOV_CL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     cpu_state.data.cl = X86_CPU_MASK_U8(instruction_state.data.cimm);
@@ -13611,7 +13601,7 @@ static void MOV_DL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     cpu_state.data.dl = X86_CPU_MASK_U8(instruction_state.data.cimm);
@@ -13626,7 +13616,7 @@ static void MOV_BL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     cpu_state.data.bl = X86_CPU_MASK_U8(instruction_state.data.cimm);
@@ -13641,7 +13631,7 @@ static void MOV_AH_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     cpu_state.data.ah = X86_CPU_MASK_U8(instruction_state.data.cimm);
@@ -13656,7 +13646,7 @@ static void MOV_CH_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     cpu_state.data.ch = X86_CPU_MASK_U8(instruction_state.data.cimm);
@@ -13671,7 +13661,7 @@ static void MOV_DH_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     cpu_state.data.dh = X86_CPU_MASK_U8(instruction_state.data.cimm);
@@ -13686,7 +13676,7 @@ static void MOV_BH_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     cpu_state.data.bh = X86_CPU_MASK_U8(instruction_state.data.cimm);
@@ -13714,7 +13704,7 @@ static void MOV_EAX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         cpu_state.data.ax = X86_CPU_MASK_U16(instruction_state.data.cimm);
     }
@@ -13742,7 +13732,7 @@ static void MOV_ECX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         cpu_state.data.cx = X86_CPU_MASK_U16(instruction_state.data.cimm);
     }
@@ -13770,7 +13760,7 @@ static void MOV_EDX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         cpu_state.data.dx = X86_CPU_MASK_U16(instruction_state.data.cimm);
     }
@@ -13798,7 +13788,7 @@ static void MOV_EBX_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         cpu_state.data.bx = X86_CPU_MASK_U16(instruction_state.data.cimm);
     }
@@ -13826,7 +13816,7 @@ static void MOV_ESP_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         cpu_state.data.sp = X86_CPU_MASK_U16(instruction_state.data.cimm);
     }
@@ -13854,7 +13844,7 @@ static void MOV_EBP_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         cpu_state.data.bp = X86_CPU_MASK_U16(instruction_state.data.cimm);
     }
@@ -13882,7 +13872,7 @@ static void MOV_ESI_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         cpu_state.data.si = X86_CPU_MASK_U16(instruction_state.data.cimm);
     }
@@ -13910,7 +13900,7 @@ static void MOV_EDI_I32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         cpu_state.data.di = X86_CPU_MASK_U16(instruction_state.data.cimm);
     }
@@ -13928,7 +13918,7 @@ static void INS_C0(core_machine_cpu_execution_context *context)
         }
         else
         {
-            cpu_state.data.ip++;
+            _adv;
         }
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -13997,7 +13987,7 @@ static void INS_C1(core_machine_cpu_execution_context *context)
         }
         else
         {
-            cpu_state.data.ip++;
+            _adv;
         }
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -14066,8 +14056,8 @@ static void RET_I16(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_imm(context, 2);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         _e_ret_near(context, X86_CPU_MASK_U16(instruction_state.data.cimm), 2);
     }
     CPU_TRACE_CALL_END;
@@ -14082,7 +14072,7 @@ static void RET(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_ret_near(context, 0, 2));
     }
     CPU_TRACE_CALL_END;
@@ -14117,7 +14107,7 @@ static void LES_R32_M16_32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm_ea(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         offset = X86_CPU_MASK_U16(instruction_state.data.crm);
@@ -14158,7 +14148,7 @@ static void LDS_R32_M16_32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm_ea(context, 2, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         offset = X86_CPU_MASK_U16(instruction_state.data.crm);
@@ -14178,7 +14168,7 @@ static void INS_C6(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     switch (instruction_state.data.cr)
@@ -14289,7 +14279,7 @@ static void INS_C7(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         switch (instruction_state.data.cr)
         {
@@ -14577,8 +14567,8 @@ static void RETF_I16(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_imm(context, 2);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         _e_ret_far(context, X86_CPU_MASK_U16(instruction_state.data.cimm), 2);
     }
     CPU_TRACE_CALL_END;
@@ -14593,7 +14583,7 @@ static void RETF(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_ret_far(context, 0, 2));
     }
     CPU_TRACE_CALL_END;
@@ -14609,7 +14599,7 @@ static void INT3(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         _e_int_n(context, 0x03, _GetOperandSize);
     }
     CPU_TRACE_CALL_END;
@@ -14626,8 +14616,8 @@ static void INT_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_imm(context, 1);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
         _e_int_n(context, (lib_u8)instruction_state.data.cimm, 2);
     }
     CPU_TRACE_CALL_END;
@@ -14643,7 +14633,7 @@ static void INTO(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         if (_GetEFLAGS_OF)
             _e_int_n(context, 0x04, _GetOperandSize);
     }
@@ -14659,7 +14649,7 @@ static void IRET(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_e_iret(context, 2));
     }
     CPU_TRACE_CALL_END;
@@ -14673,7 +14663,7 @@ static void INS_D0(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -14786,7 +14776,7 @@ static void INS_D1(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         switch (instruction_state.data.cr)
@@ -14849,7 +14839,7 @@ static void INS_D2(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -14962,7 +14952,7 @@ static void INS_D3(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         switch (instruction_state.data.cr)
@@ -15027,8 +15017,8 @@ static void AAM(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_imm(context, 1);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     }
     base = X86_CPU_MASK_U8(instruction_state.data.cimm);
     if (base == 0)
@@ -15055,8 +15045,8 @@ static void AAD(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_imm(context, 1);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     }
     base = X86_CPU_MASK_U8(instruction_state.data.cimm);
     cpu_state.data.al = X86_CPU_MASK_U8(cpu_state.data.al + (cpu_state.data.ah * base));
@@ -15092,7 +15082,7 @@ static void XLAT(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, (cpu_state.data.bx + cpu_state.data.al), X86_CPU_REFERENCE_OF(cpu_state.data.al), 1));
     }
     CPU_TRACE_CALL_END;
@@ -15106,7 +15096,7 @@ static void LOOPNZ_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_loopcc(context, (lib_i8)instruction_state.data.cimm, !_GetEFLAGS_ZF));
@@ -15121,7 +15111,7 @@ static void LOOPZ_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_loopcc(context, (lib_i8)instruction_state.data.cimm, _GetEFLAGS_ZF));
@@ -15136,7 +15126,7 @@ static void LOOP_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_loopcc(context, (lib_i8)instruction_state.data.cimm, 1));
@@ -15166,8 +15156,8 @@ static void JCXZ_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_imm(context, 1);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
         _e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, !cpu_state.data.cx);
     }
     CPU_TRACE_CALL_END;
@@ -15181,7 +15171,7 @@ static void IN_AL_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_p_input(context, X86_CPU_MASK_U8(instruction_state.data.cimm), X86_CPU_REFERENCE_OF(cpu_state.data.al), 1));
@@ -15214,7 +15204,7 @@ static void IN_EAX_I8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
         CPU_TRACE_CHECK_RETURN(_p_input(context, X86_CPU_MASK_U8(instruction_state.data.cimm), X86_CPU_REFERENCE_OF(cpu_state.data.ax), 2));
     }
@@ -15229,7 +15219,7 @@ static void OUT_I8_AL(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_p_output(context, X86_CPU_MASK_U8(instruction_state.data.cimm), X86_CPU_REFERENCE_OF(cpu_state.data.al), 1));
@@ -15262,7 +15252,7 @@ static void OUT_I8_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
         CPU_TRACE_CHECK_RETURN(_p_output(context,
             X86_CPU_MASK_U8(instruction_state.data.cimm),
@@ -15300,7 +15290,7 @@ static void CALL_REL32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         CPU_TRACE_CHECK_RETURN(_e_call_near(context, X86_CPU_MASK_U16(cpu_state.data.ip + (lib_i16)instruction_state.data.cimm), 2));
     }
@@ -15317,8 +15307,8 @@ static void JMP_REL32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
-        _d_imm(context, 2);
+        _adv;
+        CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         _e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 2, 1);
     }
     CPU_TRACE_CALL_END;
@@ -15358,7 +15348,7 @@ static void JMP_PTR16_32(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         neweip = (lib_u16)instruction_state.data.cimm;
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
@@ -15376,7 +15366,7 @@ static void JMP_REL8(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     CPU_TRACE_CHECK_RETURN(_e_jcc(context, X86_CPU_MASK_U32(instruction_state.data.cimm), 1, 1));
@@ -15391,7 +15381,7 @@ static void IN_AL_DX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_p_input(context, cpu_state.data.dx, X86_CPU_REFERENCE_OF(cpu_state.data.al), 1));
     CPU_TRACE_CALL_END;
@@ -15421,7 +15411,7 @@ static void IN_EAX_DX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_p_input(context, cpu_state.data.dx, X86_CPU_REFERENCE_OF(cpu_state.data.ax), 2));
     }
     CPU_TRACE_CALL_END;
@@ -15435,7 +15425,7 @@ static void OUT_DX_AL(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_p_output(context, cpu_state.data.dx, X86_CPU_REFERENCE_OF(cpu_state.data.al), 1));
     CPU_TRACE_CALL_END;
@@ -15466,7 +15456,7 @@ static void OUT_DX_EAX(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_p_output(context, cpu_state.data.dx,
             X86_CPU_REFERENCE_OF(cpu_state.data.ax), 2));
     }
@@ -15610,7 +15600,7 @@ static void PREFIX_REPNZ(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.prefix_rep = PREFIX_REP_REPZNZ;
     }
     CPU_TRACE_CALL_END;
@@ -15625,7 +15615,7 @@ static void PREFIX_REPZ(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         instruction_state.data.prefix_rep = PREFIX_REP_REPZ;
     }
     CPU_TRACE_CALL_END;
@@ -15654,7 +15644,7 @@ static void CMC(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         cpu_state.data.eflags ^= VCPU_EFLAGS_CF;
     }
     CPU_TRACE_CALL_END;
@@ -15668,7 +15658,7 @@ static void INS_F6(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -15788,7 +15778,7 @@ static void INS_F7(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         switch (instruction_state.data.cr)
@@ -15855,7 +15845,7 @@ static void CLC(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         _ClrEFLAGS_CF;
     }
     CPU_TRACE_CALL_END;
@@ -15870,7 +15860,7 @@ static void STC(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         _SetEFLAGS_CF;
     }
     CPU_TRACE_CALL_END;
@@ -15910,7 +15900,7 @@ static void CLI(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         _ClrEFLAGS_IF;
     }
     CPU_TRACE_CALL_END;
@@ -15950,7 +15940,7 @@ static void STI(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         _SetEFLAGS_IF;
     }
     instruction_state.data.flagMaskInt = LIB_TRUE;
@@ -15966,7 +15956,7 @@ static void CLD(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         _ClrEFLAGS_DF;
     }
     CPU_TRACE_CALL_END;
@@ -15981,7 +15971,7 @@ static void STD(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         _SetEFLAGS_DF;
     }
     CPU_TRACE_CALL_END;
@@ -15995,7 +15985,7 @@ static void INS_FE(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -16156,7 +16146,7 @@ static void INS_FF(core_machine_cpu_execution_context *context)
     }
     else
     {
-        cpu_state.data.ip++;
+        _adv;
         CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, X86_CPU_REFERENCE_OF(modrm), 1));
         switch (_GetModRM_REG(modrm))
         {
@@ -16871,6 +16861,7 @@ static void INS_0F_00(core_machine_cpu_execution_context *context)
         case 2: /* LLDT_RM16 */
             CPU_TRACE_BLOCK_BEGIN("LLDT_RM16");
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            if (_GetCPL) CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
             CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
             CPU_TRACE_CHECK_RETURN(_s_load_ldtr(context, X86_CPU_MASK_U16(instruction_state.data.crm)));
             CPU_TRACE_BLOCK_END;
@@ -16878,6 +16869,7 @@ static void INS_0F_00(core_machine_cpu_execution_context *context)
         case 3: /* LTR_RM16 */
             CPU_TRACE_BLOCK_BEGIN("LTR_RM16");
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            if (_GetCPL) CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
             CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
             CPU_TRACE_CHECK_RETURN(_s_load_tr(context, X86_CPU_MASK_U16(instruction_state.data.crm)));
             CPU_TRACE_BLOCK_END;
@@ -17004,7 +16996,7 @@ static void INS_0F_01(core_machine_cpu_execution_context *context)
         break;
     case 2: /* LGDT_M32_16 */
         CPU_TRACE_BLOCK_BEGIN("LGDT_M32_16");
-        if (_IsProtected && (_GetEFLAGS_VM || _GetCPL))
+        if (_GetCPL)
             CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
         CPU_TRACE_CHECK_RETURN(_d_modrm_table_memory(context, modrm));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
@@ -17028,7 +17020,7 @@ static void INS_0F_01(core_machine_cpu_execution_context *context)
         break;
     case 3: /* LIDT_M32_16 */
         CPU_TRACE_BLOCK_BEGIN("LIDT_M32_16");
-        if (_IsProtected && (_GetEFLAGS_VM || _GetCPL))
+        if (_GetCPL)
             CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
         CPU_TRACE_CHECK_RETURN(_d_modrm_table_memory(context, modrm));
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
@@ -18110,8 +18102,10 @@ static void ExecInit(core_machine_cpu_execution_context *context)
         context->prefetch_linear || instruction_state.data.linear -
         context->prefetch_linear >= context->prefetch_count) {
         lib_u8 prefetch_bytes = context->prefetch_capacity;
+        lib_u32 page_bytes = _GetPageSize - _GetLinear_Offset(instruction_state.data.linear);
 
         core_machine_cpu_execution_invalidate_prefetch(context);
+        if (prefetch_bytes > page_bytes) prefetch_bytes = (lib_u8)page_bytes;
         if (cpu_state.data.eip <= cpu_state.data.cs.limit &&
             (lib_u64)cpu_state.data.cs.limit - cpu_state.data.eip + 1u <
                 prefetch_bytes) {
@@ -18129,21 +18123,16 @@ static void ExecInit(core_machine_cpu_execution_context *context)
             context->prefetch_valid = LIB_TRUE;
         }
     }
+    instruction_state.data.oplen = 0u;
+    lib_memory_set(instruction_state.data.opcodes, 0, sizeof(instruction_state.data.opcodes));
     if (context->prefetch_valid && instruction_state.data.linear >=
         context->prefetch_linear && instruction_state.data.linear -
         context->prefetch_linear < context->prefetch_count) {
         lib_u8 available = context->prefetch_count -
             (lib_u8)(instruction_state.data.linear - context->prefetch_linear);
-        lib_memory_set(instruction_state.data.opcodes, 0, 15u);
         lib_memory_copy(instruction_state.data.opcodes, context->prefetch_bytes +
             (instruction_state.data.linear - context->prefetch_linear), available);
-    }
-    if (instruction_state.data.except) {
-        instruction_state.data.oplen = 0;
-    }
-    else
-    {
-        instruction_state.data.oplen = 15;
+        instruction_state.data.oplen = available;
     }
 
     instruction_state.data.flagLock = LIB_FALSE;
@@ -18202,11 +18191,22 @@ lib_u8 core_machine_cpu_execution_preview_lexeme(
     preview.preview_mode = LIB_TRUE;
     ExecInit(&preview);
     if (preview_instructions.data.except) return LIB_FALSE;
-    return core_machine_cpu_instruction_lexeme_scan_with_options(
-        preview_instructions.data.opcodes,
-        (lib_u8)sizeof(preview_instructions.data.opcodes),
-        preview.cpu_profile, preview_cpu.data.cs.seg.exec.defsize,
-        preview.cpu_80386_cr_mov_ignores_mod, out_lexeme);
+    for (;;) {
+        lib_u8 byte;
+        lib_u32 offset;
+
+        if (core_machine_cpu_instruction_lexeme_scan_with_options(
+                preview_instructions.data.opcodes, preview_instructions.data.oplen,
+                preview.cpu_profile, preview_cpu.data.cs.seg.exec.defsize,
+                preview.cpu_80386_cr_mov_ignores_mod, out_lexeme)) return LIB_TRUE;
+        if (preview_instructions.data.oplen >= sizeof(preview_instructions.data.opcodes))
+            return LIB_FALSE;
+        offset = preview_instructions.data.receip + preview_instructions.data.oplen;
+        if (preview.cpu_profile < CORE_MACHINE_CPU_PROFILE_80286)
+            offset = X86_CPU_MASK_U16(offset);
+        _s_read_cs(&preview, offset, (lib_uptr)&byte, 1u);
+        if (preview_instructions.data.except) return LIB_FALSE;
+    }
 }
 
 static lib_u32 _debug_breakpoint_address(lib_u8 index,
@@ -18589,6 +18589,10 @@ static void ExecIns(core_machine_cpu_execution_context *context)
     lib_u32 debug_cause;
 
     ExecInit(context);
+    if (instruction_state.data.except) {
+        ExecFinal(context);
+        return;
+    }
     debug_cause = _debug_match_instruction_breakpoint(context);
     if (debug_cause != 0u) {
         cpu_state.data.dr6 |= debug_cause;
@@ -18607,8 +18611,6 @@ static void ExecIns(core_machine_cpu_execution_context *context)
             break;
         }
         CPU_TRACE_CHECK_BREAK(ExecCpuInstruction(instruction_state.connect.insTable[opcode]));
-        CPU_TRACE_CHECK_BREAK(_s_test_eip(context));
-        CPU_TRACE_CHECK_BREAK(_s_test_esp(context));
         CPU_TRACE_CALL_END;
     } while (_kdf_check_prefix(context, opcode));
     _debug_complete_instruction(context, opcode);

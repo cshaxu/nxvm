@@ -79,7 +79,8 @@ static lib_i32 cpu_bus_cases(const cpu_bus_reset_case *reset)
                 if (retired.point.eip != offset + 1u ||
                     retired.old_eip != 0x100u ||
                     retired.operand_size_32 != (bytes == 4u) ||
-                    retired.point.byte_count != CORE_MACHINE_CPU_DIAGNOSTIC_BYTES ||
+                    retired.point.byte_count != (reset->profile == CORE_MACHINE_CPU_PROFILE_8088 ?
+                        4u : CORE_MACHINE_CPU_DIAGNOSTIC_BYTES) ||
                     retired.point.bytes[offset - 0x100u] != fixture.memory[offset] ||
                     retired.eax != fixture.cpu.data.eax) return 1;
             }

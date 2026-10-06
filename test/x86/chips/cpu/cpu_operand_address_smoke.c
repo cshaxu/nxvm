@@ -251,10 +251,15 @@ static lib_i32 oas_test_16bit_code_and_faults(void)
                 sizeof(nop)) || !oas_write(&state, OAS_CODE_ADDRESS, halt,
                 sizeof(halt));
         oas_resume(&state, 0xffffu);
-        failed |= oas_execute(&state, 8u) != LIB_STATUS_OK ||
-            !state.chip.cpu.data.flagHalt;
-        after = state.chip.cpu;
-        failed |= after.data.eip != 1u;
+        /* A 386 does not wrap sequential 16-bit code fetch to offset zero.
+         * Retire the legal NOP first; the next fetch fails. The deliberately
+         * absent delivery gate produces the fixture's existing DF outcome. */
+        failed |= oas_execute(&state, 1u) != LIB_STATUS_OK ||
+            state.chip.cpu.data.flagHalt || state.chip.cpu.data.eip != 0x10000u;
+        if (!failed) failed |= oas_execute(&state, 1u) != LIB_STATUS_INTERNAL_ERROR ||
+            !state.chip.fault.valid ||
+            !X86_CPU_BIT_IS_SET(state.chip.fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+            state.chip.fault.point.eip != 0x10000u;
     }
 
     return !failed;
