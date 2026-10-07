@@ -1813,7 +1813,7 @@ set(PROJECT_ALL_TEST_TARGETS ${PROJECT_ALL_TEST_TARGETS})
 set(PROJECT_UNIT_TEST_TARGETS ${PROJECT_ALL_TEST_TARGETS})
 list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
     ${PROJECT_INTEGRATION_TEST_TARGETS})
-set(PROJECT_UNIT_TEST_JOBS "4" CACHE STRING
+set(PROJECT_UNIT_TEST_JOBS "8" CACHE STRING
     "Positive CTest parallel job count for current smoke targets")
 if(NOT PROJECT_UNIT_TEST_JOBS MATCHES "^[1-9][0-9]*$")
     message(FATAL_ERROR
@@ -1824,6 +1824,12 @@ set(PROJECT_UNIT_TEST_DEADLINE_SECONDS "300" CACHE STRING
 if(NOT PROJECT_UNIT_TEST_DEADLINE_SECONDS MATCHES "^[1-9][0-9]*$")
     message(FATAL_ERROR
         "PROJECT_UNIT_TEST_DEADLINE_SECONDS must be a positive integer, got: ${PROJECT_UNIT_TEST_DEADLINE_SECONDS}")
+endif()
+set(PROJECT_INTEGRATION_TEST_JOBS "1" CACHE STRING
+    "Positive CTest parallel job count for external integration tests")
+if(NOT PROJECT_INTEGRATION_TEST_JOBS MATCHES "^[1-9][0-9]*$")
+    message(FATAL_ERROR
+        "PROJECT_INTEGRATION_TEST_JOBS must be a positive integer, got: ${PROJECT_INTEGRATION_TEST_JOBS}")
 endif()
 set(PROJECT_ASSETS_ROOT "${CMAKE_SOURCE_DIR}/../nxvm-assets/media-nxvm" CACHE PATH
     "Owner-provided local asset root for current runtime smoke coverage")
@@ -1916,7 +1922,18 @@ endfunction()
 get_property(shared_x86_test_names DIRECTORY "${PROJECT_SOURCE_DIR}/test/x86" PROPERTY TESTS)
 get_property(shared_ibmpc_test_names DIRECTORY "${PROJECT_SOURCE_DIR}/test/ibmpc" PROPERTY TESTS)
 list(APPEND shared_x86_test_names ${shared_ibmpc_test_names})
+get_directory_property(shared_x86_test_targets
+    DIRECTORY "${PROJECT_SOURCE_DIR}/test/x86"
+    DEFINITION SHARED_X86_TEST_TARGETS)
 foreach(target IN LISTS PROJECT_UNIT_TEST_TARGETS)
+    # Canonical x86.* cases already own these executables. Do not also
+    # register a product unit.* alias for the identical command.
+    if(target IN_LIST shared_x86_test_targets AND
+       NOT "unit.${target}" IN_LIST shared_x86_test_names)
+        set_property(GLOBAL APPEND PROPERTY
+            PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS ${target})
+        continue()
+    endif()
     if(NOT "unit.${target}" IN_LIST shared_x86_test_names)
         project_add_test(${target} unit)
     else()
@@ -2162,6 +2179,11 @@ add_custom_target(verify-product-artifact-roots
     COMMENT "Verifying product artifact roots"
     VERBATIM)
 
+add_custom_target(build-unit-tests)
+add_dependencies(build-unit-tests
+    ${PROJECT_UNIT_TEST_TARGETS} ${PROJECT_SHARED_CORPUS_TEST_TARGETS}
+    nxvm-firmware-build)
+
 if(POWERSHELL_EXECUTABLE)
     add_custom_target(run-unit-tests
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
@@ -2172,18 +2194,14 @@ if(POWERSHELL_EXECUTABLE)
             -DeadlineSeconds "${PROJECT_UNIT_TEST_DEADLINE_SECONDS}"
         COMMENT "Building and executing repository-only unit tests"
         VERBATIM)
-    add_dependencies(run-unit-tests ${PROJECT_UNIT_TEST_TARGETS})
-    add_dependencies(run-unit-tests nxvm-firmware-build)
-    # The canonical shared corpus owns its own CTest registration.  Keep its
-    # executables in the aggregate build without re-registering an NXVM copy.
-    add_dependencies(run-unit-tests ${PROJECT_SHARED_CORPUS_TEST_TARGETS})
+    add_dependencies(run-unit-tests build-unit-tests)
 
     add_custom_target(run-integration-tests
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
             -File "${CMAKE_SOURCE_DIR}/tools/nxvm/RunTestAggregate.ps1"
             -CTestPath "${CMAKE_CTEST_COMMAND}"
             -TestDirectory "${CMAKE_BINARY_DIR}"
-            -ParallelJobs "${PROJECT_UNIT_TEST_JOBS}"
+            -ParallelJobs "${PROJECT_INTEGRATION_TEST_JOBS}"
             -DeadlineSeconds "${PROJECT_UNIT_TEST_DEADLINE_SECONDS}"
             -Route integration
         COMMENT "Building and executing owner-provided integration tests"
@@ -2836,7 +2854,7 @@ add_custom_target(verify-current-specialized-gates
     VERBATIM)
 add_dependencies(verify-current-specialized-gates
     ${PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS})
-get_property(project_unit_test_dependencies TARGET run-unit-tests
+get_property(project_unit_test_dependencies TARGET build-unit-tests
     PROPERTY MANUALLY_ADDED_DEPENDENCIES)
 get_property(project_current_specialized_dependencies
     TARGET verify-current-specialized-gates

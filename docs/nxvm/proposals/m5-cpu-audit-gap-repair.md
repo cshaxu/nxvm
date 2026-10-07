@@ -6,7 +6,7 @@ Repair the complete implemented-family instruction/function/timing gaps found
 by T544, preserving 8086, 8088, 80186, 80286 and 80386 and their sole chip/Core
 owners. The owner requested this receiver first in Queue and closed T544 as an
 audit, not as CPU qualification. Owner admits M5 T546 after verified T545
-closure at 966249c20. S1-S5 are accepted; Current owns the next active packet and the
+closure at 966249c20. S1-S6 are accepted; Current owns the next active packet and the
 [task ledger](../history/M5-T546-cpu-audit-gap-repair.md) preserves the full
 transferred universe. On 2026-10-06 the owner explicitly includes x86/chips,
 x86/core and ibmpc in automatic approval. The nonexistent x86/devices is
@@ -87,26 +87,27 @@ test review. Each S exits with its complete batch disposition and full units.
 | S4 | Admission versus next fetch: remove unjustified post-instruction ESP/next-fetch checks while retaining real branch/frame checks. Prove committed instruction versus subsequent fetch-fault attribution. |
 | S5 | Host arithmetic/count: widen before signed shifts/multiply, unsigned bit literals, guest count versus carry-ring count, SAR and undefined-result exclusions. Prove all affected widths/forms without host-language undefined behavior. |
 | S6 | Stack/frame publication: PUSHA, ENTER operand size versus SS.B, LEAVE, POP alias/discarded slots and frame failure ordering. Prove valid access and architectural rollback boundaries; do not reject unused restored ESP. |
-| S7 | FLAGS privilege and return: POPF/CLI/STI/IRET, reserved bits, RF fault images/preservation and prior TF semantics. Prove generation/mode/privilege matrices; task loads remain distinct from POPF. |
-| S8 | Asynchronous arbiter: NMI/INTR/debug priority, short shadows, MOV/POP SS versus LSS, mask/in-service, expiry/reset/IRET and simultaneous requests. Prove one arbiter and correct generation-specific delivery. |
-| S9 | Exception delivery/shutdown: return addresses, complete ordered fault pairs, DF/error/shutdown and late task context. Prove serial handling and CPU shutdown without equating it to product stop/reset. |
-| S10 | Descriptor/query/table: generation-specific types/layout, P-independent queries, null/invalid LDT, privilege priority and busy/accessed publication. Prove LAR/LSL/VERR/VERW independently of current rejection expectations. |
-| S11 | Gate and outer-return: descriptor/operand/stack/TSS widths, CPL, LDT/conforming/ring1/2 and segment cleanup. Resolve retained original-source contradictions before changing disputed predicates. |
-| S12 | Task transition: staged admission/commit, incoming CR3/LDT/selector/CPL, outgoing dynamic save, busy/backlink/NT, VM/debug and late fault context. Prove one transition/finalizer across CALL/JMP/INT/IRET rather than parallel patches. |
-| S13 | Paging and implicit references: segment-before-page, U/S combinations, cross-page spans, CR2/error/A/D and task/descriptor/frame references. Prove preview has no architectural translation/fault side effects. |
-| S14 | String/port restart: checked current element, prior completed elements, full prefix/repeat restart and irreversible I/O. Prove one REP path with explicit memory/port failure and commit ordering. |
-| S15 | CPU external/NPX/bus: interruptible WAIT/TEST/BUSY, ESC references/errors, integrated 186 escape input and automatic/explicit LOCK interval. Prove the sole Core arbitration contract without host locks or BIOS shortcuts. |
-| S16 | Scalar/formula/transfer timing: actual widths, 8088 transfers, odd/reference counts, 186 width/direction, 286 LEAVE, 386 conversion/segment POP/VM FS-GS allocation, branch decisions and full task matrices. Prove one selector against source-conditioned expectations, not copied old constants. |
-| S17 | Retirement/external waits: keep completed decode/outcome through entry, account qualified wait/overlap once and separate instruction/delivery/compatibility progress. Prove successful, faulted and asynchronous variants at one time publisher. |
-| S18 | Cross-family regression/source convergence: reconcile every imported finding, false oracle and missing predicate after the owning fixes; review remaining original conflicts and L1/false-tier claims. Prove no unowned or silently deferred member remains. |
-| S19 | Final qualification: actual-change/code-quality review, full dual-width unit and original external integration suites, receiving-App artifacts and complete ledger audit. Close only to the level the direct evidence proves. |
+| S7 | Build/test efficiency: reuse validated compiler/configuration/object caches, remove redundant work with preserved coverage, classify temporary/focused/unit/integration routes and prove faster incremental execution. No CPU repair, weakened checks or unrelated App rebuild. |
+| S8 | FLAGS privilege and return: POPF/CLI/STI/IRET, reserved bits, RF fault images/preservation and prior TF semantics. Prove generation/mode/privilege matrices; task loads remain distinct from POPF. |
+| S9 | Asynchronous arbiter: NMI/INTR/debug priority, short shadows, MOV/POP SS versus LSS, mask/in-service, expiry/reset/IRET and simultaneous requests. Prove one arbiter and correct generation-specific delivery. |
+| S10 | Exception delivery/shutdown: return addresses, complete ordered fault pairs, DF/error/shutdown and late task context. Prove serial handling and CPU shutdown without equating it to product stop/reset. |
+| S11 | Descriptor/query/table: generation-specific types/layout, P-independent queries, null/invalid LDT, privilege priority and busy/accessed publication. Prove LAR/LSL/VERR/VERW independently of current rejection expectations. |
+| S12 | Gate and outer-return: descriptor/operand/stack/TSS widths, CPL, LDT/conforming/ring1/2 and segment cleanup. Resolve retained original-source contradictions before changing disputed predicates. |
+| S13 | Task transition: staged admission/commit, incoming CR3/LDT/selector/CPL, outgoing dynamic save, busy/backlink/NT, VM/debug and late fault context. Prove one transition/finalizer across CALL/JMP/INT/IRET rather than parallel patches. |
+| S14 | Paging and implicit references: segment-before-page, U/S combinations, cross-page spans, CR2/error/A/D and task/descriptor/frame references. Prove preview has no architectural translation/fault side effects. |
+| S15 | String/port restart: checked current element, prior completed elements, full prefix/repeat restart and irreversible I/O. Prove one REP path with explicit memory/port failure and commit ordering. |
+| S16 | CPU external/NPX/bus: interruptible WAIT/TEST/BUSY, ESC references/errors, integrated 186 escape input and automatic/explicit LOCK interval. Prove the sole Core arbitration contract without host locks or BIOS shortcuts. |
+| S17 | Scalar/formula/transfer timing: actual widths, 8088 transfers, odd/reference counts, 186 width/direction, 286 LEAVE, 386 conversion/segment POP/VM FS-GS allocation, branch decisions and full task matrices. Prove one selector against source-conditioned expectations, not copied old constants. |
+| S18 | Retirement/external waits: keep completed decode/outcome through entry, account qualified wait/overlap once and separate instruction/delivery/compatibility progress. Prove successful, faulted and asynchronous variants at one time publisher. |
+| S19 | Cross-family regression/source convergence: reconcile every imported finding, false oracle and missing predicate after the owning fixes; review remaining original conflicts and L1/false-tier claims. Prove no unowned or silently deferred member remains. |
+| S20 | Final qualification: actual-change/code-quality review, full dual-width unit and original external integration suites, receiving-App artifacts and complete ledger audit. Close only to the level the direct evidence proves. |
 
-S1-S4 establish state/admission/access seams used by later batches. S6-S9 and
-S10-S13 must reconcile their shared frame/fault/task boundaries; no S declares
-a caller correct while its required owner remains unqualified. S16 consumes
-actual branch/transfer outcomes, and S17 consumes the completed execution and
-delivery contract. S18 is a convergence check, not a repository-wide test
-rewrite or a place to postpone regressions required by S1-S17.
+S1-S4 establish state/admission/access seams used by later batches. S6 and S8-S10,
+and S11-S14 must reconcile their shared frame/fault/task boundaries; no S declares
+a caller correct while its required owner remains unqualified. S17 consumes
+actual branch/transfer outcomes, and S18 consumes the completed execution and
+delivery contract. S19 is a convergence check, not a repository-wide test
+rewrite or a place to postpone regressions required by S1-S18.
 
 ## Verification, Artifacts And Closure
 
@@ -153,3 +154,17 @@ Green catalog rows or boot success cannot hide pending semantic contexts.
 Documentation governance and coordinator actual-diff review are mandatory.
 Do not declare all-family completeness, L3 or physical-time closure beyond
 the sources and contexts actually proved.
+
+## Owner-Directed Efficiency Insertion
+
+On 2026-10-06 the owner interrupts the uncommitted FLAGS S7 and admits build/
+test efficiency as replacement S7. No original S7 P exists. Preserve its
+research and reproducer edits for deferred S8; shift the former S8-S19 to
+S9-S20. This explicit owner-directed reallocation changes no accepted S1-S6
+identifier or historical commit. Temporary probes and change-local focused
+sets are not permanent suites. Run narrow relevant checks during development,
+then the complete required suites at final acceptance, not after every probe.
+Remove a test only after identifying duplicate/obsolete ownership and proving
+its required assertions remain. Compiler caches never replace execution or
+input/flag/toolchain validity checks. Lib/Common/MyNES production and owner
+INI/media are excluded; report a shared-production need before editing it.

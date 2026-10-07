@@ -33,19 +33,20 @@ semantic proof. Every new finding joins the whole owning batch before repair.
 | S4 | Admission versus next fetch | Accepted after coordinator actual-change review: pushed Shared P1 2d9929742 and NXVM P2 ca016635d; ten code-target owners, m/ts and L2 attribution, complete dual-width units/gates/eight artifacts and 58/58 original external contexts are proven in S4 evidence. S4 closes through governance P3, with S5-S19 retained. |
 | S5 | Host arithmetic/count | Accepted after coordinator actual-change review of pushed Shared P1 bdfe3b938 and NXVM P2 04f0278ad: full source/caller/independent regression proof, final 539/539 units per width, original 58/58 integration, both gates/33 supplemental checks, eight manifests and eight stripped 0546 products. Pure governance P3 closes S5; S6-S19 remain pending. |
 | S6 | Stack/frame publication | Accepted after coordinator actual-change review of pushed Shared P1 1db282a10 and NXVM P2 19945b2b9: complete ordinary-stack/source/caller proof at A6EC7E73…, final units 541/541 per width, original external 58/58 once, supplemental 33/33 per width, both gates/eight manifests and eight stripped 0546 products. Earlier failed candidates remain evidence, not acceptance. Pure governance P3 closes S6; S7-S19 remain pending. |
-| S7 | FLAGS privilege and return | Pending full source/context/caller batch; distinct from S1 image/load classification. |
-| S8 | Asynchronous arbiter | Pending full source/context/caller batch. |
-| S9 | Exception delivery/shutdown | Pending full source/context/caller batch. |
-| S10 | Descriptor/query/table | Pending full source/context/caller batch. |
-| S11 | Gate and outer-return | Pending source conflicts and full context/caller batch. |
-| S12 | Task transition | Pending full source/context/caller batch. |
-| S13 | Paging and implicit references | Pending full source/context/caller batch. |
-| S14 | String/port restart | Pending full source/context/caller batch. |
-| S15 | CPU external/NPX/bus | Pending full source/context/caller batch. |
-| S16 | Scalar/formula/transfer timing | Pending all source-conditioned form/width/task/transfer allocations, including existing VM86 FS/GS L1 hole. |
-| S17 | Retirement/external waits | Pending complete decode/outcome and one time publication proof. |
-| S18 | Cross-family regression/source convergence | Pending every imported finding/oracle/source-tier disposition after owning repairs. |
-| S19 | Final qualification | Pending complete ledger, both widths/artifacts and all original 58 external contexts. |
+| S7 | Build/test efficiency | Complete executor proof: 36 duplicate aliases retired, assertions/334 identities retained, optimized cached dependency builds, 505/505 units once per width, applicable gates and unchanged runtime/input/artifact proof. Shared P1 0c04f2c24 is pushed; NXVM delivery and coordinator immutable-diff acceptance precede closure. See S7 efficiency evidence. |
+| S8 | FLAGS privilege and return | Owner-deferred former uncommitted S7 against accepted S6 741d00417: complete eight-member FLAGS/privilege/IRET/RF/TF batch and original B05c/B05d/family findings remain in deferred S8 design. Source/caller reconciliation precedes concrete production scheme; S1 canonical/reset images and later full arbiter/gate/task/delivery/time receivers remain distinct. No FLAGS implementation/P yet; saved reproducer edits remain deferred, not active efficiency work. |
+| S9 | Asynchronous arbiter | Pending full source/context/caller batch. |
+| S10 | Exception delivery/shutdown | Pending full source/context/caller batch. |
+| S11 | Descriptor/query/table | Pending full source/context/caller batch. |
+| S12 | Gate and outer-return | Pending source conflicts and full context/caller batch. |
+| S13 | Task transition | Pending full source/context/caller batch. |
+| S14 | Paging and implicit references | Pending full source/context/caller batch. |
+| S15 | String/port restart | Pending full source/context/caller batch. |
+| S16 | CPU external/NPX/bus | Pending full source/context/caller batch. |
+| S17 | Scalar/formula/transfer timing | Pending all source-conditioned form/width/task/transfer allocations, including existing VM86 FS/GS L1 hole. |
+| S18 | Retirement/external waits | Pending complete decode/outcome and one time publication proof. |
+| S19 | Cross-family regression/source convergence | Pending every imported finding/oracle/source-tier disposition after owning repairs. |
+| S20 | Final qualification | Pending complete ledger, both widths/artifacts and all original 58 external contexts. |
 
 Accepted disposition requires direct source/implementation/regression proof or
 source-proven non-applicability. Unresolved authority, unupgradable L1 or an
@@ -292,3 +293,12 @@ identities are retained in evidence. INIs, five masters, Lib/Common and MyNES
 are unchanged; initial failures remain separate records. Pure governance P3
 accepts/closes S6 only, removes its packet and adds no executable input or next
 admission. The complete T546 S7-S19 obligations remain open and unwaived.
+
+## Owner-Directed S7 Reallocation
+
+After pausing uncommitted FLAGS S7, the owner explicitly inserts compilation/
+test efficiency as S7, moves FLAGS to S8 and shifts later S8-S19 to S9-S20.
+There was no S7 P or acceptance to rewrite. Accepted S1-S6 and their historical
+numbered references remain immutable. Deferred source evidence and exact test
+patches are preserved; they do not become efficiency failures or vanish from
+the complete T coverage ledger. Current owns the new active packet.
