@@ -1,4 +1,4 @@
-#include "support/cpu_instruction_fixture.h"
+#include "support/cpu_stack_probe_fixture.h"
 #include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
@@ -73,7 +73,8 @@ static lib_u32 gpr_push_pop_register(const t_cpu *cpu, lib_u8 index)
 static lib_i32 gpr_push_pop_test_push_registers(void)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     lib_u8 profile;
@@ -157,7 +158,8 @@ static lib_i32 gpr_push_pop_test_pop_esp_address(void)
 static lib_i32 gpr_push_pop_test_pop_registers(void)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     lib_u8 profile;
@@ -226,7 +228,8 @@ static lib_i32 gpr_push_pop_test_rm_forms(void)
         pop_ss, push_67, pop_67};
     const lib_u8 bytes[] = {2u, 2u, 4u, 3u, 4u, 3u, 7u, 7u};
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     lib_u8 profile;
@@ -564,8 +567,229 @@ static lib_i32 gpr_push_pop_test_protected_faults(void)
     return 1;
 }
 
+static lib_bool gpr_push_pop_test_early_wrap(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186
+    };
+    static const lib_u16 stacks[] = {0u, 1u, 2u, 3u, 0xfff0u, 0xffffu};
+    const lib_u8 code[] = {0x50u};
+    lib_u8 profile, index;
+    lib_bool passed = LIB_TRUE;
+    for (profile = 0u; profile < 3u; ++profile)
+    for (index = 0u; index < sizeof(stacks) / sizeof(stacks[0]); ++index) {
+        cpu_instruction_fixture state;
+        t_cpu after;
+        const lib_u16 expected = (lib_u16)(stacks[index] - 2u);
+        cpu_instruction_prepare(&state, profiles[profile]);
+        gpr_push_pop_seed(&state);
+        state.cpu.data.sp = stacks[index];
+        if (cpu_instruction_run(&state, code, sizeof(code), &after) != LIB_STATUS_OK ||
+            state.fault.valid || after.data.sp != expected || after.data.eip != 1u ||
+            state.memory[expected] != 0x44u ||
+            state.memory[(lib_u16)(expected + 1u)] != 0x33u) {
+            lib_c_printf("early PUSH profile=%u sp=%u fault=%x result=%x\n",
+                (unsigned)profile, (unsigned)stacks[index],
+                (unsigned)state.fault.exception_mask, (unsigned)after.data.sp);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool gpr_push_pop_test_push_shutdown(void)
+{
+    static const lib_u8 forms[][4] = {
+        {0x50u}, {0x68u, 0x34u, 0x12u}, {0xffu, 0x36u, 0u, 0x40u},
+        {0x06u}, {0x0fu, 0xa0u}
+    };
+    static const lib_u8 lengths[] = {1u, 3u, 4u, 1u, 2u};
+    lib_u8 form, vm;
+    lib_bool passed = LIB_TRUE;
+    for (form = 0u; form < sizeof(lengths); ++form)
+    for (vm = 0u; vm < 2u; ++vm) {
+        cpu_instruction_fixture state;
+        t_cpu after;
+        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        gpr_push_pop_seed(&state);
+        state.cpu.data.esp = 1u;
+        if (vm) {
+            state.cpu.data.cr0 |= VCPU_CR0_PE;
+            state.cpu.data.eflags |= VCPU_EFLAGS_VM;
+        }
+        cpu_instruction_run(&state, forms[form], lengths[form], &after);
+        if (!state.execution.shutdown_requested || !state.execution.stop_requested ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
+            after.data.esp != 1u || after.data.eax != 0xa1a23344u) {
+            lib_c_printf("PUSH shutdown form=%u vm=%u requested=%u mask=%x\n",
+                (unsigned)form, (unsigned)vm, (unsigned)state.execution.shutdown_requested,
+                (unsigned)state.delivered_exception.exception_mask);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool gpr_push_pop_test_alias_failure_matrix(void)
+{
+    static const core_machine_cpu_bus_provider bus = {
+        .read_memory = cpu_stack_probe_read,
+        .write_memory = cpu_stack_probe_write,
+        .interrupt_pending = cpu_instruction_interrupt_pending
+    };
+    lib_u8 mode, operand32, stack32, form, failure;
+    lib_bool passed = LIB_TRUE;
+    for (mode = 0u; mode < 3u; ++mode)
+    for (operand32 = 0u; operand32 < 2u; ++operand32)
+    for (stack32 = 0u; stack32 < (mode == 2u ? 1u : 2u); ++stack32)
+    for (form = 0u; form < 3u; ++form)
+    for (failure = 0u; failure < (form == 2u ? 3u : 2u); ++failure) {
+        cpu_stack_probe_fixture fixture;
+        cpu_instruction_fixture *state = &fixture.instruction;
+        const lib_u8 width = operand32 ? 4u : 2u;
+        const lib_u32 source = 0xcdef1234u, sentinel = 0xdeadc0deu;
+        const lib_u32 initial_sp = mode == 2u ? 0x4000u : 0x14000u;
+        const lib_u32 stack_address = stack32 ? initial_sp : 0x4000u;
+        const lib_u32 target = initial_sp + width + 4u;
+        lib_u8 code[7] = {0};
+        lib_u8 bytes = 0u;
+        t_cpu before, after;
+        lib_u32 observed = 0u;
+
+        if (operand32) code[bytes++] = 0x66u;
+        if (form == 2u) code[bytes++] = 0x67u;
+        code[bytes++] = form == 0u ? 0x5cu : 0x8fu;
+        if (form == 1u) code[bytes++] = 0xc4u;
+        if (form == 2u) { code[bytes++] = 0x44u; code[bytes++] = 0x24u; code[bytes++] = 4u; }
+        lib_memory_set(&fixture, 0, sizeof(fixture));
+        cpu_instruction_prepare_with_bus(state, CORE_MACHINE_CPU_PROFILE_80386, &bus, &fixture);
+        gpr_push_pop_seed(state);
+        state->cpu.data.esp = initial_sp;
+        state->cpu.data.ss.limit = state->cpu.data.ds.limit =
+            mode == 2u ? 0xffffu : 0x3ffffu;
+        state->cpu.data.ss.seg.data.big = stack32;
+        if (mode) {
+            state->cpu.data.cr0 |= VCPU_CR0_PE;
+            if (mode == 1u) {
+                state->cpu.data.cs.selector = 8u;
+                state->cpu.data.ds.selector = 0x10u;
+                state->cpu.data.ss.selector = 0x18u;
+            }
+            if (mode == 2u) state->cpu.data.eflags |= VCPU_EFLAGS_VM;
+        }
+        cpu_instruction_write(state, stack_address, &source, width,
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        cpu_instruction_write(state, target, &sentinel, width,
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        fixture.frame_base = 0x4000u; fixture.frame_size = 0x12000u;
+        fixture.reject_at = failure;
+        before = state->cpu;
+        if (cpu_instruction_run(state, code, bytes, &after) !=
+                (failure ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) ||
+            fixture.frame_accesses != (failure ? failure : form == 2u ? 2u : 1u) ||
+            (failure && (!state->fault.valid ||
+                state->fault.exception_mask != VCPUINS_EXCEPT_CE ||
+                !gpr_push_pop_cpu_same(&before, &after))) ||
+            (!failure && (after.data.esp != (form == 2u ? initial_sp + width :
+                operand32 ? source : (initial_sp & 0xffff0000u) | (source & 0xffffu)) ||
+                after.data.eip != bytes || after.data.eflags != before.data.eflags ||
+                after.data.eax != before.data.eax))) {
+            lib_c_printf("POP alias mode=%u operand32=%u stack32=%u form=%u failure=%u count=%u\n",
+                (unsigned)mode, (unsigned)operand32, (unsigned)stack32,
+                (unsigned)form, (unsigned)failure, (unsigned)fixture.frame_accesses);
+            passed = LIB_FALSE;
+        }
+        cpu_instruction_read(state, target, &observed, width,
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE);
+        if (observed != ((form == 2u && !failure ? source : sentinel) &
+                (operand32 ? 0xffffffffu : 0xffffu))) passed = LIB_FALSE;
+    }
+    return passed;
+}
+
+static lib_bool gpr_push_pop_test_early_frame_callers(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186
+    };
+    static const lib_u8 codes[][5] = {
+        {0xe8u, 0xfdu, 1u}, {0x9au, 0u, 2u, 0u, 0u}, {0xcdu, 0x30u}
+    };
+    static const lib_u8 lengths[] = {3u, 5u, 2u};
+    static const lib_u8 frames[] = {2u, 4u, 6u};
+    static const lib_u16 stacks[] = {0u, 1u, 0xfffeu};
+    const lib_u8 vector[] = {0u, 2u, 0u, 0u};
+    lib_u8 profile, form, stack;
+    lib_bool passed = LIB_TRUE;
+    for (profile = 0u; profile < 3u; ++profile)
+    for (form = 0u; form < 3u; ++form)
+    for (stack = 0u; stack < 3u; ++stack) {
+        cpu_instruction_fixture state;
+        t_cpu after;
+        const lib_u16 final_sp = (lib_u16)(stacks[stack] - frames[form]);
+        cpu_instruction_prepare(&state, profiles[profile]);
+        gpr_push_pop_seed(&state);
+        state.cpu.data.sp = stacks[stack];
+        cpu_instruction_write(&state, 0x30u * 4u, vector, sizeof(vector),
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        state.memory[0x200u] = 0x90u;
+        if (cpu_instruction_run(&state, codes[form], lengths[form], &after) !=
+                LIB_STATUS_OK || state.fault.valid || after.data.sp != final_sp ||
+            after.data.eip != 0x200u || after.data.cs.selector != 0u ||
+            state.memory[final_sp] != lengths[form] ||
+            state.memory[(lib_u16)(final_sp + 1u)] != 0u) {
+            lib_c_printf("early frame profile=%u form=%u sp=%u final=%x eip=%x fault=%x\n",
+                (unsigned)profile, (unsigned)form, (unsigned)stacks[stack],
+                (unsigned)after.data.sp, (unsigned)after.data.eip,
+                (unsigned)state.fault.exception_mask);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool gpr_push_pop_test_real_stack_range(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    const lib_u8 vector[] = {0u, 2u, 0u, 0u};
+    lib_u8 profile, leave;
+    lib_bool passed = LIB_TRUE;
+    for (profile = 0u; profile < 2u; ++profile)
+    for (leave = 0u; leave < 2u; ++leave) {
+        const lib_u8 code[] = {leave ? 0xc9u : 0x58u};
+        cpu_instruction_fixture state;
+        t_cpu after;
+        cpu_instruction_prepare(&state, profiles[profile]);
+        gpr_push_pop_seed(&state);
+        if (leave) state.cpu.data.bp = 0xffffu;
+        else state.cpu.data.sp = 0xffffu;
+        cpu_instruction_write(&state, (profile ? 12u : 13u) * 4u, vector, sizeof(vector),
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        cpu_instruction_run(&state, code, sizeof(code), &after);
+        if (state.delivered_exception.exception_mask != (profile ?
+                VCPUINS_EXCEPT_SS : VCPUINS_EXCEPT_GP) ||
+            after.data.eip != 0x200u || state.execution.shutdown_requested) {
+            lib_c_printf("real stack profile=%u leave=%u delivered=%x eip=%x\n",
+                (unsigned)profile, (unsigned)leave,
+                (unsigned)state.delivered_exception.exception_mask,
+                (unsigned)after.data.eip);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
 lib_i32 main(void)
 {
+    if (!gpr_push_pop_test_real_stack_range()) return 1;
+    if (!gpr_push_pop_test_early_frame_callers()) return 1;
+    if (!gpr_push_pop_test_alias_failure_matrix()) return 1;
+    if (!gpr_push_pop_test_push_shutdown()) return 1;
+    if (!gpr_push_pop_test_early_wrap()) return 1;
     if (!gpr_push_pop_test_protected_faults())
     {
         lib_c_printf("CPU stack cache stage=test_protected_faults\n");

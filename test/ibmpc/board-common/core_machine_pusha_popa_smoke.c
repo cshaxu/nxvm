@@ -151,7 +151,7 @@ static lib_i32 pusha_popa_test_protected_pusha_limit(void)
     core_machine_debug_cpu_snapshot after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    lib_u16 expected[] = {0xa5a5u, 0x99aau, 0x7788u, 0x5566u, 0x3344u};
+    lib_u16 expected[] = {0xa001u, 0xa002u, 0xa003u, 0xa004u, 0xa005u};
     lib_u8 slot;
     lib_i32 failed = !pusha_popa_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 

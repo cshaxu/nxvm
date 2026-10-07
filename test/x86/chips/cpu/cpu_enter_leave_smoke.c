@@ -1,4 +1,4 @@
-#include "support/cpu_instruction_fixture.h"
+#include "support/cpu_stack_probe_fixture.h"
 #include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
@@ -71,6 +71,7 @@ static lib_i32 enter_leave_test_enter(core_machine_cpu_profile profile,
     t_cpu after;
     lib_u32 old_stack;
     lib_u32 frame;
+    lib_u32 frame_pointer;
     lib_u32 final_stack;
     lib_u32 display0 = 0x11112222u;
     lib_u32 display1 = 0x33334444u;
@@ -110,6 +111,8 @@ static lib_i32 enter_leave_test_enter(core_machine_cpu_profile profile,
             after.data.edi != before.data.edi || after.data.eflags !=
             before.data.eflags || !enter_leave_sregs_same(&before, &after);
         frame = old_stack - width;
+        frame_pointer = stack32 ? frame :
+            (before.data.esp & 0xffff0000u) | (frame & 0xffffu);
         final_stack = frame - (effective_level ? effective_level * width : 0u) -
             allocation;
         if (width == 2u)
@@ -118,7 +121,7 @@ static lib_i32 enter_leave_test_enter(core_machine_cpu_profile profile,
                 (frame & 0xffffu));
         }
         else
-            failed |= after.data.ebp != frame;
+            failed |= after.data.ebp != frame_pointer;
         if (stack32)
             failed |= after.data.esp != final_stack;
         else
@@ -129,7 +132,7 @@ static lib_i32 enter_leave_test_enter(core_machine_cpu_profile profile,
         if (effective_level)
         {
             failed |= !enter_leave_expect_image(&state, frame -
-                effective_level * width, width, frame);
+                effective_level * width, width, frame_pointer);
             if (effective_level > 1u)
                 failed |= !enter_leave_expect_image(&state, frame - width,
                     width, display0);
@@ -434,6 +437,7 @@ static lib_i32 enter_leave_test_protected_faults(void)
     t_cpu after;
     lib_u16 stack_image[] = {0xaaaau, 0xbbbbu, 0xccccu, 0xddddu,
         0xeeeeu};
+    lib_u16 observed_frame[5];
     lib_u32 value;
     lib_i32 failed = 0;
     cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
@@ -452,7 +456,7 @@ static lib_i32 enter_leave_test_protected_faults(void)
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
             cpu_instruction_write(&state, 0xcffcu, &stack_image[1], sizeof(lib_u16),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
-            cpu_instruction_write(&state, 0x4018u, &stack_image[2], sizeof(lib_u16),
+            cpu_instruction_write(&state, 0x4018u, stack_image, sizeof(stack_image),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
             LIB_STATUS_OK ||
             cpu_instruction_write(&state, 0x2000u, enter, sizeof(enter),
@@ -465,11 +469,10 @@ static lib_i32 enter_leave_test_protected_faults(void)
         failed |= !state.fault.valid || !X86_CPU_BIT_IS_SET(
             state.fault.exception_mask, VCPUINS_EXCEPT_DF) ||
             !enter_leave_cpu_same(&before, &after) ||
-            !enter_leave_expect_image(&state, 0x401eu, 2u,
-            before.data.ebp) || !enter_leave_expect_image(&state, 0x401cu,
-            2u, stack_image[0]) || !enter_leave_expect_image(&state, 0x401au,
-            2u, stack_image[1]) || !enter_leave_read(&state, 0x4018u, 2u,
-            &value) || value != stack_image[2];
+            cpu_instruction_read(&state, 0x4018u, observed_frame,
+                sizeof(observed_frame), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
+                LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+            lib_memory_compare(observed_frame, stack_image, sizeof(stack_image)) != 0;
     }
 
     if (failed)
@@ -500,8 +503,253 @@ static lib_i32 enter_leave_test_protected_faults(void)
     return !failed;
 }
 
+static lib_bool enter_leave_test_chain_attributes(void)
+{
+    lib_u8 operand32, stack32;
+    lib_bool passed = LIB_TRUE;
+
+    for (operand32 = 0u; operand32 < 2u; ++operand32)
+    for (stack32 = 0u; stack32 < 2u; ++stack32) {
+        const lib_u8 width = operand32 ? 4u : 2u;
+        const lib_u32 chain = operand32 ? 0x19000u : 0x9000u;
+        const lib_u32 other_chain = operand32 ? 0x9000u : 0x19000u;
+        const lib_u32 stack = stack32 ? 0x18000u : 0x8000u;
+        const lib_u32 value = operand32 ? 0xcafebabeu : 0xbeefu;
+        const lib_u32 decoy = operand32 ? 0x12345678u : 0x1234u;
+        lib_u8 code[] = {0x66u, 0xc8u, 0u, 0u, 2u};
+        const lib_u8 offset = operand32 ? 0u : 1u;
+        cpu_instruction_fixture state;
+        t_cpu after;
+        lib_u32 observed = 0u;
+
+        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        enter_leave_seed(&state);
+        state.cpu.data.esp = 0x18000u;
+        state.cpu.data.ebp = 0x19000u;
+        /* A valid cached wide, expand-up SS permits both candidate addresses.
+         * The test observes which address is read, not a bounds side effect. */
+        state.cpu.data.ss.limit = 0x3ffffu;
+        state.cpu.data.ss.seg.data.big = stack32;
+        if (cpu_instruction_write(&state, chain - width, &value, width,
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            cpu_instruction_write(&state, other_chain - width, &decoy, width,
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            cpu_instruction_run(&state, code + offset, sizeof(code) - offset,
+                &after) != LIB_STATUS_OK || state.fault.valid ||
+            !enter_leave_read(&state, stack - 2u * width, width, &observed) ||
+            observed != value || after.data.eip != sizeof(code) - offset ||
+            after.data.eflags != (VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
+                VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF)) {
+            lib_c_printf("ENTER chain operand32=%u stack32=%u observed=%x expected=%x\n",
+                (unsigned)operand32, (unsigned)stack32,
+                (unsigned)observed, (unsigned)value);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool enter_leave_test_ordered_failure(void)
+{
+    static const core_machine_cpu_bus_provider bus = {
+        .read_memory = cpu_stack_probe_read,
+        .write_memory = cpu_stack_probe_write,
+        .interrupt_pending = cpu_instruction_interrupt_pending
+    };
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const lib_u8 levels[] = {0u, 1u, 2u, 31u, 32u, 33u, 255u};
+    const lib_u32 sentinel = 0xdeadc0deu;
+    lib_u8 profile, operand32, stack32, level_index;
+    lib_u16 failure, slot;
+    lib_bool passed = LIB_TRUE;
+
+    for (profile = 0u; profile < 3u; ++profile)
+    for (operand32 = 0u; operand32 < (profile == 2u ? 2u : 1u); ++operand32)
+    for (stack32 = 0u; stack32 < (profile == 2u ? 2u : 1u); ++stack32)
+    for (level_index = 0u; level_index < sizeof(levels); ++level_index) {
+        const lib_u8 level = profile == 0u ? levels[level_index] :
+            levels[level_index] & 0x1fu;
+        const lib_u8 width = operand32 ? 4u : 2u;
+        const lib_u16 transfers = level ? (lib_u16)2u * level : 1u;
+        const lib_u16 pushes = (lib_u16)1u + level;
+        const lib_u32 mask = operand32 ? 0xffffffffu : 0xffffu;
+        for (failure = 0u; failure <= transfers; ++failure) {
+            cpu_stack_probe_fixture fixture;
+            cpu_instruction_fixture *state = &fixture.instruction;
+            lib_u8 code[] = {0x66u, 0xc8u, 8u, 0u, levels[level_index]};
+            const lib_u8 offset = operand32 ? 0u : 1u;
+            const lib_u32 initial_sp = stack32 ? 0x4800u : 0x12344800u;
+            const lib_u32 frame = initial_sp - width;
+            t_cpu before, after;
+
+            lib_memory_set(&fixture, 0, sizeof(fixture));
+            cpu_instruction_prepare_with_bus(state, profiles[profile], &bus, &fixture);
+            enter_leave_seed(state);
+            state->cpu.data.esp = initial_sp;
+            state->cpu.data.ebp = 0x4c00u;
+            state->cpu.data.ss.seg.data.big = stack32;
+            for (slot = 1u; slot < level; ++slot) {
+                lib_u32 value = 0xabcd0000u + slot;
+                cpu_instruction_write(state, 0x4c00u - slot * width, &value,
+                    width, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            }
+            for (slot = 0u; slot < pushes; ++slot)
+                cpu_instruction_write(state, 0x4800u - (slot + 1u) * width,
+                    &sentinel, width, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            fixture.frame_base = 0x4000u;
+            fixture.frame_size = 0x1000u;
+            fixture.reject_at = failure;
+            before = state->cpu;
+            if (cpu_instruction_run(state, code + offset, sizeof(code) - offset,
+                    &after) != (failure ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) ||
+                fixture.frame_accesses != (failure ? failure : transfers) ||
+                (failure && (!state->fault.valid ||
+                    state->fault.exception_mask != VCPUINS_EXCEPT_CE ||
+                    !enter_leave_cpu_same(&before, &after))) ||
+                (!failure && (state->fault.valid ||
+                    after.data.eip != sizeof(code) - offset ||
+                    after.data.eflags != before.data.eflags ||
+                    after.data.ebp != (operand32 ? frame : frame & 0xffffu) ||
+                    (stack32 ? after.data.esp != frame - level * width - 8u :
+                        after.data.esp != (0x12340000u |
+                            ((frame - level * width - 8u) & 0xffffu)))))) {
+                lib_c_printf("ENTER ordered profile=%u operand32=%u stack32=%u level=%u failure=%u count=%u\n",
+                    (unsigned)profile, (unsigned)operand32, (unsigned)stack32,
+                    (unsigned)levels[level_index], (unsigned)failure,
+                    (unsigned)fixture.frame_accesses);
+                passed = LIB_FALSE;
+            }
+            for (slot = 0u; slot < pushes; ++slot) {
+                const lib_u16 event = slot == 0u ? 1u :
+                    slot == level ? transfers : (lib_u16)2u * slot + 1u;
+                const lib_u32 value = slot == 0u ? before.data.ebp :
+                    slot == level ? frame : 0xabcd0000u + slot;
+                lib_u32 observed = 0u;
+                const lib_u32 expected = !failure || event < failure ? value : sentinel;
+                if (cpu_instruction_read(state, 0x4800u - (slot + 1u) * width,
+                        &observed, width, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
+                        LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                    observed != (expected & mask)) passed = LIB_FALSE;
+            }
+        }
+    }
+    return passed;
+}
+
+static lib_bool enter_leave_test_allocation_admission(void)
+{
+    static const core_machine_cpu_bus_provider bus = {
+        .read_memory = cpu_stack_probe_read,
+        .write_memory = cpu_stack_probe_write,
+        .interrupt_pending = cpu_instruction_interrupt_pending
+    };
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const lib_u8 levels[] = {0u, 1u, 2u, 31u, 32u, 33u, 255u};
+    static const lib_u16 allocations[] = {0u, 8u, 0x80u, 0xffu, 0x100u, 0xffffu};
+    lib_u8 profile, operand32, stack32, down, level_index, allocation_index;
+    lib_bool passed = LIB_TRUE;
+    for (profile = 0u; profile < 2u; ++profile)
+    for (operand32 = 0u; operand32 < (profile ? 2u : 1u); ++operand32)
+    for (stack32 = 0u; stack32 < (profile ? 2u : 1u); ++stack32)
+    for (down = 0u; down < 2u; ++down)
+    for (level_index = 0u; level_index < sizeof(levels); ++level_index)
+    for (allocation_index = 0u; allocation_index < sizeof(allocations) / sizeof(allocations[0]); ++allocation_index) {
+        const lib_u8 level = levels[level_index] & 0x1fu;
+        const lib_u8 width = operand32 ? 4u : 2u;
+        const lib_u16 allocation = allocations[allocation_index];
+        const lib_u32 bottom = 0x100u - ((lib_u32)1u + level) * width;
+        const lib_u32 lower = down ? 0x81u : 0u;
+        const lib_bool valid = bottom >= lower && allocation <= bottom &&
+            bottom - allocation >= lower;
+        cpu_stack_probe_fixture fixture;
+        cpu_instruction_fixture *state = &fixture.instruction;
+        lib_u8 code[] = {0x66u, 0xc8u, (lib_u8)allocation,
+            (lib_u8)(allocation >> 8u), levels[level_index]};
+        const lib_u8 offset = operand32 ? 0u : 1u;
+        t_cpu after;
+
+        lib_memory_set(&fixture, 0, sizeof(fixture));
+        cpu_instruction_prepare_with_bus(state, profiles[profile], &bus, &fixture);
+        state->cpu.data.cr0 |= VCPU_CR0_PE;
+        state->cpu.data.ss.selector = 0x10u;
+        state->cpu.data.ss.seg.data.writable = LIB_TRUE;
+        state->cpu.data.ss.seg.data.big = stack32;
+        state->cpu.data.ss.seg.data.expdown = down;
+        state->cpu.data.ss.limit = down ? 0x80u : 0x200u;
+        state->cpu.data.esp = 0x100u;
+        state->cpu.data.ebp = 0x180u;
+        state->cpu.data.idtr.limit = 0u;
+        fixture.frame_base = 0x80u;
+        fixture.frame_size = 0x100u;
+        fixture.reject_at = 1u;
+        cpu_instruction_run(state, code + offset, sizeof(code) - offset, &after);
+        if (fixture.frame_accesses != (valid ? 1u : 0u)) {
+            lib_c_printf("ENTER allocation profile=%u operand32=%u stack32=%u down=%u level=%u allocation=%u valid=%u count=%u\n",
+                (unsigned)profile, (unsigned)operand32, (unsigned)stack32,
+                (unsigned)down, (unsigned)levels[level_index], (unsigned)allocation,
+                (unsigned)valid, (unsigned)fixture.frame_accesses);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool enter_leave_test_overlapping_chain(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const lib_u8 levels[] = {2u, 31u, 32u, 255u};
+    const lib_u32 sentinel = 0xdeadc0deu;
+    lib_u8 profile, operand32, stack32, level_index;
+    lib_u16 slot;
+    lib_bool passed = LIB_TRUE;
+    for (profile = 0u; profile < 3u; ++profile)
+    for (operand32 = 0u; operand32 < (profile == 2u ? 2u : 1u); ++operand32)
+    for (stack32 = 0u; stack32 < (profile == 2u ? 2u : 1u); ++stack32)
+    for (level_index = 0u; level_index < sizeof(levels); ++level_index) {
+        const lib_u8 level = profile == 0u ? levels[level_index] : levels[level_index] & 0x1fu;
+        const lib_u8 width = operand32 ? 4u : 2u;
+        const lib_u16 pushes = (lib_u16)1u + level;
+        cpu_instruction_fixture state;
+        t_cpu after;
+        lib_u8 code[] = {0x66u, 0xc8u, 0u, 0u, levels[level_index]};
+        const lib_u8 offset = operand32 ? 0u : 1u;
+        cpu_instruction_prepare(&state, profiles[profile]);
+        enter_leave_seed(&state);
+        state.cpu.data.esp = state.cpu.data.ebp = 0x4800u;
+        state.cpu.data.ss.seg.data.big = stack32;
+        for (slot = 0u; slot < pushes; ++slot)
+            cpu_instruction_write(&state, 0x4800u - (slot + 1u) * width,
+                &sentinel, width, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        if (cpu_instruction_run(&state, code + offset, sizeof(code) - offset,
+                &after) != LIB_STATUS_OK || state.fault.valid ||
+            after.data.esp != 0x4800u - pushes * width ||
+            after.data.ebp != 0x4800u - width) passed = LIB_FALSE;
+        for (slot = 0u; slot < pushes; ++slot) {
+            lib_u32 observed = 0u;
+            /* Each chain read sees the just-pushed prior slot, not its old
+             * sentinel. Admission must never snapshot chain values early. */
+            const lib_u32 expected = level && slot == level ? 0x4800u - width : 0x4800u;
+            if (!enter_leave_read(&state, 0x4800u - (slot + 1u) * width,
+                    width, &observed) || observed != expected) passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
 lib_i32 main(void)
 {
+    if (!enter_leave_test_overlapping_chain()) return 1;
+    if (!enter_leave_test_allocation_admission()) return 1;
+    if (!enter_leave_test_ordered_failure()) return 1;
+    if (!enter_leave_test_chain_attributes()) return 1;
     if (!enter_leave_test_defaults())
     {
         lib_c_printf("ENTER-LEAVE stage=defaults\n");

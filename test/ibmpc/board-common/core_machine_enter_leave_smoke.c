@@ -156,6 +156,7 @@ static lib_i32 enter_leave_test_protected_faults(void)
     lib_status status;
     lib_u16 stack_image[] = {0xaaaau, 0xbbbbu, 0xccccu, 0xddddu,
         0xeeeeu};
+    lib_u16 observed_frame[5];
     lib_u32 value;
     lib_i32 failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &state);
@@ -171,7 +172,7 @@ static lib_i32 enter_leave_test_protected_faults(void)
             &stack_image[0], sizeof(lib_u16)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0xcffcu, &stack_image[1],
             sizeof(lib_u16)) != LIB_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x4018u, &stack_image[2], sizeof(lib_u16)) !=
+            state.machine, 0x4018u, stack_image, sizeof(stack_image)) !=
             LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x2000u,
             enter, sizeof(enter)) != LIB_STATUS_OK;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
@@ -187,11 +188,9 @@ static lib_i32 enter_leave_test_protected_faults(void)
             failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
             !enter_leave_cpu_same(&before, &after) ||
-            !enter_leave_expect_image(&state, 0x401eu, 2u,
-            before.ebp) || !enter_leave_expect_image(&state, 0x401cu,
-            2u, stack_image[0]) || !enter_leave_expect_image(&state, 0x401au,
-            2u, stack_image[1]) || !enter_leave_read(&state, 0x4018u, 2u,
-            &value) || value != stack_image[2];
+            core_machine_memory_inspect(state.machine, 0x4018u, observed_frame,
+                sizeof(observed_frame)) != LIB_STATUS_OK ||
+            lib_memory_compare(observed_frame, stack_image, sizeof(stack_image)) != 0;
     }
     core_machine_destroy(state.machine);
 

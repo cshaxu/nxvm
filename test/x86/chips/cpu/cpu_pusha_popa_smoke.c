@@ -1,4 +1,4 @@
-#include "support/cpu_instruction_fixture.h"
+#include "support/cpu_stack_probe_fixture.h"
 #include "lib/types/file.h"
 
 /* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
@@ -317,7 +317,7 @@ static lib_i32 pusha_popa_test_protected_pusha_limit(void)
     cpu_instruction_fixture state;
     t_cpu before;
     t_cpu after;
-    lib_u16 expected[] = {0xa5a5u, 0x99aau, 0x7788u, 0x5566u, 0x3344u};
+    lib_u16 expected[] = {0xa001u, 0xa002u, 0xa003u, 0xa004u, 0xa005u};
     lib_u8 slot;
     lib_i32 failed = 0;
     cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
@@ -408,8 +408,226 @@ static lib_i32 pusha_popa_test_protected_popa_limit(void)
     return !failed;
 }
 
+
+static lib_bool pusha_popa_test_frame_admission(void)
+{
+    static const core_machine_cpu_bus_provider bus = {
+        .read_memory = cpu_stack_probe_read,
+        .write_memory = cpu_stack_probe_write,
+        .interrupt_pending = cpu_instruction_interrupt_pending
+    };
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    lib_u8 profile, operand32, stack32, pop, invalid;
+    lib_bool passed = LIB_TRUE;
+    for (profile = 0u; profile < 2u; ++profile)
+    for (operand32 = 0u; operand32 < (profile ? 2u : 1u); ++operand32)
+    for (stack32 = 0u; stack32 < (profile ? 2u : 1u); ++stack32)
+    for (pop = 0u; pop < 2u; ++pop)
+    for (invalid = 0u; invalid < 2u; ++invalid) {
+        cpu_stack_probe_fixture fixture;
+        cpu_instruction_fixture *state = &fixture.instruction;
+        lib_u8 code[] = {0x66u, pop ? 0x61u : 0x60u};
+        const lib_u8 offset = operand32 ? 0u : 1u;
+        t_cpu after;
+
+        lib_memory_set(&fixture, 0, sizeof(fixture));
+        cpu_instruction_prepare_with_bus(state, profiles[profile], &bus, &fixture);
+        fixture.frame_base = 0xe0u;
+        fixture.frame_size = 0x30u;
+        fixture.reject_at = 1u;
+        state->cpu.data.cr0 |= VCPU_CR0_PE;
+        state->cpu.data.ss.selector = 0x10u;
+        state->cpu.data.ss.seg.data.writable = LIB_TRUE;
+        state->cpu.data.ss.seg.data.big = stack32;
+        state->cpu.data.ss.seg.data.expdown = !pop;
+        state->cpu.data.ss.limit = invalid ? (pop ? 0xfbu : 0xf4u) :
+            (pop ? 0x1ffu : 0xbfu);
+        state->cpu.data.esp = pop ? 0xf0u : 0x100u;
+        /* No deliverable IDT: subsequent fault handling cannot legitimately
+         * transfer the watched instruction frame. */
+        state->cpu.data.idtr.limit = 0u;
+        cpu_instruction_run(state, code + offset, sizeof(code) - offset, &after);
+        if (fixture.frame_accesses != (invalid ? 0u : 1u)) {
+            lib_c_printf("FRAME admission profile=%u operand32=%u stack32=%u pop=%u invalid=%u accesses=%u\n",
+                (unsigned)profile, (unsigned)operand32, (unsigned)stack32,
+                (unsigned)pop, (unsigned)invalid, (unsigned)fixture.frame_accesses);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool pusha_popa_test_ordered_failure(void)
+{
+    static const core_machine_cpu_bus_provider bus = {
+        .read_memory = cpu_stack_probe_read,
+        .write_memory = cpu_stack_probe_write,
+        .interrupt_pending = cpu_instruction_interrupt_pending
+    };
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    lib_u8 profile, operand32, stack32, pop, failure, slot;
+    lib_bool passed = LIB_TRUE;
+    for (profile = 0u; profile < 3u; ++profile)
+    for (operand32 = 0u; operand32 < (profile == 2u ? 2u : 1u); ++operand32)
+    for (stack32 = 0u; stack32 < (profile == 2u ? 2u : 1u); ++stack32)
+    for (pop = 0u; pop < 2u; ++pop)
+    for (failure = 1u; failure <= 8u; ++failure) {
+        cpu_stack_probe_fixture fixture;
+        cpu_instruction_fixture *state = &fixture.instruction;
+        t_cpu before, after;
+        const lib_u8 width = operand32 ? 4u : 2u;
+        const lib_u32 mask = operand32 ? 0xffffffffu : 0xffffu;
+        const lib_u32 sentinel = 0xdeadc0deu;
+        lib_u8 code[] = {0x66u, pop ? 0x61u : 0x60u};
+        const lib_u8 offset = operand32 ? 0u : 1u;
+        lib_u32 expected[8];
+
+        lib_memory_set(&fixture, 0, sizeof(fixture));
+        cpu_instruction_prepare_with_bus(state, profiles[profile], &bus, &fixture);
+        pusha_popa_seed(state);
+        state->cpu.data.esp = stack32 ? 0x4080u : 0x12344080u;
+        state->cpu.data.ss.seg.data.big = stack32;
+        before = state->cpu;
+        expected[0] = before.data.eax; expected[1] = before.data.ecx;
+        expected[2] = before.data.edx; expected[3] = before.data.ebx;
+        expected[4] = operand32 ? before.data.esp : before.data.sp;
+        expected[5] = before.data.ebp; expected[6] = before.data.esi;
+        expected[7] = before.data.edi;
+        for (slot = 0u; slot < 8u; ++slot) {
+            lib_u32 value = pop ? 0x43210000u + slot : sentinel;
+            lib_u32 address = pop ? 0x4080u + slot * width : 0x4080u - (slot + 1u) * width;
+            cpu_instruction_write(state, address, &value, width,
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        }
+        fixture.frame_base = 0x4000u;
+        fixture.frame_size = 0x100u;
+        fixture.reject_at = failure;
+        if (cpu_instruction_run(state, code + offset, sizeof(code) - offset,
+                &after) != LIB_STATUS_INTERNAL_ERROR ||
+            !state->fault.valid || state->fault.exception_mask != VCPUINS_EXCEPT_CE ||
+            fixture.frame_accesses != failure || !pusha_popa_cpu_same(&before, &after)) {
+            lib_c_printf("ordered stack profile=%u operand32=%u stack32=%u pop=%u failure=%u count=%u\n",
+                (unsigned)profile, (unsigned)operand32, (unsigned)stack32,
+                (unsigned)pop, (unsigned)failure, (unsigned)fixture.frame_accesses);
+            passed = LIB_FALSE;
+        }
+        for (slot = 0u; slot < 8u; ++slot) {
+            lib_u32 observed = 0u;
+            const lib_u32 address = pop ? 0x4080u + slot * width :
+                0x4080u - (slot + 1u) * width;
+            const lib_u32 value = pop ? 0x43210000u + slot :
+                (slot + 1u < failure ? expected[slot] : sentinel);
+            if (cpu_instruction_read(state, address, &observed, width,
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                    LIB_STATUS_OK || observed != (value & mask)) passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool pusha_popa_test_initial_sp(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    const lib_u8 code[] = {0x60u};
+    const lib_u8 vector[] = {0u, 2u, 0u, 0u};
+    lib_u8 profile, stack;
+    lib_bool passed = LIB_TRUE;
+
+    for (profile = 0u; profile < 2u; ++profile)
+    for (stack = 1u; stack < 16u; stack += 2u) {
+        cpu_instruction_fixture state;
+        t_cpu after;
+        const lib_bool shutdown = stack <= 5u;
+        cpu_instruction_prepare(&state, profiles[profile]);
+        pusha_popa_seed(&state);
+        state.cpu.data.esp = stack;
+        cpu_instruction_write(&state, 13u * 4u, vector, sizeof(vector),
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        cpu_instruction_run(&state, code, sizeof(code), &after);
+        if (!state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != (shutdown ?
+                VCPUINS_EXCEPT_SHUTDOWN : VCPUINS_EXCEPT_GP) ||
+            (state.execution.shutdown_requested != 0u) != shutdown ||
+            (state.execution.stop_requested != 0u) != shutdown ||
+            after.data.eax != 0xa1a23344u || after.data.ecx != 0xb1b25566u ||
+            (!shutdown && after.data.eip != 0x200u)) {
+            lib_c_printf("PUSHA initial profile=%u sp=%u delivered=%x shutdown=%u stop=%u\n",
+                (unsigned)profile, (unsigned)stack,
+                (unsigned)state.delivered_exception.exception_mask,
+                (unsigned)state.execution.shutdown_requested,
+                (unsigned)state.execution.stop_requested);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+typedef struct pusha_vm_fixture {
+    cpu_instruction_fixture instruction;
+    lib_u32 first_idt;
+} pusha_vm_fixture;
+
+static lib_status pusha_vm_read(void *opaque, lib_u32 address, void *destination,
+    lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
+    lib_bool observe_only, lib_bool reset_fetch)
+{
+    pusha_vm_fixture *fixture = opaque;
+    if (!observe_only && address >= 0x3000u && address < 0x3800u &&
+        fixture->first_idt == 0u) fixture->first_idt = address;
+    return cpu_instruction_read(&fixture->instruction, address, destination,
+        bytes, provenance, observe_only, reset_fetch);
+}
+
+static lib_bool pusha_popa_test_vm_initial_sp(void)
+{
+    static const core_machine_cpu_bus_provider bus = {
+        .read_memory = pusha_vm_read,
+        .write_memory = cpu_instruction_write,
+        .interrupt_pending = cpu_instruction_interrupt_pending
+    };
+    lib_u8 operand32, stack;
+    lib_bool passed = LIB_TRUE;
+    for (operand32 = 0u; operand32 < 2u; ++operand32)
+    for (stack = 1u; stack < 16u; stack += 2u) {
+        pusha_vm_fixture fixture;
+        cpu_instruction_fixture *state = &fixture.instruction;
+        lib_u8 code[] = {0x66u, 0x60u};
+        const lib_u8 offset = operand32 ? 0u : 1u;
+        t_cpu after;
+        lib_memory_set(&fixture, 0, sizeof(fixture));
+        cpu_instruction_prepare_with_bus(state, CORE_MACHINE_CPU_PROFILE_80386,
+            &bus, &fixture);
+        state->cpu.data.cr0 |= VCPU_CR0_PE;
+        state->cpu.data.eflags |= VCPU_EFLAGS_VM;
+        state->cpu.data.esp = stack;
+        state->cpu.data.idtr.base = 0x3000u;
+        state->cpu.data.idtr.limit = 0x7ffu;
+        cpu_instruction_run(state, code + offset, sizeof(code) - offset, &after);
+        if (stack <= 5u ? (!state->execution.shutdown_requested ||
+                state->delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
+                fixture.first_idt != 0u) : fixture.first_idt != 0x3068u) {
+            lib_c_printf("PUSHA VM operand32=%u sp=%u first-idt=%x shutdown=%u\n",
+                (unsigned)operand32, (unsigned)stack, (unsigned)fixture.first_idt,
+                (unsigned)state->execution.shutdown_requested);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
 lib_i32 main(void)
 {
+    if (!pusha_popa_test_vm_initial_sp()) return 1;
+    if (!pusha_popa_test_ordered_failure()) return 1;
+    if (!pusha_popa_test_initial_sp()) return 1;
+    if (!pusha_popa_test_frame_admission()) return 1;
     if (!pusha_popa_test_protected_pusha_limit())
     {
         lib_c_printf("CPU stack cache stage=test_protected_pusha_limit\n");

@@ -1604,14 +1604,16 @@ static void _s_test_ss_push(core_machine_cpu_execution_context *context, lib_u8 
     {
     case 2:
         CPU_TRACE_BLOCK_BEGIN("StackSize(2)");
-        if (cpu_state.data.sp && cpu_state.data.sp < byte)
+        if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286 &&
+            cpu_state.data.sp && cpu_state.data.sp < byte)
             CPU_TRACE_CHECK_RETURN(_SetExcept_SS(0));
         CPU_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.ss, X86_CPU_MASK_U16(cpu_state.data.sp - byte), byte, 1));
         CPU_TRACE_BLOCK_END;
         break;
     case 4:
         CPU_TRACE_BLOCK_BEGIN("StackSize(4)");
-        if (cpu_state.data.esp && cpu_state.data.esp < byte)
+        if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286 &&
+            cpu_state.data.esp && cpu_state.data.esp < byte)
             CPU_TRACE_CHECK_RETURN(_SetExcept_SS(0));
         CPU_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.ss, X86_CPU_MASK_U32(cpu_state.data.esp - byte), byte, 1));
         CPU_TRACE_BLOCK_END;
@@ -1622,6 +1624,39 @@ static void _s_test_ss_push(core_machine_cpu_execution_context *context, lib_u8 
     }
     CPU_TRACE_CALL_END;
 }
+/* Ordinary instruction admission checks segments only. Page/provider effects
+ * stay ordered at the scalar transfer; inner gates retain translated probes. */
+static void _s_test_ss_frame(core_machine_cpu_execution_context *context,
+    lib_u8 width, lib_u16 elements, lib_u16 allocation, lib_bool write)
+{
+    const lib_u32 mask = _GetStackSize == 2 ? 0xffffu : 0xffffffffu;
+    lib_u32 stack = cpu_state.data.esp & mask;
+    lib_u16 index;
+
+    CPU_TRACE_CALL_BEGIN("_s_test_ss_frame");
+    for (index = 0u; index < elements; ++index)
+    {
+        if (write)
+        {
+            if (_IsProtected && stack && stack < width)
+                CPU_TRACE_CHECK_RETURN(_SetExcept_SS(0));
+            stack = (stack - width) & mask;
+        }
+        CPU_TRACE_CHECK_RETURN(_m_test_logical(context, &cpu_state.data.ss,
+            stack, width, write));
+        if (!write) stack = (stack + width) & mask;
+    }
+    if (_IsProtected && allocation)
+    {
+        if (stack && stack < allocation)
+            CPU_TRACE_CHECK_RETURN(_SetExcept_SS(0));
+        stack = (stack - allocation) & mask;
+        CPU_TRACE_CHECK_RETURN(_m_test_logical(context, &cpu_state.data.ss,
+            stack, 0u, LIB_TRUE));
+    }
+    CPU_TRACE_CALL_END;
+}
+
 static void _s_test_stack_frame_16(core_machine_cpu_execution_context *context,
     t_cpu_data_sreg *stack, lib_u16 sp, lib_u8 words,
     lib_u8 cpl)
@@ -4992,13 +5027,24 @@ static void _ser_task_return_tss(core_machine_cpu_execution_context *context)
 static void _e_push(core_machine_cpu_execution_context *context, lib_uptr rdata, lib_u8 byte)
 {
     CPU_TRACE_CALL_BEGIN("_e_push");
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+        !_IsProtected && (_GetStackSize == 2 ? cpu_state.data.sp :
+            cpu_state.data.esp) == 1u)
+    {
+        lib_u8 index = 0u;
+        lib_u8 opcode;
+        while (index < instruction_state.data.oplen &&
+            _kdf_check_prefix(context, instruction_state.data.opcodes[index])) ++index;
+        opcode = index < instruction_state.data.oplen ?
+            instruction_state.data.opcodes[index] : 0u;
+        if ((opcode >= 0x50u && opcode <= 0x57u) || opcode == 0x68u ||
+            opcode == 0x6au || opcode == 0x06u || opcode == 0x0eu ||
+            opcode == 0x16u || opcode == 0x1eu || opcode == 0xffu ||
+            opcode == 0x0fu)
+            CPU_TRACE_CHECK_RETURN(core_machine_cpu_execution_raise_exception(
+                context, VCPUINS_EXCEPT_SHUTDOWN, 0u));
+    }
     CPU_TRACE_CHECK_RETURN(_kec_push(context, rdata, byte));
-    CPU_TRACE_CALL_END;
-}
-static void _e_pop(core_machine_cpu_execution_context *context, lib_uptr rdata, lib_u8 byte)
-{
-    CPU_TRACE_CALL_BEGIN("_e_pop");
-    CPU_TRACE_CHECK_RETURN(_kec_pop(context, rdata, byte));
     CPU_TRACE_CALL_END;
 }
 static void _e_call_far(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
@@ -8620,7 +8666,7 @@ static void POP_CS(core_machine_cpu_execution_context *context)
     {
         _adv;
     }
-    CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(xs_sel), _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(xs_sel), _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_s_load_cs(context, X86_CPU_MASK_U16(xs_sel)));
     CPU_TRACE_CALL_END;
 }
@@ -10459,12 +10505,12 @@ static void POP_EAX(core_machine_cpu_execution_context *context)
         {
         case 2:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ax), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ax), 2));
             CPU_TRACE_BLOCK_END;
             break;
         case 4:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.eax), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.eax), 4));
             CPU_TRACE_BLOCK_END;
             break;
         default:
@@ -10475,7 +10521,7 @@ static void POP_EAX(core_machine_cpu_execution_context *context)
     else
     {
         _adv;
-        CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ax), 2));
+        CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ax), 2));
     }
     CPU_TRACE_CALL_END;
 }
@@ -10489,12 +10535,12 @@ static void POP_ECX(core_machine_cpu_execution_context *context)
         {
         case 2:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.cx), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.cx), 2));
             CPU_TRACE_BLOCK_END;
             break;
         case 4:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ecx), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ecx), 4));
             CPU_TRACE_BLOCK_END;
             break;
         default:
@@ -10505,7 +10551,7 @@ static void POP_ECX(core_machine_cpu_execution_context *context)
     else
     {
         _adv;
-        CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.cx), 2));
+        CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.cx), 2));
     }
     CPU_TRACE_CALL_END;
 }
@@ -10519,12 +10565,12 @@ static void POP_EDX(core_machine_cpu_execution_context *context)
         {
         case 2:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.dx), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.dx), 2));
             CPU_TRACE_BLOCK_END;
             break;
         case 4:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.edx), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.edx), 4));
             CPU_TRACE_BLOCK_END;
             break;
         default:
@@ -10535,7 +10581,7 @@ static void POP_EDX(core_machine_cpu_execution_context *context)
     else
     {
         _adv;
-        CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.dx), 2));
+        CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.dx), 2));
     }
     CPU_TRACE_CALL_END;
 }
@@ -10549,12 +10595,12 @@ static void POP_EBX(core_machine_cpu_execution_context *context)
         {
         case 2:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx), 2));
             CPU_TRACE_BLOCK_END;
             break;
         case 4:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ebx), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ebx), 4));
             CPU_TRACE_BLOCK_END;
             break;
         default:
@@ -10565,7 +10611,7 @@ static void POP_EBX(core_machine_cpu_execution_context *context)
     else
     {
         _adv;
-        CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx), 2));
+        CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx), 2));
     }
     CPU_TRACE_CALL_END;
 }
@@ -10579,12 +10625,12 @@ static void POP_ESP(core_machine_cpu_execution_context *context)
         {
         case 2:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.sp), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.sp), 2));
             CPU_TRACE_BLOCK_END;
             break;
         case 4:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.esp), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.esp), 4));
             CPU_TRACE_BLOCK_END;
             break;
         default:
@@ -10595,7 +10641,7 @@ static void POP_ESP(core_machine_cpu_execution_context *context)
     else
     {
         _adv;
-        CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.sp), 2));
+        CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.sp), 2));
     }
     CPU_TRACE_CALL_END;
 }
@@ -10609,12 +10655,12 @@ static void POP_EBP(core_machine_cpu_execution_context *context)
         {
         case 2:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp), 2));
             CPU_TRACE_BLOCK_END;
             break;
         case 4:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ebp), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ebp), 4));
             CPU_TRACE_BLOCK_END;
             break;
         default:
@@ -10625,7 +10671,7 @@ static void POP_EBP(core_machine_cpu_execution_context *context)
     else
     {
         _adv;
-        CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp), 2));
+        CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp), 2));
     }
     CPU_TRACE_CALL_END;
 }
@@ -10639,12 +10685,12 @@ static void POP_ESI(core_machine_cpu_execution_context *context)
         {
         case 2:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.si), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.si), 2));
             CPU_TRACE_BLOCK_END;
             break;
         case 4:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.esi), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.esi), 4));
             CPU_TRACE_BLOCK_END;
             break;
         default:
@@ -10655,7 +10701,7 @@ static void POP_ESI(core_machine_cpu_execution_context *context)
     else
     {
         _adv;
-        CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.si), 2));
+        CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.si), 2));
     }
     CPU_TRACE_CALL_END;
 }
@@ -10669,12 +10715,12 @@ static void POP_EDI(core_machine_cpu_execution_context *context)
         {
         case 2:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.di), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.di), 2));
             CPU_TRACE_BLOCK_END;
             break;
         case 4:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.edi), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.edi), 4));
             CPU_TRACE_BLOCK_END;
             break;
         default:
@@ -10685,7 +10731,7 @@ static void POP_EDI(core_machine_cpu_execution_context *context)
     else
     {
         _adv;
-        CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.di), 2));
+        CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.di), 2));
     }
     CPU_TRACE_CALL_END;
 }
@@ -10696,6 +10742,18 @@ static void PUSHA(core_machine_cpu_execution_context *context)
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
+        if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286 &&
+            !_IsProtected)
+        {
+            cesp = _GetStackSize == 2 ? cpu_state.data.sp : cpu_state.data.esp;
+            if (cesp == 1u || cesp == 3u || cesp == 5u)
+                CPU_TRACE_CHECK_RETURN(core_machine_cpu_execution_raise_exception(
+                    context, VCPUINS_EXCEPT_SHUTDOWN, 0u));
+            if (cesp >= 7u && cesp <= 15u && (cesp & 1u))
+                CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        }
+        CPU_TRACE_CHECK_RETURN(_s_test_ss_frame(context, _GetOperandSize,
+            8u, 0u, LIB_TRUE));
         switch (_GetOperandSize)
         {
         case 2:
@@ -10740,30 +10798,32 @@ static void POPA(core_machine_cpu_execution_context *context)
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
+        CPU_TRACE_CHECK_RETURN(_s_test_ss_frame(context, _GetOperandSize,
+            8u, 0u, LIB_FALSE));
         switch (_GetOperandSize)
         {
         case 2:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.di), 2));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.si), 2));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp), 2));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cesp), 2));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx), 2));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.dx), 2));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.cx), 2));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ax), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.di), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.si), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cesp), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bx), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.dx), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.cx), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ax), 2));
             CPU_TRACE_BLOCK_END;
             break;
         case 4:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.edi), 4));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.esi), 4));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ebp), 4));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cesp), 4));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ebx), 4));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.edx), 4));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ecx), 4));
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.eax), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.edi), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.esi), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ebp), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cesp), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ebx), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.edx), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ecx), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.eax), 4));
             CPU_TRACE_BLOCK_END;
             break;
         default:
@@ -12017,7 +12077,7 @@ static void INS_8F(core_machine_cpu_execution_context *context)
         {
         case 0: /* POP_RM32 */
             CPU_TRACE_BLOCK_BEGIN("POP_RM32");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context,
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context,
                 X86_CPU_REFERENCE_OF(value), _GetOperandSize));
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
             instruction_state.data.crm = value;
@@ -12075,7 +12135,7 @@ static void INS_8F(core_machine_cpu_execution_context *context)
         {
         case 0: /* POP_RM16 */
             CPU_TRACE_BLOCK_BEGIN("POP_RM16");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context,
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context,
                 X86_CPU_REFERENCE_OF(value), 2));
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
             instruction_state.data.crm = value;
@@ -12578,13 +12638,13 @@ static void POPF(core_machine_cpu_execution_context *context)
                 {
                 case 2:
                     CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-                    CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(ceflags), 2));
+                    CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(ceflags), 2));
                     mask |= 0xffff0000;
                     CPU_TRACE_BLOCK_END;
                     break;
                 case 4:
                     CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-                    CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(ceflags), 4));
+                    CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(ceflags), 4));
                     mask |= VCPU_EFLAGS_VM;
                     CPU_TRACE_BLOCK_END;
                     break;
@@ -12602,13 +12662,13 @@ static void POPF(core_machine_cpu_execution_context *context)
                 {
                 case 2:
                     CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-                    CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(ceflags), 2));
+                    CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(ceflags), 2));
                     mask |= (0xffff0000 | VCPU_EFLAGS_IOPL);
                     CPU_TRACE_BLOCK_END;
                     break;
                 case 4:
                     CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-                    CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(ceflags), 4));
+                    CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(ceflags), 4));
                     mask |= (VCPU_EFLAGS_VM | VCPU_EFLAGS_RF | VCPU_EFLAGS_IOPL);
                     CPU_TRACE_BLOCK_END;
                     break;
@@ -12638,13 +12698,13 @@ static void POPF(core_machine_cpu_execution_context *context)
                 {
                 case 2:
                     CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-                    CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(ceflags), 2));
+                    CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(ceflags), 2));
                     mask |= (0xffff0000 | VCPU_EFLAGS_IOPL);
                     CPU_TRACE_BLOCK_END;
                     break;
                 case 4:
                     CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-                    CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(ceflags), 4));
+                    CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(ceflags), 4));
                     mask |= (VCPU_EFLAGS_VM | VCPU_EFLAGS_RF | VCPU_EFLAGS_IOPL);
                     CPU_TRACE_BLOCK_END;
                     break;
@@ -12668,7 +12728,7 @@ static void POPF(core_machine_cpu_execution_context *context)
     else
     {
         _adv;
-        CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(ceflags), 2));
+        CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(ceflags), 2));
         cpu_state.data.eflags = _e_eflags_load(context, ceflags);
     }
     CPU_TRACE_CALL_END;
@@ -14331,6 +14391,16 @@ static void ENTER(core_machine_cpu_execution_context *context)
          * 255.  The later 80286/80386 architecture limits it to 0--31. */
         if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286)
             level %= 32;
+        CPU_TRACE_CHECK_RETURN(_s_test_ss_frame(context, _GetOperandSize,
+            (lib_u16)1u + level, size, LIB_TRUE));
+        data = _GetOperandSize == 2 ? cpu_state.data.bp : cpu_state.data.ebp;
+        for (i = 1u; i < level; ++i)
+        {
+            data = _GetOperandSize == 2 ? X86_CPU_MASK_U16(data - 2u) :
+                X86_CPU_MASK_U32(data - 4u);
+            CPU_TRACE_CHECK_RETURN(_m_test_logical(context, &cpu_state.data.ss,
+                data, _GetOperandSize, LIB_FALSE));
+        }
         switch (_GetOperandSize)
         {
         case 2:
@@ -14347,18 +14417,7 @@ static void ENTER(core_machine_cpu_execution_context *context)
             CPU_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        switch (_GetStackSize)
-        {
-        case 2:
-            temp = cpu_state.data.sp;
-            break;
-        case 4:
-            temp = cpu_state.data.esp;
-            break;
-        default:
-            CPU_TRACE_IMPOSSIBLE_RETURN;
-            break;
-        }
+        temp = cpu_state.data.esp;
         if (level)
         {
             CPU_TRACE_BLOCK_BEGIN("level(!0)");
@@ -14369,50 +14428,16 @@ static void ENTER(core_machine_cpu_execution_context *context)
                 {
                 case 2:
                     CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-                    switch (_GetStackSize)
-                    {
-                    case 2:
-                        CPU_TRACE_BLOCK_BEGIN("StackSize(2)");
-                        cpu_state.data.bp -= 2;
-                        CPU_TRACE_CHECK_RETURN(_s_read_ss(context, cpu_state.data.bp, X86_CPU_REFERENCE_OF(data), 2));
-                        CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(data), 2));
-                        CPU_TRACE_BLOCK_END;
-                        break;
-                    case 4:
-                        CPU_TRACE_BLOCK_BEGIN("StackSize(4)");
-                        cpu_state.data.ebp -= 2;
-                        CPU_TRACE_CHECK_RETURN(_s_read_ss(context, cpu_state.data.ebp, X86_CPU_REFERENCE_OF(data), 2));
-                        CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(data), 2));
-                        CPU_TRACE_BLOCK_END;
-                        break;
-                    default:
-                        CPU_TRACE_IMPOSSIBLE_RETURN;
-                        break;
-                    }
+                    cpu_state.data.bp -= 2;
+                    CPU_TRACE_CHECK_RETURN(_s_read_ss(context, cpu_state.data.bp, X86_CPU_REFERENCE_OF(data), 2));
+                    CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(data), 2));
                     CPU_TRACE_BLOCK_END;
                     break;
                 case 4:
                     CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-                    switch (_GetStackSize)
-                    {
-                    case 2:
-                        CPU_TRACE_BLOCK_BEGIN("StackSize(2)");
-                        cpu_state.data.bp -= 4;
-                        CPU_TRACE_CHECK_RETURN(_s_read_ss(context, cpu_state.data.bp, X86_CPU_REFERENCE_OF(data), 4));
-                        CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(data), 4));
-                        CPU_TRACE_BLOCK_END;
-                        break;
-                    case 4:
-                        CPU_TRACE_BLOCK_BEGIN("StackSize(4)");
-                        cpu_state.data.ebp -= 4;
-                        CPU_TRACE_CHECK_RETURN(_s_read_ss(context, cpu_state.data.ebp, X86_CPU_REFERENCE_OF(data), 4));
-                        CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(data), 4));
-                        CPU_TRACE_BLOCK_END;
-                        break;
-                    default:
-                        CPU_TRACE_IMPOSSIBLE_RETURN;
-                        break;
-                    }
+                    cpu_state.data.ebp -= 4;
+                    CPU_TRACE_CHECK_RETURN(_s_read_ss(context, cpu_state.data.ebp, X86_CPU_REFERENCE_OF(data), 4));
+                    CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(data), 4));
                     CPU_TRACE_BLOCK_END;
                     break;
                 default:
@@ -14495,14 +14520,8 @@ static void LEAVE(core_machine_cpu_execution_context *context)
             CPU_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        if (!_IsProtected && stack > 0x0000ffff)
-        {
-            CPU_TRACE_BLOCK_BEGIN("Protected(0),ebp(>0000ffff)");
-            CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
-            CPU_TRACE_BLOCK_END;
-        }
         CPU_TRACE_CHECK_RETURN(_m_test_logical(context, &cpu_state.data.ss,
-            stack, _GetOperandSize, 1));
+            stack, _GetOperandSize, 0));
         switch (_GetStackSize)
         {
         case 2:
@@ -14519,12 +14538,12 @@ static void LEAVE(core_machine_cpu_execution_context *context)
         {
         case 2:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(2)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp), 2));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.bp), 2));
             CPU_TRACE_BLOCK_END;
             break;
         case 4:
             CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-            CPU_TRACE_CHECK_RETURN(_e_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ebp), 4));
+            CPU_TRACE_CHECK_RETURN(_kec_pop(context, X86_CPU_REFERENCE_OF(cpu_state.data.ebp), 4));
             CPU_TRACE_BLOCK_END;
             break;
         default:

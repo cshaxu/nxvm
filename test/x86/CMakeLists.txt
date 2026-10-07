@@ -206,6 +206,13 @@ add_test(NAME x86.host-arithmetic-verifier-negative COMMAND "${CMAKE_COMMAND}"
     "-DPROBE_ROOT=${CMAKE_CURRENT_BINARY_DIR}/host-arithmetic-negative"
     -P "${CMAKE_CURRENT_LIST_DIR}/verify_host_arithmetic_negative.cmake")
 set_tests_properties(x86.host-arithmetic-verifier-negative PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+add_test(NAME x86.stack-frame-boundary COMMAND "${CMAKE_COMMAND}"
+    "-DX86_ROOT=${X86_ROOT}" -P "${CMAKE_CURRENT_LIST_DIR}/verify_stack_frame.cmake")
+set_tests_properties(x86.stack-frame-boundary PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+add_test(NAME x86.stack-frame-verifier-negative COMMAND "${CMAKE_COMMAND}"
+    "-DPROBE_ROOT=${CMAKE_CURRENT_BINARY_DIR}/stack-frame-negative"
+    -P "${CMAKE_CURRENT_LIST_DIR}/verify_stack_frame_negative.cmake")
+set_tests_properties(x86.stack-frame-verifier-negative PROPERTIES LABELS "unit;x86" TIMEOUT 30)
 shared_register_test(x86 chips/cpu/cpu_outer_return x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_protected_far x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_protected_data_access x86-cpu-shared)
