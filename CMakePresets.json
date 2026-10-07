@@ -60,6 +60,15 @@
       }
     },
     {
+      "name": "mingw-gcc-x86-release-ccache",
+      "displayName": "MinGW-w64 GCC x86 optimized release with ccache",
+      "inherits": "mingw-gcc-x86-release",
+      "binaryDir": "${sourceDir}/build/mingw-gcc-x86-release-ccache",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache"
+      }
+    },
+    {
       "name": "mingw-clang-x86-release",
       "displayName": "LLVM Clang MinGW x86 optimized release",
       "generator": "Ninja",
@@ -123,11 +132,21 @@
     },
     {
       "name": "unit-tests-gcc",
-      "configurePreset": "mingw-gcc-x64",
+      "configurePreset": "mingw-gcc-x64-release-ccache",
       "targets": [
         "run-unit-tests",
         "verify-current-specialized-gates"
       ]
+    },
+    {
+      "name": "unit-build-gcc",
+      "configurePreset": "mingw-gcc-x64-release-ccache",
+      "targets": ["build-unit-tests"]
+    },
+    {
+      "name": "unit-build-gcc-x86",
+      "configurePreset": "mingw-gcc-x86-release-ccache",
+      "targets": ["build-unit-tests"]
     },
     {
       "name": "integration-tests-gcc",
