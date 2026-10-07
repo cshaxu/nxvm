@@ -685,3 +685,33 @@ ten counted code/test/build paths and three matching manifests. The final
 CPU/object/artifact proof above corresponds to that exact source revision.
 NXVM P2 separately delivers this complete evidence, scope/status/history and
 the eight verified PC products; no excluded source or configuration is added.
+
+## Coordinator Actual-Change Acceptance
+
+NXVM implementation P2 is 19945b2b9eb5e73a8b03b18733a2b38a82f8572d,
+pushed immediately. Coordinator switches roles and reads the actual immutable
+CPU/helper/handler, all three chip test diffs, the shared fixture, two Core
+receiver diffs, guards/registration/manifests and NXVM state/history/evidence
+changes. The reviewed surface maps to all seven original members and the full
+caller inventory, with source-proven unsupported early ENTER/PUSHA forms
+remaining rejected rather than gaining a new implementation. The original
+table style, one scalar publication owner, logical-only ordinary admission,
+independent attributes/full ESP, alias/discarded reads and source-specific
+starting-SP selection meet the packet's markers. The exact 386 SS source
+reconciliation corrects an introduced candidate error; it is not a lower-tier
+fallback. There is no public API, timing-value or excluded-domain mutation.
+
+Independent actual Git-blob comparison confirms all eight committed P2 products
+equal the final verified artifact bytes and SHA-256 values. Final runtime logs,
+source/object identities, full suites/gates, source-conditioned assertion
+corrections and post-integration unchanged-input checks prove the complete S6
+exit, not merely ordinary successful instructions or boot. Code-size/retained
+path and source-policy checks pass. Initial failure and stale-probe/log pitfalls
+remain explicit prevention evidence. Semantic status/queue/history references
+are reconciled separately from the structural documentation gate.
+
+Coordinator accepts both implementation Ps. Pure governance P3 closes S6,
+removes its active packet and establishes the accepted S6 artifact baseline;
+it introduces no executable input or next admission. T546 remains open for
+the complete original S7-S19 receivers and final convergence, without waived
+FLAGS/arbiter/gate/task/page/delivery/NPX/retirement or source-timing obligations.

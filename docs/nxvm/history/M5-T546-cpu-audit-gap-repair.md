@@ -32,7 +32,7 @@ semantic proof. Every new finding joins the whole owning batch before repair.
 | S3 | Effective address and segment spans | Accepted: Shared P1 15a2399d0, NXVM P2 d875a72fe, governance P3 97c5028e2; complete source/receiver/unit/boot/artifact proof in S3 evidence. |
 | S4 | Admission versus next fetch | Accepted after coordinator actual-change review: pushed Shared P1 2d9929742 and NXVM P2 ca016635d; ten code-target owners, m/ts and L2 attribution, complete dual-width units/gates/eight artifacts and 58/58 original external contexts are proven in S4 evidence. S4 closes through governance P3, with S5-S19 retained. |
 | S5 | Host arithmetic/count | Accepted after coordinator actual-change review of pushed Shared P1 bdfe3b938 and NXVM P2 04f0278ad: full source/caller/independent regression proof, final 539/539 units per width, original 58/58 integration, both gates/33 supplemental checks, eight manifests and eight stripped 0546 products. Pure governance P3 closes S5; S6-S19 remain pending. |
-| S6 | Stack/frame publication | Executor verification complete and Shared P1 1db282a10 pushed: complete ordinary-stack/source/caller batch at A6EC7E73…, final units 541/541 per width, original external 58/58 once, supplemental 33/33 per width, both gates/eight manifests and eight stripped 0546 artifacts pass. Earlier incomplete/failed candidates and source reconciliation remain in S6 evidence. NXVM P2 and coordinator immutable-diff acceptance remain pending; S6 is not closed. |
+| S6 | Stack/frame publication | Accepted after coordinator actual-change review of pushed Shared P1 1db282a10 and NXVM P2 19945b2b9: complete ordinary-stack/source/caller proof at A6EC7E73…, final units 541/541 per width, original external 58/58 once, supplemental 33/33 per width, both gates/eight manifests and eight stripped 0546 products. Earlier failed candidates remain evidence, not acceptance. Pure governance P3 closes S6; S7-S19 remain pending. |
 | S7 | FLAGS privilege and return | Pending full source/context/caller batch; distinct from S1 image/load classification. |
 | S8 | Asynchronous arbiter | Pending full source/context/caller batch. |
 | S9 | Exception delivery/shutdown | Pending full source/context/caller batch. |
@@ -273,3 +273,22 @@ accepted S3 implementation/artifact baseline. The inherited host-reference
 guards remain with S5; complete frame/task/paging/delivery/RMW contracts remain
 with their original S batches. T546's full S4-S19 repair and final convergence
 remain open; no future admission, implementation or T-level closure is added.
+
+## S6 Coordinator Acceptance
+
+Coordinator actual-change review accepts pushed Shared P1 1db282a10 and NXVM
+P2 19945b2b9 against the complete ordinary-stack batch and
+[direct source/caller/runtime proof](../etc/evidence/t546-s6-stack-frame-design.md).
+Whole-frame logical admission, independent ENTER attributes/full ESP, early
+wrapping, POP aliases/discarded reads and explicit starting-SP requests retain
+one state/publication owner and the original tables. Original 386 14-6 corrects
+the rejected candidate GP generalization. Independent Core/chip frame oracles
+preserve full state/fault checks without fictitious provider-effect rollback.
+
+Final units 541/541 each width, original external 58/58 once, supplemental
+33/33 each width, both full gates/eight manifests and eight committed verified
+0546 products prove S6 exits. Source hash A6EC7E73… and all final product/object
+identities are retained in evidence. INIs, five masters, Lib/Common and MyNES
+are unchanged; initial failures remain separate records. Pure governance P3
+accepts/closes S6 only, removes its packet and adds no executable input or next
+admission. The complete T546 S7-S19 obligations remain open and unwaived.
