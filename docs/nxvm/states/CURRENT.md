@@ -11,7 +11,28 @@
 | T546 S5 | Accepted after coordinator actual-change review of pushed Shared P1 bdfe3b938 and NXVM P2 04f0278ad: full host/count/reference batch, final 539/539 units per width, original 58/58 integration and eight qualified 0546 products are proven. S5 closed; no active packet. T546 remains open for S6-S19. |
 | T546 S6 | Accepted after coordinator actual-change review of pushed Shared P1 1db282a10 and NXVM P2 19945b2b9: complete ordinary-stack/source/caller proof, final units 541/541 per width, original integration 58/58 once, supplemental 33/33 per width, both gates/eight manifests and eight qualified stripped 0546 products. S6 is closed with no active packet; T546 remains open for S8-S20. |
 | T546 S7 | Accepted after coordinator actual-diff review of pushed Shared P1 0c04f2c24 and NXVM P2 0f86b1ce0: 36 duplicate aliases retired without removed assertions, 505/505 final units per width, dependency/cache and affected gate proof complete. No-op builds 1.37/1.05 s; cached CPU unit-dependency recovery 109.47/52.57 s. Unchanged binaries/inputs retain S6 integration proof. S7 closed; no active packet. T546 remains open for S8-S20. |
-| T546 S8 | Former uncommitted FLAGS S7 is owner-deferred intact: original source/caller evidence and intentionally failing POPF/RF/TF matrices are preserved for restoration on admission. No production repair or P. Later original S8-S19 shift to S9-S20. |
+| T546 S8 | Executor complete: Shared P1 9d5e475f7 pushed; FLAGS/privilege/IRET/RF/prior-TF batch, 505/505 units and 33/33 supplemental per width, both gates/eight manifests, original 58/58 integration once and eight stripped 0546 products. NXVM receiving P delivery and coordinator actual-diff acceptance pending. |
+
+## Active T546 S8 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: T546 S8 after accepted S7. Original uncommitted FLAGS S7 was explicitly moved to S8; no accepted S or P is reused. |
+| Admission And Approval | Owner resumes NXVM and requests its next S. Automatic approval covers x86/chips, x86/core and ibmpc; Shared CPU/tests/manifests and NXVM receiving proof/artifacts admitted. Lib/Common/MyNES, INI/media and new public contracts excluded. |
+| Objective | Repair and directly qualify the complete FLAGS privilege/return, RF image/retirement and prior-TF completion batch across five retained CPU profiles. |
+| Non-goals | Full arbiter, gate/task geometry, fault-pair/shutdown and time closure retained for S9-S20; new decoder/undo framework, clock changes, BIOS shortcuts or excluded-domain edits. |
+| Reference Baseline | Accepted S6 CPU/artifacts 1db282a10 / 19945b2b9, SHA A6EC7E73...; efficient S7 fc0d31623. Working admission HEAD d5ed4549c. Preserve current MyNES 0044 pair byte-for-byte. |
+| Candidate Proposal | [CPU repair proposal](../proposals/m5-cpu-audit-gap-repair.md), S8; [complete ledger](../history/M5-T546-cpu-audit-gap-repair.md); [source/caller/reproducer evidence](../etc/evidence/t546-s8-flags-return-design.md). |
+| Files And ABI Surface | Existing CPU instruction/canonical/image/completion owners and private context, matching CPU/Core/board tests/manifests; NXVM evidence/source gates, their actual-owner build inventory and eight 0546 products. Resolve CMake aliases before inspecting Ninja commands; retain strict flags and every source row. No public extension implied. |
+| Applicable Rules | NXVM Architecture/Coding/Source policy; shared Execution/Architecture/Coding/Documentation; original T544 FLAGS/debug/return findings and preserved S8 source pages. One owner, original table style and source-conditioned oracles. |
+| Verification | Recheck deferred hashes, restore two test deltas, visualize original FLAGS/privilege/RF/TF pages and reconcile every caller. Focused development checks; final complete cached units per width, applicable guards/eight manifests/gates, original 58 external contexts once per final group and eight stripped 0546 products. |
+| Expected Markers | POPF-local old privilege masks; 286 CLI/STI admission; both 386 VM86 widths; word/high FLAGS preservation; RF fault images/POPF preservation and actual task/IRET exceptions; prior TF without opcode-wide task exemptions. |
+| Asset Needs | Retained original manuals/renders and bounded research under ignored build; code-owned units. Four BYOB embeddings and five media masters unchanged; no asset rewrite/download. |
+| Reporting Requirements | Report source conflicts, unupgradable L1 or downgrade before changes; complete member/caller disposition, failure/repair proof, code delta, verification and artifact hashes. No partial P. |
+| Stop Conditions | Unresolved source predicate, downgrade, new public API/excluded-domain need or incomplete prerequisite requires reporting; no test weakening to match code. |
+| Exit Criteria | Complete S8 batch directly repaired/proven or source-proven non-applicable, later dependencies retained, all required proof/affected artifacts delivered and target-separated pushed Ps accepted by actual-diff review. T stays open. |
+| Original Owner Request | Switch back to NXVM and continue its next S after accepted MyNES performance task. |
+| Similar-Issue Sweep | Every FLAGS loader, POPF/CLI/STI/IRET/task path, saved image, RF completion and TF producer; actual delivery/source/caller matrices across all five profiles, not first-failure patches. |
 
 ## Accepted S7 Build And Verification Efficiency
 
@@ -183,10 +204,11 @@ this governance acceptance adds no executable input.
   The one external family harness executes each real fixed binding and its INI.
 - Eight PC 0.5.0546 EXEs remain directly in assets/my5160,
   assets/my5170, assets/mydeskpro386 and assets/nxvm, with unchanged adjacent
-  owner INIs. All eight S6 optimized stripped pairs are verified; MyNES retains
-  its two 0.0.0043 EXEs in assets/mynes. Final qualified PC hashes
+  owner INIs. All eight S6 optimized stripped pairs are verified. MyNES now retains
+  its separately accepted 0.0.0044 pair; its own [Current](../../mynes/states/CURRENT.md)
+  owns those identities. CPU-only work must not rebuild or alter them. Qualified PC hashes
   are in [S6 evidence](../etc/evidence/t546-s6-stack-frame-design.md),
-  unchanged MyNES hashes in [S1 evidence](../etc/evidence/t546-s1-reset-images.md); PE widths,
+  historical S1 MyNES hashes remain in [S1 evidence](../etc/evidence/t546-s1-reset-images.md); PE widths,
   current identity and absence of compiler debug sections are verified.
   Runtime Debug remains; only CPU-dependent PC products are rebuilt.
 - External media masters are verified unchanged after final S6 overlay integration.
