@@ -164,7 +164,8 @@ static lib_status snapshot_read_cartridge(core_cartridge *c,
     if (status == LIB_STATUS_OK && (c->mirroring > 3u ||
         c->mmc1_shift_count > 4u || c->mmc1_shift_data >= (1u << c->mmc1_shift_count) ||
         c->mmc1_control > 31u || c->mmc1_chr_bank0 > 31u ||
-        c->mmc1_chr_bank1 > 31u || c->mmc1_prg_bank > 31u))
+        c->mmc1_chr_bank1 > 31u || c->mmc1_prg_bank > 31u ||
+        (c->mapper == 3u && c->cnrom_chr_bank >= c->chr_bytes / 8192u)))
         status = LIB_STATUS_INVALID_ARGUMENT;
     return status;
 }
@@ -613,6 +614,7 @@ lib_status core_snapshot_read(core_machine *machine,
         lib_release(staged_prg); lib_release(staged_chr);
         return status;
     }
+    core_cartridge_rebuild_mapping(&cartridge);
     candidate.cartridge = machine->cartridge;
     *machine = candidate;
     {

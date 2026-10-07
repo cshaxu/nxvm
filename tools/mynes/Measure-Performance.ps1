@@ -4,6 +4,9 @@ param(
     [Parameter(Mandatory = $true)][string]$AssetDirectory,
     [Parameter(Mandatory = $true)][string]$OutputDirectory,
     [string]$ProbeExecutable = '',
+    [ValidateSet('smb1','drmario','jackal','smb2','smb3','tmnt3')]
+    [string[]]$Workloads = @('smb1','drmario','jackal','smb2','smb3','tmnt3'),
+    [ValidateSet('graphics','text')][string[]]$Modes = @('graphics','text'),
     [ValidateRange(0, 62)][int]$ProcessorIndex = 0,
     [int]$DeadlineSeconds = 60
 )
@@ -32,10 +35,10 @@ if ($ProbeExecutable) {
 if (-not (Test-Path -LiteralPath $executable)) { throw 'Build mynes-performance-probe first.' }
 New-Item -ItemType Directory -Force -Path $output | Out-Null
 $records = @()
-foreach ($name in @('smb1','drmario','jackal','smb2','smb3','tmnt3')) {
+foreach ($name in $Workloads) {
     $rom = Join-Path $assets ($name + '.nes')
     $identity = (Get-FileHash -LiteralPath $rom -Algorithm SHA256).Hash
-    foreach ($mode in @('graphics','text')) {
+    foreach ($mode in (@('graphics','text') | Where-Object { $Modes -contains $_ })) {
         $stdout = Join-Path $output "$name-$mode.csv"
         $stderr = Join-Path $output "$name-$mode.error.txt"
         # A hybrid host can otherwise schedule the two variants on different
@@ -68,6 +71,7 @@ foreach ($name in @('smb1','drmario','jackal','smb2','smb3','tmnt3')) {
             if ($process.ExitCode -ne 0) {
                 throw "$name/$mode benchmark failed: $(Get-Content -Raw $stderr)"
             }
+            $cpuMilliseconds = $process.TotalProcessorTime.TotalMilliseconds
             $rows = @(Import-Csv -LiteralPath $stdout)
             if ($rows.Count -ne 5) { throw "$name/$mode did not complete its five fixed rounds." }
             foreach ($row in $rows) {
@@ -77,7 +81,10 @@ foreach ($name in @('smb1','drmario','jackal','smb2','smb3','tmnt3')) {
                 $row | Add-Member -NotePropertyName workload -NotePropertyValue $name
                 $row | Add-Member -NotePropertyName rom_sha256 -NotePropertyValue $identity
                 $row | Add-Member -NotePropertyName processor_index -NotePropertyValue $ProcessorIndex
-                if ($mode -eq 'text') {
+                # One process total, including warmup and checksum work; not
+                # a per-frame or per-stage timer. It excludes descheduled time.
+                $row | Add-Member -NotePropertyName probe_cpu_ms -NotePropertyValue $cpuMilliseconds
+                if ($mode -eq 'text' -and $Modes -contains 'graphics') {
                     $paired = $records | Where-Object {
                         $_.workload -eq $name -and $_.mode -eq 'graphics' -and
                         $_.round -eq $row.round

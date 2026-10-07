@@ -133,6 +133,31 @@ lib_bool core_cartridge_normalize_ines_size(const lib_u8 *bytes,
     return LIB_TRUE;
 }
 
+void core_cartridge_rebuild_mapping(core_cartridge *cartridge)
+{
+    lib_u32 banks;
+    lib_u32 selected;
+    lib_u32 pages;
+
+    if (cartridge->mapper != CORE_CARTRIDGE_MAPPER_MMC3) return;
+    banks = (lib_u32)(cartridge->prg_bytes / 8192u);
+    selected = (cartridge->mmc3_bank_data[6u] % banks) * 8192u;
+    cartridge->mmc3_prg_offsets[0] = (cartridge->mmc3_bank_select & 0x40u) != 0u ?
+        (banks - 2u) * 8192u : selected;
+    cartridge->mmc3_prg_offsets[1] = (cartridge->mmc3_bank_data[7u] % banks) * 8192u;
+    cartridge->mmc3_prg_offsets[2] = (cartridge->mmc3_bank_select & 0x40u) != 0u ?
+        selected : (banks - 2u) * 8192u;
+    cartridge->mmc3_prg_offsets[3] = (banks - 1u) * 8192u;
+    pages = (lib_u32)(cartridge->chr_bytes / 1024u);
+    for (lib_u8 slot = 0u; slot < 8u; ++slot) {
+        lib_u8 mapped = (cartridge->mmc3_bank_select & 0x80u) != 0u ? slot ^ 4u : slot;
+        lib_u8 index = mapped < 4u ? mapped >> 1u : mapped - 2u;
+        lib_u8 bank = cartridge->mmc3_bank_data[index];
+        if (index < 2u) bank = (lib_u8)((bank & 0xfeu) + (slot & 1u));
+        cartridge->mmc3_chr_offsets[slot] = (bank % pages) * 1024u;
+    }
+}
+
 lib_status core_cartridge_create(core_cartridge **out_cartridge,
     const lib_u8 *bytes, lib_size byte_count)
 {
@@ -170,6 +195,7 @@ lib_status core_cartridge_create(core_cartridge **out_cartridge,
     cartridge->mirroring = descriptor.mirroring;
     cartridge->content_identity = core_cartridge_content_identity(bytes, byte_count);
     cartridge->mmc1_control = 0x0cu;
+    core_cartridge_rebuild_mapping(cartridge);
     *out_cartridge = cartridge;
     return LIB_STATUS_OK;
 }
@@ -186,7 +212,6 @@ void core_cartridge_destroy(core_cartridge *cartridge)
 lib_u8 core_cartridge_cpu_read(const core_cartridge *cartridge, lib_u16 address)
 {
     lib_size offset;
-    lib_size banks;
     lib_size bank;
 
     if (cartridge == LIB_NULL) return 0u;
@@ -201,38 +226,26 @@ lib_u8 core_cartridge_cpu_read(const core_cartridge *cartridge, lib_u16 address)
         return cartridge->prg[offset];
     }
     if (cartridge->mapper == CORE_CARTRIDGE_MAPPER_UXROM) {
-        banks = cartridge->prg_bytes / CORE_CARTRIDGE_PRG_BANK_BYTES;
         bank = address < 0xc000u ?
-            (lib_size)(cartridge->uxrom_prg_bank % banks) : banks - 1u;
+            (lib_size)(cartridge->uxrom_prg_bank & 7u) : 7u;
         return cartridge->prg[bank * CORE_CARTRIDGE_PRG_BANK_BYTES +
             (address & 0x3fffu)];
     }
     if (cartridge->mapper == CORE_CARTRIDGE_MAPPER_CNROM)
         return cartridge->prg[address - 0x8000u];
-    if (cartridge->mapper == CORE_CARTRIDGE_MAPPER_MMC3) {
-        banks = cartridge->prg_bytes / 8192u;
-        if (address < 0xa000u)
-            bank = (cartridge->mmc3_bank_select & 0x40u) != 0u ? banks - 2u :
-                (lib_size)(cartridge->mmc3_bank_data[6u] % banks);
-        else if (address < 0xc000u) bank = cartridge->mmc3_bank_data[7u] % banks;
-        else if (address < 0xe000u)
-            bank = (cartridge->mmc3_bank_select & 0x40u) != 0u ?
-                (lib_size)(cartridge->mmc3_bank_data[6u] % banks) : banks - 2u;
-        else bank = banks - 1u;
-        return cartridge->prg[bank * 8192u + (address & 0x1fffu)];
-    }
-    banks = cartridge->prg_bytes / CORE_CARTRIDGE_PRG_BANK_BYTES;
+    if (cartridge->mapper == CORE_CARTRIDGE_MAPPER_MMC3)
+        return cartridge->prg[cartridge->mmc3_prg_offsets[(address >> 13u) & 3u] +
+            (address & 0x1fffu)];
+    /* The admitted MMC1 board has two PRG banks and eight CHR pages. */
     if ((cartridge->mmc1_control & 0x0cu) <= 4u) {
-        bank = ((lib_size)(cartridge->mmc1_prg_bank & 0x0eu) % banks) *
-            CORE_CARTRIDGE_PRG_BANK_BYTES;
-        offset = bank + (address - 0x8000u);
+        offset = address - 0x8000u;
     } else if ((cartridge->mmc1_control & 0x0cu) == 8u) {
         bank = address < 0xc000u ? 0u :
-            ((lib_size)(cartridge->mmc1_prg_bank & 0x0fu) % banks);
+            (lib_size)(cartridge->mmc1_prg_bank & 1u);
         offset = bank * CORE_CARTRIDGE_PRG_BANK_BYTES + (address & 0x3fffu);
     } else {
         bank = address < 0xc000u ?
-            ((lib_size)(cartridge->mmc1_prg_bank & 0x0fu) % banks) : banks - 1u;
+            (lib_size)(cartridge->mmc1_prg_bank & 1u) : 1u;
         offset = bank * CORE_CARTRIDGE_PRG_BANK_BYTES + (address & 0x3fffu);
     }
     return cartridge->prg[offset];
@@ -272,6 +285,7 @@ lib_bool core_cartridge_cpu_write(core_cartridge *cartridge, lib_u16 address,
         if (address < 0xa000u) {
             if ((address & 1u) == 0u) cartridge->mmc3_bank_select = value;
             else cartridge->mmc3_bank_data[cartridge->mmc3_bank_select & 7u] = value;
+            core_cartridge_rebuild_mapping(cartridge);
         } else if (address < 0xc000u) {
             if ((address & 1u) == 0u)
                 cartridge->mirroring = (value & 1u) != 0u ?
@@ -316,28 +330,11 @@ lib_bool core_cartridge_cpu_write(core_cartridge *cartridge, lib_u16 address,
 static lib_size core_cartridge_mmc3_chr_offset(const core_cartridge *cartridge,
     lib_u16 address)
 {
-    lib_u8 register_index;
-    lib_u8 bank;
-
-    if ((cartridge->mmc3_bank_select & 0x80u) == 0u) {
-        if (address < 0x0800u) register_index = 0u;
-        else if (address < 0x1000u) register_index = 1u;
-        else register_index = (lib_u8)(2u + ((address - 0x1000u) >> 10u));
-    } else {
-        if (address < 0x1000u) register_index = (lib_u8)(2u + (address >> 10u));
-        else if (address < 0x1800u) register_index = 0u;
-        else register_index = 1u;
-    }
-    bank = cartridge->mmc3_bank_data[register_index];
-    if (register_index < 2u)
-        bank = (lib_u8)((bank & 0xfeu) + ((address >> 10u) & 1u));
-    return ((lib_size)bank % (cartridge->chr_bytes / 1024u)) * 1024u +
-        (address & 0x03ffu);
+    return cartridge->mmc3_chr_offsets[address >> 10u] + (address & 0x03ffu);
 }
 
 lib_u8 core_cartridge_ppu_read(const core_cartridge *cartridge, lib_u16 address)
 {
-    lib_size pages;
     lib_size page;
     if (cartridge == LIB_NULL || address >= 0x2000u) return 0u;
     if (cartridge->mapper == CORE_CARTRIDGE_MAPPER_NROM ||
@@ -348,12 +345,11 @@ lib_u8 core_cartridge_ppu_read(const core_cartridge *cartridge, lib_u16 address)
     }
     if (cartridge->mapper == CORE_CARTRIDGE_MAPPER_MMC3)
         return cartridge->chr[core_cartridge_mmc3_chr_offset(cartridge, address)];
-    pages = cartridge->chr_bytes / CORE_CARTRIDGE_CHR_PAGE_BYTES;
     if ((cartridge->mmc1_control & 0x10u) == 0u)
-        page = ((lib_size)(cartridge->mmc1_chr_bank0 & 0x1eu) % pages) +
+        page = (lib_size)(cartridge->mmc1_chr_bank0 & 6u) +
             (address >= 0x1000u ? 1u : 0u);
     else page = (lib_size)(address < 0x1000u ? cartridge->mmc1_chr_bank0 :
-        cartridge->mmc1_chr_bank1) % pages;
+        cartridge->mmc1_chr_bank1) & 7u;
     return cartridge->chr[page * CORE_CARTRIDGE_CHR_PAGE_BYTES + (address & 0x0fffu)];
 }
 

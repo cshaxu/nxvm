@@ -22,6 +22,8 @@ typedef struct core_cartridge {
     lib_u8 mmc1_shift_count;
     lib_u8 mmc3_bank_select;
     lib_u8 mmc3_bank_data[8];
+    lib_u32 mmc3_prg_offsets[4];
+    lib_u32 mmc3_chr_offsets[8];
     lib_u8 mmc3_irq_latch;
     lib_u8 mmc3_irq_counter;
     lib_u8 mmc3_a12_low_ticks;
@@ -45,6 +47,9 @@ lib_bool core_cartridge_normalize_ines_size(const lib_u8 *bytes,
 lib_status core_cartridge_create(core_cartridge **out_cartridge,
     const lib_u8 *bytes, lib_size byte_count);
 void core_cartridge_destroy(core_cartridge *cartridge);
+/* Derived offsets are not snapshot state. Rebuild a validated restored
+ * candidate before publication through the same owner as register writes. */
+void core_cartridge_rebuild_mapping(core_cartridge *cartridge);
 lib_u8 core_cartridge_cpu_read(const core_cartridge *cartridge, lib_u16 address);
 lib_bool core_cartridge_cpu_write(core_cartridge *cartridge, lib_u16 address,
     lib_u8 value);

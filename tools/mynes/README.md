@@ -58,3 +58,8 @@ and the tool restores its own original affinity. `-ProbeExecutable` can select
 a pre-change reference retained beneath ignored `build/`. Both variants must
 use the same input, compiler, flags, processor and workload. Report conversion
 separately from Core cost; these unpaced measures do not describe displayed FPS.
+`-Workloads` and `-Modes` select a bounded diagnostic subset without changing
+the full default matrix. Pair reference/candidate runs per workload. The CSV's
+`probe_cpu_ms` is one complete process CPU total, repeated on its batch rows;
+it includes warmup and checksum work, so never sum it five times or call it
+per-stage time. It helps distinguish descheduling from computational cost.

@@ -10,7 +10,7 @@ specification or a source of product code.
 
 Owner admits M7 T44 on 2026-10-06, requesting a current performance baseline
 and correctness-preserving efficiency work even though Windows gameplay is
-already smooth. Current holds the active S1 packet; the
+already smooth. Current holds the active packet; the
 [task ledger](../history/M7-T44-measured-emulator-efficiency.md) freezes the
 coverage and dispositions. Existing 0043 artifacts are the pre-task baseline;
 0044 is qualified only through normal paired delivery. No Shared production
@@ -81,6 +81,15 @@ The existing RGB table is already precomputed for all 512 output samples;
 baseline the actual per-pixel palette search, not an imagined repeated RGB
 formula. Component microbenchmarks and instrumented attribution are diagnostic;
 only paired complete-frame results support adoption.
+
+S2 begins with an owner-requested design audit against accepted S1. Prefer
+constant-domain simplification for the strictly bounded MMC1/UxROM profiles,
+no NROM/CNROM performance cache, and a small MMC3-only derived PRG/CHR window
+offset table if measured benefit justifies it. Registers remain authoritative;
+construction, bank writes and validated snapshot restoration rebuild offsets.
+Do not serialize offsets or change reset behavior to maintain a cache. The
+[S2 audit](../etc/evidence/m7-t44-s2-mapper-design.md) records the existing CNROM
+restored-bank bounds gap and the required disposition before implementation.
 
 ## Acceptance And Stop Conditions
 

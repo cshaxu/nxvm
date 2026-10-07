@@ -94,6 +94,71 @@ static void invalid_fields(core_machine *source, core_machine *target)
     reject_unchanged(target, &bad);
 }
 
+static void mapper_restore(void)
+{
+    static lib_u8 rom[16u + 3u * 16384u + 3u * 8192u];
+    static snapshot_bytes saved, before, after;
+    core_machine *source = LIB_NULL, *target = LIB_NULL;
+    lib_memory_set(rom, 0, sizeof(rom));
+    rom[0] = 'N'; rom[1] = 'E'; rom[2] = 'S'; rom[3] = 0x1au;
+    rom[4] = 3u; rom[5] = 3u; rom[6] = 0x40u;
+    for (lib_size index = 16u; index < sizeof(rom); ++index)
+        rom[index] = (lib_u8)(index >> 10u);
+    for (lib_u8 variant = 0u; variant < 2u; ++variant) {
+        lib_size size = 16u + 3u * 16384u + (variant == 0u ? 3u * 8192u : 0u);
+        rom[5] = variant == 0u ? 3u : 0u;
+        assert(core_machine_create(&source, rom, size, &(core_machine_options){0}) == LIB_STATUS_OK);
+        assert(core_machine_create(&target, rom, size, &(core_machine_options){0}) == LIB_STATUS_OK);
+        if (source->cartridge->chr_ram)
+            for (lib_size index = 0u; index < source->cartridge->chr_bytes; ++index)
+                source->cartridge->chr[index] = (lib_u8)(index >> 10u);
+        for (lib_u8 index = 0u; index < 8u; ++index) {
+            assert(core_cartridge_cpu_write(source->cartridge, 0x8000u, (lib_u8)(0xc0u | index)));
+            assert(core_cartridge_cpu_write(source->cartridge, 0x8001u, (lib_u8)(255u - index)));
+        }
+        capture(source, &saved);
+        assert(core_snapshot_read(target, get, &saved) == LIB_STATUS_OK);
+        for (lib_u32 address = 0x8000u; address <= 0xffffu; ++address)
+            assert(core_cartridge_cpu_read(source->cartridge, (lib_u16)address) ==
+                core_cartridge_cpu_read(target->cartridge, (lib_u16)address));
+        for (lib_u16 address = 0u; address < 0x2000u; ++address)
+            assert(core_cartridge_ppu_read(source->cartridge, address) ==
+                core_cartridge_ppu_read(target->cartridge, address));
+        capture(target, &after);
+        assert(saved.size == after.size && lib_memory_compare(saved.bytes, after.bytes, saved.size) == 0);
+        assert(core_machine_reset(target, CORE_RESET_WARM) == LIB_STATUS_OK);
+        for (lib_u32 address = 0x8000u; address <= 0xffffu; ++address)
+            assert(core_cartridge_cpu_read(source->cartridge, (lib_u16)address) ==
+                core_cartridge_cpu_read(target->cartridge, (lib_u16)address));
+        core_machine_destroy(target); core_machine_destroy(source);
+    }
+
+    /* Every accepted CNROM capacity, including three banks. Unsafe restored
+     * bank bytes must reject before touching the live machine. */
+    for (lib_u8 banks = 1u; banks <= 4u; ++banks) {
+        static lib_u8 cnrom[16u + 32768u + 4u * 8192u];
+        lib_size size = 16u + 32768u + (lib_size)banks * 8192u;
+        lib_memory_set(cnrom, 0xff, size);
+        lib_memory_set(cnrom, 0, 16u);
+        cnrom[0] = 'N'; cnrom[1] = 'E'; cnrom[2] = 'S'; cnrom[3] = 0x1au;
+        cnrom[4] = 2u; cnrom[5] = banks; cnrom[6] = 0x30u;
+        assert(core_machine_create(&source, cnrom, size, &(core_machine_options){0}) == LIB_STATUS_OK);
+        assert(core_machine_create(&target, cnrom, size, &(core_machine_options){0}) == LIB_STATUS_OK);
+        assert(core_cartridge_cpu_write(source->cartridge, 0x8000u, banks - 1u));
+        capture(source, &saved);
+        assert(core_snapshot_read(target, get, &saved) == LIB_STATUS_OK);
+        capture(target, &before);
+        for (lib_u32 value = banks; value <= 255u; ++value) {
+            source->cartridge->cnrom_chr_bank = (lib_u8)value;
+            capture(source, &saved);
+            reject_unchanged(target, &saved);
+        }
+        capture(target, &after);
+        assert(before.size == after.size && lib_memory_compare(before.bytes, after.bytes, before.size) == 0);
+        core_machine_destroy(target); core_machine_destroy(source);
+    }
+}
+
 int main(void)
 {
     lib_u8 rom[16400], other_rom[16400];
@@ -152,5 +217,6 @@ int main(void)
     reject_unchanged(other, &saved);
     core_machine_destroy(other);
     core_machine_destroy(machine);
+    mapper_restore();
     return 0;
 }

@@ -1,13 +1,13 @@
 # M7 T44 Measured Emulator Efficiency
 
 Owner admits the queued Nesticle-inspired performance study on 2026-10-06
-against fc0d31623, after closed MyNES T43. Current owns active S1; the
+against fc0d31623, after closed MyNES T43. Current owns the active packet; the
 [proposal](../proposals/emulator-performance-nesticle-study.md) preserves the
 full goal. No performance gain or new product is qualified at admission.
 
 ## Frozen Coverage And Disposition
 
-The universe is the retained NROM/MMC1/UxROM/MMC3 support and six owner ROMs,
+The universe is the retained NROM/MMC1/UxROM/CNROM/MMC3 support and six owner ROMs,
 code-owned blank/repeated/raster-color/emphasis/dense/scrolling fixtures,
 Window graphics and Console text, x64/x86, reset/pause/resume/input and
 snapshot continuation. Source-native guest cycles, completed frames, PCM and
@@ -18,7 +18,7 @@ production; frameskip/coalescing is not a computational gain.
 | Batch | Required proof | Disposition |
 | --- | --- | --- |
 | S1 baseline and palette conversion | Repeatable bounded before/after execution and conversion measures; exact palette ordering/RGB duplicates/overflow, text/publish behavior and bounded memory. Distinguish synthetic, game and paced native routes. | Accepted and closed after immutable-diff review of ae15f9129 / b2c973f69: both suites 56/56, exact paired identities and qualified 0044 pair. [Evidence](../etc/evidence/m7-t44-s1-palette-performance.md). |
-| S2 Mapper candidate | Only mapping-register-derived address computation. Preserve bus/A12/IRQ and reset/snapshot reconstruction. | Pending S1 evidence; no persistent cache pre-approved. |
+| S2 Mapper candidate | Only mapping-register-derived address computation. Preserve bus/A12/IRQ and reset/snapshot reconstruction. | Executor complete: selected simplifications and CNROM bounds repair; both suites 57/57, paired proof and updated 0044 pair. Coordinator review pending. [Evidence](../etc/evidence/m7-t44-s2-mapper-performance.md). |
 | S3 integrated qualification | Full coverage reconciliation, rejected-candidate dispositions, both output modes/widths, required units/integration and paired artifacts. | Pending previous batches. |
 
 Accepted means repeatable whole-frame benefit with unchanged applicable bytes,
@@ -61,3 +61,10 @@ The sole Shared diff is the separately approved pair of MyNES preset targets.
 No universal FPS/whole-emulator gain or native timing is accepted. S1 consumes
 the whole palette batch; Mapper remains a separately admitted next candidate.
 T44 remains open, and no S2 implementation has begun.
+
+## S2 Coverage Clarification
+
+The initial shorthand omitted CNROM, although mapper 3 has an existing parser,
+production path and owned test. S2 includes it in the disposition universe;
+this is not new mapper support. Its non-power-of-two CHR capacity and snapshot
+validation must not be overlooked when applying a common address optimization.
