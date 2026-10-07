@@ -9,7 +9,7 @@ downgrades, new public APIs and excluded-domain expansion require review.
 Shared CPU/Core tests/manifests and NXVM four-PC receiving proof are admitted;
 Lib/Common/MyNES and owner INI/media/firmware changes are excluded.
 Preserve unrelated MyNES documentation. S8 implementation and qualification
-are complete for executor delivery; coordinator acceptance/closure is pending.
+are accepted after coordinator actual-change review; its closure is recorded below.
 The admission and pre-fix records below remain historical proof.
 
 Consume the complete transferred FLAGS/return receiver, not merely the first
@@ -465,3 +465,32 @@ receiving proof correspond to that immutable implementation. NXVM's following
 P carries its four-line gate-owner correction, complete evidence/status/history
 and eight receiving artifacts. No source, INI or master change is added after
 qualification, and no partial implementation milestone is submitted.
+
+## Coordinator Actual-Change Acceptance
+
+Switch roles and inspect immutable Shared 9d5e475f7 and NXVM 626d504f5,
+their actual CPU/context/handler, independent matrix and receiving-oracle
+changes, manifests, gate owner resolution, documentation and eight artifacts.
+The reviewed working bytes are identical to those pushed Ps; excluded-domain
+and INI diffs are empty. The original request, active sixteen-field packet and
+complete eight-member ledger map to the direct source/caller proof above,
+not merely to a passing test count. No partial member selects closure.
+
+Accept the original handler style, unique canonical/image/stack/completion
+owners, private committed-task outcome, failure checkpoint and source-defined
+privilege predicates. Removed prefix rejection, old/current TF conjunction
+and RF checkpoint mutation have no retained parallel path. Source-qualified
+oracle corrections preserve all input/assertion coverage; the positive test
+delta supplies previously absent proof. No new public API, framework, clock
+or timing grade is introduced. Explicit later geometry/arbiter/task/page/time
+receivers remain unqualified, not silently claimed repaired.
+
+Final complete units 505/505 per width, original 58/58 integration once,
+supplemental 33/33 per width, both gates/eight manifests, documentation and
+fresh artifact/master/INI/MyNES identities satisfy the assigned S8 exits.
+The earlier failed/contained/abandoned routes are not acceptance. Verify
+target-separated scopes, linear P allocation, baseline/hash/reference updates
+and removal of the active packet. Accept and close S8 through the pure
+governance P; T546 remains open for S9-S20. Preserve only needed current/next
+research, final logs and receiving caches; no product or external master is
+removed or modified by this review. Full CPU-goal completion is not claimed.
