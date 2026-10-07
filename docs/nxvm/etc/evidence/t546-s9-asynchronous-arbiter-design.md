@@ -440,3 +440,30 @@ pushed immediately to origin/master. Its fifteen paths contain only CPU source,
 owner-local x86/IBMPC tests and their three manifests. The eight artifact hashes
 above were produced from these exact frozen source bytes; task documentation
 and product delivery are the separate NXVM P2, not a Shared-source side effect.
+
+## Coordinator Actual-change Acceptance
+
+Independently inspect pushed immutable Shared 746e3e214 and NXVM 04bd419e1,
+not the executor's summary: all fifteen Shared paths and eleven NXVM paths,
+the real added/modified source/test bodies, three manifest changes, complete
+packet/evidence/history updates and eight deployed product identities. Match
+the original owner goal and all seven packet members to the actual source,
+caller/receiver and before/after/failure/expiry proof above. Verify the
+appropriate architecture, coding, source, documentation, target/P and test/
+artifact invariants; positive code growth has its explicit regression purpose.
+
+Accept one CPU arbiter, one short-shadow owner, independent input/service
+lifetimes and separate comparator cause/status. No new public interface,
+clock allocation, parallel production path, machine-name patch or excluded
+target change. The 186 and HLT reference-model L2 dispositions do not silently
+downgrade an exact source timing row. S10-S20 retain the original unqualified
+fault/gate/task/page/NPX/retirement/source scope; S9 does not close the T.
+
+The independently inspected final 505/505 units per width, original 58/58
+contexts once, both full gates, 33/33 supplemental/eight manifests, optimized
+stripped products and unchanged INI/master/MyNES identities prove S9's exit.
+The initially incomplete/pre-fix/pre-HALT and invalid ad-hoc PE command remain
+identified, not counted as final proof. All owned handles are terminal and
+validated caches/logs remain needed by S10. Accept both implementation Ps;
+the following purely governance P3 records S9 closure and no active packet,
+without changing executable inputs or marking the complete CPU goal achieved.

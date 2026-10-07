@@ -12,28 +12,26 @@
 | T546 S6 | Accepted after coordinator actual-change review of pushed Shared P1 1db282a10 and NXVM P2 19945b2b9: complete ordinary-stack/source/caller proof, final units 541/541 per width, original integration 58/58 once, supplemental 33/33 per width, both gates/eight manifests and eight qualified stripped 0546 products. S6 is closed with no active packet; T546 remains open for S8-S20. |
 | T546 S7 | Accepted after coordinator actual-diff review of pushed Shared P1 0c04f2c24 and NXVM P2 0f86b1ce0: 36 duplicate aliases retired without removed assertions, 505/505 final units per width, dependency/cache and affected gate proof complete. No-op builds 1.37/1.05 s; cached CPU unit-dependency recovery 109.47/52.57 s. Unchanged binaries/inputs retain S6 integration proof. S7 closed; no active packet. T546 remains open for S8-S20. |
 | T546 S8 | Accepted after coordinator actual-change review of Shared 9d5e475f7 and NXVM 626d504f5: complete FLAGS/privilege/IRET/RF/prior-TF batch, dual units 505/505, supplemental 33/33, both gates/eight manifests, original integration 58/58 once and eight stripped 0546 products. S8 closed; no active packet. T546 remains open for S9-S20. |
-| T546 S9 | Complete delivery awaiting coordinator review: Shared P1 746e3e214 is pushed; seven-member arbiter/shadow/NMI/comparator/HLT/REP/receiver batch proven. Final complete units 505/505 per width (206.77/194.28 s), original integration 58/58 once, supplemental 33/33, both gates/eight manifests and eight stripped 0546 products pass. S8 remains the accepted baseline until review; NXVM receiving P2 contains the task evidence and eight products. |
+| T546 S9 | Accepted after coordinator actual-change review of pushed Shared 746e3e214 and NXVM 04bd419e1: complete seven-member arbiter/shadow/NMI/comparator/HLT/REP/receiver batch, final units 505/505 per width, original integration 58/58 once, supplemental 33/33, both gates/eight manifests and eight stripped 0546 products. S9 closed; no active packet. T546 remains open for S10-S20. |
 
-## Active T546 S9 Packet
+## Accepted S9 Asynchronous Arbiter
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: next unused S9 of open T546 after accepted S8 governance 267c1d405. |
-| Admission And Approval | Owner's complete CPU-repair goal and automatic numeric-S admission/existing x86/chips, x86/core and ibmpc approval continue on 2026-10-07. Shared CPU/Core/board source and matching tests/manifests, NXVM receiving proof/gates/eight PC artifacts admitted; Lib/Common/MyNES, owner INIs/media and new public API excluded. |
-| Objective | Repair and directly qualify one family-correct arbiter for debug/NMI/INTR, separate SS/STI shadows, comparator cause/status and NMI mask/in-service/IRET/reset lifetime. |
-| Non-goals | Full fault-pair/shutdown, gate/task/page geometry, NPX waits and instruction/delivery time publication retain S10-S20 receivers. No new event/executor/device framework, clock change, BIOS shortcut or excluded-domain edit. |
-| Reference Baseline | Clean 267c1d405; accepted Shared 9d5e475f7 / NXVM 626d504f5, CPU source BE62A9BB..., eight 0546 PC products and exact unchanged MyNES 0044 pair. Preserve S8 original-table and FLAGS/image/rollback contracts. |
-| Candidate Proposal | [CPU repair proposal](../proposals/m5-cpu-audit-gap-repair.md), S9; [complete ledger](../history/M5-T546-cpu-audit-gap-repair.md); [S9 source/caller design](../etc/evidence/t546-s9-asynchronous-arbiter-design.md). |
-| Files And ABI Surface | Existing CPU completion/arbiter/SS-STI/IRET/reset and private execution state, actual Core/board signal consumers, corresponding code-owned tests/manifests; NXVM source/gate/evidence and eight products. No public extension implied. |
-| Applicable Rules | NXVM Architecture/Coding/Source policy; shared Execution/Architecture/Coding/Documentation and repository-selected governance skills. Original T544 B03 and all five family's debug/interrupt/return/HLT/REP findings; fresh original source pages and actual callers are required. |
-| Verification | Reconcile full source/producer/expiry/arbiter/return/reset grid first. Transient development checks target actual changed CPU/Core/board owners. Final full cached units per width, applicable guards/eight manifests/33 supplemental/full gates, original 58 external contexts once per final group and eight optimized stripped 0546 products. No competing builds during final full-unit execution. |
-| Expected Markers | One arbiter, source-qualified family priority, distinct documented shadows, unconsumed lower-priority requests, NMI service state independent of board mask, correct return/reset expiry and separate comparator cause versus DR6 status. |
-| Asset Needs | Retained original CPU manuals and ignored page renders; code-owned units. Four frozen BYOB inputs, four INIs/five media masters and MyNES remain unchanged; no download or asset rewrite. |
-| Reporting Requirements | Report source conflicts, unupgradable L1 or downgrade before change; complete batch/caller dispositions and before/after direct proof, actual code delta, final verification/artifact identities and target-separated Ps. No partial P. |
-| Stop Conditions | Unresolved family source predicate, downgrade, new public API/excluded-domain need or incomplete prerequisite requires reporting; never weaken an oracle or conceal an unqualified context. |
-| Exit Criteria | Every admitted arbiter/shadow/NMI/debug member is directly repaired/proven or source-proven non-applicable; explicit later dependencies retained, required proof/products delivered and immutable target-separated Ps accepted by coordinator actual-diff review. T remains open. |
-| Original Owner Request | Complete CPU semantics/timing repair; automatically admit each numeric S, preserve original style and upgrade existing timing accuracy without unapproved downgrade. |
-| Similar-Issue Sweep | All debug match/schedule/delivery, NMI mask/request/service, INTR acknowledge, MOV/POP SS/LSS/STI, HLT/REP boundary, IRET/reset and Core/board callers across 8086/8088/186/286/386; source and actual simultaneous-delivery/failure/expiry matrices, not one priority swap. |
+Coordinator actual-change review accepts Shared `746e3e214` and NXVM
+`04bd419e1` against the complete seven-member packet and
+[source/caller/receiving proof](../etc/evidence/t546-s9-asynchronous-arbiter-design.md).
+One original arbiter and private shadow/input/service owner replace the
+retired conflated flags; original handler tables remain. No public API,
+instruction clock allocation or excluded component changes. The retained 186
+predicates and HLT/step combination are explicitly reference-model L2,
+not new physical L3 or a downgrade of existing exact instruction clocks.
+
+Final complete units pass 505/505 per width (206.77/194.28 s), original
+58/58 external contexts pass once, supplemental 33/33 per width, both full
+gates/eight manifests and eight optimized stripped 0546 artifacts pass.
+Production is net +69; twelve source/test paths are +752/-51, net +701,
+mostly independent source-conditioned regressions. INIs, five masters and
+Lib/Common/MyNES remain unchanged. S9 closes with no active packet; T546
+retains complete S10-S20 fault/gate/task/page/NPX/time/source receivers.
 
 ## Accepted S8 FLAGS Privilege And Return
 
@@ -212,9 +210,9 @@ the S1/S2 inventory and S3-S6 evidence linked by task history.
 
 ## Current Technical And Runnable Baseline
 
-Accepted implementation baseline is S8: Shared CPU/tests `9d5e475f7` and
-NXVM evidence/artifacts `626d504f5`, with production hash BE62A9BB… and final
-artifact identities in S8 evidence. Earlier candidate identities are superseded;
+Accepted implementation baseline is S9: Shared CPU/tests `746e3e214` and
+NXVM evidence/artifacts `04bd419e1`, with production hash BEBC79F8… and final
+artifact identities in S9 evidence. Earlier candidate identities are superseded;
 this governance acceptance adds no executable input.
 
 - Independent chips and sole CPU implementation live in x86/chips; neutral
@@ -227,15 +225,15 @@ this governance acceptance adds no executable input.
   The one external family harness executes each real fixed binding and its INI.
 - Eight PC 0.5.0546 EXEs remain directly in assets/my5160,
   assets/my5170, assets/mydeskpro386 and assets/nxvm, with unchanged adjacent
-  owner INIs. All eight S8 optimized stripped pairs are verified. MyNES now retains
+  owner INIs. All eight S9 optimized stripped pairs are verified. MyNES now retains
   its separately accepted 0.0.0044 pair; its own [Current](../../mynes/states/CURRENT.md)
   owns those identities. CPU-only work must not rebuild or alter them. Qualified PC hashes
-  are in [S8 evidence](../etc/evidence/t546-s8-flags-return-design.md),
+  are in [S9 evidence](../etc/evidence/t546-s9-asynchronous-arbiter-design.md),
   historical S1 MyNES hashes remain in [S1 evidence](../etc/evidence/t546-s1-reset-images.md); PE widths,
   current identity and absence of compiler debug sections are verified.
   Runtime Debug remains; only CPU-dependent PC products are rebuilt.
-- External media masters are verified unchanged after final S8 overlay integration.
-  All S8 builds/tests/gates are terminal; complete units, original 58 integration
+- External media masters are verified unchanged after final S9 overlay integration.
+  All S9 builds/tests/gates are terminal; complete units, original 58 integration
   and supplemental routes pass. Coordinator acceptance is recorded above.
   Ignored receiving caches
   remain needed for the next CPU repair batch's incremental regression checks.
@@ -243,7 +241,7 @@ this governance acceptance adds no executable input.
 ## Next Work And Qualification Boundary
 
 The owner-requested CPU instruction/function/timing repair remains open as
-T546 after accepted S8, with S9-S20 mechanism/proof batches and final
+T546 after accepted S9, with S10-S20 mechanism/proof batches and final
 qualification pending. Remaining candidates stay in [Queue](QUEUE.md). Concrete
 Shared changes follow the automatic-approval boundary recorded in the
 [proposal](../proposals/m5-cpu-audit-gap-repair.md).
