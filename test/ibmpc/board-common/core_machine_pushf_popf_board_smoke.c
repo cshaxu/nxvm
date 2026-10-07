@@ -77,7 +77,6 @@ static lib_i32 pushf_board_stack_limit_fault(void)
     core_machine_debug_register_patch patch = {
         .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP)
     };
-    core_machine_cpu_diagnostic diagnostic = {0};
     core_machine_run_result result = {0};
     lib_status fault_status = LIB_STATUS_OK;
     lib_i32 failed = !test_cpu_board_limit_prepare(&machine, code,
@@ -103,16 +102,13 @@ static lib_i32 pushf_board_stack_limit_fault(void)
         if (!failed) fault_status = core_machine_run(machine,
             (core_machine_run_budget){1u,0u}, &result);
         if (!failed) {
-            failed = fault_status != LIB_STATUS_INTERNAL_ERROR ||
-                result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
-                    LIB_STATUS_OK ||
+            failed = !test_core_machine_fixture_shutdown_wait(fault_status,
+                    &result) ||
                 core_machine_debug_capture_cpu_snapshot(machine,
                     CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) !=
                     LIB_STATUS_OK;
         }
-        if (!failed) failed = !diagnostic.first_fault.valid ||
-            after.eip != before.eip || after.esp != before.esp ||
+        if (!failed) failed = after.eip != before.eip || after.esp != before.esp ||
             after.eflags != before.eflags;
     }
     core_machine_destroy(machine);

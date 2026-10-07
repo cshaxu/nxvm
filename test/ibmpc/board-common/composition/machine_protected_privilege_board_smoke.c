@@ -6,6 +6,8 @@
 #include "x86/core/debug_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 
+#include "../core_machine_board_fixture.h"
+
 #define GDT_PTR 0x0100u
 #define IDT_PTR 0x0110u
 #define GDT_BASE 0x0300u
@@ -246,7 +248,7 @@ static lib_i32 privilege_test_stack_atomicity(void)
     if (!privilege_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286) ||
         !privilege_install(&state, 0, PRIVILEGE_NEGATIVE_STACK_ATOMICITY)) goto done;
     run_status = privilege_run(state.machine, budget, &result);
-    if (run_status != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
+    if (!test_core_machine_fixture_shutdown_wait(run_status, &result) ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
         cpu.cs.selector != 0x001bu || cpu.cs.dpl != 3u ||

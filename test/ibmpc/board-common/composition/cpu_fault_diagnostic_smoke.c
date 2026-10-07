@@ -5,7 +5,7 @@
 #include "x86/core/debug_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 
-lib_i32 main(void)
+static lib_bool diagnostic_run_case(lib_bool shutdown)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_DEFAULT_MEMORY_BYTES
@@ -18,7 +18,11 @@ lib_i32 main(void)
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     const lib_u8 load_idt[] = { 0x0fu, 0x01u, 0x1eu, 0x00u, 0x03u };
-    const lib_u8 idtr[] = { 0x17u, 0u, 0u, 0u, 0u, 0u };
+    const lib_u8 idtr[] = {
+        shutdown ? 0x17u : 0xffu, shutdown ? 0u : 3u, 0u, 0u, 0u, 0u
+    };
+    const lib_u16 ud_vector[] = {0x0400u, 0u};
+    const lib_u8 handler = 0xf4u;
     core_machine_debug_register_patch entry = {
         .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
             CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
@@ -32,8 +36,8 @@ lib_i32 main(void)
     if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK) goto fail;
-    /* T337_REAL_UD_TERMINAL_GUEST_LIDT: exclude vector 6 using guest LIDT
-       before the measured NOP/fault sequence, preserving its PC and budget. */
+    /* T337_REAL_UD_TERMINAL_GUEST_LIDT: compare a real UD handler with
+     * unavailable UD/DF entries, preserving the same source PC and budget. */
     if (core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x0200u, load_idt, sizeof(load_idt)) !=
             LIB_STATUS_OK ||
@@ -49,28 +53,40 @@ lib_i32 main(void)
     }
     program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY] = 0xd6u;
     program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 1u] = 0x90u;
-    if (core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
+    if (core_machine_memory_write(machine, 6u * 4u, ud_vector,
+            sizeof(ud_vector)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x0400u, &handler,
+            sizeof(handler)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
         LIB_STATUS_OK) goto fail;
     if (
-        core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
+        core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
         core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK) goto fail;
     /* Development instruction history is compiled out of the product; fault
      * snapshots remain the stable diagnostic contract in every build. */
     if (diagnostic.recent_count != 0u ||
-        result.reason != CORE_MACHINE_STOP_FAULT ||
-        result.detail != VCPUINS_EXCEPT_UD ||
-        !diagnostic.first_fault.valid ||
-        !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-            VCPUINS_EXCEPT_UD) ||
-        diagnostic.first_fault.point.linear_pc !=
+        result.reason != (shutdown ? CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT :
+            CORE_MACHINE_STOP_BUDGET) ||
+        result.detail != (shutdown ? VCPUINS_EXCEPT_SHUTDOWN : 0u) ||
+        result.executed != CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
+        diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+        diagnostic.last_delivered_exception.exception_mask !=
+            (shutdown ? VCPUINS_EXCEPT_SHUTDOWN : VCPUINS_EXCEPT_UD) ||
+        diagnostic.last_delivered_exception.point.linear_pc !=
             CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
-        diagnostic.first_fault.point.bytes[0] != 0xd6u ||
-        diagnostic.first_fault.point.bytes[1] != 0x90u) goto fail;
+        diagnostic.last_delivered_exception.point.bytes[0] != 0xd6u ||
+        diagnostic.last_delivered_exception.point.bytes[1] != 0x90u) goto fail;
     core_machine_destroy(machine);
-    lib_c_printf("M5:T152:S1:CPU-FAULT-DIAGNOSTIC:OK\n");
-    return 0;
+    return LIB_TRUE;
 
 fail:
     core_machine_destroy(machine);
-    return 1;
+    return LIB_FALSE;
+}
+
+lib_i32 main(void)
+{
+    if (!diagnostic_run_case(LIB_FALSE) || !diagnostic_run_case(LIB_TRUE)) return 1;
+    lib_c_printf("M5:T152:S1:CPU-FAULT-DIAGNOSTIC:OK\n");
+    return 0;
 }

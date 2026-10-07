@@ -84,7 +84,7 @@ void vm_machine_control_stop(vm_machine_control_state *control)  {
     vm_machine_executor_state_stop(&control->state);
 }
 
-void vm_machine_control_fault(vm_machine_control_state *control)
+void vm_machine_control_end_run(vm_machine_control_state *control)
 {
     if (control == LIB_NULL) return;
     vm_machine_executor_state_stop(&control->state);

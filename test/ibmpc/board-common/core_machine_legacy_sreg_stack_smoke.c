@@ -138,11 +138,13 @@ static lib_i32 legacy_sreg_stack_test_protected_ss_null(void)
         failed|=core_machine_memory_write(state.machine,0xc000u,&selector,2u)!=LIB_STATUS_OK ||
             core_machine_memory_write(state.machine,0x2000u,(lib_u8[]){0x17u},1u)!=LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
-            core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result)!=LIB_STATUS_INTERNAL_ERROR ||
+            !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
+                (core_machine_run_budget){1u,0u},&result), &result) ||
             core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=LIB_STATUS_OK ||
-            !diagnostic.first_fault.valid ||
-            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,(1u << 8)) || after.eip!=0u ||
+            diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_SHUTDOWN) || after.eip!=0u ||
             after.esp!=before.esp || after.eflags!=before.eflags ||
             !legacy_sreg_stack_gprs_same_except_esp(&before, &after) ||
             !legacy_sreg_stack_sregs_same(&before, &after);
@@ -165,11 +167,13 @@ static lib_i32 legacy_sreg_stack_test_protected_rejects(void)
             failed|=core_machine_memory_write(state.machine,0xc000u,&selector,2u)!=LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine,0x2000u,&opcodes[target],1u)!=LIB_STATUS_OK ||
                 core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
-                core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result)!=LIB_STATUS_INTERNAL_ERROR ||
+                !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
+                    (core_machine_run_budget){1u,0u},&result), &result) ||
                 core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=LIB_STATUS_OK ||
-                !diagnostic.first_fault.valid ||
-                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,(1u << 8)) || after.eip!=0u ||
+                diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
+                    VCPUINS_EXCEPT_SHUTDOWN) || after.eip!=0u ||
                 after.esp!=before.esp || after.eax!=before.eax || after.ecx!=before.ecx ||
                 after.edx!=before.edx || after.ebx!=before.ebx || after.ebp!=before.ebp ||
                 after.esi!=before.esi || after.edi!=before.edi || after.eflags!=before.eflags ||
@@ -196,11 +200,13 @@ static lib_i32 legacy_sreg_stack_test_protected_stack_limits(void)
                 core_machine_memory_write(state.machine,candidate,&image,2u)!=LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine,0x2000u,&opcodes[form],1u)!=LIB_STATUS_OK ||
                 core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
-                core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result)!=LIB_STATUS_INTERNAL_ERROR ||
+                !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
+                    (core_machine_run_budget){1u,0u},&result), &result) ||
                 core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=LIB_STATUS_OK ||
-                !diagnostic.first_fault.valid ||
-                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,(1u << 8)) ||
+                diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
+                    VCPUINS_EXCEPT_SHUTDOWN) ||
                 after.eip!=0u || after.esp!=before.esp ||
                 after.eflags!=before.eflags || lib_memory_compare(&before.es,&after.es,sizeof(before.es))!=0 ||
                 !legacy_sreg_stack_gprs_same_except_esp(&before, &after) ||

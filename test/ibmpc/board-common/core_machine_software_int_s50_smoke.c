@@ -4,6 +4,7 @@
 #include "ibmpc/board-common/machine_board_state.h"
 #include "lib/types/types_interface.h"
 #include "x86/core/device_support_interface.h"
+#include "core_machine_board_fixture.h"
 #define main cli_sti_s22_main
 #include "machine_cli_sti_interrupt_smoke.c"
 #undef main
@@ -55,6 +56,20 @@ static lib_i32 software_int_s50_sregs_same(const core_machine_debug_cpu_snapshot
             sizeof(before->fs)) == 0 &&
         lib_memory_compare(&before->gs, &after->gs,
             sizeof(before->gs)) == 0;
+}
+
+static lib_i32 software_int_s50_run_shutdown(interrupt_entry_machine *state,
+    core_machine_debug_cpu_snapshot *out_cpu,
+    core_machine_cpu_diagnostic *out_diagnostic)
+{
+    core_machine_run_result result;
+    const lib_status status = test_core_machine_fixture_run_after_delivery(
+        state->machine, (core_machine_run_budget){32u, 0u}, &result);
+
+    if (core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
+        LIB_STATUS_OK) return 0;
+    *out_cpu = ie_capture(state->machine);
+    return test_core_machine_fixture_shutdown_wait(status, &result);
 }
 
 static void software_int_s50_seed(cli_sti_machine *state, lib_u32 flags)
@@ -364,8 +379,13 @@ static lib_i32 software_int_s50_test_protected(void)
                 (forms[form].requires_overflow ? CORE_MACHINE_DEBUG_EFLAGS_OF : 0u));
             before = cli_sti_capture(
                 state.machine);
-            failed |= !ie_run(&state, 1, &after, &diagnostic);
-            if (!failed) failed |= !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_DF, 0u) ||
+            failed |= !software_int_s50_run_shutdown(&state, &after,
+                &diagnostic);
+            if (!failed) failed |= diagnostic.first_fault.valid ||
+                !diagnostic.last_delivered_exception.valid ||
+                !CORE_MACHINE_BIT_IS_SET(
+                    diagnostic.last_delivered_exception.exception_mask,
+                    VCPUINS_EXCEPT_SHUTDOWN) ||
                 lib_memory_compare(&before, &after, sizeof(before)) != 0;
         }
         core_machine_destroy(state.machine);
@@ -387,8 +407,12 @@ static lib_i32 software_int_s50_test_protected_faults_and_vm86(void)
 
     if (!failed) {
         before = cli_sti_capture(state.machine);
-        failed = !ie_run(&state, 1, &after, &diagnostic);
-        if (!failed) failed |= !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_DF, 0u) ||
+        failed = !software_int_s50_run_shutdown(&state, &after, &diagnostic);
+        if (!failed) failed |= diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            !CORE_MACHINE_BIT_IS_SET(
+                diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_SHUTDOWN) ||
             lib_memory_compare(&before, &after, sizeof(before)) != 0;
     }
     core_machine_destroy(state.machine);
@@ -401,8 +425,12 @@ static lib_i32 software_int_s50_test_protected_faults_and_vm86(void)
         failed = !ie_write(&state, IE_GDT_BASE + 13u, &target_access,
             sizeof(target_access));
         before = cli_sti_capture(state.machine);
-        failed |= !ie_run(&state, 1, &after, &diagnostic);
-        if (!failed) failed |= !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_DF, 0u) ||
+        failed |= !software_int_s50_run_shutdown(&state, &after, &diagnostic);
+        if (!failed) failed |= diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            !CORE_MACHINE_BIT_IS_SET(
+                diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_SHUTDOWN) ||
             lib_memory_compare(&before, &after, sizeof(before)) != 0;
     }
     core_machine_destroy(state.machine);
@@ -423,9 +451,12 @@ static lib_i32 software_int_s50_test_protected_faults_and_vm86(void)
         const lib_status status = core_machine_run(vm86.machine,
             (core_machine_run_budget){1u,0u}, &result);
         after = cli_sti_capture(vm86.machine);
-        failed |= status != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
+        failed |= !test_core_machine_fixture_shutdown_wait(status, &result) ||
             core_machine_get_cpu_diagnostic(vm86.machine, &diagnostic) != LIB_STATUS_OK ||
-            !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_DF, 0u) ||
+            diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_SHUTDOWN) ||
             lib_memory_compare(&before, &after, sizeof(before)) != 0;
     }
     core_machine_destroy(vm86.machine);

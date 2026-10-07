@@ -149,22 +149,15 @@ static lib_i32 oas_run_gp(oas_machine *state, const lib_u8 *code,
     lib_size code_size, core_machine_debug_cpu_snapshot *out_cpu)
 {
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic;
     lib_status status;
 
     if (!oas_write(state, OAS_CODE_ADDRESS, code, code_size)) return 0;
     status = core_machine_run(state->machine,
         (core_machine_run_budget){ 16u, 0u }, &result);
-    if (core_machine_get_cpu_diagnostic(state->machine, &diagnostic) !=
-            LIB_STATUS_OK || !oas_capture(state, out_cpu)) return 0;
-    if (status != LIB_STATUS_INTERNAL_ERROR ||
-        result.reason != CORE_MACHINE_STOP_FAULT ||
-        !diagnostic.first_fault.valid ||
-        !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-            VCPUINS_EXCEPT_DF)) {
-        lib_c_fprintf(lib_c_stderr, "S29 operand GP status=%u reason=%u first=%08x eip=%08x\n",
-            (unsigned)status, (unsigned)result.reason,
-            (unsigned)diagnostic.first_fault.exception_mask,
+    if (!oas_capture(state, out_cpu)) return 0;
+    if (!test_core_machine_fixture_shutdown_wait(status, &result)) {
+        lib_c_fprintf(lib_c_stderr, "S29 operand shutdown status=%u reason=%u detail=%08x eip=%08x\n",
+            (unsigned)status, (unsigned)result.reason, (unsigned)result.detail,
             (unsigned)out_cpu->eip);
         return 0;
     }

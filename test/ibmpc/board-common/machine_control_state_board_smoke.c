@@ -62,7 +62,11 @@ static lib_i32 control_board_fault(core_machine_cpu_profile profile,
             &diagnostic) != LIB_STATUS_OK;
     if (!failed)
         failed = !diagnostic.first_fault.valid ||
-            (diagnostic.first_fault.exception_mask & exception) == 0u;
+            diagnostic.first_fault.exception_mask !=
+                (exception == VCPUINS_EXCEPT_UD &&
+                    profile >= CORE_MACHINE_CPU_PROFILE_80186 ? VCPUINS_EXCEPT_CE : exception) ||
+            (exception == VCPUINS_EXCEPT_UD && profile >= CORE_MACHINE_CPU_PROFILE_80186 &&
+                diagnostic.first_fault.exception_code != 6u * 4u);
     core_machine_destroy(machine);
     return !failed;
 }

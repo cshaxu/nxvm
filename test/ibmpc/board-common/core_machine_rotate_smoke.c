@@ -18,7 +18,6 @@ static lib_i32 rotate_access_failure(lib_bool shift)
         };
         core_machine *machine = LIB_NULL;
         core_machine_run_result result = {0};
-        core_machine_cpu_diagnostic diagnostic = {0};
         core_machine_debug_cpu_snapshot after = {0};
         core_machine_debug_register_patch patch = {0};
         lib_u16 before = 0x8123u, observed = 0u;
@@ -33,17 +32,11 @@ static lib_i32 rotate_access_failure(lib_bool shift)
                     LIB_STATUS_OK ||
                 core_machine_memory_write(machine, 0x3010u, &before,
                     sizeof(before)) != LIB_STATUS_OK ||
-                core_machine_run(machine, (core_machine_run_budget){1u, 0u},
-                    &result) != LIB_STATUS_INTERNAL_ERROR ||
-                result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
-                    LIB_STATUS_OK ||
+                !test_core_machine_fixture_shutdown_wait(core_machine_run(machine,
+                    (core_machine_run_budget){1u, 0u}, &result), &result) ||
                 core_machine_debug_capture_cpu_snapshot(machine,
                     CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) !=
                     LIB_STATUS_OK ||
-                !diagnostic.first_fault.valid ||
-                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                    VCPUINS_EXCEPT_DF) ||
                 core_machine_debug_read_real(machine, 0x0301u, 0u, &observed,
                     sizeof(observed)) != LIB_STATUS_OK || observed != before ||
                 after.eflags != flags || after.eip != 0u;

@@ -62,7 +62,6 @@ static lib_i32 lfg_test_source_fault_atomicity(void)
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lfg_machine state;
         core_machine_run_result result = {0};
-        core_machine_cpu_diagnostic diagnostic = {0};
         core_machine_debug_cpu_snapshot before = {0};
         core_machine_debug_cpu_snapshot after = {0};
         lib_u8 code[] = { 0x0fu, opcodes[opcode], 0x06u, 0x00u, 0x10u };
@@ -92,15 +91,12 @@ static lib_i32 lfg_test_source_fault_atomicity(void)
 
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-            failed |= core_machine_run(state.machine,
-                    (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_INTERNAL_ERROR ||
-                result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
+            failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
+                    state.machine, (core_machine_run_budget){ 1u, 0u }, &result),
+                &result);
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
-            if (!failed) failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-                    diagnostic.first_fault.exception_mask, (1u << 8)) ||
-                after.eip != before.eip || after.eax != before.eax ||
+            if (!failed) failed |= after.eip != before.eip || after.eax != before.eax ||
                 after.eflags != before.eflags ||
                 (opcode == 0u ? after.ss.selector : opcode == 1u ?
                     after.fs.selector : after.gs.selector) !=
@@ -108,9 +104,8 @@ static lib_i32 lfg_test_source_fault_atomicity(void)
                         before.fs.selector : before.gs.selector);
         }
         if (failed)
-            lib_c_printf("LFG source-fault op=%02x reason=%d first=%u mask=%08x eip=%08x/%08x eax=%08x/%08x flags=%08x/%08x\n",
-                opcodes[opcode], result.reason, diagnostic.first_fault.valid,
-                diagnostic.first_fault.exception_mask, before.eip, after.eip,
+            lib_c_printf("LFG source-fault op=%02x reason=%d detail=%08x eip=%08x/%08x eax=%08x/%08x flags=%08x/%08x\n",
+                opcodes[opcode], result.reason, result.detail, before.eip, after.eip,
                 before.eax, after.eax, before.eflags, after.eflags);
         core_machine_destroy(state.machine);
         if (failed)

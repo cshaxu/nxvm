@@ -1,6 +1,7 @@
 #include "lib/types/file.h"
 #include "core_machine_board_fixture.h"
 #include "ibmpc/board-common/machine_board_state.h"
+#include "core_machine_board_fixture.h"
 #include "pic_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
@@ -230,17 +231,18 @@ static lib_i32 port_strings_board_protected(lib_bool input, lib_bool repeat)
                 sizeof(destination)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine,
-            (core_machine_run_budget){repeat ? 2u : 1u,0u}, &result) !=
-            LIB_STATUS_INTERNAL_ERROR ||
-            result.reason != CORE_MACHINE_STOP_FAULT ||
+        failed = !test_core_machine_fixture_shutdown_wait(core_machine_run(
+            machine, (core_machine_run_budget){repeat ? 2u : 1u,0u},
+            &result), &result) ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
     }
     if (!failed)
-        failed = !diagnostic.first_fault.valid ||
-            !(diagnostic.first_fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+        failed = diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_SHUTDOWN) ||
             after.eip != 0u ||
             after.ecx != (repeat ? 0x11220002u : 0x11220003u) ||
             after.esi != (repeat && !input ? 0x11u : 0x10u) ||

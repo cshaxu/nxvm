@@ -48,17 +48,12 @@ lib_i32 main(void)
         !vm_fault_outcome_prepare(session)) goto fail;
     vm_machine_control_start(&session->control);
     if (vm_machine_control_is_running(&session->control) ||
-        vm_machine_fault_get(session, &outcome) != 0 || !outcome.valid ||
-        outcome.run.reason != CORE_MACHINE_STOP_FAULT ||
-        outcome.run.detail != VCPUINS_EXCEPT_UD ||
-        !outcome.diagnostic.first_fault.valid ||
-        !CORE_MACHINE_BIT_IS_SET(outcome.diagnostic.first_fault.exception_mask,
-            VCPUINS_EXCEPT_UD) ||
+        vm_machine_fault_get(session, &outcome) != 0 || outcome.valid ||
         core_machine_get_lifecycle(session->core_machine, &lifecycle) !=
-        LIB_STATUS_OK || lifecycle != CORE_MACHINE_FAULTED ||
-        core_machine_run(session->core_machine, budget, &run) !=
-        LIB_STATUS_INTERNAL_ERROR || run.reason != CORE_MACHINE_STOP_FAULT ||
-        run.detail != VCPUINS_EXCEPT_UD) goto fail;
+        LIB_STATUS_OK || lifecycle != CORE_MACHINE_PAUSED ||
+        core_machine_run(session->core_machine, budget, &run) != LIB_STATUS_OK ||
+        run.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        run.detail != VCPUINS_EXCEPT_SHUTDOWN) goto fail;
     if (vm_machine_reset(session) != LIB_STATUS_OK ||
         vm_machine_fault_get(session, &outcome) != 0 || outcome.valid ||
         core_machine_get_lifecycle(session->core_machine, &lifecycle) !=

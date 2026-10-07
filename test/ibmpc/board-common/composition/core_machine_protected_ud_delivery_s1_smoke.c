@@ -4,6 +4,7 @@
 
 #include "x86/core/debug_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
+#include "../core_machine_board_fixture.h"
 
 #define UD_S1_GDT_BASE 0x0300u
 #define UD_S1_IDT_BASE 0x0400u
@@ -367,7 +368,6 @@ static lib_i32 ud_s1_protected_invalid_gate(void)
     static const lib_u8 code[] = { 0x0fu, 0x01u, 0xf8u };
     ud_s1_machine state;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic;
     core_machine_debug_cpu_snapshot before = {0};
     core_machine_debug_cpu_snapshot after = {0};
     lib_i32 failed = !ud_s1_boot_protected(&state, code, sizeof(code), LIB_FALSE);
@@ -375,15 +375,10 @@ static lib_i32 ud_s1_protected_invalid_gate(void)
     if (!failed) {
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
-            core_machine_run(state.machine,
-            (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_INTERNAL_ERROR ||
-            result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                LIB_STATUS_OK ||
+            !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
+            (core_machine_run_budget){ 1u, 0u }, &result), &result) ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-            !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-            diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             after.eip != before.eip || after.esp != before.esp ||
             after.eflags != before.eflags ||
             !ud_s1_gprs_same(&before, &after) ||

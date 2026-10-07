@@ -29,7 +29,8 @@ lib_bool vm_machine_executor_state_is_active(const vm_machine_executor_state *st
 void vm_machine_control_start(vm_machine_control_state *control);
 lib_status vm_machine_control_reset(vm_machine_control_state *control);
 void vm_machine_control_stop(vm_machine_control_state *control);
-void vm_machine_control_fault(vm_machine_control_state *control);
+/* End the host executor without injecting a Core stop request. */
+void vm_machine_control_end_run(vm_machine_control_state *control);
 lib_status vm_machine_control_reset_at_boundary(vm_machine_control_state *control);
 void vm_machine_control_refresh_debug(vm_machine_control_state *control);
 lib_status vm_machine_control_initialize(vm_machine_control_state *control,

@@ -12,7 +12,6 @@ static lib_i32 scan_test_read_failure(void)
     for (index = 0u; index < 2u; ++index) {
         core_machine *machine = LIB_NULL;
         core_machine_run_result result = {0};
-        core_machine_cpu_diagnostic diagnostic = {0};
         core_machine_debug_cpu_snapshot after = {0};
         core_machine_debug_register_patch patch = {0};
         lib_i32 failed = !test_cpu_board_limit_prepare(&machine,
@@ -25,17 +24,11 @@ static lib_i32 scan_test_read_failure(void)
             patch.values[CORE_MACHINE_DEBUG_EFLAGS] = flags;
             failed |= core_machine_debug_patch_registers(machine, &patch) !=
                     LIB_STATUS_OK ||
-                core_machine_run(machine,
-                    (core_machine_run_budget){ 1u, 0u }, &result) !=
-                    LIB_STATUS_INTERNAL_ERROR ||
-                result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
-                    LIB_STATUS_OK ||
+            !test_core_machine_fixture_shutdown_wait(core_machine_run(machine,
+                    (core_machine_run_budget){ 1u, 0u }, &result),
+                &result) ||
                 core_machine_debug_capture_cpu_snapshot(machine,
                     CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-                !diagnostic.first_fault.valid ||
-                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                    VCPUINS_EXCEPT_DF) ||
                 after.ecx != 0xaabbccddu || after.eflags != flags ||
                 after.eip != 0u;
         }

@@ -22,7 +22,7 @@ static void vm_machine_runner_fail(vm_machine *session)
 {
     if (session == LIB_NULL) return;
     session->runner_failed = LIB_TRUE;
-    vm_machine_control_fault(&session->control);
+    vm_machine_control_end_run(&session->control);
 }
 
 void vm_machine_runner_run(vm_machine *session)
@@ -106,6 +106,14 @@ void vm_machine_runner_run(vm_machine *session)
             vm_machine_control_stop(control);
         }
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            /* Architectural shutdown is a resident CPU state, not a normal
+             * HLT wait and not a Core fault.  End this host run without
+             * requesting product stop, so only CPU reset, a qualified NMI,
+             * or an explicit board reset can release the chip state. */
+            if (result.detail == VCPUINS_EXCEPT_SHUTDOWN) {
+                vm_machine_control_end_run(control);
+                continue;
+            }
             lib_bool advanced = LIB_FALSE;
             lib_status time_status = vm_machine_waiting_advance(
                 session, &result, &advanced);

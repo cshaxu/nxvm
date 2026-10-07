@@ -9,7 +9,7 @@
 
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine_interface.h"
-#include "test/app-nxvm/unit/support/ibmpc/machine/support/vm_presentation_capture.h"
+#include "test/app-nxvm/unit/support/ibmpc/machine/support/nxvm_presentation_capture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "ibmpc/machine/control.h"
 #include "ibmpc/machine/fault.h"
@@ -43,7 +43,7 @@ static lib_i32 vm_t287_has_text(const vm_machine *session, const char *text)
     lib_size length = lib_text_length(text);
 
     if (session == LIB_NULL || text == LIB_NULL || length == 0u ||
-        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
+        test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_TEXT_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (lib_u8)text[character]) break;
@@ -58,7 +58,7 @@ static lib_i32 vm_t287_has_prompt(const vm_machine *session)
     core_machine_guest_display_frame frame;
     lib_size cell;
 
-    if (session == LIB_NULL || test_vm_machine_capture_presentation(session,
+    if (session == LIB_NULL || test_nxvm_machine_capture_presentation(session,
             &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + 1u < VM_T287_TEXT_CELLS; ++cell) {
         if (frame.characters[cell] == 'C' && frame.characters[cell + 1u] == '>') {
@@ -152,7 +152,7 @@ static void vm_t287_print_frame(const vm_machine *session)
     lib_size row;
     lib_size column;
 
-    if (session == LIB_NULL || test_vm_machine_capture_presentation(session,
+    if (session == LIB_NULL || test_nxvm_machine_capture_presentation(session,
             &frame) != LIB_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {
         for (column = 0u; column < 80u; ++column) {

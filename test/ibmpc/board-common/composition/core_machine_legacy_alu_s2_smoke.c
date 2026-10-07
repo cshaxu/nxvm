@@ -89,7 +89,9 @@ static lib_i32 legacy_alu_divide_error_delivery(void)
                 core_machine_memory_read(machine,
                     after.ss.base + (lib_u16)after.esp, frame,
                     sizeof(frame)) != LIB_STATUS_OK ||
-                frame[0] != code_offset || frame[1] != before.cs.selector ||
+                frame[0] != code_offset + (profiles[index] ==
+                    CORE_MACHINE_CPU_PROFILE_8086 ? sizeof(code) : 0u) ||
+                frame[1] != before.cs.selector ||
                 (frame[2] & known) !=
                     ((((lib_u16)(before.eflags & ~0xfffc802au)) |
                         0x02u) & known);

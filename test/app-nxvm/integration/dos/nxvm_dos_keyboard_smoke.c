@@ -13,7 +13,7 @@
 #include "ibmpc/machine/display.h"
 #include "ibmpc/machine/lifecycle.h"
 #include "ibmpc/machine/machine_private.h"
-#include "test/app-nxvm/unit/support/ibmpc/machine/support/vm_presentation_capture.h"
+#include "test/app-nxvm/unit/support/ibmpc/machine/support/nxvm_presentation_capture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
@@ -47,7 +47,7 @@ static lib_i32 vm_dos_keyboard_has_text(const vm_machine *session,
     lib_size character;
     lib_size length = lib_text_length(text);
 
-    if (test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
+    if (test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= TEXT_VIDEO_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (lib_u8)text[character]) break;
@@ -62,7 +62,7 @@ static lib_i32 vm_dos_keyboard_has_prompt(const vm_machine *session)
     core_machine_guest_display_frame frame;
     lib_size cell;
 
-    if (test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
+    if (test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         if (isalpha(frame.characters[cell]) &&
             frame.characters[cell + 1u] == ':' &&
@@ -105,7 +105,7 @@ static lib_i32 vm_dos_keyboard_verify_text_frame(vm_machine *session)
     /* The caller has acknowledged pause. Compare the same frozen guest state,
      * not the previous frame retained by the ordinary 16 ms display cadence. */
     (void)vm_machine_publish_display(session, LIB_TRUE);
-    if (test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) {
+    if (test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) {
         printf("edit display: paused frame unavailable\n");
         return 0;
     }
@@ -160,7 +160,7 @@ static void vm_dos_keyboard_report_failure(const vm_machine *session,
     (void)core_machine_keyboard_get_native_scan_set(session->board,
         &scan_set);
     printf("keyboard smoke timed out: BDA head=%04x tail=%04x\n", head, tail);
-    if (test_vm_machine_capture_presentation(session, &frame) == LIB_STATUS_OK) {
+    if (test_nxvm_machine_capture_presentation(session, &frame) == LIB_STATUS_OK) {
         for (cell = 0u; cell < 25u; ++cell) {
             for (index = 0u; index < 80u; ++index) {
                 lib_u8 character = frame.characters[cell * 80u + index];

@@ -240,10 +240,8 @@ static lib_i32 bound_board_protected_fault(lib_u8 fault,
                 frame[3] != (lib_u16)before.eflags;
     }
     if (!failed && fault == 2u)
-        failed = !diagnostic.first_fault.valid ||
-            !(diagnostic.first_fault.exception_mask & VCPUINS_EXCEPT_DF) ||
-            result.reason != CORE_MACHINE_STOP_FAULT ||
-            after.eip != 0u || after.eax != before.eax;
+        failed = !test_core_machine_fixture_shutdown_wait(run_status, &result) ||
+            after.eip != before.eip || after.eax != before.eax;
     if (!failed && fault != 2u)
         failed = core_machine_run(machine,
                 (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||

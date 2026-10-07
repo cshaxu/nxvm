@@ -1,4 +1,5 @@
 #include "lib/types/file.h"
+#include "../core_machine_board_fixture.h"
 #include "support/protected_16_bootstrap_fixture.h"
 #include "x86/chips/cpu/cpu_interface.h"
 #define S47_VECTOR 0x30u
@@ -65,17 +66,13 @@ static lib_i32 s47_rejected_encoding(core_machine_cpu_profile profile,
 {
     test_protected_16_machine state;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
     lib_i32 failed = !test_protected_16_prepare(&state, profile);
 
     if (!failed) {
         failed = !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE,
-            code, code_bytes) || core_machine_run(state.machine,
-            (core_machine_run_budget){8u,0u}, &result) != LIB_STATUS_INTERNAL_ERROR ||
-            result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                LIB_STATUS_OK || !diagnostic.first_fault.valid ||
-            diagnostic.first_fault.exception_mask != VCPUINS_EXCEPT_UD;
+            code, code_bytes) || !test_core_machine_fixture_shutdown_wait(
+            core_machine_run(state.machine, (core_machine_run_budget){8u,0u},
+                &result), &result);
     }
     test_protected_16_destroy(&state);
     return !failed;
@@ -86,7 +83,6 @@ static lib_i32 s47_not_present_gate(void)
     static const lib_u8 interrupt[] = {0xcdu,S47_VECTOR};
     test_protected_16_machine state;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
     lib_i32 failed = !test_protected_16_prepare(&state,
         CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -94,11 +90,9 @@ static lib_i32 s47_not_present_gate(void)
         failed = !s47_install_gate(&state, S47_VECTOR,
             TEST_PROTECTED_INTERRUPT_GATE_16, LIB_FALSE) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE,
-                interrupt, sizeof(interrupt)) || core_machine_run(state.machine,
-                (core_machine_run_budget){8u,0u}, &result) != LIB_STATUS_INTERNAL_ERROR ||
-            result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                LIB_STATUS_OK || !diagnostic.first_fault.valid;
+                interrupt, sizeof(interrupt)) || !test_core_machine_fixture_shutdown_wait(
+                core_machine_run(state.machine, (core_machine_run_budget){8u,0u},
+                    &result), &result);
     }
     test_protected_16_destroy(&state);
     return !failed;

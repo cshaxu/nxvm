@@ -151,7 +151,6 @@ static lib_i32 enter_leave_test_protected_faults(void)
     enter_leave_machine state;
     core_machine_debug_cpu_snapshot before;
     core_machine_debug_cpu_snapshot after;
-    core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     lib_status status;
     lib_u16 stack_image[] = {0xaaaau, 0xbbbbu, 0xccccu, 0xddddu,
@@ -179,15 +178,11 @@ static lib_i32 enter_leave_test_protected_faults(void)
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         status = core_machine_run(state.machine,
             (core_machine_run_budget){1u, 0u}, &result);
-        failed |= status != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            LIB_STATUS_OK;
+        failed |= !test_core_machine_fixture_shutdown_wait(status, &result);
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
-            failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-            diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
-            !enter_leave_cpu_same(&before, &after) ||
+            failed |= !enter_leave_cpu_same(&before, &after) ||
             core_machine_memory_inspect(state.machine, 0x4018u, observed_frame,
                 sizeof(observed_frame)) != LIB_STATUS_OK ||
             lib_memory_compare(observed_frame, stack_image, sizeof(stack_image)) != 0;
@@ -207,16 +202,13 @@ static lib_i32 enter_leave_test_protected_faults(void)
             state.machine, 0x2000u, leave, sizeof(leave)) != LIB_STATUS_OK;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-        failed |= core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
-            &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            LIB_STATUS_OK;
+        status = core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
+            &result);
+        failed |= !test_core_machine_fixture_shutdown_wait(status, &result);
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
-            failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-            diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
-            !enter_leave_cpu_same(&before, &after) || !enter_leave_read(&state,
+            failed |= !enter_leave_cpu_same(&before, &after) || !enter_leave_read(&state,
             0x4020u, 2u, &value) || value != stack_image[0];
     }
     core_machine_destroy(state.machine);

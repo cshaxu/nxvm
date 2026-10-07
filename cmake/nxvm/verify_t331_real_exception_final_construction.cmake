@@ -10,12 +10,20 @@ endif()
 
 file(READ "${project_t331_cpu_source}" project_t331_cpu_text)
 string(FIND "${project_t331_cpu_text}"
-    "static lib_u8 _e_final_deliver_real_exception(" project_t331_helper)
-if(project_t331_helper EQUAL -1)
-    message(FATAL_ERROR "T331 real final-delivery helper is missing.")
+    "static lib_u8 _e_exception_vector(" project_t331_classifier)
+if(project_t331_classifier EQUAL -1)
+    message(FATAL_ERROR "T331 unified exception-vector classifier is missing.")
 endif()
 
-string(FIND "${project_t331_cpu_text}" "static void ExecFinal("
+string(FIND "${project_t331_cpu_text}"
+    "static lib_u8 _e_final_deliver_real_exception(" project_t331_retired_helper)
+if(NOT project_t331_retired_helper EQUAL -1)
+    message(FATAL_ERROR
+        "T331 retains the superseded parallel real-delivery helper.")
+endif()
+
+string(FIND "${project_t331_cpu_text}" "static void ExecFinal(core_machine_cpu_execution_context *context)
+{"
     project_t331_final_start)
 string(FIND "${project_t331_cpu_text}" "static void ExecIns("
     project_t331_final_end)
@@ -28,12 +36,21 @@ math(EXPR project_t331_final_length
 string(SUBSTRING "${project_t331_cpu_text}" ${project_t331_final_start}
     ${project_t331_final_length} project_t331_final_text)
 string(REGEX MATCHALL
-    "_e_final_deliver_real_exception\\(context, &fault_cpu,"
-    project_t331_real_delivery_calls "${project_t331_final_text}")
-list(LENGTH project_t331_real_delivery_calls project_t331_real_delivery_count)
-if(NOT project_t331_real_delivery_count EQUAL 4)
+    "vector = _e_exception_vector\\(context, active\\)"
+    project_t331_primary_classification "${project_t331_final_text}")
+list(LENGTH project_t331_primary_classification project_t331_primary_count)
+if(NOT project_t331_primary_count EQUAL 1)
     message(FATAL_ERROR
-        "T331 requires four ExecFinal real-delivery plan entries; found ${project_t331_real_delivery_count}.")
+        "T331 requires one ExecFinal primary exception classification; found ${project_t331_primary_count}.")
+endif()
+
+string(REGEX MATCHALL
+    "_e_exception_vector\\(context, secondary\\) == 0xffu"
+    project_t331_secondary_classification "${project_t331_final_text}")
+list(LENGTH project_t331_secondary_classification project_t331_secondary_count)
+if(NOT project_t331_secondary_count EQUAL 1)
+    message(FATAL_ERROR
+        "T331 requires one ExecFinal secondary classification; found ${project_t331_secondary_count}.")
 endif()
 
 foreach(project_t331_legacy_fragment IN ITEMS

@@ -4,6 +4,7 @@
 
 #include "x86/core/debug_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
+#include "../core_machine_board_fixture.h"
 
 /* T337_REAL_UD_VECTOR6_DELIVERY: this owner proves the shared real #UD path. */
 
@@ -93,8 +94,8 @@ static lib_i32 real_ud_prepare(real_ud_machine *state,
 static lib_i32 real_ud_test_delivery_case(const real_ud_case *test_case)
 {
     real_ud_machine state;
-    core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result = {0};
+    core_machine_cpu_diagnostic diagnostic;
     lib_u16 frame[3] = { 0u, 0u, 0u };
     core_machine_debug_cpu_snapshot before = {0};
     core_machine_debug_cpu_snapshot after = {0};
@@ -168,7 +169,6 @@ static lib_i32 real_ud_test_delivery_failure(void)
         program, sizeof(program), CORE_MACHINE_CPU_PROFILE_80386
     };
     real_ud_machine state;
-    core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result = {0};
     core_machine_debug_cpu_snapshot before = {0};
     core_machine_debug_cpu_snapshot after = {0};
@@ -181,15 +181,11 @@ static lib_i32 real_ud_test_delivery_failure(void)
             CORE_MACHINE_DEBUG_EFLAGS_IF) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
-            core_machine_run(state.machine,
-                (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_INTERNAL_ERROR ||
+            !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
+                (core_machine_run_budget){ 1u, 0u }, &result), &result) ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_FAULT ||
-            !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            diagnostic.last_delivered_exception.valid || after.eip !=
+            after.eip !=
             before.eip || after.esp != before.esp ||
             after.eax != before.eax || after.eflags !=
             before.eflags || lib_memory_compare(&after.cs, &before.cs,

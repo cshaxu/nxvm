@@ -5,7 +5,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "test/app-nxvm/unit/support/ibmpc/machine/support/vm_presentation_capture.h"
+#include "test/app-nxvm/unit/support/ibmpc/machine/support/nxvm_presentation_capture.h"
 #include "ibmpc/machine/control.h"
 #include "ibmpc/machine/lifecycle.h"
 #include "ibmpc/machine/machine_private.h"
@@ -27,7 +27,7 @@ static lib_i32 vm_t287_fdisk_has_text(const vm_machine *session, const char *tex
     lib_size length = lib_text_length(text);
 
     if (session == LIB_NULL || text == LIB_NULL || length == 0u ||
-        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
+        test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_FDISK_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (lib_u8)text[character]) break;

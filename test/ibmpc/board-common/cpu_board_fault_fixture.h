@@ -24,7 +24,6 @@ static lib_i32 test_cpu_board_faults(const test_cpu_board_fault_case *cases,
         const test_cpu_board_fault_case *entry = &cases[index];
         core_machine *machine = LIB_NULL;
         core_machine_debug_cpu_snapshot after = {0};
-        core_machine_cpu_diagnostic diagnostic = {0};
         core_machine_run_result result = {0};
         core_machine_debug_register_patch patch = {0};
         lib_u16 observed = 0u;
@@ -42,15 +41,10 @@ static lib_i32 test_cpu_board_faults(const test_cpu_board_fault_case *cases,
                     LIB_STATUS_OK ||
                 core_machine_memory_write(machine, 0x3010u, &entry->memory,
                     sizeof(entry->memory)) != LIB_STATUS_OK ||
-                core_machine_run(machine, (core_machine_run_budget){1u,0u},
-                    &result) != LIB_STATUS_INTERNAL_ERROR ||
-                result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
-                    LIB_STATUS_OK ||
+                !test_core_machine_fixture_shutdown_wait(core_machine_run(machine,
+                    (core_machine_run_budget){1u,0u}, &result), &result) ||
                 core_machine_debug_capture_cpu_snapshot(machine,
                     CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-                !diagnostic.first_fault.valid ||
-                !(diagnostic.first_fault.exception_mask & VCPUINS_EXCEPT_DF) ||
                 core_machine_debug_read_real(machine, 0x0301u, 0u,
                     &observed, sizeof(observed)) != LIB_STATUS_OK ||
                 observed != entry->memory || after.eax != entry->eax ||

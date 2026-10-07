@@ -112,7 +112,6 @@ static lib_i32 les_lds_s41_protected_case(lib_u8 opcode, lib_u16 selector)
     les_lds_s41_machine state;
     core_machine_debug_cpu_snapshot before;
     core_machine_debug_cpu_snapshot after;
-    core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     lib_u8 pointer[] = {0x44u,0x33u,0,0};
     lib_u8 source[4] = {0x44u,0x33u,0,0};
@@ -141,20 +140,14 @@ static lib_i32 les_lds_s41_protected_case(lib_u8 opcode, lib_u16 selector)
 
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-        failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){1u,0u}, &result) !=
-            LIB_STATUS_INTERNAL_ERROR ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            LIB_STATUS_OK;
+        failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
+            state.machine, (core_machine_run_budget){1u,0u}, &result), &result);
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         failed |= !les_lds_s41_read(&state, 0x3010u, observed,
             sizeof(observed)) || lib_memory_compare(source, observed,
             sizeof(source)) != 0;
-        if (!failed) failed |= result.reason != CORE_MACHINE_STOP_FAULT ||
-            !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-            diagnostic.first_fault.exception_mask, (1u << 8)) ||
-            after.eip != before.eip ||
+        if (!failed) failed |= after.eip != before.eip ||
             after.eax != before.eax ||
             !les_lds_s41_gprs_same_except_eax(&before, &after) ||
             after.eflags != before.eflags ||
@@ -194,7 +187,6 @@ static lib_i32 les_lds_s41_test_limit(void)
         les_lds_s41_machine state;
         core_machine_debug_cpu_snapshot before;
         core_machine_debug_cpu_snapshot after;
-        core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
         lib_u8 code[] = {opcodes[opcode],0x06u,0x10u,0u};
         lib_i32 failed = !les_lds_s41_prepare(CORE_MACHINE_CPU_PROFILE_80386,
@@ -217,16 +209,12 @@ static lib_i32 les_lds_s41_test_limit(void)
 
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-            failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_INTERNAL_ERROR ||
-                result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                LIB_STATUS_OK;
+            failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
+                state.machine, (core_machine_run_budget){1u,0u}, &result),
+                &result);
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
-            if (!failed) failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-                diagnostic.first_fault.exception_mask, (1u << 8)) ||
-                after.eip != before.eip ||
+            if (!failed) failed |= after.eip != before.eip ||
                 after.eax != before.eax ||
                 !les_lds_s41_gprs_same_except_eax(&before, &after) ||
                 after.eflags != before.eflags ||

@@ -225,7 +225,8 @@ static lib_i32 cli_sti_s48_test_prefixes(void)
                         &diagnostic) != LIB_STATUS_OK;
                     failed |= !diagnostic.first_fault.valid;
                     failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                        VCPUINS_EXCEPT_UD);
+                        legacy[profile] == CORE_MACHINE_CPU_PROFILE_8086 ?
+                            VCPUINS_EXCEPT_UD : VCPUINS_EXCEPT_CE);
                     failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
                 }
                 core_machine_destroy(state.machine);
@@ -321,7 +322,7 @@ static lib_i32 cli_sti_s48_test_386_prefix_and_lock(void)
                     &diagnostic) != LIB_STATUS_OK;
                 failed |= !diagnostic.first_fault.valid;
                 failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                    VCPUINS_EXCEPT_UD);
+                    VCPUINS_EXCEPT_CE);
                 failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
             }
             core_machine_destroy(state.machine);

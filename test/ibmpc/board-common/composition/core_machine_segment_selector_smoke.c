@@ -70,27 +70,19 @@ static lib_i32 segment_patch(segment_machine *state,
 }
 
 static lib_i32 segment_run_exception(segment_machine *state, const lib_u8 *code,
-    lib_size code_size, lib_u32 address, lib_u32 exception,
+    lib_size code_size, lib_u32 address,
     core_machine_debug_cpu_snapshot *out_cpu)
 {
     const core_machine_run_budget budget = { 16u, 0u };
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
 
     if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
         out_cpu == LIB_NULL || !segment_write(state, address, code, code_size))
         return 0;
     if (!segment_patch(state, CORE_MACHINE_DEBUG_EIP,
             address == 0u ? 0u : address - SEG_CODE_ADDRESS)) return 0;
-    if (exception == VCPUINS_EXCEPT_TS || exception == VCPUINS_EXCEPT_NP ||
-        exception == VCPUINS_EXCEPT_SS || exception == VCPUINS_EXCEPT_GP) {
-        exception = VCPUINS_EXCEPT_DF;
-    }
-    if (core_machine_run(state->machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
-        result.reason != CORE_MACHINE_STOP_FAULT ||
-        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) !=
-            LIB_STATUS_OK || !diagnostic.first_fault.valid ||
-        !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, exception)) return 0;
+    if (!test_core_machine_fixture_shutdown_wait(
+            core_machine_run(state->machine, budget, &result), &result)) return 0;
     return segment_capture(state, out_cpu);
 }
 
@@ -298,8 +290,6 @@ static lib_i32 segment_test_lxs_fault_atomicity(void)
         segment_machine state;
         core_machine_debug_cpu_snapshot before = {0};
         core_machine_debug_cpu_snapshot after = {0};
-        lib_u32 exception = forms[index].target == 2u ? VCPUINS_EXCEPT_SS :
-            VCPUINS_EXCEPT_NP;
 
         if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
             !segment_boot_protected(&state)) {
@@ -316,7 +306,7 @@ static lib_i32 segment_test_lxs_fault_atomicity(void)
         failed |= !segment_capture(&state, &before) ||
             !segment_write(&state, SEG_DATA_ADDRESS + 0x0400u, pointer,
                 sizeof(pointer)) || !segment_run_exception(&state, code,
-                code_size, SEG_CODE_ADDRESS, exception, &after) ||
+                code_size, SEG_CODE_ADDRESS, &after) ||
             before.eax != after.eax ||
             before.esp != after.esp ||
             before.eflags != after.eflags ||
@@ -340,7 +330,6 @@ typedef struct segment_sreg_failure {
     lib_u8 target;
     lib_u8 mov_modrm;
     lib_u16 selector;
-    lib_u32 exception;
     lib_u32 access_address;
     lib_u8 access_value;
 } segment_sreg_failure;
@@ -348,10 +337,10 @@ typedef struct segment_sreg_failure {
 static lib_i32 segment_test_protected_sreg_failures(void)
 {
     static const segment_sreg_failure failures[] = {
-        { 1u,0xd8u,0x0018u,VCPUINS_EXCEPT_NP,SEG_GDT_ADDRESS + 29u,0x12u },
-        { 2u,0xd0u,0x0018u,VCPUINS_EXCEPT_SS,SEG_GDT_ADDRESS + 29u,0x12u },
-        { 3u,0xe0u,0x0020u,VCPUINS_EXCEPT_GP,SEG_GDT_ADDRESS + 37u,0x98u },
-        { 4u,0xe8u,0x0013u,VCPUINS_EXCEPT_GP,SEG_GDT_ADDRESS + 21u,0x93u }
+        { 1u,0xd8u,0x0018u,SEG_GDT_ADDRESS + 29u,0x12u },
+        { 2u,0xd0u,0x0018u,SEG_GDT_ADDRESS + 29u,0x12u },
+        { 3u,0xe0u,0x0020u,SEG_GDT_ADDRESS + 37u,0x98u },
+        { 4u,0xe8u,0x0013u,SEG_GDT_ADDRESS + 21u,0x93u }
     };
     static const lib_u8 pop_fs[] = { 0x66u,0x0fu,0xa1u };
     static const lib_u8 pop_ss[] = { 0x66u,0x17u };
@@ -376,7 +365,7 @@ static lib_i32 segment_test_protected_sreg_failures(void)
         }
         case_failed = !segment_capture(&state, &before) ||
             !segment_run_exception(&state, code, sizeof(code),
-            SEG_CODE_ADDRESS, failures[index].exception, &after);
+            SEG_CODE_ADDRESS, &after);
         before_sreg = segment_sreg(&before, failures[index].target);
         after_sreg = segment_sreg(&after, failures[index].target);
         case_failed = case_failed || before_sreg == LIB_NULL || after_sreg == LIB_NULL ||
@@ -394,7 +383,6 @@ static lib_i32 segment_test_protected_sreg_failures(void)
         const lib_u8 *code = index == 0u ? pop_fs : pop_ss;
         lib_size code_size = index == 0u ? sizeof(pop_fs) : sizeof(pop_ss);
         lib_u8 target = index == 0u ? 3u : 2u;
-        lib_u32 exception = index == 0u ? VCPUINS_EXCEPT_NP : VCPUINS_EXCEPT_SS;
         segment_machine state;
         core_machine_debug_cpu_snapshot before = {0};
         core_machine_debug_cpu_snapshot after = {0};
@@ -412,7 +400,7 @@ static lib_i32 segment_test_protected_sreg_failures(void)
             !segment_write(&state, SEG_DATA_ADDRESS + 0x8000u,
                 selector_nonpresent, sizeof(selector_nonpresent)) ||
             !segment_run_exception(&state, code, code_size, SEG_CODE_ADDRESS,
-                exception, &after);
+                &after);
         before_sreg = segment_sreg(&before, target);
         after_sreg = segment_sreg(&after, target);
         case_failed = case_failed || before_sreg == LIB_NULL || after_sreg == LIB_NULL ||
@@ -435,7 +423,6 @@ static lib_i32 segment_test_pop_fault_atomicity(void)
     static const lib_u8 selector[] = { 0x18u,0x00u,0,0 };
     const core_machine_run_budget budget = { 8u, 0u };
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic;
     segment_machine state;
     core_machine_debug_cpu_snapshot before = {0};
     core_machine_debug_cpu_snapshot after = {0};
@@ -448,12 +435,8 @@ static lib_i32 segment_test_pop_fault_atomicity(void)
             !segment_write(&state, SEG_DATA_ADDRESS + 0x8000u, selector,
             sizeof(selector)) || !segment_write(&state, SEG_CODE_ADDRESS, pop_fs,
             sizeof(pop_fs)) || !segment_patch(&state, CORE_MACHINE_DEBUG_EIP, 0u) ||
-            core_machine_run(state.machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
-            result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            LIB_STATUS_OK || !diagnostic.first_fault.valid ||
-            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
-            diagnostic.first_fault.exception_code != 0u ||
+            !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
+                budget, &result), &result) ||
             !segment_capture(&state, &after) || after.esp != before.esp ||
             lib_memory_compare(&after.fs, &before.fs, sizeof(after.fs)) != 0;
     }

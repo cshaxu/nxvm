@@ -9,7 +9,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_sou
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine.c" input_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/lifecycle.c" driver_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/support/ibmpc/machine/support/guest_input.h" fixture_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/machine/vm_keyboard_host_ingress_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/machine/nxvm_keyboard_host_ingress_smoke.c"
     input_smoke_source)
 
 foreach(instance IN ITEMS "t_kbc[ \t]+\\*[ \t]*shared_kbc;"

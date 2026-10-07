@@ -379,8 +379,12 @@ static lib_i32 timing_ledger_physical_far_jmp_memory(lib_i32 protected_mode)
         failed = !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_CR0, 0u, 1u);
     }
     if (!failed) {
-        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
-            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+        failed |= core_machine_run(machine, budget, &result) !=
+                (protected_mode ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR) ||
+            result.reason != (protected_mode ? CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT :
+                CORE_MACHINE_STOP_FAULT) ||
+            (protected_mode && result.detail != VCPUINS_EXCEPT_SHUTDOWN) ||
+            result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u ||
             state.advanced_ticks != 0u;
     }

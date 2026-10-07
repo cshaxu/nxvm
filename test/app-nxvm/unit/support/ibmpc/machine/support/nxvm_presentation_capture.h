@@ -9,7 +9,7 @@
 
 /* Test-only view of the one production Common frame. It never publishes or
  * stores a frame, so production has no second presentation route. */
-static inline lib_status test_vm_machine_capture_presentation(const vm_machine *machine,
+static inline lib_status test_nxvm_machine_capture_presentation(const vm_machine *machine,
     core_machine_guest_display_frame *out_frame)
 {
     static common_machine_frame frame;

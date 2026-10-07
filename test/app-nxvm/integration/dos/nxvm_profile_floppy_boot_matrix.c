@@ -10,7 +10,7 @@
 #include <windows.h>
 #undef exception_code
 
-#include "test/app-nxvm/unit/support/ibmpc/machine/support/vm_presentation_capture.h"
+#include "test/app-nxvm/unit/support/ibmpc/machine/support/nxvm_presentation_capture.h"
 #include "x86/core/machine_interface.h"
 #include "x86/core/debug_interface.h"
 #include "ibmpc/machine/lifecycle.h"
@@ -172,7 +172,7 @@ static lib_i32 boot_terminal(const vm_machine *session, const char **out_name)
     lib_size cell;
 
     if (session == LIB_NULL || out_name == LIB_NULL ||
-        test_vm_machine_capture_presentation(session, &frame) !=
+        test_nxvm_machine_capture_presentation(session, &frame) !=
             LIB_STATUS_OK || frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT) return 0;
     for (cell = 0u; cell + 3u < TEXT_CELLS; ++cell) {
         if (isalpha((lib_u8)frame.characters[cell]) && frame.characters[cell + 1u] == ':' &&
@@ -195,7 +195,7 @@ static lib_i32 boot_post_reports_keyboard_failure(const vm_machine *session)
     core_machine_guest_display_frame frame;
 
     return session != LIB_NULL &&
-        test_vm_machine_capture_presentation(session, &frame) ==
+        test_nxvm_machine_capture_presentation(session, &frame) ==
             LIB_STATUS_OK && frame.kind == CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT &&
         (boot_text_has(&frame, "301-Keyboard") || boot_text_has(&frame, "303-Keyboard"));
 }
@@ -393,7 +393,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 point->bytes[2u]);
         }
     }
-    if (test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
+    if (test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT) return;
     for (row = 0u; row < 25u; ++row) {
         lib_i32 nonblank = 0;

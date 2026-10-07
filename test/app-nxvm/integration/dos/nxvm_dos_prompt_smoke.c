@@ -12,7 +12,7 @@
 
 
 #include "x86/core/debug_interface.h"
-#include "test/app-nxvm/unit/support/ibmpc/machine/support/vm_presentation_capture.h"
+#include "test/app-nxvm/unit/support/ibmpc/machine/support/nxvm_presentation_capture.h"
 #include "x86/core/machine_interface.h"
 
 #include "ibmpc/machine/lifecycle.h"
@@ -92,7 +92,7 @@ static lib_i32 has_dos_prompt(const vm_machine *session)
     lib_size cell;
 
     if (session == LIB_NULL) return 0;
-    if (test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
+    if (test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         const lib_u8 drive = frame.characters[cell];
         if (isalpha((lib_u8)drive) && frame.characters[cell + 1u] == ':' &&

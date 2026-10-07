@@ -185,7 +185,7 @@ static lib_i32 ie_prepare(interrupt_entry_machine *state,
     return negative != INTERRUPT_ENTRY_NEGATIVE_GATE_DPL || ie_prepare_user_code(state);
 }
 
-static lib_i32 ie_run(interrupt_entry_machine *state, lib_i32 expect_fault,
+static lib_i32 ie_run(interrupt_entry_machine *state, lib_i32 expect_shutdown,
     core_machine_debug_cpu_snapshot *out_cpu, core_machine_cpu_diagnostic *out_diagnostic)
 {
     const core_machine_run_budget budget = {32u, 0u};
@@ -196,12 +196,12 @@ static lib_i32 ie_run(interrupt_entry_machine *state, lib_i32 expect_fault,
     if (core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
         LIB_STATUS_OK) return 0;
     *out_cpu = ie_capture(state->machine);
-    return status == (expect_fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) &&
-        result.reason == (expect_fault ? CORE_MACHINE_STOP_FAULT :
-            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
+    return expect_shutdown ? test_core_machine_fixture_shutdown_wait(status,
+        &result) : status == LIB_STATUS_OK &&
+        result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static lib_i32 ie_run_external(interrupt_entry_machine *state, lib_i32 expect_fault,
+static lib_i32 ie_run_external(interrupt_entry_machine *state, lib_i32 expect_shutdown,
     core_machine_debug_cpu_snapshot *out_cpu, core_machine_cpu_diagnostic *out_diagnostic)
 {
     const core_machine_run_budget budget = {32u, 0u};
@@ -212,23 +212,15 @@ static lib_i32 ie_run_external(interrupt_entry_machine *state, lib_i32 expect_fa
     if (core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
         LIB_STATUS_OK) return 0;
     *out_cpu = ie_capture(state->machine);
-    return status == (expect_fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) &&
-        result.reason == (expect_fault ? CORE_MACHINE_STOP_FAULT :
-            CORE_MACHINE_STOP_BUDGET);
+    return expect_shutdown ? test_core_machine_fixture_shutdown_wait(status,
+        &result) : status == LIB_STATUS_OK &&
+        result.reason == CORE_MACHINE_STOP_BUDGET;
 }
 
-static lib_i32 ie_run_budget(interrupt_entry_machine *state, lib_i32 expect_fault,
+static lib_i32 ie_run_budget(interrupt_entry_machine *state, lib_i32 expect_shutdown,
     core_machine_debug_cpu_snapshot *out_cpu, core_machine_cpu_diagnostic *out_diagnostic)
 {
-    return ie_run_external(state, expect_fault, out_cpu, out_diagnostic);
-}
-
-static lib_i32 ie_fault_is(const core_machine_cpu_diagnostic *diagnostic,
-    lib_u32 mask, lib_u32 code)
-{
-    return diagnostic->first_fault.valid && CORE_MACHINE_BIT_IS_SET(
-        diagnostic->first_fault.exception_mask, mask) &&
-        diagnostic->first_fault.exception_code == code;
+    return ie_run_external(state, expect_shutdown, out_cpu, out_diagnostic);
 }
 
 static lib_i32 ie_test_success(lib_u8 gate_type, lib_i32 expect_if)
@@ -277,8 +269,7 @@ static lib_i32 ie_test_prefix_keeps_gate_width(void)
     return !failed;
 }
 
-static lib_i32 ie_test_failure(interrupt_entry_negative negative, lib_u32 mask,
-    lib_u32 code)
+static lib_i32 ie_test_failure(interrupt_entry_negative negative)
 {
     interrupt_entry_machine state;
     core_machine_cpu_diagnostic diagnostic = {0};
@@ -292,7 +283,9 @@ static lib_i32 ie_test_failure(interrupt_entry_negative negative, lib_u32 mask,
         before = ie_capture(state.machine);
         failed |= !ie_read(&state, IE_GDT_BASE + 13u, &access_before,
             sizeof(access_before)) || !ie_run(&state, 1, &after, &diagnostic) ||
-            !ie_fault_is(&diagnostic, mask, code) ||
+            diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_SHUTDOWN) ||
             !ie_read(&state, IE_GDT_BASE + 13u, &access_after,
                 sizeof(access_after)) || after.cs.selector != before.cs.selector ||
             after.cs.base != before.cs.base ||
@@ -618,9 +611,10 @@ static lib_i32 ie_test_fault_delivery_failure(
         failed |= !ie_read(&state, IE_GDT_BASE + 13u, &access_before,
             sizeof(access_before)) || !ie_read(&state, IE_STACK_BASE - 16u,
             stack_before, sizeof(stack_before)) || !ie_run_budget(&state, 1, &after,
-            &diagnostic) || !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_DF, 0u) ||
-            diagnostic.last_delivered_exception.valid ||
-            diagnostic.delivered_exception_count != 0u ||
+            &diagnostic) || diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_SHUTDOWN) ||
             !ie_read(&state, IE_GDT_BASE + 13u, &access_after,
                 sizeof(access_after)) || !ie_read(&state, IE_STACK_BASE - 16u,
                 stack_after, sizeof(stack_after)) ||
@@ -637,22 +631,14 @@ int main(void)
     lib_i32 failed = !ie_test_success(IE_INTGATE_32, 0) ||
         !ie_test_success(IE_TRAPGATE_32, 1) ||
         !ie_test_prefix_keeps_gate_width() ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_IDT_LIMIT, VCPUINS_EXCEPT_DF,
-            0u) ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_GATE_TYPE, VCPUINS_EXCEPT_DF,
-            0u) ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_GATE_DPL, VCPUINS_EXCEPT_DF,
-            0u) ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_GATE_NOT_PRESENT,
-            VCPUINS_EXCEPT_DF, 0u) ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_CODE_TYPE, VCPUINS_EXCEPT_DF,
-            0u) ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_CODE_NOT_PRESENT,
-            VCPUINS_EXCEPT_DF, 0u) ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_CODE_LIMIT, VCPUINS_EXCEPT_DF,
-            0u) ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_STACK_LIMIT,
-            VCPUINS_EXCEPT_DF, 0u) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_IDT_LIMIT) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_GATE_TYPE) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_GATE_DPL) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_GATE_NOT_PRESENT) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_CODE_TYPE) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_CODE_NOT_PRESENT) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_CODE_LIMIT) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_STACK_LIMIT) ||
         !ie_test_software_frontends() ||
         !ie_test_external_origin(0, 0) || !ie_test_external_origin(1, 0) ||
         !ie_test_external_origin(0, 1) || !ie_test_external_origin(1, 1);

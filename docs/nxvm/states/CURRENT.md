@@ -13,6 +13,29 @@
 | T546 S7 | Accepted after coordinator actual-diff review of pushed Shared P1 0c04f2c24 and NXVM P2 0f86b1ce0: 36 duplicate aliases retired without removed assertions, 505/505 final units per width, dependency/cache and affected gate proof complete. No-op builds 1.37/1.05 s; cached CPU unit-dependency recovery 109.47/52.57 s. Unchanged binaries/inputs retain S6 integration proof. S7 closed; no active packet. T546 remains open for S8-S20. |
 | T546 S8 | Accepted after coordinator actual-change review of Shared 9d5e475f7 and NXVM 626d504f5: complete FLAGS/privilege/IRET/RF/prior-TF batch, dual units 505/505, supplemental 33/33, both gates/eight manifests, original integration 58/58 once and eight stripped 0546 products. S8 closed; no active packet. T546 remains open for S9-S20. |
 | T546 S9 | Accepted after coordinator actual-change review of pushed Shared 746e3e214 and NXVM 04bd419e1: complete seven-member arbiter/shadow/NMI/comparator/HLT/REP/receiver batch, final units 505/505 per width, original integration 58/58 once, supplemental 33/33, both gates/eight manifests and eight stripped 0546 products. S9 closed; no active packet. T546 remains open for S10-S20. |
+| T546 S10 | Closed at owner direction: finalizer, resident shutdown/Core wait, approved query and real new-CS entry repair are separated for target-scoped delivery. The 78-owner CPU scan and 82/418 specialized gates pass on both widths; the one unrelated Lib Console viewport failure is explicitly moved to S11, not used as CPU evidence. |
+| T546 S11 | Active: Shared Win32 Console broker viewport repair. A runtime Console can have a backing buffer wider than its legal visible viewport; the broker must apply its saved display state through one exact screen-info then viewport path, while the owner test selects a legal host viewport and still proves wide-buffer output. After repair, rerun complete tests for every App. |
+
+## Active T546 S11 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Owner-directed insertion: S11 is the next numeric S after closed S10; former S11-S20 are shifted to S12-S21. |
+| Admission And Approval | Owner moved the discovered Shared Console repair into its own S on 2026-10-07 and requires complete all-App verification after it. Only `src/lib/console-broker`, its owner test and manifests are admitted production scope; no public API, Common/x86/ibmpc/App production source, INI, media, ROM or configuration change is admitted. |
+| Objective | Repair the one Console-broker display owner so restored display state uses the actual runtime's supported viewport rather than assuming a wide backing buffer can always become a same-width visible window. |
+| Non-goals | No CPU semantic change, no new presenter policy/API/state, no font shrinking, no app workaround, no host-window hard-code and no separate Console route. |
+| Reference Baseline | Closed S10 CPU delivery plus the observed Console test failure: a host may report a wide backing buffer but `GetLargestConsoleWindowSize` caps the visible extent. The existing test's fixed 120x30 viewport can therefore be invalid. |
+| Candidate Proposal | [CPU repair proposal](../proposals/m5-cpu-audit-gap-repair.md), S11; [whole ledger](../history/M5-T546-cpu-audit-gap-repair.md). |
+| Files And ABI Surface | Private Console-broker helper, owner-local test and their manifests only. No public interface, state, type or application configuration changes. |
+| Applicable Rules | Shared Execution/Architecture/Coding/Documentation and NXVM Architecture/Coding. Microsoft Console API contracts are implementation reference only; no source/asset import occurs. |
+| Verification | Owner Console unit on x64/x86; complete repository-only units for x64/x86; full test suites for NXVM and MyNES; rebuild and verify every affected App's optimized x64/x86 product pair. Keep runtime host variability in test setup, not in product behavior. |
+| Expected Markers | One display application helper performs extended screen-info restoration then exact viewport restoration. Test keeps a wide 120-column backing buffer and validates output beyond the runtime viewport; it never assumes a 120-column visible host window. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the concrete host capability observation, source/test delta, before/after unit result and complete all-App test/artifact evidence. |
+| Stop Conditions | A required public contract, behavior policy, host-specific exception or application workaround requires owner review; do not relax the output assertion merely to accept a smaller viewport. |
+| Exit Criteria | One Shared production path, no platform API leak, owner test proves legal viewport plus wide-buffer output, all affected App tests/artifacts are complete, and the actual diff is accepted. T remains open for S12-S21. |
+| Original Owner Request | Close S10 first; perform this repair as S11; shift all later S identifiers; after repair run full tests including every App. |
+| Similar-Issue Sweep | Every Console broker path that restores display state, each test that assumes a desktop viewport, and every application receiving the Shared Console implementation. |
 
 ## Accepted S9 Asynchronous Arbiter
 

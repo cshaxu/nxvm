@@ -53,6 +53,17 @@ static inline lib_i32 test_core_machine_fixture_bind_freeze_reset(
         core_machine_reset(machine) == LIB_STATUS_OK;
 }
 
+/* A deliberately receiverless protected exception is architectural CPU
+ * shutdown, not a host/provider failure.  Core exposes that state as a
+ * waiting boundary so board receivers retain control of reset/NMI policy. */
+static inline lib_i32 test_core_machine_fixture_shutdown_wait(
+    lib_status status, const core_machine_run_result *result)
+{
+    return status == LIB_STATUS_OK && result != LIB_NULL &&
+        result->reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
+        result->detail == VCPUINS_EXCEPT_SHUTDOWN;
+}
+
 /*
  * This preserves the corpus' established short-circuit lifecycle: it does
  * not add cleanup or validation policy.  Owner smokes retain all device and

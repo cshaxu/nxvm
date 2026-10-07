@@ -76,7 +76,6 @@ static lib_i32 xchg_test_write_fault_atomicity(void)
     static const lib_u8 code[] = { 0x87u,0x06u,0x00u,0x10u };
     xchg_machine state;
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
     core_machine_debug_cpu_snapshot before;
     core_machine_debug_cpu_snapshot after;
     lib_u16 memory_before = 0x7788u;
@@ -91,8 +90,8 @@ static lib_i32 xchg_test_write_fault_atomicity(void)
             core_machine_memory_write(state.machine,0x2000u,code,sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-        failed |= core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result) != LIB_STATUS_INTERNAL_ERROR ||
-            core_machine_get_cpu_diagnostic(state.machine,&diagnostic) != LIB_STATUS_OK;
+        failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
+            state.machine, (core_machine_run_budget){1u,0u}, &result), &result);
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         failed |= core_machine_memory_inspect(state.machine,0x1000u,
@@ -113,7 +112,6 @@ static lib_i32 xchg_test_read_fault_atomicity(void)
     {
         xchg_machine state;
         core_machine_run_result result;
-        core_machine_cpu_diagnostic diagnostic;
         core_machine_debug_cpu_snapshot before;
         core_machine_debug_cpu_snapshot after;
         lib_u32 memory_before = 0x11223344u;
@@ -126,8 +124,8 @@ static lib_i32 xchg_test_read_fault_atomicity(void)
                 core_machine_memory_write(state.machine,0x2000u,codes[form],form?5u:4u)!=LIB_STATUS_OK;
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-            failed |= core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result)!=LIB_STATUS_INTERNAL_ERROR ||
-                core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=LIB_STATUS_OK;
+            failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
+                state.machine, (core_machine_run_budget){1u,0u}, &result), &result);
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             if (!failed) failed |= core_machine_memory_inspect(state.machine,0x1002u,

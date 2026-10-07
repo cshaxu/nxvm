@@ -62,7 +62,6 @@ static lib_i32 lld_test_source_fault_atomicity(void)
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lld_machine state;
         core_machine_run_result result;
-        core_machine_cpu_diagnostic diagnostic;
         core_machine_debug_cpu_snapshot before;
         core_machine_debug_cpu_snapshot after;
         lib_u8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u };
@@ -88,16 +87,12 @@ static lib_i32 lld_test_source_fault_atomicity(void)
 
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-            failed |= core_machine_run(state.machine,
-                    (core_machine_run_budget){ 1u, 0u }, &result) !=
-                        LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                    LIB_STATUS_OK;
+            failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
+                    state.machine, (core_machine_run_budget){ 1u, 0u }, &result),
+                &result);
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
-            if (!failed) failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-                    diagnostic.first_fault.exception_mask, (1u << 8)) ||
-                after.eip != before.eip ||
+            if (!failed) failed |= after.eip != before.eip ||
                 after.eax != before.eax ||
                 after.eflags != before.eflags ||
                 (opcode == 0u ? after.es.selector : after.ds.selector) !=

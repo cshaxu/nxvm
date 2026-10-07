@@ -315,13 +315,27 @@ static lib_i32 debug_board_expect_real_ud(core_machine_cpu_profile profile,
         debug_board_install_real_vector(machine, 6u, 0x0100u) &&
         debug_board_patch(machine,
             CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS), values) &&
-        debug_board_run(machine, code, bytes, &result, &after, &diagnostic) &&
-        result.reason == CORE_MACHINE_STOP_BUDGET &&
-        diagnostic.last_delivered_exception.valid &&
-        diagnostic.last_delivered_exception.exception_mask == VCPUINS_EXCEPT_UD &&
-        after.eip == 0x0100u && debug_board_read_real_frame(machine, &after,
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS), values);
+    if (profile == CORE_MACHINE_CPU_PROFILE_8086) {
+        const lib_status status = passed && core_machine_memory_write(machine,
+            0u, code, bytes) == LIB_STATUS_OK ? core_machine_run(machine,
+            (core_machine_run_budget){32u,0u}, &result) : LIB_STATUS_INVALID_STATE;
+
+        passed = status == LIB_STATUS_INTERNAL_ERROR &&
+            result.reason == CORE_MACHINE_STOP_FAULT &&
+            core_machine_get_cpu_diagnostic(machine, &diagnostic) == LIB_STATUS_OK &&
+            debug_board_snapshot(machine, &after) && diagnostic.first_fault.valid &&
+            diagnostic.first_fault.exception_mask == VCPUINS_EXCEPT_UD &&
+            !diagnostic.last_delivered_exception.valid && after.eip == 0u &&
+            after.esp == 0x8000u;
+    } else {
+        passed = passed && debug_board_run(machine, code, bytes, &result, &after,
+            &diagnostic) && result.reason == CORE_MACHINE_STOP_BUDGET &&
+            diagnostic.last_delivered_exception.valid &&
+            diagnostic.last_delivered_exception.exception_mask == VCPUINS_EXCEPT_UD &&
+            after.eip == 0x0100u && debug_board_read_real_frame(machine, &after,
             frame) && frame[0] == 0u && frame[1] == 0u;
+    }
 
     core_machine_destroy(machine);
     return passed;

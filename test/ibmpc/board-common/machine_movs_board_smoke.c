@@ -130,14 +130,15 @@ static lib_i32 movs_protected_case(lib_u8 form)
     }
     if (!failed) {
         failed = core_machine_run(machine, (core_machine_run_budget){1u, 0u},
-                &result) != LIB_STATUS_INTERNAL_ERROR ||
-            result.reason != CORE_MACHINE_STOP_FAULT ||
+                &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            result.detail != VCPUINS_EXCEPT_SHUTDOWN ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
-            failed = !diagnostic.first_fault.valid ||
-                !(diagnostic.first_fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+            failed = diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+                !(diagnostic.last_delivered_exception.exception_mask & VCPUINS_EXCEPT_SHUTDOWN) ||
                 after.eip != 0u || after.eax != 0xaabb3344u ||
                 after.esi != 0x10u || after.edi != 0x20u;
     }

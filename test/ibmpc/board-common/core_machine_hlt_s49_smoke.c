@@ -4,6 +4,7 @@
 #include "ibmpc/board-common/machine_board_state.h"
 #include "lib/types/types_interface.h"
 #include "x86/core/device_support_interface.h"
+#include "core_machine_board_fixture.h"
 #define main cli_sti_s22_main
 #include "machine_cli_sti_interrupt_smoke.c"
 #undef main
@@ -127,8 +128,7 @@ static lib_i32 hlt_s49_test_defaults(void)
             failed |= !hlt_s49_sregs_preserved(&before, &after);
         }
         core_machine_destroy(state.machine);
-        if (failed)
-            return 0;
+        if (failed) return 0;
     }
     return 1;
 }
@@ -178,8 +178,7 @@ static lib_i32 hlt_s49_test_attributes_and_rejections(void)
             failed |= !hlt_s49_sregs_preserved(&before, &after);
         }
         core_machine_destroy(state.machine);
-        if (failed)
-            return 0;
+        if (failed) return 0;
     }
     for (prefix = 0u; prefix != sizeof(prefixes) / sizeof(prefixes[0]);
         ++prefix) {
@@ -192,7 +191,7 @@ static lib_i32 hlt_s49_test_attributes_and_rejections(void)
             core_machine_run_result result;
             core_machine_debug_cpu_snapshot before = {0};
             core_machine_debug_cpu_snapshot after = {0};
-            lib_status status;
+            lib_status status = LIB_STATUS_INVALID_STATE;
             lib_u8 code[] = { prefixes[prefix][0], 0xf4u, 0u };
             lib_u8 bytes = prefix == 2u ? 3u : 2u;
             lib_i32 failed = !cli_sti_prepare(legacy[profile], &state, LIB_TRUE);
@@ -211,12 +210,12 @@ static lib_i32 hlt_s49_test_attributes_and_rejections(void)
                 failed |= result.reason != CORE_MACHINE_STOP_FAULT;
                 failed |= !diagnostic.first_fault.valid;
                 failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                    VCPUINS_EXCEPT_UD);
+                    legacy[profile] == CORE_MACHINE_CPU_PROFILE_8086 ?
+                        VCPUINS_EXCEPT_UD : VCPUINS_EXCEPT_CE);
                 failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
             }
             core_machine_destroy(state.machine);
-            if (failed)
-                return 0;
+            if (failed) return 0;
         }
     }
     for (prefix = 0u; prefix != 4u; ++prefix) {
@@ -225,7 +224,7 @@ static lib_i32 hlt_s49_test_attributes_and_rejections(void)
         core_machine_run_result result;
         core_machine_debug_cpu_snapshot before = {0};
         core_machine_debug_cpu_snapshot after = {0};
-        lib_status status;
+        lib_status status = LIB_STATUS_INVALID_STATE;
         lib_u8 code[] = { 0xf0u, 0xf4u, 0u, 0u };
         lib_u8 bytes = prefix == 0u ? 2u : prefix == 3u ? 4u : 3u;
         lib_i32 failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state, LIB_TRUE);
@@ -248,12 +247,11 @@ static lib_i32 hlt_s49_test_attributes_and_rejections(void)
             failed |= result.reason != CORE_MACHINE_STOP_FAULT;
             failed |= !diagnostic.first_fault.valid;
             failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                VCPUINS_EXCEPT_UD);
+                VCPUINS_EXCEPT_CE);
             failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
         }
         core_machine_destroy(state.machine);
-        if (failed)
-            return 0;
+        if (failed) return 0;
     }
     return 1;
 }
@@ -304,13 +302,7 @@ static lib_i32 hlt_s49_test_protected(void)
         status = core_machine_run(state.machine,
             (core_machine_run_budget){ 1u, 0u }, &result);
         after = cli_sti_capture(state.machine);
-        failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            LIB_STATUS_OK;
-        failed |= status != LIB_STATUS_INTERNAL_ERROR;
-        failed |= result.reason != CORE_MACHINE_STOP_FAULT;
-        failed |= !diagnostic.first_fault.valid;
-        failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-            VCPUINS_EXCEPT_DF);
+        failed |= !test_core_machine_fixture_shutdown_wait(status, &result);
         failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
     }
     core_machine_destroy(state.machine);
@@ -461,16 +453,11 @@ static lib_i32 hlt_s49_test_irq(void)
 
 lib_i32 main(void)
 {
-    if (!hlt_s49_test_defaults())
-        return 1;
-    if (!hlt_s49_test_attributes_and_rejections())
-        return 1;
-    if (!hlt_s49_test_protected())
-        return 1;
-    if (!hlt_s49_test_vm86())
-        return 1;
-    if (!hlt_s49_test_irq())
-        return 1;
+    if (!hlt_s49_test_defaults()) return 1;
+    if (!hlt_s49_test_attributes_and_rejections()) return 1;
+    if (!hlt_s49_test_protected()) return 1;
+    if (!hlt_s49_test_vm86()) return 1;
+    if (!hlt_s49_test_irq()) return 1;
     lib_c_printf("M5:T316:S49:HLT:OK\n");
     lib_c_printf("M5:T401:S38:HLT-PROFILES:OK\n");
     return 0;

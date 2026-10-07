@@ -109,8 +109,9 @@ static lib_i32 movx_run(movx_machine *state, const lib_u8 *code,
     /* T337_REAL_UD_TERMINAL_IVT_REJECT: vector-6 bus read fails. */
     status = core_machine_run(state->machine, budget, &result);
     if (status != LIB_STATUS_INTERNAL_ERROR ||
-        result.reason != CORE_MACHINE_STOP_FAULT || core_machine_get_cpu_diagnostic(
-            state->machine, out_diagnostic) != LIB_STATUS_OK) return 0;
+        result.reason != CORE_MACHINE_STOP_FAULT ||
+        core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
+            LIB_STATUS_OK) return 0;
     return core_machine_debug_capture_cpu_snapshot(state->machine,
         CORE_MACHINE_CPU_SNAPSHOT_CURRENT, out_cpu) == LIB_STATUS_OK;
 }
@@ -186,7 +187,8 @@ static lib_i32 movx_test_read_boundaries(void)
                         !movx_run(&state, form_code, sizeof(form_code),
                         &after, &diagnostic) || !diagnostic.first_fault.valid ||
                         !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                            VCPUINS_EXCEPT_UD) || provider.reads != 0u ||
+                            VCPUINS_EXCEPT_CE) ||
+                        provider.reads != 0u ||
                         after.ecx != 0xaabbccddu || after.eflags != flags ||
                         after.eip != 0u;
                 }
@@ -201,7 +203,6 @@ static lib_i32 movx_test_read_boundaries(void)
         const core_machine_run_budget budget = {1u, 0u};
         movx_machine state;
         core_machine_debug_cpu_snapshot after;
-        core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
         lib_i32 failed = !movx_prepare_protected_limit(&state);
 
@@ -210,14 +211,10 @@ static lib_i32 movx_test_read_boundaries(void)
                 &registers) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x2000u,
                     limit_code, sizeof(limit_code)) != LIB_STATUS_OK ||
-                core_machine_run(state.machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
-                result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                    LIB_STATUS_OK ||
+                !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
+                    budget, &result), &result) ||
                 core_machine_debug_capture_cpu_snapshot(state.machine,
                     CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-                !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-                    diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
                 after.ecx != 0xaabbccddu || after.eflags != flags ||
                 after.eip != 0u;
         }

@@ -149,7 +149,6 @@ static lib_i32 pusha_popa_test_protected_pusha_limit(void)
     pusha_popa_machine state;
     core_machine_debug_cpu_snapshot before;
     core_machine_debug_cpu_snapshot after;
-    core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     lib_u16 expected[] = {0xa001u, 0xa002u, 0xa003u, 0xa004u, 0xa005u};
     lib_u8 slot;
@@ -165,15 +164,12 @@ static lib_i32 pusha_popa_test_protected_pusha_limit(void)
             state.machine, 0x2000u, code, sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-        failed |= core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
-            &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
+        failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
+            state.machine, (core_machine_run_budget){1u, 0u}, &result), &result);
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
-            failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-            diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
-            after.eip != 0u || after.eax != before.eax ||
+            failed |= after.eip != 0u || after.eax != before.eax ||
             after.ecx != before.ecx || after.edx != before.edx ||
             after.ebx != before.ebx || after.ebp != before.ebp ||
             after.esi != before.esi || after.edi != before.edi ||
@@ -199,7 +195,6 @@ static lib_i32 pusha_popa_test_protected_popa_limit(void)
     pusha_popa_machine state;
     core_machine_debug_cpu_snapshot before;
     core_machine_debug_cpu_snapshot after;
-    core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     lib_u8 slot;
     lib_i32 failed = !pusha_popa_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
@@ -214,15 +209,12 @@ static lib_i32 pusha_popa_test_protected_popa_limit(void)
             state.machine, 0x2000u, code, sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-        failed |= core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
-            &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
+        failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
+            state.machine, (core_machine_run_budget){1u, 0u}, &result), &result);
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
-            failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-            diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
-            after.eip != 0u || after.eax != before.eax ||
+            failed |= after.eip != 0u || after.eax != before.eax ||
             after.ecx != before.ecx || after.edx != before.edx ||
             after.ebx != before.ebx || after.esp != before.esp ||
             after.ebp != before.ebp || after.esi != before.esi ||

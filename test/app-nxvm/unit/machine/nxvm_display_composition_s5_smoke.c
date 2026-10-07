@@ -8,7 +8,7 @@
 #include "ibmpc/machine/display.h"
 #include "ibmpc/machine/lifecycle.h"
 #include "ibmpc/machine/machine_interface.h"
-#include "../support/ibmpc/machine/support/vm_presentation_capture.h"
+#include "../support/ibmpc/machine/support/nxvm_presentation_capture.h"
 #include "../support/rom/session_assets.h"
 #include "ibmpc/machine/machine_private.h"
 
@@ -22,7 +22,7 @@ static lib_i32 vm_display_s5_capture(vm_machine *session,
     core_machine_guest_display_frame *frame, x86_video_kind expected_kind)
 {
     return vm_machine_publish_display(session, LIB_TRUE) == expected_kind &&
-        test_vm_machine_capture_presentation(session, frame) == LIB_STATUS_OK;
+        test_nxvm_machine_capture_presentation(session, frame) == LIB_STATUS_OK;
 }
 
 static lib_i32 vm_display_s5_enable_planar(vm_machine *session)
@@ -92,7 +92,7 @@ lib_i32 main(void)
     cga_even = 0xffu;
     failed |= core_machine_memory_write(session->core_machine,
         0x000b8000u, &cga_even, sizeof(cga_even)) != LIB_STATUS_OK ||
-        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
+        test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation != cga_generation ||
         frame.pixels[0] != 0u || frame.pixels[1] != 1u || frame.pixels[2] != 2u;
 
@@ -116,7 +116,7 @@ lib_i32 main(void)
     session->last_display_publish_milliseconds = 0u;
     failed |= vm_machine_publish_display(session, LIB_FALSE) !=
         X86_VIDEO_KIND_EGA_320X200X16 ||
-        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
+        test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation <= cga_generation ||
         session->display_snapshot_generation != ega_snapshot_generation;
     ega_pixel = 0x5au;
@@ -130,7 +130,7 @@ lib_i32 main(void)
     session->last_display_publish_milliseconds = 0u;
     failed |= vm_machine_publish_display(session, LIB_FALSE) !=
         X86_VIDEO_KIND_EGA_320X200X16 ||
-        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
+        test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation <= cga_generation ||
         frame.pixels[0] != 0u || session->display_snapshot_generation !=
         observation.generation;
@@ -139,7 +139,7 @@ lib_i32 main(void)
     failed |= core_machine_get_timeline_observation(session->core_machine,
         &timeline) != LIB_STATUS_OK || timeline.now != 0u ||
         timeline.pending_events != 0u ||
-        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
+        test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
         frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xffffffu ||
