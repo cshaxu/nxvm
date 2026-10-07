@@ -174,11 +174,14 @@ For complete product tests use ctest --test-dir <matching-cache>
 -R "^mynes\." --output-on-failure -j 1 --timeout 90.
 Timing is not a pass/fail assertion in ordinary CTest.
 
-## Executor Disposition
+## Delivery And Coordinator Disposition
 
-Palette batch is eligible for coordinator actual-diff review: bounded local
-implementation, repeatable conversion benefit, complete output/correctness
-proof and paired artifacts. Native performance and remaining Mapper work are
+Shared P1 ae15f9129 and MyNES P2 b2c973f69 were committed and immediately pushed
+to origin/master. Coordinator reviewed their immutable actual diffs and accepted
+the complete palette batch: bounded local implementation, repeatable conversion
+benefit, complete output/correctness proof and paired artifacts. Native performance and remaining Mapper work are
 not qualified by S1; T44 stays open. No subsequent S is automatically admitted.
 Warm caches, fixed CSVs and reference probes remain needed for immediate S2.
-Excluded unrestricted diagnostic outputs may be removed after process exit.
+Excluded unrestricted diagnostic outputs were removed after process exit.
+Only the latest 0044 MyNES pair remains deployed. S1 closes in the subsequent
+pure governance P; T44 remains open pending owner direction.

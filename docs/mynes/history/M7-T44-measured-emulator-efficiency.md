@@ -17,7 +17,7 @@ production; frameskip/coalescing is not a computational gain.
 
 | Batch | Required proof | Disposition |
 | --- | --- | --- |
-| S1 baseline and palette conversion | Repeatable bounded before/after execution and conversion measures; exact palette ordering/RGB duplicates/overflow, text/publish behavior and bounded memory. Distinguish synthetic, game and paced native routes. | Executor complete: both suites 56/56, exact paired identities and qualified 0044 pair; coordinator immutable-diff review pending. [Evidence](../etc/evidence/m7-t44-s1-palette-performance.md). |
+| S1 baseline and palette conversion | Repeatable bounded before/after execution and conversion measures; exact palette ordering/RGB duplicates/overflow, text/publish behavior and bounded memory. Distinguish synthetic, game and paced native routes. | Accepted and closed after immutable-diff review of ae15f9129 / b2c973f69: both suites 56/56, exact paired identities and qualified 0044 pair. [Evidence](../etc/evidence/m7-t44-s1-palette-performance.md). |
 | S2 Mapper candidate | Only mapping-register-derived address computation. Preserve bus/A12/IRQ and reset/snapshot reconstruction. | Pending S1 evidence; no persistent cache pre-approved. |
 | S3 integrated qualification | Full coverage reconciliation, rejected-candidate dispositions, both output modes/widths, required units/integration and paired artifacts. | Pending previous batches. |
 
@@ -43,3 +43,21 @@ Bloodlust source, not an MIT grant. Remote HEAD/master is
 7ede7dab54bc0cef85774b424025a7d6b8133d28. Only neutral architecture lessons are
 admitted; no copying/transliteration, source/binary import or exact x.xx speed
 claim. The sibling MySMB study is read-only background and not MyNES proof.
+
+## S1 Coordinator Review
+
+Actual review covered the pushed P1 root preset diff and every P2 source,
+test, build, tool, document and artifact change, not just the timing report.
+The packet is frozen in b2c973f69:docs/mynes/states/CURRENT.md.
+Owner outcomes map to a pre-edit baseline, repeatable frame-conversion benefit,
+exact pixels/palette plus game state/PCM proof, bounded local ownership,
+full dual-width tests and latest-pair artifacts. Driver net +9 is justified by
+the direct lookup, not an added layer; full counted source/test net +327 includes
+the reusable measurement and independent regression. RGB aliases, index 255,
+ignored sample high bits and overflow preserve original behavior. No persistent
+state, extra producer, runtime API, shared production or NXVM change exists.
+INI/snapshot/ROM identities are preserved; old EXEs are recoverable in Git.
+The sole Shared diff is the separately approved pair of MyNES preset targets.
+No universal FPS/whole-emulator gain or native timing is accepted. S1 consumes
+the whole palette batch; Mapper remains a separately admitted next candidate.
+T44 remains open, and no S2 implementation has begun.
