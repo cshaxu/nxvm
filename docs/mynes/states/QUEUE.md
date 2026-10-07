@@ -2,9 +2,9 @@
 
 Ordered unnumbered candidates only.
 
-No pending candidate. Owner admits the former performance candidate as
-[M7 T44](../history/M7-T44-measured-emulator-efficiency.md); Current owns its
-active packet. Later ideas require their own proposal before entering Queue.
+No pending candidate. [M7 T44](../history/M7-T44-measured-emulator-efficiency.md)
+is closed on owner acceptance. Later ideas require their own proposal and
+admission; no next task is automatically allocated.
 
 Closed task proposals are retained under
 [`../history/retired-proposals/`](../history/retired-proposals/) as historical

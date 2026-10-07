@@ -1,7 +1,8 @@
 # M7 T44 Measured Emulator Efficiency
 
 Owner admits the queued Nesticle-inspired performance study on 2026-10-06
-against fc0d31623, after closed MyNES T43. Current owns the active packet; the
+against fc0d31623, after closed MyNES T43. Task closes on owner acceptance after
+S3 reconciliation on 2026-10-06. Historical packets are frozen in their commits; the
 [proposal](M7-T44-measured-emulator-efficiency-proposal.md) preserves the
 full goal. No performance gain or new product is qualified at admission.
 
@@ -19,7 +20,7 @@ production; frameskip/coalescing is not a computational gain.
 | --- | --- | --- |
 | S1 baseline and palette conversion | Repeatable bounded before/after execution and conversion measures; exact palette ordering/RGB duplicates/overflow, text/publish behavior and bounded memory. Distinguish synthetic, game and paced native routes. | Accepted and closed after immutable-diff review of ae15f9129 / b2c973f69: both suites 56/56, exact paired identities and qualified 0044 pair. [Evidence](../etc/evidence/m7-t44-s1-palette-performance.md). |
 | S2 Mapper candidate | Only mapping-register-derived address computation. Preserve bus/A12/IRQ and reset/snapshot reconstruction. | Accepted and closed after actual-diff review of b22a3bb89: selected simplifications and CNROM bounds repair, both suites 57/57, paired proof and updated 0044 pair. [Evidence](../etc/evidence/m7-t44-s2-mapper-performance.md). |
-| S3 integrated qualification | Full coverage reconciliation, rejected-candidate dispositions, both output modes/widths, required units/integration and paired artifacts. | Executor reconciliation complete: exact S2 inputs/results reused, owner accepts S2, candidate limits and existing TODO reconciled. Coordinator final review pending. [Audit](../etc/evidence/m7-t44-s3-closure.md). |
+| S3 integrated qualification | Full coverage reconciliation, rejected-candidate dispositions, both output modes/widths, required units/integration and paired artifacts. | Accepted after actual-diff review of f1a1ffa34; exact accepted inputs/results reused, candidate/debt/scope dispositions reconciled, proposal archived. S3 and T44 closed. [Audit](../etc/evidence/m7-t44-s3-closure.md). |
 
 Accepted means repeatable whole-frame benefit with unchanged applicable bytes,
 guest timing/state/events and no material regression. Rejected candidates keep
@@ -87,3 +88,19 @@ scopes; no universal speed/FPS claim is accepted. No Shared or adjacent App,
 INI, ROM or owner snapshot change exists. P1 was pushed immediately; subsequent
 pure governance P records S2 closure. T44 stays open for its S3 reconciliation,
 which has not started and awaits owner direction.
+
+## S3 Final Acceptance And T Closure
+
+Owner accepts S2 and requests closure. S3 P1 f1a1ffa34 completes the planned
+task audit; coordinator reviews its actual documentation/archive diff and the
+unchanged source/test/tool/configuration/artifact surface against b22a3bb89.
+Existing final logs contain 57 passes and zero failures per width; both EXE,
+INI and six-ROM identities match accepted evidence. No redundant full rebuild
+or test is run for this documentation-only step. Local T44 probe binaries/CSV
+directories are disposed after recording summaries; warm build caches remain.
+All candidate batches have direct dispositions, no new in-scope defect remains,
+and five pre-existing unrelated TODO entries retain their original owners.
+No Shared source import, adjacent App change, native FPS/per-device timing or
+compounded speed claim is accepted. The proposal is archived beside this record.
+Pure governance P records acceptance and closes S3/T44; Queue is empty and no
+next T/S is admitted. Current 0044 pair remains the S2 owner-tested build.
