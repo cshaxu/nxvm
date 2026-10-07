@@ -172,7 +172,7 @@ static lib_i32 ud_s1_protected_delivery(const lib_u8 *code,
             core_machine_debug_read_linear(state.machine,
                 after.ss.base + after.esp, frame, sizeof(frame)) != LIB_STATUS_OK || frame[0] != 0u ||
             frame[1] != before.cs.selector ||
-            frame[2] != before.eflags;
+            frame[2] != (before.eflags | 0x00010000u);
     }
     if (!failed) {
         failed |= core_machine_run(state.machine,

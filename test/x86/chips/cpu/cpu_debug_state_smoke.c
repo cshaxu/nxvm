@@ -238,8 +238,266 @@ static lib_i32 debug_state_test_data_breakpoints(void)
     return 1;
 }
 
+static lib_bool debug_state_test_popf_completion(void)
+{
+    static const lib_u8 forms[][2] = {{0x9du,0u}, {0x66u,0x9du}};
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    lib_size profile;
+    lib_u8 form, old_rf, popped_rf, old_tf, popped_tf;
+    lib_u32 rf_failures = 0u, tf_failures = 0u;
+
+    for (form = 0u; form < 2u; ++form)
+    for (old_rf = 0u; old_rf < 2u; ++old_rf)
+    for (popped_rf = 0u; popped_rf < 2u; ++popped_rf) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        const lib_u32 image = 0x02u | (popped_rf ? VCPU_EFLAGS_RF : 0u);
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        fixture.cpu.data.sp = 0x8000u;
+        fixture.cpu.data.eflags = 0x02u | (old_rf ? VCPU_EFLAGS_RF : 0u);
+        lib_memory_copy(fixture.memory + 0x8000u, &image, form ? 4u : 2u);
+        if (cpu_instruction_run(&fixture, forms[form], form + 1u, &after) !=
+                LIB_STATUS_OK || fixture.fault.valid ||
+            (after.data.eflags & VCPU_EFLAGS_RF) !=
+                (old_rf ? VCPU_EFLAGS_RF : 0u) ||
+            after.data.eip != form + 1u || after.data.sp != 0x8000u +
+                (form ? 4u : 2u)) ++rf_failures;
+    }
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (form = 0u; form < (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386 ?
+        2u : 1u); ++form)
+    for (old_tf = 0u; old_tf < 2u; ++old_tf)
+    for (popped_tf = 0u; popped_tf < 2u; ++popped_tf) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        const lib_u16 handler[] = {0x0100u,0u};
+        const lib_u32 image = 0x02u | (popped_tf ? VCPU_EFLAGS_TF : 0u);
+        lib_u16 return_ip = 0u;
+
+        cpu_instruction_prepare(&fixture, profiles[profile]);
+        fixture.cpu.data.sp = 0x8000u;
+        fixture.cpu.data.eflags = 0x02u | (old_tf ? VCPU_EFLAGS_TF : 0u);
+        lib_memory_copy(fixture.memory + 4u, handler, sizeof(handler));
+        fixture.memory[0x0100u] = 0x90u;
+        lib_memory_copy(fixture.memory + 0x8000u, &image, form ? 4u : 2u);
+        if (cpu_instruction_run(&fixture, forms[form], form + 1u, &after) !=
+                LIB_STATUS_OK || fixture.fault.valid) {
+            ++tf_failures;
+            continue;
+        }
+        lib_memory_copy(&return_ip, fixture.memory + after.data.sp,
+            sizeof(return_ip));
+        if (old_tf ? (!fixture.delivered_exception.valid ||
+                fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
+                after.data.eip != 0x0100u || return_ip != form + 1u ||
+                (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386 &&
+                    (after.data.dr6 & 0x00004000u) == 0u)) :
+            (fixture.delivered_exception.valid || after.data.eip != form + 1u ||
+                (after.data.eflags & VCPU_EFLAGS_TF) !=
+                    (popped_tf ? VCPU_EFLAGS_TF : 0u))) ++tf_failures;
+    }
+    lib_c_printf("POPF completion RF cases=8 failures=%u; TF cases=24 failures=%u\n",
+        (unsigned)rf_failures, (unsigned)tf_failures);
+    return rf_failures == 0u && tf_failures == 0u;
+}
+
+static lib_bool debug_state_test_rf_images(void)
+{
+    static const struct {
+        lib_u8 code[2];
+        lib_u8 length;
+        lib_u8 vector;
+        lib_bool fault;
+    } cases[] = {
+        {{0xf6u,0xf1u},2u,0u,LIB_TRUE},
+        {{0x0fu,0x0bu},2u,6u,LIB_TRUE},
+        {{0x90u,0u},1u,1u,LIB_TRUE},
+        {{0x90u,0u},1u,1u,LIB_FALSE},
+        {{0xcdu,0x20u},2u,0x20u,LIB_FALSE}
+    };
+    static const lib_u8 gdt[] = {
+        0,0,0,0,0,0,0,0,
+        0xffu,0xffu,0,0,0,0x9au,0,0
+    };
+    lib_u8 mode, wide, old_rf;
+    lib_size index;
+    lib_u32 failures = 0u;
+
+    for (mode = 0u; mode < 2u; ++mode)
+    for (wide = 0u; wide <= mode; ++wide)
+    for (old_rf = 0u; old_rf < 2u; ++old_rf)
+    for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        const lib_u8 vector = cases[index].vector;
+        const lib_u16 real_gate[] = {0x0100u,0u};
+        const lib_u8 gate[] = {0u,1u,8u,0u,0u,
+            (lib_u8)(wide ? 0x8eu : 0x86u),0u,0u};
+        lib_u32 image = 0u;
+        lib_u32 flags = 0x02u | (old_rf ? VCPU_EFLAGS_RF : 0u);
+
+        /* An execution breakpoint is suppressed by RF. Test that fault with
+         * RF clear; the other faults cover both incoming RF states. */
+        if (index == 2u && old_rf) continue;
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        fixture.cpu.data.sp = 0x8000u;
+        if (index == 2u) fixture.cpu.data.dr7 = 1u;
+        if (index == 3u) flags |= VCPU_EFLAGS_TF;
+        if (mode) {
+            debug_state_enter_protected(&fixture, 0u, LIB_FALSE);
+            fixture.cpu.data.gdtr.base = 0x300u;
+            fixture.cpu.data.gdtr.limit = sizeof(gdt) - 1u;
+            fixture.cpu.data.idtr.base = 0x400u;
+            fixture.cpu.data.idtr.limit = 0x107u;
+            lib_memory_copy(fixture.memory + 0x300u, gdt, sizeof(gdt));
+            lib_memory_copy(fixture.memory + 0x400u + vector * 8u,
+                gate, sizeof(gate));
+        } else {
+            lib_memory_copy(fixture.memory + vector * 4u,
+                real_gate, sizeof(real_gate));
+        }
+        fixture.cpu.data.eflags = flags;
+        fixture.cpu.data.cs.base = 0x2000u;
+        fixture.cpu.data.dr0 = 0x2000u;
+        lib_memory_copy(fixture.memory + 0x2000u, cases[index].code,
+            cases[index].length);
+        core_machine_cpu_execution_refresh(&fixture.execution);
+        after = fixture.cpu;
+        if (fixture.execution.stop_requested ||
+            fixture.fault.valid || after.data.eip != 0x0100u ||
+            after.data.sp != 0x8000u - (wide ? 12u : 6u)) {
+            lib_c_printf("RF delivery mode=%u wide=%u old=%u case=%u ip=%x sp=%x fault=%u\n",
+                mode, wide, old_rf, (unsigned)index, after.data.eip,
+                after.data.sp, fixture.fault.valid);
+            ++failures;
+            continue;
+        }
+        lib_memory_copy(&image, fixture.memory + after.data.sp +
+            (wide ? 8u : 4u), wide ? 4u : 2u);
+        if ((wide && (image & VCPU_EFLAGS_RF) !=
+                (cases[index].fault || (index == 4u && old_rf) ?
+                    VCPU_EFLAGS_RF : 0u)) ||
+            (after.data.eflags & VCPU_EFLAGS_RF) != 0u ||
+            (cases[index].fault && (!fixture.delivered_exception.valid ||
+                fixture.delivered_exception.eflags != flags))) {
+            lib_c_printf("RF image mode=%u wide=%u old=%u case=%u image=%x live=%x diagnostic=%u/%x expected=%x\n",
+                mode, wide, old_rf, (unsigned)index, image, after.data.eflags,
+                fixture.delivered_exception.valid,
+                fixture.delivered_exception.eflags, flags);
+            ++failures;
+        }
+    }
+    /* Failed delivery must retain the original state, not the RF fault image. */
+    for (index = 0u; index < 2u; ++index)
+    for (old_rf = 0u; old_rf < 2u; ++old_rf) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        const lib_u8 code[] = {0x0fu,0x0bu};
+        const lib_u32 flags = 0x02u | (old_rf ? VCPU_EFLAGS_RF : 0u);
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        if (index == 1u && old_rf) continue;
+        if (index == 1u) fixture.cpu.data.dr7 = 1u;
+        fixture.cpu.data.eflags = flags;
+        fixture.cpu.data.idtr.limit = 0u;
+        if (cpu_instruction_run(&fixture, code, sizeof(code), &after) !=
+                LIB_STATUS_INTERNAL_ERROR || !fixture.fault.valid ||
+            after.data.eflags != flags || fixture.fault.eflags != flags)
+            ++failures;
+    }
+    lib_c_printf("RF fault/trap/image/rollback failures=%u\n",
+        (unsigned)failures);
+    return failures == 0u;
+}
+
+static lib_bool debug_state_test_ordinary_transfer_rf(void)
+{
+    static const struct {
+        lib_u8 code[5];
+        lib_u8 length;
+        lib_u16 ip;
+        lib_u16 sp;
+    } cases[] = {
+        {{0x90u,0u,0u,0u,0u},1u,1u,0x8000u},
+        {{0xe8u,0u,0u,0u,0u},3u,3u,0x7ffeu},
+        {{0xe9u,0u,0u,0u,0u},3u,3u,0x8000u},
+        {{0x9au,0u,1u,0u,0u},5u,0x0100u,0x7ffcu},
+        {{0xeau,0u,1u,0u,0u},5u,0x0100u,0x8000u}
+    };
+    lib_size index;
+    lib_u8 old_rf;
+
+    for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
+    for (old_rf = 0u; old_rf < 2u; ++old_rf) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        fixture.cpu.data.sp = 0x8000u;
+        fixture.cpu.data.eflags = 2u | (old_rf ? VCPU_EFLAGS_RF : 0u);
+        if (cpu_instruction_run(&fixture, cases[index].code,
+                cases[index].length, &after) != LIB_STATUS_OK || fixture.fault.valid ||
+            after.data.eip != cases[index].ip || after.data.sp != cases[index].sp ||
+            (after.data.eflags & VCPU_EFLAGS_RF) != 0u)
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool debug_state_test_iret_completion(void)
+{
+    lib_u8 wide, bits;
+
+    for (wide = 0u; wide < 2u; ++wide)
+    for (bits = 0u; bits < 16u; ++bits) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        const lib_u8 code[] = {0x66u,0xcfu};
+        const lib_u16 handler[] = {0x0200u,0u};
+        const lib_u32 image = 2u | ((bits & 2u) ? VCPU_EFLAGS_TF : 0u) |
+            ((bits & 8u) ? VCPU_EFLAGS_RF : 0u);
+        const lib_u32 frame32[] = {0x0100u,0u,image};
+        const lib_u16 frame16[] = {0x0100u,0u,(lib_u16)image};
+        const lib_u32 expected_rf = (wide ? bits & 8u : bits & 4u) ?
+            VCPU_EFLAGS_RF : 0u;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        fixture.cpu.data.sp = 0x8000u;
+        fixture.cpu.data.eflags = 2u | ((bits & 1u) ? VCPU_EFLAGS_TF : 0u) |
+            ((bits & 4u) ? VCPU_EFLAGS_RF : 0u);
+        lib_memory_copy(fixture.memory + 4u, handler, sizeof(handler));
+        lib_memory_copy(fixture.memory + 0x8000u,
+            wide ? (const void *)frame32 : (const void *)frame16,
+            wide ? sizeof(frame32) : sizeof(frame16));
+        if (cpu_instruction_run(&fixture, wide ? code : code + 1u,
+                wide ? 2u : 1u, &after) != LIB_STATUS_OK || fixture.fault.valid)
+            return LIB_FALSE;
+        if (bits & 1u) {
+            if (!fixture.delivered_exception.valid ||
+                fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
+                fixture.delivered_exception.point.eip != 0x0100u ||
+                after.data.eip != 0x0200u ||
+                (after.data.eflags & (VCPU_EFLAGS_RF | VCPU_EFLAGS_TF)) != 0u)
+                return LIB_FALSE;
+        } else if (fixture.delivered_exception.valid || after.data.eip != 0x0100u ||
+            (after.data.eflags & VCPU_EFLAGS_RF) != expected_rf ||
+            (after.data.eflags & VCPU_EFLAGS_TF) != (image & VCPU_EFLAGS_TF))
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
+    if (!debug_state_test_iret_completion()) return 1;
+    if (!debug_state_test_ordinary_transfer_rf()) return 1;
+    if (!debug_state_test_rf_images()) return 1;
+    if (!debug_state_test_popf_completion()) return 1;
     if (!debug_state_test_mov_dr()) {
         lib_c_printf("debug-state stage=mov-dr\n");
         return 1;

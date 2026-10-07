@@ -291,7 +291,7 @@ static lib_i32 paging_test_delivered_page_fault(void)
                 state.machine, after.ss.base + after.esp,
                 frame, sizeof(frame)) != LIB_STATUS_OK || frame[0] != 0u ||
             frame[1] != 0x0080u || frame[2] != TEST_CODE_SELECTOR ||
-            frame[3] != before.eflags || after.eax != before.eax ||
+            frame[3] != (before.eflags | 0x00010000u) || after.eax != before.eax ||
             after.ebx != before.ebx || after.ecx != before.ecx ||
             after.edx != before.edx || after.ebp != before.ebp ||
             after.esi != before.esi || after.edi != before.edi;

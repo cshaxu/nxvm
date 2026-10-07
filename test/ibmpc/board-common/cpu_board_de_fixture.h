@@ -95,7 +95,7 @@ static lib_i32 test_cpu_board_de_delivery(const test_cpu_board_de_case *entry)
                 LIB_STATUS_OK || frame32[0] != code_offset ||
                 frame32[1] != before.cs.selector ||
                 frame32[2] != ((before.eflags &
-                    ~0xfffc802au) | 0x02u);
+                    ~0xfffc802au) | 0x00010002u);
     }
     core_machine_destroy(machine);
     return !failed;

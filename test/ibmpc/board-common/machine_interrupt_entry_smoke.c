@@ -543,8 +543,8 @@ static lib_i32 ie_test_fault_delivery(lib_u32 mask, lib_u8 vector,
             after.esp != IE_STACK_BASE - 16u ||
             !ie_read(&state, IE_STACK_BASE - 16u, frame, sizeof(frame)) ||
             frame[0] != code || frame[1] != diagnostic.last_delivered_exception.point.eip ||
-            frame[2] != selector || frame[3] != (user_source ? 0x00000302u :
-                0x00000202u) ||
+            frame[2] != selector || frame[3] != (user_source ? 0x00010302u :
+                0x00010202u) ||
             !ie_read(&state, IE_GDT_BASE + 13u, &access_after,
                 sizeof(access_after)) || access_after != (lib_u8)(access_before | 1u);
     }
@@ -576,7 +576,7 @@ static lib_i32 ie_test_t305_fault_delivery(void)
             after.esp != IE_STACK_BASE - 16u ||
             !ie_read(&state, IE_STACK_BASE - 16u, frame, sizeof(frame)) ||
             frame[0] != IE_VECTOR * 8u + 2u || frame[1] != 0u ||
-            frame[2] != 0x0008u || frame[3] != 0x00000202u;
+            frame[2] != 0x0008u || frame[3] != 0x00010202u;
     }
     core_machine_destroy(state.machine);
     return !failed;

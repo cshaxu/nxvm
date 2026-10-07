@@ -149,8 +149,49 @@ static lib_i32 vm86_iret_paging_success(void)
     return !failed;
 }
 
+static lib_bool vm86_iret_flags_matrix(void)
+{
+    lib_u8 wide, old_rf, new_rf;
+
+    for (wide = 0u; wide < 2u; ++wide)
+    for (old_rf = 0u; old_rf < 2u; ++old_rf)
+    for (new_rf = 0u; new_rf < 2u; ++new_rf) {
+        vm86_iret_state state;
+        const lib_u8 code[] = {0x66u,0xcfu};
+        const lib_u32 image = 3u | (new_rf ? VCPU_EFLAGS_RF : 0u);
+        const lib_u32 frame32[] = {0x0100u,0x0200u,image};
+        const lib_u16 frame16[] = {0x0100u,0x0200u,(lib_u16)image};
+        const lib_u32 expected = 3u | VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL |
+            ((wide ? new_rf : old_rf) ? VCPU_EFLAGS_RF : 0u);
+
+        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        state.cpu.data.cr0 |= VCPU_CR0_PE;
+        state.cpu.data.cs.selector = 0x0200u;
+        state.cpu.data.cs.base = 0x2000u;
+        state.cpu.data.cs.dpl = 3u;
+        state.cpu.data.ss.selector = 0x0300u;
+        state.cpu.data.ss.base = 0x3000u;
+        state.cpu.data.ss.dpl = 3u;
+        state.cpu.data.sp = 0x8000u;
+        state.cpu.data.eflags = 2u | VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL |
+            (old_rf ? VCPU_EFLAGS_RF : 0u);
+        lib_memory_copy(state.memory + 0x2000u, wide ? code : code + 1u,
+            wide ? 2u : 1u);
+        lib_memory_copy(state.memory + 0xb000u,
+            wide ? (const void *)frame32 : (const void *)frame16,
+            wide ? sizeof(frame32) : sizeof(frame16));
+        core_machine_cpu_execution_refresh(&state.execution);
+        if (state.execution.stop_requested || state.fault.valid ||
+            state.delivered_exception.valid || state.cpu.data.eip != 0x0100u ||
+            state.cpu.data.sp != 0x8000u + (wide ? 12u : 6u) ||
+            state.cpu.data.eflags != expected) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
+    if (!vm86_iret_flags_matrix()) return 1;
     if (!vm86_iret_success((const lib_u8[]){ 0xcfu }, 1u) ||
         !vm86_iret_success((const lib_u8[]){ 0x67u, 0xcfu }, 2u) ||
         !vm86_iret_stack_atomic() || !vm86_iret_paging_success())

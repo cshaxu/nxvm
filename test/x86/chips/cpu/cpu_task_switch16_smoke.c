@@ -170,8 +170,43 @@ static lib_bool cpu_task16_expect_double_fault_gate(void)
         fixture.memory[CPU_TASK16_B_BASE] == 0x28u;
 }
 
+static lib_bool cpu_task16_completion_flags(void)
+{
+    static const cpu_task16_case cases[] = {CPU_TASK16_DIRECT, CPU_TASK16_CALL,
+        CPU_TASK16_GATE, CPU_TASK16_IDT_GATE};
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    lib_size index, profile;
+    lib_u8 old_tf, new_tf, old_rf;
+
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
+    for (old_tf = 0u; old_tf < 2u; ++old_tf)
+    for (new_tf = 0u; new_tf < 2u; ++new_tf)
+    for (old_rf = 0u; old_rf <= profile; ++old_rf) {
+        cpu_instruction_fixture fixture;
+        const lib_u16 incoming = (lib_u16)(2u | (new_tf ? VCPU_EFLAGS_TF : 0u));
+
+        cpu_task16_prepare(&fixture, profiles[profile], cases[index]);
+        cpu_task16_refresh(&fixture, 1u);
+        fixture.cpu.data.eflags = 2u | (old_tf ? VCPU_EFLAGS_TF : 0u) |
+            (old_rf ? VCPU_EFLAGS_RF : 0u);
+        lib_memory_copy(fixture.memory + CPU_TASK16_B_BASE + 0x10u,
+            &incoming, sizeof(incoming));
+        cpu_task16_refresh(&fixture, 1u);
+        if (fixture.execution.stop_requested || fixture.fault.valid ||
+            fixture.delivered_exception.valid || fixture.execution.debug_trap_pending ||
+            fixture.cpu.data.tr.selector != 0x30u || fixture.cpu.data.eip != 0x100u ||
+            fixture.cpu.data.eflags != (lib_u32)(incoming |
+                (index ? VCPU_EFLAGS_NT : 0u))) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
+    if (!cpu_task16_completion_flags()) return 1;
     lib_bool failed = LIB_FALSE;
 
     failed |= !cpu_task16_expect_success(CORE_MACHINE_CPU_PROFILE_80286,

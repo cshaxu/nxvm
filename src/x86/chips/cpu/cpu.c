@@ -399,6 +399,7 @@ void core_machine_cpu_execution_context_initialize(
     context->debug_trap_pending = LIB_FALSE;
     context->debug_tf_before = LIB_FALSE;
     context->debug_rf_before = LIB_FALSE;
+    context->instruction_task_switched = LIB_FALSE;
     context->debug_trap_cause = 0u;
     context->preview_mode = LIB_FALSE;
     context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
@@ -480,6 +481,7 @@ void core_machine_cpu_state_initialize(
         context->debug_trap_pending = LIB_FALSE;
         context->debug_tf_before = LIB_FALSE;
         context->debug_rf_before = LIB_FALSE;
+        context->instruction_task_switched = LIB_FALSE;
         context->debug_trap_cause = 0u;
         context->prefetch_count = 0u;
         context->prefetch_capacity = context->cpu_profile ==

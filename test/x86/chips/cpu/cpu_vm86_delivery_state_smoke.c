@@ -196,7 +196,7 @@ static lib_bool vm86_state_delivery(lib_u8 vector, const lib_u8 *code,
         frame[error_frame ? 1u : 0u] == (trap ? 1u : 0u) &&
         frame[error_frame ? 2u : 1u] == 0x200u &&
         frame[error_frame ? 3u : 2u] == (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF |
-            (trap ? VCPU_EFLAGS_TF : 0u) | (breakpoint ? VCPU_EFLAGS_RF : 0u)) &&
+            (trap ? VCPU_EFLAGS_TF : VCPU_EFLAGS_RF)) &&
         frame[error_frame ? 4u : 3u] == 0x1234u &&
         frame[error_frame ? 5u : 4u] == 0x300u &&
         frame[error_frame ? 6u : 5u] == 0x500u &&

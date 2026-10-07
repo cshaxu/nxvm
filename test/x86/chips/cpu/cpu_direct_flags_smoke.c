@@ -218,7 +218,7 @@ static lib_i32 direct_flags_test_real_identity(void)
         { CORE_MACHINE_CPU_PROFILE_8086, 0x0fd7u, 0x0002u },
         { CORE_MACHINE_CPU_PROFILE_8088, 0x0fd7u, 0x0002u },
         { CORE_MACHINE_CPU_PROFILE_80186, 0x0fd7u, 0x0002u },
-        { CORE_MACHINE_CPU_PROFILE_80286, 0x7fd7u, 0x7002u },
+        { CORE_MACHINE_CPU_PROFILE_80286, 0x7fd7u, 0x0002u },
         { CORE_MACHINE_CPU_PROFILE_80386, 0xffd7u, 0x7002u }
     };
 
@@ -244,8 +244,100 @@ static lib_i32 direct_flags_test_real_identity(void)
     return 1;
 }
 
+static lib_bool direct_flags_test_interrupt_privilege(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const lib_u8 gdt[] = {
+        0,0,0,0,0,0,0,0,
+        0xffu,0xffu,0,0,0,0x9au,0,0,
+        0xffu,0xffu,0,0,0,0x92u,0,0
+    };
+    static const lib_u8 gate[] = {0u,1u,8u,0u,0u,0x86u,0u,0u};
+    lib_size profile;
+    lib_u8 mode, cpl, iopl, initial_if, set;
+    lib_u32 failures = 0u, count = 0u;
+
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (mode = 0u; mode <= (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80286);
+        ++mode)
+    for (cpl = 0u; cpl < (mode ? 4u : 1u); ++cpl)
+    for (iopl = 0u; iopl < (mode ? 4u : 1u); ++iopl)
+    for (initial_if = 0u; initial_if < 2u; ++initial_if)
+    for (set = 0u; set < 2u; ++set) {
+        cpu_instruction_fixture fixture;
+        const lib_u16 tss[] = {0u,0x9000u,0x10u};
+        const lib_u8 opcode = set ? 0xfbu : 0xfau;
+        const lib_u32 flags = 0x43u | ((lib_u32)iopl << 12u) |
+            (initial_if ? VCPU_EFLAGS_IF : 0u);
+        const lib_bool rejected = mode && cpl > iopl;
+        lib_u16 saved_ip = 0xffffu, saved_flags = 0u;
+
+        cpu_instruction_prepare(&fixture, profiles[profile]);
+        fixture.cpu.data.sp = 0x8000u;
+        fixture.cpu.data.eflags = flags;
+        fixture.cpu.data.cs.base = 0x2000u;
+        if (mode) {
+            fixture.cpu.data.cr0 |= VCPU_CR0_PE;
+            fixture.cpu.data.cs.dpl = cpl;
+            fixture.cpu.data.cs.selector = (lib_u16)(8u | cpl);
+            fixture.cpu.data.ss.dpl = cpl;
+            fixture.cpu.data.gdtr.base = 0x300u;
+            fixture.cpu.data.gdtr.limit = sizeof(gdt) - 1u;
+            fixture.cpu.data.idtr.base = 0x400u;
+            fixture.cpu.data.idtr.limit = 0x6fu;
+            fixture.cpu.data.tr.flagValid = LIB_TRUE;
+            fixture.cpu.data.tr.selector = 0x28u;
+            fixture.cpu.data.tr.sregtype = SREG_TR;
+            fixture.cpu.data.tr.base = 0x500u;
+            fixture.cpu.data.tr.limit = 0x2bu;
+            fixture.cpu.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
+            lib_memory_copy(fixture.memory + 0x300u, gdt, sizeof(gdt));
+            lib_memory_copy(fixture.memory + 0x468u, gate, sizeof(gate));
+            lib_memory_copy(fixture.memory + 0x500u, tss, sizeof(tss));
+        }
+        fixture.memory[0x2000u] = opcode;
+        core_machine_cpu_execution_refresh(&fixture.execution);
+        ++count;
+        if (rejected) {
+            lib_memory_copy(&saved_ip, fixture.memory + fixture.cpu.data.sp + 2u,
+                sizeof(saved_ip));
+            lib_memory_copy(&saved_flags, fixture.memory + fixture.cpu.data.sp + 6u,
+                sizeof(saved_flags));
+            if (fixture.execution.stop_requested || fixture.fault.valid ||
+                !fixture.delivered_exception.valid ||
+                fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_GP ||
+                fixture.delivered_exception.exception_code != 0u ||
+                fixture.cpu.data.eip != 0x100u || saved_ip != 0u ||
+                saved_flags != flags || fixture.instructions.data.flagMaskInt) {
+                if (failures < 4u) lib_c_printf("CLI/STI reject profile=%u cpl=%u iopl=%u stop=%u terminal=%x delivered=%u/%x/%x ip=%x sp=%x saved=%x/%x shadow=%u\n",
+                    (unsigned)profiles[profile], cpl, iopl,
+                    fixture.execution.stop_requested, fixture.fault.exception_mask,
+                    fixture.delivered_exception.valid,
+                    fixture.delivered_exception.exception_mask,
+                    fixture.delivered_exception.exception_code,
+                    fixture.cpu.data.eip, fixture.cpu.data.sp, saved_ip,
+                    saved_flags, fixture.instructions.data.flagMaskInt);
+                ++failures;
+            }
+        } else if (fixture.execution.stop_requested || fixture.fault.valid ||
+            fixture.delivered_exception.valid || fixture.cpu.data.eip != 1u ||
+            fixture.cpu.data.sp != 0x8000u || fixture.cpu.data.eflags !=
+                (set ? flags | VCPU_EFLAGS_IF : flags & ~VCPU_EFLAGS_IF) ||
+            fixture.instructions.data.flagMaskInt != (set ? LIB_TRUE : LIB_FALSE))
+            ++failures;
+    }
+    lib_c_printf("CLI/STI privilege cases=%u failures=%u\n",
+        (unsigned)count, (unsigned)failures);
+    return failures == 0u;
+}
+
 int main(void)
 {
+    if (!direct_flags_test_interrupt_privilege()) return 1;
     if (!direct_flags_test_default()) {
         lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-DIRECT-FLAGS:DEFAULT:FAIL\n");
         return 1;

@@ -151,6 +151,7 @@ struct core_machine_cpu_execution_context {
      * for retirement of the faulting instruction by the machine clock owner. */
     lib_u8 instruction_in_progress;
     lib_u8 instruction_fault_delivered;
+    lib_bool instruction_task_switched;
     /* Private CPU-execution state for post-instruction 80386 debug traps. */
     lib_u8 debug_trap_pending;
     lib_u8 debug_tf_before;

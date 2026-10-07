@@ -199,8 +199,78 @@ static lib_i32 iret_test_user_flags(void)
     return !failed;
 }
 
+static lib_bool iret_test_flags_matrix(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    lib_u8 profile, wide, outer, cpl, old_iopl, new_iopl, bits;
+    lib_u32 count = 0u, failures = 0u;
+
+    for (profile = 0u; profile < 2u; ++profile)
+    for (wide = 0u; wide <= profile; ++wide)
+    for (outer = 0u; outer < 2u; ++outer)
+    for (cpl = 0u; cpl < (outer ? 3u : 4u); ++cpl)
+    for (old_iopl = 0u; old_iopl < 4u; ++old_iopl)
+    for (new_iopl = 0u; new_iopl < 4u; ++new_iopl)
+    for (bits = 0u; bits < (profile ? 16u : 4u); ++bits) {
+        iret_machine state;
+        const lib_u8 target_cpl = outer ? 3u : cpl;
+        const lib_u8 code[] = {0x66u,0xcfu};
+        const lib_u8 length = profile && !wide ? 2u : 1u;
+        const lib_u32 oldflags = 2u | ((lib_u32)old_iopl << 12u) |
+            ((bits & 1u) ? VCPU_EFLAGS_IF : 0u) |
+            ((bits & 4u) ? VCPU_EFLAGS_RF : 0u);
+        const lib_u32 newflags = 3u | ((lib_u32)new_iopl << 12u) |
+            ((bits & 2u) ? VCPU_EFLAGS_IF : 0u) |
+            ((bits & 8u) ? VCPU_EFLAGS_RF : 0u);
+        lib_u32 frame32[] = {length,8u | target_cpl,newflags,0x9000u,
+            0x10u | target_cpl};
+        lib_u16 frame16[] = {length,(lib_u16)(8u | target_cpl),
+            (lib_u16)newflags,0x9000u,(lib_u16)(0x10u | target_cpl)};
+        lib_u32 preserve = wide ? 0u : 0xffff0000u;
+        lib_u32 expected;
+
+        if (cpl) preserve |= VCPU_EFLAGS_IOPL;
+        if (cpl > old_iopl) preserve |= VCPU_EFLAGS_IF;
+        expected = (oldflags & preserve) | (newflags & ~preserve);
+        if (!profile) expected &= 0x7fd5u;
+        expected |= 2u;
+        if (!iret_prepare(&state, IRET_NEGATIVE_NONE, 0, 0, 0)) return LIB_FALSE;
+        state.execution.cpu_profile = profiles[profile];
+        state.cpu.data.cs.dpl = cpl;
+        state.cpu.data.cs.selector = (lib_u16)(8u | cpl);
+        state.cpu.data.ss.dpl = cpl;
+        state.cpu.data.eflags = oldflags;
+        state.memory[IRET_GDT_BASE + 13u] = (lib_u8)(0x9au | (target_cpl << 5u));
+        state.memory[IRET_GDT_BASE + 21u] = (lib_u8)(0x92u | (target_cpl << 5u));
+        state.cpu.data.ss.seg.data.big = LIB_FALSE;
+        if (!iret_write(&state, IRET_CODE_BASE, length == 2u ? code : code + 1u,
+                length) || !iret_write(&state, IRET_STACK,
+                wide ? (const void *)frame32 : (const void *)frame16,
+                (wide ? 4u : 2u) * (outer ? 5u : 3u))) return LIB_FALSE;
+        core_machine_cpu_execution_refresh(&state.execution);
+        ++count;
+        if (state.execution.stop_requested || state.fault.valid ||
+            state.delivered_exception.valid || state.cpu.data.eip != length ||
+            state.cpu.data.cs.dpl != target_cpl || state.cpu.data.eflags != expected ||
+            state.cpu.data.esp != (outer ? 0x9000u : IRET_STACK +
+                (wide ? 12u : 6u))) {
+            if (failures < 4u) lib_c_printf("IRET flags profile=%u wide=%u outer=%u cpl=%u old=%x new=%x got=%x expected=%x ip=%x sp=%x fault=%x\n",
+                profile, wide, outer, cpl, oldflags, newflags,
+                state.cpu.data.eflags, expected, state.cpu.data.eip,
+                state.cpu.data.esp, state.fault.exception_mask);
+            ++failures;
+        }
+    }
+    lib_c_printf("IRET flags cases=%u failures=%u\n", (unsigned)count,
+        (unsigned)failures);
+    return failures == 0u;
+}
+
 lib_i32 main(void)
 {
+    if (!iret_test_flags_matrix()) return 1;
     if (!iret_test_success(0u, 0, 0, 0) || !iret_test_success(0x66u, 1, 0, 0) ||
         !iret_test_success(0x67u, 0, 0, 0) || !iret_test_success(0x66u, 1, 1, 0) ||
         !iret_test_success(0u, 0, 0, 1) ||

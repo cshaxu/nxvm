@@ -53,7 +53,8 @@ static lib_i32 vm86_lgdt_lidt_s5_case(lib_u8 reg)
                 VM86_STACK_TOP - 40u, (void *)frame,
                 sizeof(frame)) != LIB_STATUS_OK || frame[0] != 0u ||
             frame[1] != 0u || frame[2] != 0x0200u ||
-            frame[3] != (CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF) ||
+            frame[3] != (CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF |
+                0x00010000u) ||
             frame[4] != 0x1234u || frame[5] != 0x0300u ||
             frame[6] != 0x0500u || frame[7] != 0x0400u ||
             frame[8] != 0x0600u || frame[9] != 0x0700u;

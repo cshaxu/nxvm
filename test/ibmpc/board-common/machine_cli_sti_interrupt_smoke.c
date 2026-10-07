@@ -503,7 +503,8 @@ static lib_i32 cli_sti_test_protected_reject(void)
                 core_machine_memory_read(state.machine,
                     after.ss.base + after.esp, (void *)frame,
                     sizeof(frame)) != LIB_STATUS_OK || frame[0] != 0u ||
-                frame[1] != 0u || frame[2] != 0x001bu || frame[3] != flags;
+                frame[1] != 0u || frame[2] != 0x001bu ||
+                frame[3] != (flags | 0x00010000u);
         }
         core_machine_destroy(state.machine);
         if (failed)

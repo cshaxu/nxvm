@@ -130,7 +130,8 @@ static lib_i32 vm86_delivery_fault(lib_u8 vector, const lib_u8 *code,
         core_machine_memory_read(state.machine, VM86_STACK_TOP - (error_frame ? 40u : 36u),
             (void *)frame, sizeof(frame)) != LIB_STATUS_OK || frame[0] != 0u ||
         frame[error_frame ? 1u : 0u] != 0u || frame[error_frame ? 2u : 1u] != 0x0200u ||
-        frame[error_frame ? 3u : 2u] != (CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF) ||
+        frame[error_frame ? 3u : 2u] != (CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF |
+            0x00010000u) ||
         frame[error_frame ? 4u : 3u] != 0x1234u || frame[error_frame ? 5u : 4u] != 0x0300u ||
         frame[error_frame ? 6u : 5u] != 0x0500u || frame[error_frame ? 7u : 6u] != 0x0400u ||
         frame[error_frame ? 8u : 7u] != 0x0600u || frame[error_frame ? 9u : 8u] != 0x0700u;
@@ -272,7 +273,7 @@ static lib_i32 vm86_delivery_paging_composition(void)
                 VM86_STACK_TOP - 36u || core_machine_memory_read(state.machine, VM86_STACK_TOP - 36u,
                 (void *)frame, sizeof(frame)) != LIB_STATUS_OK ||
             frame[0] != 0u || frame[1] != 0x0200u || frame[2] !=
-                (CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF);
+                (CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF | 0x00010000u);
     }
     core_machine_destroy(state.machine);
     if (failed) return 0;
@@ -300,7 +301,7 @@ static lib_i32 vm86_delivery_paging_composition(void)
                 VM86_STACK_TOP - 40u, (void *)frame,
                 sizeof(frame)) != LIB_STATUS_OK || frame[0] != 4u ||
             frame[1] != 0u || frame[2] != 0x0400u || frame[3] !=
-                (CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF) || frame[4] != 0x1234u ||
+                (CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF | 0x00010000u) || frame[4] != 0x1234u ||
             frame[5] != 0x0300u;
     }
     core_machine_destroy(state.machine);

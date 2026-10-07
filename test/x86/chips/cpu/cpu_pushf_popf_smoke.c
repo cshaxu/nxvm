@@ -99,7 +99,12 @@ static lib_i32 pushf_test_defaults(void)
                     (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386 &&
                         (observed & 0x8000u) != 0u)) return 0;
             } else if ((after.data.eflags & mask) !=
-                    (pushf_real_flags_image(profiles[profile], image) & mask) ||
+                    (pushf_real_flags_image(profiles[profile],
+                        profiles[profile] == CORE_MACHINE_CPU_PROFILE_80286 ?
+                            (lib_u16)((image & ~(VCPU_EFLAGS_IOPL |
+                                VCPU_EFLAGS_NT)) | (flags &
+                                (VCPU_EFLAGS_IOPL | VCPU_EFLAGS_NT))) : image)
+                        & mask) ||
                 (after.data.eflags & 0xffff0000u) !=
                     (flags & 0xffff0000u)) return 0;
         }
@@ -193,10 +198,11 @@ static lib_i32 pushf_test_attributes_and_rejects(void)
             } else if (after.data.eflags != (width == 4u ?
                 ((image & ~(VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_RF |
                     VCPU_EFLAGS_VM)) | (before.data.eflags &
-                    (VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_VM)) | 0x02u) :
+                    (VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_VM |
+                        VCPU_EFLAGS_RF)) | 0x02u) :
                 ((image & ~(VCPU_EFLAGS_RESERVED | 0xffff0000u)) |
                     (before.data.eflags & (VCPU_EFLAGS_RESERVED |
-                    (0xffff0000u & ~VCPU_EFLAGS_RF))) | 0x02u))) return 0;
+                    0xffff0000u)) | 0x02u))) return 0;
         }
     }
     for (lib_size profile = 0u; profile < sizeof(legacy) /
@@ -290,9 +296,10 @@ static lib_i32 pushf_test_legacy_forms(void)
     return 1;
 }
 
-static void pushf_prepare_protected(cpu_instruction_fixture *state)
+static void pushf_prepare_protected(cpu_instruction_fixture *state,
+    core_machine_cpu_profile profile)
 {
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     state->cpu.data.cr0 |= VCPU_CR0_PE;
     state->cpu.data.cs.flagValid = LIB_TRUE;
     state->cpu.data.cs.selector = 0x08u;
@@ -335,7 +342,7 @@ static lib_i32 pushf_test_protected_iopl(void)
         const lib_u32 expected_if = pass == 1u ? 0u : VCPU_EFLAGS_IF;
         const lib_u32 expected_iopl = pass == 0u ? VCPU_EFLAGS_IOPL : iopl;
 
-        pushf_prepare_protected(&state);
+        pushf_prepare_protected(&state, CORE_MACHINE_CPU_PROFILE_80386);
         state.cpu.data.cs.dpl = pass == 0u ? 0u : 3u;
         state.cpu.data.ss.dpl = state.cpu.data.cs.dpl;
         state.cpu.data.eflags = VCPU_EFLAGS_CF | iopl;
@@ -366,7 +373,7 @@ static lib_i32 pushf_test_stack_faults(void)
         lib_u32 image = VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF;
         lib_u32 observed = 0u;
 
-        pushf_prepare_protected(&state);
+        pushf_prepare_protected(&state, CORE_MACHINE_CPU_PROFILE_80386);
         state.cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
         if (pass) state.cpu.data.ss.limit = 0x7fffu;
         else state.cpu.data.ss.seg.data.writable = LIB_FALSE;
@@ -436,28 +443,31 @@ static void pushf_prepare_vm86(cpu_instruction_fixture *state,
 static lib_i32 pushf_test_vm86(void)
 {
     static const lib_u8 forms[][2] = {
-        {0x9cu,0u}, {0x9du,0u}, {0x66u,0x9cu}
+        {0x9cu,0u}, {0x9du,0u}, {0x66u,0x9cu}, {0x66u,0x9du}
     };
 
-    for (lib_u8 form = 0u; form != 3u; ++form) {
-        for (lib_u8 pass = 0u; pass != (form == 2u ? 1u : 2u);
+    for (lib_u8 form = 0u; form != 4u; ++form) {
+        for (lib_u8 pass = 0u; pass != (form == 2u ? 1u : 4u);
             ++pass) {
             cpu_instruction_fixture state;
             t_cpu after = {0};
             lib_u32 flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_CF |
-                (pass == 0u ? VCPU_EFLAGS_IOPL : 0u) |
+                (pass == 0u ? VCPU_EFLAGS_IOPL :
+                    ((lib_u32)(pass - 1u) << 12u)) |
                 (form == 2u ? VCPU_EFLAGS_RF : 0u);
-            const lib_u16 image = VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF;
+            const lib_u32 image = VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF |
+                (form == 3u ? VCPU_EFLAGS_RF | VCPU_EFLAGS_VM : 0u);
             lib_u32 observed = 0u;
             lib_status status;
 
             pushf_prepare_vm86(&state, flags);
-            if (form == 1u)
-                lib_memory_copy(state.memory + 0x8000u, &image, 2u);
+            if (form == 1u || form == 3u)
+                lib_memory_copy(state.memory + 0x8000u, &image,
+                    form == 1u ? 2u : 4u);
             status = cpu_instruction_run(&state, forms[form],
-                form == 2u ? 2u : 1u, &after);
+                form >= 2u ? 2u : 1u, &after);
             if (status != LIB_STATUS_OK || state.fault.valid) return 0;
-            if (pass == 1u) {
+            if (pass != 0u) {
                 if (after.data.cs.selector != 0x08u ||
                     after.data.ss.selector != 0x10u ||
                     after.data.eip != 0x100u ||
@@ -477,13 +487,168 @@ static lib_i32 pushf_test_vm86(void)
                         VCPU_EFLAGS_RF | VCPU_EFLAGS_RESERVED)) | 0x02u))
                     return 0;
             }
+            else if (form == 3u &&
+                (after.data.eip != 2u || after.data.esp != 0x8004u ||
+                (after.data.eflags & (VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL |
+                    VCPU_EFLAGS_RF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF)) !=
+                    (VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL | VCPU_EFLAGS_ZF |
+                        VCPU_EFLAGS_IF))) {
+                lib_c_printf("VM86 POPFD flags=%x ip=%x sp=%x\n",
+                    (unsigned)after.data.eflags, (unsigned)after.data.eip,
+                    (unsigned)after.data.esp);
+                return 0;
+            }
         }
     }
     return 1;
 }
 
+static lib_bool pushf_test_286_real_preservation(void)
+{
+    const lib_u8 code[] = {0x9du};
+    const lib_u32 privileged = VCPU_EFLAGS_NT | VCPU_EFLAGS_IOPL;
+    lib_u8 old_bits, popped_bits;
+    lib_bool passed = LIB_TRUE;
+
+    for (old_bits = 0u; old_bits < 8u; ++old_bits)
+    for (popped_bits = 0u; popped_bits < 8u; ++popped_bits) {
+        cpu_instruction_fixture state;
+        t_cpu before, after;
+        const lib_u16 popped = (lib_u16)(((lib_u32)popped_bits << 12u) | 0x0cd5u);
+        lib_u32 expected;
+
+        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
+        state.cpu.data.eflags = ((lib_u32)old_bits << 12u) | 0x02u;
+        state.cpu.data.sp = 0x8000u;
+        before = state.cpu;
+        expected = (before.data.eflags & privileged) | (popped & 0x0fd5u);
+        if (cpu_instruction_write(&state, 0x8000u, &popped, sizeof(popped),
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            cpu_instruction_run(&state, code, sizeof(code), &after) != LIB_STATUS_OK ||
+            state.fault.valid || (after.data.eflags & 0x7fd5u) != expected ||
+            after.data.sp != 0x8002u || after.data.eip != 1u ||
+            !pushf_gprs_same(&before, &after) || !pushf_sregs_same(&before, &after)) {
+            lib_c_printf("286 real POPF old=%u popped=%u flags=%x expected=%x\n",
+                (unsigned)old_bits, (unsigned)popped_bits,
+                (unsigned)after.data.eflags, (unsigned)expected);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool pushf_test_protected_privilege_matrix(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const lib_u8 forms[][2] = {{0x9du,0u}, {0x66u,0x9du}};
+    lib_u32 failures[2] = {0u,0u}, cases[2] = {0u,0u};
+    lib_size profile;
+    lib_u8 form, cpl, old_bits, popped_bits, if_bits;
+
+    for (profile = 0u; profile < 2u; ++profile)
+    for (form = 0u; form < (profile == 0u ? 1u : 2u); ++form)
+    for (cpl = 0u; cpl < 4u; ++cpl)
+    for (old_bits = 0u; old_bits < 8u; ++old_bits)
+    for (popped_bits = 0u; popped_bits < 8u; ++popped_bits)
+    for (if_bits = 0u; if_bits < 4u; ++if_bits) {
+        cpu_instruction_fixture state;
+        t_cpu before, after;
+        const lib_u8 width = form == 0u ? 2u : 4u;
+        const lib_u32 popped = ((lib_u32)popped_bits << 12u) | 0x0cd5u |
+            ((if_bits & 2u) != 0u ? VCPU_EFLAGS_IF : 0u);
+        lib_u32 expected;
+
+        pushf_prepare_protected(&state, profiles[profile]);
+        state.cpu.data.cs.dpl = cpl;
+        state.cpu.data.cs.selector |= cpl;
+        state.cpu.data.ss.dpl = cpl;
+        state.cpu.data.ss.selector |= cpl;
+        state.cpu.data.eflags = ((lib_u32)old_bits << 12u) | 0x02u |
+            ((if_bits & 1u) != 0u ? VCPU_EFLAGS_IF : 0u);
+        before = state.cpu;
+        expected = popped;
+        if (cpl != 0u)
+            expected = (expected & ~VCPU_EFLAGS_IOPL) |
+                (before.data.eflags & VCPU_EFLAGS_IOPL);
+        if (cpl > (old_bits & 3u))
+            expected = (expected & ~VCPU_EFLAGS_IF) |
+                (before.data.eflags & VCPU_EFLAGS_IF);
+        lib_memory_copy(state.memory + 0xc000u, &popped, width);
+        ++cases[profile];
+        if (pushf_protected_run(&state, forms[form], form + 1u, &after) !=
+                LIB_STATUS_OK || state.fault.valid ||
+            (after.data.eflags & 0x7fd5u) != expected ||
+            after.data.sp != 0x8000u + width || after.data.eip != form + 1u ||
+            !pushf_gprs_same(&before, &after) || !pushf_sregs_same(&before, &after))
+            ++failures[profile];
+    }
+    for (profile = 0u; profile < 2u; ++profile)
+        lib_c_printf("protected POPF profile=%u cases=%u failures=%u\n",
+            (unsigned)profiles[profile], (unsigned)cases[profile],
+            (unsigned)failures[profile]);
+    return failures[0] == 0u && failures[1] == 0u;
+}
+
+static lib_bool pushf_test_starting_sp(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const lib_u16 starts[] = {0u,1u,2u,0xffffu};
+    lib_size profile, start;
+
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (start = 0u; start < sizeof(starts) / sizeof(starts[0]); ++start) {
+        cpu_instruction_fixture state;
+        t_cpu after;
+        const lib_u8 opcode = 0x9cu;
+        const lib_bool shutdown = profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80286 &&
+            starts[start] == 1u;
+        const lib_u16 expected_sp = (lib_u16)(starts[start] - 2u);
+        lib_u16 image = 0u;
+
+        cpu_instruction_prepare(&state, profiles[profile]);
+        state.cpu.data.sp = starts[start];
+        state.cpu.data.eflags = 0x43u;
+        state.cpu.data.cs.base = 0x2000u;
+        state.memory[0x2000u] = opcode;
+        core_machine_cpu_execution_refresh(&state.execution);
+        after = state.cpu;
+        if (shutdown) {
+            if (!state.execution.shutdown_requested || !state.execution.stop_requested ||
+                !state.delivered_exception.valid ||
+                state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
+                after.data.eip != 0u || after.data.sp != starts[start])
+                return LIB_FALSE;
+        } else {
+            lib_memory_copy(&image, state.memory + expected_sp, 1u);
+            lib_memory_copy((lib_u8 *)&image + 1u,
+                state.memory + (lib_u16)(expected_sp + 1u), 1u);
+            if (state.execution.stop_requested || state.fault.valid ||
+                after.data.eip != 1u || after.data.sp != expected_sp ||
+                image != pushf_real_flags_image(profiles[profile], 0x43u)) {
+                lib_c_printf("PUSHF SP profile=%u start=%x stop=%u ip=%x sp=%x image=%x\n",
+                    (unsigned)profiles[profile], starts[start],
+                    state.execution.stop_requested, after.data.eip, after.data.sp, image);
+                return LIB_FALSE;
+            }
+        }
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
+    if (!pushf_test_starting_sp()) return 1;
+    lib_bool real_ok = pushf_test_286_real_preservation();
+    lib_bool protected_ok = pushf_test_protected_privilege_matrix();
+    lib_bool vm86_ok = pushf_test_vm86();
+
+    if (!real_ok || !protected_ok || !vm86_ok) return 1;
     if (!pushf_test_defaults()) { lib_c_fprintf(lib_c_stderr, "%s", "defaults\n"); return 1; }
     if (!pushf_test_attributes_and_rejects()) {
         lib_c_fprintf(lib_c_stderr, "%s", "attributes\n"); return 1;
@@ -498,7 +663,6 @@ int main(void)
     if (!pushf_test_stack_faults()) {
         lib_c_fprintf(lib_c_stderr, "%s", "stack faults\n"); return 1;
     }
-    if (!pushf_test_vm86()) { lib_c_fprintf(lib_c_stderr, "%s", "vm86\n"); return 1; }
     lib_c_printf("%s\n", "M5:T316:S21:PUSHF-POPF:OK");
     lib_c_printf("%s\n", "M5:T316:S47:PUSHF-POPF:OK");
     lib_c_printf("%s\n", "M5:T401:S39:PUSHF-POPF-PROFILES:OK");
