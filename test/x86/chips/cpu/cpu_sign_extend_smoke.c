@@ -14,21 +14,6 @@ static void sign_extend_set_registers(t_cpu *cpu)
     cpu->data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
 }
 
-static lib_i32 sign_extend_state_equal(const t_cpu *before,
-    const t_cpu *after)
-{
-    return before->data.eax == after->data.eax &&
-        before->data.ecx == after->data.ecx &&
-        before->data.edx == after->data.edx &&
-        before->data.ebx == after->data.ebx &&
-        before->data.esp == after->data.esp &&
-        before->data.ebp == after->data.ebp &&
-        before->data.esi == after->data.esi &&
-        before->data.edi == after->data.edi &&
-        before->data.eflags == after->data.eflags &&
-        before->data.eip == after->data.eip;
-}
-
 static lib_i32 sign_extend_nonparticipants_equal(const t_cpu *before,
     const t_cpu *after, lib_u8 opcode)
 {
@@ -152,17 +137,11 @@ static lib_i32 sign_extend_test_prefix_reject(void)
     for (prefix = 0u; prefix < sizeof(prefixes); ++prefix)
     for (opcode = 0u; opcode < sizeof(opcodes); ++opcode) {
         cpu_instruction_fixture state;
-        t_cpu before, after;
         const lib_u8 code[] = {prefixes[prefix], opcodes[opcode]};
 
         cpu_instruction_prepare(&state, profiles[profile]);
         sign_extend_set_registers(&state.cpu);
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        if (cpu_instruction_run(&state, code, sizeof(code), &after) !=
-                LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-            !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            !sign_extend_state_equal(&before, &after)) return 0;
+        if (!cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u)) return 0;
     }
     return 1;
 }
@@ -174,18 +153,12 @@ static lib_i32 sign_extend_test_lock_diagnostic(void)
 
     for (opcode = 0u; opcode < sizeof(opcodes); ++opcode) {
         cpu_instruction_fixture state;
-        t_cpu before, after;
         const lib_u8 code[] = {0xf0u, opcodes[opcode]};
 
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
         sign_extend_set_registers(&state.cpu);
         state.cpu.data.eax = 0xaabb0080u;
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        if (cpu_instruction_run(&state, code, sizeof(code), &after) !=
-                LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-            !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            !sign_extend_state_equal(&before, &after)) {
+        if (!cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u)) {
             lib_c_fprintf(lib_c_stderr, "SIGN-EXT lock opcode=%02x fault=%08x\n",
                 opcodes[opcode], state.fault.exception_mask);
             return 0;

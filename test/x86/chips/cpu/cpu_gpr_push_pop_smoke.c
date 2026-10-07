@@ -305,7 +305,6 @@ static lib_i32 gpr_push_pop_expect_ud(core_machine_cpu_profile profile,
 {
     cpu_instruction_fixture state;
     t_cpu before;
-    t_cpu after;
     lib_u32 source = 0xface7788u;
     lib_u32 image = 0u;
     lib_i32 failed = 0;
@@ -319,17 +318,16 @@ static lib_i32 gpr_push_pop_expect_ud(core_machine_cpu_profile profile,
 
             cpu_instruction_write(&state, 0x7ffcu, &source, sizeof(source),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
-        state.cpu.data.idtr.limit = 0x17u;
         before = state.cpu;
-        failed |= cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-            !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            !gpr_push_pop_cpu_same(&before, &after) ||
+        failed |= !cpu_instruction_expect_real_fault(&state, code, bytes, 6u) ||
                 cpu_instruction_read(&state, 0x20u, &image, sizeof(image),
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
                 image != source ||
             cpu_instruction_read(&state, 0x7ffcu, &image, sizeof(image),
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
-            image != source;
+            image != (profile < CORE_MACHINE_CPU_PROFILE_80186 ? source :
+                (lib_u32)(lib_u16)(before.data.flags | 2u |
+                    (profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0xf000u : 0u)) << 16u);
     }
     return !failed;
 }
@@ -483,7 +481,6 @@ static lib_i32 gpr_push_pop_protected_fault(const lib_u8 *code, lib_u8 bytes,
     cpu_instruction_fixture state;
     t_cpu before;
     t_cpu after;
-    lib_status fault_status;
     lib_u32 sentinel = 0xdeadbeefu;
     lib_u32 observed = 0u;
     lib_i32 failed = 0;
@@ -512,11 +509,10 @@ static lib_i32 gpr_push_pop_protected_fault(const lib_u8 *code, lib_u8 bytes,
         before = state.cpu;
         state.cpu.data.eip = 0u;
         core_machine_cpu_execution_refresh(&state.execution);
-        fault_status = state.execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
-        failed |= fault_status != LIB_STATUS_INTERNAL_ERROR;
+        failed |= !core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested;
         after = state.cpu;
-        failed |= !state.fault.valid || !X86_CPU_BIT_IS_SET(
-            state.fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+        failed |= state.fault.valid || !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
             after.data.eip != 0u || after.data.eax != before.data.eax ||
             after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
             after.data.ebx != before.data.ebx || after.data.esp != before.data.esp ||
@@ -619,7 +615,8 @@ static lib_bool gpr_push_pop_test_push_shutdown(void)
             state.cpu.data.eflags |= VCPU_EFLAGS_VM;
         }
         cpu_instruction_run(&state, forms[form], lengths[form], &after);
-        if (!state.execution.shutdown_requested || !state.execution.stop_requested ||
+        if (!state.execution.shutdown_requested || !core_machine_cpu_is_shutdown(&state.execution) ||
+            state.execution.stop_requested ||
             state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
             after.data.esp != 1u || after.data.eax != 0xa1a23344u) {
             lib_c_printf("PUSH shutdown form=%u vm=%u requested=%u mask=%x\n",

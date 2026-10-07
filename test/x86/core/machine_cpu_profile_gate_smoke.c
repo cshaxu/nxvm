@@ -60,8 +60,11 @@ static lib_i32 run_case(core_machine_cpu_profile profile, const lib_u8 *program,
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
         if (expect_ud) {
             failed |= !diagnostic.first_fault.valid ||
-                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                    VCPUINS_EXCEPT_UD) ||
+                diagnostic.first_fault.exception_mask !=
+                    (profile < CORE_MACHINE_CPU_PROFILE_80186 ?
+                        VCPUINS_EXCEPT_UD : VCPUINS_EXCEPT_CE) ||
+                (profile >= CORE_MACHINE_CPU_PROFILE_80186 &&
+                    diagnostic.first_fault.exception_code != 6u * 4u) ||
                 diagnostic.first_fault.point.bytes[0] != program[0];
         } else {
             failed |= diagnostic.first_fault.valid;

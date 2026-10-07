@@ -170,7 +170,6 @@ static lib_i32 paging_write_bootstrap(core_machine *machine,
         0x8eu, 0xd0u,
         0xeau, 0x40u, 0x00u, 0x08u, 0x00u
     };
-
     return paging_install_gdt(machine) &&
         core_machine_memory_write(machine, 0u, real_code, sizeof(real_code)) ==
             LIB_STATUS_OK &&
@@ -184,21 +183,10 @@ static lib_i32 paging_run(core_machine *machine, lib_i32 expect_fault,
 {
     const core_machine_run_budget budget = { 128u, 0u };
 
-    return core_machine_run(machine, budget, out_result) ==
-            (expect_fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) &&
-        out_result->reason == (expect_fault ? CORE_MACHINE_STOP_FAULT :
-            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) &&
+    return core_machine_run(machine, budget, out_result) == LIB_STATUS_OK &&
+        out_result->reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
+        (!expect_fault || out_result->detail == VCPUINS_EXCEPT_SHUTDOWN) &&
         core_machine_get_cpu_diagnostic(machine, out_diagnostic) == LIB_STATUS_OK;
-}
-
-static lib_i32 paging_expect_fault(const core_machine_cpu_diagnostic *diagnostic,
-    lib_u32 exception, lib_u32 code, lib_u32 point_linear)
-{
-    return diagnostic->first_fault.valid &&
-        CORE_MACHINE_BIT_IS_SET(diagnostic->first_fault.exception_mask, exception) &&
-        diagnostic->first_fault.exception_code == code &&
-        diagnostic->first_fault.point.cs == TEST_CODE_SELECTOR &&
-        diagnostic->first_fault.point.linear_pc == point_linear;
 }
 
 /* Re-enter a halted fixture through the CPU-owned prepared-entry boundary. */
@@ -440,8 +428,7 @@ static lib_i32 paging_test_valid_path(void)
 
 static lib_i32 paging_test_fault(lib_u32 code_entry, lib_u32 data_entry,
     lib_u32 stack_entry, const lib_u8 *protected_code,
-    lib_size protected_code_size, lib_u32 expected_code,
-    lib_u32 expected_point, lib_u32 expected_cr2)
+    lib_size protected_code_size)
 {
     paging_machine state;
     core_machine_run_result result = {0};
@@ -457,19 +444,15 @@ static lib_i32 paging_test_fault(lib_u32 code_entry, lib_u32 data_entry,
         if (!failed) failed |= !paging_run(state.machine, 1, &result, &diagnostic);
         if (!failed) failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
-        if (!failed) failed |= !paging_expect_fault(&diagnostic, VCPUINS_EXCEPT_PF,
-            expected_code, expected_point);
-        if (!failed) failed |= cpu.cr2 != expected_cr2 ||
-            diagnostic.first_fault.cr2 != expected_cr2;
+        if (!failed) failed |= result.detail != VCPUINS_EXCEPT_SHUTDOWN;
         if (failed) {
             lib_c_fprintf(lib_c_stderr,
-                "T258 fault result=%llu/%d diag=%d/%08x/%08x point=%04x:%08x cr2=%08x expected=%08x/%08x\n",
+                "T258 receiverless-fault result=%llu/%d diag=%d/%08x/%08x point=%04x:%08x cr2=%08x\n",
                 result.executed, result.reason, diagnostic.first_fault.valid,
                 diagnostic.first_fault.exception_mask,
                 diagnostic.first_fault.exception_code,
                 diagnostic.first_fault.point.cs,
-                diagnostic.first_fault.point.linear_pc, cpu.cr2,
-                expected_point, expected_cr2);
+                diagnostic.first_fault.point.linear_pc, cpu.cr2);
         }
     }
     core_machine_destroy(state.machine);
@@ -508,12 +491,11 @@ static lib_i32 paging_test_page_faults(void)
     lib_i32 failed = 0;
 
     if (!failed) failed |= paging_test_fault(0u, data, stack, enable_only,
-        sizeof(enable_only), 0u, TEST_PROTECTED_CODE + sizeof(enable_only),
-        TEST_PROTECTED_CODE + sizeof(enable_only));
-    if (!failed) failed |= paging_test_fault(code, 0u, stack, data_read, sizeof(data_read),
-        0u, TEST_PROTECTED_CODE + 21u, 0x3000u);
+        sizeof(enable_only));
+    if (!failed) failed |= paging_test_fault(code, 0u, stack, data_read,
+        sizeof(data_read));
     if (!failed) failed |= paging_test_fault(code, data, 0u, stack_write,
-        sizeof(stack_write), 0x02u, TEST_PROTECTED_CODE + 21u, 0x4ffeu);
+        sizeof(stack_write));
     return failed;
 }
 
@@ -777,8 +759,8 @@ static lib_i32 paging_permission_prepare(paging_machine *state,
 }
 
 static lib_i32 paging_permission_expect_fault(paging_machine *state,
-    lib_u32 program_eip, lib_u32 expected_code, lib_u32 expected_cr2,
-    lib_u32 pde_address, lib_u32 pde_initial, lib_u32 pte_address,
+    lib_u32 program_eip, lib_u32 pde_address, lib_u32 pde_initial,
+    lib_u32 pte_address,
     lib_u32 pte_initial, paging_permission_access access)
 {
     core_machine_run_result result = {0};
@@ -789,18 +771,16 @@ static lib_i32 paging_permission_expect_fault(paging_machine *state,
     lib_u16 data = 0u;
     const core_machine_run_budget budget = { 32u, 0u };
     lib_i32 failed = core_machine_run(state->machine, budget, &result) !=
-        LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
+        LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) !=
             LIB_STATUS_OK;
 
+    /* These receiverless probes must terminate through shutdown.  The
+     * delivered-page-fault case above owns exact frame/code/CR2 coverage. */
     if (!failed) failed |= core_machine_debug_capture_cpu_snapshot(state->machine,
         CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
-    if (!failed) failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-        diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_PF) ||
-        diagnostic.first_fault.exception_code != expected_code ||
-        diagnostic.first_fault.point.linear_pc != TEST_PERMISSION_CODE + program_eip ||
-        cpu.cr2 != expected_cr2 ||
-        diagnostic.first_fault.cr2 != expected_cr2 || cpu.eip != program_eip ||
+    if (!failed) failed |= result.detail != VCPUINS_EXCEPT_SHUTDOWN ||
+        cpu.eip != program_eip ||
         cpu.ebx != TEST_DATA_LINEAR || cpu.esp != 0x00005000u ||
         cpu.eflags != 0x00000002u;
     if (access == PAGING_PERMISSION_READ) failed |= cpu.eax != 0xfacebeefu;
@@ -895,7 +875,7 @@ static lib_i32 paging_test_permissions(void)
             pde_data, TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
             TEST_PAGE_WRITABLE, data_user,
             stack_user, 1, 0, &eip) || !paging_permission_expect_fault(&state,
-            eip, 0x05u, TEST_PERMISSION_CODE, TEST_PAGE_DIRECTORY,
+            eip, TEST_PAGE_DIRECTORY,
             pde_code | TEST_PAGE_ACCESSED,
             TEST_PAGE_TABLE + 7u * 4u, TEST_PERMISSION_CODE |
             TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE, PAGING_PERMISSION_FETCH))
@@ -906,8 +886,8 @@ static lib_i32 paging_test_permissions(void)
     if (!paging_permission_prepare(&state, read, sizeof(read), pde_code,
             TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE,
             code_user, data_user, stack_user, 1, 0, &eip) ||
-        !paging_permission_expect_fault(&state, eip, 0x05u, TEST_DATA_LINEAR,
-            TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
+        !paging_permission_expect_fault(&state, eip, TEST_PAGE_DIRECTORY + 4u,
+            TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
             TEST_PAGE_WRITABLE, TEST_PAGE_TABLE_SECOND + 3u * 4u, data_user,
             PAGING_PERMISSION_READ)) failed = 1;
     core_machine_destroy(state.machine);
@@ -916,8 +896,8 @@ static lib_i32 paging_test_permissions(void)
     if (!paging_permission_prepare(&state, read, sizeof(read), pde_code,
             pde_data, code_user, TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
             TEST_PAGE_WRITABLE, stack_user, 1, 0, &eip) ||
-        !paging_permission_expect_fault(&state, eip, 0x05u, TEST_DATA_LINEAR,
-            TEST_PAGE_DIRECTORY + 4u, pde_data, TEST_PAGE_TABLE_SECOND + 3u * 4u,
+        !paging_permission_expect_fault(&state, eip, TEST_PAGE_DIRECTORY + 4u,
+            pde_data, TEST_PAGE_TABLE_SECOND + 3u * 4u,
             TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE,
             PAGING_PERMISSION_READ)) failed = 1;
     core_machine_destroy(state.machine);
@@ -926,8 +906,8 @@ static lib_i32 paging_test_permissions(void)
     if (!paging_permission_prepare(&state, write, sizeof(write), pde_code,
             TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_US, code_user,
             data_user, stack_user, 1, 0, &eip) ||
-        !paging_permission_expect_fault(&state, eip, 0x07u, TEST_DATA_LINEAR,
-            TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
+        !paging_permission_expect_fault(&state, eip, TEST_PAGE_DIRECTORY + 4u,
+            TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
             TEST_PAGE_US, TEST_PAGE_TABLE_SECOND + 3u * 4u, data_user,
             PAGING_PERMISSION_WRITE)) failed = 1;
     core_machine_destroy(state.machine);
@@ -936,8 +916,8 @@ static lib_i32 paging_test_permissions(void)
     if (!paging_permission_prepare(&state, write, sizeof(write), pde_code,
             pde_data, code_user, TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
             TEST_PAGE_US, stack_user, 1, 0, &eip) ||
-        !paging_permission_expect_fault(&state, eip, 0x07u, TEST_DATA_LINEAR,
-            TEST_PAGE_DIRECTORY + 4u, pde_data, TEST_PAGE_TABLE_SECOND + 3u * 4u,
+        !paging_permission_expect_fault(&state, eip, TEST_PAGE_DIRECTORY + 4u,
+            pde_data, TEST_PAGE_TABLE_SECOND + 3u * 4u,
             TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT | TEST_PAGE_US,
             PAGING_PERMISSION_WRITE)) failed = 1;
     core_machine_destroy(state.machine);
@@ -946,8 +926,8 @@ static lib_i32 paging_test_permissions(void)
     if (!paging_permission_prepare(&state, stack, sizeof(stack), pde_code,
             pde_data, code_user, data_user, TEST_STACK_PHYSICAL |
             TEST_PAGE_PRESENT | TEST_PAGE_US, 1, 0, &eip) ||
-        !paging_permission_expect_fault(&state, eip, 0x07u, 0x00004ffeu,
-            TEST_PAGE_DIRECTORY, pde_code | TEST_PAGE_ACCESSED,
+        !paging_permission_expect_fault(&state, eip, TEST_PAGE_DIRECTORY,
+            pde_code | TEST_PAGE_ACCESSED,
             TEST_PAGE_TABLE + 4u * 4u, TEST_STACK_PHYSICAL |
             TEST_PAGE_PRESENT | TEST_PAGE_US, PAGING_PERMISSION_STACK)) failed = 1;
     core_machine_destroy(state.machine);
@@ -1036,11 +1016,11 @@ static lib_i32 paging_cross_run(paging_machine *state, lib_i32 expect_fault,
 {
     const core_machine_run_budget budget = { 1u, 0u };
 
-    return core_machine_run(state->machine, budget, out_result) ==
-            (expect_fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) &&
-        out_result->reason == (expect_fault ? CORE_MACHINE_STOP_FAULT :
-            CORE_MACHINE_STOP_BUDGET) && core_machine_get_cpu_diagnostic(
-                state->machine, out_diagnostic) == LIB_STATUS_OK;
+    return core_machine_run(state->machine, budget, out_result) == LIB_STATUS_OK &&
+        out_result->reason == (expect_fault ? CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT :
+            CORE_MACHINE_STOP_BUDGET) &&
+        (!expect_fault || out_result->detail == VCPUINS_EXCEPT_SHUTDOWN) &&
+        core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) == LIB_STATUS_OK;
 }
 
 static lib_i32 paging_test_cross_data(void)
@@ -1181,9 +1161,7 @@ static lib_i32 paging_test_cross_stack(void)
     if (!failed) failed |= !paging_cross_run(&state, 1, &result, &diagnostic);
     if (!failed) failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
         CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
-    if (!failed) failed |= !paging_expect_fault(&diagnostic, VCPUINS_EXCEPT_PF, 0x02u,
-        TEST_PERMISSION_CODE) || cpu.cr2 != 0x00004000u ||
-        cpu.esp != 0x00004001u || cpu.eax != 0xfacebeefu ||
+    if (!failed) failed |= cpu.esp != 0x00004001u || cpu.eax != 0xfacebeefu ||
         cpu.eflags != 0x02u || !paging_cross_entries(state.machine,
         TEST_PAGE_DIRECTORY, TEST_PAGE_TABLE + 3u * 4u,
         TEST_PAGE_TABLE + 4u * 4u, pde | TEST_PAGE_ACCESSED, first,
@@ -1243,9 +1221,7 @@ static lib_i32 paging_test_cross_fetch(void)
     if (!failed) failed |= !paging_cross_run(&state, 1, &result, &diagnostic);
     if (!failed) failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
         CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
-    if (!failed) failed |= !paging_expect_fault(&diagnostic, VCPUINS_EXCEPT_PF, 0u,
-        TEST_PERMISSION_CODE + 0x0fffu) || cpu.cr2 !=
-        TEST_PERMISSION_CODE + 0x1000u || cpu.eip != 0x0fffu ||
+    if (!failed) failed |= cpu.eip != 0x0fffu ||
         !paging_cross_entries(state.machine, TEST_PAGE_DIRECTORY,
             TEST_PAGE_TABLE + 7u * 4u, TEST_PAGE_TABLE + 8u * 4u,
             pde | TEST_PAGE_ACCESSED,

@@ -14,15 +14,16 @@ static lib_i32 cpu_80186_lgdt_gate(void)
 
     cpu_bus_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80186);
     fixture.cpu.data.eip = 0u;
-    fixture.cpu.data.idtr.limit = 0x17u;
+    fixture.cpu.data.idtr.limit = 0x03ffu;
     lib_memory_copy(fixture.memory, program, sizeof(program));
     lib_memory_copy(fixture.memory + 0x0100u, gdtr, sizeof(gdtr));
     lib_memory_copy(fixture.memory + 0x0300u, gdt, sizeof(gdt));
     core_machine_cpu_execution_refresh(&fixture.execution);
-    return fixture.instructions.data.except != VCPUINS_EXCEPT_UD ||
-        fixture.faults != 1u || !fixture.fault.valid ||
-        fixture.fault.exception_mask != VCPUINS_EXCEPT_UD ||
-        fixture.fault.point.eip != 0u || fixture.cpu.data.eip != 0u;
+    return fixture.faults != 0u || fixture.execution.stop_requested ||
+        fixture.delivered_exceptions != 1u ||
+        !fixture.delivered_exception.valid ||
+        fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_UD ||
+        fixture.delivered_exception.point.eip != 0u;
 }
 
 static lib_i32 cpu_paging_prepare(cpu_bus_fixture *fixture,
@@ -40,7 +41,7 @@ static lib_i32 cpu_paging_prepare(cpu_bus_fixture *fixture,
         core_machine_cpu_execution_load_segment(&fixture->execution,
             &fixture->cpu.data.ss, 0u)) return 0;
     fixture->cpu.data.eip = 0u;
-    fixture->cpu.data.idtr.limit = 0x17u;
+    fixture->cpu.data.idtr.limit = 0x03ffu;
     lib_memory_copy(fixture->memory, code, bytes);
     return 1;
 }
@@ -51,11 +52,13 @@ static lib_i32 cpu_paging_control_gate(core_machine_cpu_profile profile,
     cpu_bus_fixture fixture;
 
     if (!cpu_paging_prepare(&fixture, profile, code, bytes)) return 1;
-    for (lib_u32 step = 0u; step < 128u && fixture.faults == 0u; ++step)
+    for (lib_u32 step = 0u; step < 128u &&
+            fixture.delivered_exceptions == 0u; ++step)
         core_machine_cpu_execution_refresh(&fixture.execution);
-    return fixture.instructions.data.except != VCPUINS_EXCEPT_UD ||
-        fixture.faults != 1u || !fixture.fault.valid ||
-        fixture.fault.exception_mask != VCPUINS_EXCEPT_UD;
+    return fixture.faults != 0u || fixture.execution.stop_requested ||
+        fixture.delivered_exceptions != 1u ||
+        !fixture.delivered_exception.valid ||
+        fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_UD;
 }
 
 static lib_i32 cpu_paging_control_forms(void)
@@ -101,12 +104,19 @@ static lib_i32 cpu_paging_invlpg_case(core_machine_cpu_profile profile,
     fixture.cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
     before = fixture.cpu;
     core_machine_cpu_execution_refresh(&fixture.execution);
-    return fixture.instructions.data.except != VCPUINS_EXCEPT_UD ||
-        fixture.faults != 1u || !fixture.fault.valid ||
-        fixture.fault.exception_mask != VCPUINS_EXCEPT_UD ||
-        fixture.fault.exception_code != 0u || fixture.fault.point.cs != 0u ||
-        fixture.fault.point.linear_pc != 0u ||
-        lib_memory_compare(&fixture.cpu, &before, sizeof(before)) != 0;
+    return fixture.faults != 0u || fixture.execution.stop_requested ||
+        fixture.delivered_exceptions != 1u ||
+        !fixture.delivered_exception.valid ||
+        fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_UD ||
+        fixture.delivered_exception.exception_code != 0u ||
+        fixture.delivered_exception.point.cs != 0u ||
+        fixture.delivered_exception.point.linear_pc != 0u ||
+        fixture.cpu.data.eax != before.data.eax ||
+        fixture.cpu.data.ecx != before.data.ecx ||
+        fixture.cpu.data.edx != before.data.edx ||
+        fixture.cpu.data.ebx != before.data.ebx ||
+        fixture.cpu.data.esi != before.data.esi ||
+        fixture.cpu.data.edi != before.data.edi;
 }
 
 static lib_i32 cpu_paging_invlpg_rejection(void)

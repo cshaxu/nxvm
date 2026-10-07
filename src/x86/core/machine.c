@@ -781,10 +781,7 @@ lib_status core_machine_run(
                 result->detail = machine->fault_detail;
                 return LIB_STATUS_INTERNAL_ERROR;
             }
-            /* DeskPro D3PE consumes processor shutdown as a CPU-reset pulse.
-             * It must win over the legacy stop marker carried with that CPU
-             * event, or the generic stop path would incorrectly cold-reset
-             * the board before D4 can consume the event. */
+            /* Only an explicit board binding converts shutdown to CPU reset. */
             if (machine->attachment.shutdown_reset != LIB_NULL &&
                 machine->attachment.shutdown_reset(machine->attachment.context) &&
                 core_machine_cpu_execution_consume_shutdown_request(
@@ -928,6 +925,19 @@ lib_status core_machine_run(
                     result->detail = machine->fault_detail;
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return LIB_STATUS_INTERNAL_ERROR;
+                }
+                if (core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
+                    /* Return through the loop once so an explicit board reset
+                     * can consume the notification before generic waiting. */
+                    if (machine->attachment.shutdown_reset != LIB_NULL &&
+                        machine->attachment.shutdown_reset(machine->attachment.context))
+                        continue;
+                    machine->lifecycle = CORE_MACHINE_PAUSED;
+                    result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+                    result->detail = VCPUINS_EXCEPT_SHUTDOWN;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return core_machine_complete_run_boundary(machine, result);
                 }
                 if (core_machine_cpu_execution_consume_instruction_fault_delivery(
                         machine->executor_cpu_execution)) {

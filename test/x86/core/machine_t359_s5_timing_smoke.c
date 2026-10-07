@@ -210,7 +210,8 @@ static lib_i32 t359_s5_test_attributes_and_preflight(void)
     } else {
         failed = 1;
     }
-    /* T337_REAL_UD_TERMINAL_IVT_REJECT: the configured vector route fails. */
+    /* T337_REAL_UD_TERMINAL_IVT_REJECT: the host vector read fails; this
+     * internal CE is not a successfully serviced or terminal guest UD. */
     if (!failed && core_machine_reset(machine) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, T359_S5_RESET_LINEAR, illegal_lock,
             sizeof(illegal_lock)) == LIB_STATUS_OK) {
@@ -220,7 +221,8 @@ static lib_i32 t359_s5_test_attributes_and_preflight(void)
             result.reason != CORE_MACHINE_STOP_FAULT || result.elapsed_ticks != 0u ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             !diagnostic.first_fault.valid ||
-            (diagnostic.first_fault.exception_mask & VCPUINS_EXCEPT_UD) == 0u;
+            diagnostic.first_fault.exception_mask != VCPUINS_EXCEPT_CE ||
+            diagnostic.first_fault.exception_code != 6u * 4u;
     } else {
         failed = 1;
     }

@@ -110,15 +110,20 @@ static inline lib_bool cpu_protected_step(cpu_instruction_fixture *fixture,
     return !fixture->execution.stop_requested && !fixture->fault.valid;
 }
 
-static inline lib_bool cpu_protected_fault(cpu_instruction_fixture *fixture,
-    const lib_u8 *code, lib_u8 bytes, lib_u32 exception, const t_cpu *before)
+/* These fixtures deliberately provide no usable protected-mode exception
+ * receiver. A delivery failure is therefore architectural shutdown, not a
+ * host-visible replacement fault. The original instruction must not retire. */
+static inline lib_bool cpu_protected_shutdown(cpu_instruction_fixture *fixture,
+    const lib_u8 *code, lib_u8 bytes, const t_cpu *before)
 {
     t_cpu after;
 
     fixture->cpu.data.idtr.limit = 0x17u;
-    if (cpu_protected_step(fixture, code, bytes, &after)) return LIB_FALSE;
-    return fixture->execution.stop_requested && fixture->fault.valid &&
-        (fixture->fault.exception_mask & exception) != 0u &&
+    (void)cpu_protected_step(fixture, code, bytes, &after);
+    return core_machine_cpu_is_shutdown(&fixture->execution) &&
+        !fixture->execution.stop_requested && !fixture->fault.valid &&
+        fixture->delivered_exception.valid &&
+        fixture->delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
         after.data.eip == before->data.eip && after.data.esp == before->data.esp &&
         after.data.eflags == before->data.eflags;
 }

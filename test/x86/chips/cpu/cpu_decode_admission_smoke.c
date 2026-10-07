@@ -57,6 +57,17 @@ static void decode_prepare(decode_fixture *fixture,
     fixture->bus.cpu.data.idtr.limit = 0u;
 }
 
+/* These decode cases deliberately leave protected-mode exception delivery
+ * unconfigured. The CPU keeps source classification internally, but its
+ * observable terminal result is resident shutdown, not a host fault. */
+static lib_bool decode_expect_shutdown(const decode_fixture *fixture, lib_u32 eip)
+{
+    return core_machine_cpu_is_shutdown(&fixture->bus.execution) &&
+        !fixture->bus.execution.stop_requested && fixture->bus.faults == 0u &&
+        fixture->bus.instructions.data.except == VCPUINS_EXCEPT_SHUTDOWN &&
+        fixture->bus.cpu.data.eip == eip;
+}
+
 /* One table covers the complete unchecked-call class and each required suffix
  * byte. Providers distinguish failed fetch from any dependent operand effect. */
 static lib_i32 decode_failed_suffixes(void)
@@ -125,9 +136,7 @@ static lib_i32 decode_family_lengths(void)
                 decode_fixture fixture;
                 lib_u8 bytes = legal_bytes + over;
                 lib_u32 start;
-                lib_u32 expected = over && profile >= CORE_MACHINE_CPU_PROFILE_80286 ?
-                    (profile == CORE_MACHINE_CPU_PROFILE_80286 ?
-                        VCPUINS_EXCEPT_UD : VCPUINS_EXCEPT_GP) : 0u;
+                lib_bool rejected = over && profile >= CORE_MACHINE_CPU_PROFILE_80286;
 
                 decode_prepare(&fixture, profile);
                 start = fixture.bus.cpu.data.eip;
@@ -135,10 +144,9 @@ static lib_i32 decode_family_lengths(void)
                 lib_memory_set(fixture.bus.memory + start, 0x26u, bytes - 1u);
                 fixture.bus.memory[start + bytes - 1u] = 0x90u;
                 core_machine_cpu_execution_refresh(&fixture.bus.execution);
-                if (fixture.bus.instructions.data.except != expected ||
-                    fixture.bus.faults != (expected != 0u ? 1u : 0u) ||
-                    fixture.bus.cpu.data.eip != (expected ? start : start + bytes) ||
-                    (expected && fixture.bus.fault.exception_code != 0u)) {
+                if ((rejected && !decode_expect_shutdown(&fixture, start)) ||
+                    (!rejected && (fixture.bus.instructions.data.except != 0u ||
+                        fixture.bus.faults != 0u || fixture.bus.cpu.data.eip != start + bytes))) {
                     lib_c_printf("decode length: profile=%u bytes=%u cached=%u mask=%u\n",
                         (lib_u32)profile, (lib_u32)bytes, (lib_u32)cached,
                         fixture.bus.instructions.data.except);
@@ -166,10 +174,7 @@ static lib_i32 decode_endpoint_publication(void)
         if (fixture.bus.faults || fixture.bus.cpu.data.eip != next) return 1;
         if (profile >= CORE_MACHINE_CPU_PROFILE_80286) {
             core_machine_cpu_execution_refresh(&fixture.bus.execution);
-            if (fixture.bus.faults != 1u ||
-                fixture.bus.fault.exception_mask != VCPUINS_EXCEPT_GP ||
-                fixture.bus.fault.point.eip != next ||
-                fixture.bus.cpu.data.eip != next) return 1;
+            if (!decode_expect_shutdown(&fixture, next)) return 1;
         }
     }
     return 0;
@@ -199,8 +204,7 @@ static lib_i32 decode_component_lengths(void)
             for (lib_u8 over = 0u; over != 2u; ++over) {
                 decode_fixture fixture;
                 lib_u8 prefixes = limit + over - cases[index].bytes;
-                lib_u32 expected = !over ? 0u : profile == CORE_MACHINE_CPU_PROFILE_80286 ?
-                    VCPUINS_EXCEPT_UD : VCPUINS_EXCEPT_GP;
+                lib_bool rejected = over != 0u;
                 lib_u32 start;
 
                 decode_prepare(&fixture, profile);
@@ -209,9 +213,10 @@ static lib_i32 decode_component_lengths(void)
                 lib_memory_copy(fixture.bus.memory + start + prefixes,
                     cases[index].code, cases[index].bytes);
                 core_machine_cpu_execution_refresh(&fixture.bus.execution);
-                if (fixture.bus.instructions.data.except != expected ||
-                    fixture.bus.cpu.data.eip != (over ? start : start + limit) ||
-                    (over && (fixture.data_reads || fixture.bus.writes))) return 1;
+                if ((rejected && (!decode_expect_shutdown(&fixture, start) ||
+                    fixture.data_reads || fixture.bus.writes)) ||
+                    (!rejected && (fixture.bus.instructions.data.except != 0u ||
+                        fixture.bus.cpu.data.eip != start + limit))) return 1;
             }
         }
     }
@@ -236,9 +241,7 @@ static lib_i32 decode_wrapped_immediate(void)
                 fixture.bus.instructions.data.oplen != 3u ||
                 lib_memory_compare(fixture.bus.instructions.data.opcodes,
                     (const lib_u8[]){0xb8u,0x34u,0x12u}, 3u)) return 1;
-        } else if (fixture.bus.faults != 1u ||
-            fixture.bus.fault.exception_mask != VCPUINS_EXCEPT_GP ||
-            fixture.bus.cpu.data.eip != 0xffffu ||
+        } else if (!decode_expect_shutdown(&fixture, 0xffffu) ||
             fixture.bus.cpu.data.ax != 0x3210u) return 1;
     }
     return 0;
@@ -322,8 +325,7 @@ static lib_i32 decode_page_boundary(void)
                     sizeof(before_tables))) return 1;
             core_machine_cpu_execution_refresh(&fixture.decode.bus.execution);
             if (immediate && !mapped) {
-                if (fixture.decode.bus.faults != 1u ||
-                    fixture.decode.bus.fault.exception_mask != VCPUINS_EXCEPT_PF ||
+                if (!decode_expect_shutdown(&fixture.decode, 0xfffu) ||
                     fixture.decode.bus.cpu.data.cr2 != 0x1000u ||
                     fixture.decode.bus.cpu.data.eip != 0xfffu) return 1;
             } else if (fixture.decode.bus.faults ||
@@ -351,8 +353,10 @@ static lib_i32 decode_privileged_operands(void)
                 (profile == CORE_MACHINE_CPU_PROFILE_80386 ? 3u : 1u); ++mode) {
                 decode_fixture fixture;
                 lib_u32 start;
+                lib_u32 entry;
 
                 decode_prepare(&fixture, profile);
+                entry = fixture.bus.cpu.data.eip;
                 fixture.bus.cpu.data.cr0 = VCPU_CR0_PE;
                 if (mode == 2u) fixture.bus.cpu.data.eflags |= VCPU_EFLAGS_VM;
                 else {
@@ -369,14 +373,10 @@ static lib_i32 decode_privileged_operands(void)
                 lib_memory_copy(fixture.bus.memory + start,
                     forms[index], sizeof(forms[index]));
                 core_machine_cpu_execution_refresh(&fixture.bus.execution);
-                /* The deliberately invalid IDT rejects delivery: 286 retains
-                 * GP; 386 GP delivery shuts down as DF. VM LLDT/LTR are UD.
-                 * Operand reads must be absent before either delivery result. */
+                /* The deliberately invalid IDT rejects delivery. Operand reads
+                    * must be absent before CPU-owned resident shutdown. */
                 if ((mode != 2u && fixture.data_reads != 0u) || fixture.operand_reads != 0u ||
-                    fixture.bus.instructions.data.except !=
-                        (mode == 2u && index < 2u ? VCPUINS_EXCEPT_UD :
-                            profile == CORE_MACHINE_CPU_PROFILE_80386 ?
-                                VCPUINS_EXCEPT_DF : VCPUINS_EXCEPT_GP) ||
+                    !decode_expect_shutdown(&fixture, entry) ||
                     fixture.bus.cpu.data.ldtr.selector != 0u ||
                     fixture.bus.cpu.data.tr.selector != 0u) {
                     lib_c_printf("privileged: profile=%u mode=%u form=%u reads=%u mask=%X\n",

@@ -178,16 +178,6 @@ static lib_i32 moffs_test_386_single_attributes(void)
     return 1;
 }
 
-static lib_i32 moffs_state_equal(const t_cpu *before, const t_cpu *after)
-{
-    return before->data.eax == after->data.eax &&
-        before->data.ecx == after->data.ecx &&
-        before->data.edx == after->data.edx &&
-        before->data.ebx == after->data.ebx &&
-        before->data.eflags == after->data.eflags &&
-        before->data.eip == after->data.eip;
-}
-
 static lib_i32 moffs_test_reject(void)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -205,24 +195,13 @@ static lib_i32 moffs_test_reject(void)
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
     {
         cpu_instruction_fixture state;
-        t_cpu before = {0};
-        t_cpu after = {0};
-        lib_status status = LIB_STATUS_INVALID_STATE;
         lib_u8 code[] = { prefixes[prefix], opcodes[opcode], 0u, 0x10u };
-        lib_i32 failed = 0;
 
         cpu_instruction_prepare(&state, profiles[profile]);
         moffs_set_registers(&state);
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        failed |= (status = cpu_instruction_run(&state, code, sizeof(code), &after)) != LIB_STATUS_INTERNAL_ERROR ||
-            !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-            !moffs_state_equal(&before, &after);
-
-        if (failed) {
-            lib_c_printf("MOFFS reject profile=%u prefix=%02x opcode=%02x status=%d fault=%08x\n",
-                profiles[profile], prefixes[prefix], opcodes[opcode], status,
-                state.fault.exception_mask);
+        if (!cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u)) {
+            lib_c_printf("MOFFS reject profile=%u prefix=%02x opcode=%02x\n",
+                profiles[profile], prefixes[prefix], opcodes[opcode]);
             return 0;
         }
     }
@@ -237,20 +216,12 @@ static lib_i32 moffs_test_lock(void)
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
     {
         cpu_instruction_fixture state;
-        t_cpu before;
-        t_cpu after;
         lib_u8 code[] = { 0xf0u, opcodes[opcode], 0u, 0x10u };
-        lib_i32 failed = 0;
 
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
         moffs_set_registers(&state);
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        failed |= cpu_instruction_run(&state, code, sizeof(code), &after) != LIB_STATUS_INTERNAL_ERROR ||
-            !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-            !moffs_state_equal(&before, &after);
-
-        if (failed) return 0;
+        if (!cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u))
+            return 0;
     }
     return 1;
 }

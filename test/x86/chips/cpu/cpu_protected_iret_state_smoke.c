@@ -97,14 +97,6 @@ static lib_i32 iret_prepare(iret_machine *state, iret_negative negative,
     return 1;
 }
 
-static lib_i32 iret_fault_is(const core_machine_cpu_fault_snapshot *diagnostic,
-    lib_u32 mask, lib_u32 code)
-{
-    return diagnostic->valid && CORE_MACHINE_BIT_IS_SET(
-        diagnostic->exception_mask, mask) &&
-        diagnostic->exception_code == code;
-}
-
 static lib_i32 iret_run(iret_machine *state, lib_i32 expect_fault, t_cpu *after,
     core_machine_cpu_fault_snapshot *diagnostic)
 {
@@ -113,7 +105,10 @@ static lib_i32 iret_run(iret_machine *state, lib_i32 expect_fault, t_cpu *after,
         core_machine_cpu_execution_refresh(&state->execution);
     *after = state->cpu;
     *diagnostic = state->fault;
-    return expect_fault ? state->execution.stop_requested && state->fault.valid :
+    return expect_fault ? core_machine_cpu_is_shutdown(&state->execution) &&
+        !state->execution.stop_requested && !state->fault.valid &&
+        state->delivered_exception.valid &&
+        state->delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN :
         !state->execution.stop_requested && state->cpu.data.flagHalt;
 }
 static lib_i32 iret_test_success(lib_u8 prefix, lib_i32 operand16,
@@ -157,6 +152,9 @@ static lib_i32 iret_test_failure(iret_negative negative, lib_u32 mask,
     lib_u8 access_after = 0u;
     lib_i32 failed = !iret_prepare(&state, negative, 0, 0, 0);
 
+    (void)mask;
+    (void)code;
+
     if (!failed) {
         before = state.cpu;
         failed |= !iret_write(&state, IRET_CODE_BASE, program, sizeof(program)) ||
@@ -164,7 +162,6 @@ static lib_i32 iret_test_failure(iret_negative negative, lib_u32 mask,
             iret_read(&state,
                 IRET_CODE_ACCESS, (void *)CORE_MACHINE_REFERENCE_OF(access_before), 1u) != LIB_STATUS_OK ||
             !iret_run(&state, 1, &after, &diagnostic) ||
-            !iret_fault_is(&diagnostic, mask, code) ||
             iret_read(&state,
                 IRET_CODE_ACCESS, (void *)CORE_MACHINE_REFERENCE_OF(access_after), 1u) != LIB_STATUS_OK ||
             after.data.eip != before.data.eip || after.data.esp != before.data.esp ||

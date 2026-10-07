@@ -194,7 +194,7 @@ typedef struct core_machine_cpu_instruction_observation {
 #define VCPUINS_EXCEPT_UD  0x00000040 /* 06 - fault: invalid opcode */
 #define VCPUINS_EXCEPT_NM  0x00000080 /* 07 - fault: coprocessor not available */
 #define VCPUINS_EXCEPT_DF  0x00000100 /* 08 - double fault abort */
-#define VCPUINS_EXCEPT_09  0x00000200 /* 09 - abort: reserved */
+#define VCPUINS_EXCEPT_09  0x00000200 /* 09 - protected coprocessor segment-overrun abort */
 #define VCPUINS_EXCEPT_TS  0x00000400 /* 10 - fault: task state segment fail */
 #define VCPUINS_EXCEPT_NP  0x00000800 /* 11 - fault: segment not present */
 #define VCPUINS_EXCEPT_SS  0x00001000 /* 12 - fault: stack segment fault */
@@ -431,6 +431,10 @@ lib_u8 core_machine_cpu_execution_consume_reset_request(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_request_shutdown(
     core_machine_cpu_execution_context *context);
+/* Resident architectural shutdown; consuming its board signal does not clear it.
+ * Cleared only by processor reset or successful source-qualified NMI entry. */
+lib_bool core_machine_cpu_is_shutdown(
+    const core_machine_cpu_execution_context *context);
 lib_u8 core_machine_cpu_execution_consume_shutdown_request(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_state_initialize(

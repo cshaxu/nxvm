@@ -92,15 +92,8 @@ static lib_i32 lgdt_lidt_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    t_cpu before, after;
-
     cpu_instruction_prepare(&state, profile);
-    state.cpu.data.idtr.limit = 0x17u;
-    before = state.cpu;
-    (void)cpu_instruction_run(&state, code, bytes, &after);
-    return state.execution.stop_requested && state.fault.valid &&
-        (state.fault.exception_mask & VCPUINS_EXCEPT_UD) &&
-        lib_memory_compare(&before, &after, sizeof(before)) == 0;
+    return cpu_instruction_expect_real_fault(&state, code, bytes, 6u);
 }
 
 static lib_i32 lgdt_lidt_test_rejections(void)

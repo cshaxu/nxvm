@@ -219,8 +219,6 @@ static lib_i32 inc_dec_test_or_attribute_profile_fault(void)
     }
     {
         inc_dec_machine state;
-        t_cpu after;
-        core_machine_cpu_diagnostic diagnostic;
         lib_i32 failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
 
         if (!failed) {
@@ -228,12 +226,8 @@ static lib_i32 inc_dec_test_or_attribute_profile_fault(void)
             state.cpu.data.edx = 1u;
             state.cpu.data.eflags = VCPU_EFLAGS_AF |
                 VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
-            failed |= !inc_dec_run(&state, rejected, sizeof(rejected), 1, &after,
-                &diagnostic) || !diagnostic.first_fault.valid || !X86_CPU_BIT_IS_SET(
-                    diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-                after.data.ecx != 0x11228000u || after.data.edx != 1u ||
-                after.data.eflags != (VCPU_EFLAGS_AF | VCPU_EFLAGS_CF |
-                    VCPU_EFLAGS_OF) || after.data.eip != 0u;
+            failed |= !cpu_instruction_expect_real_fault(&state, rejected,
+                sizeof(rejected), 6u);
         }
                 if (failed) return 0;
     }
@@ -413,19 +407,14 @@ static lib_i32 inc_dec_test_and_attribute_profile_fault(void)
     }
     {
         inc_dec_machine state;
-        t_cpu after;
-        core_machine_cpu_diagnostic diagnostic;
         const lib_u32 flags = VCPU_EFLAGS_AF | VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
         lib_i32 failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
         if (!failed) {
             state.cpu.data.ecx = 0x11228081u;
             state.cpu.data.edx = 0xffffu;
             state.cpu.data.eflags = flags;
-            failed |= !inc_dec_run(&state, rejected, sizeof(rejected), 1, &after,
-                &diagnostic) || !diagnostic.first_fault.valid || !X86_CPU_BIT_IS_SET(
-                    diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-                after.data.ecx != 0x11228081u || after.data.edx != 0xffffu ||
-                after.data.eflags != flags || after.data.eip != 0u;
+            failed |= !cpu_instruction_expect_real_fault(&state, rejected,
+                sizeof(rejected), 6u);
         }
                 if (failed) return 0;
     }
@@ -637,19 +626,14 @@ static lib_i32 inc_dec_test_sub_attribute_profile_fault(void)
     }
     {
         inc_dec_machine state;
-        t_cpu after;
-        core_machine_cpu_diagnostic diagnostic;
         const lib_u32 flags = VCPU_EFLAGS_CF;
         lib_i32 failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
         if (!failed) {
             state.cpu.data.ecx = 0x11220000u;
             state.cpu.data.edx = 1u;
             state.cpu.data.eflags = flags;
-            failed |= !inc_dec_run(&state, rejected, sizeof(rejected), 1, &after,
-                &diagnostic) || !diagnostic.first_fault.valid || !X86_CPU_BIT_IS_SET(
-                    diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-                after.data.ecx != 0x11220000u || after.data.edx != 1u ||
-                after.data.eflags != flags || after.data.eip != 0u;
+            failed |= !cpu_instruction_expect_real_fault(&state, rejected,
+                sizeof(rejected), 6u);
         }
                 if (failed) return 0;
     }
@@ -818,8 +802,6 @@ static lib_i32 inc_dec_test_xor_attribute_profile_fault(void)
     }
     {
         inc_dec_machine state;
-        t_cpu after;
-        core_machine_cpu_diagnostic diagnostic;
         const lib_u32 flags = VCPU_EFLAGS_AF | VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
         lib_i32 failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
 
@@ -827,11 +809,8 @@ static lib_i32 inc_dec_test_xor_attribute_profile_fault(void)
             state.cpu.data.ecx = 0x11228081u;
             state.cpu.data.edx = 0xffffu;
             state.cpu.data.eflags = flags;
-            failed |= !inc_dec_run(&state, rejected, sizeof(rejected), 1, &after,
-                &diagnostic) || !diagnostic.first_fault.valid || !X86_CPU_BIT_IS_SET(
-                    diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-                after.data.ecx != 0x11228081u || after.data.edx != 0xffffu ||
-                after.data.eflags != flags || after.data.eip != 0u;
+            failed |= !cpu_instruction_expect_real_fault(&state, rejected,
+                sizeof(rejected), 6u);
         }
                 if (failed) return 0;
     }
@@ -1011,8 +990,6 @@ static lib_i32 inc_dec_test_cmp_attribute_profile_fault(void)
     }
     {
         inc_dec_machine state;
-        t_cpu after;
-        core_machine_cpu_diagnostic diagnostic;
         const lib_u32 flags = VCPU_EFLAGS_CF;
         lib_i32 failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
 
@@ -1020,11 +997,8 @@ static lib_i32 inc_dec_test_cmp_attribute_profile_fault(void)
             state.cpu.data.ecx = 0x11220000u;
             state.cpu.data.edx = 1u;
             state.cpu.data.eflags = flags;
-            failed |= !inc_dec_run(&state, rejected, sizeof(rejected), 1, &after,
-                &diagnostic) || !diagnostic.first_fault.valid || !X86_CPU_BIT_IS_SET(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-                after.data.ecx != 0x11220000u || after.data.edx != 1u ||
-                after.data.eflags != flags || after.data.eip != 0u;
+            failed |= !cpu_instruction_expect_real_fault(&state, rejected,
+                sizeof(rejected), 6u);
         }
                 if (failed) return 0;
     }

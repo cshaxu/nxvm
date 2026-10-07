@@ -72,9 +72,6 @@ static lib_i32 lld_test_reg_direct_ud(void)
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         cpu_instruction_fixture state;
-        t_cpu before;
-        t_cpu after;
-        lib_status status;
         lib_u8 code[] = { opcodes[opcode], 0xc0u };
         lib_i32 failed = 0;
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
@@ -82,16 +79,7 @@ static lib_i32 lld_test_reg_direct_ud(void)
         if (!failed) {
             state.cpu.data.es.selector = 0x1111u;
             state.cpu.data.ds.selector = 0x2222u;
-            state.cpu.data.idtr.limit = 0x17u;
-            before = state.cpu;
-            failed |= (status = cpu_instruction_run(&state, code, sizeof(code), &after)) != LIB_STATUS_INTERNAL_ERROR ||
-                !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-                after.data.eip != before.data.eip ||
-                after.data.eax != before.data.eax ||
-                after.data.eflags != before.data.eflags ||
-                (opcode == 0u ? after.data.es.selector : after.data.ds.selector) !=
-                    (opcode == 0u ? before.data.es.selector :
-                        before.data.ds.selector);
+            failed |= !cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u);
         }
 
         if (failed)
@@ -114,9 +102,6 @@ static lib_i32 lld_test_80286_operand32_ud(void)
         for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
                 ++profile) {
             cpu_instruction_fixture state;
-            t_cpu before;
-            t_cpu after;
-            lib_status status;
             lib_u8 code[] = { 0x66u, opcodes[opcode], 0x06u, 0x00u, 0x10u };
             lib_i32 failed = 0;
             cpu_instruction_prepare(&state, profiles[profile]);
@@ -124,15 +109,7 @@ static lib_i32 lld_test_80286_operand32_ud(void)
             if (!failed) {
                 state.cpu.data.es.selector = 0x1111u;
                 state.cpu.data.ds.selector = 0x2222u;
-                state.cpu.data.idtr.limit = 0x17u;
-                before = state.cpu;
-                failed |= (status = cpu_instruction_run(&state, code, sizeof(code), &after)) != LIB_STATUS_INTERNAL_ERROR ||
-                    !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) || after.data.eip != before.data.eip ||
-                    after.data.eax != before.data.eax ||
-                    after.data.eflags != before.data.eflags ||
-                    (opcode == 0u ? after.data.es.selector :
-                        after.data.ds.selector) != (opcode == 0u ?
-                            before.data.es.selector : before.data.ds.selector);
+                failed |= !cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u);
             }
 
             if (failed)
@@ -244,9 +221,10 @@ static lib_i32 lld_test_source_fault_atomicity(void)
             state.cpu.data.eip = 0u;
             before = state.cpu;
             core_machine_cpu_execution_refresh(&state.execution);
-            failed |= !state.execution.stop_requested;
+            failed |= !core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested;
             after = state.cpu;
-            failed |= !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+            failed |= state.fault.valid || !state.delivered_exception.valid ||
+                state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
                 after.data.eip != before.data.eip ||
                 after.data.eax != before.data.eax ||
                 after.data.eflags != before.data.eflags ||

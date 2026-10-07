@@ -27,14 +27,6 @@ static lib_i32 cmps_others_same(const t_cpu *before, const t_cpu *after)
         after->data.ebp == before->data.ebp;
 }
 
-static lib_i32 cmps_all_gpr_same(const t_cpu *before, const t_cpu *after)
-{
-    return cmps_others_same(before, after) &&
-        after->data.ecx == before->data.ecx &&
-        after->data.esi == before->data.esi &&
-        after->data.edi == before->data.edi;
-}
-
 static lib_i32 cmps_memory_same(const cpu_instruction_fixture *state,
     lib_u32 source, lib_u32 destination, const void *left,
     const void *right, lib_u8 width)
@@ -232,20 +224,13 @@ static lib_i32 cmps_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    t_cpu before, after;
     const lib_u8 left = 0x10u, right = 1u;
 
     cpu_instruction_prepare(&state, profile);
     cmps_seed(&state);
     state.memory[0x20010u] = left;
     state.memory[0x30020u] = right;
-    state.cpu.data.idtr.limit = 0x17u;
-    before = state.cpu;
-    (void)cpu_instruction_run(&state, code, bytes, &after);
-    return state.fault.valid &&
-        (state.fault.exception_mask & VCPUINS_EXCEPT_UD) &&
-        after.data.eip == 0u && cmps_all_gpr_same(&before, &after) &&
-        after.data.eflags == before.data.eflags &&
+    return cpu_instruction_expect_real_fault(&state, code, bytes, 6u) &&
         cmps_memory_same(&state, 0x20010u, 0x30020u,
             &left, &right, 1u);
 }
@@ -338,8 +323,8 @@ static lib_i32 cmps_protected_case(lib_bool source_fault,
     if (repeated && state.execution.stop_requested) return 0;
     if (repeated) core_machine_cpu_execution_refresh(&state.execution);
     after = state.cpu;
-    return state.execution.stop_requested && state.fault.valid &&
-        (state.fault.exception_mask & VCPUINS_EXCEPT_DF) &&
+    return core_machine_cpu_is_shutdown(&state.execution) && !state.execution.stop_requested && !state.fault.valid && state.delivered_exception.valid &&
+        state.delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
         after.data.eip == 0u && cmps_others_same(&before, &after) &&
         after.data.ecx == (repeated ? 0x11220002u : before.data.ecx) &&
         after.data.esi == (repeated ? 0x11u : before.data.esi) &&

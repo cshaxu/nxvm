@@ -15,12 +15,15 @@ static lib_i32 fpu_state_reject(const lib_u8 *code, lib_u8 bytes,
     failed = x86_fpu_create(fpu_profile, &fpu) != LIB_STATUS_OK;
     if (!failed) {
         core_machine_cpu_execution_context_bind_fpu(&state.execution, fpu);
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        failed |= cpu_instruction_run(&state, code, bytes, &after) !=
-            LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-            (state.fault.exception_mask & exception) == 0u ||
-            lib_memory_compare(&before, &after, sizeof(before)) != 0;
+        if (exception == VCPUINS_EXCEPT_UD)
+            failed |= !cpu_instruction_expect_real_fault(&state, code, bytes, 6u);
+        else {
+            before = state.cpu;
+            failed |= cpu_instruction_run(&state, code, bytes, &after) !=
+                LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
+                (state.fault.exception_mask & exception) == 0u ||
+                lib_memory_compare(&before, &after, sizeof(before)) != 0;
+        }
     }
     x86_fpu_destroy(fpu);
     return failed;

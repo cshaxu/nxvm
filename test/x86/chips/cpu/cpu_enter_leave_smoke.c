@@ -261,8 +261,6 @@ static lib_i32 enter_leave_test_reject_case(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    t_cpu before;
-    t_cpu after;
     lib_u32 image = 0xdecafbad;
     lib_u32 observed;
     lib_i32 failed = 0;
@@ -271,17 +269,13 @@ static lib_i32 enter_leave_test_reject_case(core_machine_cpu_profile profile,
     if (!failed)
     {
         enter_leave_seed(&state);
-        failed |= cpu_instruction_write(&state, 0x7ff0u, &image, sizeof(image),
+        failed |= cpu_instruction_write(&state, 0x7000u, &image, sizeof(image),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
-            cpu_instruction_write(&state, 0x8000u, &image, sizeof(image),
+            cpu_instruction_write(&state, 0x9000u, &image, sizeof(image),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        failed |= cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-            !X86_CPU_BIT_IS_SET(state.fault.exception_mask,
-            VCPUINS_EXCEPT_UD) || !enter_leave_cpu_same(&before, &after) ||
-            !enter_leave_read(&state, 0x7ff0u, sizeof(image), &observed) ||
-            observed != image || !enter_leave_read(&state, 0x8000u,
+        failed |= !cpu_instruction_expect_real_fault(&state, code, bytes, 6u) ||
+            !enter_leave_read(&state, 0x7000u, sizeof(image), &observed) ||
+            observed != image || !enter_leave_read(&state, 0x9000u,
             sizeof(image), &observed) || observed != image;
     }
     return !failed;
@@ -464,10 +458,11 @@ static lib_i32 enter_leave_test_protected_faults(void)
         state.cpu.data.eip = 0u;
         before = state.cpu;
         core_machine_cpu_execution_refresh(&state.execution);
-        failed |= !state.execution.stop_requested;
+        failed |= !core_machine_cpu_is_shutdown(&state.execution) ||
+            state.execution.stop_requested;
         after = state.cpu;
-        failed |= !state.fault.valid || !X86_CPU_BIT_IS_SET(
-            state.fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+        failed |= state.fault.valid || !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
             !enter_leave_cpu_same(&before, &after) ||
             cpu_instruction_read(&state, 0x4018u, observed_frame,
                 sizeof(observed_frame), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
@@ -493,10 +488,11 @@ static lib_i32 enter_leave_test_protected_faults(void)
         state.cpu.data.eip = 0u;
         before = state.cpu;
         core_machine_cpu_execution_refresh(&state.execution);
-        failed |= !state.execution.stop_requested;
+        failed |= !core_machine_cpu_is_shutdown(&state.execution) ||
+            state.execution.stop_requested;
         after = state.cpu;
-        failed |= !state.fault.valid || !X86_CPU_BIT_IS_SET(
-            state.fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+        failed |= state.fault.valid || !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
             !enter_leave_cpu_same(&before, &after) || !enter_leave_read(&state,
             0x4020u, 2u, &value) || value != stack_image[0];
     }

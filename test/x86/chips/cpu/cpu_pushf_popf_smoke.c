@@ -113,36 +113,13 @@ static lib_i32 pushf_test_defaults(void)
 }
 
 static lib_i32 pushf_expect_ud(core_machine_cpu_profile profile,
-    const lib_u8 *code, lib_u8 bytes, lib_bool check_memory)
+    const lib_u8 *code, lib_u8 bytes)
 {
-    /* T337_REAL_UD_TERMINAL_CPU_OWNER: no board IVT delivery in this test. */
     cpu_instruction_fixture state;
-    t_cpu before;
-    t_cpu after = {0};
-    lib_u32 sentinel = 0xa55aa55au;
-    lib_u32 low = 0u;
-    lib_u32 high = 0u;
 
     cpu_instruction_prepare(&state, profile);
     state.cpu.data.esp = 0x8000u;
-    state.cpu.data.idtr.limit = 0x17u;
-    if (check_memory) {
-        lib_memory_copy(state.memory + 0x7ffcu, &sentinel,
-            sizeof(sentinel));
-        lib_memory_copy(state.memory + 0x8000u, &sentinel,
-            sizeof(sentinel));
-    }
-    before = state.cpu;
-    if (cpu_instruction_run(&state, code, bytes, &after) !=
-            LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-        !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-        lib_memory_compare(&before, &after, sizeof(before)) != 0) return 0;
-    if (check_memory) {
-        lib_memory_copy(&low, state.memory + 0x7ffcu, sizeof(low));
-        lib_memory_copy(&high, state.memory + 0x8000u, sizeof(high));
-        if (low != sentinel || high != sentinel) return 0;
-    }
-    return 1;
+    return cpu_instruction_expect_real_fault(&state, code, bytes, 6u);
 }
 
 static lib_i32 pushf_test_attributes_and_rejects(void)
@@ -216,8 +193,7 @@ static lib_i32 pushf_test_attributes_and_rejects(void)
                     code[1] = prefixes[prefix][1];
                     code[2] = opcode;
                 }
-                if (!pushf_expect_ud(legacy[profile], code, bytes,
-                    LIB_FALSE)) return 0;
+                if (!pushf_expect_ud(legacy[profile], code, bytes)) return 0;
             }
         }
     }
@@ -245,7 +221,7 @@ static lib_i32 pushf_test_lock(void)
                 code[3] = opcode;
             }
             if (!pushf_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, code,
-                bytes, LIB_TRUE)) return 0;
+                bytes)) return 0;
         }
     }
     return 1;
@@ -379,8 +355,16 @@ static lib_i32 pushf_test_stack_faults(void)
         else state.cpu.data.ss.seg.data.writable = LIB_FALSE;
         lib_memory_copy(state.memory + 0xc000u, &image, sizeof(image));
         before = state.cpu;
-        if (pushf_protected_run(&state, forms[pass], pass ? 2u : 1u,
-            &after) != LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
+        if (!pass) {
+            if (pushf_protected_run(&state, forms[pass], 1u, &after) !=
+                    LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
+                after.data.eip != 0u || after.data.esp != 0x8000u ||
+                after.data.eflags != before.data.eflags) return 0;
+        } else if (pushf_protected_run(&state, forms[pass], 2u, &after) !=
+                LIB_STATUS_OK || !core_machine_cpu_is_shutdown(&state.execution) ||
+            state.execution.stop_requested || state.fault.valid ||
+            !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
             after.data.eip != 0u || after.data.esp != 0x8000u ||
             after.data.eflags != before.data.eflags) return 0;
         lib_memory_copy(&observed, state.memory + 0xc000u,
@@ -619,7 +603,8 @@ static lib_bool pushf_test_starting_sp(void)
         core_machine_cpu_execution_refresh(&state.execution);
         after = state.cpu;
         if (shutdown) {
-            if (!state.execution.shutdown_requested || !state.execution.stop_requested ||
+            if (!core_machine_cpu_is_shutdown(&state.execution) ||
+                state.execution.stop_requested ||
                 !state.delivered_exception.valid ||
                 state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
                 after.data.eip != 0u || after.data.sp != starts[start])

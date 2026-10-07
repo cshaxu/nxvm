@@ -213,8 +213,6 @@ static lib_i32 gpr_mov_test_immediate_and_reject(void)
 
         for (extension = 1u; extension != 8u; ++extension) {
             cpu_instruction_fixture state;
-            t_cpu before;
-            t_cpu after;
             lib_u16 image = 0xbeefu;
             lib_u8 code[] = {(lib_u8)(form ? 0xc7u : 0xc6u),
                 (lib_u8)(0x06u | (extension << 3u)),0,0x10u,0,0};
@@ -224,12 +222,8 @@ static lib_i32 gpr_mov_test_immediate_and_reject(void)
             gpr_mov_seed(&state);
             failed |= cpu_instruction_write(&state, 0x1000u, &image, sizeof(image),
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
-            state.cpu.data.idtr.limit = 0x17u;
-            before = state.cpu;
-            failed |= cpu_instruction_run(&state, code, form ? 6u : 5u, &after) != LIB_STATUS_INTERNAL_ERROR ||
-                !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-                after.data.eip != before.data.eip ||
-                !gpr_mov_nonparticipants(&before, &after, 8u) ||
+            failed |= !cpu_instruction_expect_real_fault(&state, code,
+                form ? 6u : 5u, 6u) ||
                 cpu_instruction_read(&state, 0x1000u, &image, sizeof(image),
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
                     LIB_STATUS_OK || image != 0xbeefu;
@@ -369,8 +363,6 @@ static lib_i32 gpr_mov_test_prefix_lock(void)
          ++profile) {
         for (form = 0u; form != sizeof(prefix_sizes); ++form) {
             cpu_instruction_fixture state;
-            t_cpu before;
-            t_cpu after;
             lib_u16 image = 0xbeefu;
             lib_i32 failed = 0;
 
@@ -378,11 +370,8 @@ static lib_i32 gpr_mov_test_prefix_lock(void)
             gpr_mov_seed(&state);
             failed |= cpu_instruction_write(&state, 0x1000u, &image, sizeof(image),
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
-            state.cpu.data.idtr.limit = 0x17u;
-            before = state.cpu;
-            failed |= cpu_instruction_run(&state, prefix_codes[form], prefix_sizes[form], &after) != LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-                !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) || after.data.eip != before.data.eip ||
-                !gpr_mov_nonparticipants(&before, &after, 8u) ||
+            failed |= !cpu_instruction_expect_real_fault(&state,
+                prefix_codes[form], prefix_sizes[form], 6u) ||
                 cpu_instruction_read(&state, 0x1000u, &image, sizeof(image),
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
                     LIB_STATUS_OK || image != 0xbeefu;
@@ -392,8 +381,6 @@ static lib_i32 gpr_mov_test_prefix_lock(void)
     }
     for (form = 0u; form != sizeof(lock_sizes); ++form) {
         cpu_instruction_fixture state;
-        t_cpu before;
-        t_cpu after;
         lib_u16 image = 0xbeefu;
         lib_i32 failed = 0;
 
@@ -401,12 +388,8 @@ static lib_i32 gpr_mov_test_prefix_lock(void)
         gpr_mov_seed(&state);
         failed |= cpu_instruction_write(&state, 0x1000u, &image, sizeof(image),
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        failed |= cpu_instruction_run(&state, lock_codes[form], lock_sizes[form], &after) != LIB_STATUS_INTERNAL_ERROR ||
-            !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-            after.data.eip != before.data.eip ||
-            !gpr_mov_nonparticipants(&before, &after, 8u) ||
+        failed |= !cpu_instruction_expect_real_fault(&state, lock_codes[form],
+            lock_sizes[form], 6u) ||
             cpu_instruction_read(&state, 0x1000u, &image, sizeof(image),
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
                 LIB_STATUS_OK || image != 0xbeefu;

@@ -179,18 +179,11 @@ static lib_i32 bound_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    t_cpu before, after;
     const lib_u8 pair[] = {0xfeu,0xffu,0x02u,0x00u};
 
     cpu_instruction_prepare(&state, profile);
-    state.cpu.data.idtr.limit = 0x17u;
     lib_memory_copy(state.memory + 0x0400u, pair, sizeof(pair));
-    before = state.cpu;
-    (void)cpu_instruction_run(&state, code, bytes, &after);
-    return state.fault.valid && state.execution.stop_requested &&
-        (state.fault.exception_mask & VCPUINS_EXCEPT_UD) &&
-        !(state.fault.exception_mask & VCPUINS_EXCEPT_CE) &&
-        lib_memory_compare(&before, &after, sizeof(before)) == 0 &&
+    return cpu_instruction_expect_real_fault(&state, code, bytes, 6u) &&
         lib_memory_compare(state.memory + 0x0400u, pair,
             sizeof(pair)) == 0;
 }

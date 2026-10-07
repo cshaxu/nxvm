@@ -138,29 +138,12 @@ static lib_i32 scas_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    t_cpu before, after;
     const lib_u32 image = 0x11223344u;
 
     cpu_instruction_prepare(&state, profile);
     scas_seed(&state);
     lib_memory_copy(state.memory + 0x20020u, &image, sizeof(image));
-    state.cpu.data.idtr.limit = 0x17u;
-    before = state.cpu;
-    (void)cpu_instruction_run(&state, code, bytes, &after);
-    return state.fault.valid &&
-        (state.fault.exception_mask & VCPUINS_EXCEPT_UD) &&
-        after.data.eip == 0u &&
-        after.data.eax == before.data.eax &&
-        after.data.ecx == before.data.ecx &&
-        after.data.edx == before.data.edx &&
-        after.data.ebx == before.data.ebx &&
-        after.data.esp == before.data.esp &&
-        after.data.ebp == before.data.ebp &&
-        after.data.esi == before.data.esi &&
-        after.data.edi == before.data.edi &&
-        after.data.eflags == before.data.eflags &&
-        lib_memory_compare(&before.data.es, &after.data.es,
-            sizeof(before.data.es)) == 0 &&
+    return cpu_instruction_expect_real_fault(&state, code, bytes, 6u) &&
         lib_memory_compare(state.memory + 0x20020u,
             &image, sizeof(image)) == 0;
 }
@@ -237,8 +220,8 @@ static lib_i32 scas_test_protected(void)
     before = state.cpu;
     core_machine_cpu_execution_refresh(&state.execution);
     after = state.cpu;
-    if (!state.execution.stop_requested || !state.fault.valid ||
-        !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+    if (!core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested || state.fault.valid || !state.delivered_exception.valid ||
+        state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
         after.data.eip != 0u || after.data.eax != before.data.eax ||
         after.data.ecx != before.data.ecx ||
         !scas_others_same(&before, &after) ||
@@ -259,8 +242,8 @@ static lib_i32 scas_test_protected(void)
     if (state.execution.stop_requested) return 0;
     core_machine_cpu_execution_refresh(&state.execution);
     after = state.cpu;
-    return state.execution.stop_requested && state.fault.valid &&
-        (state.fault.exception_mask & VCPUINS_EXCEPT_DF) &&
+    return core_machine_cpu_is_shutdown(&state.execution) && !state.execution.stop_requested && !state.fault.valid && state.delivered_exception.valid &&
+        state.delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
         after.data.eip == 0u && after.data.eax == before.data.eax &&
         after.data.ecx == 0x11220002u && after.data.edi == 0x11u &&
         scas_others_same(&before, &after) &&

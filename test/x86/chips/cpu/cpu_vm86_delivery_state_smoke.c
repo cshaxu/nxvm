@@ -80,7 +80,10 @@ static lib_i32 vm86_delivery_expect_prepublication(cpu_instruction_fixture *stat
     core_machine_cpu_execution_refresh(&state->execution);
     after = state->cpu;
     lib_memory_copy(stack_after, state->memory + VM86_STACK_TOP - 40u, sizeof(stack_after));
-    return state->execution.stop_requested && state->fault.valid &&
+    return core_machine_cpu_is_shutdown(&state->execution) &&
+        !state->execution.stop_requested && !state->fault.valid &&
+        state->delivered_exception.valid &&
+        state->delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
         lib_memory_compare(&before, &after, sizeof(before)) == 0 &&
         lib_memory_compare(stack_before, stack_after, sizeof(stack_before)) == 0;
 }

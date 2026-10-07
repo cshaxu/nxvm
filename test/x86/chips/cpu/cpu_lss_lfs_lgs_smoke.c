@@ -64,9 +64,6 @@ static lib_i32 lfg_test_reg_direct_80386(void)
 
     for (i = 0u; i < 3u; ++i) {
         cpu_instruction_fixture s;
-        t_cpu a;
-        t_cpu b;
-        lib_status st;
         lib_u8 c[] = { 0x0fu, op[i], 0xc0u };
         lib_i32 f = 0;
         cpu_instruction_prepare(&s, CORE_MACHINE_CPU_PROFILE_80386);
@@ -75,16 +72,7 @@ static lib_i32 lfg_test_reg_direct_80386(void)
             s.cpu.data.ss.selector = 0x0018u;
             s.cpu.data.fs.selector = 0x1111u;
             s.cpu.data.gs.selector = 0x2222u;
-            s.cpu.data.idtr.limit = 0x17u;
-            b = s.cpu;
-            f |= (st = cpu_instruction_run(&s, c, 3u, &a)) != LIB_STATUS_INTERNAL_ERROR || !s.fault.valid ||
-                !(s.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-                a.data.eip != b.data.eip || a.data.eax != b.data.eax ||
-                a.data.eflags != b.data.eflags ||
-                (i == 0u ? a.data.ss.selector : i == 1u ?
-                    a.data.fs.selector : a.data.gs.selector) !=
-                    (i == 0u ? b.data.ss.selector : i == 1u ?
-                        b.data.fs.selector : b.data.gs.selector);
+            f |= !cpu_instruction_expect_real_fault(&s, c, 3u, 6u);
         }
 
         if (f)
@@ -102,9 +90,6 @@ static lib_i32 lfg_test_80286_memory(void)
     for (i = 0u; i < 3u; ++i) {
         for (z = 0u; z < 2u; ++z) {
             cpu_instruction_fixture s;
-            t_cpu a;
-            t_cpu b;
-            lib_status st;
             lib_u8 c[] = { 0x0fu, op[i], 0x06u, 0, 0x10u, 0 };
             lib_i32 f = 0;
             cpu_instruction_prepare(&s, CORE_MACHINE_CPU_PROFILE_80286);
@@ -121,18 +106,7 @@ static lib_i32 lfg_test_80286_memory(void)
                 s.cpu.data.ss.selector = 0x0018u;
                 s.cpu.data.fs.selector = 0x1111u;
                 s.cpu.data.gs.selector = 0x2222u;
-                s.cpu.data.idtr.limit = 0x17u;
-                b = s.cpu;
-                f |= (st = cpu_instruction_run(&s, c, z ? 6u : 5u, &a)) != LIB_STATUS_INTERNAL_ERROR || !s.fault.valid ||
-                    !(s.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-                    a.data.eip != b.data.eip || a.data.eax != b.data.eax ||
-                    a.data.eflags != b.data.eflags ||
-                    a.data.fs.selector != b.data.fs.selector ||
-                    a.data.gs.selector != b.data.gs.selector ||
-                    (i == 0u ? a.data.ss.selector : i == 1u ?
-                        a.data.fs.selector : a.data.gs.selector) !=
-                        (i == 0u ? b.data.ss.selector : i == 1u ?
-                            b.data.fs.selector : b.data.gs.selector);
+                f |= !cpu_instruction_expect_real_fault(&s, c, z ? 6u : 5u, 6u);
             }
 
             if (f)
@@ -240,9 +214,10 @@ static lib_i32 lfg_test_source_fault_atomicity(void)
             state.cpu.data.eip = 0u;
             before = state.cpu;
             core_machine_cpu_execution_refresh(&state.execution);
-            failed |= !state.execution.stop_requested;
+            failed |= !core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested;
             after = state.cpu;
-            failed |= !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+            failed |= state.fault.valid || !state.delivered_exception.valid ||
+                state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
                 after.data.eip != before.data.eip || after.data.eax != before.data.eax ||
                 after.data.eflags != before.data.eflags ||
                 (opcode == 0u ? after.data.ss.selector : opcode == 1u ?

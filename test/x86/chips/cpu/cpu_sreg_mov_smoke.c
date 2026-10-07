@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
+/* T337_REAL_UD_TERMINAL_CPU_OWNER: rejection and shutdown remain distinct. */
 static lib_i32 sreg_mov_prepare(cpu_instruction_fixture *state,
     core_machine_cpu_profile profile)
 {
@@ -37,7 +37,8 @@ static lib_i32 sreg_mov_run(cpu_instruction_fixture *state, const lib_u8 *code,
     lib_status *status)
 {
     *status = cpu_instruction_run(state, code, bytes, after);
-    *diagnostic = (core_machine_cpu_diagnostic){ .first_fault = state->fault };
+    *diagnostic = (core_machine_cpu_diagnostic){ .first_fault = state->fault,
+        .last_delivered_exception = state->delivered_exception };
     return 1;
 }
 
@@ -65,33 +66,6 @@ static lib_i32 sreg_mov_gprs_same(const t_cpu *before, const t_cpu *after,
         (changed == 5u || before->data.ebp == after->data.ebp) &&
         (changed == 6u || before->data.esi == after->data.esi) &&
         (changed == 7u || before->data.edi == after->data.edi);
-}
-
-static lib_i32 sreg_mov_all_same(const t_cpu *before, const t_cpu *after)
-{
-    return sreg_mov_gprs_same(before, after, 8u) &&
-        before->data.eip == after->data.eip &&
-        lib_memory_compare(&before->data.es, &after->data.es, sizeof(before->data.es)) == 0 &&
-        lib_memory_compare(&before->data.ss, &after->data.ss, sizeof(before->data.ss)) == 0 &&
-        lib_memory_compare(&before->data.ds, &after->data.ds, sizeof(before->data.ds)) == 0 &&
-        lib_memory_compare(&before->data.fs, &after->data.fs, sizeof(before->data.fs)) == 0 &&
-        lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
-}
-
-static lib_i32 sreg_mov_expect_ud(cpu_instruction_fixture *state, const lib_u8 *code,
-    lib_u8 bytes, const t_cpu *before)
-{
-    t_cpu after;
-    core_machine_cpu_diagnostic diagnostic;
-    lib_status status;
-    lib_i32 passed;
-
-    state->cpu.data.idtr.limit = 0x17u;
-    passed = sreg_mov_run(state, code, bytes, &after, &diagnostic, &status) &&
-        status == LIB_STATUS_INTERNAL_ERROR && diagnostic.first_fault.valid &&
-        X86_CPU_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) &&
-        sreg_mov_all_same(before, &after);
-    return passed;
 }
 
 static lib_i32 sreg_mov_test_real_forms(void)
@@ -264,39 +238,32 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
             const lib_u8 attr[] = {form ? 0x66u : 0x67u,
                 (lib_u8)(form ? 0x8eu : 0x8cu), 0xc0u};
             cpu_instruction_fixture state;
-            t_cpu before;
 
             if (!sreg_mov_prepare(&state, legacy[profile])) return 0;
             sreg_mov_seed(&state);
-            before = state.cpu;
-            failed |= !sreg_mov_expect_ud(&state, fs, sizeof(fs), &before);
+            failed |= !cpu_instruction_expect_real_fault(&state, fs, sizeof(fs), 6u);
             if (!sreg_mov_prepare(&state, legacy[profile])) return 0;
             sreg_mov_seed(&state);
-            before = state.cpu;
-            failed |= !sreg_mov_expect_ud(&state, attr, sizeof(attr), &before);
+            failed |= !cpu_instruction_expect_real_fault(&state, attr, sizeof(attr), 6u);
         }
     }
     for (form = 0u; form != sizeof(rejected) / sizeof(rejected[0]); ++form) {
         cpu_instruction_fixture state;
-        t_cpu before;
 
         if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386))
             return 0;
         sreg_mov_seed(&state);
-        before = state.cpu;
-        failed |= !sreg_mov_expect_ud(&state, rejected[form], 2u, &before);
+        failed |= !cpu_instruction_expect_real_fault(&state, rejected[form], 2u, 6u);
     }
     for (form = 0u; form != 2u; ++form) {
         const lib_u8 code[] = {0xf0u,
             (lib_u8)(form ? 0x8eu : 0x8cu), 0xc0u};
         cpu_instruction_fixture state;
-        t_cpu before;
 
         if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386))
             return 0;
         sreg_mov_seed(&state);
-        before = state.cpu;
-        failed |= !sreg_mov_expect_ud(&state, code, sizeof(code), &before);
+        failed |= !cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u);
     }
     for (form = 0u; form != 2u; ++form) {
         const lib_u8 code[] = {0xf0u, (lib_u8)(form ? 0x8eu : 0x8cu),
@@ -310,8 +277,7 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
         sreg_mov_seed(&state);
         before = state.cpu;
         failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
-            LIB_STATUS_OK || !sreg_mov_expect_ud(&state, code, sizeof(code),
-            &before) || cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+            LIB_STATUS_OK || !cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u) || cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
             image != 0xbe5au;
     }
     {
@@ -324,8 +290,7 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
         sreg_mov_seed(&state);
         before = state.cpu;
         failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
-            LIB_STATUS_OK || !sreg_mov_expect_ud(&state, code, sizeof(code),
-            &before) || cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+            LIB_STATUS_OK || !cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u) || cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
             image != 0xbe5au;
     }
     {
@@ -429,7 +394,8 @@ static lib_i32 sreg_mov_protected_step(cpu_instruction_fixture *state,
     core_machine_cpu_execution_refresh(&state->execution);
     *status = state->execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
     *after = state->cpu;
-    *diagnostic = (core_machine_cpu_diagnostic){ .first_fault = state->fault };
+    *diagnostic = (core_machine_cpu_diagnostic){ .first_fault = state->fault,
+        .last_delivered_exception = state->delivered_exception };
     return 1;
 }
 
@@ -442,8 +408,9 @@ static lib_i32 sreg_mov_protected_fault(cpu_instruction_fixture *state,
     lib_status status;
 
     return sreg_mov_protected_step(state, code, bytes, &after, &diagnostic,
-        &status) && status == LIB_STATUS_INTERNAL_ERROR && diagnostic.first_fault.valid &&
-        X86_CPU_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) &&
+        &status) && status == LIB_STATUS_OK && core_machine_cpu_is_shutdown(&state->execution) &&
+        !diagnostic.first_fault.valid && diagnostic.last_delivered_exception.valid &&
+        diagnostic.last_delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
         after.data.eip == 0u && sreg_mov_gprs_same(before, &after, 8u) &&
         lib_memory_compare(&before->data.es, &after.data.es, sizeof(before->data.es)) == 0 &&
         lib_memory_compare(&before->data.ss, &after.data.ss, sizeof(before->data.ss)) == 0 &&

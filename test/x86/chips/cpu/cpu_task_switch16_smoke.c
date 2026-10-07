@@ -112,13 +112,14 @@ static lib_bool cpu_task16_expect_stack_limit(core_machine_cpu_profile profile)
 {
     cpu_instruction_fixture fixture;
     const core_machine_cpu_fault_snapshot *snapshot;
-    const lib_u32 expected = profile == CORE_MACHINE_CPU_PROFILE_80386 ?
-        VCPUINS_EXCEPT_DF : VCPUINS_EXCEPT_SS;
+    /* SS entry is absent and the same invalid stack cannot enter DF. */
+    const lib_u32 expected = VCPUINS_EXCEPT_SHUTDOWN;
 
     cpu_task16_prepare(&fixture, profile, CPU_TASK16_STACK_LIMIT);
     cpu_task16_refresh(&fixture, 4u);
     snapshot = fixture.fault.valid ? &fixture.fault : &fixture.delivered_exception;
-    if (snapshot->valid && (snapshot->exception_mask & expected) != 0u &&
+    if (core_machine_cpu_is_shutdown(&fixture.execution) && !fixture.fault.valid &&
+        snapshot->valid && (snapshot->exception_mask & expected) != 0u &&
         snapshot->exception_code == 0u && fixture.cpu.data.tr.selector == 0x30u &&
         fixture.cpu.data.sp == 0u) return LIB_TRUE;
     lib_c_fprintf(lib_c_stderr, "task16 stack profile=%u fault=%u/%x delivered=%u/%x expected=%x tr=%04x sp=%04x\n",
@@ -232,7 +233,7 @@ int main(void)
     failed |= !cpu_task16_expect_gate_rejection(CORE_MACHINE_CPU_PROFILE_80286,
         CPU_TASK16_GATE_PRIVILEGE, VCPUINS_EXCEPT_GP);
     failed |= !cpu_task16_expect_gate_rejection(CORE_MACHINE_CPU_PROFILE_80286,
-        CPU_TASK16_GATE_NOT_PRESENT, VCPUINS_EXCEPT_NP);
+        CPU_TASK16_GATE_NOT_PRESENT, VCPUINS_EXCEPT_DF);
     failed |= !cpu_task16_expect_gate_rejection(CORE_MACHINE_CPU_PROFILE_80386,
         CPU_TASK16_GATE_NOT_PRESENT, VCPUINS_EXCEPT_DF);
     failed |= !cpu_task16_expect_stack_limit(CORE_MACHINE_CPU_PROFILE_80286);
@@ -251,7 +252,7 @@ int main(void)
     failed |= !cpu_task16_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
         CPU_TASK16_LDT_NOT_PRESENT, VCPUINS_EXCEPT_NP, 0x0040u);
     failed |= !cpu_task16_expect_fault(CORE_MACHINE_CPU_PROFILE_80386,
-        CPU_TASK16_LOCK, VCPUINS_EXCEPT_UD, 0u);
+        CPU_TASK16_LOCK, VCPUINS_EXCEPT_GP, 0x0033u);
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S55:TASK16:FAIL\n");
         return 1;

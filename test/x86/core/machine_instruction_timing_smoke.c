@@ -186,12 +186,14 @@ static lib_i32 timing_test_fault(void)
         failed |= core_machine_debug_write_register(machine,
             CORE_MACHINE_DEBUG_EIP, 0u) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0u, fault, sizeof(fault)) != LIB_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
-            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            result.detail != VCPUINS_EXCEPT_SHUTDOWN || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != prepared_ticks ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
-            !diagnostic.first_fault.valid ||
-            (diagnostic.first_fault.exception_mask & VCPUINS_EXCEPT_UD) == 0u;
+            !diagnostic.last_delivered_exception.valid ||
+            diagnostic.last_delivered_exception.exception_mask !=
+                VCPUINS_EXCEPT_SHUTDOWN;
     }
 done:
     core_machine_destroy(machine);

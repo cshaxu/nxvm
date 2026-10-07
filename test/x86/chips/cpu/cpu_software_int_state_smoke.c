@@ -33,8 +33,16 @@ static lib_bool software_int_state_reject(cpu_instruction_fixture *state,
     state->cpu.data.idtr.limit = 0x17u;
     before = state->cpu;
     lib_memory_copy(stack_before, state->memory + 0x7ff0u, sizeof(stack_before));
+    if (profile == CORE_MACHINE_CPU_PROFILE_80186)
+        return cpu_instruction_expect_real_fault(state, code, bytes, 6u);
     const lib_status status = cpu_instruction_run(state, code, bytes, &after);
     lib_memory_copy(stack_after, state->memory + 0x7ff0u, sizeof(stack_after));
+    if (profile >= CORE_MACHINE_CPU_PROFILE_80286)
+        return status == LIB_STATUS_OK && core_machine_cpu_is_shutdown(&state->execution) &&
+            !state->fault.valid && state->delivered_exception.valid &&
+            state->delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
+            lib_memory_compare(&before, &after, sizeof(before)) == 0 &&
+            lib_memory_compare(stack_before, stack_after, sizeof(stack_before)) == 0;
     return status == LIB_STATUS_INTERNAL_ERROR && state->fault.valid &&
         (state->fault.exception_mask & VCPUINS_EXCEPT_UD) != 0u &&
         lib_memory_compare(&before, &after, sizeof(before)) == 0 &&

@@ -69,6 +69,13 @@ static const core_machine_execution_provider timing_s7_execution = {
     timing_s7_reset, timing_s7_advance
 };
 
+static lib_i32 timing_s7_is_shutdown(const core_machine_run_result *result)
+{
+    return result != LIB_NULL &&
+        result->reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
+        result->detail == VCPUINS_EXCEPT_SHUTDOWN;
+}
+
 static lib_i32 timing_s7_prepare(core_machine **out_machine, timing_s7_state *state)
 {
     const core_machine_executor_config config = {
@@ -162,8 +169,8 @@ static lib_i32 timing_s7_test_denied(void)
     lib_i32 failed = !timing_s7_prepare(&machine, &state) ||
         !timing_s7_load(machine, &state, 0xe4u, 1, 0x01u);
     if (!failed) {
-        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
-            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+            !timing_s7_is_shutdown(&result) || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != state.setup_ticks ||
             state.advanced_ticks != state.setup_ticks || state.reads != 0u || state.writes != 0u;
     }
@@ -213,8 +220,8 @@ static lib_i32 timing_s7_test_permission_strings(void)
                             test_core_machine_fixture_read_register(machine, CORE_MACHINE_DEBUG_ESI) != 0x00000201u);
                 }
                 if (!failed && bitmap != 0u) {
-                    failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
-                        result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+                    failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+                        !timing_s7_is_shutdown(&result) || result.executed != 0u ||
                         result.ticks != 0u || result.elapsed_ticks != state.setup_ticks ||
                         state.reads != 0u || state.writes != 0u ||
                         test_core_machine_fixture_read_register(machine, CORE_MACHINE_DEBUG_ESI) != 0x00000200u ||

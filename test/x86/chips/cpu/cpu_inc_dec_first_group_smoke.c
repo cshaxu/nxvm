@@ -202,12 +202,18 @@ static lib_i32 inc_dec_test_address_and_profile(void)
             if (!failed) {
                 state.cpu.data.eax = 0x11227fffu;
                 state.cpu.data.eflags = VCPU_EFLAGS_CF;
-                failed |= !inc_dec_run(&state, rejected_prefixes[opcode],
-                    sizeof(rejected_prefixes[opcode]), 1, &after, &diagnostic) ||
-                    !diagnostic.first_fault.valid || !X86_CPU_BIT_IS_SET(
-                    diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-                    after.data.eax != 0x11227fffu ||
-                    after.data.eflags != VCPU_EFLAGS_CF || after.data.eip != 0u;
+                if (legacy_profiles[profile] == CORE_MACHINE_CPU_PROFILE_8086) {
+                    failed |= !inc_dec_run(&state, rejected_prefixes[opcode],
+                        sizeof(rejected_prefixes[opcode]), 1, &after, &diagnostic) ||
+                        !diagnostic.first_fault.valid || !X86_CPU_BIT_IS_SET(
+                        diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                        after.data.eax != 0x11227fffu ||
+                        after.data.eflags != VCPU_EFLAGS_CF || after.data.eip != 0u;
+                } else {
+                    failed |= !cpu_instruction_expect_real_fault(&state,
+                        rejected_prefixes[opcode], sizeof(rejected_prefixes[opcode]),
+                        6u);
+                }
             }
             if (failed) return 0;
         }
@@ -317,11 +323,8 @@ static lib_i32 inc_dec_test_not_neg_address_and_profile(void)
     if (!failed) {
         state.cpu.data.eax = 0x11225aa5u;
         state.cpu.data.eflags = saved_flags;
-        failed |= !inc_dec_run(&state, rejected_prefix, sizeof(rejected_prefix), 1,
-            &after, &diagnostic) || !diagnostic.first_fault.valid || !X86_CPU_BIT_IS_SET(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eax != 0x11225aa5u || after.data.eflags != saved_flags ||
-            after.data.eip != 0u;
+        failed |= !cpu_instruction_expect_real_fault(&state, rejected_prefix,
+            sizeof(rejected_prefix), 6u);
     }
     if (failed) return 0;
 
@@ -425,18 +428,13 @@ static lib_i32 inc_dec_test_accumulator_profiles(void)
     }
     for (profile = 0u; profile != 3u; ++profile) {
         inc_dec_machine state;
-        t_cpu after;
-        core_machine_cpu_diagnostic diagnostic;
         lib_i32 failed = !inc_dec_prepare(profiles[profile], &state);
 
         if (!failed) {
             state.cpu.data.eax = 0xaabbffffu;
             state.cpu.data.eflags = initial_flags;
-            failed |= !inc_dec_run(&state, dword, sizeof(dword), 1, &after,
-                &diagnostic) || !diagnostic.first_fault.valid || !X86_CPU_BIT_IS_SET(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-                after.data.eip != 0u || after.data.eax != 0xaabbffffu ||
-                after.data.eflags != initial_flags;
+            failed |= !cpu_instruction_expect_real_fault(&state, dword,
+                sizeof(dword), 6u);
         }
         if (failed)
             return 0;
@@ -497,11 +495,8 @@ static lib_i32 inc_dec_test_test_address_and_profile(void)
     if (!failed) {
         state.cpu.data.eax = 0x1122ffffu;
         state.cpu.data.eflags = initial_flags;
-        failed |= !inc_dec_run(&state, rejected_prefix, sizeof(rejected_prefix), 1,
-            &after, &diagnostic) || !diagnostic.first_fault.valid || !X86_CPU_BIT_IS_SET(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eax != 0x1122ffffu || after.data.eflags != initial_flags ||
-            after.data.eip != 0u;
+        failed |= !cpu_instruction_expect_real_fault(&state, rejected_prefix,
+            sizeof(rejected_prefix), 6u);
     }
     if (failed) return 0;
 
@@ -654,11 +649,8 @@ static lib_i32 inc_dec_test_mul_imul_address_and_profile(void)
         state.cpu.data.eax = 0x11220002u;
         state.cpu.data.edx = 0xaabbccddu;
         state.cpu.data.eflags = MUL_DEFINED_FLAGS;
-        failed |= !inc_dec_run(&state, rejected_prefix, sizeof(rejected_prefix), 1,
-            &after, &diagnostic) || !diagnostic.first_fault.valid || !X86_CPU_BIT_IS_SET(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eax != 0x11220002u || after.data.edx != 0xaabbccddu ||
-            after.data.eflags != MUL_DEFINED_FLAGS || after.data.eip != 0u;
+        failed |= !cpu_instruction_expect_real_fault(&state, rejected_prefix,
+            sizeof(rejected_prefix), 6u);
     }
     if (failed) return 0;
 
@@ -759,12 +751,8 @@ static lib_i32 inc_dec_test_div_idiv_attribute_and_profile(void)
         state.cpu.data.edx = 0xaabbccddu;
         state.cpu.data.ecx = 2u;
         state.cpu.data.eflags = VCPU_EFLAGS_CF;
-        failed |= !inc_dec_run(&state, rejected_prefix, sizeof(rejected_prefix), 1,
-            &after, &diagnostic) || !diagnostic.first_fault.valid || !X86_CPU_BIT_IS_SET(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eax != 0x11220005u || after.data.edx != 0xaabbccddu ||
-            after.data.ecx != 2u || after.data.eflags != VCPU_EFLAGS_CF ||
-            after.data.eip != 0u;
+        failed |= !cpu_instruction_expect_real_fault(&state, rejected_prefix,
+            sizeof(rejected_prefix), 6u);
     }
     if (failed) return 0;
 

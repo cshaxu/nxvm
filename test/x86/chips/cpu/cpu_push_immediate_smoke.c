@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
+/* T337_REAL_UD_TERMINAL_CPU_OWNER: UD and shutdown remain distinct CPU proofs. */
 static void push_immediate_seed(cpu_instruction_fixture *state)
 {
     t_cpu *cpu = &state->cpu;
@@ -69,7 +69,6 @@ static lib_i32 push_immediate_expect_ud(core_machine_cpu_profile profile,
 {
     cpu_instruction_fixture state;
     t_cpu before;
-    t_cpu after;
     lib_u32 sentinel = 0xdeadbeefu;
     lib_u32 observed = 0u;
     lib_i32 failed = 0;
@@ -80,17 +79,13 @@ static lib_i32 push_immediate_expect_ud(core_machine_cpu_profile profile,
         push_immediate_seed(&state);
         failed |= cpu_instruction_write(&state, 0x7ffcu, &sentinel, sizeof(sentinel),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
-        state.cpu.data.idtr.limit = 0x17u;
         before = state.cpu;
-        failed |= cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-            !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
-            after.data.eflags != before.data.eflags ||
-            !push_immediate_gprs_same(&before, &after) ||
-            !push_immediate_sregs_same(&before, &after) ||
+        failed |= !cpu_instruction_expect_real_fault(&state, code, bytes, 6u) ||
             cpu_instruction_read(&state, 0x7ffcu, &observed, sizeof(observed),
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
-            LIB_STATUS_OK || observed != sentinel;
+            LIB_STATUS_OK || observed != (profile < CORE_MACHINE_CPU_PROFILE_80186 ? sentinel :
+                (lib_u32)(lib_u16)(before.data.flags | 2u |
+                    (profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0xf000u : 0u)) << 16u);
     }
     return !failed;
 }
@@ -234,10 +229,10 @@ static lib_i32 push_immediate_test_protected(void)
             before = state.cpu;
             state.cpu.data.eip = 0u;
             core_machine_cpu_execution_refresh(&state.execution);
-            failed |= !state.execution.stop_requested;
+            failed |= !core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested;
             after = state.cpu;
-            failed |= !state.fault.valid || !X86_CPU_BIT_IS_SET(
-                state.fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+            failed |= state.fault.valid || !state.delivered_exception.valid ||
+                state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
                 after.data.eip != 0u || after.data.eax != before.data.eax ||
                 after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
                 after.data.ebx != before.data.ebx || after.data.esp != before.data.esp ||

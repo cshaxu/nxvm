@@ -258,11 +258,8 @@ static lib_i32 rotate_test_profile(void)
         failed = 0;
     state.cpu.data.eax = 0x11223381u;
     state.cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
-    failed |= !rotate_run_cpu(&state, rejected, sizeof(rejected), 1, &after) ||
-        !state.fault.valid ||
-        !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-        after.data.eax != 0x11223381u ||
-        after.data.eflags != (VCPU_EFLAGS_CF | VCPU_EFLAGS_OF) || after.data.eip != 0u;
+    failed |= !cpu_instruction_expect_real_fault(&state, rejected,
+        sizeof(rejected), 6u);
 
     return !failed;
 }
@@ -342,7 +339,9 @@ static lib_i32 rotate_test_cl_count_profile_matrix(void)
             }
         }
         if (extension == 6u) {
-            failed |= !rotate_run_cpu(&state, code, sizeof(code), 1, &after) || !state.fault.valid || !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) || after.data.eip != 0u || after.data.eax != before.data.eax || after.data.ecx != before.data.ecx || after.data.eflags != before.data.eflags;
+            failed |= !cpu_instruction_expect_real_fault(&state, code,
+                sizeof(code), 6u);
+            after = state.cpu;
         } else {
             failed |= !rotate_run_cpu(&state, code, sizeof(code), 0, &after) || state.fault.valid || after.data.eip != sizeof(code) || (after.data.eax & 0xffu) != value || after.data.eax != ((before.data.eax & 0xffffff00u) | value) || after.data.ecx != before.data.ecx;
         }
@@ -479,15 +478,13 @@ static lib_i32 rotate_test_shift_boundaries(void)
     }
     {
         rotate_fixture state;
-        t_cpu after;
 
         lib_i32 failed = 0;
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
         state.cpu.data.eax = 0x11223381u;
         state.cpu.data.eflags = flags;
-        failed |= !rotate_run_cpu(&state, undefined, sizeof(undefined), 1, &after) ||
-            !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eax != 0x11223381u || after.data.eflags != flags || after.data.eip != 0u;
+        failed |= !cpu_instruction_expect_real_fault(&state, undefined,
+            sizeof(undefined), 6u);
 
         if (failed) return 0;
     }
@@ -526,11 +523,8 @@ static lib_i32 rotate_test_shift_profile(void)
         failed = 0;
         state.cpu.data.eax = 0x11223381u;
         state.cpu.data.eflags = flags;
-        failed |= !rotate_run_cpu(&state, rejected_code, sizeof(rejected_code), 1,
-            &after) ||
-            !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eax != 0x11223381u || after.data.eflags != flags ||
-            after.data.eip != 0u;
+        failed |= !cpu_instruction_expect_real_fault(&state, rejected_code,
+            sizeof(rejected_code), 6u);
 
         if (failed) return 0;
     }
@@ -590,7 +584,6 @@ static lib_i32 rotate_test_80186_immediate_extensions(void)
         lib_u32 carry = 1u;
         lib_u8 effective = 0u;
         rotate_fixture state;
-        t_cpu before;
         t_cpu after;
 
         lib_i32 failed = 0;
@@ -599,7 +592,6 @@ static lib_i32 rotate_test_80186_immediate_extensions(void)
         state.cpu.data.eax = initial;
         state.cpu.data.eflags = VCPU_EFLAGS_CF |
             VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF;
-        before = state.cpu;
         if (extension < 4u)
             expected = rotate_result(extension, width, initial, 1u,
                 &carry, &effective);
@@ -610,17 +602,8 @@ static lib_i32 rotate_test_80186_immediate_extensions(void)
         else if (extension == 7u)
             expected = shift_result(2u, width, initial, 1u, &carry);
         if (extension == 6u) {
-            failed |= !rotate_run_cpu(&state, code, sizeof(code), 1,
-                &after) || !state.fault.valid ||
-                !X86_CPU_BIT_IS_SET(state.fault.exception_mask,
-                    VCPUINS_EXCEPT_UD) || after.data.eip != 0u ||
-                after.data.eax != before.data.eax || after.data.ecx !=
-                    before.data.ecx || after.data.edx != before.data.edx ||
-                after.data.ebx != before.data.ebx || after.data.esp !=
-                    before.data.esp || after.data.ebp != before.data.ebp ||
-                after.data.esi != before.data.esi || after.data.edi !=
-                    before.data.edi || after.data.eflags !=
-                    before.data.eflags;
+            failed |= !cpu_instruction_expect_real_fault(&state, code,
+                sizeof(code), 6u);
         } else {
             failed |= !rotate_run_cpu(&state, code, sizeof(code), 0,
                 &after) || state.fault.valid ||

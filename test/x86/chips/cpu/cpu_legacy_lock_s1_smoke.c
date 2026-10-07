@@ -17,36 +17,19 @@ static lib_i32 legacy_lock_s1_sregs_same(const t_cpu *before,
         &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static lib_i32 legacy_lock_s1_cpu_same(const t_cpu *before, const t_cpu *after)
-{
-    return before->data.eax == after->data.eax &&
-        before->data.ecx == after->data.ecx &&
-        before->data.edx == after->data.edx &&
-        before->data.ebx == after->data.ebx &&
-        before->data.esp == after->data.esp &&
-        before->data.ebp == after->data.ebp &&
-        before->data.esi == after->data.esi &&
-        before->data.edi == after->data.edi &&
-        before->data.eip == after->data.eip &&
-        before->data.eflags == after->data.eflags &&
-        legacy_lock_s1_sregs_same(before, after);
-}
-
 static lib_i32 legacy_lock_s1_run(cpu_instruction_fixture *state,
-    const lib_u8 *code, lib_u8 bytes, lib_u8 steps, lib_bool fault,
+    const lib_u8 *code, lib_u8 bytes, lib_u8 steps,
     t_cpu *after)
 {
     lib_status status;
 
-    if (fault) state->cpu.data.idtr.limit = 0x17u;
     status = cpu_instruction_run(state, code, bytes, after);
     for (lib_u8 step = 1u; step < steps && status == LIB_STATUS_OK; ++step) {
         core_machine_cpu_execution_refresh(&state->execution);
         *after = state->cpu;
         if (state->execution.stop_requested) status = LIB_STATUS_INTERNAL_ERROR;
     }
-    return status == (fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) &&
-        state->fault.valid == fault;
+    return status == LIB_STATUS_OK && !state->fault.valid;
 }
 
 static lib_i32 legacy_lock_s1_test_transparent_real(void)
@@ -74,7 +57,7 @@ static lib_i32 legacy_lock_s1_test_transparent_real(void)
         cpu_instruction_prepare(&state, profiles[profile]);
         state.cpu.data.eax = 0xaabb0080u;
         before = state.cpu;
-        failed = !legacy_lock_s1_run(&state, cbw, sizeof(cbw), 1u, LIB_FALSE,
+        failed = !legacy_lock_s1_run(&state, cbw, sizeof(cbw), 1u,
             &after) || after.data.eip != sizeof(cbw) ||
             after.data.eax != 0xaabbff80u ||
             after.data.eflags != before.data.eflags ||
@@ -96,7 +79,7 @@ static lib_i32 legacy_lock_s1_test_transparent_real(void)
         failed = cpu_instruction_write(&state, 0x100u, &image, sizeof(image),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
             !legacy_lock_s1_run(&state, add_memory, sizeof(add_memory),
-                1u, LIB_FALSE, &after) || after.data.eip != sizeof(add_memory) ||
+            1u, &after) || after.data.eip != sizeof(add_memory) ||
             cpu_instruction_read(&state, 0x100u, &image, sizeof(image),
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
                 LIB_STATUS_OK || image != 5u;
@@ -113,7 +96,7 @@ static lib_i32 legacy_lock_s1_test_transparent_real(void)
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
             cpu_instruction_write(&state, 0x200u, target, sizeof(target),
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
-            !legacy_lock_s1_run(&state, rep_movs, sizeof(rep_movs), 2u, LIB_FALSE,
+            !legacy_lock_s1_run(&state, rep_movs, sizeof(rep_movs), 2u,
                 &after) || after.data.eip != sizeof(rep_movs) ||
             after.data.ecx != 0x11220000u || after.data.esi != 0x0102u ||
             after.data.edi != 0x0202u ||
@@ -139,14 +122,9 @@ static lib_i32 legacy_lock_s1_test_legacy_ud(void)
     for (lib_size profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
         cpu_instruction_fixture state;
-        t_cpu before;
-        t_cpu after;
 
         cpu_instruction_prepare(&state, profiles[profile]);
-        before = state.cpu;
-        if (!legacy_lock_s1_run(&state, code, sizeof(code), 1u, LIB_TRUE, &after) ||
-            !X86_CPU_BIT_IS_SET(state.fault.exception_mask,
-                VCPUINS_EXCEPT_UD) || !legacy_lock_s1_cpu_same(&before, &after))
+        if (!cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u))
             return 0;
     }
     return 1;
@@ -157,7 +135,6 @@ static lib_i32 legacy_lock_s1_test_80386_regression(void)
     static const lib_u8 legal[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x01u };
     static const lib_u8 invalid[] = { 0xf0u, 0x01u, 0xc0u };
     cpu_instruction_fixture state;
-    t_cpu before;
     t_cpu after;
     lib_u16 image = 1u;
 
@@ -165,17 +142,15 @@ static lib_i32 legacy_lock_s1_test_80386_regression(void)
     state.cpu.data.eax = 2u;
     if (cpu_instruction_write(&state, 0x100u, &image, sizeof(image),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
-        !legacy_lock_s1_run(&state, legal, sizeof(legal), 1u, LIB_FALSE, &after) ||
+        !legacy_lock_s1_run(&state, legal, sizeof(legal), 1u, &after) ||
         after.data.eip != sizeof(legal) ||
         cpu_instruction_read(&state, 0x100u, &image, sizeof(image),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
             LIB_STATUS_OK || image != 3u) return 0;
 
     cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-    before = state.cpu;
-    return legacy_lock_s1_run(&state, invalid, sizeof(invalid), 1u, LIB_TRUE,
-        &after) && X86_CPU_BIT_IS_SET(state.fault.exception_mask,
-        VCPUINS_EXCEPT_UD) && legacy_lock_s1_cpu_same(&before, &after);
+    return cpu_instruction_expect_real_fault(&state, invalid, sizeof(invalid),
+        6u);
 }
 
 int main(void)

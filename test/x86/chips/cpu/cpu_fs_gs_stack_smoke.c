@@ -65,9 +65,6 @@ static lib_i32 fs_gs_test_80286_reject(void)
         for (size = 0u; size != 2u; ++size) {
             cpu_instruction_fixture state;
 
-            t_cpu before;
-            t_cpu after;
-            lib_status status;
             lib_u8 code[] = { 0x0fu, opcodes[opcode], 0u };
             lib_i32 failed = 0;
             cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
@@ -82,15 +79,7 @@ static lib_i32 fs_gs_test_80286_reject(void)
                 state.cpu.data.fs.selector = 0x1234u;
                 state.cpu.data.gs.selector = 0x5678u;
                 state.cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
-                state.cpu.data.idtr.limit = 0x17u;
-                before = state.cpu;
-                status = cpu_instruction_run(&state, code, size ? 3u : 2u, &after);
-                failed |= status != LIB_STATUS_INTERNAL_ERROR ||
-                    !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-                    after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
-                    after.data.fs.selector != before.data.fs.selector ||
-                    after.data.gs.selector != before.data.gs.selector ||
-                    after.data.eflags != before.data.eflags;
+                failed |= !cpu_instruction_expect_real_fault(&state, code, size ? 3u : 2u, 6u);
             }
 
             if (failed)
@@ -173,9 +162,10 @@ static lib_i32 fs_gs_test_pop_stack_fault(void)
             failed |= cpu_instruction_write(&state, 0x2000u, (lib_u8[]){0x0fu,opcodes[opcode]}, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
             state.cpu.data.eip = 0u;
             core_machine_cpu_execution_refresh(&state.execution);
-            failed |= !state.execution.stop_requested;
+            failed |= !core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested;
             after = state.cpu;
-            failed |= !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+            failed |= state.fault.valid || !state.delivered_exception.valid ||
+                state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
                 after.data.eip != 0u || after.data.esp != 0x8000u ||
                 after.data.eflags != before_flags ||
                 (opcode == 0u ? after.data.fs.selector : after.data.gs.selector) !=

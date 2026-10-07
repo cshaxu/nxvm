@@ -96,21 +96,10 @@ static lib_i32 direct_flags_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    t_cpu before;
-    t_cpu after = {0};
 
     cpu_instruction_prepare(&state, profile);
     direct_flags_seed(&state);
-    state.cpu.data.idtr.limit = 0x17u;
-    before = state.cpu;
-    if (cpu_instruction_run(&state, code, bytes, &after) !=
-            LIB_STATUS_INTERNAL_ERROR ||
-        !state.fault.valid ||
-        !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-        after.data.eip != 0u ||
-        lib_memory_compare(&before.data, &after.data,
-            sizeof(before.data)) != 0) return 0;
-    return 1;
+    return cpu_instruction_expect_real_fault(&state, code, bytes, 6u);
 }
 
 static lib_i32 direct_flags_test_attributes(void)

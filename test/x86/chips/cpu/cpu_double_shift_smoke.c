@@ -145,17 +145,11 @@ static lib_i32 shift_test_profile(void)
 
     for (index = 0u; index < 2u; ++index) {
         cpu_instruction_fixture state;
-        t_cpu after;
         cpu_instruction_prepare(&state, profiles[index]);
         state.cpu.data.eax = 0xaabbccddu;
         state.cpu.data.ecx = 0x11223344u;
         state.cpu.data.eflags = VCPU_EFLAGS_ZF;
-        state.cpu.data.idtr.limit = 0x17u;
-        if (cpu_instruction_run(&state, code, sizeof(code), &after) !=
-                LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-            !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eax != 0xaabbccddu ||
-            after.data.eflags != VCPU_EFLAGS_ZF || after.data.eip != 0u) return 0;
+        if (!cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u)) return 0;
     }
     return 1;
 }

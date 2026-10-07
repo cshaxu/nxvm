@@ -70,9 +70,15 @@ static lib_i32 debug_state_fault(cpu_instruction_fixture *fixture,
     const lib_u8 *code, lib_u8 bytes, lib_u32 exception, t_cpu *after)
 {
     (void)cpu_instruction_run(fixture, code, bytes, after);
-    if (fixture->execution.cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
+    /* This protected fixture has no handlers: UD/GP entry causes GP,
+     * another failed GP entry requires DF, whose entry is absent as well. */
+    if (fixture->execution.cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286 &&
         (fixture->cpu.data.cr0 & VCPU_CR0_PE) != 0u &&
-        exception == VCPUINS_EXCEPT_GP) exception = VCPUINS_EXCEPT_DF;
+        (exception == VCPUINS_EXCEPT_GP || exception == VCPUINS_EXCEPT_UD))
+        return core_machine_cpu_is_shutdown(&fixture->execution) &&
+            fixture->delivered_exception.valid &&
+            fixture->delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
+            !fixture->execution.stop_requested && !fixture->fault.valid;
     return (fixture->execution.stop_requested && fixture->fault.valid &&
         (fixture->fault.exception_mask & exception) != 0u) ||
         (fixture->instructions.data.except & exception) != 0u;
@@ -406,8 +412,10 @@ static lib_bool debug_state_test_rf_images(void)
         fixture.cpu.data.eflags = flags;
         fixture.cpu.data.idtr.limit = 0u;
         if (cpu_instruction_run(&fixture, code, sizeof(code), &after) !=
-                LIB_STATUS_INTERNAL_ERROR || !fixture.fault.valid ||
-            after.data.eflags != flags || fixture.fault.eflags != flags)
+                LIB_STATUS_OK || !core_machine_cpu_is_shutdown(&fixture.execution) ||
+            fixture.fault.valid || !fixture.delivered_exception.valid ||
+            fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
+            after.data.eflags != flags || fixture.delivered_exception.eflags != flags)
             ++failures;
     }
     lib_c_printf("RF fault/trap/image/rollback failures=%u\n",

@@ -97,9 +97,10 @@ static lib_bool idt_fault(cpu_instruction_fixture *state, t_cpu *after)
 {
     core_machine_cpu_execution_refresh(&state->execution);
     *after = state->cpu;
-    return state->execution.stop_requested && state->fault.valid &&
-        (state->fault.exception_mask & VCPUINS_EXCEPT_DF) != 0u &&
-        state->fault.exception_code == 0u;
+    return core_machine_cpu_is_shutdown(&state->execution) &&
+        !state->execution.stop_requested && !state->fault.valid &&
+        state->delivered_exception.valid &&
+        state->delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN;
 }
 
 static lib_bool idt_test_success(lib_u8 gate_access, lib_bool expect_if)
@@ -188,8 +189,10 @@ static lib_bool idt_test_nmi(lib_bool invalid_gate, lib_bool user_source)
     before = state.cpu;
     core_machine_cpu_execution_refresh(&state.execution);
     if (invalid_gate)
-        return state.execution.stop_requested && state.fault.valid &&
-            (state.fault.exception_mask & VCPUINS_EXCEPT_DF) != 0u &&
+        return core_machine_cpu_is_shutdown(&state.execution) &&
+            !state.execution.stop_requested && !state.fault.valid &&
+            state.delivered_exception.valid &&
+            state.delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
             state.execution.nmi_pending && state.cpu.data.eip == before.data.eip &&
             state.cpu.data.esp == before.data.esp &&
             state.cpu.data.eflags == before.data.eflags &&
@@ -233,7 +236,8 @@ static lib_bool idt_test_delivery_cache_rollback(lib_u8 failure)
     if (!idt_fault(&state, &after)) return LIB_FALSE;
     lib_memory_copy(stack_after, state.memory + before.data.esp - 16u,
         sizeof(stack_after));
-    return !state.delivered_exception.valid &&
+    return state.delivered_exception.valid &&
+        state.delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
         after.data.eip == before.data.eip && after.data.esp == before.data.esp &&
         after.data.eflags == before.data.eflags &&
         lib_memory_compare(&after.data.cs, &before.data.cs, sizeof(before.data.cs)) == 0 &&

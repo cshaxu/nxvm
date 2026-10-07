@@ -230,25 +230,16 @@ static lib_i32 movs_rejection(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    t_cpu before, after;
     lib_u16 source = 0x3344u;
     lib_u16 destination = 0xa5a5u;
 
     cpu_instruction_prepare(&state, profile);
     movs_seed(&state);
     state.cpu.data.ecx = 3u;
-    state.cpu.data.idtr.limit = 0x17u;
     lib_memory_copy(state.memory + 0x10010u, &source, sizeof(source));
     lib_memory_copy(state.memory + 0x20020u, &destination,
         sizeof(destination));
-    before = state.cpu;
-    if (cpu_instruction_run(&state, code, bytes, &after) !=
-            LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-        !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-        after.data.eip != 0u ||
-        !movs_nonindexes_same(&before, &after, LIB_FALSE) ||
-        after.data.esi != before.data.esi ||
-        after.data.edi != before.data.edi) return 0;
+    if (!cpu_instruction_expect_real_fault(&state, code, bytes, 6u)) return 0;
     lib_memory_copy(&source, state.memory + 0x10010u, sizeof(source));
     lib_memory_copy(&destination, state.memory + 0x20020u,
         sizeof(destination));
@@ -330,8 +321,8 @@ static lib_i32 movs_test_protected_limits(void)
         before = state.cpu;
         core_machine_cpu_execution_refresh(&state.execution);
         after = state.cpu;
-        if (!state.execution.stop_requested || !state.fault.valid ||
-            !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+        if (!core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested || state.fault.valid || !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
             after.data.eip != 0u ||
             !movs_nonindexes_same(&before, &after, LIB_FALSE) ||
             after.data.esi != before.data.esi ||

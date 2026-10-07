@@ -56,8 +56,22 @@ static lib_i32 lea_test_real_forms(void)
             if (profile != 3u && form != 0u)
                 state.cpu.data.idtr.limit = 0x17u;
             before = state.cpu;
+            if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80186 && form != 0u) {
+                if (!cpu_instruction_expect_real_fault(&state, codes[form],
+                        code_bytes[form], 6u)) return 0;
+                continue;
+            }
             lea_run_prepared(&state, codes[form], code_bytes[form], &after);
-            if (profile == 3u || form == 0u) {
+            if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80286 && form != 0u) {
+                if (!core_machine_cpu_is_shutdown(&state.execution) ||
+                    state.execution.stop_requested || state.fault.valid ||
+                    !state.delivered_exception.valid ||
+                    state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
+                    after.data.eip != before.data.eip || after.data.eax != before.data.eax ||
+                    after.data.eflags != before.data.eflags) return 0;
+                continue;
+            }
+            if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386 || form == 0u) {
                 failed |= state.execution.stop_requested ||
                     state.fault.valid ||
                     after.data.eip != code_bytes[form] ||
@@ -103,7 +117,22 @@ static lib_i32 lea_test_register_direct(void)
         lea_set_registers(&state);
         state.cpu.data.idtr.limit = 0x17u;
         before = state.cpu;
+        if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80186) {
+            if (!cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u)) return 0;
+            continue;
+        }
         lea_run_prepared(&state, code, sizeof(code), &after);
+        if (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80286) {
+            if (!core_machine_cpu_is_shutdown(&state.execution) ||
+                state.execution.stop_requested || state.fault.valid ||
+                !state.delivered_exception.valid ||
+                state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
+                after.data.eip != before.data.eip || after.data.eax != before.data.eax ||
+                after.data.eflags != before.data.eflags) {
+                return 0;
+            }
+            continue;
+        }
         failed |= !state.execution.stop_requested ||
             !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
             after.data.eip != before.data.eip ||
@@ -129,8 +158,10 @@ static lib_i32 lea_test_lock_ud(void)
     state.cpu.data.idtr.limit = 0x17u;
     before = state.cpu;
     lea_run_prepared(&state, code, sizeof(code), &after);
-    failed |= !state.execution.stop_requested ||
-        !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
+    failed |= !core_machine_cpu_is_shutdown(&state.execution) ||
+        state.execution.stop_requested || state.fault.valid ||
+        !state.delivered_exception.valid ||
+        state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
         after.data.eip != before.data.eip || after.data.eax != before.data.eax ||
         after.data.eflags != before.data.eflags;
     return !failed;
@@ -239,9 +270,11 @@ static lib_i32 lea_test_null_ds_no_read(void)
 
 lib_i32 main(void)
 {
-    if (!lea_test_real_forms() || !lea_test_register_direct() ||
-        !lea_test_lock_ud() || !lea_test_protected() ||
-        !lea_test_null_ds_no_read()) return 1;
+    if (!lea_test_real_forms()) { lib_c_printf("lea real\n"); return 1; }
+    if (!lea_test_register_direct()) { lib_c_printf("lea register\n"); return 1; }
+    if (!lea_test_lock_ud()) { lib_c_printf("lea lock\n"); return 1; }
+    if (!lea_test_protected()) { lib_c_printf("lea protected\n"); return 1; }
+    if (!lea_test_null_ds_no_read()) { lib_c_printf("lea null\n"); return 1; }
     lib_c_printf("M5:T539:S21:LEA-CPU:OK\n");
     return 0;
 }

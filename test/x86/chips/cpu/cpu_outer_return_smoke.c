@@ -220,7 +220,6 @@ static lib_bool cpu_outer_error_delivery(void)
 
 static lib_bool cpu_outer_iret_rejections(void)
 {
-    /* T337_REAL_UD_TERMINAL_CPU_OWNER: vector 6 is unavailable here. */
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80186,
@@ -239,33 +238,21 @@ static lib_bool cpu_outer_iret_rejections(void)
     for (index = 0u; index != sizeof(legacy) / sizeof(legacy[0]); ++index) {
         for (form = 0u; form != sizeof(attributes) / sizeof(attributes[0]); ++form) {
             cpu_instruction_fixture state;
-            t_cpu before;
-            t_cpu after;
             const lib_u8 bytes = form == 2u ? 3u : 2u;
 
             cpu_instruction_prepare(&state, legacy[index]);
-            state.cpu.data.idtr.limit = 0x17u;
-            before = state.cpu;
-            (void)cpu_instruction_run(&state, attributes[form], bytes, &after);
-            if (!state.fault.valid ||
-                (state.fault.exception_mask & VCPUINS_EXCEPT_UD) == 0u ||
-                lib_memory_compare(&before, &after, sizeof(before)) != 0)
+            if (!cpu_instruction_expect_real_fault(&state, attributes[form],
+                    bytes, 6u))
                 return LIB_FALSE;
         }
     }
     for (form = 0u; form != sizeof(lock_forms) / sizeof(lock_forms[0]); ++form) {
         cpu_instruction_fixture state;
-        t_cpu before;
-        t_cpu after;
         const lib_u8 bytes = form == 0u ? 2u : form == 3u ? 4u : 3u;
 
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        (void)cpu_instruction_run(&state, lock_forms[form], bytes, &after);
-        if (!state.fault.valid ||
-            (state.fault.exception_mask & VCPUINS_EXCEPT_UD) == 0u ||
-            lib_memory_compare(&before, &after, sizeof(before)) != 0)
+        if (!cpu_instruction_expect_real_fault(&state, lock_forms[form],
+                bytes, 6u))
             return LIB_FALSE;
     }
     return LIB_TRUE;

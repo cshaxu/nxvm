@@ -169,8 +169,10 @@ static lib_i32 port_io_test_vm86(void)
     state.instruction.cpu.data.ss.dpl = 3u;
     before = state.instruction.cpu;
     (void)cpu_instruction_run(&state.instruction, code, sizeof(code), &after);
-    return state.instruction.fault.valid &&
-        (state.instruction.fault.exception_mask & VCPUINS_EXCEPT_DF) &&
+    return core_machine_cpu_is_shutdown(&state.instruction.execution) &&
+        !state.instruction.execution.stop_requested && !state.instruction.fault.valid &&
+        state.instruction.delivered_exception.valid &&
+        state.instruction.delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
         after.data.eip == before.data.eip &&
         after.data.eax == before.data.eax &&
         after.data.eflags == before.data.eflags &&
@@ -209,8 +211,10 @@ static lib_i32 port_io_test_tss_iomap(void)
         (void)cpu_instruction_run(&state.instruction, code, sizeof(code),
             &after);
         if (denied == 1u) {
-            if (!state.instruction.fault.valid ||
-                !(state.instruction.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+            if (!core_machine_cpu_is_shutdown(&state.instruction.execution) ||
+                state.instruction.execution.stop_requested || state.instruction.fault.valid ||
+                !state.instruction.delivered_exception.valid ||
+                state.instruction.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
                 after.data.eip != before.data.eip ||
                 after.data.eax != before.data.eax ||
                 state.transfer_count != 0u) return 0;
@@ -230,19 +234,10 @@ static lib_i32 port_io_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_port_instruction_fixture state;
-    t_cpu before, after;
 
     cpu_port_prepare(&state, profile);
     port_io_seed(&state.instruction.cpu);
-    state.instruction.cpu.data.idtr.limit = 0x17u;
-    before = state.instruction.cpu;
-    (void)cpu_instruction_run(&state.instruction, code, bytes, &after);
-    return state.instruction.fault.valid &&
-        (state.instruction.fault.exception_mask & VCPUINS_EXCEPT_UD) &&
-        after.data.eip == before.data.eip &&
-        after.data.eax == before.data.eax &&
-        after.data.eflags == before.data.eflags &&
-        port_io_other_registers_same(&before, &after) &&
+    return cpu_instruction_expect_real_fault(&state.instruction, code, bytes, 6u) &&
         state.transfer_count == 0u && state.complete_count == 0u;
 }
 

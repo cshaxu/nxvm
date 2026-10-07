@@ -260,19 +260,13 @@ static lib_i32 arpl_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    t_cpu before, after;
     lib_u8 memory_before[8] = {0xa1u,0xa2u,0xa3u,0xa4u,
         0xa5u,0xa6u,0xa7u,0xa8u};
 
     cpu_instruction_prepare(&state, profile);
-    state.cpu.data.idtr.limit = 0x17u;
     lib_memory_copy(state.memory + 0x0400u, memory_before,
         sizeof(memory_before));
-    before = state.cpu;
-    (void)cpu_instruction_run(&state, code, bytes, &after);
-    return state.execution.stop_requested && state.fault.valid &&
-        (state.fault.exception_mask & VCPUINS_EXCEPT_UD) &&
-        lib_memory_compare(&before, &after, sizeof(before)) == 0 &&
+    return cpu_instruction_expect_real_fault(&state, code, bytes, 6u) &&
         lib_memory_compare(state.memory + 0x0400u, memory_before,
             sizeof(memory_before)) == 0;
 }
@@ -325,9 +319,11 @@ static lib_i32 arpl_test_protected_limit(void)
     lib_memory_copy(state.memory + 0x2000u, code, sizeof(code));
     core_machine_cpu_execution_refresh(&state.execution);
     after = state.cpu;
-    return state.execution.stop_requested && state.fault.valid &&
-        /* No IDT gate: the original #GP becomes terminal #DF here. */
-        (state.fault.exception_mask & VCPUINS_EXCEPT_DF) &&
+    return core_machine_cpu_is_shutdown(&state.execution) &&
+        !state.execution.stop_requested && !state.fault.valid &&
+        state.delivered_exception.valid &&
+        state.delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
+        /* No IDT gate: the original #GP reaches resident shutdown. */
         after.data.eip == before.data.eip &&
         after.data.ecx == before.data.ecx &&
         after.data.eflags == before.data.eflags &&

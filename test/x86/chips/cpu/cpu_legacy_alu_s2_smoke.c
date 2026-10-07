@@ -893,21 +893,26 @@ static lib_i32 legacy_alu_test_group2_forms(void)
         state.cpu.data.eflags = VCPU_EFLAGS_CF |
             VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
         before = state.cpu;
-        failed |= !legacy_alu_run(&state, code, sizeof(code), extension == 6u,
-            &after);
-        if (extension == 6u)
-            failed |= !state.fault.valid || !X86_CPU_BIT_IS_SET(
-                state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-                after.data.eip != 0u || after.data.eax != before.data.eax ||
-                after.data.ecx != before.data.ecx || after.data.eflags !=
-                before.data.eflags;
-        else
+        if (extension == 6u) {
+            if (profiles[profile_index] == CORE_MACHINE_CPU_PROFILE_8086)
+                failed |= !legacy_alu_run(&state, code, sizeof(code), 1, &after) ||
+                    !state.fault.valid || !X86_CPU_BIT_IS_SET(
+                    state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                    after.data.eip != 0u || after.data.eax != before.data.eax ||
+                    after.data.ecx != before.data.ecx || after.data.eflags !=
+                    before.data.eflags;
+            else
+                failed |= !cpu_instruction_expect_real_fault(&state, code,
+                    sizeof(code), 6u);
+        } else {
+            failed |= !legacy_alu_run(&state, code, sizeof(code), 0, &after);
             failed |= state.fault.valid || after.data.eip != sizeof(code) ||
                 (after.data.eax & (width == 8u ? 0xffu : 0xffffu)) != expected ||
                 (after.data.eflags & VCPU_EFLAGS_CF) != (carry ?
                 VCPU_EFLAGS_CF : 0u) || (after.data.eflags &
                 (VCPU_EFLAGS_IF | VCPU_EFLAGS_DF)) != (before.data.eflags &
                 (VCPU_EFLAGS_IF | VCPU_EFLAGS_DF));
+        }
 
         if (failed)
             return 0;
@@ -947,7 +952,6 @@ static lib_i32 legacy_alu_test_group2_immediate_extensions(void)
             (width == 8u ? 0x23u : 0x8123u) : legacy_alu_shift_result(extension,
             width == 8u ? 0x23u : 0x8123u, 2u, width, &carry);
         legacy_alu_machine state;
-        t_cpu before;
         t_cpu after;
 
         lib_i32 failed = 0;
@@ -956,19 +960,16 @@ static lib_i32 legacy_alu_test_group2_immediate_extensions(void)
         state.cpu.data.eax = 0x11228123u;
         state.cpu.data.eflags = VCPU_EFLAGS_CF |
             VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
-        before = state.cpu;
-        failed |= !legacy_alu_run(&state, code, sizeof(code), extension == 6u,
-            &after);
         if (extension == 6u)
-            failed |= !state.fault.valid || !X86_CPU_BIT_IS_SET(
-                state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-                after.data.eip != 0u || after.data.eax != before.data.eax ||
-                after.data.eflags != before.data.eflags;
-        else
+            failed |= !cpu_instruction_expect_real_fault(&state, code,
+                sizeof(code), 6u);
+        else {
+            failed |= !legacy_alu_run(&state, code, sizeof(code), 0, &after);
             failed |= state.fault.valid || after.data.eip != sizeof(code) ||
                 (after.data.eax & (width == 8u ? 0xffu : 0xffffu)) != expected ||
                 (after.data.eflags & VCPU_EFLAGS_CF) != (carry ?
                 VCPU_EFLAGS_CF : 0u);
+        }
 
         if (failed)
             return 0;
@@ -1023,12 +1024,16 @@ static lib_i32 legacy_alu_test_reserved_and_attribute_rejections(void)
         state.cpu.data.ecx = 0x55667788u;
         state.cpu.data.eflags = VCPU_EFLAGS_CF |
             VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
-        failed |= !legacy_alu_run(&state, reserved[form], lengths[form], 1,
-            &after) || !state.fault.valid ||
-            !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eip != 0u || after.data.eax != 0x11223344u ||
-            after.data.ecx != 0x55667788u || after.data.eflags !=
-            (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF);
+        if (profiles[profile_index] == CORE_MACHINE_CPU_PROFILE_8086)
+            failed |= !legacy_alu_run(&state, reserved[form], lengths[form], 1,
+                &after) || !state.fault.valid ||
+                !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                after.data.eip != 0u || after.data.eax != 0x11223344u ||
+                after.data.ecx != 0x55667788u || after.data.eflags !=
+                (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF);
+        else
+            failed |= !cpu_instruction_expect_real_fault(&state, reserved[form],
+                lengths[form], 6u);
 
         if (failed)
             return 0;
@@ -1046,13 +1051,16 @@ static lib_i32 legacy_alu_test_reserved_and_attribute_rejections(void)
         state.cpu.data.ecx = 0x55667788u;
         state.cpu.data.eflags = VCPU_EFLAGS_CF |
             VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
-        failed |= !legacy_alu_run(&state, attributes[form],
-            attribute_lengths[form], 1, &after) ||
-            !state.fault.valid || !X86_CPU_BIT_IS_SET(
-            state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eip != 0u || after.data.eax != 0x11223344u ||
-            after.data.ecx != 0x55667788u || after.data.eflags !=
-            (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF);
+        if (profiles[profile_index] == CORE_MACHINE_CPU_PROFILE_8086)
+            failed |= !legacy_alu_run(&state, attributes[form],
+                attribute_lengths[form], 1, &after) || !state.fault.valid ||
+                !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                after.data.eip != 0u || after.data.eax != 0x11223344u ||
+                after.data.ecx != 0x55667788u || after.data.eflags !=
+                (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF);
+        else
+            failed |= !cpu_instruction_expect_real_fault(&state, attributes[form],
+                attribute_lengths[form], 6u);
 
         if (failed)
             return 0;

@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
+/* T337_REAL_UD_TERMINAL_CPU_OWNER: rejection and shutdown remain distinct. */
 static void les_lds_s41_seed(cpu_instruction_fixture *state)
 {
     t_cpu *cpu = &state->cpu;
@@ -163,20 +163,12 @@ static lib_i32 les_lds_s41_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    t_cpu before;
-    t_cpu after;
-    lib_status status;
     lib_i32 failed = 0;
     cpu_instruction_prepare(&state, profile);
 
     if (!failed) {
         les_lds_s41_seed(&state);
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        failed |= (status = cpu_instruction_run(&state, code, bytes, &after)) != LIB_STATUS_INTERNAL_ERROR ||
-            !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-            after.data.eip != 0u || lib_memory_compare(&before.data, &after.data,
-            sizeof(before.data)) != 0;
+        failed |= !cpu_instruction_expect_real_fault(&state, code, bytes, 6u);
     }
 
     return !failed;
@@ -285,15 +277,16 @@ static lib_i32 les_lds_s41_protected_case(lib_u8 opcode, lib_u16 selector,
         failed |= cpu_instruction_write(&state, 0x3010u, pointer, sizeof(pointer), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK || cpu_instruction_write(&state, 0x2000u, program, sizeof(program), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
         state.cpu.data.eip = 0u;
         before = state.cpu;
-        failed |= (core_machine_cpu_execution_refresh(&state.execution), state.execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) !=
-            (expect_fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK);
+        core_machine_cpu_execution_refresh(&state.execution);
+        failed |= state.execution.stop_requested;
         after = state.cpu;
         failed |= !les_lds_s41_read(&state, 0x3010u, observed,
             sizeof(observed)) || lib_memory_compare(source, observed,
             sizeof(source)) != 0;
         if (expect_fault) {
-            failed |= !state.execution.stop_requested ||
-                !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+            failed |= !core_machine_cpu_is_shutdown(&state.execution) || state.fault.valid ||
+                !state.delivered_exception.valid ||
+                state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
                 after.data.eip != before.data.eip ||
                 after.data.eax != before.data.eax ||
                 !les_lds_s41_gprs_same_except_eax(&before, &after) ||
@@ -387,9 +380,10 @@ static lib_i32 les_lds_s41_test_limit(void)
             state.cpu.data.eip = 0u;
             before = state.cpu;
             core_machine_cpu_execution_refresh(&state.execution);
-            failed |= !state.execution.stop_requested;
+            failed |= !core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested;
             after = state.cpu;
-            failed |= !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+            failed |= state.fault.valid || !state.delivered_exception.valid ||
+                state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
                 after.data.eip != before.data.eip ||
                 after.data.eax != before.data.eax ||
                 !les_lds_s41_gprs_same_except_eax(&before, &after) ||

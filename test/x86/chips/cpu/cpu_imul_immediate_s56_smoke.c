@@ -87,16 +87,10 @@ static lib_i32 imul_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    t_cpu before, after;
 
     cpu_instruction_prepare(&state, profile);
     imul_seed(&state.cpu);
-    state.cpu.data.idtr.limit = 0x17u;
-    before = state.cpu;
-    return cpu_instruction_run(&state, code, bytes, &after) ==
-            LIB_STATUS_INTERNAL_ERROR && state.fault.valid &&
-        X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) &&
-        lib_memory_compare(&before, &after, sizeof(before)) == 0;
+    return cpu_instruction_expect_real_fault(&state, code, bytes, 6u);
 }
 
 static lib_i32 imul_test_defaults(void)
@@ -372,9 +366,10 @@ static lib_i32 imul_test_synthetic_ss_limit(void)
     state.cpu.data.ebp = 0x10u;
     state.cpu.data.ss.limit = 0x0fu;
     before = state.cpu;
-    return cpu_instruction_run(&state, code, sizeof(code), &after) ==
-            LIB_STATUS_INTERNAL_ERROR && state.fault.valid &&
-        X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_DF) &&
+    return cpu_instruction_run(&state, code, sizeof(code), &after) == LIB_STATUS_OK &&
+        core_machine_cpu_is_shutdown(&state.execution) && !state.execution.stop_requested &&
+        !state.fault.valid && state.delivered_exception.valid &&
+        state.delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
         after.data.eip == 0u && after.data.eax == before.data.eax &&
         imul_nonparticipants_same(&before, &after) &&
         after.data.eflags == before.data.eflags &&

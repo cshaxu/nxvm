@@ -20,6 +20,8 @@ typedef struct cpu_bus_fixture {
     lib_u32 writes;
     core_machine_cpu_fault_snapshot fault;
     lib_u32 faults;
+    core_machine_cpu_fault_snapshot delivered_exception;
+    lib_u32 delivered_exceptions;
     core_machine_cpu_instruction_observation instruction;
     lib_u32 instruction_count;
     lib_bool port_active;
@@ -135,6 +137,15 @@ static void cpu_bus_fault(void *opaque,
     ++fixture->faults;
 }
 
+static void cpu_bus_delivered_exception(void *opaque,
+    const core_machine_cpu_fault_snapshot *snapshot)
+{
+    cpu_bus_fixture *fixture = (cpu_bus_fixture *)opaque;
+
+    fixture->delivered_exception = *snapshot;
+    ++fixture->delivered_exceptions;
+}
+
 static void cpu_bus_instruction(void *opaque,
     const core_machine_cpu_instruction_observation *observation)
 {
@@ -146,7 +157,8 @@ static void cpu_bus_instruction(void *opaque,
 
 static const core_machine_cpu_execution_diagnostic_provider cpu_bus_diagnostics = {
     .record_instruction = cpu_bus_instruction,
-    .record_fault = cpu_bus_fault
+    .record_fault = cpu_bus_fault,
+    .record_delivered_exception = cpu_bus_delivered_exception
 };
 
 static void cpu_bus_prepare(cpu_bus_fixture *fixture,

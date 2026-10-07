@@ -1,8 +1,6 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: retain private IDTR rejection and full
- * CPU rollback; public IVT read failures can occur after frame writes. */
 static lib_i32 iret_s51_prepare(cpu_instruction_fixture *state,
     core_machine_cpu_profile profile)
 {
@@ -205,9 +203,6 @@ static lib_i32 iret_s51_test_80286_stack_boundary(void)
 {
     static const lib_u8 code[] = { 0xcfu };
     cpu_instruction_fixture state;
-    core_machine_cpu_fault_snapshot diagnostic;
-    t_cpu before;
-    t_cpu after;
     lib_i32 failed = !iret_s51_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
 
     if (!failed) {
@@ -218,14 +213,8 @@ static lib_i32 iret_s51_test_80286_stack_boundary(void)
     if (!failed) {
         iret_s51_seed(&state, CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF);
         state.cpu.data.sp = 0xffffu;
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        failed |= iret_s51_run(&state, 1u) != LIB_STATUS_INTERNAL_ERROR;
-        after = state.cpu;
-        diagnostic = state.fault;
-        failed |= !diagnostic.valid;
-        failed |= (diagnostic.exception_mask & VCPUINS_EXCEPT_GP) == 0u;
-        failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
+        failed |= !cpu_instruction_expect_real_fault(&state, code,
+            sizeof(code), 13u);
     }
     return !failed;
 }
@@ -234,34 +223,17 @@ static lib_i32 iret_s51_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    core_machine_cpu_fault_snapshot diagnostic;
-    t_cpu before;
-    t_cpu after;
-    lib_u8 stack_before[16] = { 0u };
-    lib_u8 stack_after[16] = { 0u };
     lib_i32 failed = !iret_s51_prepare(&state, profile);
 
     if (!failed) {
         failed = !iret_s51_entry(&state, 0u);
         failed |= iret_s51_write(&state, 0u, code, bytes) !=
             LIB_STATUS_OK;
-        failed |= iret_s51_write(&state, 0x7ff8u,
-            stack_before, sizeof(stack_before)) != LIB_STATUS_OK;
     }
     if (!failed) {
         iret_s51_seed(&state, CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF);
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        failed |= iret_s51_run(&state, 1u) != LIB_STATUS_INTERNAL_ERROR;
-        after = state.cpu;
-        diagnostic = state.fault;
-        failed |= !diagnostic.valid;
-        failed |= (diagnostic.exception_mask & VCPUINS_EXCEPT_UD) == 0u;
-        failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
-        failed |= iret_s51_read(&state,
-            0x7ff8u, (void *)stack_after,
-            sizeof(stack_after)) != LIB_STATUS_OK;
-        failed |= lib_memory_compare(stack_before, stack_after, sizeof(stack_before)) != 0;
+        state.cpu.data.idtr.limit = 0x03ffu;
+        failed |= !cpu_instruction_expect_real_fault(&state, code, bytes, 6u);
     }
     return !failed;
 }

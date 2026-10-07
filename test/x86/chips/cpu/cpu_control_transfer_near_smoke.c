@@ -23,17 +23,6 @@ static lib_i32 near_run_steps(cpu_instruction_fixture *state,
     return 1;
 }
 
-static lib_i32 near_expect_gp(cpu_instruction_fixture *state,
-    const lib_u8 *code, lib_u8 bytes, const t_cpu *before, t_cpu *after)
-{
-    state->cpu.data.idtr.limit = 0x17u;
-    return cpu_instruction_run(state, code, bytes, after) == LIB_STATUS_INTERNAL_ERROR &&
-        state->fault.valid && (state->fault.exception_mask & VCPUINS_EXCEPT_GP) &&
-        after->data.eip == before->data.eip &&
-        after->data.esp == before->data.esp &&
-        after->data.eflags == before->data.eflags;
-}
-
 static lib_i32 near_test_call_and_return_forms(void)
 {
     static const lib_u8 code32_call32[] = {0xe8u,3u,0,0,0,0xb0u,0xa5u,0xf4u,0xc3u};
@@ -128,15 +117,14 @@ static lib_i32 near_test_indirect_and_fault_boundaries(void)
     cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
     state.cpu.data.cs.seg.data.big = LIB_TRUE;
     state.cpu.data.cs.limit = 0x7fu;
-    before = state.cpu;
-    if (!near_expect_gp(&state, call_fault, sizeof(call_fault), &before, &after)) return 0;
+    if (!cpu_instruction_expect_real_fault(&state, call_fault, sizeof(call_fault), 13u)) return 0;
     cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
     state.cpu.data.cs.seg.data.big = LIB_TRUE;
     state.cpu.data.cs.limit = 0x7fu;
     state.cpu.data.eax = 0x80u;
     before = state.cpu;
-    return near_expect_gp(&state, jmp_fault, sizeof(jmp_fault), &before, &after) &&
-        after.data.eax == before.data.eax;
+    return cpu_instruction_expect_real_fault(&state, jmp_fault, sizeof(jmp_fault), 13u) &&
+        state.cpu.data.eax == before.data.eax;
 }
 
 int main(void)

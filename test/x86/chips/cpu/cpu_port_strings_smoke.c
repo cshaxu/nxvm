@@ -176,24 +176,13 @@ static lib_i32 port_strings_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_port_instruction_fixture state;
-    t_cpu before, after;
     const lib_u8 source = 0x5au, destination = 0xa5u;
 
     cpu_port_prepare(&state, profile);
     port_strings_seed(&state);
-    state.instruction.cpu.data.idtr.limit = 0x17u;
     state.instruction.memory[0x20010u] = source;
     state.instruction.memory[0x30020u] = destination;
-    before = state.instruction.cpu;
-    (void)cpu_instruction_run(&state.instruction, code, bytes, &after);
-    return state.instruction.fault.valid &&
-        (state.instruction.fault.exception_mask & VCPUINS_EXCEPT_UD) &&
-        after.data.eip == 0u && after.data.eax == before.data.eax &&
-        after.data.ecx == before.data.ecx && after.data.edx == before.data.edx &&
-        after.data.ebx == before.data.ebx && after.data.esp == before.data.esp &&
-        after.data.ebp == before.data.ebp && after.data.esi == before.data.esi &&
-        after.data.edi == before.data.edi &&
-        after.data.eflags == before.data.eflags &&
+    return cpu_instruction_expect_real_fault(&state.instruction, code, bytes, 6u) &&
         state.transfer_count == 0u && state.complete_count == 0u &&
         state.instruction.memory[0x20010u] == source &&
         state.instruction.memory[0x30020u] == destination;
@@ -293,9 +282,10 @@ static lib_i32 port_strings_protected_case(lib_bool input, lib_bool repeated)
     if (repeated)
         core_machine_cpu_execution_refresh(&state.instruction.execution);
     after = state.instruction.cpu;
-    return state.instruction.execution.stop_requested &&
-        state.instruction.fault.valid &&
-        (state.instruction.fault.exception_mask & VCPUINS_EXCEPT_DF) &&
+    return core_machine_cpu_is_shutdown(&state.instruction.execution) &&
+        !state.instruction.execution.stop_requested && !state.instruction.fault.valid &&
+        state.instruction.delivered_exception.valid &&
+        state.instruction.delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
         after.data.eip == 0u && after.data.eax == before.data.eax &&
         after.data.edx == before.data.edx && after.data.ebx == before.data.ebx &&
         after.data.esp == before.data.esp && after.data.ebp == before.data.ebp &&

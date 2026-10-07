@@ -50,6 +50,23 @@ typedef enum {
     CPU_INTERRUPT_SHADOW_SEGMENT
 } cpu_interrupt_shadow;
 
+/* Architectural masks only: provider/internal failures are not fault pairs. */
+static inline lib_bool cpu_exception_requires_double_fault(
+    core_machine_cpu_profile profile, lib_u32 first, lib_u32 second)
+{
+    const lib_u32 contributory = VCPUINS_EXCEPT_DE | VCPUINS_EXCEPT_TS |
+        VCPUINS_EXCEPT_NP | VCPUINS_EXCEPT_SS | VCPUINS_EXCEPT_GP;
+    const lib_u32 later_contributory = contributory | VCPUINS_EXCEPT_09;
+
+    if (profile < CORE_MACHINE_CPU_PROFILE_80286) return LIB_FALSE;
+    if (profile == CORE_MACHINE_CPU_PROFILE_80286)
+        return (first & contributory) != 0u;
+    return ((first & later_contributory) != 0u &&
+            (second & later_contributory) != 0u) ||
+        (first == VCPUINS_EXCEPT_PF &&
+            ((second & later_contributory) != 0u || second == VCPUINS_EXCEPT_PF));
+}
+
 typedef struct {
     t_cpu_data_sreg *rsreg;
     lib_u32 offset;
@@ -151,12 +168,16 @@ struct core_machine_cpu_execution_context {
     lib_u8 debug_pause_requested;
     lib_u8 reset_requested;
     lib_u8 shutdown_requested;
+    /* Resident chip state is independent of the consumable board signal. */
+    enum { CPU_SHUTDOWN_NONE, CPU_SHUTDOWN_WAITING,
+        CPU_SHUTDOWN_RESET_ONLY } shutdown_state;
     /* Private execution-round outcome.  A successfully delivered synchronous
      * exception preserves its architectural delivery but must not be mistaken
      * for retirement of the faulting instruction by the machine clock owner. */
     lib_u8 instruction_in_progress;
     lib_u8 instruction_fault_delivered;
     lib_bool instruction_task_switched;
+    t_cpu instruction_task_checkpoint;
     cpu_interrupt_shadow interrupt_shadow;
     lib_bool debug_segment_shadow_before;
     lib_bool nmi_in_service;

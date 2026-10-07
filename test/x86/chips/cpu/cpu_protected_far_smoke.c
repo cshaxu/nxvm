@@ -91,19 +91,19 @@ static lib_bool pft_run_386_forms(void)
         after.data.esp != 0x7ff8u) return LIB_FALSE;
     cpu_protected_prepare_far(&state, CORE_MACHINE_CPU_PROFILE_80386);
     before = state.cpu;
-    if (!cpu_protected_fault(&state, lock_jmp, sizeof(lock_jmp), VCPUINS_EXCEPT_UD, &before) ||
+    if (!cpu_protected_shutdown(&state, lock_jmp, sizeof(lock_jmp), &before) ||
         !pft_same(&before, &state.cpu)) return LIB_FALSE;
     cpu_protected_prepare_far(&state, CORE_MACHINE_CPU_PROFILE_80386);
     before = state.cpu;
-    if (!cpu_protected_fault(&state, lock_call, sizeof(lock_call), VCPUINS_EXCEPT_UD, &before) ||
+    if (!cpu_protected_shutdown(&state, lock_call, sizeof(lock_call), &before) ||
         !pft_same(&before, &state.cpu)) return LIB_FALSE;
     cpu_protected_prepare_far(&state, CORE_MACHINE_CPU_PROFILE_80286);
     before = state.cpu;
-    if (!cpu_protected_fault(&state, old_jmp, sizeof(old_jmp), VCPUINS_EXCEPT_UD, &before) ||
+    if (!cpu_protected_shutdown(&state, old_jmp, sizeof(old_jmp), &before) ||
         !pft_same(&before, &state.cpu)) return LIB_FALSE;
     cpu_protected_prepare_far(&state, CORE_MACHINE_CPU_PROFILE_80286);
     before = state.cpu;
-    return cpu_protected_fault(&state, old_call, sizeof(old_call), VCPUINS_EXCEPT_UD, &before) &&
+    return cpu_protected_shutdown(&state, old_call, sizeof(old_call), &before) &&
         pft_same(&before, &state.cpu);
 }
 
@@ -121,8 +121,8 @@ static lib_bool pft_descriptor_and_rollback(void)
 
     for (lib_size index = 0u; index < 4u; ++index) {
         cpu_protected_prepare_far(&state, CORE_MACHINE_CPU_PROFILE_80386); before = state.cpu;
-        if (!cpu_protected_fault(&state, rejected[index], sizeof(rejected[index]),
-            VCPUINS_EXCEPT_DF, &before) || !pft_same(&before, &state.cpu)) return LIB_FALSE;
+        if (!cpu_protected_shutdown(&state, rejected[index], sizeof(rejected[index]),
+            &before) || !pft_same(&before, &state.cpu)) return LIB_FALSE;
     }
     cpu_protected_prepare_far(&state, CORE_MACHINE_CPU_PROFILE_80386); state.memory[0x6000u] = 0xf4u;
     if (!cpu_protected_step(&state, conform_jmp, sizeof(conform_jmp), &after) ||
@@ -134,11 +134,11 @@ static lib_bool pft_descriptor_and_rollback(void)
     cpu_protected_prepare_far(&state, CORE_MACHINE_CPU_PROFILE_80386);
     state.memory[CPU_PROTECTED_GDT_BASE + 0x18u] = state.memory[CPU_PROTECTED_GDT_BASE + 0x19u] = 0u;
     before = state.cpu;
-    if (!cpu_protected_fault(&state, jmp_limit, sizeof(jmp_limit), VCPUINS_EXCEPT_DF, &before) ||
+    if (!cpu_protected_shutdown(&state, jmp_limit, sizeof(jmp_limit), &before) ||
         !pft_same(&before, &state.cpu)) return LIB_FALSE;
     cpu_protected_prepare_far(&state, CORE_MACHINE_CPU_PROFILE_80386); state.cpu.data.ss.limit = 1u;
     lib_memory_copy(state.memory + CPU_PROTECTED_DATA_BASE + 0x7ffcu, &sentinel, sizeof(sentinel)); before = state.cpu;
-    if (!cpu_protected_fault(&state, call_stack, sizeof(call_stack), VCPUINS_EXCEPT_DF, &before) ||
+    if (!cpu_protected_shutdown(&state, call_stack, sizeof(call_stack), &before) ||
         !pft_same(&before, &state.cpu)) return LIB_FALSE;
     lib_memory_copy(&sentinel, state.memory + CPU_PROTECTED_DATA_BASE + 0x7ffcu, sizeof(sentinel));
     return sentinel == 0x11223344u;

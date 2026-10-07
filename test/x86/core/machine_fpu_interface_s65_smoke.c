@@ -193,8 +193,11 @@ static lib_i32 fpu_interface_s65_reject(const lib_u8 *code, lib_size size,
         before = fpu_interface_s65_capture(state.machine);
         failed |= !fpu_interface_s65_run(&state, code, size, &after,
             &diagnostic, &status) || status != LIB_STATUS_INTERNAL_ERROR ||
-            !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+            !diagnostic.first_fault.valid || diagnostic.first_fault.exception_mask !=
+                (profile < CORE_MACHINE_CPU_PROFILE_80186 ?
+                    VCPUINS_EXCEPT_UD : VCPUINS_EXCEPT_CE) ||
+            (profile >= CORE_MACHINE_CPU_PROFILE_80186 &&
+                diagnostic.first_fault.exception_code != 6u * 4u) ||
             !fpu_interface_s65_same(&before, &after);
     }
     core_machine_destroy(state.machine);

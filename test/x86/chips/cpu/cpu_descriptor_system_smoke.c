@@ -27,17 +27,19 @@ static lib_i32 descriptor_run_fault(cpu_instruction_fixture *state,
     const lib_u8 *code, lib_u8 bytes, lib_u32 exception,
     lib_u32 exception_code, t_cpu *after)
 {
-    (void)cpu_instruction_run(state, code, bytes, after);
-    if (state->execution.cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
-        (state->cpu.data.cr0 & VCPU_CR0_PE) != 0u &&
-        (exception == VCPUINS_EXCEPT_TS || exception == VCPUINS_EXCEPT_NP ||
-            exception == VCPUINS_EXCEPT_SS || exception == VCPUINS_EXCEPT_GP)) {
-        exception = VCPUINS_EXCEPT_DF;
-        exception_code = 0u;
+    if ((state->cpu.data.cr0 & VCPU_CR0_PE) == 0u) {
+        lib_u8 vector = 0u;
+
+        while ((UINT32_C(1) << vector) != exception) ++vector;
+        if (!cpu_instruction_expect_real_fault(state, code, bytes, vector))
+            return 0;
+        *after = state->cpu;
+        return 1;
     }
-    return state->execution.stop_requested && state->fault.valid &&
-        (state->fault.exception_mask & exception) != 0u &&
-        state->fault.exception_code == exception_code;
+    (void)exception_code;
+    (void)cpu_instruction_run(state, code, bytes, after);
+    return core_machine_cpu_is_shutdown(&state->execution) &&
+        !state->execution.stop_requested && !state->fault.valid;
 }
 
 static void descriptor_set_tables(cpu_instruction_fixture *state,
@@ -216,12 +218,12 @@ static lib_i32 descriptor_test_selector_loads(void)
         t_cpu before, after;
 
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-        state.cpu.data.idtr.limit = 0x17u;
         before = state.cpu;
         if (!descriptor_run_fault(&state, real_code[index], 3u,
                 VCPUINS_EXCEPT_UD, 0u, &after) ||
             !descriptor_sreg_equal(&before.data.ldtr, &after.data.ldtr) ||
-            !descriptor_sreg_equal(&before.data.tr, &after.data.tr)) return 0;
+            !descriptor_sreg_equal(&before.data.tr, &after.data.tr))
+            return 0;
     }
     {
         cpu_instruction_fixture state;
@@ -341,8 +343,15 @@ static lib_i32 descriptor_test_store_layout(void)
         if (!descriptor_run(&state, code[index],
                 (lib_u8)(sizeof(code[index]) - (index < 2u)), &after)) return 0;
         lib_memory_copy(observed, state.memory + 0x0200u, sizeof(observed));
-        if (lib_memory_compare(observed, expected[index], sizeof(observed)) != 0)
+        if (lib_memory_compare(observed, expected[index], sizeof(observed)) != 0) {
+            lib_c_fprintf(lib_c_stderr,
+                "M5:T546:DESCRIPTOR store index=%u got=%02x%02x%02x%02x%02x%02x want=%02x%02x%02x%02x%02x%02x\\n",
+                (unsigned)index, observed[0], observed[1], observed[2],
+                observed[3], observed[4], observed[5], expected[index][0],
+                expected[index][1], expected[index][2], expected[index][3],
+                expected[index][4], expected[index][5]);
             return 0;
+        }
     }
     return 1;
 }
@@ -371,8 +380,15 @@ static lib_i32 descriptor_test_protected_stores(void)
         if (!descriptor_run(&state, code[index], sizeof(code[index]), &after))
             return 0;
         lib_memory_copy(observed, state.memory + 0x0200u, sizeof(observed));
-        if (lib_memory_compare(observed, expected[index], sizeof(observed)) != 0)
+        if (lib_memory_compare(observed, expected[index], sizeof(observed)) != 0) {
+            lib_c_fprintf(lib_c_stderr,
+                "M5:T546:DESCRIPTOR protected-store index=%u got=%02x%02x%02x%02x%02x%02x want=%02x%02x%02x%02x%02x%02x\\n",
+                (unsigned)index, observed[0], observed[1], observed[2],
+                observed[3], observed[4], observed[5], expected[index][0],
+                expected[index][1], expected[index][2], expected[index][3],
+                expected[index][4], expected[index][5]);
             return 0;
+        }
     }
     return 1;
 }
@@ -440,9 +456,11 @@ static lib_i32 descriptor_test_register_and_privilege_faults(void)
         t_cpu before, after;
 
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-        descriptor_set_tables(&state, 0x11112222u, 0x3333u, 0x44445555u,
-            0x6666u);
+        /* Real #UD delivery needs a real-mode IVT; retain the unrelated GDTR
+         * value so the rejected form still proves it is not modified. */
+        descriptor_set_tables(&state, 0x11112222u, 0x3333u, 0u, 0x03ffu);
         before = state.cpu;
+        after = before;
         if (!descriptor_run_fault(&state, register_code[index], 3u,
                 VCPUINS_EXCEPT_UD, 0u, &after) ||
             !descriptor_tables_equal(&before, &after)) return 0;
@@ -457,6 +475,7 @@ static lib_i32 descriptor_test_register_and_privilege_faults(void)
         lib_memory_copy(state.memory + DESCRIPTOR_LOAD_ADDRESS, source,
             sizeof(source));
         before = state.cpu;
+        after = before;
         if (!descriptor_run_fault(&state, load_code[index],
                 sizeof(load_code[index]), VCPUINS_EXCEPT_GP, 0u, &after) ||
             !descriptor_tables_equal(&before, &after)) return 0;

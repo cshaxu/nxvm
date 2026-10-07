@@ -11,6 +11,7 @@ typedef struct cpu_instruction_fixture {
     core_machine_cpu_execution_context execution;
     core_machine_cpu_fault_snapshot fault;
     core_machine_cpu_fault_snapshot delivered_exception;
+    lib_u32 writes;
     lib_u8 memory[524288];
 } cpu_instruction_fixture;
 
@@ -40,6 +41,7 @@ static lib_status cpu_instruction_write(void *opaque, lib_u32 address,
     if (address > sizeof(fixture->memory) ||
         bytes > sizeof(fixture->memory) - address) return LIB_STATUS_IO_ERROR;
     lib_memory_copy(fixture->memory + address, source, bytes);
+    ++fixture->writes;
     return LIB_STATUS_OK;
 }
 
@@ -112,6 +114,56 @@ static inline lib_status cpu_instruction_run(cpu_instruction_fixture *fixture,
     core_machine_cpu_execution_refresh(&fixture->execution);
     *after = fixture->cpu;
     return fixture->execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
+}
+
+/* Real UD/GP proofs use valid handlers; early strict diagnostics do not invent
+ * hardware exceptions. Missing tables are separate shutdown tests. */
+static inline lib_bool cpu_instruction_expect_real_fault(cpu_instruction_fixture *state,
+    const lib_u8 *code, lib_u8 bytes, lib_u8 id)
+{
+    t_cpu before, after;
+    const lib_u16 vector[] = {0x0100u, 0u};
+    lib_u16 frame[3] = {0};
+    const core_machine_cpu_profile profile = state->execution.cpu_profile;
+    const lib_u32 exception = UINT32_C(1) << id;
+    const lib_u32 writes = state->writes;
+
+    before = state->cpu;
+    if (profile < CORE_MACHINE_CPU_PROFILE_80186)
+        return cpu_instruction_run(state, code, bytes, &after) == LIB_STATUS_INTERNAL_ERROR &&
+            state->fault.valid && state->fault.exception_mask == exception &&
+            state->writes == writes &&
+            lib_memory_compare(&before, &after, sizeof(before)) == 0;
+    lib_memory_copy(state->memory + id * 4u, vector, sizeof(vector));
+    if (cpu_instruction_run(state, code, bytes, &after) != LIB_STATUS_OK ||
+        state->fault.valid || !state->delivered_exception.valid ||
+        state->writes != writes + 3u ||
+        state->delivered_exception.exception_mask != exception ||
+        state->delivered_exception.exception_code != 0u ||
+        state->delivered_exception.point.eip != before.data.eip ||
+        state->delivered_exception.point.cs != before.data.cs.selector ||
+        state->delivered_exception.eflags != before.data.eflags)
+        return LIB_FALSE;
+    lib_memory_copy(frame, state->memory + after.data.ss.base + (lib_u16)after.data.esp,
+        sizeof(frame));
+    if (frame[0] != before.data.ip || frame[1] != before.data.cs.selector ||
+        frame[2] != (lib_u16)(before.data.flags | 2u |
+            (profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0xf000u : 0u)))
+        return LIB_FALSE;
+    before.data.eip = 0x0100u;
+    before.data.cs.flagValid = LIB_TRUE;
+    before.data.cs.selector = 0u;
+    before.data.cs.base = 0u;
+    before.data.cs.limit = 0xffffu;
+    before.data.cs.dpl = 0u;
+    before.data.cs.seg.accessed = LIB_TRUE;
+    before.data.cs.seg.executable = LIB_TRUE;
+    before.data.cs.seg.exec.defsize = LIB_FALSE;
+    before.data.cs.seg.exec.conform = LIB_FALSE;
+    before.data.cs.seg.exec.readable = LIB_TRUE;
+    before.data.sp = (lib_u16)(before.data.sp - 6u);
+    before.data.eflags &= ~(VCPU_EFLAGS_IF | VCPU_EFLAGS_TF | VCPU_EFLAGS_RF);
+    return lib_memory_compare(&before, &after, sizeof(before)) == 0;
 }
 
 #endif

@@ -71,17 +71,11 @@ static lib_i32 xchg_test_profiles_and_lock(void)
         for (form = 0u; form != 3u; ++form)
         {
         cpu_instruction_fixture state;
-        t_cpu before;
-        t_cpu after;
-        lib_i32 failed = 0;
         cpu_instruction_prepare(&state, profiles[profile]);
         state.cpu.data.eax=0x11223344u;
         state.cpu.data.eflags=VCPU_EFLAGS_CF;
-        state.cpu.data.idtr.limit = 0x17u;
-        before=state.cpu;
-        failed |= cpu_instruction_run(&state, prefixes[form], form==2u?4u:3u, &after) != LIB_STATUS_INTERNAL_ERROR || !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-            after.data.eip!=before.data.eip || after.data.eax!=before.data.eax || after.data.eflags!=before.data.eflags;
-        if (failed)
+        if (!cpu_instruction_expect_real_fault(&state, prefixes[form],
+            form == 2u ? 4u : 3u, 6u))
             return 0;
         }
     }
@@ -140,27 +134,25 @@ static lib_i32 xchg_test_lock(void)
     static const lib_u8 memory_code[] = {0xf0u,0x87u,0x06u,0x00u,0x10u};
     static const lib_u8 register_code[] = {0xf0u,0x87u,0xc1u};
     cpu_instruction_fixture state;
-    t_cpu before;
     t_cpu after;
     lib_u16 memory = 0x7788u;
-    lib_i32 failed = 0;
 
     cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
     state.cpu.data.eax = 0xaabb3344u;
-    failed |= cpu_instruction_write(&state, 0x1000u, &memory, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA)!=LIB_STATUS_OK ||
-        cpu_instruction_run(&state, plain_code, sizeof(plain_code), &after) != LIB_STATUS_OK;
+    if (cpu_instruction_write(&state, 0x1000u, &memory, 2u,
+        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+        cpu_instruction_run(&state, plain_code, sizeof(plain_code), &after) != LIB_STATUS_OK)
+        return 0;
     state.cpu.data.eip = 0u;
     state.cpu.data.eax = 0xaabb3344u;
     memory = 0x7788u;
-    failed |= cpu_instruction_write(&state, 0x1000u, &memory, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA)!=LIB_STATUS_OK ||
+    if (cpu_instruction_write(&state, 0x1000u, &memory, 2u,
+        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
         cpu_instruction_run(&state, memory_code, sizeof(memory_code), &after) != LIB_STATUS_OK ||
-        after.data.eax!=0xaabb7788u;
+        after.data.eax != 0xaabb7788u) return 0;
     state.cpu.data.eip = 0u;
-    state.cpu.data.idtr.limit = 0x17u;
-    before=state.cpu;
-    failed |= cpu_instruction_run(&state, register_code, sizeof(register_code), &after) != LIB_STATUS_INTERNAL_ERROR || !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-        after.data.eip!=before.data.eip || after.data.eax!=before.data.eax || after.data.eflags!=before.data.eflags;
-    return !failed;
+    return cpu_instruction_expect_real_fault(&state, register_code,
+        sizeof(register_code), 6u);
 }
 
 static lib_u32 *xchg_acc_target(t_cpu *cpu, lib_u8 opcode)
@@ -176,20 +168,6 @@ static lib_u32 *xchg_acc_target(t_cpu *cpu, lib_u8 opcode)
     case 0x97u: return &cpu->data.edi;
     default: return LIB_NULL;
     }
-}
-
-static lib_i32 xchg_acc_state_equal(const t_cpu *before, const t_cpu *after)
-{
-    return before->data.eax == after->data.eax &&
-        before->data.ecx == after->data.ecx &&
-        before->data.edx == after->data.edx &&
-        before->data.ebx == after->data.ebx &&
-        before->data.esp == after->data.esp &&
-        before->data.ebp == after->data.ebp &&
-        before->data.esi == after->data.esi &&
-        before->data.edi == after->data.edi &&
-        before->data.eflags == after->data.eflags &&
-        before->data.eip == after->data.eip;
 }
 
 static lib_i32 xchg_acc_gpr_flags_equal(const t_cpu *before, const t_cpu *after)
@@ -319,43 +297,15 @@ static lib_i32 xchg_test_accumulator_reject(void)
         for (opcode = 0x90u; opcode <= 0x97u; ++opcode)
         {
             cpu_instruction_fixture state;
-            t_cpu before;
-            t_cpu after;
-            lib_status status;
             lib_u8 code[] = { 0x66u, opcode };
-            lib_i32 failed;
 
-            lib_memory_set(&before, 0, sizeof(before));
-            lib_memory_set(&after, 0, sizeof(after));
-            status = LIB_STATUS_INVALID_ARGUMENT;
-            failed = 0;
             cpu_instruction_prepare(&state, profiles[profile]);
             state.cpu.data.eax = 0xaabb3344u;
             state.cpu.data.ecx = 0x55667788u;
             state.cpu.data.eflags = VCPU_EFLAGS_CF;
-            state.cpu.data.idtr.limit = 0x17u;
-            before = state.cpu;
-            failed |= (status = cpu_instruction_run(&state, code, sizeof(code), &after)) != LIB_STATUS_INTERNAL_ERROR ||
-                !state.fault.valid ||
-                !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-                !xchg_acc_state_equal(&before, &after);
-            if (failed)
-            {
-                lib_c_printf(
-                    "XCHG acc 66 profile=%u opcode=%02x status=%d "
-                    "fault=%08x before=%08x/%08x/%08x after=%08x/%08x/%08x\n",
-                    profile,
-                    opcode,
-                    status,
-                    state.fault.exception_mask,
-                    before.data.eip,
-                    before.data.eax,
-                    before.data.eflags,
-                    after.data.eip,
-                    after.data.eax,
-                    after.data.eflags);
+            if (!cpu_instruction_expect_real_fault(&state, code,
+                sizeof(code), 6u))
                 return 0;
-            }
         }
     }
     return 1;
@@ -368,42 +318,14 @@ static lib_i32 xchg_test_accumulator_lock(void)
     for (opcode = 0x90u; opcode <= 0x97u; ++opcode)
     {
         cpu_instruction_fixture state;
-        t_cpu before;
-        t_cpu after;
-        lib_status status;
         lib_u8 code[] = { 0xf0u, opcode };
-        lib_i32 failed;
 
-        lib_memory_set(&before, 0, sizeof(before));
-        lib_memory_set(&after, 0, sizeof(after));
-        status = LIB_STATUS_INVALID_ARGUMENT;
-        failed = 0;
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
         state.cpu.data.eax = 0xaabb3344u;
         state.cpu.data.ecx = 0x55667788u;
         state.cpu.data.eflags = VCPU_EFLAGS_CF;
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        failed |= (status = cpu_instruction_run(&state, code, sizeof(code), &after)) != LIB_STATUS_INTERNAL_ERROR ||
-            !state.fault.valid ||
-            !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-            !xchg_acc_state_equal(&before, &after);
-        if (failed)
-        {
-            lib_c_printf(
-                "XCHG acc lock opcode=%02x status=%d fault=%08x "
-                "before=%08x/%08x/%08x after=%08x/%08x/%08x\n",
-                opcode,
-                status,
-                state.fault.exception_mask,
-                before.data.eip,
-                before.data.eax,
-                before.data.eflags,
-                after.data.eip,
-                after.data.eax,
-                after.data.eflags);
+        if (!cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u))
             return 0;
-        }
     }
     return 1;
 }

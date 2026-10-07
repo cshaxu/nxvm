@@ -108,14 +108,18 @@ static inline lib_i32 cpu_descriptor_query_fault(
 {
     t_cpu after;
 
-    /* The CPU-local fixture deliberately has no real IDT.  A short IDTR
-     * makes rejected opcodes terminal at the CPU boundary, as in the other
-     * instruction receivers, instead of asking the absent board to deliver
-     * their exception. */
-    fixture->cpu.data.idtr.limit = 0x0017u;
-    (void)cpu_instruction_run(fixture, code, bytes, &after);
-    return fixture->execution.stop_requested && fixture->fault.valid &&
-        (fixture->fault.exception_mask & exception) != 0u;
+    if ((fixture->cpu.data.cr0 & VCPU_CR0_PE) == 0u) {
+        if (exception != VCPUINS_EXCEPT_UD) return LIB_FALSE;
+        return cpu_instruction_expect_real_fault(fixture, code, bytes, 6u);
+    }
+    /* The protected fixture deliberately supplies no IDT. A failed first
+     * delivery therefore reaches the architectural resident shutdown state. */
+    return cpu_instruction_run(fixture, code, bytes, &after) == LIB_STATUS_OK &&
+        core_machine_cpu_is_shutdown(&fixture->execution) &&
+        !fixture->execution.stop_requested && !fixture->fault.valid &&
+        fixture->delivered_exception.valid &&
+        fixture->delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
+        fixture->delivered_exception.exception_code == 0u;
 }
 
 #endif

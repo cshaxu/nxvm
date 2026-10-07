@@ -126,22 +126,15 @@ static lib_i32 stos_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    t_cpu before, after;
     lib_u16 image = 0xa5a5u;
 
     cpu_instruction_prepare(&state, profile);
     stos_seed(&state);
     lib_memory_copy(state.memory + 0x20020u, &image, sizeof(image));
-    state.cpu.data.idtr.limit = 0x17u;
-    before = state.cpu;
-    (void)cpu_instruction_run(&state, code, bytes, &after);
-    if (!state.fault.valid ||
-        !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-        after.data.eip != 0u || !stos_others_same(&before, &after) ||
-        after.data.edi != before.data.edi) {
+    if (!cpu_instruction_expect_real_fault(&state, code, bytes, 6u)) {
         lib_c_printf("STOS UD profile=%u code=%02x fault=%u mask=%u eip=%u\n",
             profile, code[0], state.fault.valid,
-            state.fault.exception_mask, after.data.eip);
+            state.fault.exception_mask, state.cpu.data.eip);
         return 0;
     }
     lib_memory_copy(&image, state.memory + 0x20020u, sizeof(image));
@@ -221,8 +214,8 @@ static lib_i32 stos_test_protected(void)
         before = state.cpu;
         core_machine_cpu_execution_refresh(&state.execution);
         after = state.cpu;
-        if (!state.execution.stop_requested || !state.fault.valid ||
-            !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+        if (!core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested || state.fault.valid || !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
             after.data.eip != 0u || !stos_others_same(&before, &after) ||
             after.data.edi != before.data.edi ||
             lib_memory_compare(&before.data.es, &after.data.es,
@@ -246,8 +239,8 @@ static lib_i32 stos_test_protected(void)
         if (state.execution.stop_requested) return 0;
         core_machine_cpu_execution_refresh(&state.execution);
         after = state.cpu;
-        if (!state.execution.stop_requested || !state.fault.valid ||
-            !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+        if (!core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested || state.fault.valid || !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
             after.data.eip != 0u || after.data.eax != before.data.eax ||
             after.data.ecx != 0x11220002u || after.data.edi != 0x11u ||
             after.data.edx != before.data.edx ||

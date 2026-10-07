@@ -94,11 +94,11 @@ static lib_i32 oas_run_gp(oas_machine *state, const lib_u8 *code,
 {
     if (!oas_write(state, OAS_CODE_ADDRESS, code, code_size)) return 0;
     oas_resume(state, 0u);
-    if (oas_execute(state, 16u) != LIB_STATUS_INTERNAL_ERROR ||
-        !state->chip.fault.valid ||
-        !X86_CPU_BIT_IS_SET(state->chip.fault.exception_mask,
-            X86_CPU_BIT_IS_SET(state->chip.cpu.data.cr0, VCPU_CR0_PE) ?
-                VCPUINS_EXCEPT_DF : VCPUINS_EXCEPT_GP)) return 0;
+    if (oas_execute(state, 16u) != LIB_STATUS_OK ||
+        !core_machine_cpu_is_shutdown(&state->chip.execution) ||
+        state->chip.execution.stop_requested || state->chip.fault.valid ||
+        !state->chip.delivered_exception.valid ||
+        state->chip.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN) return 0;
     *out_cpu = state->chip.cpu;
     return 1;
 }
@@ -253,13 +253,15 @@ static lib_i32 oas_test_16bit_code_and_faults(void)
         oas_resume(&state, 0xffffu);
         /* A 386 does not wrap sequential 16-bit code fetch to offset zero.
          * Retire the legal NOP first; the next fetch fails. The deliberately
-         * absent delivery gate produces the fixture's existing DF outcome. */
+         * absent delivery gate produces CPU-owned resident shutdown. */
         failed |= oas_execute(&state, 1u) != LIB_STATUS_OK ||
             state.chip.cpu.data.flagHalt || state.chip.cpu.data.eip != 0x10000u;
-        if (!failed) failed |= oas_execute(&state, 1u) != LIB_STATUS_INTERNAL_ERROR ||
-            !state.chip.fault.valid ||
-            !X86_CPU_BIT_IS_SET(state.chip.fault.exception_mask, VCPUINS_EXCEPT_DF) ||
-            state.chip.fault.point.eip != 0x10000u;
+        if (!failed) failed |= oas_execute(&state, 1u) != LIB_STATUS_OK ||
+            !core_machine_cpu_is_shutdown(&state.chip.execution) ||
+            state.chip.execution.stop_requested || state.chip.fault.valid ||
+            !state.chip.delivered_exception.valid ||
+            state.chip.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
+            state.chip.cpu.data.eip != 0x10000u;
     }
 
     return !failed;

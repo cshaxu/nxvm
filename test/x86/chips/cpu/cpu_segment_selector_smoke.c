@@ -74,27 +74,6 @@ static lib_i32 segment_run_halt(segment_cpu *state, const lib_u8 *code,
     return 1;
 }
 
-static lib_i32 segment_run_ud(segment_cpu *state, const lib_u8 *code,
-    lib_size code_size, lib_u32 address, t_cpu *out_cpu)
-{
-    const lib_u32 budget = 16u;
-
-    if (state == LIB_NULL || code == LIB_NULL ||
-        out_cpu == LIB_NULL || !segment_write(state, address, code, code_size))
-        return 0;
-    if (!X86_CPU_BIT_IS_SET(state->chip.cpu.data.cr0, VCPU_CR0_PE))
-        state->chip.cpu.data.idtr.limit = 0x17u;
-    state->chip.cpu.data.flagHalt = LIB_FALSE;
-    state->chip.cpu.data.eip = address == 0u ? 0u : address - SEG_CODE_ADDRESS;
-    if (segment_execute(state, budget) != LIB_STATUS_INTERNAL_ERROR ||
-        !state->chip.execution.stop_requested ||
-        !state->chip.fault.valid ||
-        !X86_CPU_BIT_IS_SET(state->chip.fault.exception_mask, VCPUINS_EXCEPT_UD))
-        return 0;
-    *out_cpu = state->chip.cpu;
-    return 1;
-}
-
 static lib_i32 segment_run_exception(segment_cpu *state, const lib_u8 *code,
     lib_size code_size, lib_u32 address, lib_u32 exception,
     t_cpu *out_cpu)
@@ -106,16 +85,20 @@ static lib_i32 segment_run_exception(segment_cpu *state, const lib_u8 *code,
         return 0;
     state->chip.cpu.data.flagHalt = LIB_FALSE;
     state->chip.cpu.data.eip = address == 0u ? 0u : address - SEG_CODE_ADDRESS;
-    if (state->chip.execution.cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
-        X86_CPU_BIT_IS_SET(state->chip.cpu.data.cr0, VCPU_CR0_PE) &&
-        (exception == VCPUINS_EXCEPT_TS || exception == VCPUINS_EXCEPT_NP ||
-            exception == VCPUINS_EXCEPT_SS || exception == VCPUINS_EXCEPT_GP)) {
-        exception = VCPUINS_EXCEPT_DF;
+    lib_status status = segment_execute(state, budget);
+    if (X86_CPU_BIT_IS_SET(state->chip.cpu.data.cr0, VCPU_CR0_PE)) {
+        if (status != LIB_STATUS_OK ||
+            !core_machine_cpu_is_shutdown(&state->chip.execution) ||
+            state->chip.execution.stop_requested || state->chip.fault.valid ||
+            !state->delivered.valid ||
+            state->delivered.exception_mask != VCPUINS_EXCEPT_SHUTDOWN)
+            return 0;
+    } else {
+        if (status != LIB_STATUS_OK || state->chip.execution.stop_requested ||
+            state->chip.fault.valid || !state->delivered.valid ||
+            state->delivered.exception_mask != exception)
+            return 0;
     }
-    if (segment_execute(state, budget) != LIB_STATUS_INTERNAL_ERROR ||
-        !state->chip.execution.stop_requested ||
-        !state->chip.fault.valid ||
-        !X86_CPU_BIT_IS_SET(state->chip.fault.exception_mask, exception)) return 0;
     *out_cpu = state->chip.cpu;
     return 1;
 }
@@ -176,6 +159,9 @@ static lib_i32 segment_boot_protected(segment_cpu *state)
             run_status, state->chip.execution.stop_requested, state->chip.fault.exception_mask);
         return 0;
     }
+    /* Deliberately leave later protected-mode rejection cases without a receiver. */
+    state->chip.cpu.data.idtr.base = 0u;
+    state->chip.cpu.data.idtr.limit = 0u;
     return 1;
 }
 
@@ -597,10 +583,8 @@ static lib_i32 segment_test_lxs_memory_only(void)
             lib_u8 code_size = 0u;
             lib_u32 address = protected_mode ? SEG_CODE_ADDRESS : 0u;
             segment_cpu state;
-            t_cpu before;
             t_cpu after;
-            const t_cpu_data_sreg *before_sreg;
-            const t_cpu_data_sreg *after_sreg;
+            lib_i32 case_failed;
 
             if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 1;
             if (protected_mode && !segment_boot_protected(&state)) {
@@ -609,15 +593,11 @@ static lib_i32 segment_test_lxs_memory_only(void)
             code[code_size++] = forms[index].first;
             if (forms[index].bytes == 2u) code[code_size++] = forms[index].second;
             code[code_size++] = 0xc0u;
-            before = state.chip.cpu;
-            failed |= !segment_run_ud(&state, code, code_size, address, &after);
-            before_sreg = segment_sreg(&before, forms[index].target);
-            after_sreg = segment_sreg(&after, forms[index].target);
-            failed |= before_sreg == LIB_NULL || after_sreg == LIB_NULL ||
-                lib_memory_compare(before_sreg, after_sreg, sizeof(*before_sreg)) != 0 ||
-                before.data.eax != after.data.eax || before.data.ebx != after.data.ebx ||
-                before.data.esp != after.data.esp ||
-                before.data.eflags != after.data.eflags;
+            /* The fixture deliberately has no receiver.  Its terminal
+             * exception frame is not the rejected instruction's state. */
+            case_failed = !segment_run_exception(&state, code, code_size,
+                address, VCPUINS_EXCEPT_UD, &after);
+            failed |= case_failed;
         }
     }
     return failed;
@@ -1091,11 +1071,11 @@ static lib_i32 segment_test_rejected_forms(void)
             state.chip.cpu.data.idtr.limit = 0x17u;
             failed |= !segment_write(&state, 0u, programs[program_index],
                 sizes[program_index]);
-            failed |= segment_execute(&state, 8u) !=
-                    LIB_STATUS_INTERNAL_ERROR || !state.chip.execution.stop_requested;
-            failed |= !state.chip.fault.valid ||
-                !X86_CPU_BIT_IS_SET(state.chip.fault.exception_mask,
-                    VCPUINS_EXCEPT_UD);
+            failed |= segment_execute(&state, 8u) != LIB_STATUS_OK ||
+                !core_machine_cpu_is_shutdown(&state.chip.execution) ||
+                state.chip.execution.stop_requested || state.chip.fault.valid ||
+                !state.delivered.valid ||
+                state.delivered.exception_mask != VCPUINS_EXCEPT_SHUTDOWN;
         }
     }
     return failed;
@@ -1120,11 +1100,11 @@ static lib_i32 segment_test_pop_fault_atomicity(void)
             sizeof(pop_fs));
         state.chip.cpu.data.flagHalt = LIB_FALSE;
         state.chip.cpu.data.eip = 0u;
-        failed |= segment_execute(&state, budget) != LIB_STATUS_INTERNAL_ERROR ||
-            !state.chip.execution.stop_requested ||
-            !state.chip.fault.valid ||
-            !X86_CPU_BIT_IS_SET(state.chip.fault.exception_mask, VCPUINS_EXCEPT_DF) ||
-            state.chip.fault.exception_code != 0u;
+        failed |= segment_execute(&state, budget) != LIB_STATUS_OK ||
+            !core_machine_cpu_is_shutdown(&state.chip.execution) ||
+            state.chip.execution.stop_requested || state.chip.fault.valid ||
+            !state.delivered.valid ||
+            state.delivered.exception_mask != VCPUINS_EXCEPT_SHUTDOWN;
         after = state.chip.cpu;
         failed |= after.data.esp != before.data.esp ||
             lib_memory_compare(&after.data.fs, &before.data.fs, sizeof(after.data.fs)) != 0;

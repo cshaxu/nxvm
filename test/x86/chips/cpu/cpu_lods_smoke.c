@@ -112,25 +112,15 @@ static lib_i32 lods_expect_ud(core_machine_cpu_profile profile,
 {
     static const lib_u32 source = 0x12345678u;
     cpu_instruction_fixture state;
-    t_cpu before, after;
     lib_u32 source_after;
 
     cpu_instruction_prepare(&state, profile);
     lods_seed(&state);
     lib_memory_copy(state.memory + 0x10010u, &source, sizeof(source));
-    state.cpu.data.idtr.limit = 0x17u;
-    before = state.cpu;
-    (void)cpu_instruction_run(&state, code, bytes, &after);
+    const lib_bool rejected = cpu_instruction_expect_real_fault(&state, code, bytes, 6u);
     lib_memory_copy(&source_after, state.memory + 0x10010u, sizeof(source));
-    if (!state.fault.valid) lib_c_printf("LODS UD missing code=%02x profile=%u\n", code[0], profile);
-    return state.fault.valid &&
-        (state.fault.exception_mask & VCPUINS_EXCEPT_UD) != 0u &&
-        after.data.eip == 0u && after.data.eax == before.data.eax &&
-        after.data.ecx == before.data.ecx && after.data.edx == before.data.edx &&
-        after.data.ebx == before.data.ebx && after.data.esp == before.data.esp &&
-        after.data.ebp == before.data.ebp && after.data.esi == before.data.esi &&
-        after.data.edi == before.data.edi && after.data.eflags == before.data.eflags &&
-        source_after == source;
+    if (!rejected) lib_c_printf("LODS UD missing code=%02x profile=%u\n", code[0], profile);
+    return rejected && source_after == source;
 }
 
 static lib_i32 lods_test_rejections(void)
@@ -212,8 +202,8 @@ static lib_i32 lods_test_protected_limits(void)
         before = state.cpu;
         core_machine_cpu_execution_refresh(&state.execution);
         after = state.cpu;
-        if (!state.execution.stop_requested || !state.fault.valid ||
-            !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+        if (!core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested || state.fault.valid || !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
             after.data.eip != 0u || after.data.eax != before.data.eax ||
             after.data.ecx != before.data.ecx ||
             after.data.edx != before.data.edx ||
@@ -243,8 +233,8 @@ static lib_i32 lods_test_protected_limits(void)
         if (state.execution.stop_requested) return 0;
         core_machine_cpu_execution_refresh(&state.execution);
         after = state.cpu;
-        if (!state.execution.stop_requested || !state.fault.valid ||
-            !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+        if (!core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested || state.fault.valid || !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
             after.data.eip != 0u || after.data.eax != 0xaabb3351u ||
             after.data.ecx != 0x11220002u || after.data.esi != 0x11u ||
             after.data.edx != before.data.edx ||

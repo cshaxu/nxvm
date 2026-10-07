@@ -484,6 +484,7 @@ void core_machine_cpu_state_initialize(
         context->reset_requested = LIB_FALSE;
         context->shutdown_requested = LIB_FALSE;
         context->debug_trap_pending = LIB_FALSE;
+        context->shutdown_state = CPU_SHUTDOWN_NONE;
         context->debug_tf_before = LIB_FALSE;
         context->debug_rf_before = LIB_FALSE;
         context->instruction_task_switched = LIB_FALSE;
@@ -711,7 +712,16 @@ lib_u8 core_machine_cpu_execution_consume_reset_request(
 void core_machine_cpu_execution_request_shutdown(
     core_machine_cpu_execution_context *context)
 {
-    if (context != LIB_NULL) context->shutdown_requested = LIB_TRUE;
+    if (context != LIB_NULL) {
+        context->shutdown_requested = LIB_TRUE;
+        if (context->shutdown_state == CPU_SHUTDOWN_NONE)
+            context->shutdown_state = CPU_SHUTDOWN_WAITING;
+    }
+}
+lib_bool core_machine_cpu_is_shutdown(
+    const core_machine_cpu_execution_context *context)
+{
+    return context != LIB_NULL && context->shutdown_state != CPU_SHUTDOWN_NONE;
 }
 lib_u8 core_machine_cpu_execution_consume_shutdown_request(
     core_machine_cpu_execution_context *context)

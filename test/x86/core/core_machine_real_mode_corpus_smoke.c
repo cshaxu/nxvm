@@ -57,8 +57,6 @@ static lib_i32 corpus_run_to_ud(core_machine *machine, const lib_u8 *program,
     lib_size program_bytes, core_machine_cpu_fault_snapshot *out_fault)
 {
     static const lib_u8 reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
-    static const lib_u8 ud_vector[] = { 0x00u, 0x03u, 0x00u, 0x00u };
-    static const lib_u8 ud_handler[] = { 0xf4u };
     const core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -66,20 +64,14 @@ static lib_i32 corpus_run_to_ud(core_machine *machine, const lib_u8 *program,
         core_machine_memory_write(machine, CORPUS_RESET_LINEAR, reset_jump,
         sizeof(reset_jump)) != LIB_STATUS_OK || core_machine_memory_write(
         machine, 0u, program, program_bytes) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, 0x0018u, ud_vector,
-        sizeof(ud_vector)) != LIB_STATUS_OK || core_machine_memory_write(
-        machine, 0x0300u, ud_handler, sizeof(ud_handler)) != LIB_STATUS_OK ||
-        core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_BUDGET ||
+        core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
+        result.reason != CORE_MACHINE_STOP_FAULT ||
         core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
-        diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
-        !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
+        !diagnostic.first_fault.valid || diagnostic.last_delivered_exception.valid ||
+        !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
             VCPUINS_EXCEPT_UD) ||
-        diagnostic.last_delivered_exception.point.bytes[0] != 0x66u ||
-        core_machine_run(machine, (core_machine_run_budget){ 1u, 0u },
-            &result) != LIB_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) return 1;
-    *out_fault = diagnostic.last_delivered_exception;
+        diagnostic.first_fault.point.bytes[0] != 0x66u) return 1;
+    *out_fault = diagnostic.first_fault;
     return 0;
 }
 

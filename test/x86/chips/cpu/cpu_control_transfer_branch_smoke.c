@@ -238,21 +238,13 @@ static lib_i32 control_transfer_expect_fault(const lib_u8 *code, lib_u8 bytes,
     lib_u32 flags, lib_u32 ecx)
 {
     cpu_instruction_fixture state;
-    t_cpu before;
-    t_cpu after;
 
     cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
     state.cpu.data.cs.seg.data.big = LIB_TRUE;
     state.cpu.data.cs.limit = 0x007fu;
-    state.cpu.data.idtr.limit = 0x17u;
     state.cpu.data.eflags = flags;
     state.cpu.data.ecx = ecx;
-    before = state.cpu;
-    if (cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_INTERNAL_ERROR ||
-        !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_GP) ||
-        after.data.eip != before.data.eip || after.data.ecx != before.data.ecx ||
-        after.data.eflags != before.data.eflags) return 0;
-    return 1;
+    return cpu_instruction_expect_real_fault(&state, code, bytes, 13u);
 }
 
 static lib_i32 control_transfer_test_fault_atomicity_and_profile(void)
@@ -266,16 +258,9 @@ static lib_i32 control_transfer_test_fault_atomicity_and_profile(void)
             0x00000002u, 2u)) return 0;
     {
         cpu_instruction_fixture state;
-        t_cpu before;
-        t_cpu after;
 
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        if (cpu_instruction_run(&state, near_jcc, sizeof(near_jcc), &after) !=
-                LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-            !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-            lib_memory_compare(&before.data, &after.data, sizeof(before.data)) != 0)
+        if (!cpu_instruction_expect_real_fault(&state, near_jcc, sizeof(near_jcc), 6u))
             return 0;
     }
     return 1;

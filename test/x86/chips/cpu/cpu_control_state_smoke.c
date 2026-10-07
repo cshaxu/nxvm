@@ -13,10 +13,16 @@ static lib_i32 control_run(cpu_instruction_fixture *fixture,
 static lib_i32 control_fault(cpu_instruction_fixture *fixture,
     const lib_u8 *code, lib_u8 bytes, lib_u32 exception, t_cpu *after)
 {
-    (void)cpu_instruction_run(fixture, code, bytes, after);
+    const lib_status status = cpu_instruction_run(fixture, code, bytes, after);
+
     if (fixture->execution.cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
-        (fixture->cpu.data.cr0 & VCPU_CR0_PE) != 0u &&
-        exception == VCPUINS_EXCEPT_GP) exception = VCPUINS_EXCEPT_DF;
+        (fixture->cpu.data.cr0 & VCPU_CR0_PE) != 0u) {
+        return status == LIB_STATUS_OK &&
+            core_machine_cpu_is_shutdown(&fixture->execution) &&
+            !fixture->fault.valid && fixture->delivered_exception.valid &&
+            fixture->delivered_exception.exception_mask ==
+                VCPUINS_EXCEPT_SHUTDOWN;
+    }
     return fixture->execution.stop_requested && fixture->fault.valid &&
         (fixture->fault.exception_mask & exception) != 0u;
 }
@@ -510,16 +516,17 @@ static lib_i32 control_test_interrupt_control_storage(void)
                     expected = opcode == 0xf4u ? before.data.eflags :
                         (before.data.eflags & ~VCPU_EFLAGS_IF) |
                         (opcode == 0xfbu ? VCPU_EFLAGS_IF : 0u);
-                    status = cpu_instruction_run(&fixture, code, bytes, &after);
                     if (rejected) {
+                        status = cpu_instruction_run(&fixture, code, bytes, &after);
                         if (status != LIB_STATUS_INTERNAL_ERROR || !fixture.fault.valid ||
-                            (fixture.fault.exception_mask & VCPUINS_EXCEPT_UD) == 0u ||
+                            (fixture.fault.exception_mask & (profile == 0u ?
+                                VCPUINS_EXCEPT_UD : VCPUINS_EXCEPT_CE)) == 0u ||
                             lib_memory_compare(&before, &after, sizeof(before)) != 0) {
                             lib_c_printf("CLI-STI storage profile=%zu form=%zu lock=%u opcode=%x status=%u fault=%x\n",
                                 profile, form, lock, opcode, status, fixture.fault.exception_mask);
                             return 0;
                         }
-                    } else if (status != LIB_STATUS_OK || fixture.fault.valid ||
+                    } else if ((status = cpu_instruction_run(&fixture, code, bytes, &after)) != LIB_STATUS_OK || fixture.fault.valid ||
                         after.data.eip != bytes || after.data.eflags != expected ||
                         after.data.flagHalt != (opcode == 0xf4u) ||
                         !control_cli_sti_storage_preserved(&before, &after)) {

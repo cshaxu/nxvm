@@ -21,13 +21,19 @@ static void core_machine_cpu_diagnostic_publish_snapshot(
     snapshot.valid = 1;
     snapshot.exception_mask = instructions->data.except;
     snapshot.exception_code = instructions->data.excode;
-    snapshot.point.cs = instructions->data.oldcpu.data.cs.selector;
-    snapshot.point.cs_base = instructions->data.oldcpu.data.cs.base;
-    snapshot.point.eip = instructions->data.oldcpu.data.eip;
-    snapshot.point.linear_pc = instructions->data.linear;
-    snapshot.point.byte_count = (lib_u8)instructions->data.oplen;
-    lib_memory_copy(snapshot.point.bytes, instructions->data.opcodes,
-        sizeof(snapshot.point.bytes));
+    snapshot.point.cs = cpu->data.cs.selector;
+    snapshot.point.cs_base = cpu->data.cs.base;
+    snapshot.point.eip = cpu->data.eip;
+    snapshot.point.linear_pc = cpu->data.cs.base + cpu->data.eip;
+    if (cpu->data.cs.selector == instructions->data.oldcpu.data.cs.selector &&
+        cpu->data.cs.base == instructions->data.oldcpu.data.cs.base &&
+        cpu->data.eip == instructions->data.oldcpu.data.eip &&
+        cpu->data.tr.selector == instructions->data.oldcpu.data.tr.selector &&
+        cpu->data.cr3 == instructions->data.oldcpu.data.cr3) {
+        snapshot.point.byte_count = (lib_u8)instructions->data.oplen;
+        lib_memory_copy(snapshot.point.bytes, instructions->data.opcodes,
+            sizeof(snapshot.point.bytes));
+    }
     snapshot.eax = cpu->data.eax;
     snapshot.ebx = cpu->data.ebx;
     snapshot.ecx = cpu->data.ecx;
@@ -99,6 +105,7 @@ static void core_machine_cpu_execution_raise_exception(
 #define _SetExcept_BR(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_BR, (n))
 #define _SetExcept_TS(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_TS, (n))
 #define _SetExcept_NM(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_NM, (n))
+#define _SetExcept_DF(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_DF, (n))
 #define _SetExcept_MF(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_MF, (n))
 #define _SetExcept_FPU_UNSUPPORTED(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_FPU_UNSUPPORTED, (n))
 #define _SetExcept_CE(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_CE, (n))
@@ -524,7 +531,8 @@ static lib_u32 _kma_linear_logical(core_machine_cpu_execution_context *context, 
     case SREG_IDTR:
         CPU_TRACE_BLOCK_BEGIN("sregtype(SREG_IDTR)");
         lower = 0x00000000;
-        upper = rsreg->limit;
+        upper = context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80286 ?
+            0x03ffu : rsreg->limit;
         CPU_TRACE_BLOCK_END;
         break;
     case SREG_LDTR:
@@ -558,7 +566,8 @@ static lib_u32 _kma_linear_logical(core_machine_cpu_execution_context *context, 
     default:
         CPU_TRACE_IMPOSSIBLE_RETURN_ZERO;
     }
-    linear = rsreg->base + offset;
+    linear = (rsreg->sregtype == SREG_IDTR &&
+        context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0u : rsreg->base) + offset;
     if (offset < lower || offset > upper || (byte != 0u &&
         (lib_u32)(byte - 1u) > upper - offset))
     {
@@ -926,7 +935,8 @@ static void _ksa_read_idt(core_machine_cpu_execution_context *context, lib_u8 in
     if (!_GetCR0_PE)
     {
         CPU_TRACE_BLOCK_BEGIN("CR0_PE(0)");
-        if (X86_CPU_MASK_U16(intid * 4 + 3) > X86_CPU_MASK_U16(cpu_state.data.idtr.limit))
+        if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286 &&
+            X86_CPU_MASK_U16(intid * 4 + 3) > X86_CPU_MASK_U16(cpu_state.data.idtr.limit))
             CPU_TRACE_IMPOSSIBLE_RETURN;
         CPU_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.idtr, (intid * 4), rdata, 4, 0x00, 0));
         CPU_TRACE_BLOCK_END;
@@ -3629,10 +3639,11 @@ static void _ser_int_real(core_machine_cpu_execution_context *context, lib_u8 in
     CPU_TRACE_CALL_BEGIN("_ser_int_real");
     if (_IsProtected)
         CPU_TRACE_IMPOSSIBLE_RETURN;
-    if (X86_CPU_MASK_U16(intid * 4 + 3) > X86_CPU_MASK_U16(cpu_state.data.idtr.limit))
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286 &&
+        X86_CPU_MASK_U16(intid * 4 + 3) > X86_CPU_MASK_U16(cpu_state.data.idtr.limit))
     {
         CPU_TRACE_BLOCK_BEGIN("intid(>idtr.limit)");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_DF(0));
         CPU_TRACE_BLOCK_END;
     }
     switch (byte)
@@ -3673,14 +3684,14 @@ static void _ser_int_real(core_machine_cpu_execution_context *context, lib_u8 in
     }
     CPU_TRACE_CHECK_RETURN(_s_read_idt(context, intid, X86_CPU_REFERENCE_OF(vector)));
     cip = X86_CPU_MASK_U16(vector);
-    CPU_TRACE_CHECK_RETURN(_s_test_cs(context, cip, 0x01));
+    /* The word target belongs to the CS reloaded below, not the old cache. */
     cpu_state.data.eip = cip;
     CPU_TRACE_CHECK_RETURN(_s_load_cs(context, X86_CPU_MASK_U16(vector >> 16)));
     CPU_TRACE_CALL_END;
 }
 static lib_u16 _ser_idt_error_code(lib_u8 intid)
 {
-    /* All currently admitted IDT validation is a synchronous CPU event. */
+    /* Entry wrappers add EXT for failed hardware/exception delivery. */
     return X86_CPU_MASK_U16(intid * 8u + 2u);
 }
 static void _ser_int_protected_16(core_machine_cpu_execution_context *context,
@@ -4079,6 +4090,11 @@ static void _ser_int_protected(core_machine_cpu_execution_context *context,
     case VCPU_DESC_SYS_TYPE_TASKGATE:
         CPU_TRACE_CHECK_RETURN(_ser_task_gate_descriptor(context, gate_desc,
             _ser_idt_error_code(intid), software_origin, LIB_TRUE));
+        if (flagext) {
+            const lib_u32 error = instruction_state.data.excode;
+            CPU_TRACE_CHECK_RETURN(_kec_push(context, X86_CPU_REFERENCE_OF(error),
+                cpu_state.data.tr.sys.type == VCPU_DESC_SYS_TYPE_TSS_16_BUSY ? 2u : 4u));
+        }
         break;
     default:
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
@@ -4812,11 +4828,12 @@ static void _ser_task_transition_tss_plan(
     cpu_state.data.tr = newtr;
     if (new_is_32) cpu_state.data.dr7 &= ~VCPU_DR7_LOCAL_ENABLE_MASK;
     _SetCR0_TS;
+    if (new_is_32 && X86_CPU_GET_LSB(debug_trap)) cpu_state.data.dr6 |= VCPU_DR6_BT;
+    context->instruction_task_checkpoint = cpu_state;
     context->instruction_task_switched = LIB_TRUE;
     if (new_is_32 && X86_CPU_GET_LSB(debug_trap)) {
         t_cpu trap_cpu = cpu_state;
 
-        cpu_state.data.dr6 |= VCPU_DR6_BT;
         CPU_TRACE_CHECK_RETURN(_e_except_n(context, 0x01u, _GetOperandSize));
         if (context->diagnostic_provider != LIB_NULL &&
             context->diagnostic_provider->record_delivered_exception != LIB_NULL) {
@@ -5001,6 +5018,7 @@ static void _ser_task_transition_tss(core_machine_cpu_execution_context *context
     newtr.sys.type = VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
     cpu_state.data.tr = newtr;
     _SetCR0_TS;
+    context->instruction_task_checkpoint = cpu_state;
     context->instruction_task_switched = LIB_TRUE;
     CPU_TRACE_CALL_END;
 }
@@ -5167,6 +5185,15 @@ _______todo _e_int_n(core_machine_cpu_execution_context *context, lib_u8 intid, 
     }
     CPU_TRACE_CALL_END;
 }
+static void _e_external_entry_error(core_machine_cpu_execution_context *context)
+{
+    if (instruction_state.data.except == VCPUINS_EXCEPT_GP ||
+        instruction_state.data.except == VCPUINS_EXCEPT_NP ||
+        instruction_state.data.except == VCPUINS_EXCEPT_SS ||
+        instruction_state.data.except == VCPUINS_EXCEPT_TS)
+        instruction_state.data.excode |= 1u;
+}
+
 _______todo _e_intr_n(core_machine_cpu_execution_context *context,
     lib_u8 intid, lib_u8 byte, lib_u8 external_origin)
 {
@@ -5182,9 +5209,10 @@ _______todo _e_intr_n(core_machine_cpu_execution_context *context,
         CPU_TRACE_BLOCK_BEGIN("!Real");
         if (!external_origin)
             CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
-        else
-            CPU_TRACE_CHECK_RETURN(_ser_int_protected(context, intid, byte,
-                LIB_FALSE, LIB_FALSE));
+        else {
+            _ser_int_protected(context, intid, byte, LIB_FALSE, LIB_FALSE);
+            _e_external_entry_error(context);
+        }
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CALL_END;
@@ -5192,7 +5220,7 @@ _______todo _e_intr_n(core_machine_cpu_execution_context *context,
 static lib_u8 _e_exception_has_error_code(lib_u8 exid)
 {
     return exid == 0x08u || exid == 0x0au || exid == 0x0bu ||
-        exid == 0x0cu || exid == 0x0du || exid == 0x0eu || exid == 0x11u;
+        exid == 0x0cu || exid == 0x0du || exid == 0x0eu;
 }
 
 _______todo _e_except_n(core_machine_cpu_execution_context *context, lib_u8 exid, lib_u8 byte)
@@ -5204,7 +5232,7 @@ _______todo _e_except_n(core_machine_cpu_execution_context *context, lib_u8 exid
      * Gate entry clears live RF, while task entry loads the incoming TSS. */
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
         X86_CPU_BIT_IS_SET(instruction_state.data.except, UINT32_C(1) << exid) &&
-        exid != 0x08u) _SetEFLAGS_RF;
+        exid != 0x08u && exid != 0x09u) _SetEFLAGS_RF;
     instruction_state.data.except &= ~(UINT32_C(1) << exid);
     if (!_GetCR0_PE)
     {
@@ -5217,6 +5245,7 @@ _______todo _e_except_n(core_machine_cpu_execution_context *context, lib_u8 exid
         CPU_TRACE_BLOCK_BEGIN("!Real");
         _ser_int_protected(context, exid, byte,
             LIB_FALSE, _e_exception_has_error_code(exid));
+        _e_external_entry_error(context);
         CPU_TRACE_BLOCK_END;
     }
     if (instruction_state.data.except) cpu_state.data.eflags = oldflags;
@@ -18393,240 +18422,142 @@ static void _debug_deliver_trap(core_machine_cpu_execution_context *context)
     }
     ExecFinal(context);
 }
-static lib_u8 _e_is_contributory_exception(lib_u32 exception)
+static lib_u8 _e_exception_vector(core_machine_cpu_execution_context *context,
+    lib_u32 exception)
 {
-    return exception == VCPUINS_EXCEPT_TS || exception == VCPUINS_EXCEPT_NP ||
-        exception == VCPUINS_EXCEPT_SS || exception == VCPUINS_EXCEPT_GP;
-}
-/* Real-mode final delivery has one rollback and diagnostic boundary.  The
- * vector remains an architectural property of the producer; this helper owns
- * only the common fault-state restoration around IVT delivery. */
-static lib_u8 _e_final_deliver_real_exception(
-    core_machine_cpu_execution_context *context, const t_cpu *fault_cpu,
-    lib_u8 exception_vector)
-{
-    lib_u32 original_except;
-    lib_u32 original_excode;
+    const lib_u32 supported = VCPUINS_EXCEPT_DE | VCPUINS_EXCEPT_DB |
+        VCPUINS_EXCEPT_BR | VCPUINS_EXCEPT_UD | VCPUINS_EXCEPT_NM |
+        VCPUINS_EXCEPT_DF | VCPUINS_EXCEPT_09 | VCPUINS_EXCEPT_TS |
+        VCPUINS_EXCEPT_NP | VCPUINS_EXCEPT_SS | VCPUINS_EXCEPT_GP |
+        VCPUINS_EXCEPT_PF | VCPUINS_EXCEPT_MF;
+    lib_u8 vector;
 
-    CPU_TRACE_CALL_BEGIN("_e_final_deliver_real_exception");
-    original_except = instruction_state.data.except;
-    original_excode = instruction_state.data.excode;
-    cpu_state = *fault_cpu;
-    _e_except_n(context, exception_vector, _GetOperandSize);
-    if (instruction_state.data.except) {
-        cpu_state = *fault_cpu;
-        instruction_state.data.except = original_except;
-        instruction_state.data.excode = original_excode;
-        CPU_TRACE_CALL_END;
-        return LIB_FALSE;
+    if ((exception & supported) == 0u) return 0xffu;
+    for (vector = 0u; vector <= 16u; ++vector) {
+        if (exception != (UINT32_C(1) << vector)) continue;
+        /* Earlier chips have no protected-mode delivery or vectors 8-16,
+         * except the 8087 WAIT-error interface, which reports #MF through
+         * the real-mode vector-16 table.  A strict unsupported-op diagnostic
+         * is not hardware INT 6. */
+        if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80286 &&
+            (X86_CPU_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_PE) ||
+             (vector >= 8u && exception != VCPUINS_EXCEPT_MF)))
+            return 0xffu;
+        if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80186 &&
+            vector >= 5u && exception != VCPUINS_EXCEPT_MF)
+            return 0xffu;
+        if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386 &&
+            vector == 14u) return 0xffu;
+        if (!X86_CPU_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_PE) &&
+            (vector == 9u || vector == 10u || vector == 11u || vector == 14u))
+            return 0xffu;
+        return vector;
     }
-    if (context->diagnostic_provider != LIB_NULL &&
-        context->diagnostic_provider->record_delivered_exception != LIB_NULL) {
-        instruction_state.data.except = original_except;
-        instruction_state.data.excode = original_excode;
-        core_machine_cpu_diagnostic_publish_snapshot(
-            context->diagnostic_provider->record_delivered_exception,
-            context->diagnostic_context, fault_cpu, &instruction_state);
-        instruction_state.data.except = 0u;
-    }
-    CPU_TRACE_CALL_END;
-    return LIB_TRUE;
+    return 0xffu;
 }
 
 static void _e_mark_instruction_fault_delivered(
     core_machine_cpu_execution_context *context)
 {
-    if (context != LIB_NULL && context->instruction_in_progress) {
+    if (context != LIB_NULL && context->instruction_in_progress)
         context->instruction_fault_delivered = LIB_TRUE;
-    }
 }
 
 static void ExecFinal(core_machine_cpu_execution_context *context)
 {
     t_cpu fault_cpu;
-    lib_u32 original_except;
-    lib_u32 original_excode;
-    lib_u8 exception_vector;
-    lib_u8 exception_deliverable;
-    if (instruction_state.data.flagInsLoop)
-    {
+    const lib_u32 next_eip = cpu_state.data.eip;
+    lib_u32 active, code, secondary, secondary_code;
+    lib_u8 vector;
+
+    if (instruction_state.data.flagInsLoop) {
         cpu_state.data.cs = instruction_state.data.oldcpu.data.cs;
         cpu_state.data.eip = instruction_state.data.oldcpu.data.eip;
     }
-    if (instruction_state.data.except)
-    {
-        fault_cpu = instruction_state.data.oldcpu;
-        if (instruction_state.data.except == VCPUINS_EXCEPT_SHUTDOWN) {
+    if (!instruction_state.data.except) return;
+    fault_cpu = context->instruction_task_switched ?
+        context->instruction_task_checkpoint : instruction_state.data.oldcpu;
+    active = instruction_state.data.except;
+    code = instruction_state.data.excode;
+    if (active == VCPUINS_EXCEPT_DB) fault_cpu.data.dr6 = cpu_state.data.dr6;
+    if (active == VCPUINS_EXCEPT_PF) fault_cpu.data.cr2 = cpu_state.data.cr2;
+
+    for (;;) {
+        if (active == VCPUINS_EXCEPT_SHUTDOWN) {
             cpu_state = fault_cpu;
+            instruction_state.data.except = active;
+            instruction_state.data.excode = code;
             if (context->diagnostic_provider != LIB_NULL &&
-                context->diagnostic_provider->record_delivered_exception != LIB_NULL) {
+                context->diagnostic_provider->record_delivered_exception != LIB_NULL)
                 core_machine_cpu_diagnostic_publish_snapshot(
                     context->diagnostic_provider->record_delivered_exception,
                     context->diagnostic_context, &fault_cpu, &instruction_state);
-            }
             core_machine_cpu_execution_request_shutdown(context);
-            core_machine_cpu_execution_request_stop(context);
-            if (context->instruction_in_progress)
-                context->instruction_fault_delivered = LIB_TRUE;
-            return;
-        }
-        if (instruction_state.data.except == VCPUINS_EXCEPT_DB) {
-            fault_cpu.data.dr6 = cpu_state.data.dr6;
-        }
-        if (X86_CPU_BIT_IS_SET(instruction_state.data.except, VCPUINS_EXCEPT_PF))
-        {
-            fault_cpu.data.cr2 = cpu_state.data.cr2;
-        }
-        exception_vector = 0u;
-        exception_deliverable = LIB_FALSE;
-        if (instruction_state.data.except == VCPUINS_EXCEPT_DE) {
-            exception_vector = 0x00u;
-            exception_deliverable = LIB_TRUE;
-        }
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_DB) {
-            exception_vector = 0x01u;
-            exception_deliverable = LIB_TRUE;
-        }
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_GP) {
-            exception_vector = 0x0du;
-            exception_deliverable = LIB_TRUE;
-        }
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_UD) {
-            exception_vector = 0x06u;
-            exception_deliverable = LIB_TRUE;
-        }
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_NM) {
-            exception_vector = 0x07u;
-            exception_deliverable = LIB_TRUE;
-        }
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_BR) {
-            exception_vector = 0x05u;
-            exception_deliverable = LIB_TRUE;
-        }
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_NP) {
-            exception_vector = 0x0bu;
-            exception_deliverable = LIB_TRUE;
-        }
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_SS &&
-            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286) {
-            exception_vector = 0x0cu;
-            exception_deliverable = LIB_TRUE;
-        }
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_TS &&
-            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286) {
-            exception_vector = 0x0au;
-            exception_deliverable = LIB_TRUE;
-        }
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_PF) {
-            exception_vector = 0x0eu;
-            exception_deliverable = LIB_TRUE;
-        }
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_MF) {
-            exception_vector = 0x10u;
-            exception_deliverable = LIB_TRUE;
-        }
-        if (X86_CPU_BIT_IS_SET(fault_cpu.data.cr0, VCPU_CR0_PE) &&
-            exception_deliverable) {
-            original_except = instruction_state.data.except;
-            original_excode = instruction_state.data.excode;
-            cpu_state = fault_cpu;
-            _e_except_n(context, exception_vector, _GetOperandSize);
-            if (!instruction_state.data.except) {
-                if (context->diagnostic_provider != LIB_NULL &&
-                    context->diagnostic_provider->record_delivered_exception !=
-                        LIB_NULL) {
-                    instruction_state.data.except = original_except;
-                    instruction_state.data.excode = original_excode;
-                    core_machine_cpu_diagnostic_publish_snapshot(
-                        context->diagnostic_provider->record_delivered_exception,
-                        context->diagnostic_context, &fault_cpu,
-                        &instruction_state);
-                    instruction_state.data.except = 0u;
-                }
-                _e_mark_instruction_fault_delivered(context);
-                return;
-            }
-            cpu_state = fault_cpu;
-            if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
-                _e_is_contributory_exception(original_except) &&
-                _e_is_contributory_exception(instruction_state.data.except)) {
-                instruction_state.data.except = VCPUINS_EXCEPT_DF;
-                instruction_state.data.excode = 0u;
-                _e_except_n(context, 0x08u, _GetOperandSize);
-                if (!instruction_state.data.except) {
-                    if (context->diagnostic_provider != LIB_NULL &&
-                        context->diagnostic_provider->record_delivered_exception !=
-                            LIB_NULL) {
-                        instruction_state.data.except = VCPUINS_EXCEPT_DF;
-                        instruction_state.data.excode = 0u;
-                        core_machine_cpu_diagnostic_publish_snapshot(
-                            context->diagnostic_provider->record_delivered_exception,
-                            context->diagnostic_context, &fault_cpu,
-                            &instruction_state);
-                        instruction_state.data.except = 0u;
-                    }
-                    _e_mark_instruction_fault_delivered(context);
-                    return;
-                }
-                /* The CPU enters shutdown. Platform reset policy consumes the
-                 * event without changing CPU exception production. */
-                core_machine_cpu_execution_request_shutdown(context);
-                cpu_state = fault_cpu;
-                instruction_state.data.except = VCPUINS_EXCEPT_DF;
-                instruction_state.data.excode = 0u;
-            }
-            else {
-                instruction_state.data.except = original_except;
-                instruction_state.data.excode = original_excode;
-            }
-        }
-
-        if (!X86_CPU_BIT_IS_SET(fault_cpu.data.cr0, VCPU_CR0_PE) &&
-            (instruction_state.data.except == VCPUINS_EXCEPT_DE ||
-             instruction_state.data.except == VCPUINS_EXCEPT_DB ||
-             instruction_state.data.except == VCPUINS_EXCEPT_PF ||
-             instruction_state.data.except == VCPUINS_EXCEPT_MF ||
-             instruction_state.data.except == VCPUINS_EXCEPT_UD) &&
-            _e_final_deliver_real_exception(context, &fault_cpu,
-                exception_vector)) {
             _e_mark_instruction_fault_delivered(context);
             return;
         }
-
-        if (!X86_CPU_BIT_IS_SET(fault_cpu.data.cr0, VCPU_CR0_PE) &&
-            X86_CPU_BIT_IS_SET(instruction_state.data.except, VCPUINS_EXCEPT_BR) &&
-            _e_final_deliver_real_exception(context, &fault_cpu, 0x05u)) {
-            _e_mark_instruction_fault_delivered(context);
-            return;
-        }
-
-        if (!X86_CPU_BIT_IS_SET(fault_cpu.data.cr0, VCPU_CR0_PE) &&
-            X86_CPU_BIT_IS_SET(instruction_state.data.except, VCPUINS_EXCEPT_NM) &&
-            _e_final_deliver_real_exception(context, &fault_cpu, 0x07u)) {
-            _e_mark_instruction_fault_delivered(context);
-            return;
-        }
-
-        if (!X86_CPU_BIT_IS_SET(fault_cpu.data.cr0, VCPU_CR0_PE) &&
-            (X86_CPU_BIT_IS_SET(instruction_state.data.except, VCPUINS_EXCEPT_GP) ||
-             (instruction_state.data.except == VCPUINS_EXCEPT_SS &&
-              context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286)) &&
-            _e_final_deliver_real_exception(context, &fault_cpu,
-                instruction_state.data.except == VCPUINS_EXCEPT_SS ? 0x0cu : 0x0du)) {
-            _e_mark_instruction_fault_delivered(context);
-            return;
-        }
-
-        if (context->diagnostic_provider != LIB_NULL &&
-            context->diagnostic_provider->record_fault != LIB_NULL)
-        {
-            core_machine_cpu_diagnostic_publish_snapshot(
-                context->diagnostic_provider->record_fault,
-                context->diagnostic_context, &fault_cpu, &instruction_state);
-        }
+        vector = _e_exception_vector(context, active);
+        if (vector == 0xffu) break;
         cpu_state = fault_cpu;
-        core_machine_cpu_execution_request_stop(context);
+        if (active == VCPUINS_EXCEPT_DE &&
+            context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80186)
+            cpu_state.data.eip = next_eip;
+        instruction_state.data.except = active;
+        instruction_state.data.excode = code;
+        /* Exceptions do not inherit the interrupted instruction's override.
+         * Protected entry selects its own gate/TSS width. */
+        _e_except_n(context, vector, 2u);
+        if (!instruction_state.data.except) {
+            instruction_state.data.except = active;
+            instruction_state.data.excode = code;
+            if (context->diagnostic_provider != LIB_NULL &&
+                context->diagnostic_provider->record_delivered_exception != LIB_NULL)
+                core_machine_cpu_diagnostic_publish_snapshot(
+                    context->diagnostic_provider->record_delivered_exception,
+                    context->diagnostic_context, &fault_cpu, &instruction_state);
+            instruction_state.data.except = 0u;
+            _e_mark_instruction_fault_delivered(context);
+            return;
+        }
+        secondary = instruction_state.data.except;
+        secondary_code = instruction_state.data.excode;
+        if (context->instruction_task_switched)
+            fault_cpu = context->instruction_task_checkpoint;
+        if (secondary == VCPUINS_EXCEPT_PF)
+            fault_cpu.data.cr2 = cpu_state.data.cr2;
+        if (secondary == VCPUINS_EXCEPT_SHUTDOWN) {
+            active = secondary;
+            code = secondary_code;
+            continue;
+        }
+        /* A failed provider is not an architectural second exception. */
+        if (_e_exception_vector(context, secondary) == 0xffu) {
+            active = secondary;
+            code = secondary_code;
+            break;
+        }
+        if (active == VCPUINS_EXCEPT_DF) {
+            active = VCPUINS_EXCEPT_SHUTDOWN;
+            code = 0u;
+            continue;
+        }
+        if (cpu_exception_requires_double_fault(context->cpu_profile, active, secondary)) {
+            active = VCPUINS_EXCEPT_DF;
+            code = 0u;
+        } else {
+            active = secondary;
+            code = secondary_code;
+        }
     }
+    cpu_state = fault_cpu;
+    instruction_state.data.except = active;
+    instruction_state.data.excode = code;
+    if (context->diagnostic_provider != LIB_NULL &&
+        context->diagnostic_provider->record_fault != LIB_NULL)
+        core_machine_cpu_diagnostic_publish_snapshot(
+            context->diagnostic_provider->record_fault,
+            context->diagnostic_context, &fault_cpu, &instruction_state);
+    core_machine_cpu_execution_request_stop(context);
 }
 static void ExecIns(core_machine_cpu_execution_context *context)
 {
@@ -19295,6 +19226,8 @@ void core_machine_cpu_execution_reset(
     context->nmi_in_service = LIB_FALSE;
     context->nmi_masked = LIB_FALSE;
     context->nmi_pending = LIB_FALSE;
+    context->shutdown_state = CPU_SHUTDOWN_NONE;
+    context->shutdown_requested = LIB_FALSE;
     context->debug_trap_cause = 0u;
     context->instruction_in_progress = LIB_FALSE;
     context->instruction_fault_delivered = LIB_FALSE;
@@ -19303,6 +19236,33 @@ void core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context)
 {
     context->instruction_fault_delivered = LIB_FALSE;
+    if (core_machine_cpu_is_shutdown(context)) {
+        /* Shutdown admits NMI, not instructions, INTR or pending debug traps. */
+        if (context->shutdown_state == CPU_SHUTDOWN_RESET_ONLY ||
+            context->nmi_masked || context->nmi_in_service || !context->nmi_pending)
+            return;
+        context->nmi_pending = LIB_FALSE;
+        ExecInit(context);
+        _e_intr_n(context, 0x02u, 2u, LIB_TRUE);
+        if (!instruction_state.data.except) {
+            context->shutdown_state = CPU_SHUTDOWN_NONE;
+            context->shutdown_requested = LIB_FALSE;
+            context->nmi_in_service = LIB_TRUE;
+            cpu_state.data.flagHalt = LIB_FALSE;
+            /* Entry alone is not a retired instruction; Core starts the NMI
+             * handler in the next execution round through this existing outcome. */
+            context->instruction_fault_delivered = LIB_TRUE;
+        } else if (_e_exception_vector(context, instruction_state.data.except) == 0xffu &&
+            instruction_state.data.except != VCPUINS_EXCEPT_SHUTDOWN) {
+            ExecFinal(context);
+        } else {
+            /* The 286 requires RESET after unsuccessful shutdown-NMI service. */
+            if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286)
+                context->shutdown_state = CPU_SHUTDOWN_RESET_ONLY;
+            instruction_state.data.except = 0u;
+        }
+        return;
+    }
     if (!cpu_state.data.flagHalt)
     {
         context->debug_segment_shadow_before =

@@ -196,8 +196,6 @@ static lib_i32 pusha_popa_test_reject_case(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cpu_instruction_fixture state;
-    t_cpu before;
-    t_cpu after;
     static const lib_u8 image[32] = {
         0xa5u, 0xb6u, 0xc7u, 0xd8u, 0xe9u, 0xfau, 0x0bu, 0x1cu,
         0x2du, 0x3eu, 0x4fu, 0x50u, 0x61u, 0x72u, 0x83u, 0x94u,
@@ -211,20 +209,15 @@ static lib_i32 pusha_popa_test_reject_case(core_machine_cpu_profile profile,
     if (!failed)
     {
         pusha_popa_seed(&state);
-        failed |= cpu_instruction_write(&state, 0x7fe0u, image, sizeof(image),
+        failed |= cpu_instruction_write(&state, 0x7000u, image, sizeof(image),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
-
-            cpu_instruction_write(&state, 0x8000u, image, sizeof(image),
+            cpu_instruction_write(&state, 0x9000u, image, sizeof(image),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
-        state.cpu.data.idtr.limit = 0x17u;
-        before = state.cpu;
-        failed |= cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-            !X86_CPU_BIT_IS_SET(state.fault.exception_mask,
-            VCPUINS_EXCEPT_UD) || !pusha_popa_cpu_same(&before, &after) ||
-            cpu_instruction_read(&state, 0x7fe0u, &observed, sizeof(observed),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+        failed |= !cpu_instruction_expect_real_fault(&state, code, bytes, 6u) ||
+            cpu_instruction_read(&state, 0x7000u, &observed, sizeof(observed),
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
             lib_memory_compare(observed, image, sizeof(image)) != 0 ||
-            cpu_instruction_read(&state, 0x8000u, &observed, sizeof(observed),
+            cpu_instruction_read(&state, 0x9000u, &observed, sizeof(observed),
                 CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
             lib_memory_compare(observed, image, sizeof(image)) != 0;
     }
@@ -338,10 +331,11 @@ static lib_i32 pusha_popa_test_protected_pusha_limit(void)
         before = state.cpu;
         state.cpu.data.eip = 0u;
         core_machine_cpu_execution_refresh(&state.execution);
-        failed |= !state.execution.stop_requested;
+        failed |= !core_machine_cpu_is_shutdown(&state.execution) ||
+            state.execution.stop_requested;
         after = state.cpu;
-        failed |= !state.fault.valid || !X86_CPU_BIT_IS_SET(
-            state.fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+        failed |= state.fault.valid || !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
             after.data.eip != 0u || after.data.eax != before.data.eax ||
             after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
             after.data.ebx != before.data.ebx || after.data.ebp != before.data.ebp ||
@@ -386,10 +380,11 @@ static lib_i32 pusha_popa_test_protected_popa_limit(void)
         before = state.cpu;
         state.cpu.data.eip = 0u;
         core_machine_cpu_execution_refresh(&state.execution);
-        failed |= !state.execution.stop_requested;
+        failed |= !core_machine_cpu_is_shutdown(&state.execution) ||
+            state.execution.stop_requested;
         after = state.cpu;
-        failed |= !state.fault.valid || !X86_CPU_BIT_IS_SET(
-            state.fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+        failed |= state.fault.valid || !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
             after.data.eip != 0u || after.data.eax != before.data.eax ||
             after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
             after.data.ebx != before.data.ebx || after.data.esp != before.data.esp ||
@@ -554,8 +549,8 @@ static lib_bool pusha_popa_test_initial_sp(void)
         if (!state.delivered_exception.valid ||
             state.delivered_exception.exception_mask != (shutdown ?
                 VCPUINS_EXCEPT_SHUTDOWN : VCPUINS_EXCEPT_GP) ||
-            (state.execution.shutdown_requested != 0u) != shutdown ||
-            (state.execution.stop_requested != 0u) != shutdown ||
+            core_machine_cpu_is_shutdown(&state.execution) != shutdown ||
+            (shutdown && state.execution.stop_requested) ||
             after.data.eax != 0xa1a23344u || after.data.ecx != 0xb1b25566u ||
             (!shutdown && after.data.eip != 0x200u)) {
             lib_c_printf("PUSHA initial profile=%u sp=%u delivered=%x shutdown=%u stop=%u\n",

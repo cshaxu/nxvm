@@ -11,9 +11,6 @@ static lib_i32 legacy_sreg_stack_test_lock(void)
     {
         cpu_instruction_fixture state;
 
-        t_cpu before;
-        t_cpu after;
-        lib_status status;
         lib_u8 code[] = {0xf0u, opcodes[index]};
         lib_u32 sentinel = 0xdeadbeefu;
         lib_u32 observed = 0u;
@@ -24,17 +21,10 @@ static lib_i32 legacy_sreg_stack_test_lock(void)
         if (!failed)
         {
             state.cpu.data.esp = 0x12348000u;
-            failed |= cpu_instruction_write(&state, 0x7ffcu, &sentinel, sizeof(sentinel), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
-            state.cpu.data.idtr.limit = 0x17u;
-            before = state.cpu;
-            failed |= cpu_instruction_write(&state, 0u, code, sizeof(code), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
-                LIB_STATUS_OK;
-            status = (core_machine_cpu_execution_refresh(&state.execution), state.execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK);
-            after = state.cpu;
-            failed |= status != LIB_STATUS_INTERNAL_ERROR || !state.execution.stop_requested || !state.fault.valid ||
-                !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-                lib_memory_compare(&before, &after, sizeof(before)) != 0 ||
-                cpu_instruction_read(&state, 0x7ffcu, &observed, sizeof(observed), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+            failed |= cpu_instruction_write(&state, 0x7000u, &sentinel,
+                sizeof(sentinel), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                !cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u) ||
+                cpu_instruction_read(&state, 0x7000u, &observed, sizeof(observed), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
                 LIB_STATUS_OK || observed != sentinel;
         }
 
@@ -70,6 +60,16 @@ static lib_i32 legacy_sreg_stack_sregs_same(const t_cpu *before, const t_cpu *af
         sizeof(before->data.fs)) == 0 &&
         lib_memory_compare(&before->data.gs, &after->data.gs,
         sizeof(before->data.gs)) == 0;
+}
+
+static lib_i32 legacy_sreg_stack_shutdown(
+    const cpu_instruction_fixture *state)
+{
+    return core_machine_cpu_is_shutdown(&state->execution) &&
+        !state->execution.stop_requested && !state->fault.valid &&
+        state->delivered_exception.valid &&
+        state->delivered_exception.exception_mask == VCPUINS_EXCEPT_SHUTDOWN &&
+        state->delivered_exception.exception_code == 0u;
 }
 
 static const t_cpu_data_sreg *legacy_sreg_stack_target(const t_cpu *cpu,
@@ -313,9 +313,6 @@ static lib_i32 legacy_sreg_stack_test_attributes(void)
             {
                 cpu_instruction_fixture state;
 
-                t_cpu before;
-                t_cpu after;
-                lib_status status;
                 lib_u8 opcode = form < sizeof(push_ops) ? push_ops[form] :
                     pop_ops[form - sizeof(push_ops)];
                 lib_u8 code[] = {prefixes[attribute][0], opcode, 0u};
@@ -330,14 +327,8 @@ static lib_i32 legacy_sreg_stack_test_attributes(void)
                         code[1] = prefixes[attribute][1];
                         code[2] = opcode;
                     }
-                    state.cpu.data.idtr.limit = 0x17u;
-                    before = state.cpu;
-                    failed |= cpu_instruction_write(&state, 0u, code, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
-                    status = (core_machine_cpu_execution_refresh(&state.execution), state.execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK);
-                    after = state.cpu;
-                    failed |= status != LIB_STATUS_INTERNAL_ERROR ||
-                        !state.fault.valid || !(state.fault.exception_mask & VCPUINS_EXCEPT_UD) ||
-                        lib_memory_compare(&before, &after, sizeof(before)) != 0;
+                    failed |= !cpu_instruction_expect_real_fault(&state, code,
+                        bytes, 6u);
                 }
 
                 if (failed)
@@ -469,8 +460,7 @@ static lib_i32 legacy_sreg_stack_test_protected_ss_null(void)
         state.cpu.data.eip = 0u;
         status=(core_machine_cpu_execution_refresh(&state.execution), state.execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK);
         after=state.cpu;
-        failed|=status!=LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-            !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) || after.data.eip!=0u ||
+        failed|=status!=LIB_STATUS_OK || !legacy_sreg_stack_shutdown(&state) || after.data.eip!=0u ||
             after.data.esp!=before.data.esp || after.data.eflags!=before.data.eflags ||
             !legacy_sreg_stack_gprs_same_except_esp(&before, &after) ||
             !legacy_sreg_stack_sregs_same(&before, &after);
@@ -497,8 +487,7 @@ static lib_i32 legacy_sreg_stack_test_protected_rejects(void)
             state.cpu.data.eip = 0u;
             status=(core_machine_cpu_execution_refresh(&state.execution), state.execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK);
             after=state.cpu;
-            failed|=status!=LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-                !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) || after.data.eip!=0u ||
+            failed|=status!=LIB_STATUS_OK || !legacy_sreg_stack_shutdown(&state) || after.data.eip!=0u ||
                 after.data.esp!=before.data.esp || after.data.eax!=before.data.eax || after.data.ecx!=before.data.ecx ||
                 after.data.edx!=before.data.edx || after.data.ebx!=before.data.ebx || after.data.ebp!=before.data.ebp ||
                 after.data.esi!=before.data.esi || after.data.edi!=before.data.edi || after.data.eflags!=before.data.eflags ||
@@ -529,8 +518,7 @@ static lib_i32 legacy_sreg_stack_test_protected_stack_limits(void)
             state.cpu.data.eip = 0u;
             status=(core_machine_cpu_execution_refresh(&state.execution), state.execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK);
             after=state.cpu;
-            failed|=status!=LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-                !(state.fault.exception_mask & VCPUINS_EXCEPT_DF) ||
+            failed|=status!=LIB_STATUS_OK || !legacy_sreg_stack_shutdown(&state) ||
                 after.data.eip!=0u || after.data.esp!=before.data.esp ||
                 after.data.eflags!=before.data.eflags || lib_memory_compare(&before.data.es,&after.data.es,sizeof(before.data.es))!=0 ||
                 !legacy_sreg_stack_gprs_same_except_esp(&before, &after) ||

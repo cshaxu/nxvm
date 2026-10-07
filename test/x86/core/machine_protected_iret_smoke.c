@@ -110,15 +110,8 @@ static lib_i32 iret_prepare(iret_machine *state, iret_negative negative,
         snapshot.eip == 0u;
 }
 
-static lib_i32 iret_fault_is(const core_machine_cpu_diagnostic *diagnostic,
-    lib_u32 mask, lib_u32 code)
-{
-    return diagnostic->first_fault.valid && CORE_MACHINE_BIT_IS_SET(
-        diagnostic->first_fault.exception_mask, mask) &&
-        diagnostic->first_fault.exception_code == code;
-}
-
-static lib_i32 iret_run(iret_machine *state, lib_i32 expect_fault, core_machine_debug_cpu_snapshot *after,
+static lib_i32 iret_run(iret_machine *state, lib_i32 expect_shutdown,
+    core_machine_debug_cpu_snapshot *after,
     core_machine_cpu_diagnostic *diagnostic)
 {
     const core_machine_run_budget budget = {16u, 0u};
@@ -128,9 +121,10 @@ static lib_i32 iret_run(iret_machine *state, lib_i32 expect_fault, core_machine_
     if (core_machine_get_cpu_diagnostic(state->machine, diagnostic) !=
         LIB_STATUS_OK) return 0;
     *after = iret_capture(state->machine);
-    return status == (expect_fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) &&
-        result.reason == (expect_fault ? CORE_MACHINE_STOP_FAULT :
-            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
+    return expect_shutdown ? status == LIB_STATUS_OK &&
+        result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
+        result.detail == VCPUINS_EXCEPT_SHUTDOWN : status == LIB_STATUS_OK &&
+        result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
 static lib_i32 iret_test_success(lib_u8 prefix, lib_i32 operand16,
@@ -161,8 +155,7 @@ static lib_i32 iret_test_success(lib_u8 prefix, lib_i32 operand16,
     return !failed;
 }
 
-static lib_i32 iret_test_failure(iret_negative negative, lib_u32 mask,
-    lib_u32 code)
+static lib_i32 iret_test_failure(iret_negative negative)
 {
     iret_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -182,7 +175,9 @@ static lib_i32 iret_test_failure(iret_negative negative, lib_u32 mask,
             core_machine_memory_inspect(state.machine,
                 IRET_CODE_ACCESS, (void *)CORE_MACHINE_REFERENCE_OF(access_before), 1u) != LIB_STATUS_OK ||
             !iret_run(&state, 1, &after, &diagnostic) ||
-            !iret_fault_is(&diagnostic, mask, code) ||
+            diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_SHUTDOWN) ||
             core_machine_memory_inspect(state.machine,
                 IRET_CODE_ACCESS, (void *)CORE_MACHINE_REFERENCE_OF(access_after), 1u) != LIB_STATUS_OK ||
             after.eip != before.eip || after.esp != before.esp ||
@@ -227,11 +222,11 @@ lib_i32 main(void)
         !iret_test_success(0x67u, 0, 0, 0) || !iret_test_success(0x66u, 1, 1, 0) ||
         !iret_test_success(0u, 0, 0, 1) ||
         !iret_test_user_flags() ||
-        !iret_test_failure(IRET_NEGATIVE_NONPRESENT, VCPUINS_EXCEPT_DF, 0u) ||
-        !iret_test_failure(IRET_NEGATIVE_LIMIT, VCPUINS_EXCEPT_DF, 0u) ||
-        !iret_test_failure(IRET_NEGATIVE_CODE_TYPE, VCPUINS_EXCEPT_DF, 0u) ||
-        !iret_test_failure(IRET_NEGATIVE_CODE_DPL, VCPUINS_EXCEPT_DF, 0u) ||
-        !iret_test_failure(IRET_NEGATIVE_STACK_LIMIT, VCPUINS_EXCEPT_DF, 0u)) return 1;
+        !iret_test_failure(IRET_NEGATIVE_NONPRESENT) ||
+        !iret_test_failure(IRET_NEGATIVE_LIMIT) ||
+        !iret_test_failure(IRET_NEGATIVE_CODE_TYPE) ||
+        !iret_test_failure(IRET_NEGATIVE_CODE_DPL) ||
+        !iret_test_failure(IRET_NEGATIVE_STACK_LIMIT)) return 1;
     lib_c_printf("M5:T306:S2:SAME-CPL-IRET:OK\n");
     lib_c_printf("M5:T539:S65:PROTECTED-IRET:OK\n");
     return 0;

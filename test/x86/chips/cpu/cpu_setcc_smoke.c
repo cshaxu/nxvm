@@ -114,18 +114,11 @@ static lib_i32 setcc_test_pre_fault_nonpublication(void)
     static const lib_u8 ud_code[] = {0x0fu, 0x94u, 0xc0u};
     const lib_u32 flags = VCPU_EFLAGS_ZF | VCPU_EFLAGS_OF;
     cpu_instruction_fixture state;
-    t_cpu after;
 
     cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
     state.cpu.data.eax = 0x556677a5u;
     state.cpu.data.eflags = flags;
-    state.cpu.data.idtr.limit = 0x17u;
-    if (cpu_instruction_run(&state, ud_code, sizeof(ud_code), &after) !=
-            LIB_STATUS_INTERNAL_ERROR || !state.fault.valid ||
-        !X86_CPU_BIT_IS_SET(state.fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-        after.data.eax != 0x556677a5u || after.data.eflags != flags ||
-        after.data.eip != 0u) return 0;
-    return 1;
+    return cpu_instruction_expect_real_fault(&state, ud_code, sizeof(ud_code), 6u);
 }
 
 lib_i32 main(void)
