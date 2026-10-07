@@ -9,30 +9,34 @@
 | T545 | Closed after S7 actual-change acceptance: fixed eight-corpus import, preserved receivers, four owner-local test packages and full receiving qualification. No active S packet. |
 | T546 S4 | Accepted after coordinator actual-change review of pushed Shared P1 2d9929742 and NXVM P2 ca016635d: complete source/caller/receiver proof, 537/537 units per width, original 58/58 external contexts and eight qualified 0546 PC artifacts. S4 closed; no active S packet. |
 | T546 S5 | Accepted after coordinator actual-change review of pushed Shared P1 bdfe3b938 and NXVM P2 04f0278ad: full host/count/reference batch, final 539/539 units per width, original 58/58 integration and eight qualified 0546 products are proven. S5 closed; no active packet. T546 remains open for S6-S19. |
-| T546 S6 | Accepted after coordinator actual-change review of pushed Shared P1 1db282a10 and NXVM P2 19945b2b9: complete ordinary-stack/source/caller proof, final units 541/541 per width, original integration 58/58 once, supplemental 33/33 per width, both gates/eight manifests and eight qualified stripped 0546 products. S6 is closed with no active packet; T546 remains open for S7-S20. |
-| T546 S7 | Executor efficiency verification complete against accepted S6 741d00417: 36 duplicate aliases retired, 505 unique unit commands/assertions and 334 target identities retained. No-op builds 1.37/1.05 s; cached CPU-object recovery plus 378 unit-dependency steps 109.47/52.57 s, exact S6 object bytes. Final units pass 505/505 once per width, 250.11/233.17 s; no single-suite runtime speedup claimed. Eight manifests/Types/docs, registration/negative/cleanup and affected build/artifact/INI gates pass. Runtime inputs and ten EXEs unchanged; accepted S6 integration command/input proof retained. Target-separated P delivery and coordinator review remain pending. |
+| T546 S6 | Accepted after coordinator actual-change review of pushed Shared P1 1db282a10 and NXVM P2 19945b2b9: complete ordinary-stack/source/caller proof, final units 541/541 per width, original integration 58/58 once, supplemental 33/33 per width, both gates/eight manifests and eight qualified stripped 0546 products. S6 is closed with no active packet; T546 remains open for S8-S20. |
+| T546 S7 | Accepted after coordinator actual-diff review of pushed Shared P1 0c04f2c24 and NXVM P2 0f86b1ce0: 36 duplicate aliases retired without removed assertions, 505/505 final units per width, dependency/cache and affected gate proof complete. No-op builds 1.37/1.05 s; cached CPU unit-dependency recovery 109.47/52.57 s. Unchanged binaries/inputs retain S6 integration proof. S7 closed; no active packet. T546 remains open for S8-S20. |
 | T546 S8 | Former uncommitted FLAGS S7 is owner-deferred intact: original source/caller evidence and intentionally failing POPF/RF/TF matrices are preserved for restoration on admission. No production repair or P. Later original S8-S19 shift to S9-S20. |
 
-## Active T546 S7 Packet
+## Accepted S7 Build And Verification Efficiency
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T546 S7 after accepted S6. Owner explicitly replaces the uncommitted FLAGS S7 with efficiency S7; FLAGS moves to S8 and former S8-S19 to S9-S20. No S7 P exists; accepted identifiers and commits are unchanged. |
-| Admission And Approval | Owner requests on 2026-10-06 build/test efficiency, removal of ineffective tests, cache reuse and appropriate temporary/focused/unit/integration execution. NXVM orchestration/build/test declarations and Shared test/build mechanics are admitted; Lib/Common/MyNES production, new product behavior, INIs/media and CPU repair are excluded. |
-| Objective | Shorten the CPU repair feedback and final verification cycle by removing redundant work, with the same source validity, assertion coverage and receiving-product proof. |
-| Non-goals | CPU FLAGS repair, weaker timing/functional oracles, reduced valid integration corpus, speculative parallelism over shared outputs, new test framework, Lib/Common/MyNES production change or shared rules edit. |
-| Reference Baseline | Accepted S6 741d00417; 541 units per width, 58 original external contexts, eight qualified 0546 PC products. Deferred FLAGS tests are saved separately and do not alter this baseline. |
-| Candidate Proposal | [CPU repair](../proposals/m5-cpu-audit-gap-repair.md), inserted S7; [efficiency evidence](../etc/evidence/t546-s7-build-test-efficiency.md). Deferred [FLAGS S8](../etc/evidence/t546-s8-flags-return-design.md) remains a complete subsequent batch. |
-| Files And ABI Surface | NXVM build/test orchestration tools and cmake/nxvm registration, Shared root build presets, necessary owned test/build declarations and manifests only with assertion/owner proof; NXVM task records. No public runtime API or executable input change is planned. |
-| Applicable Rules | Unique dependency/build/output ownership; valid incremental cache keyed by toolchain/flags/source; source-owner unit coverage; temporary probes and focused choices are transient. No script-only success, deleted assertions, relaxed deadline, mixed-target commit or unrelated App rebuild. |
-| Verification | Inspect generated dependency graph, final S6 costs and actual current routes. Measure no-op and representative incremental build plus complete unit baseline on both widths. Verify discovered/removal predicates and independent owners, applicable gates/manifests/Types/docs and bounded-process failure propagation. Run full required units once on final efficiency code; integration only if its mechanics or executable inputs change, otherwise retain accepted unchanged input/artifact evidence. |
-| Expected Markers | No repeated archive compilation across valid caches; parallel independent links or native graph scheduling with no overlapping writer; focused runs never masquerade as full units; preserved unit/integration inventories and faster measured feedback. |
-| Asset Needs | Existing ignored build caches and code-owned tests; retain original external masters and qualified artifacts unchanged. Save deferred S8 patches and hashes before restoring accepted test baseline. |
-| Reporting Requirements | Report measured bottlenecks, invalid/duplicate-test dispositions, cache validity and retained assertions; show actual before/after commands/times, code delta and any excluded dependency. No unsupported percentage claim. |
-| Stop Conditions | Required shared production/API/rule/asset change, coverage loss or unsafe parallel output needs owner direction. A cache miss or failing retained test is not waived or counted as a pass. |
-| Exit Criteria | Actual implementation/diff review and measured efficiency proof with full required final verification, target-separated pushed Ps and coordinator acceptance. Restore deferred S8 only through its subsequent admission. |
-| Original Owner Request | Insert efficiency S7 before CPU FLAGS work; remove ineffective tests, fully exploit precompiled caches, regulate temporary/focused/unit/integration tests and avoid repeatedly running full suites at inappropriate stages. |
-| Similar-Issue Sweep | All current PC build-cache consumers, archive/link/deploy recipes, test registrations/labels/fixtures, repeated static negatives and aggregation tools; map every duplicate or obsolete hit to retained coverage before removal. |
+Coordinator actual-change review accepts Shared `0c04f2c24` and NXVM
+`0f86b1ce0` against the owner-directed insertion and
+[complete efficiency evidence](../etc/evidence/t546-s7-build-test-efficiency.md).
+One native graph and compiler cache replace repeated serial leaf scheduling;
+one dependency-only unit build separates compilation from execution. Thirty-six
+duplicate product aliases are removed, preserving all canonical bodies and
+334 target identities. Positive/negative registration and timeout/tree cleanup,
+affected build/artifact/INI gates, eight manifests, Types and docs pass.
+
+Both final complete unit executions pass 505/505 once, 250.11/233.17 seconds,
+without relaxing 300-second containment. Full-suite runtime is not claimed
+faster; measured build/configuration and avoided-work savings are in evidence.
+Exact S6 CPU objects, ten EXEs, four INIs and five masters are unchanged.
+The qualified integration command is unchanged; its accepted S6 58/58 proof
+is retained rather than repeated. No runtime source/API or Shared corpus body
+changes. Counted build/tool code is +56/-20, net +36.
+
+S7 is accepted and closed with no active packet. The owner moved former
+uncommitted FLAGS S7 to deferred S8 and former S8-S19 to S9-S20.
+Exact local reproducer patches/hashes, research and warm caches are retained
+for that next admission. T546's complete CPU repair remains open; source and
+runnable CPU/artifact baseline remain accepted S6, not a new CPU qualification.
 
 ## Accepted S6 Stack And Frame Publication
 
@@ -52,7 +56,8 @@ and eight stripped 0546 artifact checks. Production net +19; ten code/test/build
 paths net +826 supply the missing direct matrices and guards. INIs, five masters,
 Lib/Common and MyNES are unchanged; unrelated MyNES documentation is preserved.
 
-S6 remains accepted and closed; S7's active packet is above. T546 remains open for S7-S20;
+S6 remains accepted and closed; subsequent efficiency S7 acceptance is above.
+T546 remains open for S8-S20;
 full FLAGS/arbiter/gate/task/page/delivery/NPX/retirement and remaining source
  timing contracts retain their original receivers.
 
@@ -75,7 +80,7 @@ missing independent 2,004-context matrix proof and two guard registrations.
 Owner INIs, five media masters, Lib/Common and exact MyNES EXEs are unchanged.
 
 S5 remains accepted and closed; subsequent S6 acceptance is recorded above.
-T546 remains open for S7-S20. Complete fault/task/paging/delivery/NPX/retirement and
+T546 remains open for S8-S20. Complete fault/task/paging/delivery/NPX/retirement and
 remaining timing/source conflicts retain their original receivers.
 
 ## Accepted S4 Admission Versus Next Fetch
@@ -127,7 +132,7 @@ and eight verified optimized stripped 0546 PC artifacts. INIs, external masters
 and the exact MyNES pair are unchanged. No public API or parallel owner is added;
 production net +1 line. The Model40 conversion is L2, not physical L3.
 
-S1-S6 are closed; T546 remains open for S7-S20. The owner-authorized
+S1-S6 are closed; T546 remains open for S8-S20. The owner-authorized
 automatic boundary remains unchanged for the next admission. S1's
 accepted reset/image proof remains in the [task history](../history/M5-T546-cpu-audit-gap-repair.md).
 
@@ -193,7 +198,7 @@ this governance acceptance adds no executable input.
 ## Next Work And Qualification Boundary
 
 The owner-requested CPU instruction/function/timing repair remains open as
-T546 after accepted S6, with S7-S20 mechanism/proof batches and final
+T546 after accepted S6, with S8-S20 mechanism/proof batches and final
 qualification pending. Remaining candidates stay in [Queue](QUEUE.md). Concrete
 Shared changes follow the automatic-approval boundary recorded in the
 [proposal](../proposals/m5-cpu-audit-gap-repair.md).

@@ -204,3 +204,28 @@ Shared P1 0c04f2c24 is pushed to origin/master, changing only root build presets
 NXVM's following delivery contains its existing build/test owner changes and
 complete source/input/verification/reallocation evidence. No product executable
 input changes in either target; verified S6 binaries remain the current delivery.
+
+## Coordinator Actual-Change Acceptance
+
+After switching roles, inspect immutable Shared 0c04f2c24 and NXVM 0f86b1ce0,
+including their actual build/tool changes, complete evidence, Current/proposal/
+ledger reallocation and deferred FLAGS source record. Root presets are the sole
+Shared P surface; NXVM's P contains only its permitted paths. Actual src/test/
+assets diff against accepted S6 is empty. MyNES's unrelated documents are neither
+staged nor altered. No immutable S/commit is rewritten by the explicitly approved
+uncommitted-S reallocation.
+
+The original efficiency request is satisfied by direct before/after configuration,
+native no-op/cache-recovery measures, exact object identity, removed duplicate
+registrations with unchanged assertions, complete final units and applicable
+positive/negative/failure gates. Do not infer a full-unit execution speedup or
+CPU semantic/timing correctness. Unchanged actual integration invocation/input
+and artifact identities justify retaining S6 external proof; no gate or failing
+test is waived. Source/ownership, target separation, dependency validity,
+packet/identifier/link and code-size review pass.
+
+Accept and close S7 through the pure governance P. Keep the deferred S8 test
+patches, original research and validated warm caches; the temporary copied
+registration-negative fixture is disposable after this review. Full original
+CPU repair remains pending in S8-S20; this acceptance creates no new runtime
+baseline or next active packet.
