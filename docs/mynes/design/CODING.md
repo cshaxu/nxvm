@@ -80,7 +80,7 @@ Machine is an ownership concept and file prefix here, not a subdirectory.
 
 | Files | Sole responsibility / introduction |
 | --- | --- |
-| driver_interface.h, driver.h, driver.c | Opaque core_driver, Common driver construction, callbacks and signal latches; M2. |
+| driver_interface.h, driver.h, driver.c | Opaque core_driver, Common construction/callbacks, signal latches, input, frame adaptation, audio delivery and pacing; M2-M4. |
 | media.c | Existing removable-media callback, bounded Lib file read, candidate construction and commit; M2. |
 | debug_interface.h, debug.c | Pointer-free protocol values and executor-side NES request dispatch; M2. |
 | machine_interface.h, machine.h, machine.c | Opaque deterministic hardware, private assembly, reset and bounded execution; M2. |
@@ -90,12 +90,11 @@ Machine is an ownership concept and file prefix here, not a subdirectory.
 | cartridge.h, cartridge.c | Pure ROM parsing, PRG/CHR ownership and mapper logic; M2. |
 | clock.h, clock.c | Guest clock/device scheduling as real device consumers arrive; M3/M4. |
 | ppu.h, ppu.c, controller.h, controller.c | Guest graphics and controller devices; M3. |
-| input.c, display.c | Driver key-to-button mapping and frame output/ASCII conversion; M3. |
 | apu.h, apu.c | Guest audio device; M4. |
-| audio.c, pacing.c | NES sample conversion/stream submission and guest-to-host speed policy using Lib; M4. |
 
 The table records responsibilities and their introduction milestones, not pending
-implementation. Display and input now have their own files. driver.h is private to the integration files;
+implementation. Input, frame conversion, audio adaptation and pacing currently
+remain cohesive in driver.c; no placeholder split is implied. driver.h is private to the integration files;
 hardware never includes it or Common. Private device headers remain device-owned.
 There is no core/host, separate Core debug directory or extra core_interface.h
 facade. Composition includes driver_interface.h; App debug includes only the

@@ -47,3 +47,14 @@ For the full independent-entry proof on an architecture, run
 It selects the matching environment compiler, builds all four entries in
 separate ignored directories, verifies pointer width and C11 flags, and executes
 both standalone suites serially with JUnit results. It restores its process PATH.
+
+Performance probes are explicit diagnostics, not timing assertions in CTest.
+Build `mynes-performance-probe` in an optimized MyNES-only cache, then run
+`Measure-Performance.ps1 -BuildDirectory build/mynes-gcc-x64-release
+-AssetDirectory ../nxvm-assets/roms-mynes -OutputDirectory build/performance`.
+Use the matching x86 cache for that width. `-ProcessorIndex` selects one allowed
+logical CPU (default zero); the probe inherits that affinity before execution
+and the tool restores its own original affinity. `-ProbeExecutable` can select
+a pre-change reference retained beneath ignored `build/`. Both variants must
+use the same input, compiler, flags, processor and workload. Report conversion
+separately from Core cost; these unpaced measures do not describe displayed FPS.

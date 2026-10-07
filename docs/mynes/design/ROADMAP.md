@@ -119,3 +119,20 @@ never a product-local patch. Transfers to or from another repository pin a
 reviewed committed revision. Each milestone must name
 measurable coverage and verification
 when admitted; later milestones remain goals/dependencies/exits until then.
+
+## M7: Measured Emulator Efficiency
+
+Owner admits this post-M6 boundary on 2026-10-06. Improve measured Windows
+execution and graphics/text publication cost for the retained NES support set,
+without lowering hardware timing, output, audio, mapper, control or snapshot
+correctness. Establish a paired optimized x64/x86 baseline before selecting
+computational/cache changes. Nesticle is a historical design reference, not a
+hardware oracle or licensed source import. Shared production and sibling
+products remain excluded unless separately admitted.
+
+Exit: fixed workload/input/build identities, complete-frame and phase measures,
+repeatable accepted gains or evidence-backed candidate rejection, unchanged
+guest/output proof, complete required units/integration and current paired
+artifacts agree. Coalesced host frames or skipped emulation cannot count as
+speedups. Current owns task/S admission; this milestone creates no universal
+or Nesticle-equivalent performance claim.

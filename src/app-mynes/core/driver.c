@@ -572,6 +572,7 @@ lib_status core_driver_copy_frame(void *context, common_machine_frame *out_frame
     core_driver *driver = context;
     lib_u32 index;
     lib_u32 palette_count;
+    lib_u16 sample_palette[512];
     lib_bool cube;
 
     if (driver == LIB_NULL || out_frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -640,10 +641,17 @@ lib_status core_driver_copy_frame(void *context, common_machine_frame *out_frame
     lib_memory_set(out_frame->window.image.palette, 0,
         sizeof(out_frame->window.image.palette));
     palette_count = 0u;
+    lib_memory_set(sample_palette, 0xff, sizeof(sample_palette));
     cube = LIB_FALSE;
     for (index = 0u; index < CORE_PPU_WIDTH * CORE_PPU_HEIGHT; ++index) {
-        lib_u32 rgb = core_driver_rgb(driver->machine->ppu.completed[index]);
+        lib_u16 sample = driver->machine->ppu.completed[index] & 0x1ffu;
+        lib_u32 rgb;
         lib_u32 candidate;
+        if (sample_palette[sample] != 0xffffu) {
+            out_frame->window.image.pixels[index] = (lib_u8)sample_palette[sample];
+            continue;
+        }
+        rgb = core_driver_rgb(sample);
         for (candidate = 0u; candidate < palette_count; ++candidate)
             if (out_frame->window.image.palette[candidate] == rgb) break;
         if (candidate == palette_count) {
@@ -654,6 +662,7 @@ lib_status core_driver_copy_frame(void *context, common_machine_frame *out_frame
             out_frame->window.image.palette[palette_count++] = rgb;
         }
         out_frame->window.image.pixels[index] = (lib_u8)candidate;
+        sample_palette[sample] = (lib_u16)candidate;
     }
     if (cube) for (index = 0u; index < KVM_WINDOW_GRAPHICS_PALETTE_ENTRIES; ++index) {
         lib_u32 red = index / 36u;

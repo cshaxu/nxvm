@@ -266,3 +266,11 @@ add_test(NAME mynes.core.snapshot-smoke COMMAND mynes-core-snapshot-smoke)
 add_test(NAME mynes.core.snapshot-fields
     COMMAND ${CMAKE_COMMAND} -DSOURCE_ROOT=${CMAKE_SOURCE_DIR}
         -P ${CMAKE_CURRENT_SOURCE_DIR}/verify_snapshot_fields.cmake)
+
+add_executable(mynes-core-palette-smoke palette_smoke.c)
+target_link_libraries(mynes-core-palette-smoke PRIVATE mynes-core-driver)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(mynes-core-palette-smoke PRIVATE -UNDEBUG)
+endif()
+mynes_enable_strict_warnings(mynes-core-palette-smoke)
+add_test(NAME mynes.core.palette-smoke COMMAND mynes-core-palette-smoke)

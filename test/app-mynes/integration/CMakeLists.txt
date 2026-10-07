@@ -1,4 +1,8 @@
 add_executable(mynes-lifecycle-smoke lifecycle_smoke.c)
+add_executable(mynes-performance-probe performance_probe.c)
+target_link_libraries(mynes-performance-probe PRIVATE mynes-core-driver base storage)
+mynes_enable_strict_warnings(mynes-performance-probe)
+# Explicit benchmark only: timing variance is not an ordinary CTest assertion.
 target_link_libraries(mynes-lifecycle-smoke PRIVATE mynes-core-driver common-machine storage base)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(mynes-lifecycle-smoke PRIVATE -UNDEBUG)
