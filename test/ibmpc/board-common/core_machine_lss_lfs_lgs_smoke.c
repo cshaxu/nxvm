@@ -119,7 +119,7 @@ static lib_i32 lfg_test_source_fault_atomicity(void)
     return 1;
 }
 
-static lib_i32 lfg_test_irq_shadow(void)
+static lib_i32 lfg_test_irq_no_shadow(void)
 {
     static const lib_u8 opcodes[] = { 0xb2u, 0xb4u, 0xb5u };
     static const lib_u8 pointer[] = { 0x44u, 0x33u, 0x00u, 0x00u };
@@ -163,17 +163,16 @@ static lib_i32 lfg_test_irq_shadow(void)
             core_machine_pic_irq_source_deassert(source);
             failed |= core_machine_run(state.machine,
                     (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
-                result.reason != (opcode == 0u ? CORE_MACHINE_STOP_BUDGET :
-                    CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
+                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             if (!failed) failed |= core_machine_memory_read(state.machine,
                     after.ss.base + (lib_u16)after.esp,
                     (void *)&frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK ||
-                after.eip != (opcode == 0u ? 0x0100u : 0x0101u) || !CORE_MACHINE_BIT_IS_SET(
+                after.eip != 0x0101u || !CORE_MACHINE_BIT_IS_SET(
                     test_pic_read(state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
                 CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au),
-                    VPIC_IRR_IRQ(0u)) || frame_ip != (opcode == 0u ? 6u : 5u);
+                    VPIC_IRR_IRQ(0u)) || frame_ip != 5u;
         }
         if (failed && state.board != LIB_NULL)
             lib_c_printf("LFG irq op=%02x eip=%08x esp=%08x irr=%02x isr=%02x frame=%04x\n",
@@ -190,7 +189,7 @@ static lib_i32 lfg_test_irq_shadow(void)
 lib_i32 main(void)
 {
     if (!lfg_test_source_fault_atomicity() ||
-        !lfg_test_irq_shadow()) return 1;
+        !lfg_test_irq_no_shadow()) return 1;
     lib_c_printf("M5:T539:S27:LSS_LFS_LGS-BOARD:OK\n");
     return 0;
 }

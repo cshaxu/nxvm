@@ -116,7 +116,7 @@ static lib_i32 cpu_interrupt_pending_and_rollback(void)
         if (!core_machine_cpu_request_nmi(&fixture.execution)) return 1;
         before = fixture.cpu;
         core_machine_cpu_execution_refresh(&fixture.execution);
-        if (fixture.cpu.data.flagNMI != reject) return 1;
+        if (fixture.execution.nmi_pending != reject) return 1;
         if (reject) {
             if (!fixture.faults || fixture.cpu.data.esp != before.data.esp ||
                 fixture.cpu.data.eflags != before.data.eflags ||

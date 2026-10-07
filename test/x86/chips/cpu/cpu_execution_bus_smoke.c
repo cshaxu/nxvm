@@ -140,7 +140,10 @@ static lib_i32 cpu_bus_cases(const cpu_bus_reset_case *reset)
     core_machine_cpu_execution_refresh(&fixture.execution);
     if (fixture.acknowledgements != 0u || !fixture.interrupt ||
         fixture.cpu.data.eip != 0x101u || fixture.cpu.data.sp != 0x700u ||
-        fixture.instructions.data.except != 0u) return 1;
+        !fixture.execution.stop_requested || fixture.faults != 1u ||
+        fixture.fault.exception_mask != VCPUINS_EXCEPT_CE ||
+        fixture.fault.exception_code != LIB_STATUS_IO_ERROR ||
+        fixture.instructions.data.except != VCPUINS_EXCEPT_CE) return 1;
     fixture.fail_transfer = LIB_TRUE;
     return !core_machine_cpu_read_linear(&fixture.execution, 0x100u, &value, 1u);
 }

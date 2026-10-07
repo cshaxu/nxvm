@@ -211,12 +211,12 @@ static lib_bool vm86_state_nmi(lib_bool masked)
     const lib_u8 nop = 0x90u;
     if (!vm86_delivery_prepare(&state, 2u)) return LIB_FALSE;
     state.memory[0x2000u] = nop;
-    state.cpu.data.flagNMI = LIB_TRUE;
-    state.cpu.data.flagMaskNMI = masked;
+    state.execution.nmi_pending = LIB_TRUE;
+    state.execution.nmi_masked = masked;
     core_machine_cpu_execution_refresh(&state.execution);
     if (!masked) core_machine_cpu_execution_refresh(&state.execution);
     return !state.execution.stop_requested && !state.fault.valid &&
-        state.cpu.data.flagNMI == masked &&
+        state.execution.nmi_pending == masked &&
         state.cpu.data.eip == (masked ? 1u : 0x101u) &&
         state.cpu.data.cs.selector == (masked ? 0x200u : 8u) &&
         state.cpu.data.esp == (masked ? 0x1234u : VM86_STACK_TOP - 36u);

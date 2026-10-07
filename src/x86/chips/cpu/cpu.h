@@ -157,7 +157,7 @@ typedef struct {
     lib_u32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
     lib_u32 tr0, tr1, tr2, tr3, tr4, tr5, tr6, tr7;
     /* control flags */
-    lib_u8 flagMaskNMI, flagNMI, flagHalt;
+    lib_u8 flagHalt;
 } t_cpu_data;
 
 typedef struct {

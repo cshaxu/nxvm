@@ -124,18 +124,18 @@ lib_bool core_machine_cpu_is_halted(const core_machine_cpu_execution_context *co
 void core_machine_cpu_set_nmi_mask(core_machine_cpu_execution_context *context,
     lib_bool masked)
 {
-    cpu_state.data.flagMaskNMI = masked ? LIB_TRUE : LIB_FALSE;
+    context->nmi_masked = masked;
 }
 
 lib_bool core_machine_cpu_nmi_is_masked(const core_machine_cpu_execution_context *context)
 {
-    return cpu_state.data.flagMaskNMI != 0u;
+    return context->nmi_masked;
 }
 
 lib_bool core_machine_cpu_request_nmi(core_machine_cpu_execution_context *context)
 {
-    if (cpu_state.data.flagMaskNMI) return LIB_FALSE;
-    cpu_state.data.flagNMI = LIB_TRUE;
+    if (context->nmi_masked) return LIB_FALSE;
+    context->nmi_pending = LIB_TRUE;
     return LIB_TRUE;
 }
 
@@ -400,6 +400,11 @@ void core_machine_cpu_execution_context_initialize(
     context->debug_tf_before = LIB_FALSE;
     context->debug_rf_before = LIB_FALSE;
     context->instruction_task_switched = LIB_FALSE;
+    context->interrupt_shadow = CPU_INTERRUPT_SHADOW_NONE;
+    context->debug_segment_shadow_before = LIB_FALSE;
+    context->nmi_in_service = LIB_FALSE;
+    context->nmi_masked = LIB_FALSE;
+    context->nmi_pending = LIB_FALSE;
     context->debug_trap_cause = 0u;
     context->preview_mode = LIB_FALSE;
     context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
@@ -482,6 +487,11 @@ void core_machine_cpu_state_initialize(
         context->debug_tf_before = LIB_FALSE;
         context->debug_rf_before = LIB_FALSE;
         context->instruction_task_switched = LIB_FALSE;
+        context->interrupt_shadow = CPU_INTERRUPT_SHADOW_NONE;
+        context->debug_segment_shadow_before = LIB_FALSE;
+        context->nmi_in_service = LIB_FALSE;
+        context->nmi_masked = LIB_FALSE;
+        context->nmi_pending = LIB_FALSE;
         context->debug_trap_cause = 0u;
         context->prefetch_count = 0u;
         context->prefetch_capacity = context->cpu_profile ==

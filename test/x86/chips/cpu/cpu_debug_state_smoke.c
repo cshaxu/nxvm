@@ -223,7 +223,7 @@ static lib_i32 debug_state_test_data_breakpoints(void)
     fixture.cpu.data.dr7 = 0x00ff0008u;
     if (cpu_instruction_run(&fixture, read, sizeof(read), &after) !=
             LIB_STATUS_OK || fixture.fault.valid ||
-        (after.data.dr6 & 3u) != 2u || (after.data.eax & 0xffffu) != 0x345au)
+        (after.data.dr6 & 3u) != 3u || (after.data.eax & 0xffffu) != 0x345au)
         return 0;
 
     cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
@@ -492,8 +492,177 @@ static lib_bool debug_state_test_iret_completion(void)
     return LIB_TRUE;
 }
 
+static lib_bool debug_state_test_ss_shadow(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const struct {
+        lib_u8 code[5];
+        lib_u8 length;
+    } cases[] = {
+        {{0x8eu,0xd0u,0u,0u,0u},2u},
+        {{0x17u,0u,0u,0u,0u},1u},
+        {{0x0fu,0xb2u,0x06u,0u,0x10u},5u}
+    };
+    lib_size profile, index;
+    lib_u32 failures = 0u;
+
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (index = 0u; index < (profile ? 3u : 2u); ++index) {
+        cpu_instruction_fixture state;
+        t_cpu after;
+        const lib_u16 vector[] = {0x0100u,0u};
+        const lib_u16 pointer[] = {0x1234u,0u};
+        const lib_u16 selector = 0u;
+
+        cpu_instruction_prepare(&state, profiles[profile]);
+        core_machine_cpu_execution_load_segment(&state.execution,
+            &state.cpu.data.cs, 0x0200u);
+        state.cpu.data.sp = 0x8000u;
+        state.cpu.data.eflags = 2u | VCPU_EFLAGS_TF;
+        lib_memory_copy(state.memory + 4u, vector, sizeof(vector));
+        lib_memory_copy(state.memory + 0x8000u, &selector, sizeof(selector));
+        lib_memory_copy(state.memory + 0x1000u, pointer, sizeof(pointer));
+        lib_memory_copy(state.memory + 0x2000u, cases[index].code,
+            cases[index].length);
+        core_machine_cpu_execution_refresh(&state.execution);
+        after = state.cpu;
+        if (state.execution.stop_requested || state.fault.valid)
+            return LIB_FALSE;
+        if (index == 2u) {
+            if (!state.delivered_exception.valid || after.data.eip != 0x0100u ||
+                state.delivered_exception.point.eip != cases[index].length)
+                ++failures;
+        } else {
+            if (state.delivered_exception.valid || after.data.eip != cases[index].length) {
+                lib_c_printf("SS shadow profile=%u case=%u ip=%x trap=%u\n",
+                    (unsigned)profiles[profile], (unsigned)index,
+                    after.data.eip, state.delivered_exception.valid);
+                ++failures;
+                continue;
+            }
+            state.memory[0x2000u + cases[index].length] = 0x90u;
+            core_machine_cpu_execution_invalidate_prefetch(&state.execution);
+            core_machine_cpu_execution_refresh(&state.execution);
+            if (!state.delivered_exception.valid || state.cpu.data.eip != 0x0100u ||
+                state.delivered_exception.point.eip != cases[index].length + 1u)
+                ++failures;
+        }
+    }
+    lib_c_printf("SS/LSS single-step cases=5 failures=%u\n", (unsigned)failures);
+    return failures == 0u;
+}
+
+static lib_bool debug_state_test_comparator_status(void)
+{
+    static const lib_u8 forms[][5] = {
+        {0x90u,0u,0u,0u,0u}, {0xc6u,0x06u,0u,0x10u,0x5au}
+    };
+    lib_u8 form, enabled, matched, index, global;
+    lib_u32 failures = 0u;
+
+    for (form = 0u; form < 2u; ++form)
+    for (global = 0u; global < 2u; ++global)
+    for (enabled = 0u; enabled < 16u; ++enabled)
+    for (matched = 0u; matched < 16u; ++matched) {
+        cpu_instruction_fixture fixture;
+        const lib_u16 vector[] = {0x0100u,0u};
+        const lib_bool triggered = (enabled & matched) != 0u;
+        const lib_u32 address = form ? 0x1000u : 0x2000u;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        core_machine_cpu_execution_load_segment(&fixture.execution,
+            &fixture.cpu.data.cs, 0x0200u);
+        fixture.cpu.data.sp = 0x8000u;
+        fixture.cpu.data.eflags = 2u;
+        fixture.cpu.data.dr6 = 0x00004000u;
+        for (index = 0u; index < 4u; ++index) {
+            *debug_state_dr(&fixture.cpu, index) = (matched & (1u << index)) ?
+                address : address + 0x100u;
+            if (enabled & (1u << index))
+                fixture.cpu.data.dr7 |= 1u << (2u * index + global);
+            if (form) fixture.cpu.data.dr7 |= 1u << (16u + 4u * index);
+        }
+        lib_memory_copy(fixture.memory + 4u, vector, sizeof(vector));
+        lib_memory_copy(fixture.memory + 0x2000u, forms[form], form ? 5u : 1u);
+        core_machine_cpu_execution_refresh(&fixture.execution);
+        if (fixture.execution.stop_requested || fixture.fault.valid ||
+            fixture.delivered_exception.valid != triggered ||
+            fixture.cpu.data.dr6 != (0x00004000u | (triggered ? matched : 0u)) ||
+            fixture.cpu.data.eip != (triggered ? 0x0100u : (form ? 5u : 1u)))
+            ++failures;
+    }
+    lib_c_printf("Comparator cause/status cases=1024 failures=%u\n", (unsigned)failures);
+    return failures == 0u;
+}
+
+static lib_bool debug_state_test_shadow_fault_boundary(void)
+{
+    static const lib_u8 forms[][2] = {{0x8eu,0xd0u},{0x17u,0u}};
+    const lib_u16 handler[] = {0x0100u,0u};
+    const lib_u8 write[] = {0xc6u,0x06u,0u,8u,0x5au};
+    lib_u8 form, mode;
+
+    for (form = 0u; form < 2u; ++form)
+    for (mode = 0u; mode < 3u; ++mode) {
+        cpu_instruction_fixture state;
+        const lib_u8 length = form ? 1u : 2u;
+
+        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        core_machine_cpu_execution_load_segment(&state.execution,
+            &state.cpu.data.cs, 0x0200u);
+        state.cpu.data.sp = 0x8000u;
+        state.cpu.data.eflags = 2u;
+        lib_memory_copy(state.memory + 4u, handler, sizeof(handler));
+        lib_memory_copy(state.memory + 0x2000u, forms[form], length);
+        if (mode == 0u) {
+            state.memory[0x2000u + length] = 0x90u;
+            state.memory[0x2001u + length] = 0x90u;
+            state.cpu.data.dr0 = 0x2000u + length;
+            state.cpu.data.dr7 = 1u;
+        } else {
+            lib_memory_copy(state.memory + 0x2000u + length,
+                mode == 2u ? forms[form] : write, mode == 2u ? length : sizeof(write));
+            if (mode == 2u) lib_memory_copy(state.memory + 0x2000u + 2u * length,
+                write, sizeof(write));
+            state.cpu.data.dr0 = 0x0800u;
+            state.cpu.data.dr7 = 0x00010001u;
+        }
+        core_machine_cpu_execution_refresh(&state.execution);
+        if (state.execution.stop_requested || state.delivered_exception.valid ||
+            state.cpu.data.eip != length) return LIB_FALSE;
+        core_machine_cpu_execution_refresh(&state.execution);
+        if (mode == 0u) {
+            if (state.execution.stop_requested || state.delivered_exception.valid ||
+                state.cpu.data.eip != length + 1u || state.cpu.data.dr6 != 0u)
+                return LIB_FALSE;
+            state.cpu.data.dr0 = 0x2001u + length;
+            core_machine_cpu_execution_refresh(&state.execution);
+            if (!state.delivered_exception.valid || state.cpu.data.eip != 0x0100u ||
+                state.delivered_exception.point.eip != length + 1u)
+                return LIB_FALSE;
+        } else {
+            if (mode == 2u) {
+                if (state.execution.stop_requested || state.delivered_exception.valid ||
+                    state.cpu.data.eip != 2u * length) return LIB_FALSE;
+                core_machine_cpu_execution_refresh(&state.execution);
+            }
+            if (state.execution.stop_requested || !state.delivered_exception.valid ||
+                state.cpu.data.eip != 0x0100u || state.cpu.data.dr6 != 1u ||
+                state.memory[0x0800u] != 0x5au ||
+                state.delivered_exception.point.eip != length * (mode == 2u ? 2u : 1u) +
+                    sizeof(write)) return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
+    if (!debug_state_test_shadow_fault_boundary()) return 1;
+    if (!debug_state_test_comparator_status()) return 1;
+    if (!debug_state_test_ss_shadow()) return 1;
     if (!debug_state_test_iret_completion()) return 1;
     if (!debug_state_test_ordinary_transfer_rf()) return 1;
     if (!debug_state_test_rf_images()) return 1;

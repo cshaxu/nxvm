@@ -312,7 +312,8 @@ static lib_bool direct_flags_test_interrupt_privilege(void)
                 fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_GP ||
                 fixture.delivered_exception.exception_code != 0u ||
                 fixture.cpu.data.eip != 0x100u || saved_ip != 0u ||
-                saved_flags != flags || fixture.instructions.data.flagMaskInt) {
+                saved_flags != flags || fixture.execution.interrupt_shadow !=
+                    CPU_INTERRUPT_SHADOW_NONE) {
                 if (failures < 4u) lib_c_printf("CLI/STI reject profile=%u cpl=%u iopl=%u stop=%u terminal=%x delivered=%u/%x/%x ip=%x sp=%x saved=%x/%x shadow=%u\n",
                     (unsigned)profiles[profile], cpl, iopl,
                     fixture.execution.stop_requested, fixture.fault.exception_mask,
@@ -320,14 +321,15 @@ static lib_bool direct_flags_test_interrupt_privilege(void)
                     fixture.delivered_exception.exception_mask,
                     fixture.delivered_exception.exception_code,
                     fixture.cpu.data.eip, fixture.cpu.data.sp, saved_ip,
-                    saved_flags, fixture.instructions.data.flagMaskInt);
+                    saved_flags, fixture.execution.interrupt_shadow);
                 ++failures;
             }
         } else if (fixture.execution.stop_requested || fixture.fault.valid ||
             fixture.delivered_exception.valid || fixture.cpu.data.eip != 1u ||
             fixture.cpu.data.sp != 0x8000u || fixture.cpu.data.eflags !=
                 (set ? flags | VCPU_EFLAGS_IF : flags & ~VCPU_EFLAGS_IF) ||
-            fixture.instructions.data.flagMaskInt != (set ? LIB_TRUE : LIB_FALSE))
+            fixture.execution.interrupt_shadow != (set ? CPU_INTERRUPT_SHADOW_INTR :
+                CPU_INTERRUPT_SHADOW_NONE))
             ++failures;
     }
     lib_c_printf("CLI/STI privilege cases=%u failures=%u\n",

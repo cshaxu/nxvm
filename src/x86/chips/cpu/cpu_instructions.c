@@ -5524,6 +5524,8 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, lib_u8 byte)
     lib_u32 mask = VCPU_EFLAGS_RESERVED;
     t_cpu_data_sreg ccs = cpu_state.data.cs;
     CPU_TRACE_CALL_BEGIN("_e_iret");
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286)
+        context->nmi_in_service = LIB_FALSE;
     if (!_GetCR0_PE)
     {
         CPU_TRACE_BLOCK_BEGIN("Real");
@@ -5563,6 +5565,8 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, lib_u8 byte)
         cpu_state.data.eip = neweip;
         cpu_state.data.eflags = _e_eflags_load(context,
             (neweflags & ~mask) | (cpu_state.data.eflags & mask));
+        if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80186)
+            context->interrupt_shadow = CPU_INTERRUPT_SHADOW_INTR;
         CPU_TRACE_BLOCK_END;
     }
     else
@@ -5805,8 +5809,6 @@ static void _e_load_far(core_machine_cpu_execution_context *context, t_cpu_data_
         CPU_TRACE_BLOCK_END;
         break;
     }
-    if (rsreg->sregtype == SREG_STACK)
-        instruction_state.data.flagMaskInt = LIB_TRUE;
     CPU_TRACE_CALL_END;
 }
 static void _e_pop_sreg(core_machine_cpu_execution_context *context,
@@ -5844,8 +5846,9 @@ static void _e_pop_sreg(core_machine_cpu_execution_context *context,
         CPU_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    if (rsreg->sregtype == SREG_STACK)
-        instruction_state.data.flagMaskInt = LIB_TRUE;
+    if (rsreg->sregtype == SREG_STACK ||
+        context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80186)
+        context->interrupt_shadow = CPU_INTERRUPT_SHADOW_SEGMENT;
     CPU_TRACE_CALL_END;
 }
 static void _e_loopcc(core_machine_cpu_execution_context *context, lib_i8 csrc, lib_u8 condition)
@@ -12077,8 +12080,9 @@ static void MOV_SREG_RM16(core_machine_cpu_execution_context *context)
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
     CPU_TRACE_CHECK_RETURN(_s_load_sreg(context, instruction_state.data.rmovsreg,
         X86_CPU_MASK_U16(instruction_state.data.crm)));
-    if (instruction_state.data.rmovsreg->sregtype == SREG_STACK)
-        instruction_state.data.flagMaskInt = LIB_TRUE;
+    if (instruction_state.data.rmovsreg->sregtype == SREG_STACK ||
+        context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80186)
+        context->interrupt_shadow = CPU_INTERRUPT_SHADOW_SEGMENT;
     CPU_TRACE_CALL_END;
 }
 static void INS_8F(core_machine_cpu_execution_context *context)
@@ -15969,7 +15973,7 @@ static void STI(core_machine_cpu_execution_context *context)
         _adv;
         _SetEFLAGS_IF;
     }
-    instruction_state.data.flagMaskInt = LIB_TRUE;
+    context->interrupt_shadow = CPU_INTERRUPT_SHADOW_INTR;
     CPU_TRACE_CALL_END;
 }
 static void CLD(core_machine_cpu_execution_context *context)
@@ -18173,7 +18177,6 @@ static void ExecInit(core_machine_cpu_execution_context *context)
     instruction_state.data.source_lsl_granularity_valid = LIB_FALSE;
     instruction_state.data.source_lsl_page_granular = LIB_FALSE;
     instruction_state.data.flagInsLoop = LIB_FALSE;
-    instruction_state.data.flagMaskInt = LIB_FALSE;
     instruction_state.data.bit = 0;
     instruction_state.data.opr1 = 0;
     instruction_state.data.opr2 = 0;
@@ -18270,13 +18273,14 @@ static lib_u8 _debug_breakpoint_length(lib_u8 length)
 }
 
 static lib_u32 _debug_match_instruction_breakpoint(
-    core_machine_cpu_execution_context *context)
+    core_machine_cpu_execution_context *context, lib_u32 *matched)
 {
     lib_u32 enabled = 0u;
     lib_u8 index;
 
+    *matched = 0u;
     if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386 ||
-        context->debug_rf_before) return 0u;
+        context->debug_rf_before || context->debug_segment_shadow_before) return 0u;
     for (index = 0u; index < 4u; ++index) {
         lib_u32 control = (cpu_state.data.dr7 >> (16u + index * 4u)) &
             0x0fu;
@@ -18284,6 +18288,7 @@ static lib_u32 _debug_match_instruction_breakpoint(
         if ((control & 3u) != 0u || (control >> 2u) != 0u ||
             _debug_breakpoint_address(index, &cpu_state) !=
                 instruction_state.data.linear) continue;
+        *matched |= (lib_u32)1u << index;
         if (_debug_breakpoint_enabled(index, &cpu_state)) {
             enabled |= (lib_u32)1u << index;
         }
@@ -18292,12 +18297,13 @@ static lib_u32 _debug_match_instruction_breakpoint(
 }
 
 static lib_u32 _debug_match_data_breakpoint(
-    core_machine_cpu_execution_context *context)
+    core_machine_cpu_execution_context *context, lib_u32 *matched)
 {
     lib_u32 enabled = 0u;
     lib_u8 index;
     lib_u16 access_index;
 
+    *matched = 0u;
     if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386) return 0u;
     for (access_index = 0u; access_index < instruction_state.data.msize;
         ++access_index) {
@@ -18321,6 +18327,7 @@ static lib_u32 _debug_match_data_breakpoint(
             first = access->linear;
             last = first + access->byte - 1u;
             if (last < address || first >= address + length) continue;
+            *matched |= (lib_u32)1u << index;
             if (_debug_breakpoint_enabled(index, &cpu_state)) {
                 enabled |= (lib_u32)1u << index;
             }
@@ -18342,12 +18349,16 @@ static void _debug_complete_instruction(
     core_machine_cpu_execution_context *context, lib_u8 opcode)
 {
     lib_u32 cause;
+    lib_u32 matched = 0u;
 
     if (instruction_state.data.except) return;
-    cause = _debug_match_data_breakpoint(context);
+    cause = context->interrupt_shadow == CPU_INTERRUPT_SHADOW_SEGMENT ?
+        0u : _debug_match_data_breakpoint(context, &matched);
+    if (cause != 0u) cpu_state.data.dr6 |= matched;
     /* INT/INTO and task entry suppress the outgoing instruction's step trap;
      * ordinary completion uses TF sampled before execution, including POPF. */
     if (context->debug_tf_before && !context->instruction_task_switched &&
+        context->interrupt_shadow != CPU_INTERRUPT_SHADOW_SEGMENT &&
         opcode != 0xccu && opcode != 0xcdu && !(opcode == 0xceu &&
             X86_CPU_BIT_IS_SET(instruction_state.data.oldcpu.data.eflags,
                 VCPU_EFLAGS_OF))) cause |= VCPU_DR6_BS;
@@ -18361,7 +18372,8 @@ static void _debug_deliver_trap(core_machine_cpu_execution_context *context)
     t_cpu trap_cpu;
     lib_u32 cause;
 
-    if (!context->debug_trap_pending) return;
+    if (!context->debug_trap_pending ||
+        context->interrupt_shadow == CPU_INTERRUPT_SHADOW_SEGMENT) return;
     cause = context->debug_trap_cause;
     context->debug_trap_pending = LIB_FALSE;
     context->debug_trap_cause = 0u;
@@ -18620,15 +18632,16 @@ static void ExecIns(core_machine_cpu_execution_context *context)
 {
     lib_u8 opcode = 0;
     lib_u32 debug_cause;
+    lib_u32 debug_matches;
 
     ExecInit(context);
     if (instruction_state.data.except) {
         ExecFinal(context);
         return;
     }
-    debug_cause = _debug_match_instruction_breakpoint(context);
+    debug_cause = _debug_match_instruction_breakpoint(context, &debug_matches);
     if (debug_cause != 0u) {
-        cpu_state.data.dr6 |= debug_cause;
+        cpu_state.data.dr6 |= debug_matches;
         instruction_state.data.except = VCPUINS_EXCEPT_DB;
         ExecFinal(context);
         return;
@@ -18657,25 +18670,52 @@ static void ExecIns(core_machine_cpu_execution_context *context)
 static void ExecInt(core_machine_cpu_execution_context *context)
 {
     lib_u8 intr = 0x00;
+    lib_status acknowledge_status;
+    const lib_bool debug_first =
+        context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286;
+
+    if (context->stop_requested) return;
+    if (cpu_state.data.flagHalt) {
+        const lib_bool nmi_ready =
+            context->interrupt_shadow != CPU_INTERRUPT_SHADOW_SEGMENT &&
+            !context->nmi_masked && !context->nmi_in_service && context->nmi_pending;
+        const lib_bool intr_ready =
+            context->interrupt_shadow == CPU_INTERRUPT_SHADOW_NONE && _GetEFLAGS_IF &&
+            context->bus->interrupt_pending(context->bus_context);
+        /* A queued step trap cannot wake HALT. Recheck delivery inputs after
+         * the accepted wake, since handler entry can itself produce an edge. */
+        if (!nmi_ready && !intr_ready) return;
+        cpu_state.data.flagHalt = LIB_FALSE;
+    }
+    if (debug_first) _debug_deliver_trap(context);
+    if (context->stop_requested) return;
     /* hardware interrupt handler */
-    if (!instruction_state.data.flagMaskInt && !cpu_state.data.flagMaskNMI &&
-        cpu_state.data.flagNMI)
+    if (context->interrupt_shadow != CPU_INTERRUPT_SHADOW_SEGMENT &&
+        !context->nmi_masked && !context->nmi_in_service && context->nmi_pending)
     {
+        context->nmi_pending = LIB_FALSE;
+        context->nmi_in_service =
+            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286;
         ExecInit(context);
         _e_intr_n(context, 0x02, _GetOperandSize, LIB_TRUE);
         if (!instruction_state.data.except) {
             cpu_state.data.flagHalt = LIB_FALSE;
-            cpu_state.data.flagNMI = LIB_FALSE;
         }
+        else context->nmi_pending = LIB_TRUE;
         ExecFinal(context);
     }
-    _debug_deliver_trap(context);
     if (context->stop_requested) return;
-    if (!instruction_state.data.flagMaskInt && _GetEFLAGS_IF &&
+    if (context->interrupt_shadow == CPU_INTERRUPT_SHADOW_NONE && _GetEFLAGS_IF &&
         context->bus->interrupt_pending(context->bus_context))
     {
-        if (context->bus->acknowledge_interrupt(context->bus_context,
-                &intr) != LIB_STATUS_OK) return;
+        acknowledge_status = context->bus->acknowledge_interrupt(
+            context->bus_context, &intr);
+        if (acknowledge_status != LIB_STATUS_OK) {
+            ExecInit(context);
+            _SetExcept_CE((lib_u32)acknowledge_status);
+            ExecFinal(context);
+            return;
+        }
         ExecInit(context);
         _e_intr_n(context, intr, _GetOperandSize, LIB_TRUE);
         if (!instruction_state.data.except) {
@@ -18684,6 +18724,7 @@ static void ExecInt(core_machine_cpu_execution_context *context)
         }
         ExecFinal(context);
     }
+    if (!context->stop_requested && !debug_first) _debug_deliver_trap(context);
 }
 
 /* external interface */
@@ -19249,6 +19290,11 @@ void core_machine_cpu_execution_reset(
     context->debug_tf_before = LIB_FALSE;
     context->debug_rf_before = LIB_FALSE;
     context->instruction_task_switched = LIB_FALSE;
+    context->interrupt_shadow = CPU_INTERRUPT_SHADOW_NONE;
+    context->debug_segment_shadow_before = LIB_FALSE;
+    context->nmi_in_service = LIB_FALSE;
+    context->nmi_masked = LIB_FALSE;
+    context->nmi_pending = LIB_FALSE;
     context->debug_trap_cause = 0u;
     context->instruction_in_progress = LIB_FALSE;
     context->instruction_fault_delivered = LIB_FALSE;
@@ -19259,6 +19305,9 @@ void core_machine_cpu_execution_refresh(
     context->instruction_fault_delivered = LIB_FALSE;
     if (!cpu_state.data.flagHalt)
     {
+        context->debug_segment_shadow_before =
+            context->interrupt_shadow == CPU_INTERRUPT_SHADOW_SEGMENT;
+        context->interrupt_shadow = CPU_INTERRUPT_SHADOW_NONE;
         context->instruction_in_progress = LIB_TRUE;
         ExecIns(context);
         context->instruction_in_progress = LIB_FALSE;

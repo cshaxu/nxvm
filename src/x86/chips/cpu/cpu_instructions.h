@@ -44,6 +44,12 @@ typedef enum {
 
 typedef lib_u8 t_cpuins_data_prefix;
 
+typedef enum {
+    CPU_INTERRUPT_SHADOW_NONE,
+    CPU_INTERRUPT_SHADOW_INTR,
+    CPU_INTERRUPT_SHADOW_SEGMENT
+} cpu_interrupt_shadow;
+
 typedef struct {
     t_cpu_data_sreg *rsreg;
     lib_u32 offset;
@@ -66,7 +72,6 @@ typedef struct {
     /* execution control */
     t_cpu  oldcpu;
     lib_u8 flagInsLoop;
-    lib_u8 flagMaskInt; /* if lib_i32 is disabled once */
 
     /* memory management */
     t_cpuins_data_logical mrm;
@@ -152,6 +157,11 @@ struct core_machine_cpu_execution_context {
     lib_u8 instruction_in_progress;
     lib_u8 instruction_fault_delivered;
     lib_bool instruction_task_switched;
+    cpu_interrupt_shadow interrupt_shadow;
+    lib_bool debug_segment_shadow_before;
+    lib_bool nmi_in_service;
+    lib_bool nmi_masked;
+    lib_bool nmi_pending;
     /* Private CPU-execution state for post-instruction 80386 debug traps. */
     lib_u8 debug_trap_pending;
     lib_u8 debug_tf_before;

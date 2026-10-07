@@ -177,7 +177,7 @@ static lib_bool idt_test_nmi(lib_bool invalid_gate, lib_bool user_source)
     state.cpu.data.ss.dpl = user_source ? 3u : 0u;
     state.cpu.data.esp = 0x8000u;
     state.cpu.data.eflags = 0x202u;
-    state.cpu.data.flagNMI = LIB_TRUE;
+    state.execution.nmi_pending = LIB_TRUE;
     gate[2] = (lib_u8)code_selector;
     if (invalid_gate) gate[5] = 0x80u;
     lib_memory_copy(state.memory + IDT_IDT_BASE + 2u * 8u, gate, sizeof(gate));
@@ -190,7 +190,7 @@ static lib_bool idt_test_nmi(lib_bool invalid_gate, lib_bool user_source)
     if (invalid_gate)
         return state.execution.stop_requested && state.fault.valid &&
             (state.fault.exception_mask & VCPUINS_EXCEPT_DF) != 0u &&
-            state.cpu.data.flagNMI && state.cpu.data.eip == before.data.eip &&
+            state.execution.nmi_pending && state.cpu.data.eip == before.data.eip &&
             state.cpu.data.esp == before.data.esp &&
             state.cpu.data.eflags == before.data.eflags &&
             lib_memory_compare(&state.cpu.data.cs, &before.data.cs,
@@ -198,12 +198,12 @@ static lib_bool idt_test_nmi(lib_bool invalid_gate, lib_bool user_source)
             lib_memory_compare(&state.cpu.data.ss, &before.data.ss,
                 sizeof(before.data.ss)) == 0;
     if (state.execution.stop_requested || state.fault.valid ||
-        state.cpu.data.flagNMI || state.cpu.data.esp != 0x7ff4u ||
+        state.execution.nmi_pending || state.cpu.data.esp != 0x7ff4u ||
         state.cpu.data.cs.selector != code_selector ||
         state.cpu.data.cs.dpl != (user_source ? 3u : 0u) ||
         state.cpu.data.eip != IDT_HANDLER_OFFSET) return LIB_FALSE;
     core_machine_cpu_execution_refresh(&state.execution);
-    return !state.execution.stop_requested && !state.cpu.data.flagNMI &&
+    return !state.execution.stop_requested && !state.execution.nmi_pending &&
         state.cpu.data.esp == 0x7ff4u &&
         (user_source ? !state.cpu.data.flagHalt &&
             state.cpu.data.eip == IDT_HANDLER_OFFSET : state.cpu.data.flagHalt);
@@ -277,8 +277,204 @@ static lib_bool idt_test_software_full_rollback(lib_u8 negative)
         lib_memory_compare(&before, &after, sizeof(before)) == 0;
 }
 
+static lib_bool idt_test_nmi_service_lifetime(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    lib_size index;
+    lib_u32 failures = 0u;
+
+    for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        cpu_instruction_fixture state;
+        const lib_u16 vector[] = {0x0100u,0u};
+        const lib_u8 nop = 0x90u;
+        t_cpu after;
+
+        cpu_instruction_prepare(&state, profiles[index]);
+        state.cpu.data.sp = 0x8000u;
+        lib_memory_copy(state.memory + 8u, vector, sizeof(vector));
+        state.memory[0x0100u] = 0x90u;
+        state.memory[0x0101u] = 0xcfu;
+        if (!core_machine_cpu_request_nmi(&state.execution) ||
+            cpu_instruction_run(&state, &nop, 1u, &after) != LIB_STATUS_OK ||
+            state.fault.valid || after.data.eip != 0x0100u ||
+            after.data.sp != 0x7ffau) return LIB_FALSE;
+        if (!core_machine_cpu_request_nmi(&state.execution) ||
+            core_machine_cpu_nmi_is_masked(&state.execution)) return LIB_FALSE;
+        core_machine_cpu_execution_refresh(&state.execution);
+        if (profiles[index] < CORE_MACHINE_CPU_PROFILE_80286) {
+            if (state.execution.stop_requested || state.cpu.data.eip != 0x0100u ||
+                state.cpu.data.sp != 0x7ff4u || state.execution.nmi_pending) ++failures;
+            continue;
+        }
+        if (state.execution.stop_requested || state.cpu.data.eip != 0x0101u ||
+            state.cpu.data.sp != 0x7ffau || !state.execution.nmi_pending) {
+            lib_c_printf("NMI service profile=%u ip=%x sp=%x pending=%u\n",
+                (unsigned)profiles[index], state.cpu.data.eip,
+                state.cpu.data.sp, state.execution.nmi_pending);
+            ++failures;
+            continue;
+        }
+        core_machine_cpu_execution_refresh(&state.execution);
+        if (state.execution.stop_requested || state.cpu.data.eip != 0x0100u ||
+            state.cpu.data.sp != 0x7ffau || state.execution.nmi_pending) ++failures;
+    }
+    lib_c_printf("NMI service cases=5 failures=%u\n", (unsigned)failures);
+    return failures == 0u;
+}
+
+typedef struct idt_nmi_edge_fixture {
+    cpu_instruction_fixture state;
+    lib_bool injected;
+} idt_nmi_edge_fixture;
+
+static lib_status idt_nmi_edge_read(void *opaque, lib_u32 address,
+    void *destination, lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
+    lib_bool observe_only, lib_bool reset_fetch)
+{
+    idt_nmi_edge_fixture *fixture = (idt_nmi_edge_fixture *)opaque;
+    if (address == 8u && !observe_only && !fixture->injected) {
+        fixture->injected = LIB_TRUE;
+        core_machine_cpu_request_nmi(&fixture->state.execution);
+    }
+    return cpu_instruction_read(&fixture->state, address, destination, bytes,
+        provenance, observe_only, reset_fetch);
+}
+
+static lib_status idt_nmi_edge_write(void *opaque, lib_u32 address,
+    const void *source, lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance)
+{
+    return cpu_instruction_write(&((idt_nmi_edge_fixture *)opaque)->state,
+        address, source, bytes, provenance);
+}
+
+static lib_bool idt_test_nmi_entry_edge(void)
+{
+    const core_machine_cpu_bus_provider bus = {
+        .read_memory = idt_nmi_edge_read, .write_memory = idt_nmi_edge_write,
+        .interrupt_pending = cpu_instruction_interrupt_pending
+    };
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    lib_size profile;
+
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile) {
+        idt_nmi_edge_fixture fixture;
+        const lib_u16 vector[] = {0x0100u,0u};
+        fixture.injected = LIB_FALSE;
+        cpu_instruction_prepare_with_bus(&fixture.state, profiles[profile], &bus, &fixture);
+        fixture.state.cpu.data.sp = 0x8000u;
+        fixture.state.memory[0] = 0x90u;
+        fixture.state.memory[0x0100u] = 0x90u;
+        fixture.state.memory[0x0101u] = 0xcfu;
+        lib_memory_copy(fixture.state.memory + 8u, vector, sizeof(vector));
+        core_machine_cpu_request_nmi(&fixture.state.execution);
+        core_machine_cpu_execution_refresh(&fixture.state.execution);
+        if (fixture.state.execution.stop_requested || !fixture.injected ||
+            !fixture.state.execution.nmi_pending || !fixture.state.execution.nmi_in_service ||
+            fixture.state.cpu.data.eip != 0x0100u) return LIB_FALSE;
+        core_machine_cpu_execution_refresh(&fixture.state.execution);
+        if (fixture.state.execution.stop_requested || !fixture.state.execution.nmi_pending ||
+            fixture.state.cpu.data.eip != 0x0101u) return LIB_FALSE;
+        core_machine_cpu_execution_refresh(&fixture.state.execution);
+        if (fixture.state.execution.stop_requested || fixture.state.execution.nmi_pending ||
+            fixture.state.cpu.data.eip != 0x0100u || fixture.state.cpu.data.sp != 0x7ffau)
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool idt_test_rejected_ss_shadow(void)
+{
+    const lib_u8 fault_gate[] = {0u,3u,8u,0u,0u,0x8eu,0u,0u};
+    const lib_u8 nmi_gate[] = {0u,4u,8u,0u,0u,0x8eu,0u,0u};
+    static const lib_u8 forms[][2] = {{0x8eu,0xd0u},{0x17u,0x90u}};
+    lib_u8 form, inherited, pending;
+
+    for (form = 0u; form < 2u; ++form)
+    for (inherited = 0u; inherited < 2u; ++inherited)
+    for (pending = 0u; pending < 2u; ++pending) {
+        cpu_instruction_fixture state;
+        idt_prepare(&state, 0xeeu, 0x92u, LIB_TRUE);
+        state.cpu.data.cs.selector = 8u;
+        state.cpu.data.cs.base = IDT_KERNEL_CODE_BASE;
+        state.cpu.data.cs.dpl = 0u;
+        state.cpu.data.ss.selector = 0x10u;
+        state.cpu.data.ss.dpl = 0u;
+        state.cpu.data.esp = 0x8000u;
+        state.cpu.data.eax = 0u;
+        state.cpu.data.eflags = 2u;
+        lib_memory_copy(state.memory + IDT_KERNEL_CODE_BASE, forms[form], 2u);
+        lib_memory_copy(state.memory + IDT_IDT_BASE + 13u * 8u,
+            fault_gate, sizeof(fault_gate));
+        lib_memory_copy(state.memory + IDT_IDT_BASE + 2u * 8u,
+            nmi_gate, sizeof(nmi_gate));
+        state.execution.interrupt_shadow = inherited ?
+            CPU_INTERRUPT_SHADOW_SEGMENT : CPU_INTERRUPT_SHADOW_NONE;
+        if (pending) core_machine_cpu_request_nmi(&state.execution);
+        core_machine_cpu_execution_refresh(&state.execution);
+        if (state.execution.stop_requested || state.fault.valid ||
+            !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_GP ||
+            state.cpu.data.eip != (pending ? 0x0400u : 0x0300u) ||
+            state.cpu.data.ss.selector != 0x10u ||
+            state.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
+            state.execution.nmi_pending) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool idt_test_faulting_iret_service_release(void)
+{
+    const lib_u8 handler_descriptor[] = {0xffu,0xffu,0,0x20u,0,0x9au,0x40u,0};
+    const lib_u8 fault_gate[] = {0u,3u,0x18u,0u,0u,0x8eu,0u,0u};
+    const lib_u8 nmi_gate[] = {0u,4u,0x18u,0u,0u,0x8eu,0u,0u};
+    const lib_u32 frame[] = {0x10u,8u,0x202u};
+    lib_u8 pending;
+
+    for (pending = 0u; pending < 2u; ++pending) {
+        cpu_instruction_fixture state;
+        idt_prepare(&state, 0xeeu, 0x92u, LIB_TRUE);
+        state.cpu.data.cs.selector = 8u;
+        state.cpu.data.cs.base = IDT_KERNEL_CODE_BASE;
+        state.cpu.data.cs.dpl = 0u;
+        state.cpu.data.ss.selector = 0x10u;
+        state.cpu.data.ss.dpl = 0u;
+        state.cpu.data.sp = 0x8000u;
+        state.cpu.data.eflags = 2u;
+        state.cpu.data.gdtr.limit = 31u;
+        state.memory[IDT_GDT_BASE + 13u] &= 0x7fu;
+        state.memory[IDT_KERNEL_CODE_BASE] = 0xcfu;
+        lib_memory_copy(state.memory + IDT_GDT_BASE + 24u,
+            handler_descriptor, sizeof(handler_descriptor));
+        lib_memory_copy(state.memory + IDT_IDT_BASE + 11u * 8u,
+            fault_gate, sizeof(fault_gate));
+        lib_memory_copy(state.memory + IDT_IDT_BASE + 2u * 8u,
+            nmi_gate, sizeof(nmi_gate));
+        lib_memory_copy(state.memory + 0x8000u, frame, sizeof(frame));
+        state.execution.nmi_in_service = LIB_TRUE;
+        if (pending) core_machine_cpu_request_nmi(&state.execution);
+        core_machine_cpu_execution_refresh(&state.execution);
+        if (state.execution.stop_requested || state.fault.valid ||
+            !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_NP ||
+            state.cpu.data.eip != (pending ? 0x0400u : 0x0300u) ||
+            state.execution.nmi_in_service != (pending ? LIB_TRUE : LIB_FALSE) ||
+            state.execution.nmi_pending) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
+    if (!idt_test_rejected_ss_shadow()) return 1;
+    if (!idt_test_faulting_iret_service_release()) return 1;
+    if (!idt_test_nmi_entry_edge()) return 1;
+    if (!idt_test_nmi_service_lifetime()) return 1;
     if (!idt_test_success(0xeeu, LIB_FALSE) ||
         !idt_test_success(0xefu, LIB_TRUE) || !idt_test_16bit_stack() ||
         !idt_test_atomic(0x8eu, 0x92u, LIB_FALSE) ||
