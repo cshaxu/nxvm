@@ -1,5 +1,10 @@
 # MyNES Emulator Performance: Measured Rendering and Execution
 
+Archived at the owner-requested T44 closure. The approved narrowed implementation
+selected palette lookup and Mapper address computation; native/per-device timing
+and IRQ/PPU condition cleanup were not claimed or admitted. Final dispositions
+and proof are in [task history](M7-T44-measured-emulator-efficiency.md).
+
 ## Outcome And Boundary
 
 Improve MyNES's measured execution and presentation cost for its supported NES

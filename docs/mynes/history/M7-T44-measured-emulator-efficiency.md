@@ -2,7 +2,7 @@
 
 Owner admits the queued Nesticle-inspired performance study on 2026-10-06
 against fc0d31623, after closed MyNES T43. Current owns the active packet; the
-[proposal](../proposals/emulator-performance-nesticle-study.md) preserves the
+[proposal](M7-T44-measured-emulator-efficiency-proposal.md) preserves the
 full goal. No performance gain or new product is qualified at admission.
 
 ## Frozen Coverage And Disposition
@@ -19,7 +19,7 @@ production; frameskip/coalescing is not a computational gain.
 | --- | --- | --- |
 | S1 baseline and palette conversion | Repeatable bounded before/after execution and conversion measures; exact palette ordering/RGB duplicates/overflow, text/publish behavior and bounded memory. Distinguish synthetic, game and paced native routes. | Accepted and closed after immutable-diff review of ae15f9129 / b2c973f69: both suites 56/56, exact paired identities and qualified 0044 pair. [Evidence](../etc/evidence/m7-t44-s1-palette-performance.md). |
 | S2 Mapper candidate | Only mapping-register-derived address computation. Preserve bus/A12/IRQ and reset/snapshot reconstruction. | Accepted and closed after actual-diff review of b22a3bb89: selected simplifications and CNROM bounds repair, both suites 57/57, paired proof and updated 0044 pair. [Evidence](../etc/evidence/m7-t44-s2-mapper-performance.md). |
-| S3 integrated qualification | Full coverage reconciliation, rejected-candidate dispositions, both output modes/widths, required units/integration and paired artifacts. | Pending previous batches. |
+| S3 integrated qualification | Full coverage reconciliation, rejected-candidate dispositions, both output modes/widths, required units/integration and paired artifacts. | Executor reconciliation complete: exact S2 inputs/results reused, owner accepts S2, candidate limits and existing TODO reconciled. Coordinator final review pending. [Audit](../etc/evidence/m7-t44-s3-closure.md). |
 
 Accepted means repeatable whole-frame benefit with unchanged applicable bytes,
 guest timing/state/events and no material regression. Rejected candidates keep
