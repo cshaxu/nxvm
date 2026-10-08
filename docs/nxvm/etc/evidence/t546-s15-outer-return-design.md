@@ -68,17 +68,18 @@ timed out on x64 after 243 of 506 tests, all passing to that point.  The same
 complete 506-test label was then run in three non-overlapping CTest partitions
 (170, 170, and 166) per width.
 
-- x64: all 506 passed.
-- x86: 504 passed in the parallel partitions.  Two established tests exceeded
-  their individual 15-second containment while still printing their success
-  markers: `unit.core-machine-cli-sti-s48-smoke` and
-  `unit.machine-8086-instruction-timing-ledger-smoke`.  Each then passed
-  through CTest with its exact test name and `-j 1` from the identical x86
-  build.  Thus every x86 unit assertion ran successfully, although its one
-  parallel aggregate was not all-green.
+- x64: all 506 passed at `-j 8`.
+- x86: the first 170-test partition passed at `-j 8`.  The two later
+  partitions first exposed host-side 15-second containment at `-j 8` for
+  `unit.core-machine-cli-sti-s48-smoke` and
+  `unit.machine-8086-instruction-timing-ledger-smoke`, despite both printing
+  their success markers.  Each exact test passed at `-j 1`; rerunning those
+  complete, non-overlapping 170-test and 166-test partitions at `-j 4` then
+  passed 170/170 and 166/166.  The final x86 qualification is therefore
+  506/506, with every test identity run by CTest in its passing partition.
 
-This is evidence of an x86 parallel-containment qualification gap, not a
-passing full-suite result and not evidence that either test's CPU assertion
-failed.  S15 does not alter those IBM-PC/timing test budgets; a later
-test-execution scope must decide whether their concurrency/resource contract
-needs correction.  The active packet therefore remains open.
+The fixed `run-unit-tests` aggregate remains unsuitable as a single proof
+command here because its global 300-second containment stopped its x64 run
+after 243 passing tests.  This S neither changes test timeouts nor claims a
+test-runner repair: the complete proof is the bounded, non-overlapping CTest
+partition set above.  No CPU assertion failed.
