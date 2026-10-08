@@ -172,3 +172,12 @@ Remove a test only after identifying duplicate/obsolete ownership and proving
 its required assertions remain. Compiler caches never replace execution or
 input/flag/toolchain validity checks. Lib/Common/MyNES production and owner
 INI/media are excluded; report a shared-production need before editing it.
+
+## Owner-Directed Closure
+
+T546 closed after S24 at the owner's direction. This does not retroactively
+claim the final unrerun qualification matrix. The Model40 x86 fixed 180-second
+Turbo terminal is retained as a separate throughput TODO because the isolated
+accepted S20 binary exceeds the same budget with identical read-only inputs.
+No timeout expansion, profile/media/firmware change, or invented guest time is
+authorized by this closure.

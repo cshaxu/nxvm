@@ -6,7 +6,8 @@ Ordered unnumbered candidates; no numeric implementation task is admitted here.
 
 The separately admitted [T545 eight-corpus refresh](../history/M5-T545-softpc-eight-corpus-refresh.md)
 is closed after full receiving verification. [T546 CPU repair](../history/M5-T546-cpu-audit-gap-repair.md)
-remains open; all T544 findings remain retained. Current owns progress and the next admission.
+is closed by owner direction with its separately recorded Model40 x86
+host-throughput TODO; all T544 findings remain retained.
 
 1. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
 2. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)

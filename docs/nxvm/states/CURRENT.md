@@ -26,49 +26,21 @@
 | T546 S20 | Accepted after actual-change review of Shared `2af784585` and NXVM `8aef7bea4`: the sole CPU timing selector now classifies transfer outcomes from pre-execution state, restores 80286 LEAVE and 80386 VM86 segment-POP source rows, and retains exact delayed retirement accounting. Focused owner gates, all family manifest runners, manifests and complete repository-only units pass 506/506 per width; eight rebuilt 0546 artifacts and identities are recorded in S20 evidence. T546 remains open for S21-S23. |
 | T546 S21 | Complete pending review: one private Core retirement-wait owner now consumes qualified external work for both successful retirement and fault delivery without publishing a synthetic retirement. Direct successful/faulted evidence, manifests and complete repository-only units pass 506/506 per width; eight rebuilt 0546 artifacts are recorded in S21 evidence. T546 remains open for S22-S23. |
 | T546 S22 | Complete pending review: all eighteen transferred receivers now map to S1-S21 owners or source-proven non-applicability. Five-family current timing corpora contain 4,842 rows with zero selected source-unallocated and zero failed entries; dual-width manifest runners pass. T546 remains open for final S23 qualification. |
-| T546 S24 | Complete pending owner review: repaired the private Core shutdown/external-wait arbitration boundary exposed by Model40 qualification. Direct regression, 506/506 repository-only units on each width, one unchanged-contract Model40 x86 external pass and eight rebuilt 0546 artifacts are recorded in `etc/evidence/t546-s24-model40-shutdown-wait.md`. S23 remains the final qualification receiver. |
+| T546 S24 | Closed by owner-approved disposition: shutdown arbitration is narrowed to fault completion and the redundant successful-wait loop turn is removed. The current and isolated S20 Model40 x86 routes both exceed the unchanged 180-second host budget, while current reaches at least as much guest progress. The non-differentiating external-throughput result is retained in TODO, not claimed as a CPU repair failure. |
 
-## Active Packet — M5 T546 S24 Model40 x86 Boot Regression
+## T546 Owner-Directed Closure
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation after S23 qualification exposed a required receiving-App failure; T546 remains the only open NXVM implementation task. |
-| Admission And Approval | Owner's standing automatic S admission; existing x86/chips, x86/core and ibmpc owner boundary is admitted. |
-| Objective | Locate and repair the cross-width Model40 DOS-installation boot regression or nondeterministic path exposed by S23, without weakening the fixed external integration contract. |
-| Non-goals | No timeout expansion as a claimed repair, no BIOS/INI/media workaround, no Lib/Common/MyNES change, no timing downgrade, no new CPU feature or second execution path. |
-| Reference Baseline | S20 passed the original Model40 x86 external context in 155.34 s; S21/S22 and S23 current source; S23 x64 passes in 153.60 s while x86 fails at the unchanged 180 s terminal budget. |
-| Candidate Proposal | `proposals/m5-cpu-audit-gap-repair.md`, S24 corrective continuation. |
-| Files And ABI Surface | Existing x86 CPU/Core and ibmpc machine owners plus owner-local regressions/evidence only; no planned public API. |
-| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; T546 proposal and S20-S23 evidence. |
-| Verification | Establish the first divergent owner/checkpoint against the accepted S20 route; prove the repair with direct owner regression, complete dual-width repository-only units, each original external integration context once per width, and eight receiving artifacts. |
-| Expected Markers | The x86 Model40 route reaches its established terminal without an enlarged timeout; x64/other profiles retain their existing terminal results; no synthetic input, reset or clock publication occurs. |
-| Asset Needs | Existing BYOB ROM/CMOS/media and owner INI are read-only. |
-| Reporting Requirements | Distinguish deterministic owner evidence from host-performance observations; report any unfixable L1, source conflict, required non-owner change or retained failure. |
-| Stop Conditions | Stop and report a required Lib/Common/MyNES change, protected-asset issue, timing downgrade, unresolved source conflict or a failure outside the declared owners. |
-| Exit Criteria | The precise owner defect is repaired and similarly scoped paths are swept; complete required verification and artifacts are recorded in scoped pushed P commits. T546 then returns to S23 final qualification. |
-| Original Owner Request | Finish the CPU semantic/timing repair task completely rather than leaving a passing subset. |
-| Similar-Issue Sweep | Compare reset, retirement/external-wait, fault delivery, A20/KBC/FDC and board deadline/reset paths across the last passing S20 source and current source; inspect both host-width assumptions and all consumers of the repaired owner. |
+T546 is closed at the owner's direction. The owner-approved retained item is
+the Model40 x86 Turbo DOS-installation terminal's fixed 180-second
+host-throughput qualification: current source and the isolated accepted S20
+baseline both exceed the same budget with the same read-only inputs. It is a
+separate TODO, not a passing qualification row, CPU semantic failure, or an
+authorization to change the timeout, profile, firmware, media, or guest time.
 
-## Suspended Packet — M5 T546 S23 Final CPU Qualification
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Final continuation of T546. |
-| Admission And Approval | Owner's standing automatic S admission; no new behavior is authorized solely by qualification. |
-| Objective | Verify the repaired CPU universe at its actual claimed boundary: current code/diff audit, complete dual-width repository-only units, original four-PC external integration matrix and eight receiving artifacts. |
-| Non-goals | No new CPU feature, timing value, source claim, profile workaround, Lib/Common/MyNES change, user asset change or test weakening. |
-| Reference Baseline | S1-S22 evidence, especially S21 wait accounting and S22 convergence `08cf16df6`. |
-| Candidate Proposal | `proposals/m5-cpu-audit-gap-repair.md`, S23. |
-| Files And ABI Surface | Qualification evidence/state and artifacts only unless a test reveals a proven existing-owner defect; no planned public API. |
-| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source policies; full T546 ledger. |
-| Verification | Actual diff/source owner audit; complete x64/x86 repository-only units; each original external integration context once per width; manifests/doc gates; all eight 0546 PC binaries/hash/architecture. |
-| Expected Markers | No claimed receiver lacks direct evidence; no source-unallocated legal catalog route; all selected current checks pass without relaxed predicates, retries or invented timing. |
-| Asset Needs | Existing external BYOB assets and four App integration configurations; user INI/media/snapshot are read-only. |
-| Reporting Requirements | Separate unit, external integration, artifact and unrun-platform evidence; report any failure by real owner and do not close on a contained failure. |
-| Stop Conditions | Stop and report a required behavioral repair, L1/downgrade/source conflict, protected-asset issue or unrelated product failure requiring scope expansion. |
-| Exit Criteria | Complete evidence proves every T546 receiver repaired/qualified or source-proven non-applicable at the stated boundary; pushed final scoped P, clean worktree except user files, and coordinator completion audit. |
-| Original Owner Request | Finish the CPU semantic/timing repair task completely rather than leaving a passing subset. |
-| Similar-Issue Sweep | Inspect final diff and the receiver map against source/timing origins, CPU/Core wait publishers, family manifests, original integration registrations and receiving artifact identities. |
+S24's narrowly scoped Core shutdown-fault repair has direct x64/x86 evidence.
+The interrupted all-unit run and unrerun final external/artifact matrix are
+not claimed as passed by this closure. Historical S1-S23 packets remain below
+as records; no T546 packet is active.
 
 ## Closed Packet — M5 T546 S22 Cross-Family Convergence
 

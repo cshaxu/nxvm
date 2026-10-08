@@ -305,3 +305,18 @@ There was no S7 P or acceptance to rewrite. Accepted S1-S6 and their historical
 numbered references remain immutable. Deferred source evidence and exact test
 patches are preserved; they do not become efficiency failures or vanish from
 the complete T coverage ledger. Current owns the new active packet.
+
+## Owner-Directed T546 Closure
+
+The owner closed T546 after S24 rather than continuing a host-throughput
+investigation. S24 narrows CPU shutdown arbitration to fault completion and
+has direct x64/x86 owner-test evidence. The fixed 180-second Model40 x86 Turbo
+DOS-installation terminal remains a separate TODO: the isolated accepted S20
+binary exceeds the same budget with the same read-only inputs, while current
+source reaches at least as much guest progress. This is not recorded as a CPU
+semantic/timing repair failure or as a passing external row.
+
+The interrupted complete-unit run and the final unrerun external/artifact
+matrix are deliberately not claimed passed. No timeout, profile, firmware,
+media, INI, or guest-time workaround was introduced. Future work must admit a
+separate reproducible IBM PC/runtime throughput investigation.

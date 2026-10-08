@@ -2,19 +2,19 @@
 
 ## Defect And Repair
 
-After an external wait completed, the Core could continue the same retiring
-boundary even when that time advancement had exposed processor shutdown.  The
-generic fault-delivery branch then consumed the shutdown indication as an
-ordinary non-retiring delivery boundary.  The board never received the
-existing shutdown-reset arbitration opportunity and Model40 firmware could
-remain on the non-progressing route.
+The generic fault-delivery branch could consume a processor-shutdown
+indication as an ordinary non-retiring delivery boundary.  Shutdown is now
+resolved at the two actual completion points: immediately after a fault with
+no external wait, and after a non-retiring external wait completes.  The
+existing board `shutdown_reset` callback remains the only reset owner.
+Without that callback, the machine returns the existing
+`WAITING_FOR_INTERRUPT` shutdown result; no clock, reset, input or second
+execution path was added.
 
-The private Core retirement-wait owner now returns through the run-loop
-arbitration boundary after a retiring external wait, and checks shutdown
-before generic fault delivery.  The existing board `shutdown_reset` callback
-remains the only reset owner.  Without that callback, the machine returns the
-existing `WAITING_FOR_INTERRUPT` shutdown result; no clock, reset, input or
-second execution path was added.
+The initial S24 implementation also added a redundant run-loop turn after
+every successful external wait.  It did not contribute to shutdown handling
+and is removed: the established wait owner directly completes the retiring
+instruction after its final external tick, as it did before S24.
 
 ## Regression And Related Result
 
@@ -28,17 +28,28 @@ corrected 80286 `LEAVE` to its sourced five-clock row, while the independent
 receiver still expected eight.  The receiver now uses five; no timing model
 was changed in S24.
 
-## Verification
+## Current Verification Status
 
-- Complete repository-only `unit`: **506/506** on x64 (51.62 s).
-- Complete repository-only `unit`: **506/506** on x86 (51.60 s).
-- Direct Model40 x86 external DOS-installation context: pass (171.85 s),
-  within the unchanged 180-second contract.
-- `git diff --check`: pass.
+- The direct 80386 protected-I/O shutdown/external-wait regression passes on
+  both x64 and x86 after the narrowed repair.
+- The current x86 Model40 three-context integration group passes its Console
+  and CMOS cases, but its DOS-installation context reaches the unchanged
+  180-second host budget before its terminal marker.
+- An isolated S20 (`8aef7bea4`) x86 executable, using the same current media
+  and INI, also reaches that same 180-second budget without its terminal
+  marker.  It reaches approximately 382.7 million guest ticks; current source
+  reaches approximately 388-391 million.  The fixed host budget therefore
+  cannot presently distinguish this S24 repair from the accepted S20 baseline.
+- A one-off 300-second current diagnostic run reaches `installer-running`.
+  This is diagnostic only, not a relaxed integration result.
+- The x86 manifest and `git diff --check` pass.  Full units, complete external
+  matrix and artifact qualification remain required before S24 can close.
 
 ## Receiving Artifacts
 
-All are stripped Release 0.5.0546 artifacts built from the current source.
+The following hashes are the prior provisional S24 artifact record.  Current
+candidate artifacts are unaccepted until fixed-budget qualification can be
+completed.
 
 | App | x64 SHA-256 | x86 SHA-256 |
 | --- | --- | --- |

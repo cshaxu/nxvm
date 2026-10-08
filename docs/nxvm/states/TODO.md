@@ -39,6 +39,15 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
   they are not implicit product features.
 ## Timing-Fidelity Debt
 
+- [ ] **Model40 x86 external-throughput qualification (`TODO(Medium)`).** The
+  fixed 180-second Turbo DOS-installation terminal is not presently a
+  differentiating CPU-semantic result: the isolated accepted S20 executable
+  exceeds the same budget on the current host while current source reaches at
+  least as much guest progress. Preserve the unchanged ROM/CMOS/media and
+  terminal; admit a separate IBM PC/runtime throughput investigation only with
+  a reproducible host baseline. Do not solve it by extending the timeout,
+  changing the profile, or inventing guest time.
+
 - [ ] **Beyond digital timing (`TODO(Medium)`).** Analog/pin/physical-media
   behavior is not proven by register order or a proportional model. Admit a
   bounded source-backed receiver only when a selected product needs it; never
