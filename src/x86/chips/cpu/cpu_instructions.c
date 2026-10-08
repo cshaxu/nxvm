@@ -277,6 +277,7 @@ static void _kma_write_physical(core_machine_cpu_execution_context *context, lib
     lib_u32 cpde;
     lib_u32 cpte;
     lib_u8 paging;
+    lib_u8 pde_accessed;
 } t_kma_linear_translation;
 
 /* Validate a linear page translation without publishing page-table side effects. */
@@ -303,6 +304,16 @@ static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *con
         CPU_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
         return;
         CPU_TRACE_BLOCK_END;
+    }
+    /* The 80386 sets the directory Accessed bit while walking its
+     * second-level page table (80386 PRM 5.3.4.3), even when that walk later
+     * finds a protection violation in the page-table entry. */
+    if (!context->preview_mode) {
+        _SetPageEntry_A(cpde);
+        CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, ppde,
+            X86_CPU_REFERENCE_OF(cpde), 4,
+            CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
+        translation->pde_accessed = LIB_TRUE;
     }
     if (vpl == 0x03)
     {
@@ -374,9 +385,12 @@ static void _kma_commit_physical_linear(core_machine_cpu_execution_context *cont
         CPU_TRACE_CALL_END;
         return;
     }
-    _SetPageEntry_A(translation->cpde);
-    CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, translation->ppde,
-        X86_CPU_REFERENCE_OF(translation->cpde), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
+    if (!translation->pde_accessed) {
+        _SetPageEntry_A(translation->cpde);
+        CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, translation->ppde,
+            X86_CPU_REFERENCE_OF(translation->cpde), 4,
+            CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
+    }
     _SetPageEntry_A(translation->cpte);
     if (write)
         _SetPageEntry_D(translation->cpte);
@@ -929,6 +943,29 @@ static void _m_write_rm(core_machine_cpu_execution_context *context, lib_u8 byte
 
 /* segment accessing unit: _s_ */
 /* kernel segment accessing */
+/* GDTR and IDTR base values name physical memory (80386 PRM 5-15/5-16),
+ * unlike an LDT or TSS descriptor base.  Keep those two table routes outside
+ * the logical-to-linear paging helper. */
+static void _ksa_read_physical_table(core_machine_cpu_execution_context *context,
+    t_cpu_data_sreg *rtable, lib_u32 offset, lib_uptr rdata, lib_u8 byte)
+{
+    const lib_u32 base = rtable->sregtype == SREG_IDTR &&
+        context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0u :
+        rtable->base;
+
+    CPU_TRACE_CALL_BEGIN("_ksa_read_physical_table");
+    CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, base + offset,
+        rdata, byte, context->memory_access_provenance));
+    CPU_TRACE_CALL_END;
+}
+static void _ksa_write_physical_table(core_machine_cpu_execution_context *context,
+    t_cpu_data_sreg *rtable, lib_u32 offset, lib_uptr rdata, lib_u8 byte)
+{
+    CPU_TRACE_CALL_BEGIN("_ksa_write_physical_table");
+    CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, rtable->base + offset,
+        rdata, byte, context->memory_access_provenance));
+    CPU_TRACE_CALL_END;
+}
 static void _ksa_read_idt(core_machine_cpu_execution_context *context, lib_u8 intid, lib_uptr rdata)
 {
     CPU_TRACE_CALL_BEGIN("_s_read_idt");
@@ -938,7 +975,8 @@ static void _ksa_read_idt(core_machine_cpu_execution_context *context, lib_u8 in
         if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286 &&
             X86_CPU_MASK_U16(intid * 4 + 3) > X86_CPU_MASK_U16(cpu_state.data.idtr.limit))
             CPU_TRACE_IMPOSSIBLE_RETURN;
-        CPU_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.idtr, (intid * 4), rdata, 4, 0x00, 0));
+        CPU_TRACE_CHECK_RETURN(_ksa_read_physical_table(context,
+            &cpu_state.data.idtr, intid * 4u, rdata, 4u));
         CPU_TRACE_BLOCK_END;
     }
     else
@@ -946,7 +984,8 @@ static void _ksa_read_idt(core_machine_cpu_execution_context *context, lib_u8 in
         CPU_TRACE_BLOCK_BEGIN("CR0_PE(1)");
         if (X86_CPU_MASK_U16(intid * 8 + 7) > X86_CPU_MASK_U16(cpu_state.data.idtr.limit))
             CPU_TRACE_IMPOSSIBLE_RETURN;
-        CPU_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.idtr, (intid * 8), rdata, 8, 0x00, 0));
+        CPU_TRACE_CHECK_RETURN(_ksa_read_physical_table(context,
+            &cpu_state.data.idtr, intid * 8u, rdata, 8u));
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CALL_END;
@@ -980,7 +1019,8 @@ static void _ksa_read_gdt(core_machine_cpu_execution_context *context, lib_u16 s
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
         CPU_TRACE_BLOCK_END;
     }
-    CPU_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
+    CPU_TRACE_CHECK_RETURN(_ksa_read_physical_table(context,
+        &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8u));
     CPU_TRACE_CALL_END;
 }
 static void _ksa_read_xdt(core_machine_cpu_execution_context *context, lib_u16 selector, lib_uptr rdata)
@@ -1023,7 +1063,8 @@ static void _ksa_write_gdt(core_machine_cpu_execution_context *context, lib_u16 
         CPU_TRACE_IMPOSSIBLE_RETURN;
     if (X86_CPU_MASK_U16(_GetSelector_Offset(selector) + 7) > X86_CPU_MASK_U16(cpu_state.data.gdtr.limit))
         CPU_TRACE_IMPOSSIBLE_RETURN;
-    CPU_TRACE_CHECK_RETURN(_kma_write_logical(context, &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
+    CPU_TRACE_CHECK_RETURN(_ksa_write_physical_table(context,
+        &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8u));
     CPU_TRACE_CALL_END;
 }
 static void _ksa_write_xdt(core_machine_cpu_execution_context *context, lib_u16 selector, lib_uptr rdata)
@@ -1064,8 +1105,9 @@ static void _ksa_test_write_xdt(core_machine_cpu_execution_context *context,
         if (X86_CPU_MASK_U16(_GetSelector_Offset(selector) + 7) >
             X86_CPU_MASK_U16(cpu_state.data.gdtr.limit))
             CPU_TRACE_IMPOSSIBLE_RETURN;
-        CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
-            _GetSelector_Offset(selector), 8, 1, 0x00, 1));
+        /* A GDT write is a physical table cycle, so there is no page walk to
+         * preflight.  The preceding descriptor read already established its
+         * table bound; _ksa_write_gdt performs the sole physical write. */
     }
     CPU_TRACE_CALL_END;
 }
@@ -4742,11 +4784,9 @@ static void _ser_task_transition_tss_plan(
     if (nested)
         CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &newtr,
             TASK_SWITCH_TSS_BACKLINK_OFFSET, 2u, LIB_TRUE, 0u, LIB_TRUE));
-    CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
-        _GetSelector_Offset(cpu_state.data.tr.selector), 8u, LIB_TRUE, 0u,
-        LIB_TRUE));
-    CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
-        _GetSelector_Offset(newcs), 8u, LIB_TRUE, 0u, LIB_TRUE));
+    CPU_TRACE_CHECK_RETURN(_ksa_test_write_xdt(context,
+        cpu_state.data.tr.selector));
+    CPU_TRACE_CHECK_RETURN(_ksa_test_write_xdt(context, newcs));
     if (new_is_32) {
         CPU_TRACE_CHECK_RETURN(_kma_read_logical(context, &newtr,
             TASK_SWITCH_TSS32_CR3_OFFSET, X86_CPU_REFERENCE_OF(incoming32),

@@ -130,7 +130,6 @@ static lib_i32 install(core_machine *machine, lib_bool fault_case,
         sizeof(irq_gate)) && write_bytes(machine, KERNEL_BASE + 0x180u,
         halt, sizeof(halt));
     return write_u32(machine, 0x4000u, 0xc003u) &&
-        write_u32(machine, 0xc000u, 0x0003u) &&
         write_u32(machine, 0xc000u + 2u * 4u, 0xb003u) &&
         write_bytes(machine, 0xb100u, target_code, sizeof(target_code));
 }

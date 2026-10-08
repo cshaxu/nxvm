@@ -768,6 +768,7 @@ static lib_i32 paging_permission_expect_fault(paging_machine *state,
     core_machine_debug_cpu_snapshot cpu = {0};
     lib_u32 pde = 0u;
     lib_u32 pte = 0u;
+    const lib_u32 expected_pde = pde_initial | TEST_PAGE_ACCESSED;
     lib_u16 data = 0u;
     const core_machine_run_budget budget = { 32u, 0u };
     lib_i32 failed = core_machine_run(state->machine, budget, &result) !=
@@ -787,7 +788,7 @@ static lib_i32 paging_permission_expect_fault(paging_machine *state,
     if (!failed) failed |= !paging_permission_read(state->machine, pde_address, &pde,
         sizeof(pde)) || !paging_permission_read(state->machine, pte_address,
             &pte, sizeof(pte)) ||
-        pde != pde_initial || pte != pte_initial;
+        pde != expected_pde || pte != pte_initial;
     if (access == PAGING_PERMISSION_WRITE) {
         if (!failed) failed |= !paging_permission_read(state->machine, TEST_DATA_PHYSICAL,
             &data, sizeof(data)) || data != 0x1234u;
@@ -802,7 +803,7 @@ static lib_i32 paging_permission_expect_fault(paging_machine *state,
             diagnostic.first_fault.exception_mask,
             diagnostic.first_fault.exception_code, cpu.eip, cpu.cr2,
             cpu.eax, cpu.ebx, cpu.esp, cpu.eflags, pde,
-            pde_initial, pte, pte_initial);
+            expected_pde, pte, pte_initial);
     }
     return !failed;
 }

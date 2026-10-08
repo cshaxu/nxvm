@@ -373,6 +373,11 @@ static lib_bool cpu_page_delivery_case(lib_u8 scenario)
 {
     const lib_bool page_first = scenario >= 2u;
     const lib_bool missing_descriptor = scenario != 0u;
+    const lib_bool double_fault = scenario == 2u;
+    const lib_u32 expected_error = scenario == 3u ? 2u : 0u;
+    const lib_u16 expected_cs = double_fault ? 8u :
+        page_first ? 0x1008u : 0x100bu;
+    const lib_u16 expected_frame_cs = page_first ? 8u : 0x0bu;
     const lib_u8 descriptor[] = {0xffu,0xffu,0u,0x20u,0u,
         page_first ? 0x9au : 0xfau,0u,0u};
     const lib_u8 gp_gate[] = {0u,1u,0x0bu,0x10u,0u,0x8eu,0u,0u};
@@ -422,18 +427,20 @@ static lib_bool cpu_page_delivery_case(lib_u8 scenario)
     lib_memory_copy(frame, state.memory + 0x7ff0u, sizeof(frame));
     if (state.execution.stop_requested || state.fault.valid ||
         !state.delivered_exception.valid ||
-        state.delivered_exception.exception_mask != (page_first ? VCPUINS_EXCEPT_DF :
-            missing_descriptor ? VCPUINS_EXCEPT_PF : VCPUINS_EXCEPT_GP) ||
-        state.delivered_exception.exception_code != 0u ||
+        state.delivered_exception.exception_mask != (double_fault ? VCPUINS_EXCEPT_DF :
+            page_first ? VCPUINS_EXCEPT_PF : VCPUINS_EXCEPT_GP) ||
+        state.delivered_exception.exception_code != expected_error ||
         state.delivered_exception.point.eip != 0u ||
-        state.cpu.data.cr2 != (scenario == 2u ? 0x1000u : missing_descriptor ? 0x1308u : 0u) ||
-        state.cpu.data.eip != (page_first ? 0x400u : missing_descriptor ? 0x300u : 0x100u) ||
-        state.cpu.data.cs.selector != (page_first ? 8u : missing_descriptor ? 0x1bu : 0x100bu) ||
-        state.cpu.data.sp != 0x7ff0u || frame[0] != 0u || frame[1] != 0u ||
-        frame[2] != (page_first ? 8u : 0x0bu)) {
-        lib_c_printf("Page delivery scenario=%u stop=%u terminal=%x delivered=%x cr2=%x ip=%x sp=%x frame=%x/%x/%x\n",
+        state.cpu.data.cr2 != (page_first ? 0x1000u : 0u) ||
+        state.cpu.data.eip != (double_fault ? 0x400u : page_first ? 0x300u : 0x100u) ||
+        state.cpu.data.cs.selector != expected_cs ||
+        state.cpu.data.sp != 0x7ff0u || frame[0] != expected_error || frame[1] != 0u ||
+        frame[2] != expected_frame_cs) {
+        lib_c_printf("Page delivery scenario=%u stop=%u terminal=%x delivered=%x/%x point=%x cr2=%x cs=%x ip=%x sp=%x frame=%x/%x/%x\n",
             scenario, state.execution.stop_requested, state.fault.exception_mask,
-            state.delivered_exception.exception_mask, state.cpu.data.cr2,
+            state.delivered_exception.exception_mask, state.delivered_exception.exception_code,
+            state.delivered_exception.point.eip,
+            state.cpu.data.cr2, state.cpu.data.cs.selector,
             state.cpu.data.eip, state.cpu.data.sp, frame[0], frame[1], frame[2]);
         return LIB_FALSE;
     }
