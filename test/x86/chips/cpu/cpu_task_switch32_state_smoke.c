@@ -75,6 +75,7 @@ typedef enum task32_case {
     TASK32_RING3_SOURCE_CALL,
     TASK32_RING3_SOURCE_GATE_JUMP,
     TASK32_RING3_SOURCE_GATE_CALL,
+    TASK32_RING3_SOURCE_GATE_PRIVILEGE,
     TASK32_READABLE_CODE_DATA,
     TASK32_NULL_DATA,
     TASK32_CR3_RESERVED
@@ -278,7 +279,8 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
     if (test_case == TASK32_RING3_SOURCE_DIRECT ||
         test_case == TASK32_RING3_SOURCE_CALL ||
         test_case == TASK32_RING3_SOURCE_GATE_JUMP ||
-        test_case == TASK32_RING3_SOURCE_GATE_CALL) {
+        test_case == TASK32_RING3_SOURCE_GATE_CALL ||
+        test_case == TASK32_RING3_SOURCE_GATE_PRIVILEGE) {
         target.es.selector = 0x23u;
         target.cs.selector = 0x1bu;
         target.ss.selector = 0x23u;
@@ -316,6 +318,7 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
         gdt[0x35u] = 0x8bu;
         fault_vector = 13u;
     }
+    if (test_case == TASK32_RING3_SOURCE_GATE_PRIVILEGE) fault_vector = 13u;
     if (test_case == TASK32_NESTED_TARGET_BUSY) {
         gdt[0x35u] = 0x8bu;
         fault_vector = 13u;
@@ -375,9 +378,19 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
     if (test_case == TASK32_RING3_SOURCE_DIRECT ||
         test_case == TASK32_RING3_SOURCE_CALL ||
         test_case == TASK32_RING3_SOURCE_GATE_JUMP ||
-        test_case == TASK32_RING3_SOURCE_GATE_CALL)
+        test_case == TASK32_RING3_SOURCE_GATE_CALL ||
+        test_case == TASK32_RING3_SOURCE_GATE_PRIVILEGE)
         lib_memory_copy(fixture->memory + TASK32_C_BASE + 0x1cu,
             &ring3_source_target, sizeof(ring3_source_target));
+    if (test_case == TASK32_RING3_SOURCE_GATE_PRIVILEGE) {
+        const lib_u32 ring0_esp = 0x8000u;
+        const lib_u16 ring0_ss = 0x10u;
+
+        lib_memory_copy(fixture->memory + TASK32_B_BASE + 4u,
+            &ring0_esp, sizeof(ring0_esp));
+        lib_memory_copy(fixture->memory + TASK32_B_BASE + 8u,
+            &ring0_ss, sizeof(ring0_ss));
+    }
     lib_memory_copy(fixture->memory + TASK32_CODE_BASE + 0x100u, target_halt,
         sizeof(target_halt));
     if (test_case == TASK32_RING3_DIRECT) {
@@ -387,13 +400,17 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
     if (test_case == TASK32_RING3_SOURCE_DIRECT ||
         test_case == TASK32_RING3_SOURCE_CALL ||
         test_case == TASK32_RING3_SOURCE_GATE_JUMP ||
-        test_case == TASK32_RING3_SOURCE_GATE_CALL) {
+        test_case == TASK32_RING3_SOURCE_GATE_CALL ||
+        test_case == TASK32_RING3_SOURCE_GATE_PRIVILEGE) {
         const lib_u8 ring3_source[] = {
             (test_case == TASK32_RING3_SOURCE_DIRECT ||
              test_case == TASK32_RING3_SOURCE_GATE_JUMP) ? 0xeau : 0x9au,
             0xa0u,0x01u,
             (test_case == TASK32_RING3_SOURCE_GATE_JUMP ||
-             test_case == TASK32_RING3_SOURCE_GATE_CALL) ? 0x3bu : 0x4bu,
+             test_case == TASK32_RING3_SOURCE_GATE_CALL ||
+             test_case == TASK32_RING3_SOURCE_GATE_PRIVILEGE) ?
+                (test_case == TASK32_RING3_SOURCE_GATE_PRIVILEGE ?
+                    0x38u : 0x3bu) : 0x4bu,
             0u
         };
 
@@ -500,6 +517,19 @@ static lib_bool task32_expect(task32_case test_case)
         VCPUINS_EXCEPT_NP : VCPUINS_EXCEPT_TS;
 
     task32_prepare(&fixture, test_case);
+    if (test_case == TASK32_RING3_SOURCE_GATE_PRIVILEGE) {
+        lib_u8 step;
+
+        for (step = 0u; step < 33u && !fixture.delivered_exception.valid;
+            ++step)
+            core_machine_cpu_execution_refresh(&fixture.execution);
+        after = fixture.cpu;
+        return !fixture.fault.valid && fixture.delivered_exception.valid &&
+            (fixture.delivered_exception.exception_mask & VCPUINS_EXCEPT_GP) != 0u &&
+            after.data.tr.selector == 0x30u &&
+            fixture.memory[TASK32_GDT_BASE + 0x35u] == 0x8bu &&
+            fixture.memory[TASK32_GDT_BASE + 0x4du] == 0xe9u;
+    }
     task32_refresh(&fixture, test_case);
     after = fixture.cpu;
     snapshot = fixture.fault.valid ? &fixture.fault : &fixture.delivered_exception;
@@ -745,6 +775,7 @@ int main(void)
         TASK32_RING3_SOURCE_CALL,
         TASK32_RING3_SOURCE_GATE_JUMP,
         TASK32_RING3_SOURCE_GATE_CALL,
+        TASK32_RING3_SOURCE_GATE_PRIVILEGE,
         TASK32_READABLE_CODE_DATA, TASK32_NULL_DATA, TASK32_CR3_RESERVED
     };
     lib_size index;

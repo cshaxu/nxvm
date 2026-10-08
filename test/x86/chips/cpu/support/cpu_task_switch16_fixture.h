@@ -37,6 +37,7 @@ typedef enum cpu_task16_case {
     CPU_TASK16_RING3_SOURCE_CALL,
     CPU_TASK16_RING3_SOURCE_GATE_JUMP,
     CPU_TASK16_RING3_SOURCE_GATE_CALL,
+    CPU_TASK16_RING3_SOURCE_GATE_PRIVILEGE,
     CPU_TASK16_READABLE_CODE_DATA
 } cpu_task16_case;
 
@@ -200,13 +201,17 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
     if (test_case == CPU_TASK16_RING3_SOURCE_DIRECT ||
         test_case == CPU_TASK16_RING3_SOURCE_CALL ||
         test_case == CPU_TASK16_RING3_SOURCE_GATE_JUMP ||
-        test_case == CPU_TASK16_RING3_SOURCE_GATE_CALL) {
+        test_case == CPU_TASK16_RING3_SOURCE_GATE_CALL ||
+        test_case == CPU_TASK16_RING3_SOURCE_GATE_PRIVILEGE) {
         const lib_u8 ring3_source_code[] = {
             (test_case == CPU_TASK16_RING3_SOURCE_DIRECT ||
              test_case == CPU_TASK16_RING3_SOURCE_GATE_JUMP) ? 0xeau : 0x9au,
             0xa0u,0x01u,
             (test_case == CPU_TASK16_RING3_SOURCE_GATE_JUMP ||
-             test_case == CPU_TASK16_RING3_SOURCE_GATE_CALL) ? 0x3bu : 0x4bu,
+             test_case == CPU_TASK16_RING3_SOURCE_GATE_CALL ||
+             test_case == CPU_TASK16_RING3_SOURCE_GATE_PRIVILEGE) ?
+                (test_case == CPU_TASK16_RING3_SOURCE_GATE_PRIVILEGE ?
+                    0x38u : 0x3bu) : 0x4bu,
             0u
         };
 
@@ -214,6 +219,11 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
         state[36u] = 0x53u;
         state[38u] = 0x5bu;
         state[40u] = 0x5bu;
+        if (test_case == CPU_TASK16_RING3_SOURCE_GATE_PRIVILEGE) {
+            state[2u] = 0u;
+            state[3u] = 0x80u;
+            state[4u] = 0x10u;
+        }
         lib_memory_copy(ring3_source_state, state, sizeof(ring3_source_state));
         ring3_source_state[14u] = 0xa0u;
         ring3_source_state[15u] = 0x01u;
@@ -276,7 +286,8 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
     if (test_case == CPU_TASK16_RING3_SOURCE_DIRECT ||
         test_case == CPU_TASK16_RING3_SOURCE_CALL ||
         test_case == CPU_TASK16_RING3_SOURCE_GATE_JUMP ||
-        test_case == CPU_TASK16_RING3_SOURCE_GATE_CALL)
+        test_case == CPU_TASK16_RING3_SOURCE_GATE_CALL ||
+        test_case == CPU_TASK16_RING3_SOURCE_GATE_PRIVILEGE)
         lib_memory_copy(fixture->memory + 0x0800u, ring3_source_state,
             sizeof(ring3_source_state));
     if (test_case == CPU_TASK16_LDT || test_case == CPU_TASK16_LDT_NOT_PRESENT) {
@@ -292,7 +303,8 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
     if (test_case == CPU_TASK16_RING3_SOURCE_DIRECT ||
         test_case == CPU_TASK16_RING3_SOURCE_CALL ||
         test_case == CPU_TASK16_RING3_SOURCE_GATE_JUMP ||
-        test_case == CPU_TASK16_RING3_SOURCE_GATE_CALL) {
+        test_case == CPU_TASK16_RING3_SOURCE_GATE_CALL ||
+        test_case == CPU_TASK16_RING3_SOURCE_GATE_PRIVILEGE) {
         fixture->memory[CPU_TASK16_CODE_BASE + 0x1a0u] = 0xebu;
         fixture->memory[CPU_TASK16_CODE_BASE + 0x1a1u] = 0xfeu;
     }
