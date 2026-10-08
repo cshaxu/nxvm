@@ -44,6 +44,23 @@ static void core_machine_begin_retirement_wait(core_machine *machine,
     machine->cpu_retirement_wait_retires = retires;
 }
 
+/* A board may consume shutdown through its one owned reset.  Otherwise Core
+ * returns the established shutdown boundary without publishing more time. */
+static lib_bool core_machine_finish_shutdown(core_machine *machine,
+    core_machine_run_result *result)
+{
+    if (machine->attachment.shutdown_reset != LIB_NULL &&
+        machine->attachment.shutdown_reset(machine->attachment.context)) {
+        return LIB_FALSE;
+    }
+    machine->lifecycle = CORE_MACHINE_PAUSED;
+    result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+    result->detail = VCPUINS_EXCEPT_SHUTDOWN;
+    result->linear_pc = core_machine_linear_pc(machine);
+    result->elapsed_ticks = machine->elapsed_ticks;
+    return LIB_TRUE;
+}
+
 static core_machine_cpu_profile core_machine_resolve_cpu_profile(
     core_machine_cpu_profile profile)
 {
@@ -877,15 +894,16 @@ lib_status core_machine_run(
                         return core_machine_complete_run_boundary(machine, result);
                     }
                     if (machine->cpu_retirement_wait_ticks != 0u) continue;
-                    /* Time advancement can expose reset, stop or interrupt
-                     * state. Preserve the original arbitration boundary
-                     * before completing a retiring instruction. */
-                    if (machine->cpu_retirement_wait_retires) continue;
                 }
                 if (!machine->cpu_retirement_wait_retires) {
                     machine->cpu_retirement_wait_pending = LIB_FALSE;
                     machine->cpu_retirement_completion_ticks = 0u;
                     machine->cpu_retirement_source_ticks = 0u;
+                    if (core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
+                        if (core_machine_finish_shutdown(machine, result))
+                            return core_machine_complete_run_boundary(machine, result);
+                        continue;
+                    }
                     machine->lifecycle = CORE_MACHINE_PAUSED;
                     result->reason = CORE_MACHINE_STOP_BUDGET;
                     result->linear_pc = core_machine_linear_pc(machine);
@@ -955,19 +973,6 @@ lib_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return LIB_STATUS_INTERNAL_ERROR;
                 }
-                if (core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
-                    /* Return through the loop once so an explicit board reset
-                     * can consume the notification before generic waiting. */
-                    if (machine->attachment.shutdown_reset != LIB_NULL &&
-                        machine->attachment.shutdown_reset(machine->attachment.context))
-                        continue;
-                    machine->lifecycle = CORE_MACHINE_PAUSED;
-                    result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-                    result->detail = VCPUINS_EXCEPT_SHUTDOWN;
-                    result->linear_pc = core_machine_linear_pc(machine);
-                    result->elapsed_ticks = machine->elapsed_ticks;
-                    return core_machine_complete_run_boundary(machine, result);
-                }
                 if (core_machine_cpu_execution_consume_instruction_fault_delivery(
                         machine->executor_cpu_execution)) {
                     /* A synchronous exception frame and vector are committed, but
@@ -989,11 +994,18 @@ lib_status core_machine_run(
                             machine->external_cycle_round_ticks, 0u, 0u, LIB_FALSE);
                         continue;
                     }
-                    machine->lifecycle = CORE_MACHINE_PAUSED;
-                    result->reason = CORE_MACHINE_STOP_BUDGET;
-                    result->linear_pc = core_machine_linear_pc(machine);
-                    result->elapsed_ticks = machine->elapsed_ticks;
-                    return LIB_STATUS_OK;
+                    if (!core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
+                        machine->lifecycle = CORE_MACHINE_PAUSED;
+                        result->reason = CORE_MACHINE_STOP_BUDGET;
+                        result->linear_pc = core_machine_linear_pc(machine);
+                        result->elapsed_ticks = machine->elapsed_ticks;
+                        return LIB_STATUS_OK;
+                    }
+                }
+                if (core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
+                    if (core_machine_finish_shutdown(machine, result))
+                        return core_machine_complete_run_boundary(machine, result);
+                    continue;
                 }
                 if (core_machine_cpu_execution_consume_wait_stall(
                         machine->executor_cpu_execution)) {
