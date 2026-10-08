@@ -18,7 +18,7 @@ static lib_status vm_machine_insert_floppy_at(vm_machine *session, lib_size slot
 static lib_status vm_machine_remove_fdd_direct(vm_machine *session);
 
 static lib_status vm_machine_deliver_key(vm_machine *session,
-    lib_u16 scan_code, lib_u16 virtual_key, lib_bool pressed)
+    const kvm_input_event *event)
 {
     lib_status status = LIB_STATUS_OK;
 
@@ -29,8 +29,8 @@ static lib_status vm_machine_deliver_key(vm_machine *session,
 
         if (core_machine_keyboard_get_native_scan_set(session->board,
                 &native_scan_set) == LIB_STATUS_OK &&
-            vm_profile_default_keyboard_map_host_key_for_scan_set(
-                scan_code, virtual_key, pressed,
+            vm_profile_default_keyboard_map_kvm_event_for_scan_set(
+                event,
                 native_scan_set, &sequence) ==
             LIB_STATUS_OK) {
             status = core_machine_keyboard_receive_native_bytes(session->board,
@@ -61,9 +61,7 @@ lib_status vm_machine_deliver_common_input(vm_machine *session,
     const kvm_input_event *event)
 {
     if (event == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (event->type == KVM_EVENT_KEY) return vm_machine_deliver_key(session,
-        event->data.key.scan_code, (lib_u16)event->data.key.key,
-        event->data.key.pressed != 0u);
+    if (event->type == KVM_EVENT_KEY) return vm_machine_deliver_key(session, event);
     if (event->type == KVM_EVENT_MOUSE) return vm_machine_deliver_mouse(session,
         event->data.mouse.delta_x, event->data.mouse.delta_y,
         event->data.mouse.buttons);

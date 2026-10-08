@@ -9,7 +9,8 @@ static void vm_app_keyboard_clear_result(common_session_command_result *result)
 
 static lib_bool vm_app_keyboard_submit_chord(common_machine *machine, lib_bool cad)
 {
-    const lib_u16 scan[] = { cad ? 0x1du : 0x38u, cad ? 0x38u : 0x1cu, 0x153u };
+    const lib_u16 scan[] = { cad ? 0x1du : 0x38u, cad ? 0x38u : 0x1cu, 0x53u };
+    const lib_u32 flags[] = { 0u, 0u, KVM_KEY_FLAG_EXTENDED };
     const kvm_key key[] = { cad ? KVM_KEY_CONTROL : KVM_KEY_ALT,
         cad ? KVM_KEY_ALT : KVM_KEY_ENTER, KVM_KEY_DELETE };
     lib_u32 count = cad ? 3u : 2u;
@@ -21,6 +22,7 @@ static lib_bool vm_app_keyboard_submit_chord(common_machine *machine, lib_bool c
         input.type = KVM_EVENT_KEY;
         input.data.key.scan_code = scan[index];
         input.data.key.key = key[index];
+        input.data.key.flags = flags[index];
         input.data.key.pressed = LIB_TRUE;
         if (!common_machine_enqueue_input(machine, &input)) return LIB_FALSE;
     }
@@ -29,6 +31,7 @@ static lib_bool vm_app_keyboard_submit_chord(common_machine *machine, lib_bool c
         input.type = KVM_EVENT_KEY;
         input.data.key.scan_code = scan[index];
         input.data.key.key = key[index];
+        input.data.key.flags = flags[index];
         input.data.key.pressed = LIB_FALSE;
         if (!common_machine_enqueue_input(machine, &input)) return LIB_FALSE;
     }
