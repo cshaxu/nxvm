@@ -1879,13 +1879,13 @@ add_test(NAME unit.fdc-boundary-negative
     COMMAND "${CMAKE_COMMAND}"
         "-DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
         "-DWORK=${CMAKE_BINARY_DIR}/test/fdc-boundary-negative"
-        -P "${CMAKE_SOURCE_DIR}/test/ibmpc/board-common/composition/fdc_boundary_negative.cmake")
+        -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/board/fdc_boundary_negative.cmake")
 set_tests_properties(unit.fdc-boundary-negative PROPERTIES LABELS unit TIMEOUT 30)
 add_test(NAME unit.cpu-bus-boundary-negative
     COMMAND "${CMAKE_COMMAND}"
         "-DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
         "-DWORK=${CMAKE_BINARY_DIR}/test/cpu-bus-boundary-negative"
-        -P "${CMAKE_SOURCE_DIR}/test/ibmpc/board-common/composition/cpu_bus_boundary_negative.cmake")
+        -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/board/cpu_bus_boundary_negative.cmake")
 # Negative controls mutate owned copies, never the production CPU headers.
 # Its exclusive work directory permits overlap with other unit tests.
 set_tests_properties(unit.cpu-bus-boundary-negative PROPERTIES
