@@ -673,12 +673,12 @@ static lib_i32 timing_ledger_test_budget_overflow_and_reset(void)
         failed = !timing_ledger_load(machine, nop, sizeof(nop));
     }
     if (!failed) {
-        machine->elapsed_ticks = UINT64_MAX - 2u;
+        machine->elapsed_ticks = LIB_UINT64_MAX - 2u;
         state.advanced_ticks = 0u;
         failed |= core_machine_run(machine, sufficient, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
-            result.ticks != 0u || result.elapsed_ticks != UINT64_MAX - 2u ||
-            machine->elapsed_ticks != UINT64_MAX - 2u || state.advanced_ticks != 0u;
+            result.ticks != 0u || result.elapsed_ticks != LIB_UINT64_MAX - 2u ||
+            machine->elapsed_ticks != LIB_UINT64_MAX - 2u || state.advanced_ticks != 0u;
     }
     core_machine_destroy(machine);
     return failed;

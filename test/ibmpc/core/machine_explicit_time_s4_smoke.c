@@ -101,9 +101,9 @@ lib_i32 main(void)
         core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
         core_machine_get_elapsed_ticks(machine, &elapsed) != LIB_STATUS_OK ||
         elapsed != 1u;
-    machine->elapsed_ticks = UINT64_MAX;
+    machine->elapsed_ticks = LIB_UINT64_MAX;
     failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_INVALID_ARGUMENT ||
-        machine->elapsed_ticks != UINT64_MAX;
+        machine->elapsed_ticks != LIB_UINT64_MAX;
 
     core_machine_destroy(machine);
     if (failed) return 1;

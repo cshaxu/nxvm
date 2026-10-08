@@ -70,7 +70,7 @@ static lib_status core_machine_media_get_sector_range(
         return LIB_STATUS_OK;
     }
     byte_count = (lib_u64)sector_count * info.geometry.bytes_per_sector;
-    if (byte_count > UINT32_MAX || logical_sector > UINT64_MAX /
+    if (byte_count > LIB_UINT32_MAX || logical_sector > LIB_UINT64_MAX /
             info.geometry.bytes_per_sector) {
         core_machine_media_set_result(out_result, CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE);
         return LIB_STATUS_OK;

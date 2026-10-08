@@ -34,11 +34,6 @@ void vm_machine_fdd_destroy(t_fdd **fdd)
     *fdd = LIB_NULL;
 }
 
-static lib_u8 *vm_machine_fdd_address_marks(const t_fdd *fdd)
-{
-    return fdd->connect.address_marks;
-}
-
 static core_machine_media_result vm_machine_fdd_media_query(void *context,
     core_machine_media_info *out_info)
 {
@@ -136,7 +131,7 @@ static core_machine_media_result vm_machine_fdd_media_get_address_mark(
         return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     sector_total = (lib_u64)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector;
     if (logical_sector >= sector_total) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    *out_mark = vm_machine_fdd_address_marks(fdd)[logical_sector] ?
+    *out_mark = fdd->connect.address_marks[logical_sector] ?
         CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA : CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
@@ -157,7 +152,7 @@ static core_machine_media_result vm_machine_fdd_media_set_address_mark(
     if (logical_sector >= sector_total || (mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA &&
         mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA))
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    vm_machine_fdd_address_marks(fdd)[logical_sector] =
+    fdd->connect.address_marks[logical_sector] =
         mark == CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
@@ -366,8 +361,8 @@ void vm_machine_fdd_create_for(t_fdd *fdd)
     }
 }
 
-static lib_status vm_machine_fdd_insert_medium_for(t_fdd *fdd,
-    const char *file_name, lib_storage_medium_mode mode)
+lib_status vm_machine_fdd_insert_for(t_fdd *fdd, const char *file_name,
+    lib_storage_medium_mode mode)
 {
     lib_storage_medium *candidate = LIB_NULL;
     lib_u8 *marks;
@@ -389,12 +384,6 @@ static lib_status vm_machine_fdd_insert_medium_for(t_fdd *fdd,
     }
     return vm_machine_fdd_install_medium(fdd, candidate, marks,
         mode == LIB_STORAGE_MEDIUM_READONLY);
-}
-
-lib_status vm_machine_fdd_insert_for(t_fdd *fdd, const char *file_name,
-    lib_storage_medium_mode mode)
-{
-    return vm_machine_fdd_insert_medium_for(fdd, file_name, mode);
 }
 
 lib_status vm_machine_fdd_remove_for(t_fdd *fdd)

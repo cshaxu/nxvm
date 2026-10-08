@@ -19,8 +19,8 @@ static lib_i32 imul_forms(void)
         const lib_i64 product = (lib_i64)lhs * (lib_i64)rhs;
         const lib_u32 expected = (lib_u32)product;
         const lib_i32 overflows = width ?
-            (product > INT32_MAX || product < INT32_MIN) :
-            (product > INT16_MAX || product < INT16_MIN);
+            (product > LIB_INT32_MAX || product < LIB_INT32_MIN) :
+            (product > LIB_INT16_MAX || product < LIB_INT16_MIN);
         lib_i32 failed = 0;
 
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);

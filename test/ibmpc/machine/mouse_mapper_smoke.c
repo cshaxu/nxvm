@@ -10,7 +10,7 @@ lib_i32 main(void)
         lib_u8 expected_buttons;
     } cases[] = {
         {0, 0, 0u, 0, 0u}, {7, 8, 0xffu, -8, 7u},
-        {-7, -8, 2u, 8, 2u}, {0, INT16_MIN, 0u, INT16_MAX, 0u}
+        {-7, -8, 2u, 8, 2u}, {0, LIB_INT16_MIN, 0u, LIB_INT16_MAX, 0u}
     };
     vm_profile_default_mouse_report report;
 

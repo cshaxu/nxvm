@@ -71,7 +71,7 @@ static void core_machine_capture_time_with_board(const core_machine *machine,
     }
     if (x86_fpu_ticks_until_completion(machine->fpu, &device_ticks) ==
         LIB_STATUS_OK) {
-        if (device_ticks <= UINT64_MAX - machine->elapsed_ticks &&
+        if (device_ticks <= LIB_UINT64_MAX - machine->elapsed_ticks &&
             core_machine_deadline_consider_absolute(machine,
                 machine->elapsed_ticks + device_ticks, &source_ticks)) {
             immediate_due = LIB_TRUE;
@@ -100,7 +100,7 @@ static void core_machine_capture_time_with_board(const core_machine *machine,
         out_observation->progress_disposition = CORE_MACHINE_TIME_PROGRESS_DEADLINE;
     }
     if (board.fast_advance_blocked) return;
-    if (source_ticks != 0u && source_ticks <= UINT64_MAX - machine->elapsed_ticks) {
+    if (source_ticks != 0u && source_ticks <= LIB_UINT64_MAX - machine->elapsed_ticks) {
         out_observation->next_deadline_tick = machine->elapsed_ticks + source_ticks;
         out_observation->next_deadline_valid = LIB_TRUE;
     }
@@ -254,7 +254,7 @@ static void core_machine_advance_scheduler(core_machine *machine,
     lib_u64 target_tick;
 
     if (machine == LIB_NULL || elapsed_ticks == 0u ||
-        UINT64_MAX - machine->elapsed_ticks < elapsed_ticks) {
+        LIB_UINT64_MAX - machine->elapsed_ticks < elapsed_ticks) {
         return;
     }
     target_tick = machine->elapsed_ticks + elapsed_ticks;
@@ -297,7 +297,7 @@ lib_status core_machine_publish_elapsed_ticks(core_machine *machine,
     lib_u64 elapsed_ticks, core_machine_time_publication_origin origin)
 {
     if (machine == LIB_NULL || elapsed_ticks == 0u ||
-        UINT64_MAX - machine->elapsed_ticks < elapsed_ticks) {
+        LIB_UINT64_MAX - machine->elapsed_ticks < elapsed_ticks) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     /* Physical publication is closed to the two owners whose current source

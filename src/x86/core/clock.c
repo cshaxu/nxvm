@@ -72,7 +72,7 @@ lib_status core_machine_clock_domain_source_ticks_until(
     if (domain == LIB_NULL || out_source_ticks == LIB_NULL ||
         delivered_ticks == 0u || domain->numerator == 0u ||
         domain->denominator == 0u ||
-        delivered_ticks > UINT64_MAX / domain->denominator) {
+        delivered_ticks > LIB_UINT64_MAX / domain->denominator) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     required = delivered_ticks * domain->denominator;

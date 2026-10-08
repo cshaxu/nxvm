@@ -6,7 +6,7 @@
 lib_i32 core_machine_timing_add_ticks(lib_u64 *value,
     lib_u64 delta)
 {
-    if (value == LIB_NULL || UINT64_MAX - *value < delta) return 0;
+    if (value == LIB_NULL || LIB_UINT64_MAX - *value < delta) return 0;
     *value += delta;
     return 1;
 }
@@ -3501,7 +3501,7 @@ static lib_u64 core_machine_80386_timing_signed_magnitude(
     lib_u64 sign;
 
     if (bytes == 0u || bytes > sizeof(value)) return 0u;
-    mask = bytes == sizeof(value) ? UINT64_MAX :
+    mask = bytes == sizeof(value) ? LIB_UINT64_MAX :
         (UINT64_C(1) << (bytes * 8u)) - 1u;
     value &= mask;
     sign = UINT64_C(1) << (bytes * 8u - 1u);
@@ -3585,8 +3585,8 @@ lib_i32 core_machine_80386_dynamic_multiply_cost(core_machine_cpu_execution_cont
     }
     magnitude = signed_multiplier ? core_machine_80386_timing_signed_magnitude(
         multiplier, operand_bytes) : multiplier &
-        (operand_bytes == 4u ? UINT32_MAX :
-            operand_bytes == 2u ? UINT16_MAX : UINT8_MAX);
+        (operand_bytes == 4u ? LIB_UINT32_MAX :
+            operand_bytes == 2u ? LIB_UINT16_MAX : LIB_UINT8_MAX);
     scale = core_machine_80386_timing_ceiling_log2(magnitude);
     *out_ticks = magnitude == 0u ? 9u : (scale < 3u ? 3u : scale) + 6u;
     if (memory_multiplier) *out_ticks += 3u;
@@ -3607,7 +3607,7 @@ static lib_u64 core_machine_80386_timing_zero_scan_count(
     lib_u8 bits;
 
     bits = (lib_u8)(operand_bytes * 8u);
-    mask = operand_bytes == 4u ? UINT32_MAX : UINT16_MAX;
+    mask = operand_bytes == 4u ? LIB_UINT32_MAX : LIB_UINT16_MAX;
     value &= mask;
     if (value == 0u) return bits;
     bit = reverse ? UINT64_C(1) << (bits - 1u) : 1u;

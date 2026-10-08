@@ -220,7 +220,7 @@ static lib_i32 _kma_is_reset_vector_fetch(
         return 0;
     }
     return physical >= reset_vector &&
-        physical <= UINT32_MAX - (lib_u32)(bytes - 1u);
+        physical <= LIB_UINT32_MAX - (lib_u32)(bytes - 1u);
 }
 
 /* read content from physical */
@@ -1978,7 +1978,7 @@ _______todo _kpa_test_iomap(core_machine_cpu_execution_context *context, lib_u16
         cpu_state.data.tr.sys.type != VCPU_DESC_SYS_TYPE_TSS_32_BUSY) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
     }
-    if (X86_CPU_MASK_U32(portid) + byte > (lib_u32)UINT16_MAX + 1u) {
+    if (X86_CPU_MASK_U32(portid) + byte > (lib_u32)LIB_UINT16_MAX + 1u) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
     }
     if (cpu_state.data.tr.limit < 0x67u) {

@@ -1278,11 +1278,11 @@ static lib_i32 timing_80286_boundaries(void)
         result.ticks != 0u || !timing_80286_run(machine, &state, 1u, 9u);
     if (!failed) failed |= !timing_80286_load(machine, nop, sizeof(nop));
     if (!failed) {
-        machine->elapsed_ticks = UINT64_MAX - 2u;
+        machine->elapsed_ticks = LIB_UINT64_MAX - 2u;
         state.advanced_ticks = 0u;
         failed |= core_machine_run(machine, one, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
-            result.ticks != 0u || machine->elapsed_ticks != UINT64_MAX - 2u ||
+            result.ticks != 0u || machine->elapsed_ticks != LIB_UINT64_MAX - 2u ||
             state.advanced_ticks != 0u;
     }
     core_machine_destroy(machine);

@@ -302,7 +302,7 @@ void core_machine_cpu_external_cycle_trace(void *opaque,
             machine->external_cycle_pending_provenance ==
                 CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH &&
             provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH &&
-            machine->external_cycle_pending_physical <= UINT32_MAX -
+            machine->external_cycle_pending_physical <= LIB_UINT32_MAX -
                 machine->external_cycle_pending_bytes &&
             address == machine->external_cycle_pending_physical +
                 machine->external_cycle_pending_bytes) {
@@ -330,7 +330,7 @@ void core_machine_cpu_external_cycle_trace(void *opaque,
             }
             machine->external_cycle_page_valid = LIB_TRUE;
             machine->external_cycle_page_tag = page_tag;
-            if (UINT64_MAX - machine->external_cycle_round_ticks < wait_ticks) {
+            if (LIB_UINT64_MAX - machine->external_cycle_round_ticks < wait_ticks) {
                 machine->external_cycle_round_overflow = LIB_TRUE;
             } else {
                 machine->external_cycle_round_ticks += wait_ticks;
@@ -339,7 +339,7 @@ void core_machine_cpu_external_cycle_trace(void *opaque,
         if (pending_matches) {
             lib_u32 wait_ticks = core_machine_external_access_wait_ticks(
                 machine, space, address);
-            if (UINT64_MAX - machine->external_cycle_round_ticks < wait_ticks) {
+            if (LIB_UINT64_MAX - machine->external_cycle_round_ticks < wait_ticks) {
                 machine->external_cycle_round_overflow = LIB_TRUE;
             } else {
                 machine->external_cycle_round_ticks += wait_ticks;

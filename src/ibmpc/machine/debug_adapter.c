@@ -200,7 +200,7 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
         if (!vm_machine_debug_take_completion(&machine->debug, &reason,
                 &executed)) return LIB_STATUS_OK;
         out_result->enabled = LIB_TRUE;
-        out_result->value = executed > UINT32_MAX ? UINT32_MAX :
+        out_result->value = executed > LIB_UINT32_MAX ? LIB_UINT32_MAX :
             (lib_u32)executed;
         if (machine->debug.observation_valid)
             vm_machine_debug_copy_observation(&out_result->observation,

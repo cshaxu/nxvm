@@ -22,6 +22,9 @@ foreach(type IN ITEMS LONG LONGLONG LPCWSTR SIZE_T SHORT PCONSOLE_SCREEN_BUFFER_
         PCRAWINPUTDEVICE PSMALL_RECT SC_SIZE SC_MOVE SC_KEYMENU)
     check_source("${type} value;" "bypasses Types:.*${type}")
 endforeach()
+foreach(constant IN ITEMS UINT8_MAX UINT16_MAX UINT32_MAX UINT64_MAX INT16_MIN INT16_MAX)
+    check_source("lib_u32 value = ${constant};" "bypasses Types:.*${constant}")
+endforeach()
 check_source("#include <windows.h>" "header bypasses Types")
 check_source("void f(void) { SetEvent(0); }" "function/macro bypasses Types")
 foreach(call IN ITEMS AllocConsole FreeConsole FillConsoleOutputCharacterW

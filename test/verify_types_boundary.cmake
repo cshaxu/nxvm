@@ -5,7 +5,7 @@ endif()
 set(raw_types
     "HANDLE|DWORD|BOOL|LONG|LONGLONG|UINT|WORD|SHORT|WCHAR|SIZE_T|LP[A-Z][A-Z0-9_]*|P(C?RAWINPUTDEVICE|CONSOLE_SCREEN_BUFFER_INFO(EX)?|INPUT_RECORD|UINT|SMALL_RECT)|H(WND|ANDLE|DC|BITMAP|CURSOR|MENU)|WPARAM|LPARAM|LRESULT|FILE|size_t")
 set(raw_constants
-    "NULL|TRUE|FALSE|INFINITE|EOF|WAIT_[A-Z0-9_]+|VK_[A-Z0-9_]+|WM_[A-Z0-9_]+|SC_[A-Z0-9_]+|MAPVK_[A-Z0-9_]+|MEM_[A-Z0-9_]+|PAGE_[A-Z0-9_]+|PROT_[A-Z0-9_]+|MAP_[A-Z0-9_]+|_SC_[A-Z0-9_]+")
+    "NULL|TRUE|FALSE|INFINITE|EOF|WAIT_[A-Z0-9_]+|VK_[A-Z0-9_]+|WM_[A-Z0-9_]+|SC_[A-Z0-9_]+|MAPVK_[A-Z0-9_]+|MEM_[A-Z0-9_]+|PAGE_[A-Z0-9_]+|PROT_[A-Z0-9_]+|MAP_[A-Z0-9_]+|_SC_[A-Z0-9_]+|UINT(8|16|32|64)_MAX|INT(8|16|32|64)_(MIN|MAX)")
 set(raw_calls
     "assert|malloc|calloc|realloc|free|memset|memcpy|memmove|memcmp|memchr|strlen|strcmp|strchr|strstr|strtok|fopen|fclose|fread|fwrite|fflush|fprintf|printf|snprintf|remove|sysconf|mmap|mprotect|munmap|Create[A-Z][A-Za-z0-9_]*|Set[A-Z][A-Za-z0-9_]*|Get[A-Z][A-Za-z0-9_]*|WaitFor[A-Z][A-Za-z0-9_]*|CloseHandle|Sleep|ResetEvent|TryEnterCriticalSection|Interlocked[A-Za-z0-9_]*|Virtual[A-Za-z0-9_]*")
 string(APPEND raw_calls "|AllocConsole|FreeConsole|FillConsoleOutputCharacterW|CallWindowProcW|EnumWindows|InitializeCriticalSection|ReleaseSemaphore|TerminateProcess")

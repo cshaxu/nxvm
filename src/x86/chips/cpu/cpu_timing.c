@@ -226,7 +226,7 @@ static lib_i32 core_machine_cpu_timing_apply_8086_lock(core_machine_cpu_executio
     data = &context->instructions->data;
     if (!core_machine_cpu_timing_has_8086_lock_prefix(data) ||
         result->source_timing_unallocated) return 1;
-    if (result->ticks > UINT64_MAX - 2u) return 0;
+    if (result->ticks > LIB_UINT64_MAX - 2u) return 0;
     result->ticks += 2u;
     return 1;
 }

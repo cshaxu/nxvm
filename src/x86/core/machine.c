@@ -826,7 +826,7 @@ lib_status core_machine_run(
             if (machine->cpu_retirement_wait_pending) {
                 if (machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled &&
                     !machine->cpu_cycle_bus_ready) {
-                    if (result->ticks == UINT64_MAX || machine->elapsed_ticks == UINT64_MAX) {
+                    if (result->ticks == LIB_UINT64_MAX || machine->elapsed_ticks == LIB_UINT64_MAX) {
                         (void)core_machine_report_fault(machine, 0x54494d45u);
                         result->reason = CORE_MACHINE_STOP_FAULT;
                         result->linear_pc = core_machine_linear_pc(machine);
@@ -841,8 +841,8 @@ lib_status core_machine_run(
                     continue;
                 }
                 if (machine->cpu_retirement_wait_ticks != 0u) {
-                    if (result->ticks == UINT64_MAX ||
-                        machine->elapsed_ticks == UINT64_MAX) {
+                    if (result->ticks == LIB_UINT64_MAX ||
+                        machine->elapsed_ticks == LIB_UINT64_MAX) {
                         (void)core_machine_report_fault(machine, 0x54494d45u);
                         result->reason = CORE_MACHINE_STOP_FAULT;
                         result->linear_pc = core_machine_linear_pc(machine);
@@ -872,8 +872,8 @@ lib_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return LIB_STATUS_OK;
                 }
-                if (UINT64_MAX - result->ticks < machine->cpu_retirement_completion_ticks ||
-                    UINT64_MAX - machine->elapsed_ticks <
+                if (LIB_UINT64_MAX - result->ticks < machine->cpu_retirement_completion_ticks ||
+                    LIB_UINT64_MAX - machine->elapsed_ticks <
                         machine->cpu_retirement_completion_ticks) {
                     (void)core_machine_report_fault(machine, 0x54494d45u);
                     result->reason = CORE_MACHINE_STOP_FAULT;
@@ -981,8 +981,8 @@ lib_status core_machine_run(
                 instruction_ticks = timing_result.ticks;
                 if (!core_machine_timing_add_ticks(&instruction_ticks,
                         machine->external_cycle_round_ticks) ||
-                    UINT64_MAX - result->ticks < instruction_ticks ||
-                    UINT64_MAX - machine->elapsed_ticks < instruction_ticks) {
+                    LIB_UINT64_MAX - result->ticks < instruction_ticks ||
+                    LIB_UINT64_MAX - machine->elapsed_ticks < instruction_ticks) {
                     (void)core_machine_report_fault(machine, 0x54494d45u);
                     result->reason = CORE_MACHINE_STOP_FAULT;
                     result->linear_pc = core_machine_linear_pc(machine);

@@ -91,7 +91,7 @@ lib_status core_machine_timeline_schedule(core_machine_timeline *timeline,
     lib_u32 slot;
 
     if (timeline == LIB_NULL || callback == LIB_NULL || out_token == LIB_NULL ||
-        due_tick < timeline->now || timeline->next_sequence == UINT64_MAX) {
+        due_tick < timeline->now || timeline->next_sequence == LIB_UINT64_MAX) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     for (slot = 0u; slot < CORE_MACHINE_TIMELINE_EVENT_CAPACITY; ++slot) {
