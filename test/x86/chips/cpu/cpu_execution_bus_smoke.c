@@ -148,6 +148,45 @@ static lib_i32 cpu_bus_cases(const cpu_bus_reset_case *reset)
     return !core_machine_cpu_read_linear(&fixture.execution, 0x100u, &value, 1u);
 }
 
+static lib_i32 cpu_bus_legacy_repeat_interrupt_resume(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086,
+        CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186
+    };
+
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index)
+        for (lib_u8 nmi = 0u; nmi != 2u; ++nmi) {
+            cpu_bus_fixture fixture;
+            lib_u16 return_ip = 0u;
+            const lib_u16 expected = profiles[index] <= CORE_MACHINE_CPU_PROFILE_8088 ?
+                0x101u : 0x100u;
+
+            cpu_bus_prepare(&fixture, profiles[index]);
+            fixture.memory[0x100u] = 0x2eu;
+            fixture.memory[0x101u] = 0xf3u;
+            fixture.memory[0x102u] = 0xa4u;
+            fixture.memory[0x300u] = 0x5au;
+            fixture.memory[nmi ? 0x09u : 0xc1u] = 0x02u;
+            fixture.cpu.data.si = 0x300u;
+            fixture.cpu.data.di = 0x400u;
+            fixture.cpu.data.cx = 2u;
+            if (nmi) {
+                if (!core_machine_cpu_request_nmi(&fixture.execution)) return 1;
+            } else {
+                fixture.cpu.data.eflags |= VCPU_EFLAGS_IF;
+                fixture.interrupt = LIB_TRUE;
+            }
+            core_machine_cpu_execution_refresh(&fixture.execution);
+            lib_memory_copy(&return_ip, fixture.memory + 0x6fau, sizeof(return_ip));
+            if (fixture.acknowledgements != !nmi || fixture.memory[0x400u] != 0x5au ||
+                fixture.cpu.data.cx != 1u || fixture.cpu.data.eip != 0x200u ||
+                return_ip != expected) return 1;
+        }
+    return 0;
+}
+
 lib_i32 main(void)
 {
     static const cpu_bus_reset_case cases[] = {
@@ -160,6 +199,7 @@ lib_i32 main(void)
 
     for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
         if (cpu_bus_cases(&cases[index])) return 1;
+    if (cpu_bus_legacy_repeat_interrupt_resume()) return 1;
     lib_c_printf("%s\n", "M5:T539:S87:CPU-EXECUTION-BUS:OK");
     return 0;
 }

@@ -12950,12 +12950,12 @@ static void MOVSB(core_machine_cpu_execution_context *context)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
-            _m_movs(context, 1);
+            CPU_TRACE_CHECK_RETURN(_m_movs(context, 1));
         else
         {
             if (cpu_state.data.cx)
             {
-                _m_movs(context, 1);
+                CPU_TRACE_CHECK_RETURN(_m_movs(context, 1));
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx)
@@ -13018,12 +13018,12 @@ static void MOVSW(core_machine_cpu_execution_context *context)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
-            _m_movs(context, 2);
+            CPU_TRACE_CHECK_RETURN(_m_movs(context, 2));
         else
         {
             if (cpu_state.data.cx)
             {
-                _m_movs(context, 2);
+                CPU_TRACE_CHECK_RETURN(_m_movs(context, 2));
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx)
@@ -13090,12 +13090,12 @@ static void CMPSB(core_machine_cpu_execution_context *context)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
-            _a_cmps(context, 8);
+            CPU_TRACE_CHECK_RETURN(_a_cmps(context, 8));
         else
         {
             if (cpu_state.data.cx)
             {
-                _a_cmps(context, 8);
+                CPU_TRACE_CHECK_RETURN(_a_cmps(context, 8));
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx &&
@@ -13164,12 +13164,12 @@ static void CMPSW(core_machine_cpu_execution_context *context)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
-            _a_cmps(context, 16);
+            CPU_TRACE_CHECK_RETURN(_a_cmps(context, 16));
         else
         {
             if (cpu_state.data.cx)
             {
-                _a_cmps(context, 16);
+                CPU_TRACE_CHECK_RETURN(_a_cmps(context, 16));
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx &&
@@ -13283,12 +13283,12 @@ static void STOSB(core_machine_cpu_execution_context *context)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
-            _m_stos(context, 1);
+            CPU_TRACE_CHECK_RETURN(_m_stos(context, 1));
         else
         {
             if (cpu_state.data.cx)
             {
-                _m_stos(context, 1);
+                CPU_TRACE_CHECK_RETURN(_m_stos(context, 1));
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx)
@@ -13351,12 +13351,12 @@ static void STOSW(core_machine_cpu_execution_context *context)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
-            _m_stos(context, 2);
+            CPU_TRACE_CHECK_RETURN(_m_stos(context, 2));
         else
         {
             if (cpu_state.data.cx)
             {
-                _m_stos(context, 2);
+                CPU_TRACE_CHECK_RETURN(_m_stos(context, 2));
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx)
@@ -13419,12 +13419,12 @@ static void LODSB(core_machine_cpu_execution_context *context)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
-            _m_lods(context, 1);
+            CPU_TRACE_CHECK_RETURN(_m_lods(context, 1));
         else
         {
             if (cpu_state.data.cx)
             {
-                _m_lods(context, 1);
+                CPU_TRACE_CHECK_RETURN(_m_lods(context, 1));
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx)
@@ -13487,12 +13487,12 @@ static void LODSW(core_machine_cpu_execution_context *context)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
-            _m_lods(context, 2);
+            CPU_TRACE_CHECK_RETURN(_m_lods(context, 2));
         else
         {
             if (cpu_state.data.cx)
             {
-                _m_lods(context, 2);
+                CPU_TRACE_CHECK_RETURN(_m_lods(context, 2));
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx)
@@ -13559,12 +13559,12 @@ static void SCASB(core_machine_cpu_execution_context *context)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
-            _a_scas(context, 8);
+            CPU_TRACE_CHECK_RETURN(_a_scas(context, 8));
         else
         {
             if (cpu_state.data.cx)
             {
-                _a_scas(context, 8);
+                CPU_TRACE_CHECK_RETURN(_a_scas(context, 8));
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx &&
@@ -13633,12 +13633,12 @@ static void SCASW(core_machine_cpu_execution_context *context)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
-            _a_scas(context, 16);
+            CPU_TRACE_CHECK_RETURN(_a_scas(context, 16));
         else
         {
             if (cpu_state.data.cx)
             {
-                _a_scas(context, 16);
+                CPU_TRACE_CHECK_RETURN(_a_scas(context, 16));
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx &&
@@ -18591,6 +18591,22 @@ static void ExecIns(core_machine_cpu_execution_context *context)
     }
     ExecFinal(context);
 }
+
+static void core_machine_cpu_legacy_string_interrupt_resume(
+    core_machine_cpu_execution_context *context)
+{
+    lib_u8 prefixes = 0u;
+
+    if (context->cpu_profile > CORE_MACHINE_CPU_PROFILE_8088 ||
+        !instruction_state.data.flagInsLoop) return;
+    while (prefixes < instruction_state.data.oplen &&
+        _kdf_check_prefix(context, instruction_state.data.opcodes[prefixes]))
+        ++prefixes;
+    if (prefixes > 1u)
+        cpu_state.data.eip = X86_CPU_MASK_U16(
+            instruction_state.data.oldcpu.data.eip + prefixes - 1u);
+}
+
 static void ExecInt(core_machine_cpu_execution_context *context)
 {
     lib_u8 intr = 0x00;
@@ -18620,6 +18636,7 @@ static void ExecInt(core_machine_cpu_execution_context *context)
         context->nmi_pending = LIB_FALSE;
         context->nmi_in_service =
             context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286;
+        core_machine_cpu_legacy_string_interrupt_resume(context);
         ExecInit(context);
         _e_intr_n(context, 0x02, _GetOperandSize, LIB_TRUE);
         if (!instruction_state.data.except) {
@@ -18640,6 +18657,7 @@ static void ExecInt(core_machine_cpu_execution_context *context)
             ExecFinal(context);
             return;
         }
+        core_machine_cpu_legacy_string_interrupt_resume(context);
         ExecInit(context);
         _e_intr_n(context, intr, _GetOperandSize, LIB_TRUE);
         if (!instruction_state.data.except) {
