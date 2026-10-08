@@ -34,6 +34,7 @@ typedef enum cpu_task16_case {
     CPU_TASK16_INDIRECT_OPERAND_ADDRESS32,
     CPU_TASK16_RING3,
     CPU_TASK16_RING3_SOURCE_DIRECT,
+    CPU_TASK16_RING3_SOURCE_CALL,
     CPU_TASK16_READABLE_CODE_DATA
 } cpu_task16_case;
 
@@ -194,8 +195,12 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
         target_code[0] = 0xebu;
         target_code[1] = 0xfeu;
     }
-    if (test_case == CPU_TASK16_RING3_SOURCE_DIRECT) {
-        static const lib_u8 ring3_source_code[] = {0xeau,0xa0u,0x01u,0x4bu,0u};
+    if (test_case == CPU_TASK16_RING3_SOURCE_DIRECT ||
+        test_case == CPU_TASK16_RING3_SOURCE_CALL) {
+        const lib_u8 ring3_source_code[] = {
+            test_case == CPU_TASK16_RING3_SOURCE_CALL ? 0x9au : 0xeau,
+            0xa0u,0x01u,0x4bu,0u
+        };
 
         state[34u] = 0x5bu;
         state[36u] = 0x53u;
@@ -255,7 +260,8 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
     lib_memory_copy(fixture->memory + CPU_TASK16_GDT_BASE, gdt, sizeof(gdt));
     lib_memory_copy(fixture->memory + CPU_TASK16_IDT_BASE, idt, sizeof(idt));
     lib_memory_copy(fixture->memory + CPU_TASK16_B_BASE, state, sizeof(state));
-    if (test_case == CPU_TASK16_RING3_SOURCE_DIRECT)
+    if (test_case == CPU_TASK16_RING3_SOURCE_DIRECT ||
+        test_case == CPU_TASK16_RING3_SOURCE_CALL)
         lib_memory_copy(fixture->memory + 0x0800u, ring3_source_state,
             sizeof(ring3_source_state));
     if (test_case == CPU_TASK16_LDT || test_case == CPU_TASK16_LDT_NOT_PRESENT) {
@@ -268,7 +274,8 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
     }
     lib_memory_copy(fixture->memory + CPU_TASK16_CODE_BASE + 0x100u,
         target_code, sizeof(target_code));
-    if (test_case == CPU_TASK16_RING3_SOURCE_DIRECT) {
+    if (test_case == CPU_TASK16_RING3_SOURCE_DIRECT ||
+        test_case == CPU_TASK16_RING3_SOURCE_CALL) {
         fixture->memory[CPU_TASK16_CODE_BASE + 0x1a0u] = 0xebu;
         fixture->memory[CPU_TASK16_CODE_BASE + 0x1a1u] = 0xfeu;
     }
