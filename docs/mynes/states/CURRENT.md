@@ -2,10 +2,10 @@
 
 ## Current Work
 
-M7 T44 is reopened as a narrow corrective task after the shared-runtime
-receiving qualification exposed two repeatable MyNES lifecycle integration
-timeouts. S1 palette lookup and S2 selective Mapper simplification remain
-qualified in the current 0044 pair.
+M7 T44 is closed. Its accepted S1 palette lookup and S2 selective Mapper
+simplification remain qualified in the current 0044 pair. Corrective S4/S5
+also closed the declared Shared receiving gaps without changing MyNES runtime
+behavior.
 
 Latest governance: owner approved latest-pair-only retention on 2026-09-25.
 Shared P1 330c8cd18 updates Execution; NXVM P2 b85f72179 removes sixteen old
@@ -19,30 +19,18 @@ unchanged; no rebuild is needed. Deleted EXEs remain recoverable in Git history.
 | --- | --- |
 | T43 | Closed on owner instruction: S1-S13 accepted batches reconciled in history; final x64/x86 suites 132/132, six-ROM graphics/text matrix 24/24; remaining deferred contracts have explicit TODO receivers. |
 | T44 S4 | Accepted by owner: Core Driver creates a native audio sink only for product composition; repository-only fixtures no longer wait on a physical endpoint. Shared FDD/HDD unload now returns its actual Storage close result. Focused dual-width and all 12 integration routes per width passed; the x86 CPU exhaustive unit was not rerun under the terminal's 30-second command limit and was not claimed as fresh proof. |
-| T44 S5 | Reopened corrective: retain the accepted ownership/Types cleanup, then repair the declared IBM PC KVM dependency and add the missing close-failure injection proof. |
+| T44 S5 | Closed after owner acceptance: `src/ibmpc` now declares its existing KVM event dependency, and the owner-local FDD/HDD close-failure injection proof confirms error propagation after media lease consumption. The Shared P `56b81532c` and receiving product artifacts are pushed. |
 
 Final audit: [T44 closure](../etc/evidence/m7-t44-s3-closure.md).
 
-## Active T44 S5 Packet
+## T44 S5 Closure
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective: T44 is the latest closed numeric MyNES task; S5 is its next unused subtask. |
-| Admission And Approval | Owner reopened S5 on 2026-10-07 after `7257d068f`, explicitly authorizing the declared IBM PC KVM dependency correction and close-failure injection proof. |
-| Objective | Retain the accepted product-test ownership, Types, and forwarding cleanup; add the declared IBM PC Machine-to-KVM dependency and prove that FDD/HDD close failure reports an error after consuming the media lease. |
-| Non-goals | No Lib behavior/Common change; no public API, warning-policy cleanup, framework, state machine, guest behavior, artifact/config/media/snapshot edit, or broad dead-code claim. The test-only close-result injector does not exist in production linkage. |
-| Reference Baseline | `7257d068f`, clean worktree after S5's accepted ownership/Types/forwarding repair; receiving review found the remaining Machine-to-KVM declaration gap and missing adapter-level close-failure proof. |
-| Candidate Proposal | Corrective continuation of [T44 measured efficiency](../history/M7-T44-measured-emulator-efficiency.md); bounded shared quality repair only. |
-| Files And ABI Surface | Shared IBM PC: `src/ibmpc/verify_corpus.cmake`, `src/ibmpc/CMakeLists.txt`, `test/ibmpc/` and manifests. The test directly compiles the two media owners with a private result injector. No Lib/Common/public ABI or product source change. |
-| Applicable Rules | MyNES Architecture/Coding, Shared Execution/Architecture/Coding/Documentation, NXVM test-boundary rules for the relocated product checks, and CONTRIBUTING reading set. |
-| Verification | Run the IBM PC corpus gate before and after the dependency declaration; build and run the new close-failure test x64/x86 with existing media tests; verify manifests; then run the complete repository-only unit suite x64/x86 before S closure. |
-| Expected Markers | IBM PC Machine declares and links its existing KVM event dependency; injected final-close failure makes both FDD/HDD removal return `LIB_STATUS_IO_ERROR` while `has_media` is false and the owned medium is null; normal media behavior remains unchanged. |
-| Asset Needs | None; no external ROM, media, firmware, configuration, or snapshot input changes. |
-| Reporting Requirements | Report per-item before/after owner and file disposition; distinguish moved product tests from retained component tests; list actual added/removed/net source/test lines and all unverified paths. |
-| Stop Conditions | A required correction needs a Lib behavior/Common change, a public Types vocabulary beyond the narrow missing integer limits, guest behavior change, external asset, or another App source change. |
-| Exit Criteria | Every confirmed item has an owner-local implementation or an explicit evidence-backed disposition; manifests and boundary sweeps pass; no product checker remains in Shared test roots; all required verification and target-scoped P commits are complete. |
-| Original Owner Request | “收口S4，准入S5” followed by the owner-supplied static audit and bounded recommended repair scope. |
-| Similar-Issue Sweep | Search all IBM PC Machine includes and link targets for KVM-base consistency; inspect every FDD/HDD medium destroy caller for a close-result disposition; retain the earlier nested-CMake, Types-bound, and forwarding sweeps as accepted evidence. |
+Corrective S5 is accepted. The corpus dependency gate passes on x64/x86 after
+declaring the existing `ibmpc-machine-conversion -> kvm-base` edge. The new
+owner-local FDD/HDD close-failure test passes on both widths and confirms that
+each remove operation returns the close error only after clearing the consumed
+medium state. No Lib or Common behavior, public ABI, MyNES runtime source,
+INI, snapshot, media, or ROM changed. T44 has no active packet.
 
 S2 evidence: [Mapper qualification](../etc/evidence/m7-t44-s2-mapper-performance.md).
 

@@ -104,3 +104,15 @@ No Shared source import, adjacent App change, native FPS/per-device timing or
 compounded speed claim is accepted. The proposal is archived beside this record.
 Pure governance P records acceptance and closes S3/T44; Queue is empty and no
 next T/S is admitted. Current 0044 pair remains the S2 owner-tested build.
+
+## S5 Corrective Closure
+
+The owner later reopened the latest closed T44 for the narrow receiving repair
+only: declare IBM PC Machine's already-used `kvm-base` dependency and add a
+private close-failure injection proof for FDD/HDD removal. Shared P
+`56b81532c` contains that correction. The IBM PC corpus gate and normal plus
+injected media-removal tests pass on x64 and x86; receiving artifacts were
+rebuilt and pushed only where their hashes changed. This corrective work does
+not revise the accepted MyNES performance claim or modify MyNES runtime
+source, configuration, snapshot, ROM, or media behavior. Owner acceptance
+closes T44 again.
