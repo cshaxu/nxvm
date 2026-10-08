@@ -381,26 +381,27 @@ static lib_i32 lar_lsl_test_invalid_ldtr_is_negative(void)
 
     for (profile_index = 0u; profile_index < sizeof(profiles) /
             sizeof(profiles[0]); ++profile_index) {
-    for (index = 0u; index < sizeof(code) / sizeof(code[0]); ++index) {
-        cpu_instruction_fixture fixture;
-        t_cpu after;
+        for (index = 0u; index < sizeof(code) / sizeof(code[0]); ++index) {
+            cpu_instruction_fixture fixture;
+            t_cpu after;
 
-        cpu_instruction_prepare(&fixture, profiles[profile_index]);
-        cpu_descriptor_query_enter_protected(&fixture, 0u);
-        cpu_descriptor_query_install_gdt(&fixture);
-        fixture.cpu.data.ldtr.flagValid = LIB_FALSE;
-        fixture.cpu.data.ldtr.selector = 0x0030u;
-        fixture.cpu.data.ldtr.base = 0x0700u;
-        fixture.cpu.data.ldtr.limit = 0xffffu;
-        fixture.cpu.data.eax = 0xa1a10000u;
-        fixture.cpu.data.ecx = 0x000cu;
-        lib_memory_copy(fixture.memory + 0x0708u, descriptor,
-            sizeof(descriptor));
-        if (!cpu_descriptor_query_run(&fixture, code[index], sizeof(code[index]),
-                &after) || core_machine_cpu_is_shutdown(&fixture.execution) ||
-            CPU_DESCRIPTOR_QUERY_BIT_IS_SET(after.data.eflags,
-                VCPU_EFLAGS_ZF) || after.data.eax != 0xa1a10000u) return 0;
-    }
+            cpu_instruction_prepare(&fixture, profiles[profile_index]);
+            cpu_descriptor_query_enter_protected(&fixture, 0u);
+            cpu_descriptor_query_install_gdt(&fixture);
+            fixture.cpu.data.ldtr.flagValid = LIB_FALSE;
+            fixture.cpu.data.ldtr.selector = 0x0030u;
+            fixture.cpu.data.ldtr.base = 0x0700u;
+            fixture.cpu.data.ldtr.limit = 0xffffu;
+            fixture.cpu.data.eax = 0xa1a10000u;
+            fixture.cpu.data.ecx = 0x000cu;
+            lib_memory_copy(fixture.memory + 0x0708u, descriptor,
+                sizeof(descriptor));
+            if (!cpu_descriptor_query_run(&fixture, code[index],
+                    sizeof(code[index]), &after) ||
+                core_machine_cpu_is_shutdown(&fixture.execution) ||
+                CPU_DESCRIPTOR_QUERY_BIT_IS_SET(after.data.eflags,
+                    VCPU_EFLAGS_ZF) || after.data.eax != 0xa1a10000u) return 0;
+        }
     }
     return 1;
 }

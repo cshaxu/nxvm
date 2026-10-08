@@ -220,23 +220,24 @@ static lib_i32 verr_verw_test_invalid_ldtr_is_negative(void)
 
     for (profile_index = 0u; profile_index < sizeof(profiles) /
             sizeof(profiles[0]); ++profile_index) {
-    for (index = 0u; index < sizeof(code) / sizeof(code[0]); ++index) {
-        cpu_instruction_fixture fixture;
-        t_cpu after;
+        for (index = 0u; index < sizeof(code) / sizeof(code[0]); ++index) {
+            cpu_instruction_fixture fixture;
+            t_cpu after;
 
-        verr_verw_prepare(&fixture, profiles[profile_index]);
-        fixture.cpu.data.ldtr.flagValid = LIB_FALSE;
-        fixture.cpu.data.ldtr.selector = 0x0030u;
-        fixture.cpu.data.ldtr.base = 0x0700u;
-        fixture.cpu.data.ldtr.limit = 0xffffu;
-        fixture.cpu.data.eax = 0xa1a1000cu;
-        lib_memory_copy(fixture.memory + 0x0708u, descriptor,
-            sizeof(descriptor));
-        if (!cpu_descriptor_query_run(&fixture, code[index], sizeof(code[index]),
-                &after) || core_machine_cpu_is_shutdown(&fixture.execution) ||
-            CPU_DESCRIPTOR_QUERY_BIT_IS_SET(after.data.eflags,
-                VCPU_EFLAGS_ZF)) return 0;
-    }
+            verr_verw_prepare(&fixture, profiles[profile_index]);
+            fixture.cpu.data.ldtr.flagValid = LIB_FALSE;
+            fixture.cpu.data.ldtr.selector = 0x0030u;
+            fixture.cpu.data.ldtr.base = 0x0700u;
+            fixture.cpu.data.ldtr.limit = 0xffffu;
+            fixture.cpu.data.eax = 0xa1a1000cu;
+            lib_memory_copy(fixture.memory + 0x0708u, descriptor,
+                sizeof(descriptor));
+            if (!cpu_descriptor_query_run(&fixture, code[index],
+                    sizeof(code[index]), &after) ||
+                core_machine_cpu_is_shutdown(&fixture.execution) ||
+                CPU_DESCRIPTOR_QUERY_BIT_IS_SET(after.data.eflags,
+                    VCPU_EFLAGS_ZF)) return 0;
+        }
     }
     return 1;
 }
