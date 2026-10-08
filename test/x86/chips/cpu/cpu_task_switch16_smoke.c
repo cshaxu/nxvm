@@ -41,6 +41,17 @@ static lib_bool cpu_task16_expect_fault(core_machine_cpu_profile profile,
 
     cpu_task16_prepare(&fixture, profile, test_case);
     cpu_task16_refresh(&fixture, 4u);
+    if (test_case == CPU_TASK16_LDT_NOT_PRESENT) {
+        if (!fixture.fault.valid && fixture.delivered_exception.valid &&
+            (fixture.delivered_exception.exception_mask & VCPUINS_EXCEPT_NP) != 0u &&
+            fixture.cpu.data.tr.selector == 0x48u) return LIB_TRUE;
+        lib_c_fprintf(lib_c_stderr, "task16 late LDT fault=%u/%x delivered=%u/%x tr=%04x ip=%04x\n",
+            (unsigned)fixture.fault.valid, (unsigned)fixture.fault.exception_mask,
+            (unsigned)fixture.delivered_exception.valid,
+            (unsigned)fixture.delivered_exception.exception_mask,
+            fixture.cpu.data.tr.selector, fixture.cpu.data.ip);
+        return LIB_FALSE;
+    }
     snapshot = fixture.fault.valid ? &fixture.fault : &fixture.delivered_exception;
     if (snapshot->valid && (snapshot->exception_mask & mask) != 0u &&
         snapshot->exception_code == code && fixture.cpu.data.tr.selector == 0x28u)
@@ -68,6 +79,35 @@ static lib_bool cpu_task16_expect_ldt(core_machine_cpu_profile profile)
         after.data.ldtr.base == 0x0900u && after.data.ldtr.limit == 0x17u &&
         after.data.cs.selector == 0x0cu && after.data.ss.selector == 0x14u &&
         after.data.ds.selector == 0x14u && after.data.es.selector == 0x14u;
+}
+
+static lib_bool cpu_task16_expect_ring3(core_machine_cpu_profile profile)
+{
+    cpu_instruction_fixture fixture;
+    t_cpu after = {0};
+
+    cpu_task16_prepare(&fixture, profile, CPU_TASK16_RING3);
+    cpu_task16_refresh(&fixture, 8u);
+    after = fixture.cpu;
+    return !fixture.fault.valid && !fixture.delivered_exception.valid &&
+        !after.data.flagHalt && after.data.tr.selector == 0x30u &&
+        after.data.cs.selector == 0x53u && after.data.cs.dpl == 3u &&
+        after.data.ss.selector == 0x5bu && after.data.ds.selector == 0x5bu &&
+        after.data.es.selector == 0x5bu && after.data.ax == 0x2222u;
+}
+
+static lib_bool cpu_task16_expect_readable_code_data(
+    core_machine_cpu_profile profile)
+{
+    cpu_instruction_fixture fixture;
+    t_cpu after = {0};
+
+    cpu_task16_prepare(&fixture, profile, CPU_TASK16_READABLE_CODE_DATA);
+    cpu_task16_refresh(&fixture, 8u);
+    after = fixture.cpu;
+    return !fixture.fault.valid && !fixture.delivered_exception.valid &&
+        after.data.flagHalt && after.data.tr.selector == 0x30u &&
+        after.data.es.selector == 0x08u && after.data.ds.selector == 0x08u;
 }
 
 static lib_bool cpu_task16_expect_nested_return(core_machine_cpu_profile profile)
@@ -228,6 +268,12 @@ int main(void)
         CPU_TASK16_GATE);
     failed |= !cpu_task16_expect_ldt(CORE_MACHINE_CPU_PROFILE_80286);
     failed |= !cpu_task16_expect_ldt(CORE_MACHINE_CPU_PROFILE_80386);
+    failed |= !cpu_task16_expect_ring3(CORE_MACHINE_CPU_PROFILE_80286);
+    failed |= !cpu_task16_expect_ring3(CORE_MACHINE_CPU_PROFILE_80386);
+    failed |= !cpu_task16_expect_readable_code_data(
+        CORE_MACHINE_CPU_PROFILE_80286);
+    failed |= !cpu_task16_expect_readable_code_data(
+        CORE_MACHINE_CPU_PROFILE_80386);
     failed |= !cpu_task16_expect_nested_return(CORE_MACHINE_CPU_PROFILE_80286);
     failed |= !cpu_task16_expect_nested_return(CORE_MACHINE_CPU_PROFILE_80386);
     failed |= !cpu_task16_expect_gate_rejection(CORE_MACHINE_CPU_PROFILE_80286,

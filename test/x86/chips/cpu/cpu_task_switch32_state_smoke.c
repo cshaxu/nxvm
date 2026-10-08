@@ -5,6 +5,7 @@
 #define TASK32_IDT_BASE 0x0400u
 #define TASK32_A_BASE 0x0600u
 #define TASK32_B_BASE 0x0700u
+#define TASK32_C_BASE 0x0800u
 #define TASK32_CODE_BASE 0x2000u
 #define TASK32_DATA_BASE 0x3000u
 
@@ -68,7 +69,11 @@ typedef enum task32_case {
     TASK32_NESTED_INVALID_CODE,
     TASK32_NESTED_TARGET_BUSY,
     TASK32_NESTED_TARGET_SHORT,
-    TASK32_NESTED_STACK_LIMIT
+    TASK32_NESTED_STACK_LIMIT,
+    TASK32_RING3_DIRECT,
+    TASK32_READABLE_CODE_DATA,
+    TASK32_NULL_DATA,
+    TASK32_CR3_RESERVED
 } task32_case;
 
 static void task32_set_fault_gate(lib_u8 *idt, lib_u8 vector)
@@ -80,6 +85,8 @@ static void task32_set_fault_gate(lib_u8 *idt, lib_u8 vector)
     idt[index + 2u] = 0x08u;
     idt[index + 5u] = 0x86u;
 }
+
+static lib_bool task32_is_post_switch_rejection(task32_case test_case);
 
 static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_case)
 {
@@ -97,12 +104,13 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0x30u,0,0x92u,0,0,
-        0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,
+        0xffu,0xffu,0,0x20u,0,0xfau,0,0,
+        0xffu,0xffu,0,0x30u,0,0xf2u,0,0,
         0xffu,0,0,0x06u,0,0x89u,0,0,
         0xffu,0,0,0x07u,0,0x89u,0,0,
         0,0,0x30u,0,0,0x85u,0,0,
-        0x17u,0,0,0x09u,0,0x82u,0,0
+        0x17u,0,0,0x09u,0,0x82u,0,0,
+        0x67u,0,0,0x08u,0,0x89u,0,0
     };
     static const lib_u8 ldt_base[] = {
         0,0,0,0,0,0,0,0,
@@ -110,7 +118,7 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
         0xffu,0xffu,0,0x30u,0,0x92u,0,0
     };
     static const lib_u8 target_halt[] = {0xf4u};
-    static const lib_u8 gdt_pointer[] = {0x47u,0,0,0x03u,0,0};
+    static const lib_u8 gdt_pointer[] = {0x4fu,0,0,0x03u,0,0};
     static const lib_u8 bootstrap[] = {
         0x0fu,0x01u,0x16u,0u,0x01u,
         0xb8u,1u,0u,0x0fu,0x01u,0xf0u,
@@ -130,6 +138,12 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
         .ecx = 0xc1c13333u, .edx = 0xd1d14444u, .ebx = 0xb1b15555u,
         .esp = 0x8000u, .ebp = 0xe1e16666u, .esi = 0xf1f17777u,
         .edi = 0x81818888u, .es = {0x10u,0u}, .cs = {0x08u,0u},
+        .ss = {0x10u,0u}, .ds = {0x10u,0u}, .fs = {0x10u,0u},
+        .gs = {0x10u,0u}
+    };
+    task32_state fault_target = {
+        .cr3 = 0x00001000u, .eip = 0x180u, .eflags = 0x2u,
+        .esp = 0x8000u, .es = {0x10u,0u}, .cs = {0x08u,0u},
         .ss = {0x10u,0u}, .ds = {0x10u,0u}, .fs = {0x10u,0u},
         .gs = {0x10u,0u}
     };
@@ -247,6 +261,28 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
         }
     }
     if (test_case == TASK32_INVALID_CODE) target.cs.selector = 0x10u;
+    if (test_case == TASK32_RING3_DIRECT) {
+        target.es.selector = 0x23u;
+        target.cs.selector = 0x1bu;
+        target.ss.selector = 0x23u;
+        target.ds.selector = 0x23u;
+        target.fs.selector = 0x23u;
+        target.gs.selector = 0x23u;
+        target.eflags = 0x3002u;
+    }
+    if (test_case == TASK32_READABLE_CODE_DATA) {
+        target.es.selector = 0x08u;
+        target.ds.selector = 0x08u;
+        target.fs.selector = 0x08u;
+        target.gs.selector = 0x08u;
+    }
+    if (test_case == TASK32_NULL_DATA) {
+        target.es.selector = 0u;
+        target.ds.selector = 0u;
+        target.fs.selector = 0u;
+        target.gs.selector = 0u;
+    }
+    if (test_case == TASK32_CR3_RESERVED) target.cr3 = 0x00001003u;
     if (test_case == TASK32_NESTED_INVALID_CODE) {
         target.cs.selector = 0x10u;
         fault_vector = 10u;
@@ -297,6 +333,14 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
         if (test_case == TASK32_LDT_BAD_DATA) ldt[21u] = 0x9au;
     }
     task32_set_fault_gate(idt, fault_vector);
+    if (task32_is_post_switch_rejection(test_case)) {
+        const lib_u8 fault_gate[] = {0,0,0x48u,0,0,0x85u,0,0};
+
+        lib_memory_copy(idt + (lib_u16)fault_vector * 8u, fault_gate,
+            sizeof(fault_gate));
+        lib_memory_copy(fixture->memory + TASK32_C_BASE + 0x1cu,
+            &fault_target, sizeof(fault_target));
+    }
     fixture->memory[TASK32_CODE_BASE + 0x180u] = 0xf4u;
     lib_memory_copy(fixture->memory + 0x0100u, gdt_pointer, sizeof(gdt_pointer));
     lib_memory_copy(fixture->memory + TASK32_GDT_BASE, gdt, sizeof(gdt));
@@ -305,6 +349,10 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
         sizeof(target));
     lib_memory_copy(fixture->memory + TASK32_CODE_BASE + 0x100u, target_halt,
         sizeof(target_halt));
+    if (test_case == TASK32_RING3_DIRECT) {
+        fixture->memory[TASK32_CODE_BASE + 0x100u] = 0xebu;
+        fixture->memory[TASK32_CODE_BASE + 0x101u] = 0xfeu;
+    }
     if (test_case == TASK32_NESTED_RETURN) {
         fixture->memory[TASK32_CODE_BASE + 0x100u] = 0xcfu;
         fixture->memory[TASK32_CODE_BASE + source_bytes] = 0xf4u;
@@ -361,6 +409,16 @@ static lib_bool task32_is_rejection(task32_case test_case)
         test_case <= TASK32_LDT_BAD_DATA) ||
         (test_case >= TASK32_NESTED_INVALID_CODE &&
         test_case <= TASK32_NESTED_STACK_LIMIT);
+}
+
+static lib_bool task32_is_post_switch_rejection(task32_case test_case)
+{
+    return test_case == TASK32_INVALID_CODE ||
+        test_case == TASK32_STACK_LIMIT ||
+        (test_case >= TASK32_LDT_BAD_DESCRIPTOR &&
+            test_case <= TASK32_LDT_BAD_DATA) ||
+        test_case == TASK32_NESTED_INVALID_CODE ||
+        test_case == TASK32_NESTED_STACK_LIMIT;
 }
 
 static lib_bool task32_is_special(task32_case test_case)
@@ -423,6 +481,31 @@ static lib_bool task32_expect(task32_case test_case)
         outgoing.eip == 0x101u && outgoing.eax == 0xa1a12222u &&
         fixture.memory[TASK32_GDT_BASE + 0x2du] == 0x8bu &&
         fixture.memory[TASK32_GDT_BASE + 0x35u] == 0x89u) return LIB_TRUE;
+    if (test_case == TASK32_RING3_DIRECT && !fixture.fault.valid &&
+        !fixture.delivered_exception.valid && !after.data.flagHalt &&
+        after.data.tr.selector == 0x30u && after.data.cs.selector == 0x1bu &&
+        after.data.cs.dpl == 3u && after.data.ss.selector == 0x23u &&
+        after.data.ds.selector == 0x23u && after.data.es.selector == 0x23u &&
+        after.data.fs.selector == 0x23u && after.data.gs.selector == 0x23u &&
+        after.data.eax == 0xa1a12222u) return LIB_TRUE;
+    if (test_case == TASK32_READABLE_CODE_DATA && !fixture.fault.valid &&
+        !fixture.delivered_exception.valid && after.data.flagHalt &&
+        after.data.tr.selector == 0x30u && after.data.es.selector == 0x08u &&
+        after.data.ds.selector == 0x08u && after.data.fs.selector == 0x08u &&
+        after.data.gs.selector == 0x08u) return LIB_TRUE;
+    if (test_case == TASK32_NULL_DATA && !fixture.fault.valid &&
+        !fixture.delivered_exception.valid && after.data.flagHalt &&
+        after.data.tr.selector == 0x30u && after.data.es.selector == 0u &&
+        after.data.ds.selector == 0u && after.data.fs.selector == 0u &&
+        after.data.gs.selector == 0u) return LIB_TRUE;
+    if (test_case == TASK32_CR3_RESERVED && !fixture.fault.valid &&
+        !fixture.delivered_exception.valid && after.data.flagHalt &&
+        after.data.tr.selector == 0x30u && after.data.cr3 == 0x00001003u)
+        return LIB_TRUE;
+    if (task32_is_post_switch_rejection(test_case))
+        return !fixture.fault.valid && fixture.delivered_exception.valid &&
+            (fixture.delivered_exception.exception_mask & expected_fault) != 0u &&
+            after.data.tr.selector == 0x48u && after.data.flagHalt;
     if (nested && !rejection && !fixture.fault.valid &&
         !fixture.delivered_exception.valid && after.data.flagHalt &&
         after.data.tr.selector == 0x30u && after.data.eip == 0x101u &&
@@ -567,7 +650,8 @@ int main(void)
         TASK32_NESTED_GATE_CALL, TASK32_GATE_JMP, TASK32_GATE_JMP_OPERAND32,
         TASK32_NESTED_RETURN, TASK32_NESTED_INVALID_CODE,
         TASK32_NESTED_TARGET_BUSY, TASK32_NESTED_TARGET_SHORT,
-        TASK32_NESTED_STACK_LIMIT
+        TASK32_NESTED_STACK_LIMIT, TASK32_RING3_DIRECT,
+        TASK32_READABLE_CODE_DATA, TASK32_NULL_DATA, TASK32_CR3_RESERVED
     };
     lib_size index;
 

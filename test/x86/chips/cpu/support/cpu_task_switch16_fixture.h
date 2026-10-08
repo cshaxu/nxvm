@@ -31,7 +31,9 @@ typedef enum cpu_task16_case {
     CPU_TASK16_OPERAND32,
     CPU_TASK16_INDIRECT_OPERAND32,
     CPU_TASK16_INDIRECT_ADDRESS32,
-    CPU_TASK16_INDIRECT_OPERAND_ADDRESS32
+    CPU_TASK16_INDIRECT_OPERAND_ADDRESS32,
+    CPU_TASK16_RING3,
+    CPU_TASK16_READABLE_CODE_DATA
 } cpu_task16_case;
 
 static inline void cpu_task16_set_gate(lib_u8 *idt, lib_u8 vector,
@@ -57,7 +59,10 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
         0x2bu,0,0,0x06u,0,0x83u,0,0,
         0x2bu,0,0,0x07u,0,0x81u,0,0,
         0,0,0x30u,0,0,0x85u,0,0,
-        0x17u,0,0,0x09u,0,0x82u,0,0
+        0x17u,0,0,0x09u,0,0x82u,0,0,
+        0x2bu,0,0,0x08u,0,0x81u,0,0,
+        0xffu,0xffu,0,0x20u,0,0xfau,0,0,
+        0xffu,0xffu,0,0x30u,0,0xf2u,0,0
     };
     static const lib_u8 target_state[] = {
         0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0,
@@ -179,6 +184,19 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
         state[42u] = 0x40u;
         if (test_case == CPU_TASK16_LDT_NOT_PRESENT) gdt[8u * 8u + 5u] = 0x02u;
     }
+    if (test_case == CPU_TASK16_RING3) {
+        state[34u] = 0x5bu;
+        state[36u] = 0x53u;
+        state[38u] = 0x5bu;
+        state[40u] = 0x5bu;
+        target_code[0] = 0xebu;
+        target_code[1] = 0xfeu;
+    }
+    if (test_case == CPU_TASK16_READABLE_CODE_DATA) {
+        state[34u] = 0x08u;
+        state[40u] = 0x08u;
+        target_code[0] = 0xf4u;
+    }
     if (test_case == CPU_TASK16_LOCK) {
         source[3] = 0xf0u;
         source[4] = 0xeau;
@@ -201,6 +219,17 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
         lib_memory_copy(idt + 8u * 8u, double_fault_gate,
             sizeof(double_fault_gate));
         lib_memory_copy(idt + 13u * 8u, fault_gate, sizeof(fault_gate));
+    }
+    if (test_case == CPU_TASK16_LDT_NOT_PRESENT) {
+        const lib_u8 fault_gate[] = {0,0,0x48u,0,0,0x85u,0,0};
+        lib_u8 fault_state[sizeof(state)];
+
+        lib_memory_copy(fault_state, target_state, sizeof(fault_state));
+        fault_state[14u] = 0x80u;
+        fault_state[15u] = 0x01u;
+        lib_memory_copy(idt + 11u * 8u, fault_gate, sizeof(fault_gate));
+        lib_memory_copy(fixture->memory + 0x0800u, fault_state,
+            sizeof(fault_state));
     }
     if (test_case == CPU_TASK16_GATE_NOT_PRESENT)
         lib_memory_set(idt + 11u * 8u, 0, 8u);
