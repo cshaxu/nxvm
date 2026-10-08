@@ -37,40 +37,34 @@ static lib_i32 vm_machine_capture_display_snapshot(void *context,
         session->board, out_snapshot) == LIB_STATUS_OK;
 }
 
-x86_video_kind vm_machine_publish_display(vm_machine *machine,
+lib_status vm_machine_publish_display(vm_machine *machine,
     lib_bool force)
 {
     x86_video_snapshot_observation observation;
     lib_bool buffer_changed;
     lib_bool cursor_changed;
-
     x86_video_snapshot snapshot;
+    lib_status status;
 
-    if (machine == LIB_NULL) return X86_VIDEO_KIND_TEXT;
-    if (!vm_machine_display_publish_is_due(machine, force)) return machine->display_kind;
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (!vm_machine_display_publish_is_due(machine, force)) return LIB_STATUS_OK;
     if (!force && core_machine_observe_display_snapshot(machine->board,
             machine->display_snapshot_generation_valid,
             machine->display_snapshot_generation, &observation) == LIB_STATUS_OK &&
         !observation.capture_required) {
-        return machine->display_kind;
+        return LIB_STATUS_OK;
     }
     lib_memory_set(&observation, 0, sizeof(observation));
     if (!core_machine_display_capture_snapshot_from(machine->display_provider,
-        &snapshot)) return machine->display_kind;
-    machine->display_kind = snapshot.kind;
+        &snapshot)) return LIB_STATUS_IO_ERROR;
     buffer_changed = snapshot.buffer_changed;
     cursor_changed = snapshot.cursor_changed;
-    if (!force && !buffer_changed && !cursor_changed) return snapshot.kind;
-
-    if (snapshot.kind == X86_VIDEO_KIND_TEXT) {
-        if (snapshot.columns > X86_VIDEO_MAX_COLUMNS)
-            snapshot.columns = X86_VIDEO_MAX_COLUMNS;
-        if (snapshot.rows > X86_VIDEO_MAX_ROWS)
-            snapshot.rows = X86_VIDEO_MAX_ROWS;
-    }
-    if (vm_machine_frame_from_display(&snapshot, machine->display_generation + 1u,
-            &machine->latest_frame) == LIB_STATUS_OK)
-        machine->latest_frame_valid = LIB_TRUE;
+    if (!force && !buffer_changed && !cursor_changed) return LIB_STATUS_OK;
+    status = vm_machine_frame_from_display(&snapshot, machine->display_generation + 1u,
+        &machine->latest_frame);
+    if (status != LIB_STATUS_OK) return status;
+    machine->latest_frame_valid = LIB_TRUE;
+    machine->display_kind = snapshot.kind;
     ++machine->display_generation;
     if (core_machine_observe_display_snapshot(machine->board,
             LIB_FALSE, 0u, &observation) == LIB_STATUS_OK &&
@@ -80,7 +74,7 @@ x86_video_kind vm_machine_publish_display(vm_machine *machine,
     } else {
         machine->display_snapshot_generation_valid = LIB_FALSE;
     }
-    return snapshot.kind;
+    return LIB_STATUS_OK;
 }
 
 void vm_machine_bind_display(vm_machine *machine)

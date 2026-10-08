@@ -23,6 +23,7 @@ static base_sync_event *native_wait_entered;
 static base_sync_event *native_wait_release;
 static lib_bool native_wait_blocks;
 static lib_bool interrupt_prefix;
+static lib_status signal_status = LIB_STATUS_OK;
 static lib_i16 delivered_prefix[6];
 static lib_u32 delivered_count;
 static base_sync_event *idle_wait_entered;
@@ -39,6 +40,17 @@ static base_sync_wait_result audio_test_wait_any(base_sync_event *const *events,
         return BASE_SYNC_WAIT_CANCELLED;
     }
     return base_sync_wait_any(events, count, task, timeout, index);
+}
+
+static lib_status audio_test_event_signal(base_sync_event *event)
+{
+    lib_status status = signal_status;
+
+    if (status != LIB_STATUS_OK) {
+        signal_status = LIB_STATUS_OK;
+        return status;
+    }
+    return base_sync_event_signal(event);
 }
 
 lib_status audio_stream_platform_create(const lib_audio_stream_options *options,
@@ -121,7 +133,9 @@ lib_status audio_stream_platform_destroy(audio_stream_platform **platform)
 }
 
 #define base_sync_wait_any audio_test_wait_any
+#define base_sync_event_signal audio_test_event_signal
 #include "lib/audio/stream.c"
+#undef base_sync_event_signal
 #undef base_sync_wait_any
 
 int main(void)
@@ -199,6 +213,18 @@ int main(void)
     destroy_status = LIB_STATUS_OK;
     lib_test_assert(lib_audio_stream_destroy(&stream) == LIB_STATUS_OK && stream == LIB_NULL);
     lib_test_assert(lib_audio_stream_destroy(&stream) == LIB_STATUS_OK);
+
+    /* Queue ownership transfers before wake-up. A failed wake makes that
+     * accepted prefix terminal without inviting the producer to resend it. */
+    lib_test_assert(lib_audio_stream_create(&options, &stream) == LIB_STATUS_OK);
+    signal_status = LIB_STATUS_IO_ERROR;
+    lib_test_assert(lib_audio_stream_enqueue(stream, samples, 3u, &accepted) ==
+        LIB_STATUS_IO_ERROR && accepted == 3u);
+    lib_test_assert(lib_audio_stream_query(stream, &queued, &writable) ==
+        LIB_STATUS_IO_ERROR);
+    lib_test_assert(lib_audio_stream_enqueue(stream, samples, 1u, &accepted) ==
+        LIB_STATUS_IO_ERROR && accepted == 0u);
+    lib_test_assert(lib_audio_stream_destroy(&stream) == LIB_STATUS_OK && stream == LIB_NULL);
 
     /* Fill the producer FIFO while the native wait is held, then make the
      * write fail. A waiter must receive the terminal failure, never false

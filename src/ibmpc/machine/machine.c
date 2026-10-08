@@ -70,12 +70,16 @@ lib_status vm_machine_deliver_common_input(vm_machine *session,
     return LIB_STATUS_UNSUPPORTED;
 }
 
-lib_bool vm_machine_copy_common_frame(vm_machine *machine, common_machine_frame *frame)
+lib_status vm_machine_copy_common_frame(vm_machine *machine, common_machine_frame *frame)
 {
-    if (machine == LIB_NULL || frame == LIB_NULL) return LIB_FALSE;
-    (void)vm_machine_publish_display(machine, LIB_FALSE);
-    if (!machine->latest_frame_valid) return LIB_FALSE;
-    return common_machine_frame_copy(frame, &machine->latest_frame);
+    lib_status status;
+
+    if (machine == LIB_NULL || frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = vm_machine_publish_display(machine, LIB_FALSE);
+    if (status != LIB_STATUS_OK) return status;
+    if (!machine->latest_frame_valid) return LIB_STATUS_OK;
+    return common_machine_frame_copy(frame, &machine->latest_frame) ?
+        LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
 static lib_status vm_machine_copy_path(char *destination, lib_size capacity,
@@ -379,8 +383,7 @@ lib_status vm_machine_reconfigure_memory(vm_machine *session,
     status = core_machine_reconfigure_memory(session->core_machine, memory_bytes);
     if (status != LIB_STATUS_OK) return status;
     vm_machine_debug_reset(&session->debug);
-    vm_machine_publish_display(session, LIB_TRUE);
-    return LIB_STATUS_OK;
+    return vm_machine_publish_display(session, LIB_TRUE);
 }
 
 void vm_machine_destroy(vm_machine *session)

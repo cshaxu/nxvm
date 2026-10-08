@@ -3,14 +3,6 @@
 #include "ibmpc/product/factory_interface.h"
 #include "ibmpc/machine/machine_interface.h"
 
-static lib_bool vm_app_config_text_equal(const lib_u8 *left, const char *right)
-{
-    while (*left != '\0' && *right != '\0') {
-        if (*left++ != (lib_u8)*right++) return LIB_FALSE;
-    }
-    return *left == '\0' && *right == '\0';
-}
-
 lib_status vm_app_configure_machine(const vm_app_machine_binding *binding,
     const vm_session_request *request,
     vm_machine_config *out_config)
@@ -19,8 +11,8 @@ lib_status vm_app_configure_machine(const vm_app_machine_binding *binding,
 
     if (out_config == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     lib_memory_set(out_config, 0, sizeof(*out_config));
-    if (binding == LIB_NULL || request == LIB_NULL || (!vm_app_config_text_equal(request->display, "console") &&
-         !vm_app_config_text_equal(request->display, "window"))) return LIB_STATUS_INVALID_ARGUMENT;
+    if (binding == LIB_NULL || request == LIB_NULL || (lib_text_compare((const char *)request->display, "console") != 0 &&
+         lib_text_compare((const char *)request->display, "window") != 0)) return LIB_STATUS_INVALID_ARGUMENT;
     out_config->cpu_profile = binding->cpu;
     out_config->fpu_profile = binding->fpu;
     out_config->floppy_format = binding->floppy_format;

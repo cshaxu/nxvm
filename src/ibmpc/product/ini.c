@@ -8,14 +8,6 @@
 static lib_bool vm_app_ini_space(lib_u8 value)
 { return value == ' ' || value == '\t' || value == '\r' || value == '\f'; }
 
-static lib_bool vm_app_ini_text_equal(const lib_u8 *left, const char *right)
-{
-    while (*left != '\0' && *right != '\0') {
-        if (*left++ != (lib_u8)*right++) return LIB_FALSE;
-    }
-    return *left == '\0' && *right == '\0';
-}
-
 static lib_u8 *vm_app_ini_trim(lib_u8 *text)
 {
     lib_u8 *end;
@@ -85,9 +77,9 @@ static lib_i32 vm_app_ini_path(lib_u8 *destination, lib_size capacity,
 static lib_i32 vm_app_ini_mode(const lib_u8 *value, lib_storage_medium_mode *out_mode)
 {
     if (value == LIB_NULL || out_mode == LIB_NULL) return 0;
-    if (vm_app_ini_text_equal(value, "direct")) *out_mode = LIB_STORAGE_MEDIUM_DIRECT;
-    else if (vm_app_ini_text_equal(value, "readonly")) *out_mode = LIB_STORAGE_MEDIUM_READONLY;
-    else if (vm_app_ini_text_equal(value, "overlay")) *out_mode = LIB_STORAGE_MEDIUM_OVERLAY;
+    if (lib_text_compare((const char *)value, "direct") == 0) *out_mode = LIB_STORAGE_MEDIUM_DIRECT;
+    else if (lib_text_compare((const char *)value, "readonly") == 0) *out_mode = LIB_STORAGE_MEDIUM_READONLY;
+    else if (lib_text_compare((const char *)value, "overlay") == 0) *out_mode = LIB_STORAGE_MEDIUM_OVERLAY;
     else return 0;
     return 1;
 }
@@ -184,32 +176,32 @@ lib_status vm_app_ini_parse(const lib_u8 *directory, const lib_u8 *name,
         *equals = '\0';
         key = vm_app_ini_trim(line);
         value = vm_app_ini_trim(equals + 1u);
-        if (vm_app_ini_text_equal(section, "machine") &&
-            vm_app_ini_text_equal(key, "memory_kib")) {
+        if (lib_text_compare((const char *)section, "machine") == 0 &&
+            lib_text_compare((const char *)key, "memory_kib") == 0) {
             if (memory_seen || !vm_app_ini_memory(value, &request.memory_bytes))
                 return LIB_STATUS_INVALID_ARGUMENT;
             memory_seen = 1;
-        } else if (vm_app_ini_text_equal(section, "presentation") &&
-            vm_app_ini_text_equal(key, "display")) {
-            if (display_seen || (!vm_app_ini_text_equal(value, "console") &&
-                !vm_app_ini_text_equal(value, "window")) ||
+        } else if (lib_text_compare((const char *)section, "presentation") == 0 &&
+            lib_text_compare((const char *)key, "display") == 0) {
+            if (display_seen || (lib_text_compare((const char *)value, "console") != 0 &&
+                lib_text_compare((const char *)value, "window") != 0) ||
                 !vm_app_ini_copy(request.display, sizeof(request.display), value))
                 return LIB_STATUS_INVALID_ARGUMENT;
             display_seen = 1;
-        } else if (vm_app_ini_text_equal(section, "presentation") &&
-            vm_app_ini_text_equal(key, "console_control")) {
+        } else if (lib_text_compare((const char *)section, "presentation") == 0 &&
+            lib_text_compare((const char *)key, "console_control") == 0) {
             if (console_control_seen) return LIB_STATUS_INVALID_ARGUMENT;
-            if (vm_app_ini_text_equal(value, "1")) request.console_control = LIB_TRUE;
-            else if (vm_app_ini_text_equal(value, "0")) request.console_control = LIB_FALSE;
+            if (lib_text_compare((const char *)value, "1") == 0) request.console_control = LIB_TRUE;
+            else if (lib_text_compare((const char *)value, "0") == 0) request.console_control = LIB_FALSE;
             else return LIB_STATUS_INVALID_ARGUMENT;
             console_control_seen = 1;
-        } else if (vm_app_ini_text_equal(section, "media") && vm_app_ini_text_equal(key, "floppy0")) {
+        } else if (lib_text_compare((const char *)section, "media") == 0 && lib_text_compare((const char *)key, "floppy0") == 0) {
             if (!vm_app_ini_medium(&request, 1, 0u, directory, value)) return LIB_STATUS_INVALID_ARGUMENT;
-        } else if (vm_app_ini_text_equal(section, "media") && vm_app_ini_text_equal(key, "floppy1")) {
+        } else if (lib_text_compare((const char *)section, "media") == 0 && lib_text_compare((const char *)key, "floppy1") == 0) {
             if (!vm_app_ini_medium(&request, 1, 1u, directory, value)) return LIB_STATUS_INVALID_ARGUMENT;
-        } else if (vm_app_ini_text_equal(section, "media") && vm_app_ini_text_equal(key, "fixed_disk0")) {
+        } else if (lib_text_compare((const char *)section, "media") == 0 && lib_text_compare((const char *)key, "fixed_disk0") == 0) {
             if (!vm_app_ini_medium(&request, 0, 0u, directory, value)) return LIB_STATUS_INVALID_ARGUMENT;
-        } else if (vm_app_ini_text_equal(section, "media") && vm_app_ini_text_equal(key, "fixed_disk1")) {
+        } else if (lib_text_compare((const char *)section, "media") == 0 && lib_text_compare((const char *)key, "fixed_disk1") == 0) {
             if (!vm_app_ini_medium(&request, 0, 1u, directory, value)) return LIB_STATUS_INVALID_ARGUMENT;
         } else return LIB_STATUS_INVALID_ARGUMENT;
     }

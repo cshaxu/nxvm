@@ -2,6 +2,34 @@
 
 #include "ibmpc/machine/frame_interface.h"
 
+static lib_status vm_machine_frame_validate_source(const x86_video_snapshot *source)
+{
+    switch (source->kind) {
+    case X86_VIDEO_KIND_TEXT:
+        if (source->columns == 0u || source->rows == 0u)
+            return LIB_STATUS_INVALID_ARGUMENT;
+        if (source->columns > X86_VIDEO_MAX_COLUMNS || source->rows > X86_VIDEO_MAX_ROWS ||
+            source->text_cell_height == 0u || source->text_cell_height > 32u)
+            return LIB_STATUS_UNSUPPORTED;
+        return LIB_STATUS_OK;
+    case X86_VIDEO_KIND_CGA_320X200X4:
+    case X86_VIDEO_KIND_CGA_640X200X2:
+    case X86_VIDEO_KIND_EGA_320X200X16:
+    case X86_VIDEO_KIND_EGA_640X200X16:
+    case X86_VIDEO_KIND_EGA_640X350X16:
+    case X86_VIDEO_KIND_VGA_320X200X256:
+        if (source->pixel_width == 0u || source->pixel_height == 0u)
+            return LIB_STATUS_INVALID_ARGUMENT;
+        if (source->pixel_width > KVM_WINDOW_GRAPHICS_MAX_WIDTH ||
+            source->pixel_height > KVM_WINDOW_GRAPHICS_MAX_HEIGHT ||
+            (lib_size)source->pixel_width * source->pixel_height > sizeof(source->pixels))
+            return LIB_STATUS_UNSUPPORTED;
+        return LIB_STATUS_OK;
+    default:
+        return LIB_STATUS_UNSUPPORTED;
+    }
+}
+
 lib_status vm_machine_frame_from_display(
     const x86_video_snapshot *source, lib_u64 sequence,
     common_machine_frame *destination)
@@ -35,21 +63,16 @@ lib_status vm_machine_frame_from_display(
         0x25a0u, 0x00a0u
     };
     lib_size cell;
+    lib_status status;
 
     if (source == LIB_NULL || destination == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    if (source->kind != X86_VIDEO_KIND_TEXT && (source->pixel_width > KVM_WINDOW_GRAPHICS_MAX_WIDTH ||
-        source->pixel_height > KVM_WINDOW_GRAPHICS_MAX_HEIGHT ||
-        (lib_size)source->pixel_width * source->pixel_height > sizeof(source->pixels)))
-        return LIB_STATUS_UNSUPPORTED;
-    if (source->kind == X86_VIDEO_KIND_TEXT && (source->columns > KVM_TEXT_COLUMNS ||
-        source->rows > KVM_TEXT_ROWS || source->text_cell_height == 0u ||
-        source->text_cell_height > 32u)) return LIB_STATUS_UNSUPPORTED;
-    *destination = (common_machine_frame){0};
+    status = vm_machine_frame_validate_source(source);
+    if (status != LIB_STATUS_OK) return status;
     destination->window.valid = LIB_TRUE;
     destination->sequence = (lib_u32)sequence;
-    destination->window.graphics = source->kind != X86_VIDEO_KIND_TEXT;
-    if (destination->window.graphics) {
+    if (source->kind != X86_VIDEO_KIND_TEXT) {
+        destination->window.graphics = LIB_TRUE;
         destination->window.image.width = source->pixel_width;
         destination->window.image.height = source->pixel_height;
         destination->window.image.stride = source->pixel_width;
@@ -59,6 +82,9 @@ lib_status vm_machine_frame_from_display(
             sizeof(destination->window.image.palette));
         return LIB_STATUS_OK;
     }
+    destination->window.graphics = LIB_FALSE;
+    destination->window.text = (kvm_window_text_frame){0};
+    lib_memory_set(&destination->characters, 0, sizeof(destination->characters));
     destination->window.text.base.text_columns = source->columns;
     destination->window.text.base.text_rows = source->rows;
     /* The CRTC cell height describes cursor raster coordinates. The copied
@@ -67,17 +93,18 @@ lib_status vm_machine_frame_from_display(
     destination->window.text.base.font_height = 16u;
     destination->window.text.base.cursor_column = source->cursor_x;
     destination->window.text.base.cursor_row = source->cursor_y;
-    destination->window.text.base.cursor_top = (lib_u8)((lib_u32)source->cursor_top *
-        destination->window.text.base.font_height / source->text_cell_height);
-    destination->window.text.base.cursor_bottom = (lib_u8)(
-        (((lib_u32)source->cursor_bottom + 1u) * destination->window.text.base.font_height +
-            source->text_cell_height - 1u) / source->text_cell_height - 1u);
-    if (destination->window.text.base.cursor_top >= destination->window.text.base.font_height)
-        destination->window.text.base.cursor_top = (lib_u8)(destination->window.text.base.font_height - 1u);
-    if (destination->window.text.base.cursor_bottom >= destination->window.text.base.font_height)
-        destination->window.text.base.cursor_bottom = (lib_u8)(destination->window.text.base.font_height - 1u);
-    destination->window.text.base.cursor_visible = source->cursor_visible;
-    destination->window.text.base.cursor_phase = source->cursor_visible;
+    if (source->cursor_top < source->text_cell_height) {
+        destination->window.text.base.cursor_top = (lib_u8)((lib_u32)source->cursor_top *
+            destination->window.text.base.font_height / source->text_cell_height);
+        destination->window.text.base.cursor_bottom = (lib_u8)(
+            (((lib_u32)source->cursor_bottom + 1u) * destination->window.text.base.font_height +
+                source->text_cell_height - 1u) / source->text_cell_height - 1u);
+        if (destination->window.text.base.cursor_bottom >= destination->window.text.base.font_height)
+            destination->window.text.base.cursor_bottom =
+                (lib_u8)(destination->window.text.base.font_height - 1u);
+        destination->window.text.base.cursor_visible = source->cursor_visible;
+        destination->window.text.base.cursor_phase = source->cursor_visible;
+    }
     for (cell = 0u; cell < X86_VIDEO_MAX_COLUMNS * X86_VIDEO_MAX_ROWS; ++cell) {
         /* Preserve zero padding outside the visible snapshot rectangle. */
         if (cell / X86_VIDEO_MAX_COLUMNS >= source->rows ||

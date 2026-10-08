@@ -5,6 +5,7 @@ lib_i32 main(void)
 {
     x86_video_snapshot source = {0};
     static common_machine_frame destination;
+    static common_machine_frame before;
 
     source.kind = X86_VIDEO_KIND_TEXT;
     source.columns = 80u;
@@ -55,15 +56,35 @@ lib_i32 main(void)
         destination.window.image.height != 200u ||
         destination.window.image.pixels[63999u] != 3u ||
         destination.window.image.palette[3u] != 0x00ff0000u) return 1;
-    {
-        common_machine_frame *before = lib_allocate(sizeof(*before));
+    before = destination;
+    source.pixel_width = (lib_u16)(KVM_WINDOW_GRAPHICS_MAX_WIDTH + 1u);
+    if (vm_machine_frame_from_display(&source, 9u, &destination) != LIB_STATUS_UNSUPPORTED ||
+        lib_memory_compare(&before, &destination, sizeof(destination)) != 0) return 1;
+    source.pixel_width = 0u;
+    if (vm_machine_frame_from_display(&source, 9u, &destination) != LIB_STATUS_INVALID_ARGUMENT ||
+        lib_memory_compare(&before, &destination, sizeof(destination)) != 0) return 1;
 
-        source.pixel_width = (lib_u16)(KVM_WINDOW_GRAPHICS_MAX_WIDTH + 1u);
-        if (before == LIB_NULL) return 1;
-        *before = destination;
-        if (vm_machine_frame_from_display(&source, 9u, &destination) != LIB_STATUS_UNSUPPORTED ||
-            lib_memory_compare(before, &destination, sizeof(destination)) != 0) return 1;
-        lib_release(before);
-    }
+    source = (x86_video_snapshot){0};
+    source.kind = X86_VIDEO_KIND_TEXT;
+    source.rows = 25u;
+    source.text_cell_height = 8u;
+    if (vm_machine_frame_from_display(&source, 9u, &destination) != LIB_STATUS_INVALID_ARGUMENT ||
+        lib_memory_compare(&before, &destination, sizeof(destination)) != 0) return 1;
+    source.columns = 80u;
+    source.rows = (lib_u16)(X86_VIDEO_MAX_ROWS + 1u);
+    if (vm_machine_frame_from_display(&source, 9u, &destination) != LIB_STATUS_UNSUPPORTED ||
+        lib_memory_compare(&before, &destination, sizeof(destination)) != 0) return 1;
+    source.rows = 25u;
+    source.kind = (x86_video_kind)99;
+    if (vm_machine_frame_from_display(&source, 9u, &destination) != LIB_STATUS_UNSUPPORTED ||
+        lib_memory_compare(&before, &destination, sizeof(destination)) != 0) return 1;
+
+    source.kind = X86_VIDEO_KIND_TEXT;
+    source.cursor_visible = LIB_TRUE;
+    source.cursor_top = 8u;
+    source.cursor_bottom = 8u;
+    if (vm_machine_frame_from_display(&source, 10u, &destination) != LIB_STATUS_OK ||
+        destination.window.text.base.cursor_visible || destination.window.text.base.cursor_phase)
+        return 1;
     return 0;
 }

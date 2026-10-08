@@ -163,6 +163,7 @@ lib_status lib_audio_stream_enqueue(lib_audio_stream *stream,
     const lib_i16 *samples, lib_u32 frame_count, lib_u32 *out_accepted_frames)
 {
     lib_u32 index;
+    lib_status status;
 
     if (out_accepted_frames == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_accepted_frames = 0u;
@@ -188,8 +189,15 @@ lib_status lib_audio_stream_enqueue(lib_audio_stream *stream,
             (lib_size)stream->channel_count * sizeof(*samples));
     stream->count += *out_accepted_frames;
     base_sync_mutex_unlock(stream->lock);
-    if (*out_accepted_frames != 0u) (void)base_sync_event_signal(stream->wake);
-    return *out_accepted_frames == 0u ? LIB_STATUS_LIMIT_EXCEEDED : LIB_STATUS_OK;
+    if (*out_accepted_frames == 0u) return LIB_STATUS_LIMIT_EXCEEDED;
+    status = base_sync_event_signal(stream->wake);
+    if (status == LIB_STATUS_OK) return LIB_STATUS_OK;
+    /* The worker may already have consumed the signal, so accepted input
+     * cannot be rolled back. Make the terminal state visible to later calls. */
+    base_sync_mutex_lock(stream->lock);
+    audio_stream_fail_locked(stream, status);
+    base_sync_mutex_unlock(stream->lock);
+    return status;
 }
 
 lib_status lib_audio_stream_query(lib_audio_stream *stream,

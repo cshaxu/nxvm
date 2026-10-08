@@ -2,12 +2,13 @@
 
 static kvm_input_event events[6];
 static lib_size event_count;
+static lib_size event_limit = 6u;
 
 lib_bool common_machine_enqueue_input(common_machine *machine,
     const kvm_input_event *event)
 {
     (void)machine;
-    if (event_count >= 6u) return LIB_FALSE;
+    if (event_count >= event_limit) return LIB_FALSE;
     events[event_count++] = *event;
     return LIB_TRUE;
 }
@@ -44,6 +45,12 @@ lib_i32 main(void)
 
     if (!chord("cad", cad_scan, cad_key, 3u) ||
         !chord("alt-enter", enter_scan, enter_key, 2u)) return 1;
+    event_count = 0u;
+    event_limit = 5u;
+    if (vm_app_keyboard_handle_hotkey((common_machine *)&events,
+            COMMON_SESSION_MACHINE_RUNNING, (const lib_u8 *)"cad", &result) ||
+        event_count != 5u) return 1;
+    event_limit = 6u;
     if (!vm_app_keyboard_handle_hotkey(LIB_NULL, COMMON_SESSION_MACHINE_RUNNING,
             (const lib_u8 *)"pause", &result) ||
         result.request != COMMON_SESSION_REQUEST_PAUSE) return 1;

@@ -71,14 +71,6 @@ static void vm_app_console_lower(lib_u8 *text)
     }
 }
 
-static lib_bool vm_app_console_text_equal(const lib_u8 *left, const char *right)
-{
-    while (*left != '\0' && *right != '\0') {
-        if (*left++ != (lib_u8)*right++) return LIB_FALSE;
-    }
-    return *left == '\0' && *right == '\0';
-}
-
 static void vm_app_console_parse(vm_app_console_context *context, lib_u8 *line)
 {
     lib_u8 *token;
@@ -158,8 +150,8 @@ static void vm_app_console_speed(const vm_app_console_context *context,
         vm_app_console_append(result, "Usage: SPEED [STANDARD|TURBO]\n");
         return;
     }
-    if (vm_app_console_text_equal(context->arguments[1], "standard")) speed = VM_APP_SPEED_STANDARD;
-    else if (vm_app_console_text_equal(context->arguments[1], "turbo")) speed = VM_APP_SPEED_TURBO;
+    if (lib_text_compare((const char *)context->arguments[1], "standard") == 0) speed = VM_APP_SPEED_STANDARD;
+    else if (lib_text_compare((const char *)context->arguments[1], "turbo") == 0) speed = VM_APP_SPEED_TURBO;
     else {
         vm_app_console_append(result, "Usage: SPEED [STANDARD|TURBO]\n");
         return;
@@ -177,14 +169,14 @@ static void vm_app_console_floppy(const vm_app_console_context *context,
         vm_app_console_append(result, "Cannot change floppy media now.\n");
         return;
     }
-    if (context->argument_count == 3u && vm_app_console_text_equal(context->arguments[1], "insert")) {
+    if (context->argument_count == 3u && lib_text_compare((const char *)context->arguments[1], "insert") == 0) {
         vm_app_console_append(result, common_machine_set_removable_media(vm_app_console_common_machine(context),
             (const char *)context->arguments[2], LIB_STORAGE_MEDIUM_OVERLAY) ?
             "Floppy disk inserted.\n" : "Cannot read floppy disk.\n");
         return;
     }
     if (context->argument_count == 2u &&
-        vm_app_console_text_equal(context->arguments[1], "eject")) {
+        lib_text_compare((const char *)context->arguments[1], "eject") == 0) {
         vm_app_console_append(result, common_machine_set_removable_media(vm_app_console_common_machine(context),
             LIB_NULL, LIB_STORAGE_MEDIUM_OVERLAY) ?
             "Floppy disk ejected.\n" : "Cannot eject floppy disk.\n");
@@ -237,17 +229,17 @@ static void vm_app_console_submit_line(void *opaque,
     (void)lib_c_snprintf((char *)context->command_buffer, sizeof(context->command_buffer), "%s", line);
     vm_app_console_parse(context, context->command_buffer);
     if (context->argument_count == 0u) return;
-    if (vm_app_console_text_equal(context->arguments[0], "help")) vm_app_console_help(result);
-    else if (vm_app_console_text_equal(context->arguments[0], "info")) vm_app_console_info(context, state, result);
-    else if (vm_app_console_text_equal(context->arguments[0], "speed")) vm_app_console_speed(context, result);
-    else if (vm_app_console_text_equal(context->arguments[0], "floppy"))
+    if (lib_text_compare((const char *)context->arguments[0], "help") == 0) vm_app_console_help(result);
+    else if (lib_text_compare((const char *)context->arguments[0], "info") == 0) vm_app_console_info(context, state, result);
+    else if (lib_text_compare((const char *)context->arguments[0], "speed") == 0) vm_app_console_speed(context, result);
+    else if (lib_text_compare((const char *)context->arguments[0], "floppy") == 0)
         vm_app_console_floppy(context, state, result);
-    else if (vm_app_console_text_equal(context->arguments[0], "start")) result->request = COMMON_SESSION_REQUEST_START;
-    else if (vm_app_console_text_equal(context->arguments[0], "reset")) result->request = COMMON_SESSION_REQUEST_RESET;
-    else if (vm_app_console_text_equal(context->arguments[0], "stop")) result->request = COMMON_SESSION_REQUEST_STOP;
-    else if (vm_app_console_text_equal(context->arguments[0], "resume")) result->request = COMMON_SESSION_REQUEST_RESUME;
-    else if (vm_app_console_text_equal(context->arguments[0], "exit")) result->exit_requested = LIB_TRUE;
-    else if (vm_app_console_text_equal(context->arguments[0], "debug")) {
+    else if (lib_text_compare((const char *)context->arguments[0], "start") == 0) result->request = COMMON_SESSION_REQUEST_START;
+    else if (lib_text_compare((const char *)context->arguments[0], "reset") == 0) result->request = COMMON_SESSION_REQUEST_RESET;
+    else if (lib_text_compare((const char *)context->arguments[0], "stop") == 0) result->request = COMMON_SESSION_REQUEST_STOP;
+    else if (lib_text_compare((const char *)context->arguments[0], "resume") == 0) result->request = COMMON_SESSION_REQUEST_RESUME;
+    else if (lib_text_compare((const char *)context->arguments[0], "exit") == 0) result->exit_requested = LIB_TRUE;
+    else if (lib_text_compare((const char *)context->arguments[0], "debug") == 0) {
         if (state == COMMON_SESSION_MACHINE_PAUSED) {
             if (x86_debug_open(context->debug, vm_app_console_common_machine(context)) ==
                 LIB_STATUS_OK) {
@@ -347,7 +339,7 @@ static lib_status vm_app_console_compose(vm_app_console_context *context,
     if (status != LIB_STATUS_OK) return status;
     if (x86_debug_create(&context->debug) != LIB_STATUS_OK)
         return LIB_STATUS_NO_MEMORY;
-    session_options.display = vm_app_console_text_equal(request->display, "window") ?
+    session_options.display = lib_text_compare((const char *)request->display, "window") == 0 ?
         COMMON_SESSION_DISPLAY_WINDOW : COMMON_SESSION_DISPLAY_CONSOLE;
     session_options.console_control = request->console_control ? LIB_TRUE : LIB_FALSE;
     session_options.command.context = context;

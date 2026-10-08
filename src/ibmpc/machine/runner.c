@@ -97,7 +97,10 @@ void vm_machine_runner_run(vm_machine *session)
                 continue;
             }
         }
-        (void)vm_machine_publish_display(session, LIB_FALSE);
+        if (vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK) {
+            vm_machine_runner_fail(session);
+            continue;
+        }
         if (result.reason == CORE_MACHINE_STOP_RESET_REQUESTED) {
             /* Core reset the requested processor state before returning. */
             vm_machine_debug_reset(&session->debug);

@@ -112,8 +112,7 @@ static lib_status vm_machine_driver_copy_frame(void *context, common_machine_fra
     /* Common clears staging validity before this call.  A Core display that
      * has not yet published is an ordinary no-frame result, not a machine
      * failure. */
-    (void)vm_machine_copy_common_frame((vm_machine *)context, frame);
-    return LIB_STATUS_OK;
+    return vm_machine_copy_common_frame((vm_machine *)context, frame);
 }
 
 static lib_bool vm_machine_driver_set_removable_media(void *context,
@@ -151,7 +150,7 @@ lib_status vm_machine_finish_reset(vm_machine *machine, lib_status status)
         machine->construction.profile.notify(machine->construction.profile.context,
             VM_MACHINE_PROFILE_RESET_COMPLETED);
     if (!vm_machine_control_is_running(&machine->control)) {
-        vm_machine_publish_display(machine, LIB_TRUE);
+        return vm_machine_publish_display(machine, LIB_TRUE);
     }
     return LIB_STATUS_OK;
 }

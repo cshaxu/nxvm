@@ -62,7 +62,7 @@ lib_status vm_machine_apply_cmos_seed(const vm_machine *session,
 void vm_machine_storage_finalize(vm_machine *machine);
 lib_status vm_machine_deliver_common_input(vm_machine *machine,
     const kvm_input_event *event);
-lib_bool vm_machine_copy_common_frame(vm_machine *machine, common_machine_frame *frame);
+lib_status vm_machine_copy_common_frame(vm_machine *machine, common_machine_frame *frame);
 lib_status vm_machine_set_common_media(vm_machine *machine, const char *path,
     lib_storage_medium_mode mode);
 #endif
