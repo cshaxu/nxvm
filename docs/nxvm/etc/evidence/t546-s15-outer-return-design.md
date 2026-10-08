@@ -60,3 +60,23 @@ INI, media master, or snapshot was changed.
 
 The full repository-only unit qualification remains required by the active
 packet and is not represented by this focused result.
+
+## Repository-Only Unit Attempt
+
+The project `run-unit-tests` aggregate has a fixed 300-second containment and
+timed out on x64 after 243 of 506 tests, all passing to that point.  The same
+complete 506-test label was then run in three non-overlapping CTest partitions
+(170, 170, and 166) per width.
+
+- x64: all 506 passed.
+- x86: 504 passed in the parallel partitions.  Two established tests exceeded
+  their individual 15-second containment while still printing their success
+  markers: `unit.core-machine-cli-sti-s48-smoke` and
+  `unit.machine-8086-instruction-timing-ledger-smoke`.  Each passed immediately
+  when run alone from the identical x86 build.
+
+This is evidence of an x86 parallel-containment qualification gap, not a
+passing full-suite result and not evidence that either test's CPU assertion
+failed.  S15 does not alter those IBM-PC/timing test budgets; a later
+test-execution scope must decide whether their concurrency/resource contract
+needs correction.  The active packet therefore remains open.
