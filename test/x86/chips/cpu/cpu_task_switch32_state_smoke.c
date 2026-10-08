@@ -71,6 +71,7 @@ typedef enum task32_case {
     TASK32_NESTED_TARGET_SHORT,
     TASK32_NESTED_STACK_LIMIT,
     TASK32_RING3_DIRECT,
+    TASK32_RING3_SOURCE_DIRECT,
     TASK32_READABLE_CODE_DATA,
     TASK32_NULL_DATA,
     TASK32_CR3_RESERVED
@@ -147,6 +148,7 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
         .ss = {0x10u,0u}, .ds = {0x10u,0u}, .fs = {0x10u,0u},
         .gs = {0x10u,0u}
     };
+    task32_state ring3_source_target;
     t_cpu *const cpu = &fixture->cpu;
 
     cpu_instruction_prepare(fixture, CORE_MACHINE_CPU_PROFILE_80386);
@@ -270,6 +272,18 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
         target.gs.selector = 0x23u;
         target.eflags = 0x3002u;
     }
+    if (test_case == TASK32_RING3_SOURCE_DIRECT) {
+        target.es.selector = 0x23u;
+        target.cs.selector = 0x1bu;
+        target.ss.selector = 0x23u;
+        target.ds.selector = 0x23u;
+        target.fs.selector = 0x23u;
+        target.gs.selector = 0x23u;
+        target.eflags = 0x3002u;
+        ring3_source_target = target;
+        ring3_source_target.eip = 0x1a0u;
+        gdt[0x4du] = 0xe9u;
+    }
     if (test_case == TASK32_READABLE_CODE_DATA) {
         target.es.selector = 0x08u;
         target.ds.selector = 0x08u;
@@ -347,11 +361,22 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
     lib_memory_copy(fixture->memory + TASK32_IDT_BASE, idt, sizeof(idt));
     lib_memory_copy(fixture->memory + TASK32_B_BASE + 0x1cu, &target,
         sizeof(target));
+    if (test_case == TASK32_RING3_SOURCE_DIRECT)
+        lib_memory_copy(fixture->memory + TASK32_C_BASE + 0x1cu,
+            &ring3_source_target, sizeof(ring3_source_target));
     lib_memory_copy(fixture->memory + TASK32_CODE_BASE + 0x100u, target_halt,
         sizeof(target_halt));
     if (test_case == TASK32_RING3_DIRECT) {
         fixture->memory[TASK32_CODE_BASE + 0x100u] = 0xebu;
         fixture->memory[TASK32_CODE_BASE + 0x101u] = 0xfeu;
+    }
+    if (test_case == TASK32_RING3_SOURCE_DIRECT) {
+        const lib_u8 ring3_source[] = {0xeau,0xa0u,0x01u,0x4bu,0u};
+
+        lib_memory_copy(fixture->memory + TASK32_CODE_BASE + 0x100u,
+            ring3_source, sizeof(ring3_source));
+        fixture->memory[TASK32_CODE_BASE + 0x1a0u] = 0xebu;
+        fixture->memory[TASK32_CODE_BASE + 0x1a1u] = 0xfeu;
     }
     if (test_case == TASK32_NESTED_RETURN) {
         fixture->memory[TASK32_CODE_BASE + 0x100u] = 0xcfu;
@@ -488,6 +513,15 @@ static lib_bool task32_expect(task32_case test_case)
         after.data.ds.selector == 0x23u && after.data.es.selector == 0x23u &&
         after.data.fs.selector == 0x23u && after.data.gs.selector == 0x23u &&
         after.data.eax == 0xa1a12222u) return LIB_TRUE;
+    if (test_case == TASK32_RING3_SOURCE_DIRECT && !fixture.fault.valid &&
+        !fixture.delivered_exception.valid && !after.data.flagHalt &&
+        after.data.tr.selector == 0x4bu && after.data.cs.selector == 0x1bu &&
+        after.data.cs.dpl == 3u && after.data.ss.selector == 0x23u &&
+        after.data.ds.selector == 0x23u && after.data.es.selector == 0x23u &&
+        after.data.fs.selector == 0x23u && after.data.gs.selector == 0x23u &&
+        after.data.eip == 0x1a0u &&
+        fixture.memory[TASK32_GDT_BASE + 0x35u] == 0x89u &&
+        fixture.memory[TASK32_GDT_BASE + 0x4du] == 0xebu) return LIB_TRUE;
     if (test_case == TASK32_READABLE_CODE_DATA && !fixture.fault.valid &&
         !fixture.delivered_exception.valid && after.data.flagHalt &&
         after.data.tr.selector == 0x30u && after.data.es.selector == 0x08u &&
@@ -651,6 +685,7 @@ int main(void)
         TASK32_NESTED_RETURN, TASK32_NESTED_INVALID_CODE,
         TASK32_NESTED_TARGET_BUSY, TASK32_NESTED_TARGET_SHORT,
         TASK32_NESTED_STACK_LIMIT, TASK32_RING3_DIRECT,
+        TASK32_RING3_SOURCE_DIRECT,
         TASK32_READABLE_CODE_DATA, TASK32_NULL_DATA, TASK32_CR3_RESERVED
     };
     lib_size index;
