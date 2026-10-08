@@ -32,15 +32,20 @@ static lib_win32_char_info captured_cells[80u * 50u];
 static lib_win32_small_rect captured_region;
 static lib_win32_coord buffer_size={80,30};
 static lib_win32_small_rect viewport={0,0,79,29};
+static lib_win32_coord viewport_limit;
+static lib_bool limit_viewport, fail_viewport_set;
 static lib_bool reject_resize, ignore_resize;
 static lib_win32_bool LIB_WIN32_WINAPI screen_info(lib_win32_handle h, lib_win32_console_screen_buffer_info *p)
-{ (void)h; lib_memory_set(p, 0, sizeof(*p)); p->dwSize=buffer_size; p->srWindow=viewport; return LIB_WIN32_TRUE; }
+{ (void)h; lib_memory_set(p, 0, sizeof(*p)); p->dwSize=buffer_size; p->dwMaximumWindowSize=limit_viewport ? viewport_limit : buffer_size; p->srWindow=viewport; return LIB_WIN32_TRUE; }
 static lib_win32_bool LIB_WIN32_WINAPI resize_buffer(lib_win32_handle h,lib_win32_coord size)
 { (void)h; if(reject_resize) return LIB_WIN32_FALSE; if(!ignore_resize) buffer_size=size; return LIB_WIN32_TRUE; }
 static lib_win32_bool LIB_WIN32_WINAPI palette_get(lib_win32_handle h, lib_win32_console_screen_buffer_infoex *p)
-{ (void)h; (void)p; ++palette_attempts; return palette_query_ok; }
+{ (void)h; ++palette_attempts; p->cbSize=sizeof(*p); p->dwSize=buffer_size; p->srWindow=viewport; return palette_query_ok; }
 static lib_win32_bool LIB_WIN32_WINAPI palette_set(lib_win32_handle h, lib_win32_console_screen_buffer_infoex *p)
-{ (void)h; (void)p; ++palette_sets; if(palette_set_ok) buffer_size.Y=24; return palette_set_ok; }
+{ (void)h; ++palette_sets; if(palette_set_ok) buffer_size=p->dwSize; return palette_set_ok; }
+static lib_win32_bool LIB_WIN32_WINAPI viewport_set(lib_win32_handle h, lib_win32_bool absolute,
+    const lib_win32_small_rect *next)
+{ (void)h; (void)absolute; if(fail_viewport_set) return LIB_WIN32_FALSE; viewport=*next; return LIB_WIN32_TRUE; }
 static lib_win32_bool LIB_WIN32_WINAPI write_cells(lib_win32_handle h, const lib_win32_char_info *p, lib_win32_coord a, lib_win32_coord b, lib_win32_small_rect *r)
 {
     (void)h; (void)a; (void)b; ++writes; first_cell=p[0].Char.UnicodeChar;
@@ -87,6 +92,8 @@ static lib_win32_handle LIB_WIN32_WINAPI start_reader(lib_win32_lpsecurity_attri
 #define lib_win32_get_console_screen_buffer_info_ex palette_get
 #undef lib_win32_set_console_screen_buffer_info_ex
 #define lib_win32_set_console_screen_buffer_info_ex palette_set
+#undef lib_win32_set_console_window_info
+#define lib_win32_set_console_window_info viewport_set
 #undef lib_win32_write_console_output_w
 #define lib_win32_write_console_output_w write_cells
 #undef lib_win32_set_console_cursor_info
@@ -156,6 +163,44 @@ int main(void)
     console_broker_reader(&b);lib_test_assert(delivered==0);lib_win32_reset_event(stop);cancel_at=0;
     lib_test_assert(base_sync_mutex_create(&b.output_lock)==LIB_STATUS_OK);
     lib_test_assert(base_sync_mutex_create(&b.transaction_lock)==LIB_STATUS_OK);b.output=(lib_win32_handle)1;
+    {
+        lib_win32_console_screen_buffer_infoex saved = { 0 };
+
+        saved.cbSize = sizeof(saved);
+        saved.dwSize = (lib_win32_coord){120,60};
+        saved.srWindow = (lib_win32_small_rect){0,0,119,29};
+        buffer_size = (lib_win32_coord){20,10};
+        viewport = (lib_win32_small_rect){0,0,19,9};
+        limit_viewport = LIB_TRUE;
+        viewport_limit = (lib_win32_coord){120,30};
+        palette_set_ok = 1;
+        lib_test_assert(console_broker_apply_display(b.output,&saved)==LIB_STATUS_OK);
+        lib_test_assert(buffer_size.X==120 && buffer_size.Y==60);
+        lib_test_assert(viewport.Left==0 && viewport.Top==0 &&
+            viewport.Right==119 && viewport.Bottom==29);
+
+        buffer_size = (lib_win32_coord){20,10};
+        viewport = (lib_win32_small_rect){0,0,19,9};
+        viewport_limit = (lib_win32_coord){80,25};
+        lib_test_assert(console_broker_apply_display(b.output,&saved)==LIB_STATUS_OK);
+        lib_test_assert(buffer_size.X==120 && buffer_size.Y==60);
+        lib_test_assert(viewport.Left==0 && viewport.Top==0 &&
+            viewport.Right==79 && viewport.Bottom==24);
+
+        buffer_size = (lib_win32_coord){20,10};
+        viewport = (lib_win32_small_rect){0,0,19,9};
+        viewport_limit = (lib_win32_coord){120,30};
+        fail_viewport_set = LIB_TRUE;
+        lib_test_assert(console_broker_apply_display(b.output,&saved)==LIB_STATUS_IO_ERROR);
+        lib_test_assert(buffer_size.X==120 && buffer_size.Y==60);
+        lib_test_assert(viewport.Right==19 && viewport.Bottom==9);
+        fail_viewport_set = LIB_FALSE;
+        limit_viewport = LIB_FALSE;
+        buffer_size = (lib_win32_coord){80,30};
+        viewport = (lib_win32_small_rect){0,0,79,29};
+        palette_sets = 0u;
+        palette_set_ok = 0;
+    }
     f.columns=80;f.rows=25;f.text[0]=0x2588;f.palette[0]=1;
     for(lib_i32 i=0;i<2;++i) lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
     lib_test_assert(first_cell==0x2588 && writes==1 && palette_attempts==2);
@@ -166,9 +211,16 @@ int main(void)
     palette_set_ok=1;
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==0);
     lib_test_assert(b.previous_palette[0]==1 && palette_sets==2);
-    lib_test_assert(buffer_size.Y==25); /* Palette must precede surface preparation. */
+    lib_test_assert(buffer_size.Y==30); /* Palette metadata precedes surface preparation. */
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==0);
     lib_test_assert(palette_sets==2);
+    f.palette[0]=2;
+    fail_viewport_set=LIB_TRUE;
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_IO_ERROR);
+    lib_test_assert(b.previous_palette[0]==1);
+    fail_viewport_set=LIB_FALSE;
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
+    lib_test_assert(b.previous_palette[0]==2 && palette_sets==4);
     /* Native approximation consumes the already normalized scanline range. */
     f.font_height=16; f.cursor_top=14; f.cursor_bottom=15;
     f.cursor_visible=f.cursor_phase=LIB_TRUE;

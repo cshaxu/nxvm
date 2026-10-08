@@ -1281,7 +1281,9 @@ static lib_u8 uprintins(command_context *debugContext, lib_u16 segment, lib_u16 
     lib_u8 len;
     lib_u8 ucode[15];
     char str[0x100], stmt[0x100], sbin[0x100];
+    char *str_cursor;
     char *sbin_cursor;
+    lib_size str_remaining;
     if (command_read_real(debugContext, segment, off, ucode, first) ||
         (first < 15u && command_read_real(debugContext, segment, 0u, ucode + first, 15u - first)))
     {
@@ -1315,22 +1317,33 @@ static lib_u8 uprintins(command_context *debugContext, lib_u16 segment, lib_u16 
             }
         }
         if (!binary_failed) {
-            (void)lib_c_snprintf(str, sizeof(str), "%04X:%04X %s", segment, off,
-                sbin);
-        }
-        for (i = lib_text_length(str); i < 24; ++i)
-        {
-            if (!command_append_text_checked(str, sizeof(str), " ")) {
+            str[0] = '\0';
+            str_cursor = str;
+            str_remaining = sizeof(str);
+            if (command_format_append(&str_cursor, &str_remaining, "%04X:%04X ",
+                    segment, off) < 0 ||
+                command_format_append(&str_cursor, &str_remaining, "%s", sbin) < 0) {
+                binary_failed = LIB_TRUE;
                 len = 0u;
                 (void)lib_c_snprintf(str, sizeof(str), "%04X:%04X <ERROR>",
                     segment, off);
-                break;
             }
         }
-        if (!command_append_text_checked(str, sizeof(str), stmt)) {
-            len = 0u;
-            (void)lib_c_snprintf(str, sizeof(str), "%04X:%04X <ERROR>",
-                segment, off);
+        if (!binary_failed) {
+            for (i = lib_text_length(str); i < 24; ++i)
+            {
+                if (!command_append_text_checked(str, sizeof(str), " ")) {
+                    len = 0u;
+                    (void)lib_c_snprintf(str, sizeof(str), "%04X:%04X <ERROR>",
+                        segment, off);
+                    break;
+                }
+            }
+            if (!command_append_text_checked(str, sizeof(str), stmt)) {
+                len = 0u;
+                (void)lib_c_snprintf(str, sizeof(str), "%04X:%04X <ERROR>",
+                    segment, off);
+            }
         }
     }
     command_printf(debugContext, "%s\n", str);
@@ -1842,7 +1855,9 @@ static lib_u8 xuprintins(command_context *debugContext, lib_u32 linear)
     lib_u8 available = linear > LIB_UINT32_MAX - 14u ?
         (lib_u8)(LIB_UINT32_MAX - linear + 1u) : 15u;
     char str[0x100], stmt[0x100], sbin[0x100];
+    char *str_cursor;
     char *sbin_cursor;
+    lib_size str_remaining;
     if (command_read_linear(debugContext, linear, (void *)ucode, available))
     {
         len = 0;
@@ -1875,19 +1890,29 @@ static lib_u8 xuprintins(command_context *debugContext, lib_u32 linear)
             }
         }
         if (!binary_failed) {
-            (void)lib_c_snprintf(str, sizeof(str), "L%08X %s ", linear, sbin);
-        }
-        for (i = lib_text_length(str); i < 24; ++i)
-        {
-            if (!command_append_text_checked(str, sizeof(str), " ")) {
+            str[0] = '\0';
+            str_cursor = str;
+            str_remaining = sizeof(str);
+            if (command_format_append(&str_cursor, &str_remaining, "L%08X ", linear) < 0 ||
+                command_format_append(&str_cursor, &str_remaining, "%s ", sbin) < 0) {
+                binary_failed = LIB_TRUE;
                 len = 0u;
                 (void)lib_c_snprintf(str, sizeof(str), "L%08X <ERROR>", linear);
-                break;
             }
         }
-        if (!command_append_text_checked(str, sizeof(str), stmt)) {
-            len = 0u;
-            (void)lib_c_snprintf(str, sizeof(str), "L%08X <ERROR>", linear);
+        if (!binary_failed) {
+            for (i = lib_text_length(str); i < 24; ++i)
+            {
+                if (!command_append_text_checked(str, sizeof(str), " ")) {
+                    len = 0u;
+                    (void)lib_c_snprintf(str, sizeof(str), "L%08X <ERROR>", linear);
+                    break;
+                }
+            }
+            if (!command_append_text_checked(str, sizeof(str), stmt)) {
+                len = 0u;
+                (void)lib_c_snprintf(str, sizeof(str), "L%08X <ERROR>", linear);
+            }
         }
     }
     command_printf(debugContext, "%s\n", str);

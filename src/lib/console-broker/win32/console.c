@@ -55,6 +55,58 @@ static lib_win32_colorref console_broker_colorref_from_rgb(lib_u32 rgb)
     return lib_win32_rgb((rgb >> 16u) & 0xffu, (rgb >> 8u) & 0xffu, rgb & 0xffu);
 }
 
+static lib_bool console_broker_fit_viewport(lib_win32_small_rect *viewport,
+    const lib_win32_small_rect *target, lib_win32_coord buffer,
+    lib_win32_coord maximum)
+{
+    lib_i32 width, height;
+
+    *viewport = *target;
+    width = viewport->Right - viewport->Left + 1;
+    height = viewport->Bottom - viewport->Top + 1;
+    if (width > maximum.X) width = maximum.X;
+    if (height > maximum.Y) height = maximum.Y;
+    if (width <= 0 || height <= 0 || buffer.X < width || buffer.Y < height)
+        return LIB_FALSE;
+    if (viewport->Left < 0) viewport->Left = 0;
+    if (viewport->Top < 0) viewport->Top = 0;
+    if (viewport->Left + width > buffer.X) viewport->Left = buffer.X - width;
+    if (viewport->Top + height > buffer.Y) viewport->Top = buffer.Y - height;
+    viewport->Right = viewport->Left + width - 1;
+    viewport->Bottom = viewport->Top + height - 1;
+    return LIB_TRUE;
+}
+
+/* Screen-buffer metadata does not reliably restore the visible rectangle on
+ * every Console host. Apply that metadata first, then restore the saved,
+ * inclusive cell rectangle through its dedicated native operation. The
+ * backing buffer is independent from the visible viewport: a narrow desktop
+ * may be unable to expose all of an otherwise valid saved buffer. */
+static lib_status console_broker_apply_display(lib_win32_handle output,
+    const lib_win32_console_screen_buffer_infoex *source)
+{
+    lib_win32_console_screen_buffer_infoex display = *source;
+    lib_win32_console_screen_buffer_info current;
+    lib_win32_small_rect temporary, viewport;
+
+    if (!lib_win32_get_console_screen_buffer_info(output, &current) ||
+        !console_broker_fit_viewport(&temporary, &source->srWindow,
+            display.dwSize, current.dwMaximumWindowSize)) return LIB_STATUS_IO_ERROR;
+    display.srWindow = temporary;
+    /* This optional extended metadata operation is the only palette-specific
+     * capability boundary. A caller may retain text output when it is absent. */
+    if (!lib_win32_set_console_screen_buffer_info_ex(output, &display))
+        return LIB_STATUS_UNSUPPORTED;
+    /* The temporary rectangle only made metadata legal. Rebuild the final
+     * rectangle from the saved target after the new backing buffer is active. */
+    if (!lib_win32_get_console_screen_buffer_info(output, &current) ||
+        !console_broker_fit_viewport(&viewport, &source->srWindow,
+            current.dwSize, current.dwMaximumWindowSize) ||
+        !lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport))
+        return LIB_STATUS_IO_ERROR;
+    return LIB_STATUS_OK;
+}
+
 static lib_bool console_broker_ensure_text_surface(console_broker_backend *backend,
     lib_u16 rows)
 {
@@ -259,13 +311,11 @@ static lib_status console_broker_select_output(console_broker_backend *backend,
     backend->output = output;
     backend->output_ready = LIB_FALSE;
     if (next->cbSize != 0u) {
-        lib_win32_console_screen_buffer_infoex display = *next;
-        /* The native setter uses exclusive right/bottom window bounds. It
-         * also restores palette/geometry affected by the other screen buffer. */
-        ++display.srWindow.Right;
-        ++display.srWindow.Bottom;
-        if (!lib_win32_set_console_screen_buffer_info_ex(output, &display))
-            return LIB_STATUS_IO_ERROR;
+        lib_status status = console_broker_apply_display(output, next);
+        /* Selecting a saved screen has no palette-only fallback: every part
+         * of its stored display state is required before it becomes active. */
+        if (status != LIB_STATUS_OK)
+            return status == LIB_STATUS_UNSUPPORTED ? LIB_STATUS_IO_ERROR : status;
     }
     backend->output_ready = LIB_TRUE;
     return LIB_STATUS_OK;
@@ -600,11 +650,14 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
             for (index = 0u; index < 16u; ++index)
                 info.ColorTable[index] = console_broker_colorref_from_rgb(
                     frame->palette[index]);
-            ++info.srWindow.Right;
-            ++info.srWindow.Bottom;
-            if (lib_win32_set_console_screen_buffer_info_ex(backend->output, &info))
+            lib_status status = console_broker_apply_display(backend->output, &info);
+            if (status == LIB_STATUS_OK)
                 lib_memory_copy(backend->previous_palette, frame->palette,
                     sizeof(frame->palette));
+            else if (status != LIB_STATUS_UNSUPPORTED) {
+                console_broker_backend_unlock_output(backend);
+                return status;
+            }
         }
         /* Some terminal hosts cannot apply a palette. Do not mark it applied:
          * another frame may retry while text output remains usable. */

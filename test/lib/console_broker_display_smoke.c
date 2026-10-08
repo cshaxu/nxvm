@@ -79,6 +79,52 @@ static lib_win32_hwnd LIB_WIN32_WINAPI no_foreground(void) { return LIB_NULL; }
 #undef base_sync_mutex_destroy
 #include "lib/console-broker/console.c"
 
+/* A Console buffer can be wider or taller than the native window which its
+ * current font and display can show. Keep the requested viewport shape where
+ * possible, but make every test setup legal for the host that runs it. */
+static void set_supported_viewport(lib_win32_handle output, lib_win32_small_rect *viewport)
+{
+    lib_win32_console_screen_buffer_info info;
+    lib_i32 width = viewport->Right - viewport->Left + 1;
+    lib_i32 height = viewport->Bottom - viewport->Top + 1;
+    lib_i32 maximum_width;
+    lib_i32 maximum_height;
+
+    lib_test_assert(lib_win32_get_console_screen_buffer_info(output, &info));
+    maximum_width = info.dwMaximumWindowSize.X;
+    maximum_height = info.dwMaximumWindowSize.Y;
+    lib_test_assert(maximum_width > 0 && maximum_height > 0);
+    if (width > maximum_width) width = maximum_width;
+    if (height > maximum_height) height = maximum_height;
+    if (viewport->Left + width > info.dwSize.X) viewport->Left = info.dwSize.X - width;
+    if (viewport->Top + height > info.dwSize.Y) viewport->Top = info.dwSize.Y - height;
+    viewport->Right = (lib_win32_short)(viewport->Left + width - 1);
+    viewport->Bottom = (lib_win32_short)(viewport->Top + height - 1);
+    lib_test_assert(lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, viewport));
+}
+
+static lib_win32_handle open_console_output(void)
+{
+    lib_win32_handle output = lib_win32_create_file_a("CONOUT$",
+        LIB_WIN32_GENERIC_READ | LIB_WIN32_GENERIC_WRITE,
+        LIB_WIN32_FILE_SHARE_READ | LIB_WIN32_FILE_SHARE_WRITE, LIB_NULL,
+        LIB_WIN32_OPEN_EXISTING, 0, LIB_NULL);
+    lib_test_assert(output != LIB_WIN32_INVALID_HANDLE_VALUE);
+    return output;
+}
+
+static void prepare_output_surface(lib_win32_coord size,
+    lib_win32_small_rect *viewport)
+{
+    lib_win32_handle output = open_console_output();
+    lib_win32_small_rect initial = { 0, 0, 19, 9 };
+
+    set_supported_viewport(output, &initial);
+    lib_test_assert(lib_win32_set_console_screen_buffer_size(output, size));
+    set_supported_viewport(output, viewport);
+    lib_test_assert(lib_win32_close_handle(output));
+}
+
 typedef struct display_snapshot {
     lib_win32_console_screen_buffer_infoex info;
     lib_win32_console_cursor_info cursor;
@@ -88,11 +134,9 @@ typedef struct display_snapshot {
 
 static void snapshot(display_snapshot *s)
 {
-    lib_win32_handle output = lib_win32_create_file_a("CONOUT$", LIB_WIN32_GENERIC_READ | LIB_WIN32_GENERIC_WRITE,
-        LIB_WIN32_FILE_SHARE_READ | LIB_WIN32_FILE_SHARE_WRITE, LIB_NULL, LIB_WIN32_OPEN_EXISTING, 0, LIB_NULL);
+    lib_win32_handle output = open_console_output();
     lib_win32_coord size = {120, 30}, origin = {0, 0};
     lib_win32_small_rect region = {0, 0, 119, 29};
-    lib_test_assert(output != LIB_WIN32_INVALID_HANDLE_VALUE);
     lib_memory_set(s, 0, sizeof(*s));
     s->info.cbSize = sizeof(s->info);
     lib_test_assert(lib_win32_get_console_screen_buffer_info_ex(output, &s->info));
@@ -135,22 +179,20 @@ static void check_frame_extent(lib_i16 columns, lib_i16 rows, lib_i32 scrolled)
     lib_win32_char_info cells[80 * 25];
     lib_test_assert(lib_console_create(&cooked) == 0);
     lib_test_assert(lib_console_create(&raw) == 0);
-    lib_test_assert(console_broker_create(&broker, cooked, CONSOLE_BROKER_COOKED_LINES) == 0);
-    lib_test_assert(lib_win32_set_console_cursor_position(broker->backend->output, origin));
-    lib_test_assert(lib_win32_set_console_window_info(broker->backend->output, LIB_WIN32_TRUE, &viewport));
-    lib_test_assert(lib_win32_set_console_screen_buffer_size(broker->backend->output, extent));
     viewport.Right = scrolled == 2 ? 19 : columns - 1;
     viewport.Bottom = scrolled == 2 ? 9 : rows < 30 ? rows - 1 : 29;
     if (scrolled == 1) {
         viewport.Top = 2; viewport.Bottom += 2;
     }
-    lib_test_assert(lib_win32_set_console_window_info(broker->backend->output, LIB_WIN32_TRUE, &viewport));
+    prepare_output_surface(extent, &viewport);
+    lib_test_assert(console_broker_create(&broker, cooked, CONSOLE_BROKER_COOKED_LINES) == 0);
+    lib_test_assert(lib_win32_set_console_cursor_position(broker->backend->output, origin));
     lib_test_assert(lib_win32_get_console_screen_buffer_info(broker->backend->output, &before));
     frame.columns = 80; frame.rows = 25; frame.font_height = 16;
     for (lib_u32 i=0; i<80u*25u; ++i) frame.text[i]='#';
     for (lib_i32 round = 0; round < 3; ++round) {
         lib_test_assert(console_broker_replace(broker, cooked, raw, CONSOLE_BROKER_RAW_EVENTS) == 0);
-        lib_test_assert(lib_win32_set_console_window_info(broker->backend->output, LIB_WIN32_TRUE, &viewport));
+        set_supported_viewport(broker->backend->output, &viewport);
         if (round == 0 && !scrolled && rows == 13) {
             fail_resize = 1;
             lib_test_assert(!console_broker_ensure_text_surface(broker->backend, 25u));
@@ -220,23 +262,19 @@ int main(void)
     lib_test_assert(lib_console_create(&cooked) == 0);
     lib_test_assert(lib_console_create(&raw) == 0);
     lib_test_assert(lib_console_create(&other) == 0);
-    lib_test_assert(console_broker_create(&broker, cooked, CONSOLE_BROKER_COOKED_LINES) == 0);
-    /* AllocConsole inherits host defaults, including very narrow windows. */
     {
-        lib_win32_small_rect viewport = {0, 0, 19, 9};
+        lib_win32_small_rect viewport = {0, 0, 119, 29};
         lib_win32_coord size = {120, 60};
-        lib_test_assert(lib_win32_set_console_window_info(broker->backend->output, LIB_WIN32_TRUE, &viewport));
-        lib_test_assert(lib_win32_set_console_screen_buffer_size(broker->backend->output, size));
+        /* AllocConsole inherits host defaults, including very narrow windows. */
+        prepare_output_surface(size, &viewport);
     }
+    lib_test_assert(console_broker_create(&broker, cooked, CONSOLE_BROKER_COOKED_LINES) == 0);
     lib_test_assert(lib_win32_fill_console_output_character_w(broker->backend->output, L' ', 80 * 25, origin, &written));
     lib_test_assert(written == 80 * 25);
     lib_test_assert(lib_win32_set_console_cursor_position(broker->backend->output, origin));
     lib_test_assert(lib_win32_set_console_cursor_info(broker->backend->output, &cursor));
     {
-        lib_win32_coord size = {120, 60}, marker = {100, 28};
-        lib_win32_small_rect viewport = {0, 0, 119, 29};
-        lib_test_assert(lib_win32_set_console_screen_buffer_size(broker->backend->output, size));
-        lib_test_assert(lib_win32_set_console_window_info(broker->backend->output, LIB_WIN32_TRUE, &viewport));
+        lib_win32_coord marker = {100, 28};
         lib_test_assert(lib_win32_write_console_output_character_a(broker->backend->output, "wide history", 12, marker, &written));
         lib_test_assert(written == 12);
     }
