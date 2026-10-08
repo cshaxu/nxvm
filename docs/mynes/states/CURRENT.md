@@ -18,30 +18,31 @@ unchanged; no rebuild is needed. Deleted EXEs remain recoverable in Git history.
 | Task | Progress |
 | --- | --- |
 | T43 | Closed on owner instruction: S1-S13 accepted batches reconciled in history; final x64/x86 suites 132/132, six-ROM graphics/text matrix 24/24; remaining deferred contracts have explicit TODO receivers. |
-| T44 S4 | Active corrective: locate and repair the repeatable lifecycle/native-window completion-event timeouts exposed by current Shared receiving qualification. S1-S3 remain accepted. |
+| T44 S4 | Accepted by owner: Core Driver creates a native audio sink only for product composition; repository-only fixtures no longer wait on a physical endpoint. Shared FDD/HDD unload now returns its actual Storage close result. Focused dual-width and all 12 integration routes per width passed; the x86 CPU exhaustive unit was not rerun under the terminal's 30-second command limit and was not claimed as fresh proof. |
+| T44 S5 | Active corrective: repair shared-test ownership, Types constant authority, and the named IBM PC owner-local forwarding residue. |
 
 Final audit: [T44 closure](../etc/evidence/m7-t44-s3-closure.md).
 
-## Active T44 S4 Packet
+## Active T44 S5 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective: T44 is the latest closed numeric MyNES task; S4 is its next unused subtask. |
-| Admission And Approval | Owner approved a dedicated next S on 2026-10-07 after x64 serial reproduction of `mynes.integration.lifecycle-smoke` and `mynes.integration.native-window-smoke`; the owner then explicitly added the named Shared IBM PC FDD/HDD close-status propagation. |
-| Objective | Repair the owner-local mechanism that prevents MyNES reset/runtime completion events from reaching its integration fixtures, and make IBM PC removable-media unload return its actual Storage close result. |
-| Non-goals | No speculative timeout increase, polling loop, Shared API expansion, NXVM change, artifact/config/media/snapshot edit, or attribution of the failure to Audio without direct evidence. |
-| Reference Baseline | Current 0044 receiving artifacts and the repeatable x64 serial failures: lifecycle reset completion at `lifecycle_smoke.c:22`; native-window runtime completion at `native_window_smoke.c:218`. |
-| Candidate Proposal | Corrective continuation of [T44 measured efficiency](../history/M7-T44-measured-emulator-efficiency.md); this packet owns the bounded receiving regression, not a new performance claim. |
-| Files And ABI Surface | MyNES: `src/app-mynes/`, `test/app-mynes/`, and rebuilt MyNES artifacts. Owner-approved Shared exception: `src/ibmpc/machine/media/fdd.c`, `src/ibmpc/machine/media/hdd.c`, their manifest, and their owner-local regressions if an existing seam can prove the close-failure path. No Lib/Common/x86 or NXVM source change. |
-| Applicable Rules | MyNES Architecture/Coding, Shared Execution/Architecture/Coding/Documentation, and CONTRIBUTING reading set. |
-| Verification | Reproduce serially on x64; trace reset/request/completion ownership; run focused regression on x64/x86. If code changes, rebuild affected 0044 x64/x86 artifacts, run complete repository-only unit suites and relevant external integration routes. Verify FDD/HDD normal unload on x64/x86 and inspect the propagated close-status path. |
-| Expected Markers | Reset completion is emitted once for its generation, runtime notification reaches the fixture, no stale completion satisfies a later request, native Window presentation remains functional, and an FDD/HDD unload no longer reports success after Storage close failure. |
-| Asset Needs | Existing code-owned fixture only; no external asset change. |
-| Reporting Requirements | Report the causal chain before editing production code; list actual changed paths and added/removed/net source/test lines; separately report Shared and MyNES verification. |
-| Stop Conditions | A repair requires changing Shared ownership/API, timeout policy, external assets, or another App; stop and obtain explicit owner direction. The named IBM PC status propagation is already approved. |
-| Exit Criteria | Root cause is evidenced; any owner-local repair has focused dual-width proof, the named Shared close-status propagation has normal-path proof and a documented failure-path seam disposition, complete required suite result and pushed target-scoped P; no timeout increase is used as a substitute. |
-| Original Owner Request | “可以准入下一 S 专门定位这两个 MyNES 生命周期/运行时事件失败。” |
-| Similar-Issue Sweep | Inspect all MyNES reset-completion and Common runtime-state fixture sinks, then disposition every same callback/generation path. |
+| Identifier Mode | Corrective: T44 is the latest closed numeric MyNES task; S5 is its next unused subtask. |
+| Admission And Approval | Owner approved S5 on 2026-10-07 after the `dd68d38cd` static audit, explicitly authorizing the listed shared test-boundary, Types, and IBM PC cleanup. |
+| Objective | Remove the confirmed product dependency from Shared IBM PC negative checks, make used integer-bound constants Types-owned, verify media-unload close failure propagation, and remove named IBM PC same-owner forwarding residue without changing guest behavior. |
+| Non-goals | No Lib behavior change or Common change; no warning-policy cleanup, new framework, state machine, API, guest behavior change, artifact/config/media/snapshot edit, or broad dead-code claim. The narrow Types header edit is limited to missing integer-bound spellings needed by the audited Shared consumers. |
+| Reference Baseline | `dd68d38cd`, clean worktree before S5 admission; static audit names two nested CMake product dependencies, direct integer constants, and three IBM PC local forwarding opportunities. |
+| Candidate Proposal | Corrective continuation of [T44 measured efficiency](../history/M7-T44-measured-emulator-efficiency.md); bounded shared quality repair only. |
+| Files And ABI Surface | Shared: `src/lib/types/types_interface.h`, `src/x86/`, `src/ibmpc/`, `test/x86/`, `test/ibmpc/` and manifests. NXVM: only the necessary product test relocation/registration beneath `test/app-nxvm/` and its build declaration. No MyNES production change and no Lib behavior/Common change. |
+| Applicable Rules | MyNES Architecture/Coding, Shared Execution/Architecture/Coding/Documentation, NXVM test-boundary rules for the relocated product checks, and CONTRIBUTING reading set. |
+| Verification | Reproduce each nested CMake dependency before moving it; run each independently selectable shared suite and its manifest; run relocated NXVM checks; perform Types-boundary sweep; build x64/x86 affected consumers and run focused regressions. Run the complete repository-only unit suite before S closure. |
+| Expected Markers | `test/ibmpc` contains no NXVM product-checker dependency; every touched integer limit uses Types vocabulary; FDD/HDD unload reports a final Storage close failure while still consuming the lease under the existing Storage contract; public FDD/HDD insert entry owns its implementation directly; normal media and CPU/board behavior remains unchanged. |
+| Asset Needs | None; no external ROM, media, firmware, configuration, or snapshot input changes. |
+| Reporting Requirements | Report per-item before/after owner and file disposition; distinguish moved product tests from retained component tests; list actual added/removed/net source/test lines and all unverified paths. |
+| Stop Conditions | A required correction needs a Lib behavior/Common change, a public Types vocabulary beyond the narrow missing integer limits, guest behavior change, external asset, or another App source change. |
+| Exit Criteria | Every confirmed item has an owner-local implementation or an explicit evidence-backed disposition; manifests and boundary sweeps pass; no product checker remains in Shared test roots; all required verification and target-scoped P commits are complete. |
+| Original Owner Request | “收口S4，准入S5” followed by the owner-supplied static audit and bounded recommended repair scope. |
+| Similar-Issue Sweep | Search all nested Shared `.cmake` checks for `cmake/nxvm`, all Shared source/test integer bound constants, and all IBM PC public one-line forwarding wrappers before closing. |
 
 S2 evidence: [Mapper qualification](../etc/evidence/m7-t44-s2-mapper-performance.md).
 
