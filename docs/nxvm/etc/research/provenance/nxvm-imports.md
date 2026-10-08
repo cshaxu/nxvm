@@ -130,3 +130,17 @@ lifetime and CPU pairing ownership replace the machine-private connection.
 [Evidence](../../evidence/t539-s16-fpu-extraction.md) maps the original
 cases, independent tests and completed receiving verification. No asset enters
 the Shared source/test corpus.
+# T547 S1 — SoftPC shared-test reconciliation
+
+- Source: project-owned SoftPC commit `c6413911`.
+- Imported paths: `test/register.cmake`, `test/lib/CMakeLists.txt`, and
+  `test/lib/console_broker_display_smoke.c`.
+- Reason: private CTest work directories, a narrow native-desktop resource
+  lock, and host-actual viewport capture make independent shared test runs
+  reliable without changing runtime behavior.
+- Authorization: root MIT project policy; no third-party notice, firmware,
+  media, ROM, INI, binary or App source is imported.
+- Reconciliation: NXVM retains its newer T546 `src/x86`, `test/x86` and
+  `test/ibmpc` repairs rather than replacing them with SoftPC's older paths;
+  `docs/nxvm/etc/evidence/t547-s1-softpc-eight-component-reconciliation.md`
+  records the path-level disposition.

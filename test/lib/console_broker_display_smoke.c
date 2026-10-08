@@ -129,21 +129,31 @@ typedef struct display_snapshot {
     lib_win32_console_screen_buffer_infoex info;
     lib_win32_console_cursor_info cursor;
     lib_win32_dword mode;
+    lib_i16 columns;
+    lib_i16 rows;
     lib_win32_char_info cells[120 * 30];
 } display_snapshot;
 
 static void snapshot(display_snapshot *s)
 {
     lib_win32_handle output = open_console_output();
-    lib_win32_coord size = {120, 30}, origin = {0, 0};
-    lib_win32_small_rect region = {0, 0, 119, 29};
+    lib_win32_coord size, origin = {0, 0};
+    lib_win32_small_rect region;
     lib_memory_set(s, 0, sizeof(*s));
     s->info.cbSize = sizeof(s->info);
     lib_test_assert(lib_win32_get_console_screen_buffer_info_ex(output, &s->info));
     lib_test_assert(lib_win32_get_console_cursor_info(output, &s->cursor));
     lib_test_assert(lib_win32_get_console_mode(output, &s->mode));
+    s->columns = s->info.srWindow.Right - s->info.srWindow.Left + 1;
+    s->rows = s->info.srWindow.Bottom - s->info.srWindow.Top + 1;
+    if (s->columns > 120) s->columns = 120;
+    if (s->rows > 30) s->rows = 30;
+    lib_test_assert(s->columns > 0 && s->rows > 0);
+    size = (lib_win32_coord){s->columns, s->rows};
+    region = s->info.srWindow;
+    region.Right = (lib_win32_short)(region.Left + s->columns - 1);
+    region.Bottom = (lib_win32_short)(region.Top + s->rows - 1);
     lib_test_assert(lib_win32_read_console_output_w(output, s->cells, size, origin, &region));
-    lib_test_assert(region.Right >= 79 && region.Bottom >= 24);
     lib_test_assert(lib_win32_close_handle(output));
 }
 
@@ -325,8 +335,12 @@ int main(void)
     /* "Monitor> " is nine cells wide; the cursor is the next cell. */
     lib_test_assert(after.info.dwCursorPosition.X == 9);
     lib_test_assert(after.info.dwCursorPosition.Y == before.info.dwCursorPosition.Y + 2);
-    for (lib_u32 x = 2; x < 80; ++x)
-        lib_test_assert(after.cells[before.info.dwCursorPosition.Y * 120 + x].Char.UnicodeChar == ' ');
+    {
+        lib_i16 row = before.info.dwCursorPosition.Y - after.info.srWindow.Top;
+
+        for (lib_i16 x = 2; x < 80; ++x)
+            lib_test_assert(after.cells[row * after.columns + x].Char.UnicodeChar == ' ');
+    }
     /* Same-mode binding does not clear text, move the cursor or switch screens. */
     lib_test_assert(console_broker_replace(broker, cooked, other, CONSOLE_BROKER_COOKED_LINES) == 0);
     expect_display(&after);

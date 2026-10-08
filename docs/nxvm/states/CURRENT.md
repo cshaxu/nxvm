@@ -2,8 +2,30 @@
 
 ## Current Work
 
+## Active Packet — M5 T547 S1 SoftPC Four-Test-Package Optimization Import
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T547 S1. |
+| Admission And Approval | Owner admitted T547 and assigned S1 to import SoftPC's four-test-component optimizations on 2026-10-08. |
+| Objective | Produce a complete current SoftPC/NXVM eight-component reconciliation: import every still-valid SoftPC shared correction, retain NXVM's newer CPU/board repairs and regressions, and prove the four shared test packages remain independently owned and runnable. |
+| Non-goals | No firmware, media, INI, App test, artifact, broad corpus replacement without a path disposition, retry loop, test weakening, or replacement of a source-backed NXVM CPU timing assertion with an older SoftPC expectation. |
+| Reference Baseline | NXVM `766ef2587`; clean SoftPC `c6413911`, whose actual P4 diff changes `test/lib` and `test/register.cmake` only. |
+| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S1. |
+| Files And ABI Surface | Current shared source/test paths only when a path-level reconciliation proves a missing valid SoftPC correction; currently `test/lib/CMakeLists.txt`, `test/lib/console_broker_display_smoke.c`, `test/lib/MANIFEST.sha256`, `test/x86/verify_negative.cmake`, `test/x86/MANIFEST.sha256`, `test/register.cmake`, plus NXVM task/provenance/evidence records. No public ABI. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy rules; SoftPC import provenance requirements; each affected test package's manifest and registration boundary. |
+| Verification | Review `c6413911` and every current source/test path diff; record import/retain/supersede dispositions; run manifest/boundary gates, focused x64/x86 Lib native desktop tests, then each package's registered aggregate once per width. |
+| Expected Markers | Native desktop tests share one resource lock while ordinary tests retain parallel eligibility; the display smoke accepts a valid host viewport without masking output assertions; every upstream/NXVM difference has an evidence-backed disposition with no lost NXVM CPU/board regression. |
+| Asset Needs | None. Repository-only tests use no firmware, ROM, media, INI, font or user snapshot. |
+| Reporting Requirements | Record exact upstream commit, every changed source/test path's imported/retained/superseded disposition and why, actual code/test diff counts, each package's verification, and any native-desktop environment limitation separately. |
+| Stop Conditions | Stop for an upstream independent notice, a source/behavior conflict not resolvable from existing evidence, a test reduction that loses NXVM-owned assertion coverage, a manifest/boundary failure, or a need to touch an App/MyNES artifact. |
+| Exit Criteria | Complete eight-component disposition ledger is recorded; valid SoftPC corrections are imported without weakening NXVM repairs; all four packages retain independent registration/ownership; dual-width package proof is recorded; implementation P is pushed for coordinator review. |
+| Original Owner Request | Admit a T whose S1 imports SoftPC's four test-component optimizations. |
+| Similar-Issue Sweep | Compare all four package trees and their CMake registrations against SoftPC; distinguish current optimization changes from older divergent CPU/board regressions before copying any path. |
+
 | Work | Progress |
 | --- | --- |
+| T547 S1 | Active: current SoftPC source/test differences are reconciled. SoftPC's only current missing correction is the imported native-test isolation; NXVM retains the later T546 x86/IBM PC repair set. The local negative probe is made case-private after an actual stale-input assertion failure. Evidence records complete Common/IBM PC dual-width runs, focused Lib proof and the remaining long Lib selftest environment limit. |
 | T544 | Closed as CPU audit; complete repair/proof findings transferred to the first queued proposal, not claimed repaired. |
 | M5 Td S177 | Complete: CPU audit closure and full repair transfer, archive/queue/reference reconciliation. |
 | T545 | Closed after S7 actual-change acceptance: fixed eight-corpus import, preserved receivers, four owner-local test packages and full receiving qualification. No active S packet. |
