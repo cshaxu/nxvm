@@ -204,12 +204,77 @@ static lib_i32 verr_verw_test_ldt_selector(void)
     return 1;
 }
 
+static lib_i32 verr_verw_test_invalid_ldtr_is_negative(void)
+{
+    static const lib_u8 code[][4] = {
+        {0x0fu,0x00u,VERR_VERW_CPU_VERR_MODRM,0xf4u},
+        {0x0fu,0x00u,VERR_VERW_CPU_VERW_MODRM,0xf4u}
+    };
+    static const lib_u8 descriptor[] = {0xffu,0xffu,0,0,0,0x93u,0,0};
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    lib_size profile_index;
+    lib_size index;
+
+    for (profile_index = 0u; profile_index < sizeof(profiles) /
+            sizeof(profiles[0]); ++profile_index) {
+    for (index = 0u; index < sizeof(code) / sizeof(code[0]); ++index) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+
+        verr_verw_prepare(&fixture, profiles[profile_index]);
+        fixture.cpu.data.ldtr.flagValid = LIB_FALSE;
+        fixture.cpu.data.ldtr.selector = 0x0030u;
+        fixture.cpu.data.ldtr.base = 0x0700u;
+        fixture.cpu.data.ldtr.limit = 0xffffu;
+        fixture.cpu.data.eax = 0xa1a1000cu;
+        lib_memory_copy(fixture.memory + 0x0708u, descriptor,
+            sizeof(descriptor));
+        if (!cpu_descriptor_query_run(&fixture, code[index], sizeof(code[index]),
+                &after) || core_machine_cpu_is_shutdown(&fixture.execution) ||
+            CPU_DESCRIPTOR_QUERY_BIT_IS_SET(after.data.eflags,
+                VCPU_EFLAGS_ZF)) return 0;
+    }
+    }
+    return 1;
+}
+
+static lib_i32 verr_verw_test_descriptor_bytes_unchanged(void)
+{
+    static const lib_u8 code[][4] = {
+        {0x0fu,0x00u,VERR_VERW_CPU_VERR_MODRM,0xf4u},
+        {0x0fu,0x00u,VERR_VERW_CPU_VERW_MODRM,0xf4u}
+    };
+    static const lib_u8 descriptor[] = {0xffu,0xffu,0,0,0,0x93u,0,0};
+    lib_size index;
+
+    for (index = 0u; index < sizeof(code) / sizeof(code[0]); ++index) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+
+        verr_verw_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        fixture.cpu.data.eax = 0xa1a10010u;
+        lib_memory_copy(fixture.memory + CPU_DESCRIPTOR_QUERY_GDT_ADDRESS + 0x10u,
+            descriptor, sizeof(descriptor));
+        if (!cpu_descriptor_query_run(&fixture, code[index], sizeof(code[index]),
+                &after) || !CPU_DESCRIPTOR_QUERY_BIT_IS_SET(after.data.eflags,
+                VCPU_EFLAGS_ZF) || lib_memory_compare(fixture.memory +
+                CPU_DESCRIPTOR_QUERY_GDT_ADDRESS + 0x10u, descriptor,
+                sizeof(descriptor)) != 0) return 0;
+    }
+    return 1;
+}
+
 lib_i32 main(void)
 {
     if (!verr_verw_test_outcomes() || !verr_verw_test_memory_and_prefix_forms() ||
         !verr_verw_test_protected_memory_forms() ||
         !verr_verw_test_rejection() || !verr_verw_test_source_limit() ||
-        !verr_verw_test_ldt_selector()) {
+        !verr_verw_test_ldt_selector() ||
+        !verr_verw_test_invalid_ldtr_is_negative() ||
+        !verr_verw_test_descriptor_bytes_unchanged()) {
         lib_c_fprintf(lib_c_stderr, "M5:T539:S44:VERR-VERW:FAIL\n");
         return 1;
     }

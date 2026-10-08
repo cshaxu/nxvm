@@ -1435,7 +1435,8 @@ static lib_u8 _s_check_selector(core_machine_cpu_execution_context *context, lib
 {
     /* 0 = succ, 1 = fail */
     CPU_TRACE_CALL_BEGIN("_s_check_selector");
-    if (_IsSelectorNull(selector))
+    if (_IsSelectorNull(selector) ||
+        (_GetSelector_TI(selector) && !cpu_state.data.ldtr.flagValid))
     {
         CPU_TRACE_CALL_END;
         return LIB_TRUE;
@@ -17186,10 +17187,19 @@ static void LAR_R32_RM32(core_machine_cpu_execution_context *context)
                 case VCPU_DESC_SYS_TYPE_TSS_16_BUSY:
                 case VCPU_DESC_SYS_TYPE_CALLGATE_16:
                 case VCPU_DESC_SYS_TYPE_TASKGATE:
+                case VCPU_DESC_SYS_TYPE_TRAPGATE_16:
+                case VCPU_DESC_SYS_TYPE_INTGATE_16:
+                    _SetEFLAGS_ZF;
+                    break;
                 case VCPU_DESC_SYS_TYPE_TSS_32_AVL:
                 case VCPU_DESC_SYS_TYPE_TSS_32_BUSY:
                 case VCPU_DESC_SYS_TYPE_CALLGATE_32:
-                    _SetEFLAGS_ZF;
+                case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
+                case VCPU_DESC_SYS_TYPE_INTGATE_32:
+                    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+                        _SetEFLAGS_ZF;
+                    else
+                        _ClrEFLAGS_ZF;
                     break;
                 default:
                     _ClrEFLAGS_ZF;
@@ -17211,7 +17221,7 @@ static void LAR_R32_RM32(core_machine_cpu_execution_context *context)
                     break;
                 case 4:
                     CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
-                    descriptor = (X86_CPU_MASK_U32(descriptor >> 32) & 0x00ffff00);
+                    descriptor = (X86_CPU_MASK_U32(descriptor >> 32) & 0x00f0ff00);
                     CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(descriptor), 4));
                     CPU_TRACE_BLOCK_END;
                     break;
@@ -17277,9 +17287,14 @@ static void LSL_R32_RM32(core_machine_cpu_execution_context *context)
                 case VCPU_DESC_SYS_TYPE_TSS_16_AVL:
                 case VCPU_DESC_SYS_TYPE_LDT:
                 case VCPU_DESC_SYS_TYPE_TSS_16_BUSY:
+                    _SetEFLAGS_ZF;
+                    break;
                 case VCPU_DESC_SYS_TYPE_TSS_32_AVL:
                 case VCPU_DESC_SYS_TYPE_TSS_32_BUSY:
-                    _SetEFLAGS_ZF;
+                    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+                        _SetEFLAGS_ZF;
+                    else
+                        _ClrEFLAGS_ZF;
                     break;
                 default:
                     _ClrEFLAGS_ZF;
