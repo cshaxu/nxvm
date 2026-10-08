@@ -33,6 +33,7 @@ typedef enum cpu_task16_case {
     CPU_TASK16_INDIRECT_ADDRESS32,
     CPU_TASK16_INDIRECT_OPERAND_ADDRESS32,
     CPU_TASK16_RING3,
+    CPU_TASK16_RING3_SOURCE_DIRECT,
     CPU_TASK16_READABLE_CODE_DATA
 } cpu_task16_case;
 
@@ -77,6 +78,7 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
     lib_u8 state[sizeof(target_state)];
     lib_u8 idt[0x70u] = {0};
     lib_u8 target_code[sizeof(target_code_base)];
+    lib_u8 ring3_source_state[sizeof(target_state)];
     lib_u8 source[12u] = {0xb8u,0x11u,0x11u,0xeau,0,0,0x30u,0,0xf4u};
     lib_size source_bytes = 9u;
     t_cpu *const cpu = &fixture->cpu;
@@ -192,6 +194,20 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
         target_code[0] = 0xebu;
         target_code[1] = 0xfeu;
     }
+    if (test_case == CPU_TASK16_RING3_SOURCE_DIRECT) {
+        static const lib_u8 ring3_source_code[] = {0xeau,0xa0u,0x01u,0x4bu,0u};
+
+        state[34u] = 0x5bu;
+        state[36u] = 0x53u;
+        state[38u] = 0x5bu;
+        state[40u] = 0x5bu;
+        lib_memory_copy(ring3_source_state, state, sizeof(ring3_source_state));
+        ring3_source_state[14u] = 0xa0u;
+        ring3_source_state[15u] = 0x01u;
+        gdt[9u * 8u + 5u] = 0xe1u;
+        lib_memory_copy(target_code, ring3_source_code,
+            sizeof(ring3_source_code));
+    }
     if (test_case == CPU_TASK16_READABLE_CODE_DATA) {
         state[34u] = 0x08u;
         state[40u] = 0x08u;
@@ -239,6 +255,9 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
     lib_memory_copy(fixture->memory + CPU_TASK16_GDT_BASE, gdt, sizeof(gdt));
     lib_memory_copy(fixture->memory + CPU_TASK16_IDT_BASE, idt, sizeof(idt));
     lib_memory_copy(fixture->memory + CPU_TASK16_B_BASE, state, sizeof(state));
+    if (test_case == CPU_TASK16_RING3_SOURCE_DIRECT)
+        lib_memory_copy(fixture->memory + 0x0800u, ring3_source_state,
+            sizeof(ring3_source_state));
     if (test_case == CPU_TASK16_LDT || test_case == CPU_TASK16_LDT_NOT_PRESENT) {
         static const lib_u8 ldt[] = {
             0,0,0,0,0,0,0,0,
@@ -249,6 +268,10 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
     }
     lib_memory_copy(fixture->memory + CPU_TASK16_CODE_BASE + 0x100u,
         target_code, sizeof(target_code));
+    if (test_case == CPU_TASK16_RING3_SOURCE_DIRECT) {
+        fixture->memory[CPU_TASK16_CODE_BASE + 0x1a0u] = 0xebu;
+        fixture->memory[CPU_TASK16_CODE_BASE + 0x1a1u] = 0xfeu;
+    }
     lib_memory_copy(fixture->memory + CPU_TASK16_CODE_BASE, source,
         source_bytes);
     cpu->data.cr0 |= VCPU_CR0_PE;
