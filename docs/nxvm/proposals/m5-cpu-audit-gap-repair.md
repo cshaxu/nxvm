@@ -93,22 +93,23 @@ test review. Each S exits with its complete batch disposition and full units.
 | S9 | Asynchronous arbiter: NMI/INTR/debug priority, short shadows, MOV/POP SS versus LSS, mask/in-service, expiry/reset/IRET and simultaneous requests. Prove one arbiter and correct generation-specific delivery. |
 | S10 | Exception delivery/shutdown: return addresses, complete ordered fault pairs, DF/error/shutdown and late task context. Prove serial handling and CPU shutdown without equating it to product stop/reset. |
 | S11 | Shared Console viewport repair: replace the host-size assumption in the Win32 Console broker with one owner-local display application path; make the test choose a legal runtime viewport while retaining a wide backing-buffer assertion. This is an immediate Shared-quality repair, not a CPU semantic claim. Complete full all-App verification after the repair. |
-| S12 | Descriptor/query/table: generation-specific types/layout, P-independent queries, null/invalid LDT, privilege priority and busy/accessed publication. Prove LAR/LSL/VERR/VERW independently of current rejection expectations. |
-| S13 | Gate and outer-return: descriptor/operand/stack/TSS widths, CPL, LDT/conforming/ring1/2 and segment cleanup. Resolve retained original-source contradictions before changing disputed predicates. |
-| S14 | Task transition: staged admission/commit, incoming CR3/LDT/selector/CPL, outgoing dynamic save, busy/backlink/NT, VM/debug and late fault context. Prove one transition/finalizer across CALL/JMP/INT/IRET rather than parallel patches. |
-| S15 | Paging and implicit references: segment-before-page, U/S combinations, cross-page spans, CR2/error/A/D and task/descriptor/frame references. Prove preview has no architectural translation/fault side effects. |
-| S16 | String/port restart: checked current element, prior completed elements, full prefix/repeat restart and irreversible I/O. Prove one REP path with explicit memory/port failure and commit ordering. |
-| S17 | CPU external/NPX/bus: interruptible WAIT/TEST/BUSY, ESC references/errors, integrated 186 escape input and automatic/explicit LOCK interval. Prove the sole Core arbitration contract without host locks or BIOS shortcuts. |
-| S18 | Scalar/formula/transfer timing: actual widths, 8088 transfers, odd/reference counts, 186 width/direction, 286 LEAVE, 386 conversion/segment POP/VM FS-GS allocation, branch decisions and full task matrices. Prove one selector against source-conditioned expectations, not copied old constants. |
-| S19 | Retirement/external waits: keep completed decode/outcome through entry, account qualified wait/overlap once and separate instruction/delivery/compatibility progress. Prove successful, faulted and asynchronous variants at one time publisher. |
-| S20 | Cross-family regression/source convergence: reconcile every imported finding, false oracle and missing predicate after the owning fixes; review remaining original conflicts and L1/false-tier claims. Prove no unowned or silently deferred member remains. |
-| S21 | Final qualification: actual-change/code-quality review, full dual-width unit and original external integration suites, receiving-App artifacts and complete ledger audit. Close only to the level the direct evidence proves. |
+| S12 | Owner-directed waiting packet: no implementation is admitted until the owner publishes the next task; former planned S12-S21 are shifted to S13-S22. |
+| S13 | Descriptor/query/table: generation-specific types/layout, P-independent queries, null/invalid LDT, privilege priority and busy/accessed publication. Prove LAR/LSL/VERR/VERW independently of current rejection expectations. |
+| S14 | Gate and outer-return: descriptor/operand/stack/TSS widths, CPL, LDT/conforming/ring1/2 and segment cleanup. Resolve retained original-source contradictions before changing disputed predicates. |
+| S15 | Task transition: staged admission/commit, incoming CR3/LDT/selector/CPL, outgoing dynamic save, busy/backlink/NT, VM/debug and late fault context. Prove one transition/finalizer across CALL/JMP/INT/IRET rather than parallel patches. |
+| S16 | Paging and implicit references: segment-before-page, U/S combinations, cross-page spans, CR2/error/A/D and task/descriptor/frame references. Prove preview has no architectural translation/fault side effects. |
+| S17 | String/port restart: checked current element, prior completed elements, full prefix/repeat restart and irreversible I/O. Prove one REP path with explicit memory/port failure and commit ordering. |
+| S18 | CPU external/NPX/bus: interruptible WAIT/TEST/BUSY, ESC references/errors, integrated 186 escape input and automatic/explicit LOCK interval. Prove the sole Core arbitration contract without host locks or BIOS shortcuts. |
+| S19 | Scalar/formula/transfer timing: actual widths, 8088 transfers, odd/reference counts, 186 width/direction, 286 LEAVE, 386 conversion/segment POP/VM FS-GS allocation, branch decisions and full task matrices. Prove one selector against source-conditioned expectations, not copied old constants. |
+| S20 | Retirement/external waits: keep completed decode/outcome through entry, account qualified wait/overlap once and separate instruction/delivery/compatibility progress. Prove successful, faulted and asynchronous variants at one time publisher. |
+| S21 | Cross-family regression/source convergence: reconcile every imported finding, false oracle and missing predicate after the owning fixes; review remaining original conflicts and L1/false-tier claims. Prove no unowned or silently deferred member remains. |
+| S22 | Final qualification: actual-change/code-quality review, full dual-width unit and original external integration suites, receiving-App artifacts and complete ledger audit. Close only to the level the direct evidence proves. |
 
 S1-S4 establish state/admission/access seams used by later batches. S6 and S8-S10,
-and S12-S15 must reconcile their shared frame/fault/task boundaries; no S declares
+and S13-S16 must reconcile their shared frame/fault/task boundaries; no S declares
 a caller correct while its required owner remains unqualified. S18 consumes
-actual branch/transfer outcomes, and S19 consumes the completed execution and
-delivery contract. S20 is a convergence check, not a repository-wide test
+actual branch/transfer outcomes, and S20 consumes the completed execution and
+delivery contract. S21 is a convergence check, not a repository-wide test
 rewrite or a place to postpone regressions required by S1-S19.
 
 ## Verification, Artifacts And Closure

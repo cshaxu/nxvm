@@ -37,17 +37,18 @@ semantic proof. Every new finding joins the whole owning batch before repair.
 | S8 | FLAGS privilege and return | Accepted after actual-change review of pushed Shared 9d5e475f7 and NXVM 626d504f5: complete batch/source/caller proof, dual units 505/505, supplemental 33/33, both gates/eight manifests, original integration 58/58 once and eight stripped 0546 products. S8 closed; T remains open for S9-S20. |
 | S9 | Asynchronous arbiter | Accepted after coordinator actual-change review of pushed Shared 746e3e214 and NXVM 04bd419e1: complete seven-member source/caller disposition in S9 evidence, final units 505/505 per width, original integration 58/58 once, supplemental 33/33, both gates/eight manifests and eight stripped 0546 products. Pure governance P3 closes S9; T546 retains S10-S20. |
 | S10 | Exception delivery/shutdown | Closed at owner direction before the separate Shared Console repair: finalizer, ordered pair/serial/error/DF, shutdown/NMI/reset and late-context receivers are delivered in target-separated P commits. The unrelated Console viewport unit failure is reclassified to new S11, not hidden as CPU evidence. |
-| S11 | Shared Console viewport repair | Admitted at owner direction: one Console-broker display application path and host-capability-aware owner test; then complete all-App verification. |
-| S12 | Descriptor/query/table | Pending full source/context/caller batch. |
-| S13 | Gate and outer-return | Pending source conflicts and full context/caller batch. |
-| S14 | Task transition | Pending full source/context/caller batch. |
-| S15 | Paging and implicit references | Pending full source/context/caller batch. |
-| S16 | String/port restart | Pending full source/context/caller batch. |
-| S17 | CPU external/NPX/bus | Pending full source/context/caller batch. |
-| S18 | Scalar/formula/transfer timing | Pending all source-conditioned form/width/task/transfer allocations, including existing VM86 FS/GS L1 hole. |
-| S19 | Retirement/external waits | Pending complete decode/outcome and one time publication proof. |
-| S20 | Cross-family regression/source convergence | Pending every imported finding/oracle/source-tier disposition after owning repairs. |
-| S21 | Final qualification | Pending complete ledger, both widths/artifacts and all original 58 external contexts. |
+| S11 | Shared Console viewport repair | Closed at explicit owner direction after Shared `2e1c59660`/`89ae694ef` and receiving P commits. Focused dual-width Lib evidence passes 36/36 per width, including native desktop and Console contract tests. The broader all-App suite/artifact requirement was not rerun or claimed; it is retained for later explicit qualification. |
+| S12 | Owner-directed waiting packet | Active; no implementation scope until the owner publishes the next task. |
+| S13 | Descriptor/query/table | Pending full source/context/caller batch. |
+| S14 | Gate and outer-return | Pending source conflicts and full context/caller batch. |
+| S15 | Task transition | Pending full source/context/caller batch. |
+| S16 | Paging and implicit references | Pending full source/context/caller batch. |
+| S17 | String/port restart | Pending full source/context/caller batch. |
+| S18 | CPU external/NPX/bus | Pending full source/context/caller batch. |
+| S19 | Scalar/formula/transfer timing | Pending all source-conditioned form/width/task/transfer allocations, including existing VM86 FS/GS L1 hole. |
+| S20 | Retirement/external waits | Pending complete decode/outcome and one time publication proof. |
+| S21 | Cross-family regression/source convergence | Pending every imported finding/oracle/source-tier disposition after owning repairs. |
+| S22 | Final qualification | Pending complete ledger, both widths/artifacts and all original 58 external contexts. |
 
 Accepted disposition requires direct source/implementation/regression proof or
 source-proven non-applicability. Unresolved authority, unupgradable L1 or an
