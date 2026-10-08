@@ -15,8 +15,9 @@ static inline lib_status test_nxvm_machine_capture_presentation(const vm_machine
     static common_machine_frame frame;
     lib_size cell;
 
-    if (machine == LIB_NULL || out_frame == LIB_NULL ||
-        !vm_machine_copy_common_frame((vm_machine *)machine, &frame)) return LIB_STATUS_INVALID_STATE;
+    if (machine == LIB_NULL || out_frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (vm_machine_copy_common_frame((vm_machine *)machine, &frame) != LIB_STATUS_OK)
+        return LIB_STATUS_INVALID_STATE;
     lib_memory_set(out_frame, 0, sizeof(*out_frame));
     out_frame->generation = frame.sequence;
     if (frame.window.graphics) {

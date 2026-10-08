@@ -24,8 +24,8 @@ lib_i32 main(void)
         failed = 1;
         goto done;
     }
-    (void)vm_machine_publish_display(session, LIB_TRUE);
-    if (!vm_machine_copy_common_frame(session, &frame) ||
+    if (vm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
+        vm_machine_copy_common_frame(session, &frame) != LIB_STATUS_OK ||
         frame.window.text.base.text_columns != 80u ||
         frame.window.text.base.text_rows != 25u ||
         vm_machine_resume(session) != LIB_STATUS_OK ||

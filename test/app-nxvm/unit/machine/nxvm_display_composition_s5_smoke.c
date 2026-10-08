@@ -21,7 +21,8 @@ static void vm_display_s5_port_write(vm_machine *session, lib_u16 port,
 static lib_i32 vm_display_s5_capture(vm_machine *session,
     core_machine_guest_display_frame *frame, x86_video_kind expected_kind)
 {
-    return vm_machine_publish_display(session, LIB_TRUE) == expected_kind &&
+    return vm_machine_publish_display(session, LIB_TRUE) == LIB_STATUS_OK &&
+        session->display_kind == expected_kind &&
         test_nxvm_machine_capture_presentation(session, frame) == LIB_STATUS_OK;
 }
 
@@ -114,8 +115,8 @@ lib_i32 main(void)
         !observation.generation_reliable || observation.capture_required ||
         observation.generation != ega_snapshot_generation;
     session->last_display_publish_milliseconds = 0u;
-    failed |= vm_machine_publish_display(session, LIB_FALSE) !=
-        X86_VIDEO_KIND_EGA_320X200X16 ||
+    failed |= vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
+        session->display_kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation <= cga_generation ||
         session->display_snapshot_generation != ega_snapshot_generation;
@@ -128,8 +129,8 @@ lib_i32 main(void)
         !observation.generation_reliable || !observation.capture_required ||
         observation.generation == ega_snapshot_generation;
     session->last_display_publish_milliseconds = 0u;
-    failed |= vm_machine_publish_display(session, LIB_FALSE) !=
-        X86_VIDEO_KIND_EGA_320X200X16 ||
+    failed |= vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
+        session->display_kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation <= cga_generation ||
         frame.pixels[0] != 0u || session->display_snapshot_generation !=
