@@ -72,8 +72,10 @@ complete 506-test label was then run in three non-overlapping CTest partitions
 - x86: 504 passed in the parallel partitions.  Two established tests exceeded
   their individual 15-second containment while still printing their success
   markers: `unit.core-machine-cli-sti-s48-smoke` and
-  `unit.machine-8086-instruction-timing-ledger-smoke`.  Each passed immediately
-  when run alone from the identical x86 build.
+  `unit.machine-8086-instruction-timing-ledger-smoke`.  Each then passed
+  through CTest with its exact test name and `-j 1` from the identical x86
+  build.  Thus every x86 unit assertion ran successfully, although its one
+  parallel aggregate was not all-green.
 
 This is evidence of an x86 parallel-containment qualification gap, not a
 passing full-suite result and not evidence that either test's CPU assertion
