@@ -2,30 +2,31 @@
 
 ## Current Work
 
-## Active Packet — M5 T547 S1 SoftPC Four-Test-Package Optimization Import
+## Active Packet — M5 T547 S2 Shared Four-Package Test Stability
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T547 S1. |
-| Admission And Approval | Owner admitted T547 and assigned S1 to import SoftPC's four-test-component optimizations on 2026-10-08. |
-| Objective | Produce a complete current SoftPC/NXVM eight-component reconciliation: import every still-valid SoftPC shared correction, retain NXVM's newer CPU/board repairs and regressions, and prove the four shared test packages remain independently owned and runnable. |
-| Non-goals | No firmware, media, INI, App test, artifact, broad corpus replacement without a path disposition, retry loop, test weakening, or replacement of a source-backed NXVM CPU timing assertion with an older SoftPC expectation. |
-| Reference Baseline | NXVM `766ef2587`; clean SoftPC `c6413911`, whose actual P4 diff changes `test/lib` and `test/register.cmake` only. |
-| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S1. |
-| Files And ABI Surface | Current shared source/test paths only when a path-level reconciliation proves a missing valid SoftPC correction; currently `test/lib/CMakeLists.txt`, `test/lib/console_broker_display_smoke.c`, `test/lib/MANIFEST.sha256`, `test/x86/verify_negative.cmake`, `test/x86/MANIFEST.sha256`, `test/register.cmake`, plus NXVM task/provenance/evidence records. No public ABI. |
-| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source-policy rules; SoftPC import provenance requirements; each affected test package's manifest and registration boundary. |
-| Verification | Review `c6413911` and every current source/test path diff; record import/retain/supersede dispositions; run manifest/boundary gates, focused x64/x86 Lib native desktop tests, then each package's registered aggregate once per width. |
-| Expected Markers | Native desktop tests share one resource lock while ordinary tests retain parallel eligibility; the display smoke accepts a valid host viewport without masking output assertions; every upstream/NXVM difference has an evidence-backed disposition with no lost NXVM CPU/board regression. |
+| Identifier Mode | Continuation T547 S2. |
+| Admission And Approval | Owner admitted S2 on 2026-10-08 after S1 delivered the eight-component reconciliation but did not yet establish a complete stable dual-width four-package aggregate. |
+| Objective | Make each shared test package (`lib`, `common`, `x86`, `ibmpc`) independently complete and reproducibly runnable on x64 and x86. |
+| Non-goals | No CPU/device behavior change, firmware/media/INI/App/MyNES artifact change, retry loop, sleep-based stabilization, test weakening, timeout extension or framework/manager addition. Source changes require a demonstrated production defect and an owner report before they are made. |
+| Reference Baseline | Pushed Shared S1 reconciliation `26c013bba`; current NXVM worktree with user-owned MyNES artifacts excluded. |
+| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S2. |
+| Files And ABI Surface | `cmake/nxvm/NxvmProduct.cmake` only for the aggregate's proven safe parallelism, `test/register.cmake`, the four shared test roots and their manifests/evidence. A shared production path is out of scope unless a current failure proves it is the sole owner; that condition must be reported before edit. No public ABI. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; each package manifest/registration boundary; S1 import evidence. |
+| Verification | Fresh/configured x64 and x86 test-package builds; one registered aggregate per package/width after structural repair; focused native-desktop proof only when diagnosing its actual owner; all eight manifests and package boundary gates. |
+| Expected Markers | No stale fixture leakage, no accidental cross-test scratch sharing, no broad desktop serialization, complete result for every registered test including Types layout self-test, and no test-only bypass of an actual product defect. |
 | Asset Needs | None. Repository-only tests use no firmware, ROM, media, INI, font or user snapshot. |
-| Reporting Requirements | Record exact upstream commit, every changed source/test path's imported/retained/superseded disposition and why, actual code/test diff counts, each package's verification, and any native-desktop environment limitation separately. |
-| Stop Conditions | Stop for an upstream independent notice, a source/behavior conflict not resolvable from existing evidence, a test reduction that loses NXVM-owned assertion coverage, a manifest/boundary failure, or a need to touch an App/MyNES artifact. |
-| Exit Criteria | Complete eight-component disposition ledger is recorded; valid SoftPC corrections are imported without weakening NXVM repairs; all four packages retain independent registration/ownership; dual-width package proof is recorded; implementation P is pushed for coordinator review. |
-| Original Owner Request | Admit a T whose S1 imports SoftPC's four test-component optimizations. |
-| Similar-Issue Sweep | Compare all four package trees and their CMake registrations against SoftPC; distinguish current optimization changes from older divergent CPU/board regressions before copying any path. |
+| Reporting Requirements | Record package/width counts, fixture/resource ownership, actual failures versus host execution limits, all test-file diff counts, and any production defect separately. Do not present a focused rerun or incomplete aggregate as a completed package proof. |
+| Stop Conditions | Stop for a demonstrated production defect, test reduction that loses owner coverage, a need to change App/MyNES content, a new public API, or an unresolved host capability that cannot be modeled by the existing test contract. |
+| Exit Criteria | Each of the four package aggregates completes once with zero failed/not-run tests on x64 and x86; manifests/boundaries pass; no remaining native-test intermittency is masked by retry; any long static test completes within its own correct test path rather than an external orchestration cap. |
+| Original Owner Request | All four shared component test packages must run stably. |
+| Similar-Issue Sweep | Inspect every package's CTest registration, work-directory allocation, resource locks, fixture cleanup and static self-test invocation; classify every hit as fixed, not applicable or retained with evidence. |
 
 | Work | Progress |
 | --- | --- |
-| T547 S1 | Active: current SoftPC source/test differences are reconciled. SoftPC's only current missing correction is the imported native-test isolation; NXVM retains the later T546 x86/IBM PC repair set. The local negative probe is made case-private after an actual stale-input assertion failure. Evidence records complete Common/IBM PC dual-width runs, focused Lib proof and the remaining long Lib selftest environment limit. |
+| T547 S1 | Implementation P complete and pushed as `26c013bba`: current SoftPC differences were reconciled, native-test isolation imported, NXVM's later x86/IBM PC repairs retained, and the stale x86 negative fixture fixed. Its incomplete aggregate/stability evidence is explicitly continued by S2. |
+| T547 S2 | Complete pending P: the aggregate default is reduced from 8 to the evidence-backed safe 4 jobs, without changing individual budgets or assertions. One complete x64/x86 run of each shared package passes: Lib 51/51, Common 20/20, x86 182/182 and IBM PC 182/182; complete repository-only units pass 506/506 per width. See `etc/evidence/t547-s2-shared-test-stability.md`. |
 | T544 | Closed as CPU audit; complete repair/proof findings transferred to the first queued proposal, not claimed repaired. |
 | M5 Td S177 | Complete: CPU audit closure and full repair transfer, archive/queue/reference reconciliation. |
 | T545 | Closed after S7 actual-change acceptance: fixed eight-corpus import, preserved receivers, four owner-local test packages and full receiving qualification. No active S packet. |

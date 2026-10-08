@@ -38,6 +38,27 @@ task must not overwrite, delete, or weaken NXVM-owned assertions.
 - Update provenance/evidence and NXVM task state. No production source,
   firmware, media, INI, artifact, or App test is in scope.
 
+## S2: Shared Four-Package Test Stability
+
+- Treat S1's reconciliation as the fixed baseline; do not re-import or replace
+  shared production code while diagnosing tests.
+- Inventory each package's CTest registration, scratch ownership, native
+  resource lock and static self-test invocation on both host widths.  Run each
+  registered package aggregate once after a fresh configured build.
+- Repair only the owner-local test setup, fixture cleanup or registration that
+  demonstrably permits stale inputs, shared scratch state or an invalid host
+  contract.  A production-path change is out of scope unless a current failure
+  proves that path is the sole owner; report it before editing.
+- Do not hide an intermittent test by retrying, sleeping, increasing a timeout,
+  weakening an assertion or broadly serializing unrelated tests.  A long static
+  test must complete through its correct registered path, not through a
+  controller-imposed execution cap.
+- Set the aggregate's default parallelism only to the highest observed safe
+  level for the CPU-heavy package mix; do not alter individual test budgets.
+- Preserve the independently importable `test/lib`, `test/common`, `test/x86`
+  and `test/ibmpc` ownership boundary and update only their affected manifests
+  and task evidence.
+
 ## Completion Standard
 
 The imported resource lock serializes only native desktop tests, not every Lib
