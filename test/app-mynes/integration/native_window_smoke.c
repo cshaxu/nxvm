@@ -6,6 +6,7 @@
 #include "common/session/session_interface.h"
 #include "common/ui/ui_interface.h"
 #include "core/driver_interface.h"
+#include "lib/base/sync_interface.h"
 #include "lib/storage/file_interface.h"
 
 #define FIXTURE_PATH "mynes-native-window-fixture.nes"
@@ -19,7 +20,14 @@ typedef struct native_window_fixture
     app_command_context command;
     HANDLE session_thread;
     lib_i32 session_result;
+    base_sync_event *runtime_processed;
+    lib_atomic_i32 expected_runtime;
+    lib_atomic_i32 observed_runtime;
 } native_window_fixture;
+
+#define NATIVE_WINDOW_RUNTIME_NONE (-1)
+
+static native_window_fixture *native_window_runtime_observer;
 
 static void write_fixture(void)
 {
@@ -122,6 +130,37 @@ static void frame_sink(void *opaque, lib_u32 sequence, lib_bool graphics,
                                                   graphics, generation));
 }
 
+static void note_runtime(void *opaque, common_session_machine_state prior,
+                         common_session_machine_state completed,
+                         common_session_command_result *out_result)
+{
+    native_window_fixture *fixture = native_window_runtime_observer;
+
+    app_command_note_runtime(opaque, prior, completed, out_result);
+    if (fixture != NULL)
+        lib_atomic_i32_store_explicit(&fixture->observed_runtime, (lib_i32)completed,
+                                      LIB_MEMORY_ORDER_SEQ_CST);
+}
+
+static void note_monitor_current(void *opaque, lib_bool current,
+                                 common_session_command_result *out_result)
+{
+    native_window_fixture *fixture = native_window_runtime_observer;
+
+    app_command_note_monitor_current(opaque, current, out_result);
+    if (fixture != NULL &&
+        lib_atomic_i32_load_explicit(&fixture->expected_runtime,
+                                     LIB_MEMORY_ORDER_SEQ_CST) ==
+            lib_atomic_i32_load_explicit(&fixture->observed_runtime,
+                                         LIB_MEMORY_ORDER_SEQ_CST))
+    {
+        lib_atomic_i32_store_explicit(&fixture->expected_runtime,
+                                      NATIVE_WINDOW_RUNTIME_NONE,
+                                      LIB_MEMORY_ORDER_SEQ_CST);
+        assert(base_sync_event_signal(fixture->runtime_processed) == LIB_STATUS_OK);
+    }
+}
+
 static DWORD WINAPI run_session(void *opaque)
 {
     native_window_fixture *fixture = opaque;
@@ -164,17 +203,23 @@ static void assert_no_window(void)
     assert(window_handle == NULL);
 }
 
-static void wait_for_machine_state(common_machine *machine,
-                                   common_machine_state expected)
+static void expect_runtime(native_window_fixture *fixture,
+                           common_session_machine_state expected)
 {
-    DWORD started = GetTickCount();
-    do
-    {
-        if (common_machine_state_get(machine) == expected)
-            return;
-        Sleep(10u);
-    } while (GetTickCount() - started < 3000u);
-    assert(!"machine did not reach the expected lifecycle state");
+    assert(base_sync_event_reset(fixture->runtime_processed) == LIB_STATUS_OK);
+    lib_atomic_i32_store_explicit(&fixture->expected_runtime, (lib_i32)expected,
+                                  LIB_MEMORY_ORDER_SEQ_CST);
+}
+
+static void wait_for_runtime(native_window_fixture *fixture,
+                             common_session_machine_state expected,
+                             common_machine_state machine_expected)
+{
+    assert(base_sync_event_wait(fixture->runtime_processed, 3000u) ==
+           BASE_SYNC_WAIT_SIGNALED);
+    assert(lib_atomic_i32_load_explicit(&fixture->observed_runtime,
+                                        LIB_MEMORY_ORDER_SEQ_CST) == (lib_i32)expected);
+    assert(common_machine_state_get(fixture->machine) == machine_expected);
 }
 
 static COLORREF wait_for_pixel(HWND window, COLORREF previous)
@@ -263,6 +308,12 @@ int main(void)
                                               LIB_STORAGE_MEDIUM_READONLY));
     app_command_initialize(&fixture.command, fixture.machine, LIB_TRUE,
                            COMMON_SESSION_DISPLAY_WINDOW);
+    assert(base_sync_event_create(BASE_SYNC_EVENT_AUTO_RESET,
+                                  &fixture.runtime_processed) == LIB_STATUS_OK);
+    lib_atomic_i32_initialize(&fixture.expected_runtime,
+                              NATIVE_WINDOW_RUNTIME_NONE);
+    lib_atomic_i32_initialize(&fixture.observed_runtime,
+                              NATIVE_WINDOW_RUNTIME_NONE);
     session_options = (common_session_options){
         .display = COMMON_SESSION_DISPLAY_WINDOW,
         .console_control = LIB_TRUE,
@@ -274,9 +325,9 @@ int main(void)
             .submit_line = app_command_submit_line,
             .begin_external = app_command_begin_external,
             .handle_hotkey = app_command_handle_hotkey,
-            .note_runtime = app_command_note_runtime,
+            .note_runtime = note_runtime,
             .note_broker = app_command_note_broker,
-            .note_monitor_current = app_command_note_monitor_current}};
+            .note_monitor_current = note_monitor_current}};
     assert(common_session_create(&fixture.session, &session_options) == LIB_STATUS_OK);
     common_machine_set_state_sink(fixture.machine, state_sink, &fixture);
     common_machine_set_frame_sink(fixture.machine, frame_sink, &fixture);
@@ -294,38 +345,52 @@ int main(void)
         .graphics_console_status_text = "NES video requires a window."};
     assert(common_ui_create(&fixture.ui, &ui_options) == LIB_STATUS_OK);
     assert(common_session_bind_ui(fixture.session, fixture.ui) == LIB_STATUS_OK);
+    native_window_runtime_observer = &fixture;
+    expect_runtime(&fixture, COMMON_SESSION_MACHINE_STOPPED);
     fixture.session_thread = CreateThread(NULL, 0u, run_session, &fixture, 0u, NULL);
     assert(fixture.session_thread != NULL);
 
-    /* Let Session consume the initial stopped fact before explicit start. */
-    Sleep(50u);
-    assert(common_machine_state_get(fixture.machine) == COMMON_MACHINE_STOPPED);
+    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_STOPPED,
+                     COMMON_MACHINE_STOPPED);
     assert_no_window();
+    expect_runtime(&fixture, COMMON_SESSION_MACHINE_RUNNING);
     submit_line(&fixture, "start");
+    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_RUNNING,
+                     COMMON_MACHINE_RUNNING);
     window = wait_for_window();
     assert(window != NULL);
     idle = wait_for_pixel(window, CLR_INVALID);
     assert(idle != CLR_INVALID && idle != RGB(0u, 0u, 0u));
+    expect_runtime(&fixture, COMMON_SESSION_MACHINE_PAUSED);
     send_hotkey(window, VK_ESCAPE);
-    wait_for_machine_state(fixture.machine, COMMON_MACHINE_PAUSED);
+    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_PAUSED,
+                     COMMON_MACHINE_PAUSED);
     wait_for_title(window, "MyNes native smoke (Paused)");
+    expect_runtime(&fixture, COMMON_SESSION_MACHINE_RUNNING);
     send_hotkey(window, VK_ESCAPE);
-    wait_for_machine_state(fixture.machine, COMMON_MACHINE_RUNNING);
+    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_RUNNING,
+                     COMMON_MACHINE_RUNNING);
     wait_for_title(window, "MyNes native smoke (Running)");
+    expect_runtime(&fixture, COMMON_SESSION_MACHINE_PAUSED);
     send_hotkey(window, VK_ESCAPE);
-    wait_for_machine_state(fixture.machine, COMMON_MACHINE_PAUSED);
+    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_PAUSED,
+                     COMMON_MACHINE_PAUSED);
     wait_for_title(window, "MyNes native smoke (Paused)");
+    expect_runtime(&fixture, COMMON_SESSION_MACHINE_RUNNING);
     send_hotkey(window, VK_ESCAPE);
-    wait_for_machine_state(fixture.machine, COMMON_MACHINE_RUNNING);
+    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_RUNNING,
+                     COMMON_MACHINE_RUNNING);
     wait_for_title(window, "MyNes native smoke (Running)");
     assert(PostMessageW(window, WM_KEYDOWN, 'K', 0));
     active = wait_for_pixel(window, idle);
     assert(active != CLR_INVALID && active != idle);
     assert(PostMessageW(window, WM_KEYUP, 'K', 0));
 
+    expect_runtime(&fixture, COMMON_SESSION_MACHINE_PAUSED);
     assert(PostMessageW(window, WM_CLOSE, 0u, 0));
     wait_for_window_retirement(window);
-    wait_for_machine_state(fixture.machine, COMMON_MACHINE_PAUSED);
+    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_PAUSED,
+                     COMMON_MACHINE_PAUSED);
 
     submit_line(&fixture, "exit");
     assert(WaitForSingleObject(fixture.session_thread, 5000u) == WAIT_OBJECT_0);
@@ -333,6 +398,8 @@ int main(void)
     CloseHandle(fixture.session_thread);
     assert(common_machine_shutdown(fixture.machine) == LIB_STATUS_OK);
     assert(common_ui_destroy(fixture.ui) == LIB_STATUS_OK);
+    native_window_runtime_observer = NULL;
+    base_sync_event_destroy(fixture.runtime_processed);
     assert(common_session_destroy(fixture.session) == LIB_STATUS_OK);
     assert(common_machine_destroy(fixture.machine) == LIB_STATUS_OK);
     assert(core_driver_destroy(fixture.driver) == LIB_STATUS_OK);
