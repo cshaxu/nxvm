@@ -33,6 +33,17 @@ static lib_i32 core_machine_publish_successful_retirement(core_machine *machine)
          core_machine_retirement_qualification_contains(machine));
 }
 
+static void core_machine_begin_retirement_wait(core_machine *machine,
+    lib_u64 wait_ticks, lib_u64 completion_ticks, lib_u64 source_ticks,
+    lib_bool retires)
+{
+    machine->cpu_retirement_wait_pending = LIB_TRUE;
+    machine->cpu_retirement_wait_ticks = wait_ticks;
+    machine->cpu_retirement_completion_ticks = completion_ticks;
+    machine->cpu_retirement_source_ticks = source_ticks;
+    machine->cpu_retirement_wait_retires = retires;
+}
+
 static core_machine_cpu_profile core_machine_resolve_cpu_profile(
     core_machine_cpu_profile profile)
 {
@@ -589,6 +600,7 @@ static lib_status core_machine_cold_reset(core_machine *machine)
     machine->cpu_retirement_wait_ticks = 0u;
     machine->cpu_retirement_completion_ticks = 0u;
     machine->cpu_retirement_source_ticks = 0u;
+    machine->cpu_retirement_wait_retires = LIB_FALSE;
     machine->external_cycle_page_valid = LIB_FALSE;
     machine->external_cycle_pending_valid = LIB_FALSE;
     machine->external_cycle_pending_space = CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY;
@@ -638,6 +650,7 @@ static void core_machine_processor_reset(core_machine *machine)
     machine->cpu_retirement_wait_ticks = 0u;
     machine->cpu_retirement_completion_ticks = 0u;
     machine->cpu_retirement_source_ticks = 0u;
+    machine->cpu_retirement_wait_retires = LIB_FALSE;
     machine->external_cycle_page_valid = LIB_FALSE;
     machine->external_cycle_pending_valid = LIB_FALSE;
     machine->external_cycle_round_ticks = 0u;
@@ -856,13 +869,24 @@ lib_status core_machine_run(
                             CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT) !=
                         LIB_STATUS_OK) return LIB_STATUS_INTERNAL_ERROR;
                     result->elapsed_ticks = machine->elapsed_ticks;
-                if (core_machine_cpu_is_halted(machine->executor_cpu_execution)) {
-                    machine->lifecycle = CORE_MACHINE_PAUSED;
-                    result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-                    result->linear_pc = core_machine_linear_pc(machine);
-                    return core_machine_complete_run_boundary(machine, result);
+                    if (machine->cpu_retirement_wait_retires &&
+                        core_machine_cpu_is_halted(machine->executor_cpu_execution)) {
+                        machine->lifecycle = CORE_MACHINE_PAUSED;
+                        result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+                        result->linear_pc = core_machine_linear_pc(machine);
+                        return core_machine_complete_run_boundary(machine, result);
+                    }
+                    if (machine->cpu_retirement_wait_ticks != 0u) continue;
                 }
-                    continue;
+                if (!machine->cpu_retirement_wait_retires) {
+                    machine->cpu_retirement_wait_pending = LIB_FALSE;
+                    machine->cpu_retirement_completion_ticks = 0u;
+                    machine->cpu_retirement_source_ticks = 0u;
+                    machine->lifecycle = CORE_MACHINE_PAUSED;
+                    result->reason = CORE_MACHINE_STOP_BUDGET;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return LIB_STATUS_OK;
                 }
                 if (budget.ticks != 0u && machine->cpu_retirement_completion_ticks >
                     budget.ticks - result->ticks) {
@@ -899,6 +923,7 @@ lib_status core_machine_run(
                 machine->cpu_retirement_wait_pending = LIB_FALSE;
                 machine->cpu_retirement_completion_ticks = 0u;
                 machine->cpu_retirement_source_ticks = 0u;
+                machine->cpu_retirement_wait_retires = LIB_FALSE;
                 result->elapsed_ticks = machine->elapsed_ticks;
                 continue;
             }
@@ -926,6 +951,34 @@ lib_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return LIB_STATUS_INTERNAL_ERROR;
                 }
+                if (core_machine_cpu_execution_consume_instruction_fault_delivery(
+                        machine->executor_cpu_execution)) {
+                    /* The synchronous exception frame and vector are committed, but
+                     * the faulting instruction did not retire. A committed external
+                     * cycle still consumes its separately modelled board wait; it
+                     * completes through the same pending owner without publishing a
+                     * synthetic CPU retirement. */
+                    if (machine->external_cycle_round_overflow) {
+                        (void)core_machine_report_fault(machine, 0x54494d45u);
+                        result->reason = CORE_MACHINE_STOP_FAULT;
+                        result->linear_pc = core_machine_linear_pc(machine);
+                        result->detail = machine->fault_detail;
+                        result->elapsed_ticks = machine->elapsed_ticks;
+                        return LIB_STATUS_INTERNAL_ERROR;
+                    }
+                    if (machine->external_cycle_round_ticks != 0u) {
+                        core_machine_begin_retirement_wait(machine,
+                            machine->external_cycle_round_ticks, 0u, 0u, LIB_FALSE);
+                        continue;
+                    }
+                    if (!core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
+                        machine->lifecycle = CORE_MACHINE_PAUSED;
+                        result->reason = CORE_MACHINE_STOP_BUDGET;
+                        result->linear_pc = core_machine_linear_pc(machine);
+                        result->elapsed_ticks = machine->elapsed_ticks;
+                        return LIB_STATUS_OK;
+                    }
+                }
                 if (core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
                     /* Return through the loop once so an explicit board reset
                      * can consume the notification before generic waiting. */
@@ -938,18 +991,6 @@ lib_status core_machine_run(
                     result->linear_pc = core_machine_linear_pc(machine);
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return core_machine_complete_run_boundary(machine, result);
-                }
-                if (core_machine_cpu_execution_consume_instruction_fault_delivery(
-                        machine->executor_cpu_execution)) {
-                    /* The synchronous exception frame and vector are committed, but
-                     * the faulting instruction did not retire.  The handler starts
-                     * at the next public execution round, without publishing CPU
-                     * or device time for this faulting round. */
-                    machine->lifecycle = CORE_MACHINE_PAUSED;
-                    result->reason = CORE_MACHINE_STOP_BUDGET;
-                    result->linear_pc = core_machine_linear_pc(machine);
-                    result->elapsed_ticks = machine->elapsed_ticks;
-                    return LIB_STATUS_OK;
                 }
                 if (core_machine_cpu_execution_consume_wait_stall(
                         machine->executor_cpu_execution)) {
@@ -1003,10 +1044,10 @@ lib_status core_machine_run(
                 }
                 core_machine_retirement_observation_capture_eligibility_key(machine);
                 if (machine->external_cycle_round_ticks != 0u) {
-                    machine->cpu_retirement_wait_pending = LIB_TRUE;
-                    machine->cpu_retirement_wait_ticks = machine->external_cycle_round_ticks;
-                    machine->cpu_retirement_completion_ticks = instruction_ticks - machine->external_cycle_round_ticks;
-                    machine->cpu_retirement_source_ticks = instruction_ticks;
+                    core_machine_begin_retirement_wait(machine,
+                        machine->external_cycle_round_ticks,
+                        instruction_ticks - machine->external_cycle_round_ticks,
+                        instruction_ticks, LIB_TRUE);
                     continue;
                 }
                 machine->cpu_retirement_source_ticks = instruction_ticks;

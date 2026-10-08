@@ -78,6 +78,7 @@ struct core_machine {
     lib_u64 cpu_retirement_wait_ticks;
     lib_u64 cpu_retirement_completion_ticks;
     lib_u64 cpu_retirement_source_ticks;
+    lib_bool cpu_retirement_wait_retires;
     lib_u8 external_cycle_page_valid;
     lib_u8 external_cycle_pending_valid;
     core_machine_cpu_external_cycle_space external_cycle_pending_space;
