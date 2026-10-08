@@ -15,28 +15,28 @@
 | T546 S9 | Accepted after coordinator actual-change review of pushed Shared 746e3e214 and NXVM 04bd419e1: complete seven-member arbiter/shadow/NMI/comparator/HLT/REP/receiver batch, final units 505/505 per width, original integration 58/58 once, supplemental 33/33, both gates/eight manifests and eight stripped 0546 products. S9 closed; no active packet. T546 remains open for S10-S20. |
 | T546 S10 | Closed at owner direction: finalizer, resident shutdown/Core wait, approved query and real new-CS entry repair are separated for target-scoped delivery. The 78-owner CPU scan and 82/418 specialized gates pass on both widths; the one unrelated Lib Console viewport failure is explicitly moved to S11, not used as CPU evidence. |
 | T546 S11 | Closed at owner direction after pushed Shared Console broker repair/test P commits `2e1c59660` and `89ae694ef`, plus receiving product P commits. Focused dual-width Lib evidence passes: 36/36 Lib units per width, including the native desktop smoke and Console contract. The broader all-App test/artifact exit was not rerun or claimed; it remains available for a later explicitly scoped qualification S. T546 remains open. |
-| T546 S12 | Active: owner-directed waiting packet. No implementation scope is admitted until the owner publishes the next task. Former planned S12-S21 are shifted to S13-S22. |
+| T546 S12 | Active: Shared IBM PC and Audio failure-contract repair. Complete the audited hotkey/frame/display/lifecycle and Audio wake-failure fixes, then run dual-width shared-component suites followed by full non-Shared product suites. |
 
 ## Active T546 S12 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: S12 is the next unused numeric S after owner-closed S11; former planned S12-S21 shift to S13-S22. |
-| Admission And Approval | Owner explicitly directed on 2026-10-07: “收口本s 准入一个新s等我发布任务”. This packet admits no implementation while waiting. |
-| Objective | Preserve the one active-subtask invariant while awaiting the owner's next explicit task scope. |
-| Non-goals | No source, test, build, artifact, configuration, asset, queue, proposal, or rule change beyond this truthful status transition. |
-| Reference Baseline | S11 closure at `89ae694ef`; worktree is clean and `master` matches `origin/master`. |
-| Candidate Proposal | [CPU repair proposal](../proposals/m5-cpu-audit-gap-repair.md), with former S12 and later planned work shifted by one; [whole ledger](../history/M5-T546-cpu-audit-gap-repair.md). |
-| Files And ABI Surface | This packet owns only the active-status record and task/proposal numbering reconciliation; no runtime or public interface surface is admitted. |
-| Applicable Rules | Shared Execution and Documentation rules, plus NXVM documentation governance. |
-| Verification | Documentation governance gate and clean Git status after the status P. No build or runtime test is applicable to this waiting packet. |
-| Expected Markers | One active S12 packet with no executable work scope; later work is not started until this packet is replaced by an owner-approved scoped packet. |
+| Identifier Mode | Continuation: owner replaces the S12 waiting scope with this approved repair; former planned S12-S21 remain shifted to S13-S22. |
+| Admission And Approval | Owner approved all findings and directed dual-width shared-component tests followed by non-Shared full-suite tests on 2026-10-07. The admitted Shared surface is `src/ibmpc`, `src/lib/audio`, their owner-local tests and manifests. |
+| Objective | Make IBM PC hotkey delivery and frame publication truthful under failure; make Audio report wake failure after preserving the exact accepted-frame result; remove only the audited duplicate exact-string loops and text-frame bulk clearing. |
+| Non-goals | No Common/x86/App source, public API/type/state, configuration, asset, media, ROM, queue, new thread, new input queue, retry loop, host workaround, or unbounded audio-exit repair. The audio worker shutdown question is investigation-only unless separately admitted. |
+| Reference Baseline | The owner-provided SoftPC read-only audit: ignored hotkey enqueue failures can leave modifiers asserted; IBM PC frame conversion/publishing accepts invalid or truncated state; Audio accepts PCM while ignoring wake failure; four exact-string loops and unconditional full-frame clearing are duplicate/wasteful local work. |
+| Candidate Proposal | [CPU repair proposal](../proposals/m5-cpu-audit-gap-repair.md), S12; [whole ledger](../history/M5-T546-cpu-audit-gap-repair.md). |
+| Files And ABI Surface | Private IBM PC Product/Machine and Lib Audio owners, their existing tests and manifests only. Public interfaces and ownership topology remain unchanged. |
+| Applicable Rules | Shared Execution/Architecture/Coding/Documentation and NXVM Architecture/Coding. |
+| Verification | Build and run complete Lib/Common/x86/ibmpc test suites on x64 and x86 first. Then build and run complete non-Shared NXVM and MyNES product suites on x64 and x86. Rebuild/verify receiving artifacts only if their hashes change under the Shared import rule. |
+| Expected Markers | A failed hotkey enqueue has an explicit existing failure disposition; unknown/zero/over-capacity frame input is rejected before publication; only complete conversion advances display generation; an out-of-font cursor is hidden; Audio wake failure leaves reported accepted frames truthful and enters its existing failure state; exact string matching has one `lib_text_compare` owner; text conversion does not clear unused graphics storage. |
 | Asset Needs | None. |
-| Reporting Requirements | Report that no implementation ran under S12 and identify the next task only when the owner supplies it. |
-| Stop Conditions | Owner supplies a task scope, or requests cancellation; do not infer a task from the queue or prior discussion. |
-| Exit Criteria | The owner supplies the next scope and it replaces this waiting packet before implementation begins. |
-| Original Owner Request | “收口本s 准入一个新s等我发布任务”. |
-| Similar-Issue Sweep | Not applicable: this packet makes no defect repair or runtime change. |
+| Reporting Requirements | Report actual source/test diff, all failure-path dispositions, production line delta, dual-width four-component results, and separately the complete non-Shared product-suite results. Do not claim the audio exit investigation resolved without a bounded reproducer. |
+| Stop Conditions | A repair requires a public contract, another component, changed input semantics, rollback/retry policy, or any App/configuration workaround; stop for owner direction. |
+| Exit Criteria | All admitted failure paths are covered by owner-local regressions; duplicate local paths are removed; dual-width four-component suites pass before both products' non-Shared full suites; manifests and actual diffs are reviewed; all resulting P commits push. |
+| Original Owner Request | Owner-approved SoftPC audit findings; “批准所有修复 完成后要编译测试 跑完全套公共四组件测试 然后提交推送后再跑非公共组件全套测试”. |
+| Similar-Issue Sweep | Scan all IBM PC composite input producers, all IBM PC frame conversion/publication callers, and all Lib Audio producer wake paths. Disposition every hit as fixed, not applicable, or owner-deferred. |
 
 ## Accepted S9 Asynchronous Arbiter
 
