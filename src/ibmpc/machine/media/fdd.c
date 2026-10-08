@@ -399,8 +399,10 @@ lib_status vm_machine_fdd_insert_for(t_fdd *fdd, const char *file_name,
 
 lib_status vm_machine_fdd_remove_for(t_fdd *fdd)
 {
+    lib_status status;
+
     if (fdd == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    lib_storage_medium_destroy(&fdd->connect.medium);
+    status = lib_storage_medium_destroy(&fdd->connect.medium);
     fdd->connect.flagDiskExist = LIB_FALSE;
     fdd->connect.flagReadOnly = LIB_FALSE;
     fdd->connect.media_generation++;
@@ -408,5 +410,5 @@ lib_status vm_machine_fdd_remove_for(t_fdd *fdd)
         lib_memory_set(fdd->connect.address_marks, 0u,
             (lib_size)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector);
     }
-    return LIB_STATUS_OK;
+    return status;
 }
