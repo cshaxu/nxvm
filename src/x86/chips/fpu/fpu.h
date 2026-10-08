@@ -37,7 +37,6 @@ struct x86_fpu {
      * time advances it.  FWAIT consumes only the remaining source ticks and
      * publishes that one wait contribution with its own CPU retirement. */
     lib_u64 completion_remaining_ticks;
-    lib_u64 last_wait_ticks;
 };
 
 #endif

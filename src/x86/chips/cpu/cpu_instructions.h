@@ -50,6 +50,12 @@ typedef enum {
     CPU_INTERRUPT_SHADOW_SEGMENT
 } cpu_interrupt_shadow;
 
+typedef enum cpu_wait_state {
+    CPU_WAIT_STATE_NONE,
+    CPU_WAIT_STATE_TEST,
+    CPU_WAIT_STATE_ESC_RESTART
+} cpu_wait_state;
+
 /* Architectural masks only: provider/internal failures are not fault pairs. */
 static inline lib_bool cpu_exception_requires_double_fault(
     core_machine_cpu_profile profile, lib_u32 first, lib_u32 second)
@@ -176,6 +182,12 @@ struct core_machine_cpu_execution_context {
      * for retirement of the faulting instruction by the machine clock owner. */
     lib_u8 instruction_in_progress;
     lib_u8 instruction_fault_delivered;
+    /* A 286 automatic ESC wait restores the unretired ESC and sleeps until
+     * TEST/BUSY releases. This is distinct from an already retired WAIT or
+     * HLT instruction. */
+    lib_bool instruction_wait_stall;
+    cpu_wait_state wait_state;
+    lib_u64 wait_poll_remaining_ticks;
     lib_bool instruction_task_switched;
     t_cpu instruction_task_checkpoint;
     cpu_interrupt_shadow interrupt_shadow;

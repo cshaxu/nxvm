@@ -267,7 +267,6 @@ void x86_fpu_reset(x86_fpu *fpu)
     fpu->operation_ticks_min = 0u;
     fpu->operation_ticks_max = 0u;
     fpu->completion_remaining_ticks = 0u;
-    fpu->last_wait_ticks = 0u;
     for (index = 0u; index < 8u; ++index) {
         fpu->tags[index] = X86_FPU_TAG_EMPTY;
         fpu->registers[index].kind = X86_FPU_VALUE_ZERO;
@@ -515,21 +514,4 @@ x86_fpu_execute_result x86_fpu_binary_st0_sti(x86_fpu *fpu,
 lib_u8 x86_fpu_wait_pending(const x86_fpu *fpu)
 {
     return fpu != LIB_NULL && fpu->pending_unmasked_exception;
-}
-
-lib_u64 x86_fpu_complete_wait(x86_fpu *fpu)
-{
-    lib_u64 ticks;
-
-    if (fpu == LIB_NULL) return 0u;
-    ticks = fpu->completion_remaining_ticks;
-    fpu->busy = LIB_FALSE;
-    fpu->completion_remaining_ticks = 0u;
-    fpu->last_wait_ticks = ticks;
-    return ticks;
-}
-
-lib_u64 x86_fpu_last_wait_ticks(const x86_fpu *fpu)
-{
-    return fpu == LIB_NULL ? 0u : fpu->last_wait_ticks;
 }

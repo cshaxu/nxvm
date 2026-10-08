@@ -119,6 +119,25 @@ static lib_bool core_machine_cpu_bus_interrupt_pending(void *opaque)
         machine->attachment.pic_pending(machine->attachment.context) : LIB_FALSE;
 }
 
+static lib_bool core_machine_cpu_bus_wait_test_asserted(void *opaque)
+{
+    core_machine *machine = (core_machine *)opaque;
+
+    if (machine == LIB_NULL) return LIB_FALSE;
+    if (machine->attachment.wait_test_asserted != LIB_NULL)
+        return machine->attachment.wait_test_asserted(machine->attachment.context);
+    return x86_fpu_ticks_until_completion(machine->fpu, &(lib_u64){0u}) ==
+        LIB_STATUS_OK;
+}
+
+static lib_bool core_machine_cpu_bus_escape_trap_enabled(void *opaque)
+{
+    core_machine *machine = (core_machine *)opaque;
+
+    return machine != LIB_NULL && machine->attachment.escape_trap_enabled != LIB_NULL &&
+        machine->attachment.escape_trap_enabled(machine->attachment.context);
+}
+
 static lib_status core_machine_cpu_bus_acknowledge_interrupt(void *opaque,
     lib_u8 *vector)
 {
@@ -159,6 +178,8 @@ const core_machine_cpu_bus_provider core_machine_cpu_bus = {
     .write_memory = core_machine_cpu_bus_write_memory,
     .transfer_port = core_machine_cpu_bus_transfer_port,
     .complete_port = core_machine_cpu_bus_complete_port,
+    .wait_test_asserted = core_machine_cpu_bus_wait_test_asserted,
+    .escape_trap_enabled = core_machine_cpu_bus_escape_trap_enabled,
     .interrupt_pending = core_machine_cpu_bus_interrupt_pending,
     .acknowledge_interrupt = core_machine_cpu_bus_acknowledge_interrupt,
     .extension_command = core_machine_cpu_bus_extension_command

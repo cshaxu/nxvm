@@ -951,6 +951,17 @@ lib_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return LIB_STATUS_OK;
                 }
+                if (core_machine_cpu_execution_consume_wait_stall(
+                        machine->executor_cpu_execution)) {
+                    /* An automatic 80286 ESC wait has restored its unretired
+                     * instruction. The existing FPU deadline owns elapsed
+                     * guest time; no synthetic retirement occurs here. */
+                    machine->lifecycle = CORE_MACHINE_PAUSED;
+                    result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return core_machine_complete_run_boundary(machine, result);
+                }
                 if (was_halted && core_machine_cpu_is_halted(
                         machine->executor_cpu_execution)) {
                     machine->lifecycle = CORE_MACHINE_PAUSED;
@@ -1030,6 +1041,7 @@ lib_status core_machine_run(
                 result->linear_pc = core_machine_linear_pc(machine);
                 return core_machine_complete_run_boundary(machine, result);
             }
+            core_machine_cpu_execution_poll_wait(machine->executor_cpu_execution);
             if (core_machine_cpu_is_halted(machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;

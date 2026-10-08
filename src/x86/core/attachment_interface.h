@@ -40,6 +40,13 @@ typedef void (*core_machine_attachment_pit_pic_provider)(void *owner,
     core_machine_attachment_pit_ticks ticks);
 typedef lib_bool (*core_machine_attachment_pic_pending_provider)(void *owner);
 typedef lib_u8 (*core_machine_attachment_pic_acknowledge_provider)(void *owner);
+/*
+ * Board adaptation of the CPU TEST input for WAIT.  True means the CPU must
+ * remain suspended; the attachment owns any physical signal-polarity mapping.
+ */
+typedef lib_bool (*core_machine_attachment_wait_test_asserted_provider)(void *owner);
+/* The 80186 integrated peripheral block may route D8h--DFh to type 7. */
+typedef lib_bool (*core_machine_attachment_escape_trap_provider)(void *owner);
 typedef lib_bool (*core_machine_attachment_shutdown_reset_provider)(
     void *owner);
 typedef void (*core_machine_attachment_phase_provider)(void *owner);
@@ -63,6 +70,8 @@ typedef struct core_machine_attachment {
     core_machine_attachment_pit_pic_provider pit_pic;
     core_machine_attachment_pic_pending_provider pic_pending;
     core_machine_attachment_pic_acknowledge_provider pic_acknowledge;
+    core_machine_attachment_wait_test_asserted_provider wait_test_asserted;
+    core_machine_attachment_escape_trap_provider escape_trap_enabled;
     core_machine_attachment_shutdown_reset_provider shutdown_reset;
     core_machine_attachment_media_provider media;
     core_machine_attachment_ticks_provider rtc;

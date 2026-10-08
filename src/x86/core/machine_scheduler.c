@@ -77,6 +77,14 @@ static void core_machine_capture_time_with_board(const core_machine *machine,
             immediate_due = LIB_TRUE;
         }
     }
+    if (core_machine_cpu_execution_wait_poll_ticks(
+            machine->executor_cpu_execution, &device_ticks) == LIB_STATUS_OK) {
+        if (device_ticks <= LIB_UINT64_MAX - machine->elapsed_ticks &&
+            core_machine_deadline_consider_absolute(machine,
+                machine->elapsed_ticks + device_ticks, &source_ticks)) {
+            immediate_due = LIB_TRUE;
+        }
+    }
     if (machine->attachment.deadline != LIB_NULL)
         machine->attachment.deadline(machine->attachment.context,
             machine->elapsed_ticks, machine->timing_declarations_copied, &board);
@@ -243,6 +251,8 @@ static void core_machine_readiness_advance(core_machine *machine,
     if (machine->attachment.media != LIB_NULL)
         machine->attachment.media(machine->attachment.context, source_ticks, due_tick);
     x86_fpu_advance(machine->fpu, source_ticks);
+    core_machine_cpu_execution_advance_wait(machine->executor_cpu_execution,
+        source_ticks);
     if (machine->attachment.rtc != LIB_NULL)
         machine->attachment.rtc(machine->attachment.context, source_ticks);
 }

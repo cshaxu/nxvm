@@ -121,6 +121,55 @@ lib_bool core_machine_cpu_is_halted(const core_machine_cpu_execution_context *co
     return cpu_state.data.flagHalt != 0u;
 }
 
+lib_bool core_machine_cpu_execution_consume_wait_stall(
+    core_machine_cpu_execution_context *context)
+{
+    lib_bool stalled;
+
+    if (context == LIB_NULL) return LIB_FALSE;
+    stalled = context->instruction_wait_stall;
+    context->instruction_wait_stall = LIB_FALSE;
+    return stalled;
+}
+
+void core_machine_cpu_execution_poll_wait(
+    core_machine_cpu_execution_context *context)
+{
+    if (context == LIB_NULL || context->wait_state == CPU_WAIT_STATE_NONE ||
+        context->wait_poll_remaining_ticks != 0u ||
+        context->bus == LIB_NULL || context->bus->wait_test_asserted == LIB_NULL ||
+        context->bus->wait_test_asserted(context->bus_context)) return;
+    context->wait_state = CPU_WAIT_STATE_NONE;
+    cpu_state.data.flagHalt = LIB_FALSE;
+}
+
+void core_machine_cpu_execution_advance_wait(
+    core_machine_cpu_execution_context *context, lib_u64 elapsed_ticks)
+{
+    if (context == LIB_NULL || context->wait_state == CPU_WAIT_STATE_NONE ||
+        context->wait_poll_remaining_ticks == 0u || elapsed_ticks == 0u) return;
+    if (elapsed_ticks < context->wait_poll_remaining_ticks) {
+        context->wait_poll_remaining_ticks -= elapsed_ticks;
+        return;
+    }
+    context->wait_poll_remaining_ticks = 0u;
+    core_machine_cpu_execution_poll_wait(context);
+    if (context->wait_state != CPU_WAIT_STATE_NONE)
+        context->wait_poll_remaining_ticks = 5u;
+}
+
+lib_status core_machine_cpu_execution_wait_poll_ticks(
+    const core_machine_cpu_execution_context *context, lib_u64 *out_ticks)
+{
+    if (context == LIB_NULL || out_ticks == LIB_NULL ||
+        context->wait_state == CPU_WAIT_STATE_NONE ||
+        context->bus == LIB_NULL || context->bus->wait_test_asserted == LIB_NULL) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    *out_ticks = context->wait_poll_remaining_ticks;
+    return LIB_STATUS_OK;
+}
+
 void core_machine_cpu_set_nmi_mask(core_machine_cpu_execution_context *context,
     lib_bool masked)
 {
@@ -419,6 +468,9 @@ void core_machine_cpu_execution_context_initialize(
     context->fpu_profile = X86_FPU_PROFILE_NONE;
     context->cpu_80386_cr_mov_ignores_mod = LIB_FALSE;
     context->fpu = LIB_NULL;
+    context->instruction_wait_stall = LIB_FALSE;
+    context->wait_state = CPU_WAIT_STATE_NONE;
+    context->wait_poll_remaining_ticks = 0u;
 }
 
 void core_machine_cpu_execution_context_bind_profiles(

@@ -429,6 +429,9 @@ static lib_i32 timing_8086_test_wait_ticks(void)
 {
     static const lib_u8 wait[] = { 0x9bu };
     timing_8086_state state = { 0u, 0u, 0u };
+    core_machine_run_result result = {0};
+    lib_u8 advanced = LIB_FALSE;
+    lib_u8 attempts;
     core_machine *machine = LIB_NULL;
     lib_i32 failed = !timing_8086_prepare(&machine, &state);
 
@@ -436,11 +439,21 @@ static lib_i32 timing_8086_test_wait_ticks(void)
         failed |= !timing_8086_load(machine, wait, sizeof(wait)) ||
             (x86_fpu_begin_command(machine->fpu, 0xdbu, 0xe3u), 0) ||
             (x86_fpu_advance(machine->fpu, 2u), 0) ||
-            !timing_8086_execute(machine, 1u, 6u, &state) ||
-            x86_fpu_ticks_until_completion(machine->fpu, &(lib_u64){0}) !=
-                LIB_STATUS_INVALID_STATE ||
-            x86_fpu_last_wait_ticks(machine->fpu) != 3u;
+            core_machine_run(machine, (core_machine_run_budget){1u, 0u},
+                &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            result.executed != 1u || result.ticks != 3u ||
+            result.elapsed_ticks != 3u || state.advanced_ticks != 3u;
     }
+    for (attempts = 0u; !failed && attempts != 8u &&
+            core_machine_cpu_is_halted(machine->executor_cpu_execution); ++attempts) {
+        advanced = LIB_FALSE;
+        failed |= core_machine_advance_to_next_deadline(machine, &advanced) !=
+            LIB_STATUS_OK || !advanced;
+    }
+    failed |= core_machine_cpu_is_halted(machine->executor_cpu_execution) ||
+        x86_fpu_ticks_until_completion(machine->fpu, &(lib_u64){0}) !=
+            LIB_STATUS_INVALID_STATE;
     core_machine_destroy(machine);
     return failed;
 }

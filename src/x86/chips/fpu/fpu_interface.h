@@ -90,7 +90,5 @@ void x86_fpu_load_control_word(x86_fpu *fpu,
 x86_fpu_execute_result x86_fpu_binary_st0_sti(x86_fpu *fpu,
     x86_fpu_operation operation, lib_u8 index);
 lib_u8 x86_fpu_wait_pending(const x86_fpu *fpu);
-lib_u64 x86_fpu_complete_wait(x86_fpu *fpu);
-lib_u64 x86_fpu_last_wait_ticks(const x86_fpu *fpu);
 
 #endif

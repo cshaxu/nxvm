@@ -267,13 +267,11 @@ static lib_i32 retirement_8086_context_formula_case(void)
             (x86_fpu_advance(machine->fpu, 2u), 0) ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.executed != 1u || probe.count != 3u ||
-            probe.records[2].source_ticks != 6u ||
+            probe.records[2].source_ticks != 3u ||
             probe.records[2].timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             probe.records[2].timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY ||
-            (probe.records[2].formula_inputs &
-                CORE_MACHINE_CPU_TIMING_INPUT_WAIT_TICKS) == 0u;
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
     }
     core_machine_destroy(machine);
     return failed;

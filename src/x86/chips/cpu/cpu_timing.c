@@ -97,30 +97,7 @@ static lib_u32 core_machine_cpu_timing_formula_inputs(
         core_machine_cpu_timing_string_odd_word(data, opcode_index)) {
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
     }
-    if (opcode_index < data->oplen && data->opcodes[opcode_index] == 0x9bu &&
-        x86_fpu_last_wait_ticks(context->fpu) != 0u) {
-        inputs |= CORE_MACHINE_CPU_TIMING_INPUT_WAIT_TICKS;
-    }
     return inputs;
-}
-
-static lib_i32 core_machine_cpu_timing_is_wait(const t_cpuins_data *data)
-{
-    lib_u8 index = 0u;
-
-    if (data == LIB_NULL) return 0;
-    while (index < data->oplen) {
-        switch (data->opcodes[index]) {
-        case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:
-        case 0x64u: case 0x65u: case 0x66u: case 0x67u:
-        case 0xf0u: case 0xf2u: case 0xf3u:
-            ++index;
-            break;
-        default:
-            return data->opcodes[index] == 0x9bu;
-        }
-    }
-    return 0;
 }
 
 static lib_i32 core_machine_cpu_timing_try(core_machine_cpu_execution_context *context,
@@ -301,9 +278,6 @@ lib_i32 core_machine_cpu_timing_select(core_machine_cpu_execution_context *conte
         return 0;
     }
     if (!core_machine_cpu_timing_apply_8086_lock(context, &result)) return 0;
-    if (core_machine_cpu_timing_is_wait(&context->instructions->data) &&
-        !core_machine_timing_add_ticks(&result.ticks,
-            x86_fpu_last_wait_ticks(context->fpu))) return 0;
     result.key_id = context->timing_result.form_id;
     result.formula_inputs = core_machine_cpu_timing_formula_inputs(context);
     if (result.retirement_origin ==

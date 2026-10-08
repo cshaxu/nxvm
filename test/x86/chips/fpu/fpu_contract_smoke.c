@@ -48,8 +48,9 @@ static lib_bool timing_cases(x86_fpu_profile profile)
                 (profile == X86_FPU_PROFILE_80387 ? item->maximum : 0u);
         x86_fpu_advance(fpu, ticks - 3u);
         failed |= x86_fpu_ticks_until_completion(fpu, &remaining) != LIB_STATUS_OK ||
-            remaining != 3u || x86_fpu_complete_wait(fpu) != 3u ||
-            x86_fpu_last_wait_ticks(fpu) != 3u || fpu->busy ||
+            remaining != 3u || !fpu->busy;
+        x86_fpu_advance(fpu, 3u);
+        failed |= fpu->busy ||
             x86_fpu_ticks_until_completion(fpu, &remaining) != LIB_STATUS_INVALID_STATE;
         x86_fpu_begin_command(fpu, item->opcode, item->modrm);
         x86_fpu_advance(fpu, ticks + 1u);

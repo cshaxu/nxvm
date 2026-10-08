@@ -8289,6 +8289,33 @@ static lib_bool core_machine_cpu_allows_fpu(core_machine_cpu_profile cpu,
         cpu == CORE_MACHINE_CPU_PROFILE_80386;
 }
 
+static lib_bool core_machine_cpu_wait_test_asserted(
+    const core_machine_cpu_execution_context *context)
+{
+    return context->bus->wait_test_asserted != LIB_NULL &&
+        context->bus->wait_test_asserted(context->bus_context);
+}
+
+static void core_machine_cpu_begin_wait(
+    core_machine_cpu_execution_context *context, cpu_wait_state state)
+{
+    if (state == CPU_WAIT_STATE_ESC_RESTART) {
+        cpu_state = instruction_state.data.oldcpu;
+        context->instruction_wait_stall = LIB_TRUE;
+    }
+    context->wait_state = state;
+    /* The initial CPU-side WAIT row has not yet been published.  The next
+     * re-sample is five clocks after that row, yielding the 3/6 + 5n source
+     * formulas for 8086/8088 and 80186.  ESC restart has no retired WAIT row,
+     * so it starts at the bounded five-clock L2 control cadence instead.
+     * Later CPU profiles retain that cadence until a board gives a stronger
+     * contract. */
+    context->wait_poll_remaining_ticks = state == CPU_WAIT_STATE_ESC_RESTART ?
+        5u : (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ? 6u :
+            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 ? 7u : 3u) + 5u;
+    cpu_state.data.flagHalt = LIB_TRUE;
+}
+
 static void FPU_ESCAPE(core_machine_cpu_execution_context *context)
 {
     x86_fpu_escape_action action;
@@ -8311,6 +8338,12 @@ static void FPU_ESCAPE(core_machine_cpu_execution_context *context)
     {
         CPU_TRACE_CHECK_RETURN(UndefinedOpcode(context));
     }
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 &&
+        context->bus->escape_trap_enabled != LIB_NULL &&
+        context->bus->escape_trap_enabled(context->bus_context))
+    {
+        CPU_TRACE_CHECK_RETURN(_SetExcept_NM(0));
+    }
     if (_GetCR0_EM || _GetCR0_TS)
     {
         CPU_TRACE_CHECK_RETURN(_SetExcept_NM(0));
@@ -8324,6 +8357,17 @@ static void FPU_ESCAPE(core_machine_cpu_execution_context *context)
         if (action == X86_FPU_ESCAPE_UNSUPPORTED)
         {
             CPU_TRACE_CHECK_RETURN(_SetExcept_FPU_UNSUPPORTED(0));
+        }
+        else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+            action != X86_FPU_ESCAPE_CONSUME_NONE &&
+            core_machine_cpu_wait_test_asserted(context))
+        {
+            /* 80286 waits for the 80287 BUSY/TEST connection before starting
+             * an ESC command.  Restore the ESC so interrupt return retries
+             * it, and let the existing Core deadline advance the FPU. */
+            core_machine_cpu_begin_wait(context, CPU_WAIT_STATE_ESC_RESTART);
+            CPU_TRACE_CALL_END;
+            return;
         }
         else if (action != X86_FPU_ESCAPE_CONSUME_NONE &&
             !context->preview_mode)
@@ -12603,7 +12647,8 @@ static void WAIT(core_machine_cpu_execution_context *context)
     }
     else
     {
-        (void)x86_fpu_complete_wait(context->fpu);
+        if (core_machine_cpu_wait_test_asserted(context))
+            core_machine_cpu_begin_wait(context, CPU_WAIT_STATE_TEST);
     }
     CPU_TRACE_CALL_END;
 }
@@ -18625,6 +18670,8 @@ static void ExecInt(core_machine_cpu_execution_context *context)
         /* A queued step trap cannot wake HALT. Recheck delivery inputs after
          * the accepted wake, since handler entry can itself produce an edge. */
         if (!nmi_ready && !intr_ready) return;
+        context->wait_state = CPU_WAIT_STATE_NONE;
+        context->wait_poll_remaining_ticks = 0u;
         cpu_state.data.flagHalt = LIB_FALSE;
     }
     if (debug_first) _debug_deliver_trap(context);
@@ -19242,11 +19289,15 @@ void core_machine_cpu_execution_reset(
     context->debug_trap_cause = 0u;
     context->instruction_in_progress = LIB_FALSE;
     context->instruction_fault_delivered = LIB_FALSE;
+    context->instruction_wait_stall = LIB_FALSE;
+    context->wait_state = CPU_WAIT_STATE_NONE;
+    context->wait_poll_remaining_ticks = 0u;
 }
 void core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context)
 {
     context->instruction_fault_delivered = LIB_FALSE;
+    context->instruction_wait_stall = LIB_FALSE;
     if (core_machine_cpu_is_shutdown(context)) {
         /* Shutdown admits NMI, not instructions, INTR or pending debug traps. */
         if (context->shutdown_state == CPU_SHUTDOWN_RESET_ONLY ||
@@ -19274,6 +19325,7 @@ void core_machine_cpu_execution_refresh(
         }
         return;
     }
+    core_machine_cpu_execution_poll_wait(context);
     if (!cpu_state.data.flagHalt)
     {
         context->debug_segment_shadow_before =

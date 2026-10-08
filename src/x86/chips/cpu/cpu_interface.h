@@ -78,6 +78,10 @@ typedef struct core_machine_cpu_bus_provider {
         lib_bool write, lib_u32 *value);
     void (*complete_port)(void *context, lib_u16 port, lib_u8 bytes,
         lib_bool write);
+    /* True when the board-level TEST condition keeps WAIT suspended. */
+    lib_bool (*wait_test_asserted)(void *context);
+    /* Optional 80186 integrated-peripheral escape trap selection. */
+    lib_bool (*escape_trap_enabled)(void *context);
     lib_bool (*interrupt_pending)(void *context);
     lib_status (*acknowledge_interrupt)(void *context, lib_u8 *vector);
     void (*extension_command)(void *context, lib_u8 opcode, lib_u8 modrm);
@@ -444,6 +448,23 @@ void core_machine_cpu_capture_state(const core_machine_cpu_execution_context *co
     core_machine_cpu_state *out_state);
 lib_u32 core_machine_cpu_linear_pc(const core_machine_cpu_execution_context *context);
 lib_bool core_machine_cpu_is_halted(const core_machine_cpu_execution_context *context);
+/* A restarted automatic coprocessor wait did not retire its ESC instruction.
+ * The sole Core runner consumes this one execution-round outcome before it
+ * publishes any instruction time or retirement observation. */
+lib_bool core_machine_cpu_execution_consume_wait_stall(
+    core_machine_cpu_execution_context *context);
+/* Poll the architectural TEST input after Core has advanced the one guest
+ * timeline.  This only releases a completed WAIT/ESC wait; it does not fetch
+ * or execute an instruction. */
+void core_machine_cpu_execution_poll_wait(
+    core_machine_cpu_execution_context *context);
+void core_machine_cpu_execution_advance_wait(
+    core_machine_cpu_execution_context *context, lib_u64 elapsed_ticks);
+/* WAIT re-samples an asserted board condition after five clocks.  This is the
+ * 8086/80186 manual formula and an explicit L2 control model for later CPUs;
+ * a valid result is a Core deadline, never a host sleep or synthetic opcode. */
+lib_status core_machine_cpu_execution_wait_poll_ticks(
+    const core_machine_cpu_execution_context *context, lib_u64 *out_ticks);
 /* External NMI mask input gates both admission and delivery. Unmasking does
  * not manufacture an edge; the board refreshes its own pending sources. */
 void core_machine_cpu_set_nmi_mask(core_machine_cpu_execution_context *context,
@@ -541,7 +562,6 @@ lib_u8 core_machine_cpu_execution_preview_lexeme(
 #define CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD   (1u << 8)
 #define CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE (1u << 9)
 #define CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND (1u << 10)
-#define CORE_MACHINE_CPU_TIMING_INPUT_WAIT_TICKS      (1u << 11)
 
 /* B0's only successful-retirement CPU timing selection entry. */
 lib_i32 core_machine_cpu_timing_select(core_machine_cpu_execution_context *context,
