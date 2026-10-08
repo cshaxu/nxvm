@@ -2,32 +2,33 @@
 
 ## Current Work
 
-## Active Packet — M5 T547 S3 Shared Test Semantic Naming
+## Active Packet — M5 T547 S4 Full Project Qualification
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T547 S3. |
-| Admission And Approval | Owner directed semantic cleanup of hacky task-derived shared test names on 2026-10-08; standing automatic S admission applies. |
-| Objective | Make all current shared-test identities describe owned behavior rather than historical T/S work identifiers. |
-| Non-goals | No CPU/device behavior, test coverage, ownership relocation, public API, firmware/media/INI/App/MyNES artifact, retry or timing change. |
-| Reference Baseline | Pushed S2 stability closure `70bb50312`; user-owned rebuilt MyNES EXEs remain outside this Shared scope. |
-| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S3. |
-| Files And ABI Surface | `test/{lib,common,x86,ibmpc}` registrations, test source names/symbols/markers and their manifests, plus NXVM task evidence/state. No production source or public ABI. |
-| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; each package manifest/registration boundary; S1 import evidence. |
-| Verification | Fresh x64/x86 four-package builds, affected package aggregates, manifest/boundary checks, and a static inventory showing no task-derived identity in current shared test source or registration. |
-| Expected Markers | Behavior-derived filenames, targets, symbols and output markers; historical task identifiers only in documentation/evidence; unchanged owned test coverage. |
+| Identifier Mode | Continuation T547 S4. |
+| Admission And Approval | Owner directed S3 closure and full-project test admission on 2026-10-08; standing automatic S admission applies. |
+| Objective | Qualify the fixed T547 S1-S3 source baseline through one complete project test pass per host width. |
+| Non-goals | No source behavior, test assertion, ownership, firmware/media/INI, artifact or MyNES change; no retry, timeout extension or test weakening. |
+| Reference Baseline | Pushed S3 semantic-naming closure `8d7022ea8`; user-owned rebuilt MyNES EXEs remain outside this Shared scope. |
+| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S4. |
+| Files And ABI Surface | Test execution logs and NXVM task evidence/state only. No production source, public ABI or deployed artifact. |
+| Applicable Rules | NXVM guide; Execution and Documentation rules; existing CTest registration and package manifest boundaries. |
+| Verification | Once each: complete repository-only unit suite on x64 and x86; registered external integration suites where inputs are available. |
+| Expected Markers | Exact CTest counts and results for each width/suite; every unexecuted external or desktop gate explicitly stated. |
 | Asset Needs | None. Repository-only tests use no firmware, ROM, media, INI, font or user snapshot. |
-| Reporting Requirements | Record the package inventory, every renamed test identity, actual source/test diff counts, and Lib/Common no-change audit. Do not claim a test-only rename changes production behavior. |
-| Stop Conditions | Stop for any needed ownership relocation, behavior/test assertion change, production/App/MyNES change, public API, or ambiguity that cannot be resolved from the test's owned behavior. |
-| Exit Criteria | All four roots are audited; no current task-derived test identity remains; semantic registrations/manifests match; dual-width affected package verification and required unit suite pass. |
-| Original Owner Request | Replace hacky historical task names in shared tests with behavior-derived names. |
-| Similar-Issue Sweep | Search all four source, registration and manifest trees for task/milestone identifiers; remove current-source hits or classify a semantic non-task occurrence with evidence. |
+| Reporting Requirements | Record exact commands, counts and results. Do not claim unrun desktop or external tests pass. |
+| Stop Conditions | Stop and report a current failure; do not modify source or retry a suite in this S. |
+| Exit Criteria | Both complete repository-only unit runs finish once; all available registered integration runs finish once; evidence accurately records results and exclusions. |
+| Original Owner Request | Run the complete project test suite after S3 closure. |
+| Similar-Issue Sweep | Not applicable: qualification-only work changes no defect class. |
 
 | Work | Progress |
 | --- | --- |
 | T547 S1 | Implementation P complete and pushed as `26c013bba`: current SoftPC differences were reconciled, native-test isolation imported, NXVM's later x86/IBM PC repairs retained, and the stale x86 negative fixture fixed. Its incomplete aggregate/stability evidence is explicitly continued by S2. |
 | T547 S2 | Complete: pushed as `70bb50312`. The aggregate default is reduced from 8 to the evidence-backed safe 4 jobs, without changing individual budgets or assertions. One complete x64/x86 run of each shared package passes: Lib 51/51, Common 20/20, x86 182/182 and IBM PC 182/182; complete repository-only units pass 506/506 per width. See `etc/evidence/t547-s2-shared-test-stability.md`. |
-| T547 S3 | Active: semantic naming cleanup of the four shared test packages. |
+| T547 S3 | Complete: pushed as `8d7022ea8`. All four shared test roots were audited; current identities are behavior-derived, registrations/manifests match, static identity and focused dual-width checks pass. S4 separately owns full-project qualification. |
+| T547 S4 | Active: one complete dual-width project qualification run with all available external integration suites. |
 | T544 | Closed as CPU audit; complete repair/proof findings transferred to the first queued proposal, not claimed repaired. |
 | M5 Td S177 | Complete: CPU audit closure and full repair transfer, archive/queue/reference reconciliation. |
 | T545 | Closed after S7 actual-change acceptance: fixed eight-corpus import, preserved receivers, four owner-local test packages and full receiving qualification. No active S packet. |

@@ -39,3 +39,10 @@ no CMake behavior.
 - Full package executable aggregates are deliberately not claimed by this
   evidence until their complete dual-width build/run finishes; no passing
   result is inferred from these focused checks.
+
+## Closure
+
+S3 is complete at `8d7022ea8`. Its scope was semantic identity only: the
+static identity inventory, registration/manifest consistency and directly
+affected dual-width owner checks meet that scope. Full-project qualification is
+intentionally transferred to admitted S4 and is not claimed here.

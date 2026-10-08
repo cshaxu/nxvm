@@ -75,6 +75,21 @@ task must not overwrite, delete, or weaken NXVM-owned assertions.
   API, executable input, firmware/media/INI, App code or MyNES artifact is in
   scope.
 
+## S4: Full Project Qualification
+
+- Treat S1-S3 as the fixed source baseline. Do not make a feature, ownership,
+  artifact, firmware, media, INI or MyNES change while qualifying it.
+- Build and run the complete repository-only unit suite once on x64 and once
+  on x86, including all four independently owned shared packages and both
+  NXVM and MyNES product packages.
+- Run each registered external integration suite once per configured host
+  width when its immutable external inputs are available; record any missing
+  prerequisite or failure as a result, not a reason to retry, weaken, or
+  change a test.
+- Record commands, counts, pass/fail results and every unexecuted desktop or
+  external gate. This is qualification evidence only; it creates no new
+  executable artifact because it changes no executable input.
+
 ## Completion Standard
 
 The imported resource lock serializes only native desktop tests, not every Lib
