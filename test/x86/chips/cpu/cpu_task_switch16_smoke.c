@@ -135,6 +135,27 @@ static lib_bool cpu_task16_expect_ring3_source_call(
         fixture.memory[CPU_TASK16_GDT_BASE + 0x4du] == 0xe3u;
 }
 
+static lib_bool cpu_task16_expect_ring3_source_gate_call(
+    core_machine_cpu_profile profile)
+{
+    cpu_instruction_fixture fixture;
+    t_cpu after = {0};
+    lib_u16 backlink = 0u;
+
+    cpu_task16_prepare(&fixture, profile, CPU_TASK16_RING3_SOURCE_GATE_CALL);
+    cpu_task16_refresh(&fixture, 10u);
+    after = fixture.cpu;
+    lib_memory_copy(&backlink, fixture.memory + 0x0800u, sizeof(backlink));
+    return !fixture.fault.valid && !fixture.delivered_exception.valid &&
+        !after.data.flagHalt && after.data.tr.selector == 0x48u &&
+        after.data.cs.selector == 0x53u && after.data.cs.dpl == 3u &&
+        after.data.ss.selector == 0x5bu && after.data.ds.selector == 0x5bu &&
+        after.data.es.selector == 0x5bu && after.data.eip == 0x1a0u &&
+        (after.data.eflags & VCPU_EFLAGS_NT) != 0u && backlink == 0x30u &&
+        fixture.memory[CPU_TASK16_GDT_BASE + 0x35u] == 0x83u &&
+        fixture.memory[CPU_TASK16_GDT_BASE + 0x4du] == 0xe3u;
+}
+
 static lib_bool cpu_task16_expect_readable_code_data(
     core_machine_cpu_profile profile)
 {
@@ -316,6 +337,10 @@ int main(void)
     failed |= !cpu_task16_expect_ring3_source_call(
         CORE_MACHINE_CPU_PROFILE_80286);
     failed |= !cpu_task16_expect_ring3_source_call(
+        CORE_MACHINE_CPU_PROFILE_80386);
+    failed |= !cpu_task16_expect_ring3_source_gate_call(
+        CORE_MACHINE_CPU_PROFILE_80286);
+    failed |= !cpu_task16_expect_ring3_source_gate_call(
         CORE_MACHINE_CPU_PROFILE_80386);
     failed |= !cpu_task16_expect_readable_code_data(
         CORE_MACHINE_CPU_PROFILE_80286);
