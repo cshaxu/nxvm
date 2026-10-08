@@ -19,7 +19,7 @@ unchanged; no rebuild is needed. Deleted EXEs remain recoverable in Git history.
 | --- | --- |
 | T43 | Closed on owner instruction: S1-S13 accepted batches reconciled in history; final x64/x86 suites 132/132, six-ROM graphics/text matrix 24/24; remaining deferred contracts have explicit TODO receivers. |
 | T44 S4 | Accepted by owner: Core Driver creates a native audio sink only for product composition; repository-only fixtures no longer wait on a physical endpoint. Shared FDD/HDD unload now returns its actual Storage close result. Focused dual-width and all 12 integration routes per width passed; the x86 CPU exhaustive unit was not rerun under the terminal's 30-second command limit and was not claimed as fresh proof. |
-| T44 S5 | Active corrective: repair shared-test ownership, Types constant authority, and the named IBM PC owner-local forwarding residue. |
+| T44 S5 | Reopened corrective: retain the accepted ownership/Types cleanup, then repair the declared IBM PC KVM dependency and add the missing close-failure injection proof. |
 
 Final audit: [T44 closure](../etc/evidence/m7-t44-s3-closure.md).
 
@@ -28,21 +28,21 @@ Final audit: [T44 closure](../etc/evidence/m7-t44-s3-closure.md).
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Corrective: T44 is the latest closed numeric MyNES task; S5 is its next unused subtask. |
-| Admission And Approval | Owner approved S5 on 2026-10-07 after the `dd68d38cd` static audit, explicitly authorizing the listed shared test-boundary, Types, and IBM PC cleanup. |
-| Objective | Remove the confirmed product dependency from Shared IBM PC negative checks, make used integer-bound constants Types-owned, verify media-unload close failure propagation, and remove named IBM PC same-owner forwarding residue without changing guest behavior. |
-| Non-goals | No Lib behavior change or Common change; no warning-policy cleanup, new framework, state machine, API, guest behavior change, artifact/config/media/snapshot edit, or broad dead-code claim. The narrow Types header edit is limited to missing integer-bound spellings needed by the audited Shared consumers. |
-| Reference Baseline | `dd68d38cd`, clean worktree before S5 admission; static audit names two nested CMake product dependencies, direct integer constants, and three IBM PC local forwarding opportunities. |
+| Admission And Approval | Owner reopened S5 on 2026-10-07 after `7257d068f`, explicitly authorizing the declared IBM PC KVM dependency correction and close-failure injection proof. |
+| Objective | Retain the accepted product-test ownership, Types, and forwarding cleanup; add the declared IBM PC Machine-to-KVM dependency and prove that FDD/HDD close failure reports an error after consuming the media lease. |
+| Non-goals | No Lib behavior/Common change; no public API, warning-policy cleanup, framework, state machine, guest behavior, artifact/config/media/snapshot edit, or broad dead-code claim. The test-only close-result injector does not exist in production linkage. |
+| Reference Baseline | `7257d068f`, clean worktree after S5's accepted ownership/Types/forwarding repair; receiving review found the remaining Machine-to-KVM declaration gap and missing adapter-level close-failure proof. |
 | Candidate Proposal | Corrective continuation of [T44 measured efficiency](../history/M7-T44-measured-emulator-efficiency.md); bounded shared quality repair only. |
-| Files And ABI Surface | Shared: `src/lib/types/types_interface.h`, `src/x86/`, `src/ibmpc/`, `test/x86/`, `test/ibmpc/` and manifests. NXVM: only the necessary product test relocation/registration beneath `test/app-nxvm/` and its build declaration. No MyNES production change and no Lib behavior/Common change. |
+| Files And ABI Surface | Shared IBM PC: `src/ibmpc/verify_corpus.cmake`, `src/ibmpc/CMakeLists.txt`, `test/ibmpc/` and manifests. The test directly compiles the two media owners with a private result injector. No Lib/Common/public ABI or product source change. |
 | Applicable Rules | MyNES Architecture/Coding, Shared Execution/Architecture/Coding/Documentation, NXVM test-boundary rules for the relocated product checks, and CONTRIBUTING reading set. |
-| Verification | Reproduce each nested CMake dependency before moving it; run each independently selectable shared suite and its manifest; run relocated NXVM checks; perform Types-boundary sweep; build x64/x86 affected consumers and run focused regressions. Run the complete repository-only unit suite before S closure. |
-| Expected Markers | `test/ibmpc` contains no NXVM product-checker dependency; every touched integer limit uses Types vocabulary; FDD/HDD unload reports a final Storage close failure while still consuming the lease under the existing Storage contract; public FDD/HDD insert entry owns its implementation directly; normal media and CPU/board behavior remains unchanged. |
+| Verification | Run the IBM PC corpus gate before and after the dependency declaration; build and run the new close-failure test x64/x86 with existing media tests; verify manifests; then run the complete repository-only unit suite x64/x86 before S closure. |
+| Expected Markers | IBM PC Machine declares and links its existing KVM event dependency; injected final-close failure makes both FDD/HDD removal return `LIB_STATUS_IO_ERROR` while `has_media` is false and the owned medium is null; normal media behavior remains unchanged. |
 | Asset Needs | None; no external ROM, media, firmware, configuration, or snapshot input changes. |
 | Reporting Requirements | Report per-item before/after owner and file disposition; distinguish moved product tests from retained component tests; list actual added/removed/net source/test lines and all unverified paths. |
 | Stop Conditions | A required correction needs a Lib behavior/Common change, a public Types vocabulary beyond the narrow missing integer limits, guest behavior change, external asset, or another App source change. |
 | Exit Criteria | Every confirmed item has an owner-local implementation or an explicit evidence-backed disposition; manifests and boundary sweeps pass; no product checker remains in Shared test roots; all required verification and target-scoped P commits are complete. |
 | Original Owner Request | “收口S4，准入S5” followed by the owner-supplied static audit and bounded recommended repair scope. |
-| Similar-Issue Sweep | Search all nested Shared `.cmake` checks for `cmake/nxvm`, all Shared source/test integer bound constants, and all IBM PC public one-line forwarding wrappers before closing. |
+| Similar-Issue Sweep | Search all IBM PC Machine includes and link targets for KVM-base consistency; inspect every FDD/HDD medium destroy caller for a close-result disposition; retain the earlier nested-CMake, Types-bound, and forwarding sweeps as accepted evidence. |
 
 S2 evidence: [Mapper qualification](../etc/evidence/m7-t44-s2-mapper-performance.md).
 
