@@ -17,6 +17,18 @@ static void core_driver_clear_staged_audio(core_driver *driver)
     driver->audio_staging_count = 0u;
 }
 
+/* The native stream need only be reset after this Driver has actually handed
+ * it PCM.  A new stream has no guest audio to discard, and waiting for its
+ * worker attachment would make first reset depend on the host endpoint. */
+static void core_driver_clear_submitted_audio(core_driver *driver)
+{
+    if (driver == LIB_NULL) return;
+    core_driver_clear_staged_audio(driver);
+    if (driver->audio != LIB_NULL && driver->audio_needs_clear != LIB_FALSE &&
+        lib_audio_stream_clear(driver->audio) == LIB_STATUS_OK)
+        driver->audio_needs_clear = LIB_FALSE;
+}
+
 static lib_status core_driver_snapshot_write(void *opaque, const lib_u8 *bytes,
     lib_size byte_count)
 {
@@ -119,6 +131,7 @@ static void core_driver_drain_audio(core_driver *driver)
         if (lib_audio_stream_enqueue(driver->audio, pcm, CORE_DRIVER_AUDIO_PLAY_BLOCK,
                 &accepted) != LIB_STATUS_OK || accepted > CORE_DRIVER_AUDIO_PLAY_BLOCK)
             return;
+        if (accepted != 0u) driver->audio_needs_clear = LIB_TRUE;
         driver->audio_staging_read = (lib_u16)((driver->audio_staging_read + accepted) %
             CORE_DRIVER_AUDIO_STAGING_CAPACITY);
         driver->audio_staging_count = (lib_u16)(driver->audio_staging_count - accepted);
@@ -339,7 +352,7 @@ lib_status core_driver_create(core_driver **out_driver,
     if (driver == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     driver->options = *options;
     driver->text_output = options->text_output;
-    {
+    if (options->audio_enabled != LIB_FALSE) {
         lib_status audio_status = lib_audio_stream_create(&(lib_audio_stream_options) {
             .sample_rate = 48000u, .channel_count = 1u
         }, &driver->audio);
@@ -431,8 +444,7 @@ lib_status core_driver_write_state(void *context,
          * stop latch and frame cache only after the image has committed. */
         lib_atomic_i32_store_explicit(&driver->stop_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
         driver->published_frame_revision = 0u;
-        core_driver_clear_staged_audio(driver);
-        if (driver->audio != LIB_NULL) (void)lib_audio_stream_clear(driver->audio);
+        core_driver_clear_submitted_audio(driver);
         core_driver_reset_pacing(driver);
     }
     return status;
@@ -458,8 +470,7 @@ lib_bool core_driver_reset(void *context)
     lib_atomic_i32_store_explicit(&driver->stop_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
     lib_atomic_i32_store_explicit(&driver->wake_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
     lib_atomic_i32_store_explicit(&driver->debug_stop_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
-    if (driver->audio != LIB_NULL) (void)lib_audio_stream_clear(driver->audio);
-    core_driver_clear_staged_audio(driver);
+    core_driver_clear_submitted_audio(driver);
     core_driver_reset_pacing(driver);
     return core_machine_reset(driver->machine, CORE_RESET_POWER) == LIB_STATUS_OK;
 }
@@ -509,7 +520,12 @@ void core_driver_set_heartbeat(void *context, lib_bool enabled)
 {
     core_driver *driver = context;
     if (driver == LIB_NULL) return;
-    if (driver->audio != LIB_NULL) (void)lib_audio_stream_set_active(driver->audio, enabled);
+    if (driver->audio != LIB_NULL && (enabled != LIB_FALSE ||
+        driver->audio_needs_clear != LIB_FALSE)) {
+        if (lib_audio_stream_set_active(driver->audio, enabled) == LIB_STATUS_OK &&
+            enabled == LIB_FALSE)
+            driver->audio_needs_clear = LIB_FALSE;
+    }
     if (!enabled) core_driver_clear_staged_audio(driver);
     if (enabled) core_driver_reset_pacing(driver);
 }

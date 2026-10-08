@@ -153,7 +153,8 @@ lib_i32 app_composition_run(const app_startup_config *config)
     if (composition == LIB_NULL)
         return 1;
     if (core_driver_create(&composition->driver, &(core_driver_options){
-                                                     .text_output = config->text_output}) != LIB_STATUS_OK)
+                                                     .text_output = config->text_output,
+                                                     .audio_enabled = LIB_TRUE}) != LIB_STATUS_OK)
         goto cleanup;
     if (core_driver_make_driver(composition->driver, &common_driver) != LIB_STATUS_OK)
         goto cleanup;

@@ -44,6 +44,8 @@ int main(void)
     assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
     assert(core_driver_set_media(driver, "pacing-fixture.nes",
         LIB_STORAGE_MEDIUM_READONLY));
+    assert(core_driver_reset(driver));
+    assert(driver->audio_needs_clear == LIB_FALSE);
     core_driver_set_heartbeat(driver, LIB_TRUE);
     begin_cycles = driver->machine->cycles;
     assert(base_clock_milliseconds(&begin) == LIB_STATUS_OK);

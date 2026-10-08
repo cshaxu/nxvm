@@ -8,6 +8,7 @@ typedef struct core_driver core_driver;
 typedef struct core_driver_options {
     lib_u8 initial_ram_byte;
     lib_bool text_output;
+    lib_bool audio_enabled;
 } core_driver_options;
 
 lib_status core_driver_create(core_driver **out_driver,

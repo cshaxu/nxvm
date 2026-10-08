@@ -17,6 +17,7 @@ struct core_driver {
     lib_u16 audio_staging_read;
     lib_u16 audio_staging_write;
     lib_u16 audio_staging_count;
+    lib_bool audio_needs_clear;
     core_driver_options options;
     common_machine_executor_callback executor_callback;
     void *executor_context;
