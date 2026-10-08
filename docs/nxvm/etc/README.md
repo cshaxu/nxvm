@@ -11,6 +11,10 @@ T546 S19: [CPU external/NPX/Bus evidence](evidence/t546-s19-cpu-external-npx-bus
 records the sourced interruptible `WAIT`/TEST/ESC ownership, L3/L2 timing
 disposition, direct receiver proof and excluded inputs.
 
+T546 S20: [scalar/formula/transfer timing evidence](evidence/t546-s20-scalar-transfer-timing.md)
+records the sourced 80286 `LEAVE`, branch-outcome and VM86 segment-POP
+reconciliation at the one CPU timing selector.
+
 T540 S5: [neutral Core source cut](architecture/t540-s5-neutral-core-cut.md)
 maps the mixed executor/IBM-PC fields and ordered S6-S8 receivers; Current
 owns admission and status.

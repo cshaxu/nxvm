@@ -22,34 +22,28 @@
 | T546 S16 | Accepted: `5e0388e8c` unifies the protected task-transition owner; `be3023e26` through `b4f0e3159` add direct 286/386 Ring-3 and task-gate evidence; `2a33fc378` corrects the target paging receiver; and `e83aa8a2d` records the disposition. Complete repository-only units pass 506/506 on x64 and x86. The four receiving Apps' eight 0546 artifacts were rebuilt by the preceding S16 product commits. T546 remains open for S17-S23. |
 | T546 S17 | Accepted: Shared `de4185367` restores Intel-defined physical GDTR/IDTR table cycles, retains logical LDT/TSS references, and publishes PDE Accessed at the actual present-PDE walk. Direct owner regressions, manifests and complete repository-only units pass 506/506 per width; eight rebuilt 0546 PC artifacts and SHA-256 identities are recorded in S17 evidence. T546 remains open for S18-S23. |
 | T546 S18 | Accepted: Shared `5d6a73dec` makes early-family string handlers check each element before publishing repeat state, while the sourced 8086/8088 multi-prefix interrupt return rule is applied only at an accepted NMI/INTR boundary. Existing INS/OUTS commit ownership remains unchanged. Direct callback regression, x86 gates and complete repository-only units pass 506/506 per width; eight rebuilt 0546 PC artifacts are recorded in S18 evidence. T546 remains open for S19-S23. |
+| T546 S19 | Complete implementation and verification are recorded by Shared `5773243d4` and NXVM `3458e01c8`: Core owns one interruptible external NPX wait path; `WAIT`/TEST/BUSY, ESC restart/trap and accepted IRQ/NMI wake use the guest-time owner with no synthetic FPU completion. Complete repository-only units pass 506/506 per width and eight 0546 artifacts are rebuilt. T546 remains open for S20-S23. |
 
-## Active Packet — M5 T546 S19 CPU External/NPX/Bus
+## Active Packet — M5 T546 S20 Scalar/Formula/Transfer Timing
 
-- **Identifier mode:** Continuation. S19 follows accepted S18; T546 remains the
-  only open NXVM implementation task.
-- **Targets:** Shared source/test ownership and NXVM evidence/artifacts only.
-  Lib, Common, MyNES, user INIs, media and snapshots are excluded.
-- **Scope:** Establish the sourced CPU/Core contract for interruptible
-  `WAIT`/TEST/BUSY, ESC error/reference handling, 80186 escape input where
-  supported by authority, and the automatic/explicit LOCK interval. Retain one
-  Core arbitration and guest-time path; do not add BIOS shortcuts, host locks,
-  an x87 arithmetic implementation, or a second polling/executor path.
-- **Authorities:** `proposals/m5-cpu-audit-gap-repair.md` S19; the T546 history
-  ledger; `design/ARCHITECTURE.md`; `design/CODING.md`; rules Execution,
-  Architecture, Coding and Document; source policy; Intel 8086/8088, 80186 and
-  80286/80287 manuals recorded in S19 evidence. External emulators are
-  read-only L2 cross-checks, never imported source.
-- **Plan:** First complete source/caller/receiver audit and encode only the
-  required owner-local contract. Then add direct CPU/Core regressions covering
-  each implemented family and delivery boundary, perform the similar-issue
-  sweep, rebuild the eight receiving 0546 NXVM artifacts, run complete
-  repository-only units on x64 and x86, applicable x86/IBM-PC gates and the
-  NXVM documentation gate. Record exact source provenance, L3/L2 disposition,
-  artifacts and excluded inputs in S19 evidence.
-- **Exit:** Every admitted mechanism has a sourced disposition and a direct
-  owner regression; no unreported L1 remains in this batch. Close S19 only
-  after actual-diff review, pushed target-scoped P commits and the verification
-  above. T546 remains open for S20-S23.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T546 remains the only open NXVM implementation task. |
+| Admission And Approval | Owner's standing approval for timing-accuracy upgrades; scope is S20 of the accepted M5 T546 proposal. |
+| Objective | Reconcile source-backed scalar, formula and transfer timing at the sole CPU selector. |
+| Non-goals | No Lib/Common/MyNES changes, board timing, host pacing, parallel timing model, user INI/media/snapshot changes or unapproved accuracy downgrade. |
+| Reference Baseline | Completed S19 commits `5773243d4` and `3458e01c8`; T544 retained CPU qualification ledger. |
+| Candidate Proposal | `proposals/m5-cpu-audit-gap-repair.md`, S20. |
+| Files And ABI Surface | `src/x86/chips/cpu/cpu_timing_model.c`; owner-local x86/App timing receivers; no public API or ABI change. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Document rules; architecture/coding authorities; source policy and the named Intel timing ledgers. |
+| Verification | Direct source-row regressions; 8088/80186/80286/80386 manifest runners; complete repository-only dual-width unit suite; relevant manifests and artifact checks. |
+| Expected Markers | Existing manifest `PASS` markers, non-unallocated direct timing results, and each receiving App's x64/x86 artifact identity checks. |
+| Asset Needs | Existing build caches and eight deployed 0546 PC artifact destinations only; no external firmware/media input changes. |
+| Reporting Requirements | Record source disposition, similar-path sweep, actual diff, separate Shared/NXVM P commits, verification and any remaining boundary. |
+| Stop Conditions | Stop and report any timing downgrade, unfixable L1, source conflict requiring a new model, protected-asset need or non-CPU owner change. |
+| Exit Criteria | Every admitted row has direct owner proof with no new unresolved L1; actual-diff review, required tests, manifests/evidence and pushed scoped P commits complete. T546 remains open for S21-S23. |
+| Original Owner Request | Resume the NXVM CPU repair T after closing the preceding task; repair CPU semantics/timing thoroughly rather than switching work. |
+| Similar-Issue Sweep | Scan all five profile selectors and the retained compatibility recipe for final-PC branch inference, all segment POP timing paths, and every 80286 LEAVE/manifest consumer. |
 
 ## Accepted S9 Asynchronous Arbiter
 
