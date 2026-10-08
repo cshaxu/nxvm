@@ -1112,6 +1112,34 @@ static lib_i32 segment_test_pop_fault_atomicity(void)
     return failed;
 }
 
+static lib_i32 segment_test_vm86_pop_fs_gs_timing(void)
+{
+    static const lib_u8 opcodes[] = { 0xa1u, 0xa9u };
+    static const lib_u16 selectors[] = { 0x1234u, 0x5678u };
+
+    for (lib_size index = 0u; index < sizeof(opcodes) / sizeof(opcodes[0]);
+        ++index) {
+        const lib_u8 code[] = { 0x0fu, opcodes[index] };
+        core_machine_cpu_timing_result timing;
+        cpu_instruction_fixture state;
+        t_cpu after;
+
+        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        state.cpu.data.cr0 = VCPU_CR0_PE;
+        state.cpu.data.eflags |= VCPU_EFLAGS_VM;
+        state.cpu.data.esp = 0x0200u;
+        if (cpu_instruction_write(&state, 0x0200u, &selectors[index],
+                sizeof(selectors[index]), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+                LIB_STATUS_OK || cpu_instruction_run(&state, code, sizeof(code),
+                &after) != LIB_STATUS_OK ||
+            !core_machine_cpu_timing_select(&state.execution, &timing) ||
+            timing.source_timing_unallocated || timing.ticks != 7u ||
+            (opcodes[index] == 0xa1u ? after.data.fs.selector :
+                after.data.gs.selector) != selectors[index]) return 1;
+    }
+    return 0;
+}
+
 static lib_i32 segment_test_metadata(void)
 {
     core_machine_cpu_instruction_metadata verr =
@@ -1144,16 +1172,17 @@ lib_i32 main(void)
     lib_i32 query_edges = segment_test_selector_query_edges();
     lib_i32 rejected = segment_test_rejected_forms();
     lib_i32 atomicity = segment_test_pop_fault_atomicity();
+    lib_i32 vm86_pop = segment_test_vm86_pop_fs_gs_timing();
     lib_i32 metadata = segment_test_metadata();
 
     if (real_loads || protected_286 || protected_286_rejections || lxs_memory_only || lxs_atomicity || real_sregs || protected_sregs ||
         protected_sreg_failures || protected_forms || query_edges || rejected ||
-        atomicity || metadata) {
+        atomicity || vm86_pop || metadata) {
         lib_c_fprintf(lib_c_stderr,
-            "M5:T301:SEGMENT-SELECTOR:FAIL real=%d protected-286=%d protected-286-reject=%d lxs=%d lxs-atomic=%d sreg-real=%d sreg-protected=%d sreg-fault=%d protected=%d query=%d rejected=%d atomic=%d metadata=%d\n",
+            "M5:T301:SEGMENT-SELECTOR:FAIL real=%d protected-286=%d protected-286-reject=%d lxs=%d lxs-atomic=%d sreg-real=%d sreg-protected=%d sreg-fault=%d protected=%d query=%d rejected=%d atomic=%d vm86-pop=%d metadata=%d\n",
             real_loads, protected_286, protected_286_rejections, lxs_memory_only, lxs_atomicity, real_sregs, protected_sregs,
             protected_sreg_failures, protected_forms, query_edges, rejected,
-            atomicity, metadata);
+            atomicity, vm86_pop, metadata);
         return 1;
     }
     lib_c_printf("M5:T301:SEGMENT-SELECTOR:OK\n");

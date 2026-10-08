@@ -1153,7 +1153,9 @@ static lib_i32 timing_80286_memory(void)
 static lib_i32 timing_80286_control_ports(void)
 {
     static const lib_u8 taken[] = { 0x74u, 0x01u, 0x90u, 0x90u };
+    static const lib_u8 taken_zero[] = { 0x74u, 0x00u, 0x90u };
     static const lib_u8 not_taken[] = { 0x75u, 0x01u, 0x90u, 0x90u };
+    static const lib_u8 leave[] = { 0xc9u };
     static const lib_u8 movsb[] = { 0xa4u };
     static const lib_u8 rep[] = { 0xf3u, 0xa4u };
     static const lib_u8 source[] = { 1u, 2u, 3u };
@@ -1168,9 +1170,19 @@ static lib_i32 timing_80286_control_ports(void)
     if (!failed) failed |= !timing_80286_load(machine, taken, sizeof(taken)) ||
         (!timing_80286_patch_register(machine, CORE_MACHINE_DEBUG_EFLAGS, 0u, CORE_MACHINE_DEBUG_EFLAGS_ZF)) ||
         !timing_80286_run(machine, &state, 1u, 7u);
+    if (!failed) failed |= !timing_80286_load(machine, taken_zero,
+        sizeof(taken_zero)) || (!timing_80286_patch_register(machine,
+        CORE_MACHINE_DEBUG_EFLAGS, 0u, CORE_MACHINE_DEBUG_EFLAGS_ZF)) ||
+        !timing_80286_run(machine, &state, 1u, 7u);
     if (!failed) failed |= !timing_80286_load(machine, not_taken,
         sizeof(not_taken)) || (!timing_80286_patch_register(machine,
         CORE_MACHINE_DEBUG_EFLAGS, 0u, CORE_MACHINE_DEBUG_EFLAGS_ZF)) || !timing_80286_run(machine, &state, 1u, 3u);
+    if (!failed) failed |= !timing_80286_load(machine, leave, sizeof(leave)) ||
+        (!timing_80286_patch_register(machine, CORE_MACHINE_DEBUG_EBP,
+        0xffffu, 0x2ffeu) || !timing_80286_patch_register(machine,
+        CORE_MACHINE_DEBUG_ESP, 0xffffu, 0x7777u)) || core_machine_memory_write(
+        machine, 0x2ffeu, source, 2u) != LIB_STATUS_OK ||
+        !timing_80286_run(machine, &state, 1u, 5u);
     if (!failed) failed |= !timing_80286_load(machine, movsb, sizeof(movsb)) ||
         core_machine_memory_write(machine, 0x1000u, source, 1u) != LIB_STATUS_OK ||
         (!timing_80286_patch_register(machine, CORE_MACHINE_DEBUG_ESI, 0xffffu, 0x1000u) ||

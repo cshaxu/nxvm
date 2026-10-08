@@ -363,7 +363,7 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_POPF, 5u },
     { CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ZERO, 11u },
     { CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ONE, 15u },
-    { CORE_MACHINE_SOURCE_TIMING_LEAVE, 8u },
+    { CORE_MACHINE_SOURCE_TIMING_LEAVE, 5u },
     { CORE_MACHINE_SOURCE_TIMING_HLT, 2u },
     { CORE_MACHINE_SOURCE_TIMING_INT3, 23u },
     { CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE, 23u },
@@ -1558,6 +1558,10 @@ lib_i32 core_machine_l2_dynamic_arithmetic_model_cost(
     return 1;
 }
 
+static lib_i32 core_machine_control_stack_short_branch_taken(
+    const t_cpuins_data *data, const core_machine_cpu_execution_context *context,
+    lib_u32 prefixes, lib_i32 *out_taken);
+
 static lib_i32 core_machine_legacy_source_instruction_cost(core_machine_cpu_execution_context *context,
     lib_u64 *out_ticks,
     const core_machine_legacy_source_timing_contract *contract)
@@ -1565,7 +1569,6 @@ static lib_i32 core_machine_legacy_source_instruction_cost(core_machine_cpu_exec
     const t_cpuins_data *data = &context->instructions->data;
     lib_u32 prefixes = core_machine_instruction_prefix_count(data);
     lib_u8 opcode;
-    lib_u32 fallthrough;
     lib_i32 segment_override;
     lib_i32 lock_prefix;
 
@@ -1589,10 +1592,13 @@ static lib_i32 core_machine_legacy_source_instruction_cost(core_machine_cpu_exec
         return 1;
     }
     if (opcode >= 0x70u && opcode <= 0x7fu) {
+        lib_i32 taken;
+
         context->timing_result.form_id = CORE_MACHINE_SOURCE_TIMING_8086_JCC;
-        fallthrough = X86_CPU_MASK_U16(data->oldcpu.data.eip + prefixes + 2u);
-        *out_ticks = context->cpu->data.eip == fallthrough ?
-            contract->jcc_not_taken_ticks : contract->jcc_taken_ticks;
+        if (!core_machine_control_stack_short_branch_taken(data, context,
+                prefixes, &taken)) return 0;
+        *out_ticks = taken ? contract->jcc_taken_ticks :
+            contract->jcc_not_taken_ticks;
         return 1;
     }
     switch (opcode) {
@@ -1997,10 +2003,12 @@ lib_i32 core_machine_primary_source_instruction_cost(
     }
     if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
         opcode >= 0x70u && opcode <= 0x7fu) {
-        *out_ticks = context->cpu->data.eip ==
-            X86_CPU_MASK_U16(data->oldcpu.data.eip + 2u) ?
-            CORE_MACHINE_80286_JCC_NOT_TAKEN_TICKS :
-            CORE_MACHINE_80286_JCC_TAKEN_TICKS;
+        lib_i32 taken;
+
+        if (!core_machine_control_stack_short_branch_taken(data, context,
+                prefixes, &taken)) return 0;
+        *out_ticks = taken ? CORE_MACHINE_80286_JCC_TAKEN_TICKS :
+            CORE_MACHINE_80286_JCC_NOT_TAKEN_TICKS;
         return 1;
     }
     if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
@@ -2877,13 +2885,65 @@ static lib_i32 core_machine_control_stack_selector_is_task_gate(core_machine_cpu
     return (access & 0x0fu) == VCPU_DESC_SYS_TYPE_TASKGATE;
 }
 
+static lib_i32 core_machine_control_stack_condition_taken(lib_u32 eflags,
+    lib_u8 condition, lib_i32 *out_taken)
+{
+    lib_i32 carry;
+    lib_i32 overflow;
+    lib_i32 parity;
+    lib_i32 sign;
+    lib_i32 zero;
+
+    if (out_taken == LIB_NULL) return 0;
+    carry = (eflags & VCPU_EFLAGS_CF) != 0u;
+    parity = (eflags & VCPU_EFLAGS_PF) != 0u;
+    zero = (eflags & VCPU_EFLAGS_ZF) != 0u;
+    sign = (eflags & VCPU_EFLAGS_SF) != 0u;
+    overflow = (eflags & VCPU_EFLAGS_OF) != 0u;
+    switch (condition & 0x0fu) {
+    case 0u: *out_taken = overflow; break;
+    case 1u: *out_taken = !overflow; break;
+    case 2u: *out_taken = carry; break;
+    case 3u: *out_taken = !carry; break;
+    case 4u: *out_taken = zero; break;
+    case 5u: *out_taken = !zero; break;
+    case 6u: *out_taken = carry || zero; break;
+    case 7u: *out_taken = !carry && !zero; break;
+    case 8u: *out_taken = sign; break;
+    case 9u: *out_taken = !sign; break;
+    case 10u: *out_taken = parity; break;
+    case 11u: *out_taken = !parity; break;
+    case 12u: *out_taken = sign != overflow; break;
+    case 13u: *out_taken = sign == overflow; break;
+    case 14u: *out_taken = zero || sign != overflow; break;
+    default: *out_taken = !zero && sign == overflow; break;
+    }
+    return 1;
+}
+
 static lib_i32 core_machine_control_stack_short_branch_taken(
     const t_cpuins_data *data, const core_machine_cpu_execution_context *context,
     lib_u32 prefixes, lib_i32 *out_taken)
 {
-    if (data == LIB_NULL || context == LIB_NULL || out_taken == LIB_NULL) return 0;
-    *out_taken = context->cpu->data.eip !=
-        X86_CPU_MASK_U16(data->oldcpu.data.eip + prefixes + 2u);
+    lib_u8 opcode;
+    lib_u16 count;
+
+    if (data == LIB_NULL || context == LIB_NULL || out_taken == LIB_NULL ||
+        prefixes >= data->oplen) return 0;
+    opcode = data->opcodes[prefixes];
+    if (opcode >= 0x70u && opcode <= 0x7fu) {
+        return core_machine_control_stack_condition_taken(data->oldcpu.data.eflags,
+            opcode, out_taken);
+    }
+    count = (lib_u16)data->oldcpu.data.ecx;
+    if (opcode == 0xe3u) {
+        *out_taken = count == 0u;
+        return 1;
+    }
+    if (opcode < 0xe0u || opcode > 0xe2u) return 0;
+    --count;
+    *out_taken = count != 0u && (opcode == 0xe2u ||
+        (opcode == 0xe1u) == ((data->oldcpu.data.eflags & VCPU_EFLAGS_ZF) != 0u));
     return 1;
 }
 
@@ -3627,7 +3687,6 @@ lib_i32 core_machine_80386_secondary_source_instruction_cost(
     lib_u8 secondary;
     lib_u8 extension;
     lib_u8 operand_bytes;
-    lib_u32 fallthrough;
     lib_i32 memory;
 
     if (context == LIB_NULL || out_ticks == LIB_NULL ||
@@ -3645,16 +3704,17 @@ lib_i32 core_machine_80386_secondary_source_instruction_cost(
     if (data->prefix_oprsize) operand_bytes = operand_bytes == 4u ? 2u : 4u;
 
     if (secondary >= 0x80u && secondary <= 0x8fu) {
+        lib_i32 taken;
+
         context->timing_result.form_id = CORE_MACHINE_SOURCE_TIMING_JCC;
-        fallthrough = data->oldcpu.data.eip + prefixes + 2u + operand_bytes;
-        if (!data->oldcpu.data.cs.seg.exec.defsize) fallthrough &= 0xffffu;
-        if (context->cpu->data.eip == fallthrough) {
+        if (!core_machine_control_stack_condition_taken(data->oldcpu.data.eflags,
+                secondary, &taken)) return 0;
+        if (!taken) {
             *out_ticks = CORE_MACHINE_80386_JCC_NOT_TAKEN_TICKS;
-        } else {
-            return core_machine_control_stack_add_next_term(context,
-                CORE_MACHINE_80386_JCC_TAKEN_TICKS, out_ticks);
+            return 1;
         }
-        return 1;
+        return core_machine_control_stack_add_next_term(context,
+            CORE_MACHINE_80386_JCC_TAKEN_TICKS, out_ticks);
     }
     if (secondary < 0xa3u || prefixes + 2u >= data->oplen) return 0;
     memory = core_machine_source_timing_modrm_is_memory(data, prefixes + 1u);
@@ -3766,7 +3826,6 @@ lib_i32 core_machine_80386_privileged_source_instruction_cost(
         return 1;
     }
     if (secondary == 0xa1u || secondary == 0xa9u) {
-        if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u) return 0;
         *out_ticks = protected_mode ? 21u : 7u;
         return 1;
     }
@@ -4055,8 +4114,6 @@ lib_i32 core_machine_80386_source_instruction_cost(core_machine_cpu_execution_co
     lib_u8 opcode;
     lib_u8 group2_extension;
     lib_i32 group2_memory;
-    lib_u32 fallthrough;
-
     if (out_ticks == LIB_NULL) return 0;
     if (prefixes >= data->oplen) {
         context->source_repeat_active = LIB_FALSE;
@@ -4080,16 +4137,17 @@ lib_i32 core_machine_80386_source_instruction_cost(core_machine_cpu_execution_co
         return 1;
     }
     if (opcode >= 0x70u && opcode <= 0x7fu) {
+        lib_i32 taken;
+
         context->timing_result.form_id = CORE_MACHINE_SOURCE_TIMING_JCC;
-        fallthrough = data->oldcpu.data.eip + 2u;
-        if (!data->oldcpu.data.cs.seg.exec.defsize) fallthrough &= 0xffffu;
-        if (context->cpu->data.eip == fallthrough) {
+        if (!core_machine_control_stack_short_branch_taken(data, context,
+                prefixes, &taken)) return 0;
+        if (!taken) {
             *out_ticks = CORE_MACHINE_80386_JCC_NOT_TAKEN_TICKS;
-        } else {
-            return core_machine_control_stack_add_next_term(context,
-                CORE_MACHINE_80386_JCC_TAKEN_TICKS, out_ticks);
+            return 1;
         }
-        return 1;
+        return core_machine_control_stack_add_next_term(context,
+            CORE_MACHINE_80386_JCC_TAKEN_TICKS, out_ticks);
     }
     switch (opcode) {
     case 0x90u:
@@ -4240,8 +4298,6 @@ lib_i32 core_machine_compatibility_instruction_cost(core_machine_cpu_execution_c
     lib_u32 prefixes = core_machine_instruction_prefix_count(data);
     lib_u8 opcode;
     lib_u64 ticks = timing->base_ticks;
-    lib_u32 fallthrough;
-    lib_u8 code32;
 
     if (prefixes >= sizeof(data->opcodes)) return 0;
     /* This retained compatibility recipe has no source-form allocation.  It
@@ -4258,10 +4314,11 @@ lib_i32 core_machine_compatibility_instruction_cost(core_machine_cpu_execution_c
         return 0;
     }
     if (opcode >= 0x70u && opcode <= 0x7fu) {
-        code32 = data->oldcpu.data.cs.seg.exec.defsize;
-        fallthrough = data->oldcpu.data.eip + prefixes + 2u;
-        if (!code32) fallthrough &= 0xffffu;
-        if (context->cpu->data.eip != fallthrough &&
+        lib_i32 taken;
+
+        if (!core_machine_control_stack_short_branch_taken(data, context,
+                prefixes, &taken)) return 0;
+        if (taken &&
             !core_machine_timing_add_ticks(&ticks, timing->taken_branch_surcharge)) {
             return 0;
         }
