@@ -9,11 +9,11 @@ set(project_t344_migrated_sources
 set(project_t344_retained_sources
     "test/ibmpc/board-common/core_machine_sign_extend_smoke.c"
     "test/ibmpc/board-common/composition/core_machine_operand_address_smoke.c"
-    "test/ibmpc/board-common/core_machine_prefix_attributes_s64_smoke.c"
+    "test/ibmpc/board-common/core_machine_prefix_attributes_smoke.c"
     "test/ibmpc/board-common/composition/core_machine_segment_selector_smoke.c"
     "test/ibmpc/board-common/composition/machine_protected_privilege_board_smoke.c"
     "test/ibmpc/board-common/core_machine_sreg_mov_smoke.c"
-    "test/ibmpc/board-common/core_machine_les_lds_s41_smoke.c"
+    "test/ibmpc/board-common/core_machine_les_lds_board_smoke.c"
     "test/ibmpc/board-common/core_machine_les_lds_smoke.c"
     "test/ibmpc/board-common/core_machine_lss_lfs_lgs_smoke.c"
     "test/ibmpc/board-common/core_machine_legacy_sreg_stack_smoke.c"
@@ -253,11 +253,11 @@ list(APPEND project_t344_machine_sources
     "test/ibmpc/board-common/core_machine_pusha_popa_smoke.c"
     "test/ibmpc/board-common/core_machine_enter_leave_smoke.c"
     "test/ibmpc/board-common/core_machine_legacy_sreg_stack_smoke.c"
-    "test/ibmpc/board-common/core_machine_les_lds_s41_smoke.c"
+    "test/ibmpc/board-common/core_machine_les_lds_board_smoke.c"
     "test/ibmpc/board-common/core_machine_les_lds_smoke.c"
     "test/ibmpc/board-common/core_machine_lss_lfs_lgs_smoke.c"
     "test/ibmpc/board-common/core_machine_sreg_mov_smoke.c"
-    "test/ibmpc/board-common/core_machine_prefix_attributes_s64_smoke.c"
+    "test/ibmpc/board-common/core_machine_prefix_attributes_smoke.c"
 )
 list(APPEND project_t344_machine_sources
     "test/ibmpc/board-common/core_machine_bit_scan_smoke.c"

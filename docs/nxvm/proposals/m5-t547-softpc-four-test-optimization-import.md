@@ -89,6 +89,12 @@ task must not overwrite, delete, or weaken NXVM-owned assertions.
 - Record commands, counts, pass/fail results and every unexecuted desktop or
   external gate. This is qualification evidence only; it creates no new
   executable artifact because it changes no executable input.
+- If qualification exposes a deterministic product test reference made stale by
+  S3's accepted semantic rename, update that reference to the current semantic
+  identity without weakening its assertion, then re-run the affected complete
+  unit qualification. A user-owned MyNES executable rebuilt from its current
+  source is reconciled as a separate MyNES artifact commit only; it does not
+  alter the qualification baseline or runtime source.
 
 ## Completion Standard
 

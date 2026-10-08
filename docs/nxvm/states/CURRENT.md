@@ -9,16 +9,16 @@
 | Identifier Mode | Continuation T547 S4. |
 | Admission And Approval | Owner directed S3 closure and full-project test admission on 2026-10-08; standing automatic S admission applies. |
 | Objective | Qualify the fixed T547 S1-S3 source baseline through one complete project test pass per host width. |
-| Non-goals | No source behavior, test assertion, ownership, firmware/media/INI, artifact or MyNES change; no retry, timeout extension or test weakening. |
+| Non-goals | No source behavior, test assertion weakening, ownership, firmware/media/INI or timeout extension. The owner authorized only deterministic stale test-reference synchronization and reconciliation of the already rebuilt current-source MyNES pair. |
 | Reference Baseline | Pushed S3 semantic-naming closure `8d7022ea8`; user-owned rebuilt MyNES EXEs remain outside this Shared scope. |
 | Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S4. |
-| Files And ABI Surface | Test execution logs and NXVM task evidence/state only. No production source, public ABI or deployed artifact. |
+| Files And ABI Surface | Product test-reference scripts plus task evidence/state; no production source or public ABI. The already rebuilt MyNES pair may be committed separately after current-source verification. |
 | Applicable Rules | NXVM guide; Execution and Documentation rules; existing CTest registration and package manifest boundaries. |
 | Verification | Once each: complete repository-only unit suite on x64 and x86; registered external integration suites where inputs are available. |
 | Expected Markers | Exact CTest counts and results for each width/suite; every unexecuted external or desktop gate explicitly stated. |
 | Asset Needs | None. Repository-only tests use no firmware, ROM, media, INI, font or user snapshot. |
 | Reporting Requirements | Record exact commands, counts and results. Do not claim unrun desktop or external tests pass. |
-| Stop Conditions | Stop and report a current failure; do not modify source or retry a suite in this S. |
+| Stop Conditions | Stop and report a non-deterministic or behavioral failure. A deterministic stale reference from S3's accepted semantic rename may be synchronized, then its affected suite is re-run once. |
 | Exit Criteria | Both complete repository-only unit runs finish once; all available registered integration runs finish once; evidence accurately records results and exclusions. |
 | Original Owner Request | Run the complete project test suite after S3 closure. |
 | Similar-Issue Sweep | Not applicable: qualification-only work changes no defect class. |
@@ -28,7 +28,7 @@
 | T547 S1 | Implementation P complete and pushed as `26c013bba`: current SoftPC differences were reconciled, native-test isolation imported, NXVM's later x86/IBM PC repairs retained, and the stale x86 negative fixture fixed. Its incomplete aggregate/stability evidence is explicitly continued by S2. |
 | T547 S2 | Complete: pushed as `70bb50312`. The aggregate default is reduced from 8 to the evidence-backed safe 4 jobs, without changing individual budgets or assertions. One complete x64/x86 run of each shared package passes: Lib 51/51, Common 20/20, x86 182/182 and IBM PC 182/182; complete repository-only units pass 506/506 per width. See `etc/evidence/t547-s2-shared-test-stability.md`. |
 | T547 S3 | Complete: pushed as `8d7022ea8`. All four shared test roots were audited; current identities are behavior-derived, registrations/manifests match, static identity and focused dual-width checks pass. S4 separately owns full-project qualification. |
-| T547 S4 | Active: one complete x64/x86 qualification run is recorded in `etc/evidence/t547-s4-full-project-qualification.md`; all 44 external integrations pass, while the same two stale product negative fixtures leave each unit suite at 504/506. |
+| T547 S4 | Active: initial x64/x86 qualification recorded all 44 external integrations passing, while two stale product negative fixtures left units at 504/506. Owner authorized the narrow semantic-reference repair and one renewed unit qualification; the separately rebuilt MyNES pair will be reconciled if it matches current source. |
 | T544 | Closed as CPU audit; complete repair/proof findings transferred to the first queued proposal, not claimed repaired. |
 | M5 Td S177 | Complete: CPU audit closure and full repair transfer, archive/queue/reference reconciliation. |
 | T545 | Closed after S7 actual-change acceptance: fixed eight-corpus import, preserved receivers, four owner-local test packages and full receiving qualification. No active S packet. |

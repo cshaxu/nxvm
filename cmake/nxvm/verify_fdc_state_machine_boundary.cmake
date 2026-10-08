@@ -35,7 +35,7 @@ foreach(source_text IN ITEMS "${fdc_source}" "${fdc_header}" "${core_fixture}")
 endforeach()
 
 foreach(required IN ITEMS "core_machine_configure_fdc"
-    "core_machine_configure_dma" "M5:T283:S2:CORE-FDC-MEDIA:OK")
+    "core_machine_configure_dma" "CORE-FDC-MEDIA:OK")
     string(FIND "${core_fixture}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Core FDC fixture is incomplete: ${required}")

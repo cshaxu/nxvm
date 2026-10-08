@@ -111,10 +111,10 @@ foreach(board_test core_machine_lea_smoke.c core_machine_movx_smoke.c
         core_machine_gpr_push_pop_smoke.c core_machine_push_immediate_smoke.c core_machine_pusha_popa_smoke.c
         core_machine_enter_leave_smoke.c core_machine_fs_gs_stack_smoke.c
         core_machine_legacy_sreg_stack_smoke.c
-        core_machine_les_lds_s41_smoke.c core_machine_les_lds_smoke.c
+        core_machine_les_lds_board_smoke.c core_machine_les_lds_smoke.c
         core_machine_lss_lfs_lgs_smoke.c core_machine_segment_selector_smoke.c
         core_machine_sreg_mov_smoke.c
-        core_machine_operand_address_smoke.c core_machine_prefix_attributes_s64_smoke.c)
+        core_machine_operand_address_smoke.c core_machine_prefix_attributes_smoke.c)
     set(board_test_path "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/${board_test}")
     if(NOT EXISTS "${board_test_path}")
         set(board_test_path "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/composition/${board_test}")
