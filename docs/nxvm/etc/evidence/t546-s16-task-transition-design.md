@@ -105,13 +105,13 @@ model.
   selectors remain valid unavailable data caches.
 - Two-stage 286 and 386 regressions enter a Ring-3 task through their normal
   DPL-0 TSS, then execute a direct far JMP/CALL with an RPL-3 selector or a
-  DPL-3 task-gate CALL to a DPL-3 TSS.  The JMP case proves the second switch
-  uses the current incoming CPL and clears the non-nested source TSS busy bit.
-  The direct and gate CALL cases prove the same admission while retaining both
-  busy descriptors, publishing the backlink and setting NT.  A direct switch
-  retains its RPL-3 target selector in TR; task-gate entry loads the gate's
-  descriptor target selector.  Neither route retains the retired CPL-0-only
-  admission rule.
+  DPL-3 task-gate JMP/CALL to a DPL-3 TSS.  The direct and task-gate JMP cases
+  prove the second switch uses the current incoming CPL and clears the
+  non-nested source TSS busy bit and NT.  The direct and gate CALL cases prove
+  the same admission while retaining both busy descriptors, publishing the
+  backlink and setting NT.  A direct switch retains its RPL-3 target selector
+  in TR; task-gate entry loads the gate's descriptor target selector.  Neither
+  route retains the retired CPL-0-only admission rule.
 - The 16-bit image path preserves the old 80386 high-half fill for a 386
   16-bit TSS, but no longer applies it to a real 80286 register file.
 - Owner-local regressions now cover both 286 and 386 nonzero incoming CPL,
