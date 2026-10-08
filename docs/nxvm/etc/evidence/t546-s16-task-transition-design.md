@@ -120,6 +120,10 @@ model.
   and 386 fixtures provide the source task's ring-0 exception stack and IDT
   `#GP` gate so this architectural rejection is observed rather than replaced
   by a fixture-induced shutdown.
+- The 32-bit paging receiver maps the target task's GDT/IDT page in addition
+  to its target code page.  After CR3 publication, the staged selector checks
+  must read those tables in the incoming paging context; omitting that map is
+  a malformed target fixture, not a CPU cache-loading shortcut.
 - Owner-local regressions now cover both 286 and 386 nonzero incoming CPL,
   readable-code data caches, null 386 data caches, raw 80386 CR3 image load,
   and task-gate delivery of late selector/LDT/stack faults.  No public API,
@@ -157,6 +161,10 @@ No board, VM or product test substitutes for this proof.
   182/182 passed.
 - `ctest --test-dir build/t546-s10-my5160-x86/test/x86 --output-on-failure -j 8`:
   182/182 passed.
+- `ctest --test-dir build/t546-s10-my5160-x64 -L unit --output-on-failure -j 8`:
+  506/506 passed.
+- `ctest --test-dir build/t546-s10-my5160-x86 -L unit --output-on-failure -j 8`:
+  506/506 passed.
 - Both runs include the complete x86 unit corpus, x86 ownership/Types/negative
   gates, and both manifests.  No desktop or external-media integration run is
   claimed by this packet.
