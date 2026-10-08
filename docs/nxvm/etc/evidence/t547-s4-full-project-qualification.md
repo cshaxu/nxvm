@@ -2,18 +2,18 @@
 
 ## Baseline
 
-- Source baseline: `14bf118f1` (S3 closure and S4 admission).
-- No production, test, asset, firmware, media or INI source was changed during
-  this qualification.
-- User-owned `assets/mynes/mynes_0_0_0044_{x64,x86}.exe` modifications were
-  preserved and excluded from every commit.
+- Admission baseline: `14bf118f1` (S3 closure and S4 admission).
+- Final qualification baseline: `9ab7ed6b9`.  S4 contains the owner-approved
+  product-test reference correction `16e008415`; it changes no production
+  source, firmware, media or INI.  `9ab7ed6b9` then publishes the matching
+  rebuilt MyNES 0044 pair.
 
 ## One-run results
 
 | Host width | Build | Repository-only unit suite | External integration suite |
 | --- | --- | --- | --- |
-| x64 | `build-unit-tests`: pass | 504/506 pass; 2 fail | 22/22 pass |
-| x86 | `build-unit-tests`: pass | 504/506 pass; 2 fail | 22/22 pass |
+| x64 | `build-unit-tests`: pass | 506/506 pass | 22/22 pass |
+| x86 | `build-unit-tests`: pass | 506/506 pass | 22/22 pass |
 
 Commands were executed once per width:
 
@@ -27,7 +27,16 @@ The integration target built its own registered executable inputs before
 running the external suite. No desktop test was omitted; the unit label's
 three desktop-tagged tests ran as part of each full 506-case run.
 
-## Reproducible blockers
+The unit suite includes all four shared test packages: the currently
+registered label populations are Lib 36, Common 14, x86 176 and IBM PC 176 per
+host width.  The remaining cases are NXVM product and cross-package tests.
+No shared package was excluded.
+
+The MyNES product target was also built and executed after the corrected
+baseline: 57/57 passed on x64 and 57/57 passed on x86.  This includes its
+product unit, integration and native desktop smoke cases.
+
+## Corrected blockers
 
 Both widths fail exactly these two product-layer static negative tests:
 
@@ -38,9 +47,9 @@ Both widths fail exactly these two product-layer static negative tests:
    fixture assertion still requires the former `M5:T283:S2:CORE-FDC-MEDIA:OK`
    marker. S3 correctly removed task-derived current test markers.
 
-Both are test-registration/fixture expectations outside S3's declared source
-rename roots. They do not fail a shared-component runtime test or an external
-integration.
+Both were test-registration/fixture expectations outside S3's declared source
+rename roots. They did not indicate a shared-component runtime or external
+integration defect.
 
 ## Owner-authorized reference correction
 
@@ -65,11 +74,13 @@ ctest --test-dir build/mingw-gcc-x64-release --output-on-failure -R "unit\.(cpu-
 ctest --test-dir build/mingw-gcc-x86-release --output-on-failure -R "unit\.(cpu-bus-boundary-negative|fdc-boundary-negative)$"
 ```
 
-Both results were 2/2 passing. The renewed x64 unit run was partitioned into
-six non-overlapping CTest index ranges because this host terminates a single
-foreground command after roughly 30 seconds; together those ranges executed
-all 506 unit cases exactly once and passed 506/506. The x86 focused result is
-recorded above; its renewed complete partitioned run remains outstanding and
-is not claimed by this evidence. The initial 22/22 integration result per
-width remains applicable because the correction changes only static unit-test
-scripts and no executable or external-test input.
+Both results were 2/2 passing.  The renewed x64 and x86 unit runs were each
+partitioned into non-overlapping CTest index ranges because this host terminates
+a single foreground command after roughly 30 seconds; together the ranges
+executed all 506 unit cases exactly once per width and passed 506/506.
+
+The external integration targets were then re-run, rather than merely carried
+forward from the initial baseline: 22/22 passed on x64 and 22/22 passed on x86.
+Those runs include the available ROM/media-backed DOS, video, FDC/HDC, Windows
+3.1 checkpoint and floppy boot-matrix cases.  No desktop case was omitted:
+desktop-labelled checks run through the unit and MyNES product targets above.
