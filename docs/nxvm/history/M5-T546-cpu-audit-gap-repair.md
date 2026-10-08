@@ -38,17 +38,18 @@ semantic proof. Every new finding joins the whole owning batch before repair.
 | S9 | Asynchronous arbiter | Accepted after coordinator actual-change review of pushed Shared 746e3e214 and NXVM 04bd419e1: complete seven-member source/caller disposition in S9 evidence, final units 505/505 per width, original integration 58/58 once, supplemental 33/33, both gates/eight manifests and eight stripped 0546 products. Pure governance P3 closes S9; T546 retains S10-S20. |
 | S10 | Exception delivery/shutdown | Closed at owner direction before the separate Shared Console repair: finalizer, ordered pair/serial/error/DF, shutdown/NMI/reset and late-context receivers are delivered in target-separated P commits. The unrelated Console viewport unit failure is reclassified to new S11, not hidden as CPU evidence. |
 | S11 | Shared Console viewport repair | Closed at explicit owner direction after Shared `2e1c59660`/`89ae694ef` and receiving P commits. Focused dual-width Lib evidence passes 36/36 per width, including native desktop and Console contract tests. The broader all-App suite/artifact requirement was not rerun or claimed; it is retained for later explicit qualification. |
-| S12 | Shared IBM PC and Audio failure-contract repair | Active at owner approval: hotkey/frame/display/lifecycle and Audio wake-failure repair plus two audited local simplifications. Requires dual-width four-component suites before full non-Shared product suites. |
-| S13 | Descriptor/query/table | Pending full source/context/caller batch. |
-| S14 | Gate and outer-return | Pending source conflicts and full context/caller batch. |
-| S15 | Task transition | Pending full source/context/caller batch. |
-| S16 | Paging and implicit references | Pending full source/context/caller batch. |
-| S17 | String/port restart | Pending full source/context/caller batch. |
-| S18 | CPU external/NPX/bus | Pending full source/context/caller batch. |
-| S19 | Scalar/formula/transfer timing | Pending all source-conditioned form/width/task/transfer allocations, including existing VM86 FS/GS L1 hole. |
-| S20 | Retirement/external waits | Pending complete decode/outcome and one time publication proof. |
-| S21 | Cross-family regression/source convergence | Pending every imported finding/oracle/source-tier disposition after owning repairs. |
-| S22 | Final qualification | Pending complete ledger, both widths/artifacts and all original 58 external contexts. |
+| S12 | Shared IBM PC and Audio failure-contract repair | Delivered by `6200790b4`, `8e2f71d41`, `c23b67abb`; its complete final product qualification remains S23. |
+| S13 | IBM PC neutral-key boundary | Delivered by `320fdc385`, `c498244b7`, `5c5b64725`, `4b76caa9f`; its complete final product qualification remains S23. |
+| S14 | Descriptor/query/table | Delivered by `1b85c58d8`, `2b65d095c`, `5a9d9e54d`; final dual-width reconciliation remains S23. |
+| S15 | Gate and outer-return | Accepted: outer-return predicate and segment-cache cleanup receiver complete. |
+| S16 | Task transition | Accepted: staged task-transition receiver complete. |
+| S17 | Paging and implicit references | Accepted: physical table and Accessed-bit receiver complete. |
+| S18 | String/port restart | Accepted: element/restart receiver complete. |
+| S19 | CPU external/NPX/bus | Accepted: sole Core external-wait receiver complete. |
+| S20 | Scalar/formula/transfer timing | Accepted: source-conditioned selector receiver, including VM86 FS/GS allocation, complete. |
+| S21 | Retirement/external waits | Delivered by `c7332bab5` and `7bde37ab2`; final coordinator reconciliation is incorporated by S22/S23. |
+| S22 | Cross-family regression/source convergence | Active: reconcile every imported finding/oracle/source-tier disposition after the owning deliveries. |
+| S23 | Final qualification | Pending complete ledger, both widths/artifacts and all original external integration contexts. |
 
 Accepted disposition requires direct source/implementation/regression proof or
 source-proven non-applicability. Unresolved authority, unupgradable L1 or an

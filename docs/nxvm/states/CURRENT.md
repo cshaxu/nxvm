@@ -25,11 +25,33 @@
 | T546 S19 | Complete implementation and verification are recorded by Shared `5773243d4` and NXVM `3458e01c8`: Core owns one interruptible external NPX wait path; `WAIT`/TEST/BUSY, ESC restart/trap and accepted IRQ/NMI wake use the guest-time owner with no synthetic FPU completion. Complete repository-only units pass 506/506 per width and eight 0546 artifacts are rebuilt. T546 remains open for S20-S23. |
 | T546 S20 | Accepted after actual-change review of Shared `2af784585` and NXVM `8aef7bea4`: the sole CPU timing selector now classifies transfer outcomes from pre-execution state, restores 80286 LEAVE and 80386 VM86 segment-POP source rows, and retains exact delayed retirement accounting. Focused owner gates, all family manifest runners, manifests and complete repository-only units pass 506/506 per width; eight rebuilt 0546 artifacts and identities are recorded in S20 evidence. T546 remains open for S21-S23. |
 | T546 S21 | Complete pending review: one private Core retirement-wait owner now consumes qualified external work for both successful retirement and fault delivery without publishing a synthetic retirement. Direct successful/faulted evidence, manifests and complete repository-only units pass 506/506 per width; eight rebuilt 0546 artifacts are recorded in S21 evidence. T546 remains open for S22-S23. |
+| T546 S22 | Complete pending review: all eighteen transferred receivers now map to S1-S21 owners or source-proven non-applicability. Five-family current timing corpora contain 4,842 rows with zero selected source-unallocated and zero failed entries; dual-width manifest runners pass. T546 remains open for final S23 qualification. |
 
 ## No Active S Packet
 
-T546 S21 awaits coordinator acceptance of its scoped Shared and NXVM P
-commits. T546 remains open for S22-S23.
+T546 S22 awaits coordinator acceptance of its NXVM documentation P. T546
+remains open only for S23 final qualification.
+
+## Closed Packet — M5 T546 S22 Cross-Family Convergence
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T546 remains the only open NXVM implementation task. |
+| Admission And Approval | Owner's standing automatic S admission and timing-upgrade approval; this is S22 of the accepted M5 T546 proposal. |
+| Objective | Reconcile every imported family/source/oracle finding with its final S1-S21 owner disposition; rescan legal successful timing routes for source-unallocated publication and identify any remaining unfixable L1 or source conflict. |
+| Non-goals | No unrelated code cleanup, new timing model, source-value averaging, Lib/Common/MyNES change, profile workaround, firmware/media/INI change or unapproved timing downgrade. |
+| Reference Baseline | Accepted S1-S20 and S21 commits `c7332bab5`/`7bde37ab2`; T544 convergence and full T546 ledger. |
+| Candidate Proposal | `proposals/m5-cpu-audit-gap-repair.md`, S22. |
+| Files And ABI Surface | Owner-local x86 timing/CPU/Core tests and NXVM evidence/state only; no public API or new state unless a confirmed remaining defect requires its existing owner. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source policies; T544/T546 source evidence. |
+| Verification | Five family timing-manifest runners on x64/x86; direct route/source-unallocated scan; relevant owner regressions and manifest/document checks. |
+| Expected Markers | Every imported receiver has an S1-S21 or source-proven non-applicable disposition; L2 models retain explicit evidence; no legal successful selected route silently publishes L1/source-unallocated time. |
+| Asset Needs | Existing build caches only; no external firmware/media input changes. |
+| Reporting Requirements | Record all eighteen receiver dispositions, any retained source conflicts and their no-invention rule, actual diff, verification and S23's remaining final-qualification boundary. |
+| Stop Conditions | Stop and report an unfixable L1, necessary downgrade, unresolved authority requiring policy, required non-x86 owner change or protected-asset need. |
+| Exit Criteria | Complete receiver map and current-source sweep distinguish repaired, explicit L2 and source-proven non-applicable outcomes; focused dual-width proof, manifests/evidence and scoped P commits complete. T546 remains open for S23. |
+| Original Owner Request | Repair the complete CPU semantic/timing gap universe before moving to unrelated work. |
+| Similar-Issue Sweep | Cross-reference T544's eighteen receivers, source-unallocated publishers, timing origins, test manifests and S1-S21 evidence; reject historical status as current evidence without a current route/result check. |
 
 ## Closed Packet — M5 T546 S21 Retirement/External Wait Accounting
 
