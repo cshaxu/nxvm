@@ -20,6 +20,7 @@ static lib_bool chord(const char *identifier, const lib_u16 *scan,
     lib_size index;
 
     event_count = 0u;
+    event_limit = sizeof(events) / sizeof(events[0]);
     if (!vm_app_keyboard_handle_hotkey((common_machine *)&events,
             COMMON_SESSION_MACHINE_RUNNING, (const lib_u8 *)identifier, &result) ||
         event_count != count * 2u) return LIB_FALSE;
@@ -35,6 +36,26 @@ static lib_bool chord(const char *identifier, const lib_u16 *scan,
     return LIB_TRUE;
 }
 
+static lib_bool chord_rejects_each_prefix(const char *identifier,
+    lib_size event_total)
+{
+    common_session_command_result result;
+    lib_size limit;
+
+    for (limit = 0u; limit < event_total; ++limit) {
+        event_count = 0u;
+        event_limit = limit;
+        result = (common_session_command_result){0};
+        if (vm_app_keyboard_handle_hotkey((common_machine *)&events,
+                COMMON_SESSION_MACHINE_RUNNING, (const lib_u8 *)identifier,
+                &result) || event_count != limit) {
+            return LIB_FALSE;
+        }
+    }
+    event_limit = sizeof(events) / sizeof(events[0]);
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
     const lib_u16 cad_scan[] = {0x1du, 0x38u, 0x153u};
@@ -44,13 +65,9 @@ lib_i32 main(void)
     common_session_command_result result;
 
     if (!chord("cad", cad_scan, cad_key, 3u) ||
-        !chord("alt-enter", enter_scan, enter_key, 2u)) return 1;
-    event_count = 0u;
-    event_limit = 5u;
-    if (vm_app_keyboard_handle_hotkey((common_machine *)&events,
-            COMMON_SESSION_MACHINE_RUNNING, (const lib_u8 *)"cad", &result) ||
-        event_count != 5u) return 1;
-    event_limit = 6u;
+        !chord("alt-enter", enter_scan, enter_key, 2u) ||
+        !chord_rejects_each_prefix("cad", 6u) ||
+        !chord_rejects_each_prefix("alt-enter", 4u)) return 1;
     if (!vm_app_keyboard_handle_hotkey(LIB_NULL, COMMON_SESSION_MACHINE_RUNNING,
             (const lib_u8 *)"pause", &result) ||
         result.request != COMMON_SESSION_REQUEST_PAUSE) return 1;
