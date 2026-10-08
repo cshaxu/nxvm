@@ -104,10 +104,12 @@ model.
   documented conforming/nonconforming and RPL/DPL relationships; null data
   selectors remain valid unavailable data caches.
 - Two-stage 286 and 386 regressions enter a Ring-3 task through their normal
-  DPL-0 TSS, then execute a direct far JMP with an RPL-3 selector to a DPL-3
-  TSS.  They prove the second switch uses the current incoming CPL and clears
-  the non-nested source TSS busy bit, rather than retaining the retired
-  CPL-0-only admission rule.
+  DPL-0 TSS, then execute a direct far JMP or CALL with an RPL-3 selector to a
+  DPL-3 TSS.  The JMP case proves the second switch uses the current incoming
+  CPL and clears the non-nested source TSS busy bit.  The CALL case proves the
+  same admission while retaining both busy descriptors, publishing the
+  backlink and setting NT.  Neither retains the retired CPL-0-only admission
+  rule.
 - The 16-bit image path preserves the old 80386 high-half fill for a 386
   16-bit TSS, but no longer applies it to a real 80286 register file.
 - Owner-local regressions now cover both 286 and 386 nonzero incoming CPL,
