@@ -23,6 +23,34 @@
 | T546 S17 | Accepted: Shared `de4185367` restores Intel-defined physical GDTR/IDTR table cycles, retains logical LDT/TSS references, and publishes PDE Accessed at the actual present-PDE walk. Direct owner regressions, manifests and complete repository-only units pass 506/506 per width; eight rebuilt 0546 PC artifacts and SHA-256 identities are recorded in S17 evidence. T546 remains open for S18-S23. |
 | T546 S18 | Accepted: Shared `5d6a73dec` makes early-family string handlers check each element before publishing repeat state, while the sourced 8086/8088 multi-prefix interrupt return rule is applied only at an accepted NMI/INTR boundary. Existing INS/OUTS commit ownership remains unchanged. Direct callback regression, x86 gates and complete repository-only units pass 506/506 per width; eight rebuilt 0546 PC artifacts are recorded in S18 evidence. T546 remains open for S19-S23. |
 
+## Active Packet — M5 T546 S19 CPU External/NPX/Bus
+
+- **Identifier mode:** Continuation. S19 follows accepted S18; T546 remains the
+  only open NXVM implementation task.
+- **Targets:** Shared source/test ownership and NXVM evidence/artifacts only.
+  Lib, Common, MyNES, user INIs, media and snapshots are excluded.
+- **Scope:** Establish the sourced CPU/Core contract for interruptible
+  `WAIT`/TEST/BUSY, ESC error/reference handling, 80186 escape input where
+  supported by authority, and the automatic/explicit LOCK interval. Retain one
+  Core arbitration and guest-time path; do not add BIOS shortcuts, host locks,
+  an x87 arithmetic implementation, or a second polling/executor path.
+- **Authorities:** `proposals/m5-cpu-audit-gap-repair.md` S19; the T546 history
+  ledger; `design/ARCHITECTURE.md`; `design/CODING.md`; rules Execution,
+  Architecture, Coding and Document; source policy; Intel 8086/8088, 80186 and
+  80286/80287 manuals recorded in S19 evidence. External emulators are
+  read-only L2 cross-checks, never imported source.
+- **Plan:** First complete source/caller/receiver audit and encode only the
+  required owner-local contract. Then add direct CPU/Core regressions covering
+  each implemented family and delivery boundary, perform the similar-issue
+  sweep, rebuild the eight receiving 0546 NXVM artifacts, run complete
+  repository-only units on x64 and x86, applicable x86/IBM-PC gates and the
+  NXVM documentation gate. Record exact source provenance, L3/L2 disposition,
+  artifacts and excluded inputs in S19 evidence.
+- **Exit:** Every admitted mechanism has a sourced disposition and a direct
+  owner regression; no unreported L1 remains in this batch. Close S19 only
+  after actual-diff review, pushed target-scoped P commits and the verification
+  above. T546 remains open for S20-S23.
+
 ## Accepted S9 Asynchronous Arbiter
 
 Coordinator actual-change review accepts Shared `746e3e214` and NXVM

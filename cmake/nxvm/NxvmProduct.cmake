@@ -1202,6 +1202,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-hdc-port-smoke
     vm-media-provider-smoke
     vm-media-direct-readonly-smoke
+    vm-media-close-failure-smoke
     vm-default-pc-at-apply-smoke
     vm-default-pc-at-rom-materialization-smoke
     vm-two-session-isolation-smoke

@@ -7,6 +7,10 @@ decision, but it cannot redefine current architecture, source layout, product
 UX, roadmap, rules, status, queue, or debt. Conflicts are resolved by the
 principal documents named in [the NXVM documentation guide](../README.md).
 
+T546 S19: [CPU external/NPX/Bus evidence](evidence/t546-s19-cpu-external-npx-bus.md)
+records the sourced interruptible `WAIT`/TEST/ESC ownership, L3/L2 timing
+disposition, direct receiver proof and excluded inputs.
+
 T540 S5: [neutral Core source cut](architecture/t540-s5-neutral-core-cut.md)
 maps the mixed executor/IBM-PC fields and ordered S6-S8 receivers; Current
 owns admission and status.
