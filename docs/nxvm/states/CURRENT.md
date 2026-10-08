@@ -23,27 +23,34 @@
 | T546 S17 | Accepted: Shared `de4185367` restores Intel-defined physical GDTR/IDTR table cycles, retains logical LDT/TSS references, and publishes PDE Accessed at the actual present-PDE walk. Direct owner regressions, manifests and complete repository-only units pass 506/506 per width; eight rebuilt 0546 PC artifacts and SHA-256 identities are recorded in S17 evidence. T546 remains open for S18-S23. |
 | T546 S18 | Accepted: Shared `5d6a73dec` makes early-family string handlers check each element before publishing repeat state, while the sourced 8086/8088 multi-prefix interrupt return rule is applied only at an accepted NMI/INTR boundary. Existing INS/OUTS commit ownership remains unchanged. Direct callback regression, x86 gates and complete repository-only units pass 506/506 per width; eight rebuilt 0546 PC artifacts are recorded in S18 evidence. T546 remains open for S19-S23. |
 | T546 S19 | Complete implementation and verification are recorded by Shared `5773243d4` and NXVM `3458e01c8`: Core owns one interruptible external NPX wait path; `WAIT`/TEST/BUSY, ESC restart/trap and accepted IRQ/NMI wake use the guest-time owner with no synthetic FPU completion. Complete repository-only units pass 506/506 per width and eight 0546 artifacts are rebuilt. T546 remains open for S20-S23. |
+| T546 S20 | Accepted after actual-change review of Shared `2af784585` and NXVM `8aef7bea4`: the sole CPU timing selector now classifies transfer outcomes from pre-execution state, restores 80286 LEAVE and 80386 VM86 segment-POP source rows, and retains exact delayed retirement accounting. Focused owner gates, all family manifest runners, manifests and complete repository-only units pass 506/506 per width; eight rebuilt 0546 artifacts and identities are recorded in S20 evidence. T546 remains open for S21-S23. |
+| T546 S21 | Complete pending review: one private Core retirement-wait owner now consumes qualified external work for both successful retirement and fault delivery without publishing a synthetic retirement. Direct successful/faulted evidence, manifests and complete repository-only units pass 506/506 per width; eight rebuilt 0546 artifacts are recorded in S21 evidence. T546 remains open for S22-S23. |
 
-## Active Packet — M5 T546 S20 Scalar/Formula/Transfer Timing
+## No Active S Packet
+
+T546 S21 awaits coordinator acceptance of its scoped Shared and NXVM P
+commits. T546 remains open for S22-S23.
+
+## Closed Packet — M5 T546 S21 Retirement/External Wait Accounting
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation; T546 remains the only open NXVM implementation task. |
-| Admission And Approval | Owner's standing approval for timing-accuracy upgrades; scope is S20 of the accepted M5 T546 proposal. |
-| Objective | Reconcile source-backed scalar, formula and transfer timing at the sole CPU selector. |
-| Non-goals | No Lib/Common/MyNES changes, board timing, host pacing, parallel timing model, user INI/media/snapshot changes or unapproved accuracy downgrade. |
-| Reference Baseline | Completed S19 commits `5773243d4` and `3458e01c8`; T544 retained CPU qualification ledger. |
-| Candidate Proposal | `proposals/m5-cpu-audit-gap-repair.md`, S20. |
-| Files And ABI Surface | `src/x86/chips/cpu/cpu_timing_model.c`; owner-local x86/App timing receivers; no public API or ABI change. |
-| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Document rules; architecture/coding authorities; source policy and the named Intel timing ledgers. |
-| Verification | Direct source-row regressions; 8088/80186/80286/80386 manifest runners; complete repository-only dual-width unit suite; relevant manifests and artifact checks. |
-| Expected Markers | Existing manifest `PASS` markers, non-unallocated direct timing results, and each receiving App's x64/x86 artifact identity checks. |
+| Admission And Approval | Owner's standing approval for timing-accuracy upgrades and automatic S admission; scope is S21 of the accepted M5 T546 proposal. |
+| Objective | Reconcile successful, faulted and asynchronous CPU execution with the one Core time publisher: preserve completed instruction context, publish qualified external wait/overlap once, and keep instruction, delivery and compatibility progress distinct. |
+| Non-goals | No Lib/Common/MyNES changes, board clock redesign, host pacing, parallel executor/time path, synthetic device duration, user INI/media/snapshot changes or unapproved timing downgrade. |
+| Reference Baseline | Accepted S20 commits `2af784585` and `8aef7bea4`; S19 external WAIT/NPX contract and T544 S2/S7 retirement-boundary evidence. |
+| Candidate Proposal | `proposals/m5-cpu-audit-gap-repair.md`, S21. |
+| Files And ABI Surface | Existing x86 Core/CPU retirement and scheduler owners plus owner-local tests/evidence; no new public API, second clock, lifecycle manager or board-specific exception. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding and Document rules; architecture/coding authorities; source policy; T544 S2/S7 and T546 S19 retirement/external-wait evidence. |
+| Verification | Direct successful, faulted, bus-not-ready, reset/pause/stop and accepted asynchronous-delivery regressions; x86/IBM PC owner gates; complete repository-only dual-width unit suite; manifests, evidence and affected artifact checks. |
+| Expected Markers | One retirement observation per completed instruction; no observation for faulted delivery; exact partition of CPU-retirement versus external-wait time; pending state cleared only at completed delivery/reset; no new L1 or synthetic physical publication. |
 | Asset Needs | Existing build caches and eight deployed 0546 PC artifact destinations only; no external firmware/media input changes. |
-| Reporting Requirements | Record source disposition, similar-path sweep, actual diff, separate Shared/NXVM P commits, verification and any remaining boundary. |
-| Stop Conditions | Stop and report any timing downgrade, unfixable L1, source conflict requiring a new model, protected-asset need or non-CPU owner change. |
-| Exit Criteria | Every admitted row has direct owner proof with no new unresolved L1; actual-diff review, required tests, manifests/evidence and pushed scoped P commits complete. T546 remains open for S21-S23. |
+| Reporting Requirements | Record every pending-retirement exit and its disposition, similar-path sweep, actual diff, separate Shared/NXVM P commits, verification and remaining source/time boundary. |
+| Stop Conditions | Stop and report any timing downgrade, unfixable L1, source conflict requiring a new model, protected-asset need, required Lib/Common change or non-CPU owner change. |
+| Exit Criteria | Every admitted successful/faulted/asynchronous pending-retirement variant has direct owner proof; no duplicated or synthetic time publication; actual-diff review, required tests, manifests/evidence and pushed scoped P commits complete. T546 remains open for S22-S23. |
 | Original Owner Request | Resume the NXVM CPU repair T after closing the preceding task; repair CPU semantics/timing thoroughly rather than switching work. |
-| Similar-Issue Sweep | Scan all five profile selectors and the retained compatibility recipe for final-PC branch inference, all segment POP timing paths, and every 80286 LEAVE/manifest consumer. |
+| Similar-Issue Sweep | Scan all Core paths touching `cpu_retirement_wait_*`, `external_cycle_round_ticks`, `publish_elapsed_ticks`, reset/stop/pause and CPU refresh/delivery outcomes; classify every wait/publication origin and each asynchronous entry before changing an owner. |
 
 ## Accepted S9 Asynchronous Arbiter
 
