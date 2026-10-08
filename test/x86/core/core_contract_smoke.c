@@ -49,6 +49,6 @@ lib_i32 main(void)
     }
 
     core_machine_destroy(machine);
-    lib_c_printf("M3:T1:S1:CORE-CONTRACT:OK\n");
+    lib_c_printf("CORE-CONTRACT:OK\n");
     return 0;
 }

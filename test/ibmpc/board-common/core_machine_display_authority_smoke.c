@@ -54,8 +54,8 @@ int main(void)
     }
     core_machine_destroy(machine);
     if (!failed) {
-        lib_c_printf("M5:T296:S2:DISPLAY-AUTHORITY:OK\n");
-        lib_c_printf("M5:T540:S84:BOARD-DISPLAY-HANDLE:OK\n");
+        lib_c_printf("DISPLAY-AUTHORITY:OK\n");
+        lib_c_printf("BOARD-DISPLAY-HANDLE:OK\n");
     }
     return failed;
 }

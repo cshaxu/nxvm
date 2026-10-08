@@ -1151,19 +1151,19 @@ lib_i32 main(void)
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
-        lib_c_fprintf(lib_c_stderr, "M5:T376:S4:8272A-SCAN:FAIL %x\n", failed);
+        lib_c_fprintf(lib_c_stderr, "8272A-SCAN:FAIL %x\n", failed);
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T283:S2:CORE-FDC-MEDIA:OK");
-    lib_c_printf("%s\n", "M5:T347:S2:FDC-SERVICE:OK");
-    lib_c_printf("%s\n", "M5:T375:S20:FDC-DMA-CADENCE:OK");
-    lib_c_printf("%s\n", "M5:T375:S24:FDC-NDMA-CADENCE:OK");
-    lib_c_printf("%s\n", "M5:T376:S3:8272A-DELETED-DATA:OK");
-    lib_c_printf("%s\n", "M5:T376:S4:8272A-SCAN:OK");
-    lib_c_printf("%s\n", "M5:T465:S2:FDC-reset:OK");
-    lib_c_printf("%s\n", "M5:T465:S3:FDC-8272-command:OK");
-    lib_c_printf("%s\n", "M5:T539:S12:FDC-readiness-matrix:OK");
-    lib_c_printf("%s\n", "M5:T539:S12:FDC-ST0-identity:OK");
-    lib_c_printf("%s\n", "M5:T539:S12:FDC-PCN-Track0-READY:OK");
+    lib_c_printf("%s\n", "CORE-FDC-MEDIA:OK");
+    lib_c_printf("%s\n", "FDC-SERVICE:OK");
+    lib_c_printf("%s\n", "FDC-DMA-CADENCE:OK");
+    lib_c_printf("%s\n", "FDC-NDMA-CADENCE:OK");
+    lib_c_printf("%s\n", "8272A-DELETED-DATA:OK");
+    lib_c_printf("%s\n", "8272A-SCAN:OK");
+    lib_c_printf("%s\n", "FDC-reset:OK");
+    lib_c_printf("%s\n", "FDC-8272-command:OK");
+    lib_c_printf("%s\n", "FDC-readiness-matrix:OK");
+    lib_c_printf("%s\n", "FDC-ST0-identity:OK");
+    lib_c_printf("%s\n", "FDC-PCN-Track0-READY:OK");
     return 0;
 }

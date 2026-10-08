@@ -10,7 +10,7 @@ typedef struct cpu_profile_machine {
     core_machine *machine;
 } cpu_profile_machine;
 
-/* T337_REAL_UD_TERMINAL_IVT_REJECT: fault cases make the IVT route
+/* REAL_UD_TERMINAL_IVT_REJECT: fault cases make the IVT route
  * unavailable, without changing CPU IDTR. */
 static lib_i32 prepare_machine(core_machine_cpu_profile profile,
     cpu_profile_machine *state, lib_bool terminal_ud)
@@ -154,6 +154,6 @@ lib_i32 main(void)
     failed |= run_case(CORE_MACHINE_CPU_PROFILE_80286, fs_prefix, sizeof(fs_prefix), 1);
     failed |= run_case(CORE_MACHINE_CPU_PROFILE_80286, jcc_near, sizeof(jcc_near), 1);
     if (failed) return 1;
-    lib_c_printf("M5:T155:S1:CPU-PROFILE-GATE:OK\n");
+    lib_c_printf("CPU-PROFILE-GATE:OK\n");
     return 0;
 }

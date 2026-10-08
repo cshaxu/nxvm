@@ -417,19 +417,19 @@ lib_i32 main(void)
         plan_source_dma_deadline_is_schedulable()) {
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T434:S1:PLAN-DECLARATIONS:OK");
-    lib_c_printf("%s\n", "M5:T434:S1:PLAN-VALIDATION:OK");
-    lib_c_printf("%s\n", "M5:T434:S1:PLAN-COPY:OK");
-    lib_c_printf("%s\n", "M5:T434:S2:ROLLBACK-EQUIVALENCE:OK");
-    lib_c_printf("%s\n", "M5:T434:S3:ALL-DECLARATIONS:OK");
-    lib_c_printf("%s\n", "M5:T449:S2:TRANSACTION-CONTRACT:OK");
-    lib_c_printf("%s\n", "M5:T462:S2:CONTROLLER-RULE-PLAN:OK");
-    lib_c_printf("%s\n", "M5:T462:S2:CONTROLLER-RULE-REJECTION:OK");
-    lib_c_printf("%s\n", "M5:T462:S4:PIC-L2-BOUNDARY:OK");
-    lib_c_printf("%s\n", "M5:T462:S4:CONTROLLER-LEDGER-CLOSURE:OK");
-    lib_c_printf("%s\n", "M5:T484:S5:XT-B2-PLAN:OK");
-    lib_c_printf("%s\n", "M5:T484:S5:XT-NO-AT-TOPOLOGY:OK");
-    lib_c_printf("%s\n", "M5:T499:S3:L2-PIT-DEADLINE:OK");
-    lib_c_printf("%s\n", "M5:T540:S81:BOARD-HANDLE-PUBLICATION:OK");
+    lib_c_printf("%s\n", "PLAN-DECLARATIONS:OK");
+    lib_c_printf("%s\n", "PLAN-VALIDATION:OK");
+    lib_c_printf("%s\n", "PLAN-COPY:OK");
+    lib_c_printf("%s\n", "ROLLBACK-EQUIVALENCE:OK");
+    lib_c_printf("%s\n", "ALL-DECLARATIONS:OK");
+    lib_c_printf("%s\n", "TRANSACTION-CONTRACT:OK");
+    lib_c_printf("%s\n", "CONTROLLER-RULE-PLAN:OK");
+    lib_c_printf("%s\n", "CONTROLLER-RULE-REJECTION:OK");
+    lib_c_printf("%s\n", "PIC-L2-BOUNDARY:OK");
+    lib_c_printf("%s\n", "CONTROLLER-LEDGER-CLOSURE:OK");
+    lib_c_printf("%s\n", "XT-B2-PLAN:OK");
+    lib_c_printf("%s\n", "XT-NO-AT-TOPOLOGY:OK");
+    lib_c_printf("%s\n", "L2-PIT-DEADLINE:OK");
+    lib_c_printf("%s\n", "BOARD-HANDLE-PUBLICATION:OK");
     return 0;
 }

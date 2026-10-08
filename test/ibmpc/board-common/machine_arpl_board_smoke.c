@@ -283,10 +283,10 @@ lib_i32 main(void)
     lib_i32 irq = arpl_board_irq();
 
     if (!memory || !limit || !irq) {
-        lib_c_fprintf(lib_c_stderr, "M5:T539:S40:ARPL board failed memory=%d limit=%d irq=%d\n",
+        lib_c_fprintf(lib_c_stderr, "ARPL board failed memory=%d limit=%d irq=%d\n",
             memory, limit, irq);
         return 1;
     }
-    lib_c_printf("M5:T539:S40:ARPL-BOARD:OK\n");
+    lib_c_printf("ARPL-BOARD:OK\n");
     return 0;
 }

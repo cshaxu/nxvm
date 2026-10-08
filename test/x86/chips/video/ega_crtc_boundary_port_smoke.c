@@ -3,10 +3,10 @@
 #include "lib/types/file.h"
 
 
-#define T314_CRTC_ADJACENT_INDEX 0x12u
+#define _CRTC_ADJACENT_INDEX 0x12u
 
-_Static_assert(T314_CRTC_ADJACENT_INDEX < X86_VIDEO_CRTC_REGISTER_COUNT,
-    "T314 adjacent CRTC test index must fit the VADP CRTC register bank");
+_Static_assert(_CRTC_ADJACENT_INDEX < X86_VIDEO_CRTC_REGISTER_COUNT,
+    "adjacent CRTC test index must fit the VADP CRTC register bank");
 
 static void core_machine_ega_crtc_write(x86_video *port, lib_u8 index,
     lib_u8 value)
@@ -63,14 +63,14 @@ lib_i32 main(void)
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR, 0x35u);
     mode = video_test_read(vadp, X86_VIDEO_REGISTER_MODE);
     color = video_test_read(vadp, X86_VIDEO_REGISTER_COLOR);
-    vadp->data.crtc[T314_CRTC_ADJACENT_INDEX] = 0x5du;
+    vadp->data.crtc[_CRTC_ADJACENT_INDEX] = 0x5du;
     core_machine_ega_crtc_write(vadp, 0x01u, 0x4fu);
     core_machine_ega_crtc_write(vadp, 0x07u, 0x02u);
     core_machine_ega_crtc_write(vadp, 0x13u, 0x28u);
 
     failed |= core_machine_ega_crtc_read(vadp, 0x13u) != 0u ||
         vadp->data.crtc[0x13u] != 0x28u ||
-        vadp->data.crtc[T314_CRTC_ADJACENT_INDEX] != 0x5du ||
+        vadp->data.crtc[_CRTC_ADJACENT_INDEX] != 0x5du ||
         video_test_read(vadp, X86_VIDEO_REGISTER_MODE) != mode ||
         video_test_read(vadp, X86_VIDEO_REGISTER_COLOR) != color;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
@@ -103,9 +103,9 @@ lib_i32 main(void)
 
     x86_video_destroy(vadp);
     if (failed) {
-        lib_c_fprintf(lib_c_stderr, "M5:T314:S2:EGA-CRTC-BOUNDARY:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "EGA-CRTC-BOUNDARY:FAIL\n");
         return 1;
     }
-    lib_c_printf("M5:T314:S2:EGA-CRTC-BOUNDARY:OK\n");
+    lib_c_printf("EGA-CRTC-BOUNDARY:OK\n");
     return 0;
 }

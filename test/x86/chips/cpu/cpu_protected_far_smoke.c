@@ -148,7 +148,7 @@ int main(void)
 {
     if (!pft_run_forms(CORE_MACHINE_CPU_PROFILE_80286) || !pft_run_forms(CORE_MACHINE_CPU_PROFILE_80386) ||
         !pft_run_386_forms() || !pft_descriptor_and_rollback()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S53:CPU-PROTECTED-FAR:FAIL\n"); return 1;
+        lib_c_fprintf(lib_c_stderr, "%s", "CPU-PROTECTED-FAR:FAIL\n"); return 1;
     }
-    lib_c_printf("%s\n", "M5:T323:S1:PROTECTED-FAR:OK"); lib_c_printf("%s\n", "M5:T539:S53:CPU-PROTECTED-FAR:OK"); return 0;
+    lib_c_printf("%s\n", "PROTECTED-FAR:OK"); lib_c_printf("%s\n", "CPU-PROTECTED-FAR:OK"); return 0;
 }

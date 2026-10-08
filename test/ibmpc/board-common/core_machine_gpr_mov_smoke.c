@@ -190,9 +190,9 @@ lib_i32 main(void)
 {
     if (!gpr_mov_test_protected_limit() ||
         !gpr_mov_test_irq_no_shadow()) return 1;
-    lib_c_printf("M5:T316:S31:GPR-MOV:OK\n");
-    lib_c_printf("M5:T401:S13:IMMEDIATE-REGISTER-MOV-PROFILES:OK\n");
-    lib_c_printf("M5:T401:S47:GPR-MOV-MODRM-PROFILES:OK\n");
-    lib_c_printf("M5:T401:S58:RM-IMMEDIATE-MOV-PROFILES:OK\n");
+    lib_c_printf("GPR-MOV:OK\n");
+    lib_c_printf("IMMEDIATE-REGISTER-MOV-PROFILES:OK\n");
+    lib_c_printf("GPR-MOV-MODRM-PROFILES:OK\n");
+    lib_c_printf("RM-IMMEDIATE-MOV-PROFILES:OK\n");
     return 0;
 }

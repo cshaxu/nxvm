@@ -2,31 +2,32 @@
 
 ## Current Work
 
-## Active Packet — M5 T547 S2 Shared Four-Package Test Stability
+## Active Packet — M5 T547 S3 Shared Test Semantic Naming
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T547 S2. |
-| Admission And Approval | Owner admitted S2 on 2026-10-08 after S1 delivered the eight-component reconciliation but did not yet establish a complete stable dual-width four-package aggregate. |
-| Objective | Make each shared test package (`lib`, `common`, `x86`, `ibmpc`) independently complete and reproducibly runnable on x64 and x86. |
-| Non-goals | No CPU/device behavior change, firmware/media/INI/App/MyNES artifact change, retry loop, sleep-based stabilization, test weakening, timeout extension or framework/manager addition. Source changes require a demonstrated production defect and an owner report before they are made. |
-| Reference Baseline | Pushed Shared S1 reconciliation `26c013bba`; current NXVM worktree with user-owned MyNES artifacts excluded. |
-| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S2. |
-| Files And ABI Surface | `cmake/nxvm/NxvmProduct.cmake` only for the aggregate's proven safe parallelism, `test/register.cmake`, the four shared test roots and their manifests/evidence. A shared production path is out of scope unless a current failure proves it is the sole owner; that condition must be reported before edit. No public ABI. |
+| Identifier Mode | Continuation T547 S3. |
+| Admission And Approval | Owner directed semantic cleanup of hacky task-derived shared test names on 2026-10-08; standing automatic S admission applies. |
+| Objective | Make all current shared-test identities describe owned behavior rather than historical T/S work identifiers. |
+| Non-goals | No CPU/device behavior, test coverage, ownership relocation, public API, firmware/media/INI/App/MyNES artifact, retry or timing change. |
+| Reference Baseline | Pushed S2 stability closure `70bb50312`; user-owned rebuilt MyNES EXEs remain outside this Shared scope. |
+| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S3. |
+| Files And ABI Surface | `test/{lib,common,x86,ibmpc}` registrations, test source names/symbols/markers and their manifests, plus NXVM task evidence/state. No production source or public ABI. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding and Documentation rules; each package manifest/registration boundary; S1 import evidence. |
-| Verification | Fresh/configured x64 and x86 test-package builds; one registered aggregate per package/width after structural repair; focused native-desktop proof only when diagnosing its actual owner; all eight manifests and package boundary gates. |
-| Expected Markers | No stale fixture leakage, no accidental cross-test scratch sharing, no broad desktop serialization, complete result for every registered test including Types layout self-test, and no test-only bypass of an actual product defect. |
+| Verification | Fresh x64/x86 four-package builds, affected package aggregates, manifest/boundary checks, and a static inventory showing no task-derived identity in current shared test source or registration. |
+| Expected Markers | Behavior-derived filenames, targets, symbols and output markers; historical task identifiers only in documentation/evidence; unchanged owned test coverage. |
 | Asset Needs | None. Repository-only tests use no firmware, ROM, media, INI, font or user snapshot. |
-| Reporting Requirements | Record package/width counts, fixture/resource ownership, actual failures versus host execution limits, all test-file diff counts, and any production defect separately. Do not present a focused rerun or incomplete aggregate as a completed package proof. |
-| Stop Conditions | Stop for a demonstrated production defect, test reduction that loses owner coverage, a need to change App/MyNES content, a new public API, or an unresolved host capability that cannot be modeled by the existing test contract. |
-| Exit Criteria | Each of the four package aggregates completes once with zero failed/not-run tests on x64 and x86; manifests/boundaries pass; no remaining native-test intermittency is masked by retry; any long static test completes within its own correct test path rather than an external orchestration cap. |
-| Original Owner Request | All four shared component test packages must run stably. |
-| Similar-Issue Sweep | Inspect every package's CTest registration, work-directory allocation, resource locks, fixture cleanup and static self-test invocation; classify every hit as fixed, not applicable or retained with evidence. |
+| Reporting Requirements | Record the package inventory, every renamed test identity, actual source/test diff counts, and Lib/Common no-change audit. Do not claim a test-only rename changes production behavior. |
+| Stop Conditions | Stop for any needed ownership relocation, behavior/test assertion change, production/App/MyNES change, public API, or ambiguity that cannot be resolved from the test's owned behavior. |
+| Exit Criteria | All four roots are audited; no current task-derived test identity remains; semantic registrations/manifests match; dual-width affected package verification and required unit suite pass. |
+| Original Owner Request | Replace hacky historical task names in shared tests with behavior-derived names. |
+| Similar-Issue Sweep | Search all four source, registration and manifest trees for task/milestone identifiers; remove current-source hits or classify a semantic non-task occurrence with evidence. |
 
 | Work | Progress |
 | --- | --- |
 | T547 S1 | Implementation P complete and pushed as `26c013bba`: current SoftPC differences were reconciled, native-test isolation imported, NXVM's later x86/IBM PC repairs retained, and the stale x86 negative fixture fixed. Its incomplete aggregate/stability evidence is explicitly continued by S2. |
 | T547 S2 | Complete: pushed as `70bb50312`. The aggregate default is reduced from 8 to the evidence-backed safe 4 jobs, without changing individual budgets or assertions. One complete x64/x86 run of each shared package passes: Lib 51/51, Common 20/20, x86 182/182 and IBM PC 182/182; complete repository-only units pass 506/506 per width. See `etc/evidence/t547-s2-shared-test-stability.md`. |
+| T547 S3 | Active: semantic naming cleanup of the four shared test packages. |
 | T544 | Closed as CPU audit; complete repair/proof findings transferred to the first queued proposal, not claimed repaired. |
 | M5 Td S177 | Complete: CPU audit closure and full repair transfer, archive/queue/reference reconciliation. |
 | T545 | Closed after S7 actual-change acceptance: fixed eight-corpus import, preserved receivers, four owner-local test packages and full receiving qualification. No active S packet. |

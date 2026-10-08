@@ -739,7 +739,7 @@ static lib_i32 timing_8086_test_fallback_fault_budget_and_overflow(void)
             result.ticks != 0u || result.elapsed_ticks != 0u ||
             state.advanced_ticks != 0u;
     }
-    /* T337_REAL_UD_TERMINAL_IVT_REJECT: vector 6 cannot be read. */
+    /* REAL_UD_TERMINAL_IVT_REJECT: vector 6 cannot be read. */
     if (!failed) {
         failed |= !timing_8086_load(machine, fault, sizeof(fault)) ||
             core_machine_run(machine, one, &result) != LIB_STATUS_INTERNAL_ERROR ||
@@ -785,10 +785,10 @@ lib_i32 main(void)
         timing_8086_test_fallback_fault_budget_and_overflow() ? 10 : 0;
 
     if (failure != 0) {
-        lib_c_printf("M5:T357:S4:8086-INSTRUCTION-TIMING-LEDGER:FAIL:%d\n",
+        lib_c_printf("8086-INSTRUCTION-TIMING-LEDGER:FAIL:%d\n",
             failure);
         return failure;
     }
-    lib_c_printf("M5:T357:S4:8086-INSTRUCTION-TIMING-LEDGER:OK\n");
+    lib_c_printf("8086-INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

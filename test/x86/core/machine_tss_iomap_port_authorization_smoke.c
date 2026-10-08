@@ -254,7 +254,7 @@ static lib_i32 iomap_run_case(core_machine_cpu_profile profile, iomap_case test_
         }
         if (failed) {
             lib_c_fprintf(lib_c_stderr,
-                "T260 case=%u result=%u reads=%u writes=%u marker=%04x/%04x/%04x delivered=%d/%u code=%04x\n",
+                "case=%u result=%u reads=%u writes=%u marker=%04x/%04x/%04x delivered=%d/%u code=%04x\n",
                 (unsigned)test_case, (unsigned)result.reason,
                 (unsigned)state.port.reads, (unsigned)state.port.writes,
                 marker[0], marker[1], marker[2],
@@ -283,7 +283,7 @@ int main(void)
     failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80286,
         IOMAP_CASE_DENY_IN);
     if (failed) return 1;
-    lib_c_printf("M5:T260:S3:TSS-IOMAP:CORPUS:OK\n");
-    lib_c_printf("M5:T539:S63:TSS-IOMAP:OK\n");
+    lib_c_printf("TSS-IOMAP:CORPUS:OK\n");
+    lib_c_printf("TSS-IOMAP:OK\n");
     return 0;
 }

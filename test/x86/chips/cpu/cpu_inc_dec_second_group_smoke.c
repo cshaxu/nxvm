@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: original invalid forms stay CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: original invalid forms stay CPU-owned. */
 
 #define INC_DEC_MEMORY 0x5000u
 #define TEST_DEFINED_FLAGS (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | \
@@ -691,13 +691,13 @@ int main(void)
         !inc_dec_test_adc_attribute_profile_fault() ||
         !inc_dec_test_sbb_forms() ||
         !inc_dec_test_sbb_boundaries()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S34:CPU-TEST-ADD-ADC-SBB:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "CPU-TEST-ADD-ADC-SBB:FAIL\n");
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T316:S7:TEST-RM-REG:OK");
-    lib_c_printf("%s\n", "M5:T316:S8:ADD:OK");
-    lib_c_printf("%s\n", "M5:T316:S9:ADC:OK");
-    lib_c_printf("%s\n", "M5:T316:S10:SBB:OK");
-    lib_c_printf("%s\n", "M5:T539:S34:CPU-TEST-ADD-ADC-SBB:OK");
+    lib_c_printf("%s\n", "TEST-RM-REG:OK");
+    lib_c_printf("%s\n", "ADD:OK");
+    lib_c_printf("%s\n", "ADC:OK");
+    lib_c_printf("%s\n", "SBB:OK");
+    lib_c_printf("%s\n", "CPU-TEST-ADD-ADC-SBB:OK");
     return 0;
 }

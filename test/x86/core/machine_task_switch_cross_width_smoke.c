@@ -26,7 +26,7 @@ typedef enum task_switch_case {
     TASK_SWITCH_CASE_SHORT_TSS,
     TASK_SWITCH_CASE_STACK_LIMIT,
     TASK_SWITCH_CASE_INDIRECT_SUCCESS,
-    /* S65's 80386 timing includer still uses these construction recipes. */
+    /* 80386 timing includer still uses these construction recipes. */
     TASK_SWITCH_CASE_OPERAND32_SUCCESS,
     TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS,
     TASK_SWITCH_CASE_INDIRECT_ADDRESS32_SUCCESS,
@@ -536,16 +536,16 @@ int main(void)
     failed |= task_switch_expect_t330_32_to_16(LIB_TRUE, LIB_FALSE,
         LIB_TRUE);
     if (failed) return 1;
-    lib_c_printf("M5:T261:S2:TASK-SWITCH:OK\n");
-    lib_c_printf("M5:T261:S3:TASK-SWITCH:CORPUS:OK\n");
-    lib_c_printf("M5:T261:S5:SS-CACHE:OK\n");
-    lib_c_printf("M5:T329:S1:TSS16-JMP:OK\n");
-    lib_c_printf("M5:T329:S2:TSS32-JMP:OK\n");
-    lib_c_printf("M5:T329:S3:TSS32-IMAGE:OK\n");
-    lib_c_printf("M5:T329:S4:TSS-CALL-GATE:OK\n");
-    lib_c_printf("M5:T329:S5:TASK-RETURN:OK\n");
-    lib_c_printf("M5:T329:S6:TASK-LDT:OK\n");
-    lib_c_printf("M5:T330:S1:TASK-TRANSITION:OK\n");
-    lib_c_printf("M5:T539:S62:TASK-CROSS-WIDTH:OK\n");
+    lib_c_printf("TASK-SWITCH:OK\n");
+    lib_c_printf("TASK-SWITCH:CORPUS:OK\n");
+    lib_c_printf("SS-CACHE:OK\n");
+    lib_c_printf("TSS16-JMP:OK\n");
+    lib_c_printf("TSS32-JMP:OK\n");
+    lib_c_printf("TSS32-IMAGE:OK\n");
+    lib_c_printf("TSS-CALL-GATE:OK\n");
+    lib_c_printf("TASK-RETURN:OK\n");
+    lib_c_printf("TASK-LDT:OK\n");
+    lib_c_printf("TASK-TRANSITION:OK\n");
+    lib_c_printf("TASK-CROSS-WIDTH:OK\n");
     return 0;
 }

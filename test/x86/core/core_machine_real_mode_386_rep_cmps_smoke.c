@@ -6,13 +6,13 @@
 #include "x86/core/memory_interface.h"
 #include "memory_alias_fixture.h"
 
-#define T292_RESET_LINEAR 0xfffffff0u
-#define T292_RESET_PHYSICAL 0x000ffff0u
-#define T292_RESET_WINDOW 16u
-#define T292_SOURCE 0x0001fffdu
-#define T292_DESTINATION 0x0002fffdu
+#define _RESET_LINEAR 0xfffffff0u
+#define _RESET_PHYSICAL 0x000ffff0u
+#define _RESET_WINDOW 16u
+#define _SOURCE 0x0001fffdu
+#define _DESTINATION 0x0002fffdu
 
-static lib_i32 t292_prepare(core_machine_cpu_profile profile, core_machine **out_machine)
+static lib_i32 _prepare(core_machine_cpu_profile profile, core_machine **out_machine)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -25,11 +25,11 @@ static lib_i32 t292_prepare(core_machine_cpu_profile profile, core_machine **out
 
     if (out_machine == LIB_NULL || core_machine_neutral_create(&config, &machine) !=
             LIB_STATUS_OK || test_core_machine_fixture_register_reset_mapping(
-            machine, T292_RESET_LINEAR,
-            T292_RESET_PHYSICAL, T292_RESET_WINDOW) != LIB_STATUS_OK ||
+            machine, _RESET_LINEAR,
+            _RESET_PHYSICAL, _RESET_WINDOW) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_memory_write(machine, T292_RESET_LINEAR, reset_jump,
+        core_machine_memory_write(machine, _RESET_LINEAR, reset_jump,
             sizeof(reset_jump)) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 0;
@@ -75,13 +75,13 @@ int main(void)
     core_machine_cpu_diagnostic diagnostic;
     core_machine_debug_cpu_snapshot snapshot;
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !t292_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine);
+    lib_i32 failed = !_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine);
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
-                LIB_STATUS_OK || core_machine_memory_write(machine, T292_SOURCE,
+                LIB_STATUS_OK || core_machine_memory_write(machine, _SOURCE,
                 source, sizeof(source)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, T292_DESTINATION, destination,
+            core_machine_memory_write(machine, _DESTINATION, destination,
                 sizeof(destination)) != LIB_STATUS_OK ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -97,10 +97,10 @@ int main(void)
     core_machine_destroy(machine);
     machine = LIB_NULL;
     if (!failed) {
-        failed |= !t292_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine) ||
+        failed |= !_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine) ||
             core_machine_memory_write(machine, 0u, scas_program,
                 sizeof(scas_program)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, T292_SOURCE, scas_bytes,
+            core_machine_memory_write(machine, _SOURCE, scas_bytes,
                 sizeof(scas_bytes)) != LIB_STATUS_OK ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -115,7 +115,7 @@ int main(void)
     core_machine_destroy(machine);
     machine = LIB_NULL;
     if (!failed) {
-        failed |= !t292_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine) ||
+        failed |= !_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine) ||
             core_machine_memory_write(machine, 0u, segment_program,
                 sizeof(segment_program)) != LIB_STATUS_OK ||
             /* 80386 real mode still limits every segment offset to FFFFh.
@@ -125,7 +125,7 @@ int main(void)
                 sizeof(segment_source)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x00011000u, segment_default,
                 sizeof(segment_default)) != LIB_STATUS_OK ||
-            core_machine_memory_write(machine, T292_DESTINATION, segment_destination,
+            core_machine_memory_write(machine, _DESTINATION, segment_destination,
                 sizeof(segment_destination)) != LIB_STATUS_OK ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -140,6 +140,6 @@ int main(void)
     }
     core_machine_destroy(machine);
     if (failed) return 1;
-    lib_c_printf("%s\n", "M5:T292:S1:REP-STRING:OK");
+    lib_c_printf("%s\n", "REP-STRING:OK");
     return 0;
 }

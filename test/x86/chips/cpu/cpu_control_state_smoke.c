@@ -600,6 +600,6 @@ int main(void)
         lib_c_printf("control-state stage=hlt-privilege-storage\n");
         return 1;
     }
-    lib_c_printf("M5:T539:S45:CONTROL-STATE:OK\n");
+    lib_c_printf("CONTROL-STATE:OK\n");
     return 0;
 }

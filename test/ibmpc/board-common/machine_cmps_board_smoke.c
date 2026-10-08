@@ -235,6 +235,6 @@ lib_i32 main(void)
         lib_c_printf("CMPS board fault/IRQ failed\n");
         return 1;
     }
-    lib_c_printf("M5:T539:S38:CMPS-BOARD:OK\n");
+    lib_c_printf("CMPS-BOARD:OK\n");
     return 0;
 }

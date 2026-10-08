@@ -267,6 +267,6 @@ lib_i32 main(void)
     CHECK(port_strings_board_protected(LIB_TRUE, LIB_TRUE));
     CHECK(port_strings_board_protected(LIB_FALSE, LIB_TRUE));
 #undef CHECK
-    lib_c_printf("M5:T539:S39:PORT-STRINGS-BOARD:OK\n");
+    lib_c_printf("PORT-STRINGS-BOARD:OK\n");
     return 0;
 }

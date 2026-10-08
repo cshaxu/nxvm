@@ -257,10 +257,10 @@ lib_i32 main(void)
     failed |= core_machine_port_probe_fdc_write_conflict_is_retained();
     if (failed) {
         lib_c_fprintf(lib_c_stderr,
-            "M5:T300:S1:PORT-OWNERSHIP:FAIL reads=%u writes=%u\n",
+            "PORT-OWNERSHIP:FAIL reads=%u writes=%u\n",
             port_state.reads, port_state.writes);
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T300:S1:PORT-OWNERSHIP:OK");
+    lib_c_printf("%s\n", "PORT-OWNERSHIP:OK");
     return 0;
 }

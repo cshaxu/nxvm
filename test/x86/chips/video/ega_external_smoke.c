@@ -116,12 +116,12 @@ lib_i32 main(void)
 
     x86_video_destroy(vadp);
     if (failed) {
-        lib_c_fprintf(lib_c_stderr, "M5:T466:S2:EGA-EXTERNAL-PORT:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "EGA-EXTERNAL-PORT:FAIL\n");
         return 1;
     }
-    lib_c_printf("M5:T466:S2:EGA-EXTERNAL-PORT:OK\n");
-    lib_c_printf("M5:T480:S4:DAC:OK\n");
-    lib_c_printf("M5:T480:S4:CHAIN4:OK\n");
-    lib_c_printf("M5:T480:S4:SNAPSHOT:OK\n");
+    lib_c_printf("EGA-EXTERNAL-PORT:OK\n");
+    lib_c_printf("DAC:OK\n");
+    lib_c_printf("CHAIN4:OK\n");
+    lib_c_printf("SNAPSHOT:OK\n");
     return 0;
 }

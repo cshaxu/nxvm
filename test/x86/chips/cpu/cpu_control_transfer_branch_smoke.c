@@ -306,9 +306,9 @@ int main(void)
     if (!control_transfer_test_loop_and_jcxz()) goto fail_loop;
     if (!control_transfer_test_386_address_forms()) goto fail_address;
     if (!control_transfer_test_fault_atomicity_and_profile()) goto fail_fault;
-    lib_c_printf("%s\n", "M5:T401:S43:LOOP-JCXZ-PROFILES:OK");
-    lib_c_printf("%s\n", "M5:T401:S59:NEAR-JCC-PROFILES:OK");
-    lib_c_printf("%s\n", "M5:T539:S49:CPU-CONTROL-TRANSFER-BRANCH:OK");
+    lib_c_printf("%s\n", "LOOP-JCXZ-PROFILES:OK");
+    lib_c_printf("%s\n", "NEAR-JCC-PROFILES:OK");
+    lib_c_printf("%s\n", "CPU-CONTROL-TRANSFER-BRANCH:OK");
     return 0;
 
 fail_short_jcc:
@@ -326,6 +326,6 @@ fail_address:
 fail_fault:
     lib_c_fprintf(lib_c_stderr, "%s", "fault: ");
 fail:
-    lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S49:CPU-CONTROL-TRANSFER-BRANCH:FAIL\n");
+    lib_c_fprintf(lib_c_stderr, "%s", "CPU-CONTROL-TRANSFER-BRANCH:FAIL\n");
     return 1;
 }

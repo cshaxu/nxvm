@@ -134,7 +134,7 @@ static lib_i32 shift_test_count_zero(void)
     return 1;
 }
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: unsupported-profile #UD is CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: unsupported-profile #UD is CPU-owned. */
 static lib_i32 shift_test_profile(void)
 {
     static const lib_u8 code[] = {0x0fu, 0xa4u, 0xc8u, 1u};
@@ -201,6 +201,6 @@ lib_i32 main(void)
 {
     if (!shift_test_forms() || !shift_test_count_zero() ||
         !shift_test_profile() || !shift_test_undefined_capture()) return 1;
-    lib_c_printf("M5:T539:S30:CPU-DOUBLE-SHIFT:OK\n");
+    lib_c_printf("CPU-DOUBLE-SHIFT:OK\n");
     return 0;
 }

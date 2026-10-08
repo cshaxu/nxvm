@@ -218,6 +218,6 @@ lib_i32 main(void)
         lib_c_printf("Scalar port I/O board delivery failed\n");
         return 1;
     }
-    lib_c_printf("M5:T539:S39:PORT-IO-BOARD:OK\n");
+    lib_c_printf("PORT-IO-BOARD:OK\n");
     return 0;
 }

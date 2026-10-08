@@ -108,7 +108,7 @@ static lib_i32 setcc_test_prefix_forms(void)
     return 1;
 }
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: SETcc before 386 is CPU-owned #UD. */
+/* REAL_UD_TERMINAL_CPU_OWNER: SETcc before 386 is CPU-owned #UD. */
 static lib_i32 setcc_test_pre_fault_nonpublication(void)
 {
     static const lib_u8 ud_code[] = {0x0fu, 0x94u, 0xc0u};
@@ -126,6 +126,6 @@ lib_i32 main(void)
     if (!setcc_test_register_conditions() ||
         !setcc_test_memory_conditions() || !setcc_test_prefix_forms() ||
         !setcc_test_pre_fault_nonpublication()) return 1;
-    lib_c_printf("M5:T539:S30:CPU-SETCC:OK\n");
+    lib_c_printf("CPU-SETCC:OK\n");
     return 0;
 }

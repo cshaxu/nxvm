@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static lib_i32 lfg_test_real(void)
 {
     static const lib_u8 op[] = { 0xb2u, 0xb4u, 0xb5u };
@@ -257,6 +257,6 @@ lib_i32 main(void)
     }
     if (!lfg_test_source_fault_atomicity())
         return 1;
-    lib_c_printf("M5:T316:S24:LSS-LFS-LGS:OK\n");
+    lib_c_printf("LSS-LFS-LGS:OK\n");
     return 0;
 }

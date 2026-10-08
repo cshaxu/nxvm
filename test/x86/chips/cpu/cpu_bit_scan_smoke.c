@@ -1,7 +1,7 @@
 #include "support/cpu_operand_probe_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: unsupported-profile #UD is CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: unsupported-profile #UD is CPU-owned. */
 static lib_i32 scan_test_forms(void)
 {
     static const lib_u8 opcodes[] = { 0xbcu, 0xbdu };
@@ -146,6 +146,6 @@ static lib_bool scan_test_single_bits(void)
 lib_i32 main(void)
 {
     if (!scan_test_forms() || !scan_test_profile() || !scan_test_single_bits()) return 1;
-    lib_c_printf("M5:T539:S30:CPU-BIT-SCAN:OK\n");
+    lib_c_printf("CPU-BIT-SCAN:OK\n");
     return 0;
 }

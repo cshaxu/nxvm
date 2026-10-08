@@ -308,8 +308,8 @@ lib_i32 main(void)
         lib_c_printf("GPR-PUSH-POP stage=irq\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S44:GPR-PUSH-POP:OK\n");
-    lib_c_printf("M5:T401:S40:GPR-PUSH-POP-PROFILES:OK\n");
-    lib_c_printf("M5:T401:S10:GROUP5-PUSH-RM-PROFILES:OK\n");
+    lib_c_printf("GPR-PUSH-POP:OK\n");
+    lib_c_printf("GPR-PUSH-POP-PROFILES:OK\n");
+    lib_c_printf("GROUP5-PUSH-RM-PROFILES:OK\n");
     return 0;
 }

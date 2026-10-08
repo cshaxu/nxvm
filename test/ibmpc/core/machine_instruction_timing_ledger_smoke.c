@@ -722,6 +722,6 @@ lib_i32 main(void)
     if (timing_ledger_test_budget_overflow_and_reset()) return 6;
     if (timing_ledger_test_compatibility_is_not_source_truth()) return 7;
     if (timing_ledger_test_physical_classifier_boundary()) return 8;
-    lib_c_printf("M5:T357:S3:INSTRUCTION-TIMING-LEDGER:OK\n");
+    lib_c_printf("INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

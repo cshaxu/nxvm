@@ -394,6 +394,6 @@ lib_i32 main(void)
         !composition_machine_cleanup_failure_recovers() ||
         !composition_ui_destroy_failure_recovers(LIB_FALSE) ||
         !composition_ui_destroy_failure_recovers(LIB_TRUE)) return 1;
-    lib_c_printf("M5:T534:S8:APP-COMPOSITION-ATOMICITY:OK\n");
+    lib_c_printf("APP-COMPOSITION-ATOMICITY:OK\n");
     return 0;
 }

@@ -126,6 +126,6 @@ int main(void)
             TEST_PROTECTED_CALL_GATE_16), 0u)) return 4;
     if (!s48_gate_rejection((lib_u8)(0x80u | (3u << 5u) |
             TEST_PROTECTED_CALL_GATE_32), 0x92u)) return 5;
-    lib_c_printf("M5:T539:S48:CALL-GATE-PRIVILEGE-ENTRY:OK\n");
+    lib_c_printf("CALL-GATE-PRIVILEGE-ENTRY:OK\n");
     return 0;
 }

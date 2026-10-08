@@ -411,13 +411,13 @@ static lib_i32 paging_test_valid_path(void)
             !entries_ok || !provenance_ok || !reset_ok;
         if (failed) {
             lib_c_fprintf(lib_c_stderr,
-                "T258 valid result=%llu/%d fault=%d/%08x cr0=%08x cr2=%08x cr3=%08x ecx=%08x edx=%08x data=%04x pde=%08x pte=%08x/%08x/%08x\n",
+                "valid result=%llu/%d fault=%d/%08x cr0=%08x cr2=%08x cr3=%08x ecx=%08x edx=%08x data=%04x pde=%08x pte=%08x/%08x/%08x\n",
                 result.executed, result.reason, diagnostic.first_fault.valid,
                 diagnostic.first_fault.exception_mask, pre_cr0, pre_cr2,
                 pre_cr3, pre_ecx, pre_edx, data, pde, pte_code, pte_data,
                 pte_stack);
             lib_c_fprintf(lib_c_stderr,
-                "T258 valid checks ran=%d regs=%d data=%d reads=%d entries=%d provenance=%d reset=%d\n",
+                "valid checks ran=%d regs=%d data=%d reads=%d entries=%d provenance=%d reset=%d\n",
                 ran, registers, data_ok, entries_read, entries_ok, provenance_ok,
                 reset_ok);
         }
@@ -447,7 +447,7 @@ static lib_i32 paging_test_fault(lib_u32 code_entry, lib_u32 data_entry,
         if (!failed) failed |= result.detail != VCPUINS_EXCEPT_SHUTDOWN;
         if (failed) {
             lib_c_fprintf(lib_c_stderr,
-                "T258 receiverless-fault result=%llu/%d diag=%d/%08x/%08x point=%04x:%08x cr2=%08x\n",
+                "receiverless-fault result=%llu/%d diag=%d/%08x/%08x point=%04x:%08x cr2=%08x\n",
                 result.executed, result.reason, diagnostic.first_fault.valid,
                 diagnostic.first_fault.exception_mask,
                 diagnostic.first_fault.exception_code,
@@ -798,7 +798,7 @@ static lib_i32 paging_permission_expect_fault(paging_machine *state,
     }
     if (failed) {
         lib_c_fprintf(lib_c_stderr,
-            "T311 fault access=%u result=%u/%u diag=%x/%x eip=%x cr2=%x eax=%x ebx=%x esp=%x flags=%x pde=%x/%x pte=%x/%x\n",
+            "fault access=%u result=%u/%u diag=%x/%x eip=%x cr2=%x eax=%x ebx=%x esp=%x flags=%x pde=%x/%x pte=%x/%x\n",
             (unsigned)access, (unsigned)result.executed, (unsigned)result.reason,
             diagnostic.first_fault.exception_mask,
             diagnostic.first_fault.exception_code, cpu.eip, cpu.cr2,
@@ -845,7 +845,7 @@ static lib_i32 paging_permission_expect_success(paging_machine *state,
     }
     if (failed) {
         lib_c_fprintf(lib_c_stderr,
-            "T311 success access=%u result=%u/%u fault=%d eax=%x esp=%x pde=%x pte=%x\n",
+            "success access=%u result=%u/%u fault=%d eax=%x esp=%x pde=%x pte=%x\n",
             (unsigned)access, (unsigned)result.executed, (unsigned)result.reason,
             diagnostic.first_fault.valid, cpu.eax, cpu.esp, pde, pte);
     }
@@ -1251,17 +1251,17 @@ lib_i32 main(void)
     if (valid || delivered || faults ||
         cr3_reload || no_stale_translation || permissions || cross_page) {
         lib_c_fprintf(lib_c_stderr,
-            "M5:T258:S2:I386-PAGING:FAIL valid=%d delivered=%d faults=%d cr3=%d stale=%d permissions=%d cross=%d\n",
+            "I386-PAGING:FAIL valid=%d delivered=%d faults=%d cr3=%d stale=%d permissions=%d cross=%d\n",
             valid, delivered, faults,
             cr3_reload, no_stale_translation, permissions, cross_page);
         return 1;
     }
-    lib_c_printf("M5:T258:S2:I386-PAGING:OK\n");
-    lib_c_printf("M5:T258:S3:I386-PAGING:CORPUS:OK\n");
-    lib_c_printf("M5:T311:S3:PAGING-PERMISSIONS:OK\n");
-    lib_c_printf("M5:T311:S4:CROSS-PAGE:OK\n");
-    lib_c_printf("M5:T325:S1:CR0-PAGING-CONTROL:OK\n");
-    lib_c_printf("M5:T325:S2:CR2-CR3-TRANSLATION:OK\n");
-    lib_c_printf("M5:T325:S3:PAGING-CLOSURE:OK\n");
+    lib_c_printf("I386-PAGING:OK\n");
+    lib_c_printf("I386-PAGING:CORPUS:OK\n");
+    lib_c_printf("PAGING-PERMISSIONS:OK\n");
+    lib_c_printf("CROSS-PAGE:OK\n");
+    lib_c_printf("CR0-PAGING-CONTROL:OK\n");
+    lib_c_printf("CR2-CR3-TRANSLATION:OK\n");
+    lib_c_printf("PAGING-CLOSURE:OK\n");
     return 0;
 }

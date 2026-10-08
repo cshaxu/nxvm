@@ -109,6 +109,6 @@ lib_i32 main(void)
 
     core_machine_destroy(machine);
     if (failed) return 1;
-    lib_c_printf("%s\n", "M5:T243:S2:CHECKED-MEMORY:OK");
+    lib_c_printf("%s\n", "CHECKED-MEMORY:OK");
     return 0;
 }

@@ -774,13 +774,13 @@ lib_i32 main(void)
     core_machine_destroy(port);
     if (failed) {
         lib_c_fprintf(lib_c_stderr,
-            "M5:T464:S2:KBC:FAIL:mixed=%d:translation=%d:self-flush=%d:typematic=%d:line-bat=%d:enable-bat=%d:self-enable-bat=%d:reset-enable-bat=%d:ibm-post=%d:cpu-irq1=%d\n",
+            "KBC:FAIL:mixed=%d:translation=%d:self-flush=%d:typematic=%d:line-bat=%d:enable-bat=%d:self-enable-bat=%d:reset-enable-bat=%d:ibm-post=%d:cpu-irq1=%d\n",
             mixed_failed, translation_failed, self_test_flush_failed,
             typematic_break_failed, line_bat_failed, controller_enable_bat_failed,
             self_test_enable_bat_failed, reset_enable_bat_failed,
             ibm_5170_post_contract_failed, cpu_reset_irq1_failed);
         return 1;
     }
-    lib_c_printf("M5:T464:S2:KBC:OK\n");
+    lib_c_printf("KBC:OK\n");
     return 0;
 }

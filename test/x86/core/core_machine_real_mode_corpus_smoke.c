@@ -8,7 +8,7 @@
 #include "x86/core/port_interface.h"
 #include "memory_alias_fixture.h"
 
-/* T337_REAL_UD_VECTOR6_DELIVERY: the corpus installs and observes vector 6. */
+/* REAL_UD_DELIVERY_CONTRACT: the corpus installs and observes vector 6. */
 
 #define CORPUS_RESET_LINEAR 0xfffffff0u
 #define CORPUS_RESET_PHYSICAL 0x000ffff0u
@@ -155,10 +155,10 @@ static lib_i32 corpus_test_rep_direction(void)
             source_after[2] != source[2];
         if (failed) {
             lib_c_fprintf(lib_c_stderr,
-                "M5:T240:S2:8086-CORPUS:REP copied=%02x%02x%02x stored=%02x\n",
+                "8086-CORPUS:REP copied=%02x%02x%02x stored=%02x\n",
                 copied[0], copied[1], copied[2], stored);
             lib_c_fprintf(lib_c_stderr,
-                "M5:T240:S2:8086-CORPUS:REP source=%02x%02x%02x\n",
+                "8086-CORPUS:REP source=%02x%02x%02x\n",
                 source_after[0], source_after[1], source_after[2]);
         }
     }
@@ -271,25 +271,25 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     if (corpus_test_segment_override()) {
-        lib_c_fprintf(lib_c_stderr, "M5:T240:S2:8086-CORPUS:FAIL case=segment-override\n");
+        lib_c_fprintf(lib_c_stderr, "8086-CORPUS:FAIL case=segment-override\n");
         failed = 1;
     }
     if (corpus_test_rep_direction()) {
-        lib_c_fprintf(lib_c_stderr, "M5:T240:S2:8086-CORPUS:FAIL case=rep-direction\n");
+        lib_c_fprintf(lib_c_stderr, "8086-CORPUS:FAIL case=rep-direction\n");
         failed = 1;
     }
     if (corpus_test_int_iret()) {
-        lib_c_fprintf(lib_c_stderr, "M5:T240:S2:8086-CORPUS:FAIL case=int-iret\n");
+        lib_c_fprintf(lib_c_stderr, "8086-CORPUS:FAIL case=int-iret\n");
         failed = 1;
     }
     if (corpus_test_port_transactions()) {
-        lib_c_fprintf(lib_c_stderr, "M5:T240:S2:8086-CORPUS:FAIL case=port-transactions\n");
+        lib_c_fprintf(lib_c_stderr, "8086-CORPUS:FAIL case=port-transactions\n");
         failed = 1;
     }
     if (failed) {
-        lib_c_fprintf(lib_c_stderr, "M5:T240:S2:8086-CORPUS:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "8086-CORPUS:FAIL\n");
         return 1;
     }
-    lib_c_printf("M5:T240:S2:8086-CORPUS:OK\n");
+    lib_c_printf("8086-CORPUS:OK\n");
     return 0;
 }

@@ -157,7 +157,7 @@ done:
 static lib_i32 timing_test_fault(void)
 {
     static const lib_u8 fault[] = { 0x66u, 0x90u };
-    /* T337_REAL_UD_TERMINAL_GUEST_LIDT: guest LIDT makes vector 6
+    /* REAL_UD_TERMINAL_GUEST_LIDT: guest LIDT makes vector 6
      * unavailable; no private CPU cache is borrowed. */
     static const lib_u8 prepare_idtr[] = { 0x0fu, 0x01u, 0x1eu, 0x00u, 0x01u };
     static const lib_u8 idtr[] = { 0x17u, 0u, 0u, 0u, 0u, 0u };
@@ -361,8 +361,8 @@ static lib_i32 timing_test_physical_contract(void)
             result.elapsed_ticks != 3u;
     }
     if (!failed) {
-        lib_c_printf("M5:T394:S4:ELIGIBILITY-KEY:OK\n");
-        lib_c_printf("M5:T394:S4:PHYSICAL-ABSENT-KEY:OK\n");
+        lib_c_printf("ELIGIBILITY-KEY:OK\n");
+        lib_c_printf("PHYSICAL-ABSENT-KEY:OK\n");
     }
     core_machine_destroy(machine);
     return failed;
@@ -449,6 +449,6 @@ lib_i32 main(void)
     if (timing_test_invalid_qualification()) return 8;
     if (timing_test_physical_contract()) return 9;
     if (timing_test_next_fetch_publication()) return 10;
-    lib_c_printf("M5:T265:S3:INSTRUCTION-TIMING:OK\n");
+    lib_c_printf("INSTRUCTION-TIMING:OK\n");
     return 0;
 }

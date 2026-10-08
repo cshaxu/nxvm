@@ -1,6 +1,6 @@
 #include "support/cpu_port_instruction_fixture.h"
 #include "lib/types/file.h"
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: scalar port prefixes are CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: scalar port prefixes are CPU-owned. */
 
 static void port_io_seed(t_cpu *cpu)
 {
@@ -290,6 +290,6 @@ lib_i32 main(void)
         lib_c_printf("Scalar port I/O CPU semantics failed\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S55:PORT-IO:OK\n");
+    lib_c_printf("PORT-IO:OK\n");
     return 0;
 }

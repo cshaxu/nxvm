@@ -180,7 +180,7 @@ static lib_i32 bit_test_memory_destination_forms(void)
     return 1;
 }
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: illegal group and older profiles. */
+/* REAL_UD_TERMINAL_CPU_OWNER: illegal group and older profiles. */
 static lib_i32 bit_test_rejection(void)
 {
     static const lib_u8 invalid_ba[] = {0x0fu, 0xbau, 0x06u, 0x00u, 0x50u, 0u};
@@ -210,6 +210,6 @@ lib_i32 main(void)
 {
     if (!bit_test_register_forms() || !bit_test_immediate_and_memory() ||
         !bit_test_memory_destination_forms() || !bit_test_rejection()) return 1;
-    lib_c_printf("M5:T539:S30:CPU-BIT-TEST:OK\n");
+    lib_c_printf("CPU-BIT-TEST:OK\n");
     return 0;
 }

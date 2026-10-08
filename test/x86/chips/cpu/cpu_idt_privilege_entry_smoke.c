@@ -490,6 +490,6 @@ int main(void)
         if (!idt_test_delivery_cache_rollback(failure)) return 1;
     for (lib_u8 negative = 0u; negative < 6u; ++negative)
         if (!idt_test_software_full_rollback(negative)) return 1;
-    lib_c_printf("%s\n", "M5:T307:IDT-PRIVILEGE-ENTRY:CPU:OK");
+    lib_c_printf("%s\n", "M5::IDT-PRIVILEGE-ENTRY:CPU:OK");
     return 0;
 }

@@ -98,7 +98,7 @@ static lib_i32 sign_extend_test_irq(void)
 lib_i32 main(void)
 {
     if (!sign_extend_test_irq()) return 1;
-    lib_c_printf("M5:T316:S29:SIGN-EXTEND:OK\n");
-    lib_c_printf("M5:T401:S45:SIGN-EXTEND-PROFILES:OK\n");
+    lib_c_printf("SIGN-EXTEND:OK\n");
+    lib_c_printf("SIGN-EXTEND-PROFILES:OK\n");
     return 0;
 }

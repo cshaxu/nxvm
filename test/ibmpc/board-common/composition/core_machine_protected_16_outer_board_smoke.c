@@ -2,9 +2,9 @@
 #include "support/protected_16_bootstrap_fixture.h"
 #include "ibmpc/board-common/machine_board_interface.h"
 #include "x86/chips/cpu/cpu_interface.h"
-#define S47_S5_HANDLER 0x0320u
+#define S47_HANDLER 0x0320u
 
-static lib_i32 s47_s5_patch_eflags(test_protected_16_machine *state,
+static lib_i32 s47_patch_eflags(test_protected_16_machine *state,
     lib_u32 eflags)
 {
     core_machine_debug_register_patch patch = {0};
@@ -15,17 +15,17 @@ static lib_i32 s47_s5_patch_eflags(test_protected_16_machine *state,
         LIB_STATUS_OK;
 }
 
-static lib_i32 s47_s5_install_handler(test_protected_16_machine *state,
+static lib_i32 s47_install_handler(test_protected_16_machine *state,
     lib_u8 vector, lib_u8 type)
 {
     static const lib_u8 hlt[] = {0xf4u};
 
-    return test_protected_16_install_gate(state, vector, S47_S5_HANDLER,
+    return test_protected_16_install_gate(state, vector, S47_HANDLER,
         0x0008u, type, 0u, LIB_TRUE) && test_protected_16_write(state,
-        TEST_PROTECTED_16_CODE_BASE + S47_S5_HANDLER, hlt, sizeof(hlt));
+        TEST_PROTECTED_16_CODE_BASE + S47_HANDLER, hlt, sizeof(hlt));
 }
 
-static lib_i32 s47_s5_outer_nmi(core_machine_cpu_profile profile,
+static lib_i32 s47_outer_nmi(core_machine_cpu_profile profile,
     lib_i32 tss32, lib_u8 type)
 {
     static const lib_u8 nop[] = {0x90u};
@@ -39,9 +39,9 @@ static lib_i32 s47_s5_outer_nmi(core_machine_cpu_profile profile,
         profile, tss32);
 
     if (!failed) {
-        failed = !s47_s5_install_handler(&state, 0x02u, type) ||
+        failed = !s47_install_handler(&state, 0x02u, type) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE +
-                0x0100u, nop, sizeof(nop)) || !s47_s5_patch_eflags(&state,
+                0x0100u, nop, sizeof(nop)) || !s47_patch_eflags(&state,
                 CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF) ||
             core_machine_report_planar_parity_fault(state.board) !=
                 LIB_STATUS_OK || core_machine_get_planar_parity_observation(
@@ -52,7 +52,7 @@ static lib_i32 s47_s5_outer_nmi(core_machine_cpu_profile profile,
             !test_protected_16_snapshot(&state, &snapshot) ||
             snapshot.cs.selector != 0x0008u || snapshot.cs.dpl != 0u ||
             snapshot.ss.selector != 0x0010u || snapshot.ss.dpl != 0u ||
-            snapshot.eip != S47_S5_HANDLER + 1u || snapshot.esp !=
+            snapshot.eip != S47_HANDLER + 1u || snapshot.esp !=
                 TEST_PROTECTED_16_STACK_TOP - sizeof(frame) ||
             (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_CF) == 0u ||
             ((snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_IF) != 0u) !=
@@ -79,13 +79,13 @@ int main(void)
 
     for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile) {
         for (type = 0u; type < sizeof(types) / sizeof(types[0]); ++type) {
-            if (!s47_s5_outer_nmi(profiles[profile], LIB_FALSE, types[type]))
+            if (!s47_outer_nmi(profiles[profile], LIB_FALSE, types[type]))
                 return 1;
             if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386 &&
-                !s47_s5_outer_nmi(profiles[profile], LIB_TRUE, types[type]))
+                !s47_outer_nmi(profiles[profile], LIB_TRUE, types[type]))
                 return 2;
         }
     }
-    lib_c_printf("M5:T323:S5:PROTECTED-16-OUTER:OK\n");
+    lib_c_printf("PROTECTED-16-OUTER:OK\n");
     return 0;
 }

@@ -114,14 +114,14 @@ lib_i32 main(void)
 
     if (failed) {
         lib_c_fprintf(lib_c_stderr,
-            "M5:T236:S1:EGA-CONTROLLER:FAIL graphics=%02x,%02x attr=%02x phase=%d\n",
+            "EGA-CONTROLLER:FAIL graphics=%02x,%02x attr=%02x phase=%d\n",
             vadp->data.graphics[0], vadp->data.graphics[6], vadp->data.attribute[0],
             vadp->data.attribute_data_phase);
         x86_video_destroy(vadp);
         return 1;
     }
     x86_video_destroy(vadp);
-    lib_c_printf("M5:T236:S1:EGA-CONTROLLER:PORT:OK\n");
-    lib_c_printf("M5:T480:S3:COMMON-OWNER:OK\n");
+    lib_c_printf("EGA-CONTROLLER:PORT:OK\n");
+    lib_c_printf("COMMON-OWNER:OK\n");
     return 0;
 }

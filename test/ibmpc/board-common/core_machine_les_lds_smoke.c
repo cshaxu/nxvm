@@ -175,6 +175,6 @@ lib_i32 main(void)
 {
     if (!lld_test_source_fault_atomicity() ||
         !lld_test_irq_no_shadow()) return 1;
-    lib_c_printf("M5:T539:S27:LES_LDS-BOARD:OK\n");
+    lib_c_printf("LES_LDS-BOARD:OK\n");
     return 0;
 }

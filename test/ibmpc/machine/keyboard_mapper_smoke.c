@@ -88,6 +88,6 @@ lib_i32 main(void)
                 function_set1[index], 0u, LIB_TRUE,
                 &function_set2[index], 1u)) return 1;
     }
-    lib_c_printf("M5:T374:S18:HOST-SET1-TO-NATIVE-SET2:OK\n");
+    lib_c_printf("HOST-SET1-TO-NATIVE-SET2:OK\n");
     return 0;
 }

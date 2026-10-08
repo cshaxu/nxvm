@@ -121,6 +121,6 @@ lib_i32 main(void)
     core_machine_destroy(machine);
     if (failed != 0) return 1;
 
-    lib_c_printf("M3:T2:S2:TRACE:OK\n");
+    lib_c_printf("TRACE:OK\n");
     return 0;
 }

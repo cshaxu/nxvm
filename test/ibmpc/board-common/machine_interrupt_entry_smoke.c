@@ -657,8 +657,8 @@ int main(void)
         INTERRUPT_ENTRY_DELIVERY_STACK_LIMIT);
 
     if (failed) return 1;
-    lib_c_printf("M5:T305:INTERRUPT-ENTRY:OK\n");
-    lib_c_printf("M5:T308:S2:SAME-CPL-ERROR-DELIVERY:OK\n");
-    lib_c_printf("M5:T539:S66:INT-ENTRY:OK\n");
+    lib_c_printf("M5::INTERRUPT-ENTRY:OK\n");
+    lib_c_printf("SAME-CPL-ERROR-DELIVERY:OK\n");
+    lib_c_printf("INT-ENTRY:OK\n");
     return 0;
 }

@@ -118,9 +118,9 @@ static lib_i32 pushf_board_stack_limit_fault(void)
 int main(void)
 {
     if (!pushf_board_irq() || !pushf_board_stack_limit_fault()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:PUSHF-POPF-BOARD:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "PUSHF-POPF-BOARD:FAIL\n");
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T539:S36:PUSHF-POPF-BOARD:OK");
+    lib_c_printf("%s\n", "PUSHF-POPF-BOARD:OK");
     return 0;
 }

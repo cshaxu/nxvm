@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: negative cases retain the CPU-owned IDTR limit. */
+/* REAL_UD_TERMINAL_CPU_OWNER: negative cases retain the CPU-owned IDTR limit. */
 static void gpr_mov_seed(cpu_instruction_fixture *state)
 {
     state->cpu.data.eax = 0xaabb3344u;
@@ -477,6 +477,6 @@ lib_i32 main(void)
         !gpr_mov_test_immediate_register_386_attributes() ||
         !gpr_mov_test_prefix_lock() ||
         !gpr_mov_test_segments()) return 1;
-    lib_c_printf("M5:T539:S22:GPR_MOV:CPU:OK\n");
+    lib_c_printf("GPR_MOV:CPU:OK\n");
     return 0;
 }

@@ -1,6 +1,6 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: CMPS prefix rejection is CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: CMPS prefix rejection is CPU-owned. */
 
 #define CMPS_FLAGS (VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF | \
     VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF)
@@ -410,7 +410,7 @@ lib_i32 main(void)
         lib_c_printf("CMPS stage=flags/rejections/protected\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S37:CMPS:OK\n");
-    lib_c_printf("M5:T401:S16:CMPS-PROFILES:OK\n");
+    lib_c_printf("CMPS:OK\n");
+    lib_c_printf("CMPS-PROFILES:OK\n");
     return 0;
 }

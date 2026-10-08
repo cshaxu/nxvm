@@ -85,9 +85,9 @@ static lib_i32 direct_flags_test_irq(void)
 int main(void)
 {
     if (!direct_flags_test_protected() || !direct_flags_test_irq()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:BOARD-DIRECT-FLAGS:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "BOARD-DIRECT-FLAGS:FAIL\n");
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T539:S36:BOARD-DIRECT-FLAGS:OK");
+    lib_c_printf("%s\n", "BOARD-DIRECT-FLAGS:OK");
     return 0;
 }

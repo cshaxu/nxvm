@@ -158,6 +158,6 @@ lib_i32 main(void)
     failed |= run_case(fninit, sizeof(fninit), X86_FPU_PROFILE_80387,
         0u, 0u, 2u);
     if (failed) return 1;
-    lib_c_printf("M5:T156:S1:FPU-ESC:OK\n");
+    lib_c_printf("FPU-ESC:OK\n");
     return 0;
 }

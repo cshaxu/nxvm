@@ -185,6 +185,6 @@ lib_i32 main(void)
 {
     if (!lfg_test_source_fault_atomicity() ||
         !lfg_test_irq_no_shadow()) return 1;
-    lib_c_printf("M5:T539:S27:LSS_LFS_LGS-BOARD:OK\n");
+    lib_c_printf("LSS_LFS_LGS-BOARD:OK\n");
     return 0;
 }

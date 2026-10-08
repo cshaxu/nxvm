@@ -125,6 +125,6 @@ int main(void)
     }
     core_machine_pic_finalize(board.master, board.slave);
     test_core_port_owner_destroy(board.machine);
-    lib_c_printf("%s\n", "M5:T539:S54:OUTER-IRET:PIC-BOARD:OK");
+    lib_c_printf("%s\n", "OUTER-IRET:PIC-BOARD:OK");
     return 0;
 }

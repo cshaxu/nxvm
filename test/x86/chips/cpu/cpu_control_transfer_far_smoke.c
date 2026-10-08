@@ -377,8 +377,8 @@ int main(void)
             return 1;
         }
     }
-    lib_c_printf("%s\n", "M5:T303:CONTROL-TRANSFER:OK");
-    lib_c_printf("%s\n", "M5:T401:S23:FAR-RETURN-PROFILES:OK");
-    lib_c_printf("%s\n", "M5:T539:S51:CPU-CONTROL-TRANSFER-FAR:OK");
+    lib_c_printf("%s\n", "M5::CONTROL-TRANSFER:OK");
+    lib_c_printf("%s\n", "FAR-RETURN-PROFILES:OK");
+    lib_c_printf("%s\n", "CPU-CONTROL-TRANSFER-FAR:OK");
     return 0;
 }

@@ -465,6 +465,6 @@ lib_i32 main(void)
         !lar_lsl_test_invalid_ldtr_is_negative() ||
         !lar_lsl_test_descriptor_bytes_unchanged() ||
         !lar_lsl_test_386_lar_defined_mask()) return 1;
-    lib_c_printf("%s\n", "M5:T539:S44:LAR-LSL:OK");
+    lib_c_printf("%s\n", "LAR-LSL:OK");
     return 0;
 }

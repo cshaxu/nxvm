@@ -93,7 +93,7 @@ lib_i32 main(void)
     }
     if (lib_c_fprintf(file, "\n  }\n}\n") < 0) goto fail;
     if (lib_c_fclose(file) != 0) return 1;
-    lib_c_printf("M5:T435:S8:I386-DECODER-LEXEME:%u:%u\n", pairs, primary_count);
+    lib_c_printf("I386-DECODER-LEXEME:%u:%u\n", pairs, primary_count);
     return 0;
 
 fail:

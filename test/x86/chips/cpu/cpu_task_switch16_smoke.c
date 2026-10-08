@@ -418,9 +418,9 @@ int main(void)
     failed |= !cpu_task16_expect_fault(CORE_MACHINE_CPU_PROFILE_80386,
         CPU_TASK16_LOCK, VCPUINS_EXCEPT_GP, 0x0033u);
     if (failed) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S55:TASK16:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "TASK16:FAIL\n");
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T539:S55:TASK16:OK");
+    lib_c_printf("%s\n", "TASK16:OK");
     return 0;
 }

@@ -287,10 +287,10 @@ int main(void)
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
-        lib_c_fprintf(lib_c_stderr, "M5:T380:S2:FDC-MEDIA-CHANGE:FAIL:step=%d\n",
+        lib_c_fprintf(lib_c_stderr, "FDC-MEDIA-CHANGE:FAIL:step=%d\n",
             first_failure);
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T291:S1:FDC:PORT:OK");
+    lib_c_printf("%s\n", "FDC:PORT:OK");
     return 0;
 }

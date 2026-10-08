@@ -32,7 +32,7 @@ static lib_i32 imul_read_failure(void)
 lib_i32 main(void)
 {
     if (!imul_read_failure()) return 1;
-    lib_c_printf("M5:T310:S8:IMUL2:OK\n");
-    lib_c_printf("M5:T401:S65:IMUL2-PROFILES:OK\n");
+    lib_c_printf("IMUL2:OK\n");
+    lib_c_printf("IMUL2-PROFILES:OK\n");
     return 0;
 }

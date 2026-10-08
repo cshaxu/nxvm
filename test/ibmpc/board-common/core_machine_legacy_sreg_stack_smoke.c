@@ -286,6 +286,6 @@ lib_i32 main(void)
     if (!legacy_sreg_stack_test_irq()) {
         lib_c_printf("LEGACY-SREG-STACK-BOARD stage=irq\n"); return 1;
     }
-    lib_c_printf("M5:T539:S26:LEGACY-SREG-STACK-BOARD:OK\n");
+    lib_c_printf("LEGACY-SREG-STACK-BOARD:OK\n");
     return 0;
 }

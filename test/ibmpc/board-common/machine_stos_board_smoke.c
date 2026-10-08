@@ -147,6 +147,6 @@ lib_i32 main(void)
         lib_c_printf("STOS board fault/IRQ failed\n");
         return 1;
     }
-    lib_c_printf("M5:T539:S38:STOS-BOARD:OK\n");
+    lib_c_printf("STOS-BOARD:OK\n");
     return 0;
 }

@@ -389,6 +389,6 @@ int main(void)
     if (!cpu_outer_iret_rejections()) return 6;
     if (!cpu_outer_conforming_returns()) return 7;
     if (!cpu_outer_nonconforming_dpl_rejection()) return 8;
-    lib_c_printf("%s\n", "M5:T539:S54:CPU-OUTER-RETURN:OK");
+    lib_c_printf("%s\n", "CPU-OUTER-RETURN:OK");
     return 0;
 }

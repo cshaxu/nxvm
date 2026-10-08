@@ -607,10 +607,10 @@ lib_i32 main(void)
     lib_i32 j = table_register_board_cpl_reject();
 
     if (!a || !b || !c || !d || !e || !f || !g || !h || !i || !j) {
-        lib_c_fprintf(lib_c_stderr, "M5:T539:S42:table-register board failed sgdt=%d sidt=%d lgdt=%d lidt=%d ltr=%d segments=%d limit=%d dos=%d consumer=%d cpl=%d\n",
+        lib_c_fprintf(lib_c_stderr, "table-register board failed sgdt=%d sidt=%d lgdt=%d lidt=%d ltr=%d segments=%d limit=%d dos=%d consumer=%d cpl=%d\n",
             a, b, c, d, e, f, g, h, i, j);
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T539:S42:TABLE-REGISTER-BOARD:OK");
+    lib_c_printf("%s\n", "TABLE-REGISTER-BOARD:OK");
     return 0;
 }

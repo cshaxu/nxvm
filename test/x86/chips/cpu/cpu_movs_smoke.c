@@ -1,6 +1,6 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: MOVS prefix rejection is CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: MOVS prefix rejection is CPU-owned. */
 
 static void movs_seed(cpu_instruction_fixture *state)
 {
@@ -357,7 +357,7 @@ lib_i32 main(void)
         lib_c_printf("MOVS stage=protected\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S33:MOVS:OK\n");
-    lib_c_printf("M5:T401:S15:MOVS-PROFILES:OK\n");
+    lib_c_printf("MOVS:OK\n");
+    lib_c_printf("MOVS-PROFILES:OK\n");
     return 0;
 }

@@ -189,6 +189,6 @@ lib_i32 main(void)
     }
 
     core_machine_destroy(machine);
-    lib_c_printf("M3:T4:S2:DEBUG:OK\n");
+    lib_c_printf("DEBUG:OK\n");
     return 0;
 }

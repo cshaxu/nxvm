@@ -25,6 +25,6 @@ lib_i32 main(void)
 
     core_machine_destroy(machine);
     if (failed != 0) return 1;
-    lib_c_printf("M5:T540:S93:CORE-CPU-RESET-IDENTITY:OK\n");
+    lib_c_printf("CORE-CPU-RESET-IDENTITY:OK\n");
     return 0;
 }

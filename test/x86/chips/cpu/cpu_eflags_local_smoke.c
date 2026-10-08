@@ -100,6 +100,6 @@ lib_i32 main(void)
         }
         }
     }
-    lib_c_printf("M5:T316:S20:EFLAGS-LOCAL:OK\n");
+    lib_c_printf("EFLAGS-LOCAL:OK\n");
     return 0;
 }

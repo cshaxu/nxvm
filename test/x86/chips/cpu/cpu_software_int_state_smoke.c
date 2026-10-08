@@ -21,7 +21,7 @@ static void software_int_state_seed(cpu_instruction_fixture *state, lib_u32 flag
     state->cpu.data.eflags = flags;
 }
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: these negatives limit IDTR before any exception-frame
+/* REAL_UD_TERMINAL_CPU_OWNER: these negatives limit IDTR before any exception-frame
  * write. Only the CPU owner may seed that private architectural state. */
 static lib_bool software_int_state_reject(cpu_instruction_fixture *state,
     core_machine_cpu_profile profile, const lib_u8 *code, lib_u8 bytes)
@@ -49,7 +49,7 @@ static lib_bool software_int_state_reject(cpu_instruction_fixture *state,
         lib_memory_compare(stack_before, stack_after, sizeof(stack_before)) == 0;
 }
 
-static lib_i32 software_int_s50_test_rejections(void)
+static lib_i32 software_int_test_rejections(void)
 {
     static const software_int_form forms[] = {
         { 0x03u, { 0xccu, 0u }, 1u, 0 },
@@ -209,7 +209,7 @@ static lib_i32 software_int_state_real_forms(void)
 
 int main(void)
 {
-    if (!software_int_state_real_forms() || !software_int_s50_test_rejections()) return 1;
-    lib_c_printf("%s\n", "M5:T316:S50:SOFTWARE-INT:CPU-ROLLBACK:OK");
+    if (!software_int_state_real_forms() || !software_int_test_rejections()) return 1;
+    lib_c_printf("%s\n", "SOFTWARE-INT:CPU-ROLLBACK:OK");
     return 0;
 }

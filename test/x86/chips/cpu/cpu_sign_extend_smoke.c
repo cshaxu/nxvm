@@ -122,7 +122,7 @@ static lib_i32 sign_extend_test_address_prefix(void)
     return 1;
 }
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: prefix/LOCK #UD belongs to the CPU. */
+/* REAL_UD_TERMINAL_CPU_OWNER: prefix/LOCK #UD belongs to the CPU. */
 static lib_i32 sign_extend_test_prefix_reject(void)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -173,6 +173,6 @@ lib_i32 main(void)
         !sign_extend_test_address_prefix() ||
         !sign_extend_test_prefix_reject() ||
         !sign_extend_test_lock_diagnostic()) return 1;
-    lib_c_printf("M5:T539:S30:CPU-SIGN-EXTEND:OK\n");
+    lib_c_printf("CPU-SIGN-EXTEND:OK\n");
     return 0;
 }

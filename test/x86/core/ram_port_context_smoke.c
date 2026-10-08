@@ -88,7 +88,7 @@ lib_i32 main(void)
     lib_release(first_port);
     if (result != 0) return 1;
 
-    lib_c_printf("%s\n", "M5:T171:S1:RAM-PORT-CONTEXT:OK");
-    lib_c_printf("%s\n", "M5:T442:S1:PHYSICAL-MAPPING-SPAN-BOUNDARY:OK");
+    lib_c_printf("%s\n", "RAM-PORT-CONTEXT:OK");
+    lib_c_printf("%s\n", "PHYSICAL-MAPPING-SPAN-BOUNDARY:OK");
     return 0;
 }

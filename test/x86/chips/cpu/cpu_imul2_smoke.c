@@ -56,7 +56,7 @@ static lib_i32 imul_forms(void)
     return 1;
 }
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: unsupported IMUL forms are CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: unsupported IMUL forms are CPU-owned. */
 static lib_i32 imul_profile(void)
 {
     static const lib_u8 code[] = { 0x0fu, 0xafu, 0x0eu, 0x00u, 0x50u };
@@ -81,6 +81,6 @@ static lib_i32 imul_profile(void)
 lib_i32 main(void)
 {
     if (!imul_forms() || !imul_profile()) return 1;
-    lib_c_printf("M5:T539:S30:CPU-IMUL2:OK\n");
+    lib_c_printf("CPU-IMUL2:OK\n");
     return 0;
 }

@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: CPU-local IDTR excludes vector 6,
+/* REAL_UD_TERMINAL_CPU_OWNER: CPU-local IDTR excludes vector 6,
  * preserving the original no-handler terminal-fault cases. */
 static void lea_run_prepared(cpu_instruction_fixture *state, const lib_u8 *code,
     lib_u8 bytes, t_cpu *after)
@@ -275,6 +275,6 @@ lib_i32 main(void)
     if (!lea_test_lock_ud()) { lib_c_printf("lea lock\n"); return 1; }
     if (!lea_test_protected()) { lib_c_printf("lea protected\n"); return 1; }
     if (!lea_test_null_ds_no_read()) { lib_c_printf("lea null\n"); return 1; }
-    lib_c_printf("M5:T539:S21:LEA-CPU:OK\n");
+    lib_c_printf("LEA-CPU:OK\n");
     return 0;
 }

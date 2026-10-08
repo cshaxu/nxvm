@@ -225,11 +225,11 @@ int main(void)
         !lahf_sahf_test_386_attributes() ||
         !lahf_sahf_test_vm86() ||
         !lahf_sahf_test_386_checksum_sequence()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-LAHF-SAHF:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "CPU-LAHF-SAHF:FAIL\n");
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T316:S39:LAHF-SAHF:OK");
-    lib_c_printf("%s\n", "M5:T401:S36:LAHF-SAHF-PROFILES:OK");
-    lib_c_printf("%s\n", "M5:T539:S36:CPU-LAHF-SAHF:OK");
+    lib_c_printf("%s\n", "LAHF-SAHF:OK");
+    lib_c_printf("%s\n", "LAHF-SAHF-PROFILES:OK");
+    lib_c_printf("%s\n", "CPU-LAHF-SAHF:OK");
     return 0;
 }

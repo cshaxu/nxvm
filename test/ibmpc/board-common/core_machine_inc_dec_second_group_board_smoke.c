@@ -30,9 +30,9 @@ static lib_i32 inc_dec_second_group_protected_faults(void)
 int main(void)
 {
     if (!inc_dec_second_group_protected_faults()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S34:BOARD-TEST-ADD-ADC-SBB:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "BOARD-TEST-ADD-ADC-SBB:FAIL\n");
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T539:S34:BOARD-TEST-ADD-ADC-SBB:OK");
+    lib_c_printf("%s\n", "BOARD-TEST-ADD-ADC-SBB:OK");
     return 0;
 }

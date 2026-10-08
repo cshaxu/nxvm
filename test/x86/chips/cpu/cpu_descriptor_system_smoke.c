@@ -345,7 +345,7 @@ static lib_i32 descriptor_test_store_layout(void)
         lib_memory_copy(observed, state.memory + 0x0200u, sizeof(observed));
         if (lib_memory_compare(observed, expected[index], sizeof(observed)) != 0) {
             lib_c_fprintf(lib_c_stderr,
-                "M5:T546:DESCRIPTOR store index=%u got=%02x%02x%02x%02x%02x%02x want=%02x%02x%02x%02x%02x%02x\\n",
+                "M5::DESCRIPTOR store index=%u got=%02x%02x%02x%02x%02x%02x want=%02x%02x%02x%02x%02x%02x\\n",
                 (unsigned)index, observed[0], observed[1], observed[2],
                 observed[3], observed[4], observed[5], expected[index][0],
                 expected[index][1], expected[index][2], expected[index][3],
@@ -382,7 +382,7 @@ static lib_i32 descriptor_test_protected_stores(void)
         lib_memory_copy(observed, state.memory + 0x0200u, sizeof(observed));
         if (lib_memory_compare(observed, expected[index], sizeof(observed)) != 0) {
             lib_c_fprintf(lib_c_stderr,
-                "M5:T546:DESCRIPTOR protected-store index=%u got=%02x%02x%02x%02x%02x%02x want=%02x%02x%02x%02x%02x%02x\\n",
+                "M5::DESCRIPTOR protected-store index=%u got=%02x%02x%02x%02x%02x%02x want=%02x%02x%02x%02x%02x%02x\\n",
                 (unsigned)index, observed[0], observed[1], observed[2],
                 observed[3], observed[4], observed[5], expected[index][0],
                 expected[index][1], expected[index][2], expected[index][3],
@@ -584,11 +584,11 @@ lib_i32 main(void)
 
     if (!stores || !protected_stores || !loads || !faults || !memory_faults ||
         !selector_stores || !selector_loads || !c7 || !physical_gdt) {
-        lib_c_fprintf(lib_c_stderr, "M5:T539:S43:descriptor cpu failed stores=%d protected-stores=%d loads=%d faults=%d memory-faults=%d selector-stores=%d selector-loads=%d c7=%d physical-gdt=%d\n",
+        lib_c_fprintf(lib_c_stderr, "descriptor cpu failed stores=%d protected-stores=%d loads=%d faults=%d memory-faults=%d selector-stores=%d selector-loads=%d c7=%d physical-gdt=%d\n",
             stores, protected_stores, loads, faults, memory_faults,
             selector_stores, selector_loads, c7, physical_gdt);
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T539:S43:DESCRIPTOR-SYSTEM-CPU:OK");
+    lib_c_printf("%s\n", "DESCRIPTOR-SYSTEM-CPU:OK");
     return 0;
 }

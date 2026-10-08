@@ -161,6 +161,6 @@ int main(void)
     core_machine_pic_finalize(board.master, board.slave);
     test_core_port_owner_destroy(board.machine);
     if (failed) return 1;
-    lib_c_printf("%s\n", "M5:T307:IDT-PRIVILEGE-ENTRY:PIC:OK");
+    lib_c_printf("%s\n", "M5::IDT-PRIVILEGE-ENTRY:PIC:OK");
     return 0;
 }

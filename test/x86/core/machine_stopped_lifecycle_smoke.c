@@ -44,6 +44,6 @@ lib_i32 main(void)
 
     core_machine_destroy(machine);
     if (failed != 0) return 1;
-    lib_c_printf("M5:T170:S1:STOPPED-LIFECYCLE:OK\n");
+    lib_c_printf("STOPPED-LIFECYCLE:OK\n");
     return 0;
 }

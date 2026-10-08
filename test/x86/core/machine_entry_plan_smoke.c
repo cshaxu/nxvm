@@ -101,6 +101,6 @@ lib_i32 main(void)
     }
     core_machine_destroy(machine);
     if (failed) return 1;
-    lib_c_printf("%s\n", "M5:T246:S2:ENTRY-PLAN:OK");
+    lib_c_printf("%s\n", "ENTRY-PLAN:OK");
     return 0;
 }

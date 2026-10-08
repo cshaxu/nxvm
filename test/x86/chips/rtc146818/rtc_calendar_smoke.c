@@ -20,7 +20,7 @@ static void rtc_initialize(rtc_fixture *fixture)
         &fixture->rtc) == LIB_STATUS_OK);
 }
 
-static lib_i32 rtc_cmos_s3_test_calendar_and_reset(void)
+static lib_i32 rtc_cmos_test_calendar_and_reset(void)
 {
     rtc_fixture fixture;
     lib_i32 failed = 0;
@@ -53,7 +53,7 @@ static lib_i32 rtc_cmos_s3_test_calendar_and_reset(void)
 }
 
 
-static lib_i32 rtc_cmos_s3_test_phase_and_divider(void)
+static lib_i32 rtc_cmos_test_phase_and_divider(void)
 {
     rtc_fixture fixture;
     x86_rtc_config config = {32768u, 8u, 65u};
@@ -95,7 +95,7 @@ static lib_i32 rtc_cmos_s3_test_phase_and_divider(void)
 }
 
 
-static lib_i32 rtc_cmos_s3_test_alarm_deadline(void)
+static lib_i32 rtc_cmos_test_alarm_deadline(void)
 {
     rtc_fixture fixture;
     lib_u64 ticks = 0u;
@@ -122,8 +122,8 @@ static lib_i32 rtc_cmos_s3_test_alarm_deadline(void)
 
 lib_i32 main(void)
 {
-    lib_test_assert(rtc_cmos_s3_test_calendar_and_reset() == 0);
-    lib_test_assert(rtc_cmos_s3_test_phase_and_divider() == 0);
-    lib_test_assert(rtc_cmos_s3_test_alarm_deadline() == 0);
+    lib_test_assert(rtc_cmos_test_calendar_and_reset() == 0);
+    lib_test_assert(rtc_cmos_test_phase_and_divider() == 0);
+    lib_test_assert(rtc_cmos_test_alarm_deadline() == 0);
     return 0;
 }

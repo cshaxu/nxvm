@@ -2,7 +2,7 @@
 #include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
 #include "x86/chips/cpu/cpu_timing.h"
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: unsupported Group-2 forms are CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: unsupported Group-2 forms are CPU-owned. */
 
 typedef cpu_instruction_fixture rotate_fixture;
 
@@ -801,9 +801,9 @@ lib_i32 main(void)
     if (!rotate_test_8086_immediate_rejection()) { lib_c_fprintf(lib_c_stderr, "8086\n"); return 1; }
     if (!rotate_test_80186_immediate_extensions()) { lib_c_fprintf(lib_c_stderr, "80186\n"); return 1; }
     if (!rotate_test_profile()) { lib_c_fprintf(lib_c_stderr, "profile\n"); return 1; }
-    lib_c_printf("M5:T316:S18:ROTATE:OK\n");
-    lib_c_printf("M5:T316:S19:SHIFT:OK\n");
-    lib_c_printf("M5:T401:S8:GROUP2-CL-PROFILES:OK\n");
-    lib_c_printf("M5:T401:S21:GROUP2-IMMEDIATE-PROFILES:OK\n");
+    lib_c_printf("ROTATE:OK\n");
+    lib_c_printf("SHIFT:OK\n");
+    lib_c_printf("GROUP2-CL-PROFILES:OK\n");
+    lib_c_printf("GROUP2-IMMEDIATE-PROFILES:OK\n");
     return 0;
 }

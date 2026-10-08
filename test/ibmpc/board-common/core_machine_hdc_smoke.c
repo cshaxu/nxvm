@@ -388,12 +388,12 @@ lib_i32 main(void)
     core_machine_media_registry_destroy(registry);
     failed |= core_machine_hdc_test_ibm_wd1003();
     if (failed) {
-        lib_c_fprintf(lib_c_stderr, "M5:T286:S1:ATA-NIEN:PORT:FAIL bits=%x status=%02x error=%02x word=%04x\n",
+        lib_c_fprintf(lib_c_stderr, "ATA-NIEN:PORT:FAIL bits=%x status=%02x error=%02x word=%04x\n",
             failed, status, error, word);
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T286:S1:ATA-NIEN:PORT:OK");
-    lib_c_printf("%s\n", "M5:T283:S2:CORE-HDC-MEDIA:OK");
-    lib_c_printf("%s\n", "M5:T479:S5:IBM-WD1003:OK");
+    lib_c_printf("%s\n", "ATA-NIEN:PORT:OK");
+    lib_c_printf("%s\n", "CORE-HDC-MEDIA:OK");
+    lib_c_printf("%s\n", "IBM-WD1003:OK");
     return 0;
 }

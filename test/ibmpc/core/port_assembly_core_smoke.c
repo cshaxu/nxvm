@@ -27,6 +27,6 @@ lib_i32 main(void)
     failed |= port_assembly_hdc_transaction(CORE_MACHINE_HDC_PROTOCOL_ATA_PIO,
         0u, LIB_FALSE, LIB_TRUE);
     if (failed) return 1;
-    lib_c_printf("%s\n", "M5:T540:S93:CORE-PORT-ROLLBACK:OK");
+    lib_c_printf("%s\n", "CORE-PORT-ROLLBACK:OK");
     return 0;
 }

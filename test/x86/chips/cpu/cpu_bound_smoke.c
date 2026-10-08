@@ -1,6 +1,6 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: invalid BOUND stops at the CPU. */
+/* REAL_UD_TERMINAL_CPU_OWNER: invalid BOUND stops at the CPU. */
 
 static lib_i32 bound_same_state(const t_cpu *before, const t_cpu *after)
 {
@@ -235,6 +235,6 @@ lib_i32 main(void)
         lib_c_fprintf(lib_c_stderr, "BOUND segment route failed\n");
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T539:S41:BOUND-REGISTER-UD:OK");
+    lib_c_printf("%s\n", "BOUND-REGISTER-UD:OK");
     return 0;
 }

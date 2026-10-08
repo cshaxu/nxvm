@@ -107,7 +107,7 @@ lib_i32 main(void)
     if (lib_c_fprintf(file,
             "\n  },\n  \"semantic_only_prefixes\": [\"F0\"]\n}\n") < 0) goto fail;
     if (lib_c_fclose(file) != 0) return 1;
-    lib_c_printf("M5:T435:S7:I286-DECODER-LEXEME:%u:%u\n", accepted_pairs,
+    lib_c_printf("I286-DECODER-LEXEME:%u:%u\n", accepted_pairs,
         accepted_opcodes);
     return 0;
 

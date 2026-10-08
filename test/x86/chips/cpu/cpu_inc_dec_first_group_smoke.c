@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 #include "support/cpu_instruction_fixture.h"
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: original invalid forms stay CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: original invalid forms stay CPU-owned. */
 
 #define INC_DEC_MEMORY 0x5000u
 #define INC_DEC_DEFINED_FLAGS (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | \
@@ -857,18 +857,18 @@ int main(void)
         !inc_dec_test_div_idiv_forms() ||
         !inc_dec_test_div_idiv_attribute_and_profile() ||
         !inc_dec_test_word_dividend_capture()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S33:CPU-INC-DEC-GROUP:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "CPU-INC-DEC-GROUP:FAIL\n");
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T316:S2:INC-DEC:OK");
-    lib_c_printf("%s\n", "M5:T316:S3:NOT-NEG:OK");
-    lib_c_printf("%s\n", "M5:T316:S4:TEST:OK");
-    lib_c_printf("%s\n", "M5:T316:S5:MUL-IMUL:OK");
-    lib_c_printf("%s\n", "M5:T401:S9:IMUL-SIGN-EXTENSION-PROFILES:OK");
-    lib_c_printf("%s\n", "M5:T316:S6:DIV-IDIV:OK");
-    lib_c_printf("%s\n", "M5:T401:S10:GROUP45-INC-DEC-PROFILES:OK");
-    lib_c_printf("%s\n", "M5:T401:S11:PRIMARY-INC-DEC-PROFILES:OK");
-    lib_c_printf("%s\n", "M5:T401:S20:ACCUMULATOR-TEST-PROFILES:OK");
-    lib_c_printf("%s\n", "M5:T539:S33:CPU-INC-DEC-GROUP:OK");
+    lib_c_printf("%s\n", "INC-DEC:OK");
+    lib_c_printf("%s\n", "NOT-NEG:OK");
+    lib_c_printf("%s\n", "TEST:OK");
+    lib_c_printf("%s\n", "MUL-IMUL:OK");
+    lib_c_printf("%s\n", "IMUL-SIGN-EXTENSION-PROFILES:OK");
+    lib_c_printf("%s\n", "DIV-IDIV:OK");
+    lib_c_printf("%s\n", "GROUP45-INC-DEC-PROFILES:OK");
+    lib_c_printf("%s\n", "PRIMARY-INC-DEC-PROFILES:OK");
+    lib_c_printf("%s\n", "ACCUMULATOR-TEST-PROFILES:OK");
+    lib_c_printf("%s\n", "CPU-INC-DEC-GROUP:OK");
     return 0;
 }

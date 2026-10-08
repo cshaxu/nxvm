@@ -104,6 +104,6 @@ lib_i32 main(void)
 
     x86_video_destroy(vadp);
     if (failed) return 1;
-    lib_c_printf("M5:T228:S1:CGA:PORT:OK\n");
+    lib_c_printf("CGA:PORT:OK\n");
     return 0;
 }

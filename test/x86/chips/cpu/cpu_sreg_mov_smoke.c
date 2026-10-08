@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: rejection and shutdown remain distinct. */
+/* REAL_UD_TERMINAL_CPU_OWNER: rejection and shutdown remain distinct. */
 static lib_i32 sreg_mov_prepare(cpu_instruction_fixture *state,
     core_machine_cpu_profile profile)
 {
@@ -544,7 +544,7 @@ lib_i32 main(void)
         lib_c_printf("SREG-MOV stage=protected\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S32:SREG-MOV:OK\n");
-    lib_c_printf("M5:T401:S48:SREG-MOV-PROFILES:OK\n");
+    lib_c_printf("SREG-MOV:OK\n");
+    lib_c_printf("SREG-MOV-PROFILES:OK\n");
     return 0;
 }

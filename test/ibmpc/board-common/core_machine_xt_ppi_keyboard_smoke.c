@@ -392,10 +392,10 @@ int main(void)
         core_machine_xt_keyboard_refused_completion(LIB_TRUE, LIB_TRUE, LIB_FALSE) ||
         core_machine_xt_keyboard_refused_completion(LIB_FALSE, LIB_FALSE, LIB_TRUE) ||
         core_machine_xt_keyboard_refused_completion(LIB_TRUE, LIB_FALSE, LIB_TRUE)) return 1;
-    lib_c_printf("M5:T484:S8:XT-PPI-KEYBOARD:OK\n");
-    lib_c_printf("M5:T484:S8:XT-IRQ1-RESET:OK\n");
-    lib_c_printf("M5:T484:S8:NO-8042-ALIAS:OK\n");
-    lib_c_printf("M5:T484:S19:XT-PPI-PARITY:OK\n");
-    lib_c_printf("M5:T496:S2:XT-KEYBOARD-BAT:OK\n");
+    lib_c_printf("XT-PPI-KEYBOARD:OK\n");
+    lib_c_printf("XT-IRQ1-RESET:OK\n");
+    lib_c_printf("NO-8042-ALIAS:OK\n");
+    lib_c_printf("XT-PPI-PARITY:OK\n");
+    lib_c_printf("XT-KEYBOARD-BAT:OK\n");
     return 0;
 }

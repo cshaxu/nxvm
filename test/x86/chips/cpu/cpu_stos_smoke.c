@@ -1,6 +1,6 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: STOS prefix rejection is CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: STOS prefix rejection is CPU-owned. */
 
 static void stos_seed(cpu_instruction_fixture *state)
 {
@@ -317,7 +317,7 @@ lib_i32 main(void)
         lib_c_printf("STOS stage=protected\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S34:STOS:OK\n");
-    lib_c_printf("M5:T401:S17:STOS-PROFILES:OK\n");
+    lib_c_printf("STOS:OK\n");
+    lib_c_printf("STOS-PROFILES:OK\n");
     return 0;
 }

@@ -264,9 +264,9 @@ lib_i32 main(void)
         lib_c_printf("XCHG acc stage=irq\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S27:XCHG:OK\n");
-    lib_c_printf("M5:T316:S28:XCHG-ACC:OK\n");
-    lib_c_printf("M5:T401:S12:ACCUMULATOR-XCHG-PROFILES:OK\n");
-    lib_c_printf("M5:T401:S46:XCHG-MODRM-PROFILES:OK\n");
+    lib_c_printf("XCHG:OK\n");
+    lib_c_printf("XCHG-ACC:OK\n");
+    lib_c_printf("ACCUMULATOR-XCHG-PROFILES:OK\n");
+    lib_c_printf("XCHG-MODRM-PROFILES:OK\n");
     return 0;
 }

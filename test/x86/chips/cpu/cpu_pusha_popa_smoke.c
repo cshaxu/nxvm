@@ -1,7 +1,7 @@
 #include "support/cpu_stack_probe_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static void pusha_popa_seed(cpu_instruction_fixture *state)
 {
     t_cpu *cpu = &state->cpu;
@@ -648,7 +648,7 @@ lib_i32 main(void)
         lib_c_printf("PUSHA-POPA stage=rejections\n");
         return 1;
     }
-    lib_c_printf("CPU:M5:T316:S42:PUSHA-POPA:OK\n");
-    lib_c_printf("CPU:M5:T401:S31:PUSHA-POPA-PROFILES:OK\n");
+    lib_c_printf("PUSHA-POPA:OK\n");
+    lib_c_printf("PUSHA-POPA-PROFILES:OK\n");
     return 0;
 }

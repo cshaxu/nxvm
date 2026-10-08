@@ -40,7 +40,7 @@ static lib_i32 setcc_test_limit_nonpublication(void)
 lib_i32 main(void)
 {
     if (!setcc_test_limit_nonpublication()) return 1;
-    lib_c_printf("M5:T310:S3:SETCC:OK\n");
-    lib_c_printf("M5:T401:S60:SETCC-PROFILES:OK\n");
+    lib_c_printf("SETCC:OK\n");
+    lib_c_printf("SETCC-PROFILES:OK\n");
     return 0;
 }

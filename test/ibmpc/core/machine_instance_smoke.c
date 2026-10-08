@@ -149,6 +149,6 @@ lib_i32 main(void)
         return 1;
     }
 
-    lib_c_printf("%s\n", "M3:T1:S2:MACHINE-INSTANCE:OK");
+    lib_c_printf("%s\n", "MACHINE-INSTANCE:OK");
     return 0;
 }

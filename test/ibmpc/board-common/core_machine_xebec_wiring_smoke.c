@@ -342,12 +342,12 @@ cleanup:
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(registry);
     if (failed) {
-        lib_c_fprintf(lib_c_stderr, "M5:T484:S15:XEBEC-STACK:FAIL bits=%x\n", failed);
+        lib_c_fprintf(lib_c_stderr, "XEBEC-STACK:FAIL bits=%x\n", failed);
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T484:S15:XEBEC-STACK:OK");
-    lib_c_printf("%s\n", "M5:T484:S15:XEBEC-NO-ATA-ALIAS:OK");
-    lib_c_printf("%s\n", "M5:T484:S17:XEBEC-DMA-MEDIA:OK");
-    lib_c_printf("%s\n", "M5:T484:S18:XEBEC-DMA-RAM:OK");
+    lib_c_printf("%s\n", "XEBEC-STACK:OK");
+    lib_c_printf("%s\n", "XEBEC-NO-ATA-ALIAS:OK");
+    lib_c_printf("%s\n", "XEBEC-DMA-MEDIA:OK");
+    lib_c_printf("%s\n", "XEBEC-DMA-RAM:OK");
     return 0;
 }

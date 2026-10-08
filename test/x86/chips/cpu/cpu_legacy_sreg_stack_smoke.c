@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static lib_i32 legacy_sreg_stack_test_lock(void)
 {
     static const lib_u8 opcodes[] = {0x06u,0x07u,0x0eu,0x16u,0x17u,0x1eu,0x1fu};
@@ -679,7 +679,7 @@ lib_i32 main(void)
         lib_c_printf("LEGACY-SREG-STACK stage=lock\n");
         return 1;
     }
-    lib_c_printf("M5:T539:S26:CPU-LEGACY-SREG-STACK:OK\n");
-    lib_c_printf("M5:T401:S41:SREG-PUSH-POP-PROFILES:OK\n");
+    lib_c_printf("CPU-LEGACY-SREG-STACK:OK\n");
+    lib_c_printf("SREG-PUSH-POP-PROFILES:OK\n");
     return 0;
 }

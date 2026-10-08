@@ -55,7 +55,7 @@ static lib_i32 shift_test_access_failure(void)
 lib_i32 main(void)
 {
     if (!shift_test_access_failure()) return 1;
-    lib_c_printf("M5:T310:S6:DOUBLE-SHIFT:OK\n");
-    lib_c_printf("M5:T401:S62:DOUBLE-SHIFT-PROFILES:OK\n");
+    lib_c_printf("DOUBLE-SHIFT:OK\n");
+    lib_c_printf("DOUBLE-SHIFT-PROFILES:OK\n");
     return 0;
 }

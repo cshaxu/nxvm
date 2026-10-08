@@ -106,7 +106,7 @@ static lib_i32 movx_run(movx_machine *state, const lib_u8 *code,
         out_cpu == LIB_NULL || out_diagnostic == LIB_NULL ||
         core_machine_memory_write(state->machine, 0u, code, code_size) !=
             LIB_STATUS_OK) return 0;
-    /* T337_REAL_UD_TERMINAL_IVT_REJECT: vector-6 bus read fails. */
+    /* REAL_UD_TERMINAL_IVT_REJECT: vector-6 bus read fails. */
     status = core_machine_run(state->machine, budget, &result);
     if (status != LIB_STATUS_INTERNAL_ERROR ||
         result.reason != CORE_MACHINE_STOP_FAULT ||
@@ -227,7 +227,7 @@ static lib_i32 movx_test_read_boundaries(void)
 lib_i32 main(void)
 {
     if (!movx_test_read_boundaries()) return 1;
-    lib_c_printf("M5:T310:S4:MOVX:OK\n");
-    lib_c_printf("M5:T401:S64:MOVX-PROFILES:OK\n");
+    lib_c_printf("MOVX:OK\n");
+    lib_c_printf("MOVX-PROFILES:OK\n");
     return 0;
 }

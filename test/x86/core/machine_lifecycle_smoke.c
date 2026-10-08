@@ -91,6 +91,6 @@ lib_i32 main(void)
         return 1;
     }
 
-    lib_c_printf("M3:T2:S1:LIFECYCLE:OK\n");
+    lib_c_printf("LIFECYCLE:OK\n");
     return 0;
 }

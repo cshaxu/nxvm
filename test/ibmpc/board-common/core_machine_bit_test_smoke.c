@@ -44,7 +44,7 @@ static lib_i32 bit_test_access_failure(void)
 lib_i32 main(void)
 {
     if (!bit_test_access_failure()) return 1;
-    lib_c_printf("M5:T310:S5:BIT:OK\n");
-    lib_c_printf("M5:T401:S61:BIT-TEST-PROFILES:OK\n");
+    lib_c_printf("BIT:OK\n");
+    lib_c_printf("BIT-TEST-PROFILES:OK\n");
     return 0;
 }

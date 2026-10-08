@@ -115,14 +115,14 @@ static lib_i32 segment_boot_protected(segment_machine *state)
         !segment_write(state, SEG_GDT_ADDRESS, gdt, sizeof(gdt)) ||
         !segment_write(state, 0u, real_code, sizeof(real_code))) {
         lib_c_fprintf(lib_c_stderr,
-            "M5:T301:SEGMENT-SELECTOR bootstrap-install-failed\n");
+            "M5::SEGMENT-SELECTOR bootstrap-install-failed\n");
         return 0;
     }
     run_status = core_machine_run(state->machine, budget, &result);
     if (run_status != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 9u) {
         lib_c_fprintf(lib_c_stderr,
-            "M5:T301:SEGMENT-SELECTOR bootstrap status=%d reason=%d detail=%08x\n",
+            "M5::SEGMENT-SELECTOR bootstrap status=%d reason=%d detail=%08x\n",
             run_status, result.reason, result.detail);
         return 0;
     }
@@ -373,7 +373,7 @@ static lib_i32 segment_test_protected_sreg_failures(void)
             before.esp != after.esp ||
             before.eflags != after.eflags;
         if (case_failed) lib_c_fprintf(lib_c_stderr,
-            "M5:T539:S28:SEGMENT-SELECTOR mov-fail index=%u selector=%04x esp=%08x/%08x flags=%08x/%08x\n",
+            "SEGMENT-SELECTOR mov-fail index=%u selector=%04x esp=%08x/%08x flags=%08x/%08x\n",
             (unsigned)index, failures[index].selector, before.esp,
             after.esp, before.eflags, after.eflags);
         core_machine_destroy(state.machine);
@@ -408,7 +408,7 @@ static lib_i32 segment_test_protected_sreg_failures(void)
             before.esp != after.esp ||
             before.eflags != after.eflags;
         if (case_failed) lib_c_fprintf(lib_c_stderr,
-            "M5:T539:S28:SEGMENT-SELECTOR pop-fail index=%u esp=%08x/%08x flags=%08x/%08x\n",
+            "SEGMENT-SELECTOR pop-fail index=%u esp=%08x/%08x flags=%08x/%08x\n",
             (unsigned)index, before.esp, after.esp,
             before.eflags, after.eflags);
         core_machine_destroy(state.machine);
@@ -452,10 +452,10 @@ lib_i32 main(void)
     lib_i32 pop_fault = segment_test_pop_fault_atomicity();
 
     if (rejected_286 || lxs_faults || sreg_faults || pop_fault) {
-        lib_c_fprintf(lib_c_stderr, "M5:T539:S28:SEGMENT-SELECTOR-BOARD:FAIL 286=%d lxs=%d sreg=%d pop=%d\n",
+        lib_c_fprintf(lib_c_stderr, "SEGMENT-SELECTOR-BOARD:FAIL 286=%d lxs=%d sreg=%d pop=%d\n",
             rejected_286, lxs_faults, sreg_faults, pop_fault);
         return 1;
     }
-    lib_c_printf("M5:T539:S28:SEGMENT-SELECTOR-BOARD:OK\n");
+    lib_c_printf("SEGMENT-SELECTOR-BOARD:OK\n");
     return 0;
 }

@@ -1,4 +1,5 @@
 * text=auto eol=lf
+test/register.cmake text eol=lf
 # Preserve legacy non-UTF-8 Win32 source bytes during the completed M5 move.
 src/vm/platform/win32/win32.c -text -whitespace
 # Preserve the imported NXVM CPU units while their authority is migrated.

@@ -428,7 +428,7 @@ lib_i32 main(void)
     result |= run_8088_prefetch_control_and_self_modify();
     if (result != 0) return 1;
 
-    lib_c_printf("%s\n", "M5:T539:S89:CPU-EXECUTION-SIGNAL-PREFETCH:OK");
-    lib_c_printf("%s\n", "M5:T484:S3:XT-8088-QUEUE:OK");
+    lib_c_printf("%s\n", "CPU-EXECUTION-SIGNAL-PREFETCH:OK");
+    lib_c_printf("%s\n", "XT-8088-QUEUE:OK");
     return 0;
 }

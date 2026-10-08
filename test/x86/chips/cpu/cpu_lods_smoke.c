@@ -1,6 +1,6 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: LODS prefix rejection is CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: LODS prefix rejection is CPU-owned. */
 
 static void lods_seed(cpu_instruction_fixture *state)
 {
@@ -315,7 +315,7 @@ lib_i32 main(void)
         lib_c_printf("LODS stage=extended\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S35:LODS:OK\n");
-    lib_c_printf("M5:T401:S18:LODS-PROFILES:OK\n");
+    lib_c_printf("LODS:OK\n");
+    lib_c_printf("LODS-PROFILES:OK\n");
     return 0;
 }

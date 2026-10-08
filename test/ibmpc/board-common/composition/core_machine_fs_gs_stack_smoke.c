@@ -99,6 +99,6 @@ static lib_i32 fs_gs_test_pop_stack_fault(void)
 lib_i32 main(void)
 {
     if (!fs_gs_test_pop_stack_fault()) return 1;
-    lib_c_printf("M5:T539:S26:FS-GS-BOARD-FAULT:OK\n");
+    lib_c_printf("FS-GS-BOARD-FAULT:OK\n");
     return 0;
 }

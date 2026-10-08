@@ -123,7 +123,7 @@ static lib_i32 protected_mode_run(core_machine *machine,
     core_machine_cpu_diagnostic *out_diagnostic)
 {
     core_machine_run_budget budget = { 64u, 0u };
-    /* T337_REAL_UD_TERMINAL_GUEST_LIDT: guest LIDT precedes measurement.
+    /* REAL_UD_TERMINAL_GUEST_LIDT: guest LIDT precedes measurement.
      * Rejected instructions have real handlers, not an unavailable-table oracle. */
     const lib_u8 load_idt[] = { 0x0fu, 0x01u, 0x1eu, 0x00u, 0x06u };
     const lib_u8 idtr[] = { 0x6fu, 0u, 0u, 4u, 0u, 0u };
@@ -229,7 +229,7 @@ static lib_i32 protected_mode_test_positive(void)
             cpu.cs_base != TEST_CODE_ADDRESS;
         if (failed) {
             lib_c_fprintf(lib_c_stderr,
-                "T257 positive ran=%d fault=%u/%08x at=%04x:%08x eax=%08x first=%04x second=%04x ds=%04x/%08x ss=%04x/%08x cpu=%d %04x/%08x\n",
+                "positive ran=%d fault=%u/%08x at=%04x:%08x eax=%08x first=%04x second=%04x ds=%04x/%08x ss=%04x/%08x cpu=%d %04x/%08x\n",
                 ran, diagnostic.first_fault.valid,
                 diagnostic.first_fault.exception_mask,
                 diagnostic.first_fault.point.cs, diagnostic.first_fault.point.eip,
@@ -542,13 +542,13 @@ lib_i32 main(void)
         stack_fault_delivery || task_fault_delivery ||
         protected_lidt || configured_idt || rejects_386) {
         lib_c_fprintf(lib_c_stderr,
-            "M5:T257:S6:80286-PROTECTED-MODE:FAIL positive=%d selector=%d npcode=%d npstack=%d stackdelivery=%d taskdelivery=%d lidt=%d idt=%d i386=%d\n",
+            "80286-PROTECTED-MODE:FAIL positive=%d selector=%d npcode=%d npstack=%d stackdelivery=%d taskdelivery=%d lidt=%d idt=%d i386=%d\n",
             positive, invalid_selector, nonpresent_code, nonpresent_stack,
             stack_fault_delivery, task_fault_delivery, protected_lidt,
             configured_idt, rejects_386);
         return 1;
     }
-    lib_c_printf("M5:T257:S6:80286-PROTECTED-MODE:OK\n");
-    lib_c_printf("M5:T358:S2:EXCEPTION-IRQ:OK\n");
+    lib_c_printf("80286-PROTECTED-MODE:OK\n");
+    lib_c_printf("EXCEPTION-IRQ:OK\n");
     return 0;
 }

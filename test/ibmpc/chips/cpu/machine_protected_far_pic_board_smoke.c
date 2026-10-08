@@ -28,6 +28,6 @@ int main(void)
     }
     protected_pic_board_finalize(&board);
     if (failed) return 1;
-    lib_c_printf("%s\n", "M5:T539:S53:PROTECTED-FAR-PIC-BOARD:OK");
+    lib_c_printf("%s\n", "PROTECTED-FAR-PIC-BOARD:OK");
     return 0;
 }

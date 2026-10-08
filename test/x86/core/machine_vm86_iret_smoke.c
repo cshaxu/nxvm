@@ -191,6 +191,6 @@ lib_i32 main(void)
         !vm86_iret_success((const lib_u8[]){ 0x67u, 0xcfu }, 2u) ||
         !vm86_iret_stack_atomic() || !vm86_iret_paging_success())
         return 1;
-    lib_c_printf("M5:T320:S2:VM86-IRET:OK\n");
+    lib_c_printf("VM86-IRET:OK\n");
     return 0;
 }

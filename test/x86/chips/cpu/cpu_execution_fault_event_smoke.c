@@ -773,6 +773,6 @@ lib_i32 main(void)
     failed |= !cpu_aam_return_matrix();
     if (failed) return 1;
     if (cpu_ud_cache_preservation() || cpu_interrupt_pending_and_rollback()) return 1;
-    lib_c_printf("%s\n", "M5:T539:S91:CPU-EXECUTION-FAULT-EVENT:OK");
+    lib_c_printf("%s\n", "CPU-EXECUTION-FAULT-EVENT:OK");
     return 0;
 }

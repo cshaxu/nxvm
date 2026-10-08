@@ -98,6 +98,6 @@ lib_i32 main(void)
     }
     core_machine_destroy(machine);
     if (failed) return 1;
-    lib_c_printf("M5:T225:S2:PIT-DIVIDER:OK\n");
+    lib_c_printf("PIT-DIVIDER:OK\n");
     return 0;
 }

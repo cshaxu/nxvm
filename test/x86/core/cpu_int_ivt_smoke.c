@@ -48,6 +48,6 @@ lib_i32 main(void)
     failed |= run_case(CORE_MACHINE_CPU_PROFILE_8086);
     failed |= run_case(CORE_MACHINE_CPU_PROFILE_80386);
     if (failed) return 1;
-    lib_c_printf("M5:T215:S1:CPU-INT-IVT:OK\n");
+    lib_c_printf("CPU-INT-IVT:OK\n");
     return 0;
 }

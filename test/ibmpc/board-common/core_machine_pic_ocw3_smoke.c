@@ -172,6 +172,6 @@ lib_i32 main(void)
     failed |= pic_ocw3_test_special_mask();
     failed |= pic_ocw3_test_sfnm();
     if (failed != 0) return 1;
-    lib_c_printf("M5:T349:S3:PIC-OCW3:OK\n");
+    lib_c_printf("PIC-OCW3:OK\n");
     return 0;
 }

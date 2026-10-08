@@ -80,7 +80,7 @@ int main(void)
     }
     core_machine_pic_finalize(board.master, board.slave);
     test_core_port_owner_destroy(board.machine);
-    if (failed) { lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S55:TASK16-PIC:FAIL\n"); return 1; }
-    lib_c_printf("%s\n", "M5:T539:S55:TASK16-PIC:OK");
+    if (failed) { lib_c_fprintf(lib_c_stderr, "%s", "TASK16-PIC:FAIL\n"); return 1; }
+    lib_c_printf("%s\n", "TASK16-PIC:OK");
     return 0;
 }

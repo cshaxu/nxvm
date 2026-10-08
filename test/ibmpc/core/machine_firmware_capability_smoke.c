@@ -249,8 +249,8 @@ lib_i32 main(void)
             probe.reentry_rejected, (int)lifecycle, (int)run_status, (int)result.reason);
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T297:S3:FIRMWARE-CAPABILITY:OK");
-    lib_c_printf("%s\n", "M5:T386:S25:ROM-ALIAS-LIFECYCLE:OK");
-    lib_c_printf("%s\n", "M5:T438:S1:FIRMWARE-FAILURE-PROPAGATION:OK");
+    lib_c_printf("%s\n", "FIRMWARE-CAPABILITY:OK");
+    lib_c_printf("%s\n", "ROM-ALIAS-LIFECYCLE:OK");
+    lib_c_printf("%s\n", "FIRMWARE-FAILURE-PROPAGATION:OK");
     return 0;
 }

@@ -1,7 +1,7 @@
 #include "support/cpu_stack_probe_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static void enter_leave_seed(cpu_instruction_fixture *state)
 {
     t_cpu *cpu = &state->cpu;
@@ -771,7 +771,7 @@ lib_i32 main(void)
         lib_c_printf("ENTER-LEAVE stage=protected-faults\n");
         return 1;
     }
-    lib_c_printf("CPU:M5:T316:S43:ENTER-LEAVE:OK\n");
-    lib_c_printf("CPU:M5:T401:S24:ENTER-LEAVE-PROFILES:OK\n");
+    lib_c_printf("ENTER-LEAVE:OK\n");
+    lib_c_printf("ENTER-LEAVE-PROFILES:OK\n");
     return 0;
 }

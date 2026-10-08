@@ -1,6 +1,6 @@
 #include "support/cpu_port_instruction_fixture.h"
 #include "lib/types/file.h"
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: rejected string ports stay CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: rejected string ports stay CPU-owned. */
 
 static void port_strings_seed(cpu_port_instruction_fixture *state)
 {
@@ -327,6 +327,6 @@ lib_i32 main(void)
         lib_c_printf("PORT-STRINGS stage=protected\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S38:PORT-STRINGS:OK\n");
+    lib_c_printf("PORT-STRINGS:OK\n");
     return 0;
 }

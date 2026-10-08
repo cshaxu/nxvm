@@ -330,27 +330,27 @@ int main(void)
 {
     if (!direct_flags_test_interrupt_privilege()) return 1;
     if (!direct_flags_test_default()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-DIRECT-FLAGS:DEFAULT:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "CPU-DIRECT-FLAGS:DEFAULT:FAIL\n");
         return 1;
     }
     if (!direct_flags_test_attributes()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-DIRECT-FLAGS:ATTRIBUTES:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "CPU-DIRECT-FLAGS:ATTRIBUTES:FAIL\n");
         return 1;
     }
     if (!direct_flags_test_386_attributes()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-DIRECT-FLAGS:386-ATTRIBUTES:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "CPU-DIRECT-FLAGS:386-ATTRIBUTES:FAIL\n");
         return 1;
     }
     if (!direct_flags_test_vm86()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-DIRECT-FLAGS:VM86:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "CPU-DIRECT-FLAGS:VM86:FAIL\n");
         return 1;
     }
     if (!direct_flags_test_real_identity()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:CPU-DIRECT-FLAGS:REAL-IDENTITY:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "CPU-DIRECT-FLAGS:REAL-IDENTITY:FAIL\n");
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T316:S40:DIRECT-FLAGS:OK");
-    lib_c_printf("%s\n", "M5:T401:S42:DIRECT-FLAGS-PROFILES:OK");
-    lib_c_printf("%s\n", "M5:T539:S36:CPU-DIRECT-FLAGS:OK");
+    lib_c_printf("%s\n", "DIRECT-FLAGS:OK");
+    lib_c_printf("%s\n", "DIRECT-FLAGS-PROFILES:OK");
+    lib_c_printf("%s\n", "CPU-DIRECT-FLAGS:OK");
     return 0;
 }

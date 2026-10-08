@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: invalid SGDT/SIDT stops at the CPU. */
+/* REAL_UD_TERMINAL_CPU_OWNER: invalid SGDT/SIDT stops at the CPU. */
 static lib_i32 sgdt_sidt_run(cpu_instruction_fixture *state,
     const lib_u8 *code, lib_u8 bytes, t_cpu *after)
 {
@@ -190,10 +190,10 @@ lib_i32 main(void)
     lib_i32 routes = sgdt_sidt_test_segments_and_vm86();
 
     if (!values || !rejections || !routes) {
-        lib_c_fprintf(lib_c_stderr, "M5:T539:S42:SGDT-SIDT CPU failed values=%d reject=%d routes=%d\n",
+        lib_c_fprintf(lib_c_stderr, "SGDT-SIDT CPU failed values=%d reject=%d routes=%d\n",
             values, rejections, routes);
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T539:S42:SGDT-SIDT-CPU:OK");
+    lib_c_printf("%s\n", "SGDT-SIDT-CPU:OK");
     return 0;
 }

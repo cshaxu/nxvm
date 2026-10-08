@@ -62,6 +62,6 @@ lib_i32 main(void)
 
     core_machine_destroy(machine);
     if (failed) return 1;
-    lib_c_printf("M5:T172:S1:MEMORY-RECONFIGURE:OK\n");
+    lib_c_printf("MEMORY-RECONFIGURE:OK\n");
     return 0;
 }

@@ -241,7 +241,7 @@ lib_i32 main(void)
         result != CORE_MACHINE_MEDIA_RESULT_PERMANENT)) failed = 1;
     core_machine_media_registry_destroy(registry);
     if (failed) return 1;
-    lib_c_printf("M5:T270:S2:MEDIA-PROVIDER:OK\n");
-    lib_c_printf("M5:T374:S9:MEDIA-ADDRESS-MARK:OK\n");
+    lib_c_printf("MEDIA-PROVIDER:OK\n");
+    lib_c_printf("MEDIA-ADDRESS-MARK:OK\n");
     return 0;
 }

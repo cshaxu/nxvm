@@ -259,6 +259,6 @@ lib_i32 main(void)
             arithmetic, stack, wait, profiles);
         return 1;
     }
-    lib_c_printf("M5:T262:S3:FPU-8087:OK\n");
+    lib_c_printf("FPU-8087:OK\n");
     return 0;
 }

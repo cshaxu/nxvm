@@ -169,6 +169,6 @@ lib_i32 main(void)
 
     core_machine_destroy(machine);
     if (failed) return 1;
-    lib_c_printf("M5:T256:S3:RATIONAL-CLOCK:OK\n");
+    lib_c_printf("RATIONAL-CLOCK:OK\n");
     return 0;
 }

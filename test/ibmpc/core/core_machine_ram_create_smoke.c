@@ -143,7 +143,7 @@ lib_i32 main(void)
     failed |= ram_create_preflight();
     failed |= configuration_board_publication();
     if (failed) return 1;
-    lib_c_printf("%s\n", "M5:T313:S2:RAM-CREATE:OK");
-    lib_c_printf("%s\n", "M5:T540:S82:CONFIG-BOARD-PUBLICATION:OK");
+    lib_c_printf("%s\n", "RAM-CREATE:OK");
+    lib_c_printf("%s\n", "CONFIG-BOARD-PUBLICATION:OK");
     return 0;
 }

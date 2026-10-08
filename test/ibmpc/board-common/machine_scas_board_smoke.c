@@ -140,6 +140,6 @@ lib_i32 main(void)
         lib_c_printf("SCAS board fault/IRQ failed\n");
         return 1;
     }
-    lib_c_printf("M5:T539:S38:SCAS-BOARD:OK\n");
+    lib_c_printf("SCAS-BOARD:OK\n");
     return 0;
 }

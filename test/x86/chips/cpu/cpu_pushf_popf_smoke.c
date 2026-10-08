@@ -648,9 +648,9 @@ int main(void)
     if (!pushf_test_stack_faults()) {
         lib_c_fprintf(lib_c_stderr, "%s", "stack faults\n"); return 1;
     }
-    lib_c_printf("%s\n", "M5:T316:S21:PUSHF-POPF:OK");
-    lib_c_printf("%s\n", "M5:T316:S47:PUSHF-POPF:OK");
-    lib_c_printf("%s\n", "M5:T401:S39:PUSHF-POPF-PROFILES:OK");
-    lib_c_printf("%s\n", "M5:T539:S36:CPU-PUSHF-POPF:OK");
+    lib_c_printf("%s\n", "PUSHF-POPF:OK");
+    lib_c_printf("%s\n", "PUSHF-POPF:OK");
+    lib_c_printf("%s\n", "PUSHF-POPF-PROFILES:OK");
+    lib_c_printf("%s\n", "CPU-PUSHF-POPF:OK");
     return 0;
 }

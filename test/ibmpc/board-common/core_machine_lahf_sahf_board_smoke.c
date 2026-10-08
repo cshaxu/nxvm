@@ -81,9 +81,9 @@ static lib_i32 lahf_sahf_test_irq(void)
 int main(void)
 {
     if (!lahf_sahf_test_protected() || !lahf_sahf_test_irq()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S36:BOARD-LAHF-SAHF:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "BOARD-LAHF-SAHF:FAIL\n");
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T539:S36:BOARD-LAHF-SAHF:OK");
+    lib_c_printf("%s\n", "BOARD-LAHF-SAHF:OK");
     return 0;
 }

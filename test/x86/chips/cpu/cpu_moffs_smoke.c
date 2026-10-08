@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: negative cases retain the CPU-owned IDTR limit. */
+/* REAL_UD_TERMINAL_CPU_OWNER: negative cases retain the CPU-owned IDTR limit. */
 static void moffs_set_registers(cpu_instruction_fixture *state)
 {
     state->cpu.data.eax = 0xaabb3344u;
@@ -310,6 +310,6 @@ lib_i32 main(void)
         !moffs_test_lock() ||
         !moffs_test_segment_overrides() ||
         !moffs_test_segment_writes()) return 1;
-    lib_c_printf("M5:T539:S22:MOFFS:CPU:OK\n");
+    lib_c_printf("MOFFS:CPU:OK\n");
     return 0;
 }

@@ -79,6 +79,6 @@ lib_i32 main(void)
     core_machine_pic_finalize(master, slave);
     core_machine_destroy(machine);
     if (failed) return 1;
-    lib_c_printf("%s\n", "M5:T273:S2:CORE-RTC:OK");
+    lib_c_printf("%s\n", "CORE-RTC:OK");
     return 0;
 }

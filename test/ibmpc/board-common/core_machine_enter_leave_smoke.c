@@ -309,7 +309,7 @@ lib_i32 main(void)
         lib_c_printf("ENTER-LEAVE stage=irq\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S43:ENTER-LEAVE:OK\n");
-    lib_c_printf("M5:T401:S24:ENTER-LEAVE-PROFILES:OK\n");
+    lib_c_printf("ENTER-LEAVE:OK\n");
+    lib_c_printf("ENTER-LEAVE-PROFILES:OK\n");
     return 0;
 }

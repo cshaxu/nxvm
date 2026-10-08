@@ -158,6 +158,6 @@ int main(void)
         X86_FPU_PROFILE_8087, VCPUINS_EXCEPT_FPU_UNSUPPORTED);
     failed |= fpu_state_vm86();
     if (failed) return 1;
-    lib_c_printf("%s\n", "S65 CPU full rollback/cache state: PASS");
+    lib_c_printf("%s\n", "FPU interface CPU full rollback/cache state: PASS");
     return 0;
 }

@@ -51,7 +51,7 @@ lib_i32 main(void)
 {
     if (!rotate_access_failure(LIB_FALSE) ||
         !rotate_access_failure(LIB_TRUE)) return 1;
-    lib_c_printf("M5:T316:S18:ROTATE-BOARD:OK\n");
-    lib_c_printf("M5:T316:S19:SHIFT-BOARD:OK\n");
+    lib_c_printf("ROTATE-BOARD:OK\n");
+    lib_c_printf("SHIFT-BOARD:OK\n");
     return 0;
 }

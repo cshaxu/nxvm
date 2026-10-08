@@ -1,6 +1,6 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: SCAS prefix rejection is CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: SCAS prefix rejection is CPU-owned. */
 
 #define SCAS_CMP_FLAGS (VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF | \
     VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF)
@@ -317,7 +317,7 @@ lib_i32 main(void)
         lib_c_printf("SCAS stage=flags/rejections/protected\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S36:SCAS:OK\n");
-    lib_c_printf("M5:T401:S19:SCAS-PROFILES:OK\n");
+    lib_c_printf("SCAS:OK\n");
+    lib_c_printf("SCAS-PROFILES:OK\n");
     return 0;
 }

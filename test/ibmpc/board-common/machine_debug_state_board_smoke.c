@@ -5,7 +5,7 @@
 #include "x86/core/debug_interface.h"
 #include "x86/core/device_support_interface.h"
 #include "ibmpc/board-common/machine_board_interface.h"
-/* T337_REAL_UD_VECTOR6_DELIVERY: this owner installs and observes vector 6. */
+/* REAL_UD_DELIVERY_CONTRACT: this owner installs and observes vector 6. */
 
 typedef struct debug_board_context {
     core_machine *machine;
@@ -464,6 +464,6 @@ int main(void)
         lib_c_printf("debug-state-board stage=protected-breakpoint\n");
         return 1;
     }
-    lib_c_printf("M5:T539:S46:DEBUG-STATE-BOARD:OK\n");
+    lib_c_printf("DEBUG-STATE-BOARD:OK\n");
     return 0;
 }

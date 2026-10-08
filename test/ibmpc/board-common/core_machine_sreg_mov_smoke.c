@@ -156,7 +156,7 @@ static lib_i32 sreg_mov_test_protected_faults(void)
         }
         core_machine_destroy(state.machine);
         if (!passed) {
-            lib_c_fprintf(lib_c_stderr, "M5:T539:S28:SREG-MOV protected fault form=%u\n",
+            lib_c_fprintf(lib_c_stderr, "SREG-MOV protected fault form=%u\n",
                 (unsigned)form);
             return 0;
         }
@@ -264,6 +264,6 @@ lib_i32 main(void)
 {
     if (!sreg_mov_test_protected_faults()) return 1;
     if (!sreg_mov_test_irq_shadow()) return 1;
-    lib_c_printf("M5:T539:S28:SREG-MOV-BOARD:OK\n");
+    lib_c_printf("SREG-MOV-BOARD:OK\n");
     return 0;
 }

@@ -131,6 +131,6 @@ int main(void)
     if (!s47_rejected_encoding(CORE_MACHINE_CPU_PROFILE_80386, lock,
             sizeof(lock))) return 9;
     if (!s47_not_present_gate()) return 10;
-    lib_c_printf("M5:T323:S3:PROTECTED-16-GATE:OK\n");
+    lib_c_printf("PROTECTED-16-GATE:OK\n");
     return 0;
 }

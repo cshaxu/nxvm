@@ -276,9 +276,9 @@ lib_i32 main(void)
         !verr_verw_test_ldt_selector() ||
         !verr_verw_test_invalid_ldtr_is_negative() ||
         !verr_verw_test_descriptor_bytes_unchanged()) {
-        lib_c_fprintf(lib_c_stderr, "M5:T539:S44:VERR-VERW:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "VERR-VERW:FAIL\n");
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T539:S44:VERR-VERW:OK");
+    lib_c_printf("%s\n", "VERR-VERW:OK");
     return 0;
 }

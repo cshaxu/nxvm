@@ -226,6 +226,6 @@ lib_i32 main(void)
     failed |= pic_command_priority_test_programmed_cascade();
     failed |= pic_command_priority_test_immediate_cascade();
     if (failed != 0) return 1;
-    lib_c_printf("M5:T349:S2:PIC-COMMAND-PRIORITY:OK\n");
+    lib_c_printf("PIC-COMMAND-PRIORITY:OK\n");
     return 0;
 }

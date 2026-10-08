@@ -120,13 +120,13 @@ static lib_i32 oas_prepare(oas_machine *state, oas_port_state *port,
         !oas_write(state, OAS_GDT_POINTER, gdt_pointer, sizeof(gdt_pointer)) ||
         !oas_write(state, OAS_GDT_ADDRESS, gdt, sizeof(gdt)) ||
         !oas_write(state, 0u, real_code, sizeof(real_code))) {
-        lib_c_fprintf(lib_c_stderr, "S29 operand board bootstrap setup failed\n");
+        lib_c_fprintf(lib_c_stderr, "operand address board bootstrap setup failed\n");
         return 0;
     }
     if (core_machine_run(state->machine,
             (core_machine_run_budget){ 10u, 0u }, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 10u) {
-        lib_c_fprintf(lib_c_stderr, "S29 operand board bootstrap run failed reason=%u executed=%u\n",
+        lib_c_fprintf(lib_c_stderr, "operand address board bootstrap run failed reason=%u executed=%u\n",
             (unsigned)result.reason, (unsigned)result.executed);
         return 0;
     }
@@ -156,7 +156,7 @@ static lib_i32 oas_run_gp(oas_machine *state, const lib_u8 *code,
         (core_machine_run_budget){ 16u, 0u }, &result);
     if (!oas_capture(state, out_cpu)) return 0;
     if (!test_core_machine_fixture_shutdown_wait(status, &result)) {
-        lib_c_fprintf(lib_c_stderr, "S29 operand shutdown status=%u reason=%u detail=%08x eip=%08x\n",
+        lib_c_fprintf(lib_c_stderr, "operand address shutdown status=%u reason=%u detail=%08x eip=%08x\n",
             (unsigned)status, (unsigned)result.reason, (unsigned)result.detail,
             (unsigned)out_cpu->eip);
         return 0;
@@ -190,7 +190,7 @@ static lib_i32 oas_test_fault_delivery(void)
         }
         core_machine_destroy(state.machine);
         if (failed) {
-            lib_c_fprintf(lib_c_stderr, "S29 operand fault form=%u failed\n",
+            lib_c_fprintf(lib_c_stderr, "operand address fault form=%u failed\n",
                 (unsigned)form);
             return 0;
         }
@@ -239,13 +239,13 @@ static lib_i32 oas_test_io_strings(void)
 lib_i32 main(void)
 {
     if (!oas_test_fault_delivery()) {
-        lib_c_fprintf(lib_c_stderr, "S29 operand fault delivery failed\n");
+        lib_c_fprintf(lib_c_stderr, "operand address fault delivery failed\n");
         return 1;
     }
     if (!oas_test_io_strings()) {
-        lib_c_fprintf(lib_c_stderr, "S29 operand I/O strings failed\n");
+        lib_c_fprintf(lib_c_stderr, "operand address I/O strings failed\n");
         return 1;
     }
-    lib_c_printf("M5:T302:OPERAND-ADDRESS-STACK:OK\n");
+    lib_c_printf("M5::OPERAND-ADDRESS-STACK:OK\n");
     return 0;
 }

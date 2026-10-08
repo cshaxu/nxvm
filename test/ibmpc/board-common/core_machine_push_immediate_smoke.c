@@ -241,6 +241,6 @@ lib_i32 main(void)
         lib_c_printf("PUSH-IMMEDIATE stage=irq\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S45:PUSH-IMMEDIATE:OK\n");
+    lib_c_printf("PUSH-IMMEDIATE:OK\n");
     return 0;
 }

@@ -1349,6 +1349,6 @@ lib_i32 main(void)
     if (timing_80286_memory()) return 2;
     if (timing_80286_control_ports()) return 3;
     if (timing_80286_boundaries()) return 4;
-    lib_c_printf("M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK\n");
+    lib_c_printf("80286-INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

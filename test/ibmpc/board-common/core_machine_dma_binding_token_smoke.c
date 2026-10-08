@@ -87,6 +87,6 @@ done:
     core_machine_destroy(first);
     core_machine_media_registry_destroy(media);
     if (failed) return 1;
-    lib_c_printf("%s\n", "M5:T300:S4:DMA-BINDING-TOKEN:OK");
+    lib_c_printf("%s\n", "DMA-BINDING-TOKEN:OK");
     return 0;
 }

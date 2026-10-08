@@ -317,6 +317,6 @@ lib_i32 main(void)
         !vm86_delivery_fault(7u, nm, sizeof(nm), 0) || !vm86_delivery_debug_tf() ||
         !vm86_delivery_irq0() || !vm86_delivery_irq0_iret_round_trip() ||
         !vm86_delivery_paging_composition()) return 1;
-    lib_c_printf("M5:T320:S1:VM86-DELIVERY:OK\n");
-    lib_c_printf("M5:T539:S67:VM86:OK\n"); return 0;
+    lib_c_printf("VM86-DELIVERY:OK\n");
+    lib_c_printf("VM86:OK\n"); return 0;
 }

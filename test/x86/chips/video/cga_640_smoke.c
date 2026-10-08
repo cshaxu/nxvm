@@ -39,6 +39,6 @@ lib_i32 main(void)
         snapshot.kind != X86_VIDEO_KIND_TEXT;
     x86_video_destroy(vadp);
     if (failed) return 1;
-    lib_c_printf("M5:T254:S2:CGA-640:PORT:OK\n");
+    lib_c_printf("CGA-640:PORT:OK\n");
     return 0;
 }

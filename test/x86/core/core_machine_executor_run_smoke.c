@@ -50,7 +50,7 @@ lib_i32 main(void)
     if (status != LIB_STATUS_OK || result.executed != 1u ||
         result.reason != CORE_MACHINE_STOP_BUDGET) {
         lib_c_fprintf(lib_c_stderr,
-            "M5:T198:S1:CORE-EXECUTOR-RUN:FAIL status=%d executed=%llu reason=%d\n",
+            "CORE-EXECUTOR-RUN:FAIL status=%d executed=%llu reason=%d\n",
             (lib_i32)status,
             (unsigned long long)result.executed, (lib_i32)result.reason);
         core_machine_destroy(machine);
@@ -71,13 +71,13 @@ lib_i32 main(void)
     if (status != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
         lib_c_fprintf(lib_c_stderr,
-            "M5:T198:S1:CORE-EXECUTOR-WAIT:FAIL status=%d executed=%llu reason=%d\n",
+            "CORE-EXECUTOR-WAIT:FAIL status=%d executed=%llu reason=%d\n",
             (lib_i32)status, (unsigned long long)result.executed,
             (lib_i32)result.reason);
         core_machine_destroy(machine);
         return 1;
     }
     core_machine_destroy(machine);
-    lib_c_printf("%s\n", "M5:T83:S3:CORE-EXECUTOR-RUN:OK");
+    lib_c_printf("%s\n", "CORE-EXECUTOR-RUN:OK");
     return 0;
 }

@@ -82,6 +82,6 @@ lib_i32 main(void)
 
     if (result != 0) return 1;
 
-    lib_c_printf("%s\n", "M5:T66:S1:CPU-CONTEXT:OK");
+    lib_c_printf("%s\n", "CPU-CONTEXT:OK");
     return 0;
 }

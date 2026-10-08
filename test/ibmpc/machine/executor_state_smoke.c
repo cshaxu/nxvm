@@ -26,7 +26,7 @@ int main(void)
     vm_machine_executor_state_stop(state);
     if (vm_machine_executor_state_is_active(state) ||
         vm_machine_executor_state_take_reset(state)) goto failed;
-    lib_c_printf("M5:T534:S26:EXECUTOR-STATE:OK\n");
+    lib_c_printf("EXECUTOR-STATE:OK\n");
     return 0;
 
 failed:

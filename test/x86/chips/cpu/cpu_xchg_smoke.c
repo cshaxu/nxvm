@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 typedef struct xchg_vector {
     const lib_u8 *code;
     lib_u8 bytes;
@@ -437,6 +437,6 @@ lib_i32 main(void)
         lib_c_printf("XCHG acc stage=lock\n");
         return 1;
     }
-    lib_c_printf("M5:T539:S23:XCHG:CPU:OK\n");
+    lib_c_printf("XCHG:CPU:OK\n");
     return 0;
 }

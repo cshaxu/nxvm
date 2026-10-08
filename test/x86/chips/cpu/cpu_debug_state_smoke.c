@@ -687,6 +687,6 @@ int main(void)
         lib_c_printf("debug-state stage=data-breakpoints\n");
         return 1;
     }
-    lib_c_printf("M5:T539:S46:DEBUG-STATE:OK\n");
+    lib_c_printf("DEBUG-STATE:OK\n");
     return 0;
 }

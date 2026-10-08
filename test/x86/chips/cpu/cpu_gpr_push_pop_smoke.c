@@ -1,7 +1,7 @@
 #include "support/cpu_stack_probe_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static void gpr_push_pop_seed(cpu_instruction_fixture *state)
 {
     t_cpu *cpu = &state->cpu;
@@ -822,8 +822,8 @@ lib_i32 main(void)
         lib_c_printf("GPR-PUSH-POP stage=attributes\n");
         return 1;
     }
-    lib_c_printf("CPU:M5:T316:S44:GPR-PUSH-POP:OK\n");
-    lib_c_printf("CPU:M5:T401:S40:GPR-PUSH-POP-PROFILES:OK\n");
-    lib_c_printf("CPU:M5:T401:S10:GROUP5-PUSH-RM-PROFILES:OK\n");
+    lib_c_printf("GPR-PUSH-POP:OK\n");
+    lib_c_printf("GPR-PUSH-POP-PROFILES:OK\n");
+    lib_c_printf("GROUP5-PUSH-RM-PROFILES:OK\n");
     return 0;
 }

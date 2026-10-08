@@ -117,6 +117,6 @@ lib_i32 main(void)
         lib_c_printf("mantle shape failed=%x reason=%u\n", failed, result.reason);
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T274:S2:MANTLE-SHAPE:OK");
+    lib_c_printf("%s\n", "MANTLE-SHAPE:OK");
     return 0;
 }

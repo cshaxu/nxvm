@@ -141,8 +141,8 @@ lib_i32 main(void)
 
     x86_video_destroy(vadp);
     if (failed) return 1;
-    lib_c_printf("M5:T266:S3:VADP-TEXT-STATUS:OK\n");
-    lib_c_printf("M5:T375:S8:MODEL339-CGA-CLOCK-RECONCILIATION:OK\n");
-    lib_c_printf("M5:T375:S11:CGA-LOGICAL-RASTER:OK\n");
+    lib_c_printf("VADP-TEXT-STATUS:OK\n");
+    lib_c_printf("MODEL339-CGA-CLOCK-RECONCILIATION:OK\n");
+    lib_c_printf("CGA-LOGICAL-RASTER:OK\n");
     return 0;
 }

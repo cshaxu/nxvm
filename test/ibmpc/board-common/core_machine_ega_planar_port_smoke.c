@@ -270,9 +270,9 @@ lib_i32 main(void)
     core_machine_vadp_finalize(&vadp);
     core_machine_destroy(machine);
     if (failed) {
-        lib_c_fprintf(lib_c_stderr, "M5:T238:S2:EGA-PLANAR:PORT:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "EGA-PLANAR:PORT:FAIL\n");
         return 1;
     }
-    lib_c_printf("M5:T238:S2:EGA-PLANAR:PORT:OK\n");
+    lib_c_printf("EGA-PLANAR:PORT:OK\n");
     return 0;
 }

@@ -70,17 +70,17 @@ foreach(core_case IN ITEMS
     "core-machine-real-mode-tick-smoke|core_machine_real_mode_tick_smoke.c|x86-core"
     "core-machine-int-ivt-smoke|cpu_int_ivt_smoke.c|x86-core"
     "core-machine-configuration-smoke|machine_configuration_smoke.c|x86-core"
-    "core-machine-memory-device-registration-s16-smoke|machine_memory_device_registration_s16_smoke.c|x86-core"
+    "core-machine-memory-device-registration-smoke|machine_memory_device_registration_smoke.c|x86-core"
     "core-machine-immutable-rom-mapping-smoke|machine_immutable_rom_mapping_smoke.c|x86-core"
     "core-machine-rational-clock-smoke|machine_rational_clock_smoke.c|x86-core"
     "core-machine-executor-run-smoke|core_machine_executor_run_smoke.c|x86-core"
     "core-machine-memory-inspection-smoke|core_machine_memory_inspection_smoke.c|x86-core"
     "machine-80386-protected-io-timing-smoke|machine_80386_protected_io_timing_smoke.c|x86-core"
-    "machine-t359-s4-timing-smoke|machine_t359_s4_timing_smoke.c|x86-core"
-    "machine-t359-s6-timing-smoke|machine_t359_s6_timing_smoke.c|x86-core"
+    "machine-string-io-timing-smoke|machine_string_io_timing_smoke.c|x86-core"
+    "machine-80386-privileged-timing-smoke|machine_80386_privileged_timing_smoke.c|x86-core"
     "machine-8086-instruction-timing-ledger-smoke|machine_8086_instruction_timing_ledger_smoke.c|x86-core"
     "machine-80186-instruction-timing-ledger-smoke|machine_80186_instruction_timing_ledger_smoke.c|x86-core"
-    "machine-t359-s5-timing-smoke|machine_t359_s5_timing_smoke.c|x86-core"
+    "machine-80386-secondary-integer-timing-smoke|machine_80386_secondary_integer_timing_smoke.c|x86-core"
     "machine-cpu-profile-gate-smoke|machine_cpu_profile_gate_smoke.c|x86-core"
     "machine-instruction-timing-smoke|machine_instruction_timing_smoke.c|x86-core"
     "core-machine-descriptor-system-smoke|core_machine_descriptor_system_smoke.c|x86-core"
@@ -90,7 +90,7 @@ foreach(core_case IN ITEMS
     "core-machine-stopped-lifecycle-smoke|machine_stopped_lifecycle_smoke.c|x86-core"
     "core-machine-memory-reconfigure-smoke|machine_memory_reconfigure_smoke.c|x86-core"
     "core-machine-trace-smoke|machine_trace_smoke.c|x86-core-observable"
-    "core-machine-external-time-trace-s18-smoke|machine_external_time_trace_s18_smoke.c|x86-core-observable"
+    "core-machine-external-time-trace-smoke|machine_external_time_trace_smoke.c|x86-core-observable"
     "core-machine-debug-smoke|machine_debug_smoke.c|x86-core"
 )
     string(REPLACE "|" ";" core_fields "${core_case}")
@@ -126,10 +126,10 @@ shared_register_test(x86 chips/video/video_inspection x86-video)
 shared_register_test(x86 chips/video/video_allocation x86-video)
 shared_register_test(x86 chips/video/video_text x86-video)
 shared_register_test(x86 chips/video/video_text_status x86-video)
-shared_register_test(x86 chips/video/compaq_cecg_s9 x86-video)
-shared_register_test(x86 chips/video/compaq_cecg_s10 x86-video)
-shared_register_test(x86 chips/video/compaq_cecg_s12 x86-video)
-shared_register_test(x86 chips/video/compaq_cecg_s13 x86-video)
+shared_register_test(x86 chips/video/compaq_cecg_contract x86-video)
+shared_register_test(x86 chips/video/compaq_cecg_feature_environment x86-video)
+shared_register_test(x86 chips/video/compaq_cecg_io_base x86-video)
+shared_register_test(x86 chips/video/compaq_cecg_input_status x86-video)
 shared_register_test(x86 chips/video/ega_crtc_boundary_port x86-video)
 shared_register_test(x86 chips/video/ega_sequencer x86-video)
 shared_register_test(x86 chips/video/ega_controller x86-video)
@@ -137,8 +137,8 @@ shared_register_test(x86 chips/video/ega_external x86-video)
 shared_register_test(x86 chips/video/cga_graphics x86-video)
 shared_register_test(x86 chips/video/cga_640 x86-video)
 shared_register_test(x86 chips/video/ega_mode10 x86-video)
-shared_register_test(x86 chips/video/compaq_ega_s6 x86-video)
-shared_register_test(x86 chips/video/compaq_cecg_s28 x86-video)
+shared_register_test(x86 chips/video/compaq_ega_personality x86-video)
+shared_register_test(x86 chips/video/compaq_cecg_odd_even_page x86-video)
 shared_register_test(x86 chips/video/ega_planar x86-video)
 shared_register_test(x86 chips/ps2mouse/mouse_contract x86-ps2mouse)
 shared_register_test(x86 chips/keyboard/keyboard_contract x86-keyboard)
@@ -149,7 +149,7 @@ shared_register_test(x86 chips/cpu/cpu_contract x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_inc_dec_first_group x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_inc_dec_second_group x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_inc_dec_final_group x86-cpu-shared)
-shared_register_test(x86 chips/cpu/cpu_legacy_alu_s2 x86-cpu-shared)
+shared_register_test(x86 chips/cpu/cpu_legacy_alu x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_rotate x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_direct_flags x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_lahf_sahf x86-cpu-shared)
@@ -163,7 +163,7 @@ shared_register_test(x86 chips/cpu/cpu_enter_leave x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_fs_gs_stack x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_legacy_sreg_stack x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_les_lds x86-cpu-shared)
-shared_register_test(x86 chips/cpu/cpu_les_lds_s41 x86-cpu-shared)
+shared_register_test(x86 chips/cpu/cpu_les_lds_profile_matrix x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_lss_lfs_lgs x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_sreg_mov x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_segment_selector x86-cpu-shared)
@@ -180,7 +180,7 @@ shared_register_test(x86 chips/cpu/cpu_bound x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_lar_lsl x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_verr_verw x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_descriptor_system x86-cpu-shared)
-shared_register_test(x86 chips/cpu/cpu_dttr_s61 x86-cpu-shared)
+shared_register_test(x86 chips/cpu/cpu_descriptor_table_register x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_lgdt_lidt x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_sgdt_sidt x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_control_state x86-cpu-shared)
@@ -228,9 +228,9 @@ shared_register_test(x86 chips/cpu/cpu_double_shift x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_bit_scan x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_imul2 x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_operand_address x86-cpu-shared)
-shared_register_test(x86 chips/cpu/cpu_prefix_attributes_s64 x86-cpu-shared)
-shared_register_test(x86 chips/cpu/cpu_legacy_lock_s1 x86-cpu-shared)
-shared_register_test(x86 chips/cpu/cpu_imul_immediate_s56 x86-cpu-shared)
+shared_register_test(x86 chips/cpu/cpu_prefix_attributes x86-cpu-shared)
+shared_register_test(x86 chips/cpu/cpu_legacy_lock x86-cpu-shared)
+shared_register_test(x86 chips/cpu/cpu_imul_immediate x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_control_transfer_branch x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_control_transfer_near x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_control_transfer_far x86-cpu-shared)
@@ -240,7 +240,7 @@ shared_register_test(x86 chips/cpu/cpu_fpu_interface_state x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_vm86_delivery_state x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_vm86_iret_state x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_protected_iret_state x86-cpu-shared)
-shared_register_test(x86 chips/cpu/cpu_iret_s51_state x86-cpu-shared)
+shared_register_test(x86 chips/cpu/cpu_iret_state x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_task_switch_cross_width_state x86-cpu-shared)
 shared_register_test(x86 chips/cpu/cpu_eflags_local x86-cpu-shared)
 
@@ -275,11 +275,11 @@ foreach(profile IN ITEMS 80186 80286 80386)
 endforeach()
 
 shared_register_test(x86 core/timeline x86-core)
-add_executable(machine-fpu-interface-s65-smoke core/machine_fpu_interface_s65_smoke.c)
-target_link_libraries(machine-fpu-interface-s65-smoke PRIVATE x86-core)
-add_test(NAME unit.machine-fpu-interface-s65-smoke COMMAND machine-fpu-interface-s65-smoke)
-set_tests_properties(unit.machine-fpu-interface-s65-smoke PROPERTIES LABELS "unit;x86" TIMEOUT 30)
-list(APPEND SHARED_X86_TEST_TARGETS machine-fpu-interface-s65-smoke)
+add_executable(machine-fpu-interface-smoke core/machine_fpu_interface_smoke.c)
+target_link_libraries(machine-fpu-interface-smoke PRIVATE x86-core)
+add_test(NAME unit.machine-fpu-interface-smoke COMMAND machine-fpu-interface-smoke)
+set_tests_properties(unit.machine-fpu-interface-smoke PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+list(APPEND SHARED_X86_TEST_TARGETS machine-fpu-interface-smoke)
 add_executable(core-machine-entry-plan-smoke core/machine_entry_plan_smoke.c)
 target_link_libraries(core-machine-entry-plan-smoke PRIVATE x86-core)
 add_test(NAME unit.core-machine-entry-plan-smoke COMMAND core-machine-entry-plan-smoke)

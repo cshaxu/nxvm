@@ -168,6 +168,6 @@ lib_i32 main(void)
         .ticks_per_instruction = 1u
     };
     if (verify_board_phases(&config) || verify_deadline_admission()) return 1;
-    lib_c_printf("%s\n", "M5:T540:S93:CORE-ATTACHMENT-PHASES:OK");
+    lib_c_printf("%s\n", "CORE-ATTACHMENT-PHASES:OK");
     return 0;
 }

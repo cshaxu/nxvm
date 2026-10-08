@@ -329,7 +329,7 @@ lib_i32 main(void)
         lib_c_printf("PUSHA-POPA stage=irq\n");
         return 1;
     }
-    lib_c_printf("M5:T316:S42:PUSHA-POPA:OK\n");
-    lib_c_printf("M5:T401:S31:PUSHA-POPA-PROFILES:OK\n");
+    lib_c_printf("PUSHA-POPA:OK\n");
+    lib_c_printf("PUSHA-POPA-PROFILES:OK\n");
     return 0;
 }

@@ -318,17 +318,17 @@ target_link_libraries(core-machine-d4-refresh-hold-smoke PRIVATE core-machine-ob
 
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-t359-s4-timing-smoke PRIVATE
+    target_compile_options(machine-string-io-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-t359-s5-timing-smoke PRIVATE
+    target_compile_options(machine-80386-secondary-integer-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-t359-s6-timing-smoke PRIVATE
+    target_compile_options(machine-80386-privileged-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -476,20 +476,20 @@ endif()
 add_executable(core-machine-operand-address-smoke
     test/ibmpc/board-common/composition/core_machine_operand_address_smoke.c)
 target_link_libraries(core-machine-operand-address-smoke PRIVATE core-machine)
-add_executable(core-machine-legacy-lock-s1-smoke
-    test/ibmpc/board-common/composition/core_machine_legacy_lock_s1_smoke.c)
-target_link_libraries(core-machine-legacy-lock-s1-smoke PRIVATE core-machine)
+add_executable(core-machine-legacy-lock-smoke
+    test/ibmpc/board-common/composition/core_machine_legacy_lock_smoke.c)
+target_link_libraries(core-machine-legacy-lock-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-legacy-lock-s1-smoke PRIVATE
+    target_compile_options(core-machine-legacy-lock-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-movx-smoke test/ibmpc/board-common/composition/core_machine_movx_smoke.c)
 target_link_libraries(core-machine-movx-smoke PRIVATE core-machine)
-add_executable(core-machine-legacy-alu-s2-smoke
-    test/ibmpc/board-common/composition/core_machine_legacy_alu_s2_smoke.c)
-target_link_libraries(core-machine-legacy-alu-s2-smoke PRIVATE core-machine)
+add_executable(core-machine-legacy-alu-smoke
+    test/ibmpc/board-common/composition/core_machine_legacy_alu_smoke.c)
+target_link_libraries(core-machine-legacy-alu-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-legacy-alu-s2-smoke PRIVATE
+    target_compile_options(core-machine-legacy-alu-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -503,39 +503,39 @@ endif()
 add_executable(core-machine-fs-gs-stack-smoke test/ibmpc/board-common/composition/core_machine_fs_gs_stack_smoke.c)
 target_link_libraries(core-machine-fs-gs-stack-smoke PRIVATE core-machine)
 
-add_executable(core-machine-protected-16-gate-s3-smoke
+add_executable(core-machine-protected-16-gate-smoke
     test/ibmpc/board-common/composition/core_machine_protected_16_gate_board_smoke.c)
-target_link_libraries(core-machine-protected-16-gate-s3-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-protected-16-gate-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-protected-16-gate-s3-smoke PRIVATE
+    target_compile_options(core-machine-protected-16-gate-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-protected-16-external-s4-smoke
+add_executable(core-machine-protected-16-external-smoke
     test/ibmpc/board-common/composition/core_machine_protected_16_external_board_smoke.c)
-target_link_libraries(core-machine-protected-16-external-s4-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-protected-16-external-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-protected-16-external-s4-smoke PRIVATE
+    target_compile_options(core-machine-protected-16-external-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-protected-16-outer-s5-smoke
+add_executable(core-machine-protected-16-outer-smoke
     test/ibmpc/board-common/composition/core_machine_protected_16_outer_board_smoke.c)
-target_link_libraries(core-machine-protected-16-outer-s5-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-protected-16-outer-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-protected-16-outer-s5-smoke PRIVATE
+    target_compile_options(core-machine-protected-16-outer-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-protected-16-outer-iret-s6-smoke
+add_executable(core-machine-protected-16-outer-iret-smoke
     test/ibmpc/board-common/composition/core_machine_protected_16_outer_iret_board_smoke.c)
-target_link_libraries(core-machine-protected-16-outer-iret-s6-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-protected-16-outer-iret-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-protected-16-outer-iret-s6-smoke PRIVATE
+    target_compile_options(core-machine-protected-16-outer-iret-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-protected-16-call-gate-s7-smoke
+add_executable(core-machine-protected-16-call-gate-smoke
     test/ibmpc/board-common/composition/core_machine_protected_16_call_gate_board_smoke.c)
-target_link_libraries(core-machine-protected-16-call-gate-s7-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-protected-16-call-gate-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-protected-16-call-gate-s7-smoke PRIVATE
+    target_compile_options(core-machine-protected-16-call-gate-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -576,7 +576,7 @@ endif()
 # owners against the fixture adapter so their retained assertions observe the
 # latter only after the zero-retirement delivery boundary.
 foreach(target IN ITEMS
-    machine-t359-s4-timing-smoke
+    machine-string-io-timing-smoke
     machine-protected-privilege-board-smoke
     core-machine-call-gate-privilege-entry-smoke
     machine-tss-iomap-port-authorization-smoke
@@ -598,7 +598,7 @@ endforeach()
 # evidence of strict compilation for a smoke source.
 function(project_configure_t317_strict_cpu_smokes)
 set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
-    "core-machine-cli-sti-s48-smoke|test/ibmpc/board-common/core_machine_cli_sti_s48_smoke.c"
+    "core-machine-cli-sti-smoke|test/ibmpc/board-common/core_machine_cli_sti_profiles_smoke.c"
     "machine-cli-sti-interrupt-smoke|test/ibmpc/board-common/machine_cli_sti_interrupt_smoke.c"
     "x86-test-cpu_control_state|chips/cpu/cpu_control_state_smoke.c"
     "x86-test-cpu_control_transfer_branch|chips/cpu/cpu_control_transfer_branch_smoke.c"
@@ -608,36 +608,36 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "x86-test-cpu_protected_far|chips/cpu/cpu_protected_far_smoke.c"
     "x86-test-cpu_protected_data_access|chips/cpu/cpu_protected_data_access_smoke.c"
     "x86-test-cpu_debug_state|chips/cpu/cpu_debug_state_smoke.c"
-    "x86-test-cpu_dttr_s61|chips/cpu/cpu_dttr_s61_smoke.c"
+    "x86-test-cpu_descriptor_table_register|chips/cpu/cpu_descriptor_table_register_smoke.c"
     "x86-test-cpu_descriptor_system|chips/cpu/cpu_descriptor_system_smoke.c"
     "x86-test-cpu_lar_lsl|chips/cpu/cpu_lar_lsl_smoke.c"
     "x86-test-cpu_verr_verw|chips/cpu/cpu_verr_verw_smoke.c"
     "x86-test-cpu_eflags_local|chips/cpu/cpu_eflags_local_smoke.c"
     "core-machine-enter-leave-smoke|test/ibmpc/board-common/core_machine_enter_leave_smoke.c"
-    "machine-fpu-interface-s65-smoke|test/x86/core/machine_fpu_interface_s65_smoke.c"
+    "machine-fpu-interface-smoke|test/x86/core/machine_fpu_interface_smoke.c"
     "core-machine-fs-gs-stack-smoke|test/ibmpc/board-common/composition/core_machine_fs_gs_stack_smoke.c"
     "core-machine-gpr-mov-smoke|test/ibmpc/board-common/core_machine_gpr_mov_smoke.c"
     "core-machine-gpr-push-pop-smoke|test/ibmpc/board-common/core_machine_gpr_push_pop_smoke.c"
-    "core-machine-hlt-s49-smoke|test/ibmpc/board-common/core_machine_hlt_s49_smoke.c"
-    "core-machine-imul-immediate-s56-smoke|test/ibmpc/board-common/core_machine_imul_immediate_s56_smoke.c"
+    "core-machine-hlt-smoke|test/ibmpc/board-common/core_machine_hlt_profiles_smoke.c"
+    "core-machine-imul-immediate-smoke|test/ibmpc/board-common/core_machine_imul_immediate_profiles_smoke.c"
     "x86-test-cpu_outer_return|chips/cpu/cpu_outer_return_smoke.c"
     "x86-test-cpu_task_switch16|chips/cpu/cpu_task_switch16_smoke.c"
     "x86-test-cpu_task_switch32_decode|chips/cpu/cpu_task_switch32_decode_smoke.c"
     "x86-test-cpu_task_switch32_state|chips/cpu/cpu_task_switch32_state_smoke.c"
-    "core-machine-iret-s51-smoke|test/ibmpc/board-common/core_machine_iret_s51_smoke.c"
+    "core-machine-iret-smoke|test/ibmpc/board-common/core_machine_iret_profiles_smoke.c"
     "x86-test-cpu_lgdt_lidt|chips/cpu/cpu_lgdt_lidt_smoke.c"
     "core-machine-lea-smoke|test/ibmpc/board-common/core_machine_lea_smoke.c"
     "core-machine-legacy-sreg-stack-smoke|test/ibmpc/board-common/core_machine_legacy_sreg_stack_smoke.c"
-    "core-machine-les-lds-s41-smoke|test/ibmpc/board-common/core_machine_les_lds_s41_smoke.c"
+    "core-machine-les-lds-board-smoke|test/ibmpc/board-common/core_machine_les_lds_board_smoke.c"
     "core-machine-les-lds-smoke|test/ibmpc/board-common/core_machine_les_lds_smoke.c"
     "core-machine-lss-lfs-lgs-smoke|test/ibmpc/board-common/core_machine_lss_lfs_lgs_smoke.c"
     "core-machine-moffs-smoke|test/ibmpc/board-common/core_machine_moffs_smoke.c"
-    "core-machine-prefix-attributes-s64-smoke|test/ibmpc/board-common/core_machine_prefix_attributes_s64_smoke.c"
+    "core-machine-prefix-attributes-smoke|test/ibmpc/board-common/core_machine_prefix_attributes_smoke.c"
     "core-machine-push-immediate-smoke|test/ibmpc/board-common/core_machine_push_immediate_smoke.c"
     "core-machine-pusha-popa-smoke|test/ibmpc/board-common/core_machine_pusha_popa_smoke.c"
     "core-machine-rotate-smoke|test/ibmpc/board-common/core_machine_rotate_smoke.c"
     "core-machine-sign-extend-smoke|test/ibmpc/board-common/core_machine_sign_extend_smoke.c"
-    "core-machine-software-int-s50-smoke|test/ibmpc/board-common/core_machine_software_int_s50_smoke.c"
+    "core-machine-software-int-smoke|test/ibmpc/board-common/core_machine_software_int_profiles_smoke.c"
     "core-machine-sreg-mov-smoke|test/ibmpc/board-common/core_machine_sreg_mov_smoke.c"
     "x86-test-cpu_sgdt_sidt|chips/cpu/cpu_sgdt_sidt_smoke.c"
     "machine-debug-state-board-smoke|test/ibmpc/board-common/machine_debug_state_board_smoke.c"
@@ -1098,25 +1098,25 @@ target_link_libraries(core-machine-cpu-fpu-profile-smoke PRIVATE
 add_executable(machine-fpu-escape-smoke
     test/ibmpc/board-common/composition/machine_fpu_escape_smoke.c)
 target_link_libraries(machine-fpu-escape-smoke PRIVATE core-machine)
-add_executable(core-machine-real-exception-final-s1-smoke
-    test/ibmpc/board-common/composition/core_machine_real_exception_final_s1_smoke.c)
-target_link_libraries(core-machine-real-exception-final-s1-smoke PRIVATE core-machine)
+add_executable(core-machine-real-exception-final-smoke
+    test/ibmpc/board-common/composition/core_machine_real_exception_final_smoke.c)
+target_link_libraries(core-machine-real-exception-final-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(core-machine-real-exception-final-s1-smoke PRIVATE
+    target_compile_options(core-machine-real-exception-final-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-protected-ud-delivery-s1-smoke
-    test/ibmpc/board-common/composition/core_machine_protected_ud_delivery_s1_smoke.c)
-target_link_libraries(core-machine-protected-ud-delivery-s1-smoke PRIVATE core-machine)
+add_executable(core-machine-protected-ud-delivery-smoke
+    test/ibmpc/board-common/composition/core_machine_protected_ud_delivery_smoke.c)
+target_link_libraries(core-machine-protected-ud-delivery-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(core-machine-protected-ud-delivery-s1-smoke PRIVATE
+    target_compile_options(core-machine-protected-ud-delivery-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-real-ud-delivery-s1-smoke
-    test/ibmpc/board-common/composition/core_machine_real_ud_delivery_s1_smoke.c)
-target_link_libraries(core-machine-real-ud-delivery-s1-smoke PRIVATE core-machine)
+add_executable(core-machine-real-ud-delivery-smoke
+    test/ibmpc/board-common/composition/core_machine_real_ud_delivery_smoke.c)
+target_link_libraries(core-machine-real-ud-delivery-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(core-machine-real-ud-delivery-s1-smoke PRIVATE
+    target_compile_options(core-machine-real-ud-delivery-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-cpu-fpu-profile-closure-smoke
@@ -1214,52 +1214,52 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-time-smoke
     core-mantle-shape-smoke
     core-machine-entry-plan-smoke
-    core-machine-arbitration-s3-smoke
+    core-machine-arbitration-smoke
     core-machine-scheduler-smoke
     core-machine-board-timing-qualification-smoke
     core-machine-timing-checkpoint-smoke
-    core-machine-transaction-s2-smoke
+    core-machine-transaction-smoke
     core-machine-prefetch-locality-smoke
     model40-d4-prefetch-locality-smoke
     core-machine-competition-s3-smoke
     core-machine-d4-refresh-hold-smoke
-    core-machine-competition-80386-s1-smoke
-    core-machine-transaction-lifecycle-s4-smoke
+    core-machine-competition-80386-smoke
+    core-machine-transaction-lifecycle-smoke
     core-machine-rational-clock-smoke
-    core-machine-timeline-s2-smoke
-    core-machine-retirement-observation-s3-smoke
-    core-machine-rtc-storage-s4-smoke
-    core-machine-planar-parity-nmi-s3-smoke
-    core-machine-input-display-s5-smoke
+    core-machine-timeline-smoke
+    core-machine-retirement-observation-smoke
+    core-machine-rtc-storage-smoke
+    core-machine-planar-parity-nmi-smoke
+    core-machine-input-display-smoke
     core-machine-real-mode-tick-smoke
     machine-instruction-timing-smoke
     core-machine-cpu-timing-preview-smoke
     machine-instruction-timing-ledger-smoke
-    machine-fpu-irq-s65-smoke
-    machine-t359-s2-timing-smoke
-    machine-t359-s3-timing-smoke
-    machine-t359-s4-timing-smoke
-    machine-t359-s5-timing-smoke
-    machine-t359-s6-timing-smoke
+    machine-fpu-irq-smoke
+    machine-arithmetic-data-timing-smoke
+    machine-control-stack-timing-smoke
+    machine-string-io-timing-smoke
+    machine-80386-secondary-integer-timing-smoke
+    machine-80386-privileged-timing-smoke
     machine-8086-instruction-timing-ledger-smoke
     machine-8086-timing-manifest-runner
     machine-8088-timing-manifest-runner
     machine-80186-instruction-timing-ledger-smoke
-    machine-legacy-timing-normalization-s2-smoke
+    machine-legacy-timing-normalization-smoke
     machine-80286-instruction-timing-ledger-smoke
     machine-80386-protected-io-timing-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-real-mode-386-address-smoke
     core-machine-operand-address-smoke
-    core-machine-prefix-attributes-s64-smoke
-    core-machine-legacy-lock-s1-smoke
-    x86-test-cpu_legacy_lock_s1
+    core-machine-prefix-attributes-smoke
+    core-machine-legacy-lock-smoke
+    x86-test-cpu_legacy_lock
     core-machine-setcc-smoke
     x86-test-cpu_setcc
     core-machine-movx-smoke
     x86-test-cpu_movx
     x86-test-cpu_lea
-    x86-test-cpu_prefix_attributes_s64
+    x86-test-cpu_prefix_attributes
     x86-test-cpu_operand_address
     x86-test-cpu_bit_scan
     x86-test-cpu_double_shift
@@ -1269,17 +1269,17 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-inc-dec-first-group-board-smoke
     core-machine-inc-dec-second-group-board-smoke
     core-machine-inc-dec-final-group-board-smoke
-    core-machine-legacy-alu-s2-smoke
+    core-machine-legacy-alu-smoke
     core-machine-rotate-smoke
     x86-test-cpu_eflags_local
     core-machine-direct-flags-board-smoke
     core-machine-lahf-sahf-board-smoke
     core-machine-pushf-popf-board-smoke
     machine-cli-sti-interrupt-smoke
-    core-machine-cli-sti-s48-smoke
-    core-machine-hlt-s49-smoke
-    core-machine-software-int-s50-smoke
-    core-machine-iret-s51-smoke
+    core-machine-cli-sti-smoke
+    core-machine-hlt-smoke
+    core-machine-software-int-smoke
+    core-machine-iret-smoke
     x86-test-cpu_outer_return
     machine-outer-iret-pic-board-smoke
     x86-test-cpu_task_switch16
@@ -1289,7 +1289,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-fs-gs-stack-smoke
     core-machine-lss-lfs-lgs-smoke
     core-machine-les-lds-smoke
-    core-machine-les-lds-s41-smoke
+    core-machine-les-lds-board-smoke
     core-machine-pusha-popa-smoke
     core-machine-enter-leave-smoke
     core-machine-gpr-push-pop-smoke
@@ -1316,8 +1316,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke
-    core-machine-imul-immediate-s56-smoke
-    x86-test-cpu_imul_immediate_s56
+    core-machine-imul-immediate-smoke
+    x86-test-cpu_imul_immediate
     x86-test-cpu_control_state
     x86-test-cpu_control_transfer_branch
     x86-test-cpu_control_transfer_near
@@ -1329,11 +1329,11 @@ set(PROJECT_UNIT_TEST_TARGETS
     x86-test-cpu_protected_data_access
     machine-protected-far-pic-board-smoke
     machine-protected-data-pic-board-smoke
-    core-machine-protected-16-gate-s3-smoke
-    core-machine-protected-16-external-s4-smoke
-    core-machine-protected-16-outer-s5-smoke
-    core-machine-protected-16-outer-iret-s6-smoke
-    core-machine-protected-16-call-gate-s7-smoke
+    core-machine-protected-16-gate-smoke
+    core-machine-protected-16-external-smoke
+    core-machine-protected-16-outer-smoke
+    core-machine-protected-16-outer-iret-smoke
+    core-machine-protected-16-call-gate-smoke
     core-machine-descriptor-system-smoke
     machine-vm86-delivery-smoke
     machine-vm86-iret-smoke
@@ -1343,7 +1343,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     x86-test-cpu_arpl
     machine-arpl-board-smoke
     x86-test-cpu_bound
-    x86-test-cpu_dttr_s61
+    x86-test-cpu_descriptor_table_register
     x86-test-cpu_descriptor_system
     x86-test-cpu_lar_lsl
     x86-test-cpu_verr_verw
@@ -1362,33 +1362,33 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-task-switch32-paging-smoke
     core-machine-80386-paging-smoke
     machine-fpu-escape-smoke
-    machine-fpu-interface-s65-smoke
+    machine-fpu-interface-smoke
     core-machine-fpu-8087-smoke
-    core-machine-real-exception-final-s1-smoke
-    core-machine-protected-ud-delivery-s1-smoke
-    core-machine-real-ud-delivery-s1-smoke
-    machine-hardware-delivery-s3-smoke
-    core-machine-interrupt-return-composition-s4-smoke
-    machine-vm86-lgdt-lidt-s5-smoke
+    core-machine-real-exception-final-smoke
+    core-machine-protected-ud-delivery-smoke
+    core-machine-real-ud-delivery-smoke
+    machine-hardware-delivery-smoke
+    core-machine-interrupt-return-composition-smoke
+    machine-vm86-lgdt-lidt-smoke
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-configuration-smoke
     machine-port-ownership-board-smoke
     core-machine-firmware-capability-smoke
     core-machine-reset-rom-alias-smoke
-    core-machine-memory-device-registration-s16-smoke
+    core-machine-memory-device-registration-smoke
     core-machine-ram-port-context-smoke
     core-machine-pit-divider-smoke
-    core-machine-pit-irq0-s2-smoke
-    core-machine-auxiliary-pit-s3-smoke
+    core-machine-pit-irq0-smoke
+    core-machine-auxiliary-pit-smoke
     core-machine-d4-platform-s4-smoke
     core-machine-d4-memory-transaction-smoke
     core-machine-rom-route-transaction-smoke
-    core-machine-rtc-cmos-s3-smoke
+    core-machine-rtc-cmos-smoke
     core-machine-pic-irq-lifecycle-smoke
     core-machine-pic-command-priority-smoke
     core-machine-pic-ocw3-smoke
-    core-machine-pic-lifecycle-s4-smoke
-    core-machine-pic-phase-s2-smoke
+    core-machine-pic-lifecycle-smoke
+    core-machine-pic-phase-smoke
     core-machine-kbc-controller-smoke
     core-machine-xt-ppi-keyboard-smoke
     core-machine-kbc-serial-cadence-smoke
@@ -1402,8 +1402,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-fdc-media-change-port-smoke
     core-machine-hdc-smoke
     core-machine-xebec-wiring-smoke
-    core-machine-compaq-hdc-s5-smoke
-    core-machine-compaq-hdc-machine-s5-smoke
+    core-machine-compaq-hdc-dual-drive-smoke
+    core-machine-compaq-hdc-machine-smoke
     core-machine-controller-authority-smoke
     core-machine-board-binding-identity-smoke
     core-machine-attachment-phases-smoke
@@ -1419,9 +1419,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-memory-inspection-smoke
     core-machine-ega-controller-port-smoke
     core-machine-ega-planar-port-smoke
-    core-machine-compaq-cecg-s9-smoke
-    core-machine-compaq-cecg-s11-smoke
-    core-machine-compaq-cecg-s28-smoke
+    core-machine-compaq-cecg-contract-smoke
+    core-machine-compaq-cecg-cpu-video-gate-smoke
+    core-machine-compaq-cecg-odd-even-page-smoke
     vm-ega-sequencer-system-smoke
     vm-cga-graphics-system-smoke
     vm-ega-controller-system-smoke
@@ -1486,13 +1486,13 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-lifecycle-smoke
     core-machine-neutral-link-smoke
     core-machine-trace-smoke
-    core-machine-external-time-trace-s18-smoke
+    core-machine-external-time-trace-smoke
     vm-model-339-clock-contract-smoke
     core-machine-plan-smoke
     vm-model40-rom-layout-s14-smoke
     vm-app-ini-smoke
     core-machine-instance-smoke
-    core-machine-explicit-time-s4-smoke
+    core-machine-explicit-time-smoke
     machine-80186-timing-manifest-runner
     machine-80286-timing-manifest-runner
     core-machine-80186-decoder-inventory-runner
@@ -1514,7 +1514,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
 set(PROJECT_T337_UD_REAL_DELIVERY_TARGETS
     machine-debug-state-board-smoke
     core-machine-real-mode-corpus-smoke
-    core-machine-real-ud-delivery-s1-smoke
+    core-machine-real-ud-delivery-smoke
     )
 set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     x86-test-cpu_execution_fault_event
@@ -1526,10 +1526,10 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     x86-test-cpu_control_transfer_branch
     x86-test-cpu_control_transfer_far
     x86-test-cpu_debug_state
-    core-machine-protected-16-gate-s3-smoke
+    core-machine-protected-16-gate-smoke
     x86-test-cpu_protected_data_access
     x86-test-cpu_protected_far
-    core-machine-protected-ud-delivery-s1-smoke
+    core-machine-protected-ud-delivery-smoke
     machine-task-switch-cross-width-smoke
     machine-vm86-delivery-smoke
     vm-dos-mem-fault-smoke)
@@ -1559,10 +1559,10 @@ foreach(t337_ud_target IN LISTS PROJECT_T337_UD_UNIT_TEST_TARGETS)
                 set(t337_ud_found TRUE)
             endif()
             if(t337_ud_source_text MATCHES
-                "test_core_machine_fixture_preflight_real_ud_terminal|T337_REAL_UD_TERMINAL_GUEST_LIDT|T337_REAL_UD_TERMINAL_CPU_OWNER|T337_REAL_UD_TERMINAL_IVT_REJECT")
+                "test_core_machine_fixture_preflight_real_ud_terminal|REAL_UD_TERMINAL_GUEST_LIDT|REAL_UD_TERMINAL_CPU_OWNER|REAL_UD_TERMINAL_IVT_REJECT")
                 set(t337_ud_terminal TRUE)
             endif()
-            if(t337_ud_source_text MATCHES "T337_REAL_UD_VECTOR6_DELIVERY")
+            if(t337_ud_source_text MATCHES "REAL_UD_DELIVERY_CONTRACT")
                 set(t337_ud_delivery_marker TRUE)
             endif()
         endif()

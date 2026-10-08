@@ -200,6 +200,6 @@ lib_i32 main(void)
     for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
         if (cpu_bus_cases(&cases[index])) return 1;
     if (cpu_bus_legacy_repeat_interrupt_resume()) return 1;
-    lib_c_printf("%s\n", "M5:T539:S87:CPU-EXECUTION-BUS:OK");
+    lib_c_printf("%s\n", "CPU-EXECUTION-BUS:OK");
     return 0;
 }

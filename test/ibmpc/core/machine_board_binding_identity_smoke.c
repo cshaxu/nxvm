@@ -23,6 +23,6 @@ lib_i32 main(void)
         machine->attachment.finalize_devices != expected.finalize_devices;
     core_machine_destroy(machine);
     if (failed) return 1;
-    lib_c_printf("%s\n", "M5:T540:S93:BOARD-BINDING-IDENTITY:OK");
+    lib_c_printf("%s\n", "BOARD-BINDING-IDENTITY:OK");
     return 0;
 }

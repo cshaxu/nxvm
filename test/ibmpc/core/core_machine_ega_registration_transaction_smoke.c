@@ -355,6 +355,6 @@ lib_i32 test_video_registration_routes(t_vadp *adapter)
     }
 
     if (failed) return 1;
-    lib_c_printf("%s\n", "M5:T395:S1:ROUTE-REGISTRY-SCALABILITY:OK");
+    lib_c_printf("%s\n", "ROUTE-REGISTRY-SCALABILITY:OK");
     return 0;
 }

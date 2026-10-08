@@ -76,9 +76,9 @@ int main(void)
     if (!inc_dec_final_group_protected_faults() ||
         !inc_dec_final_group_aam_zero() ||
         !inc_dec_final_group_xlat_fault()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S35:BOARD-LOGICAL-DECIMAL-XLAT:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "%s", "BOARD-LOGICAL-DECIMAL-XLAT:FAIL\n");
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T539:S35:BOARD-LOGICAL-DECIMAL-XLAT:OK");
+    lib_c_printf("%s\n", "BOARD-LOGICAL-DECIMAL-XLAT:OK");
     return 0;
 }

@@ -79,6 +79,6 @@ lib_i32 main(void)
             "NXVM.ini")) return 1;
     if (vm_app_ini_executable_path(rejected_path, sizeof("NXVM.ini")) !=
             LIB_STATUS_INVALID_ARGUMENT || !text_equal(rejected_path, "unchanged")) return 1;
-    lib_c_printf("M5:T533:S4:NXVM-INI:OK\n");
+    lib_c_printf("NXVM-INI:OK\n");
     return 0;
 }

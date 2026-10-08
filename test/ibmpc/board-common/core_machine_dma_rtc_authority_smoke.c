@@ -192,7 +192,7 @@ int main(void)
 
 done:
     if (failed && machine != LIB_NULL) {
-        lib_c_printf("M5:T296:S3:DMA-RTC-AUTHORITY:DETAIL:%d IRQ=%u asserted=%u pending=%d vector=%02x IRR=%02x/%02x\n",
+        lib_c_printf("DMA-RTC-AUTHORITY:DETAIL:%d IRQ=%u asserted=%u pending=%d vector=%02x IRR=%02x/%02x\n",
             stage,
             board->rtc_cmos_config.irq,
             core_machine_pic_irq_source_is_asserted(board->rtc_irq_source),
@@ -200,8 +200,8 @@ done:
             test_pic_read(board->shared_pic_master, 0x0au), test_pic_read(board->shared_pic_slave, 0x0au));
     }
     core_machine_destroy(machine);
-    if (failed) lib_c_printf("M5:T296:S3:DMA-RTC-AUTHORITY:FAIL:%d\n", stage);
-    if (!failed) lib_c_printf("M5:T296:S3:DMA-RTC-AUTHORITY:OK\n");
-    if (!failed) lib_c_printf("%s\n", "M5:T540:S85:BOARD-CONTROLLER-HANDLES:OK");
+    if (failed) lib_c_printf("DMA-RTC-AUTHORITY:FAIL:%d\n", stage);
+    if (!failed) lib_c_printf("DMA-RTC-AUTHORITY:OK\n");
+    if (!failed) lib_c_printf("%s\n", "BOARD-CONTROLLER-HANDLES:OK");
     return failed;
 }

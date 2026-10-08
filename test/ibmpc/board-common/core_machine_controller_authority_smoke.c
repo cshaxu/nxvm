@@ -217,10 +217,10 @@ lib_i32 main(void)
     core_machine_media_registry_destroy(media);
     if (failed) {
         lib_c_fprintf(lib_c_stderr,
-            "M5:T296:S4:CONTROLLER-AUTHORITY:FAIL bits=%x status=%02x error=%02x fdc0=%d dma=%d fdc=%d hdc=%d\n",
+            "CONTROLLER-AUTHORITY:FAIL bits=%x status=%02x error=%02x fdc0=%d dma=%d fdc=%d hdc=%d\n",
             failed, status, error, fdc_before_dma, dma_status, fdc_status, hdc_status);
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T296:S4:CONTROLLER-AUTHORITY:OK");
+    lib_c_printf("%s\n", "CONTROLLER-AUTHORITY:OK");
     return 0;
 }

@@ -56,6 +56,6 @@ lib_i32 main(void)
         if (opcode < 0xd8u || opcode > 0xdfu) failed |= metadata.valid;
     }
     if (failed) return 1;
-    lib_c_printf("M5:T158:S1:CPU-FPU-METADATA-CLOSURE:OK\n");
+    lib_c_printf("CPU-FPU-METADATA-CLOSURE:OK\n");
     return 0;
 }

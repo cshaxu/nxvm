@@ -695,7 +695,7 @@ static lib_i32 timing_80186_boundaries(void)
 
     if (!failed) failed |= !timing_80186_load(machine, rotate,
         sizeof(rotate)) || !timing_80186_run(machine, &state, 1u, 2u);
-    /* T337_REAL_UD_TERMINAL_IVT_REJECT: vector 6 cannot be read. */
+    /* REAL_UD_TERMINAL_IVT_REJECT: vector 6 cannot be read. */
     if (!failed) failed |= !timing_80186_load(machine, fault, sizeof(fault)) ||
         core_machine_run(machine, one, &result) != LIB_STATUS_INTERNAL_ERROR ||
         result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
@@ -798,6 +798,6 @@ lib_i32 main(void)
     if (timing_80186_control_ports()) return 3;
     if (timing_80186_boundaries()) return 4;
     if (timing_80186_enter_full_level()) return 5;
-    lib_c_printf("M5:T357:S5:80186-INSTRUCTION-TIMING-LEDGER:OK\n");
+    lib_c_printf("80186-INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

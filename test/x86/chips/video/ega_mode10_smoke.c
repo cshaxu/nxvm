@@ -3,16 +3,16 @@
 #include "lib/types/file.h"
 
 
-#define T285_EGA_MODE10_WIDTH 640u
-#define T285_EGA_MODE10_HEIGHT 350u
-#define T285_EGA_MODE10_ROW_BYTES 80u
-#define T285_EGA_MODE10_START_WORD 1u
-#define T285_EGA_MODE10_START_BYTE (T285_EGA_MODE10_START_WORD * 2u)
-#define T285_EGA_MODE10_LAST_ROW_OFFSET \
-    (T285_EGA_MODE10_START_BYTE + (T285_EGA_MODE10_HEIGHT - 1u) * \
-        T285_EGA_MODE10_ROW_BYTES)
+#define _EGA_MODE10_WIDTH 640u
+#define _EGA_MODE10_HEIGHT 350u
+#define _EGA_MODE10_ROW_BYTES 80u
+#define _EGA_MODE10_START_WORD 1u
+#define _EGA_MODE10_START_BYTE (_EGA_MODE10_START_WORD * 2u)
+#define _EGA_MODE10_LAST_ROW_OFFSET \
+    (_EGA_MODE10_START_BYTE + (_EGA_MODE10_HEIGHT - 1u) * \
+        _EGA_MODE10_ROW_BYTES)
 
-static lib_i32 t285_write_byte(x86_video *video, lib_u32 physical, lib_u8 value)
+static lib_i32 _write_byte(x86_video *video, lib_u32 physical, lib_u8 value)
 {
     return x86_video_memory_write(video, X86_VIDEO_MEMORY_PLANAR, physical,
         &value, sizeof(value)) == LIB_STATUS_OK;
@@ -55,7 +55,7 @@ lib_i32 main(void)
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0cu);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x00u);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0du);
-    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, T285_EGA_MODE10_START_WORD);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, _EGA_MODE10_START_WORD);
 
     video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_INDEX, 2u);
     video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_DATA, 0x0fu);
@@ -67,11 +67,11 @@ lib_i32 main(void)
     for (plane = 0u; plane < X86_VIDEO_EGA_PLANES; ++plane) {
         video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_INDEX, 2u);
         video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_DATA, (lib_u8)(1u << plane));
-        failed |= !t285_write_byte(vadp,
-            X86_VIDEO_EGA_APERTURE_BASE + T285_EGA_MODE10_START_BYTE,
+        failed |= !_write_byte(vadp,
+            X86_VIDEO_EGA_APERTURE_BASE + _EGA_MODE10_START_BYTE,
             0x80u);
-        failed |= !t285_write_byte(vadp,
-            X86_VIDEO_EGA_APERTURE_BASE + T285_EGA_MODE10_LAST_ROW_OFFSET,
+        failed |= !_write_byte(vadp,
+            X86_VIDEO_EGA_APERTURE_BASE + _EGA_MODE10_LAST_ROW_OFFSET,
             0x80u);
     }
     (void)video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS);
@@ -81,22 +81,22 @@ lib_i32 main(void)
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot);
     failed |= snapshot.kind != X86_VIDEO_KIND_EGA_640X350X16 ||
-        snapshot.pixel_width != T285_EGA_MODE10_WIDTH ||
-        snapshot.pixel_height != T285_EGA_MODE10_HEIGHT ||
+        snapshot.pixel_width != _EGA_MODE10_WIDTH ||
+        snapshot.pixel_height != _EGA_MODE10_HEIGHT ||
         X86_VIDEO_MAX_PIXELS <
-            T285_EGA_MODE10_WIDTH * T285_EGA_MODE10_HEIGHT ||
+            _EGA_MODE10_WIDTH * _EGA_MODE10_HEIGHT ||
         snapshot.pixels[0] != 15u ||
-        snapshot.pixels[(T285_EGA_MODE10_HEIGHT - 1u) * T285_EGA_MODE10_WIDTH] != 15u ||
+        snapshot.pixels[(_EGA_MODE10_HEIGHT - 1u) * _EGA_MODE10_WIDTH] != 15u ||
         snapshot.palette_rgb[15] != 0xff5555u;
 
     (void)video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS);
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0x0fu);
     failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot) ||
         snapshot.kind != X86_VIDEO_KIND_EGA_640X350X16 ||
-        snapshot.pixel_width != T285_EGA_MODE10_WIDTH ||
-        snapshot.pixel_height != T285_EGA_MODE10_HEIGHT || !snapshot.buffer_changed ||
+        snapshot.pixel_width != _EGA_MODE10_WIDTH ||
+        snapshot.pixel_height != _EGA_MODE10_HEIGHT || !snapshot.buffer_changed ||
         snapshot.pixels[0] != 0u ||
-        snapshot.pixels[(T285_EGA_MODE10_HEIGHT - 1u) * T285_EGA_MODE10_WIDTH] != 0u;
+        snapshot.pixels[(_EGA_MODE10_HEIGHT - 1u) * _EGA_MODE10_WIDTH] != 0u;
 
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x01u);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x00u);
@@ -107,9 +107,9 @@ lib_i32 main(void)
     x86_video_destroy(vadp);
 
     if (!failed) {
-        lib_c_printf("M5:T285:S3:EGA-MODE10:CONTRACT:OK\n");
+        lib_c_printf("EGA-MODE10:CONTRACT:OK\n");
         return 0;
     }
-    lib_c_fprintf(lib_c_stderr, "M5:T285:S3:EGA-MODE10:CONTRACT:FAIL\n");
+    lib_c_fprintf(lib_c_stderr, "EGA-MODE10:CONTRACT:FAIL\n");
     return 1;
 }

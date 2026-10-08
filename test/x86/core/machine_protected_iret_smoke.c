@@ -227,7 +227,7 @@ lib_i32 main(void)
         !iret_test_failure(IRET_NEGATIVE_CODE_TYPE) ||
         !iret_test_failure(IRET_NEGATIVE_CODE_DPL) ||
         !iret_test_failure(IRET_NEGATIVE_STACK_LIMIT)) return 1;
-    lib_c_printf("M5:T306:S2:SAME-CPL-IRET:OK\n");
-    lib_c_printf("M5:T539:S65:PROTECTED-IRET:OK\n");
+    lib_c_printf("SAME-CPL-IRET:OK\n");
+    lib_c_printf("PROTECTED-IRET:OK\n");
     return 0;
 }

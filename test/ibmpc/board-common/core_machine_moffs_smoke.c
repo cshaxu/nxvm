@@ -202,7 +202,7 @@ lib_i32 main(void)
 {
     if (!moffs_test_protected_read_limit() ||
         !moffs_test_irq_no_shadow()) return 1;
-    lib_c_printf("M5:T316:S30:MOFFS:OK\n");
-    lib_c_printf("M5:T401:S14:MOFFS-MOV-PROFILES:OK\n");
+    lib_c_printf("MOFFS:OK\n");
+    lib_c_printf("MOFFS-MOV-PROFILES:OK\n");
     return 0;
 }

@@ -297,6 +297,6 @@ lib_i32 main(void)
     machine->attachment = board_probe.production;
     core_machine_destroy(machine);
     if (failed) return 1;
-    lib_c_printf("M5:T219:S2:SCHEDULER:OK\n");
+    lib_c_printf("SCHEDULER:OK\n");
     return 0;
 }

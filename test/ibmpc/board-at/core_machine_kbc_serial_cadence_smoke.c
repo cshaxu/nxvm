@@ -39,6 +39,6 @@ lib_i32 main(void)
     core_machine_kbc_finalize(&kbc);
     core_machine_destroy(port);
     if (failed) return 1;
-    lib_c_printf("M5:T406:S1:KBC-SERIAL-CADENCE:OK\n");
+    lib_c_printf("KBC-SERIAL-CADENCE:OK\n");
     return 0;
 }

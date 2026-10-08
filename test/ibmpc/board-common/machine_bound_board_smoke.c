@@ -328,10 +328,10 @@ lib_i32 main(void)
     lib_i32 irq = bound_board_irq();
 
     if (!real186 || !real286 || !real386 || !lower || !br || !gp || !ss || !irq) {
-        lib_c_fprintf(lib_c_stderr, "M5:T539:S41:BOUND board failed real186=%d real286=%d real386=%d lower=%d br=%d gp=%d ss=%d irq=%d\n",
+        lib_c_fprintf(lib_c_stderr, "BOUND board failed real186=%d real286=%d real386=%d lower=%d br=%d gp=%d ss=%d irq=%d\n",
             real186, real286, real386, lower, br, gp, ss, irq);
         return 1;
     }
-    lib_c_printf("%s\n", "M5:T539:S41:BOUND-BOARD:OK");
+    lib_c_printf("%s\n", "BOUND-BOARD:OK");
     return 0;
 }

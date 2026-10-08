@@ -195,6 +195,6 @@ lib_i32 main(void)
     core_machine_cpu_execution_finalize(&context);
     if (result != 0) return 1;
 
-    lib_c_printf("%s\n", "M5:T539:S88:CPU-EXECUTION-LIFECYCLE:OK");
+    lib_c_printf("%s\n", "CPU-EXECUTION-LIFECYCLE:OK");
     return 0;
 }

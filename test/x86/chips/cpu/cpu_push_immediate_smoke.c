@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: UD and shutdown remain distinct CPU proofs. */
+/* REAL_UD_TERMINAL_CPU_OWNER: UD and shutdown remain distinct CPU proofs. */
 static void push_immediate_seed(cpu_instruction_fixture *state)
 {
     t_cpu *cpu = &state->cpu;
@@ -266,6 +266,6 @@ lib_i32 main(void)
         lib_c_printf("PUSH-IMMEDIATE stage=attributes-lock\n");
         return 1;
     }
-    lib_c_printf("CPU:M5:T316:S45:PUSH-IMMEDIATE:OK\n");
+    lib_c_printf("PUSH-IMMEDIATE:OK\n");
     return 0;
 }

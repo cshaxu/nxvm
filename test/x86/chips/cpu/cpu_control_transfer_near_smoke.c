@@ -132,8 +132,8 @@ int main(void)
     if (!near_test_call_and_return_forms()) goto fail_call;
     if (!near_test_return_immediate()) goto fail_return;
     if (!near_test_indirect_and_fault_boundaries()) goto fail_indirect;
-    lib_c_printf("%s\n", "M5:T401:S22:NEAR-RETURN-PROFILES:OK");
-    lib_c_printf("%s\n", "M5:T539:S50:CPU-CONTROL-TRANSFER-NEAR:OK");
+    lib_c_printf("%s\n", "NEAR-RETURN-PROFILES:OK");
+    lib_c_printf("%s\n", "CPU-CONTROL-TRANSFER-NEAR:OK");
     return 0;
 fail_call:
     lib_c_fprintf(lib_c_stderr, "%s", "call: ");
@@ -144,6 +144,6 @@ fail_return:
 fail_indirect:
     lib_c_fprintf(lib_c_stderr, "%s", "indirect: ");
 fail:
-    lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S50:CPU-CONTROL-TRANSFER-NEAR:FAIL\n");
+    lib_c_fprintf(lib_c_stderr, "%s", "CPU-CONTROL-TRANSFER-NEAR:FAIL\n");
     return 1;
 }

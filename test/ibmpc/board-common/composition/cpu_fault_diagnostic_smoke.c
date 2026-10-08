@@ -36,7 +36,7 @@ static lib_bool diagnostic_run_case(lib_bool shutdown)
     if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK) goto fail;
-    /* T337_REAL_UD_TERMINAL_GUEST_LIDT: compare a real UD handler with
+    /* REAL_UD_TERMINAL_GUEST_LIDT: compare a real UD handler with
      * unavailable UD/DF entries, preserving the same source PC and budget. */
     if (core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x0200u, load_idt, sizeof(load_idt)) !=
@@ -87,6 +87,6 @@ fail:
 lib_i32 main(void)
 {
     if (!diagnostic_run_case(LIB_FALSE) || !diagnostic_run_case(LIB_TRUE)) return 1;
-    lib_c_printf("M5:T152:S1:CPU-FAULT-DIAGNOSTIC:OK\n");
+    lib_c_printf("CPU-FAULT-DIAGNOSTIC:OK\n");
     return 0;
 }

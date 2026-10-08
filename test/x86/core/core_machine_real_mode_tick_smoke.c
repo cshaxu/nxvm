@@ -5,7 +5,7 @@
 #include "x86/core/debug_interface.h"
 #include "memory_alias_fixture.h"
 
-/* T337_REAL_UD_RECEIVERLESS_LIDT: preparation is outside measured ticks. */
+/* REAL_UD_RECEIVERLESS_LIDT: preparation is outside measured ticks. */
 
 static lib_i32 core_machine_real_mode_tick_case(
     const char *name,
@@ -64,7 +64,7 @@ static lib_i32 core_machine_real_mode_tick_case(
         LIB_STATUS_OK || observation.elapsed_ticks != setup_ticks + expected_ticks;
     if (failed) {
         lib_c_fprintf(lib_c_stderr,
-            "M5:T218:S2:REAL-MODE-TICKS:FAIL case=%s status=%d reason=%d "
+            "REAL-MODE-TICKS:FAIL case=%s status=%d reason=%d "
             "executed=%llu ticks=%llu elapsed=%llu profile=%d halted=%u fault=%u\n", name, (lib_i32)status,
             (lib_i32)result.reason, (unsigned long long)result.executed,
             (unsigned long long)result.ticks,
@@ -106,6 +106,6 @@ lib_i32 main(void)
         sizeof(operand_size_prefix), CORE_MACHINE_CPU_PROFILE_80286,
         LIB_STATUS_OK, CORE_MACHINE_STOP_BUDGET, 0u, 0u);
     if (failed) return 1;
-    lib_c_printf("M5:T218:S2:REAL-MODE-TICKS:OK\n");
+    lib_c_printf("REAL-MODE-TICKS:OK\n");
     return 0;
 }

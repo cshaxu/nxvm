@@ -783,10 +783,10 @@ int main(void)
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
         if (!task32_expect(cases[index])) {
             lib_c_fprintf(lib_c_stderr, "task32 failed case=%u\n", (unsigned)cases[index]);
-            lib_c_fprintf(lib_c_stderr, "%s", "M5:T539:S57:TASK32-STATE:FAIL\n");
+            lib_c_fprintf(lib_c_stderr, "%s", "TASK32-STATE:FAIL\n");
             return 1;
         }
-    lib_c_printf("%s\n", "M5:T539:S57:TASK32-STATE:OK");
-    lib_c_printf("%s\n", "M5:T539:S60:TASK32-NESTING:OK");
+    lib_c_printf("%s\n", "TASK32-STATE:OK");
+    lib_c_printf("%s\n", "TASK32-NESTING:OK");
     return 0;
 }

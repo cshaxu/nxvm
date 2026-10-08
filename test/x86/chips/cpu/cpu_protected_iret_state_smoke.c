@@ -277,7 +277,7 @@ lib_i32 main(void)
         !iret_test_failure(IRET_NEGATIVE_CODE_TYPE, VCPUINS_EXCEPT_DF, 0u) ||
         !iret_test_failure(IRET_NEGATIVE_CODE_DPL, VCPUINS_EXCEPT_DF, 0u) ||
         !iret_test_failure(IRET_NEGATIVE_STACK_LIMIT, VCPUINS_EXCEPT_DF, 0u)) return 1;
-    lib_c_printf("M5:T540:S93:PROTECTED-IRET-CPU-STATE:OK\n");
-    lib_c_printf("M5:T539:S65:PROTECTED-IRET:OK\n");
+    lib_c_printf("PROTECTED-IRET-CPU-STATE:OK\n");
+    lib_c_printf("PROTECTED-IRET:OK\n");
     return 0;
 }

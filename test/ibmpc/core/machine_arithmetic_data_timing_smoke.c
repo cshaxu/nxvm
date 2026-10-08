@@ -1,0 +1,474 @@
+#include "lib/types/file.h"
+#include "lib/types/types_interface.h"
+#include "ibmpc/board-common/machine_board_interface.h"
+#include "x86/core/machine_interface.h"
+#include "../board-common/core_machine_board_fixture.h"
+
+#define ARITHMETIC_DATA_TIMING_RESET_LINEAR 0xfffffff0u
+#define ARITHMETIC_DATA_TIMING_RESET_PHYSICAL 0x000ffff0u
+#define ARITHMETIC_DATA_TIMING_WINDOW_BYTES 16u
+
+typedef struct arithmetic_data_timing_timing_state {
+    lib_u64 advanced_ticks;
+} arithmetic_data_timing_timing_state;
+
+typedef lib_i32 (*arithmetic_data_timing_setup)(core_machine *machine, void *opaque);
+
+typedef struct arithmetic_data_timing_word_seed {
+    lib_u16 ax;
+    lib_u16 cx;
+    lib_u16 dx;
+    lib_u16 memory;
+    lib_u32 memory_address;
+    lib_i32 write_memory;
+} arithmetic_data_timing_word_seed;
+
+static void arithmetic_data_timing_timing_reset(void *opaque)
+{
+    arithmetic_data_timing_timing_state *state = (arithmetic_data_timing_timing_state *)opaque;
+
+    if (state != LIB_NULL) state->advanced_ticks = 0u;
+}
+
+static void arithmetic_data_timing_timing_advance(void *opaque,
+    lib_u64 elapsed_ticks)
+{
+    arithmetic_data_timing_timing_state *state = (arithmetic_data_timing_timing_state *)opaque;
+
+    if (state != LIB_NULL) state->advanced_ticks += elapsed_ticks;
+}
+
+static const core_machine_execution_provider arithmetic_data_timing_timing_provider = {
+    arithmetic_data_timing_timing_reset,
+    arithmetic_data_timing_timing_advance
+};
+
+static lib_i32 arithmetic_data_timing_prepare(core_machine_cpu_profile profile,
+    core_machine **out_machine, arithmetic_data_timing_timing_state *state)
+{
+    const core_machine_config config = { .cpu_profile = profile };
+    core_machine *machine = LIB_NULL;
+
+    if (out_machine == LIB_NULL || state == LIB_NULL ||
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
+        machine == LIB_NULL ||
+        test_core_machine_fixture_register_reset_mapping(machine,
+            ARITHMETIC_DATA_TIMING_RESET_LINEAR, ARITHMETIC_DATA_TIMING_RESET_PHYSICAL,
+            ARITHMETIC_DATA_TIMING_WINDOW_BYTES) != LIB_STATUS_OK ||
+        test_core_machine_fixture_register_reset_mapping(machine, 0x00001000u,
+            0x00001000u, ARITHMETIC_DATA_TIMING_WINDOW_BYTES) != LIB_STATUS_OK ||
+        !test_core_machine_fixture_bind_freeze_reset(machine,
+            &arithmetic_data_timing_timing_provider, state)) {
+        core_machine_destroy(machine);
+        return 0;
+    }
+    *out_machine = machine;
+    return 1;
+}
+
+static lib_i32 arithmetic_data_timing_run_with_setup(core_machine *machine,
+    const lib_u8 *program, lib_size program_bytes,
+    lib_u64 expected_ticks, arithmetic_data_timing_timing_state *state,
+    arithmetic_data_timing_setup setup, void *opaque)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result = { 0 };
+    lib_i32 passed = machine != LIB_NULL && program != LIB_NULL && state != LIB_NULL &&
+        core_machine_reset(machine) == LIB_STATUS_OK &&
+        (setup == LIB_NULL || setup(machine, opaque)) &&
+        core_machine_memory_write(machine, ARITHMETIC_DATA_TIMING_RESET_LINEAR, program,
+            program_bytes) == LIB_STATUS_OK &&
+        core_machine_run(machine, budget, &result) == LIB_STATUS_OK &&
+        result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 1u &&
+        result.ticks == expected_ticks && result.elapsed_ticks == expected_ticks &&
+        state->advanced_ticks == expected_ticks;
+
+    if (!passed) {
+        lib_c_printf(" timing expected=%llu actual=%llu executed=%llu reason=%d advanced=%llu opcode=%02x\n",
+            (unsigned long long)expected_ticks, (unsigned long long)result.ticks,
+            (unsigned long long)result.executed, (lib_i32)result.reason,
+            state == LIB_NULL ? 0ull : (unsigned long long)state->advanced_ticks,
+            program == LIB_NULL ? 0u : program[0]);
+    }
+    return passed;
+}
+
+static lib_i32 arithmetic_data_timing_run(core_machine *machine,
+    const lib_u8 *program, lib_size program_bytes,
+    lib_u64 expected_ticks, arithmetic_data_timing_timing_state *state)
+{
+    return arithmetic_data_timing_run_with_setup(machine, program, program_bytes,
+        expected_ticks, state, LIB_NULL, LIB_NULL);
+}
+
+static lib_i32 arithmetic_data_timing_write_word(core_machine *machine,
+    core_machine_debug_register register_id, lib_u16 value)
+{
+    lib_u32 previous;
+
+    return core_machine_debug_read_register(machine, register_id, &previous) == LIB_STATUS_OK &&
+        core_machine_debug_write_register(machine, register_id,
+            (previous & 0xffff0000u) | value) == LIB_STATUS_OK;
+}
+
+static lib_i32 arithmetic_data_timing_seed_words(core_machine *machine, void *opaque)
+{
+    const arithmetic_data_timing_word_seed *seed = (const arithmetic_data_timing_word_seed *)opaque;
+
+    if (machine == LIB_NULL || seed == LIB_NULL) return 0;
+    return arithmetic_data_timing_write_word(machine, CORE_MACHINE_DEBUG_EAX, seed->ax) &&
+        arithmetic_data_timing_write_word(machine, CORE_MACHINE_DEBUG_ECX, seed->cx) &&
+        arithmetic_data_timing_write_word(machine, CORE_MACHINE_DEBUG_EDX, seed->dx) &&
+        (!seed->write_memory || core_machine_memory_write(machine,
+        seed->memory_address, &seed->memory, sizeof(seed->memory)) ==
+        LIB_STATUS_OK);
+}
+
+static lib_i32 arithmetic_data_timing_test_profile_rows(core_machine_cpu_profile profile,
+    lib_u64 add_register_ticks, lib_u64 add_memory_ticks,
+    lib_u64 sub_read_ticks, lib_u64 mov_immediate_ticks,
+    lib_u64 lea_ticks, lib_u64 adjust_ticks,
+    lib_u64 conversion_ticks)
+{
+    static const lib_u8 add_register[] = { 0x01u, 0xc8u };
+    static const lib_u8 add_memory[] = { 0x01u, 0x0eu, 0x00u, 0x10u };
+    static const lib_u8 sub_read[] = { 0x2bu, 0x06u, 0x00u, 0x10u };
+    static const lib_u8 mov_immediate[] = {
+        0xc7u, 0x06u, 0x00u, 0x10u, 0x34u, 0x12u
+    };
+    static const lib_u8 lea[] = { 0x8du, 0x42u, 0x00u };
+    static const lib_u8 aaa[] = { 0x37u };
+    static const lib_u8 cwd[] = { 0x99u };
+    const lib_u16 memory_value = 1u;
+    lib_u32 value;
+    arithmetic_data_timing_timing_state state = { 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !arithmetic_data_timing_prepare(profile, &machine, &state);
+
+    if (!failed) {
+        failed |= !arithmetic_data_timing_run(machine, add_register, sizeof(add_register),
+            add_register_ticks, &state) ||
+            core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX,
+                &value) != LIB_STATUS_OK || (lib_u16)value != 0u;
+    }
+    if (!failed) {
+        failed |= !arithmetic_data_timing_write_word(machine, CORE_MACHINE_DEBUG_ECX, 1u) ||
+            core_machine_memory_write(machine, 0x1000u, &memory_value,
+            sizeof(memory_value)) != LIB_STATUS_OK || !arithmetic_data_timing_run(machine,
+            add_memory, sizeof(add_memory), add_memory_ticks, &state);
+    }
+    if (!failed) {
+        failed |= core_machine_memory_write(machine, 0x1000u, &memory_value,
+            sizeof(memory_value)) != LIB_STATUS_OK || !arithmetic_data_timing_run(machine,
+            sub_read, sizeof(sub_read), sub_read_ticks, &state);
+    }
+    if (!failed) {
+        failed |= !arithmetic_data_timing_run(machine, mov_immediate, sizeof(mov_immediate),
+            mov_immediate_ticks, &state);
+    }
+    if (!failed) {
+        failed |= !arithmetic_data_timing_write_word(machine, CORE_MACHINE_DEBUG_EBP, 0x1000u) ||
+            !arithmetic_data_timing_write_word(machine, CORE_MACHINE_DEBUG_ESI, 1u) ||
+            !arithmetic_data_timing_run(machine, lea, sizeof(lea), lea_ticks, &state);
+    }
+    if (!failed) {
+        failed |= !arithmetic_data_timing_run(machine, aaa, sizeof(aaa), adjust_ticks, &state) ||
+            !arithmetic_data_timing_run(machine, cwd, sizeof(cwd), conversion_ticks, &state);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 arithmetic_data_timing_test_setcc(void)
+{
+    static const lib_u8 set_register[] = { 0x0fu, 0x95u, 0xc0u };
+    static const lib_u8 set_memory[] = {
+        0x0fu, 0x95u, 0x06u, 0x00u, 0x10u
+    };
+    lib_u32 value;
+    arithmetic_data_timing_timing_state state = { 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        &machine, &state);
+
+    if (!failed) {
+        failed |= !arithmetic_data_timing_run(machine, set_register, sizeof(set_register), 4u,
+            &state) || core_machine_debug_read_register(machine,
+                CORE_MACHINE_DEBUG_EAX, &value) != LIB_STATUS_OK ||
+            (lib_u8)value != 1u;
+    }
+    if (!failed) {
+        failed |= !arithmetic_data_timing_run(machine, set_memory, sizeof(set_memory), 5u,
+            &state);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 arithmetic_data_timing_test_legacy_odd_word_transfers(void)
+{
+    static const lib_u8 add_memory[] = {
+        0x01u, 0x0eu, 0x01u, 0x10u
+    };
+    static const lib_u8 sub_read[] = {
+        0x2bu, 0x06u, 0x01u, 0x10u
+    };
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086,
+        CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286
+    };
+    static const lib_u64 add_ticks[] = { 30u, 18u, 11u };
+    static const lib_u64 read_ticks[] = { 19u, 14u, 9u };
+    const arithmetic_data_timing_word_seed seed = {
+        0u, 1u, 0u, 1u, 0x1001u, LIB_TRUE
+    };
+    lib_u32 index;
+
+    for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0u]); ++index) {
+        arithmetic_data_timing_timing_state state = { 0u };
+        core_machine *machine = LIB_NULL;
+        lib_i32 failed = !arithmetic_data_timing_prepare(profiles[index], &machine, &state);
+
+        if (!failed) {
+            failed |= !arithmetic_data_timing_run_with_setup(machine, add_memory,
+                sizeof(add_memory), add_ticks[index], &state,
+                arithmetic_data_timing_seed_words, (void *)&seed) ||
+                !arithmetic_data_timing_run_with_setup(machine, sub_read,
+                    sizeof(sub_read), read_ticks[index], &state,
+                    arithmetic_data_timing_seed_words, (void *)&seed);
+        }
+        core_machine_destroy(machine);
+        if (failed) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 arithmetic_data_timing_test_dynamic_multiply(void)
+{
+    static const lib_u8 mul_zero[] = { 0xf7u, 0xe1u };
+    static const lib_u8 imul_immediate8[] = { 0x6bu, 0xc1u, 0x04u };
+    static const lib_u8 imul_immediate16[] = {
+        0x69u, 0xc1u, 0x04u, 0x00u
+    };
+    const arithmetic_data_timing_word_seed multiplier = {
+        0u, 16u, 0u, 0u, 0u, LIB_FALSE
+    };
+    arithmetic_data_timing_timing_state state = { 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        &machine, &state);
+
+    if (!failed) {
+        failed |= !arithmetic_data_timing_run(machine, mul_zero, sizeof(mul_zero), 9u, &state) ||
+            !arithmetic_data_timing_run(machine, imul_immediate8,
+                sizeof(imul_immediate8), 9u, &state) ||
+            !arithmetic_data_timing_run_with_setup(machine, imul_immediate16,
+                sizeof(imul_immediate16), 10u, &state, arithmetic_data_timing_seed_words,
+                (void *)&multiplier);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 arithmetic_data_timing_test_group3_rows(void)
+{
+    static const lib_u8 not_register[] = { 0xf7u, 0xd1u };
+    static const lib_u8 neg_memory[] = {
+        0xf7u, 0x1eu, 0x00u, 0x10u
+    };
+    static const lib_u8 mul_register[] = { 0xf7u, 0xe1u };
+    static const lib_u8 div_register[] = { 0xf7u, 0xf1u };
+    static const lib_u8 idiv_register[] = { 0xf7u, 0xf9u };
+    static const lib_u8 imul_immediate[] = {
+        0x69u, 0xc1u, 0x04u, 0x00u
+    };
+    static const lib_u8 mul_memory[] = {
+        0xf7u, 0x26u, 0x00u, 0x10u
+    };
+    static const lib_u8 idiv_memory[] = {
+        0x66u, 0xf7u, 0x3eu, 0x00u, 0x10u
+    };
+    const arithmetic_data_timing_word_seed seed = {
+        0u, 1u, 0u, 1u, 0x1000u, LIB_TRUE
+    };
+    const core_machine_run_budget insufficient = { 1u, 105u };
+    const core_machine_run_budget sufficient = { 1u, 106u };
+    arithmetic_data_timing_timing_state state = { 0u };
+    core_machine_run_result result;
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_8086,
+        &machine, &state);
+
+    if (!failed) {
+        failed |= !arithmetic_data_timing_run_with_setup(machine, not_register,
+            sizeof(not_register), 3u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed) || !arithmetic_data_timing_run_with_setup(machine, neg_memory,
+            sizeof(neg_memory), 22u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed);
+    }
+    core_machine_destroy(machine);
+    machine = LIB_NULL;
+    if (failed) return 1;
+    state.advanced_ticks = 0u;
+    failed |= !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_80186, &machine,
+        &state);
+    if (!failed) {
+        failed |= !arithmetic_data_timing_run_with_setup(machine, not_register,
+            sizeof(not_register), 3u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed) || !arithmetic_data_timing_run_with_setup(machine, neg_memory,
+            sizeof(neg_memory), 3u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed);
+    }
+    core_machine_destroy(machine);
+    machine = LIB_NULL;
+    if (failed) return 1;
+    state.advanced_ticks = 0u;
+    failed |= !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_80286, &machine,
+        &state);
+    if (!failed) {
+        failed |= !arithmetic_data_timing_run_with_setup(machine, not_register,
+            sizeof(not_register), 2u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed) || !arithmetic_data_timing_run_with_setup(machine, neg_memory,
+            sizeof(neg_memory), 7u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed) || !arithmetic_data_timing_run_with_setup(machine, mul_register,
+            sizeof(mul_register), 21u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed) || !arithmetic_data_timing_run_with_setup(machine, div_register,
+            sizeof(div_register), 22u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed) || !arithmetic_data_timing_run_with_setup(machine, idiv_register,
+            sizeof(idiv_register), 25u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed) || !arithmetic_data_timing_run_with_setup(machine, imul_immediate,
+            sizeof(imul_immediate), 21u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed);
+    }
+    core_machine_destroy(machine);
+    machine = LIB_NULL;
+    if (failed) return 1;
+    state.advanced_ticks = 0u;
+    failed |= !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
+        &state);
+    if (!failed) {
+        failed |= !arithmetic_data_timing_run_with_setup(machine, not_register,
+            sizeof(not_register), 2u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed) || !arithmetic_data_timing_run_with_setup(machine, neg_memory,
+            sizeof(neg_memory), 6u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed) || !arithmetic_data_timing_run_with_setup(machine, div_register,
+            sizeof(div_register), 22u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed) || !arithmetic_data_timing_run_with_setup(machine, idiv_register,
+            sizeof(idiv_register), 27u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed) || !arithmetic_data_timing_run_with_setup(machine, mul_memory,
+            sizeof(mul_memory), 12u, &state, arithmetic_data_timing_seed_words,
+            (void *)&seed);
+    }
+    if (!failed) {
+        failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
+            !arithmetic_data_timing_seed_words(machine, (void *)&seed) ||
+            core_machine_memory_write(machine, ARITHMETIC_DATA_TIMING_RESET_LINEAR,
+                idiv_memory, sizeof(idiv_memory)) != LIB_STATUS_OK ||
+            core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
+            result.ticks != 0u || result.elapsed_ticks != 0u ||
+            state.advanced_ticks != 0u;
+    }
+    if (!failed) {
+        failed |= core_machine_run(machine, sufficient, &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+            result.ticks != 46u || result.elapsed_ticks != 46u ||
+            state.advanced_ticks != 46u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 arithmetic_data_timing_test_80386_width_prefixes(void)
+{
+    static const lib_u8 operand_size_add[] = { 0x66u, 0x01u, 0xc8u };
+    static const lib_u8 address_size_add[] = {
+        0x67u, 0x01u, 0x0du, 0x00u, 0x10u, 0x00u, 0x00u
+    };
+    static const lib_u8 combined_mov[] = {
+        0x66u, 0x67u, 0xc7u, 0x05u, 0x00u, 0x10u, 0x00u, 0x00u,
+        0x34u, 0x12u, 0x00u, 0x00u
+    };
+    static const lib_u8 combined_setcc[] = {
+        0x66u, 0x67u, 0x0fu, 0x95u, 0xc0u
+    };
+    static const lib_u8 operand_size_mov[] = { 0x66u, 0x89u, 0xc8u };
+    static const lib_u8 address_size_mov[] = {
+        0x67u, 0x8bu, 0x0du, 0x00u, 0x10u, 0x00u, 0x00u
+    };
+    static const lib_u8 address_size_moffs[] = {
+        0x67u, 0xa1u, 0x00u, 0x10u, 0x00u, 0x00u
+    };
+    static const lib_u8 operand_size_immediate[] = {
+        0x66u, 0xb8u, 0x34u, 0x12u, 0x00u, 0x00u
+    };
+    static const lib_u8 segment_add[] = {
+        0x26u, 0x01u, 0x0eu, 0x00u, 0x10u
+    };
+    static const lib_u8 locked_add[] = {
+        0xf0u, 0x01u, 0x0eu, 0x00u, 0x10u
+    };
+    arithmetic_data_timing_timing_state state = { 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        &machine, &state);
+
+    if (!failed) {
+        failed |= !arithmetic_data_timing_run(machine, operand_size_add,
+            sizeof(operand_size_add), 2u, &state) ||
+            !arithmetic_data_timing_run(machine, address_size_add, sizeof(address_size_add),
+                7u, &state) || !arithmetic_data_timing_run(machine, combined_mov,
+                    sizeof(combined_mov), 2u, &state) ||
+            !arithmetic_data_timing_run(machine, combined_setcc, sizeof(combined_setcc),
+                4u, &state) || !arithmetic_data_timing_run(machine, operand_size_mov,
+                    sizeof(operand_size_mov), 2u, &state) ||
+            !arithmetic_data_timing_run(machine, address_size_mov, sizeof(address_size_mov),
+                4u, &state) || !arithmetic_data_timing_run(machine, address_size_moffs,
+                    sizeof(address_size_moffs), 4u, &state) ||
+            !arithmetic_data_timing_run(machine, operand_size_immediate,
+                sizeof(operand_size_immediate), 2u, &state) ||
+            !arithmetic_data_timing_run(machine, segment_add, sizeof(segment_add), 7u,
+                &state) || !arithmetic_data_timing_run(machine, locked_add,
+                    sizeof(locked_add), 7u, &state);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 arithmetic_data_timing_test_legacy_segment_override(void)
+{
+    static const lib_u8 program[] = {
+        0x26u, 0x01u, 0x0eu, 0x00u, 0x10u
+    };
+    arithmetic_data_timing_timing_state state = { 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_8086,
+        &machine, &state);
+
+    if (!failed) {
+        failed |= !arithmetic_data_timing_run(machine, program, sizeof(program), 24u, &state);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+lib_i32 main(void)
+{
+    if (arithmetic_data_timing_test_profile_rows(CORE_MACHINE_CPU_PROFILE_8086,
+            3u, 22u, 15u, 16u, 13u, 4u, 5u)) return 1;
+    if (arithmetic_data_timing_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80186,
+            3u, 10u, 10u, 13u, 6u, 8u, 4u)) return 2;
+    if (arithmetic_data_timing_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80286,
+            2u, 7u, 7u, 3u, 4u, 3u, 2u)) return 3;
+    if (arithmetic_data_timing_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80386,
+            2u, 7u, 7u, 2u, 2u, 4u, 3u)) return 4;
+    if (arithmetic_data_timing_test_setcc()) return 5;
+    if (arithmetic_data_timing_test_legacy_odd_word_transfers()) return 6;
+    if (arithmetic_data_timing_test_dynamic_multiply()) return 7;
+    if (arithmetic_data_timing_test_group3_rows()) return 8;
+    if (arithmetic_data_timing_test_80386_width_prefixes()) return 9;
+    if (arithmetic_data_timing_test_legacy_segment_override()) return 10;
+    lib_c_printf("ARITHMETIC-DATA-TIMING:OK\n");
+    return 0;
+}

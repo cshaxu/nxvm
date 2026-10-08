@@ -123,6 +123,6 @@ lib_i32 main(void)
     (void)lib_c_remove(vm_media_direct_fdd_path);
     (void)lib_c_remove(vm_media_direct_hdd_path);
     if (failed) return 1;
-    lib_c_printf("M5:T524:S10:MEDIA-DIRECT-READONLY:OK\n");
+    lib_c_printf("MEDIA-DIRECT-READONLY:OK\n");
     return 0;
 }

@@ -1,7 +1,7 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
 
-/* T337_REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
+/* REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
 static lib_i32 fs_gs_test_real(void)
 {
     static const lib_u8 opcodes[] = { 0xa0u, 0xa1u, 0xa8u, 0xa9u };
@@ -183,6 +183,6 @@ lib_i32 main(void)
     if (!fs_gs_test_80286_reject()) { lib_c_printf("FS-GS stage=reject\n"); return 1; }
     if (!fs_gs_test_protected_pop()) { lib_c_printf("FS-GS stage=protected\n"); return 1; }
     if (!fs_gs_test_pop_stack_fault()) return 1;
-    lib_c_printf("M5:T539:S26:CPU-FS-GS-STACK:OK\n");
+    lib_c_printf("CPU-FS-GS-STACK:OK\n");
     return 0;
 }

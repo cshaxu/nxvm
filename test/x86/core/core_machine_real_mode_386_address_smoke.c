@@ -84,6 +84,6 @@ lib_i32 main(void)
     }
     core_machine_destroy(machine);
     if (failed) return 1;
-    lib_c_printf("M5:T287:S24:REAL-MODE-386-ADDR32:OK\n");
+    lib_c_printf("REAL-MODE-386-ADDR32:OK\n");
     return 0;
 }

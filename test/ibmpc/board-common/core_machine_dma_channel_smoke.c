@@ -1237,11 +1237,11 @@ done:
     core_machine_destroy(machine);
 
     if (failed) return 1;
-    lib_c_printf("M5:T269:S1:DMA-GRANT:PORT:OK\n");
-    lib_c_printf("M5:T269:S4:DMA-MODES:OK\n");
-    lib_c_printf("M5:T230:S3:DMA-CHANNEL:OK\n");
-    lib_c_printf("M5:T348:S2:DMA-PORT-PAGE:OK\n");
-    lib_c_printf("M5:T348:S3:DMA-REQUEST-CASCADE:OK\n");
-    lib_c_printf("M5:T348:S4:DMA-TRANSACTION-LIFECYCLE:OK\n");
+    lib_c_printf("DMA-GRANT:PORT:OK\n");
+    lib_c_printf("DMA-MODES:OK\n");
+    lib_c_printf("DMA-CHANNEL:OK\n");
+    lib_c_printf("DMA-PORT-PAGE:OK\n");
+    lib_c_printf("DMA-REQUEST-CASCADE:OK\n");
+    lib_c_printf("DMA-TRANSACTION-LIFECYCLE:OK\n");
     return 0;
 }

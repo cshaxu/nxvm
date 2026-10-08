@@ -113,6 +113,6 @@ cleanup:
     core_machine_pic_finalize(master, slave);
     core_machine_destroy(machine);
     if (failed) return 1;
-    lib_c_printf("M5:T216:S1:PIC-IRQ-LIFECYCLE:OK\n");
+    lib_c_printf("PIC-IRQ-LIFECYCLE:OK\n");
     return 0;
 }

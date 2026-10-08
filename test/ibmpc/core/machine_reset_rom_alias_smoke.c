@@ -176,6 +176,6 @@ lib_i32 main(void)
     if (reset_rom_run(CORE_MACHINE_CPU_PROFILE_80286) ||
         reset_rom_run(CORE_MACHINE_CPU_PROFILE_80386) ||
         absent_fallback_run()) return 1;
-    lib_c_printf("%s\n", "M5:T496:S7:RESET-ROM-ALIAS:OK");
+    lib_c_printf("%s\n", "RESET-ROM-ALIAS:OK");
     return 0;
 }

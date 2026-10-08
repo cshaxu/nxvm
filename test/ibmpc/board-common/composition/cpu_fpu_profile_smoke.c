@@ -68,6 +68,6 @@ lib_i32 main(void)
     failed |= metadata.valid;
 
     if (failed) return 1;
-    lib_c_printf("M5:T154:S1:CPU-FPU-PROFILES:OK\n");
+    lib_c_printf("CPU-FPU-PROFILES:OK\n");
     return 0;
 }

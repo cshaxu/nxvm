@@ -59,6 +59,22 @@ task must not overwrite, delete, or weaken NXVM-owned assertions.
   and `test/ibmpc` ownership boundary and update only their affected manifests
   and task evidence.
 
+## S3: Shared Test Semantic Naming
+
+- Remove task and subtask history identifiers from all current shared test
+  filenames, CTest targets, internal test symbols, comments and result markers.
+  Keep task identifiers only in task history and evidence.
+- Audit all four package roots. `test/lib` and `test/common` require no rename
+  when they contain no task-derived current names; complete the semantic rename
+  in `test/x86` and `test/ibmpc` without moving tests between owners.
+- Name each test for its owned behavior. In particular, the 80386 secondary
+  integer timing test uses `machine_80386_secondary_integer_timing_smoke.c`,
+  `machine-80386-secondary-integer-timing-smoke`,
+  `secondary_integer_timing_*`, and `80386:SECONDARY-INTEGER-TIMING:OK`.
+- Update registration and manifests atomically. No production source, public
+  API, executable input, firmware/media/INI, App code or MyNES artifact is in
+  scope.
+
 ## Completion Standard
 
 The imported resource lock serializes only native desktop tests, not every Lib

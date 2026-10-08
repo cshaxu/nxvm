@@ -612,6 +612,6 @@ lib_i32 main(void)
     failed = 0;
 done:
     core_machine_destroy(machine);
-    if (failed == 0) lib_c_printf("M5:T540:S69:NEUTRAL-LINK:OK\n");
+    if (failed == 0) lib_c_printf("NEUTRAL-LINK:OK\n");
     return failed;
 }

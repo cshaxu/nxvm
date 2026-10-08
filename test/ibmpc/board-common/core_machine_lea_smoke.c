@@ -86,7 +86,7 @@ static lib_i32 lea_test_irq_no_shadow(void)
 lib_i32 main(void)
 {
     if (!lea_test_irq_no_shadow()) return 1;
-    lib_c_printf("M5:T316:S26:LEA:OK\n");
-    lib_c_printf("M5:T401:S44:LEA-PROFILES:OK\n");
+    lib_c_printf("LEA:OK\n");
+    lib_c_printf("LEA-PROFILES:OK\n");
     return 0;
 }

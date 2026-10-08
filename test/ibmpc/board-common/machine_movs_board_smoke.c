@@ -157,6 +157,6 @@ lib_i32 main(void)
             lib_c_printf("MOVS board stage=protected form=%u\n", form);
             return 1;
         }
-    lib_c_printf("M5:T539:S37:MOVS-BOARD:OK\n");
+    lib_c_printf("MOVS-BOARD:OK\n");
     return 0;
 }
