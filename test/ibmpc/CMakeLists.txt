@@ -53,6 +53,18 @@ foreach(media_case IN ITEMS provider direct_readonly)
     list(APPEND SHARED_IBMPC_TEST_TARGETS ${media_target})
 endforeach()
 
+# Compile the two media owners with a test-only final-close result injector.
+# Production retains the single Storage destroy path and has no test seam.
+add_executable(vm-media-close-failure-smoke machine/media/close_failure_smoke.c
+    "${IBMPC_ROOT}/machine/media/fdd.c" "${IBMPC_ROOT}/machine/media/hdd.c")
+set_source_files_properties("${IBMPC_ROOT}/machine/media/fdd.c"
+    "${IBMPC_ROOT}/machine/media/hdd.c" PROPERTIES
+    COMPILE_DEFINITIONS "lib_storage_medium_destroy=vm_media_close_failure_destroy")
+target_link_libraries(vm-media-close-failure-smoke PRIVATE types storage)
+add_test(NAME unit.vm-media-close-failure-smoke COMMAND vm-media-close-failure-smoke)
+set_tests_properties(unit.vm-media-close-failure-smoke PROPERTIES LABELS "unit;ibmpc" TIMEOUT 30)
+list(APPEND SHARED_IBMPC_TEST_TARGETS vm-media-close-failure-smoke)
+
 shared_register_test(ibmpc product/ini ibmpc-product-config)
 foreach(conversion_case IN ITEMS frame keyboard_mapper)
     if(conversion_case STREQUAL "frame")
