@@ -4119,6 +4119,32 @@ static void _ser_ret_far_same(core_machine_cpu_execution_context *context, lib_u
     CPU_TRACE_CHECK_RETURN(_kec_ret_far(context, newcs, neweip, parambyte, byte));
     CPU_TRACE_CALL_END;
 }
+static void _ser_return_outer_cleanup_sreg(t_cpu_data_sreg *rsreg,
+    lib_u8 target_cpl)
+{
+    CPU_TRACE_CALL_BEGIN("_ser_return_outer_cleanup_sreg");
+    if (rsreg->flagValid &&
+        (!rsreg->seg.executable || !rsreg->seg.exec.conform) &&
+        rsreg->dpl < target_cpl) {
+        rsreg->flagValid = LIB_FALSE;
+        rsreg->selector = 0u;
+    }
+    CPU_TRACE_CALL_END;
+}
+
+static void _ser_return_outer_cleanup_sregs(
+    core_machine_cpu_execution_context *context, lib_u8 target_cpl)
+{
+    CPU_TRACE_CALL_BEGIN("_ser_return_outer_cleanup_sregs");
+    _ser_return_outer_cleanup_sreg(&cpu_state.data.ds, target_cpl);
+    _ser_return_outer_cleanup_sreg(&cpu_state.data.es, target_cpl);
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
+        _ser_return_outer_cleanup_sreg(&cpu_state.data.fs, target_cpl);
+        _ser_return_outer_cleanup_sreg(&cpu_state.data.gs, target_cpl);
+    }
+    CPU_TRACE_CALL_END;
+}
+
 static void _ser_ret_far_outer(core_machine_cpu_execution_context *context,
     lib_u16 newcs, lib_u32 neweip, lib_u16 parambyte,
     lib_u16 byte)
@@ -4170,7 +4196,11 @@ static void _ser_ret_far_outer(core_machine_cpu_execution_context *context,
         &newss_cache, &ss_desc));
     CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
         X86_CPU_REFERENCE_OF(code_desc)));
-    if (!_IsDescCodeNonConform(code_desc))
+    if (!_IsDescCode(code_desc) ||
+        (_IsDescCodeNonConform(code_desc) &&
+            _GetDesc_DPL(code_desc) != target_cpl) ||
+        (_IsDescCodeConform(code_desc) &&
+            _GetDesc_DPL(code_desc) > target_cpl))
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     if (!_IsDescPresent(code_desc))
         CPU_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
@@ -4191,6 +4221,7 @@ static void _ser_ret_far_outer(core_machine_cpu_execution_context *context,
     _MakeCPL(target_cpl);
     cpu_state.data.cs = newcs_cache;
     cpu_state.data.eip = neweip;
+    _ser_return_outer_cleanup_sregs(context, target_cpl);
     CPU_TRACE_CALL_END;
 }
 static void _ser_jmp_far_real(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
@@ -5313,14 +5344,18 @@ static void _ser_iret_protected_outer(core_machine_cpu_execution_context *contex
     }
     CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
         X86_CPU_REFERENCE_OF(code_desc)));
-    if (!_IsDescCodeNonConform(code_desc)) {
+    newcpl = (lib_u8)_GetSelector_RPL(newcs);
+    if (!_IsDescCode(code_desc) ||
+        (_IsDescCodeNonConform(code_desc) &&
+            _GetDesc_DPL(code_desc) != newcpl) ||
+        (_IsDescCodeConform(code_desc) &&
+            _GetDesc_DPL(code_desc) > newcpl)) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     }
     if (!_IsDescPresent(code_desc)) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
     }
-    newcpl = (lib_u8)_GetSelector_RPL(newcs);
-    if (newcpl <= oldcpl || newcpl != _GetDesc_DPL(code_desc)) {
+    if (newcpl <= oldcpl) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     }
     switch (byte)
@@ -5370,6 +5405,7 @@ static void _ser_iret_protected_outer(core_machine_cpu_execution_context *contex
     cpu_state.data.eip = neweip;
     cpu_state.data.eflags = _e_eflags_load(context,
         (cpu_state.data.eflags & flags_mask) | (newflags & ~flags_mask));
+    _ser_return_outer_cleanup_sregs(context, newcpl);
     CPU_TRACE_CALL_END;
 }
 static void _ser_iret_protected_same(core_machine_cpu_execution_context *context,
