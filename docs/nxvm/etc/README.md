@@ -11,6 +11,10 @@ T540 S5: [neutral Core source cut](architecture/t540-s5-neutral-core-cut.md)
 maps the mixed executor/IBM-PC fields and ordered S6-S8 receivers; Current
 owns admission and status.
 
+T546 S18: [string and port restart](evidence/t546-s18-string-port-restart.md)
+records the sourced 8086/8088 multi-prefix interruption rule, checked
+early-family string helpers and port-effect sweep.
+
 T540 S86: [whole electrical boundary](evidence/t540-s86-board-electrical-boundary.md)
 records board-owned parity/D4/speaker/absent-memory operations and neutral
 RAM admission, preserved source behavior and product proof. Constructor/private
