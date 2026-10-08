@@ -76,9 +76,10 @@ static lib_i32 timing_s7_is_shutdown(const core_machine_run_result *result)
         result->detail == VCPUINS_EXCEPT_SHUTDOWN;
 }
 
-static lib_i32 timing_s7_prepare(core_machine **out_machine, timing_s7_state *state)
+static lib_i32 timing_s7_prepare(core_machine **out_machine, timing_s7_state *state,
+    const core_machine_external_cycle_timing *external_timing)
 {
-    const core_machine_executor_config config = {
+    core_machine_executor_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .ticks_per_instruction = 29u,
         .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
@@ -88,6 +89,8 @@ static lib_i32 timing_s7_prepare(core_machine **out_machine, timing_s7_state *st
     };
     core_machine *machine = LIB_NULL;
 
+    if (external_timing != LIB_NULL)
+        config.transaction_contract.external_cycle_timing = *external_timing;
     if (out_machine == LIB_NULL || state == LIB_NULL ||
         core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         core_machine_install_memory_aliases(machine, &alias, 1u, LIB_FALSE) !=
@@ -125,7 +128,7 @@ static lib_i32 timing_s7_run_form(const timing_s7_form *form, lib_i32 mode)
     core_machine *machine = LIB_NULL;
     lib_u64 ticks = mode == 0 ? form->protected_ticks :
         form->permission_ticks;
-    lib_i32 failed = !timing_s7_prepare(&machine, &state) ||
+    lib_i32 failed = !timing_s7_prepare(&machine, &state, LIB_NULL) ||
         !timing_s7_load(machine, &state, form->opcode, mode, 0u);
 
     if (!failed) {
@@ -166,13 +169,33 @@ static lib_i32 timing_s7_test_denied(void)
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !timing_s7_prepare(&machine, &state) ||
+    lib_i32 failed = !timing_s7_prepare(&machine, &state, LIB_NULL) ||
         !timing_s7_load(machine, &state, 0xe4u, 1, 0x01u);
     if (!failed) {
         failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             !timing_s7_is_shutdown(&result) || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != state.setup_ticks ||
             state.advanced_ticks != state.setup_ticks || state.reads != 0u || state.writes != 0u;
+    }
+    core_machine_destroy(machine);
+    return !failed;
+}
+
+static lib_i32 timing_s7_test_shutdown_external_wait(void)
+{
+    const core_machine_external_cycle_timing timing = {2048u, 1u, 0u,
+        CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u};
+    timing_s7_state state = { 0 };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !timing_s7_prepare(&machine, &state, &timing) ||
+        !timing_s7_load(machine, &state, 0xe4u, 1, 0x01u);
+
+    if (!failed) {
+        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+            !timing_s7_is_shutdown(&result) || result.executed != 0u ||
+            state.reads != 0u || state.writes != 0u;
     }
     core_machine_destroy(machine);
     return !failed;
@@ -197,7 +220,7 @@ static lib_i32 timing_s7_test_permission_strings(void)
                 core_machine *machine = LIB_NULL;
                 lib_u8 source = 0x4au;
                 lib_u8 destination = 0u;
-                lib_i32 failed = !timing_s7_prepare(&machine, &state) ||
+                lib_i32 failed = !timing_s7_prepare(&machine, &state, LIB_NULL) ||
                     !timing_s7_load(machine, &state, forms[index].opcode,
                         vm86 ? 2 : 1, bitmap);
 
@@ -242,7 +265,7 @@ static lib_i32 timing_s7_test_permission_budget(void)
     core_machine_run_result result;
     timing_s7_state state = { 0 };
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !timing_s7_prepare(&machine, &state) ||
+    lib_i32 failed = !timing_s7_prepare(&machine, &state, LIB_NULL) ||
         !timing_s7_load(machine, &state, 0xecu, 1, 0u);
 
     if (!failed) test_core_machine_fixture_write_register(machine, CORE_MACHINE_DEBUG_EDX, 0x000000e0u);
@@ -265,6 +288,7 @@ static lib_i32 timing_s7_test_permission_budget(void)
 lib_i32 main(void)
 {
     if (!timing_s7_test_success() || !timing_s7_test_denied() ||
+        !timing_s7_test_shutdown_external_wait() ||
         !timing_s7_test_permission_strings() ||
         !timing_s7_test_permission_budget())
         return 1;

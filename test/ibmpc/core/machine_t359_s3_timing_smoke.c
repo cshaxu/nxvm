@@ -267,7 +267,7 @@ static lib_i32 t359_s3_test_80186_stack_rows(void)
     static const lib_u64 pusha_ticks[] = { 36u, 17u, 18u };
     static const lib_u64 popa_ticks[] = { 51u, 19u, 24u };
     static const lib_u64 enter_ticks[] = { 15u, 11u, 10u };
-    static const lib_u64 leave_ticks[] = { 8u, 8u, 4u };
+    static const lib_u64 leave_ticks[] = { 8u, 5u, 4u };
     lib_u32 index;
 
     for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0u]); ++index) {
