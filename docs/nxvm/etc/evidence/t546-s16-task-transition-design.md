@@ -114,6 +114,12 @@ model.
   route retains the retired CPL-0-only admission rule.
 - The 16-bit image path preserves the old 80386 high-half fill for a 386
   16-bit TSS, but no longer applies it to a real 80286 register file.
+- Ring-3 direct and task-gate admission is independently negative-tested:
+  accessing a DPL-0 task gate through an RPL-0 selector after the source task
+  has entered CPL 3 delivers `#GP` before task-state publication.  The 286
+  and 386 fixtures provide the source task's ring-0 exception stack and IDT
+  `#GP` gate so this architectural rejection is observed rather than replaced
+  by a fixture-induced shutdown.
 - Owner-local regressions now cover both 286 and 386 nonzero incoming CPL,
   readable-code data caches, null 386 data caches, raw 80386 CR3 image load,
   and task-gate delivery of late selector/LDT/stack faults.  No public API,
