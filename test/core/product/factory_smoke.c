@@ -89,6 +89,8 @@ lib_i32 main(void)
     app_composed_machine machine;
     product_surface_information info;
     product_surface_speed app_speed;
+    product_surface_command_extensions extensions;
+    emulator_session_command_result result;
     const lib_status expected[] = {LIB_STATUS_OK, LIB_STATUS_UNSUPPORTED,
         LIB_STATUS_NO_MEMORY, LIB_STATUS_INVALID_STATE};
 
@@ -131,6 +133,13 @@ lib_i32 main(void)
         app_speed != PRODUCT_SURFACE_SPEED_TURBO ||
         machine.set_speed(machine.composition.machine, PRODUCT_SURFACE_SPEED_STANDARD) != LIB_STATUS_OK ||
         speed != VM_MACHINE_SPEED_STANDARD) return 6;
+    if (vm_app_configure_standard_extensions(&machine, &extensions) != LIB_STATUS_OK ||
+        extensions.submit == LIB_NULL ||
+        !extensions.submit(extensions.context, LIB_NULL,
+            EMULATOR_SESSION_MACHINE_STOPPED, "info", &result) ||
+        !result.arm_prompt || lib_text_compare_n(result.text, "Device Info\r\n",
+            sizeof("Device Info\r\n") - 1u) != 0)
+        return 7;
     machine.composition.destroy(machine.composition.machine);
     return 0;
 }

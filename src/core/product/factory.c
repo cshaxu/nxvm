@@ -184,7 +184,11 @@ static void vm_app_extension_append(emulator_session_command_result *out,
     written = lib_c_vsnprintf((char *)out->text + used,
         sizeof(out->text) - used, format, arguments);
     lib_c_va_end(arguments);
-    if (written < 0) out->text[used] = '\0';
+    if (written < 0) {
+        out->text[used] = '\0';
+        return;
+    }
+    out->arm_prompt = LIB_TRUE;
 }
 
 static lib_bool vm_app_extension_normalize(const char *source,
