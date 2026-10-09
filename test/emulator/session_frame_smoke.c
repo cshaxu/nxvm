@@ -5,7 +5,6 @@ static emulator_machine_frame published;
 static lib_u32 current_run = 7u, published_run = 7u, copies, deliveries;
 static lib_u32 delivered_sequence;
 static lib_bool delivered_graphics, delivered_status;
-static lib_u32 monitor_calls;
 static lib_u32 fake_run(const emulator_machine *machine)
 { (void)machine; return current_run; }
 static lib_bool fake_copy(emulator_machine *machine, emulator_machine_frame *frame, lib_u32 run)
@@ -60,16 +59,6 @@ lib_status emulator_ui_publish_frame(emulator_ui *ui, const kvm_window_frame *fr
     delivered_status = status;
     return LIB_STATUS_OK;
 }
-static void monitor(void *context, lib_bool current, emulator_session_command_result *result)
-{
-    (void)context;
-    ++monitor_calls;
-    /* The raw VM Console owns host input here. Product callbacks must receive
-       this false fact and must not arm or write a cooked monitor prompt. */
-    lib_test_assert(!current);
-    lib_test_assert(!result->arm_prompt);
-}
-
 static void publication_value_contract(void)
 {
     static emulator_machine_frame source, copy;
@@ -117,7 +106,6 @@ int main(void)
     /* Opaque handles are never dereferenced by the fakes. */
     session.machine = (emulator_machine *)&current_run;
     session.ui = (emulator_ui *)&current_run;
-    session.command.note_monitor_current = monitor;
     emulator_session_state_initialize(&session.state, EMULATOR_SESSION_DISPLAY_CONSOLE, 0);
     emulator_session_state_note_runtime(&session.state, EMULATOR_SESSION_MACHINE_RUNNING);
     emulator_session_state_note_vm_console(&session.state, 1);
@@ -140,7 +128,6 @@ int main(void)
     event.value.frame.graphics = 0; /* An earlier text frame. */
     lib_test_assert(emulator_session_process_completed(&session, &event));
     lib_test_assert(copies == 1u && session.state.observed_frame_sequence == 3u);
-    lib_test_assert(monitor_calls == 0u); /* Frames never request a monitor input turn. */
     lib_test_assert(session.state.graphics_actual);
     lib_test_assert(session.state.in_flight == EMULATOR_UI_ACTION_CREATE_WINDOW);
     lib_test_assert(deliveries == 0u); /* Wait for component completion before publishing. */

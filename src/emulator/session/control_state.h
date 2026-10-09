@@ -40,8 +40,8 @@ void emulator_session_state_initialize(emulator_session_state *state,
     emulator_session_display display, lib_bool console_control);
 void emulator_session_state_note_window_close(emulator_session_state *state);
 /* Records one public runtime completion.  RESET_COMPLETED is normalized to
- * PAUSED only for presentation; its distinct completion identity remains
- * available to the command session that owns monitor wording. */
+ * PAUSED only for presentation; its distinct completion identity is passed to
+ * the provider so it can generate product wording before Session delivers it. */
 void emulator_session_state_note_runtime(emulator_session_state *state,
     emulator_session_machine_state completed);
 lib_bool emulator_session_state_note_frame(emulator_session_state *state, lib_u32 sequence,

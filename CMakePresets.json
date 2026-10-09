@@ -113,6 +113,24 @@
         "PROJECT_ARTIFACT_ARCHITECTURE": "x86",
         "REPOSITORY_BUILD_NXVM": "OFF"
       }
+    },
+    {
+      "name": "mynes-gcc-x64-release-ccache",
+      "displayName": "MyNES MinGW-w64 GCC x64 optimized release with ccache",
+      "inherits": "mynes-gcc-x64-release",
+      "binaryDir": "${sourceDir}/build/mynes-gcc-x64-release-ccache",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache"
+      }
+    },
+    {
+      "name": "mynes-gcc-x86-release-ccache",
+      "displayName": "MyNES MinGW-w64 GCC x86 optimized release with ccache",
+      "inherits": "mynes-gcc-x86-release",
+      "binaryDir": "${sourceDir}/build/mynes-gcc-x86-release-ccache",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache"
+      }
     }
   ],
   "buildPresets": [
@@ -162,6 +180,16 @@
     {
       "name": "mynes-current-x86",
       "configurePreset": "mynes-gcc-x86-release",
+      "targets": ["mynes-0-0-0044"]
+    },
+    {
+      "name": "mynes-current-x64-ccache",
+      "configurePreset": "mynes-gcc-x64-release-ccache",
+      "targets": ["mynes-0-0-0044"]
+    },
+    {
+      "name": "mynes-current-x86-ccache",
+      "configurePreset": "mynes-gcc-x86-release-ccache",
       "targets": ["mynes-0-0-0044"]
     },
     {

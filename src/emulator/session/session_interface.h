@@ -49,10 +49,11 @@ typedef enum emulator_session_request {
     EMULATOR_SESSION_REQUEST_RESET
 } emulator_session_request;
 
-/* A product command provider returns copied presentation text plus, at most,
- * one neutral lifecycle request. Session is the unique lifecycle dispatcher
- * and UI owner. Synchronous debug/media access uses the machine's serialized
- * executor boundary from this same control thread. */
+/* A product command provider parses one line and returns copied presentation
+ * text plus, at most, one neutral lifecycle request. Session is the unique
+ * lifecycle dispatcher, reader owner and delayed-result owner. Synchronous
+ * debug/media access uses the machine's serialized executor boundary from
+ * this same control thread. */
 typedef struct emulator_session_command_result {
     char text[EMULATOR_SESSION_TEXT_CAPACITY];
     /* Optional additional text, borrowed until the next provider call.
@@ -75,14 +76,8 @@ typedef struct emulator_session_command_provider {
     void (*reject_line)(void *context, emulator_session_command_result *out_result);
     void (*submit_line)(void *context, emulator_session_machine_state state,
         const char *line, emulator_session_command_result *out_result);
-    lib_bool (*begin_external)(void *context, emulator_session_machine_state state,
-        emulator_session_request request);
     void (*note_runtime)(void *context, emulator_session_machine_state prior,
         emulator_session_machine_state completed,
-        emulator_session_command_result *out_result);
-    void (*note_broker)(void *context, emulator_session_machine_state state,
-        lib_bool vm_console_current, lib_bool monitor_running_surface);
-    void (*note_monitor_current)(void *context, lib_bool current,
         emulator_session_command_result *out_result);
     /* Product-owned hotkeys may request a neutral lifecycle action, release
      * Window capture, or inject product input through their own adapter. */

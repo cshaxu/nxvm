@@ -34,18 +34,15 @@ target_link_libraries(product-surface-keyboard PUBLIC emulator-machine emulator-
 add_library(product-surface-command STATIC surface/command.c surface/command_provider.c)
 target_include_directories(product-surface-command PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(product-surface-command PUBLIC product-surface-keyboard
-    emulator-session product-debug types)
-
-add_library(product-surface-composition STATIC surface/composition.c)
-target_include_directories(product-surface-composition PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(product-surface-composition PUBLIC emulator-session emulator-ui types)
+    emulator-product emulator-session product-debug types)
 
 add_library(product-surface-entry STATIC surface/entry.c)
 target_include_directories(product-surface-entry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(product-surface-entry PUBLIC emulator-product types)
 
 add_library(product-surface INTERFACE)
 target_link_libraries(product-surface INTERFACE product-surface-entry
-    product-surface-command product-surface-composition product-surface-keyboard
+    product-surface-command product-surface-keyboard emulator-product
     emulator-session emulator-ui product-debug types)
 
 add_custom_target(product-verify

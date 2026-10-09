@@ -1,0 +1,197 @@
+#include "lib/types/types_interface.h"
+
+#include "emulator/product/composition_interface.h"
+
+struct emulator_product {
+    emulator_product_machine machine;
+    emulator_machine *emulator_machine;
+    emulator_session *session;
+    emulator_ui *ui;
+};
+
+static lib_status emulator_product_status_from_lib(lib_status status)
+{
+    if (status == LIB_STATUS_OK) return LIB_STATUS_OK;
+    if (status == LIB_STATUS_INVALID_ARGUMENT) return LIB_STATUS_INVALID_ARGUMENT;
+    if (status == LIB_STATUS_INVALID_STATE) return LIB_STATUS_INVALID_STATE;
+    if (status == LIB_STATUS_UNSUPPORTED) return LIB_STATUS_UNSUPPORTED;
+    if (status == LIB_STATUS_NO_MEMORY) return LIB_STATUS_NO_MEMORY;
+    return LIB_STATUS_INTERNAL_ERROR;
+}
+
+static emulator_session_machine_state emulator_product_machine_state(
+    const emulator_product *product, emulator_machine_state state)
+{
+    if (product->machine.map_state != LIB_NULL)
+        return product->machine.map_state(product->machine.state_context, state);
+    switch (state) {
+    case EMULATOR_MACHINE_RUNNING: return EMULATOR_SESSION_MACHINE_RUNNING;
+    case EMULATOR_MACHINE_PAUSED: return EMULATOR_SESSION_MACHINE_PAUSED;
+    case EMULATOR_MACHINE_RESET_COMPLETED:
+        return EMULATOR_SESSION_MACHINE_RESET_COMPLETED;
+    case EMULATOR_MACHINE_ERROR: return EMULATOR_SESSION_MACHINE_ERROR;
+    default: return EMULATOR_SESSION_MACHINE_STOPPED;
+    }
+}
+
+static void emulator_product_machine_state_completed(void *context,
+    emulator_machine_state state, lib_u32 run_generation)
+{
+    emulator_product *product = context;
+
+    if (product == LIB_NULL || product->session == LIB_NULL)
+        return;
+    (void)emulator_session_enqueue_runtime_completed(product->session,
+        emulator_product_machine_state(product, state), run_generation);
+}
+
+static void emulator_product_machine_frame_published(void *context, lib_u32 sequence,
+    lib_bool graphics, lib_u32 run_generation)
+{
+    emulator_product *product = context;
+
+    if (product == LIB_NULL || product->session == LIB_NULL)
+        return;
+    (void)emulator_session_enqueue_frame_completed(product->session,
+        sequence, graphics, run_generation);
+}
+
+lib_status emulator_product_create(const emulator_product_machine *machine,
+    emulator_product **out_product)
+{
+    emulator_product *product;
+
+    if (out_product == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_product = LIB_NULL;
+    if (machine == LIB_NULL || machine->machine == LIB_NULL ||
+        machine->bind == LIB_NULL || machine->destroy == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    product = lib_allocate_zero(1u, sizeof(*product));
+    if (product == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    product->machine = *machine;
+    *out_product = product;
+    return LIB_STATUS_OK;
+}
+
+lib_status emulator_product_destroy(emulator_product *product)
+{
+    lib_status shutdown_status;
+
+    if (product == LIB_NULL) return LIB_STATUS_OK;
+    shutdown_status = emulator_machine_shutdown(product->emulator_machine);
+    if (shutdown_status != LIB_STATUS_OK)
+        return emulator_product_status_from_lib(shutdown_status);
+    shutdown_status = emulator_ui_destroy(product->ui);
+    if (shutdown_status != LIB_STATUS_OK)
+        return emulator_product_status_from_lib(shutdown_status);
+    product->ui = LIB_NULL;
+    emulator_session_destroy(product->session);
+    product->session = LIB_NULL;
+    shutdown_status = emulator_machine_destroy(product->emulator_machine);
+    if (shutdown_status != LIB_STATUS_OK)
+        return emulator_product_status_from_lib(shutdown_status);
+    product->emulator_machine = LIB_NULL;
+    (void)product->machine.bind(product->machine.machine, LIB_NULL);
+    shutdown_status = product->machine.destroy(product->machine.machine);
+    if (shutdown_status != LIB_STATUS_OK)
+        return emulator_product_status_from_lib(shutdown_status);
+    lib_release(product);
+    return LIB_STATUS_OK;
+}
+
+emulator_session *emulator_product_session(const emulator_product *product)
+{ return product == LIB_NULL ? LIB_NULL : product->session; }
+
+emulator_machine *emulator_product_machine_get(const emulator_product *product)
+{ return product == LIB_NULL ? LIB_NULL : product->emulator_machine; }
+
+emulator_ui *emulator_product_ui(const emulator_product *product)
+{ return product == LIB_NULL ? LIB_NULL : product->ui; }
+
+lib_status emulator_product_compose_machine(emulator_product *product)
+{
+    emulator_machine_driver driver;
+    void *machine = LIB_NULL;
+    emulator_machine *emulator_machine = LIB_NULL;
+    lib_status status;
+
+    if (product == LIB_NULL || product->emulator_machine != LIB_NULL)
+        return LIB_STATUS_INVALID_STATE;
+    machine = product->machine.machine;
+    driver = product->machine.driver;
+    status = emulator_product_status_from_lib(emulator_machine_create(&emulator_machine,
+        &driver));
+    if (status == LIB_STATUS_OK) {
+        status = product->machine.bind(machine, emulator_machine);
+    }
+    if (status != LIB_STATUS_OK) {
+        (void)product->machine.bind(machine, LIB_NULL);
+        lib_status cleanup_status = emulator_machine_destroy(emulator_machine);
+
+        if (cleanup_status != LIB_STATUS_OK) {
+            product->emulator_machine = emulator_machine;
+            return emulator_product_status_from_lib(cleanup_status);
+        }
+        return status;
+    }
+    product->emulator_machine = emulator_machine;
+    return LIB_STATUS_OK;
+}
+
+lib_status emulator_product_compose_control(emulator_product *product,
+    const emulator_session_options *options)
+{
+    emulator_session_options resolved;
+    emulator_session *session = LIB_NULL;
+    lib_status status;
+
+    if (product == LIB_NULL || options == LIB_NULL ||
+        product->emulator_machine == LIB_NULL ||
+        product->session != LIB_NULL) return LIB_STATUS_INVALID_STATE;
+    resolved = *options;
+    resolved.machine = product->emulator_machine;
+    status = emulator_session_create(&session, &resolved);
+    if (status != LIB_STATUS_OK) return emulator_product_status_from_lib(status);
+    product->session = session;
+    emulator_machine_set_state_sink(resolved.machine,
+        emulator_product_machine_state_completed, product);
+    emulator_machine_set_frame_sink(resolved.machine,
+        emulator_product_machine_frame_published, product);
+    return LIB_STATUS_OK;
+}
+
+lib_status emulator_product_compose_ui(emulator_product *product,
+    const emulator_ui_options *options)
+{
+    emulator_ui *ui = LIB_NULL;
+    lib_status status;
+
+    if (product == LIB_NULL || options == LIB_NULL || product->ui != LIB_NULL)
+        return LIB_STATUS_INVALID_STATE;
+    status = emulator_ui_create(&ui, options);
+    if (status != LIB_STATUS_OK) return emulator_product_status_from_lib(status);
+    product->ui = ui;
+    status = emulator_session_bind_ui(product->session, ui);
+    if (status != LIB_STATUS_OK) {
+        lib_status cleanup_status = emulator_ui_destroy(ui);
+
+        if (cleanup_status != LIB_STATUS_OK)
+            return emulator_product_status_from_lib(cleanup_status);
+        product->ui = LIB_NULL;
+        return emulator_product_status_from_lib(status);
+    }
+    return LIB_STATUS_OK;
+}
+
+lib_status emulator_product_publish_initial_state(emulator_product *product)
+{
+    emulator_machine_state state;
+
+    if (product == LIB_NULL || product->emulator_machine == LIB_NULL ||
+        product->session == LIB_NULL) return LIB_STATUS_INVALID_STATE;
+    state = emulator_machine_state_get(product->emulator_machine);
+    if (state != EMULATOR_MACHINE_STOPPED) return LIB_STATUS_INVALID_STATE;
+    return emulator_session_enqueue_runtime_completed(product->session,
+        emulator_product_machine_state(product, state),
+        emulator_machine_run_generation(product->emulator_machine));
+}

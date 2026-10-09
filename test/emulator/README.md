@@ -15,7 +15,7 @@ cmake --build build/emulator-tests
 ctest --test-dir build/emulator-tests --output-on-failure
 ```
 
-Coverage: public Session create/bind/destroy, copied UI/runtime/frame ingress;
+Coverage: public Product construction/ordered teardown; public Session create/bind/destroy, copied UI/runtime/frame ingress;
 UI initialization cleanup and monitor/control status propagation; publication
 value copy and run identity; session FIFO/wake, derived presentation/state matrix, input admission
 and retirement, source-local physical-key identity, machine input FIFO,

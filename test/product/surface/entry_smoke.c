@@ -1,10 +1,12 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
+#include "lib/kvm-base/hotkey_interface.h"
+#include "emulator/product/composition_interface.h"
 #include "product/surface/entry_interface.h"
 
-struct product_surface { lib_bool live; };
+struct emulator_product { lib_bool live; };
 
-static struct product_surface fixture;
+static struct emulator_product fixture;
 static lib_u32 failure;
 static lib_u32 created;
 static lib_u32 destroyed;
@@ -16,13 +18,15 @@ static lib_status fixture_bind(void *machine, emulator_machine *emulator)
     return LIB_STATUS_OK;
 }
 
-static void fixture_destroy(void *machine)
+static lib_status fixture_destroy(void *machine)
 {
     (void)machine;
     ++destroyed;
+    return LIB_STATUS_OK;
 }
 
-lib_status product_surface_create(const app_composed_machine *machine, product_surface **out_app)
+lib_status emulator_product_create(const emulator_product_machine *machine,
+    emulator_product **out_app)
 {
     (void)machine;
     ++created;
@@ -32,20 +36,20 @@ lib_status product_surface_create(const app_composed_machine *machine, product_s
     return LIB_STATUS_OK;
 }
 
-lib_status product_surface_destroy(product_surface *app)
+lib_status emulator_product_destroy(emulator_product *app)
 {
     if (app == LIB_NULL) return LIB_STATUS_OK;
     app->live = LIB_FALSE;
     return failure == 6u ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
 }
 
-emulator_session *product_surface_session(const product_surface *app)
+emulator_session *emulator_product_session(const emulator_product *app)
 { return app == LIB_NULL ? LIB_NULL : (emulator_session *)app; }
 
-emulator_machine *product_surface_emulator_machine(const product_surface *app)
+emulator_machine *emulator_product_machine_get(const emulator_product *app)
 { return app == LIB_NULL ? LIB_NULL : (emulator_machine *)app; }
 
-emulator_ui *product_surface_ui(const product_surface *app)
+emulator_ui *emulator_product_ui(const emulator_product *app)
 { return app == LIB_NULL ? LIB_NULL : (emulator_ui *)app; }
 
 lib_bool emulator_session_enqueue_ui_event(void *context,
@@ -56,7 +60,7 @@ lib_bool emulator_session_enqueue_ui_event(void *context,
     return LIB_TRUE;
 }
 
-lib_status product_surface_compose_machine(product_surface *app)
+lib_status emulator_product_compose_machine(emulator_product *app)
 {
     (void)app;
     return failure == 2u ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
@@ -81,14 +85,16 @@ lib_bool product_surface_keyboard_hotkeys(kvm_hotkey_registry *registry)
     return failure == 4u ? LIB_FALSE : LIB_TRUE;
 }
 
-lib_status product_surface_compose_control(product_surface *app, const emulator_session_options *options)
+lib_status emulator_product_compose_control(emulator_product *app,
+    const emulator_session_options *options)
 {
     (void)app;
     (void)options;
     return failure == 5u ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
 }
 
-lib_status product_surface_compose_ui(product_surface *app, const emulator_ui_options *options)
+lib_status emulator_product_compose_ui(emulator_product *app,
+    const emulator_ui_options *options)
 {
     (void)app;
     (void)options;
@@ -101,18 +107,44 @@ lib_bool emulator_session_run(emulator_session *session)
     return LIB_TRUE;
 }
 
+lib_i32 emulator_product_run(const emulator_product_definition *definition)
+{
+    emulator_product product = {0};
+    emulator_session_options session_options = {0};
+    emulator_ui_options ui_options = {0};
+
+    if (definition == LIB_NULL || definition->configure_control == LIB_NULL ||
+        definition->configure_ui == LIB_NULL) return 1;
+    ++created;
+    if (failure == 1u) {
+        ++destroyed;
+        return 1;
+    }
+    if (failure == 2u || failure == 5u) return 1;
+    fixture.live = LIB_TRUE;
+    if (definition->configure_control(definition->context, &product,
+            &session_options) != LIB_STATUS_OK ||
+        definition->configure_ui(definition->context, &product,
+            &ui_options) != LIB_STATUS_OK) {
+        fixture.live = LIB_FALSE;
+        return 1;
+    }
+    fixture.live = LIB_FALSE;
+    return failure == 6u ? 1 : 0;
+}
+
 void product_surface_command_dispose(product_surface_command_context *command)
 { (void)command; }
 
-const char *product_surface_command_hotkey_help(void)
+const char *product_surface_keyboard_hotkey_help(void)
 { return "hotkeys"; }
 
 lib_i32 main(void)
 {
     const product_surface_definition definition = {
         .name = "PC",
-        .machine = {.machine = &fixture, .bind = fixture_bind,
-            .destroy = fixture_destroy},
+        .machine = {.composition = {.machine = &fixture, .bind = fixture_bind,
+            .destroy = fixture_destroy}},
         .ui = {.display = EMULATOR_SESSION_DISPLAY_CONSOLE}
     };
     product_surface_definition invalid_ui = definition;
@@ -130,4 +162,10 @@ lib_i32 main(void)
         if (fixture.live) return 5;
     }
     return 0;
+}
+lib_status emulator_product_monitor_format_window_status(const char *name,
+    const char *hotkeys, char *out_text, lib_size capacity)
+{
+    return lib_c_snprintf(out_text, capacity, "%s %s", name, hotkeys) < 0 ?
+        LIB_STATUS_LIMIT_EXCEEDED : LIB_STATUS_OK;
 }

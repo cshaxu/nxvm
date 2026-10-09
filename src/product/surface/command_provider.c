@@ -5,13 +5,12 @@ static lib_bool product_surface_command_provider_hotkey(void *opaque,
     emulator_session_machine_state state, const lib_u8 *identifier,
     emulator_session_command_result *out)
 {
-    product_surface_command_context *command = opaque;
+    emulator_product_monitor_provider *monitor = opaque;
+    product_surface_command_context *command = monitor != LIB_NULL ? monitor->context : LIB_NULL;
+    if (command == LIB_NULL) return LIB_FALSE;
     lib_bool accepted = product_surface_keyboard_handle_hotkey(command->machine, state,
         identifier, out);
 
-    if (accepted && out->request != EMULATOR_SESSION_REQUEST_NONE &&
-        !product_surface_command_provider_begin_external(command, state, out->request))
-        out->request = EMULATOR_SESSION_REQUEST_NONE;
     return accepted;
 }
 
@@ -23,14 +22,11 @@ lib_status product_surface_command_provider_initialize(product_surface_command_c
     if (command == LIB_NULL || machine == LIB_NULL || out_provider == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_provider = (emulator_session_command_provider){
-        .context = command,
-        .open = product_surface_command_provider_open,
-        .reject_line = product_surface_command_provider_reject_line,
+        .context = &command->monitor,
+        .open = emulator_product_monitor_provider_open,
+        .reject_line = emulator_product_monitor_provider_reject_line,
         .submit_line = product_surface_command_provider_submit_line,
-        .begin_external = product_surface_command_provider_begin_external,
         .note_runtime = product_surface_command_provider_note_runtime,
-        .note_broker = product_surface_command_provider_note_broker,
-        .note_monitor_current = product_surface_command_provider_note_monitor_current,
         .handle_hotkey = product_surface_command_provider_hotkey
     };
     return product_surface_command_initialize(command, machine, display, extensions);

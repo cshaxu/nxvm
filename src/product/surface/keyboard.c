@@ -3,6 +3,16 @@
 
 #include "emulator/machine/machine_interface.h"
 
+static const char product_surface_keyboard_help[] =
+    "  Ctrl+Alt+P     pause or resume\r\n"
+    "  Ctrl+Alt+D     send Ctrl+Alt+Del to the guest\r\n"
+    "  Ctrl+Alt+F     send Alt+Enter to the guest\r\n"
+    "  Ctrl+Alt+T     send Alt+Tab to the guest\r\n"
+    "  Ctrl+Alt+M     release captured mouse";
+
+const char *product_surface_keyboard_hotkey_help(void)
+{ return product_surface_keyboard_help; }
+
 lib_bool product_surface_keyboard_deliver_input(void *context, const kvm_input_event *event)
 {
     return context != NULL && event != NULL && emulator_machine_enqueue_input(

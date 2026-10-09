@@ -45,12 +45,14 @@ line wrapping. Characters outside the 80x25 surface are omitted. Products
 must supply status/help text within this existing bounded contract.
 
 Session owns one pending cooked line until its normal/rejected event is consumed
-or the broker confirms cancellation/handoff. Frame events never request input.
-Provider prompt readiness is level-triggered, not consumed by notification;
-text, explicit requests and prompt admission use one result outlet. While editing,
-notification text first cancels and joins the reader, discarding the partial line.
-A completed queued line remains pending and is still consumed. UI only forwards
-that cancellation to its broker; it owns no second reader state or editor.
+or the broker confirms cancellation/handoff, plus the one lifecycle request in
+flight, delayed monitor text and the next requested prompt. Frame events never
+request input. Provider prompt readiness is level-triggered, not consumed by
+notification; text, explicit requests and prompt admission use one result outlet.
+While editing, notification text first cancels and joins the reader, discarding
+the partial line. A completed queued line remains pending and is still consumed.
+UI only forwards that cancellation to its broker; it owns no second reader state
+or editor. Providers hold no duplicate transition, prompt or monitor-text state.
 
 Session command results may borrow additional text until the next provider
 call. Session consumes it synchronously through its existing monitor transaction,
@@ -62,9 +64,10 @@ allocation/formatting and native write failures remain explicit.
 | `machine` | executor, lifecycle/input queues, frame publication, optional paused debug adapter | `machine_interface.h` |
 | `session` | one control queue, completed-fact reduction and dispatch | `session_interface.h` |
 | `ui` | monitor logical Console, broker and KVM composition | `ui_interface.h` |
+| `product` | neutral Machine/Session/UI construction and ordered teardown | `composition_interface.h` |
 
-`session` calls `machine` and `ui`.
-No other emulator component edge is permitted.  Application and host code may
+`session` calls `machine` and `ui`; `product` composes those three neutral
+owners. No other emulator component edge is permitted. Application and host code may
 compose only the root `*_interface.h` contracts; implementation headers and
 source files remain component-local. Importing products decide whether to inject
 an adapter or expose a command. Emulator never depends on Product.
@@ -83,7 +86,7 @@ wait on its independent task cancellation and join before returning an error.
 Commands are never replayed. Concurrent failure of native completion and task
 cancellation, or inability to prove thread exit, is outside recoverable operation:
 retain all callback/stream contexts until successful shutdown. Debug cancellation
-clears product plans, not in-flight requests. Emulator builds only its three neutral components; products separately
+clears product plans, not in-flight requests. Emulator builds only its four neutral components; products separately
 select any architecture-specific frontend.
 
 Machine shutdown synchronously joins its worker and all callbacks without

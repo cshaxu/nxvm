@@ -1,8 +1,8 @@
 #ifndef PRODUCT_SURFACE_ENTRY_INTERFACE_H
 #define PRODUCT_SURFACE_ENTRY_INTERFACE_H
 
-#include "product/surface/composition_interface.h"
 #include "product/surface/command_interface.h"
+#include "product/surface/machine_interface.h"
 
 /* App has already interpreted its configuration. Product sees only the two
  * choices required to compose Emulator Session/UI; this is not a Emulator UI
@@ -12,7 +12,8 @@ typedef struct app_composed_ui {
     lib_bool console_control;
 } app_composed_ui;
 
-typedef lib_status (*product_surface_extensions_configure)(product_surface *app,
+typedef lib_status (*product_surface_extensions_configure)(
+    app_composed_machine *machine,
     product_surface_command_extensions *out_extensions);
 
 /* Both App-composed values are transferred to Product. It does not receive an

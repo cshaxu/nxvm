@@ -18,6 +18,7 @@ endif()
 add_subdirectory(ui)
 add_subdirectory(machine)
 add_subdirectory(session)
+add_subdirectory(product)
 
 add_custom_target(emulator-verify
     COMMAND "${CMAKE_COMMAND}" -DEMULATOR_ROOT=${CMAKE_CURRENT_SOURCE_DIR}

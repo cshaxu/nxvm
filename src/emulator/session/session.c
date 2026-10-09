@@ -3,6 +3,7 @@
 #include "emulator/session/control.h"
 #include "emulator/session/control_state.h"
 #include "emulator/ui/ui_interface.h"
+#include "lib/types/file.h"
 
 
 struct emulator_session {
@@ -13,6 +14,10 @@ struct emulator_session {
     emulator_session_command_provider command;
     emulator_ui *ui;
     lib_bool pending_line;
+    emulator_session_request pending_request;
+    lib_bool prompt_due;
+    char pending_monitor_text[EMULATOR_SESSION_TEXT_CAPACITY];
+    char pending_prompt[EMULATOR_SESSION_PROMPT_CAPACITY];
 };
 
 static emulator_ui_state emulator_session_ui_state(emulator_session_machine_state state)
@@ -71,6 +76,54 @@ static lib_bool emulator_session_write_text(emulator_session *session, const cha
     return used == 0u || emulator_ui_write_monitor(session->ui, chunk) == LIB_STATUS_OK;
 }
 
+static lib_bool emulator_session_append_pending_text(emulator_session *session, const char *text)
+{
+    lib_size used;
+    lib_size available;
+    lib_size length;
+    if (session == NULL || text == NULL || text[0] == '\0') return LIB_TRUE;
+    used = lib_text_length(session->pending_monitor_text);
+    available = sizeof(session->pending_monitor_text) - used;
+    length = lib_text_length(text);
+    if (available == 0u || length >= available) return LIB_FALSE;
+    lib_memory_copy(session->pending_monitor_text + used, text, length + 1u);
+    return LIB_TRUE;
+}
+
+static void emulator_session_note_prompt(emulator_session *session,
+    const emulator_session_command_result *result)
+{
+    const char *prompt;
+    if (session == NULL || result == NULL || !result->arm_prompt) return;
+    prompt = result->prompt[0] != '\0' ? result->prompt : "> ";
+    (void)lib_c_snprintf(session->pending_prompt, sizeof(session->pending_prompt), "%s", prompt);
+    session->prompt_due = LIB_TRUE;
+}
+
+static lib_bool emulator_session_arm_if_ready(emulator_session *session)
+{
+    if (session == NULL || !emulator_session_state_monitor_is_current(&session->state)) return LIB_TRUE;
+    if (session->pending_monitor_text[0] != '\0') {
+        if (session->pending_line) {
+            lib_bool completed;
+            if (emulator_ui_cancel_monitor_line(session->ui, &completed) != LIB_STATUS_OK) return LIB_FALSE;
+            session->pending_line = completed;
+            if (!completed && emulator_ui_write_monitor(session->ui, "\r\n") != LIB_STATUS_OK)
+                return LIB_FALSE;
+        }
+        if (!emulator_session_write_text(session, session->pending_monitor_text)) return LIB_FALSE;
+        session->pending_monitor_text[0] = '\0';
+    }
+    if (session->pending_request != EMULATOR_SESSION_REQUEST_NONE ||
+        !session->prompt_due || session->pending_line) return LIB_TRUE;
+    if (emulator_ui_write_monitor(session->ui,
+            session->pending_prompt[0] != '\0' ? session->pending_prompt : "> ") != LIB_STATUS_OK ||
+        emulator_ui_request_monitor_line(session->ui) != LIB_STATUS_OK) return LIB_FALSE;
+    session->pending_line = LIB_TRUE;
+    session->prompt_due = LIB_FALSE;
+    return LIB_TRUE;
+}
+
 static lib_bool emulator_session_apply_result(emulator_session *session,
     const emulator_session_command_result *result)
 {
@@ -87,25 +140,22 @@ static lib_bool emulator_session_apply_result(emulator_session *session,
         }
         if (!emulator_session_write_text(session, result->text) ||
             !emulator_session_write_text(session, result->detail)) return LIB_FALSE;
+    } else if (!emulator_session_append_pending_text(session, result->text) ||
+        !emulator_session_append_pending_text(session, result->detail)) {
+        return LIB_FALSE;
     }
-    if (!emulator_session_dispatch_request(session, result->request)) return LIB_FALSE;
-    if (result->request != EMULATOR_SESSION_REQUEST_NONE ||
-        !result->arm_prompt || session->pending_line ||
-        !emulator_session_state_monitor_is_current(&session->state)) return LIB_TRUE;
-    if (emulator_ui_write_monitor(session->ui, result->prompt) != LIB_STATUS_OK ||
-        emulator_ui_request_monitor_line(session->ui) != LIB_STATUS_OK) return LIB_FALSE;
-    session->pending_line = LIB_TRUE;
+    if (result->request != EMULATOR_SESSION_REQUEST_NONE) {
+        if (session->pending_request != EMULATOR_SESSION_REQUEST_NONE) {
+            return emulator_session_append_pending_text(session,
+                "Machine state transition is in progress.\r\n\r\n");
+        }
+        if (!emulator_session_dispatch_request(session, result->request)) return LIB_FALSE;
+        session->pending_request = result->request;
+        session->prompt_due = LIB_FALSE;
+        return LIB_TRUE;
+    }
+    emulator_session_note_prompt(session, result);
     return LIB_TRUE;
-}
-
-static lib_bool emulator_session_arm_if_ready(emulator_session *session)
-{
-    emulator_session_command_result result;
-    if (session == NULL || session->command.note_monitor_current == NULL) return LIB_FALSE;
-    emulator_session_clear_result(&result);
-    session->command.note_monitor_current(session->command.context,
-        emulator_session_state_monitor_is_current(&session->state), &result);
-    return emulator_session_apply_result(session, &result);
 }
 
 static lib_bool emulator_session_drive(emulator_session *session)
@@ -142,13 +192,12 @@ static lib_bool emulator_session_handle_kvm_input(emulator_session *session,
     if (session == NULL || event == NULL) return LIB_FALSE;
     state = session->state.monitor_actual;
     if (event->type == KVM_EVENT_WINDOW_CLOSE) {
-        if (state == EMULATOR_SESSION_MACHINE_RUNNING &&
-            (session->command.begin_external == NULL ||
-             !session->command.begin_external(session->command.context, state,
-                 EMULATOR_SESSION_REQUEST_PAUSE))) return LIB_FALSE;
         emulator_session_state_note_window_close(&session->state);
-        return state != EMULATOR_SESSION_MACHINE_RUNNING ||
-            emulator_session_dispatch_request(session, EMULATOR_SESSION_REQUEST_PAUSE);
+        if (state != EMULATOR_SESSION_MACHINE_RUNNING ||
+            session->pending_request != EMULATOR_SESSION_REQUEST_NONE) return LIB_TRUE;
+        emulator_session_clear_result(&result);
+        result.request = EMULATOR_SESSION_REQUEST_PAUSE;
+        return emulator_session_apply_result(session, &result);
     }
     if (event->type == KVM_EVENT_HOTKEY) {
         if (session->command.handle_hotkey == NULL) return LIB_FALSE;
@@ -176,6 +225,8 @@ static lib_bool emulator_session_process_completed(emulator_session *session,
         session->command.note_runtime(session->command.context,
             session->state.monitor_actual, event->value.runtime_state, &result);
         emulator_session_state_note_runtime(&session->state, event->value.runtime_state);
+        if (event->value.runtime_state != EMULATOR_SESSION_MACHINE_INIT)
+            session->pending_request = EMULATOR_SESSION_REQUEST_NONE;
     } else if (event->kind == EMULATOR_SESSION_EVENT_FRAME_COMPLETED) {
         lib_u32 sequence = event->value.frame.sequence;
         if (emulator_session_frame_is_newer(sequence, session->state.observed_frame_sequence) &&
@@ -198,9 +249,6 @@ static lib_bool emulator_session_process_completed(emulator_session *session,
     } else return LIB_TRUE;
     if (event->kind == EMULATOR_SESSION_EVENT_RUNTIME_COMPLETED &&
         !emulator_session_apply_result(session, &result)) return LIB_FALSE;
-    /* Runtime wording is held by the injected command provider until the
-     * monitor is Current.  A raw Console must never receive monitor status
-     * text merely because its VM completion arrived first. */
     if (!emulator_session_drive(session)) return LIB_FALSE;
     if ((event->kind == EMULATOR_SESSION_EVENT_RUNTIME_COMPLETED ||
          event->kind == EMULATOR_SESSION_EVENT_BROKER_COMPLETED) &&
@@ -210,10 +258,15 @@ static lib_bool emulator_session_process_completed(emulator_session *session,
             emulator_session_ui_state(session->state.runtime_actual)) != LIB_STATUS_OK)
         return LIB_FALSE;
     if (broker_monitor_completed && emulator_session_state_monitor_is_current(&session->state) &&
-        session->command.note_broker != NULL)
-        session->command.note_broker(session->command.context,
-            session->state.monitor_actual, LIB_FALSE,
-            emulator_session_state_monitor_is_running_graphics_surface(&session->state));
+        session->state.monitor_actual == EMULATOR_SESSION_MACHINE_RUNNING &&
+        emulator_session_state_monitor_is_running_graphics_surface(&session->state))
+        session->prompt_due = LIB_TRUE;
+    if (event->kind == EMULATOR_SESSION_EVENT_BROKER_COMPLETED &&
+        event->value.broker_vm_console_current &&
+        session->state.monitor_actual == EMULATOR_SESSION_MACHINE_RUNNING) {
+        session->prompt_due = LIB_FALSE;
+        session->pending_monitor_text[0] = '\0';
+    }
     return event->kind == EMULATOR_SESSION_EVENT_FRAME_COMPLETED ? 1 :
         emulator_session_arm_if_ready(session);
 }
@@ -226,8 +279,8 @@ lib_status emulator_session_create(emulator_session **out_session,
     *out_session = NULL;
     if (options == NULL || options->machine == NULL ||
         options->command.open == NULL ||
-        options->command.submit_line == NULL || options->command.note_runtime == NULL ||
-        options->command.note_monitor_current == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+        options->command.submit_line == NULL || options->command.note_runtime == NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
     session = lib_allocate_zero(1u, sizeof(*session));
     if (session == NULL) return LIB_STATUS_NO_MEMORY;
     if (!emulator_session_queue_initialize(&session->queue)) {
