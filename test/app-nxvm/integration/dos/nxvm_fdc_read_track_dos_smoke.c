@@ -1,15 +1,15 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
 
 #include <windows.h>
 
-#include "x86/core/machine_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
-#include "x86/core/memory_interface.h"
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/machine/waiting.h"
+#include "core/x86/machine_interface.h"
+#include "core/board-base/machine_board_interface.h"
+#include "core/x86/memory_interface.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/waiting.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define VM_FDC242_BOOT_BUDGET 6000000u

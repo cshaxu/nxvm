@@ -2,12 +2,12 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "../../../ibmpc/core/composition_fixture.h"
-#include "../../../ibmpc/core/time_fixture.h"
-#include "x86/core/debug_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "../../../core/board-base/composition/composition_fixture.h"
+#include "../../../core/board-base/composition/time_fixture.h"
+#include "core/x86/debug_interface.h"
+#include "core/board-base/machine_board_interface.h"
 
-#include "../../../ibmpc/board-common/core_machine_board_fixture.h"
+#include "../../../core/board-base/core_machine_board_fixture.h"
 
 static lib_i32 core_machine_port_b_exclusivity(void)
 {

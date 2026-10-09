@@ -1,5 +1,5 @@
 #include "boot_fixture.h"
-#include "ibmpc/board-xt/xt_ppi_keyboard.h"
+#include "core/board-xt/xt_ppi_keyboard.h"
 
 lib_status test_xt_boot_ppi_output(const core_machine_xt_ppi_keyboard *keyboard,
     lib_u8 selector, x86_ppi8255_pins *pins)

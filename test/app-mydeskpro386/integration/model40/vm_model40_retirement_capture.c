@@ -1,16 +1,16 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "../../support/model40.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine_interface.h"
-#include "x86/core/debug_interface.h"
-#include "test/ibmpc/core/composition_fixture.h"
+#include "core/x86/machine_interface.h"
+#include "core/x86/debug_interface.h"
+#include "test/core/board-base/composition/composition_fixture.h"
 #include "test/app-nxvm/unit/support/ibmpc/board-common/cmos_fixture.h"
-#include "x86/core/retirement_observation_interface.h"
+#include "core/x86/retirement_observation_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/machine/waiting.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/waiting.h"
 
 #define MODEL40_CAPTURE_FORM_LIMIT 128u
 /* DeskPro firmware performs a complete multi-pass RAM verification before its

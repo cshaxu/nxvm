@@ -2,15 +2,15 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/hdc/hdc.c" hdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/hdc.c" hdc_adapter)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/pc_at_profile_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/hdc/hdc.c" hdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/hdc.c" hdc_adapter)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile_interface.h"
     profile_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/pc_at_preparation.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/pc_at_preparation.c"
     plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/core_machine_hdc_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/test/core/board-base/core_machine_hdc_smoke.c"
     core_fixture)
 
 if(hdc_source MATCHES "#include[ \t]+\"(vm|app-nxvm)/")

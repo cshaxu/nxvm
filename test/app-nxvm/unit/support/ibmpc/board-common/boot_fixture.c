@@ -1,6 +1,6 @@
 #include "boot_fixture.h"
-#include "ibmpc/board-common/machine_board_state.h"
-#include "ibmpc/board-common/fdc.h"
+#include "core/board-base/machine_board_state.h"
+#include "core/board-base/fdc.h"
 #include "../board-at/boot_fixture.h"
 #include "../board-xt/boot_fixture.h"
 

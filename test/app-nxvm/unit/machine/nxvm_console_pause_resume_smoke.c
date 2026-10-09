@@ -1,10 +1,10 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "ibmpc/machine/control.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/control.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_private.h"
 #include "../support/ibmpc/machine/support/common_machine_fixture.h"
 #include "../support/rom/session_assets.h"
 

@@ -2,11 +2,11 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/port_interface.c" port_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.h" machine_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board_state.h" board_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/port_interface.c" port_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.h" machine_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_state.h" board_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" scheduler_source)
 if(machine_header MATCHES "core_machine_hdc[ \t]+\\*?[ \t]*hdc;" OR
     NOT board_header MATCHES "core_machine_hdc[ \t]+\\*hdc;" OR
     scheduler_source MATCHES "board->hdc|core_machine_hdc_")

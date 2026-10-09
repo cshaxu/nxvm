@@ -1,5 +1,5 @@
 #include "app-mydeskpro386/profiles/d4_platform_interface.h"
-#include "../../../ibmpc/core/port_assembly_fixture.h"
+#include "../../../core/board-base/composition/port_assembly_fixture.h"
 #include <stdio.h>
 
 /* The product owns this D4 attachment; Shared knows only the test operation. */

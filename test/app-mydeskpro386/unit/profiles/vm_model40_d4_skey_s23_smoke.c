@@ -1,11 +1,11 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "../../../ibmpc/core/composition_fixture.h"
-#include "x86/core/memory_interface.h"
-#include "x86/core/machine_interface.h"
-#include "ibmpc/machine/machine_private.h"
+#include "../../../core/board-base/composition/composition_fixture.h"
+#include "core/x86/memory_interface.h"
+#include "core/x86/machine_interface.h"
+#include "core/machine/machine_private.h"
 #include "../../support/rom/model40_session_assets.h"
 
 lib_i32 main(void)

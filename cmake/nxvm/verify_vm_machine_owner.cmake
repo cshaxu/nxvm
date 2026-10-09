@@ -8,8 +8,8 @@ if(old_machine_sources)
     message(FATAL_ERROR "obsolete App Machine implementation remains")
 endif()
 file(GLOB_RECURSE shared_machine_sources
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/*.h")
+    "${PROJECT_SOURCE_DIR}/src/core/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/machine/*.h")
 foreach(source IN LISTS shared_machine_sources)
     file(READ "${source}" shared_source)
     if(shared_source MATCHES "#[ \t]*include[ \t]*[\"]app-")
@@ -20,13 +20,13 @@ if(cmake_text MATCHES "vm-composition" OR
         cmake_text MATCHES "src/(vm|app-nxvm/machine)/composition/session")
     message(FATAL_ERROR "obsolete VM composition executor route remains in CMake")
 endif()
-if(EXISTS "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/composition/session")
+if(EXISTS "${PROJECT_SOURCE_DIR}/src/core/machine/composition/session")
     message(FATAL_ERROR "obsolete VM composition executor source root remains")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine_interface.h" event_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/lifecycle.c" lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/product/composition.c" app_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h" event_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c" lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/product/surface/composition.c" app_source)
 
 # Common owns the sole lifecycle queue and worker.  App composition constructs
 # it from the vm/machine driver, then forwards copied facts to Common Session.
@@ -138,7 +138,7 @@ foreach(source IN LISTS model40_sources)
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/input_interface.h" input_contract)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/input_interface.h" input_contract)
 if(input_contract MATCHES "profile_kind|VM_MACHINE_PROFILE_(DEFAULT|IBM|COMPAQ)|app-nxvm/")
     message(FATAL_ERROR "Machine value contract retains identity or model-specific observations")
 endif()

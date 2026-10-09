@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
 #include "app-mydeskpro386/profiles/model40_private.h"
 
-#include "ibmpc/board-common/rom_validation_interface.h"
-#include "ibmpc/board-common/rom_mapping_interface.h"
+#include "core/board-base/rom_validation_interface.h"
+#include "core/board-base/rom_mapping_interface.h"
 
 lib_i32 vm_profile_model40_external_rom_is_valid(
     const vm_profile_model40_external_rom *rom)

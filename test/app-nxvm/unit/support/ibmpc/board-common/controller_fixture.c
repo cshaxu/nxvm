@@ -1,8 +1,8 @@
 #include "controller_fixture.h"
-#include "ibmpc/board-common/machine_board_state.h"
-#include "../../../../../ibmpc/board-common/fdc_fixture.h"
-#include "../../../../../ibmpc/board-common/hdc_fixture.h"
-#include "../../../../../ibmpc/board-common/dma_fixture.h"
+#include "core/board-base/machine_board_state.h"
+#include "../../../../../core/board-base/fdc_fixture.h"
+#include "../../../../../core/board-base/hdc_fixture.h"
+#include "../../../../../core/board-base/dma_fixture.h"
 
 lib_bool test_board_fdc_binding_matches(const core_machine_board_state *board,
     const core_machine *machine, core_machine_media_id media_id, lib_u8 dma_channel)

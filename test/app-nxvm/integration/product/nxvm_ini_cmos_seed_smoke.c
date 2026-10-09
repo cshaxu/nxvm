@@ -1,11 +1,11 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "test/ibmpc/core/composition_fixture.h"
+#include "test/core/board-base/composition/composition_fixture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include VM_PRODUCT_BINDING_HEADER
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 
 static lib_i32 vm_ini_cmos_seed_matches(const char *directory,
     const char *file_name, lib_u8 index, lib_u8 expected)

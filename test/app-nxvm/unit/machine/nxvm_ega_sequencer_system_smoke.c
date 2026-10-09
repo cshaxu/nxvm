@@ -1,14 +1,14 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine_interface.h"
-#include "x86/core/debug_interface.h"
-#include "ibmpc/board-common/vadp_interface.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/x86/machine_interface.h"
+#include "core/x86/debug_interface.h"
+#include "core/board-base/vadp_interface.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_interface.h"
 #include "../support/rom/session_assets.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 
 lib_i32 main(void)
 {

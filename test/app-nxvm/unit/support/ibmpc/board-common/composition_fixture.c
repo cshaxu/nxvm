@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "composition_fixture.h"
-#include "ibmpc/board-common/machine_board_state.h"
-#include "../../../../../ibmpc/board-common/pic_fixture.h"
+#include "core/board-base/machine_board_state.h"
+#include "../../../../../core/board-base/pic_fixture.h"
 #include "../board-at/command_fixture.h"
 
 lib_bool test_board_plan_timing_matches(const core_machine_plan *plan,

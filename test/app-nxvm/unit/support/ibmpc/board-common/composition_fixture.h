@@ -1,7 +1,7 @@
 #ifndef TEST_BOARD_COMPOSITION_FIXTURE_H
 #define TEST_BOARD_COMPOSITION_FIXTURE_H
-#include "ibmpc/board-common/machine_board_interface.h"
-#include "ibmpc/board-common/dma_bus_interface.h"
+#include "core/board-base/machine_board_interface.h"
+#include "core/board-base/dma_bus_interface.h"
 
 typedef struct test_board_composition_observation {
     core_machine_fdc_config fdc;

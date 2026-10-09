@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 #include "lib/storage/file_interface.h"
-#include "x86/xasm32/xasm32_interface.h"
+#include "product/xasm32/xasm32_interface.h"
 
 #define BIOS_BYTES 0x10000u
 #define BIOS_IVT 0xf800u
@@ -29,7 +29,7 @@ static lib_status bios_assemble(lib_u8 *image, lib_size *offset, lib_size limit,
     if (count < 0 || (lib_size)count >= sizeof(path) || *offset >= limit ||
         limit > BIOS_BYTES) return LIB_STATUS_LIMIT_EXCEEDED;
     status = lib_storage_file_read_owned(path, 1024u * 1024u, &text, &text_bytes);
-    if (status == LIB_STATUS_OK) status = x86_xasm32_assemble_paragraph(text,
+    if (status == LIB_STATUS_OK) status = product_xasm32_assemble_paragraph(text,
         text_bytes, image + *offset, limit - *offset, &code_bytes, LIB_FALSE);
     lib_release(text);
     if (status != LIB_STATUS_OK || code_bytes == 0u) {

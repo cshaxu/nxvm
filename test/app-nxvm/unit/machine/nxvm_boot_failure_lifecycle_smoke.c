@@ -1,11 +1,11 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "ibmpc/machine/control.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/control.h"
+#include "core/machine/machine_interface.h"
 #include "../support/rom/session_assets.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 
 lib_i32 main(void)
 {

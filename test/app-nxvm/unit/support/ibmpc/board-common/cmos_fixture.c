@@ -1,7 +1,7 @@
 #include "lib/types/file.h"
 #include "cmos_fixture.h"
-#include "ibmpc/board-common/machine_board_state.h"
-#include "ibmpc/board-common/pic_bus_interface.h"
+#include "core/board-base/machine_board_state.h"
+#include "core/board-base/pic_bus_interface.h"
 void test_board_cmos_advance(core_machine_board_state *board, lib_u64 ticks)
 {
     x86_rtc_advance(board->shared_rtc, ticks);

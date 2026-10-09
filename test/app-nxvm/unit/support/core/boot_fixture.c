@@ -1,5 +1,5 @@
 #include "boot_fixture.h"
-#include "x86/core/machine.h"
+#include "core/x86/machine.h"
 
 test_core_boot_observation test_core_boot_capture(const core_machine *machine)
 {

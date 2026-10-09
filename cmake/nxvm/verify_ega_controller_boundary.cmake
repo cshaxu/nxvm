@@ -2,13 +2,13 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/video/video.c" vadp_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory.c" memory_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/video/video.c" vadp_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/memory.c" memory_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/wiring.c" at_wiring)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_plan.c" machine_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_display.c" machine_display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/wiring.c" at_wiring)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_plan.c" machine_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_display.c" machine_display_source)
 
 if(vadp_source MATCHES "#include[ \t]+\"(vm/|vdm/|core/platform/|core/product/)")
     message(FATAL_ERROR "T236 VADP imports a product or platform owner")

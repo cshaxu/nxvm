@@ -34,8 +34,8 @@ verification and acceptance; the task history retains the cutover sequence.
   Session/UI/Machine composition. It receives an App-provided request loader
   and frozen factory; it does not define an INI grammar, path construction,
   identity or machine-specific extension. The shared PC Machine adapter lives
-  in `ibmpc/machine`.
-- `nxvm/product` owns the four NXVM Apps' `NXVM.ini` grammar, path construction,
+  in `core/machine`.
+- `core/product` owns the four NXVM Apps' `NXVM.ini` grammar, path construction,
   fixed-factory adaptation, shared `INFO`/`SPEED`/floppy extensions and NXVM
   identity. It is a private NXVM-family component, not an IBM PC or SoftPC
   dependency.
@@ -45,7 +45,7 @@ verification and acceptance; the task history retains the cutover sequence.
   one Profile's frozen values/assets and preparation for Product's shared factory.
   Product consumes Machine's public creation/INFO/speed API; Machine has no
   Product dependency or duplicate runtime input type.
-- `ibmpc/machine` is that driver: asset/media lifetime, bounded execution,
+- `core/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name
   switch, independent lifecycle queue or guest-device state.
   App prepares copied construction values and transfers its genuine Profile
@@ -56,13 +56,13 @@ verification and acceptance; the task history retains the cutover sequence.
   and board-specific behavior.
   It constructs and destroys the selected machine through neutral device
   contracts; it does not depend on Common or Machine-adapter internals.
-- `x86/chips` owns the extracted CPU, FPU, PIC, PIT, DMA, RTC, KBC, PPI,
+- `core/chips` owns the extracted CPU, FPU, PIC, PIT, DMA, RTC, KBC, PPI,
   keyboard, mouse, FDC, HDC and video chip mechanisms. T539 closed their
   independent-chip source ownership. The neutral executor,
-  guest timeline, memory/port routes and plan transaction live in `x86/core`.
+  guest timeline, memory/port routes and plan transaction live in `core/x86`.
   Its production target depends only on Types, CPU and FPU; NXVM links that
   sole implementation. Accepted S89 puts the complete media registry
-  and display-provider slot in `ibmpc/board-common`, consumed through public
+  and display-provider slot in `core/board-base`, consumed through public
   contracts. The common PIT adapter installs four copied routes against a
   board-owned opaque chip; composition alone selects the Core implementation.
   The common PIC aggregation owns opaque controller endpoints and IRQ source
@@ -70,14 +70,14 @@ verification and acceptance; the task history retains the cutover sequence.
   producers borrow sources for that aggregation's lifetime; copied register
   diagnostics do not expose a chip or mutable layout. Current records its
   verification and acceptance status.
-  `ibmpc/board-common` also owns the complete board construction, reset,
+  `core/board-base` also owns the complete board construction, reset,
   clock/deadline reduction and teardown, plus opaque FDC/HDC/video adapters.
-  `ibmpc/board-at` owns KBC and planar parity; `ibmpc/board-xt` owns PPI keyboard
+  `core/board-at` owns KBC and planar parity; `core/board-xt` owns PPI keyboard
   wiring. Common composition integrates their public contracts; neither
   family reads the common board layout. Model40 alone owns D4 memory,
   Port B and refresh state through one frozen board-profile binding.
   The former `app-nxvm/devices` implementation is removed. Chip state stays
-  in `x86/chips`, guest time in Core, and profile/firmware/media choices in
+  in `core/chips`, guest time in Core, and profile/firmware/media choices in
   App composition. Current records T540 acceptance and the next App cutover.
 - `common/machine` owns the shared execution/control protocol and paused-debug
   lease; `common/session` is the sole product-control reducer;
@@ -156,7 +156,7 @@ the normal product artifact directory; see the source policy.
 ### CPU And Machine Preservation
 
 CPU identity, feature/timing tables and instruction dispatch remain chip-owned
-at `x86/chips/cpu` and selectable by Core callers and repository-only CPU tests. Preserve all
+at `core/chips/cpu` and selectable by Core callers and repository-only CPU tests. Preserve all
 existing models and tests even when no shipped machine uses them. New 188/486
 coverage needs sources and implementation; an enum alias cannot turn 386 into
 486. Fixed products choose their documented CPU once. Do not scatter build

@@ -4,7 +4,7 @@ set(NXVM_COMPOSITION_SOURCES
     src/app-nxvm/profiles/pc_at_profile.c)
 add_library(nxvm-profile STATIC ${NXVM_COMPOSITION_SOURCES})
 target_include_directories(nxvm-profile PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(nxvm-profile PUBLIC ibmpc-machine ibmpc-board-common x86-core)
+target_link_libraries(nxvm-profile PUBLIC core-machine core-board-base core-x86)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

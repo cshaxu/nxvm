@@ -1,13 +1,13 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "../../../app-nxvm/unit/support/ibmpc/machine/support/media.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "../../../app-nxvm/unit/support/ibmpc/board-common/controller_fixture.h"
-#include "ibmpc/board-common/media_interface.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/media/media_interface.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/board-base/media_interface.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/media/media_interface.h"
+#include "core/machine/machine_private.h"
 #include "../../support/rom/model40_session_assets.h"
 #include "../../../app-nxvm/unit/support/rom/session_assets.h"
 

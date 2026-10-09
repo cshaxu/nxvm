@@ -7,20 +7,20 @@ endif()
 # media/assembly boundaries; it is not a standalone Shared mechanism test.
 # An owned build-tree fixture, not edits to the source tree under audit.
 set(paths
-    src/ibmpc/board-common/fdc.c
-    src/ibmpc/board-common/fdc.h
-    src/x86/core/machine_scheduler.c
-    src/ibmpc/board-common/board_deadline.c
-    src/ibmpc/board-common/machine_board.c
-    src/ibmpc/board-common/dma_bus.c
-    src/x86/core/memory_interface.c
-    src/ibmpc/machine/machine_devices.c
-    src/ibmpc/machine/media/fdd.c
-    src/ibmpc/machine/media/fdd_interface.h
-    src/x86/chips/fdc8272/fdc.c
-    src/x86/chips/fdc8272/fdc.h
-    src/x86/chips/fdc8272/fdc8272_interface.h
-    test/ibmpc/board-common/core_machine_fdc_smoke.c)
+    src/core/board-base/fdc.c
+    src/core/board-base/fdc.h
+    src/core/x86/machine_scheduler.c
+    src/core/board-base/board_deadline.c
+    src/core/board-base/machine_board.c
+    src/core/board-base/dma_bus.c
+    src/core/x86/memory_interface.c
+    src/core/machine/machine_devices.c
+    src/core/machine/media/fdd.c
+    src/core/machine/media/fdd_interface.h
+    src/core/chips/fdc8272/fdc.c
+    src/core/chips/fdc8272/fdc.h
+    src/core/chips/fdc8272/fdc8272_interface.h
+    test/core/board-base/core_machine_fdc_smoke.c)
 foreach(path IN LISTS paths)
     get_filename_component(directory "${WORK}/${path}" DIRECTORY)
     file(MAKE_DIRECTORY "${directory}")
@@ -39,32 +39,32 @@ endforeach()
 foreach(case RANGE 0 6)
     set(gate "${fdc_gate}")
     if(case EQUAL 0)
-        set(path src/x86/chips/fdc8272/fdc.c)
-        set(injection "#include \"x86/core/port.h\"")
+        set(path src/core/chips/fdc8272/fdc.c)
+        set(injection "#include \"core/x86/port.h\"")
         set(expected "Shared FDC retains board ownership")
     elseif(case EQUAL 1)
-        set(path src/x86/chips/fdc8272/fdc8272_interface.h)
+        set(path src/core/chips/fdc8272/fdc8272_interface.h)
         set(injection "struct x86_fdc { lib_u8 phase; };")
         set(expected "Shared FDC public layout is not opaque")
     elseif(case EQUAL 2)
-        set(path src/ibmpc/board-common/fdc.c)
+        set(path src/core/board-base/fdc.c)
         set(injection "void obsolete(void) { core_machine_fdc_PHASE_COMMAND; }")
         set(expected "NXVM crosses the opaque FDC boundary")
     elseif(case EQUAL 3)
-        set(path src/x86/core/machine_scheduler.c)
-        set(injection "#include \"x86/chips/fdc8272/fdc.h\"")
+        set(path src/core/x86/machine_scheduler.c)
+        set(injection "#include \"core/chips/fdc8272/fdc.h\"")
         set(expected "NXVM crosses the opaque FDC boundary")
     elseif(case EQUAL 4)
-        set(path src/ibmpc/board-common/fdc.c)
+        set(path src/core/board-base/fdc.c)
         set(injection "void bypass(void) { core_machine_dma_set_drq(); }")
         set(gate "${dma_gate}")
         set(expected "FDC retains forbidden raw DMA or RAM access")
     elseif(case EQUAL 5)
-        set(path src/ibmpc/machine/media/fdd_interface.h)
+        set(path src/core/machine/media/fdd_interface.h)
         set(injection "lib_u32 transCount;")
         set(expected "FDD retains a controller-owned transfer cursor")
     else()
-        set(path src/x86/core/machine_scheduler.c)
+        set(path src/core/x86/machine_scheduler.c)
         set(injection "void bypass(void) { machine->board->fdc.data.phase; }")
         set(expected "Core scheduler directly owns board FDC")
     endif()

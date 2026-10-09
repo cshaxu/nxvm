@@ -1,14 +1,14 @@
 #include "app-my5160/profiles/construction_interface.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "../../../ibmpc/core/composition_fixture.h"
+#include "../../../core/board-base/composition/composition_fixture.h"
 #include "../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
 #include "../../../app-nxvm/unit/support/ibmpc/board-common/controller_fixture.h"
-#include "ibmpc/board-common/machine_board_interface.h"
-#include "ibmpc/machine/machine_interface.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/board-base/machine_board_interface.h"
+#include "core/machine/machine_interface.h"
+#include "core/machine/machine_private.h"
 #include "app-my5160/profiles/xt_5160_268.h"
 
 static lib_status vm_xt_test_create(const vm_machine_config *config,

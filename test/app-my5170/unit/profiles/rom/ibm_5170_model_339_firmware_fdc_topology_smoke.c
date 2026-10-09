@@ -1,11 +1,11 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "../../../../ibmpc/core/composition_fixture.h"
+#include "../../../../core/board-base/composition/composition_fixture.h"
 #include "../../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/machine_interface.h"
 #include "app-my5170/profiles/profile_interface.h"
 #include "../../../../app-nxvm/unit/support/rom/session_assets.h"
 

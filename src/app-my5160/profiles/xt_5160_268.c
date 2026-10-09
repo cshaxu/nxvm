@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 
 #include "app-my5160/profiles/xt_5160_268.h"
-#include "ibmpc/board-common/floppy_interface.h"
+#include "core/board-base/floppy_interface.h"
 
 /* This bit represents only the B1 CPU/Core input. It is not a claim that a
  * 5160 board device has been bound. */

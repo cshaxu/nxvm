@@ -3,10 +3,10 @@
 #include "../../../app-mydeskpro386/unit/profiles/d4_refresh_fixture.h"
 #include <stdio.h>
 
-#include "../../../ibmpc/core/composition_fixture.h"
-#include "../../../ibmpc/core/time_fixture.h"
-#include "ibmpc/board-common/machine_board_interface.h"
-#include "../../../ibmpc/board-common/core_machine_board_fixture.h"
+#include "../../../core/board-base/composition/composition_fixture.h"
+#include "../../../core/board-base/composition/time_fixture.h"
+#include "core/board-base/machine_board_interface.h"
+#include "../../../core/board-base/core_machine_board_fixture.h"
 
 static lib_i32 machine_time_rejects(const core_machine_config *config)
 {

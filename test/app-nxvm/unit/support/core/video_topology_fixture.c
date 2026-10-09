@@ -1,5 +1,5 @@
 #include "video_topology_fixture.h"
-#include "x86/core/machine.h"
+#include "core/x86/machine.h"
 
 lib_bool test_video_missing_write_port(core_machine *machine, lib_u16 port)
 {

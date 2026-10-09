@@ -1,7 +1,7 @@
 #ifndef NXVM_DEFAULT_PROFILE_INTERFACE_H
 #define NXVM_DEFAULT_PROFILE_INTERFACE_H
 
-#include "ibmpc/board-common/pc_at_profile_interface.h"
+#include "core/board-base/pc_at_profile_interface.h"
 
 #define VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU 0x01u
 #define VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY 0x02u

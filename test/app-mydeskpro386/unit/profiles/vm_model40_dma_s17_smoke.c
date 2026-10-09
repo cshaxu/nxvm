@@ -1,14 +1,14 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 #include <stdio.h>
 
-#include "../../../ibmpc/core/bus_fixture.h"
-#include "../../../ibmpc/core/composition_fixture.h"
+#include "../../../core/board-base/composition/bus_fixture.h"
+#include "../../../core/board-base/composition/composition_fixture.h"
 #include "../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/machine_interface.h"
 #include "../../support/rom/model40_session_assets.h"
 
 lib_i32 main(void)

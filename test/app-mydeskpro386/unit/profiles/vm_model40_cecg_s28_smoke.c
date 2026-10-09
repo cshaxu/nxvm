@@ -1,14 +1,14 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 #include <stdio.h>
 
-#include "ibmpc/board-common/display_interface.h"
-#include "ibmpc/board-common/vadp_interface.h"
-#include "../../../ibmpc/core/bus_fixture.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/board-base/display_interface.h"
+#include "core/board-base/vadp_interface.h"
+#include "../../../core/board-base/composition/bus_fixture.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/machine_interface.h"
 #include "../../support/rom/model40_session_assets.h"
 
 static lib_i32 t386_s28_session_write(vm_machine *session, lib_u8 value)

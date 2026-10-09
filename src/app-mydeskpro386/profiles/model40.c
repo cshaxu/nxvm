@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 #include "app-mydeskpro386/profiles/model40_private.h"
 
-#include "ibmpc/board-common/at_contract_interface.h"
+#include "core/board-base/at_contract_interface.h"
 
 static const lib_u32 vm_profile_model40_contract_ids[] = {1u};
 

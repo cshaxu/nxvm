@@ -2,18 +2,18 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/fdc.c" fdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/fdc.h" fdc_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc.c" chip_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc.h" chip_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc8272_interface.h" chip_interface)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_deadline.c" board_deadline_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/core_machine_fdc_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/fdc.h" fdc_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/fdc8272/fdc.c" chip_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/fdc8272/fdc.h" chip_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/fdc8272/fdc8272_interface.h" chip_interface)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_deadline.c" board_deadline_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/test/core/board-base/core_machine_fdc_smoke.c"
     core_fixture)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/media/fdd_interface.h" fdd_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/media/fdd.c" fdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/media/fdd_interface.h" fdd_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/media/fdd.c" fdd_source)
 
 if(scheduler_source MATCHES "board->fdc|core_machine_fdc_")
     message(FATAL_ERROR "Core scheduler directly owns board FDC")
@@ -81,7 +81,7 @@ foreach(required IN ITEMS "x86_fdc_PHASE_COMMAND" "x86_fdc_PHASE_RESULT"
         message(FATAL_ERROR "Shared FDC mechanism missing: ${required}")
     endif()
 endforeach()
-foreach(forbidden IN ITEMS "app-nxvm" "x86/core/" "core_machine_" "t_port" "media_registry"
+foreach(forbidden IN ITEMS "app-nxvm" "core/x86/" "core_machine_" "t_port" "media_registry"
     "VFDC_DOR" "VFDC_CCR" "drive_cylinder")
     string(FIND "${chip_source}${chip_header}${chip_interface}" "${forbidden}" position)
     if(NOT position EQUAL -1)
@@ -99,17 +99,17 @@ file(GLOB_RECURSE app_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h"
-    "${PROJECT_SOURCE_DIR}/src/x86/core/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/core/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.h")
+    "${PROJECT_SOURCE_DIR}/src/core/x86/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/x86/*.h"
+    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.h"
+    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.h")
 foreach(path IN LISTS app_sources)
     file(READ "${path}" source)
-    if(source MATCHES "x86/chips/fdc8272/fdc\\.[ch]" OR
+    if(source MATCHES "core/chips/fdc8272/fdc\\.[ch]" OR
         source MATCHES "core_machine_fdc_PHASE_" OR
         source MATCHES "fdc\\.data\\.(phase|seek_pending|pcn|cmd|ret|flagINTR)" OR
         source MATCHES "fdc->data\\.(phase|seek_pending|pcn|cmd|ret|flagINTR)")

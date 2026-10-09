@@ -1,12 +1,12 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #ifndef TEST_INTEGRATION_SUPPORT_SESSION_INI_H
 #define TEST_INTEGRATION_SUPPORT_SESSION_INI_H
 
-#include "ibmpc/board-common/media_interface.h"
-#include "ibmpc/machine/media/media_interface.h"
-#include "ibmpc/machine/machine_interface.h"
-#include "app-base/product/ini_interface.h"
+#include "core/board-base/media_interface.h"
+#include "core/machine/media/media_interface.h"
+#include "core/machine/machine_interface.h"
+#include "core/product/ini_interface.h"
 
 typedef struct integration_ini_session integration_ini_session;
 

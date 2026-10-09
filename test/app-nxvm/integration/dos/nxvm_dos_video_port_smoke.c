@@ -1,13 +1,13 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
 
-#include "x86/core/debug_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/machine/waiting.h"
+#include "core/x86/debug_interface.h"
+#include "core/board-base/machine_board_interface.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/waiting.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET 1500000u

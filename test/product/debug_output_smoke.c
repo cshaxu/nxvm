@@ -1,0 +1,65 @@
+#include "lib/types/test.h"
+#include "product/debug/debug_interface.h"
+
+static lib_bool fail_allocation;
+static lib_u32 allocations;
+static void *allocate(lib_size count, lib_size size)
+{ ++allocations; return lib_allocate_zero(count, size); }
+static void *grow(void *memory, lib_size bytes)
+{ return fail_allocation ? LIB_NULL : lib_reallocate(memory, bytes); }
+static void cancel(common_machine *machine) { (void)machine; }
+#define lib_reallocate grow
+#define lib_allocate_zero allocate
+#define common_machine_debug_cancel cancel
+#include "product/debug/command.c"
+
+int main(void)
+{
+    product_debug *command;
+    product_debug_result result;
+    lib_test_assert(product_debug_create(&command) == LIB_STATUS_OK);
+    lib_test_assert(product_debug_open(command, (common_machine *)command) == LIB_STATUS_OK);
+    lib_test_assert(allocations == 1u); /* Only the debugger itself, not an argument table. */
+    /* These original CLI operations do not access a machine at all. */
+    fail_allocation = LIB_TRUE;
+    lib_test_assert(product_debug_submit_line(command, "?", &result) == LIB_STATUS_NO_MEMORY);
+    fail_allocation = LIB_FALSE;
+    lib_test_assert(product_debug_submit_line(command, "?", &result) == LIB_STATUS_OK);
+    lib_test_assert(lib_text_find_substring(result.text, "assemble") && lib_text_compare(result.prompt, "-") == 0);
+    lib_test_assert(product_debug_submit_line(command, "x?", &result) == LIB_STATUS_OK);
+    lib_test_assert(lib_text_find_substring(result.text, "XA [address]"));
+    lib_test_assert(product_debug_submit_line(command, "v", &result) == LIB_STATUS_OK);
+    lib_test_assert(lib_text_compare(result.text, "") == 0 && lib_text_compare(result.prompt, ":") == 0);
+    lib_test_assert(product_debug_submit_line(command, "Hello", &result) == LIB_STATUS_OK);
+    lib_test_assert(lib_text_compare(result.text, "48 65 6C 6C 6F \n") == 0);
+    /* Fault after some output is already accepted must still return failure. */
+    command_begin_output(command, &result);
+    lib_test_assert(command_printf(command, "prefix") == 6);
+    fail_allocation = LIB_TRUE;
+    lib_test_assert(command_printf(command, "%10000s", "tail") == -1);
+    lib_test_assert(command_end_output(command) == LIB_STATUS_NO_MEMORY);
+    fail_allocation = LIB_FALSE;
+    lib_test_assert(product_debug_submit_line(command, "", &result) == LIB_STATUS_OK);
+    lib_test_assert(lib_text_compare(result.text, "") == 0 && lib_text_compare(result.prompt, "-") == 0);
+    /* A maximum-length line cannot fill the 256-pointer table, including the
+       split command prefix and trailing sentinel. Parsing stays original. */
+    command->command_buffer[0] = 'x';
+    command->command_buffer[1] = '0';
+    for (lib_u32 i = 2u; i < sizeof(command->command_buffer) - 1u; ++i)
+        command->command_buffer[i] = i % 2u ? 'a' : ' ';
+    command->command_buffer[255] = '\0';
+    parse(command);
+    lib_test_assert(command->argument_count == 128u && command->arguments[128] == LIB_NULL);
+    lib_test_assert(sizeof(command->arguments) == DEBUG_MAXNARG * sizeof(char *));
+    lib_test_assert(product_debug_submit_line(command, "v", &result) == LIB_STATUS_OK);
+    product_debug_close(command);
+    product_debug_close(command);
+    lib_test_assert(product_debug_submit_line(command, "?", &result) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(product_debug_open(command, (common_machine *)command) == LIB_STATUS_OK);
+    lib_test_assert(allocations == 1u && command->argument_count == 0u);
+    for (lib_u32 i = 0u; i < DEBUG_MAXNARG; ++i) lib_test_assert(command->arguments[i] == LIB_NULL);
+    lib_test_assert(product_debug_submit_line(command, "?", &result) == LIB_STATUS_OK);
+    lib_test_assert(lib_text_find_substring(result.text, "assemble") && lib_text_compare(result.prompt, "-") == 0);
+    product_debug_destroy(command);
+    return 0;
+}

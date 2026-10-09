@@ -2,10 +2,10 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/dma_bus.c" dma)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/dma_bus_interface.h" dma_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/dma_bus.c" dma)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/dma_bus_interface.h" dma_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/memory_interface.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/memory_interface.h" core_header)
 
 if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/dma_bus.c" OR
    EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/dma_bus.h")
@@ -22,7 +22,7 @@ file(GLOB_RECURSE app_dma_consumers
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h")
 foreach(path IN LISTS app_dma_consumers)
     file(READ "${path}" consumer)
-    if(consumer MATCHES "shared_dma_(primary|secondary|latch)|ibmpc/board-common/dma_bus\\.h|x86/chips/dma8237/dma\\.h")
+    if(consumer MATCHES "shared_dma_(primary|secondary|latch)|core/board-base/dma_bus\\.h|core/chips/dma8237/dma\\.h")
         message(FATAL_ERROR "App borrows private DMA aggregate state: ${path}")
     endif()
 endforeach()

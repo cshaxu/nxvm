@@ -1,0 +1,929 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
+#include "lib/types/types_interface.h"
+#include "core/x86/device_support_interface.h"
+
+#include "core/x86/machine.h"
+#include "debug_fixture.h"
+#include "exception_fixture.h"
+
+typedef struct fpu_interface_machine {
+    core_machine *machine;
+} fpu_interface_machine;
+
+typedef struct fpu_interface_test_input {
+    lib_bool wait_asserted;
+    lib_bool escape_trap_enabled;
+    lib_bool interrupt_pending;
+} fpu_interface_test_input;
+
+#define FPU_GDT_POINTER 0x0100u
+#define FPU_GDT_BASE 0x0300u
+#define FPU_IDT_BASE 0x0400u
+#define FPU_CODE_BASE 0x2000u
+
+static lib_bool fpu_interface_wait_test_asserted(void *opaque)
+{
+    const fpu_interface_test_input *input = opaque;
+
+    return input != LIB_NULL && input->wait_asserted;
+}
+
+static lib_bool fpu_interface_escape_trap_enabled(void *opaque)
+{
+    const fpu_interface_test_input *input = opaque;
+
+    return input != LIB_NULL && input->escape_trap_enabled;
+}
+
+static lib_bool fpu_interface_interrupt_pending(void *opaque)
+{
+    const fpu_interface_test_input *input = opaque;
+
+    return input != LIB_NULL && input->interrupt_pending;
+}
+
+static lib_u8 fpu_interface_acknowledge_interrupt(void *opaque)
+{
+    fpu_interface_test_input *input = opaque;
+
+    if (input != LIB_NULL) input->interrupt_pending = LIB_FALSE;
+    return 0x20u;
+}
+
+static void fpu_interface_test_finalize(void *opaque)
+{
+    (void)opaque;
+}
+
+static lib_i32 fpu_interface_prepare(core_machine_cpu_profile profile,
+    x86_fpu_profile fpu_profile, fpu_interface_machine *state)
+{
+    const core_machine_executor_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = fpu_profile
+    };
+    x86_fpu_profile selected = X86_FPU_PROFILE_NONE;
+    x86_fpu_state observed = {0};
+
+    if (state == LIB_NULL) {
+        return 0;
+    }
+    lib_memory_set(state, 0, sizeof(*state));
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+        .values = {0}
+    };
+    /* REAL_UD_TERMINAL_IVT_REJECT: producer failures cannot deliver vector 6. */
+    return core_machine_neutral_create(&config, &state->machine) == LIB_STATUS_OK &&
+        core_machine_get_fpu_profile(state->machine, &selected) == LIB_STATUS_OK && selected == fpu_profile &&
+        core_machine_get_fpu_state(state->machine, &observed) == LIB_STATUS_OK &&
+        core_machine_get_fpu_profile(state->machine, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT &&
+        core_machine_get_fpu_state(state->machine, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT &&
+        test_core_exception_block_vector(state->machine, 6u, state) == LIB_STATUS_OK &&
+        core_machine_bind_execution_provider(state->machine, LIB_NULL, LIB_NULL) == LIB_STATUS_OK &&
+        core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
+        core_machine_reset(state->machine) == LIB_STATUS_OK &&
+        core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
+}
+
+static core_machine_debug_cpu_snapshot fpu_interface_capture(core_machine *machine)
+{
+    core_machine_debug_cpu_snapshot snapshot = {0};
+    if (core_machine_debug_capture_cpu_snapshot(machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT,
+            &snapshot) != LIB_STATUS_OK) lib_test_assert(LIB_FALSE);
+    return snapshot;
+}
+
+static lib_i32 fpu_interface_run(fpu_interface_machine *state,
+    const lib_u8 *code, lib_size size, core_machine_debug_cpu_snapshot *after,
+    core_machine_cpu_diagnostic *diagnostic, lib_status *status)
+{
+    core_machine_run_result result;
+
+    if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
+        core_machine_memory_write(state->machine, 0u, code, size) !=
+            LIB_STATUS_OK) {
+        return 0;
+    }
+    *status = core_machine_run(state->machine,
+        (core_machine_run_budget){ 1u, 0u }, &result);
+    *after = fpu_interface_capture(state->machine);
+    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
+        LIB_STATUS_OK;
+}
+
+static lib_i32 fpu_interface_same(const core_machine_debug_cpu_snapshot *before, const core_machine_debug_cpu_snapshot *after)
+{
+    return lib_memory_compare(before, after, sizeof(*before)) == 0;
+}
+
+static lib_i32 fpu_interface_success(const lib_u8 *code, lib_size size,
+    core_machine_cpu_profile profile, x86_fpu_profile fpu_profile,
+    lib_u32 cr0)
+{
+    fpu_interface_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_debug_cpu_snapshot before;
+    core_machine_debug_cpu_snapshot after;
+    lib_status status;
+    lib_i32 failed = !fpu_interface_prepare(profile, fpu_profile, &state);
+
+    if (!failed) {
+        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_CR0, cr0);
+        before = fpu_interface_capture(state.machine);
+        failed |= !fpu_interface_run(&state, code, size, &after,
+            &diagnostic, &status) || status != LIB_STATUS_OK ||
+            diagnostic.first_fault.valid || after.eip != size ||
+            after.eax != before.eax ||
+            after.ebx != before.ebx ||
+            after.ecx != before.ecx ||
+            after.edx != before.edx ||
+            after.esp != before.esp ||
+            after.ebp != before.ebp ||
+            after.esi != before.esi ||
+            after.edi != before.edi ||
+            after.eflags != before.eflags ||
+            lib_memory_compare(&after.es, &before.es,
+                sizeof(after.es)) != 0 ||
+            lib_memory_compare(&after.cs, &before.cs,
+                sizeof(after.cs)) != 0 ||
+            lib_memory_compare(&after.ss, &before.ss,
+                sizeof(after.ss)) != 0 ||
+            lib_memory_compare(&after.ds, &before.ds,
+                sizeof(after.ds)) != 0 ||
+            lib_memory_compare(&after.fs, &before.fs,
+                sizeof(after.fs)) != 0 ||
+            lib_memory_compare(&after.gs, &before.gs,
+                sizeof(after.gs)) != 0;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static lib_i32 fpu_interface_mf(void)
+{
+    static const lib_u8 wait[] = { 0x9bu };
+    static const lib_u8 handler[] = { 0xf4u };
+    const lib_u16 handler_offset = 0x0100u;
+    const lib_u16 handler_segment = 0u;
+    lib_u16 frame[3] = { 0u, 0u, 0u };
+    fpu_interface_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_debug_cpu_snapshot before;
+    core_machine_debug_cpu_snapshot after;
+    lib_status status;
+    lib_i32 failed = !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        X86_FPU_PROFILE_80387, &state);
+
+    if (!failed) {
+        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_ESP, 0x00008000u);
+        failed |= core_machine_memory_write(state.machine, 0x0040u,
+            &handler_offset, sizeof(handler_offset)) != LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine, 0x0042u, &handler_segment,
+                sizeof(handler_segment)) != LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine, handler_offset, handler,
+                sizeof(handler)) != LIB_STATUS_OK;
+        x86_fpu_load_control_word(state.machine->fpu, 0x037eu);
+        failed |= x86_fpu_store_m32(state.machine->fpu, &(lib_u32){0}) !=
+            X86_FPU_EXECUTE_COMPLETED || !x86_fpu_wait_pending(state.machine->fpu);
+        before = fpu_interface_capture(state.machine);
+        failed |= !fpu_interface_run(&state, wait, sizeof(wait), &after,
+            &diagnostic, &status) || status != LIB_STATUS_OK ||
+            diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
+                diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_MF) || after.eip != handler_offset ||
+            after.esp != ((before.esp & 0xffff0000u) |
+                (lib_u16)(before.esp - 6u)) ||
+            core_machine_debug_read_linear(state.machine,
+                after.ss.base + (lib_u16)after.esp, frame, sizeof(frame)) != LIB_STATUS_OK ||
+            frame[0] != 0u || frame[1] != before.cs.selector ||
+            frame[2] != (lib_u16)before.eflags ||
+            after.eax != before.eax || after.ebx != before.ebx ||
+            after.ecx != before.ecx || after.edx != before.edx ||
+            after.ebp != before.ebp || after.esi != before.esi ||
+            after.edi != before.edi ||
+            lib_memory_compare(&after.es, &before.es, sizeof(after.es)) != 0 ||
+            lib_memory_compare(&after.ds, &before.ds, sizeof(after.ds)) != 0 ||
+            lib_memory_compare(&after.fs, &before.fs, sizeof(after.fs)) != 0 ||
+            lib_memory_compare(&after.gs, &before.gs, sizeof(after.gs)) != 0;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static lib_i32 fpu_interface_reject(const lib_u8 *code, lib_size size,
+    core_machine_cpu_profile profile)
+{
+    fpu_interface_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_debug_cpu_snapshot before;
+    core_machine_debug_cpu_snapshot after;
+    lib_status status;
+    lib_i32 failed = !fpu_interface_prepare(profile,
+        X86_FPU_PROFILE_NONE, &state);
+
+    if (!failed) {
+        before = fpu_interface_capture(state.machine);
+        failed |= !fpu_interface_run(&state, code, size, &after,
+            &diagnostic, &status) || status != LIB_STATUS_INTERNAL_ERROR ||
+            !diagnostic.first_fault.valid || diagnostic.first_fault.exception_mask !=
+                (profile < CORE_MACHINE_CPU_PROFILE_80186 ?
+                    VCPUINS_EXCEPT_UD : VCPUINS_EXCEPT_CE) ||
+            (profile >= CORE_MACHINE_CPU_PROFILE_80186 &&
+                diagnostic.first_fault.exception_code != 6u * 4u) ||
+            !fpu_interface_same(&before, &after);
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static lib_i32 fpu_interface_handoff(core_machine_cpu_profile cpu,
+    x86_fpu_profile profile)
+{
+    static const lib_u8 fadd_wait[] = { 0xd8u, 0xc0u, 0x9bu };
+    core_machine_run_result result = {0};
+    lib_u8 advanced = LIB_FALSE;
+    lib_u8 attempts;
+    fpu_interface_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_debug_cpu_snapshot before;
+    core_machine_debug_cpu_snapshot after;
+    lib_status status;
+    lib_i32 failed = !fpu_interface_prepare(cpu, profile, &state);
+
+    if (!failed) {
+        before = fpu_interface_capture(state.machine);
+        failed |= core_machine_memory_write(state.machine, 0u, fadd_wait,
+            sizeof(fadd_wait)) != LIB_STATUS_OK;
+        status = core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u },
+            &(core_machine_run_result){ 0 });
+        failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+            LIB_STATUS_OK;
+        after = fpu_interface_capture(state.machine);
+        if (!failed) failed |= status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
+            after.eip != sizeof(fadd_wait) - 1u ||
+            after.eax != before.eax || after.ebx != before.ebx ||
+            x86_fpu_ticks_until_completion(state.machine->fpu,
+                &(lib_u64){0}) != LIB_STATUS_OK ||
+            state.machine->transaction.address != fadd_wait[0] ||
+            state.machine->transaction.value != fadd_wait[1] ||
+            state.machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
+            state.machine->transaction.kind != CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND;
+        failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u },
+            &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            result.executed != 1u ||
+            x86_fpu_ticks_until_completion(state.machine->fpu,
+                &(lib_u64){0}) != LIB_STATUS_OK;
+        for (attempts = 0u; !failed && attempts != 64u &&
+                x86_fpu_ticks_until_completion(state.machine->fpu,
+                    &(lib_u64){0u}) == LIB_STATUS_OK; ++attempts) {
+            advanced = LIB_FALSE;
+            failed |= core_machine_advance_to_next_deadline(state.machine,
+                &advanced) != LIB_STATUS_OK || !advanced;
+        }
+        failed |= x86_fpu_ticks_until_completion(state.machine->fpu,
+            &(lib_u64){0}) != LIB_STATUS_INVALID_STATE;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static lib_i32 fpu_interface_deadline(core_machine_cpu_profile cpu,
+    x86_fpu_profile profile)
+{
+    static const lib_u8 fadd[] = { 0xd8u, 0xc0u };
+    fpu_interface_machine state;
+    core_machine_time_observation observation;
+    lib_u8 advanced = LIB_FALSE;
+    lib_i32 failed = !fpu_interface_prepare(cpu, profile, &state);
+
+    if (!failed) {
+        failed |= core_machine_memory_write(state.machine, 0u, fadd,
+            sizeof(fadd)) != LIB_STATUS_OK ||
+            core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
+                &(core_machine_run_result){0}) != LIB_STATUS_OK ||
+            x86_fpu_ticks_until_completion(state.machine->fpu,
+                &(lib_u64){0}) != LIB_STATUS_OK ||
+            core_machine_capture_time_observation(state.machine, &observation) !=
+                LIB_STATUS_OK || !observation.next_deadline_valid ||
+            observation.next_deadline_tick <= observation.elapsed_ticks ||
+            core_machine_advance_to_next_deadline(state.machine, &advanced) !=
+                LIB_STATUS_OK || !advanced ||
+            x86_fpu_ticks_until_completion(state.machine->fpu,
+                &(lib_u64){0}) != LIB_STATUS_INVALID_STATE;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static lib_i32 fpu_interface_80286_esc_restart(void)
+{
+    static const lib_u8 escapes[] = { 0xd8u, 0xc0u, 0xd8u, 0xc0u };
+    fpu_interface_machine state;
+    core_machine_debug_cpu_snapshot after;
+    core_machine_time_observation observation = {0};
+    core_machine_run_result result = {0};
+    lib_u8 advanced;
+    lib_u8 attempts;
+    lib_i32 failed = !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80286,
+        X86_FPU_PROFILE_80287, &state);
+
+    if (!failed) {
+        failed |= core_machine_memory_write(state.machine, 0u, escapes,
+            sizeof(escapes)) != LIB_STATUS_OK ||
+            core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
+                &result) != LIB_STATUS_OK || result.executed != 1u ||
+            result.reason != CORE_MACHINE_STOP_BUDGET ||
+            x86_fpu_ticks_until_completion(state.machine->fpu,
+                &(lib_u64){0}) != LIB_STATUS_OK;
+        after = fpu_interface_capture(state.machine);
+        failed |= after.eip != 2u;
+        if (!failed) {
+            result = (core_machine_run_result){0};
+            failed |= core_machine_run(state.machine,
+                (core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_OK ||
+                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                result.executed != 0u;
+            after = fpu_interface_capture(state.machine);
+            failed |= after.eip != 2u;
+        }
+        for (attempts = 0u; !failed && attempts != 64u &&
+                x86_fpu_ticks_until_completion(state.machine->fpu,
+                    &(lib_u64){0u}) == LIB_STATUS_OK; ++attempts) {
+            advanced = LIB_FALSE;
+            failed |= core_machine_advance_to_next_deadline(state.machine,
+                &advanced) != LIB_STATUS_OK || !advanced;
+        }
+        if (!failed) {
+            failed |= core_machine_capture_time_observation(state.machine,
+                &observation) != LIB_STATUS_OK;
+            if (!failed && observation.next_deadline_valid) {
+                advanced = LIB_FALSE;
+                failed |= core_machine_advance_to_next_deadline(state.machine,
+                    &advanced) != LIB_STATUS_OK || !advanced;
+            }
+        }
+        if (!failed) {
+            result = (core_machine_run_result){0};
+            failed |= x86_fpu_ticks_until_completion(state.machine->fpu,
+                &(lib_u64){0}) != LIB_STATUS_INVALID_STATE ||
+                core_machine_run(state.machine,
+                    (core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_OK ||
+                result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u;
+            after = fpu_interface_capture(state.machine);
+            failed |= after.eip != sizeof(escapes);
+        }
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static lib_i32 fpu_interface_external_test_input_profile(
+    core_machine_cpu_profile profile, lib_u64 wait_ticks)
+{
+    static const lib_u8 code[] = { 0x9bu, 0x90u };
+    const core_machine_executor_config config = {
+        .cpu_profile = profile,
+        .fpu_profile = X86_FPU_PROFILE_NONE
+    };
+    fpu_interface_test_input input = {
+        .wait_asserted = LIB_TRUE
+    };
+    const core_machine_attachment attachment = {
+        .wait_test_asserted = fpu_interface_wait_test_asserted,
+        .finalize_devices = fpu_interface_test_finalize,
+        .context = &input
+    };
+    core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+        .values = {0}
+    };
+    core_machine_time_observation observation = {0};
+    core_machine_run_result result = {0};
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = core_machine_neutral_create(&config, &machine) !=
+        LIB_STATUS_OK || core_machine_bind_attachment(machine, &attachment) !=
+        LIB_STATUS_OK || core_machine_freeze_execution_providers(machine) !=
+        LIB_STATUS_OK || core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0u, code, sizeof(code)) !=
+        LIB_STATUS_OK || core_machine_run(machine,
+            (core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        result.executed != 1u || result.ticks != wait_ticks ||
+        core_machine_capture_time_observation(machine, &observation) !=
+        LIB_STATUS_OK || !observation.next_deadline_valid ||
+        observation.next_deadline_tick != observation.elapsed_ticks + 5u;
+
+    if (!failed) {
+        input.wait_asserted = LIB_FALSE;
+        lib_u8 advanced = LIB_FALSE;
+        result = (core_machine_run_result){0};
+        failed |= core_machine_advance_to_next_deadline(machine, &advanced) !=
+            LIB_STATUS_OK || !advanced || core_machine_run(machine,
+            (core_machine_run_budget){1u, 0u},
+            &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            result.executed != 1u || result.linear_pc != 2u;
+    }
+    core_machine_destroy(machine);
+    return !failed;
+}
+
+static lib_i32 fpu_interface_external_test_input(void)
+{
+    return fpu_interface_external_test_input_profile(
+        CORE_MACHINE_CPU_PROFILE_8086, 3u) &&
+        fpu_interface_external_test_input_profile(
+            CORE_MACHINE_CPU_PROFILE_80186, 6u);
+}
+
+static lib_i32 fpu_interface_wait_interrupt(void)
+{
+    static const lib_u8 wait[] = {0x9bu};
+    static const lib_u8 hlt = 0xf4u;
+    const core_machine_executor_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .fpu_profile = X86_FPU_PROFILE_NONE
+    };
+    fpu_interface_test_input input = {
+        .wait_asserted = LIB_TRUE
+    };
+    const core_machine_attachment attachment = {
+        .wait_test_asserted = fpu_interface_wait_test_asserted,
+        .pic_pending = fpu_interface_interrupt_pending,
+        .pic_acknowledge = fpu_interface_acknowledge_interrupt,
+        .finalize_devices = fpu_interface_test_finalize,
+        .context = &input
+    };
+    core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+        .values = {0}
+    };
+    const lib_u16 vector_offset = 0x0100u;
+    const lib_u16 vector_segment = 0u;
+    core_machine_debug_cpu_snapshot after;
+    core_machine_run_result result = {0};
+    core_machine *machine = LIB_NULL;
+    lib_u16 frame_ip = 0u;
+    lib_i32 failed;
+
+    entry.values[CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_IF;
+    failed = core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0u, wait, sizeof(wait)) !=
+            LIB_STATUS_OK || core_machine_memory_write(machine, 0x80u,
+                &vector_offset, sizeof(vector_offset)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x82u, &vector_segment,
+            sizeof(vector_segment)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, vector_offset, &hlt, sizeof(hlt)) !=
+            LIB_STATUS_OK || core_machine_run(machine,
+                (core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        result.executed != 1u;
+
+    if (!failed) {
+        input.interrupt_pending = LIB_TRUE;
+        result = (core_machine_run_result){0};
+        failed |= core_machine_run(machine, (core_machine_run_budget){2u, 0u},
+            &result) != LIB_STATUS_OK || result.reason !=
+                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || result.executed != 2u;
+        after = fpu_interface_capture(machine);
+        failed |= input.interrupt_pending || after.eip != vector_offset + 1u ||
+            core_machine_memory_read(machine, after.ss.base + (lib_u16)after.esp,
+                (void *)CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) !=
+                LIB_STATUS_OK || frame_ip != sizeof(wait);
+    }
+    core_machine_destroy(machine);
+    return !failed;
+}
+
+static lib_i32 fpu_interface_80186_escape_trap(void)
+{
+    static const lib_u8 escape[] = {0xd8u, 0xc0u};
+    static const lib_u8 hlt = 0xf4u;
+    const core_machine_executor_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80186,
+        .fpu_profile = X86_FPU_PROFILE_NONE
+    };
+    fpu_interface_test_input input = {
+        .escape_trap_enabled = LIB_TRUE
+    };
+    const core_machine_attachment attachment = {
+        .escape_trap_enabled = fpu_interface_escape_trap_enabled,
+        .finalize_devices = fpu_interface_test_finalize,
+        .context = &input
+    };
+    core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+        .values = {0}
+    };
+    const lib_u16 vector_offset = 0x0100u;
+    const lib_u16 vector_segment = 0u;
+    core_machine_debug_cpu_snapshot after;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_run_result result = {0};
+    core_machine *machine = LIB_NULL;
+    lib_u16 frame_ip = 0u;
+    lib_i32 failed = core_machine_neutral_create(&config, &machine) !=
+        LIB_STATUS_OK || core_machine_bind_attachment(machine, &attachment) !=
+        LIB_STATUS_OK || core_machine_freeze_execution_providers(machine) !=
+        LIB_STATUS_OK || core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0u, escape, sizeof(escape)) !=
+        LIB_STATUS_OK || core_machine_memory_write(machine, 0x1cu,
+            &vector_offset, sizeof(vector_offset)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x1eu,
+            &vector_segment, sizeof(vector_segment)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, vector_offset, &hlt, sizeof(hlt)) !=
+        LIB_STATUS_OK || core_machine_run(machine,
+            (core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_BUDGET ||
+        core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK;
+
+    if (!failed) {
+        after = fpu_interface_capture(machine);
+        failed |= diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
+                diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_NM) || after.eip != vector_offset ||
+            core_machine_memory_read(machine, after.ss.base + (lib_u16)after.esp,
+                (void *)CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) !=
+                LIB_STATUS_OK || frame_ip != 0u;
+    }
+    core_machine_destroy(machine);
+    return !failed;
+}
+
+static lib_i32 fpu_interface_incompatible(void)
+{
+    static const lib_u8 fninit[] = { 0xdbu, 0xe3u };
+    fpu_interface_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_debug_cpu_snapshot before;
+    core_machine_debug_cpu_snapshot after;
+    lib_status status;
+    lib_i32 failed = !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        X86_FPU_PROFILE_8087, &state);
+
+    if (!failed) {
+        before = fpu_interface_capture(state.machine);
+        failed |= !fpu_interface_run(&state, fninit, sizeof(fninit), &after,
+            &diagnostic, &status) || status != LIB_STATUS_INTERNAL_ERROR ||
+            !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
+                diagnostic.first_fault.exception_mask,
+                VCPUINS_EXCEPT_FPU_UNSUPPORTED) || !fpu_interface_same(&before, &after);
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static lib_i32 fpu_interface_nm_delivery(const lib_u8 *code,
+    lib_size code_size, lib_u32 cr0)
+{
+    static const lib_u8 hlt = 0xf4u;
+    const lib_u16 offset = 0x0100u;
+    const lib_u16 segment = 0u;
+    fpu_interface_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_run_result result;
+    core_machine_debug_cpu_snapshot after;
+    lib_u16 frame_ip = 0u;
+    lib_i32 failed = !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        X86_FPU_PROFILE_NONE, &state);
+
+    if (!failed) {
+        failed |= core_machine_memory_write(state.machine, 0u, code,
+            code_size) != LIB_STATUS_OK;
+        failed |= core_machine_memory_write(state.machine, 0x1cu, &offset,
+            sizeof(offset)) != LIB_STATUS_OK;
+        failed |= core_machine_memory_write(state.machine, 0x1eu, &segment,
+            sizeof(segment)) != LIB_STATUS_OK;
+        failed |= core_machine_memory_write(state.machine, offset, &hlt,
+            sizeof(hlt)) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_CR0, cr0);
+        failed |= core_machine_run(state.machine,
+            (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                LIB_STATUS_OK;
+        after = fpu_interface_capture(state.machine);
+        if (!failed) failed |= diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
+                diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_NM) || after.eip != offset ||
+            core_machine_memory_read(state.machine,
+                after.ss.base + (lib_u16)after.esp,
+                (void *)CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
+            frame_ip != 0u;
+        failed |= core_machine_run(state.machine,
+            (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        after = fpu_interface_capture(state.machine);
+        failed |= after.eip != offset + 1u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static lib_i32 fpu_interface_vm86(void)
+{
+    static const lib_u8 esc[] = { 0xd8u, 0xc0u };
+    fpu_interface_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_run_result result;
+    core_machine_debug_cpu_snapshot before;
+    core_machine_debug_cpu_snapshot after;
+    lib_status status;
+    lib_i32 failed = !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        X86_FPU_PROFILE_NONE, &state);
+
+    if (!failed) {
+        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_CR0, VCPU_CR0_PE);
+        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS,
+            CORE_MACHINE_DEBUG_EFLAGS_VM | 0x00003000u |
+            CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_CF);
+        const core_machine_debug_register_patch segments = {
+            .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS),
+            .values = {0}
+        };
+        failed |= core_machine_debug_patch_registers(state.machine, &segments) != LIB_STATUS_OK;
+        before = fpu_interface_capture(state.machine);
+        failed |= core_machine_memory_write(state.machine, 0u, esc,
+            sizeof(esc)) != LIB_STATUS_OK;
+        status = core_machine_run(state.machine,
+            (core_machine_run_budget){ 1u, 0u }, &result);
+        failed |= status != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                LIB_STATUS_OK;
+        after = fpu_interface_capture(state.machine);
+        failed |= after.eip != sizeof(esc) || after.eax != before.eax ||
+            after.ecx != before.ecx || after.edx != before.edx ||
+            after.ebx != before.ebx || after.esp != before.esp ||
+            after.ebp != before.ebp || after.esi != before.esi ||
+            after.edi != before.edi || after.eflags != before.eflags ||
+            lib_memory_compare(&after.es, &before.es, sizeof(after.es)) != 0 ||
+            lib_memory_compare(&after.cs, &before.cs, sizeof(after.cs)) != 0 ||
+            lib_memory_compare(&after.ss, &before.ss, sizeof(after.ss)) != 0 ||
+            lib_memory_compare(&after.ds, &before.ds, sizeof(after.ds)) != 0 ||
+            lib_memory_compare(&after.fs, &before.fs, sizeof(after.fs)) != 0 ||
+            lib_memory_compare(&after.gs, &before.gs, sizeof(after.gs)) != 0;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static lib_i32 fpu_interface_protected_nm(void)
+{
+    static const lib_u8 gdt_pointer[] = { 0x1fu,0u,0u,0x03u,0u,0u };
+    static const lib_u8 idt_pointer[] = { 0xffu,0u,0u,0x04u,0u,0u };
+    static const lib_u8 gdt[] = {
+        0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
+        0xffu,0xffu,0,0x30u,0,0x92u,0,0, 0xffu,0xffu,0,0x40u,0,0x92u,0,0
+    };
+    static const lib_u8 real_code[] = {
+        0x0fu,0x01u,0x16u,0x00u,0x01u, 0x0fu,0x01u,0x1eu,0x10u,0x01u,
+        0xb8u,0x01u,0,0x0fu,0x01u,0xf0u, 0xb8u,0x10u,0,0x8eu,0xd8u,
+        0xb8u,0x18u,0,0x8eu,0xd0u, 0xeau,0,0,0x08u,0
+    };
+    static const lib_u8 esc[] = { 0xd8u,0xc0u };
+    static const lib_u8 hlt = 0xf4u;
+    lib_u8 idt[0x100u] = { 0u };
+    fpu_interface_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_debug_cpu_snapshot before;
+    core_machine_debug_cpu_snapshot after;
+    lib_u16 frame_ip = 0u;
+    lib_i32 failed = !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        X86_FPU_PROFILE_NONE, &state);
+
+    idt[7u * 8u + 1u] = 0x01u;
+    idt[7u * 8u + 2u] = 0x08u;
+    idt[7u * 8u + 5u] = 0x86u;
+    if (!failed) {
+        failed |= core_machine_memory_write(state.machine, FPU_GDT_POINTER,
+            gdt_pointer, sizeof(gdt_pointer)) != LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine, FPU_GDT_BASE, gdt,
+            sizeof(gdt)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x0110u, idt_pointer, sizeof(idt_pointer)) != LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine, FPU_IDT_BASE, idt,
+            sizeof(idt)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x0200u, real_code, sizeof(real_code)) != LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine, FPU_CODE_BASE + 0x100u,
+            &hlt, sizeof(hlt)) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EIP, 0x0200u);
+        lib_status boot_status = core_machine_run(state.machine,
+            (core_machine_run_budget){9u,0u}, &result);
+        failed |= boot_status != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 9u;
+    }
+    if (!failed) {
+        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_CR0,
+            test_core_machine_fixture_read_register(state.machine, CORE_MACHINE_DEBUG_CR0) | VCPU_CR0_EM);
+        before = fpu_interface_capture(state.machine);
+        failed |= core_machine_memory_write(state.machine, FPU_CODE_BASE, esc,
+            sizeof(esc)) != LIB_STATUS_OK || core_machine_run(state.machine,
+            (core_machine_run_budget){64u,0u}, &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
+        after = fpu_interface_capture(state.machine);
+        if (!failed) failed |= core_machine_memory_read(state.machine,
+            after.ss.base + (lib_u16)after.esp, (void *)CORE_MACHINE_REFERENCE_OF(frame_ip),
+            sizeof(frame_ip)) != LIB_STATUS_OK;
+        if (!failed) failed |= !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
+            diagnostic.last_delivered_exception.exception_mask,
+            VCPUINS_EXCEPT_NM) || result.executed != 0u || result.ticks != 0u ||
+            after.eip != 0x100u || frame_ip != 0u ||
+            after.eax != before.eax || after.ecx != before.ecx ||
+            after.edx != before.edx || after.ebx != before.ebx ||
+            after.ebp != before.ebp || after.esi != before.esi ||
+            after.edi != before.edi ||
+            lib_memory_compare(&after.ds, &before.ds, sizeof(after.ds)) != 0 ||
+            lib_memory_compare(&after.es, &before.es, sizeof(after.es)) != 0 ||
+            lib_memory_compare(&after.fs, &before.fs, sizeof(after.fs)) != 0 ||
+            lib_memory_compare(&after.gs, &before.gs, sizeof(after.gs)) != 0;
+        failed |= core_machine_run(state.machine,
+            (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        after = fpu_interface_capture(state.machine);
+        failed |= after.eip != 0x101u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+lib_i32 main(void)
+{
+    static const lib_u8 wait[] = { 0x9bu };
+    static const lib_u8 fninit[] = { 0xdbu, 0xe3u };
+    static const lib_u8 escapes[][2] = {
+        { 0xd8u, 0xc0u }, { 0xd9u, 0xc0u }, { 0xdau, 0xc0u },
+        { 0xdbu, 0xe3u }, { 0xdcu, 0xc0u }, { 0xddu, 0xc0u },
+        { 0xdeu, 0xc0u }, { 0xdfu, 0xc0u }
+    };
+    static const lib_u8 attr_wait_66[] = { 0x66u, 0x9bu };
+    static const lib_u8 attr_wait_67[] = { 0x67u, 0x9bu };
+    static const lib_u8 attr_wait[] = { 0x66u, 0x67u, 0x9bu };
+    static const lib_u8 attr_esc_66[] = { 0x66u, 0xdbu, 0xe3u };
+    static const lib_u8 attr_esc_67[] = { 0x67u, 0xdbu, 0xe3u };
+    static const lib_u8 attr_esc[] = { 0x66u, 0x67u, 0xdbu, 0xe3u };
+    static const lib_u8 *const legacy_attributes[] = {
+        attr_wait_66, attr_wait_67, attr_wait, attr_esc_66, attr_esc_67,
+        attr_esc
+    };
+    static const lib_u8 legacy_attribute_sizes[] = { 2u, 2u, 3u, 3u, 3u, 4u };
+    static const lib_u8 lock_forms[][5] = {
+        { 0xf0u, 0x9bu }, { 0xf0u, 0x66u, 0x9bu },
+        { 0xf0u, 0x67u, 0x9bu }, { 0xf0u, 0x66u, 0x67u, 0x9bu },
+        { 0xf0u, 0xdbu, 0xe3u }, { 0xf0u, 0x66u, 0xdbu, 0xe3u },
+        { 0xf0u, 0x67u, 0xdbu, 0xe3u },
+        { 0xf0u, 0x66u, 0x67u, 0xdbu, 0xe3u }
+    };
+    static const lib_u8 lock_sizes[] = { 2u, 3u, 3u, 4u, 3u, 4u, 4u, 5u };
+    core_machine_cpu_profile profile;
+    lib_u8 index;
+    lib_i32 failed = 0;
+
+    for (profile = CORE_MACHINE_CPU_PROFILE_8086;
+        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+        failed |= !fpu_interface_success(wait, sizeof(wait), profile,
+            X86_FPU_PROFILE_NONE, 0u);
+        failed |= !fpu_interface_success(fninit, sizeof(fninit), profile,
+            X86_FPU_PROFILE_NONE, 0u);
+        for (index = 0u; index != sizeof(escapes) / sizeof(escapes[0]);
+            ++index) {
+            failed |= !fpu_interface_success(escapes[index],
+                sizeof(escapes[index]), profile, X86_FPU_PROFILE_NONE,
+                0u);
+        }
+    }
+    failed |= !fpu_interface_success(fninit, sizeof(fninit),
+        CORE_MACHINE_CPU_PROFILE_8086, X86_FPU_PROFILE_8087, 0u);
+    failed |= !fpu_interface_handoff(CORE_MACHINE_CPU_PROFILE_8086,
+        X86_FPU_PROFILE_8087);
+    failed |= !fpu_interface_handoff(CORE_MACHINE_CPU_PROFILE_80186,
+        X86_FPU_PROFILE_8087);
+    failed |= !fpu_interface_handoff(CORE_MACHINE_CPU_PROFILE_80286,
+        X86_FPU_PROFILE_80287);
+    failed |= !fpu_interface_handoff(CORE_MACHINE_CPU_PROFILE_80386,
+        X86_FPU_PROFILE_80287);
+    failed |= !fpu_interface_handoff(CORE_MACHINE_CPU_PROFILE_80386,
+        X86_FPU_PROFILE_80387);
+    failed |= !fpu_interface_deadline(CORE_MACHINE_CPU_PROFILE_8086,
+        X86_FPU_PROFILE_8087);
+    failed |= !fpu_interface_deadline(CORE_MACHINE_CPU_PROFILE_80186,
+        X86_FPU_PROFILE_8087);
+    failed |= !fpu_interface_deadline(CORE_MACHINE_CPU_PROFILE_80286,
+        X86_FPU_PROFILE_80287);
+    failed |= !fpu_interface_deadline(CORE_MACHINE_CPU_PROFILE_80386,
+        X86_FPU_PROFILE_80287);
+    failed |= !fpu_interface_deadline(CORE_MACHINE_CPU_PROFILE_80386,
+        X86_FPU_PROFILE_80387);
+    if (!fpu_interface_80286_esc_restart()) {
+        lib_c_fprintf(lib_c_stderr, "FPU wait stage=80286-esc-restart\n");
+        failed = 1;
+    }
+    if (!fpu_interface_external_test_input()) {
+        lib_c_fprintf(lib_c_stderr, "FPU wait stage=external-test-input\n");
+        failed = 1;
+    }
+    if (!fpu_interface_wait_interrupt()) {
+        lib_c_fprintf(lib_c_stderr, "FPU wait stage=wait-interrupt\n");
+        failed = 1;
+    }
+    if (!fpu_interface_80186_escape_trap()) {
+        lib_c_fprintf(lib_c_stderr, "FPU wait stage=80186-escape-trap\n");
+        failed = 1;
+    }
+    failed |= !fpu_interface_incompatible();
+    failed |= !fpu_interface_success(attr_wait, sizeof(attr_wait),
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
+    failed |= !fpu_interface_success(attr_wait_66, sizeof(attr_wait_66),
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
+    failed |= !fpu_interface_success(attr_wait_67, sizeof(attr_wait_67),
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
+    failed |= !fpu_interface_success(attr_esc, sizeof(attr_esc),
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
+    failed |= !fpu_interface_success(attr_esc_66, sizeof(attr_esc_66),
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
+    failed |= !fpu_interface_success(attr_esc_67, sizeof(attr_esc_67),
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
+    failed |= !fpu_interface_mf();
+    for (profile = CORE_MACHINE_CPU_PROFILE_8086;
+        profile <= CORE_MACHINE_CPU_PROFILE_80286; ++profile) {
+        for (index = 0u; index != sizeof(legacy_attributes) /
+            sizeof(legacy_attributes[0]); ++index) {
+            failed |= !fpu_interface_reject(legacy_attributes[index],
+                legacy_attribute_sizes[index], profile);
+        }
+    }
+    for (index = 0u; index != sizeof(lock_forms) / sizeof(lock_forms[0]);
+        ++index) {
+        failed |= !fpu_interface_reject(lock_forms[index], lock_sizes[index],
+            CORE_MACHINE_CPU_PROFILE_80386);
+    }
+    if (!fpu_interface_nm_delivery(wait, sizeof(wait),
+        VCPU_CR0_TS | VCPU_CR0_MP) || !fpu_interface_nm_delivery(fninit,
+        sizeof(fninit), VCPU_CR0_EM) || !fpu_interface_nm_delivery(fninit,
+        sizeof(fninit), VCPU_CR0_TS)) {
+        lib_c_fprintf(lib_c_stderr, "FPU interface stage=nm-delivery\n");
+        failed = 1;
+    }
+    for (index = 0u; index != sizeof(escapes) / sizeof(escapes[0]); ++index) {
+        if (!fpu_interface_nm_delivery(escapes[index],
+            sizeof(escapes[index]), VCPU_CR0_EM)) {
+            lib_c_fprintf(lib_c_stderr, "FPU interface stage=escape-nm index=%u\n", index);
+            failed = 1;
+        }
+        if (!fpu_interface_nm_delivery(escapes[index],
+            sizeof(escapes[index]), VCPU_CR0_TS)) {
+            lib_c_fprintf(lib_c_stderr, "FPU interface stage=escape-ts index=%u\n", index);
+            failed = 1;
+        }
+    }
+    if (!fpu_interface_vm86()) {
+        lib_c_fprintf(lib_c_stderr, "FPU interface stage=vm86\n");
+        failed = 1;
+    }
+    if (!fpu_interface_protected_nm()) {
+        lib_c_fprintf(lib_c_stderr, "FPU interface stage=protected-nm\n");
+        failed = 1;
+    }
+    if (failed) {
+        return 1;
+    }
+    lib_c_printf("FPU-INTERFACE:OK\n");
+    lib_c_printf("X87-CROSS-PROFILE-INTERFACE:PASS\n");
+    return 0;
+}

@@ -1,14 +1,14 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include <windows.h>
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 #include <stdio.h>
 #include "lib/types/types_interface.h"
 
 
 #include "test/app-nxvm/unit/support/ibmpc/machine/support/nxvm_presentation_capture.h"
-#include "ibmpc/machine/control.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/control.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_private.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define VM_T287_FDISK_CELLS (80u * 25u)

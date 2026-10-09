@@ -1,11 +1,11 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/media/fdd_interface.h"
-#include "ibmpc/machine/media/hdd_interface.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/media/fdd_interface.h"
+#include "core/machine/media/hdd_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 static lib_i32 verify(const char *directory, const char *file_name)

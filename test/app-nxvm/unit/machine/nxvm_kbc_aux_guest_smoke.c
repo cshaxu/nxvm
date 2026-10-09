@@ -1,12 +1,12 @@
 #include "../support/ibmpc/machine/support/guest_input.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/entry_plan_interface.h"
-#include "x86/core/machine_interface.h"
-#include "ibmpc/machine/machine_interface.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/x86/entry_plan_interface.h"
+#include "core/x86/machine_interface.h"
+#include "core/machine/machine_interface.h"
+#include "core/machine/machine_private.h"
 #include "../support/rom/session_assets.h"
 
 #define VM_KBC_AUX_BOOT_BUDGET 500000u

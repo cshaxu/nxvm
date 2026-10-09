@@ -9,34 +9,34 @@ set(cpu_files cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h
     cpu_timing.c cpu_timing.h cpu_timing_model.c cpu_trace.h)
 set(cpu_negative_files ${cpu_files})
 list(REMOVE_ITEM cpu_negative_files cpu_trace.h)
-set(paths src/ibmpc/machine/machine.c src/x86/core/machine.c
-    src/x86/core/cpu_bus.c src/ibmpc/board-common/board_advance.c
-    test/ibmpc/board-common/core_machine_lea_smoke.c
-    test/ibmpc/board-common/core_machine_gpr_mov_smoke.c
-    test/ibmpc/board-common/core_machine_moffs_smoke.c
-    test/ibmpc/board-common/core_machine_xchg_smoke.c
-    test/ibmpc/board-common/core_machine_gpr_push_pop_smoke.c
-    test/ibmpc/board-common/core_machine_push_immediate_smoke.c
-    test/ibmpc/board-common/core_machine_pusha_popa_smoke.c
-    test/ibmpc/board-common/core_machine_enter_leave_smoke.c
-    test/ibmpc/board-common/composition/core_machine_fs_gs_stack_smoke.c
-    test/ibmpc/board-common/core_machine_legacy_sreg_stack_smoke.c
-    test/ibmpc/board-common/composition/core_machine_movx_smoke.c
-    test/ibmpc/board-common/core_machine_les_lds_board_smoke.c
-    test/ibmpc/board-common/core_machine_les_lds_smoke.c
-    test/ibmpc/board-common/core_machine_lss_lfs_lgs_smoke.c
-    test/ibmpc/board-common/composition/core_machine_segment_selector_smoke.c
-    test/ibmpc/board-common/core_machine_sreg_mov_smoke.c
-    test/ibmpc/board-common/core_machine_bit_scan_smoke.c
-    test/ibmpc/board-common/core_machine_bit_test_smoke.c
-    test/ibmpc/board-common/core_machine_double_shift_smoke.c
-    test/ibmpc/board-common/core_machine_imul2_smoke.c
-    test/ibmpc/board-common/core_machine_setcc_smoke.c
-    test/ibmpc/board-common/core_machine_sign_extend_smoke.c
-    test/ibmpc/board-common/composition/core_machine_operand_address_smoke.c
-    test/ibmpc/board-common/core_machine_prefix_attributes_smoke.c)
+set(paths src/core/machine/machine.c src/core/x86/machine.c
+    src/core/x86/cpu_bus.c src/core/board-base/board_advance.c
+    test/core/board-base/core_machine_lea_smoke.c
+    test/core/board-base/core_machine_gpr_mov_smoke.c
+    test/core/board-base/core_machine_moffs_smoke.c
+    test/core/board-base/core_machine_xchg_smoke.c
+    test/core/board-base/core_machine_gpr_push_pop_smoke.c
+    test/core/board-base/core_machine_push_immediate_smoke.c
+    test/core/board-base/core_machine_pusha_popa_smoke.c
+    test/core/board-base/core_machine_enter_leave_smoke.c
+    test/core/board-base/composition/core_machine_fs_gs_stack_smoke.c
+    test/core/board-base/core_machine_legacy_sreg_stack_smoke.c
+    test/core/board-base/composition/core_machine_movx_smoke.c
+    test/core/board-base/core_machine_les_lds_board_smoke.c
+    test/core/board-base/core_machine_les_lds_smoke.c
+    test/core/board-base/core_machine_lss_lfs_lgs_smoke.c
+    test/core/board-base/composition/core_machine_segment_selector_smoke.c
+    test/core/board-base/core_machine_sreg_mov_smoke.c
+    test/core/board-base/core_machine_bit_scan_smoke.c
+    test/core/board-base/core_machine_bit_test_smoke.c
+    test/core/board-base/core_machine_double_shift_smoke.c
+    test/core/board-base/core_machine_imul2_smoke.c
+    test/core/board-base/core_machine_setcc_smoke.c
+    test/core/board-base/core_machine_sign_extend_smoke.c
+    test/core/board-base/composition/core_machine_operand_address_smoke.c
+    test/core/board-base/core_machine_prefix_attributes_smoke.c)
 foreach(name IN LISTS cpu_files)
-    list(APPEND paths "src/x86/chips/cpu/${name}")
+    list(APPEND paths "src/core/chips/cpu/${name}")
 endforeach()
 foreach(path IN LISTS paths)
     get_filename_component(directory "${WORK}/${path}" DIRECTORY)
@@ -62,7 +62,7 @@ endif()
 # a reduction in the dependencies the gate must reject.
 set(cpu_negative_tokens t_ram t_port core_machine_transaction
     firmware_interrupt software_interrupt core_machine_pic_scan_interrupt
-    "#include \"x86/core/machine.h\""
+    "#include \"core/x86/machine.h\""
     "#include \"app-nxvm/devices/cpu_bus.h\"")
 list(LENGTH cpu_negative_files cpu_negative_file_count)
 list(LENGTH cpu_negative_tokens cpu_negative_token_count)
@@ -73,7 +73,7 @@ math(EXPR cpu_negative_last "${cpu_negative_file_count} - 1")
 foreach(index RANGE 0 ${cpu_negative_last})
     list(GET cpu_negative_files ${index} name)
     list(GET cpu_negative_tokens ${index} token)
-    set(path "${WORK}/src/x86/chips/cpu/${name}")
+    set(path "${WORK}/src/core/chips/cpu/${name}")
     file(READ "${path}" original)
     if(token MATCHES "^#include")
         set(expected "CPU imports outside its neutral boundary")
@@ -93,13 +93,13 @@ foreach(index RANGE 0 ${cpu_negative_last})
 endforeach()
 message(STATUS "CPU bus boundary: baseline and eight orthogonal controls pass")
 
-set(path "${WORK}/src/x86/core/cpu_bus.c")
+set(path "${WORK}/src/core/x86/cpu_bus.c")
 file(READ "${path}" original)
 foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0\;"
         "machine->executor_cpu_instructions.data.except = 0\;"
         "machine->executor_cpu_execution.cpu = 0\;"
-        "#include \"x86/chips/cpu/cpu.h\""
-        "#include \"x86/chips/cpu/cpu_instructions.h\"")
+        "#include \"core/chips/cpu/cpu.h\""
+        "#include \"core/chips/cpu/cpu_instructions.h\"")
     if(injection MATCHES "^#include")
         set(expected "Board imports private CPU layout")
     else()
@@ -121,16 +121,16 @@ set(board_test_negative_files core_machine_lea_smoke.c
     core_machine_bit_test_smoke.c)
 set(board_test_negative_tokens "machine->executor_cpu.data.eax = 0\;"
     "#include \"support/machine_cpu_fixture.h\""
-    "#include \"x86/chips/cpu/cpu.h\""
-    "#include \"x86/chips/cpu/cpu_instructions.h\"")
+    "#include \"core/chips/cpu/cpu.h\""
+    "#include \"core/chips/cpu/cpu_instructions.h\"")
 set(board_test_negative_index 0)
 foreach(name IN LISTS board_test_negative_files)
     list(GET board_test_negative_tokens ${board_test_negative_index} injection)
     math(EXPR board_test_negative_index
         "(${board_test_negative_index} + 1) % 4")
-    set(path "${WORK}/test/ibmpc/board-common/${name}")
+    set(path "${WORK}/test/core/board-base/${name}")
     if(NOT EXISTS "${path}")
-        set(path "${WORK}/test/ibmpc/board-common/composition/${name}")
+        set(path "${WORK}/test/core/board-base/composition/${name}")
     endif()
     file(READ "${path}" original)
     write_negative("${path}" "${original}" "${injection}")

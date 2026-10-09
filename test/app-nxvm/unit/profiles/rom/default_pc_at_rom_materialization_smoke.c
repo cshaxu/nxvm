@@ -1,12 +1,12 @@
-#include "ibmpc/board-common/pc_at_rom_interface.h"
+#include "core/board-base/pc_at_rom_interface.h"
 #include "../../support/profile.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine_interface.h"
-#include "ibmpc/machine/machine_interface.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/x86/machine_interface.h"
+#include "core/machine/machine_interface.h"
+#include "core/machine/machine_private.h"
 
 int main(void)
 {

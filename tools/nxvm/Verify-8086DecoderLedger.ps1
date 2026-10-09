@@ -15,8 +15,8 @@ foreach ($key in @("I86-XLAT", "I86-XLAT-SEGMENT", "I86-POP-SEG-CS")) {
         throw "corrective decoder key missing or duplicated: $key"
     }
 }
-$decoderSource = Get-Content -Raw -LiteralPath (Join-Path $root "src/x86/chips/cpu/cpu_instructions.c")
-$timingSource = Get-Content -Raw -LiteralPath (Join-Path $root "src/x86/chips/cpu/cpu_timing_model.c")
+$decoderSource = Get-Content -Raw -LiteralPath (Join-Path $root "src/core/chips/cpu/cpu_instructions.c")
+$timingSource = Get-Content -Raw -LiteralPath (Join-Path $root "src/core/chips/cpu/cpu_timing_model.c")
 $ledger = Get-Content -Raw -LiteralPath (Join-Path $root "docs/nxvm/etc/cpu-timing/t435-s1-8086-ledger.md")
 $contract = Get-Content -Raw -LiteralPath (Join-Path $root "docs/nxvm/etc/cpu-timing/t435-s5-8086-decoder-reconciliation-contract.md")
 $decoderInventoryPath = Join-Path $root "docs/nxvm/etc/cpu-timing/t435-s5-8086-decoder-inventory.json"

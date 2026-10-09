@@ -1,14 +1,14 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "../../unit/support/ibmpc/machine/support/media.h"
 #include "../../unit/support/ibmpc/board-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/debug_interface.h"
-#include "x86/core/machine_interface.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/waiting.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/x86/debug_interface.h"
+#include "core/x86/machine_interface.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/waiting.h"
+#include "core/machine/machine_private.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define VM_HDC_HDD_BOOT_ADDRESS 0x00007c00u

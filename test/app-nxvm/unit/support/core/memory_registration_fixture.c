@@ -1,5 +1,5 @@
 #include "memory_registration_fixture.h"
-#include "x86/core/machine.h"
+#include "core/x86/machine.h"
 
 static lib_status unused_read(void *owner, lib_u32 physical,
     lib_uptr destination, lib_uptr bytes, lib_bool observe_only)

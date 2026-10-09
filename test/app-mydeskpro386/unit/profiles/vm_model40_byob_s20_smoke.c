@@ -1,17 +1,17 @@
 #include "app-mydeskpro386/profiles/observation_interface.h"
 #include "../../../app-nxvm/unit/support/profile.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "../../../app-nxvm/unit/support/ibmpc/machine/support/media.h"
-#include "../../../ibmpc/core/composition_fixture.h"
-#include "../../../ibmpc/core/time_fixture.h"
+#include "../../../core/board-base/composition/composition_fixture.h"
+#include "../../../core/board-base/composition/time_fixture.h"
 #include "../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "ibmpc/board-common/machine_board_interface.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/board-base/machine_board_interface.h"
+#include "core/machine/machine_private.h"
 #include "app-mydeskpro386/profiles/model40_private.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "../../support/rom/model40_session_assets.h"
 
 static lib_bool refresh_count_matches(core_machine *machine, lib_u16 expected)

@@ -1,7 +1,7 @@
 #ifndef MY5170_PROFILE_INTERFACE_H
 #define MY5170_PROFILE_INTERFACE_H
 
-#include "ibmpc/board-common/pc_at_profile_interface.h"
+#include "core/board-base/pc_at_profile_interface.h"
 
 #define VM_PROFILE_5170_SESSION_OPTION_MEMORY 0x02u
 const vm_profile_default_pc_at_descriptor *

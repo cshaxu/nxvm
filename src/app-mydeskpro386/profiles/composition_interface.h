@@ -2,7 +2,7 @@
 #define VM_PROFILE_MODEL40_COMPOSITION_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 #include "app-mydeskpro386/profiles/d4_platform_interface.h"
 lib_status vm_profile_model40_topology_materialize(
     core_machine_plan_topology *out_topology);

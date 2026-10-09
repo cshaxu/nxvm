@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
 #include "app-mydeskpro386/profiles/d4_platform.h"
 #include "app-mydeskpro386/profiles/d4_platform_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
-#include "x86/core/debug_interface.h"
+#include "core/board-base/machine_board_interface.h"
+#include "core/x86/debug_interface.h"
 #include <stdio.h>
 
 static lib_u32 prefetch_grants;

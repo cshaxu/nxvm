@@ -2,9 +2,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/vadp.c" source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/vadp.h" header)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/CMakeLists.txt" targets)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/vadp.c" source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/vadp.h" header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/CMakeLists.txt" targets)
 file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" app_targets)
 
 foreach(required "append_ports(routes, 0u, cga_ports"
@@ -29,8 +29,8 @@ foreach(forbidden "t_port" "core_machine_port_add_"
 endforeach()
 
 if(NOT targets MATCHES "board-common/fdc\\.c board-common/hdc\\.c board-common/vadp\\.c" OR
-    NOT targets MATCHES "add_library\\(ibmpc-board-common STATIC" OR
-    app_targets MATCHES "src/(app-nxvm/devices|ibmpc/board-common)/vadp\\.c")
+    NOT targets MATCHES "add_library\\(core-board-base STATIC" OR
+    app_targets MATCHES "src/(app-nxvm/devices|core/board-base)/vadp\\.c")
     message(FATAL_ERROR "VADP must be built once by the Shared board source list, not App")
 endif()
 

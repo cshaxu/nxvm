@@ -111,7 +111,7 @@ lib_i32 nxvm_console_process_run(const char *executable,
         stage = "console handles";
         goto done;
     }
-    if (!nxvm_console_wait_for_text(output, "Console>", NXVM_CONSOLE_WAIT_MILLISECONDS)) {
+    if (!nxvm_console_wait_for_text(output, "> ", NXVM_CONSOLE_WAIT_MILLISECONDS)) {
         stage = "monitor prompt";
         goto done;
     }

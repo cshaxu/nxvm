@@ -1,10 +1,10 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #ifndef TEST_VM_COMMON_MACHINE_FIXTURE_H
 #define TEST_VM_COMMON_MACHINE_FIXTURE_H
 
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/machine_interface.h"
 #include "lib/base/clock_interface.h"
 #include "lib/base/sync_interface.h"
 

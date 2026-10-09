@@ -1,12 +1,12 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "../../support/model40.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "../../../ibmpc/core/composition_fixture.h"
-#include "x86/core/memory_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
-#include "ibmpc/machine/machine_private.h"
+#include "../../../core/board-base/composition/composition_fixture.h"
+#include "core/x86/memory_interface.h"
+#include "core/board-base/machine_board_interface.h"
+#include "core/machine/machine_private.h"
 #include "../../support/rom/model40_session_assets.h"
 
 static lib_i32 read_byte(core_machine *machine, lib_u32 physical,

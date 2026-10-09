@@ -9,7 +9,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         "speed turbo\r", "help\r", "info\r", "exit\r"
     };
     static const char *const markers[] = {
-        "Speed: turbo", "VM Console Commands", "Machine:           ibm-5170-model-339", ""
+        "Speed: turbo", "Control your virtual machine:", "Machine:           ibm-5170-model-339", ""
     };
 
     if (argc != 3 || !nxvm_console_process_run(argv[2], argv[1],

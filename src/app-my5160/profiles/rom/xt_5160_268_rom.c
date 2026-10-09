@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
 
 #include "app-my5160/profiles/xt_5160_268.h"
-#include "ibmpc/board-common/rom_validation_interface.h"
-#include "ibmpc/board-common/rom_mapping_interface.h"
+#include "core/board-base/rom_validation_interface.h"
+#include "core/board-base/rom_mapping_interface.h"
 
 lib_status vm_profile_xt_5160_268_external_rom_create(
     const lib_u8 *system, lib_size system_bytes,

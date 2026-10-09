@@ -17,9 +17,10 @@ future Profile only when its separate evidence task admits real source files.
 src/
   lib/                  shared C and platform services
   common/{session,machine,ui}/
-  x86/{chips,core,xasm32,debug}/
-  ibmpc/{board-common,board-xt,board-at,machine,product}/
-  nxvm/product/          four-NXVM-App private configuration/factory/extensions
+  x86/{xasm32,debug}/     portable x86 development tools
+  ibmpc/product/          portable IBM PC product interaction
+  core/{chips,x86,board-base,board-xt,board-at,machine,product}/
+                           NXVM-only machine stack and family product support
   app-my5160/           fixed IBM 5160 App
     product/            thin main and fixed XT binding
     profiles/           IBM 5160 composition and firmware slots
@@ -29,7 +30,7 @@ src/
   app-mydeskpro386/     fixed DeskPro 386 App
     product/            thin main and fixed Model40 binding
     profiles/           Model40 composition, D4 and firmware slots
-  app-nxvm/             app-base product implementation
+  app-nxvm/             core product implementation
     product/            thin main and fixed composition binding
     firmware/           project-owned BIOS source and offline ROM construction
     profiles/           retained default PC/AT composition and firmware slots
@@ -37,30 +38,30 @@ src/
 
 Keep machine-specific profile declarations at the profiles root. Common
 floppy geometry/channel, Option ROM validation and profile-contract validation
-live in flat `ibmpc/board-common`, with their independent tests under `test/ibmpc`.
-The shared execution/debug adapter lives in `ibmpc/machine`; App profiles
+live in flat `core/board-base`, with their independent tests under `test/core`.
+The shared execution/debug adapter lives in `core/machine`; App profiles
 prepare copied construction values and transfer their real context lifetime.
 Shared owns candidate publication and rollback, never an App layout or model ID.
 Common PC/AT descriptor/materialization and immutable ROM mapping live in
-board-common/pc_at_profile and pc_at_rom. Machine's pc_at_preparation owns the
+core/board-base/pc_at_profile and pc_at_rom. Machine's pc_at_preparation owns the
 one allocated AT candidate and ROM preparation; each App supplies its fixed
 choices and validator. No mixed default/5170 compile guards remain.
 The shared Product command/hotkey and Common composition files and their
-reusable assertions live in ibmpc/product and test/ibmpc/product. `nxvm/product`
+reusable assertions live in ibmpc/product and test/ibmpc/product. `core/product`
 contains the NXVM-family INI, Machine adapter and extensions used by the four
 NXVM Apps; it is not an IBM PC Product dependency. Shared process entry/banner
 formatting consumes App-provided identity, request loader and factory. The
 former `app-nxvm/devices` implementation is removed. Shared board mechanisms
-live in the flat `ibmpc/board-*` receivers; genuine D4 state stays in
+live in the flat `core/board-*` receivers; genuine D4 state stays in
 `app-mydeskpro386/profiles`. Current records delivery acceptance, not this layout.
 The
 former singular `core/profile` root is retired; do not restore a compatibility
 directory. Preserve existing machine identities and
 variants rather than renaming them into a replacement Standard profile.
 Do not add a framework or empty future directories. CPU-family implementations
-and selection tables stay in `x86/chips/cpu`, not copied into board directories.
+and selection tables stay in `core/chips/cpu`, not copied into board directories.
 
-ROM mapping declarations and asset roles remain with the app-base product profile.
+ROM mapping declarations and asset roles remain with the core product profile.
 Project-owned BIOS source/build lives in `src/app-nxvm/firmware`, not in the
 runtime driver or devices. Its build produces a candidate ROM under `build/`
 and embeds its bytes into the selected EXE. Other machines embed their BYOB
@@ -102,22 +103,23 @@ preparation; it has no second runtime-media projection or factory body.
 ## Source Organization
 
 Repository-only shared tests remain `test/{lib,common,x86,ibmpc}`. The
-four-App NXVM-family Product component owns `test/app-base/product`; individual
+four-App NXVM-family Product component owns `test/core/product`; individual
 App-only tests live below their matching `test/app-*/` root.
-Shared board and family tests live in `test/ibmpc/board-common`,
-`test/ibmpc/board-at` and `test/ibmpc/board-xt`, with their actual source owners.
+Shared board and family tests live in `test/core/board-base`,
+`test/core/board-at` and `test/core/board-xt`, with their actual source owners.
 Profile tests follow their real `src/app-*/profiles/` owner. The independent
 My5160, My5170 and MyDeskPro386 test roots preserve their original assertions;
 default remains in `test/app-nxvm`. PC-family composition tests and their
-single mixed-family fixture live in `test/ibmpc/machine/composition` and
-`test/ibmpc/machine/support`; board-wiring tests live in
-`test/ibmpc/board-common/composition`.
+single mixed-family fixture live in `test/core/machine/composition` and
+`test/core/machine/support`; board-wiring tests live in
+`test/core/board-base/composition`.
 The former helper-only `device` and `byob` roots are retired. Do not create
 empty future-profile directories. Retained
 NXVM composition/firmware tests live in `test/app-nxvm/unit/profiles/` with their
-product owner. CPU mechanism and retained board-timing recipe tests live under
-`test/x86`, preserving all CPU models. Neutral Core tests live
-in `test/x86/core` and build independently of NXVM board composition.
+product owner. CPU, chip, execution-Core and board-timing tests live under
+`test/core`, preserving all CPU models. The remaining `test/x86` package
+covers only portable Debug/Xasm32. Neutral Core tests build independently of
+NXVM board composition.
 `test/app-nxvm/integration/` stays separate;
 at cutover it uses the real INI path and external assets. Unit tests use code-
 owned values without external ROM/INI/YAML/media dependencies.
@@ -129,8 +131,9 @@ fixtures or removing duplicate machinery must not reduce behavior coverage.
 ## Shared PC Family
 
 The four fixed Apps consume the sole ibmpc Machine/Product implementation;
-they do not supply libraries to one another. CPU/Core tooling remains in x86,
-PC mechanisms in ibmpc, and immutable model choices and D4 in each App.
+they do not supply libraries to one another. Portable Debug/Xasm32 tooling
+remains in x86; NXVM PC mechanisms live in Core, and immutable model choices
+and D4 remain in each App.
 PC110 remains future work, not an empty source/test directory.
 
 Each App has its own source, profile assertions, integration registration and

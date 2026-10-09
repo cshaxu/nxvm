@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" project_cmake)
 file(READ "${PROJECT_SOURCE_DIR}/src/lib/CMakeLists.txt" library_cmake)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/product/build.cmake" product_build)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/product/build.cmake" product_build)
 
 foreach(forbidden "VM_RUNTIME_SOURCES")
     string(FIND "${project_cmake}" "${forbidden}" position)

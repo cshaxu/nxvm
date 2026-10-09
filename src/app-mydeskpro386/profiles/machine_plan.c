@@ -1,4 +1,4 @@
-#include "ibmpc/machine/preparation_interface.h"
+#include "core/machine/preparation_interface.h"
 #include "app-mydeskpro386/profiles/construction_interface.h"
 #include "app-mydeskpro386/profiles/composition_interface.h"
 #include "app-mydeskpro386/profiles/model40_private.h"

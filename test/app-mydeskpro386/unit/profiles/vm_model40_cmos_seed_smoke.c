@@ -1,14 +1,14 @@
 #include "../../../app-nxvm/unit/support/profile.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 #include <stdio.h>
-#include "x86/core/device_support_interface.h"
+#include "core/x86/device_support_interface.h"
 
-#include "../../../ibmpc/core/composition_fixture.h"
-#include "x86/chips/rtc146818/rtc146818_interface.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/machine_private.h"
+#include "../../../core/board-base/composition/composition_fixture.h"
+#include "core/chips/rtc146818/rtc146818_interface.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_private.h"
 #include "../../support/rom/model40_session_assets.h"
 
 static lib_u8 vm_model40_cmos_read(vm_machine *session,

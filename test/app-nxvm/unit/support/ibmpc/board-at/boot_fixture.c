@@ -1,5 +1,5 @@
 #include "boot_fixture.h"
-#include "ibmpc/board-at/kbc.h"
+#include "core/board-at/kbc.h"
 
 lib_bool test_at_boot_bat_ready(const t_kbc *kbc)
 {

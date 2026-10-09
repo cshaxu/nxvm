@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 #ifndef VM_PROFILE_XT_5160_268_H
 #define VM_PROFILE_XT_5160_268_H
 
-#include "ibmpc/board-common/profile_contract_interface.h"
-#include "x86/core/firmware_interface.h"
+#include "core/board-base/profile_contract_interface.h"
+#include "core/x86/firmware_interface.h"
 
 #define VM_PROFILE_XT_5160_268_FDD_MEDIA_ID 1u
 #define VM_PROFILE_XT_5160_268_HDD_MEDIA_ID 2u

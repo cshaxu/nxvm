@@ -2,8 +2,8 @@
 #define TEST_BOARD_BOOT_FIXTURE_H
 #include "controller_fixture.h"
 #include "composition_fixture.h"
-#include "ibmpc/board-common/vadp_interface.h"
-#include "x86/chips/ppi8255/ppi8255_interface.h"
+#include "core/board-base/vadp_interface.h"
+#include "core/chips/ppi8255/ppi8255_interface.h"
 
 /* Diagnostic operations do not clock, reset or perform guest I/O. The
  * component owner reads its actual handles; callers receive copied values. */

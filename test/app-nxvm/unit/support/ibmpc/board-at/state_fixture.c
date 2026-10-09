@@ -1,5 +1,5 @@
 #include "state_fixture.h"
-#include "ibmpc/board-at/kbc.h"
+#include "core/board-at/kbc.h"
 
 static void keyboard_repeat(void *context, lib_u8 byte)
 {

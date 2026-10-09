@@ -1,13 +1,13 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include <windows.h>
 
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "app-base/product/factory_interface.h"
+#include "core/product/factory_interface.h"
 #include VM_PRODUCT_BINDING_HEADER
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 #include "lib/base/sync_interface.h"
 
 static lib_i32 integration_ini_session_find(const char *directory,
@@ -43,8 +43,7 @@ lib_i32 integration_ini_session_assets_present(
 
 lib_status integration_ini_session_restart(integration_ini_session *session)
 {
-    vm_app_factory factory;
-    common_machine_driver driver;
+    app_composed_machine composed;
     void *machine = LIB_NULL;
     lib_status status;
 
@@ -59,8 +58,8 @@ lib_status integration_ini_session_restart(integration_ini_session *session)
         vm_machine_destroy(session->session);
         session->session = LIB_NULL;
     }
-    vm_app_configure_factory(&vm_app_machine, &factory);
-    status = factory.prepare(factory.context, &session->request, &machine, &driver);
+    status = vm_app_compose_machine(&vm_app_machine, &session->request, &composed);
+    machine = composed.machine;
     session->session = machine;
     if (status != LIB_STATUS_OK || session->session == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
     if (session->transform != LIB_NULL && session->transform(session,

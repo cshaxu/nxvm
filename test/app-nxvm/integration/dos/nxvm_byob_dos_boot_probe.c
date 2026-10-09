@@ -1,29 +1,29 @@
 #include "../../unit/support/ibmpc/machine/support/guest_input.h"
 #include "../../unit/support/profile.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "../../../app-mydeskpro386/support/model40.h"
 #include "../../unit/support/ibmpc/board-common/boot_fixture.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
 
-#include "x86/core/debug_interface.h"
+#include "core/x86/debug_interface.h"
 #include <windows.h>
 #ifdef exception_code
 #undef exception_code
 #endif
 
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 #include "../../unit/support/core/boot_fixture.h"
-#include "../../../ibmpc/core/composition_fixture.h"
-#include "x86/core/retirement_observation_interface.h"
-#include "x86/core/trace_interface.h"
+#include "../../../core/board-base/composition/composition_fixture.h"
+#include "core/x86/retirement_observation_interface.h"
+#include "core/x86/trace_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "ibmpc/machine/control.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "x86/core/machine_interface.h"
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/machine/waiting.h"
+#include "core/machine/control.h"
+#include "core/machine/lifecycle.h"
+#include "core/x86/machine_interface.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/waiting.h"
 
 #define VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS 90000u
 #define VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS 15000u

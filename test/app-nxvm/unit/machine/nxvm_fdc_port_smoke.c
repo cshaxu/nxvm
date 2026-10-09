@@ -1,14 +1,14 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "../support/ibmpc/machine/support/media.h"
 #include "lib/types/types_interface.h"
 #include "../support/ibmpc/board-common/controller_fixture.h"
 #include <stdio.h>
 
-#include "ibmpc/board-common/pic_bus_interface.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/machine_interface.h"
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/machine/media/fdd_interface.h"
+#include "core/board-base/pic_bus_interface.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_interface.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/media/fdd_interface.h"
 #include "../support/rom/session_assets.h"
 #include "lib/storage/file_interface.h"
 

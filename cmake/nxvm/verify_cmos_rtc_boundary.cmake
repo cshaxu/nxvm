@@ -2,17 +2,17 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/rtc146818/rtc.c" rtc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_advance.c" advance_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/rtc146818/rtc.c" rtc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" advance_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/pc_at_profile_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile_interface.h"
     profile_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/at_assembly.c" assembly_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/at_assembly.c" assembly_source)
 
 foreach(forbidden IN ITEMS "machine->board->shared_rtc"
     "machine->board->rtc_selected_register" "x86_rtc_advance(")

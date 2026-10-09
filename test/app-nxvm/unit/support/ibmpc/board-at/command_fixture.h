@@ -1,7 +1,7 @@
 #ifndef TEST_AT_KBC_COMMAND_FIXTURE_H
 #define TEST_AT_KBC_COMMAND_FIXTURE_H
-#include "ibmpc/board-at/kbc_interface.h"
-#include "x86/core/port_interface.h"
+#include "core/board-at/kbc_interface.h"
+#include "core/x86/port_interface.h"
 
 /* Fixture command replies use the production ports and configured deadline.
  * The bounded loop accommodates the profile's status-poll delivery contract. */

@@ -1,13 +1,13 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 #include <stdio.h>
-#include "x86/core/device_support_interface.h"
+#include "core/x86/device_support_interface.h"
 
-#include "../../../ibmpc/core/composition_fixture.h"
-#include "ibmpc/board-common/machine_board_interface.h"
-#include "x86/core/retirement_observation_interface.h"
-#include "../../../ibmpc/board-common/core_machine_board_fixture.h"
-#include "../../../ibmpc/board-common/composition/support/protected_16_bootstrap_fixture.h"
+#include "../../../core/board-base/composition/composition_fixture.h"
+#include "core/board-base/machine_board_interface.h"
+#include "core/x86/retirement_observation_interface.h"
+#include "../../../core/board-base/core_machine_board_fixture.h"
+#include "../../../core/board-base/composition/support/protected_16_bootstrap_fixture.h"
 
 #define S3_GDT_BASE 0x0300u
 #define S3_CODE_BASE 0x2000u
@@ -16,7 +16,7 @@
 #define S3_HANDLER 0x0100u
 
 #define main timing_80386_manifest_retained_task_switch_smoke_main
-#include "../../../x86/core/machine_task_switch_cross_width_smoke.c"
+#include "../../../core/x86/machine_task_switch_cross_width_smoke.c"
 #undef main
 
 #define TIMING_80386_MANIFEST_RESET_LINEAR 0xfffffff0u

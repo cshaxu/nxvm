@@ -1,9 +1,9 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "../../../app-mydeskpro386/support/model40.h"
 #include "../../unit/support/ibmpc/machine/support/media.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 #include <ctype.h>
 #include <stdio.h>
 
@@ -11,11 +11,11 @@
 #undef exception_code
 
 #include "test/app-nxvm/unit/support/ibmpc/machine/support/nxvm_presentation_capture.h"
-#include "x86/core/machine_interface.h"
-#include "x86/core/debug_interface.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/board-common/floppy_interface.h"
+#include "core/x86/machine_interface.h"
+#include "core/x86/debug_interface.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_private.h"
+#include "core/board-base/floppy_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define BOOT_TIMEOUT 180000u

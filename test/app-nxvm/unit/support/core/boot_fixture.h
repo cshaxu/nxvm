@@ -1,7 +1,7 @@
 #ifndef TEST_CORE_BOOT_FIXTURE_H
 #define TEST_CORE_BOOT_FIXTURE_H
-#include "x86/core/machine_interface.h"
-#include "x86/core/memory_interface.h"
+#include "core/x86/machine_interface.h"
+#include "core/x86/memory_interface.h"
 
 typedef struct test_core_boot_observation {
     lib_size memory_bytes;

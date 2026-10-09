@@ -1,11 +1,11 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/firmware_interface.h"
-#include "../../../ibmpc/core/composition_fixture.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/x86/firmware_interface.h"
+#include "../../../core/board-base/composition/composition_fixture.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_private.h"
 #include "../support/ibmpc/machine/support/common_machine_fixture.h"
 #include "../support/rom/session_assets.h"
 

@@ -1,13 +1,13 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 
-#include "../../../ibmpc/core/composition_fixture.h"
+#include "../../../core/board-base/composition/composition_fixture.h"
 #include "../support/ibmpc/board-common/composition_fixture.h"
-#include "x86/core/debug_interface.h"
+#include "core/x86/debug_interface.h"
 
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "../support/rom/session_assets.h"
 
 static lib_bool sessions_are_isolated(core_machine *first, core_machine *second,

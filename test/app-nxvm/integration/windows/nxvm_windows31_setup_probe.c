@@ -1,5 +1,5 @@
 #include "../../unit/support/ibmpc/machine/support/guest_input.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "../../unit/support/ibmpc/board-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
@@ -7,14 +7,14 @@
 #include <windows.h>
 #undef exception_code
 
-#include "x86/core/debug_interface.h"
-#include "x86/core/machine_interface.h"
+#include "core/x86/debug_interface.h"
+#include "core/x86/machine_interface.h"
 #include "test/app-nxvm/unit/support/ibmpc/machine/support/nxvm_presentation_capture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "ibmpc/machine/control.h"
-#include "ibmpc/machine/fault.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/control.h"
+#include "core/machine/fault.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_private.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)
 #define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u

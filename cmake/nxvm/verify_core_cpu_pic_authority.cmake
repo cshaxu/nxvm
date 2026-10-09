@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c"
     machine_source)
 
 set(forbidden_vm_cpu_pic_wiring
@@ -14,9 +14,9 @@ if(vm_cpu_pic_wiring)
         "VM machine retains T295 CPU/PIC initialization wiring: ${vm_cpu_pic_wiring}")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" core_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/cpu_bus.c" bus_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_advance.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c" core_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/cpu_bus.c" bus_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c"
     board_source)
 string(FIND "${core_source}"
     "core_machine_cpu_create(&core_machine_cpu_bus," core_cpu_bus_bind)
@@ -45,7 +45,7 @@ foreach(token IN ITEMS
 endforeach()
 foreach(cpu_file cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h
         cpu_timing.c cpu_timing.h cpu_timing_model.c cpu_trace.h)
-    file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/${cpu_file}" contents)
+    file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/cpu/${cpu_file}" contents)
     if(contents MATCHES "core_machine_pic_|shared_pic_|bind_pic|pic8259/")
         message(FATAL_ERROR "CPU retains a concrete PIC dependency: ${cpu_file}")
     endif()
@@ -58,7 +58,7 @@ foreach(cpu_file cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions
     endforeach()
     string(REGEX MATCHALL "#[ \t]*include[ \t]*[<\"][^>\"]+[>\"]" cpu_includes "${contents}")
     foreach(cpu_include IN LISTS cpu_includes)
-        if(NOT cpu_include MATCHES "[<\"](lib/types/[^>\"]+|x86/chips/fpu/fpu_interface\\.h|x86/chips/cpu/cpu(_interface|_instructions|_timing|_trace)?\\.h)[>\"]$")
+        if(NOT cpu_include MATCHES "[<\"](lib/types/[^>\"]+|core/chips/fpu/fpu_interface\\.h|core/chips/cpu/cpu(_interface|_instructions|_timing|_trace)?\\.h)[>\"]$")
             message(FATAL_ERROR "CPU imports outside its neutral boundary: ${cpu_file}: ${cpu_include}")
         endif()
     endforeach()
@@ -83,21 +83,21 @@ file(GLOB_RECURSE board_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.h")
-list(APPEND board_sources "${PROJECT_SOURCE_DIR}/src/x86/core/cpu_bus.c")
+    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.h"
+    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.h")
+list(APPEND board_sources "${PROJECT_SOURCE_DIR}/src/core/x86/cpu_bus.c")
 foreach(board_source IN LISTS board_sources)
     file(READ "${board_source}" contents)
     if(contents MATCHES "executor_cpu(_instructions|_execution)?[ \t\r\n]*(\\.|->)[ \t\r\n]*[a-zA-Z_]")
         message(FATAL_ERROR "Board bypasses copied CPU operations: ${board_source}")
     endif()
     # CPU storage is private to cpu.c; no board header imports its layout.
-    if(NOT board_source STREQUAL "${PROJECT_SOURCE_DIR}/src/x86/core/machine.h" AND
-       contents MATCHES "#[ \t]*include[ \t]*[<\"]x86/chips/cpu/cpu(_instructions)?\\.h[>\"]")
+    if(NOT board_source STREQUAL "${PROJECT_SOURCE_DIR}/src/core/x86/machine.h" AND
+       contents MATCHES "#[ \t]*include[ \t]*[<\"]core/chips/cpu/cpu(_instructions)?\\.h[>\"]")
         message(FATAL_ERROR "Board imports private CPU layout: ${board_source}")
     endif()
 endforeach()
@@ -115,12 +115,12 @@ foreach(board_test core_machine_lea_smoke.c core_machine_movx_smoke.c
         core_machine_lss_lfs_lgs_smoke.c core_machine_segment_selector_smoke.c
         core_machine_sreg_mov_smoke.c
         core_machine_operand_address_smoke.c core_machine_prefix_attributes_smoke.c)
-    set(board_test_path "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/${board_test}")
+    set(board_test_path "${PROJECT_SOURCE_DIR}/test/core/board-base/${board_test}")
     if(NOT EXISTS "${board_test_path}")
-        set(board_test_path "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/composition/${board_test}")
+        set(board_test_path "${PROJECT_SOURCE_DIR}/test/core/board-base/composition/${board_test}")
     endif()
     file(READ "${board_test_path}" contents)
-    if(contents MATCHES "executor_cpu|machine_cpu_fixture|x86/chips/cpu/cpu(_instructions)?\\.h")
+    if(contents MATCHES "executor_cpu|machine_cpu_fixture|core/chips/cpu/cpu(_instructions)?\\.h")
         message(FATAL_ERROR "Migrated board test bypasses CPU boundary: ${board_test}")
     endif()
 endforeach()
@@ -139,19 +139,19 @@ file(GLOB_RECURSE pic_consumers
     "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-my5170/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-my5160/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.h")
+    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.h"
+    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.h")
 foreach(consumer IN LISTS pic_consumers)
-    if(consumer MATCHES "/src/ibmpc/board-common/pic_bus\\.(c|h)$")
+    if(consumer MATCHES "/src/core/board-base/pic_bus\\.(c|h)$")
         continue()
     endif()
     file(READ "${consumer}" contents)
-    if(contents MATCHES "x86/chips/pic8259/pic\\.h" OR
-       contents MATCHES "ibmpc/board-common/pic_bus\\.h" OR
+    if(contents MATCHES "core/chips/pic8259/pic\\.h" OR
+       contents MATCHES "core/board-base/pic_bus\\.h" OR
        contents MATCHES "(shared_pic_(master|slave)|pic_(master|slave))[ \\t]*(\\.|->)device" OR
        contents MATCHES "irq[0-9]*_source[ \\t]*(\\.|->)(master|slave|irq|asserted)" OR
        contents MATCHES "(shared_pic_(master|slave)|pic_(master|slave))[ \\t]*(\\.|->)data" OR

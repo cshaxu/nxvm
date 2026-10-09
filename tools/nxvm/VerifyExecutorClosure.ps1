@@ -5,7 +5,7 @@ $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path -LiteralPath $RepositoryRoot).Path
 
 $rules = @(
-    @{ Pattern = 'core_machine_cpu_execution_refresh\s*\('; Allowed = @('src/x86/core/machine.c', 'src/x86/chips/cpu/cpu_instructions.c') },
+    @{ Pattern = 'core_machine_cpu_execution_refresh\s*\('; Allowed = @('src/core/x86/machine.c', 'src/core/chips/cpu/cpu_instructions.c') },
     @{ Pattern = '\bvmachine(Refresh|Reset)\s*\('; Allowed = @() },
     @{ Pattern = '\bmachine_refresh\b'; Allowed = @() }
 )
@@ -15,7 +15,7 @@ $renamedHeaders = @{
     'device_support_interface.h' = 'device_support.h'
     'execution_provider_interface.h' = 'execution_provider.h'
 }
-foreach ($coreFile in Get-ChildItem (Join-Path $root 'src/x86/core') -File) {
+foreach ($coreFile in Get-ChildItem (Join-Path $root 'src/core/x86') -File) {
     $oldName = $coreFile.Name
     if ($renamedHeaders.ContainsKey($oldName)) { $oldName = $renamedHeaders[$oldName] }
     $oldPath = Join-Path $root ('src/app-nxvm/devices/' + $oldName)

@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "ibmpc/board-common/dma_bus_interface.h"
+#include "core/board-base/dma_bus_interface.h"
 #include "../support/ibmpc/board-common/composition_fixture.h"
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 #include "app-nxvm/profiles/profile_interface.h"
 #include "app-my5170/profiles/profile_interface.h"
 #include "app-mydeskpro386/profiles/model40_private.h"

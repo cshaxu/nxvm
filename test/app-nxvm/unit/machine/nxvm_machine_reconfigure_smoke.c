@@ -1,4 +1,4 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 #include "../support/rom/session_assets.h"

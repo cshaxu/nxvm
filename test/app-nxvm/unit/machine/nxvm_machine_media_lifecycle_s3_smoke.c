@@ -1,4 +1,4 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
@@ -50,7 +50,7 @@ lib_i32 main(void)
         return 1;
     }
     /* App owns the selected default factory/media combination, not generic
-     * generation or running-admission rules now proven in test/ibmpc. */
+     * generation or running-admission rules now proven in test/core. */
     failed |= vm_machine_insert_fdd(session, floppy_path) != 0 ||
         vm_machine_get_information(session, &information) != LIB_STATUS_OK ||
         !information.floppy_media_inserted || information.floppy_image_bytes != 1440u * 1024u ||

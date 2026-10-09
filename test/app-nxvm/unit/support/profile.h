@@ -1,14 +1,14 @@
 #ifndef NXVM_TEST_PROFILE_H
 #define NXVM_TEST_PROFILE_H
 
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "ibmpc/machine/support/selection.h"
 #include "app-nxvm/profiles/construction_interface.h"
 #include "app-my5160/profiles/construction_interface.h"
 #include "app-my5170/profiles/construction_interface.h"
 #include "app-mydeskpro386/profiles/construction_interface.h"
 #include "app-mydeskpro386/profiles/model40_private.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 
 /* Borrow the actual Machine-owned construction. This test view adds no
  * registry, mirrored state or production getter. */

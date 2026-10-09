@@ -1,7 +1,7 @@
 #include "app-my5170/profiles/construction_interface.h"
 #include "app-my5170/profiles/profile_interface.h"
-#include "ibmpc/machine/pc_at_preparation_interface.h"
-#include "ibmpc/machine/preparation_interface.h"
+#include "core/machine/pc_at_preparation_interface.h"
+#include "core/machine/preparation_interface.h"
 
 static lib_status vm_profile_prepare_5170(const vm_machine_config *config,
     vm_profile_default_pc_at_plan_snapshot *profile,

@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fpu/fpu.c" fpu_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/fpu/fpu.c" fpu_source)
 
 string(REGEX MATCH "(^|[^A-Za-z0-9_])(float|double)([^A-Za-z0-9_]|$)"
     host_floating_point "${fpu_source}")
@@ -33,25 +33,25 @@ file(GLOB_RECURSE consumers
     "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-my5170/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-my5160/*.h"
-    "${PROJECT_SOURCE_DIR}/src/x86/core/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/core/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.h"
-    "${PROJECT_SOURCE_DIR}/test/x86/core/*.c"
-    "${PROJECT_SOURCE_DIR}/test/x86/core/*.h"
-    "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/*.c"
-    "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/*.h"
-    "${PROJECT_SOURCE_DIR}/test/ibmpc/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/test/ibmpc/board-at/*.h"
-    "${PROJECT_SOURCE_DIR}/test/ibmpc/board-xt/*.c"
-    "${PROJECT_SOURCE_DIR}/test/ibmpc/board-xt/*.h")
+    "${PROJECT_SOURCE_DIR}/src/core/x86/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/x86/*.h"
+    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.h"
+    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.h"
+    "${PROJECT_SOURCE_DIR}/test/core/x86/*.c"
+    "${PROJECT_SOURCE_DIR}/test/core/x86/*.h"
+    "${PROJECT_SOURCE_DIR}/test/core/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/test/core/board-base/*.h"
+    "${PROJECT_SOURCE_DIR}/test/core/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/test/core/board-at/*.h"
+    "${PROJECT_SOURCE_DIR}/test/core/board-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/test/core/board-xt/*.h")
 foreach(path IN LISTS consumers)
     file(READ "${path}" consumer)
-    if(consumer MATCHES "x86/chips/fpu/fpu\\.h" OR
+    if(consumer MATCHES "core/chips/fpu/fpu\\.h" OR
        consumer MATCHES "app-nxvm/devices/fpu" OR
        consumer MATCHES "fpu[ \t]*->[ \t]*(busy|profile|registers|completion_remaining_ticks)" OR
        consumer MATCHES "fpu[ \t]*\\.")

@@ -23,8 +23,8 @@ endforeach()
 set(project_live_path_authorities
     ".gitignore"
     "cmake/nxvm/NxvmProduct.cmake"
-    "src/ibmpc/product/deploy_artifact.cmake"
-    "src/ibmpc/product/verify_artifact_optimized.cmake"
+    "src/core/product/deploy_artifact.cmake"
+    "src/core/product/verify_artifact_optimized.cmake"
     "cmake/nxvm/verify_t533_integration_ini_boundary.cmake"
     "src/app-mynes/product/CMakeLists.txt"
     "tools/nxvm/README.md"
@@ -39,7 +39,7 @@ foreach(project_live_path_authority IN LISTS project_live_path_authorities)
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/product/deploy_artifact.cmake" project_deployment)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/product/deploy_artifact.cmake" project_deployment)
 if(project_deployment MATCHES "file\\([ \t\r\n]*(WRITE|APPEND)[ \t\r\n]")
     message(FATAL_ERROR "EXE deployment must not write owner configuration files")
 endif()

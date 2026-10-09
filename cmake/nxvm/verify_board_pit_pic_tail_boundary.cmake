@@ -2,9 +2,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" core)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_advance.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" creation)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" creation)
 foreach(forbidden "machine->pit_clock" "machine->auxiliary_pit_clock"
     "machine->board->pit_clock" "machine->board->auxiliary_pit_clock"
     "machine->shared_pit" "machine->auxiliary_pit"

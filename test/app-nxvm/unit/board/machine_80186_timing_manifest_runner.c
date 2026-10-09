@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
-#include "x86/core/machine_interface.h"
-#include "x86/core/retirement_observation_interface.h"
-#include "x86/core/debug_interface.h"
+#include "core/x86/machine_interface.h"
+#include "core/x86/retirement_observation_interface.h"
+#include "core/x86/debug_interface.h"
 
 #define TIMING_80186_MANIFEST_RESET_LINEAR 0x000ffff0u
 #define TIMING_80186_MANIFEST_RESET_PHYSICAL 0x000ffff0u

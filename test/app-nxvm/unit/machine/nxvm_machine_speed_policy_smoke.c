@@ -1,11 +1,11 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine_interface.h"
-#include "ibmpc/machine/control.h"
-#include "ibmpc/machine/machine_private.h"
-#include "ibmpc/machine/waiting.h"
+#include "core/x86/machine_interface.h"
+#include "core/machine/control.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/waiting.h"
 #include "../support/rom/session_assets.h"
 
 static lib_i32 verify_ratio_compare(void)

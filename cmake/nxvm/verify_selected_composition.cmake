@@ -8,7 +8,7 @@ while(pending)
     endif()
     list(APPEND visited ${target})
     if(target STREQUAL "vm-profile-tests" OR
-            (target MATCHES "^core-machine(-observable|-runtime)?$" AND
+            (target MATCHES "^mydeskpro386-d4(-observable|-runtime)?$" AND
              NOT NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40"))
         message(FATAL_ERROR "Selected product links an unselected composition: ${target}")
     endif()

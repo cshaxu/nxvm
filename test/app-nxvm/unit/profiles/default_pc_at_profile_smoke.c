@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 #include <stdio.h>
 
 #include "app-nxvm/profiles/profile_interface.h"

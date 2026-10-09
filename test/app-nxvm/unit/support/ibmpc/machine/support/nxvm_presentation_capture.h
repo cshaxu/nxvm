@@ -1,11 +1,11 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #ifndef TEST_VM_PRESENTATION_CAPTURE_H
 #define TEST_VM_PRESENTATION_CAPTURE_H
 #include "lib/types/types_interface.h"
 
 
 #include "guest_display.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 
 /* Test-only view of the one production Common frame. It never publishes or
  * stores a frame, so production has no second presentation route. */

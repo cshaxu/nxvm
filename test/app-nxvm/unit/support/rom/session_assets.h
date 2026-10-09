@@ -1,12 +1,12 @@
 #include "../profile.h"
-#include "ibmpc/board-common/pc_at_rom_interface.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/board-base/pc_at_rom_interface.h"
+#include "core/machine/machine_interface.h"
 #ifndef TEST_VM_SUPPORT_ROM_SESSION_ASSETS_H
 #define TEST_VM_SUPPORT_ROM_SESSION_ASSETS_H
 #include "lib/types/types_interface.h"
 
 
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 
 static inline void vm_test_default_pc_at_assets(vm_machine_assets *assets,
     lib_u8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES])

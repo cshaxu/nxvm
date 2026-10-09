@@ -1,13 +1,13 @@
 #include "../../../app-nxvm/unit/support/profile.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #ifndef TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 #define TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 #include "lib/types/types_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
-#include "x86/core/device_support_interface.h"
+#include "core/board-base/machine_board_interface.h"
+#include "core/x86/device_support_interface.h"
 
-#include "x86/chips/rtc146818/rtc146818_interface.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/chips/rtc146818/rtc146818_interface.h"
+#include "core/machine/machine_interface.h"
 #include "app-mydeskpro386/profiles/model40_private.h"
 
 static inline void vm_model40_fixture_cmos_seed(

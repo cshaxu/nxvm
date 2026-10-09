@@ -1,10 +1,10 @@
 #include "../../app-nxvm/unit/support/profile.h"
 #include "app-mydeskpro386/profiles/observation_interface.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #ifndef NXVM_TEST_MODEL40_H
 #define NXVM_TEST_MODEL40_H
 
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 
 /* Test views capture the actual Profile owner; they maintain no live state. */
 static inline vm_profile_model40_observation vm_test_model40_observation(

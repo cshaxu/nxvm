@@ -3,13 +3,13 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/d4_memory.c" d4)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/memory_interface.c" core)
 
 file(GLOB_RECURSE generic_machine_sources
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/*.h"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/*.h")
+    "${PROJECT_SOURCE_DIR}/src/core/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/machine/*.h"
+    "${PROJECT_SOURCE_DIR}/src/core/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/machine/*.h")
 foreach(source_file IN LISTS generic_machine_sources)
     file(READ "${source_file}" source_text)
     if(source_text MATCHES "model40_board|model40_fdc_terminal_observation|core_machine_d4_platform[ \t]*\\*")
@@ -42,8 +42,8 @@ foreach(forbidden "core_machine_register_memory_replacement_device("
 endforeach()
 
 
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/parity.c" parity)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/parity.c" parity)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/d4_platform.c" d4_platform)
 if(d4_platform MATCHES "machine_board_state.h|->board")
     message(FATAL_ERROR "D4 platform retains private common-board dependency")
@@ -96,7 +96,7 @@ foreach(operation IN ITEMS
         message(FATAL_ERROR "Board electrical operation retains Core receiver: ${operation}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" executor)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c" executor)
 file(GLOB_RECURSE callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
@@ -115,7 +115,7 @@ foreach(caller IN LISTS callers)
         message(FATAL_ERROR "Electrical caller retains Core receiver: ${caller}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.h" executor_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.h" executor_header)
 if("${executor}${executor_header}${board}" MATCHES "core_machine_reconfigure_memory_core")
     message(FATAL_ERROR "Duplicate RAM reconfiguration path remains")
 endif()

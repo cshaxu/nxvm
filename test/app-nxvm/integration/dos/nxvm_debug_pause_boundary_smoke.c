@@ -1,20 +1,20 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "x86/debug/protocol_interface.h"
+#include "product/debug/protocol_interface.h"
 
 static lib_i32 debug_trace_one(integration_ini_session *session)
 {
     common_machine_debug_lease lease;
-    x86_debug_request request = {
-        .operation = X86_DEBUG_SET_EXECUTION_PLAN,
-        .execution_kind = X86_DEBUG_EXECUTION_TRACE,
+    product_debug_request request = {
+        .operation = PRODUCT_DEBUG_SET_EXECUTION_PLAN,
+        .execution_kind = PRODUCT_DEBUG_EXECUTION_TRACE,
         .instruction_count = 1u
     };
-    x86_debug_response response;
+    product_debug_response response;
     lib_size response_size = 0u;
 
     if (session == LIB_NULL || session->common_machine == LIB_NULL ||
@@ -28,8 +28,8 @@ static lib_i32 debug_trace_one(integration_ini_session *session)
         common_machine_debug_acquire(session->common_machine, &lease) != LIB_STATUS_OK) {
         return 0;
     }
-    request.operation = X86_DEBUG_GET_EXECUTION_RESULT;
-    request.execution_kind = X86_DEBUG_EXECUTION_NONE;
+    request.operation = PRODUCT_DEBUG_GET_EXECUTION_RESULT;
+    request.execution_kind = PRODUCT_DEBUG_EXECUTION_NONE;
     request.instruction_count = 0u;
     response_size = 0u;
     return common_machine_debug_execute_with_lease(session->common_machine, &lease,

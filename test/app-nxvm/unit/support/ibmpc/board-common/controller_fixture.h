@@ -1,9 +1,9 @@
 #ifndef TEST_BOARD_CONTROLLER_FIXTURE_H
 #define TEST_BOARD_CONTROLLER_FIXTURE_H
-#include "ibmpc/board-common/machine_board_interface.h"
-#include "x86/chips/fdc8272/fdc8272_interface.h"
-#include "x86/chips/hdc/hdc_interface.h"
-#include "../../../../../ibmpc/board-common/fdc_values.h"
+#include "core/board-base/machine_board_interface.h"
+#include "core/chips/fdc8272/fdc8272_interface.h"
+#include "core/chips/hdc/hdc_interface.h"
+#include "../../../../../core/board-base/fdc_values.h"
 
 lib_bool test_board_fdc_binding_matches(const core_machine_board_state *board,
     const core_machine *machine, core_machine_media_id media_id, lib_u8 dma_channel);

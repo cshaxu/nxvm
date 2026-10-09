@@ -1,6 +1,6 @@
 #ifndef TEST_BOARD_CMOS_FIXTURE_H
 #define TEST_BOARD_CMOS_FIXTURE_H
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 
 void test_board_cmos_advance(core_machine_board_state *board, lib_u64 ticks);
 lib_u8 test_board_cmos_scan_interrupt(core_machine_board_state *board);

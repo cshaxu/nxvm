@@ -122,9 +122,9 @@ task must not overwrite, delete, or weaken NXVM-owned assertions.
 - Adopt SoftPC S16's ownership boundary without importing its App runtime:
   `ibmpc/product` remains portable, while the NXVM.ini grammar, executable-path
   lookup, four-App machine-factory adaptation, NXVM identity and NXVM-only
-  command extensions move to `src/app-base/product`.
+  command extensions move to `src/core/product`.
 - Move the corresponding direct INI and factory unit tests to
-  `test/app-base/product`.  They are NXVM-family tests, not generic IBM PC Product
+  `test/core/product`.  They are NXVM-family tests, not generic IBM PC Product
   tests.  The individual `app-*` roots retain only their fixed bindings and
   their own product/integration tests.
 - Remove `ibmpc/nxvm`, its CMake target, IBM PC manifest entries and its
@@ -138,6 +138,47 @@ task must not overwrite, delete, or weaken NXVM-owned assertions.
   claim T-level full unit/integration qualification. Rebuild the existing eight
   0546 artifacts when relocation changes their link input; do not create a new
   artifact version.
+
+## S7: Canonical Core Component Rehome
+
+- Move the seven NXVM-only owners and their matching owned tests atomically:
+  `app-base/product -> core/product`, `x86/chips -> core/chips`,
+  `x86/core -> core/x86`, `ibmpc/board-common -> core/board-base`,
+  `ibmpc/board-xt -> core/board-xt`, `ibmpc/board-at -> core/board-at`, and
+  `ibmpc/machine -> core/machine`.
+- Update every include path, CMake target, manifest, boundary gate and
+  component-specific public symbol to the new owner. Do not retain forwarding
+  headers, compatibility targets, aliases or duplicate test paths.
+- Retain `x86/debug`, `x86/xasm32`, and portable `ibmpc/product` in their
+  current components. `core/product` is the NXVM-private outer assembly owner:
+  it may consume portable `ibmpc/product`; lower Core components must continue
+  to depend only inward on x86, Common and Lib capabilities.
+- Split CMake configuration in dependency order where necessary; the directory
+  parent is not permission to hide a reverse dependency or cycle behind an
+  aggregate target.
+- Verify each remaining/new component manifest and boundary gate, the moved
+  tests on x64 and x86, and all eight receiver artifacts when their executable
+  inputs change. T547 remains open for its separately required full
+  qualification.
+
+## S8: Public Product Corpus Cutover
+
+- Treat clean SoftPC `288d93193c5c53c6be9d50db79b18de10ee9be03` as the fixed
+  upstream corpus. Import its `src/{lib,common,product}` and matching
+  `test/{lib,common,product}` without editing the imported implementation.
+- Correct the two upstream stale manifest entries locally: Common source
+  `README.md` and Common test `verify_negative.cmake`. Record those as exact
+  manifest-only repairs, not a divergent implementation.
+- Complete the in-progress S7 Core rehome in the same delivery because its
+  CMake receiver graph is necessary for Product replacement. Retire the old
+  portable `x86/debug`, `x86/xasm32` and `ibmpc/product` routes completely;
+  their canonical owner becomes `src/product`, with matching `test/product`.
+- Adapt only NXVM's Core Product and four App bindings to the imported
+  `app_composed_machine` Product contract. CPU/chip/board/machine semantics,
+  firmware/media/INI contents and MyNES remain outside scope.
+- Run all imported package gates and tests, then complete repository unit and
+  available integration qualification on x64/x86. Build all eight PC App
+  artifacts with Ninja and report desktop/external gates separately.
 
 ## Completion Standard
 

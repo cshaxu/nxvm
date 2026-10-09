@@ -1,9 +1,9 @@
 #ifndef CORE_MACHINE_D4_PLATFORM_INTERFACE_H
 #define CORE_MACHINE_D4_PLATFORM_INTERFACE_H
 
-#include "x86/core/machine_interface.h"
-#include "x86/chips/pit825x/pit825x_interface.h"
-#include "ibmpc/board-common/board_profile_interface.h"
+#include "core/x86/machine_interface.h"
+#include "core/chips/pit825x/pit825x_interface.h"
+#include "core/board-base/board_profile_interface.h"
 #include "app-mydeskpro386/profiles/d4_memory_interface.h"
 
 typedef struct core_machine_d4_platform core_machine_d4_platform;

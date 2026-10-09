@@ -1,17 +1,17 @@
-#include "ibmpc/machine/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "x86/core/device_support_interface.h"
+#include "core/x86/device_support_interface.h"
 
-#include "x86/core/debug_interface.h"
-#include "x86/core/machine_interface.h"
-#include "x86/core/memory_interface.h"
-#include "ibmpc/machine/control.h"
-#include "ibmpc/machine/fault.h"
-#include "ibmpc/machine/lifecycle.h"
-#include "ibmpc/machine/machine_interface.h"
+#include "core/x86/debug_interface.h"
+#include "core/x86/machine_interface.h"
+#include "core/x86/memory_interface.h"
+#include "core/machine/control.h"
+#include "core/machine/fault.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_interface.h"
 #include "../support/rom/session_assets.h"
-#include "ibmpc/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 
 static lib_i32 vm_fault_outcome_prepare(vm_machine *session)
 {

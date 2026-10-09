@@ -67,7 +67,7 @@ allocation/formatting and native write failures remain explicit.
 No other common component edge is permitted.  Application and host code may
 compose only the root `*_interface.h` contracts; implementation headers and
 source files remain component-local. Importing products decide whether to inject
-an adapter or expose a command. Common never depends on the optional x86 corpus.
+an adapter or expose a command. Common never depends on Product.
 The machine debug contract is synchronous to the control-thread caller and
 serviced by the existing paused executor.
 Machine copies opaque pointer-free request/response bytes with explicit lengths,
@@ -96,8 +96,8 @@ Shutdown is permanent and idempotent, unlike the restartable product stop.
 ## Independent verification
 
 Source-only Common needs just src/common and src/lib. The neutral test suites
-need only src/common, src/lib, test/common and test/lib. x86 CLI/protocol and
-assembly tests are owned by test/x86, not the neutral Common suite.
+need only src/common, src/lib, test/common and test/lib. Product CLI/protocol
+and assembly tests are owned by test/product, not the neutral Common suite.
 No importing-product sources, configuration or resources are needed:
 
 ```text

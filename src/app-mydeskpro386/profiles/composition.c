@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
-#include "ibmpc/board-common/machine_board_interface.h"
+#include "core/board-base/machine_board_interface.h"
 #include "app-mydeskpro386/profiles/composition_interface.h"
 
-#include "ibmpc/board-common/vadp_interface.h"
-#include "ibmpc/board-common/floppy_interface.h"
-#include "ibmpc/board-common/at_assembly_interface.h"
+#include "core/board-base/vadp_interface.h"
+#include "core/board-base/floppy_interface.h"
+#include "core/board-base/at_assembly_interface.h"
 
 static lib_status vm_profile_model40_materialize_controllers(core_machine_plan *plan,
     core_machine_fdc_terminal_observation_provider terminal_observation)

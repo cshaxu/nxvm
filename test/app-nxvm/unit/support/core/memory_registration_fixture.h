@@ -1,6 +1,6 @@
 #ifndef TEST_CORE_MEMORY_REGISTRATION_FIXTURE_H
 #define TEST_CORE_MEMORY_REGISTRATION_FIXTURE_H
-#include "x86/core/machine_interface.h"
+#include "core/x86/machine_interface.h"
 
 typedef lib_status (*test_core_memory_registration_configure)(
     core_machine *machine, void *context);

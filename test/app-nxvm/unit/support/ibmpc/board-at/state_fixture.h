@@ -1,6 +1,6 @@
 #ifndef TEST_AT_KBC_STATE_FIXTURE_H
 #define TEST_AT_KBC_STATE_FIXTURE_H
-#include "ibmpc/board-at/kbc_interface.h"
+#include "core/board-at/kbc_interface.h"
 
 lib_bool test_kbc_aux_enabled(const t_kbc *kbc);
 lib_bool test_keyboard_scanning(const t_kbc *kbc);

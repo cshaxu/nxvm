@@ -6,7 +6,7 @@ set(MY5160_COMPOSITION_SOURCES
     src/app-my5160/profiles/machine_plan.c)
 add_library(my5160-profile STATIC ${MY5160_COMPOSITION_SOURCES})
 target_include_directories(my5160-profile PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(my5160-profile PUBLIC ibmpc-machine ibmpc-board-common x86-core)
+target_link_libraries(my5160-profile PUBLIC core-machine core-board-base core-x86)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(my5160-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

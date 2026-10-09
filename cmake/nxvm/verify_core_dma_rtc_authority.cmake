@@ -2,19 +2,19 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_plan.c" core_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board.c" core_board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" core_scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_advance.c" board_advance_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_plan.c" core_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" core_board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" core_scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board_advance_source)
 set(core_source "${core_plan_source}${core_board_source}${core_scheduler_source}${board_advance_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board_interface.h" core_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine.c" machine_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/at_assembly.c" assembly_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/at_assembly.c" assembly_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
     devices_source)
 
 foreach(required IN ITEMS "core_machine_configure_dma"
@@ -74,7 +74,7 @@ foreach(forbidden IN ITEMS "core_machine_configuration_shared_dma_"
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/machine_board_state.h" board_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_state.h" board_header)
 foreach(operation IN ITEMS configure_dma get_fdc_dma_request_binding
     configure_rtc_cmos configure_fdc configure_hdc)
     if(NOT core_board_source MATCHES
@@ -132,10 +132,10 @@ file(GLOB_RECURSE controller_callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-mydeskpro386/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/core/*.c" "${PROJECT_SOURCE_DIR}/test/x86/core/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/*.c" "${PROJECT_SOURCE_DIR}/test/ibmpc/board-common/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-at/*.c" "${PROJECT_SOURCE_DIR}/test/ibmpc/board-at/*.c"
-    "${PROJECT_SOURCE_DIR}/src/ibmpc/board-xt/*.c" "${PROJECT_SOURCE_DIR}/test/ibmpc/board-xt/*.c")
+    "${PROJECT_SOURCE_DIR}/src/core/x86/*.c" "${PROJECT_SOURCE_DIR}/test/core/x86/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-base/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-base/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-at/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c" "${PROJECT_SOURCE_DIR}/test/core/board-xt/*.c")
 foreach(caller IN LISTS controller_callers)
     file(READ "${caller}" caller_source)
     if(caller_source MATCHES

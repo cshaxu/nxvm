@@ -2,18 +2,18 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" machine_lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" machine_scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/board_advance.c" board_advance_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c" machine_lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" machine_scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board_advance_source)
 set(machine_source "${machine_lifecycle_source}${machine_scheduler_source}${board_advance_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/clock.c" clock_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/execution_provider_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/clock.c" clock_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/execution_provider_interface.h"
     provider_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/pc_at_profile_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile_interface.h"
     profile_header)
 
 foreach(required IN ITEMS "dma_clock" "pit_clock" "vadp_clock" "kbc_clock"

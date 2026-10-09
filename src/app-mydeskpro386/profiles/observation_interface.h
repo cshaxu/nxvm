@@ -1,7 +1,7 @@
 #ifndef VM_PROFILE_MODEL40_OBSERVATION_INTERFACE_H
 #define VM_PROFILE_MODEL40_OBSERVATION_INTERFACE_H
 
-#include "ibmpc/machine/construction_interface.h"
+#include "core/machine/construction_interface.h"
 #include "app-mydeskpro386/profiles/d4_platform_interface.h"
 
 typedef struct vm_profile_model40_observation {
