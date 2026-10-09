@@ -2,11 +2,11 @@
 
 ## Current Work
 
-## Active Packet — M5 T547 S5 Shared IBM PC Product Replacement
+## Current Task — M5 T547 (S5 Closed; T Qualification Pending)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T547 S5. |
+| Identifier Mode | Continuation T547; S5 is closed at owner direction. |
 | Admission And Approval | Owner explicitly directed the SoftPC Product replacement and stated its six invariant outcomes on 2026-10-08; standing automatic S admission applies. |
 | Objective | Replace the legacy IBM PC Product path with SoftPC Product as the sole command, Debug and hotkey base, while exposing only App identity, factory, INI adaptation and extra-command registration. |
 | Non-goals | No Lib/Common/x86 change; no second command parser, legacy hotkey path, snapshot command, firmware/media change, user INI edit, desktop workaround or generic command framework. |
@@ -16,7 +16,7 @@
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source policies; shared IBM PC dependency gate and manifest rules. |
 | Verification | Product source comparison, IBM PC source/test manifests and boundary gate, Product unit tests on x64/x86, each of four App x64/x86 Release build/artifact routes, then complete unit/integration qualification required by the T. |
 | Expected Markers | SoftPC canonical Debug/hotkey/help path is sole owner; no legacy command parser or snapshot grammar; `INFO`/`SPEED`/`floppy` are App extensions; shared Product owns the full help layout and inserts App help after `exit` before hotkeys; all named gates/results recorded. |
-| Asset Needs | Existing BYOB assets for ordinary App/integration routes only. Preserve user-owned `assets/nxvm/NXVM.ini`; do not stage or modify it. |
+| Asset Needs | Existing BYOB assets for ordinary App/integration routes only. |
 | Reporting Requirements | Report actual source/test diff, each retained App adapter, build/test results and all unexecuted desktop/external gates. Do not describe a local compile as full qualification. |
 | Stop Conditions | Stop for an incompatible SoftPC semantic, required Lib/Common/x86 change, product-specific command that cannot use the extension seam, protected-source issue, runtime regression or non-deterministic failure. |
 | Exit Criteria | Legacy Product is removed with no live route; SoftPC command/keyboard behavior is canonical; only stated injection boundaries remain; manifests/gates, dual-width Product tests and four App artifact builds pass; full T qualification is recorded before T closure. |
@@ -25,7 +25,7 @@
 
 | Work | Progress |
 | --- | --- |
-| T547 S5 | Active: legacy Product is no longer on a live route; the SoftPC command/keyboard base and narrow App injection seams are under dual-width verification. No closure or artifact qualification is claimed. |
+| T547 S5 | Closed at owner direction. P1 `9131545d8` replaces the live Product with the SoftPC command/keyboard base and App extensions; P2 `09cbfcf93` removes the SoftPC-branded fault message; P3 `3ff1e89f8` moves NXVM identity out of shared Product; P4 `7a2f23574` reduces the shared opening contract to App-provided text. Eight 0546 App artifacts were rebuilt. Product entry/command/manifest focused checks passed on x64; full dual-width Product and complete T547 qualification remain open and are not claimed by this S closure. |
 | T547 S1 | Implementation P complete and pushed as `26c013bba`: current SoftPC differences were reconciled, native-test isolation imported, NXVM's later x86/IBM PC repairs retained, and the stale x86 negative fixture fixed. Its incomplete aggregate/stability evidence is explicitly continued by S2. |
 | T547 S2 | Complete: pushed as `70bb50312`. The aggregate default is reduced from 8 to the evidence-backed safe 4 jobs, without changing individual budgets or assertions. One complete x64/x86 run of each shared package passes: Lib 51/51, Common 20/20, x86 182/182 and IBM PC 182/182; complete repository-only units pass 506/506 per width. See `etc/evidence/t547-s2-shared-test-stability.md`. |
 | T547 S3 | Complete: pushed as `8d7022ea8`. All four shared test roots were audited; current identities are behavior-derived, registrations/manifests match, static identity and focused dual-width checks pass. S4 separately owns full-project qualification. |
@@ -314,7 +314,8 @@ this governance acceptance adds no executable input.
 - Independent chips and sole CPU implementation live in x86/chips; neutral
   execution, memory/ports and guest time live in x86/core.
 - IBMPC board-common/AT/XT own PC wiring; Machine owns one Common driver and
-  pacing/media adaptation; Product owns one INI/command/Debug/UX/entry path.
+  pacing/media adaptation; Product owns command/Debug/UX/entry while each App
+  owns its INI/request-loader policy.
 - Four fixed Apps own immutable compositions and firmware bindings. Model40
   alone owns D4. No App production graph links a peer App.
 - Shared tests follow their owners; actual model assertions stay App-local.

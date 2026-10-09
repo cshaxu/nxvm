@@ -104,7 +104,7 @@ task must not overwrite, delete, or weaken NXVM-owned assertions.
 - Preserve SoftPC as canonical for Debug commands, hotkey names/actions and
   raw-Console help.  Do not retain the old NXVM parser, snapshot grammar or a
   second hotkey implementation.
-- Make the only App seams explicit: immutable banner/version/config filename,
+- Make the only App seams explicit: opening text/config filename,
   fixed machine factory, App-specific INI adaptation, and an optional
   synchronous extra-command registry.  `INFO`/`SPEED` and `floppy` use that
   registry; they must not become Product dispatcher cases.  Product owns the
