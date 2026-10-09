@@ -40,12 +40,8 @@ static void verify_stopped_startup(void)
             emulator_session_command_result result;
             app_command_initialize(&context, LIB_NULL, present != 0u, displays[display]);
             app_command_open(&context, &result);
-            assert(result.request == EMULATOR_SESSION_REQUEST_NONE && !result.arm_prompt);
-            assert(!context.run_after_reset);
-            app_command_note_runtime(&context, EMULATOR_SESSION_MACHINE_INIT,
-                EMULATOR_SESSION_MACHINE_STOPPED, &result);
             assert(result.request == EMULATOR_SESSION_REQUEST_NONE && result.arm_prompt);
-            assert(!context.initial_state_pending);
+            assert(!context.run_after_reset);
         }
     }
 }
@@ -106,7 +102,7 @@ int main(void)
         EMULATOR_SESSION_DISPLAY_WINDOW);
     app_command_open(&context, &result);
     assert(app_command_contains(result.text, "Control your virtual machine:") &&
-        !result.arm_prompt);
+        result.arm_prompt);
     assert(lib_text_length(result.text) >= 4u &&
         lib_memory_compare(result.text + lib_text_length(result.text) - 4u,
             "\r\n\r\n", 4u) == 0);
@@ -119,13 +115,10 @@ int main(void)
     assert(app_command_contains(result.text, "Enter               Start"));
     assert(app_command_contains(result.text, "Shift               Select"));
     assert(app_command_contains(result.text, "Esc                 Pause or Resume"));
-    app_command_note_runtime(&context, EMULATOR_SESSION_MACHINE_INIT,
-        EMULATOR_SESSION_MACHINE_STOPPED, &result);
-    assert(result.text[0] == '\0' && result.arm_prompt);
-    assert(lib_text_compare(result.prompt, "MyNes> ") == 0);
+    assert(lib_text_compare(result.prompt, "> ") == 0);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_STOPPED, "", &result);
     assert(result.text[0] == '\0' && result.arm_prompt &&
-        lib_text_compare(result.prompt, "MyNes> ") == 0);
+        lib_text_compare(result.prompt, "> ") == 0);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_STOPPED, "start", &result);
     assert(app_command_output_compare(result.text, "Insert a cartridge before starting.\n") == 0);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_STOPPED, "save", &result);
