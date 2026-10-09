@@ -81,7 +81,7 @@ lib_i32 main(lib_i32 argc, char **argv)
      * This probe's distinct subject is HDD firmware handoff, so remove that
      * declared removable medium through the production owner and reset before
      * executing.  It is not a second profile or boot-order configuration. */
-    if (vm_machine_set_common_media(session, LIB_NULL,
+    if (vm_machine_set_emulator_media(session, LIB_NULL,
             LIB_STORAGE_MEDIUM_OVERLAY) != LIB_STATUS_OK ||
         vm_machine_reset(session) != LIB_STATUS_OK) goto fail;
     while (executed < VM_HDC_HDD_BOOT_INSTRUCTION_BUDGET) {

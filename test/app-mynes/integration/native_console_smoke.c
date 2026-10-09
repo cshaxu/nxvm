@@ -2,9 +2,9 @@
 #include <windows.h>
 
 #include "product/command.h"
-#include "common/machine/machine_interface.h"
-#include "common/session/session_interface.h"
-#include "common/ui/ui_interface.h"
+#include "emulator/machine/machine_interface.h"
+#include "emulator/session/session_interface.h"
+#include "emulator/ui/ui_interface.h"
 #include "core/driver_interface.h"
 #include "lib/storage/file_interface.h"
 
@@ -15,9 +15,9 @@
 typedef struct native_console_fixture
 {
     core_driver *driver;
-    common_machine *machine;
-    common_session *session;
-    common_ui *ui;
+    emulator_machine *machine;
+    emulator_session *session;
+    emulator_ui *ui;
     app_command_context command;
     HANDLE session_thread;
     HANDLE raw_console_ready;
@@ -68,32 +68,32 @@ static void write_fixture(void)
     assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
 }
 
-static void state_sink(void *opaque, common_machine_state state, lib_u32 generation)
+static void state_sink(void *opaque, emulator_machine_state state, lib_u32 generation)
 {
     native_console_fixture *fixture = opaque;
-    common_session_machine_state session_state = COMMON_SESSION_MACHINE_ERROR;
+    emulator_session_machine_state session_state = EMULATOR_SESSION_MACHINE_ERROR;
 
     switch (state)
     {
-    case COMMON_MACHINE_STOPPED:
-        session_state = COMMON_SESSION_MACHINE_STOPPED;
+    case EMULATOR_MACHINE_STOPPED:
+        session_state = EMULATOR_SESSION_MACHINE_STOPPED;
         break;
-    case COMMON_MACHINE_RUNNING:
-        session_state = COMMON_SESSION_MACHINE_RUNNING;
+    case EMULATOR_MACHINE_RUNNING:
+        session_state = EMULATOR_SESSION_MACHINE_RUNNING;
         break;
-    case COMMON_MACHINE_PAUSED:
-        session_state = COMMON_SESSION_MACHINE_PAUSED;
+    case EMULATOR_MACHINE_PAUSED:
+        session_state = EMULATOR_SESSION_MACHINE_PAUSED;
         break;
-    case COMMON_MACHINE_RESET_COMPLETED:
-        session_state = COMMON_SESSION_MACHINE_RESET_COMPLETED;
+    case EMULATOR_MACHINE_RESET_COMPLETED:
+        session_state = EMULATOR_SESSION_MACHINE_RESET_COMPLETED;
         break;
-    case COMMON_MACHINE_STARTING:
-        session_state = COMMON_SESSION_MACHINE_INIT;
+    case EMULATOR_MACHINE_STARTING:
+        session_state = EMULATOR_SESSION_MACHINE_INIT;
         break;
-    case COMMON_MACHINE_ERROR:
+    case EMULATOR_MACHINE_ERROR:
         break;
     }
-    assert(common_session_enqueue_runtime_completed(fixture->session, session_state,
+    assert(emulator_session_enqueue_runtime_completed(fixture->session, session_state,
                                                     generation));
 }
 
@@ -101,34 +101,34 @@ static void frame_sink(void *opaque, lib_u32 sequence, lib_bool graphics,
                        lib_u32 generation)
 {
     native_console_fixture *fixture = opaque;
-    assert(common_session_enqueue_frame_completed(fixture->session, sequence,
+    assert(emulator_session_enqueue_frame_completed(fixture->session, sequence,
                                                   graphics, generation));
 }
 
 static DWORD WINAPI run_session(void *opaque)
 {
     native_console_fixture *fixture = opaque;
-    fixture->session_result = common_session_run(fixture->session);
+    fixture->session_result = emulator_session_run(fixture->session);
     return 0u;
 }
 
-static lib_bool ui_event_sink(void *opaque, const common_ui_event *event)
+static lib_bool ui_event_sink(void *opaque, const emulator_ui_event *event)
 {
     native_console_fixture *fixture = opaque;
-    lib_bool accepted = common_session_enqueue_ui_event(fixture->session, event);
-    if (event->kind == COMMON_UI_EVENT_BROKER_COMPLETED &&
+    lib_bool accepted = emulator_session_enqueue_ui_event(fixture->session, event);
+    if (event->kind == EMULATOR_UI_EVENT_BROKER_COMPLETED &&
         event->value.broker_vm_console_current)
         assert(SetEvent(fixture->raw_console_ready));
     return accepted;
 }
 
-static void wait_for_machine_state(common_machine *machine,
-                                   common_machine_state expected)
+static void wait_for_machine_state(emulator_machine *machine,
+                                   emulator_machine_state expected)
 {
     DWORD started = GetTickCount();
     do
     {
-        if (common_machine_state_get(machine) == expected)
+        if (emulator_machine_state_get(machine) == expected)
             return;
         Sleep(10u);
     } while (GetTickCount() - started < 10000u);
@@ -137,13 +137,13 @@ static void wait_for_machine_state(common_machine *machine,
 
 static void submit_line(native_console_fixture *fixture, const char *text)
 {
-    common_ui_event event = {0};
+    emulator_ui_event event = {0};
     lib_size length = lib_text_length(text);
     assert(length < sizeof(event.value.line.text));
-    event.kind = COMMON_UI_EVENT_MONITOR_LINE;
+    event.kind = EMULATOR_UI_EVENT_MONITOR_LINE;
     lib_memory_copy(event.value.line.text, text, length);
     event.value.line.length = (lib_u32)length;
-    assert(common_session_enqueue_ui_event(fixture->session, &event));
+    assert(emulator_session_enqueue_ui_event(fixture->session, &event));
 }
 
 static void send_key_state(HANDLE input, WORD key, BOOL pressed)
@@ -162,13 +162,13 @@ static void send_key_state(HANDLE input, WORD key, BOOL pressed)
     assert(written == 1u);
 }
 
-static void pause_with_escape(HANDLE input, common_machine *machine)
+static void pause_with_escape(HANDLE input, emulator_machine *machine)
 {
     DWORD started = GetTickCount();
 
     do
     {
-        if (common_machine_state_get(machine) == COMMON_MACHINE_PAUSED)
+        if (emulator_machine_state_get(machine) == EMULATOR_MACHINE_PAUSED)
             return;
         /* Resume reports RUNNING before the raw Console reader has completed
          * its broker takeover. Retry the physical Esc cycle until that reader
@@ -193,12 +193,12 @@ static lib_bool image_differs(const console_image *left, const console_image *ri
     return lib_memory_compare(left->cells, right->cells, sizeof(left->cells)) != 0 ? LIB_TRUE : LIB_FALSE;
 }
 
-static void wait_for_frame(common_machine *machine, HANDLE output, console_image *image)
+static void wait_for_frame(emulator_machine *machine, HANDLE output, console_image *image)
 {
     DWORD started = GetTickCount();
     do
     {
-        if (common_machine_published_frame_sequence(machine) != 0u)
+        if (emulator_machine_published_frame_sequence(machine) != 0u)
         {
             capture_console(output, image);
             return;
@@ -236,9 +236,9 @@ static void wait_for_changed_image(HANDLE input, HANDLE output,
 int main(void)
 {
     native_console_fixture fixture = {0};
-    common_machine_driver driver;
-    common_session_options session_options;
-    common_ui_options ui_options;
+    emulator_machine_driver driver;
+    emulator_session_options session_options;
+    emulator_ui_options ui_options;
     kvm_hotkey_registry hotkeys;
     console_image idle;
     HANDLE input;
@@ -256,41 +256,41 @@ int main(void)
     assert(core_driver_create(&fixture.driver, &(core_driver_options){
                                                    .text_output = LIB_TRUE}) == LIB_STATUS_OK);
     assert(core_driver_make_driver(fixture.driver, &driver) == LIB_STATUS_OK);
-    assert(common_machine_create(&fixture.machine, &driver) == LIB_STATUS_OK);
-    assert(common_machine_set_removable_media(fixture.machine, FIXTURE_PATH,
+    assert(emulator_machine_create(&fixture.machine, &driver) == LIB_STATUS_OK);
+    assert(emulator_machine_set_removable_media(fixture.machine, FIXTURE_PATH,
                                               LIB_STORAGE_MEDIUM_READONLY));
     app_command_initialize(&fixture.command, fixture.machine, LIB_TRUE,
-                           COMMON_SESSION_DISPLAY_CONSOLE);
-    session_options = (common_session_options){
-        .display = COMMON_SESSION_DISPLAY_CONSOLE,
+                           EMULATOR_SESSION_DISPLAY_CONSOLE);
+    session_options = (emulator_session_options){
+        .display = EMULATOR_SESSION_DISPLAY_CONSOLE,
         .console_control = LIB_TRUE,
         .machine = fixture.machine,
         .command = {.context = &fixture.command, .open = app_command_open, .reject_line = app_command_reject_line, .submit_line = app_command_submit_line, .begin_external = app_command_begin_external, .handle_hotkey = app_command_handle_hotkey, .note_runtime = app_command_note_runtime, .note_broker = app_command_note_broker, .note_monitor_current = app_command_note_monitor_current}};
-    assert(common_session_create(&fixture.session, &session_options) == LIB_STATUS_OK);
-    common_machine_set_state_sink(fixture.machine, state_sink, &fixture);
-    common_machine_set_frame_sink(fixture.machine, frame_sink, &fixture);
-    state_sink(&fixture, COMMON_MACHINE_STOPPED,
-        common_machine_run_generation(fixture.machine));
+    assert(emulator_session_create(&fixture.session, &session_options) == LIB_STATUS_OK);
+    emulator_machine_set_state_sink(fixture.machine, state_sink, &fixture);
+    emulator_machine_set_frame_sink(fixture.machine, frame_sink, &fixture);
+    state_sink(&fixture, EMULATOR_MACHINE_STOPPED,
+        emulator_machine_run_generation(fixture.machine));
     kvm_hotkey_registry_initialize(&hotkeys);
     assert(kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,
                                         "pause-toggle") == LIB_STATUS_OK);
     fixture.raw_console_ready = CreateEventW(NULL, FALSE, FALSE, NULL);
     assert(fixture.raw_console_ready != NULL);
-    ui_options = (common_ui_options){.event_context = &fixture,
+    ui_options = (emulator_ui_options){.event_context = &fixture,
                                      .event_sink = ui_event_sink,
                                      .hotkeys = hotkeys,
                                      .running_window_title = "MyNes native Console smoke (Running)",
                                      .paused_window_title = "MyNes native Console smoke (Paused)",
                                      .graphics_console_status_text = "NES video requires a window."};
-    assert(common_ui_create(&fixture.ui, &ui_options) == LIB_STATUS_OK);
-    assert(common_session_bind_ui(fixture.session, fixture.ui) == LIB_STATUS_OK);
+    assert(emulator_ui_create(&fixture.ui, &ui_options) == LIB_STATUS_OK);
+    assert(emulator_session_bind_ui(fixture.session, fixture.ui) == LIB_STATUS_OK);
     fixture.session_thread = CreateThread(NULL, 0u, run_session, &fixture, 0u, NULL);
     assert(fixture.session_thread != NULL);
 
     Sleep(50u);
-    assert(common_machine_state_get(fixture.machine) == COMMON_MACHINE_STOPPED);
+    assert(emulator_machine_state_get(fixture.machine) == EMULATOR_MACHINE_STOPPED);
     submit_line(&fixture, "start");
-    wait_for_machine_state(fixture.machine, COMMON_MACHINE_RUNNING);
+    wait_for_machine_state(fixture.machine, EMULATOR_MACHINE_RUNNING);
     assert(WaitForSingleObject(fixture.raw_console_ready, 3000u) == WAIT_OBJECT_0);
     /* CONOUT$ names the active screen buffer at open time.  The raw KVM
        binding has just selected its private buffer, so open after the
@@ -310,16 +310,16 @@ int main(void)
     assert(FlushConsoleInputBuffer(input));
     pause_with_escape(input, fixture.machine);
     submit_line(&fixture, "resume");
-    wait_for_machine_state(fixture.machine, COMMON_MACHINE_RUNNING);
+    wait_for_machine_state(fixture.machine, EMULATOR_MACHINE_RUNNING);
     submit_line(&fixture, "exit");
     assert(WaitForSingleObject(fixture.session_thread, 5000u) == WAIT_OBJECT_0);
     assert(fixture.session_result == 1);
     CloseHandle(fixture.session_thread);
-    assert(common_machine_shutdown(fixture.machine) == LIB_STATUS_OK);
-    assert(common_ui_destroy(fixture.ui) == LIB_STATUS_OK);
+    assert(emulator_machine_shutdown(fixture.machine) == LIB_STATUS_OK);
+    assert(emulator_ui_destroy(fixture.ui) == LIB_STATUS_OK);
     CloseHandle(fixture.raw_console_ready);
-    assert(common_session_destroy(fixture.session) == LIB_STATUS_OK);
-    assert(common_machine_destroy(fixture.machine) == LIB_STATUS_OK);
+    assert(emulator_session_destroy(fixture.session) == LIB_STATUS_OK);
+    assert(emulator_machine_destroy(fixture.machine) == LIB_STATUS_OK);
     assert(core_driver_destroy(fixture.driver) == LIB_STATUS_OK);
     CloseHandle(input);
     CloseHandle(output);

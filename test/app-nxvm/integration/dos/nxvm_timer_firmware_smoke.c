@@ -13,12 +13,12 @@
 static lib_i32 vm_timer_debug_execute(integration_ini_session *session,
     const product_debug_request *request, product_debug_response *out_response)
 {
-    common_machine_debug_lease lease;
+    emulator_machine_debug_lease lease;
     lib_size response_size = 0u;
 
-    if (session == LIB_NULL || session->common_machine == LIB_NULL ||
-        common_machine_debug_acquire(session->common_machine, &lease) != LIB_STATUS_OK ||
-        common_machine_debug_execute_with_lease(session->common_machine, &lease,
+    if (session == LIB_NULL || session->emulator_machine == LIB_NULL ||
+        emulator_machine_debug_acquire(session->emulator_machine, &lease) != LIB_STATUS_OK ||
+        emulator_machine_debug_execute_with_lease(session->emulator_machine, &lease,
             request, sizeof(*request), out_response, sizeof(*out_response),
             &response_size) != LIB_STATUS_OK || response_size != sizeof(*out_response))
         return 0;
@@ -37,7 +37,7 @@ static lib_i32 vm_timer_debug_break_real(integration_ini_session *session,
 
     if (!vm_timer_debug_execute(session, &request, &response) ||
         integration_ini_session_resume(session, 2000u) != LIB_STATUS_OK ||
-        !integration_ini_session_wait_for_state(session, COMMON_MACHINE_PAUSED,
+        !integration_ini_session_wait_for_state(session, EMULATOR_MACHINE_PAUSED,
             2000u)) return 0;
     request = (product_debug_request) { .operation = PRODUCT_DEBUG_GET_EXECUTION_RESULT };
     return vm_timer_debug_execute(session, &request, &response) && response.enabled;

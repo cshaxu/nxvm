@@ -6,10 +6,10 @@ static lib_u32 memory_base;
 static lib_u16 code_segment, data_segment;
 static lib_u32 reads, writes;
 static lib_bool short_response;
-static lib_status acquire(common_machine *m, common_machine_debug_lease *lease)
-{ (void)m; *lease = (common_machine_debug_lease){0}; return LIB_STATUS_OK; }
-static void cancel(common_machine *m) { (void)m; }
-static lib_status execute_x86(common_machine *m, const common_machine_debug_lease *lease,
+static lib_status acquire(emulator_machine *m, emulator_machine_debug_lease *lease)
+{ (void)m; *lease = (emulator_machine_debug_lease){0}; return LIB_STATUS_OK; }
+static void cancel(emulator_machine *m) { (void)m; }
+static lib_status execute_x86(emulator_machine *m, const emulator_machine_debug_lease *lease,
     const product_debug_request *request, product_debug_response *result)
 {
     (void)m; (void)lease;
@@ -40,7 +40,7 @@ static lib_status execute_x86(common_machine *m, const common_machine_debug_leas
     }
     return LIB_STATUS_OK;
 }
-static lib_status execute(common_machine *m, const common_machine_debug_lease *lease,
+static lib_status execute(emulator_machine *m, const emulator_machine_debug_lease *lease,
     const void *bytes, lib_size size, void *response, lib_size capacity, lib_size *response_size)
 {
     product_debug_request request;
@@ -52,9 +52,9 @@ static lib_status execute(common_machine *m, const common_machine_debug_lease *l
     *response_size = short_response ? sizeof(result) - 1u : sizeof(result);
     return status;
 }
-#define common_machine_debug_acquire acquire
-#define common_machine_debug_execute_with_lease execute
-#define common_machine_debug_cancel cancel
+#define emulator_machine_debug_acquire acquire
+#define emulator_machine_debug_execute_with_lease execute
+#define emulator_machine_debug_cancel cancel
 #include "product/debug/command.c"
 
 static product_debug *debug;
@@ -74,7 +74,7 @@ int main(void)
         "xf ffffffff 2 11", "xs ffffffff 2 11"
     };
     lib_test_assert(product_debug_create(&debug) == LIB_STATUS_OK);
-    lib_test_assert(product_debug_open(debug, (common_machine *)debug) == LIB_STATUS_OK);
+    lib_test_assert(product_debug_open(debug, (emulator_machine *)debug) == LIB_STATUS_OK);
 
     product_debug_response response;
     short_response = LIB_TRUE;
@@ -82,7 +82,7 @@ int main(void)
         .operation = PRODUCT_DEBUG_GET_CODE_DEFAULT_SIZE }, &response) != 0);
     lib_test_assert(debug->access_status == LIB_STATUS_IO_ERROR && response.value == 0u);
     short_response = LIB_FALSE;
-    lib_test_assert(product_debug_open(debug, (common_machine *)debug) == LIB_STATUS_OK);
+    lib_test_assert(product_debug_open(debug, (emulator_machine *)debug) == LIB_STATUS_OK);
 
     lib_memory_copy(memory, "ABCDE", 5);
     lib_test_assert(lib_text_compare(submit("xm 0 1 4"), "") == 0);

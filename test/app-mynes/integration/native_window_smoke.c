@@ -2,9 +2,9 @@
 #include <windows.h>
 
 #include "product/command.h"
-#include "common/machine/machine_interface.h"
-#include "common/session/session_interface.h"
-#include "common/ui/ui_interface.h"
+#include "emulator/machine/machine_interface.h"
+#include "emulator/session/session_interface.h"
+#include "emulator/ui/ui_interface.h"
 #include "core/driver_interface.h"
 #include "lib/base/sync_interface.h"
 #include "lib/storage/file_interface.h"
@@ -14,9 +14,9 @@
 typedef struct native_window_fixture
 {
     core_driver *driver;
-    common_machine *machine;
-    common_session *session;
-    common_ui *ui;
+    emulator_machine *machine;
+    emulator_session *session;
+    emulator_ui *ui;
     app_command_context command;
     HANDLE session_thread;
     lib_i32 session_result;
@@ -86,39 +86,39 @@ static void write_fixture(void)
     assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
 }
 
-static void state_sink(void *opaque, common_machine_state state, lib_u32 generation)
+static void state_sink(void *opaque, emulator_machine_state state, lib_u32 generation)
 {
     native_window_fixture *fixture = opaque;
-    common_session_machine_state session_state = COMMON_SESSION_MACHINE_ERROR;
+    emulator_session_machine_state session_state = EMULATOR_SESSION_MACHINE_ERROR;
 
     switch (state)
     {
-    case COMMON_MACHINE_STOPPED:
-        session_state = COMMON_SESSION_MACHINE_STOPPED;
+    case EMULATOR_MACHINE_STOPPED:
+        session_state = EMULATOR_SESSION_MACHINE_STOPPED;
         break;
-    case COMMON_MACHINE_RUNNING:
-        session_state = COMMON_SESSION_MACHINE_RUNNING;
+    case EMULATOR_MACHINE_RUNNING:
+        session_state = EMULATOR_SESSION_MACHINE_RUNNING;
         break;
-    case COMMON_MACHINE_PAUSED:
-        session_state = COMMON_SESSION_MACHINE_PAUSED;
+    case EMULATOR_MACHINE_PAUSED:
+        session_state = EMULATOR_SESSION_MACHINE_PAUSED;
         break;
-    case COMMON_MACHINE_RESET_COMPLETED:
+    case EMULATOR_MACHINE_RESET_COMPLETED:
         if (fixture->command.suppress_window_after_reset)
         {
             fixture->command.suppress_window_after_reset = LIB_FALSE;
             fixture->command.report_suppressed_reset = LIB_TRUE;
-            session_state = COMMON_SESSION_MACHINE_PAUSED;
+            session_state = EMULATOR_SESSION_MACHINE_PAUSED;
         }
         else
-            session_state = COMMON_SESSION_MACHINE_RESET_COMPLETED;
+            session_state = EMULATOR_SESSION_MACHINE_RESET_COMPLETED;
         break;
-    case COMMON_MACHINE_STARTING:
-        session_state = COMMON_SESSION_MACHINE_INIT;
+    case EMULATOR_MACHINE_STARTING:
+        session_state = EMULATOR_SESSION_MACHINE_INIT;
         break;
-    case COMMON_MACHINE_ERROR:
+    case EMULATOR_MACHINE_ERROR:
         break;
     }
-    assert(common_session_enqueue_runtime_completed(fixture->session, session_state,
+    assert(emulator_session_enqueue_runtime_completed(fixture->session, session_state,
                                                     generation));
 }
 
@@ -126,13 +126,13 @@ static void frame_sink(void *opaque, lib_u32 sequence, lib_bool graphics,
                        lib_u32 generation)
 {
     native_window_fixture *fixture = opaque;
-    assert(common_session_enqueue_frame_completed(fixture->session, sequence,
+    assert(emulator_session_enqueue_frame_completed(fixture->session, sequence,
                                                   graphics, generation));
 }
 
-static void note_runtime(void *opaque, common_session_machine_state prior,
-                         common_session_machine_state completed,
-                         common_session_command_result *out_result)
+static void note_runtime(void *opaque, emulator_session_machine_state prior,
+                         emulator_session_machine_state completed,
+                         emulator_session_command_result *out_result)
 {
     native_window_fixture *fixture = native_window_runtime_observer;
 
@@ -143,7 +143,7 @@ static void note_runtime(void *opaque, common_session_machine_state prior,
 }
 
 static void note_monitor_current(void *opaque, lib_bool current,
-                                 common_session_command_result *out_result)
+                                 emulator_session_command_result *out_result)
 {
     native_window_fixture *fixture = native_window_runtime_observer;
 
@@ -164,7 +164,7 @@ static void note_monitor_current(void *opaque, lib_bool current,
 static DWORD WINAPI run_session(void *opaque)
 {
     native_window_fixture *fixture = opaque;
-    fixture->session_result = common_session_run(fixture->session);
+    fixture->session_result = emulator_session_run(fixture->session);
     return 0u;
 }
 
@@ -204,7 +204,7 @@ static void assert_no_window(void)
 }
 
 static void expect_runtime(native_window_fixture *fixture,
-                           common_session_machine_state expected)
+                           emulator_session_machine_state expected)
 {
     assert(base_sync_event_reset(fixture->runtime_processed) == LIB_STATUS_OK);
     lib_atomic_i32_store_explicit(&fixture->expected_runtime, (lib_i32)expected,
@@ -212,14 +212,14 @@ static void expect_runtime(native_window_fixture *fixture,
 }
 
 static void wait_for_runtime(native_window_fixture *fixture,
-                             common_session_machine_state expected,
-                             common_machine_state machine_expected)
+                             emulator_session_machine_state expected,
+                             emulator_machine_state machine_expected)
 {
     assert(base_sync_event_wait(fixture->runtime_processed, 3000u) ==
            BASE_SYNC_WAIT_SIGNALED);
     assert(lib_atomic_i32_load_explicit(&fixture->observed_runtime,
                                         LIB_MEMORY_ORDER_SEQ_CST) == (lib_i32)expected);
-    assert(common_machine_state_get(fixture->machine) == machine_expected);
+    assert(emulator_machine_state_get(fixture->machine) == machine_expected);
 }
 
 static COLORREF wait_for_pixel(HWND window, COLORREF previous)
@@ -280,21 +280,21 @@ static void wait_for_window_retirement(HWND window)
 
 static void submit_line(native_window_fixture *fixture, const char *text)
 {
-    common_ui_event event = {0};
+    emulator_ui_event event = {0};
     lib_size length = lib_text_length(text);
     assert(length < sizeof(event.value.line.text));
-    event.kind = COMMON_UI_EVENT_MONITOR_LINE;
+    event.kind = EMULATOR_UI_EVENT_MONITOR_LINE;
     lib_memory_copy(event.value.line.text, text, length);
     event.value.line.length = (lib_u32)length;
-    assert(common_session_enqueue_ui_event(fixture->session, &event));
+    assert(emulator_session_enqueue_ui_event(fixture->session, &event));
 }
 
 int main(void)
 {
     native_window_fixture fixture = {0};
-    common_machine_driver driver;
-    common_session_options session_options;
-    common_ui_options ui_options;
+    emulator_machine_driver driver;
+    emulator_session_options session_options;
+    emulator_ui_options ui_options;
     kvm_hotkey_registry hotkeys;
     HWND window;
     COLORREF idle;
@@ -303,19 +303,19 @@ int main(void)
     write_fixture();
     assert(core_driver_create(&fixture.driver, &(core_driver_options){0}) == LIB_STATUS_OK);
     assert(core_driver_make_driver(fixture.driver, &driver) == LIB_STATUS_OK);
-    assert(common_machine_create(&fixture.machine, &driver) == LIB_STATUS_OK);
-    assert(common_machine_set_removable_media(fixture.machine, FIXTURE_PATH,
+    assert(emulator_machine_create(&fixture.machine, &driver) == LIB_STATUS_OK);
+    assert(emulator_machine_set_removable_media(fixture.machine, FIXTURE_PATH,
                                               LIB_STORAGE_MEDIUM_READONLY));
     app_command_initialize(&fixture.command, fixture.machine, LIB_TRUE,
-                           COMMON_SESSION_DISPLAY_WINDOW);
+                           EMULATOR_SESSION_DISPLAY_WINDOW);
     assert(base_sync_event_create(BASE_SYNC_EVENT_AUTO_RESET,
                                   &fixture.runtime_processed) == LIB_STATUS_OK);
     lib_atomic_i32_initialize(&fixture.expected_runtime,
                               NATIVE_WINDOW_RUNTIME_NONE);
     lib_atomic_i32_initialize(&fixture.observed_runtime,
                               NATIVE_WINDOW_RUNTIME_NONE);
-    session_options = (common_session_options){
-        .display = COMMON_SESSION_DISPLAY_WINDOW,
+    session_options = (emulator_session_options){
+        .display = EMULATOR_SESSION_DISPLAY_WINDOW,
         .console_control = LIB_TRUE,
         .machine = fixture.machine,
         .command = {
@@ -328,80 +328,80 @@ int main(void)
             .note_runtime = note_runtime,
             .note_broker = app_command_note_broker,
             .note_monitor_current = note_monitor_current}};
-    assert(common_session_create(&fixture.session, &session_options) == LIB_STATUS_OK);
-    common_machine_set_state_sink(fixture.machine, state_sink, &fixture);
-    common_machine_set_frame_sink(fixture.machine, frame_sink, &fixture);
-    state_sink(&fixture, COMMON_MACHINE_STOPPED,
-        common_machine_run_generation(fixture.machine));
+    assert(emulator_session_create(&fixture.session, &session_options) == LIB_STATUS_OK);
+    emulator_machine_set_state_sink(fixture.machine, state_sink, &fixture);
+    emulator_machine_set_frame_sink(fixture.machine, frame_sink, &fixture);
+    state_sink(&fixture, EMULATOR_MACHINE_STOPPED,
+        emulator_machine_run_generation(fixture.machine));
     kvm_hotkey_registry_initialize(&hotkeys);
     assert(kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,
                                         "pause-toggle") == LIB_STATUS_OK);
-    ui_options = (common_ui_options){
+    ui_options = (emulator_ui_options){
         .event_context = fixture.session,
-        .event_sink = common_session_enqueue_ui_event,
+        .event_sink = emulator_session_enqueue_ui_event,
         .hotkeys = hotkeys,
         .running_window_title = "MyNes native smoke (Running)",
         .paused_window_title = "MyNes native smoke (Paused)",
         .graphics_console_status_text = "NES video requires a window."};
-    assert(common_ui_create(&fixture.ui, &ui_options) == LIB_STATUS_OK);
-    assert(common_session_bind_ui(fixture.session, fixture.ui) == LIB_STATUS_OK);
+    assert(emulator_ui_create(&fixture.ui, &ui_options) == LIB_STATUS_OK);
+    assert(emulator_session_bind_ui(fixture.session, fixture.ui) == LIB_STATUS_OK);
     native_window_runtime_observer = &fixture;
-    expect_runtime(&fixture, COMMON_SESSION_MACHINE_STOPPED);
+    expect_runtime(&fixture, EMULATOR_SESSION_MACHINE_STOPPED);
     fixture.session_thread = CreateThread(NULL, 0u, run_session, &fixture, 0u, NULL);
     assert(fixture.session_thread != NULL);
 
-    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_STOPPED,
-                     COMMON_MACHINE_STOPPED);
+    wait_for_runtime(&fixture, EMULATOR_SESSION_MACHINE_STOPPED,
+                     EMULATOR_MACHINE_STOPPED);
     assert_no_window();
-    expect_runtime(&fixture, COMMON_SESSION_MACHINE_RUNNING);
+    expect_runtime(&fixture, EMULATOR_SESSION_MACHINE_RUNNING);
     submit_line(&fixture, "start");
-    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_RUNNING,
-                     COMMON_MACHINE_RUNNING);
+    wait_for_runtime(&fixture, EMULATOR_SESSION_MACHINE_RUNNING,
+                     EMULATOR_MACHINE_RUNNING);
     window = wait_for_window();
     assert(window != NULL);
     idle = wait_for_pixel(window, CLR_INVALID);
     assert(idle != CLR_INVALID && idle != RGB(0u, 0u, 0u));
-    expect_runtime(&fixture, COMMON_SESSION_MACHINE_PAUSED);
+    expect_runtime(&fixture, EMULATOR_SESSION_MACHINE_PAUSED);
     send_hotkey(window, VK_ESCAPE);
-    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_PAUSED,
-                     COMMON_MACHINE_PAUSED);
+    wait_for_runtime(&fixture, EMULATOR_SESSION_MACHINE_PAUSED,
+                     EMULATOR_MACHINE_PAUSED);
     wait_for_title(window, "MyNes native smoke (Paused)");
-    expect_runtime(&fixture, COMMON_SESSION_MACHINE_RUNNING);
+    expect_runtime(&fixture, EMULATOR_SESSION_MACHINE_RUNNING);
     send_hotkey(window, VK_ESCAPE);
-    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_RUNNING,
-                     COMMON_MACHINE_RUNNING);
+    wait_for_runtime(&fixture, EMULATOR_SESSION_MACHINE_RUNNING,
+                     EMULATOR_MACHINE_RUNNING);
     wait_for_title(window, "MyNes native smoke (Running)");
-    expect_runtime(&fixture, COMMON_SESSION_MACHINE_PAUSED);
+    expect_runtime(&fixture, EMULATOR_SESSION_MACHINE_PAUSED);
     send_hotkey(window, VK_ESCAPE);
-    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_PAUSED,
-                     COMMON_MACHINE_PAUSED);
+    wait_for_runtime(&fixture, EMULATOR_SESSION_MACHINE_PAUSED,
+                     EMULATOR_MACHINE_PAUSED);
     wait_for_title(window, "MyNes native smoke (Paused)");
-    expect_runtime(&fixture, COMMON_SESSION_MACHINE_RUNNING);
+    expect_runtime(&fixture, EMULATOR_SESSION_MACHINE_RUNNING);
     send_hotkey(window, VK_ESCAPE);
-    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_RUNNING,
-                     COMMON_MACHINE_RUNNING);
+    wait_for_runtime(&fixture, EMULATOR_SESSION_MACHINE_RUNNING,
+                     EMULATOR_MACHINE_RUNNING);
     wait_for_title(window, "MyNes native smoke (Running)");
     assert(PostMessageW(window, WM_KEYDOWN, 'K', 0));
     active = wait_for_pixel(window, idle);
     assert(active != CLR_INVALID && active != idle);
     assert(PostMessageW(window, WM_KEYUP, 'K', 0));
 
-    expect_runtime(&fixture, COMMON_SESSION_MACHINE_PAUSED);
+    expect_runtime(&fixture, EMULATOR_SESSION_MACHINE_PAUSED);
     assert(PostMessageW(window, WM_CLOSE, 0u, 0));
     wait_for_window_retirement(window);
-    wait_for_runtime(&fixture, COMMON_SESSION_MACHINE_PAUSED,
-                     COMMON_MACHINE_PAUSED);
+    wait_for_runtime(&fixture, EMULATOR_SESSION_MACHINE_PAUSED,
+                     EMULATOR_MACHINE_PAUSED);
 
     submit_line(&fixture, "exit");
     assert(WaitForSingleObject(fixture.session_thread, 5000u) == WAIT_OBJECT_0);
     assert(fixture.session_result == 1);
     CloseHandle(fixture.session_thread);
-    assert(common_machine_shutdown(fixture.machine) == LIB_STATUS_OK);
-    assert(common_ui_destroy(fixture.ui) == LIB_STATUS_OK);
+    assert(emulator_machine_shutdown(fixture.machine) == LIB_STATUS_OK);
+    assert(emulator_ui_destroy(fixture.ui) == LIB_STATUS_OK);
     native_window_runtime_observer = NULL;
     base_sync_event_destroy(fixture.runtime_processed);
-    assert(common_session_destroy(fixture.session) == LIB_STATUS_OK);
-    assert(common_machine_destroy(fixture.machine) == LIB_STATUS_OK);
+    assert(emulator_session_destroy(fixture.session) == LIB_STATUS_OK);
+    assert(emulator_machine_destroy(fixture.machine) == LIB_STATUS_OK);
     assert(core_driver_destroy(fixture.driver) == LIB_STATUS_OK);
     return 0;
 }

@@ -1,6 +1,6 @@
 #include "lib/types/test.h"
-#ifndef TEST_IBMPC_COMMON_FDC_FIXTURE_H
-#define TEST_IBMPC_COMMON_FDC_FIXTURE_H
+#ifndef TEST_IBMPC_EMULATOR_FDC_FIXTURE_H
+#define TEST_IBMPC_EMULATOR_FDC_FIXTURE_H
 #include "core/board-base/fdc.h"
 #include "fdc_values.h"
 

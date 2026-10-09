@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "common/machine/machine_interface.h"
+#include "emulator/machine/machine_interface.h"
 #include "product/debug/protocol_interface.h"
 
 #include "core/machine/machine_interface.h"

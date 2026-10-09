@@ -42,19 +42,19 @@ lib_status vm_machine_create(const vm_machine_config *config,
 void vm_machine_destroy(vm_machine *machine)
 { if (machine != LIB_NULL) ++releases; }
 
-lib_status vm_machine_describe_common_driver(vm_machine *machine,
-    common_machine_driver *driver)
+lib_status vm_machine_describe_emulator_driver(vm_machine *machine,
+    emulator_machine_driver *driver)
 {
     (void)machine;
     ++descriptions;
     driver->context = &candidate;
     if (phase == 3u) return LIB_STATUS_INVALID_STATE;
-    *driver = (common_machine_driver){0};
+    *driver = (emulator_machine_driver){0};
     return LIB_STATUS_OK;
 }
 
-lib_status vm_machine_bind_common_machine(vm_machine *machine, common_machine *common)
-{ (void)machine; (void)common; return LIB_STATUS_OK; }
+lib_status vm_machine_bind_emulator_machine(vm_machine *machine, emulator_machine *emulator)
+{ (void)machine; (void)emulator; return LIB_STATUS_OK; }
 
 lib_status vm_machine_get_information(const vm_machine *machine,
     vm_machine_information *information)

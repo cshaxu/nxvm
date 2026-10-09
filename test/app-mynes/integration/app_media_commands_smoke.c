@@ -1,8 +1,8 @@
 #include <assert.h>
 
 #include "product/command.h"
-#include "common/machine/machine_interface.h"
-#include "common/session/control_state.h"
+#include "emulator/machine/machine_interface.h"
+#include "emulator/session/control_state.h"
 #include "core/driver_interface.h"
 #include "lib/storage/file_interface.h"
 
@@ -27,64 +27,64 @@ static void write_fixture(void)
 int main(void)
 {
     core_driver *driver = LIB_NULL;
-    common_machine *machine = LIB_NULL;
-    common_machine_driver common_driver;
+    emulator_machine *machine = LIB_NULL;
+    emulator_machine_driver emulator_driver;
     app_command_context command;
-    common_session_command_result result;
+    emulator_session_command_result result;
 
     write_fixture();
     assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
-    assert(core_driver_make_driver(driver, &common_driver) == LIB_STATUS_OK);
-    assert(common_machine_create(&machine, &common_driver) == LIB_STATUS_OK);
+    assert(core_driver_make_driver(driver, &emulator_driver) == LIB_STATUS_OK);
+    assert(emulator_machine_create(&machine, &emulator_driver) == LIB_STATUS_OK);
     app_command_initialize(&command, machine, LIB_FALSE,
-        COMMON_SESSION_DISPLAY_WINDOW);
+        EMULATOR_SESSION_DISPLAY_WINDOW);
 
     /* Common begins monitoring at INIT and publishes the actual stopped
      * state asynchronously. App opens cartridge management after that
      * authoritative completion, rather than fabricating a lifecycle state. */
     {
-        common_session_state session_state;
-        common_session_state_initialize(&session_state,
-            COMMON_SESSION_DISPLAY_CONSOLE, LIB_TRUE);
-        assert(session_state.monitor_actual == COMMON_SESSION_MACHINE_INIT);
+        emulator_session_state session_state;
+        emulator_session_state_initialize(&session_state,
+            EMULATOR_SESSION_DISPLAY_CONSOLE, LIB_TRUE);
+        assert(session_state.monitor_actual == EMULATOR_SESSION_MACHINE_INIT);
         app_command_note_runtime(&command, session_state.monitor_actual,
-            COMMON_SESSION_MACHINE_STOPPED, &result);
-        session_state.monitor_actual = COMMON_SESSION_MACHINE_STOPPED;
+            EMULATOR_SESSION_MACHINE_STOPPED, &result);
+        session_state.monitor_actual = EMULATOR_SESSION_MACHINE_STOPPED;
         app_command_submit_line(&command, session_state.monitor_actual,
             "start", &result);
         assert(lib_text_compare(result.text,
             "Insert a cartridge before starting.\n\n") == 0);
         app_command_submit_line(&command, session_state.monitor_actual,
             "rom insert mynes-app-media-fixture.nes", &result);
-        assert(result.request == COMMON_SESSION_REQUEST_RESET);
+        assert(result.request == EMULATOR_SESSION_REQUEST_RESET);
         assert(command.cartridge_present);
         app_command_note_runtime(&command, session_state.monitor_actual,
-            COMMON_SESSION_MACHINE_STOPPED, &result);
-        assert(common_machine_set_removable_media(machine, LIB_NULL,
+            EMULATOR_SESSION_MACHINE_STOPPED, &result);
+        assert(emulator_machine_set_removable_media(machine, LIB_NULL,
             LIB_STORAGE_MEDIUM_READONLY));
         app_command_initialize(&command, machine, LIB_FALSE,
-            COMMON_SESSION_DISPLAY_WINDOW);
+            EMULATOR_SESSION_DISPLAY_WINDOW);
     }
 
-    app_command_submit_line(&command, COMMON_SESSION_MACHINE_STOPPED,
+    app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_STOPPED,
         "rom insert mynes-app-media-fixture.nes", &result);
-    assert(result.request == COMMON_SESSION_REQUEST_RESET && !result.arm_prompt &&
+    assert(result.request == EMULATOR_SESSION_REQUEST_RESET && !result.arm_prompt &&
         core_driver_has_cartridge(driver));
-    app_command_note_runtime(&command, COMMON_SESSION_MACHINE_STOPPED,
-        COMMON_SESSION_MACHINE_RESET_COMPLETED, &result);
-    app_command_submit_line(&command, COMMON_SESSION_MACHINE_STOPPED,
+    app_command_note_runtime(&command, EMULATOR_SESSION_MACHINE_STOPPED,
+        EMULATOR_SESSION_MACHINE_RESET_COMPLETED, &result);
+    app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_STOPPED,
         "rom insert mynes-missing-media-fixture.nes", &result);
     assert(lib_text_compare(result.text, "Cartridge insertion failed.\n\n") == 0 &&
-        result.request == COMMON_SESSION_REQUEST_NONE && core_driver_has_cartridge(driver));
-    app_command_submit_line(&command, COMMON_SESSION_MACHINE_RUNNING,
+        result.request == EMULATOR_SESSION_REQUEST_NONE && core_driver_has_cartridge(driver));
+    app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_RUNNING,
         "rom eject", &result);
     assert(lib_text_compare(result.text, "Stop or pause before ejecting the cartridge.\n\n") == 0 &&
         core_driver_has_cartridge(driver));
-    app_command_submit_line(&command, COMMON_SESSION_MACHINE_PAUSED, "rom eject", &result);
-    assert(result.request == COMMON_SESSION_REQUEST_STOP && !result.arm_prompt &&
+    app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_PAUSED, "rom eject", &result);
+    assert(result.request == EMULATOR_SESSION_REQUEST_STOP && !result.arm_prompt &&
         !core_driver_has_cartridge(driver));
-    assert(common_machine_shutdown(machine) == LIB_STATUS_OK);
-    assert(common_machine_destroy(machine) == LIB_STATUS_OK);
+    assert(emulator_machine_shutdown(machine) == LIB_STATUS_OK);
+    assert(emulator_machine_destroy(machine) == LIB_STATUS_OK);
     assert(core_driver_destroy(driver) == LIB_STATUS_OK);
     return 0;
 }

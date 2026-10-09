@@ -4,7 +4,7 @@
 
 #include "lib/storage/file_interface.h"
 
-#include "../support/ibmpc/machine/support/common_machine_fixture.h"
+#include "../support/ibmpc/machine/support/emulator_machine_fixture.h"
 #include "../support/rom/session_assets.h"
 
 static lib_i32 vm_machine_media_create_floppy(const char *path)
@@ -43,8 +43,8 @@ lib_i32 main(void)
 
     if (vm_machine_media_create_floppy(floppy_path) != 0) return 1;
     if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || vm_test_common_machine_bind(session) != LIB_STATUS_OK) {
-        vm_test_common_machine_unbind(session);
+        session == LIB_NULL || vm_test_emulator_machine_bind(session) != LIB_STATUS_OK) {
+        vm_test_emulator_machine_unbind(session);
         vm_machine_destroy(session);
         (void)lib_c_remove(floppy_path);
         return 1;
@@ -55,7 +55,7 @@ lib_i32 main(void)
         vm_machine_get_information(session, &information) != LIB_STATUS_OK ||
         !information.floppy_media_inserted || information.floppy_image_bytes != 1440u * 1024u ||
         !information.fixed_disk_present;
-    vm_test_common_machine_unbind(session);
+    vm_test_emulator_machine_unbind(session);
     vm_machine_destroy(session);
     (void)lib_c_remove(floppy_path);
     if (failed) return 1;

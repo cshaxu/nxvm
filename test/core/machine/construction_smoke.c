@@ -133,8 +133,8 @@ static void check_floppy_lifecycle(void)
     vm_machine_construction construction = prepare(&probe);
     const vm_machine_config runtime = {.create_fdd = 1};
     vm_machine *machine = LIB_NULL;
-    common_machine *executor = LIB_NULL;
-    common_machine_driver driver;
+    emulator_machine *executor = LIB_NULL;
+    emulator_machine_driver driver;
     core_machine_media_info before, after;
     const core_machine_media_provider *media = vm_machine_fdd_media_provider();
     lib_test_assert(lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) == LIB_STATUS_OK);
@@ -142,9 +142,9 @@ static void check_floppy_lifecycle(void)
         lib_test_assert(lib_storage_file_writer_write(writer, zeroes, sizeof(zeroes)) == LIB_STATUS_OK);
     lib_test_assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
     lib_test_assert(vm_machine_create(&runtime, &construction, &machine) == LIB_STATUS_OK);
-    lib_test_assert(vm_machine_describe_common_driver(machine, &driver) == LIB_STATUS_OK);
-    lib_test_assert(common_machine_create(&executor, &driver) == LIB_STATUS_OK);
-    lib_test_assert(vm_machine_bind_common_machine(machine, executor) == LIB_STATUS_OK);
+    lib_test_assert(vm_machine_describe_emulator_driver(machine, &driver) == LIB_STATUS_OK);
+    lib_test_assert(emulator_machine_create(&executor, &driver) == LIB_STATUS_OK);
+    lib_test_assert(vm_machine_bind_emulator_machine(machine, executor) == LIB_STATUS_OK);
     lib_test_assert(media->query(machine->floppy[0u], &before) == CORE_MACHINE_MEDIA_RESULT_OK);
     lib_test_assert(vm_machine_insert_fdd(machine, path) == 0);
     lib_test_assert(media->query(machine->floppy[0u], &after) == CORE_MACHINE_MEDIA_RESULT_OK &&
@@ -161,8 +161,8 @@ static void check_floppy_lifecycle(void)
     lib_test_assert(vm_machine_eject_fdd(machine) == 0);
     lib_test_assert(media->query(machine->floppy[0u], &after) == CORE_MACHINE_MEDIA_RESULT_ABSENT &&
         !after.present && machine->floppy_image_path[0u][0] == '\0');
-    lib_test_assert(common_machine_destroy(executor) == LIB_STATUS_OK);
-    lib_test_assert(vm_machine_bind_common_machine(machine, LIB_NULL) == LIB_STATUS_OK);
+    lib_test_assert(emulator_machine_destroy(executor) == LIB_STATUS_OK);
+    lib_test_assert(vm_machine_bind_emulator_machine(machine, LIB_NULL) == LIB_STATUS_OK);
     vm_machine_destroy(machine);
     lib_test_assert(probe.released && lib_c_remove(path) == 0);
 }
@@ -176,7 +176,7 @@ static void check_transaction(lib_status configure_status,
     vm_machine_construction construction = prepare(&probe);
     const vm_machine_config runtime = {0};
     vm_machine *machine = LIB_NULL;
-    common_machine_driver driver;
+    emulator_machine_driver driver;
     vm_machine_information information;
     lib_status status = vm_machine_create(&runtime, &construction, &machine);
 
@@ -196,7 +196,7 @@ static void check_transaction(lib_status configure_status,
     construction.floppy_slot_count = 0u;
     lib_test_assert(vm_machine_get_information(machine, &information) == LIB_STATUS_OK);
     lib_test_assert(information.memory_bytes == CORE_MACHINE_MINIMUM_MEMORY_BYTES);
-    lib_test_assert(vm_machine_describe_common_driver(machine, &driver) == LIB_STATUS_OK);
+    lib_test_assert(vm_machine_describe_emulator_driver(machine, &driver) == LIB_STATUS_OK);
     lib_test_assert(driver.context == machine && driver.reset(driver.context));
     lib_test_assert(probe.configure_count == 1u && probe.firmware_count == 1u);
     lib_test_assert(probe.reset_count == 2u && probe.reset_notice_count == 2u);

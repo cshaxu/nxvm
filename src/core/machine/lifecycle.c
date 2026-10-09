@@ -93,7 +93,7 @@ static void vm_machine_driver_set_heartbeat(void *context, lib_bool enabled)
 { (void)context; (void)enabled; }
 
 static void vm_machine_driver_set_executor_callback(void *context,
-    common_machine_executor_callback callback, void *callback_context)
+    emulator_machine_executor_callback callback, void *callback_context)
 {
     vm_machine *machine = (vm_machine *)context;
 
@@ -104,15 +104,15 @@ static void vm_machine_driver_set_executor_callback(void *context,
 
 static void vm_machine_driver_deliver_input(void *context,
     const kvm_input_event *event)
-{ (void)vm_machine_deliver_common_input((vm_machine *)context, event); }
+{ (void)vm_machine_deliver_emulator_input((vm_machine *)context, event); }
 
-static lib_status vm_machine_driver_copy_frame(void *context, common_machine_frame *frame)
+static lib_status vm_machine_driver_copy_frame(void *context, emulator_machine_frame *frame)
 {
     if (context == LIB_NULL || frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     /* Common clears staging validity before this call.  A Core display that
      * has not yet published is an ordinary no-frame result, not a machine
      * failure. */
-    return vm_machine_copy_common_frame((vm_machine *)context, frame);
+    return vm_machine_copy_emulator_frame((vm_machine *)context, frame);
 }
 
 static lib_bool vm_machine_driver_set_removable_media(void *context,
@@ -121,7 +121,7 @@ static lib_bool vm_machine_driver_set_removable_media(void *context,
     vm_machine *machine = (vm_machine *)context;
 
     if (machine == LIB_NULL) return LIB_FALSE;
-    return vm_machine_set_common_media(machine, path, mode) == LIB_STATUS_OK;
+    return vm_machine_set_emulator_media(machine, path, mode) == LIB_STATUS_OK;
 }
 
 static lib_bool vm_machine_driver_take_debug_stop(void *context)
@@ -163,18 +163,18 @@ lib_status vm_machine_reset(vm_machine *machine) {
      * rendezvous with in that state, so reset the VM-owned Core directly.
      * Once a Common run exists, lifecycle remains exclusively Common-owned. */
     if (machine != LIB_NULL && (machine->executor == LIB_NULL ||
-        common_machine_state_get(machine->executor) == COMMON_MACHINE_STOPPED)) {
+        emulator_machine_state_get(machine->executor) == EMULATOR_MACHINE_STOPPED)) {
         status = vm_machine_control_reset(&machine->control);
         return vm_machine_finish_reset(machine, status);
     }
-    return machine != LIB_NULL && common_machine_reset(machine->executor) ?
+    return machine != LIB_NULL && emulator_machine_reset(machine->executor) ?
         LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;
 }
 
 void vm_machine_stop(vm_machine *machine) {
     if (machine == LIB_NULL) return;
     if (machine->executor != LIB_NULL) {
-        (void)common_machine_stop(machine->executor);
+        (void)emulator_machine_stop(machine->executor);
         return;
     }
     /* An uncomposed machine has no Common lifecycle owner yet. This is the
@@ -186,16 +186,16 @@ void vm_machine_stop(vm_machine *machine) {
 lib_status vm_machine_request_pause(vm_machine *machine)
 {
     return machine != LIB_NULL && machine->executor != LIB_NULL &&
-        common_machine_pause(machine->executor) ?
+        emulator_machine_pause(machine->executor) ?
         LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;
 }
 
-lib_status vm_machine_describe_common_driver(vm_machine *machine,
-    common_machine_driver *out_driver)
+lib_status vm_machine_describe_emulator_driver(vm_machine *machine,
+    emulator_machine_driver *out_driver)
 {
     if (machine == LIB_NULL || out_driver == LIB_NULL || !machine->active)
         return LIB_STATUS_INVALID_ARGUMENT;
-    *out_driver = (common_machine_driver) {
+    *out_driver = (emulator_machine_driver) {
         .context = machine,
         .reset = vm_machine_driver_reset,
         .run = vm_machine_driver_run,
@@ -213,20 +213,20 @@ lib_status vm_machine_describe_common_driver(vm_machine *machine,
     return LIB_STATUS_OK;
 }
 
-lib_status vm_machine_bind_common_machine(vm_machine *machine,
-    common_machine *common_machine)
+lib_status vm_machine_bind_emulator_machine(vm_machine *machine,
+    emulator_machine *emulator_machine)
 {
     if (machine == LIB_NULL || !machine->active ||
-        (machine->executor != LIB_NULL && common_machine != LIB_NULL))
+        (machine->executor != LIB_NULL && emulator_machine != LIB_NULL))
         return LIB_STATUS_INVALID_STATE;
-    machine->executor = common_machine;
+    machine->executor = emulator_machine;
     return LIB_STATUS_OK;
 }
 
 lib_status vm_machine_resume(vm_machine *machine) {
     return machine != LIB_NULL && machine->executor != LIB_NULL &&
-        (common_machine_state_get(machine->executor) == COMMON_MACHINE_STOPPED ?
-            common_machine_start(machine->executor) : common_machine_resume(machine->executor)) ?
+        (emulator_machine_state_get(machine->executor) == EMULATOR_MACHINE_STOPPED ?
+            emulator_machine_start(machine->executor) : emulator_machine_resume(machine->executor)) ?
         LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;
 }
 

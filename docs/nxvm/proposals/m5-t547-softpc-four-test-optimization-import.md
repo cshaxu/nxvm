@@ -190,3 +190,22 @@ package manifests match their own trees, each package test registration remains
 independent, and dual-width package verification passes. Any unrelated native
 desktop failure is reported as such; it is not concealed through retries or
 test removal.
+
+## S9: Canonical Emulator Corpus Import
+
+- Treat clean SoftPC `e6001412` as the fixed upstream corpus. Import its
+  `src/{lib,emulator,product}` and matching `test/{lib,emulator,product}`
+  without editing imported implementation or tests.
+- Retire the former shared `src/common` and `test/common` component paths.
+  Migrate every NXVM-only receiver, include, symbol prefix, CMake target,
+  manifest, static gate and test registration from the retired Common public
+  surface to the canonical Emulator public surface. Do not retain a forwarding
+  header, compatibility target, symbol alias or duplicate route.
+- The migration is nomenclature/API reception only. It must not modify
+  emulator behavior, Product behavior, CPU/chip/board/machine semantics,
+  firmware, media, INI content or MyNES.
+- Prove exact upstream parity for the six imported roots after reception;
+  separately prove NXVM receivers are free of old `common` public paths and
+  names. Run the package, complete repository unit and available integration
+  suites on x64/x86, then rebuild and verify all eight PC artifacts with Ninja.
+- Keep T547 open after the pushed S9 delivery for the owner's validation.

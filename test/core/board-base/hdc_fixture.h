@@ -1,6 +1,6 @@
 #include "lib/types/test.h"
-#ifndef TEST_IBMPC_COMMON_HDC_FIXTURE_H
-#define TEST_IBMPC_COMMON_HDC_FIXTURE_H
+#ifndef TEST_IBMPC_EMULATOR_HDC_FIXTURE_H
+#define TEST_IBMPC_EMULATOR_HDC_FIXTURE_H
 #include "core/board-base/hdc.h"
 
 static inline void test_hdc_port_write(core_machine *machine,

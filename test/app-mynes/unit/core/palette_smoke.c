@@ -5,7 +5,7 @@
 /* Code-owned frames only. The reference retains raster-order RGB deduplication,
  * independently of the production sample-index shortcut. */
 static void reference_frame(const core_machine *machine, const lib_u32 *rgb,
-    common_machine_frame *frame)
+    emulator_machine_frame *frame)
 {
     lib_u32 count = 0u;
     lib_bool cube = LIB_FALSE;
@@ -37,8 +37,8 @@ static void reference_frame(const core_machine *machine, const lib_u32 *rgb,
 int main(void)
 {
     core_machine *machine = lib_allocate_zero(1u, sizeof(*machine));
-    common_machine_frame *actual = lib_allocate_zero(1u, sizeof(*actual));
-    common_machine_frame *expected = lib_allocate_zero(1u, sizeof(*expected));
+    emulator_machine_frame *actual = lib_allocate_zero(1u, sizeof(*actual));
+    emulator_machine_frame *expected = lib_allocate_zero(1u, sizeof(*expected));
     core_driver driver = { .machine = machine };
     lib_u32 rgb[512];
     lib_u32 random = 1u;

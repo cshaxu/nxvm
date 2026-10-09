@@ -1,5 +1,5 @@
-#ifndef TEST_IBMPC_COMMON_KBC_IRQ_FIXTURE_H
-#define TEST_IBMPC_COMMON_KBC_IRQ_FIXTURE_H
+#ifndef TEST_IBMPC_EMULATOR_KBC_IRQ_FIXTURE_H
+#define TEST_IBMPC_EMULATOR_KBC_IRQ_FIXTURE_H
 #include "core/board-base/pic_bus_interface.h"
 
 typedef struct test_kbc_irq_wiring {

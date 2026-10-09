@@ -11,12 +11,12 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 get_filename_component(CORE_SOURCE_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
-get_filename_component(CORE_COMMON_ROOT "${CORE_SOURCE_ROOT}/common" ABSOLUTE)
+get_filename_component(CORE_EMULATOR_ROOT "${CORE_SOURCE_ROOT}/emulator" ABSOLUTE)
 if(NOT TARGET types)
     add_subdirectory("${CORE_SOURCE_ROOT}/lib" "${CMAKE_CURRENT_BINARY_DIR}/lib")
 endif()
-if(NOT TARGET common-machine)
-    add_subdirectory("${CORE_COMMON_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/common")
+if(NOT TARGET emulator-machine)
+    add_subdirectory("${CORE_EMULATOR_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/emulator")
 endif()
 
 function(core_add_chip target source)
@@ -118,7 +118,7 @@ add_library(core-machine STATIC machine/preparation.c machine/debug.c
     machine/fault.c machine/runner.c machine/waiting.c machine/machine_devices.c
     machine/machine_info.c)
 target_include_directories(core-machine PUBLIC ${CORE_SOURCE_ROOT})
-target_link_libraries(core-machine PUBLIC types base storage common-machine
+target_link_libraries(core-machine PUBLIC types base storage emulator-machine
     core-machine-media core-machine-conversion core-board-base core-x86)
 
 add_custom_target(core-verify

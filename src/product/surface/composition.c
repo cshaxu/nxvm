@@ -4,9 +4,9 @@
 
 struct product_surface {
     app_composed_machine machine;
-    common_machine *common_machine;
-    common_session *session;
-    common_ui *ui;
+    emulator_machine *emulator_machine;
+    emulator_session *session;
+    emulator_ui *ui;
 };
 
 static lib_status product_surface_status_from_lib(lib_status status)
@@ -19,29 +19,29 @@ static lib_status product_surface_status_from_lib(lib_status status)
     return LIB_STATUS_INTERNAL_ERROR;
 }
 
-static common_session_machine_state product_surface_machine_state(common_machine_state state)
+static emulator_session_machine_state product_surface_machine_state(emulator_machine_state state)
 {
     switch (state) {
-    case COMMON_MACHINE_RUNNING: return COMMON_SESSION_MACHINE_RUNNING;
-    case COMMON_MACHINE_PAUSED: return COMMON_SESSION_MACHINE_PAUSED;
-    case COMMON_MACHINE_RESET_COMPLETED:
-        return COMMON_SESSION_MACHINE_RESET_COMPLETED;
-    case COMMON_MACHINE_ERROR: return COMMON_SESSION_MACHINE_ERROR;
-    default: return COMMON_SESSION_MACHINE_STOPPED;
+    case EMULATOR_MACHINE_RUNNING: return EMULATOR_SESSION_MACHINE_RUNNING;
+    case EMULATOR_MACHINE_PAUSED: return EMULATOR_SESSION_MACHINE_PAUSED;
+    case EMULATOR_MACHINE_RESET_COMPLETED:
+        return EMULATOR_SESSION_MACHINE_RESET_COMPLETED;
+    case EMULATOR_MACHINE_ERROR: return EMULATOR_SESSION_MACHINE_ERROR;
+    default: return EMULATOR_SESSION_MACHINE_STOPPED;
     }
 }
 
 static void product_surface_machine_state_completed(void *context,
-    common_machine_state state, lib_u32 run_generation)
+    emulator_machine_state state, lib_u32 run_generation)
 {
-    (void)common_session_enqueue_runtime_completed((common_session *)context,
+    (void)emulator_session_enqueue_runtime_completed((emulator_session *)context,
         product_surface_machine_state(state), run_generation);
 }
 
 static void product_surface_machine_frame_published(void *context, lib_u32 sequence,
     lib_bool graphics, lib_u32 run_generation)
 {
-    (void)common_session_enqueue_frame_completed((common_session *)context,
+    (void)emulator_session_enqueue_frame_completed((emulator_session *)context,
         sequence, graphics, run_generation);
 }
 
@@ -67,99 +67,99 @@ lib_status product_surface_destroy(product_surface *app)
     lib_status shutdown_status;
 
     if (app == LIB_NULL) return LIB_STATUS_OK;
-    shutdown_status = common_machine_shutdown(app->common_machine);
+    shutdown_status = emulator_machine_shutdown(app->emulator_machine);
     if (shutdown_status != LIB_STATUS_OK)
         return product_surface_status_from_lib(shutdown_status);
-    shutdown_status = common_ui_destroy(app->ui);
+    shutdown_status = emulator_ui_destroy(app->ui);
     if (shutdown_status != LIB_STATUS_OK)
         return product_surface_status_from_lib(shutdown_status);
     app->ui = LIB_NULL;
-    common_session_destroy(app->session);
+    emulator_session_destroy(app->session);
     app->session = LIB_NULL;
-    shutdown_status = common_machine_destroy(app->common_machine);
+    shutdown_status = emulator_machine_destroy(app->emulator_machine);
     if (shutdown_status != LIB_STATUS_OK)
         return product_surface_status_from_lib(shutdown_status);
-    app->common_machine = LIB_NULL;
+    app->emulator_machine = LIB_NULL;
     (void)app->machine.bind(app->machine.machine, LIB_NULL);
     app->machine.destroy(app->machine.machine);
     lib_release(app);
     return LIB_STATUS_OK;
 }
 
-common_session *product_surface_session(const product_surface *app)
+emulator_session *product_surface_session(const product_surface *app)
 { return app == LIB_NULL ? LIB_NULL : app->session; }
 
-common_machine *product_surface_common_machine(const product_surface *app)
-{ return app == LIB_NULL ? LIB_NULL : app->common_machine; }
+emulator_machine *product_surface_emulator_machine(const product_surface *app)
+{ return app == LIB_NULL ? LIB_NULL : app->emulator_machine; }
 
-common_ui *product_surface_ui(const product_surface *app)
+emulator_ui *product_surface_ui(const product_surface *app)
 { return app == LIB_NULL ? LIB_NULL : app->ui; }
 
 lib_status product_surface_compose_machine(product_surface *app)
 {
-    common_machine_driver driver;
+    emulator_machine_driver driver;
     void *machine = LIB_NULL;
-    common_machine *common_machine = LIB_NULL;
+    emulator_machine *emulator_machine = LIB_NULL;
     lib_status status;
 
-    if (app == LIB_NULL || app->common_machine != LIB_NULL)
+    if (app == LIB_NULL || app->emulator_machine != LIB_NULL)
         return LIB_STATUS_INVALID_STATE;
     machine = app->machine.machine;
     driver = app->machine.driver;
-    status = product_surface_status_from_lib(common_machine_create(&common_machine,
+    status = product_surface_status_from_lib(emulator_machine_create(&emulator_machine,
         &driver));
     if (status == LIB_STATUS_OK) {
-        status = app->machine.bind(machine, common_machine);
+        status = app->machine.bind(machine, emulator_machine);
     }
     if (status != LIB_STATUS_OK) {
         (void)app->machine.bind(machine, LIB_NULL);
-        lib_status cleanup_status = common_machine_destroy(common_machine);
+        lib_status cleanup_status = emulator_machine_destroy(emulator_machine);
 
         if (cleanup_status != LIB_STATUS_OK) {
-            app->common_machine = common_machine;
+            app->emulator_machine = emulator_machine;
             return product_surface_status_from_lib(cleanup_status);
         }
         return status;
     }
-    app->common_machine = common_machine;
+    app->emulator_machine = emulator_machine;
     return LIB_STATUS_OK;
 }
 
 lib_status product_surface_compose_control(product_surface *app,
-    const common_session_options *options)
+    const emulator_session_options *options)
 {
-    common_session_options resolved;
-    common_session *session = LIB_NULL;
+    emulator_session_options resolved;
+    emulator_session *session = LIB_NULL;
     lib_status status;
 
     if (app == LIB_NULL || options == LIB_NULL ||
-        app->common_machine == LIB_NULL ||
+        app->emulator_machine == LIB_NULL ||
         app->session != LIB_NULL) return LIB_STATUS_INVALID_STATE;
     resolved = *options;
-    resolved.machine = app->common_machine;
-    status = common_session_create(&session, &resolved);
+    resolved.machine = app->emulator_machine;
+    status = emulator_session_create(&session, &resolved);
     if (status != LIB_STATUS_OK) return product_surface_status_from_lib(status);
-    common_machine_set_state_sink(resolved.machine, product_surface_machine_state_completed,
+    emulator_machine_set_state_sink(resolved.machine, product_surface_machine_state_completed,
         session);
-    common_machine_set_frame_sink(resolved.machine, product_surface_machine_frame_published,
+    emulator_machine_set_frame_sink(resolved.machine, product_surface_machine_frame_published,
         session);
     app->session = session;
     return LIB_STATUS_OK;
 }
 
-lib_status product_surface_compose_ui(product_surface *app, const common_ui_options *options)
+lib_status product_surface_compose_ui(product_surface *app, const emulator_ui_options *options)
 {
-    common_ui *ui = LIB_NULL;
+    emulator_ui *ui = LIB_NULL;
     lib_status status;
 
     if (app == LIB_NULL || options == LIB_NULL || app->ui != LIB_NULL)
         return LIB_STATUS_INVALID_STATE;
-    status = common_ui_create(&ui, options);
+    status = emulator_ui_create(&ui, options);
     if (status != LIB_STATUS_OK) return product_surface_status_from_lib(status);
     app->ui = ui;
-    status = common_session_bind_ui(app->session, ui);
+    status = emulator_session_bind_ui(app->session, ui);
     if (status != LIB_STATUS_OK) {
-        lib_status cleanup_status = common_ui_destroy(ui);
+        lib_status cleanup_status = emulator_ui_destroy(ui);
 
         if (cleanup_status != LIB_STATUS_OK)
             return product_surface_status_from_lib(cleanup_status);

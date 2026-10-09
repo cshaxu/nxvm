@@ -3,7 +3,7 @@
 | Directory | Owner and purpose |
 | --- | --- |
 | [lib](lib/README.md) | Independently reusable Lib tests and fixtures. |
-| [common](common/README.md) | Independently reusable neutral Common tests and fake machine. |
+| [emulator](emulator/README.md) | Independently reusable neutral Emulator tests and fake machine. |
 | [x86](x86/README.md) | Independently reusable x86 debugger and assembler tests. |
 | app | Product configuration, command parsing and key bindings. |
 | core | Concrete machine, compatibility host, devices, media and ABI. |
@@ -20,7 +20,7 @@ They use non-mutating media modes; tests must not overwrite supplied media/INI.
 `integration/machine_fixture.c/h` assembles one SoftPC driver and Common machine
 for three worker/boot tests. It owns only these two test objects; callers own
 the original machine. Tests call Common directly after assembly. It is not the
-neutral fake machine from test/common and is not part of any reusable corpus.
+neutral fake machine from test/emulator and is not part of any reusable corpus.
 `integration/snapshot_cross_process.cmake` orchestrates disposable save/load
 processes using the existing snapshot transaction test.
 

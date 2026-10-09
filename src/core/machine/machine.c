@@ -57,7 +57,7 @@ static lib_status vm_machine_deliver_mouse(vm_machine *session,
     return LIB_STATUS_OK;
 }
 
-lib_status vm_machine_deliver_common_input(vm_machine *session,
+lib_status vm_machine_deliver_emulator_input(vm_machine *session,
     const kvm_input_event *event)
 {
     if (event == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -68,7 +68,7 @@ lib_status vm_machine_deliver_common_input(vm_machine *session,
     return LIB_STATUS_UNSUPPORTED;
 }
 
-lib_status vm_machine_copy_common_frame(vm_machine *machine, common_machine_frame *frame)
+lib_status vm_machine_copy_emulator_frame(vm_machine *machine, emulator_machine_frame *frame)
 {
     lib_status status;
 
@@ -76,7 +76,7 @@ lib_status vm_machine_copy_common_frame(vm_machine *machine, common_machine_fram
     status = vm_machine_publish_display(machine, LIB_FALSE);
     if (status != LIB_STATUS_OK) return status;
     if (!machine->latest_frame_valid) return LIB_STATUS_OK;
-    return common_machine_frame_copy(frame, &machine->latest_frame) ?
+    return emulator_machine_frame_copy(frame, &machine->latest_frame) ?
         LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
@@ -192,7 +192,7 @@ static lib_status vm_machine_remove_fdd_direct(vm_machine *session)
     return status;
 }
 
-lib_status vm_machine_set_common_media(vm_machine *session, const char *path,
+lib_status vm_machine_set_emulator_media(vm_machine *session, const char *path,
     lib_storage_medium_mode mode)
 {
     if (session == LIB_NULL || !session->active) return LIB_STATUS_INVALID_STATE;
@@ -203,12 +203,12 @@ lib_status vm_machine_set_common_media(vm_machine *session, const char *path,
 
 lib_i32 vm_machine_insert_fdd(vm_machine *session, const char *path)
 { return session != LIB_NULL && session->executor != LIB_NULL &&
-    common_machine_set_removable_media(session->executor, path,
+    emulator_machine_set_removable_media(session->executor, path,
         LIB_STORAGE_MEDIUM_OVERLAY) ? 0 : -1; }
 
 lib_i32 vm_machine_eject_fdd(vm_machine *session)
 { return session != LIB_NULL && session->executor != LIB_NULL &&
-    common_machine_set_removable_media(session->executor, LIB_NULL,
+    emulator_machine_set_removable_media(session->executor, LIB_NULL,
         LIB_STORAGE_MEDIUM_OVERLAY) ? 0 : -1; }
 static lib_status vm_machine_insert_hdd_at_startup(vm_machine *session,
     const char *path, lib_storage_medium_mode mode)
@@ -374,8 +374,8 @@ lib_status vm_machine_reconfigure_memory(vm_machine *session,
     lib_status status;
 
     if (session == LIB_NULL || !session->construction.memory_reconfigurable ||
-        (session->executor != LIB_NULL && common_machine_state_get(
-            session->executor) != COMMON_MACHINE_STOPPED)) {
+        (session->executor != LIB_NULL && emulator_machine_state_get(
+            session->executor) != EMULATOR_MACHINE_STOPPED)) {
         return LIB_STATUS_INVALID_STATE;
     }
     status = core_machine_reconfigure_memory(session->core_machine, memory_bytes);

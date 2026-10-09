@@ -7,10 +7,10 @@ static void *allocate(lib_size count, lib_size size)
 { ++allocations; return lib_allocate_zero(count, size); }
 static void *grow(void *memory, lib_size bytes)
 { return fail_allocation ? LIB_NULL : lib_reallocate(memory, bytes); }
-static void cancel(common_machine *machine) { (void)machine; }
+static void cancel(emulator_machine *machine) { (void)machine; }
 #define lib_reallocate grow
 #define lib_allocate_zero allocate
-#define common_machine_debug_cancel cancel
+#define emulator_machine_debug_cancel cancel
 #include "product/debug/command.c"
 
 int main(void)
@@ -18,7 +18,7 @@ int main(void)
     product_debug *command;
     product_debug_result result;
     lib_test_assert(product_debug_create(&command) == LIB_STATUS_OK);
-    lib_test_assert(product_debug_open(command, (common_machine *)command) == LIB_STATUS_OK);
+    lib_test_assert(product_debug_open(command, (emulator_machine *)command) == LIB_STATUS_OK);
     lib_test_assert(allocations == 1u); /* Only the debugger itself, not an argument table. */
     /* These original CLI operations do not access a machine at all. */
     fail_allocation = LIB_TRUE;
@@ -55,7 +55,7 @@ int main(void)
     product_debug_close(command);
     product_debug_close(command);
     lib_test_assert(product_debug_submit_line(command, "?", &result) == LIB_STATUS_INVALID_ARGUMENT);
-    lib_test_assert(product_debug_open(command, (common_machine *)command) == LIB_STATUS_OK);
+    lib_test_assert(product_debug_open(command, (emulator_machine *)command) == LIB_STATUS_OK);
     lib_test_assert(allocations == 1u && command->argument_count == 0u);
     for (lib_u32 i = 0u; i < DEBUG_MAXNARG; ++i) lib_test_assert(command->arguments[i] == LIB_NULL);
     lib_test_assert(product_debug_submit_line(command, "?", &result) == LIB_STATUS_OK);

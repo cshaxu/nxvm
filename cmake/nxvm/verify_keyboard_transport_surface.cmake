@@ -34,12 +34,12 @@ foreach(source_text IN ITEMS "${input_header}" "${input_source}" "${input_smoke_
 endforeach()
 
 string(FIND "${input_source}" "KVM_EVENT_KEY" keypress_surface_position)
-string(FIND "${input_source}" "vm_machine_deliver_common_input"
+string(FIND "${input_source}" "vm_machine_deliver_emulator_input"
     keypress_operation_position)
 if(keypress_surface_position EQUAL -1 OR keypress_operation_position EQUAL -1 OR
-   NOT driver_source MATCHES "vm_machine_deliver_common_input" OR
-   NOT fixture_source MATCHES "common_machine_enqueue_input" OR
-   NOT fixture_source MATCHES "vm_machine_deliver_common_input" OR
+   NOT driver_source MATCHES "vm_machine_deliver_emulator_input" OR
+   NOT fixture_source MATCHES "emulator_machine_enqueue_input" OR
+   NOT fixture_source MATCHES "vm_machine_deliver_emulator_input" OR
    NOT input_smoke_source MATCHES "vm_test_submit_host_input")
     message(FATAL_ERROR "VM keyboard transport lost its real keypress path")
 endif()

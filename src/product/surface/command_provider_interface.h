@@ -4,8 +4,8 @@
 #include "product/surface/command_interface.h"
 
 lib_status product_surface_command_provider_initialize(product_surface_command_context *command,
-    common_machine *machine, common_session_display display,
+    emulator_machine *machine, emulator_session_display display,
     const product_surface_command_extensions *extensions,
-    common_session_command_provider *out_provider);
+    emulator_session_command_provider *out_provider);
 
 #endif

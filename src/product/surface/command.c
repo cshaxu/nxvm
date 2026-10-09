@@ -32,7 +32,7 @@ static void help(const product_surface_command_session *s, product_surface_comma
     (void)lib_c_snprintf(e->text, sizeof(e->text), "%s\r\n", HELP_COMMANDS);
 }
 /* Product readiness remains true until a command reserves a transition.
- * Common alone admits one pending line; callbacks never consume readiness. */
+ * Emulator alone admits one pending line; callbacks never consume readiness. */
 static void prompt(product_surface_command_session *s) { s->prompt_due = 1; }
 static void outcome(product_surface_command_session *s, const char *value)
 {
@@ -132,7 +132,7 @@ static void lifecycle(product_surface_command_session *s, app_monitor_state stat
     }
 }
 
-void product_surface_command_session_initialize(product_surface_command_session *s, common_session_display display)
+void product_surface_command_session_initialize(product_surface_command_session *s, emulator_session_display display)
 {
     lib_memory_set(s, 0, sizeof(*s));
     s->display = display;
@@ -229,39 +229,39 @@ int product_surface_command_session_begin_external(product_surface_command_sessi
     return 1;
 }
 void product_surface_command_session_note_runtime(product_surface_command_session *s,
-                                      app_monitor_state prior, common_machine_state state, product_surface_command_effect *e)
+                                      app_monitor_state prior, emulator_machine_state state, product_surface_command_effect *e)
 {
     if (s == NULL || e == NULL)
         return;
     clear(e);
-    if (state == COMMON_MACHINE_RESET_COMPLETED)
+    if (state == EMULATOR_MACHINE_RESET_COMPLETED)
     {
         s->transition_pending = 0;
         outcome(s, "Machine reset and paused.");
         return;
     }
-    if (state == COMMON_MACHINE_PAUSED && prior != APP_MONITOR_PAUSED)
+    if (state == EMULATOR_MACHINE_PAUSED && prior != APP_MONITOR_PAUSED)
     {
         s->transition_pending = 0;
         outcome(s, "Machine paused.");
     }
-    else if (state == COMMON_MACHINE_RUNNING)
+    else if (state == EMULATOR_MACHINE_RUNNING)
     {
         s->transition_pending = 0;
         if (prior == APP_MONITOR_STOPPED)
             outcome(s, "Machine started.");
         else if (prior == APP_MONITOR_PAUSED)
             outcome(s, "Machine resumed.");
-        else if (s->display == COMMON_SESSION_DISPLAY_WINDOW)
+        else if (s->display == EMULATOR_SESSION_DISPLAY_WINDOW)
             prompt(s);
     }
-    else if (state == COMMON_MACHINE_STOPPED &&
+    else if (state == EMULATOR_MACHINE_STOPPED &&
              prior != APP_MONITOR_STOPPED)
     {
         s->transition_pending = 0;
         outcome(s, "Machine stopped.");
     }
-    else if (state == COMMON_MACHINE_ERROR)
+    else if (state == EMULATOR_MACHINE_ERROR)
     {
         s->transition_pending = 0;
         outcome(s, "Machine error.");
@@ -297,78 +297,78 @@ void product_surface_command_session_note_monitor_current(product_surface_comman
     e->arm_prompt = 1;
 }
 
-_Static_assert(COMMON_SESSION_PROMPT_CAPACITY >= PRODUCT_DEBUG_PROMPT_CAPACITY,
+_Static_assert(EMULATOR_SESSION_PROMPT_CAPACITY >= PRODUCT_DEBUG_PROMPT_CAPACITY,
                "Session prompt must hold debugger continuation prompts");
 
-/* product/ owns product command policy. common/session owns its neutral copied
+/* product/ owns product command policy. emulator/session owns its neutral copied
  * completion facts; convert explicitly at this one composition boundary.
  * The numeric enum values are deliberately not a cross-component contract. */
-static common_machine_state app_machine_completed_state(
-    common_session_machine_state state)
+static emulator_machine_state app_machine_completed_state(
+    emulator_session_machine_state state)
 {
     switch (state)
     {
-    case COMMON_SESSION_MACHINE_RUNNING:
-        return COMMON_MACHINE_RUNNING;
-    case COMMON_SESSION_MACHINE_PAUSED:
-        return COMMON_MACHINE_PAUSED;
-    case COMMON_SESSION_MACHINE_ERROR:
-        return COMMON_MACHINE_ERROR;
-    case COMMON_SESSION_MACHINE_RESET_COMPLETED:
-        return COMMON_MACHINE_RESET_COMPLETED;
+    case EMULATOR_SESSION_MACHINE_RUNNING:
+        return EMULATOR_MACHINE_RUNNING;
+    case EMULATOR_SESSION_MACHINE_PAUSED:
+        return EMULATOR_MACHINE_PAUSED;
+    case EMULATOR_SESSION_MACHINE_ERROR:
+        return EMULATOR_MACHINE_ERROR;
+    case EMULATOR_SESSION_MACHINE_RESET_COMPLETED:
+        return EMULATOR_MACHINE_RESET_COMPLETED;
     default:
-        return COMMON_MACHINE_STOPPED;
+        return EMULATOR_MACHINE_STOPPED;
     }
 }
 
-static app_monitor_state product_surface_command_state(common_session_machine_state state)
+static app_monitor_state product_surface_command_state(emulator_session_machine_state state)
 {
     switch (state)
     {
-    case COMMON_SESSION_MACHINE_RUNNING:
+    case EMULATOR_SESSION_MACHINE_RUNNING:
         return APP_MONITOR_RUNNING;
-    case COMMON_SESSION_MACHINE_PAUSED:
+    case EMULATOR_SESSION_MACHINE_PAUSED:
         return APP_MONITOR_PAUSED;
-    case COMMON_SESSION_MACHINE_ERROR:
+    case EMULATOR_SESSION_MACHINE_ERROR:
         return APP_MONITOR_ERROR;
     default:
         return APP_MONITOR_STOPPED;
     }
 }
 
-static common_session_request app_session_request(app_lifecycle_request request)
+static emulator_session_request app_session_request(app_lifecycle_request request)
 {
     switch (request)
     {
     case APP_LIFECYCLE_REQUEST_START:
-        return COMMON_SESSION_REQUEST_START;
+        return EMULATOR_SESSION_REQUEST_START;
     case APP_LIFECYCLE_REQUEST_RESUME:
-        return COMMON_SESSION_REQUEST_RESUME;
+        return EMULATOR_SESSION_REQUEST_RESUME;
     case APP_LIFECYCLE_REQUEST_PAUSE:
-        return COMMON_SESSION_REQUEST_PAUSE;
+        return EMULATOR_SESSION_REQUEST_PAUSE;
     case APP_LIFECYCLE_REQUEST_STOP:
-        return COMMON_SESSION_REQUEST_STOP;
+        return EMULATOR_SESSION_REQUEST_STOP;
     case APP_LIFECYCLE_REQUEST_RESET:
-        return COMMON_SESSION_REQUEST_RESET;
+        return EMULATOR_SESSION_REQUEST_RESET;
     default:
-        return COMMON_SESSION_REQUEST_NONE;
+        return EMULATOR_SESSION_REQUEST_NONE;
     }
 }
 
 static app_lifecycle_request app_lifecycle_request_from_session(
-    common_session_request request)
+    emulator_session_request request)
 {
     switch (request)
     {
-    case COMMON_SESSION_REQUEST_START:
+    case EMULATOR_SESSION_REQUEST_START:
         return APP_LIFECYCLE_REQUEST_START;
-    case COMMON_SESSION_REQUEST_RESUME:
+    case EMULATOR_SESSION_REQUEST_RESUME:
         return APP_LIFECYCLE_REQUEST_RESUME;
-    case COMMON_SESSION_REQUEST_PAUSE:
+    case EMULATOR_SESSION_REQUEST_PAUSE:
         return APP_LIFECYCLE_REQUEST_PAUSE;
-    case COMMON_SESSION_REQUEST_STOP:
+    case EMULATOR_SESSION_REQUEST_STOP:
         return APP_LIFECYCLE_REQUEST_STOP;
-    case COMMON_SESSION_REQUEST_RESET:
+    case EMULATOR_SESSION_REQUEST_RESET:
         return APP_LIFECYCLE_REQUEST_RESET;
     default:
         return APP_LIFECYCLE_REQUEST_NONE;
@@ -376,7 +376,7 @@ static app_lifecycle_request app_lifecycle_request_from_session(
 }
 
 static void product_surface_command_set_prompt(const product_surface_command_context *command,
-                                   common_session_command_result *out)
+                                   emulator_session_command_result *out)
 {
     if (command == NULL || out == NULL)
         return;
@@ -385,11 +385,11 @@ static void product_surface_command_set_prompt(const product_surface_command_con
 }
 
 static void product_surface_command_copy_effect(product_surface_command_context *command,
-                                    common_session_command_result *out, const product_surface_command_effect *effect)
+                                    emulator_session_command_result *out, const product_surface_command_effect *effect)
 {
     if (command == NULL || out == NULL || effect == NULL)
         return;
-    *out = (common_session_command_result){0};
+    *out = (emulator_session_command_result){0};
     (void)lib_c_snprintf(out->text, sizeof(out->text), "%s", effect->text);
     out->exit_requested = effect->exit_requested != 0;
     out->arm_prompt = effect->arm_prompt != 0;
@@ -397,7 +397,7 @@ static void product_surface_command_copy_effect(product_surface_command_context 
 }
 
 static void product_surface_command_append_help(const product_surface_command_context *command,
-    common_session_command_result *out)
+    emulator_session_command_result *out)
 {
     lib_size used;
 
@@ -415,7 +415,7 @@ static void product_surface_command_append_help(const product_surface_command_co
 }
 
 void product_surface_command_provider_open(void *opaque,
-                               common_session_command_result *out)
+                               emulator_session_command_result *out)
 {
     product_surface_command_context *command = (product_surface_command_context *)opaque;
     product_surface_command_effect effect = {0};
@@ -425,7 +425,7 @@ void product_surface_command_provider_open(void *opaque,
 }
 
 void product_surface_command_provider_reject_line(void *opaque,
-                                      common_session_command_result *out)
+                                      emulator_session_command_result *out)
 {
     product_surface_command_context *command = (product_surface_command_context *)opaque;
     product_surface_command_effect effect = {0};
@@ -434,8 +434,8 @@ void product_surface_command_provider_reject_line(void *opaque,
 }
 
 static void product_surface_command_copy_debug(product_surface_command_context *command,
-                                   common_session_machine_state state, const product_debug_result *result,
-                                   common_session_command_result *out)
+                                   emulator_session_machine_state state, const product_debug_result *result,
+                                   emulator_session_command_result *out)
 {
     out->detail = result->text;
     (void)lib_c_snprintf(command->debug_prompt, sizeof(command->debug_prompt), "%s", result->prompt);
@@ -448,14 +448,14 @@ static void product_surface_command_copy_debug(product_surface_command_context *
     if (result->lifecycle_request == PRODUCT_DEBUG_LIFECYCLE_RESUME &&
         product_surface_command_session_begin_external(&command->session,
                                            product_surface_command_state(state), APP_LIFECYCLE_REQUEST_RESUME))
-        out->request = COMMON_SESSION_REQUEST_RESUME;
+        out->request = EMULATOR_SESSION_REQUEST_RESUME;
     else if (result->lifecycle_request != PRODUCT_DEBUG_LIFECYCLE_NONE)
         (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug lifecycle request is not applicable.\r\n\r\n");
 }
 
 void product_surface_command_provider_submit_line(void *opaque,
-                                      common_session_machine_state state, const char *line,
-                                      common_session_command_result *out)
+                                      emulator_session_machine_state state, const char *line,
+                                      emulator_session_command_result *out)
 {
     product_surface_command_context *command = (product_surface_command_context *)opaque;
     product_surface_command_effect effect = {0};
@@ -464,25 +464,25 @@ void product_surface_command_provider_submit_line(void *opaque,
         product_debug_result result = {0};
         command->debug_completed_pending = LIB_FALSE;
         lib_status status = product_debug_submit_line(command->debug, line, &result);
-        *out = (common_session_command_result){0};
+        *out = (emulator_session_command_result){0};
         if (status != LIB_STATUS_OK)
         {
             (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug command failed.\r\n\r\n");
-            common_machine_debug_cancel(command->machine);
+            emulator_machine_debug_cancel(command->machine);
             (void)lib_c_snprintf(command->debug_prompt, sizeof(command->debug_prompt), "-");
         }
         else
         {
             product_surface_command_copy_debug(command, state, &result, out);
         }
-        command->session.prompt_due = out->request == COMMON_SESSION_REQUEST_NONE;
+        command->session.prompt_due = out->request == EMULATOR_SESSION_REQUEST_NONE;
         product_surface_command_set_prompt(command, out);
         return;
     }
     product_surface_command_session_submit_line(&command->session, product_surface_command_state(state), line,
                                     &effect);
     if (effect.unrecognized && command->extensions.submit != LIB_NULL) {
-        *out = (common_session_command_result){0};
+        *out = (emulator_session_command_result){0};
         if (command->extensions.submit(command->extensions.context,
                 command->machine, state, line, out)) {
             product_surface_command_set_prompt(command, out);
@@ -512,7 +512,7 @@ void product_surface_command_provider_submit_line(void *opaque,
 }
 
 lib_bool product_surface_command_provider_begin_external(void *opaque,
-                                             common_session_machine_state state, common_session_request request)
+                                             emulator_session_machine_state state, emulator_session_request request)
 {
     product_surface_command_context *command = (product_surface_command_context *)opaque;
     return product_surface_command_session_begin_external(&command->session,
@@ -520,8 +520,8 @@ lib_bool product_surface_command_provider_begin_external(void *opaque,
 }
 
 void product_surface_command_provider_note_runtime(void *opaque,
-                                       common_session_machine_state prior, common_session_machine_state completed,
-                                       common_session_command_result *out)
+                                       emulator_session_machine_state prior, emulator_session_machine_state completed,
+                                       emulator_session_command_result *out)
 {
     product_surface_command_context *command = (product_surface_command_context *)opaque;
     product_surface_command_effect effect = {0};
@@ -531,13 +531,13 @@ void product_surface_command_provider_note_runtime(void *opaque,
     if (command->debug_active)
     {
         command->debug_completed_pending = LIB_FALSE;
-        product_debug_machine_state state = completed == COMMON_SESSION_MACHINE_PAUSED ? PRODUCT_DEBUG_MACHINE_PAUSED : completed == COMMON_SESSION_MACHINE_RUNNING ? PRODUCT_DEBUG_MACHINE_RUNNING
+        product_debug_machine_state state = completed == EMULATOR_SESSION_MACHINE_PAUSED ? PRODUCT_DEBUG_MACHINE_PAUSED : completed == EMULATOR_SESSION_MACHINE_RUNNING ? PRODUCT_DEBUG_MACHINE_RUNNING
                                                                                                                                                                   : PRODUCT_DEBUG_MACHINE_STOPPED;
         product_debug_result result = {0};
         if (product_debug_observe_machine(command->debug, state, LIB_STATUS_OK, &result) != LIB_STATUS_OK)
         {
             (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug command failed.\r\n\r\n");
-            common_machine_debug_cancel(command->machine);
+            emulator_machine_debug_cancel(command->machine);
             (void)lib_c_snprintf(command->debug_prompt, sizeof(command->debug_prompt), "-");
         }
         else if (result.prompt_ready)
@@ -549,7 +549,7 @@ void product_surface_command_provider_note_runtime(void *opaque,
 }
 
 void product_surface_command_provider_note_broker(void *opaque,
-                                      common_session_machine_state state, lib_bool vm_console_current,
+                                      emulator_session_machine_state state, lib_bool vm_console_current,
                                       lib_bool monitor_running_surface)
 {
     product_surface_command_context *command = (product_surface_command_context *)opaque;
@@ -558,7 +558,7 @@ void product_surface_command_provider_note_broker(void *opaque,
 }
 
 void product_surface_command_provider_note_monitor_current(void *opaque,
-                                               lib_bool current, common_session_command_result *out)
+                                               lib_bool current, emulator_session_command_result *out)
 {
     product_surface_command_context *command = (product_surface_command_context *)opaque;
     product_surface_command_effect effect = {0};
@@ -568,15 +568,15 @@ void product_surface_command_provider_note_monitor_current(void *opaque,
     if (current && command->debug_completed_pending)
     {
         command->debug_completed_pending = LIB_FALSE;
-        product_surface_command_copy_debug(command, COMMON_SESSION_MACHINE_PAUSED,
+        product_surface_command_copy_debug(command, EMULATOR_SESSION_MACHINE_PAUSED,
                                &command->debug_completed, out);
-        out->arm_prompt = out->request == COMMON_SESSION_REQUEST_NONE;
+        out->arm_prompt = out->request == EMULATOR_SESSION_REQUEST_NONE;
     }
     product_surface_command_set_prompt(command, out);
 }
 
 lib_status product_surface_command_initialize(product_surface_command_context *command,
-                                  common_machine *machine, common_session_display display,
+                                  emulator_machine *machine, emulator_session_display display,
                                   const product_surface_command_extensions *extensions)
 {
     if (command == NULL || machine == NULL)

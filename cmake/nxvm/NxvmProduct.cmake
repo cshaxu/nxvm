@@ -58,7 +58,9 @@ add_custom_target(cpu-timing-manifest-catalog
 
 set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     shared-lib-tests
-    shared-common-tests
+    shared-emulator-tests
+    shared-product-tests
+    core-product-tests
     core-x86-tests
     core-board-tests)
 
@@ -849,8 +851,8 @@ target_include_directories(vm-app PUBLIC
 target_link_libraries(vm-app PUBLIC
     product-surface
     core-product
-    common-session
-    common-ui
+    emulator-session
+    emulator-ui
     product-debug
     product-xasm32
     vm-profile-selected
@@ -1435,10 +1437,10 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-immutable-rom-mapping-smoke
     core-machine-int-ivt-smoke
     vm-boot-failure-lifecycle-smoke
-    common-machine-smoke
-    common-session-smoke
-    common-ui-smoke
-    common-adapter-conformance
+    emulator-machine-smoke
+    emulator-session-smoke
+    emulator-ui-smoke
+    emulator-adapter-conformance
     vm-machine-frame-smoke
     vm-profile-contract-smoke
     host-smoke
@@ -1470,10 +1472,10 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-ibm-5170-direct-plan-smoke
     vm-xt-5160-268-profile-smoke)
 list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
-    common-machine-smoke
-    common-session-smoke
-    common-ui-smoke
-    common-adapter-conformance
+    emulator-machine-smoke
+    emulator-session-smoke
+    emulator-ui-smoke
+    emulator-adapter-conformance
     host-smoke
     storage-smoke)
 
@@ -2947,16 +2949,16 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     core-board-base
     core-x86
     core-chip-cpu
-    common-machine
+    emulator-machine
     product-xasm32
     product-debug
     vm-profile-selected
     vm-profile-tests
     core-machine-media
     mydeskpro386-d4
-    common-session
+    emulator-session
     vm-app
-    common-ui
+    emulator-ui
     ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})
 set(PROJECT_T344_DIRECT_COMPILE_TARGETS
     ${PROJECT_T344_PRODUCTION_TARGETS}

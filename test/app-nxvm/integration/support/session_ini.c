@@ -48,11 +48,11 @@ lib_status integration_ini_session_restart(integration_ini_session *session)
     lib_status status;
 
     if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (session->common_machine != LIB_NULL) {
-        (void)common_machine_shutdown(session->common_machine);
-        (void)vm_machine_bind_common_machine(session->session, LIB_NULL);
-        (void)common_machine_destroy(session->common_machine);
-        session->common_machine = LIB_NULL;
+    if (session->emulator_machine != LIB_NULL) {
+        (void)emulator_machine_shutdown(session->emulator_machine);
+        (void)vm_machine_bind_emulator_machine(session->session, LIB_NULL);
+        (void)emulator_machine_destroy(session->emulator_machine);
+        session->emulator_machine = LIB_NULL;
     }
     if (session->session != LIB_NULL) {
         vm_machine_destroy(session->session);
@@ -73,39 +73,39 @@ lib_status integration_ini_session_restart(integration_ini_session *session)
 
 lib_status integration_ini_session_start(integration_ini_session *session)
 {
-    common_machine_driver driver;
+    emulator_machine_driver driver;
 
     if (session == LIB_NULL || session->session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (session->common_machine == LIB_NULL &&
-        (vm_machine_describe_common_driver(session->session, &driver) != LIB_STATUS_OK ||
-        common_machine_create(&session->common_machine, &driver) != LIB_STATUS_OK ||
-        vm_machine_bind_common_machine(session->session, session->common_machine) !=
+    if (session->emulator_machine == LIB_NULL &&
+        (vm_machine_describe_emulator_driver(session->session, &driver) != LIB_STATUS_OK ||
+        emulator_machine_create(&session->emulator_machine, &driver) != LIB_STATUS_OK ||
+        vm_machine_bind_emulator_machine(session->session, session->emulator_machine) !=
             LIB_STATUS_OK)) return LIB_STATUS_INTERNAL_ERROR;
-    return common_machine_start(session->common_machine) ? LIB_STATUS_OK :
+    return emulator_machine_start(session->emulator_machine) ? LIB_STATUS_OK :
         LIB_STATUS_INVALID_STATE;
 }
 
 lib_i32 integration_ini_session_wait_for_state(const integration_ini_session *session,
-    common_machine_state state, lib_u32 milliseconds)
+    emulator_machine_state state, lib_u32 milliseconds)
 {
     lib_u32 elapsed;
 
-    if (session == LIB_NULL || session->common_machine == LIB_NULL) return 0;
+    if (session == LIB_NULL || session->emulator_machine == LIB_NULL) return 0;
     for (elapsed = 0u; elapsed < milliseconds; ++elapsed) {
-        if (common_machine_state_get(session->common_machine) == state) return 1;
+        if (emulator_machine_state_get(session->emulator_machine) == state) return 1;
         base_sync_sleep_milliseconds(1u);
     }
-    return common_machine_state_get(session->common_machine) == state;
+    return emulator_machine_state_get(session->emulator_machine) == state;
 }
 
 lib_status integration_ini_session_pause(integration_ini_session *session,
     lib_u32 milliseconds)
 {
-    if (session == LIB_NULL || session->common_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (!integration_ini_session_wait_for_state(session, COMMON_MACHINE_RUNNING,
+    if (session == LIB_NULL || session->emulator_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (!integration_ini_session_wait_for_state(session, EMULATOR_MACHINE_RUNNING,
             milliseconds)) return LIB_STATUS_INVALID_STATE;
-    if (!common_machine_pause(session->common_machine)) return LIB_STATUS_INVALID_STATE;
-    return integration_ini_session_wait_for_state(session, COMMON_MACHINE_PAUSED,
+    if (!emulator_machine_pause(session->emulator_machine)) return LIB_STATUS_INVALID_STATE;
+    return integration_ini_session_wait_for_state(session, EMULATOR_MACHINE_PAUSED,
         milliseconds) ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
@@ -113,8 +113,8 @@ lib_status integration_ini_session_resume(integration_ini_session *session,
     lib_u32 milliseconds)
 {
     (void)milliseconds;
-    if (session == LIB_NULL || session->common_machine == LIB_NULL ||
-        !common_machine_resume(session->common_machine)) return LIB_STATUS_INVALID_STATE;
+    if (session == LIB_NULL || session->emulator_machine == LIB_NULL ||
+        !emulator_machine_resume(session->emulator_machine)) return LIB_STATUS_INVALID_STATE;
     return LIB_STATUS_OK;
 }
 
@@ -124,18 +124,18 @@ lib_status integration_ini_session_reset(integration_ini_session *session,
     lib_u32 generation;
     lib_u32 elapsed;
 
-    if (session == LIB_NULL || session->common_machine == LIB_NULL)
+    if (session == LIB_NULL || session->emulator_machine == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    generation = common_machine_run_generation(session->common_machine);
-    if (!common_machine_reset(session->common_machine)) return LIB_STATUS_INVALID_STATE;
+    generation = emulator_machine_run_generation(session->emulator_machine);
+    if (!emulator_machine_reset(session->emulator_machine)) return LIB_STATUS_INVALID_STATE;
     for (elapsed = 0u; elapsed < milliseconds; ++elapsed) {
-        if (common_machine_run_generation(session->common_machine) != generation &&
-            common_machine_state_get(session->common_machine) == COMMON_MACHINE_PAUSED)
+        if (emulator_machine_run_generation(session->emulator_machine) != generation &&
+            emulator_machine_state_get(session->emulator_machine) == EMULATOR_MACHINE_PAUSED)
             return LIB_STATUS_OK;
         base_sync_sleep_milliseconds(1u);
     }
-    return common_machine_run_generation(session->common_machine) != generation &&
-        common_machine_state_get(session->common_machine) == COMMON_MACHINE_PAUSED ?
+    return emulator_machine_run_generation(session->emulator_machine) != generation &&
+        emulator_machine_state_get(session->emulator_machine) == EMULATOR_MACHINE_PAUSED ?
         LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
@@ -221,10 +221,10 @@ lib_status integration_ini_session_overlay_write(integration_ini_session *sessio
 void integration_ini_session_close(integration_ini_session *session)
 {
     if (session == LIB_NULL) return;
-    (void)common_machine_shutdown(session->common_machine);
-    (void)vm_machine_bind_common_machine(session->session, LIB_NULL);
-    (void)common_machine_destroy(session->common_machine);
-    session->common_machine = LIB_NULL;
+    (void)emulator_machine_shutdown(session->emulator_machine);
+    (void)vm_machine_bind_emulator_machine(session->session, LIB_NULL);
+    (void)emulator_machine_destroy(session->emulator_machine);
+    session->emulator_machine = LIB_NULL;
     vm_machine_destroy(session->session);
     lib_memory_set(session, 0, sizeof(*session));
 }

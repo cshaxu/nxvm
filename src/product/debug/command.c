@@ -31,7 +31,7 @@ typedef enum command_run_kind {
 } command_run_kind;
 
 struct product_debug {
-    common_machine *machine;
+    emulator_machine *machine;
     lib_status access_status;
     lib_bool defaults_ready;
     lib_u32 assemble_linear;
@@ -210,20 +210,20 @@ static lib_bool command_execute(command_context *debugContext,
     const product_debug_request *request,
     product_debug_response *result)
 {
-    common_machine_debug_lease lease;
+    emulator_machine_debug_lease lease;
     lib_size response_size;
 
-    _Static_assert(sizeof(*request) <= COMMON_MACHINE_DEBUG_REQUEST_CAPACITY,
+    _Static_assert(sizeof(*request) <= EMULATOR_MACHINE_DEBUG_REQUEST_CAPACITY,
         "x86 request must fit Machine transport");
-    _Static_assert(sizeof(*result) <= COMMON_MACHINE_DEBUG_RESPONSE_CAPACITY,
+    _Static_assert(sizeof(*result) <= EMULATOR_MACHINE_DEBUG_RESPONSE_CAPACITY,
         "x86 response must fit Machine transport");
 
     if (debugContext == LIB_NULL || request == LIB_NULL || result == LIB_NULL) return LIB_TRUE;
     lib_memory_set(result, 0, sizeof(*result));
     if (debugContext->access_status != LIB_STATUS_OK) return LIB_TRUE;
-    debugContext->access_status = common_machine_debug_acquire(debugContext->machine, &lease);
+    debugContext->access_status = emulator_machine_debug_acquire(debugContext->machine, &lease);
     if (debugContext->access_status == LIB_STATUS_OK)
-        debugContext->access_status = common_machine_debug_execute_with_lease(
+        debugContext->access_status = emulator_machine_debug_execute_with_lease(
             debugContext->machine, &lease, request, sizeof(*request),
             result, sizeof(*result), &response_size);
     if (debugContext->access_status == LIB_STATUS_OK && response_size != sizeof(*result)) {
@@ -373,9 +373,9 @@ static lib_i32 command_get_watch(command_context *debugContext,
 
 static lib_bool command_is_paused(command_context *debugContext)
 {
-    common_machine_debug_lease lease;
+    emulator_machine_debug_lease lease;
     return debugContext != LIB_NULL &&
-        common_machine_debug_acquire(debugContext->machine, &lease) == LIB_STATUS_OK;
+        emulator_machine_debug_acquire(debugContext->machine, &lease) == LIB_STATUS_OK;
 }
 
 static void command_resume(command_context *debugContext)
@@ -1704,7 +1704,7 @@ static void t(command_context *debugContext)
         return;
     }
     /* The original loop synchronously waited after each instruction.  The
-     * common/session boundary is asynchronous: one trace budget and one
+     * emulator/session boundary is asynchronous: one trace budget and one
      * resume request preserve the requested stop point without polling. */
     if (count == 0u) return;
     if (command_begin_trace(debugContext, COMMAND_RUN_TRACE_REAL, count)) return;
@@ -3016,7 +3016,7 @@ static void exec(command_context *debugContext)
 }
 
 static void command_initialize(product_debug *command,
-    common_machine *machine)
+    emulator_machine *machine)
 {
     lib_release(command->output);
     lib_memory_set(command, 0, sizeof(*command));
@@ -3044,7 +3044,7 @@ void product_debug_destroy(product_debug *command)
 }
 
 lib_status product_debug_open(product_debug *command,
-    common_machine *machine)
+    emulator_machine *machine)
 {
     if (command == LIB_NULL || machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     product_debug_close(command);
@@ -3055,7 +3055,7 @@ lib_status product_debug_open(product_debug *command,
 void product_debug_close(product_debug *command)
 {
     if (command == LIB_NULL) return;
-    common_machine_debug_cancel(command->machine);
+    emulator_machine_debug_cancel(command->machine);
     command->machine = LIB_NULL;
     command->continuation = COMMAND_CONTINUATION_NONE;
 }
@@ -3116,8 +3116,8 @@ static lib_bool command_needs_machine(product_debug *command)
 
 static lib_bool command_prepare_machine(product_debug *debugContext)
 {
-    common_machine_debug_lease lease;
-    debugContext->access_status = common_machine_debug_acquire(debugContext->machine, &lease);
+    emulator_machine_debug_lease lease;
+    debugContext->access_status = emulator_machine_debug_acquire(debugContext->machine, &lease);
     if (debugContext->access_status != LIB_STATUS_OK) return LIB_FALSE;
     if (!debugContext->defaults_ready) {
         asmSegRec = uasmSegRec = _cs;

@@ -174,9 +174,9 @@ static void vm_t287_report_fault(integration_ini_session *ini_session, const cha
 
     if (session == LIB_NULL) return;
     was_running = vm_machine_control_is_running(&session->control);
-    if (common_machine_state_get(ini_session->common_machine) == COMMON_MACHINE_RUNNING &&
+    if (emulator_machine_state_get(ini_session->emulator_machine) == EMULATOR_MACHINE_RUNNING &&
         integration_ini_session_pause(ini_session, 5000u) != LIB_STATUS_OK) return;
-    if (common_machine_shutdown(session->executor) != LIB_STATUS_OK) return;
+    if (emulator_machine_shutdown(session->executor) != LIB_STATUS_OK) return;
     (void)core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic);
     printf("M5:T287:S23:WINDOWS31:SETUP:CHECKPOINT stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,

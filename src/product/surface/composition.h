@@ -5,5 +5,5 @@
 #include "product/surface/command_interface.h"
 
 /* SoftPC-derived Product policy binds one command context and one hotkey
- * policy into Common.  Machine construction remains App-injected below it. */
+ * policy into Emulator.  Machine construction remains App-injected below it. */
 #endif

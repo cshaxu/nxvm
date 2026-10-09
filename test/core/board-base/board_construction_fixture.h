@@ -1,5 +1,5 @@
-#ifndef TEST_IBMPC_COMMON_BOARD_CONSTRUCTION_FIXTURE_H
-#define TEST_IBMPC_COMMON_BOARD_CONSTRUCTION_FIXTURE_H
+#ifndef TEST_IBMPC_EMULATOR_BOARD_CONSTRUCTION_FIXTURE_H
+#define TEST_IBMPC_EMULATOR_BOARD_CONSTRUCTION_FIXTURE_H
 #include "core/board-base/machine_board_interface.h"
 
 typedef lib_status (*test_core_constructor)(

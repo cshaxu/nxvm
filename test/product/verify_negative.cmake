@@ -16,5 +16,5 @@ function(expect_rejected suffix appended)
 endfunction()
 
 expect_rejected("outer-product" "target_link_libraries(product-xasm32 PRIVATE product-debug)")
-expect_rejected("outer-emulator" "target_link_libraries(product-xasm32 PRIVATE common-machine)")
+expect_rejected("outer-emulator" "target_link_libraries(product-xasm32 PRIVATE emulator-machine)")
 message(STATUS "Product dependency negative coverage: OK")

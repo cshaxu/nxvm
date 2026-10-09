@@ -1,12 +1,12 @@
 #include "lib/types/types_interface.h"
 #include "product/surface/keyboard_interface.h"
 
-#include "common/machine/machine_interface.h"
+#include "emulator/machine/machine_interface.h"
 
 lib_bool product_surface_keyboard_deliver_input(void *context, const kvm_input_event *event)
 {
-    return context != NULL && event != NULL && common_machine_enqueue_input(
-        (common_machine *)context, event) != 0;
+    return context != NULL && event != NULL && emulator_machine_enqueue_input(
+        (emulator_machine *)context, event) != 0;
 }
 
 lib_bool product_surface_keyboard_hotkeys(kvm_hotkey_registry *registry)
@@ -67,18 +67,18 @@ static lib_bool product_surface_keyboard_submit_alt_key(void *context, kvm_input
         product_surface_keyboard_emit(context, sink, 0x38u, KVM_KEY_ALT, LIB_FALSE);
 }
 
-lib_bool product_surface_keyboard_handle_hotkey(common_machine *machine,
-    common_session_machine_state state, const lib_u8 *identifier,
-    common_session_command_result *out)
+lib_bool product_surface_keyboard_handle_hotkey(emulator_machine *machine,
+    emulator_session_machine_state state, const lib_u8 *identifier,
+    emulator_session_command_result *out)
 {
     const char *name;
-    common_session_request request = COMMON_SESSION_REQUEST_NONE;
-    *out = (common_session_command_result) { 0 };
+    emulator_session_request request = EMULATOR_SESSION_REQUEST_NONE;
+    *out = (emulator_session_command_result) { 0 };
     if (identifier == NULL) return LIB_FALSE;
     name = (const char *)identifier;
     if (lib_text_compare(name, "pause-toggle") == 0) {
-        request = state == COMMON_SESSION_MACHINE_PAUSED ?
-            COMMON_SESSION_REQUEST_RESUME : COMMON_SESSION_REQUEST_PAUSE;
+        request = state == EMULATOR_SESSION_MACHINE_PAUSED ?
+            EMULATOR_SESSION_REQUEST_RESUME : EMULATOR_SESSION_REQUEST_PAUSE;
         out->request = request;
         return LIB_TRUE;
     }
@@ -86,7 +86,7 @@ lib_bool product_surface_keyboard_handle_hotkey(common_machine *machine,
         out->release_window_mouse = LIB_TRUE;
         return LIB_TRUE;
     }
-    if (state != COMMON_SESSION_MACHINE_RUNNING) return LIB_TRUE;
+    if (state != EMULATOR_SESSION_MACHINE_RUNNING) return LIB_TRUE;
     if (lib_text_compare(name, "send-ctrl-alt-del") == 0)
         return product_surface_keyboard_submit_ctrl_alt_del(machine,
             product_surface_keyboard_deliver_input);

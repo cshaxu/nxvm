@@ -1,5 +1,5 @@
-#ifndef TEST_IBMPC_COMMON_DMA_COMPETITION_FIXTURE_H
-#define TEST_IBMPC_COMMON_DMA_COMPETITION_FIXTURE_H
+#ifndef TEST_IBMPC_EMULATOR_DMA_COMPETITION_FIXTURE_H
+#define TEST_IBMPC_EMULATOR_DMA_COMPETITION_FIXTURE_H
 #include "core/board-base/machine_board_interface.h"
 #include "core/board-base/dma_bus_interface.h"
 

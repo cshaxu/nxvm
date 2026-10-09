@@ -2,7 +2,7 @@
 #define PRODUCT_DEBUG_INTERFACE_H
 
 #include "lib/types/types_interface.h"
-#include "common/machine/machine_interface.h"
+#include "emulator/machine/machine_interface.h"
 #include "product/debug/protocol_interface.h"
 
 typedef struct product_debug product_debug;
@@ -39,7 +39,7 @@ typedef enum product_debug_machine_state {
 
 lib_status product_debug_create(product_debug **out_debug);
 void product_debug_destroy(product_debug *debug);
-lib_status product_debug_open(product_debug *debug, common_machine *machine);
+lib_status product_debug_open(product_debug *debug, emulator_machine *machine);
 void product_debug_close(product_debug *debug);
 lib_status product_debug_submit_line(product_debug *debug, const char *line,
     product_debug_result *out_result);

@@ -71,7 +71,7 @@ static void run_frame(core_driver *driver)
     for (index = 0u; index < 64u; ++index) assert(core_driver_run(driver));
 }
 
-static lib_u32 pixel_rgb(const common_machine_frame *frame, lib_u32 pixel)
+static lib_u32 pixel_rgb(const emulator_machine_frame *frame, lib_u32 pixel)
 {
     return frame->window.image.palette[frame->window.image.pixels[pixel]];
 }
@@ -79,7 +79,7 @@ static lib_u32 pixel_rgb(const common_machine_frame *frame, lib_u32 pixel)
 static void prove_window(void)
 {
     core_driver *driver = LIB_NULL;
-    common_machine_frame frame = { 0 };
+    emulator_machine_frame frame = { 0 };
     kvm_input_event input = { .type = KVM_EVENT_KEY, .source_identity = 1u };
 
     assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
@@ -104,7 +104,7 @@ static void prove_window(void)
 static void prove_console(void)
 {
     core_driver *driver = LIB_NULL;
-    common_machine_frame frame = { 0 };
+    emulator_machine_frame frame = { 0 };
     kvm_input_event input = { .type = KVM_EVENT_KEY, .source_identity = 2u };
     kvm_text_cell idle;
 

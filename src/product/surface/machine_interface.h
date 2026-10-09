@@ -2,7 +2,7 @@
 #define PRODUCT_SURFACE_MACHINE_INTERFACE_H
 
 #include "lib/types/types_interface.h"
-#include "common/machine/machine_interface.h"
+#include "emulator/machine/machine_interface.h"
 
 typedef enum product_surface_speed {
     PRODUCT_SURFACE_SPEED_STANDARD,
@@ -24,13 +24,13 @@ typedef struct product_surface_information {
 
 /* App composes this opaque machine lifetime before entering Product. Product
  * neither reads configuration nor constructs the private machine: it only
- * creates Common around the complete driver and releases this owned value
- * after Common has stopped. Context and INFO names outlive Product. */
+ * creates Emulator around the complete driver and releases this owned value
+ * after Emulator has stopped. Context and INFO names outlive Product. */
 typedef struct app_composed_machine {
     void *machine;
-    common_machine_driver driver;
+    emulator_machine_driver driver;
     const void *context;
-    lib_status (*bind)(void *machine, common_machine *common);
+    lib_status (*bind)(void *machine, emulator_machine *emulator);
     void (*destroy)(void *machine);
     /* Optional App capabilities. Composition requires only the machine,
      * driver, bind and destroy values; an App extension may use a capability

@@ -32,7 +32,7 @@ static void core_driver_clear_submitted_audio(core_driver *driver)
 static lib_status core_driver_snapshot_write(void *opaque, const lib_u8 *bytes,
     lib_size byte_count)
 {
-    const common_machine_state_writer *writer = opaque;
+    const emulator_machine_state_writer *writer = opaque;
     return writer == LIB_NULL || writer->write == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
         writer->write(writer->context, bytes, byte_count);
 }
@@ -40,7 +40,7 @@ static lib_status core_driver_snapshot_write(void *opaque, const lib_u8 *bytes,
 static lib_status core_driver_snapshot_read(void *opaque, lib_u8 *bytes,
     lib_size byte_count)
 {
-    const common_machine_state_reader *reader = opaque;
+    const emulator_machine_state_reader *reader = opaque;
     return reader == LIB_NULL || reader->read == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
         reader->read(reader->context, bytes, byte_count);
 }
@@ -383,10 +383,10 @@ lib_status core_driver_destroy(core_driver *driver)
 }
 
 lib_status core_driver_make_driver(core_driver *driver,
-    common_machine_driver *out_common_driver)
+    emulator_machine_driver *out_emulator_driver)
 {
-    if (driver == LIB_NULL || out_common_driver == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_common_driver = (common_machine_driver) {
+    if (driver == LIB_NULL || out_emulator_driver == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_emulator_driver = (emulator_machine_driver) {
         .context = driver,
         .reset = core_driver_reset,
         .run = core_driver_run,
@@ -408,7 +408,7 @@ lib_status core_driver_make_driver(core_driver *driver,
 }
 
 lib_status core_driver_begin_state_read(void *context,
-    const common_machine_state_writer *writer)
+    const emulator_machine_state_writer *writer)
 {
     core_driver *driver = context;
     if (driver == LIB_NULL || driver->machine == LIB_NULL || writer == LIB_NULL ||
@@ -427,12 +427,12 @@ lib_bool core_driver_take_state_read_result(void *context, lib_status *out_statu
         return LIB_FALSE;
     *out_status = driver->state_read_status;
     driver->state_read_ready = LIB_FALSE;
-    driver->state_writer = (common_machine_state_writer) { 0 };
+    driver->state_writer = (emulator_machine_state_writer) { 0 };
     return LIB_TRUE;
 }
 
 lib_status core_driver_write_state(void *context,
-    const common_machine_state_reader *reader)
+    const emulator_machine_state_reader *reader)
 {
     core_driver *driver = context;
     lib_status status;
@@ -531,7 +531,7 @@ void core_driver_set_heartbeat(void *context, lib_bool enabled)
 }
 
 void core_driver_set_executor_callback(void *context,
-    common_machine_executor_callback callback, void *callback_context)
+    emulator_machine_executor_callback callback, void *callback_context)
 {
     core_driver *driver = context;
     if (driver == LIB_NULL) return;
@@ -583,7 +583,7 @@ void core_driver_deliver_input(void *context, const kvm_input_event *event)
     core_driver_publish_buttons(driver);
 }
 
-lib_status core_driver_copy_frame(void *context, common_machine_frame *out_frame)
+lib_status core_driver_copy_frame(void *context, emulator_machine_frame *out_frame)
 {
     core_driver *driver = context;
     lib_u32 index;

@@ -31,11 +31,11 @@ file(READ "${PROJECT_SOURCE_DIR}/src/product/surface/composition.c" app_source)
 # Common owns the sole lifecycle queue and worker.  App composition constructs
 # it from the vm/machine driver, then forwards copied facts to Common Session.
 foreach(required IN ITEMS
-    "common_machine_start"
-    "common_machine_pause"
-    "common_machine_reset"
-    "common_machine_resume"
-    "common_machine_stop")
+    "emulator_machine_start"
+    "emulator_machine_pause"
+    "emulator_machine_reset"
+    "emulator_machine_resume"
+    "emulator_machine_stop")
     string(FIND "${lifecycle_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "VM machine Common lifecycle route lacks ${required}")
@@ -44,7 +44,7 @@ endforeach()
 
 foreach(required IN ITEMS
     "app->factory.prepare"
-    "common_machine_create"
+    "emulator_machine_create"
     "app->factory.bind")
     string(FIND "${app_source}" "${required}" position)
     if(position EQUAL -1)
@@ -52,16 +52,16 @@ foreach(required IN ITEMS
     endif()
 endforeach()
 
-string(FIND "${lifecycle_source}" "common_machine_create" position)
+string(FIND "${lifecycle_source}" "emulator_machine_create" position)
 if(NOT position EQUAL -1)
     message(FATAL_ERROR "core/core still constructs Common")
 endif()
 
 foreach(required IN ITEMS
-    "common_machine_set_state_sink"
-    "common_machine_set_frame_sink"
-    "common_session_enqueue_runtime_completed"
-    "common_session_enqueue_frame_completed")
+    "emulator_machine_set_state_sink"
+    "emulator_machine_set_frame_sink"
+    "emulator_session_enqueue_runtime_completed"
+    "emulator_session_enqueue_frame_completed")
     string(FIND "${app_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "VM app does not forward Common fact ${required}")

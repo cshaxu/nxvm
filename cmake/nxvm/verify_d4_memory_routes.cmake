@@ -46,7 +46,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/parity.c" parity)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/d4_platform.c" d4_platform)
 if(d4_platform MATCHES "machine_board_state.h|->board")
-    message(FATAL_ERROR "D4 platform retains private common-board dependency")
+    message(FATAL_ERROR "D4 platform retains private emulator-board dependency")
 endif()
 foreach(operation IN ITEMS
     "core_machine_at_parity_refresh_nmi"

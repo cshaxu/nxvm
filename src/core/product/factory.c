@@ -4,7 +4,7 @@
 #include "core/product/factory_interface.h"
 #include "core/machine/machine_interface.h"
 
-static lib_status vm_app_bind(void *machine, common_machine *common);
+static lib_status vm_app_bind(void *machine, emulator_machine *emulator);
 static void vm_app_release_machine(void *machine);
 static lib_status vm_app_read_information(const void *context, const void *machine,
     product_surface_information *out_info);
@@ -46,7 +46,7 @@ lib_status vm_app_compose_machine(const vm_app_machine_binding *binding,
     vm_machine_config config;
     vm_machine_construction construction;
     vm_machine *machine = LIB_NULL;
-    common_machine_driver driver = {0};
+    emulator_machine_driver driver = {0};
     lib_status status;
 
     if (out_machine == LIB_NULL)
@@ -60,7 +60,7 @@ lib_status vm_app_compose_machine(const vm_app_machine_binding *binding,
     if (status == LIB_STATUS_OK)
         status = vm_machine_create(&config, &construction, &machine);
     if (status == LIB_STATUS_OK)
-        status = vm_machine_describe_common_driver(machine, &driver);
+        status = vm_machine_describe_emulator_driver(machine, &driver);
     if (status != LIB_STATUS_OK) {
         vm_machine_destroy(machine);
         return status;
@@ -78,8 +78,8 @@ lib_status vm_app_compose_machine(const vm_app_machine_binding *binding,
     return LIB_STATUS_OK;
 }
 
-static lib_status vm_app_bind(void *machine, common_machine *common)
-{ return vm_machine_bind_common_machine(machine, common); }
+static lib_status vm_app_bind(void *machine, emulator_machine *emulator)
+{ return vm_machine_bind_emulator_machine(machine, emulator); }
 
 static void vm_app_release_machine(void *machine)
 { vm_machine_destroy(machine); }
@@ -129,16 +129,16 @@ lib_status vm_app_configure_ui(const vm_session_request *request,
     if (request == LIB_NULL || out_ui == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     if (lib_text_compare((const char *)request->display, "console") == 0)
-        out_ui->display = COMMON_SESSION_DISPLAY_CONSOLE;
+        out_ui->display = EMULATOR_SESSION_DISPLAY_CONSOLE;
     else if (lib_text_compare((const char *)request->display, "window") == 0)
-        out_ui->display = COMMON_SESSION_DISPLAY_WINDOW;
+        out_ui->display = EMULATOR_SESSION_DISPLAY_WINDOW;
     else
         return LIB_STATUS_INVALID_ARGUMENT;
     out_ui->console_control = request->console_control != 0 ? LIB_TRUE : LIB_FALSE;
     return LIB_STATUS_OK;
 }
 
-static void vm_app_extension_append(common_session_command_result *out,
+static void vm_app_extension_append(emulator_session_command_result *out,
     const char *format, ...)
 {
     lib_size used;
@@ -192,9 +192,9 @@ static lib_bool vm_app_extension_floppy_mode(const char *text,
     return LIB_TRUE;
 }
 
-static lib_bool vm_app_extension_floppy(common_machine *machine,
-    common_session_machine_state state, char *command,
-    common_session_command_result *out)
+static lib_bool vm_app_extension_floppy(emulator_machine *machine,
+    emulator_session_machine_state state, char *command,
+    emulator_session_command_result *out)
 {
     char *operation = command;
     char *mode;
@@ -206,13 +206,13 @@ static lib_bool vm_app_extension_floppy(common_machine *machine,
     operation += 7u;
     while (*operation == ' ' || *operation == '\t')
         ++operation;
-    if (state == COMMON_SESSION_MACHINE_RUNNING) {
+    if (state == EMULATOR_SESSION_MACHINE_RUNNING) {
         vm_app_extension_append(out, "Cannot change floppy media now.\r\n\r\n");
         return LIB_TRUE;
     }
     if (lib_text_compare(operation, "eject") == 0) {
         vm_app_extension_append(out,
-            common_machine_set_removable_media(machine, LIB_NULL,
+            emulator_machine_set_removable_media(machine, LIB_NULL,
                 LIB_STORAGE_MEDIUM_OVERLAY) ?
             "Floppy disk ejected.\r\n\r\n" : "Cannot eject floppy disk.\r\n\r\n");
         return LIB_TRUE;
@@ -240,14 +240,14 @@ static lib_bool vm_app_extension_floppy(common_machine *machine,
         return LIB_TRUE;
     }
     vm_app_extension_append(out,
-        common_machine_set_removable_media(machine, path, medium_mode) ?
+        emulator_machine_set_removable_media(machine, path, medium_mode) ?
         "Floppy disk inserted.\r\n\r\n" : "Cannot read floppy disk.\r\n\r\n");
     return LIB_TRUE;
 }
 
 static lib_bool vm_app_standard_extension(void *context,
-    common_machine *machine, common_session_machine_state state,
-    const char *line, common_session_command_result *out)
+    emulator_machine *machine, emulator_session_machine_state state,
+    const char *line, emulator_session_command_result *out)
 {
     product_surface *app = context;
     product_surface_information information;
@@ -257,7 +257,7 @@ static lib_bool vm_app_standard_extension(void *context,
     (void)machine;
     if (app == LIB_NULL || line == LIB_NULL || out == LIB_NULL) return LIB_FALSE;
     if (!vm_app_extension_normalize(line, command, sizeof(command))) return LIB_FALSE;
-    *out = (common_session_command_result){0};
+    *out = (emulator_session_command_result){0};
     if (lib_text_compare((const char *)command, "info") == 0) {
         if (product_surface_information_read(app, &information) != LIB_STATUS_OK) {
             vm_app_extension_append(out, "Machine information unavailable.\r\n\r\n");
@@ -282,7 +282,7 @@ static lib_bool vm_app_standard_extension(void *context,
         vm_app_extension_append(out, "\r\nBIOS: %s\r\nRunning: %s\r\n\r\n",
             information.external_firmware ? "external ROM mapped at F0000h" :
                 "profile ROM mapped",
-            state == COMMON_SESSION_MACHINE_RUNNING ? "Yes" : "No");
+            state == EMULATOR_SESSION_MACHINE_RUNNING ? "Yes" : "No");
         return LIB_TRUE;
     }
     if (lib_text_compare((const char *)command, "speed") == 0) {

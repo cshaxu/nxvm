@@ -23,7 +23,7 @@ static void probe(const char *variable, lib_u8 mapper, lib_bool text_output)
     const char *limit_text = getenv("MYNES_OWNER_SLICES");
     lib_u32 limit = 20000u;
     lib_u32 slice;
-    common_machine_frame frame = { 0 };
+    emulator_machine_frame frame = { 0 };
 
     if (path == LIB_NULL || path[0] == '\0') return;
     if (limit_text != LIB_NULL && limit_text[0] != '\0') {

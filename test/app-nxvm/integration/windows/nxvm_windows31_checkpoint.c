@@ -201,7 +201,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             VM_T287_DIRECTORY_TIMEOUT_MILLISECONDS) == LIB_NULL) goto fail;
     if (integration_ini_session_pause(&ini_session, VM_T287_COMMAND_TIMEOUT_MILLISECONDS) != LIB_STATUS_OK)
         goto fail;
-    if (common_machine_shutdown(ini_session.common_machine) != LIB_STATUS_OK) goto fail;
+    if (emulator_machine_shutdown(ini_session.emulator_machine) != LIB_STATUS_OK) goto fail;
     stage = "bda-hdd-count";
     if (core_machine_debug_read_memory(session->core_machine, 0x0474u, hdd_bda,
             sizeof(hdd_bda)) == LIB_STATUS_OK) hdd_count = hdd_bda[1];
@@ -217,9 +217,9 @@ lib_i32 main(lib_i32 argc, char **argv)
     }
 
 fail:
-    if (common_machine_state_get(ini_session.common_machine) == COMMON_MACHINE_RUNNING)
+    if (emulator_machine_state_get(ini_session.emulator_machine) == EMULATOR_MACHINE_RUNNING)
         (void)integration_ini_session_pause(&ini_session, VM_T287_COMMAND_TIMEOUT_MILLISECONDS);
-    if (common_machine_shutdown(ini_session.common_machine) == LIB_STATUS_OK)
+    if (emulator_machine_shutdown(ini_session.emulator_machine) == LIB_STATUS_OK)
         vm_t287_report(session, stage);
     if (session != LIB_NULL) vm_machine_stop(session);
     integration_ini_session_close(&ini_session);

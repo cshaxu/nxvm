@@ -1,8 +1,8 @@
 #include <assert.h>
 
 #include "core/driver_interface.h"
-#include "common/machine/machine_interface.h"
-#include "common/session/session_interface.h"
+#include "emulator/machine/machine_interface.h"
+#include "emulator/session/session_interface.h"
 #include "lib/storage/file_interface.h"
 #include "lib/types/file.h"
 
@@ -16,14 +16,14 @@ static lib_status save_battery(core_driver *driver, const char *path)
     return save_status;
 }
 
-static lib_bool set_media(common_machine *machine, const char *path,
+static lib_bool set_media(emulator_machine *machine, const char *path,
     lib_storage_medium_mode mode)
 {
     ++media_calls;
-    return common_machine_set_removable_media(machine, path, mode);
+    return emulator_machine_set_removable_media(machine, path, mode);
 }
 
-static lib_bool session_run(common_session *session)
+static lib_bool session_run(emulator_session *session)
 {
     assert(session != LIB_NULL);
     return LIB_TRUE;
@@ -32,21 +32,21 @@ static lib_bool session_run(common_session *session)
 /* Substitute only existing boundaries, to observe whether a failed save can
  * reach the destructive media operation. No production test API is added. */
 #define core_driver_save_battery_ram save_battery
-#define common_machine_set_removable_media set_media
-#define common_session_run session_run
+#define emulator_machine_set_removable_media set_media
+#define emulator_session_run session_run
 #include "product/composition.c"
-#undef common_session_run
-#undef common_machine_set_removable_media
+#undef emulator_session_run
+#undef emulator_machine_set_removable_media
 #undef core_driver_save_battery_ram
 
 int main(void)
 {
     app_composition composition = {0};
-    common_machine_driver driver;
+    emulator_machine_driver driver;
     assert(core_driver_create(&composition.driver,
         &(core_driver_options){0}) == LIB_STATUS_OK);
     assert(core_driver_make_driver(composition.driver, &driver) == LIB_STATUS_OK);
-    assert(common_machine_create(&composition.machine, &driver) == LIB_STATUS_OK);
+    assert(emulator_machine_create(&composition.machine, &driver) == LIB_STATUS_OK);
     lib_memory_copy(composition.battery_path, "previous.sav", sizeof("previous.sav"));
 
     save_status = LIB_STATUS_IO_ERROR;
@@ -58,8 +58,8 @@ int main(void)
     save_status = LIB_STATUS_OK;
     assert(app_composition_set_media(&composition, LIB_NULL));
     assert(media_calls == 1u && composition.battery_path[0] == '\0');
-    assert(common_machine_shutdown(composition.machine) == LIB_STATUS_OK);
-    assert(common_machine_destroy(composition.machine) == LIB_STATUS_OK);
+    assert(emulator_machine_shutdown(composition.machine) == LIB_STATUS_OK);
+    assert(emulator_machine_destroy(composition.machine) == LIB_STATUS_OK);
     assert(core_driver_destroy(composition.driver) == LIB_STATUS_OK);
     {
         lib_u8 rom[16400] = {'N', 'E', 'S', 0x1au, 1u};

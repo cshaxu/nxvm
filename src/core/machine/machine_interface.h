@@ -5,7 +5,7 @@
 
 #include "core/machine/input_interface.h"
 #include "core/board-base/rom_validation_interface.h"
-#include "common/machine/machine_interface.h"
+#include "emulator/machine/machine_interface.h"
 #include "lib/storage/medium_interface.h"
 
 typedef enum vm_machine_speed {
@@ -51,12 +51,12 @@ lib_status vm_machine_create(const vm_machine_config *config,
 void vm_machine_destroy(vm_machine *session);
 /* vm/machine supplies this value-only driver; App composition owns the Common
  * machine it constructs from it. */
-lib_status vm_machine_describe_common_driver(vm_machine *session,
-    common_machine_driver *out_driver);
+lib_status vm_machine_describe_emulator_driver(vm_machine *session,
+    emulator_machine_driver *out_driver);
 /* App binds its Common owner before lifecycle requests.  Passing NULL revokes
  * that non-owning link during ordered teardown. */
-lib_status vm_machine_bind_common_machine(vm_machine *session,
-    common_machine *common_machine);
+lib_status vm_machine_bind_emulator_machine(vm_machine *session,
+    emulator_machine *emulator_machine);
 lib_status vm_machine_reconfigure_memory(vm_machine *session,
     lib_size memory_bytes);
 lib_status vm_machine_get_speed(const vm_machine *session,

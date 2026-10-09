@@ -1,8 +1,8 @@
 #ifndef PRODUCT_SURFACE_COMMAND_H
 #define PRODUCT_SURFACE_COMMAND_H
 
-#include "common/session/session_interface.h"
-#include "common/machine/machine_interface.h"
+#include "emulator/session/session_interface.h"
+#include "emulator/machine/machine_interface.h"
 #include "product/debug/debug_interface.h"
 
 #define PRODUCT_SURFACE_COMMAND_TEXT_CAPACITY 2048u
@@ -27,7 +27,7 @@ typedef enum app_lifecycle_request {
 
 /* Product command policy only: no runtime, presenter, broker, or native I/O. */
 typedef struct product_surface_command_session {
-    common_session_display display;
+    emulator_session_display display;
     app_lifecycle_request pending_request;
     int dispatch_pending;
     int transition_pending;
@@ -44,10 +44,10 @@ typedef struct product_surface_command_effect {
 /* Optional App commands are deliberately outside the shared command grammar.
  * The Product still owns monitor admission, prompts, hotkeys, Debug and the
  * lifecycle path; an App extension can only recognize and complete its own
- * command synchronously through the copied Common result. */
+ * command synchronously through the copied Emulator result. */
 typedef lib_bool (*product_surface_command_extension_submit)(void *context,
-    common_machine *machine, common_session_machine_state state,
-    const char *line, common_session_command_result *out);
+    emulator_machine *machine, emulator_session_machine_state state,
+    const char *line, emulator_session_command_result *out);
 
 typedef struct product_surface_command_extensions {
     void *context;
@@ -60,7 +60,7 @@ typedef struct product_surface_command_extensions {
 /* The registered raw-Console hotkey section is product help text shared by
  * monitor `help` and the graphical raw-Console status surface. */
 const char *product_surface_command_hotkey_help(void);
-void product_surface_command_session_initialize(product_surface_command_session *, common_session_display);
+void product_surface_command_session_initialize(product_surface_command_session *, emulator_session_display);
 void product_surface_command_session_open(product_surface_command_session *, product_surface_command_effect *);
 void product_surface_command_session_reject_line(product_surface_command_session *, product_surface_command_effect *);
 void product_surface_command_session_submit_line(product_surface_command_session *, app_monitor_state,
@@ -74,7 +74,7 @@ app_lifecycle_request product_surface_command_session_take_request(product_surfa
 int product_surface_command_session_begin_external(product_surface_command_session *,
     app_monitor_state, app_lifecycle_request);
 void product_surface_command_session_note_runtime(product_surface_command_session *, app_monitor_state,
-    common_machine_state, product_surface_command_effect *);
+    emulator_machine_state, product_surface_command_effect *);
 void product_surface_command_session_note_broker(product_surface_command_session *, app_monitor_state,
     int vm, int monitor_running_surface);
 void product_surface_command_session_note_monitor_current(product_surface_command_session *, int, product_surface_command_effect *);
@@ -83,7 +83,7 @@ void product_surface_command_session_note_monitor_current(product_surface_comman
 /* The app chooses its CLI. Session continues owning dispatch and Console I/O. */
 typedef struct product_surface_command_context {
     product_surface_command_session session;
-    common_machine *machine;
+    emulator_machine *machine;
     product_debug *debug;
     lib_bool debug_active;
     product_debug_result debug_completed;
@@ -92,19 +92,19 @@ typedef struct product_surface_command_context {
     product_surface_command_extensions extensions;
 } product_surface_command_context;
 
-lib_status product_surface_command_initialize(product_surface_command_context *, common_machine *,
-    common_session_display,
+lib_status product_surface_command_initialize(product_surface_command_context *, emulator_machine *,
+    emulator_session_display,
     const product_surface_command_extensions *);
 void product_surface_command_dispose(product_surface_command_context *);
-void product_surface_command_provider_open(void *, common_session_command_result *);
-void product_surface_command_provider_reject_line(void *, common_session_command_result *);
-void product_surface_command_provider_submit_line(void *, common_session_machine_state,
-    const char *, common_session_command_result *);
-lib_bool product_surface_command_provider_begin_external(void *, common_session_machine_state,
-    common_session_request);
-void product_surface_command_provider_note_runtime(void *, common_session_machine_state,
-    common_session_machine_state, common_session_command_result *);
-void product_surface_command_provider_note_broker(void *, common_session_machine_state, lib_bool, lib_bool);
-void product_surface_command_provider_note_monitor_current(void *, lib_bool, common_session_command_result *);
+void product_surface_command_provider_open(void *, emulator_session_command_result *);
+void product_surface_command_provider_reject_line(void *, emulator_session_command_result *);
+void product_surface_command_provider_submit_line(void *, emulator_session_machine_state,
+    const char *, emulator_session_command_result *);
+lib_bool product_surface_command_provider_begin_external(void *, emulator_session_machine_state,
+    emulator_session_request);
+void product_surface_command_provider_note_runtime(void *, emulator_session_machine_state,
+    emulator_session_machine_state, emulator_session_command_result *);
+void product_surface_command_provider_note_broker(void *, emulator_session_machine_state, lib_bool, lib_bool);
+void product_surface_command_provider_note_monitor_current(void *, lib_bool, emulator_session_command_result *);
 
 #endif

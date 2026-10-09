@@ -21,5 +21,5 @@ add_library(mynes-core-driver STATIC
     media.c
     debug.c)
 target_include_directories(mynes-core-driver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(mynes-core-driver PUBLIC mynes-core-hardware common-machine storage audio)
+target_link_libraries(mynes-core-driver PUBLIC mynes-core-hardware emulator-machine storage audio)
 mynes_enable_strict_warnings(mynes-core-driver)

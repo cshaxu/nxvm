@@ -1,6 +1,6 @@
 #include <assert.h>
 
-#include "common/machine/machine_interface.h"
+#include "emulator/machine/machine_interface.h"
 #include "core/driver_interface.h"
 #include "lib/base/sync_interface.h"
 #include "lib/storage/file_interface.h"
@@ -52,23 +52,23 @@ static void write_fixture(const lib_u8 *bytes, lib_size size)
     assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
 }
 
-static void wait_for_paused(common_machine *machine)
+static void wait_for_paused(emulator_machine *machine)
 {
     lib_u32 attempt;
     for (attempt = 0u; attempt < 1000u; ++attempt) {
-        if (common_machine_state_get(machine) == COMMON_MACHINE_PAUSED) return;
+        if (emulator_machine_state_get(machine) == EMULATOR_MACHINE_PAUSED) return;
         base_sync_sleep_milliseconds(1u);
     }
     assert(0 && "machine did not pause");
 }
 
-static lib_size execute(common_machine *machine, const lib_u8 *request,
+static lib_size execute(emulator_machine *machine, const lib_u8 *request,
     lib_size request_size, lib_u8 *response, lib_size response_capacity)
 {
-    common_machine_debug_lease lease;
+    emulator_machine_debug_lease lease;
     lib_size response_size = 0u;
-    assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
-    assert(common_machine_debug_execute_with_lease(machine, &lease, request,
+    assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
+    assert(emulator_machine_debug_execute_with_lease(machine, &lease, request,
         request_size, response, response_capacity, &response_size) == LIB_STATUS_OK);
     return response_size;
 }
@@ -80,14 +80,14 @@ static void header(lib_u8 *request, lib_u16 operation, lib_u32 payload_size)
     write_u32(request + 4u, payload_size);
 }
 
-static void wait_for_instruction_count(common_machine *machine, lib_u64 expected)
+static void wait_for_instruction_count(emulator_machine *machine, lib_u64 expected)
 {
     lib_u8 request[8] = { 0 };
     lib_u8 response[64];
     lib_u32 attempt;
     header(request, 1u, 0u);
     for (attempt = 0u; attempt < 1000u; ++attempt) {
-        if (common_machine_state_get(machine) == COMMON_MACHINE_PAUSED) {
+        if (emulator_machine_state_get(machine) == EMULATOR_MACHINE_PAUSED) {
             if (execute(machine, request, sizeof(request), response, sizeof(response)) == 52u &&
                 ((lib_u64)read_u32(response + 28u) |
                 ((lib_u64)read_u32(response + 32u) << 32u)) == expected)
@@ -104,19 +104,19 @@ int main(void)
     lib_u8 request[128] = { 0 };
     lib_u8 response[1536];
     core_driver *driver = 0;
-    common_machine *machine = 0;
-    common_machine_driver common_driver;
-    common_machine_debug_lease lease;
+    emulator_machine *machine = 0;
+    emulator_machine_driver emulator_driver;
+    emulator_machine_debug_lease lease;
     lib_size response_size = 0u;
 
     make_fixture(fixture);
     write_fixture(fixture, sizeof(fixture));
     assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
-    assert(core_driver_make_driver(driver, &common_driver) == LIB_STATUS_OK);
-    assert(common_machine_create(&machine, &common_driver) == LIB_STATUS_OK);
-    assert(common_machine_set_removable_media(machine, FIXTURE_PATH,
+    assert(core_driver_make_driver(driver, &emulator_driver) == LIB_STATUS_OK);
+    assert(emulator_machine_create(&machine, &emulator_driver) == LIB_STATUS_OK);
+    assert(emulator_machine_set_removable_media(machine, FIXTURE_PATH,
         LIB_STORAGE_MEDIUM_READONLY));
-    assert(common_machine_reset(machine));
+    assert(emulator_machine_reset(machine));
     wait_for_paused(machine);
 
     header(request, 1u, 0u);
@@ -145,12 +145,12 @@ int main(void)
     assert(execute(machine, request, 8u, response, sizeof(response)) == 18u);
     assert(read_u16(response + 12u) == 1u && read_u16(response + 16u) == 0x8002u);
 
-    assert(common_machine_resume(machine));
+    assert(emulator_machine_resume(machine));
     wait_for_instruction_count(machine, 1u);
     header(request, 1u, 0u);
     (void)execute(machine, request, 8u, response, sizeof(response));
     assert(read_u16(response + 18u) == 0x8002u);
-    assert(common_machine_resume(machine));
+    assert(emulator_machine_resume(machine));
     wait_for_instruction_count(machine, 3u);
     (void)execute(machine, request, 8u, response, sizeof(response));
     assert(read_u16(response + 18u) == 0x8002u);
@@ -166,40 +166,40 @@ int main(void)
     header(request, 3u, 5u);
     write_u16(request + 8u, 0x8000u); write_u16(request + 10u, 1u); request[12] = 0u;
     lib_memory_set(response, 0x5au, sizeof(response));
-    assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
-    assert(common_machine_debug_execute_with_lease(machine, &lease, request, 13u,
+    assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
+    assert(emulator_machine_debug_execute_with_lease(machine, &lease, request, 13u,
         response, sizeof(response), &response_size) == LIB_STATUS_INVALID_ARGUMENT);
     assert(response_size == 0u && response[0] == 0x5au);
 
     header(request, 8u, 8u);
     lib_memory_set(request + 8u, 0, 8u);
     request[8u] = 1u;
-    assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
-    assert(common_machine_debug_execute_with_lease(machine, &lease, request, 16u,
+    assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
+    assert(emulator_machine_debug_execute_with_lease(machine, &lease, request, 16u,
         response, sizeof(response), &response_size) == LIB_STATUS_OK);
     assert(response_size == 12u && read_u16(response + 2u) == 8u);
     request[8u] = 2u;
-    assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
-    assert(common_machine_debug_execute_with_lease(machine, &lease, request, 16u,
+    assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
+    assert(emulator_machine_debug_execute_with_lease(machine, &lease, request, 16u,
         response, sizeof(response), &response_size) == LIB_STATUS_INVALID_ARGUMENT);
 
     header(request, 9u, 12u);
-    assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
-    assert(common_machine_debug_execute_with_lease(machine, &lease, request, 20u,
+    assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
+    assert(emulator_machine_debug_execute_with_lease(machine, &lease, request, 20u,
         response, sizeof(response), &response_size) == LIB_STATUS_UNSUPPORTED);
     lib_memory_set(response, 0x5au, sizeof(response));
     header(request, 1u, 0u); request[0] = 2u;
-    assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
-    assert(common_machine_debug_execute_with_lease(machine, &lease, request, 8u,
+    assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
+    assert(emulator_machine_debug_execute_with_lease(machine, &lease, request, 8u,
         response, sizeof(response), &response_size) == LIB_STATUS_UNSUPPORTED);
     assert(response_size == 0u && response[0] == 0x5au);
     header(request, 1u, 1u); request[8] = 0u;
-    assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
-    assert(common_machine_debug_execute_with_lease(machine, &lease, request, 9u,
+    assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
+    assert(emulator_machine_debug_execute_with_lease(machine, &lease, request, 9u,
         response, sizeof(response), &response_size) == LIB_STATUS_INVALID_ARGUMENT);
     header(request, 1u, 0u);
-    assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
-    assert(common_machine_debug_execute_with_lease(machine, &lease, request, 8u,
+    assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
+    assert(emulator_machine_debug_execute_with_lease(machine, &lease, request, 8u,
         response, 51u, &response_size) == LIB_STATUS_INVALID_ARGUMENT);
 
     {
@@ -211,19 +211,19 @@ int main(void)
         }
         header(request, 5u, 4u);
         write_u16(request + 8u, 0x8110u); write_u16(request + 10u, 1u);
-        assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
-        assert(common_machine_debug_execute_with_lease(machine, &lease, request, 12u,
+        assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
+        assert(emulator_machine_debug_execute_with_lease(machine, &lease, request, 12u,
             response, sizeof(response), &response_size) == LIB_STATUS_LIMIT_EXCEEDED);
     }
     header(request, 1u, 0u);
-    assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
-    assert(common_machine_reset(machine));
+    assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
+    assert(emulator_machine_reset(machine));
     wait_for_paused(machine);
-    assert(common_machine_debug_execute_with_lease(machine, &lease, request, 8u,
+    assert(emulator_machine_debug_execute_with_lease(machine, &lease, request, 8u,
         response, sizeof(response), &response_size) == LIB_STATUS_INVALID_STATE);
 
-    assert(common_machine_shutdown(machine) == LIB_STATUS_OK);
-    assert(common_machine_destroy(machine) == LIB_STATUS_OK);
+    assert(emulator_machine_shutdown(machine) == LIB_STATUS_OK);
+    assert(emulator_machine_destroy(machine) == LIB_STATUS_OK);
     assert(core_driver_destroy(driver) == LIB_STATUS_OK);
     return 0;
 }

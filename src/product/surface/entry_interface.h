@@ -5,10 +5,10 @@
 #include "product/surface/command_interface.h"
 
 /* App has already interpreted its configuration. Product sees only the two
- * choices required to compose Common Session/UI; this is not a Common UI
+ * choices required to compose Emulator Session/UI; this is not a Emulator UI
  * instance and Product remains its sole creator. */
 typedef struct app_composed_ui {
-    common_session_display display;
+    emulator_session_display display;
     lib_bool console_control;
 } app_composed_ui;
 

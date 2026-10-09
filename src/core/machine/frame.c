@@ -32,7 +32,7 @@ static lib_status vm_machine_frame_validate_source(const x86_video_snapshot *sou
 
 lib_status vm_machine_frame_from_display(
     const x86_video_snapshot *source, lib_u64 sequence,
-    common_machine_frame *destination)
+    emulator_machine_frame *destination)
 {
     static const lib_u16 cp437_controls[33u] = {
         0x0020u, 0x263au, 0x263bu, 0x2665u, 0x2666u, 0x2663u, 0x2660u,

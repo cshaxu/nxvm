@@ -214,7 +214,7 @@ static lib_status core_driver_execute_debug(void *context, const void *request,
     return LIB_STATUS_OK;
 }
 
-common_machine_debug_execute core_driver_debug_execute(void)
+emulator_machine_debug_execute core_driver_debug_execute(void)
 {
     return core_driver_execute_debug;
 }

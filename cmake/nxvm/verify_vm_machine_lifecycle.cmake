@@ -10,18 +10,18 @@ if(source MATCHES "vm_platform_|run_handle|executor_fifo")
 endif()
 
 foreach(helper IN ITEMS
-    common_machine_start
-    common_machine_pause
-    common_machine_reset
-    common_machine_resume
-    common_machine_stop)
+    emulator_machine_start
+    emulator_machine_pause
+    emulator_machine_reset
+    emulator_machine_resume
+    emulator_machine_stop)
     string(FIND "${source}" "${helper}" helper_position)
     if(helper_position EQUAL -1)
         message(FATAL_ERROR "VM machine Common lifecycle helper is missing: ${helper}")
     endif()
 endforeach()
 
-foreach(helper IN ITEMS common_machine_create app->factory.prepare
+foreach(helper IN ITEMS emulator_machine_create app->factory.prepare
     app->factory.bind)
     string(FIND "${app_source}" "${helper}" helper_position)
     if(helper_position EQUAL -1)
@@ -29,7 +29,7 @@ foreach(helper IN ITEMS common_machine_create app->factory.prepare
     endif()
 endforeach()
 
-if(source MATCHES "common_machine_create")
+if(source MATCHES "emulator_machine_create")
     message(FATAL_ERROR "VM machine lifecycle still constructs Common")
 endif()
 

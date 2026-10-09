@@ -7,33 +7,33 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/debug_adapter.h"
 #include "core/machine/machine_private.h"
-#include "../support/ibmpc/machine/support/common_machine_fixture.h"
+#include "../support/ibmpc/machine/support/emulator_machine_fixture.h"
 #include "../support/rom/session_assets.h"
 
 static lib_i32 vm_debug_execute(vm_machine *machine,
-    const common_machine_debug_lease *lease,
+    const emulator_machine_debug_lease *lease,
     const product_debug_request *request,
     product_debug_response *result)
 {
     lib_size response_size = 0u;
 
-    return common_machine_debug_execute_with_lease(machine->executor, lease,
+    return emulator_machine_debug_execute_with_lease(machine->executor, lease,
         request, sizeof(*request), result, sizeof(*result), &response_size) ==
             LIB_STATUS_OK && response_size == sizeof(*result);
 }
 
 static lib_i32 vm_debug_wait_paused(const vm_machine *machine,
-    const vm_test_common_machine_state_waiter *waiter)
+    const vm_test_emulator_machine_state_waiter *waiter)
 {
-    return vm_test_common_machine_wait_state(machine, waiter,
-        COMMON_MACHINE_PAUSED, 2000u);
+    return vm_test_emulator_machine_wait_state(machine, waiter,
+        EMULATOR_MACHINE_PAUSED, 2000u);
 }
 
 lib_i32 main(void)
 {
     vm_machine *machine = LIB_NULL;
-    vm_test_common_machine_state_waiter waiter = {0};
-    common_machine_debug_lease lease;
+    vm_test_emulator_machine_state_waiter waiter = {0};
+    emulator_machine_debug_lease lease;
     product_debug_response result;
     lib_u32 register_id;
     lib_u32 watch_address;
@@ -46,10 +46,10 @@ lib_i32 main(void)
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &machine) !=
             LIB_STATUS_OK || machine == LIB_NULL ||
-        vm_test_common_machine_bind(machine) != LIB_STATUS_OK ||
-        vm_test_common_machine_state_waiter_initialize(machine, &waiter) !=
+        vm_test_emulator_machine_bind(machine) != LIB_STATUS_OK ||
+        vm_test_emulator_machine_state_waiter_initialize(machine, &waiter) !=
             LIB_STATUS_OK) return 1;
-    if (!common_machine_reset(machine->executor) ||
+    if (!emulator_machine_reset(machine->executor) ||
         !vm_debug_wait_paused(machine, &waiter))
         goto failed;
     /* Force a Core-originated classification through the adapter.  The
@@ -72,7 +72,7 @@ lib_i32 main(void)
         goto failed;
     }
     machine->core_machine = saved_core_machine;
-    if (common_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK)
+    if (emulator_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK)
         goto failed;
     for (register_id = CORE_MACHINE_DEBUG_EAX;
          register_id < CORE_MACHINE_DEBUG_REGISTER_COUNT; ++register_id) {
@@ -185,22 +185,22 @@ lib_i32 main(void)
         result.observation.count != 1u || !result.observation.accesses[0].write ||
         result.observation.accesses[0].linear != 0x4567u ||
         result.observation.accesses[0].data != 0x5au) goto failed;
-    if (!common_machine_stop(machine->executor)) goto failed;
-    if (common_machine_debug_execute_with_lease(machine->executor, &lease,
+    if (!emulator_machine_stop(machine->executor)) goto failed;
+    if (emulator_machine_debug_execute_with_lease(machine->executor, &lease,
             &(product_debug_request){
                 .operation = PRODUCT_DEBUG_READ_REGISTER,
                 .register_id = CORE_MACHINE_DEBUG_EIP
             }, sizeof(product_debug_request), &result, sizeof(result),
             &(lib_size){0u}) != LIB_STATUS_INVALID_STATE) goto failed;
-    vm_test_common_machine_unbind(machine);
-    vm_test_common_machine_state_waiter_finalize(&waiter);
+    vm_test_emulator_machine_unbind(machine);
+    vm_test_emulator_machine_state_waiter_finalize(&waiter);
     vm_machine_destroy(machine);
     puts("M5:T531:S27:VM-X86-DEBUG-MAPPING:OK");
     return 0;
 
 failed:
-    vm_test_common_machine_unbind(machine);
-    vm_test_common_machine_state_waiter_finalize(&waiter);
+    vm_test_emulator_machine_unbind(machine);
+    vm_test_emulator_machine_state_waiter_finalize(&waiter);
     vm_machine_destroy(machine);
     return 1;
 }

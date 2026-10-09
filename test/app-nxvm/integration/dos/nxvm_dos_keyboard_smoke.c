@@ -267,7 +267,7 @@ lib_i32 main(lib_i32 argc, char **argv)
                 outcome.diagnostic.first_fault.exception_code);
         } else {
             printf("edit run state: %s\n",
-                common_machine_state_get(session->executor) == COMMON_MACHINE_RUNNING ?
+                emulator_machine_state_get(session->executor) == EMULATOR_MACHINE_RUNNING ?
                     "running" : "stopped");
         }
     }

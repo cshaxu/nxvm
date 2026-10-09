@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
-#ifndef TEST_IBMPC_COMMON_EXECUTOR_FIXTURE_H
-#define TEST_IBMPC_COMMON_EXECUTOR_FIXTURE_H
+#ifndef TEST_IBMPC_EMULATOR_EXECUTOR_FIXTURE_H
+#define TEST_IBMPC_EMULATOR_EXECUTOR_FIXTURE_H
 
 #include "core/board-base/machine_board_interface.h"
 

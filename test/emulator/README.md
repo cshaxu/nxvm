@@ -1,0 +1,35 @@
+# Shared Emulator tests
+
+This package selects C11 without extensions in standalone and embedded builds.
+GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
+
+This neutral suite needs only sibling `src/emulator` and `src/lib` corpora.
+The four-directory set `src/lib`, `src/emulator`, `test/lib`, `test/emulator`
+plus the shared CMake tools directly in test/ builds and tests without any x86
+or importing-product files. Emulator tests also run without test/lib. Shared tools
+register/check tests only; each package selects and owns its own suite.
+
+```text
+cmake -S test/emulator -B build/emulator-tests -DCMAKE_BUILD_TYPE=Release
+cmake --build build/emulator-tests
+ctest --test-dir build/emulator-tests --output-on-failure
+```
+
+Coverage: public Session create/bind/destroy, copied UI/runtime/frame ingress;
+UI initialization cleanup and monitor/control status propagation; publication
+value copy and run identity; session FIFO/wake, derived presentation/state matrix, input admission
+and retirement, source-local physical-key identity, machine input FIFO,
+machine/executor/debug byte-transport lease contracts with a fake driver,
+and independent source manifest/DAG negative probes. Emulator sync
+tests use Base; the existing native-thread machine fake is Windows-only and
+does not imply Linux execution coverage. Production Emulator stays platform-free.
+
+`machine_fixture.h` and `machine_fixture.c` own that neutral fake driver and its
+native-thread test resources. Emulator tests inject a token protocol; other
+test packages own their own minimal drivers. No architecture
+commands or registers belong to this fixture. The scripted `machine_wait` test
+separately covers failure interleavings without scheduling or desktop input.
+
+CLI bindings, original machine execution, cooked/raw product presentation,
+firmware and media integration remain in the importing product's test suite.
+They are not copied or weakened to turn them into Emulator unit tests.

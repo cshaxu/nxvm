@@ -79,7 +79,7 @@ static void run_fresh_frames(core_driver *driver, lib_u32 count)
     assert(driver->machine->ppu.frame_revision >= revision);
 }
 
-static lib_u32 rgb_at(const common_machine_frame *frame, lib_u32 x, lib_u32 y)
+static lib_u32 rgb_at(const emulator_machine_frame *frame, lib_u32 x, lib_u32 y)
 {
     return frame->window.image.palette[frame->window.image.pixels[y * 256u + x]];
 }
@@ -95,7 +95,7 @@ static lib_u8 expected_bit(lib_u8 fine_x, lib_u32 x)
 static void prove_fine_x(lib_u8 fine_x)
 {
     core_driver *driver = LIB_NULL;
-    common_machine_frame frame = { 0 };
+    emulator_machine_frame frame = { 0 };
     lib_u32 x;
 
     write_fixture(fine_x);

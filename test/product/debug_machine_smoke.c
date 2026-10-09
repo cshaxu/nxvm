@@ -1,16 +1,16 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
 #include "lib/types/file.h"
-#include "common/machine/machine_interface.h"
+#include "emulator/machine/machine_interface.h"
 #include "product/debug/debug_interface.h"
 
 /* Only the driver behavior needed by Debug's paused-lease integration.
- * Common owns the sole executor; this fixture creates no thread or runner. */
+ * Emulator owns the sole executor; this fixture creates no thread or runner. */
 typedef struct machine_fake {
     lib_win32_handle stopped, wake, running, reset_completed;
-    common_machine_executor_callback callback;
+    emulator_machine_executor_callback callback;
     void *callback_context;
-    common_machine_debug_execute debug;
+    emulator_machine_debug_execute debug;
     void *debug_context;
     lib_win32_dword executor_thread;
     lib_win32_long debug_calls;
@@ -47,7 +47,7 @@ static void fixture_wake(void *opaque)
 static void fixture_heartbeat(void *opaque, lib_bool enabled)
 { (void)opaque; (void)enabled; }
 static void fixture_callback(void *opaque,
-    common_machine_executor_callback callback, void *context)
+    emulator_machine_executor_callback callback, void *context)
 {
     machine_fake *fake = opaque;
     fake->callback = callback;
@@ -55,7 +55,7 @@ static void fixture_callback(void *opaque,
 }
 static void fixture_input(void *opaque, const kvm_input_event *event)
 { (void)opaque; (void)event; }
-static lib_status fixture_frame(void *opaque, common_machine_frame *frame)
+static lib_status fixture_frame(void *opaque, emulator_machine_frame *frame)
 {
     (void)opaque;
     frame->window.valid = LIB_FALSE;
@@ -70,24 +70,24 @@ static lib_status fixture_debug(void *opaque, const void *request, lib_size size
     return fake->debug(fake->debug_context, request, size, response, capacity,
         response_size);
 }
-static void machine_fake_note_state(void *opaque, common_machine_state state,
+static void machine_fake_note_state(void *opaque, emulator_machine_state state,
     lib_u32 generation)
 {
     machine_fake *fake = opaque;
     (void)generation;
-    if (state == COMMON_MACHINE_RUNNING) lib_win32_set_event(fake->running);
-    if (state == COMMON_MACHINE_RESET_COMPLETED)
+    if (state == EMULATOR_MACHINE_RUNNING) lib_win32_set_event(fake->running);
+    if (state == EMULATOR_MACHINE_RESET_COMPLETED)
         lib_win32_set_event(fake->reset_completed);
 }
 static void machine_fake_initialize(machine_fake *fake,
-    common_machine_driver *driver)
+    emulator_machine_driver *driver)
 {
     fake->stopped = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
     fake->wake = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
     fake->running = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
     fake->reset_completed = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
     lib_test_assert(fake->stopped && fake->wake && fake->running && fake->reset_completed);
-    *driver = (common_machine_driver) { .context = fake, .reset = fixture_reset,
+    *driver = (emulator_machine_driver) { .context = fake, .reset = fixture_reset,
         .run = fixture_run, .request_stop = fixture_stop,
         .request_wake = fixture_wake, .set_heartbeat = fixture_heartbeat,
         .set_executor_callback = fixture_callback, .deliver_input = fixture_input,
@@ -179,12 +179,12 @@ static lib_status fake_execute_debug(void *opaque, const void *bytes, lib_size s
     return status;
 }
 
-static lib_status execute_x86(common_machine *machine,
-    const common_machine_debug_lease *lease, const product_debug_request *request,
+static lib_status execute_x86(emulator_machine *machine,
+    const emulator_machine_debug_lease *lease, const product_debug_request *request,
     product_debug_response *response)
 {
     lib_size size;
-    lib_status status = common_machine_debug_execute_with_lease(machine, lease,
+    lib_status status = emulator_machine_debug_execute_with_lease(machine, lease,
         request, sizeof(*request), response, sizeof(*response), &size);
     lib_test_assert(size == (status == LIB_STATUS_OK ? sizeof(*response) : 0u));
     return status;
@@ -359,9 +359,9 @@ int main(void)
 {
     machine_fake fake = { 0 };
     debug_fake protocol = { 0 };
-    common_machine_driver driver = { 0 };
-    common_machine *machine = LIB_NULL;
-    common_machine_debug_lease lease = { 0 };
+    emulator_machine_driver driver = { 0 };
+    emulator_machine *machine = LIB_NULL;
+    emulator_machine_debug_lease lease = { 0 };
     product_debug_response debug_result = { 0 };
     product_debug *debug = LIB_NULL;
     product_debug_result debug_command_result = { 0 };
@@ -369,8 +369,8 @@ int main(void)
     machine_fake_initialize(&fake, &driver);
     fake.debug = fake_execute_debug;
     fake.debug_context = &protocol;
-    lib_test_assert(common_machine_create(&machine, &driver) == LIB_STATUS_OK);
-    common_machine_set_state_sink(machine, machine_fake_note_state, &fake);
+    lib_test_assert(emulator_machine_create(&machine, &driver) == LIB_STATUS_OK);
+    emulator_machine_set_state_sink(machine, machine_fake_note_state, &fake);
     lib_test_assert(product_debug_create(&debug) == LIB_STATUS_OK);
     lib_test_assert(product_debug_open(debug, machine) == LIB_STATUS_OK);
     lib_test_assert(fake.debug_calls == 0);
@@ -380,19 +380,19 @@ int main(void)
     lib_test_assert(lib_text_find_substring(debug_command_result.text, "0003") != LIB_NULL && fake.debug_calls == 0);
     lib_test_assert(product_debug_submit_line(debug, "r", &debug_command_result) == LIB_STATUS_OK);
     lib_test_assert(lib_text_find_substring(debug_command_result.text, "must be paused") != LIB_NULL && fake.debug_calls == 0);
-    lib_test_assert(common_machine_start(machine));
+    lib_test_assert(emulator_machine_start(machine));
     lib_test_assert(lib_win32_wait_for_single_object(fake.running, 5000u) == LIB_WIN32_WAIT_OBJECT_0);
     lib_test_assert(product_debug_submit_line(debug, "d", &debug_command_result) == LIB_STATUS_OK);
     lib_test_assert(lib_text_find_substring(debug_command_result.text, "must be paused") != LIB_NULL);
     lib_test_assert(product_debug_submit_line(debug, "q", &debug_command_result) == LIB_STATUS_OK);
     lib_test_assert(!debug_command_result.keep_active);
-    lib_test_assert(common_machine_state_get(machine) == COMMON_MACHINE_RUNNING);
+    lib_test_assert(emulator_machine_state_get(machine) == EMULATOR_MACHINE_RUNNING);
     lib_test_assert(product_debug_open(debug, machine) == LIB_STATUS_OK);
     lib_test_assert(fake.debug_calls == 0);
-    lib_test_assert(common_machine_reset(machine));
+    lib_test_assert(emulator_machine_reset(machine));
     lib_test_assert(lib_win32_wait_for_single_object(fake.reset_completed, 5000u) == LIB_WIN32_WAIT_OBJECT_0);
-    lib_test_assert(common_machine_state_get(machine) == COMMON_MACHINE_PAUSED);
-    lib_test_assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
+    lib_test_assert(emulator_machine_state_get(machine) == EMULATOR_MACHINE_PAUSED);
+    lib_test_assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
     lib_test_assert(execute_x86(machine, &lease,
         &(product_debug_request) {
             .operation = PRODUCT_DEBUG_READ_REGISTER,
@@ -409,7 +409,7 @@ int main(void)
     product_debug_close(debug);
     product_debug_destroy(debug);
     /* Immediate paused destruction must not need a caller-side STOP barrier. */
-    lib_test_assert(common_machine_destroy(machine) == LIB_STATUS_OK);
+    lib_test_assert(emulator_machine_destroy(machine) == LIB_STATUS_OK);
     machine_fake_dispose(&fake);
     return 0;
 }

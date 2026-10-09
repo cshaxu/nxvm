@@ -1,7 +1,7 @@
 #include <assert.h>
 
 #include "product/command.h"
-#include "common/machine/machine_interface.h"
+#include "emulator/machine/machine_interface.h"
 #include "core/driver_interface.h"
 #include "lib/base/sync_interface.h"
 #include "lib/storage/file_interface.h"
@@ -38,20 +38,20 @@ static void write_fixture(const lib_u8 *bytes, lib_size size)
     assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
 }
 
-static void wait_for_paused(common_machine *machine)
+static void wait_for_paused(emulator_machine *machine)
 {
     lib_u32 attempt;
     for (attempt = 0u; attempt < 1000u; ++attempt) {
-        if (common_machine_state_get(machine) == COMMON_MACHINE_PAUSED) return;
+        if (emulator_machine_state_get(machine) == EMULATOR_MACHINE_PAUSED) return;
         base_sync_sleep_milliseconds(1u);
     }
     assert(0 && "machine did not pause");
 }
 
 static void submit(app_command_context *context, const char *line,
-    common_session_command_result *result)
+    emulator_session_command_result *result)
 {
-    app_command_submit_line(context, COMMON_SESSION_MACHINE_PAUSED, line, result);
+    app_command_submit_line(context, EMULATOR_SESSION_MACHINE_PAUSED, line, result);
     assert(result->arm_prompt && !result->exit_requested);
 }
 
@@ -59,22 +59,22 @@ int main(void)
 {
     lib_u8 fixture[16u + 16384u];
     core_driver *driver = 0;
-    common_machine *machine = 0;
-    common_machine_driver common_driver;
+    emulator_machine *machine = 0;
+    emulator_machine_driver emulator_driver;
     app_command_context command;
-    common_session_command_result result;
+    emulator_session_command_result result;
 
     make_fixture(fixture);
     write_fixture(fixture, sizeof(fixture));
     assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
-    assert(core_driver_make_driver(driver, &common_driver) == LIB_STATUS_OK);
-    assert(common_machine_create(&machine, &common_driver) == LIB_STATUS_OK);
-    assert(common_machine_set_removable_media(machine, FIXTURE_PATH,
+    assert(core_driver_make_driver(driver, &emulator_driver) == LIB_STATUS_OK);
+    assert(emulator_machine_create(&machine, &emulator_driver) == LIB_STATUS_OK);
+    assert(emulator_machine_set_removable_media(machine, FIXTURE_PATH,
         LIB_STORAGE_MEDIUM_READONLY));
-    assert(common_machine_reset(machine));
+    assert(emulator_machine_reset(machine));
     wait_for_paused(machine);
     app_command_initialize(&command, machine, LIB_TRUE,
-        COMMON_SESSION_DISPLAY_WINDOW);
+        EMULATOR_SESSION_DISPLAY_WINDOW);
 
     submit(&command, "debug REGS", &result);
     assert(lib_text_compare(result.text, "A=00 X=00 Y=00 S=FD P=24 PC=8000 cycles=7 instructions=0\n") == 0);
@@ -103,11 +103,11 @@ int main(void)
     assert(lib_text_compare(result.text, "Removed breakpoint 8002.\n") == 0);
     submit(&command, "debug reset", &result);
     assert(lib_text_compare(result.text, "Soft reset complete; machine paused.\n") == 0);
-    app_command_submit_line(&command, COMMON_SESSION_MACHINE_RUNNING, "debug regs", &result);
+    app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_RUNNING, "debug regs", &result);
     assert(lib_text_compare(result.text, "Pause with a cartridge before debugging.\n") == 0);
 
-    assert(common_machine_shutdown(machine) == LIB_STATUS_OK);
-    assert(common_machine_destroy(machine) == LIB_STATUS_OK);
+    assert(emulator_machine_shutdown(machine) == LIB_STATUS_OK);
+    assert(emulator_machine_destroy(machine) == LIB_STATUS_OK);
     assert(core_driver_destroy(driver) == LIB_STATUS_OK);
     return 0;
 }

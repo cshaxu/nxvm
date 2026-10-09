@@ -3,7 +3,7 @@
 #include "core/driver.h"
 #include "core/machine.h"
 #include "core/debug_interface.h"
-#include "common/machine/frame_interface.h"
+#include "emulator/machine/frame_interface.h"
 #include "lib/storage/file_interface.h"
 
 static lib_u8 fixture[16u + 131072u];
@@ -65,7 +65,7 @@ int main(void)
     core_driver *driver = LIB_NULL;
     core_machine *accepted;
     lib_size index;
-    static common_machine_frame frame;
+    static emulator_machine_frame frame;
 
     make_fixture();
     write_fixture();

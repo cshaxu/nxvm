@@ -4,8 +4,8 @@
 lib_i32 main(void)
 {
     x86_video_snapshot source = {0};
-    static common_machine_frame destination;
-    static common_machine_frame before;
+    static emulator_machine_frame destination;
+    static emulator_machine_frame before;
 
     source.kind = X86_VIDEO_KIND_TEXT;
     source.columns = 80u;

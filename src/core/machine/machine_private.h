@@ -14,13 +14,13 @@
 #include "core/machine/debug.h"
 #include "core/machine/media/fdd_interface.h"
 #include "core/machine/media/hdd_interface.h"
-#include "common/machine/machine_interface.h"
+#include "emulator/machine/machine_interface.h"
 #include "core/board-base/floppy_interface.h"
 
 struct vm_machine {
     lib_bool active;
     /* Non-owning App-composition link. */
-    common_machine *executor;
+    emulator_machine *executor;
     core_machine_plan *core_machine_plan;
     vm_machine_construction construction;
     core_machine *core_machine;
@@ -32,9 +32,9 @@ struct vm_machine {
     t_debug debug;
     core_machine_media_registry *media_registry;
     core_machine_display_provider_slot *display_provider;
-    common_machine_executor_callback executor_callback;
+    emulator_machine_executor_callback executor_callback;
     void *executor_callback_context;
-    common_machine_frame latest_frame;
+    emulator_machine_frame latest_frame;
     lib_bool latest_frame_valid;
     lib_u64 display_generation;
     lib_u64 display_snapshot_generation;
@@ -60,9 +60,9 @@ lib_status vm_machine_storage_initialize(vm_machine *machine);
 lib_status vm_machine_apply_cmos_seed(const vm_machine *session,
     core_machine_plan_topology *topology);
 void vm_machine_storage_finalize(vm_machine *machine);
-lib_status vm_machine_deliver_common_input(vm_machine *machine,
+lib_status vm_machine_deliver_emulator_input(vm_machine *machine,
     const kvm_input_event *event);
-lib_status vm_machine_copy_common_frame(vm_machine *machine, common_machine_frame *frame);
-lib_status vm_machine_set_common_media(vm_machine *machine, const char *path,
+lib_status vm_machine_copy_emulator_frame(vm_machine *machine, emulator_machine_frame *frame);
+lib_status vm_machine_set_emulator_media(vm_machine *machine, const char *path,
     lib_storage_medium_mode mode);
 #endif

@@ -1,6 +1,6 @@
 #include <assert.h>
 
-#include "common/machine/machine_interface.h"
+#include "emulator/machine/machine_interface.h"
 #include "core/debug_interface.h"
 #include "core/driver_interface.h"
 #include "lib/base/sync_interface.h"
@@ -29,10 +29,10 @@ static lib_status get(void *opaque, lib_u8 *bytes, lib_size count)
     return LIB_STATUS_OK;
 }
 
-static void wait_state(common_machine *machine, common_machine_state state)
+static void wait_state(emulator_machine *machine, emulator_machine_state state)
 {
     for (lib_u32 i = 0u; i < 1000u; ++i) {
-        if (common_machine_state_get(machine) == state) return;
+        if (emulator_machine_state_get(machine) == state) return;
         base_sync_sleep_milliseconds(1u);
     }
     assert(0 && "lifecycle did not complete");
@@ -60,18 +60,18 @@ static void fixture(void)
     assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
 }
 
-static void debug(common_machine *machine, const lib_u8 *request,
+static void debug(emulator_machine *machine, const lib_u8 *request,
     lib_size request_size, lib_u8 *response, lib_size expected_size)
 {
-    common_machine_debug_lease lease;
+    emulator_machine_debug_lease lease;
     lib_size size = 0u;
-    assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
-    assert(common_machine_debug_execute_with_lease(machine, &lease, request,
+    assert(emulator_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
+    assert(emulator_machine_debug_execute_with_lease(machine, &lease, request,
         request_size, response, expected_size, &size) == LIB_STATUS_OK);
     assert(size == expected_size);
 }
 
-static lib_u64 cycles(common_machine *machine)
+static lib_u64 cycles(emulator_machine *machine)
 {
     lib_u8 request[8] = {CORE_DEBUG_VERSION, 0, CORE_DEBUG_OBSERVE};
     lib_u8 response[52];
@@ -81,29 +81,29 @@ static lib_u64 cycles(common_machine *machine)
     return value;
 }
 
-static void run_and_check(common_machine *machine, lib_bool pressed)
+static void run_and_check(emulator_machine *machine, lib_bool pressed)
 {
     lib_u64 before = cycles(machine);
     lib_u32 sequence;
     kvm_input_event event = {0};
     lib_u8 request[12] = {CORE_DEBUG_VERSION, 0, CORE_DEBUG_PEEK, 0, 4, 0, 0, 0, 0, 0, 1};
     lib_u8 response[17];
-    assert(common_machine_resume(machine));
-    wait_state(machine, COMMON_MACHINE_RUNNING);
+    assert(emulator_machine_resume(machine));
+    wait_state(machine, EMULATOR_MACHINE_RUNNING);
     event.type = KVM_EVENT_KEY;
     event.source_identity = 1u;
     event.data.key.key = 'K';
     event.data.key.pressed = pressed;
-    assert(common_machine_enqueue_input(machine, &event));
-    sequence = common_machine_published_frame_sequence(machine);
+    assert(emulator_machine_enqueue_input(machine, &event));
+    sequence = emulator_machine_published_frame_sequence(machine);
     for (lib_u32 i = 0u; i < 1000u; ++i) {
-        if (common_machine_published_frame_sequence(machine) - sequence >= 2u) break;
+        if (emulator_machine_published_frame_sequence(machine) - sequence >= 2u) break;
         base_sync_sleep_milliseconds(1u);
     }
-    assert(common_machine_pause(machine));
-    wait_state(machine, COMMON_MACHINE_PAUSED);
+    assert(emulator_machine_pause(machine));
+    wait_state(machine, EMULATOR_MACHINE_PAUSED);
     assert(cycles(machine) > before && "Running must actually advance guest cycles");
-    assert(common_machine_published_frame_sequence(machine) - sequence >= 2u);
+    assert(emulator_machine_published_frame_sequence(machine) - sequence >= 2u);
     debug(machine, request, sizeof(request), response, sizeof(response));
     assert(response[16] == (pressed ? 1u : 0u));
 }
@@ -113,56 +113,56 @@ int main(void)
     fixture();
     for (lib_u32 text = 0u; text < 2u; ++text) {
         core_driver *driver = LIB_NULL;
-        common_machine *machine = LIB_NULL;
-        common_machine_driver binding;
+        emulator_machine *machine = LIB_NULL;
+        emulator_machine_driver binding;
         snapshot_bytes snapshot = {0};
         lib_u64 saved;
         assert(core_driver_create(&driver, &(core_driver_options){.text_output = text != 0u}) == LIB_STATUS_OK);
         assert(core_driver_make_driver(driver, &binding) == LIB_STATUS_OK);
-        assert(common_machine_create(&machine, &binding) == LIB_STATUS_OK);
-        assert(common_machine_set_removable_media(machine, "mynes-snapshot.nes", LIB_STORAGE_MEDIUM_READONLY));
-        assert(common_machine_reset(machine));
-        wait_state(machine, COMMON_MACHINE_PAUSED);
+        assert(emulator_machine_create(&machine, &binding) == LIB_STATUS_OK);
+        assert(emulator_machine_set_removable_media(machine, "mynes-snapshot.nes", LIB_STORAGE_MEDIUM_READONLY));
+        assert(emulator_machine_reset(machine));
+        wait_state(machine, EMULATOR_MACHINE_PAUSED);
         run_and_check(machine, LIB_TRUE);
-        assert(common_machine_read_state(machine, &(common_machine_state_writer){put, &snapshot}) == LIB_STATUS_OK);
-        wait_state(machine, COMMON_MACHINE_PAUSED);
+        assert(emulator_machine_read_state(machine, &(emulator_machine_state_writer){put, &snapshot}) == LIB_STATUS_OK);
+        wait_state(machine, EMULATOR_MACHINE_PAUSED);
         run_and_check(machine, LIB_FALSE);
         saved = cycles(machine);
         snapshot.size = 0u;
-        assert(common_machine_read_state(machine, &(common_machine_state_writer){put, &snapshot}) == LIB_STATUS_OK);
-        wait_state(machine, COMMON_MACHINE_PAUSED);
+        assert(emulator_machine_read_state(machine, &(emulator_machine_state_writer){put, &snapshot}) == LIB_STATUS_OK);
+        wait_state(machine, EMULATOR_MACHINE_PAUSED);
         /* Restore the same completed frame: the old publication cache must
          * not suppress the first image of the new run generation. */
         {
-            lib_u32 sequence = common_machine_published_frame_sequence(machine);
-            assert(common_machine_stop(machine));
-            wait_state(machine, COMMON_MACHINE_STOPPED);
+            lib_u32 sequence = emulator_machine_published_frame_sequence(machine);
+            assert(emulator_machine_stop(machine));
+            wait_state(machine, EMULATOR_MACHINE_STOPPED);
             snapshot.cursor = 0u;
-            assert(common_machine_write_state(machine, &(common_machine_state_reader){get, &snapshot}) == LIB_STATUS_OK);
-            wait_state(machine, COMMON_MACHINE_PAUSED);
+            assert(emulator_machine_write_state(machine, &(emulator_machine_state_reader){get, &snapshot}) == LIB_STATUS_OK);
+            wait_state(machine, EMULATOR_MACHINE_PAUSED);
             assert(cycles(machine) == saved);
-            assert(common_machine_published_frame_sequence(machine) != sequence);
+            assert(emulator_machine_published_frame_sequence(machine) != sequence);
         }
         run_and_check(machine, LIB_FALSE);
         for (lib_u32 repeat = 0u; repeat < 2u; ++repeat) {
-            assert(common_machine_stop(machine));
-            wait_state(machine, COMMON_MACHINE_STOPPED);
+            assert(emulator_machine_stop(machine));
+            wait_state(machine, EMULATOR_MACHINE_STOPPED);
             snapshot.cursor = 0u;
-            assert(common_machine_write_state(machine, &(common_machine_state_reader){get, &snapshot}) == LIB_STATUS_OK);
-            wait_state(machine, COMMON_MACHINE_PAUSED);
+            assert(emulator_machine_write_state(machine, &(emulator_machine_state_reader){get, &snapshot}) == LIB_STATUS_OK);
+            wait_state(machine, EMULATOR_MACHINE_PAUSED);
             assert(cycles(machine) == saved);
             run_and_check(machine, repeat == 0u);
         }
-        assert(common_machine_stop(machine));
-        wait_state(machine, COMMON_MACHINE_STOPPED);
+        assert(emulator_machine_stop(machine));
+        wait_state(machine, EMULATOR_MACHINE_STOPPED);
         snapshot.bytes[0] = 'X'; snapshot.cursor = 0u;
-        assert(common_machine_write_state(machine, &(common_machine_state_reader){get, &snapshot}) != LIB_STATUS_OK);
-        assert(common_machine_state_get(machine) == COMMON_MACHINE_STOPPED);
-        assert(common_machine_reset(machine));
-        wait_state(machine, COMMON_MACHINE_PAUSED);
+        assert(emulator_machine_write_state(machine, &(emulator_machine_state_reader){get, &snapshot}) != LIB_STATUS_OK);
+        assert(emulator_machine_state_get(machine) == EMULATOR_MACHINE_STOPPED);
+        assert(emulator_machine_reset(machine));
+        wait_state(machine, EMULATOR_MACHINE_PAUSED);
         run_and_check(machine, LIB_FALSE);
-        assert(common_machine_shutdown(machine) == LIB_STATUS_OK);
-        assert(common_machine_destroy(machine) == LIB_STATUS_OK);
+        assert(emulator_machine_shutdown(machine) == LIB_STATUS_OK);
+        assert(emulator_machine_destroy(machine) == LIB_STATUS_OK);
         assert(core_driver_destroy(driver) == LIB_STATUS_OK);
     }
     return 0;

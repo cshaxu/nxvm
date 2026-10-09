@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## Current Task — M5 T547 (S8 Active; T Qualification Pending)
+## Current Task — M5 T547 (S9 Active; T Qualification Pending)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T547; S8 completes the in-progress Core rehome and imports SoftPC's current public Lib/Common/Product six-component corpus. |
-| Admission And Approval | Owner explicitly admits S8, authorizes correcting SoftPC's two stale manifests in the NXVM import, requires Ninja-first full dual-width build/test and push; standing automatic S admission and push approval apply. |
-| Objective | Complete the approved Core rehome baseline, replace the retired portable `x86/{debug,xasm32}` and `ibmpc/product` owners with unmodified SoftPC `src/product` and `test/product`, and import SoftPC `src/{lib,common}` and `test/{lib,common}` including the two manifest corrections. Adapt Core Product and all four App receivers to the new Product contracts without retaining aliases. |
-| Non-goals | No change to SoftPC, MyNES, firmware/media/INI contents, Core chip/board semantics, Lib/Common API invention, compatibility alias, duplicate Product route or framework. |
-| Reference Baseline | Pushed T547 S4 qualification baseline `16e008415`; fixed upstream source is clean SoftPC `288d93193c5c53c6be9d50db79b18de10ee9be03`. S7's uncommitted Core-rehome working tree is part of this S8 delivery because its CMake receiver changes are required to build the imported Product. |
-| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S7-S8 continuation. |
-| Files And ABI Surface | `src/{lib,common,product,core}`, `test/{lib,common,product,core}`, retired `src/x86/{debug,xasm32}`, retired `src/ibmpc/product`, root/package CMake, manifests, static gates, four App receivers, current architecture/layout authorities and eight App artifacts. |
+| Identifier Mode | Continuation T547; S9 imports the current SoftPC six-component corpus and adopts its `common` → `emulator` public component naming. |
+| Admission And Approval | Owner explicitly admits S9 to execute the import. Standing automatic S admission and ordinary push approval apply. |
+| Objective | Import clean SoftPC `e6001412` `src/{lib,emulator,product}` and `test/{lib,emulator,product}` byte-for-byte, retire NXVM's shared `common` route, and adapt all NXVM-only Core and App receivers to the canonical `emulator` APIs, targets, paths and manifests. |
+| Non-goals | No change to SoftPC; no MyNES behavior, configuration or asset change; no CPU, chip, board, machine, firmware, media, INI or Product behavior change; no compatibility aliases, duplicate shared route, API invention or new framework. The mechanical MyNES receiver migration is required because it consumes the renamed public API. |
+| Reference Baseline | Pushed T547 S8 delivery `e8106c056`; fixed upstream source is clean SoftPC `e6001412`. |
+| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S9 continuation. |
+| Files And ABI Surface | Raw imported `src/{lib,emulator,product}` and `test/{lib,emulator,product}`; NXVM-only Core/App receiver includes, symbols, CMake and manifests; eight PC artifacts. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source policies; SoftPC provenance and shared component manifest/boundary rules. |
-| Verification | All six imported manifests and static boundary gates; each imported package's unit suite; complete repository unit suites and available integration suites on x64/x86; all eight affected App artifacts built with Ninja and deployment identities verified. Desktop/external results reported separately. |
-| Expected Markers | `src/product` and `test/product` are the sole portable Product owners; no live `x86/debug`, `x86/xasm32` or `ibmpc/product` path, target, include or symbol remains; no stale SoftPC Common manifest entry remains; NXVM-only CPU/chip/board/machine code exists only under `core/`. |
+| Verification | Exact six-root upstream diff check; six manifests and static boundary gates; each imported package's unit suite; complete repository unit suites and available integration suites on x64/x86; Ninja-built eight PC artifacts with deployment identities verified. Desktop/external results reported separately. |
+| Expected Markers | `src/{lib,emulator,product}` and matching tests are the only shared owners and match `e6001412`; no live `common/`, `common_*` or `COMMON_*` receiver path/target/symbol remains; no compatibility aliases exist; NXVM-only CPU/chip/board/machine code remains under `core/`. |
 | Asset Needs | Existing BYOB assets for ordinary App/integration routes only. |
 | Reporting Requirements | Report actual source/test diff, each retained App adapter, build/test results and all unexecuted desktop/external gates. Do not describe a local compile as full qualification. |
 | Stop Conditions | Stop for an incompatible SoftPC semantic, required Lib/Common/x86 change, protected-source issue, runtime regression or non-deterministic failure. |
-| Exit Criteria | Core rehome and public six-component import have one live source/test owner each, with no forwarding aliases or retired routes; upstream manifest corrections are included; all declared dual-width build/test/artifact gates have actual results and all eight artifacts are rebuilt. Full T qualification remains required before T closure. |
-| Original Owner Request | Accept current SoftPC public six components for raw import, correct its two stale manifests in NXVM, and fully build/test/push the resulting product. |
-| Similar-Issue Sweep | Search source, tests, CMake, manifests and design documents for retired x86/ibmpc Product paths, stale source/test manifest entries, component names and any receiver retaining old Product targets. Audit all new Product dependencies remain inward only. |
+| Exit Criteria | Exact six-root upstream parity; no live old Common path/name/target; no reverse dependency or alias; declared dual-width build/test/artifact gates have actual results and all eight artifacts are rebuilt. T remains open for owner review. |
+| Original Owner Request | Audit the latest SoftPC public six components, then admit and execute their import into NXVM. |
+| Similar-Issue Sweep | Search source, tests, CMake, manifests and docs for all old Common include paths, names, targets, output markers and package identities; audit imported APIs remain inward-only. |
 
 | Work | Progress |
 | --- | --- |
@@ -29,6 +29,7 @@
 | T547 S6 | Complete: `bf469c879` adopts SoftPC S16's ownership correction without importing SoftPC runtime code. NXVM-family configuration/factory/extension support and direct tests now live in `src/core/product` and `test/core/product`; the old `ibmpc/nxvm` member is gone. IBM PC and core gates plus 8 focused tests pass on x64 and x86; all eight 0546 product artifacts were rebuilt against the relocated link input. |
 | T547 S7 | Superseded into S8 before P delivery: its uncommitted canonical Core rehome is retained as S8's required receiver baseline rather than split into an unbuildable partial commit. |
 | T547 S8 | Active: owner-directed raw SoftPC public six-component import from `288d9319`, including its two stale Common manifest repairs and complete Ninja-first dual-width qualification/artifact delivery. |
+| T547 S9 | Active: owner-directed raw SoftPC `e6001412` six-component import. Canonical shared `emulator` replaces retired `common`; all NXVM receivers, CMake, manifests and tests must migrate with no alias. |
 | T547 S1 | Implementation P complete and pushed as `26c013bba`: current SoftPC differences were reconciled, native-test isolation imported, NXVM's later x86/IBM PC repairs retained, and the stale x86 negative fixture fixed. Its incomplete aggregate/stability evidence is explicitly continued by S2. |
 | T547 S2 | Complete: pushed as `70bb50312`. The aggregate default is reduced from 8 to the evidence-backed safe 4 jobs, without changing individual budgets or assertions. One complete x64/x86 run of each shared package passes: Lib 51/51, Common 20/20, x86 182/182 and IBM PC 182/182; complete repository-only units pass 506/506 per width. See `etc/evidence/t547-s2-shared-test-stability.md`. |
 | T547 S3 | Complete: pushed as `8d7022ea8`. All four shared test roots were audited; current identities are behavior-derived, registrations/manifests match, static identity and focused dual-width checks pass. S4 separately owns full-project qualification. |
@@ -316,7 +317,7 @@ this governance acceptance adds no executable input.
 
 - Independent chips and sole CPU implementation live in core/chips; neutral
   execution, memory/ports and guest time live in core/x86.
-- IBMPC board-common/AT/XT own PC wiring; Machine owns one Common driver and
+- IBMPC board-common/AT/XT own PC wiring; Machine owns one Emulator driver and
   pacing/media adaptation; Product owns command/Debug/UX/entry while each App
   owns its INI/request-loader policy.
 - Four fixed Apps own immutable compositions and firmware bindings. Model40

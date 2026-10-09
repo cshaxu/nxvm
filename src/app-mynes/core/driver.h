@@ -19,7 +19,7 @@ struct core_driver {
     lib_u16 audio_staging_count;
     lib_bool audio_needs_clear;
     core_driver_options options;
-    common_machine_executor_callback executor_callback;
+    emulator_machine_executor_callback executor_callback;
     void *executor_context;
     lib_atomic_i32 stop_requested;
     lib_atomic_i32 wake_requested;
@@ -37,7 +37,7 @@ struct core_driver {
     lib_u64 pacing_origin_cycles;
     lib_bool pacing_ready;
     lib_bool text_output;
-    common_machine_state_writer state_writer;
+    emulator_machine_state_writer state_writer;
     lib_status state_read_status;
     lib_bool state_read_ready;
 };
@@ -48,18 +48,18 @@ void core_driver_request_stop(void *context);
 void core_driver_request_wake(void *context);
 void core_driver_set_heartbeat(void *context, lib_bool enabled);
 void core_driver_set_executor_callback(void *context,
-    common_machine_executor_callback callback, void *callback_context);
+    emulator_machine_executor_callback callback, void *callback_context);
 void core_driver_deliver_input(void *context, const kvm_input_event *event);
-lib_status core_driver_copy_frame(void *context, common_machine_frame *out_frame);
+lib_status core_driver_copy_frame(void *context, emulator_machine_frame *out_frame);
 lib_bool core_driver_take_debug_stop(void *context);
 void core_driver_cancel_debug(void *context);
-common_machine_debug_execute core_driver_debug_execute(void);
+emulator_machine_debug_execute core_driver_debug_execute(void);
 lib_bool core_driver_set_media(void *context, const char *path,
     lib_storage_medium_mode mode);
 lib_status core_driver_begin_state_read(void *context,
-    const common_machine_state_writer *writer);
+    const emulator_machine_state_writer *writer);
 lib_bool core_driver_take_state_read_result(void *context, lib_status *out_status);
 lib_status core_driver_write_state(void *context,
-    const common_machine_state_reader *reader);
+    const emulator_machine_state_reader *reader);
 
 #endif

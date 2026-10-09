@@ -13,12 +13,12 @@ lib_i32 product_surface_run(const product_surface_definition *definition)
     product_surface *app = LIB_NULL;
     product_surface_command_context commands = {0};
     product_surface_command_extensions extensions = {0};
-    common_session_options session_options = {0};
-    common_ui_options ui_options = {0};
+    emulator_session_options session_options = {0};
+    emulator_ui_options ui_options = {0};
     kvm_hotkey_registry hotkeys;
     lib_u8 running_title[PRODUCT_SURFACE_WINDOW_TEXT_CAPACITY];
     lib_u8 paused_title[PRODUCT_SURFACE_WINDOW_TEXT_CAPACITY];
-    lib_u8 graphics_status[COMMON_SESSION_TEXT_CAPACITY];
+    lib_u8 graphics_status[EMULATOR_SESSION_TEXT_CAPACITY];
     lib_status status;
     lib_status destroy_status;
 
@@ -31,8 +31,8 @@ lib_i32 product_surface_run(const product_surface_definition *definition)
      * provider. */
     lib_c_printf("%s\n\nBuilt on %s %s\n\n", definition->name,
         __DATE__, __TIME__);
-    if (definition->ui.display != COMMON_SESSION_DISPLAY_CONSOLE &&
-        definition->ui.display != COMMON_SESSION_DISPLAY_WINDOW) {
+    if (definition->ui.display != EMULATOR_SESSION_DISPLAY_CONSOLE &&
+        definition->ui.display != EMULATOR_SESSION_DISPLAY_WINDOW) {
         definition->machine.destroy(definition->machine.machine);
         return 1;
     }
@@ -45,7 +45,7 @@ lib_i32 product_surface_run(const product_surface_definition *definition)
         status = definition->configure_extensions(app, &extensions);
     if (status == LIB_STATUS_OK)
         status = product_surface_command_provider_initialize(&commands,
-            product_surface_common_machine(app), definition->ui.display, &extensions,
+            product_surface_emulator_machine(app), definition->ui.display, &extensions,
             &session_options.command);
     if (status == LIB_STATUS_OK && !product_surface_keyboard_hotkeys(&hotkeys))
         status = LIB_STATUS_INTERNAL_ERROR;
@@ -66,14 +66,14 @@ lib_i32 product_surface_run(const product_surface_definition *definition)
         status = LIB_STATUS_LIMIT_EXCEEDED;
     if (status == LIB_STATUS_OK) {
         ui_options.event_context = product_surface_session(app);
-        ui_options.event_sink = common_session_enqueue_ui_event;
+        ui_options.event_sink = emulator_session_enqueue_ui_event;
         ui_options.hotkeys = hotkeys;
         ui_options.running_window_title = (const char *)running_title;
         ui_options.paused_window_title = (const char *)paused_title;
         ui_options.graphics_console_status_text = (const char *)graphics_status;
         status = product_surface_compose_ui(app, &ui_options);
     }
-    if (status == LIB_STATUS_OK && !common_session_run(product_surface_session(app)))
+    if (status == LIB_STATUS_OK && !emulator_session_run(product_surface_session(app)))
         status = LIB_STATUS_INTERNAL_ERROR;
     product_surface_command_dispose(&commands);
     destroy_status = product_surface_destroy(app);

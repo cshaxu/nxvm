@@ -30,7 +30,7 @@ static lib_status clock_read(lib_u64 *units, lib_u64 *frequency)
     return base_clock_monotonic_counter(units, frequency);
 }
 
-static void hash_frame(lib_u64 *hash, const common_machine_frame *frame)
+static void hash_frame(lib_u64 *hash, const emulator_machine_frame *frame)
 {
     if (frame->window.graphics) {
         hash_bytes(hash, frame->window.image.palette,
@@ -51,7 +51,7 @@ static lib_status measure_round(const lib_u8 *rom, lib_size rom_size,
     lib_bool text, performance_result *result, lib_u64 *frequency)
 {
     core_machine *machine = LIB_NULL;
-    common_machine_frame *frame = LIB_NULL;
+    emulator_machine_frame *frame = LIB_NULL;
     core_driver driver = {0};
     lib_status status;
     lib_u64 start_cycles = 0u, start_instructions = 0u;
@@ -138,7 +138,7 @@ done:
 static int measure_conversion(lib_bool text)
 {
     core_machine *machine = lib_allocate_zero(1u, sizeof(*machine));
-    common_machine_frame *frame = lib_allocate_zero(1u, sizeof(*frame));
+    emulator_machine_frame *frame = lib_allocate_zero(1u, sizeof(*frame));
     core_driver driver = {0};
     if (machine == LIB_NULL || frame == LIB_NULL) {
         lib_release(machine); lib_release(frame); return 1;
