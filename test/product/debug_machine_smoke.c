@@ -246,8 +246,13 @@ static void transcript(product_debug *debug, const char *line,
     const char *text, const char *prompt)
 {
     product_debug_result result;
+    lib_size length = lib_text_length(text);
+
+    while (length != 0u && (text[length - 1u] == '\r' || text[length - 1u] == '\n'))
+        --length;
     lib_test_assert(product_debug_submit_line(debug, line, &result) == LIB_STATUS_OK);
-    lib_test_assert(lib_text_compare(result.text, text) == 0);
+    lib_test_assert(lib_text_compare_n(result.text, text, length) == 0 &&
+        result.text[length] == '\0');
     lib_test_assert(result.prompt_ready && lib_text_compare(result.prompt, prompt) == 0);
     lib_test_assert(result.lifecycle_request == PRODUCT_DEBUG_LIFECYCLE_NONE);
 }
@@ -302,7 +307,7 @@ static void original_cli(product_debug *debug, debug_fake *fake)
     transcript(debug, "xa 520", "", "L00000520 ");
     transcript(debug, "nop", "", "L00000521 ");
     lib_test_assert(product_debug_submit_line(debug, "not_an_instruction", &result) == LIB_STATUS_OK);
-    lib_test_assert(lib_text_find_substring(result.text, "^ Error\n") && lib_text_compare(result.prompt, "L00000521 ") == 0);
+    lib_test_assert(lib_text_find_substring(result.text, "^ Error") && lib_text_compare(result.prompt, "L00000521 ") == 0);
     transcript(debug, "clc", "", "L00000522 ");
     transcript(debug, "", "", "-");
     transcript(debug, "xa", "", "L00000522 ");
@@ -327,9 +332,12 @@ static void original_cli(product_debug *debug, debug_fake *fake)
     const char *cursor = result.text;
     for (lib_u32 address = 0; address < 0x1000; address += 16) {
         char row[128];
+        lib_size row_length;
         lib_c_snprintf(row, sizeof(row), "L%08X  41 41 41 41 41 41 41 41 \b-41 41 41 41 41 41 41 41   AAAAAAAAAAAAAAAA\n", address);
-        lib_test_assert(lib_text_compare_n(cursor, row, lib_text_length(row)) == 0);
-        cursor += lib_text_length(row);
+        row_length = lib_text_length(row);
+        if (address + 16u == 0x1000u) --row_length;
+        lib_test_assert(lib_text_compare_n(cursor, row, row_length) == 0);
+        cursor += row_length;
     }
     lib_test_assert(*cursor == '\0' && lib_text_length(result.text) > 16384u);
     lib_test_assert(product_debug_submit_line(debug, "xd", &result) == LIB_STATUS_OK);
@@ -346,8 +354,8 @@ static void original_cli(product_debug *debug, debug_fake *fake)
             lib_test_assert(product_debug_observe_machine(debug, PRODUCT_DEBUG_MACHINE_PAUSED,
                 LIB_STATUS_OK, &result) == LIB_STATUS_OK);
             lib_size length = lib_text_length(result.text);
-            lib_test_assert(length >= 2u && result.text[length - 1u] == '\n');
-            lib_test_assert((result.text[length - 2u] == '\n') == (step == 0u));
+            lib_test_assert(length != 0u && result.text[length - 1u] != '\r' &&
+                result.text[length - 1u] != '\n');
             lib_test_assert(result.lifecycle_request == (step == 0u ?
                 PRODUCT_DEBUG_LIFECYCLE_RESUME : PRODUCT_DEBUG_LIFECYCLE_NONE));
         }

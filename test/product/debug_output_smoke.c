@@ -31,7 +31,7 @@ int main(void)
     lib_test_assert(product_debug_submit_line(command, "v", &result) == LIB_STATUS_OK);
     lib_test_assert(lib_text_compare(result.text, "") == 0 && lib_text_compare(result.prompt, ":") == 0);
     lib_test_assert(product_debug_submit_line(command, "Hello", &result) == LIB_STATUS_OK);
-    lib_test_assert(lib_text_compare(result.text, "48 65 6C 6C 6F \n") == 0);
+    lib_test_assert(lib_text_compare(result.text, "48 65 6C 6C 6F ") == 0);
     /* Fault after some output is already accepted must still return failure. */
     command_begin_output(command, &result);
     lib_test_assert(command_printf(command, "prefix") == 6);

@@ -179,6 +179,12 @@ static lib_status command_end_output(command_context *command)
         command->result->prompt[0] = '-';
         command->result->prompt[1] = '\0';
     }
+    while (command->output_length != 0u &&
+        (command->output[command->output_length - 1u] == '\r' ||
+         command->output[command->output_length - 1u] == '\n'))
+        --command->output_length;
+    if (command->output != LIB_NULL)
+        command->output[command->output_length] = '\0';
     command->result->text = command->output_length != 0u ? command->output : "";
     command->result = NULL;
     return command->output_status;
@@ -3138,7 +3144,7 @@ static void command_report_access(product_debug *command)
     command->run_kind = COMMAND_RUN_NONE;
     command->result->lifecycle_request = PRODUCT_DEBUG_LIFECYCLE_NONE;
     command->output_length = 0u;
-    command_printf(command, "%s\r\n\r\n",
+    command_printf(command, "%s",
         command->access_status == LIB_STATUS_INVALID_STATE ?
             "Machine must be paused for this debug operation." :
         command->access_status == LIB_STATUS_UNSUPPORTED ?
@@ -3158,7 +3164,7 @@ lib_status product_debug_submit_line(product_debug *command,
     command_begin_output(command, out_result);
     command->access_status = LIB_STATUS_OK;
     if (lib_text_length(line) >= sizeof(command->command_buffer)) {
-        command_printf(command, "Debug command is too long.\r\n\r\n");
+        command_printf(command, "Debug command is too long.");
         goto finished;
     }
     if (command->continuation == COMMAND_CONTINUATION_NONE) {

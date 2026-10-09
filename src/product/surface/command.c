@@ -11,7 +11,7 @@ static void product_surface_command_set_prompt(
 static void product_surface_command_message(emulator_session_command_result *out,
     const char *text)
 {
-    (void)lib_c_snprintf(out->text, sizeof(out->text), "%s\r\n\r\n", text);
+    (void)lib_c_snprintf(out->text, sizeof(out->text), "%s\r\n", text);
     out->arm_prompt = LIB_TRUE;
 }
 
@@ -111,7 +111,7 @@ static void product_surface_command_copy_debug(product_surface_command_context *
         state == EMULATOR_SESSION_MACHINE_PAUSED)
         out->request = EMULATOR_SESSION_REQUEST_RESUME;
     else if (result->lifecycle_request != PRODUCT_DEBUG_LIFECYCLE_NONE)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug lifecycle request is not applicable.\r\n\r\n");
+        (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug lifecycle request is not applicable.");
 }
 
 void product_surface_command_provider_submit_line(void *opaque,
@@ -128,7 +128,7 @@ void product_surface_command_provider_submit_line(void *opaque,
         *out = (emulator_session_command_result){0};
         if (status != LIB_STATUS_OK)
         {
-            (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug command failed.\r\n\r\n");
+            (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug command failed.");
             emulator_machine_debug_cancel(command->machine);
             (void)lib_c_snprintf(command->debug_prompt, sizeof(command->debug_prompt), "-");
         }
@@ -152,21 +152,21 @@ void product_surface_command_provider_note_runtime(void *opaque,
     if (command == LIB_NULL || out == LIB_NULL) return;
     *out = (emulator_session_command_result){0};
     if (completed == EMULATOR_SESSION_MACHINE_RESET_COMPLETED)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine reset and paused.\r\n\r\n");
+        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine reset and paused.\r\n");
     else if (completed == EMULATOR_SESSION_MACHINE_PAUSED &&
         prior != EMULATOR_SESSION_MACHINE_PAUSED)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine paused.\r\n\r\n");
+        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine paused.\r\n");
     else if (completed == EMULATOR_SESSION_MACHINE_RUNNING &&
         prior == EMULATOR_SESSION_MACHINE_STOPPED)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine started.\r\n\r\n");
+        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine started.\r\n");
     else if (completed == EMULATOR_SESSION_MACHINE_RUNNING &&
         prior == EMULATOR_SESSION_MACHINE_PAUSED)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine resumed.\r\n\r\n");
+        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine resumed.\r\n");
     else if (completed == EMULATOR_SESSION_MACHINE_STOPPED &&
         prior != EMULATOR_SESSION_MACHINE_STOPPED)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine stopped.\r\n\r\n");
+        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine stopped.\r\n");
     else if (completed == EMULATOR_SESSION_MACHINE_ERROR)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine error.\r\n\r\n");
+        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine error.\r\n");
     out->arm_prompt = completed != EMULATOR_SESSION_MACHINE_INIT;
     product_surface_command_set_prompt(command, out);
     if (command->debug_active)
@@ -176,7 +176,7 @@ void product_surface_command_provider_note_runtime(void *opaque,
         product_debug_result result = {0};
         if (product_debug_observe_machine(command->debug, state, LIB_STATUS_OK, &result) != LIB_STATUS_OK)
         {
-            (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug command failed.\r\n\r\n");
+            (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug command failed.");
             emulator_machine_debug_cancel(command->machine);
             (void)lib_c_snprintf(command->debug_prompt, sizeof(command->debug_prompt), "-");
         }

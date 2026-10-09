@@ -19,8 +19,8 @@ typedef enum product_debug_lifecycle_request {
 } product_debug_lifecycle_request;
 
 typedef struct product_debug_result {
-    /* Borrowed, NUL-terminated output, valid until the next submit/observe,
-     * open or destroy on this debug object. Copy before retaining longer.
+    /* Borrowed, NUL-terminated output without a terminal line ending. It is valid
+     * until the next submit/observe, open, or destroy on this debug object. Copy before retaining longer.
      * Output grows as needed; allocation/format failure returns lib_status. */
     const char *text;
     char prompt[PRODUCT_DEBUG_PROMPT_CAPACITY];

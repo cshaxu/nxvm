@@ -14,10 +14,10 @@ static lib_bool fixture_extension(void *context, emulator_machine *machine,
     ++extension_submissions;
     if (lib_text_compare(line, "info") == 0)
         (void)lib_c_snprintf((char *)out->text, sizeof(out->text),
-            "Fixture information.\r\n\r\n");
+            "Fixture information.\r\n");
     else if (lib_text_compare(line, "floppy insert direct disk.img") == 0)
         (void)lib_c_snprintf((char *)out->text, sizeof(out->text),
-            "Fixture floppy extension.\r\n\r\n");
+            "Fixture floppy extension.\r\n");
     else
         return LIB_FALSE;
     return LIB_TRUE;

@@ -243,19 +243,19 @@ static lib_bool vm_app_extension_floppy(emulator_machine *machine,
     while (*operation == ' ' || *operation == '\t')
         ++operation;
     if (state == EMULATOR_SESSION_MACHINE_RUNNING) {
-        vm_app_extension_append(out, "Cannot change floppy media now.\r\n\r\n");
+        vm_app_extension_append(out, "Cannot change floppy media now.\r\n");
         return LIB_TRUE;
     }
     if (lib_text_compare(operation, "eject") == 0) {
         vm_app_extension_append(out,
             emulator_machine_set_removable_media(machine, LIB_NULL,
                 LIB_STORAGE_MEDIUM_OVERLAY) ?
-            "Floppy disk ejected.\r\n\r\n" : "Cannot eject floppy disk.\r\n\r\n");
+            "Floppy disk ejected.\r\n" : "Cannot eject floppy disk.\r\n");
         return LIB_TRUE;
     }
     if (lib_text_compare(operation, "insert ") != 0) {
         vm_app_extension_append(out,
-            "Usage: floppy insert <readonly|direct|overlay> <image> | floppy eject\r\n\r\n");
+            "Usage: floppy insert <readonly|direct|overlay> <image> | floppy eject\r\n");
         return LIB_TRUE;
     }
     mode = operation + 7u;
@@ -264,7 +264,7 @@ static lib_bool vm_app_extension_floppy(emulator_machine *machine,
         ++path;
     if (*path == '\0') {
         vm_app_extension_append(out,
-            "Usage: floppy insert <readonly|direct|overlay> <image> | floppy eject\r\n\r\n");
+            "Usage: floppy insert <readonly|direct|overlay> <image> | floppy eject\r\n");
         return LIB_TRUE;
     }
     *path++ = '\0';
@@ -272,12 +272,12 @@ static lib_bool vm_app_extension_floppy(emulator_machine *machine,
         ++path;
     if (*path == '\0' || !vm_app_extension_floppy_mode(mode, &medium_mode)) {
         vm_app_extension_append(out,
-            "Usage: floppy insert <readonly|direct|overlay> <image> | floppy eject\r\n\r\n");
+            "Usage: floppy insert <readonly|direct|overlay> <image> | floppy eject\r\n");
         return LIB_TRUE;
     }
     vm_app_extension_append(out,
         emulator_machine_set_removable_media(machine, path, medium_mode) ?
-        "Floppy disk inserted.\r\n\r\n" : "Cannot read floppy disk.\r\n\r\n");
+        "Floppy disk inserted.\r\n" : "Cannot read floppy disk.\r\n");
     return LIB_TRUE;
 }
 
@@ -296,7 +296,7 @@ static lib_bool vm_app_standard_extension(void *context,
     *out = (emulator_session_command_result){0};
     if (lib_text_compare((const char *)command, "info") == 0) {
         if (vm_app_information_read(app, &information) != LIB_STATUS_OK) {
-            vm_app_extension_append(out, "Machine information unavailable.\r\n\r\n");
+            vm_app_extension_append(out, "Machine information unavailable.\r\n");
             return LIB_TRUE;
         }
         vm_app_extension_append(out,
@@ -315,7 +315,7 @@ static lib_bool vm_app_standard_extension(void *context,
                 (lib_u32)information.fixed_disk_cylinders,
                 (lib_u32)information.fixed_disk_image_bytes,
                 information.fixed_disk_media_connected ? "connected" : "disconnected");
-        vm_app_extension_append(out, "\r\nBIOS: %s\r\nRunning: %s\r\n\r\n",
+        vm_app_extension_append(out, "\r\nBIOS: %s\r\nRunning: %s\r\n",
             information.external_firmware ? "external ROM mapped at F0000h" :
                 "profile ROM mapped",
             state == EMULATOR_SESSION_MACHINE_RUNNING ? "Yes" : "No");
@@ -323,7 +323,7 @@ static lib_bool vm_app_standard_extension(void *context,
     }
     if (lib_text_compare((const char *)command, "speed") == 0) {
         if (vm_app_speed_read(app, &speed) == LIB_STATUS_OK)
-            vm_app_extension_append(out, "Speed: %s\r\n\r\n",
+            vm_app_extension_append(out, "Speed: %s\r\n",
                 speed == PRODUCT_SURFACE_SPEED_TURBO ? "turbo" : "standard");
         return LIB_TRUE;
     }
@@ -332,11 +332,11 @@ static lib_bool vm_app_standard_extension(void *context,
         speed = lib_text_compare((const char *)command, "speed turbo") == 0 ?
             PRODUCT_SURFACE_SPEED_TURBO : PRODUCT_SURFACE_SPEED_STANDARD;
         if (vm_app_speed_write(app, speed) == LIB_STATUS_OK)
-            vm_app_extension_append(out, "Speed: %s\r\n\r\n",
+            vm_app_extension_append(out, "Speed: %s\r\n",
                 speed == PRODUCT_SURFACE_SPEED_TURBO ? "turbo" : "standard");
         else
             vm_app_extension_append(out,
-                "Cannot change speed while session is running.\r\n\r\n");
+                "Cannot change speed while session is running.\r\n");
         return LIB_TRUE;
     }
     return vm_app_extension_floppy(machine, state, (char *)command, out);

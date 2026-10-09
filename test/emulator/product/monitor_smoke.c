@@ -51,7 +51,7 @@ static void command_parse(void)
 
 static void text_format(void)
 {
-    char text[EMULATOR_PRODUCT_MONITOR_TEXT_CAPACITY];
+    char text[EMULATOR_SESSION_TEXT_CAPACITY];
     const char *start;
     const char *reset;
     const char *load;
@@ -113,7 +113,7 @@ static void provider_contract(void)
             no_argument_commands[index].line) >= 0);
         emulator_product_monitor_provider_submit_line((void *)&provider,
             EMULATOR_SESSION_MACHINE_STOPPED, invalid_line, &result);
-        lib_test_assert(lib_text_compare(result.text, "Unknown command.") == 0 &&
+        lib_test_assert(lib_text_compare(result.text, "Unknown command.\r\n") == 0 &&
             extension_calls == 0u);
     }
     emulator_product_monitor_provider_submit_line((void *)&provider,
@@ -131,14 +131,14 @@ static void provider_contract(void)
             EMULATOR_PRODUCT_MONITOR_PROMPT) == 0);
     emulator_product_monitor_provider_submit_line((void *)&provider,
         EMULATOR_SESSION_MACHINE_STOPPED, "help unexpected", &result);
-    lib_test_assert(lib_text_compare(result.text, "Unknown command.") == 0 &&
+    lib_test_assert(lib_text_compare(result.text, "Unknown command.\r\n") == 0 &&
         extension_calls == 1u);
     emulator_product_monitor_provider_submit_line((void *)&provider,
         EMULATOR_SESSION_MACHINE_STOPPED, "exit", &result);
     lib_test_assert(result.exit_requested && !result.arm_prompt);
     emulator_product_monitor_provider_submit_line((void *)&provider,
         EMULATOR_SESSION_MACHINE_STOPPED, "exit unexpected", &result);
-    lib_test_assert(lib_text_compare(result.text, "Unknown command.") == 0 &&
+    lib_test_assert(lib_text_compare(result.text, "Unknown command.\r\n") == 0 &&
         extension_calls == 1u);
 }
 
@@ -153,7 +153,7 @@ static void unavailable_fixed_commands(void)
     for (index = 0u; index < sizeof(lines) / sizeof(lines[0]); ++index) {
         emulator_product_monitor_provider_submit_line((void *)&provider,
             EMULATOR_SESSION_MACHINE_STOPPED, lines[index], &result);
-        lib_test_assert(lib_text_compare(result.text, "Feature not implemented.") == 0 &&
+        lib_test_assert(lib_text_compare(result.text, "Feature not implemented.\r\n") == 0 &&
             result.arm_prompt && lib_text_compare(result.prompt,
                 EMULATOR_PRODUCT_MONITOR_PROMPT) == 0);
     }

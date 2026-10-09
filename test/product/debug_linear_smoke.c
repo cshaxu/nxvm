@@ -112,11 +112,11 @@ int main(void)
 
     memory_base = 0x10000u;
     lib_memory_copy(memory, "AAAA", 4);
-    lib_test_assert(lib_text_compare(submit("xs 10000 3 41 41"), "L00010000\nL00010001\n") == 0);
+    lib_test_assert(lib_text_compare(submit("xs 10000 3 41 41"), "L00010000\nL00010001") == 0);
     lib_test_assert(reads == 2);
     lib_test_assert(lib_text_compare(submit("xs 10000 1 41 41"), "") == 0 && reads == 0);
     lib_test_assert(lib_text_compare(submit("xs 10000 0 41"), "") == 0 && reads == 0);
-    lib_test_assert(lib_text_compare(submit("xs 10000 2 41 41"), "L00010000\n") == 0 && reads == 1);
+    lib_test_assert(lib_text_compare(submit("xs 10000 2 41 41"), "L00010000") == 0 && reads == 1);
 
     for (lib_size i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
         lib_test_assert(lib_text_find_substring(submit(invalid[i]), "^ Error") != LIB_NULL);
@@ -131,7 +131,7 @@ int main(void)
     lib_test_assert(lib_text_find_substring(submit("xu ffffffff 2"), "<ERROR>") != LIB_NULL && reads == 1);
     submit("xd ffffffff 1"); lib_test_assert(reads == 1 && debug->dump_linear == LIB_UINT32_MAX);
     submit("xe ffffffff 41"); lib_test_assert(writes == 1 && memory[4095] == 0x41);
-    lib_test_assert(lib_text_compare(submit("xs ffffffff 1 41"), "LFFFFFFFF\n") == 0 && reads == 1);
+    lib_test_assert(lib_text_compare(submit("xs ffffffff 1 41"), "LFFFFFFFF") == 0 && reads == 1);
     submit("xf fffffffe 2 42"); lib_test_assert(writes == 2);
     submit("xm fffffffe fffffffd 2"); lib_test_assert(reads == 2 && writes == 2);
     submit("xc fffffffe fffffffe 2"); lib_test_assert(reads == 4);
@@ -170,7 +170,7 @@ int main(void)
     submit("m 201 205 200"); lib_test_assert(lib_memory_compare(memory + 0x200, "AbAbA", 5) == 0);
     submit("f 300 l4 'A'");
     lib_test_assert(lib_text_compare(submit("s 300 303 'AA'"),
-        "0000:0300  \n0000:0301  \n0000:0302  \n") == 0);
+        "0000:0300  \n0000:0301  \n0000:0302  ") == 0);
     lib_test_assert(lib_text_compare(submit("s 300 l1 'AA'"), "") == 0 && reads == 0);
     lib_test_assert(lib_text_compare(submit("xs 300 1 'AA'"), "") == 0 && reads == 0);
     submit("s 300 l2 'AA'"); lib_test_assert(reads == 2);

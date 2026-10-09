@@ -5,8 +5,11 @@
 static lib_i32 app_command_output_compare(const char *actual, const char *expected)
 {
     lib_size length = lib_text_length(expected);
-    return lib_memory_compare(actual, expected, length) != 0 || actual[length] != '\n' ||
-        actual[length + 1u] != '\0';
+
+    if (length == 0u || expected[length - 1u] != '\n') return -1;
+    --length;
+    return lib_memory_compare(actual, expected, length) != 0 ||
+        lib_text_compare(actual + length, "\r\n") != 0;
 }
 
 static lib_i32 app_command_monitor_output_compare(const char *actual,
@@ -16,7 +19,7 @@ static lib_i32 app_command_monitor_output_compare(const char *actual,
 
     return length == 0u || expected[length - 1u] != '\n' ||
         lib_memory_compare(actual, expected, length - 1u) != 0 ||
-        lib_text_compare(actual + length - 1u, "\r\n\r\n") != 0;
+        lib_text_compare(actual + length - 1u, "\r\n") != 0;
 }
 
 static lib_bool app_command_contains(const char *text, const char *needle)

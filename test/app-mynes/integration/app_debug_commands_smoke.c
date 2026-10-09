@@ -11,8 +11,15 @@
 static lib_i32 app_command_output_compare(const char *actual, const char *expected)
 {
     lib_size length = lib_text_length(expected);
-    return lib_memory_compare(actual, expected, length) != 0 || actual[length] != '\n' ||
-        actual[length + 1u] != '\0';
+
+    while (length != 0u && (expected[length - 1u] == '\r' || expected[length - 1u] == '\n'))
+        --length;
+    return lib_memory_compare(actual, expected, length) != 0 || actual[length] != '\0';
+}
+
+static lib_i32 app_command_normal_output_compare(const char *actual, const char *expected)
+{
+    return lib_text_compare(actual, expected);
 }
 
 #undef lib_text_compare
@@ -107,7 +114,8 @@ int main(void)
     assert(lib_text_compare(result.text, "Soft reset complete; machine paused.\n") == 0);
     app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_RUNNING, "q", &result);
     app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_RUNNING, "debug", &result);
-    assert(lib_text_compare(result.text, "Pause with a cartridge before debugging.\n") == 0);
+    assert(app_command_normal_output_compare(result.text,
+        "Pause with a cartridge before debugging.\r\n") == 0);
 
     assert(emulator_machine_shutdown(machine) == LIB_STATUS_OK);
     assert(emulator_machine_destroy(machine) == LIB_STATUS_OK);

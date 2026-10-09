@@ -10,7 +10,6 @@
 
 static void app_command_result(emulator_session_command_result *out_result,
     const char *text);
-static void app_command_finish_output(emulator_session_command_result *out_result);
 static void app_command_set_debug_prompt(emulator_session_command_result *out_result);
 static lib_bool app_command_submit_fixed(void *opaque,
     emulator_product_monitor_command fixed_command,
@@ -225,7 +224,14 @@ static void app_command_result(emulator_session_command_result *out_result,
 
 static void app_command_set_debug_prompt(emulator_session_command_result *out_result)
 {
+    lib_size length;
+
     if (out_result == LIB_NULL) return;
+    length = lib_text_length(out_result->text);
+    while (length != 0u && (out_result->text[length - 1u] == '\r' ||
+                            out_result->text[length - 1u] == '\n'))
+        --length;
+    out_result->text[length] = '\0';
     out_result->prompt[0] = '-';
     out_result->prompt[1] = '\0';
 }
@@ -304,29 +310,16 @@ static void app_command_message(char *target, lib_size target_capacity,
         return;
     if (length >= target_capacity)
         length = target_capacity - 1u;
+    while (length != 0u && (text[length - 1u] == '\r' || text[length - 1u] == '\n'))
+        --length;
     if (length != 0u)
         lib_memory_copy(target, text, length);
     target[length] = '\0';
-    if (length != 0u && target[length - 1u] != '\n' && length + 1u < target_capacity)
+    if (length != 0u && length + 2u < target_capacity) {
+        target[length++] = '\r';
         target[length++] = '\n';
-    if (length != 0u && length + 1u < target_capacity)
-        target[length++] = '\n';
+    }
     target[length] = '\0';
-}
-
-static void app_command_finish_output(emulator_session_command_result *out_result)
-{
-    lib_size length;
-
-    if (out_result == LIB_NULL || out_result->text[0] == '\0')
-        return;
-    length = lib_text_length(out_result->text);
-    if (out_result->text[length - 1u] != '\n' &&
-        length + 1u < sizeof(out_result->text))
-        out_result->text[length++] = '\n';
-    if (length + 1u < sizeof(out_result->text))
-        out_result->text[length++] = '\n';
-    out_result->text[length] = '\0';
 }
 
 static void app_command_request(app_command_context *context,
@@ -401,7 +394,6 @@ static void app_command_regs(app_command_context *context,
                                         ((lib_u64)app_command_read_u32(response + 24u) << 32u)),
                    (unsigned long long)((lib_u64)app_command_read_u32(response + 28u) |
                                         ((lib_u64)app_command_read_u32(response + 32u) << 32u)));
-    app_command_finish_output(out_result);
 }
 
 static void app_command_mem(app_command_context *context, const char *arguments,
@@ -449,7 +441,6 @@ static void app_command_mem(app_command_context *context, const char *arguments,
             written += (lib_size)lib_c_snprintf(out_result->text + written,
                                                 sizeof(out_result->text) - written, "\n");
     }
-    app_command_finish_output(out_result);
 }
 
 static void app_command_poke(app_command_context *context, const char *arguments,
@@ -536,7 +527,6 @@ static void app_command_step(app_command_context *context, const char *arguments
                    (unsigned)app_command_read_u32(response + 12u),
                    (unsigned)app_command_read_u32(response + 16u),
                    app_command_read_u16(response + 26u));
-    app_command_finish_output(out_result);
 }
 
 static void app_command_break_set(app_command_context *context, const char *arguments,
@@ -565,7 +555,6 @@ static void app_command_break_set(app_command_context *context, const char *argu
     }
     lib_c_snprintf(out_result->text, sizeof(out_result->text), "%s breakpoint %04X.\n",
                    enabled ? "Set" : "Removed", address);
-    app_command_finish_output(out_result);
 }
 
 static void app_command_break_list(app_command_context *context,
@@ -599,7 +588,6 @@ static void app_command_break_list(app_command_context *context,
                                             sizeof(out_result->text) - written, " %04X", app_command_read_u16(response + 16u + index * 2u));
     (void)lib_c_snprintf(out_result->text + written,
                          sizeof(out_result->text) - written, "\n");
-    app_command_finish_output(out_result);
 }
 
 static lib_size app_command_format_instruction(char *text, lib_size capacity,
@@ -697,7 +685,6 @@ static void app_command_disasm(app_command_context *context, const char *argumen
                                                   response + 16u + byte_offset);
         byte_offset += known ? info.bytes : 1u;
     }
-    app_command_finish_output(out_result);
 }
 
 static void app_command_debug_submit(app_command_context *context,

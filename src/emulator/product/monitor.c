@@ -27,7 +27,7 @@ static void emulator_product_monitor_message(emulator_session_command_result *ou
     const char *text)
 {
     if (out_result == LIB_NULL || text == LIB_NULL) return;
-    (void)lib_c_snprintf(out_result->text, sizeof(out_result->text), "%s", text);
+    (void)lib_c_snprintf(out_result->text, sizeof(out_result->text), "%s\r\n", text);
     out_result->arm_prompt = LIB_TRUE;
 }
 

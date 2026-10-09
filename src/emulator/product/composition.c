@@ -8,16 +8,6 @@ struct emulator_product {
     emulator_ui *ui;
 };
 
-static lib_status emulator_product_status_from_lib(lib_status status)
-{
-    if (status == LIB_STATUS_OK) return LIB_STATUS_OK;
-    if (status == LIB_STATUS_INVALID_ARGUMENT) return LIB_STATUS_INVALID_ARGUMENT;
-    if (status == LIB_STATUS_INVALID_STATE) return LIB_STATUS_INVALID_STATE;
-    if (status == LIB_STATUS_UNSUPPORTED) return LIB_STATUS_UNSUPPORTED;
-    if (status == LIB_STATUS_NO_MEMORY) return LIB_STATUS_NO_MEMORY;
-    return LIB_STATUS_INTERNAL_ERROR;
-}
-
 static emulator_session_machine_state emulator_product_machine_state(
     const emulator_product *product, emulator_machine_state state)
 {
@@ -79,21 +69,21 @@ lib_status emulator_product_destroy(emulator_product *product)
     if (product == LIB_NULL) return LIB_STATUS_OK;
     shutdown_status = emulator_machine_shutdown(product->emulator_machine);
     if (shutdown_status != LIB_STATUS_OK)
-        return emulator_product_status_from_lib(shutdown_status);
+        return shutdown_status;
     shutdown_status = emulator_ui_destroy(product->ui);
     if (shutdown_status != LIB_STATUS_OK)
-        return emulator_product_status_from_lib(shutdown_status);
+        return shutdown_status;
     product->ui = LIB_NULL;
     emulator_session_destroy(product->session);
     product->session = LIB_NULL;
     shutdown_status = emulator_machine_destroy(product->emulator_machine);
     if (shutdown_status != LIB_STATUS_OK)
-        return emulator_product_status_from_lib(shutdown_status);
+        return shutdown_status;
     product->emulator_machine = LIB_NULL;
     (void)product->machine.bind(product->machine.machine, LIB_NULL);
     shutdown_status = product->machine.destroy(product->machine.machine);
     if (shutdown_status != LIB_STATUS_OK)
-        return emulator_product_status_from_lib(shutdown_status);
+        return shutdown_status;
     lib_release(product);
     return LIB_STATUS_OK;
 }
@@ -109,8 +99,7 @@ lib_status emulator_product_compose_machine(emulator_product *product)
         return LIB_STATUS_INVALID_STATE;
     machine = product->machine.machine;
     driver = product->machine.driver;
-    status = emulator_product_status_from_lib(emulator_machine_create(&emulator_machine,
-        &driver));
+    status = emulator_machine_create(&emulator_machine, &driver);
     if (status == LIB_STATUS_OK) {
         status = product->machine.bind(machine, emulator_machine);
     }
@@ -120,7 +109,7 @@ lib_status emulator_product_compose_machine(emulator_product *product)
 
         if (cleanup_status != LIB_STATUS_OK) {
             product->emulator_machine = emulator_machine;
-            return emulator_product_status_from_lib(cleanup_status);
+            return cleanup_status;
         }
         return status;
     }
@@ -141,7 +130,7 @@ lib_status emulator_product_compose_control(emulator_product *product,
     resolved = *options;
     resolved.machine = product->emulator_machine;
     status = emulator_session_create(&session, &resolved);
-    if (status != LIB_STATUS_OK) return emulator_product_status_from_lib(status);
+    if (status != LIB_STATUS_OK) return status;
     product->session = session;
     emulator_machine_set_state_sink(resolved.machine,
         emulator_product_machine_state_completed, product);
@@ -156,19 +145,20 @@ lib_status emulator_product_compose_ui(emulator_product *product,
     emulator_ui *ui = LIB_NULL;
     lib_status status;
 
-    if (product == LIB_NULL || options == LIB_NULL || product->ui != LIB_NULL)
+    if (product == LIB_NULL || options == LIB_NULL || product->session == LIB_NULL ||
+        product->ui != LIB_NULL)
         return LIB_STATUS_INVALID_STATE;
     status = emulator_ui_create(&ui, options);
-    if (status != LIB_STATUS_OK) return emulator_product_status_from_lib(status);
+    if (status != LIB_STATUS_OK) return status;
     product->ui = ui;
     status = emulator_session_bind_ui(product->session, ui);
     if (status != LIB_STATUS_OK) {
         lib_status cleanup_status = emulator_ui_destroy(ui);
 
         if (cleanup_status != LIB_STATUS_OK)
-            return emulator_product_status_from_lib(cleanup_status);
+            return cleanup_status;
         product->ui = LIB_NULL;
-        return emulator_product_status_from_lib(status);
+        return status;
     }
     return LIB_STATUS_OK;
 }

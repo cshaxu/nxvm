@@ -4,7 +4,6 @@
 #include "emulator/session/session_interface.h"
 #include "lib/types/types_interface.h"
 
-#define EMULATOR_PRODUCT_MONITOR_TEXT_CAPACITY 2048u
 #define EMULATOR_PRODUCT_MONITOR_PROMPT "> "
 
 typedef enum emulator_product_monitor_command {

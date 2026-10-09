@@ -323,7 +323,7 @@ int main(void)
     lib_test_assert(emulator_session_apply_result(&s, &notice));
     lib_test_assert(cancellations == 1 && notices == 1 && !s.pending_line);
     lib_test_assert(emulator_session_arm_if_ready(&s) && requests == 2 && prompts == 2);
-    lib_test_assert(lib_text_find_substring(output, "notice\r\n\r\n> ") != LIB_NULL);
+    lib_test_assert(lib_text_find_substring(output, "notice\r\n> ") != LIB_NULL);
     collect = LIB_FALSE;
 
     /* Raw Console receives no monitor text. Session keeps the copied text and
