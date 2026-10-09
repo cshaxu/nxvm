@@ -2,7 +2,7 @@
 
 ## Current Work
 
-## Current Task — M5 T547 (S6 Active; T Qualification Pending)
+## Current Task — M5 T547 (S6 Complete; T Qualification Pending)
 
 | Field | Required record |
 | --- | --- |
@@ -26,7 +26,7 @@
 | Work | Progress |
 | --- | --- |
 | T547 S5 | Closed at owner direction. P1 `9131545d8` replaces the live Product with the SoftPC command/keyboard base and App extensions; P2 `09cbfcf93` removes the SoftPC-branded fault message; P3 `3ff1e89f8` moves NXVM identity out of shared Product; P4 `7a2f23574` reduces the shared opening contract to App-provided text. Eight 0546 App artifacts were rebuilt. Product entry/command/manifest focused checks passed on x64; full dual-width Product and complete T547 qualification remain open and are not claimed by this S closure. |
-| T547 S6 | Active: adopt SoftPC S16's ownership correction without importing SoftPC runtime code. Move NXVM-family configuration/factory/extension support and its direct tests to `src/app-base/product` and `test/app-base/product`; remove the old `ibmpc/nxvm` member from the portable IBM PC corpus. All eight 0546 product artifacts rebuilt against the relocated link input. |
+| T547 S6 | Complete: `bf469c879` adopts SoftPC S16's ownership correction without importing SoftPC runtime code. NXVM-family configuration/factory/extension support and direct tests now live in `src/app-base/product` and `test/app-base/product`; the old `ibmpc/nxvm` member is gone. IBM PC and app-base gates plus 8 focused tests pass on x64 and x86; all eight 0546 product artifacts were rebuilt against the relocated link input. |
 | T547 S1 | Implementation P complete and pushed as `26c013bba`: current SoftPC differences were reconciled, native-test isolation imported, NXVM's later x86/IBM PC repairs retained, and the stale x86 negative fixture fixed. Its incomplete aggregate/stability evidence is explicitly continued by S2. |
 | T547 S2 | Complete: pushed as `70bb50312`. The aggregate default is reduced from 8 to the evidence-backed safe 4 jobs, without changing individual budgets or assertions. One complete x64/x86 run of each shared package passes: Lib 51/51, Common 20/20, x86 182/182 and IBM PC 182/182; complete repository-only units pass 506/506 per width. See `etc/evidence/t547-s2-shared-test-stability.md`. |
 | T547 S3 | Complete: pushed as `8d7022ea8`. All four shared test roots were audited; current identities are behavior-derived, registrations/manifests match, static identity and focused dual-width checks pass. S4 separately owns full-project qualification. |
