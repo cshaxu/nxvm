@@ -200,6 +200,19 @@ static lib_i32 composition_machine_failure_recovers(composition_failure failure)
     return emulator_product_destroy(app) == LIB_STATUS_OK && composition_fixture_clean();
 }
 
+static lib_i32 composition_destroy_before_compose(void)
+{
+    emulator_product *app = LIB_NULL;
+
+    composition_fixture_reset(COMPOSITION_FAILURE_NONE);
+    if (emulator_product_create(&composition_machine, &app) != LIB_STATUS_OK ||
+        emulator_product_destroy(app) != LIB_STATUS_OK || !composition_fixture_clean())
+        return 0;
+    return fixture.machine_destroy_count == 1u &&
+        fixture.emulator_machine_destroy_count == 0u &&
+        fixture.session_destroy_count == 0u && fixture.ui_destroy_count == 0u;
+}
+
 static lib_i32 composition_control_failure_recovers(void)
 {
     emulator_product *app = LIB_NULL;
@@ -336,6 +349,7 @@ lib_i32 main(void)
     if (!composition_machine_failure_recovers(
             COMPOSITION_FAILURE_EMULATOR_MACHINE_CREATE) ||
         !composition_machine_failure_recovers(COMPOSITION_FAILURE_MACHINE_BIND) ||
+        !composition_destroy_before_compose() ||
         !composition_control_failure_recovers() ||
         !composition_ui_requires_control() ||
         !composition_ui_failure_recovers(COMPOSITION_FAILURE_UI_CREATE) ||
