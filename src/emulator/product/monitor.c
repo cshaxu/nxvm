@@ -4,14 +4,16 @@
 static const char emulator_product_monitor_commands[] =
     "Control your virtual machine:\r\n"
     "  start          cold-reset and run the machine\r\n"
-    "  resume         continue a paused machine\r\n"
-    "  pause          request machine pause\r\n"
-    "  stop           stop execution\r\n"
     "  reset          cold-reset and pause at firmware entry\r\n"
-    "  save <file>    save a running or paused machine\r\n"
+    "  stop           stop execution\r\n"
+    "  pause          request machine pause\r\n"
+    "  resume         continue a paused machine\r\n"
+    "\r\n"
     "  load <file>    load a snapshot while stopped\r\n"
-    "  help           show this help\r\n"
+    "  save <file>    save a running or paused machine\r\n"
+    "\r\n"
     "  debug          enter debugger (q returns to monitor)\r\n"
+    "  help           show this help\r\n"
     "  exit           quit\r\n";
 
 static void emulator_product_monitor_clear_result(
@@ -173,19 +175,21 @@ void emulator_product_monitor_provider_submit_line(void *opaque,
         emulator_product_monitor_set_prompt(provider, out_result);
         return;
     }
-    if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_HELP && *arguments == '\0') {
+    if (command != EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE &&
+        command != EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD && *arguments != '\0') {
+        emulator_product_monitor_message(out_result, "Unknown command.");
+        emulator_product_monitor_set_prompt(provider, out_result);
+        return;
+    }
+    if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_HELP) {
         emulator_product_monitor_provider_open(opaque, out_result);
         return;
     }
-    if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_EXIT && *arguments == '\0') {
+    if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_EXIT) {
         out_result->exit_requested = LIB_TRUE;
         return;
     }
-    if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_HELP ||
-        command == EMULATOR_PRODUCT_MONITOR_COMMAND_EXIT) {
-        emulator_product_monitor_message(out_result, "Unknown command.");
-    } else if (
-        provider->submit_fixed == LIB_NULL ||
+    if (provider->submit_fixed == LIB_NULL ||
         !provider->submit_fixed(provider->context, command, state, arguments, out_result)) {
         emulator_product_monitor_message(out_result, "Feature not implemented.");
     }

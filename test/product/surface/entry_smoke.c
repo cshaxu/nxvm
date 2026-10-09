@@ -43,15 +43,6 @@ lib_status emulator_product_destroy(emulator_product *app)
     return failure == 6u ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
 }
 
-emulator_session *emulator_product_session(const emulator_product *app)
-{ return app == LIB_NULL ? LIB_NULL : (emulator_session *)app; }
-
-emulator_machine *emulator_product_machine_get(const emulator_product *app)
-{ return app == LIB_NULL ? LIB_NULL : (emulator_machine *)app; }
-
-emulator_ui *emulator_product_ui(const emulator_product *app)
-{ return app == LIB_NULL ? LIB_NULL : (emulator_ui *)app; }
-
 lib_bool emulator_session_enqueue_ui_event(void *context,
     const emulator_ui_event *event)
 {
@@ -122,10 +113,9 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
     }
     if (failure == 2u || failure == 5u) return 1;
     fixture.live = LIB_TRUE;
-    if (definition->configure_control(definition->context, &product,
+    if (definition->configure_control(definition->context, (emulator_machine *)&product,
             &session_options) != LIB_STATUS_OK ||
-        definition->configure_ui(definition->context, &product,
-            &ui_options) != LIB_STATUS_OK) {
+        definition->configure_ui(definition->context, &ui_options) != LIB_STATUS_OK) {
         fixture.live = LIB_FALSE;
         return 1;
     }

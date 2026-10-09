@@ -33,14 +33,11 @@ static lib_bool product_surface_command_submit_fixed(void *opaque,
 {
     product_surface_command_context *command = opaque;
 
+    (void)arguments;
     if (command == LIB_NULL || out == LIB_NULL) return LIB_FALSE;
     if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE ||
         fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD) return LIB_FALSE;
     if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG) {
-        if (*arguments != '\0') {
-            product_surface_command_message(out, "Unknown command.");
-            return LIB_TRUE;
-        }
         if (product_debug_open(command->debug, command->machine) != LIB_STATUS_OK) {
             product_surface_command_message(out, "Cannot open debugger.");
             return LIB_TRUE;

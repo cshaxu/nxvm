@@ -21,12 +21,12 @@ typedef struct product_surface_run_context {
 } product_surface_run_context;
 
 static lib_status product_surface_configure_control(void *opaque,
-    emulator_product *product, emulator_session_options *out_options)
+    emulator_machine *machine, emulator_session_options *out_options)
 {
     product_surface_run_context *context = opaque;
     lib_status status;
 
-    if (context == LIB_NULL || product == LIB_NULL || out_options == LIB_NULL)
+    if (context == LIB_NULL || machine == LIB_NULL || out_options == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     if (context->definition->configure_extensions != LIB_NULL) {
         status = context->definition->configure_extensions(&context->machine,
@@ -34,7 +34,7 @@ static lib_status product_surface_configure_control(void *opaque,
         if (status != LIB_STATUS_OK) return status;
     }
     status = product_surface_command_provider_initialize(&context->command,
-        emulator_product_machine_get(product), context->definition->ui.display,
+        machine, context->definition->ui.display,
         &context->extensions, &out_options->command);
     if (status != LIB_STATUS_OK) return status;
     if (!product_surface_keyboard_hotkeys(&context->hotkeys)) return LIB_STATUS_INTERNAL_ERROR;
@@ -45,10 +45,9 @@ static lib_status product_surface_configure_control(void *opaque,
 }
 
 static lib_status product_surface_configure_ui(void *opaque,
-    emulator_product *product, emulator_ui_options *out_options)
+    emulator_ui_options *out_options)
 {
     product_surface_run_context *context = opaque;
-    (void)product;
     if (context == LIB_NULL || out_options == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (lib_c_snprintf((char *)context->running_title,
             sizeof(context->running_title),

@@ -39,8 +39,9 @@ typedef struct emulator_product_monitor_provider {
     emulator_product_monitor_extension_submit submit_extension;
 } emulator_product_monitor_provider;
 
-/* The command shell recognizes one fixed vocabulary.  It returns the original
- * argument tail so the selected product retains its own execution grammar. */
+/* The command shell recognizes one fixed vocabulary.  Only save/load retain
+ * their original argument tail for the selected product's snapshot grammar;
+ * the other fixed commands accept no arguments. */
 lib_bool emulator_product_monitor_parse(const char *line,
     emulator_product_monitor_command *out_command, const char **out_arguments);
 

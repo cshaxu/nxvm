@@ -14,6 +14,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_C_COMPILER_LAUNCHER": "cmake;-E;env;CCACHE_DIR=${sourceDir}/build/.ccache;ccache",
         "PROJECT_ARTIFACT_ARCHITECTURE": "x64",
         "REPOSITORY_BUILD_MYNES": "OFF",
         "NXVM_PRODUCT_PROFILE": "default-pc-at-80386-1440k-hdd"
@@ -24,9 +25,7 @@
       "displayName": "MinGW-w64 GCC x64 with ccache",
       "inherits": "mingw-gcc-x64",
       "binaryDir": "${sourceDir}/build/mingw-gcc-x64-ccache",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER_LAUNCHER": "ccache"
-      }
+      "cacheVariables": {}
     },
     {
       "name": "mingw-gcc-x64-release",
@@ -42,9 +41,7 @@
       "displayName": "MinGW-w64 GCC x64 optimized release with ccache",
       "inherits": "mingw-gcc-x64-release",
       "binaryDir": "${sourceDir}/build/mingw-gcc-x64-release-ccache",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER_LAUNCHER": "ccache"
-      }
+      "cacheVariables": {}
     },
     {
       "name": "mingw-gcc-x86-release",
@@ -54,6 +51,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "$env{NXVM_I686_GCC}",
+        "CMAKE_C_COMPILER_LAUNCHER": "cmake;-E;env;CCACHE_DIR=${sourceDir}/build/.ccache;ccache",
         "CMAKE_C_FLAGS_RELEASE": "-O3 -DNDEBUG",
         "PROJECT_ARTIFACT_ARCHITECTURE": "x86",
         "REPOSITORY_BUILD_MYNES": "OFF",
@@ -65,9 +63,7 @@
       "displayName": "MinGW-w64 GCC x86 optimized release with ccache",
       "inherits": "mingw-gcc-x86-release",
       "binaryDir": "${sourceDir}/build/mingw-gcc-x86-release-ccache",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER_LAUNCHER": "ccache"
-      }
+      "cacheVariables": {}
     },
     {
       "name": "mingw-clang-x86-release",
@@ -77,6 +73,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "$env{NXVM_I686_CLANG}",
+        "CMAKE_C_COMPILER_LAUNCHER": "cmake;-E;env;CCACHE_DIR=${sourceDir}/build/.ccache;ccache",
         "CMAKE_C_COMPILER_TARGET": "i686-w64-windows-gnu",
         "CMAKE_SYSROOT": "$env{NXVM_I686_SYSROOT}",
         "PROJECT_ARTIFACT_ARCHITECTURE": "x86",
@@ -92,6 +89,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_C_COMPILER_LAUNCHER": "cmake;-E;env;CCACHE_DIR=${sourceDir}/build/.ccache;ccache",
         "CMAKE_C_FLAGS_RELEASE": "-O3 -DNDEBUG",
         "CMAKE_EXE_LINKER_FLAGS": "-static -static-libgcc",
         "MYNES_EXPECTED_POINTER_SIZE": "8",
@@ -107,6 +105,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "i686-w64-mingw32-gcc",
+        "CMAKE_C_COMPILER_LAUNCHER": "cmake;-E;env;CCACHE_DIR=${sourceDir}/build/.ccache;ccache",
         "CMAKE_C_FLAGS_RELEASE": "-O3 -DNDEBUG",
         "CMAKE_EXE_LINKER_FLAGS": "-static -static-libgcc",
         "MYNES_EXPECTED_POINTER_SIZE": "4",
@@ -119,18 +118,14 @@
       "displayName": "MyNES MinGW-w64 GCC x64 optimized release with ccache",
       "inherits": "mynes-gcc-x64-release",
       "binaryDir": "${sourceDir}/build/mynes-gcc-x64-release-ccache",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER_LAUNCHER": "ccache"
-      }
+      "cacheVariables": {}
     },
     {
       "name": "mynes-gcc-x86-release-ccache",
       "displayName": "MyNES MinGW-w64 GCC x86 optimized release with ccache",
       "inherits": "mynes-gcc-x86-release",
       "binaryDir": "${sourceDir}/build/mynes-gcc-x86-release-ccache",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER_LAUNCHER": "ccache"
-      }
+      "cacheVariables": {}
     }
   ],
   "buildPresets": [

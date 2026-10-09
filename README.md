@@ -67,12 +67,9 @@ documentation governance gate with:
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .
 ```
 
-When `ccache` is installed, an optional isolated repeat-build route is:
-
-```powershell
-cmake --preset mingw-gcc-x64-ccache
-cmake --build --preset current-gcc-ccache
-```
+All Ninja presets invoke `ccache` through a stable repository-local cache at
+`build/.ccache`. This keeps repeat builds warm even when the host supplies a
+temporary user-profile directory. `ccache` must be available on `PATH`.
 
 Visual Studio is not required for the supported development path. The legacy
 manual-project, Autotools, and Makefile instructions are retired.

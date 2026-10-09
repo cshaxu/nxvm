@@ -154,6 +154,16 @@ lib_bool emulator_session_enqueue_frame_completed(emulator_session *session,
     lib_u32 sequence, lib_bool graphics, lib_u32 generation)
 { (void)session; (void)sequence; (void)graphics; (void)generation; return LIB_TRUE; }
 
+lib_status emulator_product_monitor_format_startup(const char *name,
+    char *out_text, lib_size out_capacity)
+{ (void)name; (void)out_text; (void)out_capacity; return LIB_STATUS_OK; }
+
+lib_bool emulator_session_run(emulator_session *session)
+{ (void)session; return LIB_TRUE; }
+
+lib_bool emulator_session_enqueue_ui_event(void *context, const emulator_ui_event *event)
+{ (void)context; (void)event; return LIB_TRUE; }
+
 lib_status emulator_ui_create(emulator_ui **out_ui, const emulator_ui_options *options)
 {
     if (out_ui == LIB_NULL || options == LIB_NULL || fixture.ui.live ||
@@ -180,10 +190,10 @@ static lib_i32 composition_machine_failure_recovers(composition_failure failure)
     composition_fixture_reset(failure);
     if (emulator_product_create(&composition_machine, &app) != LIB_STATUS_OK ||
         emulator_product_compose_machine(app) == LIB_STATUS_OK ||
-        emulator_product_machine_get(app) != LIB_NULL || !fixture.machine.live) return 0;
+        fixture.emulator_machine.live || !fixture.machine.live) return 0;
     fixture.failure = COMPOSITION_FAILURE_NONE;
     if (emulator_product_compose_machine(app) != LIB_STATUS_OK ||
-        emulator_product_machine_get(app) == LIB_NULL) return 0;
+        !fixture.emulator_machine.live) return 0;
     return emulator_product_destroy(app) == LIB_STATUS_OK && composition_fixture_clean();
 }
 
@@ -196,11 +206,11 @@ static lib_i32 composition_control_failure_recovers(void)
     if (emulator_product_create(&composition_machine, &app) != LIB_STATUS_OK ||
         emulator_product_compose_machine(app) != LIB_STATUS_OK ||
         emulator_product_compose_control(app, &options) != LIB_STATUS_INVALID_ARGUMENT ||
-        emulator_product_session(app) != LIB_NULL || !fixture.machine.live ||
+        !fixture.machine.live ||
         !fixture.emulator_machine.live || fixture.session.live) return 0;
     fixture.failure = COMPOSITION_FAILURE_NONE;
     if (emulator_product_compose_control(app, &options) != LIB_STATUS_OK ||
-        emulator_product_session(app) == LIB_NULL) return 0;
+        !fixture.session.live) return 0;
     return emulator_product_destroy(app) == LIB_STATUS_OK && composition_fixture_clean();
 }
 
@@ -215,10 +225,10 @@ static lib_i32 composition_ui_failure_recovers(composition_failure failure)
         emulator_product_compose_machine(app) != LIB_STATUS_OK ||
         emulator_product_compose_control(app, &session_options) != LIB_STATUS_OK ||
         emulator_product_compose_ui(app, &ui_options) != LIB_STATUS_INVALID_ARGUMENT ||
-        emulator_product_ui(app) != LIB_NULL) return 0;
+        fixture.ui.live) return 0;
     fixture.failure = COMPOSITION_FAILURE_NONE;
     if (emulator_product_compose_ui(app, &ui_options) != LIB_STATUS_OK ||
-        emulator_product_ui(app) == LIB_NULL) return 0;
+        !fixture.ui.live) return 0;
     return emulator_product_destroy(app) == LIB_STATUS_OK && composition_fixture_clean();
 }
 
@@ -250,7 +260,6 @@ static lib_i32 composition_machine_cleanup_failure_recovers(void)
     fixture.machine_destroy_status = LIB_STATUS_IO_ERROR;
     if (emulator_product_create(&composition_machine, &app) != LIB_STATUS_OK ||
         emulator_product_compose_machine(app) != LIB_STATUS_INTERNAL_ERROR ||
-        emulator_product_machine_get(app) != &fixture.emulator_machine ||
         !fixture.emulator_machine.live || !fixture.machine.live ||
         fixture.machine_destroy_count != 0u ||
         emulator_product_compose_machine(app) != LIB_STATUS_INVALID_STATE) return 0;
@@ -273,10 +282,10 @@ static lib_i32 composition_ui_destroy_failure_recovers(lib_bool binding_failed)
     fixture.ui_destroy_status = binding_failed ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
     if (emulator_product_compose_ui(app, &ui_options) !=
             (binding_failed ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) ||
-        emulator_product_ui(app) != &fixture.ui || !fixture.ui.live) return 0;
+        !fixture.ui.live) return 0;
     fixture.ui_destroy_status = LIB_STATUS_IO_ERROR;
     if (emulator_product_destroy(app) != LIB_STATUS_INTERNAL_ERROR ||
-        emulator_product_ui(app) != &fixture.ui || !fixture.ui.live ||
+        !fixture.ui.live ||
         !fixture.session.live || !fixture.emulator_machine.live ||
         !fixture.machine.live || fixture.session_destroy_count != 0u ||
         fixture.emulator_machine_destroy_count != 0u ||
