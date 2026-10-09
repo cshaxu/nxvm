@@ -9,12 +9,9 @@
 typedef lib_status (*vm_app_request_loader)(const char *configuration_file,
     vm_session_request *out_request);
 
-/* Immutable App identity and factory; all borrowed values outlive run. */
+/* Immutable App opening text and factory; all borrowed values outlive run. */
 typedef struct vm_app_definition {
     const char *name;
-    const char *version;
-    const char *copyright;
-    const char *build_time;
     const char *configuration_file;
     vm_app_request_loader load_request;
     vm_app_factory factory;

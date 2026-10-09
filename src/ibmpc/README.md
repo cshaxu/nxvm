@@ -20,9 +20,9 @@ time and owns the board attachment teardown; the Machine adapter borrows it.
 Media/display provider contexts remain borrowed until teardown, with one
 freeze/publication/rollback path. Concrete topology, firmware, immutable
 machine binding and genuine model-specific state remain App-owned. Product
-receives identity/version values and a request loader from each App; it neither
-defines an INI document nor owns an App brand. Build callers inject the single
-current revision into each fixed executable.
+prints only the App-provided opening text and receives its request loader; it
+neither defines an INI document nor owns an App brand or version format. Build
+callers select each fixed executable's artifact revision.
 
 AT endpoint lookup belongs to board-at. board-common/at_assembly projects those
 explicit endpoints into existing display/RTC/DMA/FDC configurations, preserving

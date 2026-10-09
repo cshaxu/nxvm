@@ -2000,7 +2000,7 @@ function(add_current_vm_artifact target version)
     set(directory "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}")
     set(PROJECT_CURRENT_VM_RUNTIME_PATH "${directory}/${task_artifact_filename}" PARENT_SCOPE)
     ibmpc_add_product(${target} "${NXVM_PRODUCT_ENTRY}"
-        "${version}" "${task_artifact_filename}" "${PROJECT_ARTIFACT_ARCHITECTURE}"
+        "${task_artifact_filename}" "${PROJECT_ARTIFACT_ARCHITECTURE}"
         "${directory}" vm-app nxvm-product-firmware)
 endfunction()
 

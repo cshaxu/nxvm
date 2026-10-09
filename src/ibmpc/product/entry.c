@@ -25,13 +25,10 @@ lib_i32 vm_app_run(const vm_app_definition *definition)
     lib_status destroy_status;
 
     if (definition == LIB_NULL || definition->name == LIB_NULL ||
-        definition->version == LIB_NULL || definition->copyright == LIB_NULL ||
-        definition->build_time == LIB_NULL ||
         definition->configuration_file == LIB_NULL ||
         definition->load_request == LIB_NULL)
         return 1;
-    lib_c_printf("%s [%s]\n%s\n\nBuilt on %s\n\n", definition->name,
-        definition->version, definition->copyright, definition->build_time);
+    lib_c_printf("%s\n", definition->name);
     if (definition->load_request(definition->configuration_file, &request) !=
         LIB_STATUS_OK) {
         lib_c_printf("Unable to load %s.\n", definition->configuration_file);

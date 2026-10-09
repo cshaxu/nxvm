@@ -110,8 +110,7 @@ const char *app_command_hotkey_help(void)
 lib_i32 main(void)
 {
     const vm_app_definition definition = {
-        .name = "PC", .version = "test", .copyright = "fixture",
-        .build_time = "fixed", .configuration_file = "NXVM.ini",
+        .name = "PC", .configuration_file = "NXVM.ini",
         .load_request = fixture_load_request
     };
     lib_u32 index;
