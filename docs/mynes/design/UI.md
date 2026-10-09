@@ -19,7 +19,7 @@ Emulator Product owns the fixed monitor grammar, prompt framing and help layout;
 MyNES owns its configuration, cartridge/debug extension commands and product
 hotkeys.
 
-MyNes reads `mynes.ini` beside its executable before constructing Common. The
+MyNes reads `mynes.ini` beside its executable before constructing Emulator. The
 file selects the optional startup ROM and `window` or `console` presentation;
 `display` defaults to `window` when omitted. `console_control=0|1` controls
 whether the running machine may return to the cooked monitor Console; it
@@ -32,7 +32,7 @@ specifies the command grammar, ini syntax, defaults, limits and startup behavior
 
 Cartridge commands are `rom insert <file_path>` and `rom eject`, following the
 removable-media model used for floppy insertion/ejection. Paths containing spaces
-are quoted. Both use Common's existing removable-media interface; insert also
+are quoted. Both use Emulator's existing removable-media interface; insert also
 replaces an accepted cartridge, and failed preparation preserves the old one.
 
 ### Default Input Direction

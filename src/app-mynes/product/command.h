@@ -14,9 +14,12 @@ typedef enum app_command_snapshot_result {
 } app_command_snapshot_result;
 
 typedef struct app_command_context {
+    /* This is MyNES's one Session-provider adapter. It delegates the primary
+     * monitor grammar to Emulator Product and owns only NES extensions/debug. */
     emulator_machine *machine;
     emulator_product_monitor_provider monitor;
     emulator_session_display display;
+    lib_bool debug_active;
     lib_bool cartridge_present;
     lib_bool run_after_reset;
     lib_bool started_after_reset;

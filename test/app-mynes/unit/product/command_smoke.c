@@ -139,10 +139,10 @@ int main(void)
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_PAUSED, "load state.mns", &result);
     assert(app_command_output_compare(result.text, "Machine is paused; stop it before load.\n") == 0);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_STOPPED, "debug", &result);
-    assert(app_command_contains(result.text, "MyNES debug commands"));
-    assert(app_command_contains(result.text, "debug regs"));
+    assert(app_command_output_compare(result.text,
+        "Pause with a cartridge before debugging.\n") == 0);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_STOPPED, "debug regs", &result);
-    assert(app_command_output_compare(result.text, "Pause with a cartridge before debugging.\n") == 0);
+    assert(app_command_monitor_output_compare(result.text, "Unknown command.\n") == 0);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_STOPPED, "regs", &result);
     assert(app_command_monitor_output_compare(result.text, "Unknown command.\n") == 0);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_STOPPED, "reset", &result);

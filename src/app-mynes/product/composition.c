@@ -14,7 +14,6 @@
 typedef struct app_composition
 {
     core_driver *driver;
-    emulator_product *product;
     app_command_context command;
     lib_u8 startup_rom_path[APP_CONFIG_PATH_CAPACITY];
     lib_u8 battery_path[APP_CONFIG_PATH_CAPACITY];
@@ -64,12 +63,9 @@ static lib_bool app_composition_set_media(void *opaque, const char *path)
 {
     app_composition *composition = opaque;
     lib_u8 battery_path[APP_CONFIG_PATH_CAPACITY] = { 0 };
-    emulator_machine *machine;
+    emulator_machine *machine = composition == LIB_NULL ? LIB_NULL : composition->command.machine;
     emulator_machine_state state;
 
-    if (composition == LIB_NULL || composition->product == LIB_NULL)
-        return LIB_FALSE;
-    machine = emulator_product_machine_get(composition->product);
     if (machine == LIB_NULL)
         return LIB_FALSE;
     state = emulator_machine_state_get(machine);
@@ -150,22 +146,21 @@ static lib_status app_composition_destroy_machine(void *opaque)
 static lib_status app_composition_bind_machine(void *opaque,
     emulator_machine *machine)
 {
-    (void)opaque;
-    (void)machine;
+    app_composition *composition = opaque;
+
+    if (composition == LIB_NULL || machine == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    composition->command.machine = machine;
     return LIB_STATUS_OK;
 }
 
 static lib_status app_composition_configure_control(void *opaque,
-    emulator_product *product, emulator_session_options *out_options)
+    emulator_machine *machine, emulator_session_options *out_options)
 {
     app_composition *composition = opaque;
-    emulator_machine *machine;
 
-    if (composition == LIB_NULL || product == LIB_NULL || out_options == LIB_NULL)
+    if (composition == LIB_NULL || machine == LIB_NULL || out_options == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    composition->product = product;
-    machine = emulator_product_machine_get(product);
-    if (machine == LIB_NULL) return LIB_STATUS_INVALID_STATE;
     if (composition->command.cartridge_present &&
         !app_composition_set_media(composition,
             (const char *)composition->startup_rom_path))
@@ -188,12 +183,11 @@ static lib_status app_composition_configure_control(void *opaque,
 }
 
 static lib_status app_composition_configure_ui(void *opaque,
-    emulator_product *product, emulator_ui_options *out_options)
+    emulator_ui_options *out_options)
 {
     kvm_hotkey_registry hotkeys;
 
     (void)opaque;
-    (void)product;
     if (out_options == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     kvm_hotkey_registry_initialize(&hotkeys);
     if (kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,
@@ -242,8 +236,6 @@ lib_i32 app_composition_run(const app_startup_config *config)
         .context = composition,
         .configure_control = app_composition_configure_control,
         .configure_ui = app_composition_configure_ui});
-    composition->product = LIB_NULL;
-
 cleanup:
     if (composition->driver != LIB_NULL &&
                app_composition_destroy_machine(composition) != LIB_STATUS_OK)

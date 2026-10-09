@@ -8,8 +8,8 @@ below preserve the introduction context; they are not current task status. Apply
 ## Product Shape
 
 MyNes is one C11 NES emulator product, first hosted on Windows.
-Its App/Common/Lib organization follows SoftPC, with one NES Core replacing
-SoftPC's VM/Compat/MVDM backend responsibilities. Reusable Lib/Common mechanisms
+Its App/Emulator/Lib organization follows SoftPC, with one NES Core replacing
+SoftPC's VM/Compat/MVDM backend responsibilities. Reusable Lib/Emulator mechanisms
 are adopted from reviewed source rather than independently recreated.
 There is no recovered x86 engine, compatibility ABI or VM selection framework.
 Each NES machine has explicit instance ownership; no global current machine exists.
@@ -36,27 +36,27 @@ follow prerequisites, but the planned dual-backend gameplay outcome needs both.
 Arrows below mean source dependency on public contracts:
 
 ```text
-App composition ------> Common + Core public integration + Lib
-App command/debug ----> Common + Lib + Core public protocol values
-Other App ------------> Common + Lib
-Common session -------> Common machine + UI
-Common ---------------> Lib
-Core machine driver ----> Common driver contract + Lib copied values/storage
+App composition ------> Emulator + Core public integration + Lib
+App command/debug ----> Emulator + Lib + Core public protocol values
+Other App ------------> Emulator + Lib
+Emulator session ------> Emulator machine + UI
+Emulator --------------> Lib
+Core machine driver ----> Emulator driver contract + Lib copied values/storage
 Core machine driver ----> Core machine
 Core machine/devices -> Lib types and deterministic C-runtime vocabulary
 Lib leaves -----------> Lib types + explicitly declared neutral Lib support
 ```
 
-Common never includes Core or App. App composition creates the Core adapter and
-injects its machine driver into Common; this is the same real execution boundary
-used by SoftPC. Runtime calls from the Common executor through that driver do not
-give Common knowledge of NES internals. Other App modules never call Core lifecycle
+Emulator never includes Core or App. App composition creates the Core adapter and
+injects its machine driver into Emulator; this is the same real execution boundary
+used by SoftPC. Runtime calls from the Emulator executor through that driver do not
+give Emulator knowledge of NES internals. Other App modules never call Core lifecycle
 or access its handle. App command/debug
-may include the Core-owned value-only debug protocol and send it through Common;
+may include the Core-owned value-only debug protocol and send it through Emulator;
 this header introduces no Core runtime dependency or mutable hardware access.
 Core's adapter implements the injected contract; it does not call Common lifecycle
-operations or depend on Common implementation headers. Deterministic hardware
-modules do not depend on the adapter, Common, host APIs, files, clocks or workers.
+operations or depend on Emulator implementation headers. Deterministic hardware
+modules do not depend on the adapter, Emulator, host APIs, files, clocks or workers.
 Lib contains no NES/application state or policy. No cyclic link dependency is needed.
 
 ### State And Resource Owners
@@ -66,9 +66,9 @@ Lib contains no NES/application state or policy. No cyclic link dependency is ne
 | App config/command/debug/keyboard | Defaults/effective settings, extension/debug execution semantics, NES key mapping and hotkey policy. | Native resources, executor, fixed monitor parsing or hardware state. |
 | Emulator product | Neutral composition/teardown, fixed monitor command/help framing and injected command dispatch. | NES-specific execution, configuration or keyboard policy. |
 | App composition | App-private construction and callback binding. | A second dispatcher, command parser or run state. |
-| Common session | One control FIFO, desired/actual reduction, lifecycle dispatch and prompt scheduling. | Executor state, native input or NES policy. |
-| Common UI | Monitor logical Console, broker, both KVM presenters and copied input/presentation bindings. | Command interpretation, NES controller state or machine lifecycle. |
-| Common machine | One executor, request/input queues, lifecycle completion, generations, frame publication and paused debug rendezvous. | NES CPU/bus semantics or host presentation choice. |
+| Emulator session | One control FIFO, desired/actual reduction, lifecycle dispatch and prompt scheduling. | Executor state, native input or NES policy. |
+| Emulator UI | Monitor logical Console, broker, both KVM presenters and copied input/presentation bindings. | Command interpretation, NES controller state or machine lifecycle. |
+| Emulator machine | One executor, request/input queues, lifecycle completion, generations, frame publication and paused debug rendezvous. | NES CPU/bus semantics or host presentation choice. |
 | Core machine driver | NES machine construction/load transaction, driver implementation, input/debug adaptation, pixel/text frame production including graphics-to-text conversion, and hardware teardown. | Product control queue, native resources or a second executor. |
 | Core machine | Hardware assembly, power/reset sequence, guest master time and device/interrupt scheduling. | Commands, host pacing or host surface selection. |
 | Core CPU | Registers, decode/execute state and CPU-local interrupts. | Address-map policy or host access. |

@@ -15,12 +15,6 @@ static lib_i32 app_command_output_compare(const char *actual, const char *expect
         actual[length + 1u] != '\0';
 }
 
-static lib_i32 app_monitor_output_compare(const char *actual, const char *expected)
-{
-    lib_size length = lib_text_length(expected);
-    return lib_memory_compare(actual, expected, length) != 0 || actual[length] != '\0';
-}
-
 #undef lib_text_compare
 #define lib_text_compare app_command_output_compare
 
@@ -82,34 +76,37 @@ int main(void)
     app_command_initialize(&command, machine, LIB_TRUE,
         EMULATOR_SESSION_DISPLAY_WINDOW);
 
-    submit(&command, "debug REGS", &result);
+    submit(&command, "debug", &result);
+    assert(result.prompt[0] == '-' && result.prompt[1] == '\0');
+    submit(&command, "r", &result);
     assert(lib_text_compare(result.text, "A=00 X=00 Y=00 S=FD P=24 PC=8000 cycles=7 instructions=0\n") == 0);
-    submit(&command, "debug PoKe $10 $55 170", &result);
+    submit(&command, "e $10 $55 170", &result);
     assert(lib_text_compare(result.text, "Memory updated.\n") == 0);
-    submit(&command, "debug mem 16 2", &result);
+    submit(&command, "d 16 2", &result);
     assert(lib_text_compare(result.text, "0010: 55 AA\n") == 0);
     submit(&command, "set mem.count 2", &result);
-    assert(app_monitor_output_compare(result.text, "Unknown command.\r\n\r\n") == 0);
-    submit(&command, "debug mem 16 2", &result);
+    assert(lib_text_compare(result.text, "Unknown debug command; enter debug help.\n") == 0);
+    submit(&command, "d 16 2", &result);
     assert(lib_text_compare(result.text, "0010: 55 AA\n") == 0);
     submit(&command, "set disasm.count 3", &result);
-    assert(app_monitor_output_compare(result.text, "Unknown command.\r\n\r\n") == 0);
-    submit(&command, "debug disasm $8000 3", &result);
+    assert(lib_text_compare(result.text, "Unknown debug command; enter debug help.\n") == 0);
+    submit(&command, "u $8000 3", &result);
     assert(lib_text_compare(result.text,
         "8000: A9 2A    LDA #$2A\n"
         "8002: EA       NOP\n"
         "8003: 4C 02 80 JMP $8002\n") == 0);
-    submit(&command, "debug step", &result);
+    submit(&command, "t", &result);
     assert(lib_text_compare(result.text, "Stepped 1 instruction(s), 2 cycle(s); PC=8002.\n") == 0);
-    submit(&command, "debug break $8002", &result);
+    submit(&command, "b $8002", &result);
     assert(lib_text_compare(result.text, "Set breakpoint 8002.\n") == 0);
-    submit(&command, "debug breaks", &result);
+    submit(&command, "bl", &result);
     assert(lib_text_compare(result.text, "Breakpoints: 8002\n") == 0);
-    submit(&command, "debug delete 32770", &result);
+    submit(&command, "bc 32770", &result);
     assert(lib_text_compare(result.text, "Removed breakpoint 8002.\n") == 0);
-    submit(&command, "debug reset", &result);
+    submit(&command, "z", &result);
     assert(lib_text_compare(result.text, "Soft reset complete; machine paused.\n") == 0);
-    app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_RUNNING, "debug regs", &result);
+    app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_RUNNING, "q", &result);
+    app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_RUNNING, "debug", &result);
     assert(lib_text_compare(result.text, "Pause with a cartridge before debugging.\n") == 0);
 
     assert(emulator_machine_shutdown(machine) == LIB_STATUS_OK);

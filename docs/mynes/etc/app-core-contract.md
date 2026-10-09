@@ -21,10 +21,10 @@ graphics/text, input and audio boundaries are fixed in
 later milestone tasks. Save states, rewind, networking, PAL/Dendy and expansion
 peripherals remain outside the approved product scope, not unfinished M2 work.
 
-Construction order is App config/provider storage -> Core adapter -> Common
-machine -> Common session -> Common UI -> bind UI and machine sinks -> run
+Construction order is App config/provider storage -> Core adapter -> Emulator
+machine -> Emulator session -> Emulator UI -> bind UI and machine sinks -> run
 session. Session must exist before UI can deliver events. Sink callbacks map
-Common enum values explicitly and enqueue runtime/frame facts only. A failed
+Emulator enum values explicitly and enqueue runtime/frame facts only. A failed
 enqueue latches a thread-safe composition failure and requests signal-only Core
 stop; no callback destroys a dependency or processes a command inline.
 
@@ -188,7 +188,7 @@ opcode metadata as CPU decode; illegal bytes render `.byte`, not invented code.
 
 Entry: `MyNes` accepts no command-line options. It loads `mynes.ini` from the
 same directory as its executable; unreadable or malformed configuration exits
-with code 2 before App/Common construction. The file accepts `rom = PATH`,
+with code 2 before App/Emulator construction. The file accepts `rom = PATH`,
 `display = window|console` and `console_control = 0|1`; `display` defaults to
 window, `console_control` defaults to `1`, and a missing `rom` means no cartridge.
 No autorun: an initial ROM uses the same attachment helper as
@@ -229,15 +229,16 @@ only and explicitly rejects non-ASCII; no false Unicode-path claim or Lib patch.
 | `resume` | PAUSED with cartridge | Check guest trap then RESUME. STOPPED reports that `start` or `reset` is required; RUNNING reports already running. |
 | `pause` | RUNNING | PAUSE; PAUSED is an idempotent no-op. Empty/stopped rejects. |
 | `stop` | RUNNING/PAUSED | STOP; retains cartridge. STOPPED is an idempotent no-op. |
-| `reset` | STOPPED/RUNNING/PAUSED with cartridge | Common RESET -> power reset -> PAUSED; reports RAM clear semantics. |
+| `reset` | STOPPED/RUNNING/PAUSED with cartridge | Emulator RESET -> power reset -> PAUSED; reports RAM clear semantics. |
 | `help` | Any, including ERROR | Shows the primary monitor grammar and gameplay controls. |
-| `debug`, `debug help` | Any non-ERROR state | Lists the nested debug grammar. |
-| `debug regs`, `debug mem ADDR [COUNT]` | PAUSED with cartridge | OBSERVE or PEEK; mem default 64, max 256. |
-| `debug poke ADDR BYTE...` | PAUSED with cartridge | POKE, max 64 bytes; RAM/mirrors only. |
-| `debug disasm ADDR [COUNT]` | PAUSED with cartridge | Peek at most 3*count bytes, count default 8/max 32; no wrap or MMIO. |
-| `debug step [COUNT]` | PAUSED, no fatal guest trap | STEP, default 1/max 1000; stays PAUSED and reports actual retirement. |
-| `debug break ADDR`, `debug delete ADDR`, `debug breaks` | PAUSED with cartridge | Bounded breakpoint operations. |
-| `debug reset` | PAUSED with cartridge | WARM_RESET protocol; remains PAUSED. |
+| `debug` | PAUSED with cartridge | Enters the nested `-` Debug prompt; top-level `debug` accepts no argument. |
+| `r`, `d ADDR [COUNT]` | PAUSED with cartridge | OBSERVE or PEEK; mem default 64, max 256. |
+| `e ADDR BYTE...` | PAUSED with cartridge | POKE, max 64 bytes; RAM/mirrors only. |
+| `u ADDR [COUNT]` | PAUSED with cartridge | Peek at most 3*count bytes, count default 8/max 32; no wrap or MMIO. |
+| `t [COUNT]` | PAUSED, no fatal guest trap | STEP, default 1/max 1000; stays PAUSED and reports actual retirement. |
+| `b ADDR`, `bc ADDR`, `bl` | PAUSED with cartridge | Bounded breakpoint operations. |
+| `z` | PAUSED with cartridge | WARM_RESET protocol; remains PAUSED. |
+| `q` | Debug prompt | Returns to the primary monitor. |
 | `exit` | Any | Provider sets exit_requested; composition always does permanent shutdown even if session's preliminary STOP was rejected. |
 
 Session owns the pending lifecycle request, the native reader and delayed monitor

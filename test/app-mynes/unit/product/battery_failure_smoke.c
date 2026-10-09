@@ -36,16 +36,22 @@ int main(void)
 {
     app_composition composition = {0};
     emulator_machine_driver driver;
+    emulator_product *product = LIB_NULL;
+    emulator_session_options options = {0};
     assert(core_driver_create(&composition.driver,
         &(core_driver_options){0}) == LIB_STATUS_OK);
     assert(core_driver_make_driver(composition.driver, &driver) == LIB_STATUS_OK);
+    composition.command.display = EMULATOR_SESSION_DISPLAY_CONSOLE;
     assert(emulator_product_create(&(emulator_product_machine){
         .machine = &composition,
         .driver = driver,
         .bind = app_composition_bind_machine,
         .destroy = app_composition_destroy_machine},
-        &composition.product) == LIB_STATUS_OK);
-    assert(emulator_product_compose_machine(composition.product) == LIB_STATUS_OK);
+        &product) == LIB_STATUS_OK);
+    assert(emulator_product_compose_machine(product) == LIB_STATUS_OK);
+    assert(app_composition_configure_control(&composition, composition.command.machine,
+        &options) == LIB_STATUS_OK);
+    assert(emulator_product_compose_control(product, &options) == LIB_STATUS_OK);
     lib_memory_copy(composition.battery_path, "previous.sav", sizeof("previous.sav"));
 
     save_status = LIB_STATUS_IO_ERROR;
@@ -57,7 +63,6 @@ int main(void)
     save_status = LIB_STATUS_OK;
     assert(app_composition_set_media(&composition, LIB_NULL));
     assert(media_calls == 1u && composition.battery_path[0] == '\0');
-    assert(emulator_product_destroy(composition.product) == LIB_STATUS_OK);
-    composition.product = LIB_NULL;
+    assert(emulator_product_destroy(product) == LIB_STATUS_OK);
     return 0;
 }

@@ -11,6 +11,7 @@
 static void app_command_result(emulator_session_command_result *out_result,
     const char *text);
 static void app_command_finish_output(emulator_session_command_result *out_result);
+static void app_command_set_debug_prompt(emulator_session_command_result *out_result);
 static lib_bool app_command_submit_fixed(void *opaque,
     emulator_product_monitor_command fixed_command,
     emulator_session_machine_state state, const char *arguments,
@@ -43,15 +44,16 @@ static lib_bool app_command_set_media(app_command_context *context,
 
 static const lib_u8 app_command_debug_help[] =
     "MyNES debug commands (paused cartridge required)\n"
-    "  debug regs                show RP2A03 registers\n"
-    "  debug mem <addr> [count]  display 1..256 bytes\n"
-    "  debug poke <addr> <bytes> write 1..64 RAM bytes\n"
-    "  debug disasm <addr> [n]   disassemble 1..32 instructions\n"
-    "  debug step [count]        execute 1..1000 instructions\n"
-    "  debug break <addr>        add a breakpoint\n"
-    "  debug delete <addr>       remove a breakpoint\n"
-    "  debug breaks              list breakpoints\n"
-    "  debug reset               soft-reset; preserves RAM\n";
+    "  r                         show RP2A03 registers\n"
+    "  d <addr> [count]          display 1..256 bytes\n"
+    "  e <addr> <bytes>          write 1..64 RAM bytes\n"
+    "  u <addr> [n]              disassemble 1..32 instructions\n"
+    "  t [count]                 execute 1..1000 instructions\n"
+    "  b <addr>                  add a breakpoint\n"
+    "  bc <addr>                 remove a breakpoint\n"
+    "  bl                        list breakpoints\n"
+    "  z                         soft-reset; preserves RAM\n"
+    "  q                         return to monitor\n";
 
 static lib_u16 app_command_read_u16(const lib_u8 *bytes)
 {
@@ -224,6 +226,13 @@ static void app_command_result(emulator_session_command_result *out_result,
     out_result->prompt[4] = 's';
     out_result->prompt[5] = '>';
     out_result->prompt[6] = ' ';
+}
+
+static void app_command_set_debug_prompt(emulator_session_command_result *out_result)
+{
+    if (out_result == LIB_NULL) return;
+    out_result->prompt[0] = '-';
+    out_result->prompt[1] = '\0';
 }
 
 static lib_status app_command_snapshot_write(void *opaque, const lib_u8 *bytes,
@@ -710,40 +719,48 @@ static void app_command_debug_submit(app_command_context *context,
     {
         app_command_result(out_result, "Pause with a cartridge before debugging.\n");
     }
-    else if (app_command_equal(arguments, "regs"))
+    else if (app_command_equal(arguments, "r") || app_command_equal(arguments, "regs"))
     {
         app_command_regs(context, out_result);
     }
-    else if ((path = app_command_after(arguments, "mem ")) != LIB_NULL)
+    else if (app_command_equal(arguments, "d") ||
+             (path = app_command_after(arguments, "d ")) != LIB_NULL ||
+             (path = app_command_after(arguments, "mem ")) != LIB_NULL)
     {
-        app_command_mem(context, path, out_result);
+        app_command_mem(context, path == LIB_NULL ? "" : path, out_result);
     }
-    else if ((path = app_command_after(arguments, "poke ")) != LIB_NULL)
+    else if ((path = app_command_after(arguments, "e ")) != LIB_NULL ||
+             (path = app_command_after(arguments, "poke ")) != LIB_NULL)
     {
         app_command_poke(context, path, out_result);
     }
-    else if ((path = app_command_after(arguments, "disasm ")) != LIB_NULL)
+    else if ((path = app_command_after(arguments, "u ")) != LIB_NULL ||
+             (path = app_command_after(arguments, "disasm ")) != LIB_NULL)
     {
         app_command_disasm(context, path, out_result);
     }
-    else if (app_command_equal(arguments, "step") ||
+    else if (app_command_equal(arguments, "t") ||
+             (path = app_command_after(arguments, "t ")) != LIB_NULL ||
+             app_command_equal(arguments, "step") ||
              (path = app_command_after(arguments, "step ")) != LIB_NULL)
     {
         app_command_step(context, path == LIB_NULL ? "" : path, out_result);
     }
-    else if ((path = app_command_after(arguments, "break ")) != LIB_NULL)
+    else if ((path = app_command_after(arguments, "b ")) != LIB_NULL ||
+             (path = app_command_after(arguments, "break ")) != LIB_NULL)
     {
         app_command_break_set(context, path, LIB_TRUE, out_result);
     }
-    else if ((path = app_command_after(arguments, "delete ")) != LIB_NULL)
+    else if ((path = app_command_after(arguments, "bc ")) != LIB_NULL ||
+             (path = app_command_after(arguments, "delete ")) != LIB_NULL)
     {
         app_command_break_set(context, path, LIB_FALSE, out_result);
     }
-    else if (app_command_equal(arguments, "breaks"))
+    else if (app_command_equal(arguments, "bl") || app_command_equal(arguments, "breaks"))
     {
         app_command_break_list(context, out_result);
     }
-    else if (app_command_equal(arguments, "reset"))
+    else if (app_command_equal(arguments, "z") || app_command_equal(arguments, "reset"))
     {
         lib_u8 request[8] = {0};
         lib_u8 response[64];
@@ -880,15 +897,14 @@ static lib_bool app_command_submit_fixed(void *opaque,
         app_command_result(out_result, "Machine host error; exit and restart.\n");
         return LIB_TRUE;
     }
-    if (fixed_command != EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG &&
-        fixed_command != EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE &&
-        fixed_command != EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD &&
-        !app_command_end(arguments)) {
-        app_command_result(out_result, "Unknown command.\n");
-        return LIB_TRUE;
-    }
     if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG) {
-        app_command_debug_submit(context, state, arguments, out_result);
+        if (!app_command_debug_ready(context, state))
+            app_command_result(out_result, "Pause with a cartridge before debugging.\n");
+        else {
+            context->debug_active = LIB_TRUE;
+            app_command_debug_submit(context, state, "help", out_result);
+            app_command_set_debug_prompt(out_result);
+        }
         return LIB_TRUE;
     }
     if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE) {
@@ -989,7 +1005,19 @@ void app_command_submit_line(void *opaque, emulator_session_machine_state state,
                              const char *line, emulator_session_command_result *out_result)
 {
     app_command_context *context = opaque;
+    const char *debug_line;
     if (context == LIB_NULL || out_result == LIB_NULL) return;
+    if (context->debug_active) {
+        debug_line = app_command_skip_space(line);
+        if (debug_line[0] == 'q' && app_command_end(debug_line + 1u)) {
+            context->debug_active = LIB_FALSE;
+            app_command_result(out_result, LIB_NULL);
+            return;
+        }
+        app_command_debug_submit(context, state, debug_line, out_result);
+        app_command_set_debug_prompt(out_result);
+        return;
+    }
     emulator_product_monitor_provider_submit_line(&context->monitor, state, line, out_result);
 }
 
@@ -1020,6 +1048,9 @@ void app_command_note_runtime(void *opaque, emulator_session_machine_state prior
     app_command_context *context = opaque;
 
     *out_result = (emulator_session_command_result){0};
+    if (context != LIB_NULL && completed != EMULATOR_SESSION_MACHINE_PAUSED &&
+        completed != EMULATOR_SESSION_MACHINE_RESET_COMPLETED)
+        context->debug_active = LIB_FALSE;
     /* INIT only acknowledges dispatch. Session retains the pending request
      * until the terminal completion and therefore cannot arm another reader. */
     if (completed == EMULATOR_SESSION_MACHINE_INIT)
