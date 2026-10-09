@@ -76,11 +76,13 @@ lib_status emulator_product_destroy(emulator_product *product)
     product->ui = LIB_NULL;
     emulator_session_destroy(product->session);
     product->session = LIB_NULL;
+    shutdown_status = product->machine.bind(product->machine.machine, LIB_NULL);
+    if (shutdown_status != LIB_STATUS_OK)
+        return shutdown_status;
     shutdown_status = emulator_machine_destroy(product->emulator_machine);
     if (shutdown_status != LIB_STATUS_OK)
         return shutdown_status;
     product->emulator_machine = LIB_NULL;
-    (void)product->machine.bind(product->machine.machine, LIB_NULL);
     shutdown_status = product->machine.destroy(product->machine.machine);
     if (shutdown_status != LIB_STATUS_OK)
         return shutdown_status;

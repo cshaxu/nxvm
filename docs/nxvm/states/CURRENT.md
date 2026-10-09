@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## Current Task — M5 T547 (S16 Complete; T Qualification Pending)
+## Current Task — M5 T547 (S17 Complete; T Qualification Pending)
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation T547; S13 corrects shared startup publication exposed by real MyNES and NXVM launches. Session remains the unique owner of reader pending, lifecycle requests in flight, actual machine state and delayed monitor-result delivery. |
-| Admission And Approval | Owner explicitly approved S16: add the missing zero-stage destruction regression only; do not change the correct production implementation. Standing automatic S admission and ordinary push approval apply. |
-| Objective | Prove the existing `emulator_product_create()` then `emulator_product_destroy()` zero-stage lifecycle: the App-owned opaque machine is destroyed exactly once while Emulator Machine, Session and UI are never created or retained. |
+| Admission And Approval | Owner identified and approved the S17 composition-teardown correction: unbind the App-owned machine before wrapper destruction and propagate unbind failure. Standing automatic S admission and ordinary push approval apply. |
+| Objective | Make `emulator_product_destroy()` clear the private-machine binding before destroying its referenced Emulator Machine wrapper, retain all remaining owned machine resources after a failed unbind for retry, and document the approved Monitor/Debug output-framing contract. |
 | Non-goals | No Lib change; no CPU, chip, board, firmware, media format, guest timing or emulator-specific hotkey protocol change; no second session reducer, executor, input queue, compatibility wrapper or product-specific branch in Emulator. Do not import, reuse or modify `product/debug/command`; App INI loading stays App-owned. |
 | Reference Baseline | Pushed S9 delivery `51eb612bf`; SoftPC `e6001412` Product/Suface remains the structural reference, not a new source import. |
 | Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S10/S11 continuation. |
-| Files And ABI Surface | `test/emulator/product/composition_smoke.c`, its manifest and this status record only. No production ABI or artifact changes. |
+| Files And ABI Surface | `src/emulator/product/composition.c`, `src/emulator/session/session_interface.h`, `test/emulator/product/composition_smoke.c`, affected manifests, this status record and rebuilt T547 artifacts. No public API or new state. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source policies; SoftPC provenance and shared component manifest/boundary rules. |
-| Verification | `emulator.composition` and Emulator test manifest on x64/x86; source/test manifest verification and diff review. No desktop or external route is required. |
-| Expected Markers | Zero-stage destroy releases the opaque machine exactly once and leaves no Emulator Machine, Session or UI resource live; the test adds no test-only public contract. |
+| Verification | Emulator composition and manifest tests on x64/x86; source/test manifest verification, dual-width product artifact builds and deployment verification. No desktop or external route is required. |
+| Expected Markers | The only teardown path unbinds before wrapper destruction; an unbind failure preserves the wrapper/private machine for retry; no teardown state machine or second path is introduced. Result framing is documented without behavior change. |
 | Asset Needs | Existing BYOB assets for ordinary App/integration routes only. |
 | Reporting Requirements | Report actual source/test diff, every retained App semantic adapter, build/test results and all unexecuted desktop/external gates. Do not describe a local compile as full qualification. |
 | Stop Conditions | Stop for a required Lib change, a required import/reuse of PC Debug implementation, an incompatible nested-Debug semantic, runtime regression or non-deterministic failure. |
-| Exit Criteria | One direct zero-stage regression passes on x64/x86, manifests match, production code remains unchanged, and the reviewable test-only commit is pushed. T remains open for owner review. |
-| Original Owner Request | Add the missing zero-stage destruction regression without changing the existing production teardown implementation. |
-| Similar-Issue Sweep | Inspect the existing composition fixture's create, partial-compose and destroy paths; retain its owner-local resource counters instead of adding a second fixture or test API. |
+| Exit Criteria | Ordering and retry tests pass on x64/x86, manifests match, all ten artifacts are rebuilt/deployed, and the reviewable commit is pushed. T remains open for owner review. |
+| Original Owner Request | Correct the only discovered production-level composition issue: private-machine unbinding must precede wrapper destruction and must not be ignored on failure; document current result framing. |
+| Similar-Issue Sweep | Audit every `emulator_product_destroy()` cleanup step and each composition fixture failure path; retain the one teardown owner and existing fixture rather than introducing a retry manager or second cleanup route. |
 
 | Work | Progress |
 | --- | --- |
@@ -37,6 +37,7 @@
 | T547 S14 | Complete pending owner review: NXVM extension output now re-arms the one Session-owned monitor reader after successful formatting. This fixes `info` (and identically routed `speed`/`floppy`) printing then leaving no prompt, which looked like a hang. A Core factory callback regression covers the actual `info` route. Repository-only units pass 511/511 on x64 and x86; all eight 0546 PC artifacts were rebuilt. No MyNES source or artifact changed. External integration and manual desktop validation were not run. |
 | T547 S15 | Complete pending owner review: one Session-owned result separator now appends exactly one CRLF whenever text re-arms a prompt. Normal monitor owners terminate text with one CRLF; PC and MyNES Debug owners publish terminal-newline-free text for their `-` continuation. This removes text inspection and no mode flag/API is introduced. The same S removes lossy Emulator composition status remapping, rejects UI composition before control exists, and removes the test-only public monitor capacity constant. Emulator/Product/Core focused tests pass 38/38 on each width; MyNES owned App plus Debug integration tests pass 5/5 on each width. All ten artifacts were rebuilt. Desktop/manual and external integration were not run; T547 remains open for owner review. |
 | T547 S16 | Complete pending owner review: test-only zero-stage composition destruction coverage proves `create` then `destroy` releases the App opaque machine exactly once without composing Emulator Machine, Session or UI. `emulator.composition` and the Emulator test manifest pass on x64 and x86. No production code, artifact or desktop/external route changed. |
+| T547 S17 | Complete pending owner review: private-machine unbinding now precedes wrapper destruction, and a failed unbind preserves the wrapper/private machine for retry. The existing fixture proves both ordering and retry behavior; the command-result contract documents Monitor versus Debug framing. Emulator composition/manifest tests pass on x64 and x86; all ten artifacts were rebuilt and deployed. Desktop/manual and external integration were not run. |
 | T547 S1 | Implementation P complete and pushed as `26c013bba`: current SoftPC differences were reconciled, native-test isolation imported, NXVM's later x86/IBM PC repairs retained, and the stale x86 negative fixture fixed. Its incomplete aggregate/stability evidence is explicitly continued by S2. |
 | T547 S2 | Complete: pushed as `70bb50312`. The aggregate default is reduced from 8 to the evidence-backed safe 4 jobs, without changing individual budgets or assertions. One complete x64/x86 run of each shared package passes: Lib 51/51, Common 20/20, x86 182/182 and IBM PC 182/182; complete repository-only units pass 506/506 per width. See `etc/evidence/t547-s2-shared-test-stability.md`. |
 | T547 S3 | Complete: pushed as `8d7022ea8`. All four shared test roots were audited; current identities are behavior-derived, registrations/manifests match, static identity and focused dual-width checks pass. S4 separately owns full-project qualification. |

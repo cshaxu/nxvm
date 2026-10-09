@@ -53,7 +53,10 @@ typedef enum emulator_session_request {
  * text plus, at most, one neutral lifecycle request. Session is the unique
  * lifecycle dispatcher, reader owner and delayed-result owner. Synchronous
  * debug/media access uses the machine's serialized executor boundary from
- * this same control thread. */
+ * this same control thread. When text/detail re-arms a prompt, normal Monitor
+ * output ends in one line ending and Session adds one CRLF blank separator;
+ * Debug detail has no terminal line ending, so its prompt begins on the next
+ * line without a blank separator. */
 typedef struct emulator_session_command_result {
     char text[EMULATOR_SESSION_TEXT_CAPACITY];
     /* Optional additional text, borrowed until the next provider call.

@@ -11,6 +11,7 @@ typedef enum composition_failure {
     COMPOSITION_FAILURE_NONE,
     COMPOSITION_FAILURE_EMULATOR_MACHINE_CREATE,
     COMPOSITION_FAILURE_MACHINE_BIND,
+    COMPOSITION_FAILURE_MACHINE_UNBIND,
     COMPOSITION_FAILURE_SESSION_CREATE,
     COMPOSITION_FAILURE_UI_CREATE,
     COMPOSITION_FAILURE_UI_BIND
@@ -26,6 +27,9 @@ typedef struct composition_fixture {
     lib_u32 emulator_machine_destroy_count;
     lib_u32 session_destroy_count;
     lib_u32 ui_destroy_count;
+    lib_u32 teardown_sequence;
+    lib_u32 unbind_sequence;
+    lib_u32 emulator_machine_destroy_sequence;
     lib_status shutdown_status;
     lib_status ui_destroy_status;
     lib_status machine_destroy_status;
@@ -69,6 +73,10 @@ static lib_status bind(void *opaque, emulator_machine *emulator)
     if (machine == LIB_NULL || !machine->live) return LIB_STATUS_INVALID_STATE;
     if (emulator != LIB_NULL && fixture.failure == COMPOSITION_FAILURE_MACHINE_BIND)
         return LIB_STATUS_INVALID_STATE;
+    if (emulator == LIB_NULL && fixture.failure == COMPOSITION_FAILURE_MACHINE_UNBIND)
+        return LIB_STATUS_IO_ERROR;
+    if (emulator == LIB_NULL)
+        fixture.unbind_sequence = ++fixture.teardown_sequence;
     machine->bound = emulator;
     return LIB_STATUS_OK;
 }
@@ -98,6 +106,7 @@ lib_status emulator_machine_destroy(emulator_machine *machine)
 {
     if (machine == LIB_NULL) return LIB_STATUS_OK;
     if (fixture.ui.live || fixture.session.live) return LIB_STATUS_INTERNAL_ERROR;
+    fixture.emulator_machine_destroy_sequence = ++fixture.teardown_sequence;
     ++fixture.emulator_machine_destroy_count;
     if (fixture.machine_destroy_status != LIB_STATUS_OK)
         return fixture.machine_destroy_status;
@@ -211,6 +220,39 @@ static lib_i32 composition_destroy_before_compose(void)
     return fixture.machine_destroy_count == 1u &&
         fixture.emulator_machine_destroy_count == 0u &&
         fixture.session_destroy_count == 0u && fixture.ui_destroy_count == 0u;
+}
+
+static lib_i32 composition_destroy_unbinds_before_wrapper(void)
+{
+    emulator_product *app = LIB_NULL;
+
+    composition_fixture_reset(COMPOSITION_FAILURE_NONE);
+    if (emulator_product_create(&composition_machine, &app) != LIB_STATUS_OK ||
+        emulator_product_compose_machine(app) != LIB_STATUS_OK ||
+        emulator_product_destroy(app) != LIB_STATUS_OK || !composition_fixture_clean())
+        return 0;
+    return fixture.unbind_sequence != 0u &&
+        fixture.emulator_machine_destroy_sequence != 0u &&
+        fixture.unbind_sequence < fixture.emulator_machine_destroy_sequence;
+}
+
+static lib_i32 composition_destroy_unbind_failure_recovers(void)
+{
+    emulator_product *app = LIB_NULL;
+
+    composition_fixture_reset(COMPOSITION_FAILURE_NONE);
+    if (emulator_product_create(&composition_machine, &app) != LIB_STATUS_OK ||
+        emulator_product_compose_machine(app) != LIB_STATUS_OK) return 0;
+    fixture.failure = COMPOSITION_FAILURE_MACHINE_UNBIND;
+    if (emulator_product_destroy(app) != LIB_STATUS_IO_ERROR || !fixture.machine.live ||
+        !fixture.emulator_machine.live ||
+        fixture.machine.bound != &fixture.emulator_machine ||
+        fixture.machine_destroy_count != 0u ||
+        fixture.emulator_machine_destroy_count != 0u) return 0;
+    fixture.failure = COMPOSITION_FAILURE_NONE;
+    return emulator_product_destroy(app) == LIB_STATUS_OK && composition_fixture_clean() &&
+        fixture.machine_destroy_count == 1u &&
+        fixture.emulator_machine_destroy_count == 1u;
 }
 
 static lib_i32 composition_control_failure_recovers(void)
@@ -350,6 +392,8 @@ lib_i32 main(void)
             COMPOSITION_FAILURE_EMULATOR_MACHINE_CREATE) ||
         !composition_machine_failure_recovers(COMPOSITION_FAILURE_MACHINE_BIND) ||
         !composition_destroy_before_compose() ||
+        !composition_destroy_unbinds_before_wrapper() ||
+        !composition_destroy_unbind_failure_recovers() ||
         !composition_control_failure_recovers() ||
         !composition_ui_requires_control() ||
         !composition_ui_failure_recovers(COMPOSITION_FAILURE_UI_CREATE) ||
