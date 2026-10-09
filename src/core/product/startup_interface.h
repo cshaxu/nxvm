@@ -12,9 +12,8 @@ lib_status vm_app_ini_executable_path(const char *name, lib_u8 *path,
 lib_status vm_app_ini_load_request(const char *name,
     vm_session_request *out_request);
 
-/* All PC Apps use the same version/copyright/build format while supplying
- * their own product name. */
-void vm_app_print_banner(const char *name);
+/* The caller owns the complete App banner; Core only writes it. */
+void vm_app_print_banner(const char *banner);
 
 /* NXVM-family startup owns its common INI grammar and fixed-machine adapter;
  * shared Product receives only completed machine and presentation values. */

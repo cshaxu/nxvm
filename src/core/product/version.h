@@ -1,0 +1,7 @@
+#ifndef CORE_PRODUCT_VERSION_H
+#define CORE_PRODUCT_VERSION_H
+
+#define CORE_PRODUCT_VERSION "0.5.0546"
+#define CORE_PRODUCT_COPYRIGHT "Copyright (c) 2012-2026 Xu Ha."
+
+#endif

@@ -1,16 +1,14 @@
 #include "lib/types/types_interface.h"
 #include "core/product/startup_interface.h"
 #include "core/product/ini_interface.h"
-#include "core/product/version_interface.h"
 
 #include "lib/base/process_interface.h"
 #include "lib/types/file.h"
 
-void vm_app_print_banner(const char *name)
+void vm_app_print_banner(const char *banner)
 {
-    if (name == LIB_NULL) return;
-    lib_c_printf("%s [%s]\n\n%s\n\nBuilt on %s %s\n\n", name,
-        NXVM_PRODUCT_VERSION, NXVM_PRODUCT_COPYRIGHT, __DATE__, __TIME__);
+    if (banner == LIB_NULL) return;
+    lib_c_printf("%s", banner);
 }
 
 lib_status vm_app_ini_executable_path(const char *name, lib_u8 *path,
