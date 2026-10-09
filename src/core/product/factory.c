@@ -12,6 +12,13 @@ static lib_status vm_app_read_speed(const void *machine,
     product_surface_speed *out_speed);
 static lib_status vm_app_write_speed(void *machine, product_surface_speed speed);
 
+static const emulator_product_help_row vm_app_standard_help_rows[] = {
+    {"info", "list device information"},
+    {"speed [standard|turbo]", ""},
+    {"floppy insert <mode> <image>", "insert drive A media while stopped/paused"},
+    {"floppy eject", "eject drive A media while stopped/paused"}
+};
+
 static lib_status vm_app_information_read(const app_composed_machine *machine,
     product_surface_information *out_info)
 {
@@ -350,11 +357,8 @@ lib_status vm_app_configure_standard_extensions(app_composed_machine *app,
     *out_extensions = (product_surface_command_extensions){
         .context = app,
         .submit = vm_app_standard_extension,
-        .help_text = "  info           list device information\r\n"
-            "  speed [standard|turbo]\r\n"
-            "  floppy insert <mode> <image>\r\n"
-            "                 insert drive A media while stopped/paused\r\n"
-            "  floppy eject   eject drive A media while stopped/paused\r\n"
+        .help = {vm_app_standard_help_rows,
+            sizeof(vm_app_standard_help_rows) / sizeof(vm_app_standard_help_rows[0])}
     };
     return LIB_STATUS_OK;
 }

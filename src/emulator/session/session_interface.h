@@ -8,6 +8,7 @@
 
 #define EMULATOR_SESSION_TEXT_CAPACITY 16384u
 #define EMULATOR_SESSION_PROMPT_CAPACITY 64u
+#define EMULATOR_SESSION_MONITOR_PROMPT "> "
 
 typedef struct emulator_session emulator_session;
 
@@ -48,6 +49,12 @@ typedef enum emulator_session_request {
     EMULATOR_SESSION_REQUEST_STOP,
     EMULATOR_SESSION_REQUEST_RESET
 } emulator_session_request;
+
+/* Session owns neutral lifecycle selection from an observed machine state.
+ * UI adapters use this for a pause-toggle hotkey; Product still owns command
+ * grammar and user-facing results. */
+lib_bool emulator_session_request_pause_toggle(emulator_session_machine_state state,
+    emulator_session_request *out_request);
 
 /* A product command provider parses one line and returns copied presentation
  * text plus, at most, one neutral lifecycle request. Session is the unique

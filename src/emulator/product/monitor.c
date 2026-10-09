@@ -1,20 +1,26 @@
 #include "emulator/product/monitor_interface.h"
 #include "lib/types/file.h"
 
-static const char emulator_product_monitor_commands[] =
-    "Control your virtual machine:\r\n"
-    "  start          cold-reset and run the machine\r\n"
-    "  reset          cold-reset and pause at firmware entry\r\n"
-    "  stop           stop execution\r\n"
-    "  pause          request machine pause\r\n"
-    "  resume         continue a paused machine\r\n"
-    "\r\n"
-    "  load <file>    load a snapshot while stopped\r\n"
-    "  save <file>    save a running or paused machine\r\n"
-    "\r\n"
-    "  debug          enter debugger (q returns to monitor)\r\n"
-    "  help           show this help\r\n"
-    "  exit           quit\r\n";
+#define EMULATOR_PRODUCT_HELP_DESCRIPTION_COLUMN 17u
+
+static const emulator_product_help_row emulator_product_monitor_machine_rows[] = {
+    {"start", "cold-reset and run the machine"},
+    {"reset", "cold-reset and pause at firmware entry"},
+    {"stop", "stop execution"},
+    {"pause", "request machine pause"},
+    {"resume", "continue a paused machine"}
+};
+
+static const emulator_product_help_row emulator_product_monitor_snapshot_rows[] = {
+    {"load <file>", "load a snapshot while stopped"},
+    {"save <file>", "save a running or paused machine"}
+};
+
+static const emulator_product_help_row emulator_product_monitor_general_rows[] = {
+    {"debug", "enter debugger (q returns to monitor)"},
+    {"help", "show this help"},
+    {"exit", "quit"}
+};
 
 static void emulator_product_monitor_clear_result(
     emulator_session_command_result *out_result)
@@ -36,7 +42,78 @@ static void emulator_product_monitor_set_prompt(emulator_session_command_result 
     if (out_result == LIB_NULL || !out_result->arm_prompt) return;
     if (out_result->prompt[0] != '\0') return;
     (void)lib_c_snprintf(out_result->prompt, sizeof(out_result->prompt), "%s",
-        EMULATOR_PRODUCT_MONITOR_PROMPT);
+        EMULATOR_SESSION_MONITOR_PROMPT);
+}
+
+static void emulator_product_monitor_lifecycle_message(
+    emulator_session_command_result *out_result, const char *text)
+{
+    emulator_product_monitor_message(out_result, text);
+    emulator_product_monitor_set_prompt(out_result);
+}
+
+lib_bool emulator_product_monitor_request_lifecycle(
+    const emulator_product_monitor_provider *provider,
+    emulator_product_monitor_command command, emulator_session_machine_state state,
+    emulator_session_command_result *out_result)
+{
+    emulator_session_request request = EMULATOR_SESSION_REQUEST_NONE;
+    lib_status status = LIB_STATUS_OK;
+
+    emulator_product_monitor_clear_result(out_result);
+    if (provider == LIB_NULL || out_result == LIB_NULL) return LIB_FALSE;
+    if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_START) {
+        if (state == EMULATOR_SESSION_MACHINE_STOPPED)
+            request = EMULATOR_SESSION_REQUEST_START;
+        else emulator_product_monitor_lifecycle_message(out_result,
+            state == EMULATOR_SESSION_MACHINE_PAUSED ?
+                "Machine is paused; use resume, reset, or stop." :
+                state == EMULATOR_SESSION_MACHINE_RUNNING ?
+                    "Machine is already running; use pause, reset, or stop." :
+                    "Machine has failed; exit and restart the program.");
+    } else if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE) {
+        if (state == EMULATOR_SESSION_MACHINE_RUNNING)
+            request = EMULATOR_SESSION_REQUEST_PAUSE;
+        else emulator_product_monitor_lifecycle_message(out_result,
+            state == EMULATOR_SESSION_MACHINE_PAUSED ?
+                "Machine is paused; use resume, reset, or stop." :
+                state == EMULATOR_SESSION_MACHINE_STOPPED ?
+                    "Machine is stopped; use start or reset." :
+                    "Machine has failed; exit and restart the program.");
+    } else if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME) {
+        if (state == EMULATOR_SESSION_MACHINE_PAUSED)
+            request = EMULATOR_SESSION_REQUEST_RESUME;
+        else emulator_product_monitor_lifecycle_message(out_result,
+            state == EMULATOR_SESSION_MACHINE_RUNNING ?
+                "Machine is already running; use pause, reset, or stop." :
+                state == EMULATOR_SESSION_MACHINE_STOPPED ?
+                    "Machine is stopped; use start or reset." :
+                    "Machine has failed; exit and restart the program.");
+    } else if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_STOP) {
+        if (state == EMULATOR_SESSION_MACHINE_RUNNING || state == EMULATOR_SESSION_MACHINE_PAUSED)
+            request = EMULATOR_SESSION_REQUEST_STOP;
+        else emulator_product_monitor_lifecycle_message(out_result,
+            state == EMULATOR_SESSION_MACHINE_STOPPED ?
+                "Machine is stopped; use start or reset." :
+                "Machine has failed; exit and restart the program.");
+    } else if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESET) {
+        if (state == EMULATOR_SESSION_MACHINE_STOPPED || state == EMULATOR_SESSION_MACHINE_RUNNING ||
+            state == EMULATOR_SESSION_MACHINE_PAUSED)
+            request = EMULATOR_SESSION_REQUEST_RESET;
+        else emulator_product_monitor_lifecycle_message(out_result,
+            "Machine has failed; exit and restart the program.");
+    } else return LIB_FALSE;
+    if (request == EMULATOR_SESSION_REQUEST_NONE) return LIB_TRUE;
+    if (provider->lifecycle_preflight != LIB_NULL)
+        status = provider->lifecycle_preflight(provider->context, command, out_result);
+    if (status != LIB_STATUS_OK) {
+        if (out_result->text[0] == '\0')
+            emulator_product_monitor_lifecycle_message(out_result, "Feature not implemented.");
+        else emulator_product_monitor_set_prompt(out_result);
+        return LIB_TRUE;
+    }
+    out_result->request = request;
+    return LIB_TRUE;
 }
 
 static lib_bool emulator_product_monitor_space(char value)
@@ -123,8 +200,8 @@ void emulator_product_monitor_provider_open(void *opaque,
 
     emulator_product_monitor_clear_result(out_result);
     if (provider == LIB_NULL || out_result == LIB_NULL ||
-        emulator_product_monitor_format_help(provider->extension_help,
-            provider->hotkey_help, out_result->text, sizeof(out_result->text)) != LIB_STATUS_OK) {
+        emulator_product_monitor_format_help(provider->extension_commands,
+            provider->hotkeys, out_result->text, sizeof(out_result->text)) != LIB_STATUS_OK) {
         emulator_product_monitor_message(out_result, "Help text is unavailable.");
         return;
     }
@@ -186,6 +263,15 @@ void emulator_product_monitor_provider_submit_line(void *opaque,
         out_result->exit_requested = LIB_TRUE;
         return;
     }
+    if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_START ||
+        command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME ||
+        command == EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE ||
+        command == EMULATOR_PRODUCT_MONITOR_COMMAND_STOP ||
+        command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESET) {
+        (void)emulator_product_monitor_request_lifecycle(provider, command, state, out_result);
+        emulator_product_monitor_set_prompt(out_result);
+        return;
+    }
     if (provider->submit_fixed == LIB_NULL ||
         !provider->submit_fixed(provider->context, command, state, arguments, out_result)) {
         emulator_product_monitor_message(out_result, "Feature not implemented.");
@@ -193,34 +279,188 @@ void emulator_product_monitor_provider_submit_line(void *opaque,
     emulator_product_monitor_set_prompt(out_result);
 }
 
-lib_status emulator_product_monitor_format_help(const char *extensions,
-    const char *hotkeys, char *out_text, lib_size capacity)
+void emulator_product_monitor_provider_note_runtime(void *opaque,
+    emulator_session_machine_state prior, emulator_session_machine_state completed,
+    emulator_session_command_result *out_result)
 {
-    lib_size used;
+    (void)opaque;
+    emulator_product_monitor_clear_result(out_result);
+    if (out_result == LIB_NULL || completed == EMULATOR_SESSION_MACHINE_INIT)
+        return;
+    if (completed == EMULATOR_SESSION_MACHINE_RESET_COMPLETED)
+        emulator_product_monitor_message(out_result, "Machine reset and paused.");
+    else if (completed == EMULATOR_SESSION_MACHINE_PAUSED &&
+        prior != EMULATOR_SESSION_MACHINE_PAUSED)
+        emulator_product_monitor_message(out_result, "Machine paused.");
+    else if (completed == EMULATOR_SESSION_MACHINE_RUNNING &&
+        prior == EMULATOR_SESSION_MACHINE_STOPPED)
+        emulator_product_monitor_message(out_result, "Machine started.");
+    else if (completed == EMULATOR_SESSION_MACHINE_RUNNING &&
+        prior == EMULATOR_SESSION_MACHINE_PAUSED)
+        emulator_product_monitor_message(out_result, "Machine resumed.");
+    else if (completed == EMULATOR_SESSION_MACHINE_STOPPED &&
+        prior != EMULATOR_SESSION_MACHINE_STOPPED)
+        emulator_product_monitor_message(out_result, "Machine stopped.");
+    else if (completed == EMULATOR_SESSION_MACHINE_ERROR)
+        emulator_product_monitor_message(out_result, "Machine error.");
+    out_result->arm_prompt = LIB_TRUE;
+    emulator_product_monitor_set_prompt(out_result);
+}
+
+static lib_status emulator_product_monitor_append(char *out_text, lib_size capacity,
+    lib_size *used, const char *text)
+{
+    lib_size length;
+
+    if (out_text == LIB_NULL || used == LIB_NULL || text == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    length = lib_text_length(text);
+    if (*used >= capacity || length >= capacity - *used)
+        return LIB_STATUS_LIMIT_EXCEEDED;
+    lib_memory_copy(out_text + *used, text, length + 1u);
+    *used += length;
+    return LIB_STATUS_OK;
+}
+
+static lib_status emulator_product_monitor_append_spaces(char *out_text, lib_size capacity,
+    lib_size *used, lib_size count)
+{
+    if (out_text == LIB_NULL || used == LIB_NULL || *used >= capacity ||
+        count >= capacity - *used)
+        return LIB_STATUS_LIMIT_EXCEEDED;
+    lib_memory_set(out_text + *used, ' ', count);
+    *used += count;
+    out_text[*used] = '\0';
+    return LIB_STATUS_OK;
+}
+
+static lib_status emulator_product_monitor_validate_rows(emulator_product_help_map rows)
+{
+    lib_size index;
+
+    if (rows.count != 0u && rows.rows == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    for (index = 0u; index < rows.count; ++index) {
+        const emulator_product_help_row *row = &rows.rows[index];
+        const char *description;
+
+        if (row->key == LIB_NULL || lib_text_find_substring(row->key, "\r") != LIB_NULL ||
+            lib_text_find_substring(row->key, "\n") != LIB_NULL)
+            return LIB_STATUS_INVALID_ARGUMENT;
+        description = row->description;
+        if (description != LIB_NULL && (lib_text_find_substring(description, "\r") != LIB_NULL ||
+            lib_text_find_substring(description, "\n") != LIB_NULL))
+            return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    return LIB_STATUS_OK;
+}
+
+static lib_status emulator_product_monitor_append_rows(emulator_product_help_map rows,
+    char *out_text, lib_size capacity, lib_size *used)
+{
+    lib_size index;
+
+    if (emulator_product_monitor_validate_rows(rows) != LIB_STATUS_OK)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    for (index = 0u; index < rows.count; ++index) {
+        const emulator_product_help_row *row = &rows.rows[index];
+        const char *description = row->description;
+        lib_size key_length;
+
+        key_length = lib_text_length(row->key);
+        if (emulator_product_monitor_append(out_text, capacity, used, "  ") != LIB_STATUS_OK ||
+            emulator_product_monitor_append(out_text, capacity, used, row->key) != LIB_STATUS_OK)
+            return LIB_STATUS_LIMIT_EXCEEDED;
+        if (description == LIB_NULL || description[0] == '\0') {
+            if (emulator_product_monitor_append(out_text, capacity, used, "\r\n") != LIB_STATUS_OK)
+                return LIB_STATUS_LIMIT_EXCEEDED;
+        } else if (key_length + 2u < EMULATOR_PRODUCT_HELP_DESCRIPTION_COLUMN) {
+            if (emulator_product_monitor_append_spaces(out_text, capacity, used,
+                    EMULATOR_PRODUCT_HELP_DESCRIPTION_COLUMN - key_length - 2u) != LIB_STATUS_OK ||
+                emulator_product_monitor_append(out_text, capacity, used, description) != LIB_STATUS_OK ||
+                emulator_product_monitor_append(out_text, capacity, used, "\r\n") != LIB_STATUS_OK)
+                return LIB_STATUS_LIMIT_EXCEEDED;
+        } else {
+            if (emulator_product_monitor_append(out_text, capacity, used, "\r\n") != LIB_STATUS_OK ||
+                emulator_product_monitor_append_spaces(out_text, capacity, used,
+                    EMULATOR_PRODUCT_HELP_DESCRIPTION_COLUMN) != LIB_STATUS_OK ||
+                emulator_product_monitor_append(out_text, capacity, used, description) != LIB_STATUS_OK ||
+                emulator_product_monitor_append(out_text, capacity, used, "\r\n") != LIB_STATUS_OK)
+                return LIB_STATUS_LIMIT_EXCEEDED;
+        }
+    }
+    return LIB_STATUS_OK;
+}
+
+lib_status emulator_product_monitor_format_help(emulator_product_help_map extensions,
+    emulator_product_help_map hotkeys, char *out_text, lib_size capacity)
+{
+    lib_size used = 0u;
+    emulator_product_help_map machine = {
+        emulator_product_monitor_machine_rows,
+        sizeof(emulator_product_monitor_machine_rows) / sizeof(emulator_product_monitor_machine_rows[0])};
+    emulator_product_help_map snapshots = {
+        emulator_product_monitor_snapshot_rows,
+        sizeof(emulator_product_monitor_snapshot_rows) / sizeof(emulator_product_monitor_snapshot_rows[0])};
+    emulator_product_help_map general = {
+        emulator_product_monitor_general_rows,
+        sizeof(emulator_product_monitor_general_rows) / sizeof(emulator_product_monitor_general_rows[0])};
 
     if (out_text == LIB_NULL || capacity == 0u)
         return LIB_STATUS_INVALID_ARGUMENT;
-    if (lib_c_snprintf(out_text, capacity, "%s", emulator_product_monitor_commands) < 0)
+    if (emulator_product_monitor_validate_rows(extensions) != LIB_STATUS_OK ||
+        emulator_product_monitor_validate_rows(hotkeys) != LIB_STATUS_OK)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    out_text[0] = '\0';
+    if (emulator_product_monitor_append(out_text, capacity, &used,
+            "Control your virtual machine:\r\n") != LIB_STATUS_OK ||
+        emulator_product_monitor_append_rows(machine, out_text, capacity, &used) != LIB_STATUS_OK ||
+        emulator_product_monitor_append(out_text, capacity, &used, "\r\n") != LIB_STATUS_OK ||
+        emulator_product_monitor_append_rows(snapshots, out_text, capacity, &used) != LIB_STATUS_OK ||
+        emulator_product_monitor_append(out_text, capacity, &used, "\r\n") != LIB_STATUS_OK ||
+        emulator_product_monitor_append_rows(general, out_text, capacity, &used) != LIB_STATUS_OK)
         return LIB_STATUS_LIMIT_EXCEEDED;
-    used = lib_text_length(out_text);
-    if (extensions != LIB_NULL && extensions[0] != '\0') {
-        if (lib_c_snprintf(out_text + used, capacity - used, "\r\n%s", extensions) < 0)
+    if (extensions.count != 0u) {
+        if (emulator_product_monitor_append(out_text, capacity, &used, "\r\n") != LIB_STATUS_OK ||
+            emulator_product_monitor_append_rows(extensions, out_text, capacity, &used) != LIB_STATUS_OK)
             return LIB_STATUS_LIMIT_EXCEEDED;
-        used = lib_text_length(out_text);
     }
-    if (hotkeys != LIB_NULL && hotkeys[0] != '\0' &&
-        lib_c_snprintf(out_text + used, capacity - used,
-            "\r\nWhile the machine is running:\r\n%s\r\n", hotkeys) < 0)
+    if (hotkeys.count != 0u) {
+        if (emulator_product_monitor_append(out_text, capacity, &used,
+                "\r\nWhile the machine is running:\r\n") != LIB_STATUS_OK ||
+            emulator_product_monitor_append_rows(hotkeys, out_text, capacity, &used) != LIB_STATUS_OK)
+            return LIB_STATUS_LIMIT_EXCEEDED;
+    }
+    return LIB_STATUS_OK;
+}
+
+lib_status emulator_product_monitor_format_window_titles(const char *name,
+    char *out_running, lib_size running_capacity, char *out_paused,
+    lib_size paused_capacity)
+{
+    if (name == LIB_NULL || out_running == LIB_NULL || out_paused == LIB_NULL ||
+        running_capacity == 0u || paused_capacity == 0u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (lib_c_snprintf(out_running, running_capacity, "%s (Running)", name) < 0 ||
+        lib_c_snprintf(out_paused, paused_capacity, "%s (Paused)", name) < 0)
         return LIB_STATUS_LIMIT_EXCEEDED;
     return LIB_STATUS_OK;
 }
 
 lib_status emulator_product_monitor_format_window_status(const char *name,
-    const char *hotkeys, char *out_text, lib_size capacity)
+    emulator_product_help_map hotkeys, char *out_text, lib_size capacity)
 {
-    if (name == LIB_NULL || hotkeys == LIB_NULL || out_text == LIB_NULL || capacity == 0u)
+    lib_size used = 0u;
+
+    if (name == LIB_NULL || out_text == LIB_NULL || capacity == 0u)
         return LIB_STATUS_INVALID_ARGUMENT;
-    return lib_c_snprintf(out_text, capacity,
-        "%s is running in the Window.\r\n\r\nWhile the machine is running:\r\n%s\r\n",
-        name, hotkeys) < 0 ? LIB_STATUS_LIMIT_EXCEEDED : LIB_STATUS_OK;
+    if (emulator_product_monitor_validate_rows(hotkeys) != LIB_STATUS_OK)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    out_text[0] = '\0';
+    if (lib_c_snprintf(out_text, capacity,
+            "%s is running in the Window.\r\n\r\nWhile the machine is running:\r\n",
+            name) < 0)
+        return LIB_STATUS_LIMIT_EXCEEDED;
+    used = lib_text_length(out_text);
+    return emulator_product_monitor_append_rows(hotkeys, out_text, capacity, &used);
 }

@@ -126,8 +126,8 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
 void product_surface_command_dispose(product_surface_command_context *command)
 { (void)command; }
 
-const char *product_surface_keyboard_hotkey_help(void)
-{ return "hotkeys"; }
+emulator_product_help_map product_surface_keyboard_hotkey_help(void)
+{ return (emulator_product_help_map){LIB_NULL, 0u}; }
 
 lib_i32 main(void)
 {
@@ -153,9 +153,19 @@ lib_i32 main(void)
     }
     return 0;
 }
-lib_status emulator_product_monitor_format_window_status(const char *name,
-    const char *hotkeys, char *out_text, lib_size capacity)
+lib_status emulator_product_monitor_format_window_titles(const char *name,
+    char *out_running, lib_size running_capacity, char *out_paused,
+    lib_size paused_capacity)
 {
-    return lib_c_snprintf(out_text, capacity, "%s %s", name, hotkeys) < 0 ?
+    return lib_c_snprintf(out_running, running_capacity, "%s", name) < 0 ||
+        lib_c_snprintf(out_paused, paused_capacity, "%s", name) < 0 ?
+        LIB_STATUS_LIMIT_EXCEEDED : LIB_STATUS_OK;
+}
+
+lib_status emulator_product_monitor_format_window_status(const char *name,
+    emulator_product_help_map hotkeys, char *out_text, lib_size capacity)
+{
+    (void)hotkeys;
+    return lib_c_snprintf(out_text, capacity, "%s", name) < 0 ?
         LIB_STATUS_LIMIT_EXCEEDED : LIB_STATUS_OK;
 }

@@ -277,3 +277,13 @@ test removal.
   dependency gates and x64/x86 affected unit suites, then rebuild and verify
   all ten current artifacts. Report desktop and external qualification
   separately.
+
+## S18: Unified Fixed Lifecycle Contract
+
+- Make Emulator Product the sole owner of the fixed lifecycle transition table
+  and completion wording. App adapters may reject a request for a genuine
+  machine prerequisite, but do not maintain lifecycle flags, auto-resume after
+  reset, alternate state admission or duplicate completion text.
+- Cover all five lifecycle commands at the generic monitor boundary and retain
+  App tests for genuine preflight failures. Rebuild all ten current artifacts
+  after affected x64/x86 units and package manifests pass.

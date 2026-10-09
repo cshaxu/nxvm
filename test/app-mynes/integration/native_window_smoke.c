@@ -103,14 +103,7 @@ static void state_sink(void *opaque, emulator_machine_state state, lib_u32 gener
         session_state = EMULATOR_SESSION_MACHINE_PAUSED;
         break;
     case EMULATOR_MACHINE_RESET_COMPLETED:
-        if (fixture->command.suppress_window_after_reset)
-        {
-            fixture->command.suppress_window_after_reset = LIB_FALSE;
-            fixture->command.report_suppressed_reset = LIB_TRUE;
-            session_state = EMULATOR_SESSION_MACHINE_PAUSED;
-        }
-        else
-            session_state = EMULATOR_SESSION_MACHINE_RESET_COMPLETED;
+        session_state = EMULATOR_SESSION_MACHINE_RESET_COMPLETED;
         break;
     case EMULATOR_MACHINE_STARTING:
         session_state = EMULATOR_SESSION_MACHINE_INIT;
@@ -336,12 +329,10 @@ int main(void)
     assert(emulator_ui_create(&fixture.ui, &ui_options) == LIB_STATUS_OK);
     assert(emulator_session_bind_ui(fixture.session, fixture.ui) == LIB_STATUS_OK);
     native_window_runtime_observer = &fixture;
-    expect_runtime(&fixture, EMULATOR_SESSION_MACHINE_STOPPED);
     fixture.session_thread = CreateThread(NULL, 0u, run_session, &fixture, 0u, NULL);
     assert(fixture.session_thread != NULL);
 
-    wait_for_runtime(&fixture, EMULATOR_SESSION_MACHINE_STOPPED,
-                     EMULATOR_MACHINE_STOPPED);
+    /* INIT transitions to STOPPED without a monitor completion notice. */
     assert_no_window();
     expect_runtime(&fixture, EMULATOR_SESSION_MACHINE_RUNNING);
     submit_line(&fixture, "start");

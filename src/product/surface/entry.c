@@ -49,11 +49,9 @@ static lib_status product_surface_configure_ui(void *opaque,
 {
     product_surface_run_context *context = opaque;
     if (context == LIB_NULL || out_options == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (lib_c_snprintf((char *)context->running_title,
-            sizeof(context->running_title),
-            "%s (Running)", context->definition->name) < 0 ||
-        lib_c_snprintf((char *)context->paused_title, sizeof(context->paused_title),
-            "%s (Paused)", context->definition->name) < 0 ||
+    if (emulator_product_monitor_format_window_titles(context->definition->name,
+            (char *)context->running_title, sizeof(context->running_title),
+            (char *)context->paused_title, sizeof(context->paused_title)) != LIB_STATUS_OK ||
         emulator_product_monitor_format_window_status(context->definition->name,
             product_surface_keyboard_hotkey_help(), (char *)context->graphics_status,
             sizeof(context->graphics_status)) != LIB_STATUS_OK) {

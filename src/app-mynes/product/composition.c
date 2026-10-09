@@ -11,12 +11,17 @@
 #include "lib/storage/medium_interface.h"
 #include "lib/types/file.h"
 
+#define APP_COMPOSITION_WINDOW_TITLE_CAPACITY 256u
+
 typedef struct app_composition
 {
     core_driver *driver;
     app_command_context command;
     lib_u8 startup_rom_path[APP_CONFIG_PATH_CAPACITY];
     lib_u8 battery_path[APP_CONFIG_PATH_CAPACITY];
+    lib_u8 running_window_title[APP_COMPOSITION_WINDOW_TITLE_CAPACITY];
+    lib_u8 paused_window_title[APP_COMPOSITION_WINDOW_TITLE_CAPACITY];
+    lib_u8 graphics_console_status[EMULATOR_SESSION_TEXT_CAPACITY];
     lib_bool console_control;
 } app_composition;
 
@@ -107,14 +112,7 @@ static emulator_session_machine_state app_composition_map_state(void *context,
         session_state = EMULATOR_SESSION_MACHINE_PAUSED;
         break;
     case EMULATOR_MACHINE_RESET_COMPLETED:
-        if (composition->command.suppress_window_after_reset)
-        {
-            composition->command.suppress_window_after_reset = LIB_FALSE;
-            composition->command.report_suppressed_reset = LIB_TRUE;
-            session_state = EMULATOR_SESSION_MACHINE_PAUSED;
-        }
-        else
-            session_state = EMULATOR_SESSION_MACHINE_RESET_COMPLETED;
+        session_state = EMULATOR_SESSION_MACHINE_RESET_COMPLETED;
         break;
     case EMULATOR_MACHINE_STARTING:
         session_state = EMULATOR_SESSION_MACHINE_INIT;
@@ -149,8 +147,9 @@ static lib_status app_composition_bind_machine(void *opaque,
 {
     app_composition *composition = opaque;
 
-    if (composition == LIB_NULL || machine == LIB_NULL)
+    if (composition == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
+    /* NULL is the ordered teardown revoke of this non-owning link. */
     composition->command.machine = machine;
     return LIB_STATUS_OK;
 }
@@ -186,20 +185,29 @@ static lib_status app_composition_configure_control(void *opaque,
 static lib_status app_composition_configure_ui(void *opaque,
                                                emulator_ui_options *out_options)
 {
+    app_composition *composition = opaque;
     kvm_hotkey_registry hotkeys;
 
-    (void)opaque;
-    if (out_options == LIB_NULL)
+    if (composition == LIB_NULL || out_options == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     kvm_hotkey_registry_initialize(&hotkeys);
     if (kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,
                                      "pause-toggle") != LIB_STATUS_OK)
         return LIB_STATUS_INTERNAL_ERROR;
+    if (emulator_product_monitor_format_window_titles("MyNES",
+            (char *)composition->running_window_title,
+            sizeof(composition->running_window_title),
+            (char *)composition->paused_window_title,
+            sizeof(composition->paused_window_title)) != LIB_STATUS_OK ||
+        emulator_product_monitor_format_window_status("MyNES", app_command_hotkey_help(),
+            (char *)composition->graphics_console_status,
+            sizeof(composition->graphics_console_status)) != LIB_STATUS_OK)
+        return LIB_STATUS_LIMIT_EXCEEDED;
     *out_options = (emulator_ui_options){
         .hotkeys = hotkeys,
-        .running_window_title = "MyNES (Running)",
-        .paused_window_title = "MyNES (Paused)",
-        .graphics_console_status_text = "NES video requires a window."};
+        .running_window_title = (const char *)composition->running_window_title,
+        .paused_window_title = (const char *)composition->paused_window_title,
+        .graphics_console_status_text = (const char *)composition->graphics_console_status};
     return LIB_STATUS_OK;
 }
 

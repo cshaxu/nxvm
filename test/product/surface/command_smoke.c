@@ -25,13 +25,15 @@ static lib_bool fixture_extension(void *context, emulator_machine *machine,
 
 lib_i32 main(void)
 {
+    static const emulator_product_help_row help_rows[] = {
+        {"info", "fixture information"},
+        {"floppy eject", "fixture media command"}};
     product_surface_command_context command = {0};
     emulator_session_command_result result = {0};
     emulator_session_command_provider provider;
     const product_surface_command_extensions extensions = {
         .submit = fixture_extension,
-        .help_text = "  info           fixture information\r\n"
-            "  floppy eject   fixture media command\r\n"
+        .help = {help_rows, sizeof(help_rows) / sizeof(help_rows[0])}
     };
 
     if (product_surface_command_provider_initialize(&command, (emulator_machine *)&command,

@@ -268,6 +268,17 @@ static void public_session_contract(void)
 
 int main(void)
 {
+    emulator_session_request toggle_request;
+
+    lib_test_assert(emulator_session_request_pause_toggle(
+        EMULATOR_SESSION_MACHINE_RUNNING, &toggle_request) &&
+        toggle_request == EMULATOR_SESSION_REQUEST_PAUSE);
+    lib_test_assert(emulator_session_request_pause_toggle(
+        EMULATOR_SESSION_MACHINE_PAUSED, &toggle_request) &&
+        toggle_request == EMULATOR_SESSION_REQUEST_RESUME);
+    lib_test_assert(!emulator_session_request_pause_toggle(
+        EMULATOR_SESSION_MACHINE_STOPPED, &toggle_request) &&
+        toggle_request == EMULATOR_SESSION_REQUEST_NONE);
     public_session_contract();
     {
         emulator_session initial = {0};

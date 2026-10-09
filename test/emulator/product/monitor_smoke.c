@@ -51,27 +51,46 @@ static void command_parse(void)
 
 static void text_format(void)
 {
+    static const emulator_product_help_row extensions[] = {
+        {"disk attach <file>", "attach a test disk"},
+        {"floppy insert <mode> <image>", "insert a test disk"}};
+    static const emulator_product_help_row hotkeys[] = {
+        {"Ctrl+Alt+P", "pause or resume"}};
     char text[EMULATOR_SESSION_TEXT_CAPACITY];
     const char *start;
     const char *reset;
     const char *load;
     const char *debug;
+    char running_title[64];
+    char paused_title[64];
 
-    lib_test_assert(emulator_product_monitor_format_help("  disk attach <file>\r\n",
-        "  Ctrl+Alt+P     pause or resume\r\n",
+    lib_test_assert(emulator_product_monitor_format_help(
+        (emulator_product_help_map){extensions, sizeof(extensions) / sizeof(extensions[0])},
+        (emulator_product_help_map){hotkeys, sizeof(hotkeys) / sizeof(hotkeys[0])},
         text, sizeof(text)) == LIB_STATUS_OK);
     lib_test_assert(lib_text_find_substring(text, "  start          cold-reset") != LIB_NULL);
     lib_test_assert(lib_text_find_substring(text, "  save <file>") != LIB_NULL);
     lib_test_assert(lib_text_find_substring(text, "  disk attach <file>") != LIB_NULL);
+    lib_test_assert(lib_text_find_substring(text,
+        "  floppy insert <mode> <image>\r\n                 insert a test disk\r\n") != LIB_NULL);
     lib_test_assert(lib_text_find_substring(text, "While the machine is running:") != LIB_NULL);
+    lib_test_assert(emulator_product_monitor_format_help(
+        (emulator_product_help_map){(const emulator_product_help_row[]){{"bad\r\nkey", "text"}}, 1u},
+        (emulator_product_help_map){LIB_NULL, 0u}, text, sizeof(text)) ==
+        LIB_STATUS_INVALID_ARGUMENT);
     start = lib_text_find_substring(text, "  start          cold-reset");
     reset = lib_text_find_substring(text, "  reset          cold-reset");
     load = lib_text_find_substring(text, "  load <file>");
     debug = lib_text_find_substring(text, "  debug          enter debugger");
     lib_test_assert(start != LIB_NULL && reset != LIB_NULL && load != LIB_NULL &&
         debug != LIB_NULL && start < reset && reset < load && load < debug);
+    lib_test_assert(emulator_product_monitor_format_window_titles("Test Machine",
+        running_title, sizeof(running_title), paused_title, sizeof(paused_title)) ==
+        LIB_STATUS_OK && lib_text_compare(running_title, "Test Machine (Running)") == 0 &&
+        lib_text_compare(paused_title, "Test Machine (Paused)") == 0);
     lib_test_assert(emulator_product_monitor_format_window_status("Test Machine",
-        "  Ctrl+Alt+P     pause or resume\r\n", text, sizeof(text)) == LIB_STATUS_OK);
+        (emulator_product_help_map){hotkeys, sizeof(hotkeys) / sizeof(hotkeys[0])},
+        text, sizeof(text)) == LIB_STATUS_OK);
     lib_test_assert(lib_text_find_substring(text,
         "Test Machine is running in the Window.") != LIB_NULL);
     lib_test_assert(lib_text_find_substring(text, "While the machine is running:") != LIB_NULL);
@@ -79,19 +98,31 @@ static void text_format(void)
 
 static void provider_contract(void)
 {
+    static const emulator_product_help_row extensions[] = {
+        {"media attach <file>", "attach test media"}};
+    static const emulator_product_help_row hotkeys[] = {
+        {"Ctrl+Alt+P", "pause or resume"}};
     static const struct {
         const char *line;
         emulator_product_monitor_command command;
-    } no_argument_commands[] = {
-        {"start", EMULATOR_PRODUCT_MONITOR_COMMAND_START},
-        {"resume", EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME},
-        {"pause", EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE},
-        {"stop", EMULATOR_PRODUCT_MONITOR_COMMAND_STOP},
-        {"reset", EMULATOR_PRODUCT_MONITOR_COMMAND_RESET},
+    } provider_commands[] = {
         {"debug", EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG}};
+    static const struct {
+        const char *line;
+        emulator_session_machine_state state;
+        emulator_session_request request;
+    } lifecycle_commands[] = {
+        {"start", EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_REQUEST_START},
+        {"resume", EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_RESUME},
+        {"pause", EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_PAUSE},
+        {"stop", EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_STOP},
+        {"stop", EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_STOP},
+        {"reset", EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_REQUEST_RESET},
+        {"reset", EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_RESET},
+        {"reset", EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_RESET}};
     const emulator_product_monitor_provider provider = {
-        .extension_help = "  media attach <file>\r\n",
-        .hotkey_help = "  Ctrl+Alt+P     pause or resume\r\n",
+        .extension_commands = {extensions, sizeof(extensions) / sizeof(extensions[0])},
+        .hotkeys = {hotkeys, sizeof(hotkeys) / sizeof(hotkeys[0])},
         .submit_fixed = submit_fixed,
         .submit_extension = submit_extension};
     emulator_session_command_result result;
@@ -101,20 +132,27 @@ static void provider_contract(void)
     emulator_product_monitor_provider_open((void *)&provider, &result);
     lib_test_assert(lib_text_find_substring(result.text, "media attach") != LIB_NULL &&
         result.arm_prompt && lib_text_compare(result.prompt,
-            EMULATOR_PRODUCT_MONITOR_PROMPT) == 0);
-    for (index = 0u; index < sizeof(no_argument_commands) /
-            sizeof(no_argument_commands[0]); ++index) {
+            EMULATOR_SESSION_MONITOR_PROMPT) == 0);
+    for (index = 0u; index < sizeof(provider_commands) /
+            sizeof(provider_commands[0]); ++index) {
         emulator_product_monitor_provider_submit_line((void *)&provider,
-            EMULATOR_SESSION_MACHINE_STOPPED, no_argument_commands[index].line, &result);
-        lib_test_assert(last_fixed_command == no_argument_commands[index].command &&
+            EMULATOR_SESSION_MACHINE_STOPPED, provider_commands[index].line, &result);
+        lib_test_assert(last_fixed_command == provider_commands[index].command &&
             last_fixed_arguments[0] == '\0' && fixed_calls[last_fixed_command] == 1u &&
             extension_calls == 0u);
         lib_test_assert(lib_c_snprintf(invalid_line, sizeof(invalid_line), "%s unexpected",
-            no_argument_commands[index].line) >= 0);
+            provider_commands[index].line) >= 0);
         emulator_product_monitor_provider_submit_line((void *)&provider,
             EMULATOR_SESSION_MACHINE_STOPPED, invalid_line, &result);
         lib_test_assert(lib_text_compare(result.text, "Unknown command.\r\n") == 0 &&
             extension_calls == 0u);
+    }
+    for (index = 0u; index < sizeof(lifecycle_commands) /
+            sizeof(lifecycle_commands[0]); ++index) {
+        emulator_product_monitor_provider_submit_line((void *)&provider,
+            lifecycle_commands[index].state, lifecycle_commands[index].line, &result);
+        lib_test_assert(result.request == lifecycle_commands[index].request &&
+            !result.arm_prompt && extension_calls == 0u);
     }
     emulator_product_monitor_provider_submit_line((void *)&provider,
         EMULATOR_SESSION_MACHINE_STOPPED, "save state.bin", &result);
@@ -128,7 +166,7 @@ static void provider_contract(void)
         EMULATOR_SESSION_MACHINE_STOPPED, "media attach disk.img", &result);
     lib_test_assert(lib_text_compare(result.text, "Media attached.\r\n") == 0 &&
         extension_calls == 1u && lib_text_compare(result.prompt,
-            EMULATOR_PRODUCT_MONITOR_PROMPT) == 0);
+            EMULATOR_SESSION_MONITOR_PROMPT) == 0);
     emulator_product_monitor_provider_submit_line((void *)&provider,
         EMULATOR_SESSION_MACHINE_STOPPED, "help unexpected", &result);
     lib_test_assert(lib_text_compare(result.text, "Unknown command.\r\n") == 0 &&
@@ -144,8 +182,7 @@ static void provider_contract(void)
 
 static void unavailable_fixed_commands(void)
 {
-    static const char *lines[] = {
-        "start", "resume", "pause", "stop", "reset", "save state.bin", "load state.bin", "debug"};
+    static const char *lines[] = {"save state.bin", "load state.bin", "debug"};
     const emulator_product_monitor_provider provider = {0};
     emulator_session_command_result result;
     lib_size index;
@@ -155,8 +192,35 @@ static void unavailable_fixed_commands(void)
             EMULATOR_SESSION_MACHINE_STOPPED, lines[index], &result);
         lib_test_assert(lib_text_compare(result.text, "Feature not implemented.\r\n") == 0 &&
             result.arm_prompt && lib_text_compare(result.prompt,
-                EMULATOR_PRODUCT_MONITOR_PROMPT) == 0);
+                EMULATOR_SESSION_MONITOR_PROMPT) == 0);
     }
+}
+
+static void lifecycle_contract(void)
+{
+    const emulator_product_monitor_provider provider = {0};
+    emulator_session_command_result result;
+
+    emulator_product_monitor_provider_submit_line((void *)&provider,
+        EMULATOR_SESSION_MACHINE_PAUSED, "start", &result);
+    lib_test_assert(lib_text_compare(result.text,
+        "Machine is paused; use resume, reset, or stop.\r\n") == 0);
+    emulator_product_monitor_provider_submit_line((void *)&provider,
+        EMULATOR_SESSION_MACHINE_STOPPED, "pause", &result);
+    lib_test_assert(lib_text_compare(result.text,
+        "Machine is stopped; use start or reset.\r\n") == 0);
+    emulator_product_monitor_provider_submit_line((void *)&provider,
+        EMULATOR_SESSION_MACHINE_ERROR, "reset", &result);
+    lib_test_assert(lib_text_compare(result.text,
+        "Machine has failed; exit and restart the program.\r\n") == 0);
+    emulator_product_monitor_provider_note_runtime((void *)&provider,
+        EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_MACHINE_RUNNING, &result);
+    lib_test_assert(lib_text_compare(result.text, "Machine started.\r\n") == 0 &&
+        result.arm_prompt);
+    emulator_product_monitor_provider_note_runtime((void *)&provider,
+        EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_MACHINE_RESET_COMPLETED, &result);
+    lib_test_assert(lib_text_compare(result.text, "Machine reset and paused.\r\n") == 0 &&
+        result.arm_prompt);
 }
 
 int main(void)
@@ -165,5 +229,6 @@ int main(void)
     text_format();
     provider_contract();
     unavailable_fixed_commands();
+    lifecycle_contract();
     return 0;
 }

@@ -44,7 +44,6 @@ static void verify_stopped_startup(void)
             app_command_initialize(&context, LIB_NULL, present != 0u, displays[display]);
             app_command_open(&context, &result);
             assert(result.request == EMULATOR_SESSION_REQUEST_NONE && result.arm_prompt);
-            assert(!context.run_after_reset);
         }
     }
 }
@@ -76,7 +75,7 @@ int main(void)
     app_command_note_runtime(&startup_context, EMULATOR_SESSION_MACHINE_STOPPED,
         EMULATOR_SESSION_MACHINE_RESET_COMPLETED, &result);
     assert(result.text[0] != '\0' && result.arm_prompt);
-    assert(app_command_output_compare(result.text, "Reset complete; machine paused.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine reset and paused.\n") == 0);
     app_command_note_runtime(&startup_context, EMULATOR_SESSION_MACHINE_PAUSED,
         EMULATOR_SESSION_MACHINE_RUNNING, &result);
     assert(app_command_output_compare(result.text, "Machine resumed.\n") == 0);
@@ -88,36 +87,39 @@ int main(void)
     assert(app_command_output_compare(result.text, "Machine stopped.\n") == 0);
     app_command_note_runtime(&startup_context, EMULATOR_SESSION_MACHINE_RUNNING,
         EMULATOR_SESSION_MACHINE_ERROR, &result);
-    assert(app_command_output_compare(result.text, "Machine host error; exit and restart.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine error.\n") == 0);
     app_command_initialize(&window_start_context, 0, LIB_TRUE,
         EMULATOR_SESSION_DISPLAY_WINDOW);
-    window_start_context.started_after_reset = LIB_TRUE;
     app_command_note_runtime(&window_start_context, EMULATOR_SESSION_MACHINE_PAUSED,
         EMULATOR_SESSION_MACHINE_RUNNING, &result);
     assert(result.text[0] != '\0' && result.arm_prompt);
-    assert(app_command_output_compare(result.text, "Machine started.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine resumed.\n") == 0);
     app_command_initialize(&console_context, 0, LIB_TRUE,
         EMULATOR_SESSION_DISPLAY_CONSOLE);
     app_command_note_runtime(&console_context, EMULATOR_SESSION_MACHINE_PAUSED,
         EMULATOR_SESSION_MACHINE_RUNNING, &result);
-    assert(result.text[0] == '\0' && !result.arm_prompt);
+    assert(result.text[0] != '\0' && result.arm_prompt);
+    assert(app_command_output_compare(result.text, "Machine resumed.\n") == 0);
     app_command_initialize(&context, 0, 0,
         EMULATOR_SESSION_DISPLAY_WINDOW);
     app_command_open(&context, &result);
     assert(app_command_contains(result.text, "Control your virtual machine:") &&
         result.arm_prompt);
-    assert(lib_text_length(result.text) >= 4u &&
-        lib_memory_compare(result.text + lib_text_length(result.text) - 4u,
-            "\r\n\r\n", 4u) == 0);
+    assert(lib_text_length(result.text) >= 2u &&
+        lib_memory_compare(result.text + lib_text_length(result.text) - 2u,
+            "\r\n", 2u) == 0);
     assert(app_command_contains(result.text, "start          cold-reset"));
     assert(app_command_contains(result.text, "debug          enter debugger"));
     assert(app_command_contains(result.text, "save <file>    save a running or paused machine"));
     assert(app_command_contains(result.text, "load <file>    load a snapshot while stopped"));
     assert(!app_command_contains(result.text, "mem <addr> [count]"));
     assert(app_command_contains(result.text, "exit           quit"));
-    assert(app_command_contains(result.text, "Enter               Start"));
-    assert(app_command_contains(result.text, "Shift               Select"));
-    assert(app_command_contains(result.text, "Esc                 Pause or Resume"));
+    assert(app_command_contains(result.text, "  Enter") &&
+        app_command_contains(result.text, "Start"));
+    assert(app_command_contains(result.text, "  Shift") &&
+        app_command_contains(result.text, "Select"));
+    assert(app_command_contains(result.text, "  Esc") &&
+        app_command_contains(result.text, "Pause or Resume"));
     assert(lib_text_compare(result.prompt, "> ") == 0);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_STOPPED, "", &result);
     assert(result.text[0] == '\0' && result.arm_prompt &&
@@ -147,23 +149,27 @@ int main(void)
         EMULATOR_SESSION_DISPLAY_WINDOW);
     assert(app_command_handle_hotkey(&loaded_context, EMULATOR_SESSION_MACHINE_PAUSED,
         pause_toggle, &result));
-    assert(result.request == EMULATOR_SESSION_REQUEST_RESUME);
+    assert(result.request == EMULATOR_SESSION_REQUEST_NONE);
+    assert(app_command_output_compare(result.text, "Debugger request failed.\n") == 0);
     assert(app_command_handle_hotkey(&loaded_context, EMULATOR_SESSION_MACHINE_RUNNING,
         pause_toggle, &result));
     assert(result.request == EMULATOR_SESSION_REQUEST_PAUSE);
-    assert(!app_command_handle_hotkey(&loaded_context, EMULATOR_SESSION_MACHINE_STOPPED,
+    assert(app_command_handle_hotkey(&loaded_context, EMULATOR_SESSION_MACHINE_STOPPED,
         pause_toggle, &result));
-    assert(!app_command_handle_hotkey(&loaded_context, EMULATOR_SESSION_MACHINE_ERROR,
+    assert(app_command_output_compare(result.text, "Machine is stopped; use start or reset.\n") == 0);
+    assert(app_command_handle_hotkey(&loaded_context, EMULATOR_SESSION_MACHINE_ERROR,
         pause_toggle, &result));
+    assert(app_command_output_compare(result.text,
+        "Machine has failed; exit and restart the program.\n") == 0);
     assert(!app_command_handle_hotkey(&loaded_context, EMULATOR_SESSION_MACHINE_RUNNING,
         unknown_hotkey, &result));
     app_command_submit_line(&loaded_context, EMULATOR_SESSION_MACHINE_STOPPED, "start", &result);
-    assert(result.request == EMULATOR_SESSION_REQUEST_RESET && !result.arm_prompt);
+    assert(result.request == EMULATOR_SESSION_REQUEST_START && !result.arm_prompt);
     app_command_submit_line(&loaded_context, EMULATOR_SESSION_MACHINE_STOPPED, "help", &result);
     assert(app_command_contains(result.text, "Control your virtual machine:"));
     app_command_note_runtime(&loaded_context, EMULATOR_SESSION_MACHINE_STOPPED,
         EMULATOR_SESSION_MACHINE_RESET_COMPLETED, &result);
-    assert(result.request == EMULATOR_SESSION_REQUEST_RESUME && !result.arm_prompt);
+    assert(app_command_output_compare(result.text, "Machine reset and paused.\n") == 0);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_RUNNING, "pause", &result);
     assert(result.request == EMULATOR_SESSION_REQUEST_PAUSE && !result.arm_prompt);
     app_command_note_runtime(&context, EMULATOR_SESSION_MACHINE_RUNNING,
@@ -173,11 +179,11 @@ int main(void)
     app_command_note_runtime(&context, EMULATOR_SESSION_MACHINE_PAUSED,
         EMULATOR_SESSION_MACHINE_STOPPED, &result);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_STOPPED, "pause", &result);
-    assert(app_command_output_compare(result.text, "Machine is not running.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine is stopped; use start or reset.\n") == 0);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_STOPPED, "stop", &result);
-    assert(app_command_output_compare(result.text, "Machine is already stopped.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine is stopped; use start or reset.\n") == 0);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_ERROR, "start", &result);
-    assert(app_command_output_compare(result.text, "Machine host error; exit and restart.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine has failed; exit and restart the program.\n") == 0);
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_ERROR, "help", &result);
     assert(app_command_contains(result.text, "While the machine is running:"));
     app_command_submit_line(&context, EMULATOR_SESSION_MACHINE_STOPPED, "rom insert", &result);

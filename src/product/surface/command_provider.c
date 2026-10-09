@@ -8,6 +8,16 @@ static lib_bool product_surface_command_provider_hotkey(void *opaque,
     emulator_product_monitor_provider *monitor = opaque;
     product_surface_command_context *command = monitor != LIB_NULL ? monitor->context : LIB_NULL;
     if (command == LIB_NULL) return LIB_FALSE;
+    if (lib_text_compare((const char *)identifier, "pause-toggle") == 0) {
+        emulator_session_request request;
+
+        if (!emulator_session_request_pause_toggle(state, &request))
+            request = EMULATOR_SESSION_REQUEST_PAUSE;
+        return emulator_product_monitor_request_lifecycle(monitor,
+            request == EMULATOR_SESSION_REQUEST_RESUME ?
+                EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME :
+                EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE, state, out);
+    }
     lib_bool accepted = product_surface_keyboard_handle_hotkey(command->machine, state,
         identifier, out);
 

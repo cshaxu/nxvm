@@ -22,7 +22,7 @@ typedef struct product_surface_command_extensions {
     product_surface_command_extension_submit submit;
     /* Command rows only: Product supplies the title, canonical rows, blank
      * separators and shared hotkey section around this App-owned middle. */
-    const char *help_text;
+    emulator_product_help_map help;
 } product_surface_command_extensions;
 
 /* Product CLI state and callbacks; composition installs these directly. */

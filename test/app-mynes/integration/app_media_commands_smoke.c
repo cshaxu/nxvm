@@ -53,7 +53,7 @@ int main(void)
         app_command_submit_line(&command, session_state.monitor_actual,
             "start", &result);
         assert(lib_text_compare(result.text,
-            "Insert a cartridge before starting.\n\n") == 0);
+            "Insert a cartridge before starting.\r\n") == 0);
         app_command_submit_line(&command, session_state.monitor_actual,
             "rom insert mynes-app-media-fixture.nes", &result);
         assert(result.request == EMULATOR_SESSION_REQUEST_RESET);
@@ -74,11 +74,11 @@ int main(void)
         EMULATOR_SESSION_MACHINE_RESET_COMPLETED, &result);
     app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_STOPPED,
         "rom insert mynes-missing-media-fixture.nes", &result);
-    assert(lib_text_compare(result.text, "Cartridge insertion failed.\n\n") == 0 &&
+    assert(lib_text_compare(result.text, "Cartridge insertion failed.\r\n") == 0 &&
         result.request == EMULATOR_SESSION_REQUEST_NONE && core_driver_has_cartridge(driver));
     app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_RUNNING,
         "rom eject", &result);
-    assert(lib_text_compare(result.text, "Stop or pause before ejecting the cartridge.\n\n") == 0 &&
+    assert(lib_text_compare(result.text, "Stop or pause before ejecting the cartridge.\r\n") == 0 &&
         core_driver_has_cartridge(driver));
     app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_PAUSED, "rom eject", &result);
     assert(result.request == EMULATOR_SESSION_REQUEST_STOP && !result.arm_prompt &&

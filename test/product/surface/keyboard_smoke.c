@@ -80,13 +80,7 @@ lib_i32 main(void)
     if (!chord_rejects_each_prefix("send-ctrl-alt-del", 6u)) return 3;
     if (!chord_rejects_each_prefix("send-alt-enter", 6u)) return 4;
     if (!product_surface_keyboard_handle_hotkey(LIB_NULL, EMULATOR_SESSION_MACHINE_RUNNING,
-            (const lib_u8 *)"pause-toggle", &result) ||
-        result.request != EMULATOR_SESSION_REQUEST_PAUSE) return 5;
-    if (!product_surface_keyboard_handle_hotkey(LIB_NULL, EMULATOR_SESSION_MACHINE_PAUSED,
-            (const lib_u8 *)"pause-toggle", &result) ||
-        result.request != EMULATOR_SESSION_REQUEST_RESUME) return 6;
-    if (!product_surface_keyboard_handle_hotkey(LIB_NULL, EMULATOR_SESSION_MACHINE_RUNNING,
             (const lib_u8 *)"release-window-mouse", &result) ||
-        !result.release_window_mouse) return 7;
+        !result.release_window_mouse) return 5;
     return 0;
 }

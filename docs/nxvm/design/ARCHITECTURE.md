@@ -32,14 +32,27 @@ verification and acceptance; the task history retains the cutover sequence.
 
 - `emulator/product` owns neutral Machine/Session/UI composition, ordered
   teardown, the fixed monitor grammar and its startup/help-page framing.  Its
+  help rows, headings, indentation, line endings and Window title formats are
+  likewise canonical; Apps provide only command and hotkey key/description
+  rows. `emulator/session` owns monitor input delivery and the sole default
+  monitor prompt (`> `).
   fixed commands are `start`, `reset`, `stop`, `pause`, `resume`, `load`,
   `save`, `debug`, `help` and `exit`. The first five and last three accept no
   argument; only `load`/`save` retain their App-owned file grammar. It dispatches
   each command through an
   injected bounded capability and reports `Feature not implemented.` when the
   selected App has none; it never implements guest, snapshot or debug behavior
-  itself.  It receives an already constructed driver plus bounded bind, destroy
-  and completed-state translation callbacks; it does not define an INI grammar,
+  itself.  It owns the one fixed lifecycle contract: construction completion
+  changes `INIT` to `STOPPED` without a monitor notice; `start` changes
+  `STOPPED` to `RUNNING`; `pause` changes `RUNNING` to `PAUSED`; `resume`
+  changes `PAUSED` to `RUNNING`; `stop` changes `RUNNING` or `PAUSED` to
+  `STOPPED`; and `reset` from any of those three states changes it to `PAUSED`.
+  Its completion text is respectively `Machine started.`, `Machine paused.`,
+  `Machine resumed.`, `Machine stopped.`, `Machine reset and paused.`, and
+  `Machine error.`. Apps may reject an otherwise valid lifecycle request for a
+  real prerequisite, but do not reinterpret lifecycle states or wording. It
+  receives an already constructed driver plus bounded bind, destroy and
+  completed-state translation callbacks; it does not define an INI grammar,
   path construction, identity, board, CPU, firmware or App extension.
 - `product/surface` owns only the shared x86/IBM-PC Console/Debug/hotkey
   implementation that supplies Emulator Product capabilities.  It is a SoftPC

@@ -48,39 +48,8 @@ static lib_bool product_surface_command_submit_fixed(void *opaque,
         product_surface_command_set_prompt(command, out);
         return LIB_TRUE;
     }
-    if (state == EMULATOR_SESSION_MACHINE_ERROR) {
-        product_surface_command_message(out, "Machine has failed; exit and restart the program.");
-        return LIB_TRUE;
-    }
-    if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_START) {
-        if (state == EMULATOR_SESSION_MACHINE_STOPPED)
-            out->request = EMULATOR_SESSION_REQUEST_START;
-        else product_surface_command_message(out,
-            state == EMULATOR_SESSION_MACHINE_PAUSED ?
-                "Machine is paused; use resume, reset, or stop." :
-                "Machine is already running; use pause, reset, or stop.");
-    } else if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE) {
-        if (state == EMULATOR_SESSION_MACHINE_RUNNING)
-            out->request = EMULATOR_SESSION_REQUEST_PAUSE;
-        else product_surface_command_message(out,
-            state == EMULATOR_SESSION_MACHINE_PAUSED ?
-                "Machine is paused; use resume, reset, or stop." :
-                "Machine is stopped; use start or reset.");
-    } else if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME) {
-        if (state == EMULATOR_SESSION_MACHINE_PAUSED)
-            out->request = EMULATOR_SESSION_REQUEST_RESUME;
-        else product_surface_command_message(out,
-            state == EMULATOR_SESSION_MACHINE_RUNNING ?
-                "Machine is already running; use pause, reset, or stop." :
-                "Machine is stopped; use start or reset.");
-    } else if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESET) {
-        out->request = EMULATOR_SESSION_REQUEST_RESET;
-    } else if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_STOP) {
-        if (state == EMULATOR_SESSION_MACHINE_RUNNING || state == EMULATOR_SESSION_MACHINE_PAUSED)
-            out->request = EMULATOR_SESSION_REQUEST_STOP;
-        else product_surface_command_message(out, "Machine is stopped; use start or reset.");
-    } else return LIB_FALSE;
-    return LIB_TRUE;
+    (void)state;
+    return LIB_FALSE;
 }
 
 _Static_assert(EMULATOR_SESSION_PROMPT_CAPACITY >= PRODUCT_DEBUG_PROMPT_CAPACITY,
@@ -93,7 +62,7 @@ static void product_surface_command_set_prompt(const product_surface_command_con
         return;
     (void)lib_c_snprintf(out->prompt, sizeof(out->prompt), "%s",
         command->debug_active ? command->debug_prompt :
-            EMULATOR_PRODUCT_MONITOR_PROMPT);
+            EMULATOR_SESSION_MONITOR_PROMPT);
 }
 
 static void product_surface_command_copy_debug(product_surface_command_context *command,
@@ -150,25 +119,7 @@ void product_surface_command_provider_note_runtime(void *opaque,
     emulator_product_monitor_provider *monitor = opaque;
     product_surface_command_context *command = monitor != LIB_NULL ? monitor->context : LIB_NULL;
     if (command == LIB_NULL || out == LIB_NULL) return;
-    *out = (emulator_session_command_result){0};
-    if (completed == EMULATOR_SESSION_MACHINE_RESET_COMPLETED)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine reset and paused.\r\n");
-    else if (completed == EMULATOR_SESSION_MACHINE_PAUSED &&
-        prior != EMULATOR_SESSION_MACHINE_PAUSED)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine paused.\r\n");
-    else if (completed == EMULATOR_SESSION_MACHINE_RUNNING &&
-        prior == EMULATOR_SESSION_MACHINE_STOPPED)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine started.\r\n");
-    else if (completed == EMULATOR_SESSION_MACHINE_RUNNING &&
-        prior == EMULATOR_SESSION_MACHINE_PAUSED)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine resumed.\r\n");
-    else if (completed == EMULATOR_SESSION_MACHINE_STOPPED &&
-        prior != EMULATOR_SESSION_MACHINE_STOPPED)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine stopped.\r\n");
-    else if (completed == EMULATOR_SESSION_MACHINE_ERROR)
-        (void)lib_c_snprintf(out->text, sizeof(out->text), "Machine error.\r\n");
-    out->arm_prompt = completed != EMULATOR_SESSION_MACHINE_INIT;
-    product_surface_command_set_prompt(command, out);
+    emulator_product_monitor_provider_note_runtime(monitor, prior, completed, out);
     if (command->debug_active)
     {
         product_debug_machine_state state = completed == EMULATOR_SESSION_MACHINE_PAUSED ? PRODUCT_DEBUG_MACHINE_PAUSED : completed == EMULATOR_SESSION_MACHINE_RUNNING ? PRODUCT_DEBUG_MACHINE_RUNNING
@@ -200,8 +151,8 @@ lib_status product_surface_command_initialize(product_surface_command_context *c
     if (extensions != LIB_NULL) command->extensions = *extensions;
     command->monitor = (emulator_product_monitor_provider){
         .context = command,
-        .extension_help = command->extensions.help_text,
-        .hotkey_help = product_surface_keyboard_hotkey_help(),
+        .extension_commands = command->extensions.help,
+        .hotkeys = product_surface_keyboard_hotkey_help(),
         .submit_fixed = product_surface_command_submit_fixed,
         .submit_extension = product_surface_command_submit_extension};
     (void)display;

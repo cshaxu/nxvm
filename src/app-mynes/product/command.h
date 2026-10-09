@@ -21,21 +21,14 @@ typedef struct app_command_context {
     emulator_session_display display;
     lib_bool debug_active;
     lib_bool cartridge_present;
-    lib_bool run_after_reset;
-    lib_bool started_after_reset;
-    /* Window mode keeps a stopped cartridge reset in the cooked monitor until
-     * the user starts or resumes it.  App maps that one completion to PAUSED
-     * for Common's presentation policy, while retaining reset wording here. */
-    lib_bool suppress_window_after_reset;
-    lib_bool report_suppressed_reset;
     app_command_snapshot_result pending_snapshot;
     void *media_context;
     lib_bool (*set_media)(void *context, const char *path);
 } app_command_context;
 
 void app_command_initialize(app_command_context *context, emulator_machine *machine,
-    lib_bool cartridge_present,
-    emulator_session_display display);
+    lib_bool cartridge_present, emulator_session_display display);
+emulator_product_help_map app_command_hotkey_help(void);
 void app_command_open(void *context, emulator_session_command_result *out_result);
 void app_command_reject_line(void *context, emulator_session_command_result *out_result);
 void app_command_submit_line(void *context, emulator_session_machine_state state,

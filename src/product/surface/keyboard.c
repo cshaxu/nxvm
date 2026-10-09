@@ -3,15 +3,19 @@
 
 #include "emulator/machine/machine_interface.h"
 
-static const char product_surface_keyboard_help[] =
-    "  Ctrl+Alt+P     pause or resume\r\n"
-    "  Ctrl+Alt+D     send Ctrl+Alt+Del to the guest\r\n"
-    "  Ctrl+Alt+F     send Alt+Enter to the guest\r\n"
-    "  Ctrl+Alt+T     send Alt+Tab to the guest\r\n"
-    "  Ctrl+Alt+M     release captured mouse";
+static const emulator_product_help_row product_surface_keyboard_help[] = {
+    {"Ctrl+Alt+P", "pause or resume"},
+    {"Ctrl+Alt+D", "send Ctrl+Alt+Del to the guest"},
+    {"Ctrl+Alt+F", "send Alt+Enter to the guest"},
+    {"Ctrl+Alt+T", "send Alt+Tab to the guest"},
+    {"Ctrl+Alt+M", "release captured mouse"}
+};
 
-const char *product_surface_keyboard_hotkey_help(void)
-{ return product_surface_keyboard_help; }
+emulator_product_help_map product_surface_keyboard_hotkey_help(void)
+{
+    return (emulator_product_help_map){product_surface_keyboard_help,
+        sizeof(product_surface_keyboard_help) / sizeof(product_surface_keyboard_help[0])};
+}
 
 lib_bool product_surface_keyboard_deliver_input(void *context, const kvm_input_event *event)
 {
@@ -82,16 +86,10 @@ lib_bool product_surface_keyboard_handle_hotkey(emulator_machine *machine,
     emulator_session_command_result *out)
 {
     const char *name;
-    emulator_session_request request = EMULATOR_SESSION_REQUEST_NONE;
     *out = (emulator_session_command_result) { 0 };
     if (identifier == NULL) return LIB_FALSE;
     name = (const char *)identifier;
-    if (lib_text_compare(name, "pause-toggle") == 0) {
-        request = state == EMULATOR_SESSION_MACHINE_PAUSED ?
-            EMULATOR_SESSION_REQUEST_RESUME : EMULATOR_SESSION_REQUEST_PAUSE;
-        out->request = request;
-        return LIB_TRUE;
-    }
+    if (lib_text_compare(name, "pause-toggle") == 0) return LIB_FALSE;
     if (lib_text_compare(name, "release-window-mouse") == 0) {
         out->release_window_mouse = LIB_TRUE;
         return LIB_TRUE;

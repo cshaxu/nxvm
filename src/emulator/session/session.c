@@ -56,6 +56,20 @@ static lib_bool emulator_session_dispatch_request(emulator_session *session,
     }
 }
 
+lib_bool emulator_session_request_pause_toggle(emulator_session_machine_state state,
+    emulator_session_request *out_request)
+{
+    if (out_request == LIB_NULL) return LIB_FALSE;
+    *out_request = EMULATOR_SESSION_REQUEST_NONE;
+    if (state == EMULATOR_SESSION_MACHINE_RUNNING)
+        *out_request = EMULATOR_SESSION_REQUEST_PAUSE;
+    else if (state == EMULATOR_SESSION_MACHINE_PAUSED)
+        *out_request = EMULATOR_SESSION_REQUEST_RESUME;
+    else
+        return LIB_FALSE;
+    return LIB_TRUE;
+}
+
 static lib_bool emulator_session_write_text(emulator_session *session, const char *text)
 {
     char chunk[1024];
@@ -102,7 +116,7 @@ static void emulator_session_note_prompt(emulator_session *session,
 {
     const char *prompt;
     if (session == NULL || result == NULL || !result->arm_prompt) return;
-    prompt = result->prompt[0] != '\0' ? result->prompt : "> ";
+    prompt = result->prompt[0] != '\0' ? result->prompt : EMULATOR_SESSION_MONITOR_PROMPT;
     (void)lib_c_snprintf(session->pending_prompt, sizeof(session->pending_prompt), "%s", prompt);
     session->prompt_due = LIB_TRUE;
 }
@@ -124,7 +138,8 @@ static lib_bool emulator_session_arm_if_ready(emulator_session *session)
     if (session->pending_request != EMULATOR_SESSION_REQUEST_NONE ||
         !session->prompt_due || session->pending_line) return LIB_TRUE;
     if (emulator_ui_write_monitor(session->ui,
-            session->pending_prompt[0] != '\0' ? session->pending_prompt : "> ") != LIB_STATUS_OK ||
+            session->pending_prompt[0] != '\0' ? session->pending_prompt :
+                EMULATOR_SESSION_MONITOR_PROMPT) != LIB_STATUS_OK ||
         emulator_ui_request_monitor_line(session->ui) != LIB_STATUS_OK) return LIB_FALSE;
     session->pending_line = LIB_TRUE;
     session->prompt_due = LIB_FALSE;
