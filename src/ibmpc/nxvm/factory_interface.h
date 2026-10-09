@@ -2,6 +2,8 @@
 #define VM_APP_FACTORY_INTERFACE_H
 
 #include "ibmpc/product/machine_interface.h"
+#include "ibmpc/product/command_interface.h"
+#include "ibmpc/product/composition_interface.h"
 #include "ibmpc/machine/input_interface.h"
 
 /* Fixed composition values and assets outlive Product. prepare interprets the
@@ -22,5 +24,10 @@ lib_status vm_app_configure_machine(const vm_app_machine_binding *binding,
     const vm_session_request *request, vm_machine_config *out_config);
 void vm_app_configure_factory(const vm_app_machine_binding *binding,
     vm_app_factory *out_factory);
+
+/* NXVM-family commands are registered by each App; shared Product dispatch
+ * has no INFO, SPEED or floppy cases. */
+lib_status vm_app_configure_standard_extensions(vm_app *app,
+    app_command_extensions *out_extensions);
 
 #endif

@@ -18,7 +18,7 @@ src/
   lib/                  shared C and platform services
   common/{session,machine,ui}/
   x86/{chips,core,xasm32,debug}/
-  ibmpc/{board-common,board-xt,board-at,machine,product}/
+  ibmpc/{board-common,board-xt,board-at,machine,product,nxvm}/
   app-my5160/           fixed IBM 5160 App
     product/            thin main and fixed XT binding
     profiles/           IBM 5160 composition and firmware slots
@@ -44,9 +44,11 @@ Common PC/AT descriptor/materialization and immutable ROM mapping live in
 board-common/pc_at_profile and pc_at_rom. Machine's pc_at_preparation owns the
 one allocated AT candidate and ROM preparation; each App supplies its fixed
 choices and validator. No mixed default/5170 compile guards remain.
-The shared Product INI, command/hotkey and Common composition files and their
-reusable assertions live in ibmpc/product and test/ibmpc/product. Shared process
-entry/banner formatting consumes shared PC identity/version and App-owned factory values. The
+The shared Product command/hotkey and Common composition files and their
+reusable assertions live in ibmpc/product and test/ibmpc/product. `ibmpc/nxvm`
+contains the NXVM-family INI and Machine adapter used by the four NXVM Apps;
+it is not a Product dependency. Shared process entry/banner formatting consumes
+shared PC identity/version, an App-owned request loader and an App-owned factory. The
 former `app-nxvm/devices` implementation is removed. Shared board mechanisms
 live in the flat `ibmpc/board-*` receivers; genuine D4 state stays in
 `app-mydeskpro386/profiles`. Current records delivery acceptance, not this layout.

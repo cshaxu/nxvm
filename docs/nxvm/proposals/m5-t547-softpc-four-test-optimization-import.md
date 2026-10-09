@@ -96,6 +96,27 @@ task must not overwrite, delete, or weaken NXVM-owned assertions.
   source is reconciled as a separate MyNES artifact commit only; it does not
   alter the qualification baseline or runtime source.
 
+## S5: Shared IBM PC Product Replacement
+
+- Rename the legacy `src/ibmpc/product` out of the live route, import the
+  owner-controlled SoftPC `src/app-softpc/product` command and keyboard base,
+  then delete the temporary legacy directory before closure.
+- Preserve SoftPC as canonical for Debug commands, hotkey names/actions and
+  raw-Console help.  Do not retain the old NXVM parser, snapshot grammar or a
+  second hotkey implementation.
+- Make the only App seams explicit: immutable banner/version/config filename,
+  fixed machine factory, App-specific INI adaptation, and an optional
+  synchronous extra-command registry.  `INFO`/`SPEED` and `floppy` use that
+  registry; they must not become Product dispatcher cases.  Product owns the
+  complete help layout: App help is inserted after `exit` and before the shared
+  hotkey section, while App handlers run only for a shared-unrecognized line.
+- Run a complete similar-route sweep for old command/snapshot/hotkey/overlay
+  paths.  Repair stale test fixtures so they link the sole production Product
+  implementation rather than compiling private copies.
+- Verify source and test manifests, IBM PC dependency gate, Product tests on
+  x64/x86, all four PC App x64/x86 artifact builds, then the existing T547
+  complete unit/integration qualification.  Do not modify the owner INI.
+
 ## Completion Standard
 
 The imported resource lock serializes only native desktop tests, not every Lib

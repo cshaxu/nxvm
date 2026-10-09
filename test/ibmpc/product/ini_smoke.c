@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "ibmpc/product/ini_interface.h"
-#include "ibmpc/product/startup_interface.h"
+#include "ibmpc/nxvm/ini_interface.h"
+#include "ibmpc/nxvm/startup_interface.h"
 
 static lib_bool text_equal(const lib_u8 *left, const char *right)
 {
@@ -71,13 +71,15 @@ lib_i32 main(void)
         return 1;
     if (vm_app_ini_parse((const lib_u8 *)"\\", (const lib_u8 *)"\\NXVM.ini", root,
             &request) != LIB_STATUS_OK || !text_equal(request.floppy[0u], "\\boot.img")) return 1;
-    if (vm_app_ini_executable_path(executable_ini_path, sizeof(executable_ini_path)) !=
+    if (vm_app_ini_executable_path("NXVM.ini", executable_ini_path,
+            sizeof(executable_ini_path)) !=
             LIB_STATUS_OK) return 1;
     executable_ini_length = lib_text_length((const char *)executable_ini_path);
     if (executable_ini_length < sizeof("NXVM.ini") ||
         !text_equal(executable_ini_path + executable_ini_length - sizeof("NXVM.ini") + 1u,
             "NXVM.ini")) return 1;
-    if (vm_app_ini_executable_path(rejected_path, sizeof("NXVM.ini")) !=
+    if (vm_app_ini_executable_path("NXVM.ini", rejected_path,
+            sizeof("NXVM.ini")) !=
             LIB_STATUS_INVALID_ARGUMENT || !text_equal(rejected_path, "unchanged")) return 1;
     lib_c_printf("NXVM-INI:OK\n");
     return 0;

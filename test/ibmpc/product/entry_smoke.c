@@ -1,83 +1,137 @@
 #include "lib/types/types_interface.h"
-#include "ibmpc/product/entry.c"
+#include "lib/types/file.h"
+#include "ibmpc/product/entry_interface.h"
 
 struct vm_app { lib_bool live; };
-struct vm_app_console_context { lib_bool live; };
 
-static struct vm_app app;
-static struct vm_app_console_context console;
+static struct vm_app fixture;
 static lib_u32 failure;
-static lib_u32 cleanup;
-static lib_u32 create_count;
+static lib_u32 created;
+static lib_u32 destroyed;
 
-lib_status vm_app_ini_executable_path(lib_u8 *out_path, lib_size capacity)
+static lib_status fixture_load_request(const char *name,
+    vm_session_request *request)
 {
-    if (failure == 1u) return LIB_STATUS_IO_ERROR;
-    if (capacity < 9u) return LIB_STATUS_LIMIT_EXCEEDED;
-    lib_memory_copy(out_path, "NXVM.ini", 9u);
+    if (failure == 1u || failure == 2u ||
+        lib_text_compare(name, "NXVM.ini") != 0)
+        return LIB_STATUS_IO_ERROR;
+    lib_memory_set(request, 0, sizeof(*request));
+    lib_memory_copy(request->display, "console", 8u);
     return LIB_STATUS_OK;
 }
 
 lib_status vm_app_create(const vm_app_factory *factory, vm_app **out_app)
 {
     (void)factory;
-    ++create_count;
-    if (failure == 2u) return LIB_STATUS_NO_MEMORY;
-    app.live = LIB_TRUE;
-    *out_app = &app;
-    return LIB_STATUS_OK;
-}
-
-lib_status vm_app_destroy(vm_app *session)
-{
-    if (session == LIB_NULL) return LIB_STATUS_OK;
-    cleanup = cleanup * 10u + 2u;
-    if (failure == 5u) return LIB_STATUS_INTERNAL_ERROR;
-    session->live = LIB_FALSE;
-    return LIB_STATUS_OK;
-}
-
-lib_status vm_app_console_context_create(vm_app_console_context **out_context)
-{
+    ++created;
     if (failure == 3u) return LIB_STATUS_NO_MEMORY;
-    console.live = LIB_TRUE;
-    *out_context = &console;
+    fixture.live = LIB_TRUE;
+    *out_app = &fixture;
     return LIB_STATUS_OK;
 }
 
-void vm_app_console_context_destroy(vm_app_console_context *context)
+lib_status vm_app_destroy(vm_app *app)
 {
-    context->live = LIB_FALSE;
-    cleanup = cleanup * 10u + 1u;
+    if (app == LIB_NULL) return LIB_STATUS_OK;
+    ++destroyed;
+    app->live = LIB_FALSE;
+    return failure == 8u ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
 }
 
-lib_status vm_app_console_main(vm_app_console_context *context,
-    vm_app *session, const lib_u8 *path)
+common_session *vm_app_session(const vm_app *app)
+{ return app == LIB_NULL ? LIB_NULL : (common_session *)app; }
+
+common_machine *vm_app_common_machine(const vm_app *app)
+{ return app == LIB_NULL ? LIB_NULL : (common_machine *)app; }
+
+common_ui *vm_app_ui(const vm_app *app)
+{ return app == LIB_NULL ? LIB_NULL : (common_ui *)app; }
+
+lib_bool common_session_enqueue_ui_event(void *context,
+    const common_ui_event *event)
 {
-    if (!context->live || !session->live ||
-        lib_text_compare((const char *)path, "NXVM.ini") != 0)
-        return LIB_STATUS_INVALID_STATE;
-    return failure == 4u ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
+    (void)context;
+    (void)event;
+    return LIB_TRUE;
 }
+
+lib_status vm_app_compose_machine(vm_app *app, const vm_session_request *request)
+{
+    (void)app;
+    (void)request;
+    return failure == 4u ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
+}
+
+lib_status app_command_provider_initialize(app_command_context *command,
+    common_machine *machine, common_session_display display,
+    const app_command_extensions *extensions,
+    common_session_command_provider *provider)
+{
+    (void)command;
+    (void)machine;
+    (void)display;
+    (void)extensions;
+    (void)provider;
+    return failure == 5u ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
+}
+
+lib_bool app_keyboard_hotkeys(kvm_hotkey_registry *registry)
+{
+    (void)registry;
+    return failure == 6u ? LIB_FALSE : LIB_TRUE;
+}
+
+lib_status vm_app_compose_control(vm_app *app, const common_session_options *options)
+{
+    (void)app;
+    (void)options;
+    return failure == 7u ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
+}
+
+lib_status vm_app_compose_ui(vm_app *app, const common_ui_options *options)
+{
+    (void)app;
+    (void)options;
+    return LIB_STATUS_OK;
+}
+
+lib_bool common_session_run(common_session *session)
+{
+    (void)session;
+    return LIB_TRUE;
+}
+
+void app_command_dispose(app_command_context *command)
+{ (void)command; }
+
+const char *app_command_hotkey_help(void)
+{ return "hotkeys"; }
 
 lib_i32 main(void)
 {
     const vm_app_definition definition = {
-        .name = "PC", .version = "test", .copyright = "fixture", .build_time = "fixed"
+        .name = "PC", .version = "test", .copyright = "fixture",
+        .build_time = "fixed", .configuration_file = "NXVM.ini",
+        .load_request = fixture_load_request
     };
+    lib_u32 index;
 
     if (vm_app_run(LIB_NULL) != 1) return 1;
-    for (failure = 0u; failure <= 5u; ++failure) {
-        lib_i32 result;
-        app.live = console.live = LIB_FALSE;
-        cleanup = create_count = 0u;
-        result = vm_app_run(&definition);
-        if (result != (failure == 0u ? 0 : 1) || console.live) return 1;
-        if (failure == 1u && create_count != 0u) return 1;
-        if ((failure == 1u || failure == 2u) && cleanup != 0u) return 1;
-        if (failure == 3u && cleanup != 2u) return 1;
-        if ((failure == 0u || failure >= 4u) && cleanup != 12u) return 1;
-        if (app.live != (failure == 5u ? LIB_TRUE : LIB_FALSE)) return 1;
+    for (index = 0u; index <= 8u; ++index) {
+        failure = index;
+        fixture.live = LIB_FALSE;
+        created = destroyed = 0u;
+        if (vm_app_run(&definition) != (index == 0u ? 0 : 1)) return 2;
+        if (index != 0u && index < 3u && created != 0u) return 3;
+        if (index != 0u && index <= 3u && destroyed != 0u) {
+            lib_c_printf("unexpected cleanup %u/%u\n", index, destroyed);
+            return 4;
+        }
+        if (index >= 4u && destroyed != 1u) {
+            lib_c_printf("missing cleanup %u/%u\n", index, destroyed);
+            return 4;
+        }
+        if (fixture.live) return 5;
     }
     return 0;
 }

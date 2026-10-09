@@ -5,8 +5,9 @@
 #include "lib/storage/medium_interface.h"
 
 /* Immutable copied runtime request.  The executable's generated Profile
- * binding supplies all board, CPU and firmware facts; NXVM.ini owns only the
- * user-changeable memory, media and presentation values below. */
+ * binding supplies all board, CPU and firmware facts; each App configuration
+ * loader supplies only the user-changeable memory, media and presentation
+ * values below. */
 #define VM_SESSION_REQUEST_PATH_MAX 1024u
 #define VM_SESSION_REQUEST_MEDIA_SLOT_COUNT 2u
 

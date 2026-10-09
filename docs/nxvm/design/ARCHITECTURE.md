@@ -119,8 +119,9 @@ build-selected profile + compiled immutable firmware + App INI options
            one Core + Board instance -> Machine adapter -> Common Machine
 ```
 
-Profile owns hardware constraints and firmware asset resolution; shared Product
-owns INI syntax and runtime-media path resolution; Core owns
+Profile owns hardware constraints and firmware asset resolution; each App owns
+its INI syntax and runtime-media path resolution before it supplies one copied
+request to shared Product; Core owns
 generic structural/state invariants. These are distinct checks, not copies of
 one board rule in all three layers. Share constants or construction helpers
 only where semantics match. Fixed targets need no profile inheritance

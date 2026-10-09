@@ -1,76 +1,100 @@
 #include "lib/types/types_interface.h"
+#include "ibmpc/product/keyboard_interface.h"
 
-#include "ibmpc/product/keyboard.h"
+#include "common/machine/machine_interface.h"
 
-static void vm_app_keyboard_clear_result(common_session_command_result *result)
+lib_bool app_keyboard_deliver_input(void *context, const kvm_input_event *event)
 {
-    if (result != LIB_NULL) *result = (common_session_command_result){0};
+    return context != NULL && event != NULL && common_machine_enqueue_input(
+        (common_machine *)context, event) != 0;
 }
 
-static lib_bool vm_app_keyboard_submit_chord(common_machine *machine, lib_bool cad)
+lib_bool app_keyboard_hotkeys(kvm_hotkey_registry *registry)
 {
-    const lib_u16 scan[] = { cad ? 0x1du : 0x38u, cad ? 0x38u : 0x1cu, 0x53u };
-    const lib_u32 flags[] = { 0u, 0u, KVM_KEY_FLAG_EXTENDED };
-    const kvm_key key[] = { cad ? KVM_KEY_CONTROL : KVM_KEY_ALT,
-        cad ? KVM_KEY_ALT : KVM_KEY_ENTER, KVM_KEY_DELETE };
-    lib_u32 count = cad ? 3u : 2u;
-    lib_u32 index;
+    static const kvm_hotkey_registry hotkeys = {
+        { { 'P', KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
+              "pause-toggle" },
+          { 'D', KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
+              "send-ctrl-alt-del" },
+          { 'F', KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
+              "send-alt-enter" },
+          { 'T', KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
+              "send-alt-tab" },
+          { 'M', KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
+              "release-window-mouse" } }, 5u };
 
-    if (machine == LIB_NULL) return LIB_FALSE;
-    for (index = 0u; index < count; ++index) {
-        kvm_input_event input = {0};
-        input.type = KVM_EVENT_KEY;
-        input.data.key.scan_code = scan[index];
-        input.data.key.key = key[index];
-        input.data.key.flags = flags[index];
-        input.data.key.pressed = LIB_TRUE;
-        if (!common_machine_enqueue_input(machine, &input)) return LIB_FALSE;
-    }
-    for (index = count; index-- != 0u;) {
-        kvm_input_event input = {0};
-        input.type = KVM_EVENT_KEY;
-        input.data.key.scan_code = scan[index];
-        input.data.key.key = key[index];
-        input.data.key.flags = flags[index];
-        input.data.key.pressed = LIB_FALSE;
-        if (!common_machine_enqueue_input(machine, &input)) return LIB_FALSE;
-    }
+    if (registry == NULL) return LIB_FALSE;
+    *registry = hotkeys;
     return LIB_TRUE;
 }
 
-void vm_app_keyboard_register_hotkeys(kvm_hotkey_registry *registry)
+static lib_bool app_keyboard_emit(void *context, kvm_input_sink sink, lib_u32 scan,
+    lib_u32 key, lib_bool pressed)
 {
-    if (registry == LIB_NULL) return;
-    kvm_hotkey_registry_initialize(registry);
-    (void)kvm_hotkey_registry_register(registry, 'P',
-        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "pause");
-    (void)kvm_hotkey_registry_register(registry, 'D',
-        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "cad");
-    (void)kvm_hotkey_registry_register(registry, 'F',
-        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "alt-enter");
-    (void)kvm_hotkey_registry_register(registry, 'M',
-        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "release-mouse");
+    kvm_input_event event = { 0 };
+    if (sink == NULL) return LIB_FALSE;
+    event.type = KVM_EVENT_KEY;
+    event.data.key.scan_code = scan;
+    event.data.key.key = key;
+    event.data.key.flags = (scan & 0x0100u) != 0u ? KVM_KEY_FLAG_EXTENDED : 0u;
+    event.data.key.pressed = pressed;
+    return sink(context, &event);
 }
 
-lib_bool vm_app_keyboard_handle_hotkey(common_machine *machine,
-    common_session_machine_state state, const lib_u8 *identifier,
-    common_session_command_result *result)
+lib_bool app_keyboard_release_ctrl_alt(void *context, kvm_input_sink sink)
 {
-    vm_app_keyboard_clear_result(result);
-    if (identifier == LIB_NULL || result == LIB_NULL) return LIB_FALSE;
-    if (lib_text_compare((const char *)identifier, "pause") == 0) {
-        result->request = state == COMMON_SESSION_MACHINE_RUNNING ?
-            COMMON_SESSION_REQUEST_PAUSE : COMMON_SESSION_REQUEST_RESUME;
+    return app_keyboard_emit(context, sink, 0x1du, KVM_KEY_CONTROL, LIB_FALSE) &&
+        app_keyboard_emit(context, sink, 0x38u, KVM_KEY_ALT, LIB_FALSE);
+}
+
+lib_bool app_keyboard_submit_ctrl_alt_del(void *context, kvm_input_sink sink)
+{
+    return app_keyboard_emit(context, sink, 0x1du, KVM_KEY_CONTROL, LIB_TRUE) &&
+        app_keyboard_emit(context, sink, 0x38u, KVM_KEY_ALT, LIB_TRUE) &&
+        app_keyboard_emit(context, sink, 0x0153u, KVM_KEY_DELETE, LIB_TRUE) &&
+        app_keyboard_emit(context, sink, 0x0153u, KVM_KEY_DELETE, LIB_FALSE) &&
+        app_keyboard_emit(context, sink, 0x38u, KVM_KEY_ALT, LIB_FALSE) &&
+        app_keyboard_emit(context, sink, 0x1du, KVM_KEY_CONTROL, LIB_FALSE);
+}
+
+static lib_bool app_keyboard_submit_alt_key(void *context, kvm_input_sink sink,
+    lib_u32 scan, kvm_key key)
+{
+    return app_keyboard_release_ctrl_alt(context, sink) &&
+        app_keyboard_emit(context, sink, 0x38u, KVM_KEY_ALT, LIB_TRUE) &&
+        app_keyboard_emit(context, sink, scan, key, LIB_TRUE) &&
+        app_keyboard_emit(context, sink, scan, key, LIB_FALSE) &&
+        app_keyboard_emit(context, sink, 0x38u, KVM_KEY_ALT, LIB_FALSE);
+}
+
+lib_bool app_keyboard_handle_hotkey(common_machine *machine,
+    common_session_machine_state state, const lib_u8 *identifier,
+    common_session_command_result *out)
+{
+    const char *name;
+    common_session_request request = COMMON_SESSION_REQUEST_NONE;
+    *out = (common_session_command_result) { 0 };
+    if (identifier == NULL) return LIB_FALSE;
+    name = (const char *)identifier;
+    if (lib_text_compare(name, "pause-toggle") == 0) {
+        request = state == COMMON_SESSION_MACHINE_PAUSED ?
+            COMMON_SESSION_REQUEST_RESUME : COMMON_SESSION_REQUEST_PAUSE;
+        out->request = request;
         return LIB_TRUE;
     }
-    if (lib_text_compare((const char *)identifier, "release-mouse") == 0) {
-        result->release_window_mouse = LIB_TRUE;
+    if (lib_text_compare(name, "release-window-mouse") == 0) {
+        out->release_window_mouse = LIB_TRUE;
         return LIB_TRUE;
     }
-    if (lib_text_compare((const char *)identifier, "cad") == 0 ||
-        lib_text_compare((const char *)identifier, "alt-enter") == 0) {
-        return vm_app_keyboard_submit_chord(machine,
-            lib_text_compare((const char *)identifier, "cad") == 0);
-    }
-    return LIB_FALSE;
+    if (state != COMMON_SESSION_MACHINE_RUNNING) return LIB_TRUE;
+    if (lib_text_compare(name, "send-ctrl-alt-del") == 0)
+        return app_keyboard_submit_ctrl_alt_del(machine,
+            app_keyboard_deliver_input);
+    if (lib_text_compare(name, "send-alt-enter") == 0)
+        return app_keyboard_submit_alt_key(machine,
+            app_keyboard_deliver_input, 0x1cu, KVM_KEY_ENTER);
+    if (lib_text_compare(name, "send-alt-tab") == 0)
+        return app_keyboard_submit_alt_key(machine,
+            app_keyboard_deliver_input, 0x0fu, KVM_KEY_TAB);
+    return LIB_TRUE;
 }

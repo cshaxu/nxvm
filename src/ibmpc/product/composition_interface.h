@@ -19,5 +19,9 @@ lib_status vm_app_compose_machine(vm_app *app,
 lib_status vm_app_compose_control(vm_app *app,
     const common_session_options *options);
 lib_status vm_app_compose_ui(vm_app *app, const common_ui_options *options);
+lib_status vm_app_information_read(const vm_app *app,
+    vm_app_information *out_info);
+lib_status vm_app_speed_read(const vm_app *app, vm_app_speed *out_speed);
+lib_status vm_app_speed_write(vm_app *app, vm_app_speed speed);
 
 #endif

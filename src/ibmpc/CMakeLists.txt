@@ -16,9 +16,10 @@ if(NOT TARGET x86-debug)
     message(FATAL_ERROR "IBM PC Product requires the existing x86 Debug tools")
 endif()
 
-add_library(ibmpc-product-config STATIC product/ini.c product/startup.c)
-target_include_directories(ibmpc-product-config PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(ibmpc-product-config PUBLIC types storage base)
+add_library(ibmpc-nxvm-adapter STATIC nxvm/factory.c nxvm/ini.c nxvm/startup.c)
+target_include_directories(ibmpc-nxvm-adapter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(ibmpc-nxvm-adapter PUBLIC ibmpc-machine
+    ibmpc-product-composition types storage base)
 
 add_library(ibmpc-machine-media STATIC machine/media/fdd.c
     machine/media/hdd.c)
@@ -85,10 +86,28 @@ add_library(ibmpc-board-xt STATIC board-xt/xt_ppi_keyboard.c)
 target_include_directories(ibmpc-board-xt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(ibmpc-board-xt PUBLIC types x86-ppi8255)
 
-add_library(ibmpc-product STATIC product/command.c product/composition.c product/keyboard.c
-    product/entry.c product/factory.c)
-target_include_directories(ibmpc-product PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(ibmpc-product PUBLIC ibmpc-product-config common-session common-ui x86-debug ibmpc-machine types)
+add_library(ibmpc-product-keyboard STATIC product/keyboard.c)
+target_include_directories(ibmpc-product-keyboard PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(ibmpc-product-keyboard PUBLIC common-machine common-session
+    kvm-base types)
+
+add_library(ibmpc-product-command STATIC product/command.c product/command_provider.c)
+target_include_directories(ibmpc-product-command PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(ibmpc-product-command PUBLIC ibmpc-product-keyboard
+    common-session x86-debug types)
+
+add_library(ibmpc-product-composition STATIC product/composition.c)
+target_include_directories(ibmpc-product-composition PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(ibmpc-product-composition PUBLIC common-session common-ui types)
+
+add_library(ibmpc-product-entry STATIC product/entry.c)
+target_include_directories(ibmpc-product-entry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+
+add_library(ibmpc-product INTERFACE)
+target_link_libraries(ibmpc-product INTERFACE ibmpc-product-entry
+    ibmpc-product-command ibmpc-product-composition ibmpc-product-keyboard
+    ibmpc-machine common-session
+    common-ui x86-debug types)
 
 add_custom_target(ibmpc-verify
     COMMAND "${CMAKE_COMMAND}" -DCOMMON_ROOT=${CMAKE_CURRENT_SOURCE_DIR}

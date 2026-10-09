@@ -1,7 +1,6 @@
 #include "lib/types/types_interface.h"
 
 #include "ibmpc/product/composition_interface.h"
-#include "ibmpc/product/composition.h"
 
 struct vm_app {
     vm_app_factory factory;
@@ -54,9 +53,8 @@ lib_status vm_app_create(const vm_app_factory *factory, vm_app **out_app)
     if (out_app == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_app = LIB_NULL;
     if (factory == LIB_NULL || factory->prepare == LIB_NULL ||
-        factory->bind == LIB_NULL || factory->destroy == LIB_NULL ||
-        factory->information == LIB_NULL || factory->get_speed == LIB_NULL ||
-        factory->set_speed == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+        factory->bind == LIB_NULL || factory->destroy == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
     app = lib_allocate_zero(1u, sizeof(*app));
     if (app == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     app->factory = *factory;
@@ -177,17 +175,20 @@ lib_status vm_app_compose_ui(vm_app *app, const common_ui_options *options)
 lib_status vm_app_information_read(const vm_app *app, vm_app_information *out_info)
 {
     return app == LIB_NULL || app->machine == LIB_NULL ? LIB_STATUS_INVALID_STATE :
+        app->factory.information == LIB_NULL ? LIB_STATUS_UNSUPPORTED :
         app->factory.information(app->factory.context, app->machine, out_info);
 }
 
 lib_status vm_app_speed_read(const vm_app *app, vm_app_speed *out_speed)
 {
     return app == LIB_NULL || app->machine == LIB_NULL ? LIB_STATUS_INVALID_STATE :
+        app->factory.get_speed == LIB_NULL ? LIB_STATUS_UNSUPPORTED :
         app->factory.get_speed(app->machine, out_speed);
 }
 
 lib_status vm_app_speed_write(vm_app *app, vm_app_speed speed)
 {
     return app == LIB_NULL || app->machine == LIB_NULL ? LIB_STATUS_INVALID_STATE :
+        app->factory.set_speed == LIB_NULL ? LIB_STATUS_UNSUPPORTED :
         app->factory.set_speed(app->machine, speed);
 }

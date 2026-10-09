@@ -6,7 +6,7 @@
 #include "ibmpc/board-common/media_interface.h"
 #include "ibmpc/machine/media/media_interface.h"
 #include "ibmpc/machine/machine_interface.h"
-#include "ibmpc/product/ini_interface.h"
+#include "ibmpc/nxvm/ini_interface.h"
 
 typedef struct integration_ini_session integration_ini_session;
 

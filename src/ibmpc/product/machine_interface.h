@@ -33,6 +33,8 @@ typedef struct vm_app_factory {
         void **out_machine, common_machine_driver *out_driver);
     lib_status (*bind)(void *machine, common_machine *common);
     void (*destroy)(void *machine);
+    /* Optional App capabilities. Construction requires only prepare, bind and
+     * destroy; an App extension may elect to use a capability it provides. */
     lib_status (*information)(const void *context, const void *machine, vm_app_information *out_info);
     lib_status (*get_speed)(const void *machine, vm_app_speed *out_speed);
     lib_status (*set_speed)(void *machine, vm_app_speed speed);

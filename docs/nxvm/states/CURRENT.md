@@ -2,29 +2,30 @@
 
 ## Current Work
 
-## Active Packet — M5 T547 S4 Full Project Qualification
+## Active Packet — M5 T547 S5 Shared IBM PC Product Replacement
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T547 S4. |
-| Admission And Approval | Owner directed S3 closure and full-project test admission on 2026-10-08; standing automatic S admission applies. |
-| Objective | Qualify the fixed T547 S1-S3 source baseline through one complete project test pass per host width. |
-| Non-goals | No source behavior, test assertion weakening, ownership, firmware/media/INI or timeout extension. The owner authorized only deterministic stale test-reference synchronization and reconciliation of the already rebuilt current-source MyNES pair. |
-| Reference Baseline | Pushed S3 semantic-naming closure `8d7022ea8`; user-owned rebuilt MyNES EXEs remain outside this Shared scope. |
-| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S4. |
-| Files And ABI Surface | Product test-reference scripts plus task evidence/state; no production source or public ABI. The already rebuilt MyNES pair may be committed separately after current-source verification. |
-| Applicable Rules | NXVM guide; Execution and Documentation rules; existing CTest registration and package manifest boundaries. |
-| Verification | Once each: complete repository-only unit suite on x64 and x86; registered external integration suites where inputs are available. |
-| Expected Markers | Exact CTest counts and results for each width/suite; every unexecuted external or desktop gate explicitly stated. |
-| Asset Needs | None. Repository-only tests use no firmware, ROM, media, INI, font or user snapshot. |
-| Reporting Requirements | Record exact commands, counts and results. Do not claim unrun desktop or external tests pass. |
-| Stop Conditions | Stop and report a non-deterministic or behavioral failure. A deterministic stale reference from S3's accepted semantic rename may be synchronized, then its affected suite is re-run once. |
-| Exit Criteria | Both complete repository-only unit runs finish once; all available registered integration runs finish once; evidence accurately records results and exclusions. |
-| Original Owner Request | Run the complete project test suite after S3 closure. |
-| Similar-Issue Sweep | Not applicable: qualification-only work changes no defect class. |
+| Identifier Mode | Continuation T547 S5. |
+| Admission And Approval | Owner explicitly directed the SoftPC Product replacement and stated its six invariant outcomes on 2026-10-08; standing automatic S admission applies. |
+| Objective | Replace the legacy IBM PC Product path with SoftPC Product as the sole command, Debug and hotkey base, while exposing only App identity, factory, INI adaptation and extra-command registration. |
+| Non-goals | No Lib/Common/x86 change; no second command parser, legacy hotkey path, snapshot command, firmware/media change, user INI edit, desktop workaround or generic command framework. |
+| Reference Baseline | Pushed T547 S4 qualification baseline `16e008415`; source candidate is the owner-controlled SoftPC `src/app-softpc/product` corpus. |
+| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S5. |
+| Files And ABI Surface | `src/ibmpc/product`, the NXVM-family `src/ibmpc/nxvm` adapter, their CMake/dependency gate and owner-local IBM PC tests; four App definitions inject fixed identity/factory/request loader/extensions. The extension callback is the only new Product-facing customization seam. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source policies; shared IBM PC dependency gate and manifest rules. |
+| Verification | Product source comparison, IBM PC source/test manifests and boundary gate, Product unit tests on x64/x86, each of four App x64/x86 Release build/artifact routes, then complete unit/integration qualification required by the T. |
+| Expected Markers | SoftPC canonical Debug/hotkey/help path is sole owner; no legacy command parser or snapshot grammar; `INFO`/`SPEED`/`floppy` are App extensions; shared Product owns the full help layout and inserts App help after `exit` before hotkeys; all named gates/results recorded. |
+| Asset Needs | Existing BYOB assets for ordinary App/integration routes only. Preserve user-owned `assets/nxvm/NXVM.ini`; do not stage or modify it. |
+| Reporting Requirements | Report actual source/test diff, each retained App adapter, build/test results and all unexecuted desktop/external gates. Do not describe a local compile as full qualification. |
+| Stop Conditions | Stop for an incompatible SoftPC semantic, required Lib/Common/x86 change, product-specific command that cannot use the extension seam, protected-source issue, runtime regression or non-deterministic failure. |
+| Exit Criteria | Legacy Product is removed with no live route; SoftPC command/keyboard behavior is canonical; only stated injection boundaries remain; manifests/gates, dual-width Product tests and four App artifact builds pass; full T qualification is recorded before T closure. |
+| Original Owner Request | Move `ibmpc/product` aside, import SoftPC Product as the new base, and make App version/factory/INI/extra command support explicit without retaining old NXVM command behavior. |
+| Similar-Issue Sweep | Search all IBM PC Product/App entry points for legacy command, hotkey, snapshot and fixed-overlay paths; classify every remaining App-specific command as a registered extension or remove it. |
 
 | Work | Progress |
 | --- | --- |
+| T547 S5 | Active: legacy Product is no longer on a live route; the SoftPC command/keyboard base and narrow App injection seams are under dual-width verification. No closure or artifact qualification is claimed. |
 | T547 S1 | Implementation P complete and pushed as `26c013bba`: current SoftPC differences were reconciled, native-test isolation imported, NXVM's later x86/IBM PC repairs retained, and the stale x86 negative fixture fixed. Its incomplete aggregate/stability evidence is explicitly continued by S2. |
 | T547 S2 | Complete: pushed as `70bb50312`. The aggregate default is reduced from 8 to the evidence-backed safe 4 jobs, without changing individual budgets or assertions. One complete x64/x86 run of each shared package passes: Lib 51/51, Common 20/20, x86 182/182 and IBM PC 182/182; complete repository-only units pass 506/506 per width. See `etc/evidence/t547-s2-shared-test-stability.md`. |
 | T547 S3 | Complete: pushed as `8d7022ea8`. All four shared test roots were audited; current identities are behavior-derived, registrations/manifests match, static identity and focused dual-width checks pass. S4 separately owns full-project qualification. |

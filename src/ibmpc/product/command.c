@@ -1,403 +1,595 @@
-/* Copyright 2012-2014 Neko. */
-
-/* The product owns its command words and their meaning.  Common owns the
- * monitor loop, lifecycle dispatch, presentation transitions and all host
- * queues; this file only supplies the injected command provider. */
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
-
-#include "x86/debug/debug_interface.h"
-#include "common/session/session_interface.h"
-#include "common/ui/ui_interface.h"
-#include "ibmpc/product/composition.h"
-#include "ibmpc/product/ini_interface.h"
 #include "ibmpc/product/command_interface.h"
-#include "ibmpc/product/keyboard.h"
 
-#define CONSOLE_MAXNARG 256u
+static const char HELP_COMMANDS[] =
+    "Control your virtual machine:\r\n"
+    "  start          cold-reset and run the machine\r\n"
+    "  resume         continue a paused machine\r\n"
+    "  pause          request machine pause\r\n"
+    "  stop           stop execution\r\n"
+    "  reset          cold-reset and pause at firmware entry\r\n"
+    "  help           show this help\r\n"
+    "  debug          enter debugger (q returns to monitor)\r\n"
+    "  exit           quit\r\n";
+static const char HELP_HOTKEYS[] =
+    "While the guest is running:\r\n"
+    "  Ctrl+Alt+P     pause or resume\r\n"
+    "  Ctrl+Alt+D     send Ctrl+Alt+Del to the guest\r\n"
+    "  Ctrl+Alt+F     send Alt+Enter to the guest\r\n"
+    "  Ctrl+Alt+T     send Alt+Tab to the guest\r\n"
+    "  Ctrl+Alt+M     release captured mouse\r\n";
 
-struct vm_app_console_context {
-    lib_u8 command_buffer[COMMON_SESSION_TEXT_CAPACITY];
-    lib_u8 *arguments[CONSOLE_MAXNARG];
-    lib_size argument_count;
-    vm_app *session;
-    common_session *control;
-    x86_debug *debug;
-    lib_bool debug_active;
-    lib_bool debug_requested;
-};
-
-static common_machine *vm_app_console_common_machine(
-    const vm_app_console_context *context)
+static void clear(app_command_effect *e) { lib_memory_set(e, 0, sizeof(*e)); }
+static void text(app_command_effect *e, const char *s) { (void)lib_c_snprintf(e->text, sizeof(e->text), "%s", s); }
+static void message(char *out, lib_size capacity, const char *value)
 {
-    return context == LIB_NULL ? LIB_NULL : vm_app_common_machine(context->session);
+    (void)lib_c_snprintf(out, capacity, "%s\r\n\r\n", value);
+}
+static void help(const app_command_session *s, app_command_effect *e)
+{
+    (void)s;
+    (void)lib_c_snprintf(e->text, sizeof(e->text), "%s\r\n", HELP_COMMANDS);
+}
+/* Product readiness remains true until a command reserves a transition.
+ * Common alone admits one pending line; callbacks never consume readiness. */
+static void prompt(app_command_session *s) { s->prompt_due = 1; }
+static void outcome(app_command_session *s, const char *value)
+{
+    message(s->pending_monitor_text, sizeof(s->pending_monitor_text), value);
+    prompt(s);
+}
+static void reject(app_command_session *s, app_command_effect *e, const char *value)
+{
+    message(e->text, sizeof(e->text), value);
+    prompt(s);
+}
+static lib_bool whitespace(char value)
+{
+    return value == ' ' || value == '\t' || value == '\n' ||
+           value == '\r' || value == '\f' || value == '\v';
+}
+static char lowercase(char value)
+{
+    return value >= 'A' && value <= 'Z' ?
+        (char)(value + ('a' - 'A')) : value;
+}
+static char *trim(char *s)
+{
+    char *e;
+    while (*s && whitespace(*s))
+        ++s;
+    e = s + lib_text_length(s);
+    while (e != s && whitespace(e[-1]))
+        --e;
+    *e = 0;
+    return s;
+}
+static void lower(char *s)
+{
+    while (*s)
+    {
+        *s = lowercase(*s);
+        ++s;
+    }
+}
+static void accept(app_command_session *session,
+                   app_lifecycle_request request)
+{
+    session->pending_request = request;
+    session->dispatch_pending = 1;
+    session->transition_pending = 1;
+    session->prompt_due = 0;
 }
 
-static void vm_app_console_clear_result(common_session_command_result *result)
+static void lifecycle(app_command_session *s, app_monitor_state state,
+                      const char *c, app_command_effect *e)
 {
-    if (result != LIB_NULL) *result = (common_session_command_result){0};
+    if (s->transition_pending || s->dispatch_pending)
+    {
+        reject(s, e, "Machine state transition is in progress.");
+        return;
+    }
+    if (!lib_text_compare(c, "start"))
+    {
+        if (state == APP_MONITOR_STOPPED)
+        {
+            accept(s, APP_LIFECYCLE_REQUEST_START);
+        }
+        else
+            reject(s, e, state == APP_MONITOR_PAUSED ? "Machine is paused; use resume, reset, or stop." : "Machine is already running; use pause, reset, or stop.");
+    }
+    else if (!lib_text_compare(c, "pause"))
+    {
+        if (state == APP_MONITOR_RUNNING)
+            accept(s, APP_LIFECYCLE_REQUEST_PAUSE);
+        else
+            reject(s, e, state == APP_MONITOR_PAUSED ? "Machine is paused; use resume, reset, or stop." : "Machine is stopped; use start or reset.");
+    }
+    else if (!lib_text_compare(c, "resume"))
+    {
+        if (state == APP_MONITOR_PAUSED)
+            accept(s, APP_LIFECYCLE_REQUEST_RESUME);
+        else
+            reject(s, e, state == APP_MONITOR_RUNNING ? "Machine is already running; use pause, reset, or stop." : "Machine is stopped; use start or reset.");
+    }
+    else if (!lib_text_compare(c, "reset"))
+    {
+        accept(s, APP_LIFECYCLE_REQUEST_RESET);
+    }
+    else if (!lib_text_compare(c, "stop"))
+    {
+        if (state == APP_MONITOR_RUNNING || state == APP_MONITOR_PAUSED)
+        {
+            accept(s, APP_LIFECYCLE_REQUEST_STOP);
+        }
+        else
+            reject(s, e, "Machine is stopped; use start or reset.");
+    }
+    else {
+        e->unrecognized = LIB_TRUE;
+        reject(s, e, "Unknown command.");
+    }
 }
 
-static void vm_app_console_append(common_session_command_result *result,
-    const char *format, ...)
+void app_command_session_initialize(app_command_session *s, common_session_display display)
+{
+    lib_memory_set(s, 0, sizeof(*s));
+    s->display = display;
+}
+const char *app_command_hotkey_help(void) { return HELP_HOTKEYS; }
+void app_command_session_open(app_command_session *s, app_command_effect *e)
+{
+    clear(e);
+    help(s, e);
+    prompt(s);
+}
+void app_command_session_reject_line(app_command_session *s, app_command_effect *e)
+{
+    clear(e);
+    reject(s, e, "Command is too long.");
+}
+void app_command_session_submit_line(app_command_session *s, app_monitor_state state,
+                                     const char *line, app_command_effect *e)
+{
+    char b[APP_COMMAND_TEXT_CAPACITY], *c, *a;
+    lib_size n;
+    clear(e);
+    if (!line || (n = lib_text_length(line)) >= sizeof(b))
+    {
+        reject(s, e, line ? "Command is too long." : "Unknown command.");
+        return;
+    }
+    lib_memory_copy(b, line, n + 1);
+    c = trim(b);
+    a = c;
+    while (*a && !whitespace(*a))
+        ++a;
+    if (*a)
+        *a++ = 0;
+    a = trim(a);
+    lower(c);
+    if (!*c)
+    {
+        prompt(s);
+        return;
+    }
+    if (!lib_text_compare(c, "help"))
+    {
+        help(s, e);
+        e->action = APP_COMMAND_ACTION_HELP;
+        prompt(s);
+        return;
+    }
+    if (!lib_text_compare(c, "exit"))
+    {
+        e->exit_requested = 1;
+        return;
+    }
+    if (!lib_text_compare(c, "debug") && !*a)
+    {
+        e->action = APP_COMMAND_ACTION_DEBUG;
+        prompt(s);
+        return;
+    }
+    /* The parser does not own machine state.  It receives control's current
+       stable fact for the one command validation below. */
+    if (state == APP_MONITOR_ERROR)
+    {
+        reject(s, e, "Machine has failed; exit and restart SoftPC.");
+        return;
+    }
+    lifecycle(s, state, c, e);
+}
+app_lifecycle_request app_command_session_take_request(app_command_session *s)
+{
+    app_lifecycle_request request;
+    if (s == NULL || !s->dispatch_pending)
+        return APP_LIFECYCLE_REQUEST_NONE;
+    request = s->pending_request;
+    s->pending_request = APP_LIFECYCLE_REQUEST_NONE;
+    s->dispatch_pending = 0;
+    return request;
+}
+int app_command_session_begin_external(app_command_session *s,
+                                       app_monitor_state state, app_lifecycle_request request)
+{
+    if (s == NULL || s->transition_pending ||
+        request == APP_LIFECYCLE_REQUEST_NONE)
+        return 0;
+    if ((request == APP_LIFECYCLE_REQUEST_PAUSE &&
+         state != APP_MONITOR_RUNNING) ||
+        (request == APP_LIFECYCLE_REQUEST_RESUME &&
+         state != APP_MONITOR_PAUSED) ||
+        (request == APP_LIFECYCLE_REQUEST_STOP &&
+         state != APP_MONITOR_RUNNING && state != APP_MONITOR_PAUSED))
+        return 0;
+    s->transition_pending = 1;
+    s->prompt_due = 0;
+    return 1;
+}
+void app_command_session_note_runtime(app_command_session *s,
+                                      app_monitor_state prior, common_machine_state state, app_command_effect *e)
+{
+    if (s == NULL || e == NULL)
+        return;
+    clear(e);
+    if (state == COMMON_MACHINE_RESET_COMPLETED)
+    {
+        s->transition_pending = 0;
+        outcome(s, "Machine reset and paused.");
+        return;
+    }
+    if (state == COMMON_MACHINE_PAUSED && prior != APP_MONITOR_PAUSED)
+    {
+        s->transition_pending = 0;
+        outcome(s, "Machine paused.");
+    }
+    else if (state == COMMON_MACHINE_RUNNING)
+    {
+        s->transition_pending = 0;
+        if (prior == APP_MONITOR_STOPPED)
+            outcome(s, "Machine started.");
+        else if (prior == APP_MONITOR_PAUSED)
+            outcome(s, "Machine resumed.");
+        else if (s->display == COMMON_SESSION_DISPLAY_WINDOW)
+            prompt(s);
+    }
+    else if (state == COMMON_MACHINE_STOPPED &&
+             prior != APP_MONITOR_STOPPED)
+    {
+        s->transition_pending = 0;
+        outcome(s, "Machine stopped.");
+    }
+    else if (state == COMMON_MACHINE_ERROR)
+    {
+        s->transition_pending = 0;
+        outcome(s, "Machine error.");
+    }
+}
+
+void app_command_session_note_broker(app_command_session *s,
+                                     app_monitor_state state, int vm,
+                                     int monitor_running_surface)
+{
+    if (s == NULL)
+        return;
+    if (vm && state == APP_MONITOR_RUNNING)
+    {
+        s->prompt_due = 0;
+        s->pending_monitor_text[0] = '\0';
+    }
+    else if (!vm && state == APP_MONITOR_RUNNING &&
+             monitor_running_surface)
+        prompt(s);
+}
+
+void app_command_session_note_monitor_current(app_command_session *s,
+                                              int current, app_command_effect *e)
+{
+    if (s == NULL || e == NULL)
+        return;
+    clear(e);
+    if (!s->prompt_due || !current)
+        return;
+    text(e, s->pending_monitor_text);
+    s->pending_monitor_text[0] = '\0';
+    e->arm_prompt = 1;
+}
+
+_Static_assert(COMMON_SESSION_PROMPT_CAPACITY >= X86_DEBUG_PROMPT_CAPACITY,
+               "Session prompt must hold debugger continuation prompts");
+
+/* product/ owns product command policy. common/session owns its neutral copied
+ * completion facts; convert explicitly at this one composition boundary.
+ * The numeric enum values are deliberately not a cross-component contract. */
+static common_machine_state app_machine_completed_state(
+    common_session_machine_state state)
+{
+    switch (state)
+    {
+    case COMMON_SESSION_MACHINE_RUNNING:
+        return COMMON_MACHINE_RUNNING;
+    case COMMON_SESSION_MACHINE_PAUSED:
+        return COMMON_MACHINE_PAUSED;
+    case COMMON_SESSION_MACHINE_ERROR:
+        return COMMON_MACHINE_ERROR;
+    case COMMON_SESSION_MACHINE_RESET_COMPLETED:
+        return COMMON_MACHINE_RESET_COMPLETED;
+    default:
+        return COMMON_MACHINE_STOPPED;
+    }
+}
+
+static app_monitor_state app_command_state(common_session_machine_state state)
+{
+    switch (state)
+    {
+    case COMMON_SESSION_MACHINE_RUNNING:
+        return APP_MONITOR_RUNNING;
+    case COMMON_SESSION_MACHINE_PAUSED:
+        return APP_MONITOR_PAUSED;
+    case COMMON_SESSION_MACHINE_ERROR:
+        return APP_MONITOR_ERROR;
+    default:
+        return APP_MONITOR_STOPPED;
+    }
+}
+
+static common_session_request app_session_request(app_lifecycle_request request)
+{
+    switch (request)
+    {
+    case APP_LIFECYCLE_REQUEST_START:
+        return COMMON_SESSION_REQUEST_START;
+    case APP_LIFECYCLE_REQUEST_RESUME:
+        return COMMON_SESSION_REQUEST_RESUME;
+    case APP_LIFECYCLE_REQUEST_PAUSE:
+        return COMMON_SESSION_REQUEST_PAUSE;
+    case APP_LIFECYCLE_REQUEST_STOP:
+        return COMMON_SESSION_REQUEST_STOP;
+    case APP_LIFECYCLE_REQUEST_RESET:
+        return COMMON_SESSION_REQUEST_RESET;
+    default:
+        return COMMON_SESSION_REQUEST_NONE;
+    }
+}
+
+static app_lifecycle_request app_lifecycle_request_from_session(
+    common_session_request request)
+{
+    switch (request)
+    {
+    case COMMON_SESSION_REQUEST_START:
+        return APP_LIFECYCLE_REQUEST_START;
+    case COMMON_SESSION_REQUEST_RESUME:
+        return APP_LIFECYCLE_REQUEST_RESUME;
+    case COMMON_SESSION_REQUEST_PAUSE:
+        return APP_LIFECYCLE_REQUEST_PAUSE;
+    case COMMON_SESSION_REQUEST_STOP:
+        return APP_LIFECYCLE_REQUEST_STOP;
+    case COMMON_SESSION_REQUEST_RESET:
+        return APP_LIFECYCLE_REQUEST_RESET;
+    default:
+        return APP_LIFECYCLE_REQUEST_NONE;
+    }
+}
+
+static void app_command_set_prompt(const app_command_context *command,
+                                   common_session_command_result *out)
+{
+    if (command == NULL || out == NULL)
+        return;
+    (void)lib_c_snprintf(out->prompt, sizeof(out->prompt), "%s",
+        command->debug_active ? command->debug_prompt : "> ");
+}
+
+static void app_command_copy_effect(app_command_context *command,
+                                    common_session_command_result *out, const app_command_effect *effect)
+{
+    if (command == NULL || out == NULL || effect == NULL)
+        return;
+    *out = (common_session_command_result){0};
+    (void)lib_c_snprintf(out->text, sizeof(out->text), "%s", effect->text);
+    out->exit_requested = effect->exit_requested != 0;
+    out->arm_prompt = effect->arm_prompt != 0;
+    app_command_set_prompt(command, out);
+}
+
+static void app_command_append_help(const app_command_context *command,
+    common_session_command_result *out)
 {
     lib_size used;
-    lib_i32 written;
-    lib_c_va_list arguments;
 
-    if (result == LIB_NULL || format == LIB_NULL) return;
-    used = lib_text_length((const char *)result->text);
-    if (used >= sizeof(result->text)) return;
-    lib_c_va_start(arguments, format);
-    written = lib_c_vsnprintf((char *)result->text + used, sizeof(result->text) - used,
-        (const char *)format, arguments);
-    lib_c_va_end(arguments);
-    if (written < 0) result->text[used] = '\0';
-}
-
-static void vm_app_console_prompt(common_session_command_result *result,
-    const char *prompt)
-{
-    if (result == LIB_NULL || prompt == LIB_NULL) return;
-    (void)lib_c_snprintf((char *)result->prompt, sizeof(result->prompt), "%s", (const char *)prompt);
-    result->arm_prompt = LIB_TRUE;
-}
-
-static void vm_app_console_lower(lib_u8 *text)
-{
-    while (*text != '\0') {
-        if (*text >= 'A' && *text <= 'Z') *text = (lib_u8)(*text + ('a' - 'A'));
-        ++text;
+    if (command == LIB_NULL || out == LIB_NULL) return;
+    used = lib_text_length((const char *)out->text);
+    if (used >= sizeof(out->text)) return;
+    if (command->extensions.help_text != LIB_NULL) {
+        (void)lib_c_snprintf((char *)out->text + used, sizeof(out->text) - used,
+            "%s", command->extensions.help_text);
+        used = lib_text_length((const char *)out->text);
     }
+    if (used < sizeof(out->text))
+        (void)lib_c_snprintf((char *)out->text + used, sizeof(out->text) - used,
+            "\r\n%s\r\n", HELP_HOTKEYS);
 }
 
-static void vm_app_console_parse(vm_app_console_context *context, lib_u8 *line)
+void app_command_provider_open(void *opaque,
+                               common_session_command_result *out)
 {
-    lib_u8 *token;
+    app_command_context *command = (app_command_context *)opaque;
+    app_command_effect effect = {0};
+    app_command_session_open(&command->session, &effect);
+    app_command_copy_effect(command, out, &effect);
+    app_command_append_help(command, out);
+}
 
-    context->argument_count = 0u;
-    token = (lib_u8 *)lib_text_token((char *)line, " \t\n\r\f");
-    while (token != LIB_NULL && context->argument_count < CONSOLE_MAXNARG) {
-        vm_app_console_lower(token);
-        context->arguments[context->argument_count++] = token;
-        token = (lib_u8 *)lib_text_token(LIB_NULL, " \t\n\r\f");
+void app_command_provider_reject_line(void *opaque,
+                                      common_session_command_result *out)
+{
+    app_command_context *command = (app_command_context *)opaque;
+    app_command_effect effect = {0};
+    app_command_session_reject_line(&command->session, &effect);
+    app_command_copy_effect(command, out, &effect);
+}
+
+static void app_command_copy_debug(app_command_context *command,
+                                   common_session_machine_state state, const x86_debug_result *result,
+                                   common_session_command_result *out)
+{
+    out->detail = result->text;
+    (void)lib_c_snprintf(command->debug_prompt, sizeof(command->debug_prompt), "%s", result->prompt);
+    if (!result->keep_active)
+    {
+        x86_debug_close(command->debug);
+        command->debug_active = LIB_FALSE;
+        command->debug_completed_pending = LIB_FALSE;
     }
+    if (result->lifecycle_request == X86_DEBUG_LIFECYCLE_RESUME &&
+        app_command_session_begin_external(&command->session,
+                                           app_command_state(state), APP_LIFECYCLE_REQUEST_RESUME))
+        out->request = COMMON_SESSION_REQUEST_RESUME;
+    else if (result->lifecycle_request != X86_DEBUG_LIFECYCLE_NONE)
+        (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug lifecycle request is not applicable.\r\n\r\n");
 }
 
-static lib_i32 vm_app_console_is_running(common_session_machine_state state)
-{ return state == COMMON_SESSION_MACHINE_RUNNING; }
-
-static void vm_app_console_help(common_session_command_result *result)
+void app_command_provider_submit_line(void *opaque,
+                                      common_session_machine_state state, const char *line,
+                                      common_session_command_result *out)
 {
-    vm_app_console_append(result,
-        "VM Console Commands\n"
-        "===================\n"
-        "HELP    Show help information\n"
-        "INFO    List device information\n"
-        "SPEED   Show or select machine speed\n"
-        "DEBUG   Launch hardware debugger\n"
-        "FLOPPY  Insert or eject removable floppy media\n"
-        "START | RESET | STOP | RESUME\n"
-        "EXIT    Stop the machine and quit the console\n\n");
-}
-
-static void vm_app_console_info(const vm_app_console_context *context,
-    common_session_machine_state state, common_session_command_result *result)
-{
-    vm_app_information information;
-
-    if (vm_app_information_read(context->session, &information) != LIB_STATUS_OK) {
-        vm_app_console_append(result, "Machine information unavailable.\n");
+    app_command_context *command = (app_command_context *)opaque;
+    app_command_effect effect = {0};
+    if (command->debug_active)
+    {
+        x86_debug_result result = {0};
+        command->debug_completed_pending = LIB_FALSE;
+        lib_status status = x86_debug_submit_line(command->debug, line, &result);
+        *out = (common_session_command_result){0};
+        if (status != LIB_STATUS_OK)
+        {
+            (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug command failed.\r\n\r\n");
+            common_machine_debug_cancel(command->machine);
+            (void)lib_c_snprintf(command->debug_prompt, sizeof(command->debug_prompt), "-");
+        }
+        else
+        {
+            app_command_copy_debug(command, state, &result, out);
+        }
+        command->session.prompt_due = out->request == COMMON_SESSION_REQUEST_NONE;
+        app_command_set_prompt(command, out);
         return;
     }
-    vm_app_console_append(result,
-        "Device Info\n===========\nMachine:           %s\n"
-        "CPU:               Intel %s\nRAM Size:          %u %s\n"
-        "Floppy Disk Drive: %.2f MB, %s\n",
-        information.machine_name,
-        information.cpu_name,
-        (lib_u32)(information.memory_bytes < (1u << 20) ?
-            information.memory_bytes >> 10 : information.memory_bytes >> 20),
-        information.memory_bytes < (1u << 20) ? "KB" : "MB",
-        information.floppy_image_bytes * 1.0 / ((1 << 10) * 1000),
-        information.floppy_media_inserted ? "inserted" : "not inserted");
-    if (information.fixed_disk_present)
-        vm_app_console_append(result, "Hard Disk Drive:   %u cylinders, %.2f MB, %s\n",
-            (lib_u32)information.fixed_disk_cylinders,
-            information.fixed_disk_image_bytes * 1.0 / (1 << 20),
-            information.fixed_disk_media_connected ? "connected" : "disconnected");
-    vm_app_console_append(result, "\nBIOS: %s\nRunning: %s\n",
-        information.external_firmware ? "external ROM mapped at F0000h" :
-            "profile ROM mapped", vm_app_console_is_running(state) ? "Yes" : "No");
-}
-
-static const char *vm_app_console_speed_name(vm_app_speed speed)
-{ return speed == VM_APP_SPEED_TURBO ? "turbo" : "standard"; }
-
-static void vm_app_console_speed(const vm_app_console_context *context,
-    common_session_command_result *result)
-{
-    vm_app_speed speed;
-
-    if (context->session == LIB_NULL) return;
-    if (context->argument_count == 1u) {
-        if (vm_app_speed_read(context->session, &speed) == LIB_STATUS_OK)
-            vm_app_console_append(result, "Speed: %s\n",
-                vm_app_console_speed_name(speed));
+    app_command_session_submit_line(&command->session, app_command_state(state), line,
+                                    &effect);
+    if (effect.unrecognized && command->extensions.submit != LIB_NULL) {
+        *out = (common_session_command_result){0};
+        if (command->extensions.submit(command->extensions.context,
+                command->machine, state, line, out)) {
+            app_command_set_prompt(command, out);
+            return;
+        }
+    }
+    if (effect.action == APP_COMMAND_ACTION_DEBUG)
+    {
+        if (x86_debug_open(command->debug, command->machine) == LIB_STATUS_OK)
+        {
+            command->debug_active = LIB_TRUE;
+            (void)lib_c_snprintf(command->debug_prompt, sizeof(command->debug_prompt), "-");
+            effect.text[0] = '\0';
+        }
+        else
+            (void)lib_c_snprintf(effect.text, sizeof(effect.text), "Cannot open debugger.\r\n\r\n");
+    }
+    else if (effect.action == APP_COMMAND_ACTION_HELP)
+    {
+        app_command_copy_effect(command, out, &effect);
+        app_command_append_help(command, out);
         return;
     }
-    if (context->argument_count != 2u) {
-        vm_app_console_append(result, "Usage: SPEED [STANDARD|TURBO]\n");
-        return;
-    }
-    if (lib_text_compare((const char *)context->arguments[1], "standard") == 0) speed = VM_APP_SPEED_STANDARD;
-    else if (lib_text_compare((const char *)context->arguments[1], "turbo") == 0) speed = VM_APP_SPEED_TURBO;
-    else {
-        vm_app_console_append(result, "Usage: SPEED [STANDARD|TURBO]\n");
-        return;
-    }
-    if (vm_app_speed_write(context->session, speed) == LIB_STATUS_OK)
-        vm_app_console_append(result, "Speed: %s\n", vm_app_console_speed_name(speed));
-    else vm_app_console_append(result, "Cannot change speed while session is running.\n");
+    app_command_copy_effect(command, out, &effect);
+    out->request = app_session_request(
+        app_command_session_take_request(&command->session));
 }
 
-static void vm_app_console_floppy(const vm_app_console_context *context,
-    common_session_machine_state state, common_session_command_result *result)
+lib_bool app_command_provider_begin_external(void *opaque,
+                                             common_session_machine_state state, common_session_request request)
 {
-    if (vm_app_console_common_machine(context) == LIB_NULL) return;
-    if (vm_app_console_is_running(state)) {
-        vm_app_console_append(result, "Cannot change floppy media now.\n");
-        return;
-    }
-    if (context->argument_count == 3u && lib_text_compare((const char *)context->arguments[1], "insert") == 0) {
-        vm_app_console_append(result, common_machine_set_removable_media(vm_app_console_common_machine(context),
-            (const char *)context->arguments[2], LIB_STORAGE_MEDIUM_OVERLAY) ?
-            "Floppy disk inserted.\n" : "Cannot read floppy disk.\n");
-        return;
-    }
-    if (context->argument_count == 2u &&
-        lib_text_compare((const char *)context->arguments[1], "eject") == 0) {
-        vm_app_console_append(result, common_machine_set_removable_media(vm_app_console_common_machine(context),
-            LIB_NULL, LIB_STORAGE_MEDIUM_OVERLAY) ?
-            "Floppy disk ejected.\n" : "Cannot eject floppy disk.\n");
-        return;
-    }
-    vm_app_console_append(result, "Usage: FLOPPY INSERT <image> | EJECT\n");
+    app_command_context *command = (app_command_context *)opaque;
+    return app_command_session_begin_external(&command->session,
+                                              app_command_state(state), app_lifecycle_request_from_session(request)) != 0;
 }
 
-static void vm_app_console_debug_result(common_session_command_result *destination,
-    const x86_debug_result *source)
+void app_command_provider_note_runtime(void *opaque,
+                                       common_session_machine_state prior, common_session_machine_state completed,
+                                       common_session_command_result *out)
 {
-    if (destination == LIB_NULL || source == LIB_NULL) return;
-    vm_app_console_append(destination, "%s", source->text);
-    if (source->prompt_ready) vm_app_console_prompt(destination, (const char *)source->prompt);
-    if (source->lifecycle_request == X86_DEBUG_LIFECYCLE_RESUME ||
-        source->lifecycle_request == X86_DEBUG_LIFECYCLE_STEP)
-        destination->request = COMMON_SESSION_REQUEST_RESUME;
-    if (source->lifecycle_request == X86_DEBUG_LIFECYCLE_STOP)
-        destination->request = COMMON_SESSION_REQUEST_STOP;
-}
-
-static void vm_app_console_submit_debug(vm_app_console_context *context,
-    const lib_u8 *line, common_session_command_result *result)
-{
-    x86_debug_result debug_result = {0};
-    if (x86_debug_submit_line(context->debug, (const char *)line, &debug_result) != LIB_STATUS_OK) {
-        vm_app_console_append(result, "Debugger command failed.\n");
-        return;
-    }
-    vm_app_console_debug_result(result, &debug_result);
-    if (!debug_result.keep_active) {
-        x86_debug_close(context->debug);
-        context->debug_active = LIB_FALSE;
+    app_command_context *command = (app_command_context *)opaque;
+    app_command_effect effect = {0};
+    app_command_session_note_runtime(&command->session, app_command_state(prior),
+                                     app_machine_completed_state(completed), &effect);
+    app_command_copy_effect(command, out, &effect);
+    if (command->debug_active)
+    {
+        command->debug_completed_pending = LIB_FALSE;
+        x86_debug_machine_state state = completed == COMMON_SESSION_MACHINE_PAUSED ? X86_DEBUG_MACHINE_PAUSED : completed == COMMON_SESSION_MACHINE_RUNNING ? X86_DEBUG_MACHINE_RUNNING
+                                                                                                                                                                  : X86_DEBUG_MACHINE_STOPPED;
+        x86_debug_result result = {0};
+        if (x86_debug_observe_machine(command->debug, state, LIB_STATUS_OK, &result) != LIB_STATUS_OK)
+        {
+            (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug command failed.\r\n\r\n");
+            common_machine_debug_cancel(command->machine);
+            (void)lib_c_snprintf(command->debug_prompt, sizeof(command->debug_prompt), "-");
+        }
+        else if (result.prompt_ready)
+        {
+            command->debug_completed = result;
+            command->debug_completed_pending = LIB_TRUE;
+        }
     }
 }
 
-static void vm_app_console_submit_line(void *opaque,
-    common_session_machine_state state, const char *line,
-    common_session_command_result *result)
+void app_command_provider_note_broker(void *opaque,
+                                      common_session_machine_state state, lib_bool vm_console_current,
+                                      lib_bool monitor_running_surface)
 {
-    vm_app_console_context *context = opaque;
+    app_command_context *command = (app_command_context *)opaque;
+    app_command_session_note_broker(&command->session, app_command_state(state),
+                                    vm_console_current != 0, monitor_running_surface != 0);
+}
 
-    vm_app_console_clear_result(result);
-    const lib_u8 *text = (const lib_u8 *)line;
-    if (context == LIB_NULL || text == LIB_NULL) return;
-    if (context->debug_active) {
-        vm_app_console_submit_debug(context, text, result);
-        return;
+void app_command_provider_note_monitor_current(void *opaque,
+                                               lib_bool current, common_session_command_result *out)
+{
+    app_command_context *command = (app_command_context *)opaque;
+    app_command_effect effect = {0};
+    app_command_session_note_monitor_current(&command->session, current != 0,
+                                             &effect);
+    app_command_copy_effect(command, out, &effect);
+    if (current && command->debug_completed_pending)
+    {
+        command->debug_completed_pending = LIB_FALSE;
+        app_command_copy_debug(command, COMMON_SESSION_MACHINE_PAUSED,
+                               &command->debug_completed, out);
+        out->arm_prompt = out->request == COMMON_SESSION_REQUEST_NONE;
     }
-    (void)lib_c_snprintf((char *)context->command_buffer, sizeof(context->command_buffer), "%s", line);
-    vm_app_console_parse(context, context->command_buffer);
-    if (context->argument_count == 0u) return;
-    if (lib_text_compare((const char *)context->arguments[0], "help") == 0) vm_app_console_help(result);
-    else if (lib_text_compare((const char *)context->arguments[0], "info") == 0) vm_app_console_info(context, state, result);
-    else if (lib_text_compare((const char *)context->arguments[0], "speed") == 0) vm_app_console_speed(context, result);
-    else if (lib_text_compare((const char *)context->arguments[0], "floppy") == 0)
-        vm_app_console_floppy(context, state, result);
-    else if (lib_text_compare((const char *)context->arguments[0], "start") == 0) result->request = COMMON_SESSION_REQUEST_START;
-    else if (lib_text_compare((const char *)context->arguments[0], "reset") == 0) result->request = COMMON_SESSION_REQUEST_RESET;
-    else if (lib_text_compare((const char *)context->arguments[0], "stop") == 0) result->request = COMMON_SESSION_REQUEST_STOP;
-    else if (lib_text_compare((const char *)context->arguments[0], "resume") == 0) result->request = COMMON_SESSION_REQUEST_RESUME;
-    else if (lib_text_compare((const char *)context->arguments[0], "exit") == 0) result->exit_requested = LIB_TRUE;
-    else if (lib_text_compare((const char *)context->arguments[0], "debug") == 0) {
-        if (state == COMMON_SESSION_MACHINE_PAUSED) {
-            if (x86_debug_open(context->debug, vm_app_console_common_machine(context)) ==
-                LIB_STATUS_OK) {
-                context->debug_active = LIB_TRUE;
-                vm_app_console_prompt(result, "- ");
-            } else vm_app_console_append(result, "Unable to enter debugger.\n");
-        } else if (state == COMMON_SESSION_MACHINE_RUNNING) {
-            context->debug_requested = LIB_TRUE;
-            result->request = COMMON_SESSION_REQUEST_PAUSE;
-        } else vm_app_console_append(result, "Machine must be paused to enter debugger.\n");
-    } else vm_app_console_append(result, "Illegal command '%s'.\n", context->arguments[0]);
+    app_command_set_prompt(command, out);
 }
 
-static void vm_app_console_open(void *opaque,
-    common_session_command_result *result)
+lib_status app_command_initialize(app_command_context *command,
+                                  common_machine *machine, common_session_display display,
+                                  const app_command_extensions *extensions)
 {
-    (void)opaque;
-    vm_app_console_clear_result(result);
-    vm_app_console_append(result, "\nType HELP for help.\n\n");
-}
-
-static void vm_app_console_reject_line(void *opaque,
-    common_session_command_result *result)
-{
-    (void)opaque;
-    vm_app_console_clear_result(result);
-    vm_app_console_append(result, "Invalid console input.\n");
-}
-
-static void vm_app_console_note_runtime(void *opaque,
-    common_session_machine_state prior, common_session_machine_state completed,
-    common_session_command_result *result)
-{
-    vm_app_console_context *context = opaque;
-    const char *message = LIB_NULL;
-    (void)prior;
-    vm_app_console_clear_result(result);
-    switch (completed) {
-    case COMMON_SESSION_MACHINE_RUNNING: message = "Machine started.\n"; break;
-    case COMMON_SESSION_MACHINE_PAUSED: message = "Machine paused.\n"; break;
-    case COMMON_SESSION_MACHINE_STOPPED: message = "Machine stopped.\n"; break;
-    case COMMON_SESSION_MACHINE_RESET_COMPLETED: message = "Machine reset.\n"; break;
-    case COMMON_SESSION_MACHINE_ERROR: message = "Machine faulted.\n"; break;
-    default: break;
-    }
-    if (message != LIB_NULL) vm_app_console_append(result, "%s", message);
-    if (context != LIB_NULL && context->debug_requested &&
-        completed == COMMON_SESSION_MACHINE_PAUSED &&
-        x86_debug_open(context->debug, vm_app_console_common_machine(context)) ==
-            LIB_STATUS_OK) {
-        context->debug_requested = LIB_FALSE;
-        context->debug_active = LIB_TRUE;
-        vm_app_console_prompt(result, "- ");
-    }
-}
-
-static void vm_app_console_note_monitor_current(void *opaque,
-    lib_bool current, common_session_command_result *result)
-{
-    vm_app_console_context *context = opaque;
-    vm_app_console_clear_result(result);
-    if (!current) return;
-    vm_app_console_prompt(result,
-        context != LIB_NULL && context->debug_active ? "- " : "Console> ");
-}
-
-static lib_bool vm_app_console_begin_external(void *opaque,
-    common_session_machine_state state, common_session_request request)
-{
-    (void)opaque;
-    (void)state;
-    (void)request;
-    return LIB_TRUE;
-}
-
-static lib_bool vm_app_console_hotkey(void *opaque,
-    common_session_machine_state state, const lib_u8 *identifier,
-    common_session_command_result *result)
-{
-    vm_app_console_context *context = opaque;
-    if (context == LIB_NULL) {
-        vm_app_console_clear_result(result);
-        return LIB_FALSE;
-    }
-    return vm_app_keyboard_handle_hotkey(vm_app_console_common_machine(context), state,
-        identifier, result);
-}
-
-static lib_status vm_app_console_compose(vm_app_console_context *context,
-    const vm_session_request *request)
-{
-    common_session_options session_options = {0};
-    common_ui_options ui_options = {0};
-
-    lib_status status = vm_app_compose_machine(context->session, request);
-
-    if (status != LIB_STATUS_OK) return status;
-    if (x86_debug_create(&context->debug) != LIB_STATUS_OK)
-        return LIB_STATUS_NO_MEMORY;
-    session_options.display = lib_text_compare((const char *)request->display, "window") == 0 ?
-        COMMON_SESSION_DISPLAY_WINDOW : COMMON_SESSION_DISPLAY_CONSOLE;
-    session_options.console_control = request->console_control ? LIB_TRUE : LIB_FALSE;
-    session_options.command.context = context;
-    session_options.command.open = vm_app_console_open;
-    session_options.command.reject_line = vm_app_console_reject_line;
-    session_options.command.submit_line = vm_app_console_submit_line;
-    session_options.command.begin_external = vm_app_console_begin_external;
-    session_options.command.note_runtime = vm_app_console_note_runtime;
-    session_options.command.note_monitor_current = vm_app_console_note_monitor_current;
-    session_options.command.handle_hotkey = vm_app_console_hotkey;
-    status = vm_app_compose_control(context->session, &session_options);
-    if (status != LIB_STATUS_OK) return status;
-    context->control = vm_app_session(context->session);
-    ui_options.event_context = context->control;
-    ui_options.event_sink = common_session_enqueue_ui_event;
-    ui_options.running_window_title = "NXVM (Running)";
-    ui_options.paused_window_title = "NXVM (Paused)";
-    ui_options.graphics_console_status_text = "NXVM graphics output is active in a Window.";
-    vm_app_keyboard_register_hotkeys(&ui_options.hotkeys);
-    return vm_app_compose_ui(context->session, &ui_options);
-}
-
-lib_status vm_app_console_context_create(vm_app_console_context **out_context)
-{
-    vm_app_console_context *context;
-    if (out_context == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_context = LIB_NULL;
-    context = lib_allocate_zero(1u, sizeof(*context));
-    if (context == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    *out_context = context;
-    return LIB_STATUS_OK;
-}
-
-void vm_app_console_context_destroy(vm_app_console_context *context)
-{
-    if (context == LIB_NULL) return;
-    x86_debug_destroy(context->debug);
-    lib_release(context);
-}
-
-lib_status vm_app_console_main(vm_app_console_context *context,
-    vm_app *session, const lib_u8 *ini_path)
-{
-    vm_session_request request;
-    lib_status status;
-
-    if (context == LIB_NULL || session == LIB_NULL || ini_path == LIB_NULL)
+    if (command == NULL || machine == NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    context->session = session;
-    status = vm_app_ini_load(ini_path, &request);
-    if (status != LIB_STATUS_OK) {
-        lib_c_printf("Unable to load NXVM.ini.\n");
-        return status;
-    }
-    status = vm_app_console_compose(context, &request);
-    if (status != LIB_STATUS_OK) {
-        lib_c_printf("Unable to create session from '%s'.\n", (const char *)request.file_name);
-        return status;
-    }
-    return common_session_run(context->control) ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
+    lib_memory_set(command, 0, sizeof(*command));
+    command->machine = machine;
+    if (extensions != LIB_NULL) command->extensions = *extensions;
+    app_command_session_initialize(&command->session, display);
+    return x86_debug_create(&command->debug);
+}
+
+void app_command_dispose(app_command_context *command)
+{
+    if (command != NULL)
+        x86_debug_destroy(command->debug);
 }

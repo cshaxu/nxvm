@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "ibmpc/product/factory_interface.h"
+#include "ibmpc/nxvm/factory_interface.h"
 #include VM_PRODUCT_BINDING_HEADER
 
 const vm_machine_assets vm_app_firmware = {0};
