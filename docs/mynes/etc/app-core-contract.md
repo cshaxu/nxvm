@@ -251,7 +251,7 @@ maps completed runtime facts to one result; Session clears the in-flight request
 delivers or defers that result according to monitor ownership, then decides when
 to arm the next reader.  Window-close follows the same Session admission path.
 `arm_prompt` expresses a requested next prompt, never permission to start a
-second native reader. Output is bounded to 16383 bytes, prompt `MyNes> ` to 63;
+second native reader. Output is bounded to 16383 bytes, primary prompt `> ` to 63;
 `detail` is null. Bounded mem/disasm listings fit without dynamic logs. No direct
 worker printing and no App-owned monitor-text cache are permitted.
 

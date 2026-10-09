@@ -219,13 +219,8 @@ static void app_command_result(emulator_session_command_result *out_result,
     *out_result = (emulator_session_command_result){0};
     app_command_message(out_result->text, sizeof(out_result->text), text);
     out_result->arm_prompt = LIB_TRUE;
-    out_result->prompt[0] = 'M';
-    out_result->prompt[1] = 'y';
-    out_result->prompt[2] = 'N';
-    out_result->prompt[3] = 'e';
-    out_result->prompt[4] = 's';
-    out_result->prompt[5] = '>';
-    out_result->prompt[6] = ' ';
+    (void)lib_c_snprintf(out_result->prompt, sizeof(out_result->prompt), "%s",
+        EMULATOR_PRODUCT_MONITOR_PROMPT);
 }
 
 static void app_command_set_debug_prompt(emulator_session_command_result *out_result)
@@ -787,11 +782,9 @@ void app_command_initialize(app_command_context *context, emulator_machine *mach
     *context = (app_command_context){
         .machine = machine,
         .display = display,
-        .cartridge_present = cartridge_present,
-        .initial_state_pending = LIB_TRUE};
+        .cartridge_present = cartridge_present};
     context->monitor = (emulator_product_monitor_provider){
         .context = context,
-        .prompt = "MyNes> ",
         .extension_help = app_command_help_extensions,
         .hotkey_help = app_command_help_hotkeys,
         .submit_fixed = app_command_submit_fixed,
@@ -803,8 +796,6 @@ void app_command_open(void *opaque, emulator_session_command_result *out_result)
     app_command_context *context = opaque;
     if (context == LIB_NULL || out_result == LIB_NULL) return;
     emulator_product_monitor_provider_open(&context->monitor, out_result);
-    if (context->initial_state_pending)
-        out_result->arm_prompt = LIB_FALSE;
 }
 
 void app_command_reject_line(void *opaque, emulator_session_command_result *out_result)
@@ -1097,12 +1088,7 @@ void app_command_note_runtime(void *opaque, emulator_session_machine_state prior
     }
     else if (completed == EMULATOR_SESSION_MACHINE_STOPPED)
     {
-        if (context != LIB_NULL && context->initial_state_pending)
-        {
-            context->initial_state_pending = LIB_FALSE;
-            app_command_result(out_result, LIB_NULL);
-        }
-        else if (prior != EMULATOR_SESSION_MACHINE_STOPPED)
+        if (prior != EMULATOR_SESSION_MACHINE_STOPPED)
             app_command_result(out_result, "Machine stopped.\n");
     }
     else if (completed == EMULATOR_SESSION_MACHINE_ERROR)

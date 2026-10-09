@@ -52,17 +52,17 @@ static lib_status app_composition_save_battery(app_composition *composition)
 
     if (composition->battery_path[0] != '\0')
         status = core_driver_save_battery_ram(composition->driver,
-            (const char *)composition->battery_path);
+                                              (const char *)composition->battery_path);
     if (status != LIB_STATUS_OK)
         lib_c_fprintf(lib_c_stderr, "Cannot save battery RAM: %s\n",
-            (const char *)composition->battery_path);
+                      (const char *)composition->battery_path);
     return status;
 }
 
 static lib_bool app_composition_set_media(void *opaque, const char *path)
 {
     app_composition *composition = opaque;
-    lib_u8 battery_path[APP_CONFIG_PATH_CAPACITY] = { 0 };
+    lib_u8 battery_path[APP_CONFIG_PATH_CAPACITY] = {0};
     emulator_machine *machine = composition == LIB_NULL ? LIB_NULL : composition->command.machine;
     emulator_machine_state state;
 
@@ -72,11 +72,12 @@ static lib_bool app_composition_set_media(void *opaque, const char *path)
     if (state != EMULATOR_MACHINE_STOPPED && state != EMULATOR_MACHINE_PAUSED)
         return LIB_FALSE;
     if (path != LIB_NULL && !app_battery_path((const lib_u8 *)path, battery_path,
-            sizeof(battery_path))) return LIB_FALSE;
+                                              sizeof(battery_path)))
+        return LIB_FALSE;
     if (app_composition_save_battery(composition) != LIB_STATUS_OK)
         return LIB_FALSE;
     if (!emulator_machine_set_removable_media(machine, path,
-                                            LIB_STORAGE_MEDIUM_READONLY))
+                                              LIB_STORAGE_MEDIUM_READONLY))
         return LIB_FALSE;
     lib_memory_copy(composition->battery_path, battery_path, sizeof(battery_path));
     if (path != LIB_NULL)
@@ -86,7 +87,7 @@ static lib_bool app_composition_set_media(void *opaque, const char *path)
 }
 
 static emulator_session_machine_state app_composition_map_state(void *context,
-    emulator_machine_state state)
+                                                                emulator_machine_state state)
 {
     app_composition *composition = context;
     emulator_session_machine_state session_state = EMULATOR_SESSION_MACHINE_ERROR;
@@ -144,7 +145,7 @@ static lib_status app_composition_destroy_machine(void *opaque)
 }
 
 static lib_status app_composition_bind_machine(void *opaque,
-    emulator_machine *machine)
+                                               emulator_machine *machine)
 {
     app_composition *composition = opaque;
 
@@ -155,7 +156,7 @@ static lib_status app_composition_bind_machine(void *opaque,
 }
 
 static lib_status app_composition_configure_control(void *opaque,
-    emulator_machine *machine, emulator_session_options *out_options)
+                                                    emulator_machine *machine, emulator_session_options *out_options)
 {
     app_composition *composition = opaque;
 
@@ -163,10 +164,10 @@ static lib_status app_composition_configure_control(void *opaque,
         return LIB_STATUS_INVALID_ARGUMENT;
     if (composition->command.cartridge_present &&
         !app_composition_set_media(composition,
-            (const char *)composition->startup_rom_path))
+                                   (const char *)composition->startup_rom_path))
         return LIB_STATUS_IO_ERROR;
     app_command_initialize(&composition->command, machine,
-        composition->command.cartridge_present, composition->command.display);
+                           composition->command.cartridge_present, composition->command.display);
     composition->command.media_context = composition;
     composition->command.set_media = app_composition_set_media;
     *out_options = (emulator_session_options){
@@ -183,19 +184,21 @@ static lib_status app_composition_configure_control(void *opaque,
 }
 
 static lib_status app_composition_configure_ui(void *opaque,
-    emulator_ui_options *out_options)
+                                               emulator_ui_options *out_options)
 {
     kvm_hotkey_registry hotkeys;
 
     (void)opaque;
-    if (out_options == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (out_options == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
     kvm_hotkey_registry_initialize(&hotkeys);
     if (kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,
-            "pause-toggle") != LIB_STATUS_OK) return LIB_STATUS_INTERNAL_ERROR;
+                                     "pause-toggle") != LIB_STATUS_OK)
+        return LIB_STATUS_INTERNAL_ERROR;
     *out_options = (emulator_ui_options){
         .hotkeys = hotkeys,
-        .running_window_title = "MyNes (Running)",
-        .paused_window_title = "MyNes (Paused)",
+        .running_window_title = "MyNES (Running)",
+        .paused_window_title = "MyNES (Paused)",
         .graphics_console_status_text = "NES video requires a window."};
     return LIB_STATUS_OK;
 }
@@ -213,7 +216,7 @@ lib_i32 app_composition_run(const app_startup_config *config)
         return 1;
     if (core_driver_create(&composition->driver, &(core_driver_options){
                                                      .text_output = config->display ==
-                                                         EMULATOR_SESSION_DISPLAY_CONSOLE,
+                                                                    EMULATOR_SESSION_DISPLAY_CONSOLE,
                                                      .audio_enabled = LIB_TRUE}) != LIB_STATUS_OK)
         goto cleanup;
     if (core_driver_make_driver(composition->driver, &emulator_driver) != LIB_STATUS_OK)
@@ -223,9 +226,8 @@ lib_i32 app_composition_run(const app_startup_config *config)
     composition->command.display = config->display;
     if (composition->command.cartridge_present)
         lib_memory_copy(composition->startup_rom_path, config->rom_path,
-            lib_text_length((const char *)config->rom_path) + 1u);
+                        lib_text_length((const char *)config->rom_path) + 1u);
     result = emulator_product_run(&(emulator_product_definition){
-        .name = "MyNES",
         .machine = {
             .machine = composition,
             .driver = emulator_driver,
@@ -238,7 +240,7 @@ lib_i32 app_composition_run(const app_startup_config *config)
         .configure_ui = app_composition_configure_ui});
 cleanup:
     if (composition->driver != LIB_NULL &&
-               app_composition_destroy_machine(composition) != LIB_STATUS_OK)
+        app_composition_destroy_machine(composition) != LIB_STATUS_OK)
         return 1;
     lib_release(composition);
     return result;
