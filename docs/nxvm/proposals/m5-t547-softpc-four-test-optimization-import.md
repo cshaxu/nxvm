@@ -117,6 +117,28 @@ task must not overwrite, delete, or weaken NXVM-owned assertions.
   x64/x86, all four PC App x64/x86 artifact builds, then the existing T547
   complete unit/integration qualification.  Do not modify the owner INI.
 
+## S6: NXVM-Family Product Ownership
+
+- Adopt SoftPC S16's ownership boundary without importing its App runtime:
+  `ibmpc/product` remains portable, while the NXVM.ini grammar, executable-path
+  lookup, four-App machine-factory adaptation, NXVM identity and NXVM-only
+  command extensions move to `src/app-base/product`.
+- Move the corresponding direct INI and factory unit tests to
+  `test/app-base/product`.  They are NXVM-family tests, not generic IBM PC Product
+  tests.  The individual `app-*` roots retain only their fixed bindings and
+  their own product/integration tests.
+- Remove `ibmpc/nxvm`, its CMake target, IBM PC manifest entries and its
+  dependency-gate member.  Do not leave forwarding headers, compatibility
+  targets, duplicate INI parsers or a Product dependency on NXVM support.
+- Add one NXVM-family source/test manifest and retain package-local C11,
+  Types and inward-boundary checks.  Update only affected NXVM architecture and
+  source-layout authorities.
+- Verify the NXVM-family manifest, IBM PC manifest/dependency gate, both moved
+  unit tests on x64/x86, and all four App build receivers.  This S does not
+  claim T-level full unit/integration qualification. Rebuild the existing eight
+  0546 artifacts when relocation changes their link input; do not create a new
+  artifact version.
+
 ## Completion Standard
 
 The imported resource lock serializes only native desktop tests, not every Lib

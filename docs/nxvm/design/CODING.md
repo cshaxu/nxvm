@@ -18,7 +18,8 @@ src/
   lib/                  shared C and platform services
   common/{session,machine,ui}/
   x86/{chips,core,xasm32,debug}/
-  ibmpc/{board-common,board-xt,board-at,machine,product,nxvm}/
+  ibmpc/{board-common,board-xt,board-at,machine,product}/
+  nxvm/product/          four-NXVM-App private configuration/factory/extensions
   app-my5160/           fixed IBM 5160 App
     product/            thin main and fixed XT binding
     profiles/           IBM 5160 composition and firmware slots
@@ -28,7 +29,7 @@ src/
   app-mydeskpro386/     fixed DeskPro 386 App
     product/            thin main and fixed Model40 binding
     profiles/           Model40 composition, D4 and firmware slots
-  app-nxvm/             NXVM product implementation
+  app-nxvm/             app-base product implementation
     product/            thin main and fixed composition binding
     firmware/           project-owned BIOS source and offline ROM construction
     profiles/           retained default PC/AT composition and firmware slots
@@ -45,10 +46,10 @@ board-common/pc_at_profile and pc_at_rom. Machine's pc_at_preparation owns the
 one allocated AT candidate and ROM preparation; each App supplies its fixed
 choices and validator. No mixed default/5170 compile guards remain.
 The shared Product command/hotkey and Common composition files and their
-reusable assertions live in ibmpc/product and test/ibmpc/product. `ibmpc/nxvm`
-contains the NXVM-family INI and Machine adapter used by the four NXVM Apps;
-it is not a Product dependency. Shared process entry/banner formatting consumes
-shared PC identity/version, an App-owned request loader and an App-owned factory. The
+reusable assertions live in ibmpc/product and test/ibmpc/product. `nxvm/product`
+contains the NXVM-family INI, Machine adapter and extensions used by the four
+NXVM Apps; it is not an IBM PC Product dependency. Shared process entry/banner
+formatting consumes App-provided identity, request loader and factory. The
 former `app-nxvm/devices` implementation is removed. Shared board mechanisms
 live in the flat `ibmpc/board-*` receivers; genuine D4 state stays in
 `app-mydeskpro386/profiles`. Current records delivery acceptance, not this layout.
@@ -59,7 +60,7 @@ variants rather than renaming them into a replacement Standard profile.
 Do not add a framework or empty future directories. CPU-family implementations
 and selection tables stay in `x86/chips/cpu`, not copied into board directories.
 
-ROM mapping declarations and asset roles remain with the NXVM product profile.
+ROM mapping declarations and asset roles remain with the app-base product profile.
 Project-owned BIOS source/build lives in `src/app-nxvm/firmware`, not in the
 runtime driver or devices. Its build produces a candidate ROM under `build/`
 and embeds its bytes into the selected EXE. Other machines embed their BYOB
@@ -100,8 +101,9 @@ preparation; it has no second runtime-media projection or factory body.
 
 ## Source Organization
 
-Repository-only shared tests remain `test/{lib,common,x86,ibmpc}`. NXVM-only tests
-live below `test/app-nxvm/`, mirroring `app-nxvm` beneath `unit/`.
+Repository-only shared tests remain `test/{lib,common,x86,ibmpc}`. The
+four-App NXVM-family Product component owns `test/app-base/product`; individual
+App-only tests live below their matching `test/app-*/` root.
 Shared board and family tests live in `test/ibmpc/board-common`,
 `test/ibmpc/board-at` and `test/ibmpc/board-xt`, with their actual source owners.
 Profile tests follow their real `src/app-*/profiles/` owner. The independent

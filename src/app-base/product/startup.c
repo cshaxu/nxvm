@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "ibmpc/nxvm/startup_interface.h"
-#include "ibmpc/nxvm/ini_interface.h"
+#include "app-base/product/startup_interface.h"
+#include "app-base/product/ini_interface.h"
 
 #include "lib/base/process_interface.h"
 

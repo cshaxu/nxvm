@@ -30,11 +30,15 @@ release behavior remains the baseline until an implemented, verified cutover.
 The following map describes the four-App implementation. Current records
 verification and acceptance; the task history retains the cutover sequence.
 
-- `ibmpc/product` owns shared INI syntax, copied runtime request, path construction,
-  Console/Debug/hotkey policy and atomic Common Session/UI/Machine composition.
-  App supplies one frozen factory with copied INFO/speed operations; it owns
-  fixed hardware/firmware projection. The shared PC Machine adapter lives in
-  `ibmpc/machine`.
+- `ibmpc/product` owns shared Console/Debug/hotkey policy and atomic Common
+  Session/UI/Machine composition. It receives an App-provided request loader
+  and frozen factory; it does not define an INI grammar, path construction,
+  identity or machine-specific extension. The shared PC Machine adapter lives
+  in `ibmpc/machine`.
+- `nxvm/product` owns the four NXVM Apps' `NXVM.ini` grammar, path construction,
+  fixed-factory adaptation, shared `INFO`/`SPEED`/floppy extensions and NXVM
+  identity. It is a private NXVM-family component, not an IBM PC or SoftPC
+  dependency.
 - Each `app-*/product` consumes the shared PC identity/version and supplies its
   fixed binding to the sole `ibmpc/product`
   process entry, banner and cleanup body. Its fixed composition binding selects

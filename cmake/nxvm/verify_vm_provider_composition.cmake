@@ -6,7 +6,7 @@ set(session_dir "${PROJECT_SOURCE_DIR}/src/ibmpc/machine")
 set(devices "${session_dir}/machine_devices.c")
 set(firmware "${PROJECT_SOURCE_DIR}/src/ibmpc/board-common/pc_at_rom.c")
 set(info "${session_dir}/machine_info.c")
-set(factory "${PROJECT_SOURCE_DIR}/src/ibmpc/nxvm/factory.c")
+set(factory "${PROJECT_SOURCE_DIR}/src/app-base/product/factory.c")
 
 foreach(file IN ITEMS "${devices}" "${firmware}" "${info}"
     "${factory}")

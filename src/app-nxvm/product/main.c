@@ -6,9 +6,9 @@
  */
 #include "ibmpc/product/entry_interface.h"
 #include "ibmpc/product/composition.h"
-#include "ibmpc/nxvm/factory_interface.h"
-#include "ibmpc/nxvm/startup_interface.h"
-#include "ibmpc/nxvm/version_interface.h"
+#include "app-base/product/factory_interface.h"
+#include "app-base/product/startup_interface.h"
+#include "app-base/product/version_interface.h"
 #include "app-nxvm/product/binding_interface.h"
 
 lib_i32 main(void)

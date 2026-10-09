@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "ibmpc/nxvm/factory_interface.h"
+#include "app-base/product/factory_interface.h"
 #include "ibmpc/machine/machine_interface.h"
 
 static lib_u32 phase;

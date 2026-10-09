@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 
-#include "ibmpc/nxvm/ini_interface.h"
+#include "app-base/product/ini_interface.h"
 #include "lib/storage/file_interface.h"
 
 #define VM_APP_INI_MAX_BYTES (64u * 1024u)

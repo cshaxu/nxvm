@@ -8,7 +8,7 @@
 lib_status vm_app_ini_executable_path(const char *name, lib_u8 *path,
     lib_size capacity);
 
-/* NXVM-family adapter: Product only calls its App-provided request loader. */
+/* NXVM-family loader passed into the shared Product entry. */
 lib_status vm_app_ini_load_request(const char *name,
     vm_session_request *out_request);
 

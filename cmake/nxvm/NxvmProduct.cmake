@@ -848,7 +848,7 @@ target_include_directories(vm-app PUBLIC
 )
 target_link_libraries(vm-app PUBLIC
     ibmpc-product
-    ibmpc-nxvm-adapter
+    app-base-product
     common-session
     common-ui
     x86-debug
@@ -2939,7 +2939,7 @@ file(GENERATE
 # substitutes for the direct compile command of a smoke source.
 set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine
-    ibmpc-nxvm-adapter
+    app-base-product
     ibmpc-product
     ibmpc-board-common
     x86-core

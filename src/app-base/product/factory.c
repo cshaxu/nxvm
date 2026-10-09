@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "ibmpc/nxvm/factory_interface.h"
+#include "app-base/product/factory_interface.h"
 #include "ibmpc/machine/machine_interface.h"
 
 lib_status vm_app_configure_machine(const vm_app_machine_binding *binding,

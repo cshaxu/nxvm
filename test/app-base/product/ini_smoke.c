@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "ibmpc/nxvm/ini_interface.h"
-#include "ibmpc/nxvm/startup_interface.h"
+#include "app-base/product/ini_interface.h"
+#include "app-base/product/startup_interface.h"
 
 static lib_bool text_equal(const lib_u8 *left, const char *right)
 {

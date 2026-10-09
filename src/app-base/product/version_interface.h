@@ -1,0 +1,6 @@
+#ifndef NXVM_PRODUCT_VERSION_INTERFACE_H
+#define NXVM_PRODUCT_VERSION_INTERFACE_H
+
+#define NXVM_PRODUCT_NAME "Neko's x86 Virtual Machine"
+
+#endif

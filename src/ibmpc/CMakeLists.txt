@@ -16,11 +16,6 @@ if(NOT TARGET x86-debug)
     message(FATAL_ERROR "IBM PC Product requires the existing x86 Debug tools")
 endif()
 
-add_library(ibmpc-nxvm-adapter STATIC nxvm/factory.c nxvm/ini.c nxvm/startup.c)
-target_include_directories(ibmpc-nxvm-adapter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(ibmpc-nxvm-adapter PUBLIC ibmpc-machine
-    ibmpc-product-composition types storage base)
-
 add_library(ibmpc-machine-media STATIC machine/media/fdd.c
     machine/media/hdd.c)
 target_include_directories(ibmpc-machine-media PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
