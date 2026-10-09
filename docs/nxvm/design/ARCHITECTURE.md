@@ -9,7 +9,7 @@ from this approved target.
 
 NXVM retains an extensible multi-machine architecture. XT, AT, DeskPro 386,
 default PC/AT and later PC110 each link one fixed machine composition, using the same
-App, Common, Lib and x86 tooling. Build configuration selects that executable's
+App, Emulator, Lib and x86 tooling. Build configuration selects that executable's
 external BYOB build-input root; the selected Profile determines its fixed firmware
 roles and relative asset names. The approved ROM-packaging target embeds the
 selected ROM bytes at build time for all four machines; Current distinguishes
@@ -32,8 +32,10 @@ verification and acceptance; the task history retains the cutover sequence.
 
 - `emulator/product` owns neutral Machine/Session/UI composition, ordered
   teardown, the fixed monitor grammar and its startup/help-page framing.  Its
-  fixed commands are `start`, `resume`, `pause`, `stop`, `reset`, `save`,
-  `load`, `debug`, `help` and `exit`.  It dispatches each command through an
+  fixed commands are `start`, `reset`, `stop`, `pause`, `resume`, `load`,
+  `save`, `debug`, `help` and `exit`. The first five and last three accept no
+  argument; only `load`/`save` retain their App-owned file grammar. It dispatches
+  each command through an
   injected bounded capability and reports `Feature not implemented.` when the
   selected App has none; it never implements guest, snapshot or debug behavior
   itself.  It receives an already constructed driver plus bounded bind, destroy
@@ -81,20 +83,21 @@ verification and acceptance; the task history retains the cutover sequence.
   `core/board-base` also owns the complete board construction, reset,
   clock/deadline reduction and teardown, plus opaque FDC/HDC/video adapters.
   `core/board-at` owns KBC and planar parity; `core/board-xt` owns PPI keyboard
-  wiring. Common composition integrates their public contracts; neither
+  wiring. Emulator Product composition integrates their public contracts; neither
   family reads the common board layout. Model40 alone owns D4 memory,
   Port B and refresh state through one frozen board-profile binding.
   The former `app-nxvm/devices` implementation is removed. Chip state stays
   in `core/chips`, guest time in Core, and profile/firmware/media choices in
   App composition. Current records T540 acceptance and the next App cutover.
-- `common/machine` owns the shared execution/control protocol and paused-debug
-  lease; `common/session` is the sole product-control reducer;
-  `common/ui` binds Lib KVM and the Console broker.
-- `x86/debug` owns Debug CLI continuations; `x86/xasm32` owns assembly and
-  disassembly. Paused Debug operations go through Common Machine and the NXVM
+- `emulator/machine` owns the shared execution/control protocol and paused-debug
+  lease; `emulator/session` is the sole product-control reducer;
+  `emulator/ui` binds Lib KVM and the Console broker.
+- `product/debug` owns Debug CLI continuations; `product/xasm32` owns assembly and
+  disassembly. Paused Debug operations go through Emulator Machine and the NXVM
   driver to Core, not a second machine path.
-- `lib` owns platform/C-runtime services. Lib/Common/x86 retain their existing neutral boundaries. The separate
-  ibmpc package contains only shared PC integration, never App-private definitions.
+- `lib` owns platform/C-runtime services. Lib/Emulator/product retain their existing
+  neutral boundaries. Core contains NXVM-private PC integration, never App-private
+  definitions from another product.
 - `app-nxvm/firmware` owns project-authored guest BIOS source and offline ROM
   construction. Its build tool may consume x86 assembly and Lib file services,
   but the construction tool is not linked into the machine executable. Its
@@ -128,7 +131,7 @@ build-selected profile + compiled immutable firmware + App INI options
        Profile resolves its fixed assets, then constructs one frozen Core plan
                               |
                               v
-           one Core + Board instance -> Machine adapter -> Common Machine
+           one Core + Board instance -> Machine adapter -> Emulator Machine
 ```
 
 Profile owns hardware constraints and firmware asset resolution; each App owns
@@ -144,11 +147,11 @@ Construction prepares assets and a plan, validates, publishes one live machine,
 and rolls back through one resource owner on failure. Reset reuses the frozen
 plan and Core reset path. The driver retains only the selected board's resources,
 not simultaneous XT, PC/AT and Compaq ROM/state records. Profile owns board
-construction; Machine retains execution, host-resource lifetime and Common
+construction; Machine retains execution, host-resource lifetime and Emulator
 adaptation only.
 Injected asset/media services use neutral contracts, avoiding a Profile-to-
 Machine dependency cycle. Adding a board needs a composition and build entry,
-not another Common queue, App parser or generic-device machine-name branch.
+not another Emulator queue, App parser or generic-device machine-name branch.
 
 The build root is a local CMake input, not a tracked absolute path or runtime
 configuration selector. A build validates each selected BYOB ROM's slot, size
@@ -184,7 +187,7 @@ scheduler. Immutable configuration is distinct from guest-programmed state.
 
 ## Product And Host Boundary
 
-Common retains one Session control queue and one Machine execution boundary;
+Emulator retains one Session control queue and one Machine execution boundary;
 App adds neither a parallel queue nor a second reducer. The NXVM driver runs
 the existing bounded Core path; no per-profile executor, presenter, debugger
 or file backend is introduced.
@@ -202,7 +205,7 @@ reduce files. In the approved packaging target, ROM bytes are immutable linked
 inputs selected at build time; seed configuration
 initializes Core-owned writable CMOS rather than a second BIOS/register mirror.
 
-Guest writes flow through sole device state into copied snapshots, Common UI
+Guest writes flow through sole device state into copied snapshots, Emulator UI
 and Lib KVM. Native handles, fonts and presentation are not guest-video owners.
 All executables retain the same lifecycle and UX. The shared INI is one format
 and parser, not a promise that every memory size or disk fits every board.
@@ -235,9 +238,9 @@ maps this design to observed code and bounded migration evidence.
 
 ## Shared-Hardware And App Ownership
 
-The dependency direction is App composition -> ibmpc PC integration -> x86
-Core/chips and neutral Lib/Common capabilities. No x86 component depends on
-ibmpc; no App production graph links a peer App. Each App supplies a fixed
+The dependency direction is App composition -> Core PC integration -> Core
+chips and neutral Lib/Emulator capabilities. No App production graph links a peer
+App. Each App supplies a fixed
 binding, not another parser, executor, lifecycle queue, presenter or debugger.
 The App-local build entry selects firmware inputs and a flat assets/<app>
 root, while shared Product provides the sole embed/deploy recipe.

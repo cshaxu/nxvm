@@ -253,3 +253,27 @@ test removal.
   section.
 - Migrate PC and MyNES command adapters without a second command loop, then
   move generic command/help tests to `test/emulator/product`.
+
+## S12: Fixed-Command Contract And MyNES Nested Debug
+
+- Emulator Product rejects arguments for every fixed control/debug/help/exit
+  monitor command before invoking an App capability. Fixed `save/load` retain
+  their App-owned file arguments. Only a shared-unrecognized line reaches the
+  App extension callback, whose arguments remain App-owned. This replaces the
+  older SoftPC tail-ignore behavior as the explicit current contract.
+- Keep PC Debug's existing implementation unchanged. MyNES `debug` accepts no
+  argument, enters an App-owned nested DOS-style Debug console with `-` prompt,
+  help/output framing and `q` return to the normal monitor. Do not import,
+  call or alter `product/debug/command`.
+- Remove only genuinely excess Emulator Product getter exposure: runner-only
+  Session/UI access becomes implementation-private. If a Machine borrow is
+  still required, pass it directly at configuration and document its bounded
+  Product-lifetime ownership rather than exporting an opaque Product getter.
+- Replace the partial monitor smoke with a small table-driven fixed-command
+  suite proving parsing, argument rejection, extension non-shadowing,
+  unsupported fixed-command framing, and Emulator-owned help/exit.
+- Correct only direct current-architecture terminology in NXVM/MyNES design
+  documents; preserve historical task records. Verify manifests, relevant
+  dependency gates and x64/x86 affected unit suites, then rebuild and verify
+  all ten current artifacts. Report desktop and external qualification
+  separately.

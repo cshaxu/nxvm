@@ -30,9 +30,12 @@ is a container, not a build directory. Run current gates through the separate
 `current-gates-gcc` build preset. Other compilers or temporary build trees are
 task-specific verification inputs, not supported development commands.
 
-When `ccache` is installed, `mingw-gcc-x64-ccache` and `current-gcc-ccache`
-provide an opt-in isolated build tree. They are an acceleration aid only; the
-default route remains the supported route and never requires ccache.
+Every Ninja preset invokes `ccache` through the stable, Git-ignored
+`build/.ccache` directory. This avoids host-specific temporary profile paths
+and permits repeat builds to reuse the same cache. `ccache` is therefore part
+of the supported Ninja development environment; the legacy `*-ccache` presets
+retain their separate binary directories for compatibility but use the same
+launcher and cache.
 
 Every implementation-task closure also builds the same product target for
 32-bit Windows. Set `NXVM_I686_GCC` to an i686 MinGW-w64 `gcc.exe` and place
