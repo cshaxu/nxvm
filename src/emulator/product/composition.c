@@ -1,8 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "lib/types/file.h"
-
 #include "emulator/product/composition_interface.h"
-#include "emulator/product/monitor_interface.h"
 
 struct emulator_product {
     emulator_product_machine machine;
@@ -195,19 +192,14 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
     emulator_product *product = LIB_NULL;
     emulator_session_options session_options = {0};
     emulator_ui_options ui_options = {0};
-    lib_u8 startup[EMULATOR_SESSION_TEXT_CAPACITY];
     lib_status status = LIB_STATUS_OK;
     lib_status destroy_status;
 
-    if (definition == LIB_NULL || definition->name == LIB_NULL ||
-        definition->machine.machine == LIB_NULL ||
+    if (definition == LIB_NULL || definition->machine.machine == LIB_NULL ||
         definition->machine.bind == LIB_NULL ||
         definition->machine.destroy == LIB_NULL ||
         definition->configure_control == LIB_NULL || definition->configure_ui == LIB_NULL)
         return 1;
-    if (emulator_product_monitor_format_startup(definition->name, (char *)startup,
-            sizeof(startup)) != LIB_STATUS_OK) return 1;
-    lib_c_printf("%s", startup);
     status = emulator_product_create(&definition->machine, &product);
     if (status == LIB_STATUS_OK) status = emulator_product_compose_machine(product);
     if (status == LIB_STATUS_OK)

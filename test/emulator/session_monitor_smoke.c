@@ -2,7 +2,7 @@
 #include "emulator/session/session_interface.h"
 #include "emulator/session/control.h"
 
-static lib_u32 requests, prompts, notices, cancellations, commands;
+static lib_u32 requests, prompts, notices, cancellations, commands, runtime_notices;
 static lib_bool completed, fail_cancel, fail_request, exit_on_request;
 static lib_bool collect;
 static char output[40000];
@@ -128,6 +128,7 @@ static void runtime(void *p, emulator_session_machine_state a,
     emulator_session_machine_state b, emulator_session_command_result *out)
 {
     (void)p; (void)a; (void)b;
+    ++runtime_notices;
     lib_memory_copy(out->text, "notice", 7);
     out->arm_prompt = LIB_TRUE;
     lib_memory_copy(out->prompt, "> ", 3u);
@@ -268,10 +269,37 @@ static void public_session_contract(void)
 int main(void)
 {
     public_session_contract();
+    {
+        emulator_session initial = {0};
+        emulator_session_event initial_event = {
+            .kind = EMULATOR_SESSION_EVENT_RUNTIME_COMPLETED,
+            .value.runtime_state = EMULATOR_SESSION_MACHINE_STOPPED};
+
+        active = &initial;
+        initial.machine = (emulator_machine *)&initial;
+        initial.ui = (emulator_ui *)&initial;
+        initial.command.note_runtime = runtime;
+        initial.command.open = opened;
+        initial.command.reject_line = rejected;
+        initial.command.submit_line = submitted;
+        lib_test_assert(emulator_session_queue_initialize(&initial.queue));
+        emulator_session_state_initialize(&initial.state, EMULATOR_SESSION_DISPLAY_CONSOLE, 1);
+        runtime_notices = 0u;
+        lib_test_assert(emulator_session_process_completed(&initial, &initial_event));
+        lib_test_assert(initial.state.monitor_actual == EMULATOR_SESSION_MACHINE_STOPPED &&
+            runtime_notices == 0u);
+        emulator_session_state_note_runtime(&initial.state, EMULATOR_SESSION_MACHINE_RUNNING);
+        lib_test_assert(emulator_session_process_completed(&initial, &initial_event) &&
+            runtime_notices == 1u);
+        emulator_session_queue_dispose(&initial.queue);
+    }
+    requests = prompts = notices = cancellations = commands = writes = waits = 0u;
+    output_used = 0u;
     static emulator_session s;
     emulator_session_event event = {0};
     emulator_session_command_result notice = {0};
     active = &s;
+    runtime_notices = 0u;
     s.machine = (emulator_machine *)&s; s.ui = (emulator_ui *)&s;
     s.command.note_runtime = runtime;
     s.command.open = opened; s.command.reject_line = rejected;

@@ -5,6 +5,7 @@
 #include "lib/types/types_interface.h"
 
 #define EMULATOR_PRODUCT_MONITOR_TEXT_CAPACITY 2048u
+#define EMULATOR_PRODUCT_MONITOR_PROMPT "> "
 
 typedef enum emulator_product_monitor_command {
     EMULATOR_PRODUCT_MONITOR_COMMAND_NONE,
@@ -32,7 +33,6 @@ typedef lib_bool (*emulator_product_monitor_extension_submit)(void *context,
 
 typedef struct emulator_product_monitor_provider {
     void *context;
-    const char *prompt;
     const char *extension_help;
     const char *hotkey_help;
     emulator_product_monitor_fixed_submit submit_fixed;
@@ -54,10 +54,6 @@ void emulator_product_monitor_provider_reject_line(void *opaque,
 void emulator_product_monitor_provider_submit_line(void *opaque,
     emulator_session_machine_state state, const char *line,
     emulator_session_command_result *out_result);
-
-/* Product identity is injected; Emulator owns only stable surrounding text. */
-lib_status emulator_product_monitor_format_startup(const char *name,
-    char *out_text, lib_size capacity);
 
 /* Extensions are inserted after the fixed commands and before hotkey help. */
 lib_status emulator_product_monitor_format_help(const char *extensions,

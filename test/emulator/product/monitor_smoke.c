@@ -28,7 +28,7 @@ static lib_bool submit_extension(void *opaque, emulator_session_machine_state st
     (void)state;
     ++extension_calls;
     if (lib_text_compare(line, "media attach disk.img") != 0) return LIB_FALSE;
-    (void)lib_c_snprintf(out->text, sizeof(out->text), "Media attached.\r\n\r\n");
+    (void)lib_c_snprintf(out->text, sizeof(out->text), "Media attached.\r\n");
     out->arm_prompt = LIB_TRUE;
     return LIB_TRUE;
 }
@@ -57,9 +57,6 @@ static void text_format(void)
     const char *load;
     const char *debug;
 
-    lib_test_assert(emulator_product_monitor_format_startup("Test Machine", text,
-        sizeof(text)) == LIB_STATUS_OK);
-    lib_test_assert(lib_text_find_substring(text, "Test Machine\n\nBuilt on ") != LIB_NULL);
     lib_test_assert(emulator_product_monitor_format_help("  disk attach <file>\r\n",
         "  Ctrl+Alt+P     pause or resume\r\n",
         text, sizeof(text)) == LIB_STATUS_OK);
@@ -93,7 +90,6 @@ static void provider_contract(void)
         {"reset", EMULATOR_PRODUCT_MONITOR_COMMAND_RESET},
         {"debug", EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG}};
     const emulator_product_monitor_provider provider = {
-        .prompt = "Fixture> ",
         .extension_help = "  media attach <file>\r\n",
         .hotkey_help = "  Ctrl+Alt+P     pause or resume\r\n",
         .submit_fixed = submit_fixed,
@@ -104,7 +100,8 @@ static void provider_contract(void)
 
     emulator_product_monitor_provider_open((void *)&provider, &result);
     lib_test_assert(lib_text_find_substring(result.text, "media attach") != LIB_NULL &&
-        result.arm_prompt && lib_text_compare(result.prompt, "Fixture> ") == 0);
+        result.arm_prompt && lib_text_compare(result.prompt,
+            EMULATOR_PRODUCT_MONITOR_PROMPT) == 0);
     for (index = 0u; index < sizeof(no_argument_commands) /
             sizeof(no_argument_commands[0]); ++index) {
         emulator_product_monitor_provider_submit_line((void *)&provider,
@@ -130,7 +127,8 @@ static void provider_contract(void)
     emulator_product_monitor_provider_submit_line((void *)&provider,
         EMULATOR_SESSION_MACHINE_STOPPED, "media attach disk.img", &result);
     lib_test_assert(lib_text_compare(result.text, "Media attached.\r\n\r\n") == 0 &&
-        extension_calls == 1u && lib_text_compare(result.prompt, "Fixture> ") == 0);
+        extension_calls == 1u && lib_text_compare(result.prompt,
+            EMULATOR_PRODUCT_MONITOR_PROMPT) == 0);
     emulator_product_monitor_provider_submit_line((void *)&provider,
         EMULATOR_SESSION_MACHINE_STOPPED, "help unexpected", &result);
     lib_test_assert(lib_text_compare(result.text, "Unknown command.\r\n\r\n") == 0 &&
@@ -148,7 +146,7 @@ static void unavailable_fixed_commands(void)
 {
     static const char *lines[] = {
         "start", "resume", "pause", "stop", "reset", "save state.bin", "load state.bin", "debug"};
-    const emulator_product_monitor_provider provider = {.prompt = "Fixture> "};
+    const emulator_product_monitor_provider provider = {0};
     emulator_session_command_result result;
     lib_size index;
 
@@ -156,7 +154,8 @@ static void unavailable_fixed_commands(void)
         emulator_product_monitor_provider_submit_line((void *)&provider,
             EMULATOR_SESSION_MACHINE_STOPPED, lines[index], &result);
         lib_test_assert(lib_text_compare(result.text, "Feature not implemented.\r\n\r\n") == 0 &&
-            result.arm_prompt && lib_text_compare(result.prompt, "Fixture> ") == 0);
+            result.arm_prompt && lib_text_compare(result.prompt,
+                EMULATOR_PRODUCT_MONITOR_PROMPT) == 0);
     }
 }
 

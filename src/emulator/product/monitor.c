@@ -31,14 +31,27 @@ static void emulator_product_monitor_message(emulator_session_command_result *ou
     out_result->arm_prompt = LIB_TRUE;
 }
 
-static void emulator_product_monitor_set_prompt(
-    const emulator_product_monitor_provider *provider,
-    emulator_session_command_result *out_result)
+static void emulator_product_monitor_set_prompt(emulator_session_command_result *out_result)
 {
-    if (provider == LIB_NULL || out_result == LIB_NULL || !out_result->arm_prompt ||
-        out_result->prompt[0] != '\0') return;
+    lib_size length;
+
+    if (out_result == LIB_NULL || !out_result->arm_prompt) return;
+    if (out_result->text[0] != '\0') {
+        length = lib_text_length(out_result->text);
+        if (!((length >= 2u && out_result->text[length - 2u] == '\n' &&
+                out_result->text[length - 1u] == '\n') ||
+              (length >= 4u && out_result->text[length - 4u] == '\r' &&
+                out_result->text[length - 3u] == '\n' &&
+                out_result->text[length - 2u] == '\r' &&
+                out_result->text[length - 1u] == '\n'))) {
+            (void)lib_c_snprintf(out_result->text + length,
+                sizeof(out_result->text) - length, "%s",
+                length != 0u && out_result->text[length - 1u] == '\n' ? "\r\n" : "\r\n\r\n");
+        }
+    }
+    if (out_result->prompt[0] != '\0') return;
     (void)lib_c_snprintf(out_result->prompt, sizeof(out_result->prompt), "%s",
-        provider->prompt != LIB_NULL ? provider->prompt : "> ");
+        EMULATOR_PRODUCT_MONITOR_PROMPT);
 }
 
 static lib_bool emulator_product_monitor_space(char value)
@@ -131,17 +144,16 @@ void emulator_product_monitor_provider_open(void *opaque,
         return;
     }
     out_result->arm_prompt = LIB_TRUE;
-    emulator_product_monitor_set_prompt(provider, out_result);
+    emulator_product_monitor_set_prompt(out_result);
 }
 
 void emulator_product_monitor_provider_reject_line(void *opaque,
     emulator_session_command_result *out_result)
 {
-    const emulator_product_monitor_provider *provider = opaque;
-
+    (void)opaque;
     emulator_product_monitor_clear_result(out_result);
     emulator_product_monitor_message(out_result, "Command is too long.");
-    emulator_product_monitor_set_prompt(provider, out_result);
+    emulator_product_monitor_set_prompt(out_result);
 }
 
 void emulator_product_monitor_provider_submit_line(void *opaque,
@@ -162,23 +174,23 @@ void emulator_product_monitor_provider_submit_line(void *opaque,
     while (emulator_product_monitor_space(*cursor)) ++cursor;
     if (*cursor == '\0') {
         out_result->arm_prompt = LIB_TRUE;
-        emulator_product_monitor_set_prompt(provider, out_result);
+        emulator_product_monitor_set_prompt(out_result);
         return;
     }
     if (!emulator_product_monitor_parse(line, &command, &arguments)) {
         if (provider->submit_extension != LIB_NULL &&
             provider->submit_extension(provider->context, state, line, out_result)) {
-            emulator_product_monitor_set_prompt(provider, out_result);
+            emulator_product_monitor_set_prompt(out_result);
             return;
         }
         emulator_product_monitor_message(out_result, "Unknown command.");
-        emulator_product_monitor_set_prompt(provider, out_result);
+        emulator_product_monitor_set_prompt(out_result);
         return;
     }
     if (command != EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE &&
         command != EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD && *arguments != '\0') {
         emulator_product_monitor_message(out_result, "Unknown command.");
-        emulator_product_monitor_set_prompt(provider, out_result);
+        emulator_product_monitor_set_prompt(out_result);
         return;
     }
     if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_HELP) {
@@ -193,16 +205,7 @@ void emulator_product_monitor_provider_submit_line(void *opaque,
         !provider->submit_fixed(provider->context, command, state, arguments, out_result)) {
         emulator_product_monitor_message(out_result, "Feature not implemented.");
     }
-    emulator_product_monitor_set_prompt(provider, out_result);
-}
-
-lib_status emulator_product_monitor_format_startup(const char *name,
-    char *out_text, lib_size capacity)
-{
-    if (name == LIB_NULL || out_text == LIB_NULL || capacity == 0u)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    return lib_c_snprintf(out_text, capacity, "%s\n\nBuilt on %s %s\n\n",
-        name, __DATE__, __TIME__) < 0 ? LIB_STATUS_LIMIT_EXCEEDED : LIB_STATUS_OK;
+    emulator_product_monitor_set_prompt(out_result);
 }
 
 lib_status emulator_product_monitor_format_help(const char *extensions,

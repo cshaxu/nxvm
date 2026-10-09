@@ -161,10 +161,6 @@ lib_bool emulator_session_enqueue_frame_completed(emulator_session *session,
     lib_u32 sequence, lib_bool graphics, lib_u32 generation)
 { (void)session; (void)sequence; (void)graphics; (void)generation; return LIB_TRUE; }
 
-lib_status emulator_product_monitor_format_startup(const char *name,
-    char *out_text, lib_size out_capacity)
-{ (void)name; (void)out_text; (void)out_capacity; return LIB_STATUS_OK; }
-
 lib_bool emulator_session_run(emulator_session *session)
 { (void)session; return LIB_TRUE; }
 

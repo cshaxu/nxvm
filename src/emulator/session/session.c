@@ -215,15 +215,20 @@ static lib_bool emulator_session_process_completed(emulator_session *session,
 {
     emulator_session_command_result result;
     lib_bool broker_monitor_completed = LIB_FALSE;
+    lib_bool initial_stopped;
     if (session == NULL || event == NULL) return LIB_FALSE;
     if (event->run_generation != 0u &&
         event->run_generation != emulator_machine_run_generation(session->machine))
         return LIB_TRUE;
     emulator_session_clear_result(&result);
+    initial_stopped = event->kind == EMULATOR_SESSION_EVENT_RUNTIME_COMPLETED &&
+        session->state.monitor_actual == EMULATOR_SESSION_MACHINE_INIT &&
+        event->value.runtime_state == EMULATOR_SESSION_MACHINE_STOPPED;
     if (event->kind == EMULATOR_SESSION_EVENT_RUNTIME_COMPLETED) {
         if (session->command.note_runtime == NULL) return LIB_FALSE;
-        session->command.note_runtime(session->command.context,
-            session->state.monitor_actual, event->value.runtime_state, &result);
+        if (!initial_stopped)
+            session->command.note_runtime(session->command.context,
+                session->state.monitor_actual, event->value.runtime_state, &result);
         emulator_session_state_note_runtime(&session->state, event->value.runtime_state);
         if (event->value.runtime_state != EMULATOR_SESSION_MACHINE_INIT)
             session->pending_request = EMULATOR_SESSION_REQUEST_NONE;
@@ -247,7 +252,7 @@ static lib_bool emulator_session_process_completed(emulator_session *session,
             event->value.broker_vm_console_current);
         broker_monitor_completed = !event->value.broker_vm_console_current;
     } else return LIB_TRUE;
-    if (event->kind == EMULATOR_SESSION_EVENT_RUNTIME_COMPLETED &&
+    if (event->kind == EMULATOR_SESSION_EVENT_RUNTIME_COMPLETED && !initial_stopped &&
         !emulator_session_apply_result(session, &result)) return LIB_FALSE;
     if (!emulator_session_drive(session)) return LIB_FALSE;
     if ((event->kind == EMULATOR_SESSION_EVENT_RUNTIME_COMPLETED ||
