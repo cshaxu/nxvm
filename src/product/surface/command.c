@@ -92,7 +92,8 @@ static void product_surface_command_set_prompt(const product_surface_command_con
     if (command == LIB_NULL || out == LIB_NULL)
         return;
     (void)lib_c_snprintf(out->prompt, sizeof(out->prompt), "%s",
-        command->debug_active ? command->debug_prompt : "> ");
+        command->debug_active ? command->debug_prompt :
+            EMULATOR_PRODUCT_MONITOR_PROMPT);
 }
 
 static void product_surface_command_copy_debug(product_surface_command_context *command,
@@ -199,7 +200,6 @@ lib_status product_surface_command_initialize(product_surface_command_context *c
     if (extensions != LIB_NULL) command->extensions = *extensions;
     command->monitor = (emulator_product_monitor_provider){
         .context = command,
-        .prompt = "> ",
         .extension_help = command->extensions.help_text,
         .hotkey_help = product_surface_keyboard_hotkey_help(),
         .submit_fixed = product_surface_command_submit_fixed,

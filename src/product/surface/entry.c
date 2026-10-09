@@ -77,7 +77,6 @@ lib_i32 product_surface_run(const product_surface_definition *definition)
     context.definition = definition;
     context.machine = definition->machine;
     result = emulator_product_run(&(emulator_product_definition){
-        .name = definition->name,
         .machine = definition->machine.composition,
         .context = &context,
         .configure_control = product_surface_configure_control,
