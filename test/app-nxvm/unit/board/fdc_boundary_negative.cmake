@@ -6,6 +6,7 @@ endif()
 # This App integration gate checks both Shared controller ownership and App
 # media/assembly boundaries; it is not a standalone Shared mechanism test.
 # An owned build-tree fixture, not edits to the source tree under audit.
+file(REMOVE_RECURSE "${WORK}")
 set(paths
     src/core/board-base/fdc.c
     src/core/board-base/fdc.h
