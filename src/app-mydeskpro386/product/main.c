@@ -2,14 +2,14 @@
 #include "ibmpc/product/composition.h"
 #include "ibmpc/nxvm/factory_interface.h"
 #include "ibmpc/nxvm/startup_interface.h"
-#include "ibmpc/product/version_interface.h"
+#include "ibmpc/nxvm/version_interface.h"
 #include "app-mydeskpro386/product/binding_interface.h"
 
 lib_i32 main(void)
 {
     vm_app_definition definition = {
-        .name = PRODUCT_NAME, .version = PRODUCT_BUILD_VERSION,
-        .copyright = PRODUCT_COPYRIGHT, .build_time = __DATE__ " " __TIME__,
+        .name = NXVM_PRODUCT_NAME, .version = PRODUCT_BUILD_VERSION,
+        .copyright = NXVM_PRODUCT_COPYRIGHT, .build_time = __DATE__ " " __TIME__,
         .configuration_file = "NXVM.ini", .load_request = vm_app_ini_load_request
     };
 

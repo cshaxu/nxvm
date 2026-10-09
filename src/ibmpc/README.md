@@ -10,7 +10,7 @@ allowed. Product-facing opaque ABI and hardware algorithms remain unchanged.
 | board-xt | XT PPI/keyboard, DIP and speaker/NMI wiring. |
 | board-at | Immutable AT endpoint grammar, KBC/AUX/A20/reset and planar parity/Port B wiring. |
 | machine | Construction finishing/publication, bounded executor, pacing, copied input/frame/debug adaptation and Storage-backed media lifetime. |
-| product | Shared PC version/identity, INI syntax/request, entry/banner, command/hotkey policy and Common composition with an injected App factory. |
+| product | Shared PC entry/banner rendering, command/hotkey policy and Common composition with injected App identity, request loader and factory. |
 
 Board families consume only public x86/Core/chip contracts and Types; they
 never read board-common private layouts. Board-common composes their public
@@ -19,9 +19,10 @@ production or observation-enabled Core/board pair. Core alone advances guest
 time and owns the board attachment teardown; the Machine adapter borrows it.
 Media/display provider contexts remain borrowed until teardown, with one
 freeze/publication/rollback path. Concrete topology, firmware, immutable
-machine binding and genuine model-specific state remain App-owned. The four PC
-products share product identity/version declarations in product/version_interface.h;
-build callers inject the single current revision into each fixed executable.
+machine binding and genuine model-specific state remain App-owned. Product
+receives identity/version values and a request loader from each App; it neither
+defines an INI document nor owns an App brand. Build callers inject the single
+current revision into each fixed executable.
 
 AT endpoint lookup belongs to board-at. board-common/at_assembly projects those
 explicit endpoints into existing display/RTC/DMA/FDC configurations, preserving
