@@ -319,9 +319,12 @@ int main(void)
     lib_memory_copy(notice.text, "notice", 7);
     notice.arm_prompt = LIB_TRUE;
     lib_memory_copy(notice.prompt, "> ", 3u);
+    collect = LIB_TRUE;
     lib_test_assert(emulator_session_apply_result(&s, &notice));
     lib_test_assert(cancellations == 1 && notices == 1 && !s.pending_line);
     lib_test_assert(emulator_session_arm_if_ready(&s) && requests == 2 && prompts == 2);
+    lib_test_assert(lib_text_find_substring(output, "notice\r\n\r\n> ") != LIB_NULL);
+    collect = LIB_FALSE;
 
     /* Raw Console receives no monitor text. Session keeps the copied text and
      * releases it only after the broker confirms Monitor ownership again. */
@@ -331,7 +334,7 @@ int main(void)
     event.kind = EMULATOR_SESSION_EVENT_BROKER_COMPLETED;
     event.value.broker_vm_console_current = LIB_FALSE;
     lib_test_assert(emulator_session_process_completed(&s, &event));
-    lib_test_assert(notices == 2 && s.pending_monitor_text[0] == '\0');
+    lib_test_assert(notices == 1 && s.pending_monitor_text[0] == '\0');
 
     /* A lifecycle request is dispatched once, remains owned by Session over
      * INIT, and clears only on its terminal runtime completion. */

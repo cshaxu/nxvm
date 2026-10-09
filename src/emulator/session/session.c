@@ -90,6 +90,28 @@ static lib_bool emulator_session_append_pending_text(emulator_session *session, 
     return LIB_TRUE;
 }
 
+static lib_bool emulator_session_result_has_blank_line(const char *text)
+{
+    lib_size length;
+
+    if (text == NULL) return LIB_TRUE;
+    length = lib_text_length(text);
+    return (length >= 2u && text[length - 2u] == '\n' && text[length - 1u] == '\n') ||
+        (length >= 4u && text[length - 4u] == '\r' && text[length - 3u] == '\n' &&
+         text[length - 2u] == '\r' && text[length - 1u] == '\n');
+}
+
+static const char *emulator_session_result_gap(const emulator_session_command_result *result)
+{
+    const char *last;
+
+    if (result == NULL || !result->arm_prompt || (result->text[0] == '\0' &&
+        (result->detail == NULL || result->detail[0] == '\0'))) return "";
+    last = result->detail != NULL && result->detail[0] != '\0' ? result->detail : result->text;
+    if (emulator_session_result_has_blank_line(last)) return "";
+    return last[lib_text_length(last) - 1u] == '\n' ? "\r\n" : "\r\n\r\n";
+}
+
 static void emulator_session_note_prompt(emulator_session *session,
     const emulator_session_command_result *result)
 {
@@ -139,9 +161,11 @@ static lib_bool emulator_session_apply_result(emulator_session *session,
                 return LIB_FALSE;
         }
         if (!emulator_session_write_text(session, result->text) ||
-            !emulator_session_write_text(session, result->detail)) return LIB_FALSE;
+            !emulator_session_write_text(session, result->detail) ||
+            !emulator_session_write_text(session, emulator_session_result_gap(result))) return LIB_FALSE;
     } else if (!emulator_session_append_pending_text(session, result->text) ||
-        !emulator_session_append_pending_text(session, result->detail)) {
+        !emulator_session_append_pending_text(session, result->detail) ||
+        !emulator_session_append_pending_text(session, emulator_session_result_gap(result))) {
         return LIB_FALSE;
     }
     if (result->request != EMULATOR_SESSION_REQUEST_NONE) {

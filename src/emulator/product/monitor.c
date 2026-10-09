@@ -27,28 +27,13 @@ static void emulator_product_monitor_message(emulator_session_command_result *ou
     const char *text)
 {
     if (out_result == LIB_NULL || text == LIB_NULL) return;
-    (void)lib_c_snprintf(out_result->text, sizeof(out_result->text), "%s\r\n\r\n", text);
+    (void)lib_c_snprintf(out_result->text, sizeof(out_result->text), "%s", text);
     out_result->arm_prompt = LIB_TRUE;
 }
 
 static void emulator_product_monitor_set_prompt(emulator_session_command_result *out_result)
 {
-    lib_size length;
-
     if (out_result == LIB_NULL || !out_result->arm_prompt) return;
-    if (out_result->text[0] != '\0') {
-        length = lib_text_length(out_result->text);
-        if (!((length >= 2u && out_result->text[length - 2u] == '\n' &&
-                out_result->text[length - 1u] == '\n') ||
-              (length >= 4u && out_result->text[length - 4u] == '\r' &&
-                out_result->text[length - 3u] == '\n' &&
-                out_result->text[length - 2u] == '\r' &&
-                out_result->text[length - 1u] == '\n'))) {
-            (void)lib_c_snprintf(out_result->text + length,
-                sizeof(out_result->text) - length, "%s",
-                length != 0u && out_result->text[length - 1u] == '\n' ? "\r\n" : "\r\n\r\n");
-        }
-    }
     if (out_result->prompt[0] != '\0') return;
     (void)lib_c_snprintf(out_result->prompt, sizeof(out_result->prompt), "%s",
         EMULATOR_PRODUCT_MONITOR_PROMPT);
