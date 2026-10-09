@@ -30,17 +30,25 @@ release behavior remains the baseline until an implemented, verified cutover.
 The following map describes the four-App implementation. Current records
 verification and acceptance; the task history retains the cutover sequence.
 
-- `ibmpc/product` owns shared Console/Debug/hotkey policy and atomic Common
-  Session/UI/Machine composition. It receives an App-provided request loader
-  and frozen factory; it does not define an INI grammar, path construction,
-  identity or machine-specific extension. The shared PC Machine adapter lives
-  in `core/machine`.
+- `emulator/product` owns neutral Machine/Session/UI composition, ordered
+  teardown, the fixed monitor grammar and its startup/help-page framing.  Its
+  fixed commands are `start`, `resume`, `pause`, `stop`, `reset`, `save`,
+  `load`, `debug`, `help` and `exit`.  It dispatches each command through an
+  injected bounded capability and reports `Feature not implemented.` when the
+  selected App has none; it never implements guest, snapshot or debug behavior
+  itself.  It receives an already constructed driver plus bounded bind, destroy
+  and completed-state translation callbacks; it does not define an INI grammar,
+  path construction, identity, board, CPU, firmware or App extension.
+- `product/surface` owns only the shared x86/IBM-PC Console/Debug/hotkey
+  implementation that supplies Emulator Product capabilities.  It is a SoftPC
+  and NXVM shared component, not a `core/product` member and not a dependency
+  of MyNES.  The shared PC Machine adapter lives in `core/machine`.
 - `core/product` owns the four NXVM Apps' `NXVM.ini` grammar, path construction,
   fixed-factory adaptation, shared `INFO`/`SPEED`/floppy extensions and NXVM
   identity. It is a private NXVM-family component, not an IBM PC or SoftPC
   dependency.
 - Each `app-*/product` consumes the shared PC identity/version and supplies its
-  fixed binding to the sole `ibmpc/product`
+  fixed binding to the sole `product/surface`
   process entry, banner and cleanup body. Its fixed composition binding selects
   one Profile's frozen values/assets and preparation for Product's shared factory.
   Product consumes Machine's public creation/INFO/speed API; Machine has no

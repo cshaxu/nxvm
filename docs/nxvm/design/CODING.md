@@ -16,9 +16,10 @@ future Profile only when its separate evidence task admits real source files.
 ```text
 src/
   lib/                  shared C and platform services
-  common/{session,machine,ui}/
-  x86/{xasm32,debug}/     portable x86 development tools
-  ibmpc/product/          portable IBM PC product interaction
+  emulator/{machine,session,ui,product}/
+                        ISA-neutral execution, control, UI and composition
+  product/{xasm32,debug,surface}/
+                        portable x86 tools and shared IBM PC interaction
   core/{chips,x86,board-base,board-xt,board-at,machine,product}/
                            NXVM-only machine stack and family product support
   app-my5160/           fixed IBM 5160 App
@@ -46,8 +47,10 @@ Common PC/AT descriptor/materialization and immutable ROM mapping live in
 core/board-base/pc_at_profile and pc_at_rom. Machine's pc_at_preparation owns the
 one allocated AT candidate and ROM preparation; each App supplies its fixed
 choices and validator. No mixed default/5170 compile guards remain.
-The shared Product command/hotkey and Common composition files and their
-reusable assertions live in ibmpc/product and test/ibmpc/product. `core/product`
+The shared x86/IBM-PC Debug and hotkey implementation lives in
+`src/product/surface`; neutral Machine/Session/UI composition, fixed monitor
+command grammar and help/startup framing live in `src/emulator/product` and
+`test/emulator/product`. `core/product`
 contains the NXVM-family INI, Machine adapter and extensions used by the four
 NXVM Apps; it is not an IBM PC Product dependency. Shared process entry/banner
 formatting consumes App-provided identity, request loader and factory. The

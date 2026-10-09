@@ -29,7 +29,7 @@ lib_status vm_app_configure_ui(const vm_session_request *request,
 
 /* NXVM-family commands are registered by each App; shared Product dispatch
  * has no INFO, SPEED or floppy cases. */
-lib_status vm_app_configure_standard_extensions(product_surface *app,
+lib_status vm_app_configure_standard_extensions(app_composed_machine *machine,
     product_surface_command_extensions *out_extensions);
 
 #endif

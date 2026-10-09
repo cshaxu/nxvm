@@ -5,12 +5,40 @@
 #include "core/machine/machine_interface.h"
 
 static lib_status vm_app_bind(void *machine, emulator_machine *emulator);
-static void vm_app_release_machine(void *machine);
+static lib_status vm_app_release_machine(void *machine);
 static lib_status vm_app_read_information(const void *context, const void *machine,
     product_surface_information *out_info);
 static lib_status vm_app_read_speed(const void *machine,
     product_surface_speed *out_speed);
 static lib_status vm_app_write_speed(void *machine, product_surface_speed speed);
+
+static lib_status vm_app_information_read(const app_composed_machine *machine,
+    product_surface_information *out_info)
+{
+    if (machine == LIB_NULL || machine->composition.machine == LIB_NULL ||
+        machine->information == LIB_NULL)
+        return LIB_STATUS_INVALID_STATE;
+    return machine->information(machine->context, machine->composition.machine,
+        out_info);
+}
+
+static lib_status vm_app_speed_read(const app_composed_machine *machine,
+    product_surface_speed *out_speed)
+{
+    if (machine == LIB_NULL || machine->composition.machine == LIB_NULL ||
+        machine->get_speed == LIB_NULL)
+        return LIB_STATUS_INVALID_STATE;
+    return machine->get_speed(machine->composition.machine, out_speed);
+}
+
+static lib_status vm_app_speed_write(const app_composed_machine *machine,
+    product_surface_speed speed)
+{
+    if (machine == LIB_NULL || machine->composition.machine == LIB_NULL ||
+        machine->set_speed == LIB_NULL)
+        return LIB_STATUS_INVALID_STATE;
+    return machine->set_speed(machine->composition.machine, speed);
+}
 
 lib_status vm_app_configure_machine(const vm_app_machine_binding *binding,
     const vm_session_request *request,
@@ -66,11 +94,12 @@ lib_status vm_app_compose_machine(const vm_app_machine_binding *binding,
         return status;
     }
     *out_machine = (app_composed_machine){
-        .machine = machine,
-        .driver = driver,
+        .composition = {
+            .machine = machine,
+            .driver = driver,
+            .bind = vm_app_bind,
+            .destroy = vm_app_release_machine},
         .context = binding,
-        .bind = vm_app_bind,
-        .destroy = vm_app_release_machine,
         .information = vm_app_read_information,
         .get_speed = vm_app_read_speed,
         .set_speed = vm_app_write_speed
@@ -81,8 +110,11 @@ lib_status vm_app_compose_machine(const vm_app_machine_binding *binding,
 static lib_status vm_app_bind(void *machine, emulator_machine *emulator)
 { return vm_machine_bind_emulator_machine(machine, emulator); }
 
-static void vm_app_release_machine(void *machine)
-{ vm_machine_destroy(machine); }
+static lib_status vm_app_release_machine(void *machine)
+{
+    vm_machine_destroy(machine);
+    return LIB_STATUS_OK;
+}
 
 static lib_status vm_app_read_information(const void *context, const void *machine,
     product_surface_information *out_info)
@@ -249,7 +281,7 @@ static lib_bool vm_app_standard_extension(void *context,
     emulator_machine *machine, emulator_session_machine_state state,
     const char *line, emulator_session_command_result *out)
 {
-    product_surface *app = context;
+    const app_composed_machine *app = context;
     product_surface_information information;
     product_surface_speed speed;
     lib_u8 command[PRODUCT_SURFACE_COMMAND_PATH_CAPACITY];
@@ -259,7 +291,7 @@ static lib_bool vm_app_standard_extension(void *context,
     if (!vm_app_extension_normalize(line, command, sizeof(command))) return LIB_FALSE;
     *out = (emulator_session_command_result){0};
     if (lib_text_compare((const char *)command, "info") == 0) {
-        if (product_surface_information_read(app, &information) != LIB_STATUS_OK) {
+        if (vm_app_information_read(app, &information) != LIB_STATUS_OK) {
             vm_app_extension_append(out, "Machine information unavailable.\r\n\r\n");
             return LIB_TRUE;
         }
@@ -286,7 +318,7 @@ static lib_bool vm_app_standard_extension(void *context,
         return LIB_TRUE;
     }
     if (lib_text_compare((const char *)command, "speed") == 0) {
-        if (product_surface_speed_read(app, &speed) == LIB_STATUS_OK)
+        if (vm_app_speed_read(app, &speed) == LIB_STATUS_OK)
             vm_app_extension_append(out, "Speed: %s\r\n\r\n",
                 speed == PRODUCT_SURFACE_SPEED_TURBO ? "turbo" : "standard");
         return LIB_TRUE;
@@ -295,7 +327,7 @@ static lib_bool vm_app_standard_extension(void *context,
         lib_text_compare((const char *)command, "speed turbo") == 0) {
         speed = lib_text_compare((const char *)command, "speed turbo") == 0 ?
             PRODUCT_SURFACE_SPEED_TURBO : PRODUCT_SURFACE_SPEED_STANDARD;
-        if (product_surface_speed_write(app, speed) == LIB_STATUS_OK)
+        if (vm_app_speed_write(app, speed) == LIB_STATUS_OK)
             vm_app_extension_append(out, "Speed: %s\r\n\r\n",
                 speed == PRODUCT_SURFACE_SPEED_TURBO ? "turbo" : "standard");
         else
@@ -306,7 +338,7 @@ static lib_bool vm_app_standard_extension(void *context,
     return vm_app_extension_floppy(machine, state, (char *)command, out);
 }
 
-lib_status vm_app_configure_standard_extensions(product_surface *app,
+lib_status vm_app_configure_standard_extensions(app_composed_machine *app,
     product_surface_command_extensions *out_extensions)
 {
     if (app == LIB_NULL || out_extensions == LIB_NULL)

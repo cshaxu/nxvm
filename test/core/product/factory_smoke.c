@@ -100,11 +100,12 @@ lib_i32 main(void)
         return 1;
     for (phase = 0u; phase < 4u; ++phase) {
         releases = creations = descriptions = 0u;
-        machine = (app_composed_machine){.machine = &candidate};
+        machine = (app_composed_machine){.composition.machine = &candidate};
         if (vm_app_compose_machine(&binding, &request, &machine) != expected[phase])
             return 2;
-        if (phase == 0u) machine.destroy(machine.machine);
-        if ((phase != 0u && (machine.machine != LIB_NULL || machine.driver.context != LIB_NULL)) ||
+        if (phase == 0u) machine.composition.destroy(machine.composition.machine);
+        if ((phase != 0u && (machine.composition.machine != LIB_NULL ||
+            machine.composition.driver.context != LIB_NULL)) ||
             releases != (phase == 1u ? 0u : 1u) ||
             creations != (phase == 1u ? 0u : 1u) ||
             descriptions != (phase == 1u || phase == 2u ? 0u : 1u)) return 3;
@@ -118,18 +119,18 @@ lib_i32 main(void)
         observed.fixed_disk_mode[0] != LIB_STORAGE_MEDIUM_OVERLAY) return 4;
     phase = 0u;
     if (vm_app_compose_machine(&binding, &request, &machine) != LIB_STATUS_OK ||
-        machine.information(machine.context, machine.machine, &info) != LIB_STATUS_OK ||
+        machine.information(machine.context, machine.composition.machine, &info) != LIB_STATUS_OK ||
         info.machine_name != binding.name || lib_text_compare(info.cpu_name, "80386") != 0 ||
         info.memory_bytes != 1024u || info.fixed_disk_cylinders != 40u ||
         info.fixed_disk_image_bytes != 4096u || info.floppy_image_bytes != 360u ||
         !info.floppy_media_inserted || !info.fixed_disk_present ||
         !info.fixed_disk_media_connected || !info.external_firmware) return 5;
-    if (machine.set_speed(machine.machine, PRODUCT_SURFACE_SPEED_TURBO) != LIB_STATUS_OK ||
+    if (machine.set_speed(machine.composition.machine, PRODUCT_SURFACE_SPEED_TURBO) != LIB_STATUS_OK ||
         speed != VM_MACHINE_SPEED_TURBO ||
-        machine.get_speed(machine.machine, &app_speed) != LIB_STATUS_OK ||
+        machine.get_speed(machine.composition.machine, &app_speed) != LIB_STATUS_OK ||
         app_speed != PRODUCT_SURFACE_SPEED_TURBO ||
-        machine.set_speed(machine.machine, PRODUCT_SURFACE_SPEED_STANDARD) != LIB_STATUS_OK ||
+        machine.set_speed(machine.composition.machine, PRODUCT_SURFACE_SPEED_STANDARD) != LIB_STATUS_OK ||
         speed != VM_MACHINE_SPEED_STANDARD) return 6;
-    machine.destroy(machine.machine);
+    machine.composition.destroy(machine.composition.machine);
     return 0;
 }

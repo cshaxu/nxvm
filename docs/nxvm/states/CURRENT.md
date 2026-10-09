@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## Current Task — M5 T547 (S9 Active; T Qualification Pending)
+## Current Task — M5 T547 (S11 Active; T Qualification Pending)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T547; S9 imports the current SoftPC six-component corpus and adopts its `common` → `emulator` public component naming. |
-| Admission And Approval | Owner explicitly admits S9 to execute the import. Standing automatic S admission and ordinary push approval apply. |
-| Objective | Import clean SoftPC `e6001412` `src/{lib,emulator,product}` and `test/{lib,emulator,product}` byte-for-byte, retire NXVM's shared `common` route, and adapt all NXVM-only Core and App receivers to the canonical `emulator` APIs, targets, paths and manifests. |
-| Non-goals | No change to SoftPC; no MyNES behavior, configuration or asset change; no CPU, chip, board, machine, firmware, media, INI or Product behavior change; no compatibility aliases, duplicate shared route, API invention or new framework. The mechanical MyNES receiver migration is required because it consumes the renamed public API. |
-| Reference Baseline | Pushed T547 S8 delivery `e8106c056`; fixed upstream source is clean SoftPC `e6001412`. |
-| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S9 continuation. |
-| Files And ABI Surface | Raw imported `src/{lib,emulator,product}` and `test/{lib,emulator,product}`; NXVM-only Core/App receiver includes, symbols, CMake and manifests; eight PC artifacts. |
+| Identifier Mode | Continuation T547; S11 completes the approved Generic Monitor Command And Help Shell after the neutral composition extraction. Session remains the unique owner of reader pending, lifecycle requests in flight, actual machine state and delayed monitor-result delivery. |
+| Admission And Approval | Owner explicitly approved the Emulator-owned generic printing, command shell and assembly direction, including MyNES `display=window|console` and `console_control=0|1`; standing automatic S admission and ordinary push approval apply. |
+| Objective | Make `src/emulator/product` the sole owner of neutral composition/teardown, fixed monitor grammar (`start`, `resume`, `pause`, `stop`, `reset`, `save`, `load`, `debug`, `help`, `exit`), startup/help formatting and prompt bridge. Adapt PC Product and MyNES as real consumers: each supplies command execution, extension rows, keyboard-help rows and App-private configuration only. MyNES must expose the same `display=window|console` and `console_control=0|1` semantics as PC Products. |
+| Non-goals | No Lib change; no CPU, chip, board, firmware, media format, guest timing or emulator-specific hotkey protocol change; no second session reducer, executor, input queue, compatibility wrapper or product-specific branch in Emulator. App INI loading stays App-owned, and fixed commands never acquire PC/NES-specific execution semantics. |
+| Reference Baseline | Pushed S9 delivery `51eb612bf`; SoftPC `e6001412` Product/Suface remains the structural reference, not a new source import. |
+| Candidate Proposal | `proposals/m5-t547-softpc-four-test-optimization-import.md`, S10/S11 continuation. |
+| Files And ABI Surface | `src/emulator/product`, `test/emulator/product`, current `src/test product/surface` receivers, `src/test app-mynes/product`, App-private MyNES configuration/docs and all ten runnable artifacts. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source policies; SoftPC provenance and shared component manifest/boundary rules. |
-| Verification | Exact six-root upstream diff check; six manifests and static boundary gates; each imported package's unit suite; complete repository unit suites and available integration suites on x64/x86; Ninja-built eight PC artifacts with deployment identities verified. Desktop/external results reported separately. |
-| Expected Markers | `src/{lib,emulator,product}` and matching tests are the only shared owners and match `e6001412`; no live `common/`, `common_*` or `COMMON_*` receiver path/target/symbol remains; no compatibility aliases exist; NXVM-only CPU/chip/board/machine code remains under `core/`. |
+| Verification | Emulator/Product/MyNES owned unit tests, component manifests and dependency gates on x64/x86; direct MyNES configuration tests for both display and console-control forms; full affected App unit suites; Ninja-built ten artifacts with deployment identities verified. Desktop/external results are reported separately. |
+| Expected Markers | `emulator/product` owns one neutral composition/teardown and fixed-monitor path; Session owns one reader/request/result-delivery path; PC and MyNES retain command execution semantics but have no duplicate fixed parser, transition/prompt/pending-monitor state; fixed commands cannot be overridden by extensions; no duplicated composition path or compatibility alias remains. |
 | Asset Needs | Existing BYOB assets for ordinary App/integration routes only. |
-| Reporting Requirements | Report actual source/test diff, each retained App adapter, build/test results and all unexecuted desktop/external gates. Do not describe a local compile as full qualification. |
-| Stop Conditions | Stop for an incompatible SoftPC semantic, required Lib/Common/x86 change, protected-source issue, runtime regression or non-deterministic failure. |
-| Exit Criteria | Exact six-root upstream parity; no live old Common path/name/target; no reverse dependency or alias; declared dual-width build/test/artifact gates have actual results and all eight artifacts are rebuilt. T remains open for owner review. |
-| Original Owner Request | Audit the latest SoftPC public six components, then admit and execute their import into NXVM. |
-| Similar-Issue Sweep | Search source, tests, CMake, manifests and docs for all old Common include paths, names, targets, output markers and package identities; audit imported APIs remain inward-only. |
+| Reporting Requirements | Report actual source/test diff, every retained App semantic adapter, build/test results and all unexecuted desktop/external gates. Do not describe a local compile as full qualification. |
+| Stop Conditions | Stop for a required Lib change, a behavior ambiguity between SoftPC and MyNES, an incompatible product semantic, runtime regression or non-deterministic failure. |
+| Exit Criteria | One generic composition/teardown/fixed-monitor owner, no duplicate assembly or fixed-parser route, package-local owned tests, inward dependencies, declared dual-width build/test/artifact results and all ten artifacts rebuilt. T remains open for owner review. |
+| Original Owner Request | Extract the new `emulator/product` component with corresponding source/test moves; then move generic printing, fixed command/help shell and generic assembly there while preserving product-owned command execution. MyNES must adopt the common display and console-control semantics. |
+| Similar-Issue Sweep | Search all Product/App composition, command, prompt, hotkey-help and CMake paths for duplicate generic ownership; retain only real PC/NES policy adapters. Confirm every fixed command has precisely one parser/formatter and that extensions cannot shadow it. |
 
 | Work | Progress |
 | --- | --- |
@@ -30,6 +30,8 @@
 | T547 S7 | Superseded into S8 before P delivery: its uncommitted canonical Core rehome is retained as S8's required receiver baseline rather than split into an unbuildable partial commit. |
 | T547 S8 | Active: owner-directed raw SoftPC public six-component import from `288d9319`, including its two stale Common manifest repairs and complete Ninja-first dual-width qualification/artifact delivery. |
 | T547 S9 | Active: owner-directed raw SoftPC `e6001412` six-component import. Canonical shared `emulator` replaces retired `common`; all NXVM receivers, CMake, manifests and tests must migrate with no alias. |
+| T547 S10 | Superseded into S11 before P delivery: its uncommitted neutral composition extraction is retained as S11's required baseline rather than split into an unbuildable partial commit. |
+| T547 S11 | Complete pending owner review: Emulator owns one generic composition/teardown and fixed monitor shell; PC/MyNES retain only execution, extension rows, keyboard-help rows and App-private configuration. MyNES now accepts `display=window|console` and strict `console_control=0|1`. x64/x86 repository-only units pass 511/511 per width; MyNES owned tests pass 57/57 per width; all ten runnable artifacts were rebuilt and PE-verified. Desktop/manual and PC external integration were not rerun for S11. T547 remains open for owner review. |
 | T547 S1 | Implementation P complete and pushed as `26c013bba`: current SoftPC differences were reconciled, native-test isolation imported, NXVM's later x86/IBM PC repairs retained, and the stale x86 negative fixture fixed. Its incomplete aggregate/stability evidence is explicitly continued by S2. |
 | T547 S2 | Complete: pushed as `70bb50312`. The aggregate default is reduced from 8 to the evidence-backed safe 4 jobs, without changing individual budgets or assertions. One complete x64/x86 run of each shared package passes: Lib 51/51, Common 20/20, x86 182/182 and IBM PC 182/182; complete repository-only units pass 506/506 per width. See `etc/evidence/t547-s2-shared-test-stability.md`. |
 | T547 S3 | Complete: pushed as `8d7022ea8`. All four shared test roots were audited; current identities are behavior-derived, registrations/manifests match, static identity and focused dual-width checks pass. S4 separately owns full-project qualification. |

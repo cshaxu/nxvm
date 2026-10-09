@@ -209,3 +209,47 @@ test removal.
   names. Run the package, complete repository unit and available integration
   suites on x64/x86, then rebuild and verify all eight PC artifacts with Ninja.
 - Keep T547 open after the pushed S9 delivery for the owner's validation.
+
+## S10: Emulator Product Extraction
+
+- Extract the proven neutral product shell from the current PC Product into
+  `src/emulator/product`, with its owned tests under `test/emulator/product`.
+  It owns exactly one construction/teardown sequence for an injected machine,
+  Emulator Session and Emulator UI.
+- An App reads and validates its own configuration before it calls this shell.
+  The shell receives copied UI settings, a frozen machine factory/driver and
+  injected product identity text.  It does not parse an INI, know a board,
+  open media, name a CPU or select firmware.
+- Migrate the current PC Product as an x86/IBM-PC consumer and MyNES as a
+  non-x86 consumer.  PC Debug, NES Debug, command vocabulary, keyboard policy
+  and help framing remain in their present consumer owners in this S.  No
+  second composition, session reducer, executor, input queue or compatibility
+  facade may remain after the move.
+- Move/replace tests by ownership: neutral composition/teardown tests live
+  under `test/emulator/product`; PC x86/debug/keyboard tests remain
+  Product-owned; NES media/debug/key mapping tests remain `test/app-mynes`.
+  Update CMake, manifests and dependency gates atomically.
+- Verify the affected component and App test suites on x64/x86, then rebuild
+  and verify all eight PC and two MyNES artifacts with the configured Ninja /
+  ccache trees.  Report desktop and external integration checks separately.
+
+## S11: Generic Monitor Command And Help Shell
+
+- After S10 proves one neutral composition owner, extract the fixed monitor
+  grammar (`start`, `resume`, `pause`, `stop`, `reset`, `save`, `load`,
+  `debug`, `help`, `exit`), prompt/reducer bridge and help-page/startup
+  framing into Emulator Product.  Every fixed command remains visible and
+  recognized; an App that lacks its injected backing capability receives
+  `Feature not implemented.`
+- Emulator Product owns parsing, fixed command order and formatting only.  It
+  dispatches to injected App/product capabilities; guest execution, snapshot,
+  Debug and media semantics remain with their actual owner.  PC-specific
+  implementations stay in `product/surface`; MyNES supplies its own bindings
+  and must not link that PC component.
+- Floppy/media, INFO/SPEED and other App commands remain extension rows after
+  the fixed section.  An extension cannot override a fixed command.  Apps keep
+  their own configuration parser and keyboard mapping; their keyboard module
+  supplies hotkey-help rows while Emulator Product formats the surrounding
+  section.
+- Migrate PC and MyNES command adapters without a second command loop, then
+  move generic command/help tests to `test/emulator/product`.
