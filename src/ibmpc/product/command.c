@@ -196,7 +196,7 @@ void app_command_session_submit_line(app_command_session *s, app_monitor_state s
        stable fact for the one command validation below. */
     if (state == APP_MONITOR_ERROR)
     {
-        reject(s, e, "Machine has failed; exit and restart SoftPC.");
+        reject(s, e, "Machine has failed; exit and restart the program.");
         return;
     }
     lifecycle(s, state, c, e);
