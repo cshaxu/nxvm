@@ -2,37 +2,35 @@
 
 #include "core/debug_interface.h"
 #include "core/opcode_interface.h"
+#include "emulator/product/monitor_interface.h"
 #include "lib/types/file.h"
 #include "lib/storage/file_interface.h"
 
 #define APP_COMMAND_PATH_CAPACITY 1024u
 
-/* App owns product terminology and the monitor's discoverable command
- * surface.  Keep this in the same grouped form as SoftPC's cooked monitor:
- * a user can see grammar, state policy and gameplay controls in one `help`. */
-static const lib_u8 app_command_help[] =
-    "MyNES\n"
-    "=====\n"
-    "  start               cold-reset and run the inserted cartridge\n"
-    "  resume              continue a paused machine\n"
-    "  pause               pause a running machine\n"
-    "  stop                stop a running or paused machine\n"
-    "  reset               power-reset and pause the inserted cartridge\n"
-    "  rom insert <file>   insert a read-only iNES cartridge while stopped/paused\n"
-    "  rom eject           eject the cartridge while stopped/paused\n"
-    "  save <file>         save a running or paused machine\n"
-    "  load <file>         load a snapshot while stopped\n"
-    "  help                show this help\n"
-    "  debug               enter the paused-machine debug command group\n"
-    "  exit                close MyNES\n"
-    "\n"
-    "While the game is running:\n"
-    "  W/A/S/D             D-pad\n"
-    "  J/Ctrl              B\n"
-    "  K/Alt               A\n"
-    "  Enter               Start\n"
-    "  Shift               Select\n"
-    "  Esc                 Pause or Resume\n";
+static void app_command_result(emulator_session_command_result *out_result,
+    const char *text);
+static void app_command_finish_output(emulator_session_command_result *out_result);
+static lib_bool app_command_submit_fixed(void *opaque,
+    emulator_product_monitor_command fixed_command,
+    emulator_session_machine_state state, const char *arguments,
+    emulator_session_command_result *out_result);
+static lib_bool app_command_submit_extension(void *opaque,
+    emulator_session_machine_state state, const char *line,
+    emulator_session_command_result *out_result);
+
+/* Emulator Product supplies fixed command rows and the outer help layout.
+ * MyNES contributes only cartridge commands and its physical control rows. */
+static const char app_command_help_extensions[] =
+    "  rom insert <file>   insert a read-only iNES cartridge while stopped/paused\r\n"
+    "  rom eject           eject the cartridge while stopped/paused\r\n";
+static const char app_command_help_hotkeys[] =
+    "  W/A/S/D             D-pad\r\n"
+    "  J/Ctrl              B\r\n"
+    "  K/Alt               A\r\n"
+    "  Enter               Start\r\n"
+    "  Shift               Select\r\n"
+    "  Esc                 Pause or Resume\r\n";
 
 static lib_bool app_command_set_media(app_command_context *context,
                                       const char *path)
@@ -253,9 +251,7 @@ static void app_command_complete_snapshot(app_command_context *context,
              (pending == APP_COMMAND_SNAPSHOT_SAVED &&
               emulator_machine_state_get(context->machine) == EMULATOR_MACHINE_PAUSED))
     {
-        context->session.pending_snapshot = status == LIB_STATUS_OK ? pending : APP_COMMAND_SNAPSHOT_SAVE_FAILED;
-        context->session.transition_pending = LIB_TRUE;
-        context->session.prompt_due = LIB_FALSE;
+        context->pending_snapshot = status == LIB_STATUS_OK ? pending : APP_COMMAND_SNAPSHOT_SAVE_FAILED;
         *out_result = (emulator_session_command_result){0};
     }
     else
@@ -314,15 +310,6 @@ static void app_command_message(char *target, lib_size target_capacity,
     target[length] = '\0';
 }
 
-static void app_command_outcome(app_command_context *context, const char *text)
-{
-    if (context == LIB_NULL)
-        return;
-    app_command_message((char *)context->session.pending_monitor_text,
-                        sizeof(context->session.pending_monitor_text), text);
-    context->session.prompt_due = LIB_TRUE;
-}
-
 static void app_command_finish_output(emulator_session_command_result *out_result)
 {
     lib_size length;
@@ -341,8 +328,7 @@ static void app_command_finish_output(emulator_session_command_result *out_resul
 static void app_command_request(app_command_context *context,
                                 emulator_session_command_result *out_result, emulator_session_request request)
 {
-    context->session.transition_pending = LIB_TRUE;
-    context->session.prompt_due = LIB_FALSE;
+    (void)context;
     out_result->request = request;
     out_result->arm_prompt = LIB_FALSE;
 }
@@ -714,7 +700,7 @@ static void app_command_debug_submit(app_command_context *context,
                                      emulator_session_machine_state state, const char *arguments,
                                      emulator_session_command_result *out_result)
 {
-    const char *path;
+    const char *path = LIB_NULL;
 
     if (app_command_end(arguments) || app_command_equal(arguments, "help"))
     {
@@ -783,86 +769,45 @@ void app_command_initialize(app_command_context *context, emulator_machine *mach
 {
     *context = (app_command_context){
         .machine = machine,
+        .display = display,
         .cartridge_present = cartridge_present,
-        .initial_state_pending = LIB_TRUE,
-        .session = {.display = display}};
+        .initial_state_pending = LIB_TRUE};
+    context->monitor = (emulator_product_monitor_provider){
+        .context = context,
+        .prompt = "MyNes> ",
+        .extension_help = app_command_help_extensions,
+        .hotkey_help = app_command_help_hotkeys,
+        .submit_fixed = app_command_submit_fixed,
+        .submit_extension = app_command_submit_extension};
 }
 
 void app_command_open(void *opaque, emulator_session_command_result *out_result)
 {
     app_command_context *context = opaque;
-    app_command_result(out_result,
-                       (const char *)app_command_help);
-    if (context != LIB_NULL && context->initial_state_pending)
+    if (context == LIB_NULL || out_result == LIB_NULL) return;
+    emulator_product_monitor_provider_open(&context->monitor, out_result);
+    if (context->initial_state_pending)
         out_result->arm_prompt = LIB_FALSE;
 }
 
 void app_command_reject_line(void *opaque, emulator_session_command_result *out_result)
 {
-    (void)opaque;
-    app_command_result(out_result, "Command is too long.\n");
+    app_command_context *context = opaque;
+    if (context == LIB_NULL || out_result == LIB_NULL) return;
+    emulator_product_monitor_provider_reject_line(&context->monitor, out_result);
 }
 
-void app_command_submit_line(void *opaque, emulator_session_machine_state state,
-                             const char *line, emulator_session_command_result *out_result)
+static lib_bool app_command_submit_extension(void *opaque,
+    emulator_session_machine_state state, const char *line,
+    emulator_session_command_result *out_result)
 {
     app_command_context *context = opaque;
-    const char *path;
+    const char *path = LIB_NULL;
     char media_path[APP_COMMAND_PATH_CAPACITY];
 
     app_command_result(out_result, LIB_NULL);
-    if (context == LIB_NULL || line == LIB_NULL)
-    {
-        app_command_result(out_result, "Invalid command context.\n");
-        return;
-    }
-    if (app_command_end(line))
-        return;
-    if (state == EMULATOR_SESSION_MACHINE_ERROR && !app_command_equal(line, "help") &&
-        !app_command_equal(line, "exit"))
-    {
-        app_command_result(out_result, "Machine host error; exit and restart.\n");
-        return;
-    }
-    if (context->session.transition_pending && !app_command_equal(line, "help") &&
-        !app_command_equal(line, "exit"))
-    {
-        app_command_result(out_result, "Machine command is still pending.\n");
-        return;
-    }
-    if (app_command_equal(line, "help"))
-    {
-        app_command_result(out_result, (const char *)app_command_help);
-    }
-    else if (app_command_equal(line, "debug"))
-    {
-        app_command_debug_submit(context, state, "", out_result);
-    }
-    else if ((path = app_command_after(line, "debug ")) != LIB_NULL)
-    {
-        app_command_debug_submit(context, state, path, out_result);
-    }
-    else if (app_command_equal(line, "save") ||
-             (path = app_command_after(line, "save ")) != LIB_NULL)
-    {
-        if (!app_command_parse_path(path == LIB_NULL ? "" : path, media_path, sizeof(media_path)))
-            app_command_result(out_result, "Usage: save <file>\n");
-        else if (state != EMULATOR_SESSION_MACHINE_RUNNING && state != EMULATOR_SESSION_MACHINE_PAUSED)
-            app_command_result(out_result, "Machine is stopped; use start before save.\n");
-        else
-            app_command_save_snapshot(context, media_path, out_result);
-    }
-    else if (app_command_equal(line, "load") ||
-             (path = app_command_after(line, "load ")) != LIB_NULL)
-    {
-        if (!app_command_parse_path(path == LIB_NULL ? "" : path, media_path, sizeof(media_path)))
-            app_command_result(out_result, "Usage: load <file>\n");
-        else if (state != EMULATOR_SESSION_MACHINE_STOPPED)
-            app_command_result(out_result, state == EMULATOR_SESSION_MACHINE_RUNNING ? "Machine is running; stop it before load.\n" : "Machine is paused; stop it before load.\n");
-        else
-            app_command_load_snapshot(context, media_path, out_result);
-    }
-    else if (app_command_equal(line, "rom insert") ||
+    if (context == LIB_NULL || line == LIB_NULL) return LIB_FALSE;
+    if (app_command_equal(line, "rom insert") ||
              (path = app_command_after(line, "rom insert ")) != LIB_NULL)
     {
         if (!app_command_parse_path(path == LIB_NULL ? "" : path, media_path,
@@ -884,9 +829,10 @@ void app_command_submit_line(void *opaque, emulator_session_machine_state state,
             context->run_after_reset = LIB_FALSE;
             context->suppress_window_after_reset =
                 state == EMULATOR_SESSION_MACHINE_STOPPED &&
-                context->session.display == EMULATOR_SESSION_DISPLAY_WINDOW;
+                context->display == EMULATOR_SESSION_DISPLAY_WINDOW;
             app_command_request(context, out_result, EMULATOR_SESSION_REQUEST_RESET);
         }
+        return LIB_TRUE;
     }
     else if (app_command_equal(line, "rom eject"))
     {
@@ -910,12 +856,61 @@ void app_command_submit_line(void *opaque, emulator_session_machine_state state,
                 app_command_result(out_result, "Cartridge ejected.\n");
             }
         }
+        return LIB_TRUE;
     }
     else if (app_command_after(line, "rom eject") != LIB_NULL)
     {
         app_command_result(out_result, "rom eject accepts no arguments.\n");
+        return LIB_TRUE;
     }
-    else if (app_command_equal(line, "start"))
+    return LIB_FALSE;
+}
+
+static lib_bool app_command_submit_fixed(void *opaque,
+    emulator_product_monitor_command fixed_command,
+    emulator_session_machine_state state, const char *arguments,
+    emulator_session_command_result *out_result)
+{
+    app_command_context *context = opaque;
+    char media_path[APP_COMMAND_PATH_CAPACITY];
+
+    if (context == LIB_NULL || out_result == LIB_NULL) return LIB_FALSE;
+    app_command_result(out_result, LIB_NULL);
+    if (state == EMULATOR_SESSION_MACHINE_ERROR) {
+        app_command_result(out_result, "Machine host error; exit and restart.\n");
+        return LIB_TRUE;
+    }
+    if (fixed_command != EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG &&
+        fixed_command != EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE &&
+        fixed_command != EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD &&
+        !app_command_end(arguments)) {
+        app_command_result(out_result, "Unknown command.\n");
+        return LIB_TRUE;
+    }
+    if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG) {
+        app_command_debug_submit(context, state, arguments, out_result);
+        return LIB_TRUE;
+    }
+    if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE) {
+        if (!app_command_parse_path(arguments, media_path, sizeof(media_path)))
+            app_command_result(out_result, "Usage: save <file>\n");
+        else if (state != EMULATOR_SESSION_MACHINE_RUNNING && state != EMULATOR_SESSION_MACHINE_PAUSED)
+            app_command_result(out_result, "Machine is stopped; use start before save.\n");
+        else app_command_save_snapshot(context, media_path, out_result);
+        return LIB_TRUE;
+    }
+    if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD) {
+        if (!app_command_parse_path(arguments, media_path, sizeof(media_path)))
+            app_command_result(out_result, "Usage: load <file>\n");
+        else if (state != EMULATOR_SESSION_MACHINE_STOPPED)
+            app_command_result(out_result,
+                state == EMULATOR_SESSION_MACHINE_RUNNING ?
+                    "Machine is running; stop it before load.\n" :
+                    "Machine is paused; stop it before load.\n");
+        else app_command_load_snapshot(context, media_path, out_result);
+        return LIB_TRUE;
+    }
+    if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_START)
     {
         if (!context->cartridge_present)
         {
@@ -936,7 +931,7 @@ void app_command_submit_line(void *opaque, emulator_session_machine_state state,
             app_command_result(out_result, "Machine is already running; use pause, reset, or stop.\n");
         }
     }
-    else if (app_command_equal(line, "resume"))
+    else if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME)
     {
         lib_bool trapped;
         if (state == EMULATOR_SESSION_MACHINE_STOPPED)
@@ -953,7 +948,7 @@ void app_command_submit_line(void *opaque, emulator_session_machine_state state,
         else
             app_command_request(context, out_result, EMULATOR_SESSION_REQUEST_RESUME);
     }
-    else if (app_command_equal(line, "pause"))
+    else if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE)
     {
         if (state == EMULATOR_SESSION_MACHINE_RUNNING)
         {
@@ -962,7 +957,7 @@ void app_command_submit_line(void *opaque, emulator_session_machine_state state,
         else
             app_command_result(out_result, "Machine is not running.\n");
     }
-    else if (app_command_equal(line, "stop"))
+    else if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_STOP)
     {
         if (state == EMULATOR_SESSION_MACHINE_RUNNING || state == EMULATOR_SESSION_MACHINE_PAUSED)
         {
@@ -971,7 +966,7 @@ void app_command_submit_line(void *opaque, emulator_session_machine_state state,
         else
             app_command_result(out_result, "Machine is already stopped.\n");
     }
-    else if (app_command_equal(line, "reset"))
+    else if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESET)
     {
         if (!context->cartridge_present)
         {
@@ -982,33 +977,20 @@ void app_command_submit_line(void *opaque, emulator_session_machine_state state,
             context->run_after_reset = LIB_FALSE;
             context->suppress_window_after_reset =
                 state == EMULATOR_SESSION_MACHINE_STOPPED &&
-                context->session.display == EMULATOR_SESSION_DISPLAY_WINDOW;
+                context->display == EMULATOR_SESSION_DISPLAY_WINDOW;
             app_command_request(context, out_result, EMULATOR_SESSION_REQUEST_RESET);
         }
     }
-    else if (app_command_equal(line, "exit"))
-    {
-        out_result->exit_requested = LIB_TRUE;
-        out_result->arm_prompt = LIB_FALSE;
-    }
-    else
-    {
-        app_command_result(out_result, "Unknown command.\n");
-    }
+    else return LIB_FALSE;
+    return LIB_TRUE;
 }
 
-lib_bool app_command_begin_external(void *opaque, emulator_session_machine_state state,
-                                    emulator_session_request request)
+void app_command_submit_line(void *opaque, emulator_session_machine_state state,
+                             const char *line, emulator_session_command_result *out_result)
 {
     app_command_context *context = opaque;
-
-    (void)state;
-    if (context == LIB_NULL || context->session.transition_pending ||
-        request == EMULATOR_SESSION_REQUEST_NONE)
-        return LIB_FALSE;
-    context->session.transition_pending = LIB_TRUE;
-    context->session.prompt_due = LIB_FALSE;
-    return LIB_TRUE;
+    if (context == LIB_NULL || out_result == LIB_NULL) return;
+    emulator_product_monitor_provider_submit_line(&context->monitor, state, line, out_result);
 }
 
 lib_bool app_command_handle_hotkey(void *opaque, emulator_session_machine_state state,
@@ -1016,8 +998,7 @@ lib_bool app_command_handle_hotkey(void *opaque, emulator_session_machine_state 
 {
     app_command_context *context = opaque;
 
-    if (context == LIB_NULL || identifier == LIB_NULL || out_result == LIB_NULL ||
-        context->session.transition_pending)
+    if (context == LIB_NULL || identifier == LIB_NULL || out_result == LIB_NULL)
         return LIB_FALSE;
     app_command_result(out_result, LIB_NULL);
     if (lib_text_compare((const char *)identifier, "pause-toggle") == 0)
@@ -1039,16 +1020,13 @@ void app_command_note_runtime(void *opaque, emulator_session_machine_state prior
     app_command_context *context = opaque;
 
     *out_result = (emulator_session_command_result){0};
-    /* INIT only acknowledges that Common accepted a request.  It is not its
-     * completion: keeping the command pending prevents Session from arming a
-     * second cooked prompt between `rom insert`/`reset` and RESET_COMPLETED. */
+    /* INIT only acknowledges dispatch. Session retains the pending request
+     * until the terminal completion and therefore cannot arm another reader. */
     if (completed == EMULATOR_SESSION_MACHINE_INIT)
     {
         out_result->arm_prompt = LIB_FALSE;
         return;
     }
-    if (context != LIB_NULL)
-        context->session.transition_pending = LIB_FALSE;
     if (context != LIB_NULL && completed == EMULATOR_SESSION_MACHINE_RESET_COMPLETED)
     {
         if (context->run_after_reset)
@@ -1057,31 +1035,31 @@ void app_command_note_runtime(void *opaque, emulator_session_machine_state prior
             app_command_request(context, out_result, EMULATOR_SESSION_REQUEST_RESUME);
         }
         else
-            app_command_outcome(context, "Reset complete; machine paused.\n");
+            app_command_result(out_result, "Reset complete; machine paused.\n");
     }
     else if (completed == EMULATOR_SESSION_MACHINE_PAUSED)
     {
         if (context != LIB_NULL &&
-            context->session.pending_snapshot != APP_COMMAND_SNAPSHOT_NONE)
+            context->pending_snapshot != APP_COMMAND_SNAPSHOT_NONE)
         {
-            app_command_snapshot_result pending = context->session.pending_snapshot;
-            context->session.pending_snapshot = APP_COMMAND_SNAPSHOT_NONE;
-            app_command_outcome(context, pending == APP_COMMAND_SNAPSHOT_SAVED ? "Machine saved and paused.\n" : pending == APP_COMMAND_SNAPSHOT_LOADED ? "Machine loaded and paused.\n"
+            app_command_snapshot_result pending = context->pending_snapshot;
+            context->pending_snapshot = APP_COMMAND_SNAPSHOT_NONE;
+            app_command_result(out_result, pending == APP_COMMAND_SNAPSHOT_SAVED ? "Machine saved and paused.\n" : pending == APP_COMMAND_SNAPSHOT_LOADED ? "Machine loaded and paused.\n"
                                                                                                                                                         : "Cannot save machine state.\n");
         }
         else if (context != LIB_NULL && context->report_suppressed_reset)
         {
             context->report_suppressed_reset = LIB_FALSE;
-            app_command_outcome(context, "Reset complete; machine paused.\n");
+            app_command_result(out_result, "Reset complete; machine paused.\n");
         }
         else if (prior != EMULATOR_SESSION_MACHINE_PAUSED)
-            app_command_outcome(context, "Machine paused.\n");
+            app_command_result(out_result, "Machine paused.\n");
     }
     else if (completed == EMULATOR_SESSION_MACHINE_RUNNING)
     {
-        if (context != LIB_NULL && context->session.display == EMULATOR_SESSION_DISPLAY_WINDOW)
+        if (context != LIB_NULL && context->display == EMULATOR_SESSION_DISPLAY_WINDOW)
         {
-            app_command_outcome(context, context->started_after_reset ? "Machine started.\n" : "Machine resumed.\n");
+            app_command_result(out_result, context->started_after_reset ? "Machine started.\n" : "Machine resumed.\n");
         }
         if (context != LIB_NULL)
             context->started_after_reset = LIB_FALSE;
@@ -1091,10 +1069,10 @@ void app_command_note_runtime(void *opaque, emulator_session_machine_state prior
         if (context != LIB_NULL && context->initial_state_pending)
         {
             context->initial_state_pending = LIB_FALSE;
-            context->session.prompt_due = LIB_TRUE;
+            app_command_result(out_result, LIB_NULL);
         }
         else if (prior != EMULATOR_SESSION_MACHINE_STOPPED)
-            app_command_outcome(context, "Machine stopped.\n");
+            app_command_result(out_result, "Machine stopped.\n");
     }
     else if (completed == EMULATOR_SESSION_MACHINE_ERROR)
     {
@@ -1103,43 +1081,6 @@ void app_command_note_runtime(void *opaque, emulator_session_machine_state prior
             context->run_after_reset = LIB_FALSE;
             context->started_after_reset = LIB_FALSE;
         }
-        app_command_outcome(context, "Machine host error; exit and restart.\n");
-    }
-}
-
-void app_command_note_broker(void *opaque, emulator_session_machine_state state,
-                             lib_bool vm_console_current, lib_bool monitor_running_surface)
-{
-    app_command_context *context = opaque;
-
-    if (context == LIB_NULL)
-        return;
-    if (vm_console_current && state == EMULATOR_SESSION_MACHINE_RUNNING)
-    {
-        context->session.prompt_due = LIB_FALSE;
-        context->session.pending_monitor_text[0] = '\0';
-    }
-    else if (!vm_console_current && state == EMULATOR_SESSION_MACHINE_RUNNING &&
-             monitor_running_surface)
-    {
-        context->session.prompt_due = LIB_TRUE;
-    }
-}
-
-void app_command_note_monitor_current(void *opaque, lib_bool current,
-                                      emulator_session_command_result *out_result)
-{
-    app_command_context *context = opaque;
-    app_command_result(out_result, LIB_NULL);
-    out_result->arm_prompt = context != LIB_NULL && current &&
-                             context->session.prompt_due;
-    if (out_result->arm_prompt)
-    {
-        lib_size length = lib_text_length((const char *)context->session.pending_monitor_text);
-        if (length >= sizeof(out_result->text))
-            length = sizeof(out_result->text) - 1u;
-        lib_memory_copy(out_result->text, context->session.pending_monitor_text, length);
-        out_result->text[length] = '\0';
-        context->session.pending_monitor_text[0] = '\0';
+        app_command_result(out_result, "Machine host error; exit and restart.\n");
     }
 }

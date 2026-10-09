@@ -1,13 +1,15 @@
 #ifndef APP_CONFIG_H
 #define APP_CONFIG_H
 
+#include "emulator/session/session_interface.h"
 #include "lib/types/types_interface.h"
 
 #define APP_CONFIG_PATH_CAPACITY 1024u
 
 typedef struct app_startup_config {
     lib_u8 rom_path[APP_CONFIG_PATH_CAPACITY];
-    lib_bool text_output;
+    emulator_session_display display;
+    lib_bool console_control;
 } app_startup_config;
 
 /* Parses the contents of MyNes's fixed startup file.  This is public for

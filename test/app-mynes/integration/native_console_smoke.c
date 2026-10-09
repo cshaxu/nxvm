@@ -265,7 +265,7 @@ int main(void)
         .display = EMULATOR_SESSION_DISPLAY_CONSOLE,
         .console_control = LIB_TRUE,
         .machine = fixture.machine,
-        .command = {.context = &fixture.command, .open = app_command_open, .reject_line = app_command_reject_line, .submit_line = app_command_submit_line, .begin_external = app_command_begin_external, .handle_hotkey = app_command_handle_hotkey, .note_runtime = app_command_note_runtime, .note_broker = app_command_note_broker, .note_monitor_current = app_command_note_monitor_current}};
+        .command = {.context = &fixture.command, .open = app_command_open, .reject_line = app_command_reject_line, .submit_line = app_command_submit_line, .handle_hotkey = app_command_handle_hotkey, .note_runtime = app_command_note_runtime}};
     assert(emulator_session_create(&fixture.session, &session_options) == LIB_STATUS_OK);
     emulator_machine_set_state_sink(fixture.machine, state_sink, &fixture);
     emulator_machine_set_frame_sink(fixture.machine, frame_sink, &fixture);

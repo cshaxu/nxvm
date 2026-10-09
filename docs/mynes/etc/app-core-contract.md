@@ -28,12 +28,13 @@ Common enum values explicitly and enqueue runtime/frame facts only. A failed
 enqueue latches a thread-safe composition failure and requests signal-only Core
 stop; no callback destroys a dependency or processes a command inline.
 
-Session options are always `display=COMMON_SESSION_DISPLAY_CONSOLE` and
-`console_control=LIB_TRUE`. This is Common's automatic frame-kind route:
-graphics means Window plus cooked monitor; text means raw Console; no ready frame
-means cooked monitor. It does NOT mean the product forces ASCII. App's independent
-`display` setting selects Core's published representation. No Common display setter
-or session reconstruction is needed for presentation switching.
+The App maps `display=window|console` to Core's published representation and
+to Emulator Session's initial display target. It maps `console_control=0|1`
+directly to Session's cooked-monitor handoff policy; omitted configuration
+defaults to `1`. Graphics means Window plus cooked monitor when handoff is
+enabled; text means raw Console; no ready frame means cooked monitor. The
+setting does not change NES hardware mode. No Emulator display setter or
+session reconstruction is needed for presentation switching.
 
 On exit: stop accepting App operations; `common_machine_shutdown` with session,
 UI and Core alive; destroy UI (joins its producers); detach machine sinks;
@@ -187,9 +188,10 @@ opcode metadata as CPU decode; illegal bytes render `.byte`, not invented code.
 
 Entry: `MyNes` accepts no command-line options. It loads `mynes.ini` from the
 same directory as its executable; unreadable or malformed configuration exits
-with code 2 before App/Common construction. The file accepts `rom = PATH` and
-`display = window|console`; `display` defaults to window and a missing `rom` means
-no cartridge. No autorun: an initial ROM uses the same attachment helper as
+with code 2 before App/Common construction. The file accepts `rom = PATH`,
+`display = window|console` and `console_control = 0|1`; `display` defaults to
+window, `console_control` defaults to `1`, and a missing `rom` means no cartridge.
+No autorun: an initial ROM uses the same attachment helper as
 `rom insert`.
 Blank or ordinary non-assignment lines are ignored; semicolon and hash begin
 line comments, and quoted ROM paths may contain spaces. Unknown or malformed
@@ -205,15 +207,17 @@ submitted monitor line. Exit codes: 0 orderly exit/help, 2 invalid startup
 arguments, 1 host/startup failure. A rejected interactive command keeps the session
 alive and does not change process success. UI remains the only monitor writer.
 
-Grammar is case-insensitive ASCII keywords; space/tab separate tokens. Double
-quotes delimit one path including spaces; backslashes are literal, no shell
-escapes, expansion, semicolon chaining or nested commands. An unmatched quote,
-extra token, embedded control character or numeric overflow rejects the whole
-line. Counts are decimal; addresses/byte values accept `$` or `0x` hex prefixes,
-otherwise decimal. No implicit address wrapping. App line bound is 4095 bytes;
-media path bound is 1023 bytes including no NUL (buffer capacity 1024). Empty
-lines rearm the prompt without output. Every nonempty command result ends with
-one blank line before the next prompt. Long lines reject once, never execute a truncated prefix.
+Emulator Product recognizes case-insensitive ASCII fixed keywords; space/tab
+separate tokens. It alone formats fixed help, empty-line prompt recovery,
+unknown-command output and the blank line before the next prompt. MyNES receives
+only a selected fixed command or an extension line and parses its own ROM/debug
+arguments. Double quotes delimit one path including spaces; backslashes are
+literal, with no shell escapes, expansion, semicolon chaining or nested commands.
+An unmatched quote, extra token, embedded control character or numeric overflow
+rejects the whole line. Counts are decimal; addresses/byte values accept `$` or
+`0x` hex prefixes, otherwise decimal. No implicit address wrapping. App line
+bound is 4095 bytes; media path bound is 1023 bytes including no NUL (buffer
+capacity 1024). Long lines reject once, never execute a truncated prefix.
 Storage currently uses narrow Win32 paths: M2 guarantees printable ASCII paths
 only and explicitly rejects non-ASCII; no false Unicode-path claim or Lib patch.
 
@@ -236,19 +240,19 @@ only and explicitly rejects non-ASCII; no false Unicode-path claim or Lib patch.
 | `debug reset` | PAUSED with cartridge | WARM_RESET protocol; remains PAUSED. |
 | `exit` | Any | Provider sets exit_requested; composition always does permanent shutdown even if session's preliminary STOP was rejected. |
 
-While a lifecycle request is pending, other machine commands report busy; help
-and exit remain available. Provider tracks one pending command intent and
-accepted media identity, not an authoritative running flag. Common state_get and
-matching runtime facts remain authoritative; STARTING is busy even if the last
-session-visible fact was STOPPED. `note_runtime` finishes only the corresponding
-intent; ERROR cancels it. `begin_external` validates hotkey/window-close actions
-through the same policy. `arm_prompt` expresses readiness, never permission to
-start a second native reader. Output is bounded to 16383 bytes, prompt `MyNes> `
-to 63; `detail` is null. Bounded mem/disasm listings fit without dynamic logs.
-Notifications queued while raw Console owns the endpoint are held in one bounded
-App notice and emitted when `note_monitor_current` reports true. Notification
-wording advises re-entry of any unsubmitted edit; App does not pretend to know
-the native reader's partial buffer. No direct worker printing.
+Session owns the pending lifecycle request, the native reader and delayed monitor
+delivery. It rejects a second lifecycle request while one is in flight; the
+Emulator Product shell keeps fixed help and exit available. The App receives only
+the stable Session state plus an already-selected fixed command or extension line,
+produces a bounded result and may request one lifecycle operation, but it does not
+keep a transition or prompt state. `note_runtime`
+maps completed runtime facts to one result; Session clears the in-flight request,
+delivers or defers that result according to monitor ownership, then decides when
+to arm the next reader.  Window-close follows the same Session admission path.
+`arm_prompt` expresses a requested next prompt, never permission to start a
+second native reader. Output is bounded to 16383 bytes, prompt `MyNes> ` to 63;
+`detail` is null. Bounded mem/disasm listings fit without dynamic logs. No direct
+worker printing and no App-owned monitor-text cache are permitted.
 
 Defaults: no cartridge, no autorun, zero RAM, 256/1024 execution slice,
 display=window, text=80x25/color, and the keyboard mapping in Hardware And

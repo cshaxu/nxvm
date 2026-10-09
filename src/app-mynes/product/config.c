@@ -45,7 +45,9 @@ lib_bool app_config_load_text(const lib_u8 *text, lib_size text_length,
 {
     const lib_u8 *cursor;
     const lib_u8 *limit;
-    app_startup_config candidate = { 0 };
+    app_startup_config candidate = {
+        .display = EMULATOR_SESSION_DISPLAY_WINDOW,
+        .console_control = LIB_TRUE};
 
     if (text == LIB_NULL || out_config == LIB_NULL) return LIB_FALSE;
     cursor = text;
@@ -87,9 +89,16 @@ lib_bool app_config_load_text(const lib_u8 *text, lib_size text_length,
                             sizeof(candidate.rom_path), value_start, value_end)) return LIB_FALSE;
                 } else if (app_config_equals(key_start, key_end, APP_CONFIG_TEXT("display"))) {
                     if (app_config_equals(value_start, value_end, APP_CONFIG_TEXT("window")))
-                        candidate.text_output = LIB_FALSE;
+                        candidate.display = EMULATOR_SESSION_DISPLAY_WINDOW;
                     else if (app_config_equals(value_start, value_end, APP_CONFIG_TEXT("console")))
-                        candidate.text_output = LIB_TRUE;
+                        candidate.display = EMULATOR_SESSION_DISPLAY_CONSOLE;
+                    else return LIB_FALSE;
+                } else if (app_config_equals(key_start, key_end,
+                           APP_CONFIG_TEXT("console_control"))) {
+                    if (value_end == value_start + 1u && value_start[0] == '0')
+                        candidate.console_control = LIB_FALSE;
+                    else if (value_end == value_start + 1u && value_start[0] == '1')
+                        candidate.console_control = LIB_TRUE;
                     else return LIB_FALSE;
                 } else return LIB_FALSE;
             }

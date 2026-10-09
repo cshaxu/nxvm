@@ -15,6 +15,12 @@ static lib_i32 app_command_output_compare(const char *actual, const char *expect
         actual[length + 1u] != '\0';
 }
 
+static lib_i32 app_monitor_output_compare(const char *actual, const char *expected)
+{
+    lib_size length = lib_text_length(expected);
+    return lib_memory_compare(actual, expected, length) != 0 || actual[length] != '\0';
+}
+
 #undef lib_text_compare
 #define lib_text_compare app_command_output_compare
 
@@ -83,11 +89,11 @@ int main(void)
     submit(&command, "debug mem 16 2", &result);
     assert(lib_text_compare(result.text, "0010: 55 AA\n") == 0);
     submit(&command, "set mem.count 2", &result);
-    assert(lib_text_compare(result.text, "Unknown command.\n") == 0);
+    assert(app_monitor_output_compare(result.text, "Unknown command.\r\n\r\n") == 0);
     submit(&command, "debug mem 16 2", &result);
     assert(lib_text_compare(result.text, "0010: 55 AA\n") == 0);
     submit(&command, "set disasm.count 3", &result);
-    assert(lib_text_compare(result.text, "Unknown command.\n") == 0);
+    assert(app_monitor_output_compare(result.text, "Unknown command.\r\n\r\n") == 0);
     submit(&command, "debug disasm $8000 3", &result);
     assert(lib_text_compare(result.text,
         "8000: A9 2A    LDA #$2A\n"

@@ -63,8 +63,9 @@ Lib contains no NES/application state or policy. No cyclic link dependency is ne
 
 | Owner | Owns | Does not own |
 | --- | --- | --- |
-| App config/command/debug/keyboard | Defaults/effective settings, command/debug semantics, NES key mapping and hotkey policy. | Native resources, executor or hardware state. |
-| App composition | Entity construction, callback wiring, running session and ordered teardown. | A second dispatcher, command parser or run state. |
+| App config/command/debug/keyboard | Defaults/effective settings, extension/debug execution semantics, NES key mapping and hotkey policy. | Native resources, executor, fixed monitor parsing or hardware state. |
+| Emulator product | Neutral composition/teardown, fixed monitor command/help framing and injected command dispatch. | NES-specific execution, configuration or keyboard policy. |
+| App composition | App-private construction and callback binding. | A second dispatcher, command parser or run state. |
 | Common session | One control FIFO, desired/actual reduction, lifecycle dispatch and prompt scheduling. | Executor state, native input or NES policy. |
 | Common UI | Monitor logical Console, broker, both KVM presenters and copied input/presentation bindings. | Command interpretation, NES controller state or machine lifecycle. |
 | Common machine | One executor, request/input queues, lifecycle completion, generations, frame publication and paused debug rendezvous. | NES CPU/bus semantics or host presentation choice. |
@@ -338,10 +339,10 @@ Window and Console remain equal acceptance targets without changing shared code.
 ### Cooked Management, Debug And Configuration
 
 Common UI owns the monitor endpoint and one native broker. Session owns one pending
-cooked line and prompt scheduling. App consumes complete copied command lines
-through its provider; debug uses that same path. Help can run while the guest
-executes; configuration remains the startup-only `mynes.ini` file. Machine debug
-requires paused executor access.
+cooked line and prompt scheduling. Emulator Product parses fixed command lines and
+dispatches selected operations to MyNES; MyNES debug uses that same path. Help can
+run while the guest executes; configuration remains the startup-only `mynes.ini`
+file. Machine debug requires paused executor access.
 Cooked editing waits only in its Lib worker, so it cannot block guest execution.
 
 App owns built-in defaults and effective configuration. A command validates a

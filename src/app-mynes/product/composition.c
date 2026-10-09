@@ -1,6 +1,8 @@
 #include "product/composition.h"
 
 #include "product/command.h"
+#include "emulator/product/composition_interface.h"
+#include "emulator/product/monitor_interface.h"
 #include "emulator/machine/machine_interface.h"
 #include "emulator/session/session_interface.h"
 #include "emulator/ui/ui_interface.h"
@@ -12,11 +14,11 @@
 typedef struct app_composition
 {
     core_driver *driver;
-    emulator_machine *machine;
-    emulator_session *session;
-    emulator_ui *ui;
+    emulator_product *product;
     app_command_context command;
+    lib_u8 startup_rom_path[APP_CONFIG_PATH_CAPACITY];
     lib_u8 battery_path[APP_CONFIG_PATH_CAPACITY];
+    lib_bool console_control;
 } app_composition;
 
 static lib_bool app_battery_path(const lib_u8 *rom_path, lib_u8 *out_path,
@@ -62,18 +64,22 @@ static lib_bool app_composition_set_media(void *opaque, const char *path)
 {
     app_composition *composition = opaque;
     lib_u8 battery_path[APP_CONFIG_PATH_CAPACITY] = { 0 };
+    emulator_machine *machine;
     emulator_machine_state state;
 
-    if (composition == LIB_NULL)
+    if (composition == LIB_NULL || composition->product == LIB_NULL)
         return LIB_FALSE;
-    state = emulator_machine_state_get(composition->machine);
+    machine = emulator_product_machine_get(composition->product);
+    if (machine == LIB_NULL)
+        return LIB_FALSE;
+    state = emulator_machine_state_get(machine);
     if (state != EMULATOR_MACHINE_STOPPED && state != EMULATOR_MACHINE_PAUSED)
         return LIB_FALSE;
     if (path != LIB_NULL && !app_battery_path((const lib_u8 *)path, battery_path,
             sizeof(battery_path))) return LIB_FALSE;
     if (app_composition_save_battery(composition) != LIB_STATUS_OK)
         return LIB_FALSE;
-    if (!emulator_machine_set_removable_media(composition->machine, path,
+    if (!emulator_machine_set_removable_media(machine, path,
                                             LIB_STORAGE_MEDIUM_READONLY))
         return LIB_FALSE;
     lib_memory_copy(composition->battery_path, battery_path, sizeof(battery_path));
@@ -83,14 +89,14 @@ static lib_bool app_composition_set_media(void *opaque, const char *path)
     return LIB_TRUE;
 }
 
-static void app_machine_state_sink(void *context, emulator_machine_state state,
-                                   lib_u32 run_generation)
+static emulator_session_machine_state app_composition_map_state(void *context,
+    emulator_machine_state state)
 {
     app_composition *composition = context;
     emulator_session_machine_state session_state = EMULATOR_SESSION_MACHINE_ERROR;
 
-    if (composition == LIB_NULL || composition->session == LIB_NULL)
-        return;
+    if (composition == LIB_NULL)
+        return session_state;
 
     switch (state)
     {
@@ -122,29 +128,88 @@ static void app_machine_state_sink(void *context, emulator_machine_state state,
     if (state == EMULATOR_MACHINE_PAUSED || state == EMULATOR_MACHINE_STOPPED ||
         state == EMULATOR_MACHINE_ERROR)
         core_driver_request_input_reset(composition->driver);
-    (void)emulator_session_enqueue_runtime_completed(composition->session, session_state,
-                                                   run_generation);
+    return session_state;
 }
 
-static void app_machine_frame_sink(void *context, lib_u32 sequence,
-                                   lib_bool graphics, lib_u32 run_generation)
+static lib_status app_composition_destroy_machine(void *opaque)
 {
-    app_composition *composition = context;
+    app_composition *composition = opaque;
+    lib_status status;
 
-    if (composition == LIB_NULL || composition->session == LIB_NULL)
-        return;
-    (void)emulator_session_enqueue_frame_completed(composition->session, sequence, graphics,
-                                                 run_generation);
+    if (composition == LIB_NULL || composition->driver == LIB_NULL)
+        return LIB_STATUS_INVALID_STATE;
+    status = app_composition_save_battery(composition);
+    if (status != LIB_STATUS_OK)
+        return status;
+    status = core_driver_destroy(composition->driver);
+    if (status == LIB_STATUS_OK)
+        composition->driver = LIB_NULL;
+    return status;
+}
+
+static lib_status app_composition_bind_machine(void *opaque,
+    emulator_machine *machine)
+{
+    (void)opaque;
+    (void)machine;
+    return LIB_STATUS_OK;
+}
+
+static lib_status app_composition_configure_control(void *opaque,
+    emulator_product *product, emulator_session_options *out_options)
+{
+    app_composition *composition = opaque;
+    emulator_machine *machine;
+
+    if (composition == LIB_NULL || product == LIB_NULL || out_options == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    composition->product = product;
+    machine = emulator_product_machine_get(product);
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_STATE;
+    if (composition->command.cartridge_present &&
+        !app_composition_set_media(composition,
+            (const char *)composition->startup_rom_path))
+        return LIB_STATUS_IO_ERROR;
+    app_command_initialize(&composition->command, machine,
+        composition->command.cartridge_present, composition->command.display);
+    composition->command.media_context = composition;
+    composition->command.set_media = app_composition_set_media;
+    *out_options = (emulator_session_options){
+        .display = composition->command.display,
+        .console_control = composition->console_control,
+        .command = {
+            .context = &composition->command,
+            .open = app_command_open,
+            .reject_line = app_command_reject_line,
+            .submit_line = app_command_submit_line,
+            .handle_hotkey = app_command_handle_hotkey,
+            .note_runtime = app_command_note_runtime}};
+    return LIB_STATUS_OK;
+}
+
+static lib_status app_composition_configure_ui(void *opaque,
+    emulator_product *product, emulator_ui_options *out_options)
+{
+    kvm_hotkey_registry hotkeys;
+
+    (void)opaque;
+    (void)product;
+    if (out_options == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    kvm_hotkey_registry_initialize(&hotkeys);
+    if (kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,
+            "pause-toggle") != LIB_STATUS_OK) return LIB_STATUS_INTERNAL_ERROR;
+    *out_options = (emulator_ui_options){
+        .hotkeys = hotkeys,
+        .running_window_title = "MyNes (Running)",
+        .paused_window_title = "MyNes (Paused)",
+        .graphics_console_status_text = "NES video requires a window."};
+    return LIB_STATUS_OK;
 }
 
 lib_i32 app_composition_run(const app_startup_config *config)
 {
     app_composition *composition;
     emulator_machine_driver emulator_driver;
-    emulator_session_options session_options;
-    emulator_ui_options ui_options;
-    kvm_hotkey_registry hotkeys;
-    lib_status status;
     lib_i32 result = 1;
 
     if (config == LIB_NULL)
@@ -153,87 +218,36 @@ lib_i32 app_composition_run(const app_startup_config *config)
     if (composition == LIB_NULL)
         return 1;
     if (core_driver_create(&composition->driver, &(core_driver_options){
-                                                     .text_output = config->text_output,
+                                                     .text_output = config->display ==
+                                                         EMULATOR_SESSION_DISPLAY_CONSOLE,
                                                      .audio_enabled = LIB_TRUE}) != LIB_STATUS_OK)
         goto cleanup;
     if (core_driver_make_driver(composition->driver, &emulator_driver) != LIB_STATUS_OK)
         goto cleanup;
-    if (emulator_machine_create(&composition->machine, &emulator_driver) != LIB_STATUS_OK)
-        goto cleanup;
-    if (config->rom_path[0] != '\0' &&
-        !app_composition_set_media(composition, (const char *)config->rom_path))
-        goto cleanup;
-
-    app_command_initialize(&composition->command, composition->machine,
-                           config->rom_path[0] != '\0',
-                           config->text_output ? EMULATOR_SESSION_DISPLAY_CONSOLE : EMULATOR_SESSION_DISPLAY_WINDOW);
-    composition->command.media_context = composition;
-    composition->command.set_media = app_composition_set_media;
-    session_options = (emulator_session_options){
-        .display = config->text_output ? EMULATOR_SESSION_DISPLAY_CONSOLE : EMULATOR_SESSION_DISPLAY_WINDOW,
-        .console_control = LIB_TRUE,
-        .machine = composition->machine,
-        .command = {
-            .context = &composition->command,
-            .open = app_command_open,
-            .reject_line = app_command_reject_line,
-            .submit_line = app_command_submit_line,
-            .begin_external = app_command_begin_external,
-            .handle_hotkey = app_command_handle_hotkey,
-            .note_runtime = app_command_note_runtime,
-            .note_broker = app_command_note_broker,
-            .note_monitor_current = app_command_note_monitor_current}};
-    if (emulator_session_create(&composition->session, &session_options) != LIB_STATUS_OK)
-        goto cleanup;
-    emulator_machine_set_state_sink(composition->machine, app_machine_state_sink, composition);
-    emulator_machine_set_frame_sink(composition->machine, app_machine_frame_sink, composition);
-    if (emulator_machine_state_get(composition->machine) != EMULATOR_MACHINE_STOPPED)
-        goto cleanup;
-    /* Binding an observer does not replay Common's initial state. Cartridge
-     * attachment does not start execution; publish STOPPED for either case. */
-    app_machine_state_sink(composition, EMULATOR_MACHINE_STOPPED,
-                           emulator_machine_run_generation(composition->machine));
-
-    kvm_hotkey_registry_initialize(&hotkeys);
-    if (kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,
-                                     "pause-toggle") != LIB_STATUS_OK)
-        goto cleanup;
-    ui_options = (emulator_ui_options){
-        .event_context = composition->session,
-        .event_sink = emulator_session_enqueue_ui_event,
-        .hotkeys = hotkeys,
-        .running_window_title = "MyNes (Running)",
-        .paused_window_title = "MyNes (Paused)",
-        .graphics_console_status_text = "NES video requires a window."};
-    if (emulator_ui_create(&composition->ui, &ui_options) != LIB_STATUS_OK)
-        goto cleanup;
-    if (emulator_session_bind_ui(composition->session, composition->ui) != LIB_STATUS_OK)
-        goto cleanup;
-    result = emulator_session_run(composition->session) == 1 ? 0 : 1;
+    composition->command.cartridge_present = config->rom_path[0] != '\0';
+    composition->console_control = config->console_control;
+    composition->command.display = config->display;
+    if (composition->command.cartridge_present)
+        lib_memory_copy(composition->startup_rom_path, config->rom_path,
+            lib_text_length((const char *)config->rom_path) + 1u);
+    result = emulator_product_run(&(emulator_product_definition){
+        .name = "MyNES",
+        .machine = {
+            .machine = composition,
+            .driver = emulator_driver,
+            .bind = app_composition_bind_machine,
+            .destroy = app_composition_destroy_machine,
+            .state_context = composition,
+            .map_state = app_composition_map_state},
+        .context = composition,
+        .configure_control = app_composition_configure_control,
+        .configure_ui = app_composition_configure_ui});
+    composition->product = LIB_NULL;
 
 cleanup:
-    if (composition->machine != LIB_NULL)
-    {
-        status = emulator_machine_shutdown(composition->machine);
-        if (status != LIB_STATUS_OK)
-            return 1;
-    }
-    if (app_composition_save_battery(composition) != LIB_STATUS_OK)
-        result = 1;
-    if (composition->ui != LIB_NULL && emulator_ui_destroy(composition->ui) != LIB_STATUS_OK)
+    if (composition->driver != LIB_NULL &&
+               app_composition_destroy_machine(composition) != LIB_STATUS_OK)
         return 1;
-    composition->ui = LIB_NULL;
-    if (composition->session != LIB_NULL &&
-        emulator_session_destroy(composition->session) != LIB_STATUS_OK)
-        return 1;
-    composition->session = LIB_NULL;
-    if (composition->machine != LIB_NULL &&
-        emulator_machine_destroy(composition->machine) != LIB_STATUS_OK)
-        return 1;
-    composition->machine = LIB_NULL;
-    if (core_driver_destroy(composition->driver) != LIB_STATUS_OK)
-        return 1;
-    composition->driver = LIB_NULL;
     lib_release(composition);
     return result;
 }

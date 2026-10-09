@@ -137,20 +137,11 @@ static void note_runtime(void *opaque, emulator_session_machine_state prior,
     native_window_fixture *fixture = native_window_runtime_observer;
 
     app_command_note_runtime(opaque, prior, completed, out_result);
-    if (fixture != NULL)
+    if (fixture != NULL) {
         lib_atomic_i32_store_explicit(&fixture->observed_runtime, (lib_i32)completed,
                                       LIB_MEMORY_ORDER_SEQ_CST);
-}
-
-static void note_monitor_current(void *opaque, lib_bool current,
-                                 emulator_session_command_result *out_result)
-{
-    native_window_fixture *fixture = native_window_runtime_observer;
-
-    app_command_note_monitor_current(opaque, current, out_result);
-    if (fixture != NULL &&
-        lib_atomic_i32_load_explicit(&fixture->expected_runtime,
-                                     LIB_MEMORY_ORDER_SEQ_CST) ==
+        if (lib_atomic_i32_load_explicit(&fixture->expected_runtime,
+                                      LIB_MEMORY_ORDER_SEQ_CST) ==
             lib_atomic_i32_load_explicit(&fixture->observed_runtime,
                                          LIB_MEMORY_ORDER_SEQ_CST))
     {
@@ -159,6 +150,8 @@ static void note_monitor_current(void *opaque, lib_bool current,
                                       LIB_MEMORY_ORDER_SEQ_CST);
         assert(base_sync_event_signal(fixture->runtime_processed) == LIB_STATUS_OK);
     }
+}
+
 }
 
 static DWORD WINAPI run_session(void *opaque)
@@ -323,11 +316,8 @@ int main(void)
             .open = app_command_open,
             .reject_line = app_command_reject_line,
             .submit_line = app_command_submit_line,
-            .begin_external = app_command_begin_external,
             .handle_hotkey = app_command_handle_hotkey,
-            .note_runtime = note_runtime,
-            .note_broker = app_command_note_broker,
-            .note_monitor_current = note_monitor_current}};
+            .note_runtime = note_runtime}};
     assert(emulator_session_create(&fixture.session, &session_options) == LIB_STATUS_OK);
     emulator_machine_set_state_sink(fixture.machine, state_sink, &fixture);
     emulator_machine_set_frame_sink(fixture.machine, frame_sink, &fixture);

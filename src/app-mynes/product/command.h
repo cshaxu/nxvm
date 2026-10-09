@@ -1,6 +1,7 @@
 #ifndef APP_COMMAND_H
 #define APP_COMMAND_H
 
+#include "emulator/product/monitor_interface.h"
 #include "emulator/session/session_interface.h"
 
 #define APP_COMMAND_TEXT_CAPACITY EMULATOR_SESSION_TEXT_CAPACITY
@@ -12,17 +13,10 @@ typedef enum app_command_snapshot_result {
     APP_COMMAND_SNAPSHOT_SAVE_FAILED
 } app_command_snapshot_result;
 
-typedef struct app_command_session {
-    emulator_session_display display;
-    lib_bool transition_pending;
-    lib_bool prompt_due;
-    app_command_snapshot_result pending_snapshot;
-    lib_u8 pending_monitor_text[APP_COMMAND_TEXT_CAPACITY];
-} app_command_session;
-
 typedef struct app_command_context {
-    app_command_session session;
     emulator_machine *machine;
+    emulator_product_monitor_provider monitor;
+    emulator_session_display display;
     lib_bool cartridge_present;
     lib_bool run_after_reset;
     lib_bool started_after_reset;
@@ -32,6 +26,7 @@ typedef struct app_command_context {
      * for Common's presentation policy, while retaining reset wording here. */
     lib_bool suppress_window_after_reset;
     lib_bool report_suppressed_reset;
+    app_command_snapshot_result pending_snapshot;
     void *media_context;
     lib_bool (*set_media)(void *context, const char *path);
 } app_command_context;
@@ -43,15 +38,9 @@ void app_command_open(void *context, emulator_session_command_result *out_result
 void app_command_reject_line(void *context, emulator_session_command_result *out_result);
 void app_command_submit_line(void *context, emulator_session_machine_state state,
     const char *line, emulator_session_command_result *out_result);
-lib_bool app_command_begin_external(void *context, emulator_session_machine_state state,
-    emulator_session_request request);
 lib_bool app_command_handle_hotkey(void *context, emulator_session_machine_state state,
     const lib_u8 *identifier, emulator_session_command_result *out_result);
 void app_command_note_runtime(void *context, emulator_session_machine_state prior,
     emulator_session_machine_state completed, emulator_session_command_result *out_result);
-void app_command_note_broker(void *context, emulator_session_machine_state state,
-    lib_bool vm_console_current, lib_bool monitor_running_surface);
-void app_command_note_monitor_current(void *context, lib_bool current,
-    emulator_session_command_result *out_result);
 
 #endif

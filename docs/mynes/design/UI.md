@@ -15,11 +15,15 @@ The product has a cooked Console for management/debug and two equally supported
 gameplay backends: Win32 KVM Window and ASCII KVM Console.
 It has no menu, graphical settings dialog or in-game
 management overlay. The Console stays available when Window gameplay runs.
-App owns the command grammar, prompts, configuration and product hotkeys.
+Emulator Product owns the fixed monitor grammar, prompt framing and help layout;
+MyNES owns its configuration, cartridge/debug extension commands and product
+hotkeys.
 
 MyNes reads `mynes.ini` beside its executable before constructing Common. The
 file selects the optional startup ROM and `window` or `console` presentation;
-`display` defaults to `window` when omitted. Configuration is fixed for that
+`display` defaults to `window` when omitted. `console_control=0|1` controls
+whether the running machine may return to the cooked monitor Console; it
+defaults to `1`. Configuration is fixed for that
 process lifetime, so changing it means editing the file and restarting.
 Startup remains STOPPED, with or without a configured ROM: attachment alone
 does not reset, run or create a gameplay Window. Use `start` to begin execution.
@@ -84,8 +88,10 @@ Logs and frame notifications do not print directly over a partially typed line.
 ASCII gameplay displays the normal game image as character cells, with optional
 cell colors. Core supplies that text rendition; kvm-console displays text frames
 only. It presents the same running machine without changing NES hardware mode.
-The `display` setting in `mynes.ini` selects Core's published representation at
-startup; Common continues its ordinary frame-kind-driven mode switching.
+The `display=window|console` setting in `mynes.ini` selects Core's published
+representation at startup; `console_control=0|1` independently enables or
+disables the cooked monitor handoff. Emulator continues its ordinary
+frame-kind-driven mode switching.
 Conversion and routing ownership are defined in [Architecture](ARCHITECTURE.md).
 The chosen representation takes effect on explicit start/resume because the shared
 publisher is parked during paused debugging.
