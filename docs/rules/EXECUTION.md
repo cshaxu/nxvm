@@ -453,6 +453,16 @@ repository-only unit suite passes. Every numbered T closes only after that unit
 suite and its owner-managed external-ROM/disk integration suite pass; an S may
 include either relevant suite in its transient focused selection. Standalone
 documentation work runs only its applicable governance checks.
+
+**Long-running build and test execution.** Run a complete build, unit suite,
+integration suite, or other command that can outlive an interactive command
+output interval in a persistent, pollable terminal session. Poll that same
+process to completion; do not repeatedly launch it through a short foreground
+execution interval that can terminate it partway through. A partial build or
+test has no verification value and must not be reported as a failure or pass.
+Use configured Ninja parallelism and the persistent project ccache directory
+where available, but do not represent cache hits as a substitute for linking
+targets or executing the required suite.
 Documentation/design tasks apply only the rules relevant to their artifact and
 do not manufacture runtime verification requirements. Standalone `Td` work
 does not create a task artifact or change the current artifact version.

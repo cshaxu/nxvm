@@ -29,6 +29,8 @@ typedef struct composition_fixture {
     lib_status shutdown_status;
     lib_status ui_destroy_status;
     lib_status machine_destroy_status;
+    lib_bool initial_state_enqueued;
+    lib_bool initial_state_enqueue_succeeds;
 } composition_fixture;
 
 static composition_fixture fixture;
@@ -40,6 +42,7 @@ static void composition_fixture_reset(composition_failure failure)
     fixture.shutdown_status = LIB_STATUS_OK;
     fixture.ui_destroy_status = LIB_STATUS_OK;
     fixture.machine_destroy_status = LIB_STATUS_OK;
+    fixture.initial_state_enqueue_succeeds = LIB_TRUE;
     fixture.machine.live = LIB_TRUE;
 }
 
@@ -148,7 +151,11 @@ lib_status emulator_session_destroy(emulator_session *session)
 
 lib_bool emulator_session_enqueue_runtime_completed(emulator_session *session,
     emulator_session_machine_state state, lib_u32 generation)
-{ (void)session; (void)state; (void)generation; return LIB_TRUE; }
+{
+    (void)session; (void)state; (void)generation;
+    fixture.initial_state_enqueued = LIB_TRUE;
+    return fixture.initial_state_enqueue_succeeds;
+}
 
 lib_bool emulator_session_enqueue_frame_completed(emulator_session *session,
     lib_u32 sequence, lib_bool graphics, lib_u32 generation)
@@ -252,6 +259,24 @@ static lib_i32 composition_destroy_failure_recovers(void)
     return emulator_product_destroy(app) == LIB_STATUS_OK && composition_fixture_clean();
 }
 
+static lib_i32 composition_initial_state_reports_enqueue_result(void)
+{
+    emulator_product *app = LIB_NULL;
+    emulator_session_options options = {0};
+
+    composition_fixture_reset(COMPOSITION_FAILURE_NONE);
+    if (emulator_product_create(&composition_machine, &app) != LIB_STATUS_OK ||
+        emulator_product_compose_machine(app) != LIB_STATUS_OK ||
+        emulator_product_compose_control(app, &options) != LIB_STATUS_OK ||
+        emulator_product_publish_initial_state(app) != LIB_STATUS_OK ||
+        !fixture.initial_state_enqueued) return 0;
+    fixture.initial_state_enqueued = LIB_FALSE;
+    fixture.initial_state_enqueue_succeeds = LIB_FALSE;
+    if (emulator_product_publish_initial_state(app) != LIB_STATUS_INTERNAL_ERROR ||
+        !fixture.initial_state_enqueued) return 0;
+    return emulator_product_destroy(app) == LIB_STATUS_OK && composition_fixture_clean();
+}
+
 static lib_i32 composition_machine_cleanup_failure_recovers(void)
 {
     emulator_product *app = LIB_NULL;
@@ -306,6 +331,7 @@ lib_i32 main(void)
         !composition_ui_failure_recovers(COMPOSITION_FAILURE_UI_CREATE) ||
         !composition_ui_failure_recovers(COMPOSITION_FAILURE_UI_BIND) ||
         !composition_destroy_failure_recovers() ||
+        !composition_initial_state_reports_enqueue_result() ||
         !composition_machine_cleanup_failure_recovers() ||
         !composition_ui_destroy_failure_recovers(LIB_FALSE) ||
         !composition_ui_destroy_failure_recovers(LIB_TRUE)) return 1;

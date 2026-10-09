@@ -186,7 +186,8 @@ lib_status emulator_product_publish_initial_state(emulator_product *product)
     if (state != EMULATOR_MACHINE_STOPPED) return LIB_STATUS_INVALID_STATE;
     return emulator_session_enqueue_runtime_completed(product->session,
         emulator_product_machine_state(product, state),
-        emulator_machine_run_generation(product->emulator_machine));
+        emulator_machine_run_generation(product->emulator_machine)) ?
+        LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
 lib_i32 emulator_product_run(const emulator_product_definition *definition)
