@@ -38,24 +38,6 @@ add_custom_command(OUTPUT "${nxvm_default_firmware_rom}"
 include(cmake/nxvm/NxvmProductProfile.cmake)
 
 set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
-set(PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG
-    "${CMAKE_BINARY_DIR}/generated/cpu_timing_manifest_metadata_catalog.inc")
-add_custom_command(
-    OUTPUT "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}"
-    COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-        -File "${CMAKE_SOURCE_DIR}/tools/nxvm/Export-CpuTimingManifestCatalog.ps1"
-        -OutPath "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}"
-    DEPENDS tools/nxvm/Export-CpuTimingManifestCatalog.ps1
-        tools/nxvm/Verify-CpuTimingManifestContract.ps1
-        docs/nxvm/etc/cpu-timing/t435-s2-8086-timing-manifest.json
-        docs/nxvm/etc/cpu-timing/t512-s5-8088-timing-manifest.json
-        docs/nxvm/etc/cpu-timing/t435-s2-80186-timing-manifest.json
-        docs/nxvm/etc/cpu-timing/t435-s2-80286-timing-manifest.json
-        docs/nxvm/etc/cpu-timing/t435-s2-80386-timing-manifest.json
-    VERBATIM)
-add_custom_target(cpu-timing-manifest-catalog
-    DEPENDS "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}")
-
 set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     shared-lib-tests
     shared-emulator-tests
@@ -342,133 +324,8 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-# The T435 S4 runner proves every frozen I86 key through a real instruction
-# execution; its result artifact is verified by the dependent CTest below.
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/test-results")
-add_executable(machine-8086-timing-manifest-runner
-    test/app-nxvm/unit/board/machine_8086_timing_manifest_runner.c)
-target_link_libraries(machine-8086-timing-manifest-runner PRIVATE
-    core-x86)
-target_compile_definitions(machine-8086-timing-manifest-runner PRIVATE
-    PROJECT_TEST_8086_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json"
-    PROJECT_TEST_8086_DECODER_INVENTORY_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8086-decoder-inventory.json")
-add_dependencies(machine-8086-timing-manifest-runner
-    cpu-timing-manifest-catalog)
-target_include_directories(machine-8086-timing-manifest-runner PRIVATE
-    "${CMAKE_BINARY_DIR}/generated")
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-8086-timing-manifest-runner PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
-# T512 S5 reuses the one I86 recipe executor for the 8088 source row. The
-# target is admitted as a unit test only once its independent Table-2-21
-# transfer verifier consumes its result artifact.
-add_executable(machine-8088-timing-manifest-runner
-    test/app-nxvm/unit/board/machine_8086_timing_manifest_runner.c)
-target_link_libraries(machine-8088-timing-manifest-runner PRIVATE
-    core-x86)
-target_compile_definitions(machine-8088-timing-manifest-runner PRIVATE
-    PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE=CORE_MACHINE_CPU_PROFILE_8088
-    PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME="8088"
-    PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX="I88-"
-    PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8088-timing-results.json"
-    PROJECT_TEST_TIMING_MANIFEST_DECODER_INVENTORY_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8088-decoder-inventory.json")
-add_dependencies(machine-8088-timing-manifest-runner
-    cpu-timing-manifest-catalog)
-target_include_directories(machine-8088-timing-manifest-runner PRIVATE
-    "${CMAKE_BINARY_DIR}/generated")
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-8088-timing-manifest-runner PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(machine-80186-instruction-timing-ledger-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
-# The unit runner records real I186 recipes in the manifest-result document.
-add_executable(machine-80186-timing-manifest-runner
-    test/app-nxvm/unit/board/machine_80186_timing_manifest_runner.c)
-target_link_libraries(machine-80186-timing-manifest-runner PRIVATE
-    core-x86)
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/test-results")
-target_compile_definitions(machine-80186-timing-manifest-runner PRIVATE
-    PROJECT_TEST_80186_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80186-timing-results.json")
-add_dependencies(machine-80186-timing-manifest-runner
-    cpu-timing-manifest-catalog)
-target_include_directories(machine-80186-timing-manifest-runner PRIVATE
-    "${CMAKE_BINARY_DIR}/generated")
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-80186-timing-manifest-runner PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
-# The unit runner records 80286 generated-key retirement observations.
-add_executable(machine-80286-timing-manifest-runner
-    test/app-nxvm/unit/board/machine_80286_timing_manifest_runner.c)
-target_link_libraries(machine-80286-timing-manifest-runner PRIVATE
-    mydeskpro386-d4)
-target_compile_definitions(machine-80286-timing-manifest-runner PRIVATE
-    PROJECT_TEST_80286_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80286-timing-results.json")
-add_dependencies(machine-80286-timing-manifest-runner
-    cpu-timing-manifest-catalog)
-target_include_directories(machine-80286-timing-manifest-runner PRIVATE
-    "${CMAKE_BINARY_DIR}/generated")
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-80286-timing-manifest-runner PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
-# These runners generate reproducible decoder-boundary artifacts under the
-# build tree; the ledger verifiers consume those artifacts separately.
-add_executable(core-machine-80186-decoder-inventory-runner
-    test/core/chips/cpu/core_machine_80186_decoder_inventory_runner.c)
-target_link_libraries(core-machine-80186-decoder-inventory-runner PRIVATE
-    mydeskpro386-d4)
-target_compile_definitions(core-machine-80186-decoder-inventory-runner PRIVATE
-    PROJECT_TEST_80186_DECODER_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80186-decoder-inventory.json")
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-80186-decoder-inventory-runner PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
-add_executable(core-machine-80286-decoder-inventory-runner
-    test/core/chips/cpu/core_machine_80286_decoder_inventory_runner.c)
-target_link_libraries(core-machine-80286-decoder-inventory-runner PRIVATE
-    mydeskpro386-d4)
-target_compile_definitions(core-machine-80286-decoder-inventory-runner PRIVATE
-    PROJECT_TEST_80286_DECODER_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80286-decoder-inventory.json")
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-80286-decoder-inventory-runner PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
-add_executable(core-machine-80386-decoder-inventory-runner
-    test/core/chips/cpu/core_machine_80386_decoder_inventory_runner.c)
-target_link_libraries(core-machine-80386-decoder-inventory-runner PRIVATE
-    mydeskpro386-d4)
-target_compile_definitions(core-machine-80386-decoder-inventory-runner PRIVATE
-    PROJECT_TEST_80386_DECODER_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80386-decoder-inventory.json")
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-80386-decoder-inventory-runner PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
-add_executable(machine-80386-timing-manifest-runner
-    test/app-nxvm/unit/board/machine_80386_timing_manifest_runner.c
-    test/core/board-base/composition/composition_fixture.c)
-target_link_libraries(machine-80386-timing-manifest-runner PRIVATE
-    mydeskpro386-d4)
-target_compile_definitions(machine-80386-timing-manifest-runner PRIVATE
-    PROJECT_TEST_80386_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80386-timing-results.json")
-add_dependencies(machine-80386-timing-manifest-runner
-    cpu-timing-manifest-catalog)
-target_include_directories(machine-80386-timing-manifest-runner PRIVATE
-    "${CMAKE_BINARY_DIR}/generated")
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-80386-timing-manifest-runner PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -1238,8 +1095,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-80386-secondary-integer-timing-smoke
     machine-80386-privileged-timing-smoke
     machine-8086-instruction-timing-ledger-smoke
-    machine-8086-timing-manifest-runner
-    machine-8088-timing-manifest-runner
     machine-80186-instruction-timing-ledger-smoke
     machine-legacy-timing-normalization-smoke
     machine-80286-instruction-timing-ledger-smoke
@@ -1474,6 +1329,21 @@ list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
     host-smoke
     storage-smoke)
 
+# This root-level list is the repository registration index, not an App
+# ownership list.  These Core-owned targets remain here solely so its exact
+# CTest partition check accounts for their routes under test/core.
+list(APPEND PROJECT_UNIT_TEST_TARGETS
+    core-machine-time-smoke
+    core-machine-competition-smoke
+    machine-8086-timing-manifest-runner
+    machine-8088-timing-manifest-runner
+    machine-80186-timing-manifest-runner
+    machine-80286-timing-manifest-runner
+    machine-80386-timing-manifest-runner
+    core-machine-80186-decoder-inventory-runner
+    core-machine-80286-decoder-inventory-runner
+    core-machine-80386-decoder-inventory-runner)
+
 # The undefined-opcode verifier inventories actual unit sources, rather than a second hand-maintained
 # target list.  Every source that names a #UD producer/assertion must still
 # have one explicit real-delivery or terminal disposition below.
@@ -1490,12 +1360,6 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     vm-model40-rom-layout-smoke
     core-machine-instance-smoke
     core-machine-explicit-time-smoke
-    machine-80186-timing-manifest-runner
-    machine-80286-timing-manifest-runner
-    core-machine-80186-decoder-inventory-runner
-    core-machine-80286-decoder-inventory-runner
-    core-machine-80386-decoder-inventory-runner
-    machine-80386-timing-manifest-runner
     core-machine-debug-smoke
     x86-test-cpu_execution_fault_event
     vm-fdc-authority-smoke
@@ -1916,12 +1780,6 @@ add_test(NAME unit.nxvm-firmware-build
         "-DWORK=${CMAKE_BINARY_DIR}/test/nxvm-firmware-build"
         -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/product/firmware_build.cmake")
 set_tests_properties(unit.nxvm-firmware-build PROPERTIES LABELS "unit;app-nxvm" TIMEOUT 30)
-add_test(NAME unit.fdc-boundary-negative
-    COMMAND "${CMAKE_COMMAND}"
-        "-DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
-        "-DWORK=${CMAKE_BINARY_DIR}/test/fdc-boundary-negative"
-        -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/board/fdc_boundary_negative.cmake")
-set_tests_properties(unit.fdc-boundary-negative PROPERTIES LABELS "unit;app-nxvm" TIMEOUT 30)
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.
 foreach(target IN ITEMS
@@ -1932,45 +1790,6 @@ foreach(target IN ITEMS
     set_tests_properties("unit.${target}" PROPERTIES
         WORKING_DIRECTORY "${project_console_smoke_workspace}")
 endforeach()
-
-set_tests_properties("unit.machine-8086-timing-manifest-runner" PROPERTIES
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-set_tests_properties("unit.machine-8088-timing-manifest-runner" PROPERTIES
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-if(POWERSHELL_EXECUTABLE)
-    add_test(NAME "unit.core-machine-8086-timing-results-s5"
-        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/Verify-8086TimingResults.ps1"
-            -ResultPath
-            "${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json")
-    set_tests_properties("unit.core-machine-8086-timing-results-s5" PROPERTIES
-        DEPENDS "unit.machine-8086-timing-manifest-runner"
-        LABELS "unit"
-        TIMEOUT 30
-        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-    add_test(NAME "unit.core-machine-8088-timing-results-s5"
-        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/Verify-8088TimingResults.ps1"
-            -BaseResultPath
-            "${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json"
-            -ResultPath
-            "${CMAKE_BINARY_DIR}/generated/test-results/8088-timing-results.json")
-    set_tests_properties("unit.core-machine-8088-timing-results-s5" PROPERTIES
-        DEPENDS "unit.machine-8086-timing-manifest-runner;unit.machine-8088-timing-manifest-runner"
-        LABELS "unit"
-        TIMEOUT 30
-        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-    add_test(NAME "unit.core-machine-8086-decoder-ledger-s5"
-        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/Verify-8086DecoderLedger.ps1"
-            -ResultPath
-            "${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json")
-    set_tests_properties("unit.core-machine-8086-decoder-ledger-s5" PROPERTIES
-        DEPENDS "unit.machine-8086-timing-manifest-runner"
-        LABELS "unit"
-        TIMEOUT 30
-        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-endif()
 
 if(NXVM_PRODUCT_PROFILE STREQUAL "default-pc-at-80386-1440k-hdd")
 foreach(target IN LISTS PROJECT_INTEGRATION_FDD_TARGETS)
@@ -2094,9 +1913,9 @@ set(PROJECT_UNIT_TEST_AUXILIARY_TESTS
     nxvm-firmware-embedding nxvm-firmware-build fdc-boundary-negative)
 if(POWERSHELL_EXECUTABLE)
     list(APPEND PROJECT_UNIT_TEST_AUXILIARY_TESTS
-        core-machine-8086-timing-results-s5
-        core-machine-8088-timing-results-s5
-        core-machine-8086-decoder-ledger-s5)
+        core-machine-8086-timing-results
+        core-machine-8088-timing-results
+        core-machine-8086-decoder-ledger)
 endif()
 file(GENERATE
     OUTPUT "${CMAKE_BINARY_DIR}/unit-test-targets.txt"

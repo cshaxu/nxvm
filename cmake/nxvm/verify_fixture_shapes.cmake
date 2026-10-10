@@ -125,10 +125,10 @@ endif()
 # historical fixture shapes.  Name them here so a new direct constructor
 # cannot hide behind the historical count.
 set(project_fixture_shapes_timing_manifest_sources
-    "test/app-nxvm/unit/board/machine_8086_timing_manifest_runner.c"
-    "test/app-nxvm/unit/board/machine_80186_timing_manifest_runner.c"
-    "test/app-nxvm/unit/board/machine_80286_timing_manifest_runner.c"
-    "test/app-nxvm/unit/board/machine_80386_timing_manifest_runner.c")
+    "test/core/x86/machine_8086_timing_manifest_runner.c"
+    "test/core/x86/machine_80186_timing_manifest_runner.c"
+    "test/core/x86/machine_80286_timing_manifest_runner.c"
+    "test/core/x86/machine_80386_timing_manifest_runner.c")
 set(project_fixture_shapes_constructor_sources ${project_fixture_shapes_inventory}
     # S93 separates attachment phases from controller wiring; the original
     # joint binding-identity constructor remains classified in the inventory.
@@ -194,7 +194,11 @@ file(GLOB project_fixture_shapes_machine_sources
     "${PROJECT_FIXTURE_SHAPES_SOURCE_DIR}/test/app-nxvm/unit/board/*.c")
 list(APPEND project_fixture_shapes_machine_sources
     "test/core/board-base/machine_competition_smoke.c"
-    "test/core/board-base/machine_time_smoke.c")
+    "test/core/board-base/machine_time_smoke.c"
+    "test/core/x86/machine_8086_timing_manifest_runner.c"
+    "test/core/x86/machine_80186_timing_manifest_runner.c"
+    "test/core/x86/machine_80286_timing_manifest_runner.c"
+    "test/core/x86/machine_80386_timing_manifest_runner.c")
 list(APPEND project_fixture_shapes_machine_sources
     "test/app-mydeskpro386/unit/profiles/core_machine_d4_platform_smoke.c"
     "test/app-mydeskpro386/unit/profiles/machine_d4_refresh_hold_smoke.c")

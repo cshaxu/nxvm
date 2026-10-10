@@ -3,9 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR OR NOT DEFINED WORK)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR and WORK are required")
 endif()
 
-# This App integration gate checks both Shared controller ownership and App
-# media/assembly boundaries; it is not a standalone Shared mechanism test.
-# An owned build-tree fixture, not edits to the source tree under audit.
+# This Core gate checks controller ownership and machine-media/assembly
+# boundaries through an owned build-tree fixture, not source-tree edits.
 file(REMOVE_RECURSE "${WORK}")
 set(paths
     src/core/board-base/fdc.c

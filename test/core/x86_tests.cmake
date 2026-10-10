@@ -11,6 +11,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 get_filename_component(CORE_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../src/core" ABSOLUTE)
 get_filename_component(PRODUCT_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../src/product" ABSOLUTE)
+get_filename_component(CORE_TEST_REPOSITORY_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
 if(NOT TARGET core-chip-pit825x)
     add_subdirectory("${CORE_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/core")
 endif()
@@ -22,6 +23,147 @@ endif()
 set(CORE_X86_TEST_TARGETS)
 include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 set(CORE_TEST_ROOT "${CMAKE_CURRENT_LIST_DIR}")
+
+if(NOT TARGET cpu-timing-manifest-catalog)
+    set(CORE_CPU_TIMING_MANIFEST_METADATA_CATALOG
+        "${CMAKE_BINARY_DIR}/generated/cpu_timing_manifest_metadata_catalog.inc")
+    add_custom_command(
+        OUTPUT "${CORE_CPU_TIMING_MANIFEST_METADATA_CATALOG}"
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CORE_TEST_REPOSITORY_ROOT}/tools/nxvm/Export-CpuTimingManifestCatalog.ps1"
+            -OutPath "${CORE_CPU_TIMING_MANIFEST_METADATA_CATALOG}"
+        DEPENDS "${CORE_TEST_REPOSITORY_ROOT}/tools/nxvm/Export-CpuTimingManifestCatalog.ps1"
+            "${CORE_TEST_REPOSITORY_ROOT}/tools/nxvm/Verify-CpuTimingManifestContract.ps1"
+            "${CORE_TEST_REPOSITORY_ROOT}/docs/nxvm/etc/cpu-timing/t435-s2-8086-timing-manifest.json"
+            "${CORE_TEST_REPOSITORY_ROOT}/docs/nxvm/etc/cpu-timing/t512-s5-8088-timing-manifest.json"
+            "${CORE_TEST_REPOSITORY_ROOT}/docs/nxvm/etc/cpu-timing/t435-s2-80186-timing-manifest.json"
+            "${CORE_TEST_REPOSITORY_ROOT}/docs/nxvm/etc/cpu-timing/t435-s2-80286-timing-manifest.json"
+            "${CORE_TEST_REPOSITORY_ROOT}/docs/nxvm/etc/cpu-timing/t435-s2-80386-timing-manifest.json"
+        VERBATIM)
+    add_custom_target(cpu-timing-manifest-catalog
+        DEPENDS "${CORE_CPU_TIMING_MANIFEST_METADATA_CATALOG}")
+endif()
+
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/test-results")
+add_executable(machine-8086-timing-manifest-runner
+    ${CORE_TEST_ROOT}/x86/machine_8086_timing_manifest_runner.c)
+target_link_libraries(machine-8086-timing-manifest-runner PRIVATE core-x86)
+target_compile_definitions(machine-8086-timing-manifest-runner PRIVATE
+    PROJECT_TEST_8086_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json"
+    PROJECT_TEST_8086_DECODER_INVENTORY_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8086-decoder-inventory.json")
+add_dependencies(machine-8086-timing-manifest-runner cpu-timing-manifest-catalog)
+target_include_directories(machine-8086-timing-manifest-runner PRIVATE "${CMAKE_BINARY_DIR}/generated")
+
+add_executable(machine-8088-timing-manifest-runner
+    ${CORE_TEST_ROOT}/x86/machine_8086_timing_manifest_runner.c)
+target_link_libraries(machine-8088-timing-manifest-runner PRIVATE core-x86)
+target_compile_definitions(machine-8088-timing-manifest-runner PRIVATE
+    PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE=CORE_MACHINE_CPU_PROFILE_8088
+    PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME="8088"
+    PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX="I88-"
+    PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8088-timing-results.json"
+    PROJECT_TEST_TIMING_MANIFEST_DECODER_INVENTORY_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8088-decoder-inventory.json")
+add_dependencies(machine-8088-timing-manifest-runner cpu-timing-manifest-catalog)
+target_include_directories(machine-8088-timing-manifest-runner PRIVATE "${CMAKE_BINARY_DIR}/generated")
+
+add_executable(machine-80186-timing-manifest-runner
+    ${CORE_TEST_ROOT}/x86/machine_80186_timing_manifest_runner.c)
+target_link_libraries(machine-80186-timing-manifest-runner PRIVATE core-x86)
+target_compile_definitions(machine-80186-timing-manifest-runner PRIVATE
+    PROJECT_TEST_80186_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80186-timing-results.json")
+add_dependencies(machine-80186-timing-manifest-runner cpu-timing-manifest-catalog)
+target_include_directories(machine-80186-timing-manifest-runner PRIVATE "${CMAKE_BINARY_DIR}/generated")
+
+add_executable(machine-80286-timing-manifest-runner
+    ${CORE_TEST_ROOT}/x86/machine_80286_timing_manifest_runner.c)
+target_link_libraries(machine-80286-timing-manifest-runner PRIVATE core-board-base core-x86)
+target_compile_definitions(machine-80286-timing-manifest-runner PRIVATE
+    PROJECT_TEST_80286_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80286-timing-results.json")
+add_dependencies(machine-80286-timing-manifest-runner cpu-timing-manifest-catalog)
+target_include_directories(machine-80286-timing-manifest-runner PRIVATE "${CMAKE_BINARY_DIR}/generated")
+
+add_executable(machine-80386-timing-manifest-runner
+    ${CORE_TEST_ROOT}/x86/machine_80386_timing_manifest_runner.c
+    ${CORE_TEST_ROOT}/board-base/composition/composition_fixture.c)
+target_link_libraries(machine-80386-timing-manifest-runner PRIVATE core-board-base core-x86)
+target_compile_definitions(machine-80386-timing-manifest-runner PRIVATE
+    PROJECT_TEST_80386_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80386-timing-results.json")
+add_dependencies(machine-80386-timing-manifest-runner cpu-timing-manifest-catalog)
+target_include_directories(machine-80386-timing-manifest-runner PRIVATE "${CMAKE_BINARY_DIR}/generated")
+
+foreach(profile IN ITEMS 80186 80286 80386)
+    set(target "core-machine-${profile}-decoder-inventory-runner")
+    add_executable(${target}
+        "${CORE_TEST_ROOT}/chips/cpu/core_machine_${profile}_decoder_inventory_runner.c")
+    target_link_libraries(${target} PRIVATE core-chip-cpu)
+    target_compile_definitions(${target} PRIVATE
+        PROJECT_TEST_${profile}_DECODER_PATH="${CMAKE_BINARY_DIR}/generated/test-results/${profile}-decoder-inventory.json")
+endforeach()
+
+foreach(target IN ITEMS
+    machine-8086-timing-manifest-runner
+    machine-8088-timing-manifest-runner
+    machine-80186-timing-manifest-runner
+    machine-80286-timing-manifest-runner
+    machine-80386-timing-manifest-runner
+    core-machine-80186-decoder-inventory-runner
+    core-machine-80286-decoder-inventory-runner
+    core-machine-80386-decoder-inventory-runner)
+    if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
+    list(APPEND CORE_X86_TEST_TARGETS ${target})
+endforeach()
+
+foreach(target IN ITEMS
+    machine-8086-timing-manifest-runner
+    machine-8088-timing-manifest-runner
+    machine-80186-timing-manifest-runner
+    machine-80286-timing-manifest-runner
+    machine-80386-timing-manifest-runner)
+    add_test(NAME "unit.${target}" COMMAND ${target})
+    set_tests_properties("unit.${target}" PROPERTIES
+        LABELS "unit;core" TIMEOUT 30
+        WORKING_DIRECTORY "${CORE_TEST_REPOSITORY_ROOT}")
+endforeach()
+
+foreach(target IN ITEMS
+    core-machine-80186-decoder-inventory-runner
+    core-machine-80286-decoder-inventory-runner
+    core-machine-80386-decoder-inventory-runner)
+    add_test(NAME "unit.${target}" COMMAND ${target})
+    set_tests_properties("unit.${target}" PROPERTIES
+        LABELS "unit;core" TIMEOUT 30
+        WORKING_DIRECTORY "${CORE_TEST_REPOSITORY_ROOT}")
+endforeach()
+
+if(POWERSHELL_EXECUTABLE)
+    add_test(NAME unit.core-machine-8086-timing-results
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CORE_TEST_REPOSITORY_ROOT}/tools/nxvm/Verify-8086TimingResults.ps1"
+            -ResultPath "${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json")
+    set_tests_properties(unit.core-machine-8086-timing-results PROPERTIES
+        DEPENDS "unit.machine-8086-timing-manifest-runner"
+        LABELS "unit;core" TIMEOUT 30
+        WORKING_DIRECTORY "${CORE_TEST_REPOSITORY_ROOT}")
+    add_test(NAME unit.core-machine-8088-timing-results
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CORE_TEST_REPOSITORY_ROOT}/tools/nxvm/Verify-8088TimingResults.ps1"
+            -BaseResultPath "${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json"
+            -ResultPath "${CMAKE_BINARY_DIR}/generated/test-results/8088-timing-results.json")
+    set_tests_properties(unit.core-machine-8088-timing-results PROPERTIES
+        DEPENDS "unit.machine-8086-timing-manifest-runner;unit.machine-8088-timing-manifest-runner"
+        LABELS "unit;core" TIMEOUT 30
+        WORKING_DIRECTORY "${CORE_TEST_REPOSITORY_ROOT}")
+    add_test(NAME unit.core-machine-8086-decoder-ledger
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CORE_TEST_REPOSITORY_ROOT}/tools/nxvm/Verify-8086DecoderLedger.ps1"
+            -ResultPath "${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json")
+    set_tests_properties(unit.core-machine-8086-decoder-ledger PROPERTIES
+        DEPENDS "unit.machine-8086-timing-manifest-runner"
+        LABELS "unit;core" TIMEOUT 30
+        WORKING_DIRECTORY "${CORE_TEST_REPOSITORY_ROOT}")
+endif()
 
 add_test(NAME core.x86-test-boundaries COMMAND "${CMAKE_COMMAND}"
     "-DTEST_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" "-DTEST_LAYER=core"

@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include "core/x86/device_support_interface.h"
 
-#include "../../../core/board-base/composition/composition_fixture.h"
+#include "../board-base/composition/composition_fixture.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/x86/retirement_observation_interface.h"
-#include "../../../core/board-base/core_machine_board_fixture.h"
-#include "../../../core/board-base/composition/support/protected_16_bootstrap_fixture.h"
+#include "../board-base/core_machine_board_fixture.h"
+#include "../board-base/composition/support/protected_16_bootstrap_fixture.h"
 
 #define S3_GDT_BASE 0x0300u
 #define S3_CODE_BASE 0x2000u
@@ -16,7 +16,7 @@
 #define S3_HANDLER 0x0100u
 
 #define main timing_80386_manifest_retained_task_switch_smoke_main
-#include "../../../core/x86/machine_task_switch_cross_width_smoke.c"
+#include "machine_task_switch_cross_width_smoke.c"
 #undef main
 
 #define TIMING_80386_MANIFEST_RESET_LINEAR 0xfffffff0u
