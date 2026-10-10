@@ -2673,7 +2673,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-strict-cpu-smoke-coverage
     verify-cpu-fixture-lifecycle
     verify-fixture-shapes
-    verify-t344-strict-declaration-uniqueness
+    verify-strict-declaration-uniqueness
     verify-t338-legacy-profile-metadata
     verify-t330-task-transition-construction
     verify-t331-real-exception-final-construction
@@ -3023,38 +3023,38 @@ foreach(project_t344_target IN LISTS PROJECT_T344_DIRECT_COMPILE_TARGETS)
     endif()
 endforeach()
 
-# T344 owns target-local strict declarations.  Repeating one option produces
+# Target-local strict declarations must be unique. Repeating one option produces
 # the same compiler command twice and hides a configuration construction error.
-get_property(project_t344_configured_targets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
-set(PROJECT_T344_STRICT_DECLARATION_MATRIX)
-foreach(project_t344_target IN LISTS project_t344_configured_targets)
-    get_target_property(project_t344_options ${project_t344_target} COMPILE_OPTIONS)
-    foreach(project_t344_strict_option IN ITEMS -Wall -Wextra -Wpedantic -Werror)
-        set(project_t344_strict_option_count 0)
-        foreach(project_t344_option IN LISTS project_t344_options)
-            if(project_t344_option STREQUAL project_t344_strict_option)
-                list(APPEND PROJECT_T344_STRICT_DECLARATION_MATRIX
-                    "${project_t344_target}|${project_t344_strict_option}")
-                math(EXPR project_t344_strict_option_count
-                    "${project_t344_strict_option_count} + 1")
+get_property(project_strict_declaration_configured_targets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+set(PROJECT_STRICT_DECLARATION_MATRIX)
+foreach(project_strict_declaration_target IN LISTS project_strict_declaration_configured_targets)
+    get_target_property(project_strict_declaration_options ${project_strict_declaration_target} COMPILE_OPTIONS)
+    foreach(project_strict_declaration_option IN ITEMS -Wall -Wextra -Wpedantic -Werror)
+        set(project_strict_declaration_option_count 0)
+        foreach(project_strict_declaration_current_option IN LISTS project_strict_declaration_options)
+            if(project_strict_declaration_current_option STREQUAL project_strict_declaration_option)
+                list(APPEND PROJECT_STRICT_DECLARATION_MATRIX
+                    "${project_strict_declaration_target}|${project_strict_declaration_option}")
+                math(EXPR project_strict_declaration_option_count
+                    "${project_strict_declaration_option_count} + 1")
             endif()
         endforeach()
-        if(project_t344_strict_option_count GREATER 1)
+        if(project_strict_declaration_option_count GREATER 1)
             message(FATAL_ERROR
-                "T344 duplicate target-local strict option ${project_t344_strict_option} on ${project_t344_target}")
+                "Duplicate target-local strict option ${project_strict_declaration_option} on ${project_strict_declaration_target}")
         endif()
     endforeach()
 endforeach()
-string(REPLACE ";" "\n" project_t344_strict_declaration_contents
-    "${PROJECT_T344_STRICT_DECLARATION_MATRIX}")
+string(REPLACE ";" "\n" project_strict_declaration_contents
+    "${PROJECT_STRICT_DECLARATION_MATRIX}")
 file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/t344-strict-declaration-matrix.txt"
-    CONTENT "${project_t344_strict_declaration_contents}\n")
-add_custom_target(verify-t344-strict-declaration-uniqueness
+    OUTPUT "${CMAKE_BINARY_DIR}/strict-declaration-matrix.txt"
+    CONTENT "${project_strict_declaration_contents}\n")
+add_custom_target(verify-strict-declaration-uniqueness
     COMMAND "${CMAKE_COMMAND}"
-        -DPROJECT_T344_STRICT_DECLARATION_MATRIX:FILEPATH=${CMAKE_BINARY_DIR}/t344-strict-declaration-matrix.txt
-        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t344_strict_declaration_uniqueness.cmake"
-    COMMENT "Verifying T344 strict declaration uniqueness"
+        -DPROJECT_STRICT_DECLARATION_MATRIX:FILEPATH=${CMAKE_BINARY_DIR}/strict-declaration-matrix.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_strict_declaration_uniqueness.cmake"
+    COMMENT "Verifying strict declaration uniqueness"
     VERBATIM)
 list(LENGTH PROJECT_T344_DIRECT_COMPILE_MATRIX project_t344_matrix_count)
 if(project_t344_matrix_count EQUAL 0)

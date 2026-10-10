@@ -119,6 +119,15 @@ and firmware capability. The verifier now checks 135 unique direct
 constructors and passes on x64 and x86. This is CMake/test verification only:
 no production source, CTest route, external asset or executable input changed.
 
+## S15 Disposition: Strict-Declaration Uniqueness
+
+The live strict-declaration uniqueness verifier now uses behavior identities
+for its CMake file, custom target, variables, generated matrix and diagnostics.
+It retains the exact target-local option-record predicate and passes with 532
+records on x64 and x86. The distinct direct-compilation matrix and its T345
+consumer remain unchanged for a separately scoped receiver. No production
+source, CTest route, external asset or executable input changed.
+
 ## S11 Disposition: CPU Qualification Verification
 
 S11 renamed the live CPU qualification group without touching CTest routes or
