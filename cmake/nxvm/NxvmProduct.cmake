@@ -1484,10 +1484,10 @@ list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
     host-smoke
     storage-smoke)
 
-# T337 inventories actual unit sources, rather than a second hand-maintained
+# The undefined-opcode verifier inventories actual unit sources, rather than a second hand-maintained
 # target list.  Every source that names a #UD producer/assertion must still
 # have one explicit real-delivery or terminal disposition below.
-set(PROJECT_T337_UD_UNIT_TEST_TARGETS)
+set(PROJECT_UNDEFINED_OPCODE_UNIT_TEST_TARGETS)
 
 list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-contract-smoke
@@ -1518,12 +1518,12 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
 # the remaining two classes are deliberately explicit because they do not use
 # that rollback helper.  Keep these target lists exact: configure fails if an
 # inventoried owner has no one disposition.
-set(PROJECT_T337_UD_REAL_DELIVERY_TARGETS
+set(PROJECT_UNDEFINED_OPCODE_REAL_DELIVERY_TARGETS
     machine-debug-state-board-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-real-ud-delivery-smoke
     )
-set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
+set(PROJECT_UNDEFINED_OPCODE_NO_REAL_NEGATIVE_TARGETS
     x86-test-cpu_execution_fault_event
     x86-test-cpu_descriptor_system
     x86-test-cpu_lar_lsl
@@ -1541,96 +1541,96 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     machine-vm86-delivery-smoke
     vm-dos-mem-fault-smoke)
 
-function(t337_verify_ud_dispositions)
-foreach(t337_ud_target IN LISTS PROJECT_T337_UD_UNIT_TEST_TARGETS)
-    if(NOT TARGET ${t337_ud_target})
+function(project_verify_undefined_opcode_dispositions)
+foreach(undefined_opcode_target IN LISTS PROJECT_UNDEFINED_OPCODE_UNIT_TEST_TARGETS)
+    if(NOT TARGET ${undefined_opcode_target})
         message(FATAL_ERROR
-            "T337 #UD owner is not a registered test target: ${t337_ud_target}")
+            "Undefined-opcode owner is not a registered test target: ${undefined_opcode_target}")
     endif()
-    get_target_property(t337_ud_sources ${t337_ud_target} SOURCES)
-    get_target_property(t337_ud_source_dir ${t337_ud_target} SOURCE_DIR)
-    set(t337_ud_found FALSE)
-    set(t337_ud_terminal FALSE)
-    set(t337_ud_delivery_marker FALSE)
-    foreach(t337_ud_source IN LISTS t337_ud_sources)
-        if(IS_ABSOLUTE "${t337_ud_source}")
-            set(t337_ud_source_path "${t337_ud_source}")
+    get_target_property(undefined_opcode_sources ${undefined_opcode_target} SOURCES)
+    get_target_property(undefined_opcode_source_dir ${undefined_opcode_target} SOURCE_DIR)
+    set(undefined_opcode_found FALSE)
+    set(undefined_opcode_terminal FALSE)
+    set(undefined_opcode_delivery_marker FALSE)
+    foreach(undefined_opcode_source IN LISTS undefined_opcode_sources)
+        if(IS_ABSOLUTE "${undefined_opcode_source}")
+            set(undefined_opcode_source_path "${undefined_opcode_source}")
         else()
-            set(t337_ud_source_path
-                "${t337_ud_source_dir}/${t337_ud_source}")
+            set(undefined_opcode_source_path
+                "${undefined_opcode_source_dir}/${undefined_opcode_source}")
         endif()
-        if(EXISTS "${t337_ud_source_path}")
-            file(READ "${t337_ud_source_path}" t337_ud_source_text)
-            if(t337_ud_source_text MATCHES
+        if(EXISTS "${undefined_opcode_source_path}")
+            file(READ "${undefined_opcode_source_path}" undefined_opcode_source_text)
+            if(undefined_opcode_source_text MATCHES
                 "VCPUINS_EXCEPT_UD|_SetExcept_UD|UndefinedOpcode")
-                set(t337_ud_found TRUE)
+                set(undefined_opcode_found TRUE)
             endif()
-            if(t337_ud_source_text MATCHES
+            if(undefined_opcode_source_text MATCHES
                 "test_core_machine_fixture_preflight_real_ud_terminal|REAL_UD_TERMINAL_GUEST_LIDT|REAL_UD_TERMINAL_CPU_OWNER|REAL_UD_TERMINAL_IVT_REJECT")
-                set(t337_ud_terminal TRUE)
+                set(undefined_opcode_terminal TRUE)
             endif()
-            if(t337_ud_source_text MATCHES "REAL_UD_DELIVERY_CONTRACT")
-                set(t337_ud_delivery_marker TRUE)
+            if(undefined_opcode_source_text MATCHES "REAL_UD_DELIVERY_CONTRACT")
+                set(undefined_opcode_delivery_marker TRUE)
             endif()
         endif()
     endforeach()
-    if(NOT t337_ud_found)
+    if(NOT undefined_opcode_found)
         message(FATAL_ERROR
-            "T337 #UD owner has no #UD source assertion: ${t337_ud_target}")
+            "Undefined-opcode owner has no #UD source assertion: ${undefined_opcode_target}")
     endif()
-    list(FIND PROJECT_T337_UD_REAL_DELIVERY_TARGETS "${t337_ud_target}"
-        t337_ud_delivery_index)
-    list(FIND PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS "${t337_ud_target}"
-        t337_ud_nonreal_index)
-    if(t337_ud_terminal)
-        if(NOT t337_ud_delivery_index LESS 0 OR NOT t337_ud_nonreal_index LESS 0)
+    list(FIND PROJECT_UNDEFINED_OPCODE_REAL_DELIVERY_TARGETS "${undefined_opcode_target}"
+        undefined_opcode_delivery_index)
+    list(FIND PROJECT_UNDEFINED_OPCODE_NO_REAL_NEGATIVE_TARGETS "${undefined_opcode_target}"
+        undefined_opcode_nonreal_index)
+    if(undefined_opcode_terminal)
+        if(NOT undefined_opcode_delivery_index LESS 0 OR NOT undefined_opcode_nonreal_index LESS 0)
             message(FATAL_ERROR
-                "T337 #UD terminal owner has a conflicting disposition: "
-                "${t337_ud_target}")
+                "Undefined-opcode terminal owner has a conflicting disposition: "
+                "${undefined_opcode_target}")
         endif()
-    elseif(t337_ud_delivery_index LESS 0 AND t337_ud_nonreal_index LESS 0)
+    elseif(undefined_opcode_delivery_index LESS 0 AND undefined_opcode_nonreal_index LESS 0)
         message(FATAL_ERROR
-            "T337 #UD owner lacks real-mode delivery disposition: "
-            "${t337_ud_target}")
-    elseif(NOT t337_ud_delivery_index LESS 0 AND NOT t337_ud_nonreal_index LESS 0)
+            "Undefined-opcode owner lacks real-mode delivery disposition: "
+            "${undefined_opcode_target}")
+    elseif(NOT undefined_opcode_delivery_index LESS 0 AND NOT undefined_opcode_nonreal_index LESS 0)
         message(FATAL_ERROR
-            "T337 #UD owner has multiple non-terminal dispositions: "
-            "${t337_ud_target}")
-    elseif(NOT t337_ud_delivery_index LESS 0 AND
-        NOT t337_ud_delivery_marker)
+            "Undefined-opcode owner has multiple non-terminal dispositions: "
+            "${undefined_opcode_target}")
+    elseif(NOT undefined_opcode_delivery_index LESS 0 AND
+        NOT undefined_opcode_delivery_marker)
         message(FATAL_ERROR
-            "T337 #UD delivery owner lacks its source contract marker: "
-            "${t337_ud_target}")
+            "Undefined-opcode delivery owner lacks its source contract marker: "
+            "${undefined_opcode_target}")
     endif()
 endforeach()
 endfunction()
 
-function(t337_verify_ud_unit_test_inventory)
-foreach(t337_current_target IN LISTS PROJECT_UNIT_TEST_TARGETS)
-    get_target_property(t337_current_sources ${t337_current_target} SOURCES)
-    get_target_property(t337_current_source_dir ${t337_current_target} SOURCE_DIR)
-    foreach(t337_current_source IN LISTS t337_current_sources)
-        if(IS_ABSOLUTE "${t337_current_source}")
-            set(t337_current_source_path "${t337_current_source}")
+function(project_verify_undefined_opcode_unit_test_inventory)
+foreach(undefined_opcode_candidate_target IN LISTS PROJECT_UNIT_TEST_TARGETS)
+    get_target_property(undefined_opcode_candidate_sources ${undefined_opcode_candidate_target} SOURCES)
+    get_target_property(undefined_opcode_candidate_source_dir ${undefined_opcode_candidate_target} SOURCE_DIR)
+    foreach(undefined_opcode_candidate_source IN LISTS undefined_opcode_candidate_sources)
+        if(IS_ABSOLUTE "${undefined_opcode_candidate_source}")
+            set(undefined_opcode_candidate_source_path "${undefined_opcode_candidate_source}")
         else()
-            set(t337_current_source_path "${t337_current_source_dir}/${t337_current_source}")
+            set(undefined_opcode_candidate_source_path "${undefined_opcode_candidate_source_dir}/${undefined_opcode_candidate_source}")
         endif()
-        if(EXISTS "${t337_current_source_path}")
-            file(READ "${t337_current_source_path}" t337_current_source_text)
-            if(t337_current_source_text MATCHES
+        if(EXISTS "${undefined_opcode_candidate_source_path}")
+            file(READ "${undefined_opcode_candidate_source_path}" undefined_opcode_candidate_source_text)
+            if(undefined_opcode_candidate_source_text MATCHES
                 "VCPUINS_EXCEPT_UD|_SetExcept_UD|UndefinedOpcode")
-                list(APPEND PROJECT_T337_UD_UNIT_TEST_TARGETS
-                    ${t337_current_target})
+                list(APPEND PROJECT_UNDEFINED_OPCODE_UNIT_TEST_TARGETS
+                    ${undefined_opcode_candidate_target})
                 break()
             endif()
         endif()
     endforeach()
 endforeach()
-list(REMOVE_DUPLICATES PROJECT_T337_UD_UNIT_TEST_TARGETS)
-t337_verify_ud_dispositions()
+list(REMOVE_DUPLICATES PROJECT_UNDEFINED_OPCODE_UNIT_TEST_TARGETS)
+project_verify_undefined_opcode_dispositions()
 endfunction()
 
-t337_verify_ud_unit_test_inventory()
+project_verify_undefined_opcode_unit_test_inventory()
 
 set(PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS
     vm-dos-prompt-smoke

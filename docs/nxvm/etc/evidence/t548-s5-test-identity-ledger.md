@@ -133,3 +133,15 @@ Both x64 and x86 configurations passed all three affected targets:
 fixed-width vocabulary, strict CPU smoke compilation and CPU fixture
 lifecycle.  This S changes CMake/test verification only; it does not change
 production behavior, CTest count, assets or executable inputs.
+
+## S12 Disposition: Undefined-Opcode Verification
+
+The configuration-time undefined-opcode verifier now uses behavior names for
+its source discovery, delivery/terminal disposition sets and helper functions.
+It still discovers the same registered unit targets by their source markers,
+then enforces exactly the same terminal, real-delivery and explicit
+non-delivery requirements.  The verifier intentionally remains a CMake
+configuration check rather than gaining a second custom target.  Both x64 and
+x86 CMake configurations passed, so the live registration graph has executed
+the unchanged predicate.  No CTest route, source assertion, production input
+or artifact changed.
