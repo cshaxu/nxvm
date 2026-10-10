@@ -1,6 +1,5 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
-#include <stdio.h>
 #include "core/x86/device_support_interface.h"
 
 #include "../board-base/composition/composition_fixture.h"
@@ -479,7 +478,7 @@ static void timing_80386_manifest_print_missing_s3(void)
             timing_80386_manifest_key_is_s3(
                 timing_80386_manifest_records[index].key_id) &&
             !timing_80386_manifest_observed[index]) {
-            printf("I386-NONCONTROL-MISSING:%s\n",
+            lib_c_printf("I386-NONCONTROL-MISSING:%s\n",
                 timing_80386_manifest_records[index].key_id);
         }
     }
@@ -495,7 +494,7 @@ static void timing_80386_manifest_print_missing_s6(void)
             timing_80386_manifest_key_is_s6(
                 timing_80386_manifest_records[index].key_id) &&
             !timing_80386_manifest_observed[index]) {
-            printf("I386-PROTECTED-MISSING:%s\n",
+            lib_c_printf("I386-PROTECTED-MISSING:%s\n",
                 timing_80386_manifest_records[index].key_id);
         }
     }
@@ -508,7 +507,7 @@ static void timing_80386_manifest_print_missing_s7(void)
             sizeof(timing_80386_manifest_records[0]); ++index) {
         if (timing_80386_manifest_is_i386(&timing_80386_manifest_records[index]) &&
             timing_80386_manifest_key_is_s7(timing_80386_manifest_records[index].key_id) &&
-            !timing_80386_manifest_observed[index]) printf(
+            !timing_80386_manifest_observed[index]) lib_c_printf(
                 "I386-PROTECTED-SYSTEM-MISSING:%s\n",
                 timing_80386_manifest_records[index].key_id);
     }
@@ -527,18 +526,18 @@ static lib_i32 timing_80386_manifest_results_complete(void)
 static lib_i32 timing_80386_manifest_write_results(const char *path,
     lib_i32 final_results_authorized)
 {
-    FILE *file;
+    lib_c_file *file;
     lib_size index;
     lib_size written = 0u;
     lib_i32 failed;
 
     if (path == LIB_NULL || !final_results_authorized ||
         !timing_80386_manifest_results_complete()) return 1;
-    file = fopen(path, "wb");
-    if (file == LIB_NULL || fprintf(file,
+    file = lib_c_fopen(path, "wb");
+    if (file == LIB_NULL || lib_c_fprintf(file,
             "{\n  \"schema\": \"nxvm.cpu-timing-results.v1\",\n"
             "  \"profile\": \"80386DX\",\n  \"results\": [\n") < 0) {
-        if (file != LIB_NULL) fclose(file);
+        if (file != LIB_NULL) lib_c_fclose(file);
         return 1;
     }
     for (index = 0u; index < sizeof(timing_80386_manifest_records) /
@@ -550,8 +549,8 @@ static lib_i32 timing_80386_manifest_write_results(const char *path,
 
         if (!timing_80386_manifest_is_i386(record) ||
             timing_80386_manifest_is_esc(record)) continue;
-        if ((written != 0u && fprintf(file, ",\n") < 0) ||
-            fprintf(file, "    {\"key_id\":\"%s\","
+        if ((written != 0u && lib_c_fprintf(file, ",\n") < 0) ||
+            lib_c_fprintf(file, "    {\"key_id\":\"%s\","
                 "\"profile\":\"%s\",\"level\":\"%s\","
                 "\"source_rule\":\"%s\",\"context\":\"%s\","
                 "\"timing_domain\":\"cpu\",\"ticks\":%llu,\"formula_inputs\":%u,"
@@ -563,13 +562,13 @@ static lib_i32 timing_80386_manifest_write_results(const char *path,
                 observation->timing_origin, observation->timing_disposition ==
                     CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ?
                     "true" : "false") < 0) {
-            fclose(file);
+            lib_c_fclose(file);
             return 1;
         }
         ++written;
     }
-    if ((written != 0u && fprintf(file, ",\n") < 0) ||
-        fprintf(file, "    {\"key_id\":\"I386-ESC\","
+    if ((written != 0u && lib_c_fprintf(file, ",\n") < 0) ||
+        lib_c_fprintf(file, "    {\"key_id\":\"I386-ESC\","
             "\"profile\":\"80386DX\",\"level\":\"L2\","
             "\"source_rule\":\"I386DX-PRM-1990 Ch.17 delegates completion clocks to 80287/80387 data sheets; selected 80387 operation is a range\","
             "\"context\":\"BASE\",\"timing_domain\":\"mcp\","
@@ -581,12 +580,12 @@ static lib_i32 timing_80386_manifest_write_results(const char *path,
             "\"handoff_kind\":\"CPU_FPU_COMMAND\",\"passed\":true}",
             timing_80386_manifest_esc.opcode, timing_80386_manifest_esc.modrm,
             timing_80386_manifest_esc.remaining_ticks) < 0) {
-        fclose(file);
+        lib_c_fclose(file);
         return 1;
     }
     ++written;
-    failed = fprintf(file, "\n  ]\n}\n") < 0;
-    if (fclose(file) != 0) failed = 1;
+    failed = lib_c_fprintf(file, "\n  ]\n}\n") < 0;
+    if (lib_c_fclose(file) != 0) failed = 1;
     if (failed) return 1;
     return written == timing_80386_manifest_expected_count() ? 0 : 1;
 }
@@ -1026,7 +1025,7 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
          capture.observation.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_FIRST) ||
         (timing_80386_manifest_key_has_suffix(key_id, "-REP-PHASE-ZERO") &&
          capture.observation.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT)) {
-        printf("I386-RECIPE-DETAIL:%s:status=%d:reason=%d:executed=%llu:capture=%u:disposition=%d:form=%u:origin=%d\n",
+        lib_c_printf("I386-RECIPE-DETAIL:%s:status=%d:reason=%d:executed=%llu:capture=%u:disposition=%d:form=%u:origin=%d\n",
             key_id, status, run.reason, run.executed, capture.count,
             capture.observation.timing_disposition,
             capture.observation.source_timing_form_id,
@@ -1150,7 +1149,7 @@ static lib_i32 timing_80386_manifest_run_s7_protected_recipe(
         capture.observation.timing_disposition ==
             CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
         capture.observation.source_ticks != expected_ticks) {
-        printf("I386-PROTECTED-RECIPE-DETAIL:%s:status=%d:reason=%d:executed=%llu:capture=%u:ticks=%llu:expected=%llu\\n",
+        lib_c_printf("I386-PROTECTED-RECIPE-DETAIL:%s:status=%d:reason=%d:executed=%llu:capture=%u:ticks=%llu:expected=%llu\\n",
             key_id, status, run.reason, run.executed, capture.count,
             capture.observation.source_ticks, expected_ticks);
         goto cleanup;
@@ -1734,7 +1733,7 @@ static lib_i32 timing_80386_manifest_run_s4_repeat_continuation(
     if (status != LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u || capture.count != 1u ||
         capture.observation.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_FIRST) {
-        printf("I386-REPEAT-FIRST-DETAIL:%s:status=%d:executed=%llu:phase=%d\n",
+        lib_c_printf("I386-REPEAT-FIRST-DETAIL:%s:status=%d:executed=%llu:phase=%d\n",
             key_id, status, run.executed, capture.observation.repeat_phase);
         core_machine_destroy(machine);
         return 1;
@@ -1750,7 +1749,7 @@ static lib_i32 timing_80386_manifest_run_s4_repeat_continuation(
             CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
         capture.observation.source_timing_form_id ==
             CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED) {
-        printf("I386-REPEAT-CONTINUE-DETAIL:%s:status=%d:executed=%llu:phase=%d\n",
+        lib_c_printf("I386-REPEAT-CONTINUE-DETAIL:%s:status=%d:executed=%llu:phase=%d\n",
             key_id, status, run.executed, capture.observation.repeat_phase);
         core_machine_destroy(machine);
         return 1;
@@ -1986,7 +1985,7 @@ static lib_i32 timing_80386_manifest_run_s6_direct_recipe(const char *key_id,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != 0x0010u;
-    if (failed) printf("I386-PROTECTED-DIRECT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
+    if (failed) lib_c_printf("I386-PROTECTED-DIRECT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
         key_id != LIB_NULL ? key_id : "(null)", run.ticks, capture.observation.source_ticks, capture.count,
         snapshot.cs.selector,
         snapshot.eip);
@@ -2054,7 +2053,7 @@ static lib_i32 timing_80386_manifest_run_s6_memory_recipe(const char *key_id,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != 0x0010u;
-    if (failed) printf("I386-PROTECTED-MEMORY-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
+    if (failed) lib_c_printf("I386-PROTECTED-MEMORY-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
         key_id != LIB_NULL ? key_id : "(null)", run.ticks, capture.observation.source_ticks, capture.count,
         snapshot.cs.selector,
         snapshot.eip);
@@ -2101,7 +2100,7 @@ static lib_i32 timing_80386_manifest_run_s6_return_recipe(const char *key_id,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != 0x0010u;
-    if (failed) printf("I386-PROTECTED-RETURN-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
+    if (failed) lib_c_printf("I386-PROTECTED-RETURN-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
         key_id != LIB_NULL ? key_id : "(null)", run.ticks, capture.observation.source_ticks, capture.count,
         snapshot.cs.selector,
         snapshot.eip);
@@ -2148,7 +2147,7 @@ static lib_i32 timing_80386_manifest_run_s6_interrupt_recipe(const char *key_id,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != S3_HANDLER;
-    if (failed) printf("I386-PROTECTED-INTERRUPT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
+    if (failed) lib_c_printf("I386-PROTECTED-INTERRUPT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
         key_id != LIB_NULL ? key_id : "(null)", run.ticks, capture.observation.source_ticks, capture.count,
         snapshot.cs.selector,
         snapshot.eip);
@@ -2270,7 +2269,7 @@ static lib_i32 timing_80386_manifest_run_s6_outer_call_gate_recipe(
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != 0x0100u ||
         snapshot.ss.selector != 0x0010u;
-    if (failed) printf("I386-PROTECTED-OUTER-GATE-DETAIL:%s:status=%d:reason=%d:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x:ss=%04x\n",
+    if (failed) lib_c_printf("I386-PROTECTED-OUTER-GATE-DETAIL:%s:status=%d:reason=%d:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x:ss=%04x\n",
         key_id != LIB_NULL ? key_id : "(null)", (lib_i32)run_status, (lib_i32)run.reason, run.ticks, capture.observation.source_ticks, capture.count,
         snapshot.cs.selector,
         snapshot.eip,
@@ -2323,7 +2322,7 @@ static lib_i32 timing_80386_manifest_run_s6_outer_call_gate_memory_recipe(
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != 0x0100u ||
         snapshot.ss.selector != 0x0010u;
-    if (failed) printf("I386-PROTECTED-OUTER-GATE-MEMORY-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x:ss=%04x\n",
+    if (failed) lib_c_printf("I386-PROTECTED-OUTER-GATE-MEMORY-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x:ss=%04x\n",
         key_id != LIB_NULL ? key_id : "(null)", run.ticks, capture.observation.source_ticks, capture.count,
         snapshot.cs.selector,
         snapshot.eip,
@@ -2388,7 +2387,7 @@ static lib_i32 timing_80386_manifest_run_s6_inner_interrupt_recipe(
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != S3_HANDLER;
-    if (failed) printf("I386-PROTECTED-INNER-INTERRUPT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
+    if (failed) lib_c_printf("I386-PROTECTED-INNER-INTERRUPT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
         key_id != LIB_NULL ? key_id : "(null)", run.ticks, capture.observation.source_ticks, capture.count,
         snapshot.cs.selector,
         snapshot.eip);
@@ -2456,7 +2455,7 @@ static lib_i32 timing_80386_manifest_run_s6_task_recipe(const char *key_id,
         core_machine_debug_capture_cpu_snapshot(fixture.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.tr.selector != 0x0030u;
-    if (failed) printf("I386-TASK-DETAIL:%s:bootstrap=%llu/%llu:run=%llu:source=%llu:count=%u:tr=%04x\n",
+    if (failed) lib_c_printf("I386-TASK-DETAIL:%s:bootstrap=%llu/%llu:run=%llu:source=%llu:count=%u:tr=%04x\n",
         key_id != LIB_NULL ? key_id : "(null)", bootstrap.ticks, bootstrap.executed, run.ticks,
         capture.observation.source_ticks, capture.count, snapshot.tr.selector);
     core_machine_destroy(fixture.machine);
@@ -2508,7 +2507,7 @@ static lib_i32 timing_80386_manifest_run_s6_iret_task_recipe(const char *key_id)
         core_machine_debug_capture_cpu_snapshot(fixture.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.tr.selector != 0x0028u;
-    if (failed) printf("I386-IRET-TASK-DETAIL:%s:bootstrap=%llu:enter=%llu:run=%llu:source=%llu:count=%u:tr=%04x\n",
+    if (failed) lib_c_printf("I386-IRET-TASK-DETAIL:%s:bootstrap=%llu:enter=%llu:run=%llu:source=%llu:count=%u:tr=%04x\n",
         key_id != LIB_NULL ? key_id : "(null)", bootstrap.executed, enter_task.ticks, run.ticks, capture.observation.source_ticks,
         capture.count, snapshot.tr.selector);
     core_machine_destroy(fixture.machine);
@@ -2568,7 +2567,7 @@ static lib_i32 timing_80386_manifest_run_s6_task_interrupt_recipe(
         core_machine_debug_capture_cpu_snapshot(fixture.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.tr.selector != 0x0030u;
-    if (failed) printf("I386-TASK-INTERRUPT-DETAIL:%s:bootstrap=%llu/%llu:run=%llu:source=%llu:count=%u:tr=%04x\n",
+    if (failed) lib_c_printf("I386-TASK-INTERRUPT-DETAIL:%s:bootstrap=%llu/%llu:run=%llu:source=%llu:count=%u:tr=%04x\n",
         key_id != LIB_NULL ? key_id : "(null)", bootstrap.ticks, bootstrap.executed, run.ticks,
         capture.observation.source_ticks, capture.count, snapshot.tr.selector);
     core_machine_destroy(fixture.machine);
@@ -2647,7 +2646,7 @@ static lib_i32 timing_80386_manifest_run_s6_vm86_interrupt_recipe(const char *ke
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != S3_HANDLER;
-    if (failed) printf("I386-VM86-INTERRUPT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
+    if (failed) lib_c_printf("I386-VM86-INTERRUPT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
         key_id != LIB_NULL ? key_id : "(null)", run.ticks, capture.observation.source_ticks, capture.count,
         snapshot.cs.selector,
         snapshot.eip);
@@ -2694,7 +2693,7 @@ static lib_i32 timing_80386_manifest_run_s6_iret_vm86_recipe(const char *key_id)
         snapshot.cs.selector != 0x0200u ||
         snapshot.cs.base != S3_CODE_BASE ||
         snapshot.eip != 0x10u;
-    if (failed) printf("I386-IRET-VM86-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:base=%08x:eip=%08x:eflags=%08x\n",
+    if (failed) lib_c_printf("I386-IRET-VM86-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:base=%08x:eip=%08x:eflags=%08x\n",
         key_id != LIB_NULL ? key_id : "(null)", run.ticks, capture.observation.source_ticks, capture.count,
         snapshot.cs.selector,
         snapshot.cs.base,
@@ -2750,7 +2749,7 @@ static lib_i32 timing_80386_manifest_run_s6_outer_return_recipe(const char *key_
         snapshot.cs.selector != 0x001bu ||
         snapshot.ss.selector != 0x0023u ||
         snapshot.eip != 0x0010u;
-    if (failed) printf("I386-PROTECTED-OUTER-RETURN-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:ss=%04x:eip=%08x\n",
+    if (failed) lib_c_printf("I386-PROTECTED-OUTER-RETURN-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:ss=%04x:eip=%08x\n",
         key_id != LIB_NULL ? key_id : "(null)", run.ticks, capture.observation.source_ticks, capture.count,
         snapshot.cs.selector,
         snapshot.ss.selector,
@@ -3313,28 +3312,28 @@ lib_i32 main(void)
 
     if (timing_80386_manifest_expected_count() != 1413u) return 1;
     if (timing_80386_manifest_run_recipe("I386-FLAG-NOP", nop, sizeof(nop))) {
-        printf("I386-RECIPE-FAIL:I386-FLAG-NOP\n");
+        lib_c_printf("I386-RECIPE-FAIL:I386-FLAG-NOP\n");
         return 1;
     }
     if (timing_80386_manifest_run_recipe("I386-XLAT", xlat, sizeof(xlat))) {
-        printf("I386-RECIPE-FAIL:I386-XLAT\n");
+        lib_c_printf("I386-RECIPE-FAIL:I386-XLAT\n");
         return 1;
     }
     if (timing_80386_manifest_run_size_contexts("I386-XLAT", xlat,
             sizeof(xlat))) {
-        printf("I386-SIZE-RECIPE-FAIL:I386-XLAT\n");
+        lib_c_printf("I386-SIZE-RECIPE-FAIL:I386-XLAT\n");
         return 1;
     }
     if (timing_80386_manifest_run_recipe("I386-WAIT",
             (const lib_u8[]){ 0x9bu }, 1u)) {
-        printf("I386-RECIPE-FAIL:I386-WAIT\n");
+        lib_c_printf("I386-RECIPE-FAIL:I386-WAIT\n");
         return 1;
     }
     for (index = 0u; index < sizeof(flag_recipes) / sizeof(flag_recipes[0]);
         ++index) {
         if (timing_80386_manifest_run_recipe(flag_recipes[index].key_id,
                 &flag_recipes[index].opcode, 1u)) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 flag_recipes[index].key_id);
             return 1;
         }
@@ -3343,7 +3342,7 @@ lib_i32 main(void)
             sizeof(adjust_recipes[0]); ++index) {
         if (timing_80386_manifest_run_recipe(adjust_recipes[index].key_id,
                 adjust_recipes[index].bytes, adjust_recipes[index].byte_count)) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 adjust_recipes[index].key_id);
             return 1;
         }
@@ -3352,13 +3351,13 @@ lib_i32 main(void)
         ++index) {
         if (timing_80386_manifest_run_recipe(mov_recipes[index].key_id,
                 mov_recipes[index].bytes, mov_recipes[index].byte_count)) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 mov_recipes[index].key_id);
             return 1;
         }
         if (timing_80386_manifest_run_size_contexts(mov_recipes[index].key_id,
                 mov_recipes[index].bytes, mov_recipes[index].byte_count)) {
-            printf("I386-SIZE-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n",
                 mov_recipes[index].key_id);
             return 1;
         }
@@ -3369,7 +3368,7 @@ lib_i32 main(void)
                 mov_extended_recipes[index].key_id,
                 mov_extended_recipes[index].bytes,
                 mov_extended_recipes[index].byte_count)) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 mov_extended_recipes[index].key_id);
             return 1;
         }
@@ -3377,7 +3376,7 @@ lib_i32 main(void)
                 mov_extended_recipes[index].key_id,
                 mov_extended_recipes[index].bytes,
                 mov_extended_recipes[index].byte_count)) {
-            printf("I386-SIZE-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n",
                 mov_extended_recipes[index].key_id);
             return 1;
         }
@@ -3386,13 +3385,13 @@ lib_i32 main(void)
         ++index) {
         if (timing_80386_manifest_run_recipe(alu_recipes[index].key_id,
                 alu_recipes[index].bytes, sizeof(alu_recipes[index].bytes))) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 alu_recipes[index].key_id);
             return 1;
         }
         if (timing_80386_manifest_run_size_contexts(alu_recipes[index].key_id,
                 alu_recipes[index].bytes, sizeof(alu_recipes[index].bytes))) {
-            printf("I386-SIZE-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n",
                 alu_recipes[index].key_id);
             return 1;
         }
@@ -3401,13 +3400,13 @@ lib_i32 main(void)
         ++index) {
         if (timing_80386_manifest_run_recipe(test_recipes[index].key_id,
                 test_recipes[index].bytes, test_recipes[index].byte_count)) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 test_recipes[index].key_id);
             return 1;
         }
         if (timing_80386_manifest_run_size_contexts(test_recipes[index].key_id,
                 test_recipes[index].bytes, test_recipes[index].byte_count)) {
-            printf("I386-SIZE-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n",
                 test_recipes[index].key_id);
             return 1;
         }
@@ -3447,12 +3446,12 @@ lib_i32 main(void)
                 program[program_bytes++] = 0u;
             }
             if (timing_80386_manifest_run_recipe(key_id, program, program_bytes)) {
-                printf("I386-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
             if (timing_80386_manifest_run_size_contexts(key_id, program,
                     program_bytes)) {
-                printf("I386-SIZE-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
         }
@@ -3461,13 +3460,13 @@ lib_i32 main(void)
             sizeof(unary_recipes[0]); ++index) {
         if (timing_80386_manifest_run_recipe(unary_recipes[index].key_id,
                 unary_recipes[index].bytes, unary_recipes[index].byte_count)) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 unary_recipes[index].key_id);
             return 1;
         }
         if (timing_80386_manifest_run_size_contexts(unary_recipes[index].key_id,
                 unary_recipes[index].bytes, unary_recipes[index].byte_count)) {
-            printf("I386-SIZE-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n",
                 unary_recipes[index].key_id);
             return 1;
         }
@@ -3478,7 +3477,7 @@ lib_i32 main(void)
                 unary_memory_recipes[index].key_id,
                 unary_memory_recipes[index].bytes,
                 sizeof(unary_memory_recipes[index].bytes))) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 unary_memory_recipes[index].key_id);
             return 1;
         }
@@ -3486,7 +3485,7 @@ lib_i32 main(void)
                 unary_memory_recipes[index].key_id,
                 unary_memory_recipes[index].bytes,
                 sizeof(unary_memory_recipes[index].bytes))) {
-            printf("I386-SIZE-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n",
                 unary_memory_recipes[index].key_id);
             return 1;
         }
@@ -3496,14 +3495,14 @@ lib_i32 main(void)
         if (timing_80386_manifest_run_recipe(multiply_recipes[index].key_id,
                 multiply_recipes[index].bytes,
                 multiply_recipes[index].byte_count)) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 multiply_recipes[index].key_id);
             return 1;
         }
         if (timing_80386_manifest_run_size_contexts(
                 multiply_recipes[index].key_id, multiply_recipes[index].bytes,
                 multiply_recipes[index].byte_count)) {
-            printf("I386-SIZE-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n",
                 multiply_recipes[index].key_id);
             return 1;
         }
@@ -3524,7 +3523,7 @@ lib_i32 main(void)
                 timing_80386_manifest_run_recipe(key_id,
                     multiply_recipes[index].bytes,
                     multiply_recipes[index].byte_count)) {
-                printf("I386-MULTIPLIER-RECIPE-FAIL:%s\n",
+                lib_c_printf("I386-MULTIPLIER-RECIPE-FAIL:%s\n",
                     key_id);
                 return 1;
             }
@@ -3544,7 +3543,7 @@ lib_i32 main(void)
                 divide_recipes[index].key_id) < 0 ||
             timing_80386_manifest_run_recipe(key_id, program,
                 divide_recipes[index].byte_count + 1u)) {
-            printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
+            lib_c_printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
             return 1;
         }
     }
@@ -3561,7 +3560,7 @@ lib_i32 main(void)
                 bit_scan_recipes[index].key_id) < 0 ||
             timing_80386_manifest_run_recipe(key_id, program,
                 bit_scan_recipes[index].byte_count + 1u)) {
-            printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
+            lib_c_printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
             return 1;
         }
     }
@@ -3577,7 +3576,7 @@ lib_i32 main(void)
                 bound_recipes[index].key_id) < 0 ||
             timing_80386_manifest_run_recipe(key_id, program,
                 bound_recipes[index].byte_count + 1u)) {
-            printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
+            lib_c_printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
             return 1;
         }
     }
@@ -3586,13 +3585,13 @@ lib_i32 main(void)
         if (timing_80386_manifest_run_recipe(divide_recipes[index].key_id,
                 divide_recipes[index].bytes,
                 divide_recipes[index].byte_count)) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 divide_recipes[index].key_id);
             return 1;
         }
         if (timing_80386_manifest_run_size_contexts(divide_recipes[index].key_id,
                 divide_recipes[index].bytes, divide_recipes[index].byte_count)) {
-            printf("I386-SIZE-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n",
                 divide_recipes[index].key_id);
             return 1;
         }
@@ -3601,13 +3600,13 @@ lib_i32 main(void)
             sizeof(bound_recipes[0]); ++index) {
         if (timing_80386_manifest_run_recipe(bound_recipes[index].key_id,
                 bound_recipes[index].bytes, bound_recipes[index].byte_count)) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 bound_recipes[index].key_id);
             return 1;
         }
         if (timing_80386_manifest_run_size_contexts(bound_recipes[index].key_id,
                 bound_recipes[index].bytes, bound_recipes[index].byte_count)) {
-            printf("I386-SIZE-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n",
                 bound_recipes[index].key_id);
             return 1;
         }
@@ -3617,14 +3616,14 @@ lib_i32 main(void)
         if (timing_80386_manifest_run_recipe(bit_scan_recipes[index].key_id,
                 bit_scan_recipes[index].bytes,
                 bit_scan_recipes[index].byte_count)) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 bit_scan_recipes[index].key_id);
             return 1;
         }
         if (timing_80386_manifest_run_size_contexts(
                 bit_scan_recipes[index].key_id, bit_scan_recipes[index].bytes,
                 bit_scan_recipes[index].byte_count)) {
-            printf("I386-SIZE-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n",
                 bit_scan_recipes[index].key_id);
             return 1;
         }
@@ -3661,12 +3660,12 @@ lib_i32 main(void)
             }
             if (bit_forms[form_index].immediate) program[program_bytes++] = 1u;
             if (timing_80386_manifest_run_recipe(key_id, program, program_bytes)) {
-                printf("I386-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
             if (timing_80386_manifest_run_size_contexts(key_id, program,
                     program_bytes)) {
-                printf("I386-SIZE-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
             if (bit_forms[form_index].memory) {
@@ -3679,7 +3678,7 @@ lib_i32 main(void)
                         bit_forms[form_index].form) < 0 ||
                     timing_80386_manifest_run_recipe(key_id, segment_program,
                         program_bytes + 1u)) {
-                    printf("I386-SEGMENT-RECIPE-FAIL:%s\n",
+                    lib_c_printf("I386-SEGMENT-RECIPE-FAIL:%s\n",
                         key_id);
                     return 1;
                 }
@@ -3707,12 +3706,12 @@ lib_i32 main(void)
             program[program_bytes++] = 0xc1u;
             if (!double_shift_forms[form_index].cl_count) program[program_bytes++] = 1u;
             if (timing_80386_manifest_run_recipe(key_id, program, program_bytes)) {
-                printf("I386-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
             if (timing_80386_manifest_run_size_contexts(key_id, program,
                     program_bytes)) {
-                printf("I386-SIZE-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
             program_bytes = 0u;
@@ -3726,7 +3725,7 @@ lib_i32 main(void)
             program[program_bytes++] = 0x10u;
             if (!double_shift_forms[form_index].cl_count) program[program_bytes++] = 1u;
             if (timing_80386_manifest_run_recipe(key_id, program, program_bytes)) {
-                printf("I386-MEMORY-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-MEMORY-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
             if (lib_c_snprintf(key_id, sizeof(key_id), "I386-%s-%s-SEGMENT",
@@ -3744,7 +3743,7 @@ lib_i32 main(void)
             program[program_bytes++] = 0x10u;
             if (!double_shift_forms[form_index].cl_count) program[program_bytes++] = 1u;
             if (timing_80386_manifest_run_recipe(key_id, program, program_bytes)) {
-                printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
         }
@@ -3753,18 +3752,18 @@ lib_i32 main(void)
         ++index) {
         if (timing_80386_manifest_run_recipe(setcc_recipes[index].key_id,
                 setcc_recipes[index].bytes, setcc_recipes[index].byte_count)) {
-            printf("I386-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-RECIPE-FAIL:%s\n",
                 setcc_recipes[index].key_id);
             return 1;
         }
     }
     if (timing_80386_manifest_run_recipe("I386-HLT", hlt, sizeof(hlt))) {
-        printf("I386-RECIPE-FAIL:I386-HLT\n");
+        lib_c_printf("I386-RECIPE-FAIL:I386-HLT\n");
         return 1;
     }
     if (timing_80386_manifest_run_recipe("I386-XLAT-SEGMENT",
             (const lib_u8[]){ 0x26u, 0xd7u }, 2u)) {
-        printf("I386-SEGMENT-RECIPE-FAIL:I386-XLAT-SEGMENT\n");
+        lib_c_printf("I386-SEGMENT-RECIPE-FAIL:I386-XLAT-SEGMENT\n");
         return 1;
     }
     for (index = 0u; index < sizeof(mov_segment_recipes) /
@@ -3772,7 +3771,7 @@ lib_i32 main(void)
         if (timing_80386_manifest_run_recipe(mov_segment_recipes[index].key_id,
                 mov_segment_recipes[index].bytes,
                 mov_segment_recipes[index].byte_count)) {
-            printf("I386-SEGMENT-RECIPE-FAIL:%s\n",
+            lib_c_printf("I386-SEGMENT-RECIPE-FAIL:%s\n",
                 mov_segment_recipes[index].key_id);
             return 1;
         }
@@ -3791,14 +3790,14 @@ lib_i32 main(void)
                 lock_alu_operations[index].op) < 0 ||
             timing_80386_manifest_run_recipe(key_id, mr_program,
                 sizeof(mr_program))) {
-            printf("I386-LOCK-RECIPE-FAIL:%s\n", key_id);
+            lib_c_printf("I386-LOCK-RECIPE-FAIL:%s\n", key_id);
             return 1;
         }
         if (lib_c_snprintf(key_id, sizeof(key_id), "I386-ALU-%s-RMI-LOCK",
                 lock_alu_operations[index].op) < 0 ||
             timing_80386_manifest_run_recipe(key_id, rmi_program,
                 sizeof(rmi_program))) {
-            printf("I386-LOCK-RECIPE-FAIL:%s\n", key_id);
+            lib_c_printf("I386-LOCK-RECIPE-FAIL:%s\n", key_id);
             return 1;
         }
     }
@@ -3811,7 +3810,7 @@ lib_i32 main(void)
         if (lib_c_snprintf(key_id, sizeof(key_id), "I386-%s-M-LOCK",
                 lock_unary_operations[index].op) < 0 ||
             timing_80386_manifest_run_recipe(key_id, program, sizeof(program))) {
-            printf("I386-LOCK-RECIPE-FAIL:%s\n", key_id);
+            lib_c_printf("I386-LOCK-RECIPE-FAIL:%s\n", key_id);
             return 1;
         }
     }
@@ -3838,7 +3837,7 @@ lib_i32 main(void)
                 multiply_recipes[index].key_id) < 0 ||
             timing_80386_manifest_run_recipe(key_id, program,
                 multiply_recipes[index].byte_count + 1u)) {
-            printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
+            lib_c_printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
             return 1;
         }
     }
@@ -3886,7 +3885,7 @@ lib_i32 main(void)
                 program[program_bytes++] = 0u;
             }
             if (timing_80386_manifest_run_recipe(key_id, program, program_bytes)) {
-                printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
         }
@@ -3900,7 +3899,7 @@ lib_i32 main(void)
         if (lib_c_snprintf(key_id, sizeof(key_id), "I386-%s-M-SEGMENT",
                 lock_unary_operations[index].op) < 0 ||
             timing_80386_manifest_run_recipe(key_id, program, sizeof(program))) {
-            printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
+            lib_c_printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
             return 1;
         }
     }
@@ -3923,12 +3922,12 @@ lib_i32 main(void)
                 (group2_operations[index].extension << 3u));
             if (group2_forms[form_index].has_immediate) program[program_bytes++] = 1u;
             if (timing_80386_manifest_run_recipe(key_id, program, program_bytes)) {
-                printf("I386-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
             if (timing_80386_manifest_run_size_contexts(key_id, program,
                     program_bytes)) {
-                printf("I386-SIZE-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-SIZE-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
             program_bytes = 0u;
@@ -3940,7 +3939,7 @@ lib_i32 main(void)
             program[program_bytes++] = 0x10u;
             if (group2_forms[form_index].has_immediate) program[program_bytes++] = 1u;
             if (timing_80386_manifest_run_recipe(key_id, program, program_bytes)) {
-                printf("I386-MEMORY-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-MEMORY-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
             if (lib_c_snprintf(key_id, sizeof(key_id), "I386-%s-%s-SEGMENT",
@@ -3956,35 +3955,35 @@ lib_i32 main(void)
             program[program_bytes++] = 0x10u;
             if (group2_forms[form_index].has_immediate) program[program_bytes++] = 1u;
             if (timing_80386_manifest_run_recipe(key_id, program, program_bytes)) {
-                printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
+                lib_c_printf("I386-SEGMENT-RECIPE-FAIL:%s\n", key_id);
                 return 1;
             }
         }
     }
     if (timing_80386_manifest_run_s4_base_recipes()) {
-        printf("I386-STRING-IO-BASE-RECIPE-FAIL\n");
+        lib_c_printf("I386-STRING-IO-BASE-RECIPE-FAIL\n");
         return 1;
     }
     if (timing_80386_manifest_run_s4_context_recipes() ||
         timing_80386_manifest_s4_count(0) != 162u ||
         timing_80386_manifest_s4_count(1) != 162u) {
-        printf("I386-STRING-IO-CONTEXT-RECIPE-FAIL\n");
+        lib_c_printf("I386-STRING-IO-CONTEXT-RECIPE-FAIL\n");
         return 1;
     }
     if (timing_80386_manifest_run_s5_real_base_recipes()) {
-        printf("I386-REAL-CONTROL-BASE-RECIPE-FAIL\n");
+        lib_c_printf("I386-REAL-CONTROL-BASE-RECIPE-FAIL\n");
         return 1;
     }
     if (timing_80386_manifest_run_s5_branch_recipes()) {
-        printf("I386-BRANCH-RECIPE-FAIL\n");
+        lib_c_printf("I386-BRANCH-RECIPE-FAIL\n");
         return 1;
     }
     if (timing_80386_manifest_run_s5_segment_recipes()) {
-        printf("I386-SEGMENT-RECIPE-FAIL\n");
+        lib_c_printf("I386-SEGMENT-RECIPE-FAIL\n");
         return 1;
     }
     if (timing_80386_manifest_run_s6_direct_recipes()) {
-        printf("I386-PROTECTED-DIRECT-RECIPE-FAIL\n");
+        lib_c_printf("I386-PROTECTED-DIRECT-RECIPE-FAIL\n");
         return 1;
     }
     if (timing_80386_manifest_run_s7_arpl_recipes() ||
@@ -4002,12 +4001,12 @@ lib_i32 main(void)
         timing_80386_manifest_run_s7_lldt_recipes() ||
         timing_80386_manifest_run_s7_ltr_recipes() ||
         timing_80386_manifest_run_s7_str_recipes()) {
-        printf("I386-PROTECTED-SYSTEM-RECIPE-FAIL\n");
+        lib_c_printf("I386-PROTECTED-SYSTEM-RECIPE-FAIL\n");
         return 1;
     }
     if (timing_80386_manifest_s5_count(0) != 234u ||
         timing_80386_manifest_s5_count(1) != 234u) {
-        printf("I386-ORDINARY-CONTROL-COVERAGE-FAIL:observed=%u:canonical=%u\n",
+        lib_c_printf("I386-ORDINARY-CONTROL-COVERAGE-FAIL:observed=%u:canonical=%u\n",
             timing_80386_manifest_s5_count(1), timing_80386_manifest_s5_count(0));
         return 1;
     }
@@ -4016,48 +4015,48 @@ lib_i32 main(void)
         timing_80386_manifest_observed_count() == 0u ||
         timing_80386_manifest_write_results(
             PROJECT_TEST_80386_RESULTS_PATH, 1) != 0) {
-        printf("I386-POSTCHECK-FAIL:canonical=%u:observed=%u:total=%u\n",
+        lib_c_printf("I386-POSTCHECK-FAIL:canonical=%u:observed=%u:total=%u\n",
             timing_80386_manifest_s3_count(0), timing_80386_manifest_s3_count(1),
             timing_80386_manifest_observed_count());
         return 1;
     }
-    printf("I386-RESULT-PRODUCER:PASS:observed=%u:canonical=%u\n",
+    lib_c_printf("I386-RESULT-PRODUCER:PASS:observed=%u:canonical=%u\n",
         timing_80386_manifest_observed_count(),
         timing_80386_manifest_expected_count());
-    printf("I386-RESULT-CLOSURE:PASS:canonical=%u:cpu=1412:mcp=1\n",
+    lib_c_printf("I386-RESULT-CLOSURE:PASS:canonical=%u:cpu=1412:mcp=1\n",
         timing_80386_manifest_expected_count());
-    printf("I386-NONCONTROL-COVERAGE:observed=%u:canonical=%u\n",
+    lib_c_printf("I386-NONCONTROL-COVERAGE:observed=%u:canonical=%u\n",
         timing_80386_manifest_s3_count(1), timing_80386_manifest_s3_count(0));
-    printf("I386-STRING-IO-OBSERVED:%u\n",
+    lib_c_printf("I386-STRING-IO-OBSERVED:%u\n",
         timing_80386_manifest_s4_count(1));
-    printf("I386-STRING-IO-COVERAGE:PASS:canonical=%u\n",
+    lib_c_printf("I386-STRING-IO-COVERAGE:PASS:canonical=%u\n",
         timing_80386_manifest_s4_count(0));
-    printf("I386-STRING-IO-INPUTS:PASS\n");
-    printf("I386-ORDINARY-CONTROL-OBSERVED:%u\n",
+    lib_c_printf("I386-STRING-IO-INPUTS:PASS\n");
+    lib_c_printf("I386-ORDINARY-CONTROL-OBSERVED:%u\n",
         timing_80386_manifest_s5_count(1));
-    printf("I386-ORDINARY-CONTROL-COVERAGE:PASS:canonical=%u\n",
+    lib_c_printf("I386-ORDINARY-CONTROL-COVERAGE:PASS:canonical=%u\n",
         timing_80386_manifest_s5_count(0));
-    printf("I386-ORDINARY-CONTROL-INPUTS:PASS\n");
-    printf("I386-PROTECTED-CONTROL-OBSERVED:%u:canonical=%u\n",
+    lib_c_printf("I386-ORDINARY-CONTROL-INPUTS:PASS\n");
+    lib_c_printf("I386-PROTECTED-CONTROL-OBSERVED:%u:canonical=%u\n",
         timing_80386_manifest_s6_count(1), timing_80386_manifest_s6_count(0));
     if (timing_80386_manifest_s6_count(1) ==
         timing_80386_manifest_s6_count(0)) {
-        printf("I386-PROTECTED-CONTROL-COVERAGE:PASS:canonical=%u\n",
+        lib_c_printf("I386-PROTECTED-CONTROL-COVERAGE:PASS:canonical=%u\n",
             timing_80386_manifest_s6_count(0));
     } else {
         timing_80386_manifest_print_missing_s6();
     }
-    printf("I386-PROTECTED-SYSTEM-OBSERVED:%u:canonical=%u\n",
+    lib_c_printf("I386-PROTECTED-SYSTEM-OBSERVED:%u:canonical=%u\n",
         timing_80386_manifest_s7_count(1), timing_80386_manifest_s7_count(0));
     if (timing_80386_manifest_s7_count(1) != timing_80386_manifest_s7_count(0))
         timing_80386_manifest_print_missing_s7();
     if (timing_80386_manifest_s3_count(1) ==
         timing_80386_manifest_s3_count(0)) {
-        printf("I386-NONCONTROL-OBSERVED:809\n");
-        printf("I386-NONCONTROL-COVERAGE:PASS:canonical=809\n");
-        printf("I386-MEMORY-INPUTS:PASS\n");
-        printf("I386-ESC-HANDOFF:PASS\n");
-        printf("X87-ESC-HANDOFF:PASS\n");
+        lib_c_printf("I386-NONCONTROL-OBSERVED:809\n");
+        lib_c_printf("I386-NONCONTROL-COVERAGE:PASS:canonical=809\n");
+        lib_c_printf("I386-MEMORY-INPUTS:PASS\n");
+        lib_c_printf("I386-ESC-HANDOFF:PASS\n");
+        lib_c_printf("X87-ESC-HANDOFF:PASS\n");
     } else {
         timing_80386_manifest_print_missing_s3();
     }

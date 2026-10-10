@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "core/board-base/dma_bus_interface.h"
 #include "composition/composition_fixture.h"
@@ -250,9 +250,9 @@ lib_i32 main(void)
     core_machine_destroy(machine);
     failed = failed || !competition_dma_wait_contract();
     if (failed) return 1;
-    printf("COMPETITION:OK\n");
-    printf("DMA-NO-WAIT:OK\n");
-    printf("DMA-BUSRDY:OK\n");
-    printf("DMA-HOLD:OK\n");
+    lib_c_printf("COMPETITION:OK\n");
+    lib_c_printf("DMA-NO-WAIT:OK\n");
+    lib_c_printf("DMA-BUSRDY:OK\n");
+    lib_c_printf("DMA-HOLD:OK\n");
     return 0;
 }

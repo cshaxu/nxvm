@@ -115,13 +115,18 @@ static void check_memory_replacement(vm_machine *machine)
     t_hdd *disk = machine->fixed_disk[0u];
     t_debug *debug = &machine->debug;
     vm_machine_reset_vector vector;
+    vm_machine_information information;
     lib_size bytes = 0u;
     lib_test_assert(vm_machine_reconfigure_memory(machine, 32u * 1024u * 1024u) == LIB_STATUS_OK);
     lib_test_assert(machine == identity && machine->core_machine == core &&
         machine->floppy[0u] == floppy && machine->fixed_disk[0u] == disk && &machine->debug == debug);
     lib_test_assert(core_machine_get_memory_bytes(core, &bytes) == LIB_STATUS_OK && bytes == 32u * 1024u * 1024u);
+    lib_test_assert(vm_machine_get_information(machine, &information) == LIB_STATUS_OK &&
+        information.memory_bytes == 32u * 1024u * 1024u);
     lib_test_assert(vm_machine_get_reset_vector(LIB_NULL, &vector) == LIB_STATUS_INVALID_ARGUMENT);
     lib_test_assert(vm_machine_get_reset_vector(machine, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(vm_machine_get_reset_vector(machine, &vector) == LIB_STATUS_OK &&
+        vector.cs == 0xf000u && vector.ip == 0xfff0u);
 }
 
 static void check_floppy_lifecycle(void)
@@ -165,6 +170,20 @@ static void check_floppy_lifecycle(void)
     lib_test_assert(vm_machine_bind_emulator_machine(machine, LIB_NULL) == LIB_STATUS_OK);
     vm_machine_destroy(machine);
     lib_test_assert(probe.released && lib_c_remove(path) == 0);
+}
+
+static void check_partial_media_cleanup(void)
+{
+    vm_machine partial = {0};
+    const core_machine_media_geometry geometry = {2880u, 512u, 80u, 2u, 18u};
+
+    lib_test_assert(vm_machine_fdd_allocate(&geometry, &partial.floppy[0u]) ==
+        LIB_STATUS_OK);
+    lib_test_assert(vm_machine_hdd_allocate(&partial.fixed_disk[0u]) ==
+        LIB_STATUS_OK);
+    vm_machine_finalize(&partial);
+    lib_test_assert(partial.floppy[0u] == LIB_NULL && partial.fixed_disk[0u] == LIB_NULL);
+    vm_machine_finalize(&partial);
 }
 
 static void check_transaction(lib_status configure_status,
@@ -222,6 +241,7 @@ lib_i32 main(void)
     check_transaction(LIB_STATUS_INVALID_ARGUMENT, LIB_STATUS_OK);
     check_transaction(LIB_STATUS_OK, LIB_STATUS_INVALID_STATE);
     check_floppy_lifecycle();
+    check_partial_media_cleanup();
     probe = (construction_probe) {0};
     construction = prepare(&probe);
     const vm_machine_config missing_media = {

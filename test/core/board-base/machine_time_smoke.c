@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "composition/composition_fixture.h"
 #include "composition/time_fixture.h"
@@ -97,6 +97,6 @@ lib_i32 main(void)
 done:
     core_machine_destroy(machine);
     if (failed) return 1;
-    printf("TIME:OK\n");
+    lib_c_printf("TIME:OK\n");
     return 0;
 }
