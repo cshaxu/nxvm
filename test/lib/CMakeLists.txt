@@ -145,6 +145,11 @@ set_tests_properties(
     library.test-manifest
     PROPERTIES LABELS "unit;lib" TIMEOUT 30)
 
+# This self-test intentionally configures several isolated negative layout
+# fixtures.  It is a Lib-owned validation and may exceed the ordinary unit
+# timeout on a cold compiler cache, so keep its contract with the suite.
+set_tests_properties(library.types-layout-selftest PROPERTIES TIMEOUT 180)
+
 # One suite-owned build entry for importing products.  CTest registration and
 # standalone configuration remain unchanged; this only builds every executable
 # CTest case before a parent invokes its aggregate test runner.
