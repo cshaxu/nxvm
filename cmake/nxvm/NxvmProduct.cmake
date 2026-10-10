@@ -278,13 +278,6 @@ target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE my5160-profile)
 
 
 
-add_executable(core-machine-time-smoke test/app-nxvm/unit/board/machine_time_smoke.c)
-target_sources(core-machine-time-smoke PRIVATE
-    test/core/board-base/composition/composition_fixture.c
-    test/core/board-base/composition/time_fixture.c
-    test/app-mydeskpro386/unit/profiles/d4_refresh_fixture.c)
-target_link_libraries(core-machine-time-smoke PRIVATE mydeskpro386-d4)
-
 add_library(model40-d4-prefetch-scheduler-test OBJECT src/core/x86/machine_scheduler.c)
 target_link_libraries(model40-d4-prefetch-scheduler-test PRIVATE core-x86-observable)
 target_compile_definitions(model40-d4-prefetch-scheduler-test PRIVATE
@@ -298,13 +291,6 @@ add_executable(model40-d4-prefetch-locality-smoke
 target_link_libraries(model40-d4-prefetch-locality-smoke PRIVATE
     model40-d4-prefetch-scheduler-test mydeskpro386-d4-observable)
 
-add_executable(core-machine-competition-smoke
-    test/app-nxvm/unit/board/machine_competition_smoke.c
-    test/core/board-base/composition/composition_fixture.c
-    test/core/board-base/composition/time_fixture.c
-    test/core/board-base/support/composition_fixture.c)
-target_link_libraries(core-machine-competition-smoke PRIVATE mydeskpro386-d4-observable)
-
 add_executable(core-machine-d4-refresh-hold-smoke
     test/app-mydeskpro386/unit/profiles/machine_d4_refresh_hold_smoke.c
     test/app-mydeskpro386/unit/profiles/d4_refresh_fixture.c
@@ -312,6 +298,20 @@ add_executable(core-machine-d4-refresh-hold-smoke
     test/core/board-base/composition/time_fixture.c
     test/core/board-base/support/composition_fixture.c)
 target_link_libraries(core-machine-d4-refresh-hold-smoke PRIVATE mydeskpro386-d4-observable)
+
+add_executable(model40-d4-refresh-deadline-smoke
+    test/app-mydeskpro386/unit/profiles/d4_refresh_deadline_smoke.c
+    test/app-mydeskpro386/unit/profiles/d4_refresh_fixture.c
+    test/core/board-base/composition/composition_fixture.c
+    test/core/board-base/composition/time_fixture.c)
+target_link_libraries(model40-d4-refresh-deadline-smoke PRIVATE mydeskpro386-d4)
+
+add_executable(model40-d4-port-assembly-smoke
+    test/app-mydeskpro386/unit/profiles/d4_port_b_assembly_smoke.c
+    test/core/board-base/composition/port_assembly_fixture.c
+    test/core/board-base/port_assembly_board_fixture.c
+    test/core/board-base/board_construction_fixture.c)
+target_link_libraries(model40-d4-port-assembly-smoke PRIVATE mydeskpro386-d4)
 
 
 
@@ -1169,15 +1169,6 @@ add_executable(vm-core-executor-storage-smoke
 target_link_libraries(vm-core-executor-storage-smoke PRIVATE
     vm-profile-tests)
 
-add_executable(core-machine-port-assembly-smoke
-    test/app-nxvm/unit/board/core_machine_port_assembly_smoke.c
-)
-target_link_libraries(core-machine-port-assembly-smoke PRIVATE mydeskpro386-d4)
-target_sources(core-machine-port-assembly-smoke PRIVATE
-    test/core/board-base/composition/port_assembly_fixture.c
-    test/core/board-base/port_assembly_board_fixture.c
-    test/core/board-base/board_construction_fixture.c)
-
 set(PROJECT_UNIT_TEST_TARGETS
     nxvm-firmware-floppy-smoke
     vm-default-pc-at-profile-smoke
@@ -1216,8 +1207,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-executor-run-smoke
     core-machine-ram-create-smoke
     core-machine-port-rollback-smoke
-    core-machine-port-assembly-smoke
-    core-machine-time-smoke
     core-mantle-shape-smoke
     core-machine-entry-plan-smoke
     core-machine-arbitration-smoke
@@ -1227,7 +1216,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-transaction-smoke
     core-machine-prefetch-locality-smoke
     model40-d4-prefetch-locality-smoke
-    core-machine-competition-smoke
+    model40-d4-refresh-deadline-smoke
+    model40-d4-port-assembly-smoke
     core-machine-d4-refresh-hold-smoke
     core-machine-competition-80386-smoke
     core-machine-transaction-lifecycle-smoke

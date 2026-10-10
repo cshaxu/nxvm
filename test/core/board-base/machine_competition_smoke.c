@@ -1,14 +1,13 @@
-#include "app-mydeskpro386/profiles/d4_platform_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "core/board-base/dma_bus_interface.h"
-#include "../../../core/board-base/composition/composition_fixture.h"
-#include "../../../core/board-base/composition/time_fixture.h"
-#include "../../../core/board-base/support/composition_fixture.h"
+#include "composition/composition_fixture.h"
+#include "composition/time_fixture.h"
+#include "support/composition_fixture.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/x86/trace_interface.h"
-#include "../../../core/board-base/core_machine_board_fixture.h"
+#include "core_machine_board_fixture.h"
 
 typedef struct competition_probe {
     core_machine_trace_event events[256];
@@ -147,10 +146,7 @@ lib_i32 main(void)
     const lib_u8 nop = 0x90u;
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
-    core_machine_d4_platform *d4_board = LIB_NULL;
     core_machine_config config = {0};
-    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
-    core_machine_d4_platform_observation d4_observation;
     core_machine_trace_provider trace;
     core_machine_dma_request_binding binding = {0};
     core_machine_run_budget budget = {1u, 0u};
@@ -178,14 +174,9 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.auxiliary_pit_present = LIB_TRUE;
-    config.auxiliary_pit_base_port = 0x0048u;
     trace.callback = competition_trace;
     trace.context = &probe;
     failed = failed || core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
-    failed = failed || core_machine_d4_platform_attach(board, &d4, &d4_board) != LIB_STATUS_OK;
-    failed = failed || core_machine_d4_platform_observe(d4_board, &d4_observation) !=
-        LIB_STATUS_OK || !d4_observation.configured;
     failed = failed || test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed = failed || test_board_dma_bind_channel(board, 2u,
@@ -260,8 +251,8 @@ lib_i32 main(void)
     failed = failed || !competition_dma_wait_contract();
     if (failed) return 1;
     printf("COMPETITION:OK\n");
-    printf("D4-DMA-NO-WAIT:OK\n");
-    printf("D4-DMA-BUSRDY:OK\n");
-    printf("PCAT-HOLD:OK\n");
+    printf("DMA-NO-WAIT:OK\n");
+    printf("DMA-BUSRDY:OK\n");
+    printf("DMA-HOLD:OK\n");
     return 0;
 }

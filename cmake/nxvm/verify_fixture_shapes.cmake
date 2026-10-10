@@ -75,7 +75,7 @@ set(project_fixture_shapes_retained_sources
     "test/core/x86/cpu_int_ivt_smoke.c"
     "test/core/board-base/machine_arbitration_smoke.c"
     "test/core/board-base/dma_competition_fixture.c"
-    "test/app-nxvm/unit/board/machine_competition_smoke.c"
+    "test/core/board-base/machine_competition_smoke.c"
     "test/core/x86/machine_configuration_smoke.c"
     "test/core/board-base/machine_cpu_pic_lifecycle_smoke.c"
     "test/app-mydeskpro386/unit/profiles/machine_d4_refresh_hold_smoke.c"
@@ -90,7 +90,7 @@ set(project_fixture_shapes_retained_sources
     "test/core/board-base/composition/machine_retirement_observation_smoke.c"
     "test/core/board-base/machine_rtc_storage_smoke.c"
     "test/core/board-base/composition/machine_scheduler_smoke.c"
-    "test/app-nxvm/unit/board/machine_time_smoke.c"
+    "test/core/board-base/machine_time_smoke.c"
     "test/core/board-base/composition/machine_timeline_smoke.c"
     "test/core/board-base/machine_timing_checkpoint_smoke.c"
     "test/core/board-base/composition/machine_transaction_lifecycle_smoke.c"
@@ -192,6 +192,9 @@ file(GLOB project_fixture_shapes_machine_sources
     RELATIVE "${PROJECT_FIXTURE_SHAPES_SOURCE_DIR}"
     "${PROJECT_FIXTURE_SHAPES_SOURCE_DIR}/test/core/board-base/composition/*.c"
     "${PROJECT_FIXTURE_SHAPES_SOURCE_DIR}/test/app-nxvm/unit/board/*.c")
+list(APPEND project_fixture_shapes_machine_sources
+    "test/core/board-base/machine_competition_smoke.c"
+    "test/core/board-base/machine_time_smoke.c")
 list(APPEND project_fixture_shapes_machine_sources
     "test/app-mydeskpro386/unit/profiles/core_machine_d4_platform_smoke.c"
     "test/app-mydeskpro386/unit/profiles/machine_d4_refresh_hold_smoke.c")

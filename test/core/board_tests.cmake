@@ -195,6 +195,26 @@ add_test(NAME unit.core-machine-rtc-storage-smoke COMMAND core-machine-rtc-stora
 set_tests_properties(unit.core-machine-rtc-storage-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
 list(APPEND CORE_BOARD_TEST_TARGETS core-machine-rtc-storage-smoke)
 
+add_executable(core-machine-time-smoke
+    ${CORE_TEST_ROOT}/board-base/machine_time_smoke.c
+    ${CORE_TEST_ROOT}/board-base/composition/composition_fixture.c
+    ${CORE_TEST_ROOT}/board-base/composition/time_fixture.c)
+target_link_libraries(core-machine-time-smoke PRIVATE core-board-base core-x86)
+add_test(NAME unit.core-machine-time-smoke COMMAND core-machine-time-smoke)
+set_tests_properties(unit.core-machine-time-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
+list(APPEND CORE_BOARD_TEST_TARGETS core-machine-time-smoke)
+
+add_executable(core-machine-competition-smoke
+    ${CORE_TEST_ROOT}/board-base/machine_competition_smoke.c
+    ${CORE_TEST_ROOT}/board-base/composition/composition_fixture.c
+    ${CORE_TEST_ROOT}/board-base/composition/time_fixture.c
+    ${CORE_TEST_ROOT}/board-base/support/composition_fixture.c)
+target_link_libraries(core-machine-competition-smoke PRIVATE
+    core-board-base-observable core-x86-observable)
+add_test(NAME unit.core-machine-competition-smoke COMMAND core-machine-competition-smoke)
+set_tests_properties(unit.core-machine-competition-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
+list(APPEND CORE_BOARD_TEST_TARGETS core-machine-competition-smoke)
+
 foreach(board_case IN ITEMS dma-binding-token compaq-hdc-machine auxiliary-pit
         fdc-topology-port fdc-media-change-port fdc hdc compaq-hdc-dual-drive xebec-wiring pit-divider
         rtc rtc-cmos dma-rtc-authority)
