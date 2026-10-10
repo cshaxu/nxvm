@@ -12,9 +12,9 @@ lib_status vm_app_ini_executable_path(const char *name, lib_u8 *path,
 lib_status vm_app_ini_load_request(const char *name,
     vm_session_request *out_request);
 
-/* NXVM-family startup owns its common INI grammar and fixed-machine adapter;
- * shared Product receives only completed machine and presentation values. */
-lib_i32 vm_app_run(const char *name, const char *banner,
-    const vm_app_machine_binding *binding);
+/* NXVM-family startup owns its common INI grammar, opening identity and fixed
+ * machine adapter; shared Product receives completed machine, presentation and
+ * banner values. */
+lib_i32 vm_app_run(const char *name, const vm_app_machine_binding *binding);
 
 #endif
