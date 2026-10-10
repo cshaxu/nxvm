@@ -1,13 +1,12 @@
 #include "app-my5160/profiles/construction_interface.h"
 #include "core/machine/machine_interface.h"
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 
 #include "../../../core/board-base/composition/composition_fixture.h"
 #include "../../../core/board-base/support/composition_fixture.h"
 #include "../../../core/board-base/support/controller_fixture.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "app-my5160/profiles/xt_5160_268.h"
 
@@ -246,13 +245,13 @@ int main(void)
     if (vm_xt_5160_268_contract_is_fixed() ||
         vm_xt_5160_268_topology_constructs_one_xt_route() ||
         vm_xt_5160_268_byob_session_uses_one_xt_route()) return 1;
-    printf("XT-FIXED-PROFILE:OK\n");
-    printf("XT-B2-SHARED-TOPOLOGY:OK\n");
-    printf("XT-FDC-PLAN:OK\n");
-    printf("XT-NO-AT-FDC-ALIAS:OK\n");
-    printf("XT-CGA-PLAN:OK\n");
-    printf("XT-NO-VIDEO-ALIAS:OK\n");
-    printf("XT-TYPE2:OK\n");
-    printf("XT-B6-BYOB-SESSION:OK\n");
+    lib_c_printf("XT-FIXED-PROFILE:OK\n");
+    lib_c_printf("XT-B2-SHARED-TOPOLOGY:OK\n");
+    lib_c_printf("XT-FDC-PLAN:OK\n");
+    lib_c_printf("XT-NO-AT-FDC-ALIAS:OK\n");
+    lib_c_printf("XT-CGA-PLAN:OK\n");
+    lib_c_printf("XT-NO-VIDEO-ALIAS:OK\n");
+    lib_c_printf("XT-TYPE2:OK\n");
+    lib_c_printf("XT-B6-BYOB-SESSION:OK\n");
     return 0;
 }
