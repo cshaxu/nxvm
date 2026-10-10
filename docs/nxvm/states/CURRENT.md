@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S28 Active: Audit MyDeskPro386 Unit Ownership)
+## Current Task — M5 T548 (S29 Active: Audit Shared Monitor Unit Ownership)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S28. This S consumes the MyDeskPro386 App batch following the completed My5160/My5170 ownership review. |
+| Identifier Mode | Continuation T548 S29. This S consumes the shared Lib/Emulator/Product monitor batch following the completed MyDeskPro386 ownership review. |
 | Admission And Approval | Owner instruction in this conversation to continue the complete test-corpus repair after the S25 Core rehome; standing push approval applies. |
-| Objective | Establish behavior-level ownership for every MyDeskPro386 unit entry. Retain Model 40 D4, CMOS, firmware, topology and composition increments; move or retire only a generic assertion with a documented equal-or-stronger Core receiver. |
+| Objective | Establish behavior-level ownership for every Lib, Emulator and Product monitor unit entry. Retain consumer delegation/extension increments; move or retire only a duplicate fixed monitor assertion with a documented canonical shared receiver. |
 | Non-goals | No production behavior or public ABI change; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools; no sibling-repository edit. |
-| Reference Baseline | S26 commits `c47e7c848` through `b2ff1e9cd`, S27's My5160/My5170 ledger, the S1 ownership ledger and receiver evidence. |
+| Reference Baseline | S26 commits `c47e7c848` through `b2ff1e9cd`, S27/S28 App ledgers, the S1 ownership ledger and receiver evidence. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | `test/app-mydeskpro386/unit/**`, its CMake registrations/support fixtures, any documented equal-or-stronger `test/core/**` receiver, and NXVM evidence/state only. No production, assets, ABI or integration input changes. |
+| Files And ABI Surface | `test/{lib,emulator,product}/**`, consumer monitor receivers only where a documented comparison requires them, registrations/support fixtures and NXVM evidence/state. No production, assets, ABI or integration input changes. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | Before any move, record each MyDeskPro386 test's asserted behavior, Model 40 fact, Core receiver and disposition. Build/run every changed receiver on x64/x86; preserve routes/counts unless a documented equal-or-stronger receiver retires a duplicate; run manifests, fixture and registration gates. |
-| Expected Markers | Every MyDeskPro386 unit has a behavior-level disposition: Core receiver, retained App increment, split receiver, or explicit later owner. No path is moved merely because it includes a Core private header. |
+| Verification | Before any move, record each shared monitor behavior, consumer increment and canonical receiver. Build/run every changed receiver on x64/x86; preserve routes/counts unless a documented equal-or-stronger receiver retires a duplicate; run manifests, fixture and registration gates. |
+| Expected Markers | Every reviewed monitor behavior has one canonical shared or consumer receiver. No path is moved merely because it calls a shared component. |
 | Asset Needs | None. INIs, media, snapshots and artifacts are not edited. |
 | Reporting Requirements | Report exact source/target/output identities, disposition table, test-count and line delta, dual-width results and every retained App increment. Do not rename historical evidence or claim behavior coverage from names. |
 | Stop Conditions | Missing equal-or-stronger receiver, ambiguous Core-versus-profile assertion, external identity contract, required production change, or loss of an existing assertion. |
-| Exit Criteria | All current MyDeskPro386 unit entries have a documented disposition. Every changed behavior has one canonical Core or App owner; Model 40 D4/CMOS/firmware/composition increments remain visible; affected x64/x86 tests and gates pass. T548 remains open for the Shared/Emulator/Product, MyNES and final qualification batches. |
+| Exit Criteria | Every shared monitor unit entry has a documented disposition. Every changed behavior has one canonical shared or consumer owner; consumer delegation/extension increments remain visible; affected x64/x86 tests and gates pass. T548 remains open for the MyNES and final qualification batches. |
 | Original Owner Request | Repair the entire NXVM test suite cleanly after closing the old lifecycle/product task. |
-| Similar-Issue Sweep | Review MyDeskPro386 profile, firmware, topology, D4, CMOS and composition entries together; search Core for same behavior and failure predicate before moving or removing any case. |
+| Similar-Issue Sweep | Review Lib/Emulator/Product monitor grammar, help, lifecycle, prompt and presentation entries together; compare MyNES/PC consumer tests before moving or removing any case. |
 
 | Work | Progress |
 | --- | --- |
@@ -29,6 +29,7 @@
 | T548 S1 | Complete: committed baseline `006a7592d` records the 541-unit-entry/45-integration-C universe, registration owners and first semantic candidate groups. It confirmed the Default-App factory duplicate and protected selected-profile increments from mechanical relocation. |
 | T548 S26 | Complete: Core `c47e7c848`, MyDeskPro386 `41cc1779b`, My5170 `b67332ae1`, My5160 `113514a57`, NXVM `1209e0f35` and Shared registration `2de340bf3` retire or narrow Default-PC duplicates, assign generic predicates to Core and split every outward Core-to-App test edge to its real App receiver. The complete repository-only unit selection passes 515/515 on x64 and x86; Core manifests pass on both widths. No production, firmware, media, INI, snapshot or deployed executable input changed. |
 | T548 S27 | Complete pending commit: all two My5160 and six My5170 unit entries are classified in `etc/evidence/t548-s27-my5160-my5170-ownership-ledger.md`. Every assertion selects a fixed profile, firmware, topology, clock or composed route that Core does not own; none is rehomed or retired. Two raw-CRT/duplicate-include test-boundary cleanups compile and the complete eight-entry App batch passes on x64/x86. No production, asset, firmware, media, INI, snapshot or executable input changed. |
+| T548 S28 | Complete pending commit: all 25 Model 40 unit entries are classified in `etc/evidence/t548-s28-mydeskpro386-ownership-ledger.md`. Every assertion selects D4, CMOS, ROM, media geometry, CECG or a Model 40 composed route that Core does not own; none is rehomed or retired. Twenty-five raw-CRT test boundary cleanups compile and all 28 MyDeskPro386 routes pass on x64/x86. No production, asset, firmware, media, INI, snapshot or executable input changed. |
 | T548 S2 | Complete: retired `nxvm_ini_smoke.c` and both `vm-app-ini-smoke` registrations. Reconfigured x64/x86 CTest graphs contain only `core.factory`; it passes on both widths. Core ownership and manifest gates pass. This is test/CMake-only, so no executable input or artifact changed. |
 | T548 S3 | Complete: pushed as `ac7fbc5dc`. The unmodified eight-by-five Core CPU/PIC negative matrix now has one `core.cpu-bus-boundary-negative` registration, runs on x64/x86, and the old App identity is absent. The FDC assembly gate remains App-owned. Core ownership and both Core manifests pass. No production or artifact input changed. |
 | T548 S4 | Complete: the mixed Default-App plan test is split into one Default-PC, one My5170 and one MyDeskPro386 receiver; the 5170 clock contract also moves to My5170. All four targets pass on x64/x86, and no old mixed path/target remains in active test/CMake sources. This is test/CMake-only, so no executable input or artifact changed. |
