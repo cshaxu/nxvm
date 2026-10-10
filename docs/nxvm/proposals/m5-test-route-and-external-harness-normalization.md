@@ -55,6 +55,7 @@ path.
 | S5 | NXVM, MyNES | Run each selected external integration group once after unit qualification, report diagnostics separately, and close only if every route and retained external input has an explicit result or owner-approved transfer. |
 | S6 | Shared, NXVM | Audit the current SoftPC public six-component update for raw import eligibility, component ownership, Types usage, dependency direction, test closure and minimality.  Do not import or modify code without a separate owner-approved implementation scope. |
 | S7 | Shared, NXVM | Import SoftPC commit `2f706c37` verbatim for `src/{lib,emulator,product}`, `test/{lib,emulator,product}` and `test/register.cmake`; retain NXVM's established explicit 30-second static-test budgets plus the proven `lib.types-layout-selftest` 180-second and `emulator.verifier-negative` 60-second fixture budgets. Reconcile every affected CTest reference atomically to canonical `lib.*` and source-path identities, then prove shared x64/x86 suites and manifests. |
+| S8 | Shared, NXVM, MyNES | Import SoftPC commit `c7b5c3a8` verbatim for the public-six delta since S7: the Win32 Console deactivate flush, its failure-injection regression, and the committed Lib/Emulator test-budget metadata/manifests. Exclude all later SoftPC worktree changes. Prove source/test manifests, boundary gates, and the Shared Lib, Emulator and Product unit routes on x64 and x86; because this changes Shared production input, rebuild, verify and deploy every receiving App's x64/x86 artifact pair. |
 
 ## Completion Standard
 
