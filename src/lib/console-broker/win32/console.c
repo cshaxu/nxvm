@@ -99,8 +99,18 @@ static lib_status console_broker_apply_display(lib_win32_handle output,
         return LIB_STATUS_UNSUPPORTED;
     /* The temporary rectangle only made metadata legal. Rebuild the final
      * rectangle from the saved target after the new backing buffer is active. */
-    if (!lib_win32_get_console_screen_buffer_info(output, &current) ||
-        !console_broker_fit_viewport(&viewport, &source->srWindow,
+    if (!lib_win32_get_console_screen_buffer_info(output, &current))
+        return LIB_STATUS_IO_ERROR;
+    /* Some Console hosts accept extended metadata but silently retain a
+     * smaller backing buffer. Restore and verify the saved capacity before
+     * fitting the user-visible viewport to the current host limits. */
+    if (current.dwSize.X != source->dwSize.X || current.dwSize.Y != source->dwSize.Y) {
+        if (!lib_win32_set_console_screen_buffer_size(output, source->dwSize) ||
+            !lib_win32_get_console_screen_buffer_info(output, &current) ||
+            current.dwSize.X != source->dwSize.X || current.dwSize.Y != source->dwSize.Y)
+            return LIB_STATUS_IO_ERROR;
+    }
+    if (!console_broker_fit_viewport(&viewport, &source->srWindow,
             current.dwSize, current.dwMaximumWindowSize) ||
         !lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport))
         return LIB_STATUS_IO_ERROR;
