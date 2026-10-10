@@ -1,6 +1,6 @@
 #include "kbc_state_fixture.h"
 #include "core/board-base/machine_board_state.h"
-#include "../board-at/state_fixture.h"
+#include "../../board-at/support/state_fixture.h"
 
 lib_i32 test_board_keyboard_repeat_cadence(core_machine_board_state *board,
     lib_u64 initial_ticks, lib_u64 repeat_ticks)

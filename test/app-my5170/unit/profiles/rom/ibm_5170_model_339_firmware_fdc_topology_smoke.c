@@ -3,11 +3,11 @@
 #include <stdio.h>
 
 #include "../../../../core/board-base/composition/composition_fixture.h"
-#include "../../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
+#include "../../../../core/board-base/support/composition_fixture.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
 #include "app-my5170/profiles/profile_interface.h"
-#include "../../../../app-nxvm/unit/support/rom/session_assets.h"
+#include "../../../support/session_assets.h"
 
 int main(void)
 {

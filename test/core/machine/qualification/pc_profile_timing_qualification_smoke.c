@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "core/board-base/dma_bus_interface.h"
-#include "../support/ibmpc/board-common/composition_fixture.h"
+#include "../../board-base/support/composition_fixture.h"
 #include "core/board-base/machine_board_interface.h"
 #include "app-nxvm/profiles/profile_interface.h"
 #include "app-my5170/profiles/profile_interface.h"

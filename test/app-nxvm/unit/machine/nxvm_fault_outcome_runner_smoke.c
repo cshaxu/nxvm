@@ -10,7 +10,7 @@
 #include "core/machine/fault.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 #include "core/machine/machine_private.h"
 
 static lib_i32 vm_fault_outcome_prepare(vm_machine *session)

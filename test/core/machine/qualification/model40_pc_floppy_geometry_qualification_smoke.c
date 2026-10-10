@@ -1,15 +1,15 @@
 #include "core/machine/machine_interface.h"
-#include "../../../app-nxvm/unit/support/ibmpc/machine/support/media.h"
+#include "../support/media.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "../../../app-nxvm/unit/support/ibmpc/board-common/controller_fixture.h"
+#include "../../board-base/support/controller_fixture.h"
 #include "core/board-base/media_interface.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/media/media_interface.h"
 #include "core/machine/machine_private.h"
-#include "../../support/rom/model40_session_assets.h"
-#include "../../../app-nxvm/unit/support/rom/session_assets.h"
+#include "model40_session_assets.h"
+#include "../support/session_assets.h"
 
 #define MODEL40_FDD_BYTES (80u * 2u * 15u * 512u)
 #define MODEL40_COMPATIBLE_MEDIA_BYTES (40u * 2u * 9u * 512u)
@@ -64,9 +64,9 @@ lib_i32 main(void)
                 sizeof(compatible_media)) != LIB_FALSE) goto done;
     }
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != LIB_STATUS_OK ||
+    if (pc_qualification_default_pc_at_session_create(LIB_NULL, &default_session) != LIB_STATUS_OK ||
         default_session == LIB_NULL ||
-        vm_test_ibm_5170_session_create(&model339_config, &model339) != LIB_STATUS_OK ||
+        pc_qualification_ibm_5170_session_create(&model339_config, &model339) != LIB_STATUS_OK ||
         model339 == LIB_NULL ||
         vm_test_fdd_info(default_session->floppy[0u]).geometry.sectors_per_track != 18u ||
         vm_test_fdd_info(model339->floppy[0u]).geometry.sectors_per_track != 15u) goto done;

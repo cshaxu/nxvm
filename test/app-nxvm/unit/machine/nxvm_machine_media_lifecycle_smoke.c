@@ -4,8 +4,8 @@
 
 #include "lib/storage/file_interface.h"
 
-#include "../support/ibmpc/machine/support/emulator_machine_fixture.h"
-#include "../support/rom/session_assets.h"
+#include "../../../core/machine/support/emulator_machine_fixture.h"
+#include "../../support/rom/session_assets.h"
 
 static lib_i32 vm_machine_media_create_floppy(const char *path)
 {

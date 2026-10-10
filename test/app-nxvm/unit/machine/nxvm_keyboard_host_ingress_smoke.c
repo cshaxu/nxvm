@@ -1,11 +1,11 @@
-#include "../support/ibmpc/machine/support/guest_input.h"
+#include "../../../core/machine/support/guest_input.h"
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 
 lib_i32 main(void)
 {

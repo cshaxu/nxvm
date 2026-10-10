@@ -4,11 +4,11 @@
 
 #include "core/board-base/vadp_interface.h"
 #include "../../../core/board-base/composition/bus_fixture.h"
-#include "../../../app-nxvm/unit/support/core/video_topology_fixture.h"
+#include "../../../core/support/video_topology_fixture.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "../../support/rom/model40_session_assets.h"
+#include "../../../core/machine/qualification/model40_session_assets.h"
 
 lib_i32 main(void)
 {

@@ -7,7 +7,7 @@
 #include "core/x86/debug_interface.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 
 static lib_bool fdc_result_is_local(core_machine *machine, core_machine *other)
 {

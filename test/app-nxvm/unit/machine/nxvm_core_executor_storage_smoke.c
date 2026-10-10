@@ -9,7 +9,7 @@
 #include "core/x86/debug_interface.h"
 
 #include "core/machine/machine_interface.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 
 lib_i32 main(void)
 {

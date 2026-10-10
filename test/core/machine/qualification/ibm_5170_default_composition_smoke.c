@@ -1,21 +1,21 @@
 #include "core/board-base/pc_at_rom_interface.h"
-#include "../../../app-nxvm/unit/support/profile.h"
+#include "../support/profile_qualification.h"
 #include "core/machine/machine_interface.h"
-#include "../../../app-nxvm/unit/support/ibmpc/machine/support/media.h"
+#include "../support/media.h"
 #include "lib/types/types_interface.h"
-#include "../../../core/board-base/composition/composition_fixture.h"
-#include "../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
-#include "../../../app-nxvm/unit/support/ibmpc/board-common/kbc_state_fixture.h"
+#include "../../board-base/composition/composition_fixture.h"
+#include "../../board-base/support/composition_fixture.h"
+#include "../../board-base/support/kbc_state_fixture.h"
 #include <stdio.h>
 
 #include "core/x86/debug_interface.h"
-#include "../../../core/board-base/composition/bus_fixture.h"
+#include "../../board-base/composition/bus_fixture.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
 #include "app-my5170/profiles/profile_interface.h"
 
-#include "../../../app-nxvm/unit/support/rom/session_assets.h"
+#include "../support/session_assets.h"
 
 static lib_status vm_test_create_5170(const vm_machine_config *config,
     vm_machine **out_session)
@@ -25,11 +25,11 @@ static lib_status vm_test_create_5170(const vm_machine_config *config,
     lib_u8 font[VM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES] = {0};
     vm_machine_assets assets;
 
-    vm_test_ibm_5170_assets(&assets, even, odd);
+    pc_qualification_ibm_5170_assets(&assets, even, odd);
     font['A' * 8u] = 0x81u;
     font[2048u + 'A' * 8u] = 0x42u;
     assets.font = (vm_machine_asset_bytes) { font, sizeof(font) };
-    return vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5170_MODEL_339,
+    return pc_qualification_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5170_MODEL_339,
         config, &assets, out_session);
 }
 
@@ -39,8 +39,8 @@ static lib_status vm_test_create_default(const vm_machine_config *config,
     lib_u8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
     vm_machine_assets assets;
 
-    vm_test_default_pc_at_assets(&assets, rom);
-    return vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+    pc_qualification_default_pc_at_assets(&assets, rom);
+    return pc_qualification_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         config, &assets, out_session);
 }
 
@@ -294,14 +294,14 @@ static lib_i32 vm_model_339_external_rom_route(void)
     lib_u8 observed[2] = {0};
     lib_i32 failed;
 
-    vm_test_ibm_5170_assets(&assets, even, odd);
+    pc_qualification_ibm_5170_assets(&assets, even, odd);
     even[0u] = 0x12u;
     odd[0u] = 0x34u;
     assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
-    failed = vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5170_MODEL_339,
+    failed = pc_qualification_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5170_MODEL_339,
         &config, &assets, &session) !=
             LIB_STATUS_OK || session == LIB_NULL ||
-        vm_test_profile_construction(session)->firmware_provider == LIB_NULL ||
+        pc_qualification_profile_construction(session)->firmware_provider == LIB_NULL ||
         core_machine_memory_read(session->core_machine, 0x000f0000u, observed,
             sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x12u ||
             observed[1u] != 0x34u ||
@@ -326,7 +326,7 @@ lib_i32 main(void)
     const lib_i32 rom = vm_model_339_external_rom_route();
     const lib_i32 default_create = vm_test_create_default(&default_config,
         &default_session) != LIB_STATUS_OK || default_session == LIB_NULL ||
-        !vm_test_profile_construction(default_session)->hdc_present;
+        !pc_qualification_profile_construction(default_session)->hdc_present;
     lib_i32 failed = selected || floppy || refresh || refresh_post || dma_word_io || rom || default_create;
 
     vm_machine_destroy(default_session);

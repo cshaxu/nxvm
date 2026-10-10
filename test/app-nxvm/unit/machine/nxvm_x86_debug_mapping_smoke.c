@@ -7,8 +7,8 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/debug_adapter.h"
 #include "core/machine/machine_private.h"
-#include "../support/ibmpc/machine/support/emulator_machine_fixture.h"
-#include "../support/rom/session_assets.h"
+#include "../../../core/machine/support/emulator_machine_fixture.h"
+#include "../../support/rom/session_assets.h"
 
 static lib_i32 vm_debug_execute(vm_machine *machine,
     const emulator_machine_debug_lease *lease,

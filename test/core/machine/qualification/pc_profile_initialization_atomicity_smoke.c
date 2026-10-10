@@ -1,5 +1,5 @@
 #include "app-mydeskpro386/profiles/observation_interface.h"
-#include "../support/profile.h"
+#include "../support/profile_qualification.h"
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
@@ -9,11 +9,11 @@
 #include "core/machine/runner.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "../support/ibmpc/board-common/composition_fixture.h"
+#include "../../board-base/support/composition_fixture.h"
 #include "core/machine/input_interface.h"
 #include "core/board-base/rom_validation_interface.h"
 #include "app-nxvm/profiles/profile_interface.h"
-#include "../support/rom/session_assets.h"
+#include "../support/session_assets.h"
 
 static lib_i32 verify_recovery(void);
 
@@ -44,7 +44,7 @@ static lib_i32 verify_missing_firmware_rejection(void)
     vm_machine *session = LIB_NULL;
     lib_i32 failed;
 
-    failed = vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+    failed = pc_qualification_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         &config, &missing_assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
     vm_machine_destroy(session);
@@ -57,18 +57,18 @@ static lib_i32 verify_constructor_output_contract(void)
     vm_machine *session = (vm_machine *)(lib_uptr)1u;
     const vm_machine_config config = {.bios_count = 1u};
 
-    if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+    if (pc_qualification_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         LIB_NULL, &assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL) return 1;
     for (vm_machine_profile_kind kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT;
             kind <= VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40; ++kind) {
         vm_machine_construction construction = {.profile.context = (void *)(lib_uptr)1u};
 
-        if (vm_test_profile_construction_create(kind, LIB_NULL, &assets, &construction) !=
+        if (pc_qualification_profile_construction_create(kind, LIB_NULL, &assets, &construction) !=
                 LIB_STATUS_INVALID_ARGUMENT || construction.profile.context != LIB_NULL) return 1;
-        if (vm_test_profile_construction_create(kind, &config, LIB_NULL, &construction) !=
+        if (pc_qualification_profile_construction_create(kind, &config, LIB_NULL, &construction) !=
                 LIB_STATUS_INVALID_ARGUMENT || construction.profile.context != LIB_NULL) return 1;
-        if (vm_test_profile_construction_create(kind, &config, &assets, &construction) !=
+        if (pc_qualification_profile_construction_create(kind, &config, &assets, &construction) !=
                 LIB_STATUS_INVALID_ARGUMENT || construction.profile.context != LIB_NULL) return 1;
     }
     return 0;
@@ -140,7 +140,7 @@ static lib_i32 verify_create_materialization(
     test_board_plan_observation observed;
     lib_i32 failed = 1;
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != LIB_STATUS_OK ||
+    if (pc_qualification_default_pc_at_session_create(LIB_NULL, &default_session) != LIB_STATUS_OK ||
         default_session == LIB_NULL || default_session->core_machine_plan == LIB_NULL)
         goto done;
     observed = test_board_capture_plan(default_session->core_machine_plan);
@@ -151,7 +151,7 @@ static lib_i32 verify_create_materialization(
             profile) || !session_core_config_is_applied(default_session,
             profile->default_memory_bytes, profile->cpu_profile,
             profile->fpu_profile)) goto done;
-    if (vm_test_default_pc_at_session_create(&overrides, &configured_session) !=
+    if (pc_qualification_default_pc_at_session_create(&overrides, &configured_session) !=
         LIB_STATUS_OK || configured_session == LIB_NULL ||
         configured_session->core_machine_plan == LIB_NULL) goto done;
     observed = test_board_capture_plan(configured_session->core_machine_plan);
@@ -183,7 +183,7 @@ static lib_i32 verify_invalid_media_slot(
     };
     vm_machine *session = LIB_NULL;
 
-    if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_INVALID_ARGUMENT ||
+    if (pc_qualification_default_pc_at_session_create(&config, &session) != LIB_STATUS_INVALID_ARGUMENT ||
         session != LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
@@ -195,7 +195,7 @@ static lib_i32 verify_recovery(void)
 {
     vm_machine *session = LIB_NULL;
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
+    if (pc_qualification_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || !session->active || session->core_machine == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
@@ -203,11 +203,11 @@ static lib_i32 verify_recovery(void)
     {
         vm_profile_model40_observation observation = { .fdc_terminal_valid = LIB_TRUE };
 
-        if (vm_profile_model40_observe(vm_test_profile_construction(session), &observation) !=
+        if (vm_profile_model40_observe(pc_qualification_profile_construction(session), &observation) !=
                 LIB_STATUS_UNSUPPORTED || !observation.fdc_terminal_valid ||
             vm_profile_model40_observe(LIB_NULL, &observation) !=
                 LIB_STATUS_INVALID_ARGUMENT ||
-            vm_profile_model40_observe(vm_test_profile_construction(session), LIB_NULL) !=
+            vm_profile_model40_observe(pc_qualification_profile_construction(session), LIB_NULL) !=
                 LIB_STATUS_INVALID_ARGUMENT) {
             vm_machine_destroy(session);
             return 1;

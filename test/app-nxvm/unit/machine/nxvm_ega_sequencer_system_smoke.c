@@ -7,7 +7,7 @@
 #include "core/board-base/vadp_interface.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 #include "core/machine/machine_private.h"
 
 lib_i32 main(void)

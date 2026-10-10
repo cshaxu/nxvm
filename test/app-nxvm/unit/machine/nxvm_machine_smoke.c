@@ -6,7 +6,7 @@
 #include "core/machine/machine_private.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 
 static lib_i32 verify(void)
 {

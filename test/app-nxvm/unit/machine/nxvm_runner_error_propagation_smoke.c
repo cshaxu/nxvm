@@ -6,8 +6,8 @@
 #include "../../../core/board-base/composition/composition_fixture.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
-#include "../support/ibmpc/machine/support/emulator_machine_fixture.h"
-#include "../support/rom/session_assets.h"
+#include "../../../core/machine/support/emulator_machine_fixture.h"
+#include "../../support/rom/session_assets.h"
 
 static lib_i32 vm_runner_error_wait(const vm_machine *machine,
     const vm_test_emulator_machine_state_waiter *waiter)

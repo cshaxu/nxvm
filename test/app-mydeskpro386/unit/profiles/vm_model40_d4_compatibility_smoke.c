@@ -1,14 +1,14 @@
-#include "../../../app-nxvm/unit/support/profile.h"
+#include "../../support/profile.h"
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "core/x86/machine_interface.h"
-#include "../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
+#include "../../../core/board-base/support/composition_fixture.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "../../support/rom/model40_session_assets.h"
+#include "../../../core/machine/qualification/model40_session_assets.h"
 
 static lib_i32 vm_model40_d4_read(core_machine *machine,
     lib_u32 physical, lib_u8 expected)

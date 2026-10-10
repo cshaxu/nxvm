@@ -1,6 +1,6 @@
 #include "core/machine/machine_interface.h"
-#include "../../../app-mydeskpro386/support/model40.h"
-#include "../../unit/support/ibmpc/machine/support/media.h"
+#include "../../../core/machine/qualification/model40_profile.h"
+#include "../../../core/machine/support/media.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 #include "core/board-base/machine_board_interface.h"
@@ -10,7 +10,7 @@
 #include <windows.h>
 #undef exception_code
 
-#include "test/app-nxvm/unit/support/ibmpc/machine/support/nxvm_presentation_capture.h"
+#include "test/core/machine/support/nxvm_presentation_capture.h"
 #include "core/x86/machine_interface.h"
 #include "core/x86/debug_interface.h"
 #include "core/machine/lifecycle.h"
@@ -230,7 +230,8 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
             printf("T515:INI-BOOT:%s:STATE:elapsed=%llu:lifecycle=%u\n", name,
                 (unsigned long long)observation.elapsed_ticks, observation.lifecycle);
         }
-        const vm_profile_model40_observation profile = vm_test_model40_observation(session);
+        const vm_profile_model40_observation profile =
+            pc_qualification_model40_observation(session);
         if (profile.fdc_terminal_valid) {
             const core_machine_fdc_terminal_observation *terminal =
                 &profile.fdc_terminal;

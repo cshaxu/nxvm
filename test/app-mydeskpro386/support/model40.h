@@ -1,4 +1,4 @@
-#include "../../app-nxvm/unit/support/profile.h"
+#include "profile.h"
 #include "app-mydeskpro386/profiles/observation_interface.h"
 #include "core/machine/machine_interface.h"
 #ifndef NXVM_TEST_MODEL40_H

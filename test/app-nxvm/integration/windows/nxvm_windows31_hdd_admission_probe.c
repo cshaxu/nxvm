@@ -1,6 +1,6 @@
-#include "../../unit/support/profile.h"
+#include "../../support/profile.h"
 #include "core/machine/machine_interface.h"
-#include "../../unit/support/ibmpc/board-common/controller_fixture.h"
+#include "../../../core/board-base/support/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 

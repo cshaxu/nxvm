@@ -1,6 +1,6 @@
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include "../support/ibmpc/board-common/controller_fixture.h"
+#include "../../../core/board-base/support/controller_fixture.h"
 #include <stdio.h>
 #include "core/machine/machine_private.h"
 
@@ -13,7 +13,7 @@
 
 #include "core/machine/lifecycle.h"
 
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 
 lib_i32 main(void)
 {

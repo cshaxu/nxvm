@@ -1,14 +1,14 @@
-#include "../profile.h"
+#include "profile_qualification.h"
 #include "core/board-base/pc_at_rom_interface.h"
 #include "core/machine/machine_interface.h"
-#ifndef TEST_VM_SUPPORT_ROM_SESSION_ASSETS_H
-#define TEST_VM_SUPPORT_ROM_SESSION_ASSETS_H
+#ifndef TEST_CORE_MACHINE_SESSION_ASSETS_H
+#define TEST_CORE_MACHINE_SESSION_ASSETS_H
 #include "lib/types/types_interface.h"
 
 
 #include "core/machine/machine_interface.h"
 
-static inline void vm_test_default_pc_at_assets(vm_machine_assets *assets,
+static inline void pc_qualification_default_pc_at_assets(vm_machine_assets *assets,
     lib_u8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES])
 {
     if (assets == LIB_NULL || rom == LIB_NULL) return;
@@ -17,7 +17,7 @@ static inline void vm_test_default_pc_at_assets(vm_machine_assets *assets,
     *assets = (vm_machine_assets) { .bios = { { rom, VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES } } };
 }
 
-static inline lib_status vm_test_default_pc_at_session_create(
+static inline lib_status pc_qualification_default_pc_at_session_create(
     const vm_machine_config *requested, vm_machine **out_session)
 {
     lib_u8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
@@ -26,12 +26,12 @@ static inline lib_status vm_test_default_pc_at_session_create(
         *requested;
 
     config.bios_count = 1u;
-    vm_test_default_pc_at_assets(&assets, rom);
-    return vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+    pc_qualification_default_pc_at_assets(&assets, rom);
+    return pc_qualification_machine_create_from_assets(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         &config, &assets, out_session);
 }
 
-static inline void vm_test_ibm_5170_assets(vm_machine_assets *assets,
+static inline void pc_qualification_ibm_5170_assets(vm_machine_assets *assets,
     lib_u8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES],
     lib_u8 odd[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES])
 {
@@ -45,7 +45,7 @@ static inline void vm_test_ibm_5170_assets(vm_machine_assets *assets,
     } };
 }
 
-static inline lib_status vm_test_ibm_5170_session_create(
+static inline lib_status pc_qualification_ibm_5170_session_create(
     const vm_machine_config *requested, vm_machine **out_session)
 {
     lib_u8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
@@ -55,8 +55,8 @@ static inline lib_status vm_test_ibm_5170_session_create(
         *requested;
 
     config.bios_count = 2u;
-    vm_test_ibm_5170_assets(&assets, even, odd);
-    return vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5170_MODEL_339,
+    pc_qualification_ibm_5170_assets(&assets, even, odd);
+    return pc_qualification_machine_create_from_assets(VM_MACHINE_PROFILE_IBM_5170_MODEL_339,
         &config, &assets, out_session);
 }
 

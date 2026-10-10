@@ -3,7 +3,7 @@
 
 #include "app-mydeskpro386/profiles/d4_memory.h"
 #include "../../../core/board-base/composition/composition_fixture.h"
-#include "../../../app-nxvm/unit/support/core/memory_registration_fixture.h"
+#include "../../../core/support/memory_registration_fixture.h"
 
 typedef struct iochk_probe {
     lib_u32 assertions;

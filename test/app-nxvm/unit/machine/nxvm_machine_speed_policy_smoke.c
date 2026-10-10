@@ -6,7 +6,7 @@
 #include "core/machine/control.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 
 static lib_i32 verify_ratio_compare(void)
 {

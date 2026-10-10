@@ -1,16 +1,16 @@
 #include "app-mydeskpro386/profiles/observation_interface.h"
-#include "../../../app-nxvm/unit/support/profile.h"
+#include "../../support/profile.h"
 #include "core/machine/machine_interface.h"
 #include "../../support/model40.h"
-#include "../../../app-nxvm/unit/support/ibmpc/board-common/controller_fixture.h"
-#include "../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
+#include "../../../core/board-base/support/controller_fixture.h"
+#include "../../../core/board-base/support/composition_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "core/machine/machine_private.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/media/fdd_interface.h"
-#include "../../support/rom/model40_session_assets.h"
+#include "../../../core/machine/qualification/model40_session_assets.h"
 
 #define MODEL40_FDC_BYTES (80u * 2u * 15u * 512u)
 static lib_i32 floppy_channel_matrix(void)

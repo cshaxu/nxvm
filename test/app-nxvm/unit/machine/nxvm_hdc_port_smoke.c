@@ -1,7 +1,7 @@
 #include "core/machine/machine_interface.h"
-#include "../support/ibmpc/machine/support/media.h"
+#include "../../../core/machine/support/media.h"
 #include "lib/types/types_interface.h"
-#include "../support/ibmpc/board-common/controller_fixture.h"
+#include "../../../core/board-base/support/controller_fixture.h"
 #include <stdio.h>
 
 #include "core/x86/machine_interface.h"
@@ -9,7 +9,7 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "app-nxvm/profiles/profile_interface.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 
 #define HDC_DATA_PORT 0x01f0u
 #define HDC_ERROR_PORT 0x01f1u

@@ -1,8 +1,8 @@
 #include "boot_fixture.h"
 #include "core/board-base/machine_board_state.h"
 #include "core/board-base/fdc.h"
-#include "../board-at/boot_fixture.h"
-#include "../board-xt/boot_fixture.h"
+#include "../../board-at/support/boot_fixture.h"
+#include "../../board-xt/support/boot_fixture.h"
 
 lib_status test_board_boot_video(const core_machine_board_state *board,
     x86_video_bus_observation *observation)

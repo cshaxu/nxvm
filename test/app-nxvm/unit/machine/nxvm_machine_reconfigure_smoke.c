@@ -1,7 +1,7 @@
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 
 lib_i32 main(void)
 {

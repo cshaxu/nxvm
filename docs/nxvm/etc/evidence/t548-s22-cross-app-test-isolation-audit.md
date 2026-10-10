@@ -68,3 +68,81 @@ The next implementation receiver must:
 
 No source, CMake registration, test assertion, artifact or external asset was
 changed by this audit.
+
+## Expanded repository-wide inventory
+
+The current graph has 545 non-integration C test/support/fixture files and 45
+integration C files. Fresh configured x64 and x86 graphs each expose 512
+`unit` CTest routes with no duplicate CTest name. The registration verifier
+reports 334 executable unit registrations; the remaining routes are static or
+script-driven gates. Both widths pass the current registration and
+fixture-shape verifiers.
+
+Those results prove registration uniqueness, not semantic ownership.
+
+### Additional confirmed topology defects
+
+1. PC App unit routes are registered centrally by
+   `cmake/nxvm/NxvmProduct.cmake`, rather than by independently selectable App
+   packages. CTest has no unit labels for Default-PC, My5160, My5170 or
+   MyDeskPro386; `-L unit` selects only the combined graph.
+2. The cross-App helper issue is broader than `profile.h`: My5160 has one,
+   My5170 has four, and DeskPro has nineteen unit/integration sources that
+   consume `test/app-nxvm` support. Neutral Core board/machine fixtures and
+   App-private profile/ROM construction support must be separated rather than
+   moved wholesale into another App.
+3. `nxvm_machine_initialization_atomicity_smoke.c`,
+   `nxvm_timing_qualification_smoke.c`, and My5170's clock-contract smoke
+   consume peer profile facts. They are family-qualification candidates, not
+   Default-PC or My5170 unit ownership.
+
+### Non-findings and limits
+
+- No byte-identical C entry source and no duplicate CTest name was found.
+- `test/core`, `test/lib`, `test/emulator`, and `test/product` already have
+  standalone roots with inward production dependencies; their valid lower-layer
+  use is not reclassified as a defect.
+- Static verifier path references are evidence consumers, not duplicate CTest
+  registrations.
+- This inventory cannot prove semantic equivalence or branch coverage. A later
+  deletion requires an equal-or-stronger receiving assertion in the same
+  execution context.
+
+## Bounded repair sequence
+
+1. S23 rehomes support and registration topology without changing assertions.
+2. S24 splits Core, fixed-profile and cross-profile assertion groups.
+3. S25 resolves remaining semantic duplicate candidates from a behavior ledger.
+4. S26 performs final component-ordered dual-width qualification and validates
+   the resulting ownership boundaries.
+
+## S23 implementation evidence
+
+S23 moved generic boot, controller, CMOS, video, media, selection and machine
+fixtures from `test/app-nxvm/unit/support` to their narrowest Core owner.  The
+four PC Apps now retain only profile-specific construction or ROM helpers.
+Six tests that compare PC profile facts now live under
+`test/core/machine/qualification`; their source paths make their multi-profile
+scope explicit.
+
+The qualification-only Model 40 byte fixture owns the one shared consumer
+case.  This removes the former Default-App integration dependency on DeskPro
+test support without copying a fixture into a second App tree.
+
+Each App boundary check now also scans its own C/H/CMake test sources and
+rejects an include of another App's `support` tree.  Fresh x64 and x86 CMake
+configuration passed all four App source and test-support boundaries.  CTest
+labels make selectable owners visible: `app-nxvm` (42 registrations),
+`app-my5160` (1), `app-my5170` (2), `app-mydeskpro386` (24), and
+`pc-qualification` (6).  The remaining unit routes are Core or shared
+component tests, not unlabelled App routes.
+
+The complete Ninja graph and unit suite passed on both widths:
+
+- x64: 1,098 build steps; 512/512 unit routes passed (242.54 seconds);
+- x86: 1,337 build steps; 512/512 unit routes passed (45.08 seconds).
+
+The `test/core` manifest and whitespace check also pass.  No C assertion,
+production source, artifact input or integration route was removed.  S24 owns
+the still-mixed assertion semantics identified in Finding A; S23 changed only
+fixture/registration topology.

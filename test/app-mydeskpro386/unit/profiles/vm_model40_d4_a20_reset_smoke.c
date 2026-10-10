@@ -6,7 +6,7 @@
 #include "core/x86/memory_interface.h"
 #include "core/x86/machine_interface.h"
 #include "core/machine/machine_private.h"
-#include "../../support/rom/model40_session_assets.h"
+#include "../../../core/machine/qualification/model40_session_assets.h"
 
 lib_i32 main(void)
 {

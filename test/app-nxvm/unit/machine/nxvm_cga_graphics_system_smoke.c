@@ -6,7 +6,7 @@
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 
 #define VM_CGA_GRAPHICS_BOOT_BUDGET 500000u
 

@@ -6,8 +6,8 @@
 #include "core/machine/display.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
-#include "../support/ibmpc/machine/support/emulator_machine_fixture.h"
-#include "../support/rom/session_assets.h"
+#include "../../../core/machine/support/emulator_machine_fixture.h"
+#include "../../support/rom/session_assets.h"
 
 lib_i32 main(void)
 {

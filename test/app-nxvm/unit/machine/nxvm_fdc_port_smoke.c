@@ -1,7 +1,7 @@
 #include "core/machine/machine_interface.h"
-#include "../support/ibmpc/machine/support/media.h"
+#include "../../../core/machine/support/media.h"
 #include "lib/types/types_interface.h"
-#include "../support/ibmpc/board-common/controller_fixture.h"
+#include "../../../core/board-base/support/controller_fixture.h"
 #include <stdio.h>
 
 #include "core/board-base/pic_bus_interface.h"
@@ -9,7 +9,7 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/media/fdd_interface.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 #include "lib/storage/file_interface.h"
 
 static lib_bool fdc_command(core_machine_board_state *board, core_machine *machine,

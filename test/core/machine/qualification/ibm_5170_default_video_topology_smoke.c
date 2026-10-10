@@ -4,13 +4,13 @@
 #include <stdio.h>
 
 #include "core/board-base/vadp_interface.h"
-#include "../../../core/board-base/composition/bus_fixture.h"
-#include "../../../app-nxvm/unit/support/core/video_topology_fixture.h"
-#include "../../../app-nxvm/unit/support/ibmpc/board-common/video_topology_fixture.h"
+#include "../../board-base/composition/bus_fixture.h"
+#include "../../support/video_topology_fixture.h"
+#include "../../board-base/support/video_topology_fixture.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "../../../app-nxvm/unit/support/rom/session_assets.h"
+#include "../support/session_assets.h"
 
 static lib_i32 vm_model_339_cga_topology(void)
 {
@@ -18,7 +18,7 @@ static lib_i32 vm_model_339_cga_topology(void)
     x86_video_snapshot snapshot;
     lib_u8 value = 0x5au;
     vm_machine *session = LIB_NULL;
-    lib_i32 failed = vm_test_ibm_5170_session_create(&config, &session) != LIB_STATUS_OK ||
+    lib_i32 failed = pc_qualification_ibm_5170_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
 
     if (!failed) failed |= test_video_cga_ports(session->core_machine) |
@@ -37,7 +37,7 @@ static lib_i32 vm_model_339_cga_topology(void)
 static lib_i32 vm_default_ega_topology(void)
 {
     vm_machine *session = LIB_NULL;
-    lib_i32 failed = vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
+    lib_i32 failed = pc_qualification_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
 
     if (!failed) failed |= test_video_ega_ports(session->core_machine) |

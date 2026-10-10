@@ -5,11 +5,11 @@
 
 #include "../../../core/board-base/composition/bus_fixture.h"
 #include "../../../core/board-base/composition/composition_fixture.h"
-#include "../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
+#include "../../../core/board-base/support/composition_fixture.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "../../support/rom/model40_session_assets.h"
+#include "../../../core/machine/qualification/model40_session_assets.h"
 
 lib_i32 main(void)
 {

@@ -1,4 +1,4 @@
-#include "../support/profile.h"
+#include "../../support/profile.h"
 #include "core/board-base/pc_at_rom_interface.h"
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
@@ -8,12 +8,12 @@
 
 #include "core/board-base/pic_bus_interface.h"
 #include "../../../core/board-base/composition/bus_fixture.h"
-#include "../support/ibmpc/board-common/cmos_fixture.h"
+#include "../../../core/board-base/support/cmos_fixture.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/chips/rtc146818/rtc146818_interface.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 
 static void cmos_write(core_machine *core, lib_u8 reg, lib_u8 value)
 {

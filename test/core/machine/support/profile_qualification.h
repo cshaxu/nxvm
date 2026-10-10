@@ -1,38 +1,25 @@
-#ifndef NXVM_TEST_PROFILE_H
-#define NXVM_TEST_PROFILE_H
+#ifndef TEST_CORE_MACHINE_PROFILE_QUALIFICATION_H
+#define TEST_CORE_MACHINE_PROFILE_QUALIFICATION_H
 
 #include "core/machine/machine_interface.h"
-#include "ibmpc/machine/support/selection.h"
+#include "selection.h"
 #include "app-nxvm/profiles/construction_interface.h"
 #include "app-my5160/profiles/construction_interface.h"
 #include "app-my5170/profiles/construction_interface.h"
 #include "app-mydeskpro386/profiles/construction_interface.h"
-#include "app-mydeskpro386/profiles/model40_private.h"
 #include "core/machine/machine_private.h"
 
 /* Borrow the actual Machine-owned construction. This test view adds no
  * registry, mirrored state or production getter. */
-static inline const vm_machine_construction *vm_test_profile_construction(
+static inline const vm_machine_construction *pc_qualification_profile_construction(
     const vm_machine *machine)
 {
     return machine == LIB_NULL ? LIB_NULL :
         &machine->construction;
 }
 
-static inline lib_bool vm_test_profile_is_model40(const vm_machine_construction *construction)
-{
-    return construction != LIB_NULL &&
-        construction->firmware_provider == vm_profile_model40_firmware_provider();
-}
-
-static inline const vm_profile_model40_external_rom *vm_test_profile_model40_rom(
-    const vm_machine_construction *construction)
-{
-    return !vm_test_profile_is_model40(construction) ? LIB_NULL : construction->firmware_context;
-}
-
 /* Multi-profile selection belongs to fixtures, never to a product EXE. */
-static inline lib_status vm_test_profile_construction_create(vm_machine_profile_kind kind,
+static inline lib_status pc_qualification_profile_construction_create(vm_machine_profile_kind kind,
     const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine_construction *out_construction)
 {
@@ -53,7 +40,7 @@ static inline lib_status vm_test_profile_construction_create(vm_machine_profile_
     }
 }
 
-static inline lib_status vm_test_machine_create_from_assets(vm_machine_profile_kind kind,
+static inline lib_status pc_qualification_machine_create_from_assets(vm_machine_profile_kind kind,
     const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine **out_machine)
 {
@@ -62,7 +49,7 @@ static inline lib_status vm_test_machine_create_from_assets(vm_machine_profile_k
 
     if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_machine = LIB_NULL;
-    status = vm_test_profile_construction_create(kind, config, assets, &construction);
+    status = pc_qualification_profile_construction_create(kind, config, assets, &construction);
     if (status != LIB_STATUS_OK) return status;
     return vm_machine_create(config, &construction, out_machine);
 }

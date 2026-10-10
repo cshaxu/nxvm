@@ -1,8 +1,8 @@
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "../../../core/board-base/composition/composition_fixture.h"
-#include "../support/ibmpc/board-common/composition_fixture.h"
-#include "../support/ibmpc/board-common/kbc_state_fixture.h"
+#include "../../../core/board-base/support/composition_fixture.h"
+#include "../../../core/board-base/support/kbc_state_fixture.h"
 #include <stdio.h>
 
 #include "core/board-base/machine_board_interface.h"
@@ -12,7 +12,7 @@
 #include "app-nxvm/profiles/profile_interface.h"
 
 #include "core/x86/debug_interface.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 
 static lib_i32 vm_pcat_composition_topology_matches(
     const vm_machine *session,

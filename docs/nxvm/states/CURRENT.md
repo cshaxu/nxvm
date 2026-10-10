@@ -2,24 +2,24 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S22 Active: Audit Cross-App Test Isolation)
+## Current Task — M5 T548 (S23 Complete Pending Commit: Rehome Shared Test Support)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S22. S1-S21 completed the initial duplicate, ownership and identity classification work. This S records the current cross-App test-support and mixed-ownership evidence before a behavior-level repair receiver is admitted. |
+| Identifier Mode | Continuation T548 S23. S22 completed the repository-wide topology audit. This S rehomes test support to its narrowest real owner and gives each PC App an independently selectable unit-test package; semantic assertion splitting remains a later receiver. |
 | Admission And Approval | Owner instruction in this conversation: close the old T, then admit the first queued T to repair the complete NXVM test corpus cleanly. Standing push approval applies. |
 | Objective | Freeze a complete behavior-level ownership and coverage ledger for every registered repository unit test and production owner, then repair misplaced, duplicated, incomplete or non-independent coverage without losing component, profile, board, CPU, composition or failure evidence. |
 | Non-goals | No production behavior or public ABI change merely to simplify tests; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools as units; no sibling-repository edit. |
 | Reference Baseline | T547 closure commits `5b1d07412`, `08a6a19f4` and `6be3ce8ee`; re-freeze the current committed source/test/build graph before any move, merge or deletion. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | Read-only audit of current test ownership and dependency edges; write only task evidence and active-packet status. No production, test assertion, CMake registration, asset or ABI change. |
+| Files And ABI Surface | Test C/H fixtures, CMake registration, test manifests and task evidence only. No production, test assertion semantics, asset or ABI change. Core fixtures may move into `test/core`; App-private fixtures remain in their App roots; multi-App qualification support is not placed under a single App. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | Reproduce each reported dependency from current source and CMake registrations; distinguish App-specific profile proof from neutral Core mechanisms. |
+| Verification | Prove no App unit source includes another App's test support; configure and build each App's selectable package on x64/x86; preserve existing test routes/counts unless a later semantic S explicitly changes them; run manifests and ownership gates. |
 | Expected Markers | Active filenames, targets, variables and generated matrices describe behavior rather than historical task numbers; provenance remains in comments/evidence only. |
 | Asset Needs | None. INIs, media, snapshots and artifacts are not edited. |
 | Reporting Requirements | Report source/target/output before-and-after identities, exact test count delta, line delta and dual-width result. Do not rename historical evidence or claim behavior coverage from names. |
 | Stop Conditions | Ambiguous semantic replacement, an external identity contract, an old reference outside MyDeskPro386 scope, required production change, or loss of an existing assertion. |
-| Exit Criteria | The verifier group has behavior identities, preserved assertions/dependencies and passing x64/x86 verification. T548 remains open. |
+| Exit Criteria | Generic support has one non-App owner, App-private profile/ROM support has one App owner, cross-profile support is visibly qualification-only, and each PC App has a package target/label without peer-App test dependencies. T548 remains open for semantic split and duplicate consolidation. |
 | Original Owner Request | Repair the entire NXVM test suite cleanly after closing the old lifecycle/product task. |
 | Similar-Issue Sweep | Inventory every C/CMake test entry, alias, fixture, negative gate and unit runner outside integration; distinguish component proof, composition increment, App/profile proof and non-unit tooling before assigning a canonical owner. |
 
@@ -47,6 +47,7 @@
 | T548 S19 | Complete pending commit: successful-sentinel, physical-timebase, physical-eligibility and residual-form verifier filenames, targets, variables and diagnostics now use behavior identities. Their T388 evidence files and required evidence markers remain unchanged. Fresh x64/x86 Ninja graphs prove all four exact predicates and the old target names are absent. No production or C test source changed; no executable artifact is retained. |
 | T548 S20 | Complete pending commit: the Jcc target-lexeme verifier filename, target, local variables and diagnostics now use a behavior identity. Its T388 evidence file and required success-marker anchor remain unchanged. Fresh x64/x86 Ninja graphs prove the unchanged predicate. No production or C test source changed; no executable artifact is retained. |
 | T548 S21 | Complete pending commit: the 80286 Appendix-B, 80286 LSL reconciliation and 80386 LSL granularity verifier filenames, targets, variables and diagnostics now use behavior identities. Their T388 evidence files and required success-marker anchors remain unchanged. Fresh x64/x86 Ninja graphs prove all three unchanged predicates and the old target names are absent. No production or C test source changed; no executable artifact is retained. |
+| T548 S23 | Complete pending commit: generic fixtures now have narrow Core owners, App-private profile/ROM helpers have local owners, and six multi-profile routes are visibly Core Machine qualification. Four App test-support boundary checks reject peer-App support includes. Fresh x64/x86 complete Ninja graphs pass (1,098/1,337 steps); each full unit suite passes 512/512. Core manifest and whitespace checks pass. No production assertion, source, artifact input or integration route changed. S24 remains the semantic receiver for mixed Core/D4 assertions. |
 | T547 S5 | Closed at owner direction. P1 `9131545d8` replaces the live Product with the SoftPC command/keyboard base and App extensions; P2 `09cbfcf93` removes the SoftPC-branded fault message; P3 `3ff1e89f8` moves NXVM identity out of shared Product; P4 `7a2f23574` reduces the shared opening contract to App-provided text. Eight 0546 App artifacts were rebuilt. Product entry/command/manifest focused checks passed on x64; full dual-width Product and complete T547 qualification remain open and are not claimed by this S closure. |
 | T547 S6 | Complete: `bf469c879` adopts SoftPC S16's ownership correction without importing SoftPC runtime code. NXVM-family configuration/factory/extension support and direct tests now live in `src/core/product` and `test/core/product`; the old `ibmpc/nxvm` member is gone. IBM PC and core gates plus 8 focused tests pass on x64 and x86; all eight 0546 product artifacts were rebuilt against the relocated link input. |
 | T547 S7 | Superseded into S8 before P delivery: its uncommitted canonical Core rehome is retained as S8's required receiver baseline rather than split into an unbuildable partial commit. |

@@ -1,8 +1,7 @@
-#include "../../unit/support/ibmpc/machine/support/guest_input.h"
-#include "../../unit/support/profile.h"
+#include "../../../core/machine/support/guest_input.h"
 #include "core/machine/machine_interface.h"
-#include "../../../app-mydeskpro386/support/model40.h"
-#include "../../unit/support/ibmpc/board-common/boot_fixture.h"
+#include "../../../core/machine/qualification/model40_profile.h"
+#include "../../../core/board-base/support/boot_fixture.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -14,7 +13,7 @@
 #endif
 
 #include "core/board-base/machine_board_interface.h"
-#include "../../unit/support/core/boot_fixture.h"
+#include "../../../core/support/boot_fixture.h"
 #include "../../../core/board-base/composition/composition_fixture.h"
 #include "core/x86/retirement_observation_interface.h"
 #include "core/x86/trace_interface.h"
@@ -1753,7 +1752,8 @@ int main(lib_i32 argc, char **argv)
     }
     trace.machine = session->core_machine;
     trace.board = session->board;
-    if (vm_test_profile_is_model40(vm_test_profile_construction(session))) {
+    if (pc_qualification_profile_is_model40(
+            pc_qualification_profile_construction(session))) {
         if (!test_core_boot_bind_write_observer(session->core_machine,
                 vm_byob_model40_memory_write_observe, &trace)) {
             printf("BOOT-PROBE=setup-failed\n");
@@ -1855,7 +1855,7 @@ int main(lib_i32 argc, char **argv)
                     (unsigned int)fault_cpu.gdtr.base, (unsigned int)fault_cpu.gdtr.limit);
             }
             core_machine_d4_platform_observation d4 = {0};
-            (void)vm_test_model40_d4_observe(session, &d4);
+            (void)pc_qualification_model40_d4_observe(session, &d4);
             printf("BOOT-PROBE=d4-control=%02X-ram-setup=%04X\n",
                 (unsigned int)d4.memory_control,
                 (unsigned int)d4.memory_ram_setup);
@@ -2567,7 +2567,7 @@ done:
             (unsigned long long)trace.model40_video_delay_entries,
             (unsigned int)trace.model40_video_delay_predecessor);
         core_machine_d4_platform_observation d4 = {0};
-        (void)vm_test_model40_d4_observe(session, &d4);
+        (void)pc_qualification_model40_d4_observe(session, &d4);
         printf("BOOT-PROBE=model40-d4-control=%02X-ram-setup=%04X\n",
             (unsigned int)d4.memory_control,
             (unsigned int)d4.memory_ram_setup);

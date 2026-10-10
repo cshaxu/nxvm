@@ -4,11 +4,11 @@
 #include "core/machine/machine_private.h"
 
 #include "../../../core/board-base/composition/composition_fixture.h"
-#include "../support/ibmpc/board-common/composition_fixture.h"
+#include "../../../core/board-base/support/composition_fixture.h"
 #include "core/x86/debug_interface.h"
 
 #include "core/machine/machine_interface.h"
-#include "../support/rom/session_assets.h"
+#include "../../support/rom/session_assets.h"
 
 static lib_bool sessions_are_isolated(core_machine *first, core_machine *second,
     core_machine_board_state *first_board, core_machine_board_state *second_board)

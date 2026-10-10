@@ -4,8 +4,8 @@
 #include <stdio.h>
 
 #include "../../../core/board-base/composition/composition_fixture.h"
-#include "../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
-#include "../../../app-nxvm/unit/support/ibmpc/board-common/controller_fixture.h"
+#include "../../../core/board-base/support/composition_fixture.h"
+#include "../../../core/board-base/support/controller_fixture.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"

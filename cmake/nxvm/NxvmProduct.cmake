@@ -104,7 +104,7 @@ add_executable(vm-pcat-composition-smoke
     test/app-nxvm/unit/machine/nxvm_pcat_composition_smoke.c)
 target_link_libraries(vm-pcat-composition-smoke PRIVATE vm-profile-tests)
 add_executable(vm-ibm-5170-model-339-composition-smoke
-    test/app-my5170/unit/profiles/vm_ibm_5170_model_339_composition_smoke.c)
+    test/core/machine/qualification/ibm_5170_default_composition_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-composition-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_composition_smoke.c)
@@ -119,14 +119,14 @@ target_link_libraries(vm-model40-machine-integration-smoke PRIVATE vm-profile-te
 add_executable(vm-model40-cecg-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_cecg_smoke.c)
 target_link_libraries(vm-model40-cecg-smoke PRIVATE vm-profile-tests)
-target_sources(vm-model40-cecg-smoke PRIVATE test/app-nxvm/unit/support/core/video_topology_fixture.c)
+target_sources(vm-model40-cecg-smoke PRIVATE test/core/support/video_topology_fixture.c)
 add_executable(vm-model40-cecg-feature-environment-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_cecg_feature_environment_smoke.c)
 target_link_libraries(vm-model40-cecg-feature-environment-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cecg-cpu-video-gate-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_cecg_cpu_video_gate_smoke.c)
 target_link_libraries(vm-model40-cecg-cpu-video-gate-smoke PRIVATE vm-profile-tests)
-target_sources(vm-model40-cecg-cpu-video-gate-smoke PRIVATE test/app-nxvm/unit/support/core/video_topology_fixture.c)
+target_sources(vm-model40-cecg-cpu-video-gate-smoke PRIVATE test/core/support/video_topology_fixture.c)
 add_executable(vm-model40-cecg-io-base-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_cecg_io_base_smoke.c)
 target_link_libraries(vm-model40-cecg-io-base-smoke PRIVATE vm-profile-tests)
@@ -151,8 +151,8 @@ add_executable(vm-model40-d4-parity-smoke
 target_link_libraries(vm-model40-d4-parity-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-fdc-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_fdc_smoke.c
-    test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
+    test/core/board-base/support/controller_fixture.c
+    test/core/board-base/support/composition_fixture.c)
 target_link_libraries(vm-model40-fdc-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-d4-a20-reset-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_d4_a20_reset_smoke.c
@@ -162,7 +162,7 @@ add_executable(vm-model40-dma-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_dma_smoke.c)
 target_link_libraries(vm-model40-dma-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-fdd-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_fdd_smoke.c)
+    test/core/machine/qualification/model40_pc_floppy_geometry_qualification_smoke.c)
 target_link_libraries(vm-model40-fdd-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-byob-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_byob_smoke.c)
@@ -170,7 +170,7 @@ target_link_libraries(vm-model40-byob-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-byob-retirement-capture
     test/app-mydeskpro386/integration/model40/vm_model40_retirement_capture.c
     test/core/board-base/composition/composition_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/cmos_fixture.c)
+    test/core/board-base/support/cmos_fixture.c)
 target_link_libraries(vm-model40-byob-retirement-capture PRIVATE
     integration-session-ini-support)
 add_executable(vm-model40-byob-boot-media-smoke
@@ -186,18 +186,18 @@ target_include_directories(vm-model40-console-s20-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
 target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-app vm-profile-tests)
 add_executable(my5170-clock-contract-smoke
-    test/app-my5170/unit/profiles/vm_ibm_5170_model_339_clock_contract_smoke.c)
+    test/core/machine/qualification/ibm_5170_clock_contract_qualification_smoke.c)
 target_sources(my5170-clock-contract-smoke PRIVATE
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/kbc_state_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-at/state_fixture.c)
+    test/core/board-base/support/composition_fixture.c
+    test/core/board-base/support/kbc_state_fixture.c
+    test/core/board-at/support/state_fixture.c)
 target_link_libraries(my5170-clock-contract-smoke PRIVATE vm-profile-tests)
 add_executable(vm-ibm-5170-model-339-cga-topology-smoke
-    test/app-my5170/unit/profiles/vm_ibm_5170_model_339_cga_topology_smoke.c)
+    test/core/machine/qualification/ibm_5170_default_video_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-profile-tests)
 target_sources(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE
-    test/app-nxvm/unit/support/core/video_topology_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/video_topology_fixture.c)
+    test/core/support/video_topology_fixture.c
+    test/core/board-base/support/video_topology_fixture.c)
 add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     test/app-my5170/unit/profiles/rom/ibm_5170_model_339_firmware_fdc_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-profile-tests)
@@ -205,7 +205,7 @@ add_executable(vm-hdc-port-smoke test/app-nxvm/unit/machine/nxvm_hdc_port_smoke.
 target_link_libraries(vm-hdc-port-smoke PRIVATE vm-profile-tests)
 add_executable(vm-hdc-hdd-boot-smoke
     test/app-nxvm/integration/hdd/nxvm_hdc_hdd_boot_smoke.c
-    test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c)
+    test/core/board-base/support/controller_fixture.c)
 target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-default-pc-at-apply-smoke
     test/app-nxvm/unit/profiles/nxvm_default_pc_at_apply_smoke.c)
@@ -241,9 +241,9 @@ target_link_libraries(vm-ini-cmos-seed-smoke PRIVATE integration-session-ini-sup
 add_executable(vm-app-session-smoke test/app-nxvm/unit/machine/nxvm_machine_smoke.c)
 target_link_libraries(vm-app-session-smoke PRIVATE vm-profile-tests)
 add_executable(vm-machine-initialization-atomicity-smoke
-    test/app-nxvm/unit/machine/nxvm_machine_initialization_atomicity_smoke.c)
+    test/core/machine/qualification/pc_profile_initialization_atomicity_smoke.c)
 target_sources(vm-machine-initialization-atomicity-smoke PRIVATE
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
+    test/core/board-base/support/composition_fixture.c)
 target_link_libraries(vm-machine-initialization-atomicity-smoke PRIVATE vm-profile-tests)
 add_executable(vm-machine-reconfigure-smoke
     test/app-nxvm/unit/machine/nxvm_machine_reconfigure_smoke.c)
@@ -255,7 +255,7 @@ add_executable(vm-machine-speed-policy-smoke
     test/app-nxvm/unit/machine/nxvm_machine_speed_policy_smoke.c)
 target_link_libraries(vm-machine-speed-policy-smoke PRIVATE vm-profile-tests)
 add_executable(vm-timing-qualification-smoke
-    test/app-nxvm/unit/machine/nxvm_timing_qualification_smoke.c)
+    test/core/machine/qualification/pc_profile_timing_qualification_smoke.c)
 target_link_libraries(vm-timing-qualification-smoke PRIVATE vm-profile-tests)
 add_executable(nxvm-default-pc-at-plan-smoke
     test/app-nxvm/unit/profiles/default_pc_at_plan_smoke.c)
@@ -271,8 +271,8 @@ add_executable(vm-xt-5160-268-profile-smoke
     test/app-my5160/unit/profiles/profile_smoke.c)
 target_sources(vm-xt-5160-268-profile-smoke PRIVATE
     test/core/board-base/composition/composition_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c)
+    test/core/board-base/support/composition_fixture.c
+    test/core/board-base/support/controller_fixture.c)
 target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE my5160-profile)
 
 
@@ -302,7 +302,7 @@ add_executable(core-machine-competition-smoke
     test/app-nxvm/unit/board/machine_competition_smoke.c
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/composition/time_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
+    test/core/board-base/support/composition_fixture.c)
 target_link_libraries(core-machine-competition-smoke PRIVATE mydeskpro386-d4-observable)
 
 add_executable(core-machine-d4-refresh-hold-smoke
@@ -310,7 +310,7 @@ add_executable(core-machine-d4-refresh-hold-smoke
     test/app-mydeskpro386/unit/profiles/d4_refresh_fixture.c
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/composition/time_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
+    test/core/board-base/support/composition_fixture.c)
 target_link_libraries(core-machine-d4-refresh-hold-smoke PRIVATE mydeskpro386-d4-observable)
 
 
@@ -885,7 +885,7 @@ target_link_libraries(core-machine-d4-platform-smoke PRIVATE mydeskpro386-d4)
 add_executable(core-machine-d4-memory-transaction-smoke
     test/app-mydeskpro386/unit/profiles/d4_memory_transaction_smoke.c
     test/core/board-base/composition/composition_fixture.c
-    test/app-nxvm/unit/support/core/memory_registration_fixture.c)
+    test/core/support/memory_registration_fixture.c)
 target_link_libraries(core-machine-d4-memory-transaction-smoke PRIVATE mydeskpro386-d4)
 add_executable(vm-kbc-aux-guest-smoke
     test/app-nxvm/unit/machine/nxvm_kbc_aux_guest_smoke.c
@@ -905,13 +905,13 @@ add_executable(vm-ata-pio-dos-smoke
 target_link_libraries(vm-ata-pio-dos-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-byob-dos-boot-probe
     test/app-nxvm/integration/dos/nxvm_byob_dos_boot_probe.c
-    test/app-nxvm/unit/support/core/boot_fixture.c
+    test/core/support/boot_fixture.c
     test/core/board-base/composition/composition_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/boot_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-at/boot_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-xt/boot_fixture.c
+    test/core/board-base/support/boot_fixture.c
+    test/core/board-base/support/controller_fixture.c
+    test/core/board-base/support/composition_fixture.c
+    test/core/board-at/support/boot_fixture.c
+    test/core/board-xt/support/boot_fixture.c
 )
 target_link_libraries(vm-byob-dos-boot-probe PRIVATE integration-session-ini-support)
 add_library(integration-session-ini-support STATIC
@@ -934,7 +934,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 add_executable(vm-windows31-checkpoint
     test/app-nxvm/integration/windows/nxvm_windows31_checkpoint.c
-    test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c
+    test/core/board-base/support/controller_fixture.c
 )
 target_link_libraries(vm-windows31-checkpoint PRIVATE integration-session-ini-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -942,7 +942,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 add_executable(vm-windows31-setup-probe
     test/app-nxvm/integration/windows/nxvm_windows31_setup_probe.c
-    test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c
+    test/core/board-base/support/controller_fixture.c
 )
 target_link_libraries(vm-windows31-setup-probe PRIVATE integration-session-ini-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -964,7 +964,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 add_executable(vm-windows31-hdd-admission-probe
     test/app-nxvm/integration/windows/nxvm_windows31_hdd_admission_probe.c
-    test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c
+    test/core/board-base/support/controller_fixture.c
 )
 target_link_libraries(vm-windows31-hdd-admission-probe PRIVATE integration-session-ini-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -1011,47 +1011,47 @@ target_compile_definitions(vm-rom-ega-int10-dos-smoke PRIVATE
 target_link_libraries(vm-rom-ega-int10-dos-smoke PRIVATE integration-session-ini-support)
 
 add_executable(vm-cmos-rtc-port-smoke test/app-nxvm/unit/machine/nxvm_cmos_rtc_port_smoke.c)
-target_sources(vm-cmos-rtc-port-smoke PRIVATE test/app-nxvm/unit/support/ibmpc/board-common/cmos_fixture.c)
+target_sources(vm-cmos-rtc-port-smoke PRIVATE test/core/board-base/support/cmos_fixture.c)
 target_sources(vm-default-pc-at-apply-smoke PRIVATE
     test/core/board-base/composition/time_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/cmos_fixture.c)
+    test/core/board-base/support/composition_fixture.c
+    test/core/board-base/support/cmos_fixture.c)
 foreach(_pcat_composition_target IN ITEMS vm-pcat-topology-smoke
         vm-pcat-composition-smoke vm-ibm-5170-model-339-composition-smoke)
     target_sources(${_pcat_composition_target} PRIVATE
         test/core/board-base/composition/composition_fixture.c
-        test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c
-        test/app-nxvm/unit/support/ibmpc/board-common/kbc_state_fixture.c
-        test/app-nxvm/unit/support/ibmpc/board-at/state_fixture.c)
+        test/core/board-base/support/composition_fixture.c
+        test/core/board-base/support/kbc_state_fixture.c
+        test/core/board-at/support/state_fixture.c)
 endforeach()
 target_link_libraries(vm-cmos-rtc-port-smoke PRIVATE vm-profile-tests)
 target_sources(vm-model40-fdd-smoke PRIVATE
-    test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c)
+    test/core/board-base/support/controller_fixture.c)
 target_sources(vm-model40-hdc-smoke PRIVATE
-    test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c)
+    test/core/board-base/support/controller_fixture.c)
 target_sources(vm-model40-dma-smoke PRIVATE
     test/core/board-base/composition/composition_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
+    test/core/board-base/support/composition_fixture.c)
 target_sources(vm-model40-d4-compatibility-smoke PRIVATE
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
+    test/core/board-base/support/composition_fixture.c)
 target_sources(vm-model40-byob-smoke PRIVATE
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/composition/time_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
+    test/core/board-base/support/composition_fixture.c)
 foreach(_model40_composition_target IN ITEMS vm-model40-composition-smoke
         vm-model40-machine-integration-smoke)
     target_sources(${_model40_composition_target} PRIVATE
         test/core/board-base/composition/composition_fixture.c
-        test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c
-        test/app-nxvm/unit/support/ibmpc/board-common/cmos_fixture.c
-        test/app-nxvm/unit/support/ibmpc/board-common/kbc_state_fixture.c
-        test/app-nxvm/unit/support/ibmpc/board-at/state_fixture.c)
+        test/core/board-base/support/composition_fixture.c
+        test/core/board-base/support/cmos_fixture.c
+        test/core/board-base/support/kbc_state_fixture.c
+        test/core/board-at/support/state_fixture.c)
 endforeach()
 target_sources(vm-model40-machine-integration-smoke PRIVATE
-    test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c)
+    test/core/board-base/support/controller_fixture.c)
 target_sources(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE
     test/core/board-base/composition/composition_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
+    test/core/board-base/support/composition_fixture.c)
 add_executable(vm-pcat-ownership-smoke test/app-nxvm/unit/machine/nxvm_pcat_ownership_smoke.c)
 target_link_libraries(vm-pcat-ownership-smoke PRIVATE vm-profile-tests)
 add_executable(vm-fdc-authority-smoke test/app-nxvm/unit/machine/nxvm_fdc_authority_smoke.c)
@@ -1064,7 +1064,7 @@ target_link_libraries(vm-fdc-read-track-smoke PRIVATE vm-profile-tests)
 foreach(_controller_composition_target IN ITEMS vm-fdc-authority-smoke
         vm-fdc-port-smoke vm-fdc-read-track-smoke vm-hdc-port-smoke)
     target_sources(${_controller_composition_target} PRIVATE
-        test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c)
+        test/core/board-base/support/controller_fixture.c)
 endforeach()
 add_executable(vm-boot-failure-lifecycle-smoke
     test/app-nxvm/unit/machine/nxvm_boot_failure_lifecycle_smoke.c)
@@ -1139,9 +1139,9 @@ add_custom_target(core-machine-lifecycle-ownership-closure
 add_executable(vm-two-session-isolation-smoke
     test/app-nxvm/unit/machine/nxvm_two_session_isolation_smoke.c
     test/core/board-base/composition/composition_fixture.c
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
+    test/core/board-base/support/composition_fixture.c)
 target_sources(vm-timing-qualification-smoke PRIVATE
-    test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
+    test/core/board-base/support/composition_fixture.c)
 target_link_libraries(vm-two-session-isolation-smoke PRIVATE
     vm-profile-tests)
 add_executable(vm-debug-pause-boundary-smoke
@@ -1776,6 +1776,41 @@ add_custom_target(run-windows31-hdd-checkpoint
     COMMENT "Running the opt-in owner-supplied Windows readiness HDD checkpoint"
     VERBATIM)
 
+function(project_test_app_label target out_label)
+    get_target_property(project_test_sources ${target} SOURCES)
+    get_target_property(project_test_source_dir ${target} SOURCE_DIR)
+    set(project_test_labels)
+
+    foreach(project_test_source IN LISTS project_test_sources)
+        if(IS_ABSOLUTE "${project_test_source}")
+            set(project_test_source_path "${project_test_source}")
+        else()
+            set(project_test_source_path "${project_test_source_dir}/${project_test_source}")
+        endif()
+        file(RELATIVE_PATH project_test_relative_path
+            "${CMAKE_SOURCE_DIR}" "${project_test_source_path}")
+        if(project_test_relative_path MATCHES "^test/app-nxvm/")
+            list(APPEND project_test_labels app-nxvm)
+        elseif(project_test_relative_path MATCHES "^test/app-my5160/")
+            list(APPEND project_test_labels app-my5160)
+        elseif(project_test_relative_path MATCHES "^test/app-my5170/")
+            list(APPEND project_test_labels app-my5170)
+        elseif(project_test_relative_path MATCHES "^test/app-mydeskpro386/")
+            list(APPEND project_test_labels app-mydeskpro386)
+        elseif(project_test_relative_path MATCHES "^test/core/machine/qualification/")
+            list(APPEND project_test_labels pc-qualification)
+        endif()
+    endforeach()
+    list(REMOVE_DUPLICATES project_test_labels)
+    list(LENGTH project_test_labels project_test_label_count)
+    if(project_test_label_count EQUAL 1)
+        list(GET project_test_labels 0 project_test_label)
+        set(${out_label} "${project_test_label}" PARENT_SCOPE)
+    else()
+        set(${out_label} "" PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(project_add_test target route)
     if(NOT TARGET ${target})
         message(FATAL_ERROR "Current smoke target is missing: ${target}")
@@ -1790,8 +1825,13 @@ function(project_add_test target route)
     set_property(GLOBAL APPEND PROPERTY
         PROJECT_UNIT_TEST_REGISTERED_TARGETS "${target}")
     add_test(NAME "${route}.${target}" COMMAND "$<TARGET_FILE:${target}>" ${ARGN})
+    project_test_app_label(${target} project_test_app_label)
+    set(project_test_labels "${route}")
+    if(NOT project_test_app_label STREQUAL "")
+        list(APPEND project_test_labels "${project_test_app_label}")
+    endif()
     set_tests_properties("${route}.${target}" PROPERTIES
-        LABELS "${route}"
+        LABELS "${project_test_labels}"
         TIMEOUT 30)
 endfunction()
 
@@ -1878,20 +1918,20 @@ add_test(NAME unit.nxvm-firmware-embedding
         "-DWORK=${CMAKE_BINARY_DIR}/test/nxvm-firmware-embedding"
         "-DEMBED_SCRIPT=${CMAKE_SOURCE_DIR}/src/core/product/embed_firmware.cmake"
         -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/product/firmware_embedding.cmake")
-set_tests_properties(unit.nxvm-firmware-embedding PROPERTIES LABELS unit)
+set_tests_properties(unit.nxvm-firmware-embedding PROPERTIES LABELS "unit;app-nxvm")
 add_test(NAME unit.nxvm-firmware-build
     COMMAND "${CMAKE_COMMAND}"
         "-DBUILDER=$<TARGET_FILE:nxvm-firmware-build>"
         "-DSOURCE=${CMAKE_SOURCE_DIR}/src/app-nxvm/firmware"
         "-DWORK=${CMAKE_BINARY_DIR}/test/nxvm-firmware-build"
         -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/product/firmware_build.cmake")
-set_tests_properties(unit.nxvm-firmware-build PROPERTIES LABELS unit TIMEOUT 30)
+set_tests_properties(unit.nxvm-firmware-build PROPERTIES LABELS "unit;app-nxvm" TIMEOUT 30)
 add_test(NAME unit.fdc-boundary-negative
     COMMAND "${CMAKE_COMMAND}"
         "-DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
         "-DWORK=${CMAKE_BINARY_DIR}/test/fdc-boundary-negative"
         -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/board/fdc_boundary_negative.cmake")
-set_tests_properties(unit.fdc-boundary-negative PROPERTIES LABELS unit TIMEOUT 30)
+set_tests_properties(unit.fdc-boundary-negative PROPERTIES LABELS "unit;app-nxvm" TIMEOUT 30)
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.
 foreach(target IN ITEMS

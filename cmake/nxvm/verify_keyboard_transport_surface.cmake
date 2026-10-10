@@ -8,7 +8,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_state.h" boar
 file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" input_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c" driver_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/support/core/machine/support/guest_input.h" fixture_source)
+file(READ "${PROJECT_SOURCE_DIR}/test/core/machine/support/guest_input.h" fixture_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/machine/nxvm_keyboard_host_ingress_smoke.c"
     input_smoke_source)
 

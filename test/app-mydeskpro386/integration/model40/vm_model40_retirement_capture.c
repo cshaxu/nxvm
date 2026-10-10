@@ -6,7 +6,7 @@
 #include "core/x86/machine_interface.h"
 #include "core/x86/debug_interface.h"
 #include "test/core/board-base/composition/composition_fixture.h"
-#include "test/app-nxvm/unit/support/ibmpc/board-common/cmos_fixture.h"
+#include "test/core/board-base/support/cmos_fixture.h"
 #include "core/x86/retirement_observation_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "core/machine/machine_private.h"

@@ -1,8 +1,8 @@
-#include "../support/profile.h"
+#include "../../support/profile.h"
 #include "core/machine/machine_interface.h"
-#include "../support/ibmpc/machine/support/media.h"
+#include "../../../core/machine/support/media.h"
 #include "lib/types/types_interface.h"
-#include "../support/ibmpc/board-common/composition_fixture.h"
+#include "../../../core/board-base/support/composition_fixture.h"
 #include "core/board-base/machine_board_interface.h"
 #include <stdio.h>
 
@@ -11,8 +11,8 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "../../../core/board-base/composition/time_fixture.h"
-#include "../support/ibmpc/board-common/cmos_fixture.h"
-#include "../support/rom/session_assets.h"
+#include "../../../core/board-base/support/cmos_fixture.h"
+#include "../../support/rom/session_assets.h"
 
 static lib_i32 vm_default_pc_at_fdd_format_is_valid(
     vm_machine_floppy_format format, lib_u16 cylinders,

@@ -1,7 +1,7 @@
-#include "../../../app-nxvm/unit/support/profile.h"
+#include "../support/profile_qualification.h"
 #include "core/machine/machine_interface.h"
-#ifndef TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
-#define TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
+#ifndef TEST_CORE_MACHINE_QUALIFICATION_MODEL40_SESSION_ASSETS_H
+#define TEST_CORE_MACHINE_QUALIFICATION_MODEL40_SESSION_ASSETS_H
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/x86/device_support_interface.h"
@@ -47,7 +47,8 @@ static inline lib_status vm_model40_fixture_create_bytes_with_floppy_format(
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
     config.bios_count = 2u;
     config.floppy_format = floppy_format;
-    return vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
+    return pc_qualification_machine_create_from_assets(
+        VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
         &config, &assets, out_session);
 }
 

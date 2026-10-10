@@ -1,12 +1,12 @@
 #include "core/machine/machine_interface.h"
-#include "../../../app-nxvm/unit/support/ibmpc/machine/support/media.h"
-#include "../../../app-nxvm/unit/support/ibmpc/board-common/controller_fixture.h"
+#include "../../../core/machine/support/media.h"
+#include "../../../core/board-base/support/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "core/machine/machine_private.h"
 #include "core/machine/media/hdd_interface.h"
-#include "../../support/rom/model40_session_assets.h"
+#include "../../../core/machine/qualification/model40_session_assets.h"
 
 #define MODEL40_HDC_BYTES (925u * 5u * 17u * 512u)
 

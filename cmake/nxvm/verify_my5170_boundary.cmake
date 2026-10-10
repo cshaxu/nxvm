@@ -6,6 +6,9 @@ foreach(source IN LISTS my5170_sources)
         message(FATAL_ERROR "My5170 includes a peer App: ${source}")
     endif()
 endforeach()
+set(PROJECT_APP_TEST_OWNER "app-my5170")
+include("${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_app_test_support_boundary.cmake")
+unset(PROJECT_APP_TEST_OWNER)
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "at" AND
         (NOT NXVM_PRODUCT_ARTIFACT_ROOT STREQUAL "${CMAKE_SOURCE_DIR}/assets/my5170" OR
          NOT NXVM_PRODUCT_ARTIFACT_DIRECTORY STREQUAL NXVM_PRODUCT_ARTIFACT_ROOT))

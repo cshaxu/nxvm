@@ -6,6 +6,9 @@ foreach(source IN LISTS nxvm_sources)
         message(FATAL_ERROR "NXVM includes a peer App: ${source}")
     endif()
 endforeach()
+set(PROJECT_APP_TEST_OWNER "app-nxvm")
+include("${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_app_test_support_boundary.cmake")
+unset(PROJECT_APP_TEST_OWNER)
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "default" AND
         (NOT NXVM_PRODUCT_ARTIFACT_ROOT STREQUAL "${CMAKE_SOURCE_DIR}/assets/nxvm" OR
          NOT NXVM_PRODUCT_ARTIFACT_DIRECTORY STREQUAL NXVM_PRODUCT_ARTIFACT_ROOT))

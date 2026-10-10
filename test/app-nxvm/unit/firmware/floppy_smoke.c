@@ -1,4 +1,4 @@
-#include "../support/profile.h"
+#include "../../support/profile.h"
 /* Repository guest firmware and synthetic media only; no external asset files. */
 #include "core/machine/input_interface.h"
 #include "core/board-base/machine_board_interface.h"

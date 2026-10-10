@@ -1,6 +1,6 @@
-#include "../../unit/support/ibmpc/machine/support/guest_input.h"
+#include "../../../core/machine/support/guest_input.h"
 #include "core/machine/machine_interface.h"
-#include "../../unit/support/ibmpc/board-common/controller_fixture.h"
+#include "../../../core/board-base/support/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -8,7 +8,7 @@
 
 #include "core/x86/debug_interface.h"
 #include "core/x86/machine_interface.h"
-#include "test/app-nxvm/unit/support/ibmpc/machine/support/nxvm_presentation_capture.h"
+#include "test/core/machine/support/nxvm_presentation_capture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
