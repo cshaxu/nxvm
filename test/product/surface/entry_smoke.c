@@ -10,6 +10,7 @@ static struct emulator_product fixture;
 static lib_u32 failure;
 static lib_u32 created;
 static lib_u32 destroyed;
+static const char *received_banner;
 
 static lib_status fixture_bind(void *machine, emulator_machine *emulator)
 {
@@ -106,6 +107,7 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
 
     if (definition == LIB_NULL || definition->configure_control == LIB_NULL ||
         definition->configure_ui == LIB_NULL) return 1;
+    received_banner = definition->banner;
     ++created;
     if (failure == 1u) {
         ++destroyed;
@@ -147,10 +149,12 @@ lib_i32 main(void)
         failure = index;
         fixture.live = LIB_FALSE;
         created = destroyed = 0u;
+        received_banner = LIB_NULL;
         if (product_surface_run(&definition) != (index == 0u ? 0 : 1)) return 2;
         if (index == 1u && (created != 1u || destroyed != 1u)) return 3;
         if (index != 1u && (created != 1u || destroyed != 0u)) return 4;
         if (fixture.live) return 5;
+        if (received_banner != definition.banner) return 6;
     }
     return 0;
 }
