@@ -56,6 +56,15 @@ pre-existing `integration-session-ini-support` reference to retired
 | My5160 | 1 | Replace task provenance with XT behavior markers in a My5160-only S. |
 | Core / Lib / Emulator / Product | 0 | No active explicit task-formatted success marker found by this scan. |
 
+## S8 Disposition: My5170
+
+S8 replaced task provenance in the four currently active My5170 source files:
+the Model 339 CGA topology, firmware/FDC topology, clock-contract, and
+composition tests. The first three contain eleven success markers; composition
+contains one failure diagnostic. This confirms the baseline ledger's four-file
+count without changing a source path, predicate or registration. All four
+targets pass on x64 and x86.
+
 ## CMake Registration Debt
 
 Task-shaped CMake helper names are not renamed mechanically. They fall into

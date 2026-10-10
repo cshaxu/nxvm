@@ -238,7 +238,7 @@ static lib_i32 vm_model_339_refresh_post_loop_is_calibrated(void)
         core_machine_debug_capture_cpu_snapshot(session->core_machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
         (cpu.ecx & 0xffffu) < 0xf600u;
-    if (failed) printf("M5:T516:S2:MODEL339-REFRESH:CX=%04X:EIP=%04X:reason=%u\n",
+    if (failed) printf("MODEL339-REFRESH:CX=%04X:EIP=%04X:reason=%u\n",
         (unsigned int)(cpu.ecx & 0xffffu), (unsigned int)cpu.eip, result.reason);
     vm_machine_destroy(session);
     return failed;

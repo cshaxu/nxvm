@@ -38,6 +38,6 @@ int main(void)
 done:
     vm_machine_destroy(session);
     if (failed) return 1;
-    printf("M5:T366:S7:MODEL339-FIRMWARE-FDC-TOPOLOGY:OK\n");
+    printf("MODEL339-FIRMWARE-FDC-TOPOLOGY:OK\n");
     return 0;
 }

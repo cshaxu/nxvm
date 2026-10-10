@@ -54,7 +54,7 @@ static lib_i32 vm_default_ega_topology(void)
 lib_i32 main(void)
 {
     if (vm_model_339_cga_topology() || vm_default_ega_topology()) return 1;
-    printf("M5:T366:S6:MODEL339-CGA-TOPOLOGY:OK\n");
-    printf("M5:T375:S15:MODEL339-REV3-CGA-DEFAULTS:OK\n");
+    printf("MODEL339-CGA-TOPOLOGY:OK\n");
+    printf("MODEL339-REV3-CGA-DEFAULTS:OK\n");
     return 0;
 }

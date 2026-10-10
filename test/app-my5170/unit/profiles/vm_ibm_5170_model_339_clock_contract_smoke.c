@@ -135,13 +135,13 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
 lib_i32 main(void)
 {
     if (vm_model_339_clock_contract_is_selected()) return 1;
-    printf("M5:T375:S2:MODEL339-CLOCK-CONTRACT:OK\n");
-    printf("M5:T375:S13:MODEL339-CGA-REFERENCE-CONTRACT:OK\n");
-    printf("M5:T375:S22:MODEL339-TYPEMATIC:OK\n");
-    printf("M5:T375:S23:KBC-F3-CADENCE:OK\n");
-    printf("M5:T462:S3:CONTROLLER-PROFILE-SELECTION:OK\n");
-    printf("M5:T462:S3:CONTROLLER-OWNER-CONSUMPTION:OK\n");
-    printf("M5:T469:S3:CORE-DEADLINE-SELECTION:OK\n");
-    printf("M5:T476:S3:IBM5170-ROOT-CUTOVER:OK\n");
+    printf("MODEL339-CLOCK-CONTRACT:OK\n");
+    printf("MODEL339-CGA-REFERENCE-CONTRACT:OK\n");
+    printf("MODEL339-TYPEMATIC:OK\n");
+    printf("KBC-F3-CADENCE:OK\n");
+    printf("CONTROLLER-PROFILE-SELECTION:OK\n");
+    printf("CONTROLLER-OWNER-CONSUMPTION:OK\n");
+    printf("CORE-DEADLINE-SELECTION:OK\n");
+    printf("IBM5170-ROOT-CUTOVER:OK\n");
     return 0;
 }
