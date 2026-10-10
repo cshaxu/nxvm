@@ -96,7 +96,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         }
     }
     if (failed || !prompt_seen || int10_count == 0u || f2_count != 0u) goto fail;
-    printf("M5:T212:S2:VIDEO:DOS:OK INT10=%u F2=%u AH=", int10_count, f2_count);
+    printf("NXVM:VIDEO:DOS:OK INT10=%u F2=%u AH=", int10_count, f2_count);
     for (instruction = 0u; instruction < 256u; ++instruction) {
         if (functions[instruction]) printf("%02X", (lib_u32)instruction);
     }
@@ -106,7 +106,7 @@ lib_i32 main(lib_i32 argc, char **argv)
 
 fail:
     fprintf(stderr,
-        "M5:T212:S2:VIDEO:DOS:FAIL INT10=%u F2=%u PROMPT=%d STOP=%d\n",
+        "NXVM:VIDEO:DOS:FAIL INT10=%u F2=%u PROMPT=%d STOP=%d\n",
         int10_count, f2_count, prompt_seen, (lib_i32)result.reason);
     integration_ini_session_close(&ini_session);
     return 1;

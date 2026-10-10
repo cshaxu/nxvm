@@ -88,6 +88,6 @@ lib_i32 main(lib_i32 argc, char **argv)
 done:
     integration_ini_session_close(&ini_session);
     if (!saw_cga || !saw_text) return 1;
-    printf("M5:T254:S3:CGA-640:SYSTEM:OK\n");
+    printf("NXVM:CGA-640:SYSTEM:OK\n");
     return 0;
 }

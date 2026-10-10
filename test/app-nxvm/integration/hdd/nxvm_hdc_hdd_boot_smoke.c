@@ -91,13 +91,13 @@ lib_i32 main(lib_i32 argc, char **argv)
             if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
                 LIB_STATUS_OK && diagnostic.first_fault.valid) {
                 fprintf(stderr,
-                    "M5:T213:S3:HDC:SYSTEM-FAULT reason=%u cs=%04X ip=%08X opcode=%02X\n",
+                    "NXVM:HDC:SYSTEM-FAULT reason=%u cs=%04X ip=%08X opcode=%02X\n",
                     (lib_u32)result.reason, diagnostic.first_fault.point.cs,
                     diagnostic.first_fault.point.eip,
                     diagnostic.first_fault.point.bytes[0]);
             } else {
                 fprintf(stderr,
-                    "M5:T213:S3:HDC:SYSTEM-STOP reason=%u status=%u count=%u\n",
+                    "NXVM:HDC:SYSTEM-STOP reason=%u status=%u count=%u\n",
                     (lib_u32)result.reason, (lib_u32)run_status,
                     test_board_hdc_observe(session->board).command_count);
             }
@@ -128,14 +128,14 @@ lib_i32 main(lib_i32 argc, char **argv)
             VM_MACHINE_MEDIA_HDD_ID, (lib_size)vm_hdc_hdd_boot_partition_lba(session) *
             VM_HDC_HDD_BOOT_BYTES, image_bytes, sizeof(image_bytes), &image_result);
         fprintf(stderr,
-            "M5:T213:S3:HDC:SYSTEM-NO-HANDOFF count=%u command=%02X memory=%02X%02X%02X%02X expected=%02X%02X%02X%02X\n",
+            "NXVM:HDC:SYSTEM-NO-HANDOFF count=%u command=%02X memory=%02X%02X%02X%02X expected=%02X%02X%02X%02X\n",
             test_board_hdc_observe(session->board).command_count,
             test_board_hdc_observe(session->board).last_command,
             bytes[0], bytes[1], bytes[2], bytes[3],
             image_bytes[0], image_bytes[1], image_bytes[2], image_bytes[3]);
         goto fail;
     }
-    printf("M5:T287:S22:HDD-ONLY-BOOT:OK command=20 reads=%u instructions=%u\n",
+    printf("NXVM:HDD-ONLY-BOOT:OK command=20 reads=%u instructions=%u\n",
         test_board_hdc_observe(session->board).command_count, executed);
     integration_ini_session_close(&ini_session);
     return 0;

@@ -155,12 +155,12 @@ lib_status integration_ini_session_open_with_overlay_transform(const char *direc
     if (out_session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     lib_memory_set(out_session, 0, sizeof(*out_session));
     if (!integration_ini_session_find(directory, file_name, &out_session->request)) {
-        fprintf(stderr, "T533:INI-SESSION:%s:REQUEST-NOT-FOUND\n",
+        fprintf(stderr, "NXVM:INI-SESSION:%s:REQUEST-NOT-FOUND\n",
             file_name == LIB_NULL ? "(null)" : file_name);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (!integration_ini_session_assets_present(&out_session->request)) {
-        fprintf(stderr, "T533:INI-SESSION:%s:DECLARED-ASSET-UNAVAILABLE\n",
+        fprintf(stderr, "NXVM:INI-SESSION:%s:DECLARED-ASSET-UNAVAILABLE\n",
             file_name);
         return LIB_STATUS_UNSUPPORTED;
     }
@@ -168,7 +168,7 @@ lib_status integration_ini_session_open_with_overlay_transform(const char *direc
     out_session->transform_opaque = opaque;
     status = integration_ini_session_restart(out_session);
     if (status != LIB_STATUS_OK || out_session->session == LIB_NULL) {
-        fprintf(stderr, "T533:INI-SESSION:%s:OPEN-FAILED:%d\n",
+        fprintf(stderr, "NXVM:INI-SESSION:%s:OPEN-FAILED:%d\n",
             file_name, (lib_i32)status);
         integration_ini_session_close(out_session);
         return LIB_STATUS_INTERNAL_ERROR;

@@ -14,12 +14,12 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 
-#define VM_T287_TEXT_CELLS (80u * 25u)
-#define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u
-#define VM_T287_COMMAND_TIMEOUT_MILLISECONDS 5000u
-#define VM_T287_DIRECTORY_TIMEOUT_MILLISECONDS 60000u
+#define VM_WINDOWS31_CHECKPOINT_TEXT_CELLS (80u * 25u)
+#define VM_WINDOWS31_CHECKPOINT_BOOT_TIMEOUT_MILLISECONDS 60000u
+#define VM_WINDOWS31_CHECKPOINT_COMMAND_TIMEOUT_MILLISECONDS 5000u
+#define VM_WINDOWS31_CHECKPOINT_DIRECTORY_TIMEOUT_MILLISECONDS 60000u
 
-static lib_i32 vm_t287_submit_input(vm_machine *session,
+static lib_i32 vm_windows31_checkpoint_submit_input(vm_machine *session,
     lib_u16 scan_code, lib_u16 virtual_key, lib_i32 pressed)
 {
     core_machine_guest_input_event event = { 0 };
@@ -32,7 +32,7 @@ static lib_i32 vm_t287_submit_input(vm_machine *session,
     return vm_test_submit_host_input(session, &event) == LIB_STATUS_OK;
 }
 
-static lib_i32 vm_t287_has_text(const vm_machine *session, const char *text)
+static lib_i32 vm_windows31_checkpoint_has_text(const vm_machine *session, const char *text)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
@@ -41,7 +41,7 @@ static lib_i32 vm_t287_has_text(const vm_machine *session, const char *text)
 
     if (session == LIB_NULL || text == LIB_NULL || length == 0u ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
-    for (cell = 0u; cell + length <= VM_T287_TEXT_CELLS; ++cell) {
+    for (cell = 0u; cell + length <= VM_WINDOWS31_CHECKPOINT_TEXT_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (lib_u8)text[character]) break;
         }
@@ -50,14 +50,14 @@ static lib_i32 vm_t287_has_text(const vm_machine *session, const char *text)
     return 0;
 }
 
-static const char *vm_t287_wait_for_text(const vm_machine *session,
+static const char *vm_windows31_checkpoint_wait_for_text(const vm_machine *session,
     const char *first, const char *second, DWORD timeout)
 {
     DWORD elapsed;
 
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
-        if (vm_t287_has_text(session, first)) return first;
-        if (second != LIB_NULL && vm_t287_has_text(session, second)) return second;
+        if (vm_windows31_checkpoint_has_text(session, first)) return first;
+        if (second != LIB_NULL && vm_windows31_checkpoint_has_text(session, second)) return second;
         if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
             return LIB_NULL;
         }
@@ -66,27 +66,27 @@ static const char *vm_t287_wait_for_text(const vm_machine *session,
     return LIB_NULL;
 }
 
-static void vm_t287_submit_key(const vm_machine *session, lib_u16 scan_code,
+static void vm_windows31_checkpoint_submit_key(const vm_machine *session, lib_u16 scan_code,
     lib_u16 virtual_key)
 {
     if (session == LIB_NULL) return;
-    if (!vm_t287_submit_input((vm_machine *)session, scan_code, virtual_key, 1)) return;
+    if (!vm_windows31_checkpoint_submit_input((vm_machine *)session, scan_code, virtual_key, 1)) return;
     Sleep(25u);
-    (void)vm_t287_submit_input((vm_machine *)session, scan_code, virtual_key, 0);
+    (void)vm_windows31_checkpoint_submit_input((vm_machine *)session, scan_code, virtual_key, 0);
     Sleep(25u);
 }
 
-static void vm_t287_submit_colon(const vm_machine *session)
+static void vm_windows31_checkpoint_submit_colon(const vm_machine *session)
 {
     if (session == LIB_NULL) return;
-    if (!vm_t287_submit_input((vm_machine *)session, 0x2au, VK_SHIFT, 1)) return;
+    if (!vm_windows31_checkpoint_submit_input((vm_machine *)session, 0x2au, VK_SHIFT, 1)) return;
     Sleep(25u);
-    vm_t287_submit_key(session, 0x27u, VK_OEM_1);
-    (void)vm_t287_submit_input((vm_machine *)session, 0x2au, VK_SHIFT, 0);
+    vm_windows31_checkpoint_submit_key(session, 0x27u, VK_OEM_1);
+    (void)vm_windows31_checkpoint_submit_input((vm_machine *)session, 0x2au, VK_SHIFT, 0);
     Sleep(25u);
 }
 
-static void vm_t287_report(const vm_machine *session, const char *stage)
+static void vm_windows31_checkpoint_report(const vm_machine *session, const char *stage)
 {
     core_machine_guest_display_frame frame;
     core_machine_cpu_diagnostic diagnostic = {0};
@@ -94,7 +94,7 @@ static void vm_t287_report(const vm_machine *session, const char *stage)
     lib_size column;
 
     if (session == LIB_NULL) return;
-    printf("M5:T287:S2:WINDOWS31:CHECKPOINT:FAIL stage=%s running=%d "
+    printf("NXVM:WINDOWS31:CHECKPOINT:FAIL stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
         vm_machine_control_is_running(&session->control),
         test_board_hdc_observe(session->board).command_count,
@@ -103,7 +103,7 @@ static void vm_t287_report(const vm_machine *session, const char *stage)
             LIB_STATUS_OK && diagnostic.first_fault.valid) {
         lib_size index;
 
-        printf("M5:T287:S17:FAULT cs=%04X ip=%08X opcode=%02X%02X%02X "
+        printf("NXVM:FAULT cs=%04X ip=%08X opcode=%02X%02X%02X "
             "eax=%08X ebx=%08X ecx=%08X edx=%08X esi=%08X edi=%08X\n",
             diagnostic.first_fault.point.cs, diagnostic.first_fault.point.eip,
             diagnostic.first_fault.point.bytes[0], diagnostic.first_fault.point.bytes[1],
@@ -112,7 +112,7 @@ static void vm_t287_report(const vm_machine *session, const char *stage)
             diagnostic.first_fault.edx, diagnostic.first_fault.esi,
             diagnostic.first_fault.edi);
         for (index = 0u; index < diagnostic.recent_count; ++index) {
-            printf("M5:T287:S17:RECENT cs=%04X ip=%08X opcode=%02X%02X%02X\n",
+            printf("NXVM:RECENT cs=%04X ip=%08X opcode=%02X%02X%02X\n",
                 diagnostic.recent[index].cs, diagnostic.recent[index].eip,
                 diagnostic.recent[index].bytes[0], diagnostic.recent[index].bytes[1],
                 diagnostic.recent[index].bytes[2]);
@@ -128,7 +128,7 @@ static void vm_t287_report(const vm_machine *session, const char *stage)
     }
 }
 
-static void vm_t287_report_frame(const vm_machine *session)
+static void vm_windows31_checkpoint_report_frame(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
     lib_size row;
@@ -163,43 +163,43 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (session == LIB_NULL) goto fail;
     if (integration_ini_session_start(&ini_session) != LIB_STATUS_OK) goto fail;
     stage = "date";
-    boot_text = vm_t287_wait_for_text(session, "Enter new date", "A:\\>",
-        VM_T287_BOOT_TIMEOUT_MILLISECONDS);
+    boot_text = vm_windows31_checkpoint_wait_for_text(session, "Enter new date", "A:\\>",
+        VM_WINDOWS31_CHECKPOINT_BOOT_TIMEOUT_MILLISECONDS);
     if (boot_text == LIB_NULL) goto fail;
     if (lib_text_compare(boot_text, "A:\\>") != 0) {
-        vm_t287_submit_key(session, 0x1cu, VK_RETURN);
+        vm_windows31_checkpoint_submit_key(session, 0x1cu, VK_RETURN);
     }
     stage = "time";
     if (lib_text_compare(boot_text, "A:\\>") != 0) {
-        boot_text = vm_t287_wait_for_text(session, "Enter new time", "A:\\>",
-            VM_T287_BOOT_TIMEOUT_MILLISECONDS);
+        boot_text = vm_windows31_checkpoint_wait_for_text(session, "Enter new time", "A:\\>",
+            VM_WINDOWS31_CHECKPOINT_BOOT_TIMEOUT_MILLISECONDS);
         if (boot_text == LIB_NULL) goto fail;
         if (lib_text_compare(boot_text, "A:\\>") != 0) {
-            vm_t287_submit_key(session, 0x1cu, VK_RETURN);
+            vm_windows31_checkpoint_submit_key(session, 0x1cu, VK_RETURN);
         }
     }
     stage = "prompt";
-    if (vm_t287_wait_for_text(session, "A:\\>", LIB_NULL,
-            VM_T287_BOOT_TIMEOUT_MILLISECONDS) == LIB_NULL) {
+    if (vm_windows31_checkpoint_wait_for_text(session, "A:\\>", LIB_NULL,
+            VM_WINDOWS31_CHECKPOINT_BOOT_TIMEOUT_MILLISECONDS) == LIB_NULL) {
         goto fail;
     }
     stage = "c-command";
-    vm_t287_submit_key(session, 0x2eu, 'C');
-    vm_t287_submit_colon(session);
-    vm_t287_submit_key(session, 0x1cu, VK_RETURN);
+    vm_windows31_checkpoint_submit_key(session, 0x2eu, 'C');
+    vm_windows31_checkpoint_submit_colon(session);
+    vm_windows31_checkpoint_submit_key(session, 0x1cu, VK_RETURN);
     stage = "c-drive";
-    drive_result = vm_t287_wait_for_text(session, "C:\\>",
-        "Invalid drive specification", VM_T287_COMMAND_TIMEOUT_MILLISECONDS);
+    drive_result = vm_windows31_checkpoint_wait_for_text(session, "C:\\>",
+        "Invalid drive specification", VM_WINDOWS31_CHECKPOINT_COMMAND_TIMEOUT_MILLISECONDS);
     c_present = drive_result != LIB_NULL && !lib_text_compare(drive_result, "C:\\>");
     if (!c_present) goto fail;
     stage = "c-dir";
-    vm_t287_submit_key(session, 0x20u, 'D');
-    vm_t287_submit_key(session, 0x17u, 'I');
-    vm_t287_submit_key(session, 0x13u, 'R');
-    vm_t287_submit_key(session, 0x1cu, VK_RETURN);
-    if (vm_t287_wait_for_text(session, "file(s)", "File(s)",
-            VM_T287_DIRECTORY_TIMEOUT_MILLISECONDS) == LIB_NULL) goto fail;
-    if (integration_ini_session_pause(&ini_session, VM_T287_COMMAND_TIMEOUT_MILLISECONDS) != LIB_STATUS_OK)
+    vm_windows31_checkpoint_submit_key(session, 0x20u, 'D');
+    vm_windows31_checkpoint_submit_key(session, 0x17u, 'I');
+    vm_windows31_checkpoint_submit_key(session, 0x13u, 'R');
+    vm_windows31_checkpoint_submit_key(session, 0x1cu, VK_RETURN);
+    if (vm_windows31_checkpoint_wait_for_text(session, "file(s)", "File(s)",
+            VM_WINDOWS31_CHECKPOINT_DIRECTORY_TIMEOUT_MILLISECONDS) == LIB_NULL) goto fail;
+    if (integration_ini_session_pause(&ini_session, VM_WINDOWS31_CHECKPOINT_COMMAND_TIMEOUT_MILLISECONDS) != LIB_STATUS_OK)
         goto fail;
     if (emulator_machine_shutdown(ini_session.emulator_machine) != LIB_STATUS_OK) goto fail;
     stage = "bda-hdd-count";
@@ -207,9 +207,9 @@ lib_i32 main(lib_i32 argc, char **argv)
             sizeof(hdd_bda)) == LIB_STATUS_OK) hdd_count = hdd_bda[1];
     ata_commands = test_board_hdc_observe(session->board).command_count;
     vm_machine_stop(session);
-    vm_t287_report_frame(session);
+    vm_windows31_checkpoint_report_frame(session);
     if (c_present && ata_commands != 0u) {
-        printf("M5:T287:S2:WINDOWS31:CHECKPOINT:OK result=c-drive-present "
+        printf("NXVM:WINDOWS31:CHECKPOINT:OK result=c-drive-present "
             "observed_bda_hdd_count=%u ata_commands=%u\n", hdd_count,
             ata_commands);
         integration_ini_session_close(&ini_session);
@@ -218,9 +218,9 @@ lib_i32 main(lib_i32 argc, char **argv)
 
 fail:
     if (emulator_machine_state_get(ini_session.emulator_machine) == EMULATOR_MACHINE_RUNNING)
-        (void)integration_ini_session_pause(&ini_session, VM_T287_COMMAND_TIMEOUT_MILLISECONDS);
+        (void)integration_ini_session_pause(&ini_session, VM_WINDOWS31_CHECKPOINT_COMMAND_TIMEOUT_MILLISECONDS);
     if (emulator_machine_shutdown(ini_session.emulator_machine) == LIB_STATUS_OK)
-        vm_t287_report(session, stage);
+        vm_windows31_checkpoint_report(session, stage);
     if (session != LIB_NULL) vm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     return 1;

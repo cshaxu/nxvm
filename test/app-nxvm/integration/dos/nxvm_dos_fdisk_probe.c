@@ -11,15 +11,15 @@
 #include "core/machine/machine_private.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
-#define VM_T287_FDISK_CELLS (80u * 25u)
+#define VM_DOS_FDISK_FDISK_CELLS (80u * 25u)
 
-static DWORD WINAPI vm_t287_fdisk_run(void *opaque)
+static DWORD WINAPI vm_dos_fdisk_fdisk_run(void *opaque)
 {
     vm_machine_control_start(&((vm_machine *)opaque)->control);
     return 0u;
 }
 
-static lib_i32 vm_t287_fdisk_has_text(const vm_machine *session, const char *text)
+static lib_i32 vm_dos_fdisk_fdisk_has_text(const vm_machine *session, const char *text)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
@@ -28,7 +28,7 @@ static lib_i32 vm_t287_fdisk_has_text(const vm_machine *session, const char *tex
 
     if (session == LIB_NULL || text == LIB_NULL || length == 0u ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
-    for (cell = 0u; cell + length <= VM_T287_FDISK_CELLS; ++cell) {
+    for (cell = 0u; cell + length <= VM_DOS_FDISK_FDISK_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (lib_u8)text[character]) break;
         }
@@ -37,13 +37,13 @@ static lib_i32 vm_t287_fdisk_has_text(const vm_machine *session, const char *tex
     return 0;
 }
 
-static lib_i32 vm_t287_fdisk_wait(const vm_machine *session, const char *text,
+static lib_i32 vm_dos_fdisk_fdisk_wait(const vm_machine *session, const char *text,
     DWORD timeout)
 {
     DWORD elapsed;
 
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
-        if (vm_t287_fdisk_has_text(session, text)) return 1;
+        if (vm_dos_fdisk_fdisk_has_text(session, text)) return 1;
         if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
             return 0;
         }
@@ -52,7 +52,7 @@ static lib_i32 vm_t287_fdisk_wait(const vm_machine *session, const char *text,
     return 0;
 }
 
-static lib_i32 vm_t287_fdisk_submit(const vm_machine *session, const lib_u8 *codes,
+static lib_i32 vm_dos_fdisk_fdisk_submit(const vm_machine *session, const lib_u8 *codes,
     lib_size count)
 {
     lib_size index;
@@ -81,24 +81,24 @@ lib_i32 main(lib_i32 argc, char **argv)
             &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
     if ((thread = CreateThread(LIB_NULL, 0u,
-            vm_t287_fdisk_run, session, 0u, LIB_NULL)) == LIB_NULL) goto done;
-    if (!vm_t287_fdisk_wait(session, "Enter new date", 60000u) ||
-        !vm_t287_fdisk_submit(session, enter, sizeof(enter)) ||
-        !vm_t287_fdisk_wait(session, "Enter new time", 60000u) ||
-        !vm_t287_fdisk_submit(session, enter, sizeof(enter)) ||
-        !vm_t287_fdisk_wait(session, "A:\\>", 60000u) ||
-        !vm_t287_fdisk_submit(session, fdisk, sizeof(fdisk)) ||
-        !vm_t287_fdisk_wait(session, "FDISK Options", 60000u)) goto done;
+            vm_dos_fdisk_fdisk_run, session, 0u, LIB_NULL)) == LIB_NULL) goto done;
+    if (!vm_dos_fdisk_fdisk_wait(session, "Enter new date", 60000u) ||
+        !vm_dos_fdisk_fdisk_submit(session, enter, sizeof(enter)) ||
+        !vm_dos_fdisk_fdisk_wait(session, "Enter new time", 60000u) ||
+        !vm_dos_fdisk_fdisk_submit(session, enter, sizeof(enter)) ||
+        !vm_dos_fdisk_fdisk_wait(session, "A:\\>", 60000u) ||
+        !vm_dos_fdisk_fdisk_submit(session, fdisk, sizeof(fdisk)) ||
+        !vm_dos_fdisk_fdisk_wait(session, "FDISK Options", 60000u)) goto done;
     Sleep(3000u);
-    if (!vm_t287_fdisk_submit(session, four_make, sizeof(four_make))) goto done;
+    if (!vm_dos_fdisk_fdisk_submit(session, four_make, sizeof(four_make))) goto done;
     Sleep(100u);
-    if (!vm_t287_fdisk_submit(session, four_break, sizeof(four_break))) goto done;
+    if (!vm_dos_fdisk_fdisk_submit(session, four_break, sizeof(four_break))) goto done;
     Sleep(100u);
-    if (!vm_t287_fdisk_submit(session, enter, sizeof(enter))) goto done;
-    if (!vm_t287_fdisk_wait(session, "Display Partition Information", 60000u)) goto done;
+    if (!vm_dos_fdisk_fdisk_submit(session, enter, sizeof(enter))) goto done;
+    if (!vm_dos_fdisk_fdisk_wait(session, "Display Partition Information", 60000u)) goto done;
     Sleep(1000u);
-    if (!vm_t287_fdisk_has_text(session, "Display Partition Information") ||
-        !vm_t287_fdisk_has_text(session, "Press Esc to continue")) goto done;
+    if (!vm_dos_fdisk_fdisk_has_text(session, "Display Partition Information") ||
+        !vm_dos_fdisk_fdisk_has_text(session, "Press Esc to continue")) goto done;
     passed = 1;
 
 done:
@@ -109,6 +109,6 @@ done:
     }
     integration_ini_session_close(&ini_session);
     if (!passed) return 1;
-    printf("M5:T287:S21:FDISK:OPTION4:EXTERNAL:OK\n");
+    printf("NXVM:FDISK:OPTION4:EXTERNAL:OK\n");
     return 0;
 }

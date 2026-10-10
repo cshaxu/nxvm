@@ -163,11 +163,11 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (!vm_timer_debug_read_register(&ini_session, PRODUCT_DEBUG_EAX, &register_value) ||
         int1a_ticks != 0u || (register_value & 0xffu) != 1u) goto fail;
     integration_ini_session_close(&ini_session);
-    printf("M5:T225:S4:IRQ0-BDA-INT1A-ROLLOVER:DOS:OK\n");
+    printf("NXVM:IRQ0-BDA-INT1A-ROLLOVER:DOS:OK\n");
     return 0;
 
 fail:
-    fprintf(stderr, "M5:T225:S3:TIMER:FAIL:%d:%u\n", stage, bda_ticks);
+    fprintf(stderr, "NXVM:TIMER:FAIL:%d:%u\n", stage, bda_ticks);
     integration_ini_session_close(&ini_session);
     return 1;
 }

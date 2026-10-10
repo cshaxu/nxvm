@@ -54,7 +54,7 @@ static void vm_dos_mem_fault_print(const core_machine_cpu_diagnostic *diagnostic
     const core_machine_cpu_fault_snapshot *fault = &diagnostic->first_fault;
     lib_size index;
 
-    printf("M5:T152:S1:FAULT CS:IP=%04X:%08X L%08X EX=%08X CODE=%08X BYTES=",
+    printf("NXVM:FAULT CS:IP=%04X:%08X L%08X EX=%08X CODE=%08X BYTES=",
         fault->point.cs, fault->point.eip, fault->point.linear_pc,
         fault->exception_mask, fault->exception_code);
     for (index = 0u; index < fault->point.byte_count; ++index) {
@@ -111,18 +111,18 @@ lib_i32 main(lib_i32 argc, char **argv)
                 diagnostic.first_fault.point.bytes[0] == 0xdbu &&
                 diagnostic.first_fault.point.bytes[1] == 0xe3u) goto fail;
         } else {
-            printf("M5:T156:S1:DOS-MEM-NEXT:STOPPED\n");
+            printf("NXVM:DOS-MEM-NEXT:STOPPED\n");
         }
     } else {
-        printf("M5:T156:S1:DOS-MEM-NEXT:RUNNING\n");
+        printf("NXVM:DOS-MEM-NEXT:RUNNING\n");
     }
     vm_machine_stop(session);
     integration_ini_session_close(&ini_session);
-    printf("M5:T156:S1:DOS-MEM-FNINIT-PASSED:OK\n");
+    printf("NXVM:DOS-MEM-FNINIT-PASSED:OK\n");
     return 0;
 
 fail:
-    fprintf(stderr, "M5:T198:S1:DOS-MEM:FAIL stage=%s\n", stage);
+    fprintf(stderr, "NXVM:DOS-MEM:FAIL stage=%s\n", stage);
     if (session != LIB_NULL &&
         core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
             LIB_STATUS_OK && diagnostic.first_fault.valid) {

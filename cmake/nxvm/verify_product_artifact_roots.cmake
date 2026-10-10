@@ -25,7 +25,7 @@ set(project_live_path_authorities
     "cmake/nxvm/NxvmProduct.cmake"
     "src/core/product/deploy_artifact.cmake"
     "src/core/product/verify_artifact_optimized.cmake"
-    "cmake/nxvm/verify_t533_integration_ini_boundary.cmake"
+    "cmake/nxvm/verify_integration_ini_boundary.cmake"
     "src/app-mynes/product/CMakeLists.txt"
     "tools/nxvm/README.md"
     "docs/rules/DOCUMENT.md"

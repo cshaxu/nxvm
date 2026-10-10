@@ -16,13 +16,13 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 
-#define VM_T287_TEXT_CELLS (80u * 25u)
-#define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u
-#define VM_T287_SETUP_TIMEOUT_MILLISECONDS 20000u
-#define VM_T287_FAULT_OBSERVATION_MILLISECONDS 60000u
-#define VM_T288_POST_COPY_TIMEOUT_MILLISECONDS 720000u
+#define VM_WINDOWS31_SETUP_TEXT_CELLS (80u * 25u)
+#define VM_WINDOWS31_SETUP_BOOT_TIMEOUT_MILLISECONDS 60000u
+#define VM_WINDOWS31_SETUP_SETUP_TIMEOUT_MILLISECONDS 20000u
+#define VM_WINDOWS31_SETUP_FAULT_OBSERVATION_MILLISECONDS 60000u
+#define VM_WINDOWS31_SETUP_POST_COPY_TIMEOUT_MILLISECONDS 720000u
 
-static lib_i32 vm_t287_submit_input(vm_machine *session,
+static lib_i32 vm_windows31_setup_submit_input(vm_machine *session,
     lib_u16 scan_code, lib_u16 virtual_key, lib_i32 pressed)
 {
     core_machine_guest_input_event event = { 0 };
@@ -35,7 +35,7 @@ static lib_i32 vm_t287_submit_input(vm_machine *session,
     return vm_test_submit_host_input(session, &event) == LIB_STATUS_OK;
 }
 
-static lib_i32 vm_t287_has_text(const vm_machine *session, const char *text)
+static lib_i32 vm_windows31_setup_has_text(const vm_machine *session, const char *text)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
@@ -44,7 +44,7 @@ static lib_i32 vm_t287_has_text(const vm_machine *session, const char *text)
 
     if (session == LIB_NULL || text == LIB_NULL || length == 0u ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
-    for (cell = 0u; cell + length <= VM_T287_TEXT_CELLS; ++cell) {
+    for (cell = 0u; cell + length <= VM_WINDOWS31_SETUP_TEXT_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (lib_u8)text[character]) break;
         }
@@ -53,18 +53,18 @@ static lib_i32 vm_t287_has_text(const vm_machine *session, const char *text)
     return 0;
 }
 
-static lib_i32 vm_t287_has_prompt(const vm_machine *session)
+static lib_i32 vm_windows31_setup_has_prompt(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
 
     if (session == LIB_NULL || test_nxvm_machine_capture_presentation(session,
             &frame) != LIB_STATUS_OK) return 0;
-    for (cell = 0u; cell + 1u < VM_T287_TEXT_CELLS; ++cell) {
+    for (cell = 0u; cell + 1u < VM_WINDOWS31_SETUP_TEXT_CELLS; ++cell) {
         if (frame.characters[cell] == 'C' && frame.characters[cell + 1u] == '>') {
             return 1;
         }
-        if (cell + 3u < VM_T287_TEXT_CELLS && frame.characters[cell] == 'C' &&
+        if (cell + 3u < VM_WINDOWS31_SETUP_TEXT_CELLS && frame.characters[cell] == 'C' &&
             frame.characters[cell + 1u] == ':' && frame.characters[cell + 2u] == '\\' &&
             frame.characters[cell + 3u] == '>') {
             return 1;
@@ -73,14 +73,14 @@ static lib_i32 vm_t287_has_prompt(const vm_machine *session)
     return 0;
 }
 
-static lib_i32 vm_t287_wait_for(const vm_machine *session, const char *text,
+static lib_i32 vm_windows31_setup_wait_for(const vm_machine *session, const char *text,
     DWORD timeout)
 {
     DWORD elapsed;
 
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
-        if ((text == LIB_NULL && vm_t287_has_prompt(session)) ||
-            (text != LIB_NULL && vm_t287_has_text(session, text))) return 1;
+        if ((text == LIB_NULL && vm_windows31_setup_has_prompt(session)) ||
+            (text != LIB_NULL && vm_windows31_setup_has_text(session, text))) return 1;
         if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
             return 0;
         }
@@ -89,14 +89,14 @@ static lib_i32 vm_t287_wait_for(const vm_machine *session, const char *text,
     return 0;
 }
 
-static lib_i32 vm_t287_submit_return(vm_machine *session)
+static lib_i32 vm_windows31_setup_submit_return(vm_machine *session)
 {
-    if (!vm_t287_submit_input(session, 0x1cu, VK_RETURN, 1)) return 0;
+    if (!vm_windows31_setup_submit_input(session, 0x1cu, VK_RETURN, 1)) return 0;
     Sleep(25u);
-    return vm_t287_submit_input(session, 0x1cu, VK_RETURN, 0);
+    return vm_windows31_setup_submit_input(session, 0x1cu, VK_RETURN, 0);
 }
 
-static lib_i32 vm_t287_type_setup(vm_machine *session)
+static lib_i32 vm_windows31_setup_type_setup(vm_machine *session)
 {
     static const lib_u8 scan_codes[] = {
         0x2bu, 0x12u, 0x11u, 0x17u, 0x31u, 0x04u, 0x02u, 0x2bu, 0x1fu,
@@ -110,11 +110,11 @@ static lib_i32 vm_t287_type_setup(vm_machine *session)
 
     if (session == LIB_NULL) return 0;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        if (!vm_t287_submit_input(session, scan_codes[index], virtual_keys[index], 1)) {
+        if (!vm_windows31_setup_submit_input(session, scan_codes[index], virtual_keys[index], 1)) {
             return 0;
         }
         Sleep(25u);
-        if (!vm_t287_submit_input(session, scan_codes[index], virtual_keys[index], 0)) {
+        if (!vm_windows31_setup_submit_input(session, scan_codes[index], virtual_keys[index], 0)) {
             return 0;
         }
         Sleep(25u);
@@ -122,7 +122,7 @@ static lib_i32 vm_t287_type_setup(vm_machine *session)
     return 1;
 }
 
-static lib_i32 vm_t288_type_windows(vm_machine *session)
+static lib_i32 vm_windows31_setup_type_windows(vm_machine *session)
 {
     static const lib_u8 scan_codes[] = {
         0x11u, 0x17u, 0x31u, 0x20u, 0x18u, 0x11u, 0x1fu, 0x1cu
@@ -134,11 +134,11 @@ static lib_i32 vm_t288_type_windows(vm_machine *session)
 
     if (session == LIB_NULL) return 0;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        if (!vm_t287_submit_input(session, scan_codes[index], virtual_keys[index], 1)) {
+        if (!vm_windows31_setup_submit_input(session, scan_codes[index], virtual_keys[index], 1)) {
             return 0;
         }
         Sleep(25u);
-        if (!vm_t287_submit_input(session, scan_codes[index], virtual_keys[index], 0)) {
+        if (!vm_windows31_setup_submit_input(session, scan_codes[index], virtual_keys[index], 0)) {
             return 0;
         }
         Sleep(25u);
@@ -146,7 +146,7 @@ static lib_i32 vm_t288_type_windows(vm_machine *session)
     return 1;
 }
 
-static void vm_t287_print_frame(const vm_machine *session)
+static void vm_windows31_setup_print_frame(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
     lib_size row;
@@ -164,7 +164,7 @@ static void vm_t287_print_frame(const vm_machine *session)
     }
 }
 
-static void vm_t287_report_fault(integration_ini_session *ini_session, const char *stage)
+static void vm_windows31_setup_report_fault(integration_ini_session *ini_session, const char *stage)
 {
     vm_machine *session = ini_session->session;
     core_machine_cpu_diagnostic diagnostic = {0};
@@ -178,7 +178,7 @@ static void vm_t287_report_fault(integration_ini_session *ini_session, const cha
         integration_ini_session_pause(ini_session, 5000u) != LIB_STATUS_OK) return;
     if (emulator_machine_shutdown(session->executor) != LIB_STATUS_OK) return;
     (void)core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic);
-    printf("M5:T287:S23:WINDOWS31:SETUP:CHECKPOINT stage=%s running=%d "
+    printf("NXVM:WINDOWS31:SETUP:CHECKPOINT stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
         was_running,
         test_board_hdc_observe(session->board).command_count,
@@ -186,7 +186,7 @@ static void vm_t287_report_fault(integration_ini_session *ini_session, const cha
     if (diagnostic.first_fault.valid) {
         const core_machine_cpu_fault_snapshot *fault = &diagnostic.first_fault;
 
-        printf("M5:T288:S1:WINDOWS31:FAULT mask=%08X code=%08X "
+        printf("NXVM:WINDOWS31:FAULT mask=%08X code=%08X "
             "cs=%04X ip=%08X linear=%08X opcode=", fault->exception_mask,
             fault->exception_code, fault->point.cs, fault->point.eip,
             fault->point.linear_pc);
@@ -201,7 +201,7 @@ static void vm_t287_report_fault(integration_ini_session *ini_session, const cha
             const core_machine_cpu_execution_point *point =
                 &diagnostic.recent[index];
 
-            printf("M5:T288:S1:WINDOWS31:RECENT cs=%04X ip=%08X "
+            printf("NXVM:WINDOWS31:RECENT cs=%04X ip=%08X "
                 "linear=%08X opcode=%02X%02X%02X\n", point->cs, point->eip,
                 point->linear_pc, point->bytes[0], point->bytes[1],
                 point->bytes[2]);
@@ -210,7 +210,7 @@ static void vm_t287_report_fault(integration_ini_session *ini_session, const cha
     if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) ==
             LIB_STATUS_OK) {
-        printf("M5:T287:S23:WINDOWS31:CPU cr0=%08X cr2=%08X cr3=%08X "
+        printf("NXVM:WINDOWS31:CPU cr0=%08X cr2=%08X cr3=%08X "
             "gdtr=%08X/%04X idtr=%08X/%04X cs=%04X:%08X/%08X ds=%04X:%08X/%08X "
             "ss=%04X:%08X/%08X\n", cpu.cr0, cpu.cr2, cpu.cr3,
             cpu.gdtr.base, cpu.gdtr.limit, cpu.idtr.base,
@@ -219,7 +219,7 @@ static void vm_t287_report_fault(integration_ini_session *ini_session, const cha
             cpu.ds.limit, cpu.ss.selector, cpu.ss.base,
             cpu.ss.limit);
     }
-    vm_t287_print_frame(session);
+    vm_windows31_setup_print_frame(session);
 }
 
 lib_i32 main(lib_i32 argc, char **argv)
@@ -239,68 +239,68 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (session == LIB_NULL) goto fail;
     if (integration_ini_session_start(&ini_session) != LIB_STATUS_OK) goto fail;
     stage = "boot";
-    for (elapsed = 0u; elapsed < VM_T287_BOOT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
-        date_prompt = vm_t287_has_text(session, "Enter new date");
-        if (date_prompt || vm_t287_has_prompt(session)) break;
+    for (elapsed = 0u; elapsed < VM_WINDOWS31_SETUP_BOOT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
+        date_prompt = vm_windows31_setup_has_text(session, "Enter new date");
+        if (date_prompt || vm_windows31_setup_has_prompt(session)) break;
         if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
             goto fail;
         }
         Sleep(10u);
     }
-    if (elapsed == VM_T287_BOOT_TIMEOUT_MILLISECONDS) goto fail;
+    if (elapsed == VM_WINDOWS31_SETUP_BOOT_TIMEOUT_MILLISECONDS) goto fail;
     if (date_prompt) {
         stage = "date";
-        if (!vm_t287_submit_return(session)) goto fail;
+        if (!vm_windows31_setup_submit_return(session)) goto fail;
         stage = "time";
-        if (!vm_t287_wait_for(session, "Enter new time", VM_T287_BOOT_TIMEOUT_MILLISECONDS) ||
-            !vm_t287_submit_return(session)) goto fail;
+        if (!vm_windows31_setup_wait_for(session, "Enter new time", VM_WINDOWS31_SETUP_BOOT_TIMEOUT_MILLISECONDS) ||
+            !vm_windows31_setup_submit_return(session)) goto fail;
     }
     stage = "prompt";
-    if (!vm_t287_wait_for(session, LIB_NULL, VM_T287_BOOT_TIMEOUT_MILLISECONDS)) goto fail;
+    if (!vm_windows31_setup_wait_for(session, LIB_NULL, VM_WINDOWS31_SETUP_BOOT_TIMEOUT_MILLISECONDS)) goto fail;
     stage = "setup-command";
-    if (!vm_t287_type_setup(session)) goto fail;
+    if (!vm_windows31_setup_type_setup(session)) goto fail;
     stage = "setup-result";
-    observed_setup_inf = vm_t287_wait_for(session, "Reading SETUP.INF...",
-        VM_T287_SETUP_TIMEOUT_MILLISECONDS);
+    observed_setup_inf = vm_windows31_setup_wait_for(session, "Reading SETUP.INF...",
+        VM_WINDOWS31_SETUP_SETUP_TIMEOUT_MILLISECONDS);
     if (observed_setup_inf) {
-        Sleep(VM_T287_FAULT_OBSERVATION_MILLISECONDS);
+        Sleep(VM_WINDOWS31_SETUP_FAULT_OBSERVATION_MILLISECONDS);
         if (!vm_machine_control_is_running(&session->control)) {
-            vm_t287_report_fault(&ini_session, "setup-inf-fault");
+            vm_windows31_setup_report_fault(&ini_session, "setup-inf-fault");
             goto done;
         }
-        if (vm_t287_has_text(session, "Welcome to Setup.")) {
+        if (vm_windows31_setup_has_text(session, "Welcome to Setup.")) {
             stage = "welcome";
             if (advance_steps != 0) {
-                if (!vm_t287_submit_return(session)) goto fail;
+                if (!vm_windows31_setup_submit_return(session)) goto fail;
                 Sleep(3000u);
                 if (advance_steps >= 2) {
-                    if (!vm_t287_submit_return(session)) goto fail;
+                    if (!vm_windows31_setup_submit_return(session)) goto fail;
                     Sleep(3000u);
                 }
                 if (advance_steps >= 3) {
-                    if (!vm_t288_type_windows(session)) goto fail;
+                    if (!vm_windows31_setup_type_windows(session)) goto fail;
                     if (advance_steps == 3) Sleep(30000u);
                     if (advance_steps >= 4) {
                         stage = "post-copy";
                         for (elapsed = 0u;
-                                elapsed < VM_T288_POST_COPY_TIMEOUT_MILLISECONDS;
+                                elapsed < VM_WINDOWS31_SETUP_POST_COPY_TIMEOUT_MILLISECONDS;
                                 elapsed += 100u) {
                             if (!vm_machine_control_is_running(&session->control)) break;
                             Sleep(100u);
                         }
                     }
                 }
-                vm_t287_report_fault(&ini_session, "after-welcome-enter");
+                vm_windows31_setup_report_fault(&ini_session, "after-welcome-enter");
                 goto done;
             }
             passed = 1;
-            printf("M5:T287:S24:WINDOWS31:SETUP:OK result=welcome\n");
-            vm_t287_print_frame(session);
+            printf("NXVM:WINDOWS31:SETUP:OK result=welcome\n");
+            vm_windows31_setup_print_frame(session);
             goto done;
         }
-        vm_t287_report_fault(&ini_session, "setup-inf-running");
+        vm_windows31_setup_report_fault(&ini_session, "setup-inf-running");
     } else {
-        vm_t287_report_fault(&ini_session, stage);
+        vm_windows31_setup_report_fault(&ini_session, stage);
     }
 
 done:
@@ -309,6 +309,6 @@ done:
     return passed ? 0 : 1;
 
 fail:
-    vm_t287_report_fault(&ini_session, stage);
+    vm_windows31_setup_report_fault(&ini_session, stage);
     goto done;
 }

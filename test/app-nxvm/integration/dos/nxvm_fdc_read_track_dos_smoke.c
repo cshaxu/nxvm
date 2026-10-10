@@ -258,7 +258,7 @@ lib_i32 main(lib_i32 argc, char **argv)
                 break;
             }
         }
-        fprintf(stderr, "M5:T242:S4:FDC:DOS:FAIL bytes=%d@%zu:%02x/%02x runs=%d result=%d off=%d/%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
+        fprintf(stderr, "NXVM:FDC:DOS:FAIL bytes=%d@%zu:%02x/%02x runs=%d result=%d off=%d/%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
             lib_memory_compare(expected, one_instruction.bytes, sizeof(expected)) == 0,
             first_mismatch,
             first_mismatch < sizeof(expected) ? expected[first_mismatch] : 0u,
@@ -279,9 +279,9 @@ lib_i32 main(lib_i32 argc, char **argv)
         integration_ini_session_close(&ini_session); return 1;
     }
     integration_ini_session_close(&ini_session);
-    printf("M5:T268:S3:FDC-MOTOR:DOS:OK\n");
-    printf("M5:T269:S3:DMA-GRANT:DOS:OK\n");
-    printf("M5:T290:S3:FDC:DOS:OK\n");
-    printf("M5:T291:S3:FDC:DOS:OK\n");
-    printf("M5:T242:S4:FDC:DOS:OK\n"); return 0;
+    printf("NXVM:FDC-MOTOR:DOS:OK\n");
+    printf("NXVM:DMA-GRANT:DOS:OK\n");
+    printf("NXVM:FDC:DOS:OK\n");
+    printf("NXVM:FDC:DOS:OK\n");
+    printf("NXVM:FDC:DOS:OK\n"); return 0;
 }

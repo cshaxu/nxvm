@@ -45,6 +45,6 @@ lib_i32 main(lib_i32 argc, char **argv)
     fixed_disk_result = verify(argv[1], argv[3]);
     if (floppy_result < 0 || fixed_disk_result < 0) return 77;
     if (floppy_result != 0 || fixed_disk_result != 0) return 1;
-    puts("M5:T5:S2:NXVM-PC-AT:OK");
+    puts("NXVM:NXVM-PC-AT:OK");
     return 0;
 }

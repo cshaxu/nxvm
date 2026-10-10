@@ -36,7 +36,7 @@ static void dump_first_fault(core_machine *machine)
         LIB_STATUS_OK || !diagnostic.first_fault.valid) return;
     fault = &diagnostic.first_fault;
     fprintf(stderr,
-        "M5:T155:S1:BOOT-FAULT CS:IP=%04X:%08X BYTES=",
+        "NXVM:BOOT-FAULT CS:IP=%04X:%08X BYTES=",
         fault->point.cs, fault->point.eip);
     for (index = 0u; index < fault->point.byte_count; ++index) {
         fprintf(stderr, "%02X", fault->point.bytes[index]);
@@ -74,11 +74,11 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (!prompt_seen) prompt_seen = has_dos_prompt(session);
     if (!prompt_seen) {
         dump_first_fault(session->core_machine);
-        fprintf(stderr, "%s", "M5:T70:S2:DOS-PROMPT:TIMEOUT\n");
+        fprintf(stderr, "%s", "NXVM:DOS-PROMPT:TIMEOUT\n");
         goto fail;
     }
     integration_ini_session_close(&ini_session);
-    puts(turbo ? "M5:T459:S1:DOS-PROMPT-TURBO:OK" : "M5:T70:S2:DOS-PROMPT:OK");
+    puts(turbo ? "NXVM:DOS-PROMPT-TURBO:OK" : "NXVM:DOS-PROMPT:OK");
     return 0;
 
 fail:

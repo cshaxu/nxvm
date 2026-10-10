@@ -1,5 +1,5 @@
 if(NOT DEFINED PROJECT_SOURCE_DIR OR NOT EXISTS "${PROJECT_SOURCE_DIR}/test/app-nxvm/integration")
-    message(FATAL_ERROR "T533 integration source root is required.")
+    message(FATAL_ERROR "integration source root is required.")
 endif()
 
 file(GLOB_RECURSE integration_sources
@@ -15,7 +15,7 @@ foreach(source IN LISTS integration_sources)
     file(READ "${source}" text)
     if(text MATCHES "CopyFileA|session-floppy-[^\"]*\\.img|session-fixed-disk-[^\"]*\\.img|open_with_media_transform")
         message(FATAL_ERROR
-            "T533 integration must use the INI-declared VM media overlay, not copied media: ${source}")
+            "integration must use the INI-declared VM media overlay, not copied media: ${source}")
     endif()
     # This is the one integration provider that resolves the production INI.
     # into the immutable request used to create the test machine. Every other
@@ -25,10 +25,10 @@ foreach(source IN LISTS integration_sources)
         continue()
     endif()
     if(text MATCHES "vm_machine_create[ \t\r\n]*\\(")
-        message(FATAL_ERROR "T533 integration must open only through the INI session owner: ${source}")
+        message(FATAL_ERROR "integration must open only through the INI session owner: ${source}")
     endif()
     if(text MATCHES "vm_machine_config[ \t\r\n]")
-        message(FATAL_ERROR "T533 integration must not construct a session config: ${source}")
+        message(FATAL_ERROR "integration must not construct a session config: ${source}")
     endif()
     if(source MATCHES "/support/.*\\.c$" OR source MATCHES "\\\\support\\\\.*\\.c$")
         continue()
@@ -45,7 +45,7 @@ foreach(source IN LISTS integration_sources)
     endif()
     if(source MATCHES "\\.c$" AND NOT text MATCHES
         "integration_ini_session_|vm_app_ini_load|nxvm_console_process_run")
-        message(FATAL_ERROR "T533 integration lacks an INI session consumer: ${source}")
+        message(FATAL_ERROR "integration lacks an INI session consumer: ${source}")
     endif()
 endforeach()
 file(GLOB_RECURSE unit_sources
@@ -67,7 +67,7 @@ foreach(source IN LISTS unit_sources)
     file(READ "${source}" text)
     if(text MATCHES "GetFileAttributesA|CopyFileA|CreateFile")
         message(FATAL_ERROR
-            "T533 repository-only unit test must not load an external asset: ${source}")
+            "Repository-only unit test must not load an external asset: ${source}")
     endif()
 endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_text)
@@ -75,13 +75,13 @@ file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" product_cmake_tex
 if(product_cmake_text MATCHES "configure_file\\([^)]*NXVM\\.ini" OR
    NOT product_cmake_text MATCHES "set\\(directory \"\\$\\{NXVM_PRODUCT_ARTIFACT_DIRECTORY\\}\"\\)" OR
    NOT product_cmake_text MATCHES "set\\(PROJECT_CURRENT_VM_RUNTIME_PATH \"\\$\\{directory\\}/\\$\\{task_artifact_filename\\}\"" OR
-   NOT product_cmake_text MATCHES "project_add_test\\(\\$\\{target\\} integration[ \t\r\n]+\"\\$\\{project_t533_runtime_directory\\}\"")
+   NOT product_cmake_text MATCHES "project_add_test\\(\\$\\{target\\} integration[ \t\r\n]+\"\\$\\{project_console_runtime_directory\\}\"")
     message(FATAL_ERROR
         "Console integration must launch the deployed EXE beside its owner INI, not a copied build-tree INI.")
 endif()
 if(cmake_text MATCHES "project_add_test\\([^\\n]*integration[^\\n]*(PROJECT_FDD_SMOKE_IMAGE|PROJECT_M1_FDD_SMOKE_IMAGE|PROJECT_HDD_SMOKE_IMAGE)")
     message(FATAL_ERROR
-        "T533 integration must be registered through the INI helper, not a media path.")
+        "integration must be registered through the INI helper, not a media path.")
 endif()
 file(GLOB session_documents
     "${PROJECT_SOURCE_DIR}/assets/nxvm/NXVM.ini"
@@ -96,26 +96,26 @@ set(expected_session_documents
 list(LENGTH session_documents session_document_count)
 if(NOT session_document_count EQUAL 4)
     message(FATAL_ERROR
-        "T533 must retain exactly one canonical INI per supported machine.")
+        "Exactly one canonical INI is required per supported machine.")
 endif()
 foreach(expected_session_document IN LISTS expected_session_documents)
     if(NOT EXISTS "${expected_session_document}")
         message(FATAL_ERROR
-            "T533 canonical INI is missing: ${expected_session_document}")
+            "Canonical INI is missing: ${expected_session_document}")
     endif()
 endforeach()
 file(GLOB legacy_session_documents "${PROJECT_SOURCE_DIR}/assets/nxvm/*/*.yaml")
 if(NOT legacy_session_documents STREQUAL "")
-    message(FATAL_ERROR "T533 must not retain YAML product-session variants.")
+    message(FATAL_ERROR "YAML product-session variants must not remain.")
 endif()
 foreach(session_document IN LISTS session_documents)
     file(READ "${session_document}" text)
     if(text MATCHES "(bios|video|cmos|font|profile|cpu|firmware)[ 	]*=")
         message(FATAL_ERROR
-            "T533 INI must not select firmware or a machine profile: ${session_document}")
+            "INI must not select firmware or a machine profile: ${session_document}")
     endif()
     if(NOT text MATCHES "\\[media\\]")
-        message(FATAL_ERROR "T533 INI must have a media section: ${session_document}")
+        message(FATAL_ERROR "INI must have a media section: ${session_document}")
     endif()
 endforeach()
-message(STATUS "M5:T533:S4:INTEGRATION-INI-BOUNDARY:OK")
+message(STATUS "INTEGRATION-INI-BOUNDARY:OK")

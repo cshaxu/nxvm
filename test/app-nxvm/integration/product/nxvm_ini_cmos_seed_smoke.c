@@ -35,6 +35,6 @@ lib_i32 main(lib_i32 argc, char **argv)
         if (!vm_ini_cmos_seed_matches(argv[1], argv[2], 0x12u, 0x00u) ||
             !vm_ini_cmos_seed_matches(argv[1], argv[2], 0x2fu, 0x43u)) return 1;
     } else return 1;
-    printf("M5:T533:S4:INI-CMOS-SEED:OK\n");
+    printf("NXVM:INI-CMOS-SEED:OK\n");
     return 0;
 }

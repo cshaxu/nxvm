@@ -215,9 +215,9 @@ done:
     integration_ini_session_close(&ini_session);
     if (!passed) return 1;
 #if defined(VM_EGA_PLANAR_ROM_INT10_SMOKE)
-    printf("M5:T239:S3:ROM-EGA-INT10:DOS:OK\n");
+    printf("NXVM:ROM-EGA-INT10:DOS:OK\n");
 #else
-    printf("M5:T238:S3:EGA-PLANAR:DOS:OK\n");
+    printf("NXVM:EGA-PLANAR:DOS:OK\n");
 #endif
     return 0;
 }

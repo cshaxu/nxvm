@@ -130,7 +130,7 @@ static lib_i32 vm_dos_keyboard_verify_text_frame(vm_machine *session)
         }
     }
     if (title_cell != TEXT_VIDEO_CELLS) {
-        printf("M5:T287:S18:EDIT-ATTR title=%02x body=%02x\n",
+        printf("NXVM:EDIT-ATTR title=%02x body=%02x\n",
             frame.attributes[title_cell], frame.attributes[80u]);
     }
     return 1;
@@ -281,7 +281,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     vm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     if (elapsed == edit_timeout || !display_ok) return 1;
-    printf("M5:T216:S5:EDIT:DOS:OK\n");
+    printf("NXVM:EDIT:DOS:OK\n");
     return 0;
 
 fail:

@@ -110,7 +110,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         goto fail;
     }
     failed = 0;
-    printf("M5:T212:S2:VIDEO:ROM:OK INT10=%u F2=%u CURSOR=%04x AH=",
+    printf("NXVM:VIDEO:ROM:OK INT10=%u F2=%u CURSOR=%04x AH=",
         int10_count, f2_count, cursor);
     for (instruction = 0u; instruction < 256u; ++instruction) {
         if (functions[instruction]) printf("%02X", (lib_u32)instruction);

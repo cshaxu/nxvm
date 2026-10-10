@@ -201,6 +201,6 @@ lib_i32 main(lib_i32 argc, char **argv)
 done:
     integration_ini_session_close(&ini_session);
     if (!passed) return 1;
-    printf("M5:T228:S3:CGA:DOS:OK\n");
+    printf("NXVM:CGA:DOS:OK\n");
     return 0;
 }

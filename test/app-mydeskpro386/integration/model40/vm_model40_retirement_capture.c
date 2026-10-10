@@ -928,7 +928,7 @@ static void model40_capture_emit_terminal_bytes(
     lib_u8 index;
 
     if (capture == LIB_NULL || !capture->terminal_bytes_available) return;
-    printf("T390 terminal-bytes=");
+    printf("MODEL40 terminal-bytes=");
     for (index = 0u; index < capture->terminal_byte_count &&
         index < sizeof(capture->terminal_bytes); ++index) {
         printf("%02X", (unsigned)capture->terminal_bytes[index]);
@@ -944,7 +944,7 @@ static void model40_capture_emit(const model40_retirement_capture *capture)
     for (index = 0u; index < capture->form_count; ++index) {
         const model40_retirement_capture_form *form = &capture->forms[index];
 
-        printf("T390 form=%s operand=%s opcode=%02X escape=%02X group=%u source-form=%u origin=%u modrm=%u modrm-ext=%u control=%u next=%u repeat-phase=%u ticks=%llu cpl=%u pm=%u vm=%u os32=%u "
+        printf("MODEL40 form=%s operand=%s opcode=%02X escape=%02X group=%u source-form=%u origin=%u modrm=%u modrm-ext=%u control=%u next=%u repeat-phase=%u ticks=%llu cpl=%u pm=%u vm=%u os32=%u "
             "as32=%u lock=%u rep=%u disposition=%u count=%u\n",
             form->form, form->operand, (unsigned)form->opcode,
             (unsigned)form->escape_opcode, (unsigned)form->group_extension,
@@ -968,19 +968,19 @@ static void model40_capture_emit_post_c0_history(
     lib_u32 count;
 
     if (capture == LIB_NULL) return;
-    printf("M5:T498:S5:POST-C0-HISTORY:first=%u last=%u ports=%u\n",
+    printf("MODEL40:POST-C0-HISTORY:first=%u last=%u ports=%u\n",
         (unsigned)capture->post_c0_first_count,
         (unsigned)capture->post_c0_last_count,
         (unsigned)capture->post_c0_port_count);
     if (capture->post_c0_non_rom_seen) {
-        printf("M5:T498:S5:POST-C0-ROM-EXIT:from=%08X-pm=%u-to=%08X-pm=%u\n",
+        printf("MODEL40:POST-C0-ROM-EXIT:from=%08X-pm=%u-to=%08X-pm=%u\n",
             (unsigned)capture->post_c0_non_rom_predecessor.linear_pc,
             (unsigned)capture->post_c0_non_rom_predecessor.protected_mode,
             (unsigned)capture->post_c0_non_rom.linear_pc,
             (unsigned)capture->post_c0_non_rom.protected_mode);
     }
     for (index = 0u; index < capture->post_c0_first_count; ++index) {
-        printf("M5:T498:S5:POST-C0-FIRST:pc=%08X-pm=%u\n",
+        printf("MODEL40:POST-C0-FIRST:pc=%08X-pm=%u\n",
             (unsigned)capture->post_c0_first[index].linear_pc,
             (unsigned)capture->post_c0_first[index].protected_mode);
     }
@@ -992,13 +992,13 @@ static void model40_capture_emit_post_c0_history(
         const model40_capture_execution_point *point = &capture->post_c0_last[
             (start + index) % MODEL40_CAPTURE_POST_C0_HISTORY];
 
-        printf("M5:T498:S5:POST-C0-LAST:pc=%08X-pm=%u\n",
+        printf("MODEL40:POST-C0-LAST:pc=%08X-pm=%u\n",
             (unsigned)point->linear_pc, (unsigned)point->protected_mode);
     }
     for (index = 0u; index < capture->post_c0_port_count; ++index) {
         const model40_capture_port_event *event = &capture->post_c0_ports[index];
 
-        printf("M5:T498:S5:POST-C0-PORT:seq=%llu-pc=%08X-port=%04X-%s-value=%02X\n",
+        printf("MODEL40:POST-C0-PORT:seq=%llu-pc=%08X-port=%04X-%s-value=%02X\n",
             (unsigned long long)event->sequence, (unsigned)event->linear_pc,
             (unsigned)event->port, event->write ? "write" : "read",
             (unsigned)event->value);
@@ -1011,12 +1011,12 @@ static void model40_capture_emit_d4_timer_history(
     lib_u32 index;
 
     if (capture == LIB_NULL || !capture->d4_timer_history_enabled) return;
-    printf("M5:T498:S5:D4-TIMER-HISTORY:ports=%u\n",
+    printf("MODEL40:D4-TIMER-HISTORY:ports=%u\n",
         (unsigned)capture->d4_timer_port_count);
     for (index = 0u; index < capture->d4_timer_port_count; ++index) {
         const model40_capture_port_event *event = &capture->d4_timer_ports[index];
 
-        printf("M5:T498:S5:D4-TIMER-PORT:seq=%llu-pc=%08X-port=%04X-%s-value=%02X\n",
+        printf("MODEL40:D4-TIMER-PORT:seq=%llu-pc=%08X-port=%04X-%s-value=%02X\n",
             (unsigned long long)event->sequence, (unsigned)event->linear_pc,
             (unsigned)event->port, event->write ? "write" : "read",
             (unsigned)event->value);
@@ -1095,10 +1095,10 @@ static lib_i32 model40_capture_synthetic_c0_smoke(void)
         capture.classified != 7u || capture.unallocated != 1u ||
         capture.form_count != 8u ||
         lib_text_compare(capture.forms[0].form, "mov-immediate")) return 1;
-    printf("M5:T390:S17:M40-C0-CAPTURE:OK\n");
-    printf("M5:T390:S29:M40-C1-DIAGNOSTIC:OK\n");
-    printf("M5:T390:S32:C1-TRANSITION:OK\n");
-    printf("M5:T390:S33:POST-C0-IO:OK\n");
+    printf("MODEL40:M40-C0-CAPTURE:OK\n");
+    printf("MODEL40:M40-C1-DIAGNOSTIC:OK\n");
+    printf("MODEL40:C1-TRANSITION:OK\n");
+    printf("MODEL40:POST-C0-IO:OK\n");
     return 0;
 }
 static lib_i32 model40_capture_synthetic_key_mapping_smoke(void)
@@ -1128,7 +1128,7 @@ static lib_i32 model40_capture_synthetic_key_mapping_smoke(void)
     model40_capture_observe(&capture, &observation);
     if (capture.key_count != 2u || capture.keys[0].count != 2u ||
         capture.keys[1].count != 1u || capture.key_limit_reached) return 1;
-    printf("M5:T394:S5:C0-KEY-MAPPING:OK\n");
+    printf("MODEL40:C0-KEY-MAPPING:OK\n");
     return 0;
 }
 static lib_i32 model40_capture_synthetic_c0a_smoke(void)
@@ -1168,7 +1168,7 @@ static lib_i32 model40_capture_synthetic_c0a_smoke(void)
         capture.post_c0_port_count != 1u || capture.post_c0_ports[0].value != 0x35u ||
         capture.count != 3u || capture.classified != 3u || capture.unallocated != 0u ||
         capture.form_count != 3u) return 1;
-    printf("M5:T391:S2:C0A-CAPTURE:OK\n");
+    printf("MODEL40:C0A-CAPTURE:OK\n");
     return 0;
 }
 static lib_i32 model40_capture_synthetic_fdc_read_data_smoke(void)
@@ -1199,7 +1199,7 @@ static lib_i32 model40_capture_synthetic_fdc_read_data_smoke(void)
     if (!model40_capture_has_fdc_read_data(&capture, &profile)) return 1;
     profile.fdc_terminal_valid = LIB_FALSE;
     if (model40_capture_has_fdc_read_data(&capture, &profile)) return 1;
-    printf("M5:T393:S4:FDC-READ-DATA-CAPTURE:OK\n");
+    printf("MODEL40:FDC-READ-DATA-CAPTURE:OK\n");
     return 0;
 }
 
@@ -1232,7 +1232,7 @@ static lib_i32 model40_capture_synthetic_c1_transfer_smoke(void)
         !capture.c1_collecting || !capture.c1_transfer_reached ||
         capture.count != 2u || capture.classified != 2u ||
         capture.unallocated != 0u || capture.form_count != 1u) return 1;
-    printf("M5:T391:S5:C1-TRANSFER-CAPTURE:OK\n");
+    printf("MODEL40:C1-TRANSFER-CAPTURE:OK\n");
     return 0;
 }
 lib_i32 main(lib_i32 argc, char **argv)
@@ -1462,7 +1462,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         if (sample_count > MODEL40_CAPTURE_D4_MEMORY_HISTORY) {
             sample_count = MODEL40_CAPTURE_D4_MEMORY_HISTORY;
         }
-        printf("M5:T498:S5:D4-MEMORY-ITERATIONS:count=%u", (unsigned)
+        printf("MODEL40:D4-MEMORY-ITERATIONS:count=%u", (unsigned)
             capture.d4_memory_iteration_count);
         for (index = 0u; index < sample_count; ++index) {
             printf("-ebp=%08X-next=%08X", (unsigned)capture.d4_memory_ebp[index],
@@ -1471,16 +1471,16 @@ lib_i32 main(lib_i32 argc, char **argv)
         printf("\n");
     }
     if (capture.d4_failsafe_test_seen) {
-        printf("M5:T498:S5:D4-FAILSAFE-TEST:value=%02X\n",
+        printf("MODEL40:D4-FAILSAFE-TEST:value=%02X\n",
             (unsigned)capture.d4_failsafe_port_value);
     }
-    printf("M5:T394:S5:C0-KEY-MAPPING:forms=%u keys=%u key-limit=%u\n",
+    printf("MODEL40:C0-KEY-MAPPING:forms=%u keys=%u key-limit=%u\n",
         (unsigned)capture.form_count, (unsigned)capture.key_count,
         (unsigned)capture.key_limit_reached);
     if (emit_terminal_bytes || capture.unallocated != 0u) {
         model40_capture_emit_terminal_bytes(&capture);
     }
-    printf("M5:T390:S8:BYOB-BOOT-CAPTURE:terminal=%s count=%u classified=%u "
+    printf("MODEL40:BYOB-BOOT-CAPTURE:terminal=%s count=%u classified=%u "
         "coprocessor-domain=%u unallocated=%u forms=%u protected=%u checkpoint=%u c1=%u status=%u reason=%u detail=%08X pc=%08X\n", terminal,
         (unsigned)capture.count, (unsigned)capture.classified,
         (unsigned)capture.coprocessor_domain,
@@ -1493,7 +1493,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         lib_u8 bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES] = {0};
         lib_u32 linear_pc = 0u;
 
-        printf("M5:T498:S5:FDC-PREDECESSOR:c0a=%u baseline=%u port=%u read-data=%u "
+        printf("MODEL40:FDC-PREDECESSOR:c0a=%u baseline=%u port=%u read-data=%u "
             "terminal-observation=%u post-c0-io=%u\n",
             (unsigned)model40_capture_c0a_reached(&capture),
             (unsigned)capture.fdc_read_data_baseline_valid,
@@ -1505,7 +1505,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             linear_pc = cpu.cs_base + cpu.eip;
             if (core_machine_memory_read(session->core_machine, linear_pc, bytes,
                     sizeof(bytes)) == LIB_STATUS_OK) {
-                printf("M5:T498:S5:FDC-PREDECESSOR-PC=%08X-bytes=%02X,%02X,%02X,%02X\n",
+                printf("MODEL40:FDC-PREDECESSOR-PC=%08X-bytes=%02X,%02X,%02X,%02X\n",
                     (unsigned)linear_pc, (unsigned)bytes[0u], (unsigned)bytes[1u],
                     (unsigned)bytes[2u], (unsigned)bytes[3u]);
             }
@@ -1513,7 +1513,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     }
     if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
         LIB_STATUS_OK) {
-        printf("M5:T498:S5:CPU-EXCEPTION-DIAGNOSTIC:fault-valid=%u-fault-mask=%08X-fault-code=%08X-fault-pc=%08X-fault-bytes=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-count=%u-first-valid=%u-first-mask=%08X-first-code=%08X-first-pc=%08X-last-valid=%u-last-mask=%08X-last-code=%08X-last-pc=%08X\n",
+        printf("MODEL40:CPU-EXCEPTION-DIAGNOSTIC:fault-valid=%u-fault-mask=%08X-fault-code=%08X-fault-pc=%08X-fault-bytes=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-count=%u-first-valid=%u-first-mask=%08X-first-code=%08X-first-pc=%08X-last-valid=%u-last-mask=%08X-last-code=%08X-last-pc=%08X\n",
             (unsigned)diagnostic.first_fault.valid,
             (unsigned)diagnostic.first_fault.exception_mask,
             (unsigned)diagnostic.first_fault.exception_code,
@@ -1541,7 +1541,7 @@ lib_i32 main(lib_i32 argc, char **argv)
 
         if (core_machine_memory_read(session->core_machine, result.linear_pc,
                 bytes, sizeof(bytes)) == LIB_STATUS_OK) {
-            printf("M5:T498:S5:FINAL-PC:pc=%08X-bytes=%02X,%02X,%02X,%02X,%02X,%02X\n",
+            printf("MODEL40:FINAL-PC:pc=%08X-bytes=%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned)result.linear_pc, (unsigned)bytes[0u],
                 (unsigned)bytes[1u], (unsigned)bytes[2u], (unsigned)bytes[3u],
                 (unsigned)bytes[4u], (unsigned)bytes[5u]);
@@ -1551,7 +1551,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         core_machine_cpu_state cpu = {0};
 
         if (core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK) {
-            printf("M5:T498:S5:FINAL-CPU:cs=%04X-base=%08X-eip=%08X-flags=%08X-halted=%u\n",
+            printf("MODEL40:FINAL-CPU:cs=%04X-base=%08X-eip=%08X-flags=%08X-halted=%u\n",
                 (unsigned)cpu.cs, (unsigned)cpu.cs_base,
                 (unsigned)cpu.eip, (unsigned)cpu.eflags,
                 (unsigned)cpu.halted);
@@ -1559,7 +1559,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     }
     if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu) == LIB_STATUS_OK) {
-        printf("M5:T498:S5:FINAL-INTERNAL-CPU:es=%04X-base=%08X-ds=%04X-base=%08X-ss=%04X-base=%08X-ebx=%08X-eax=%08X-cr0=%08X\n",
+        printf("MODEL40:FINAL-INTERNAL-CPU:es=%04X-base=%08X-ds=%04X-base=%08X-ss=%04X-base=%08X-ebx=%08X-eax=%08X-cr0=%08X\n",
             (unsigned)current_cpu.es.selector,
             (unsigned)current_cpu.es.base,
             (unsigned)current_cpu.ds.selector,
@@ -1571,7 +1571,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             (unsigned)current_cpu.cr0);
     }
     if (capture.iret_frame_seen) {
-        printf("M5:T498:S5:IRET-FRAME:count=%u-read=%u-ss=%04X-base=%08X-sp=%04X-cr0=%08X-operand32=%u-stack32=%u-ip=%04X-cs=%04X-flags=%04X-stopped-read=%u-stopped-ip=%04X-stopped-cs=%04X-stopped-flags=%04X\n",
+        printf("MODEL40:IRET-FRAME:count=%u-read=%u-ss=%04X-base=%08X-sp=%04X-cr0=%08X-operand32=%u-stack32=%u-ip=%04X-cs=%04X-flags=%04X-stopped-read=%u-stopped-ip=%04X-stopped-cs=%04X-stopped-flags=%04X\n",
             (unsigned)capture.iret_frame_count, (unsigned)capture.iret_frame_read,
             (unsigned)capture.iret_ss, (unsigned)capture.iret_ss_base,
             (unsigned)capture.iret_sp,
@@ -1586,7 +1586,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             (unsigned)capture.iret_frame_stopped[2u]);
     }
     if (capture.nmi_entry_seen) {
-        printf("M5:T498:S5:NMI-ENTRY-FRAME:count=%u-read=%u-ss=%04X-base=%08X-sp=%04X-vector2-read=%u-vector2-ip=%04X-vector2-cs=%04X-source-cr0=%08X-source-ip=%04X-source-cs=%04X-source-flags=%04X-ip=%04X-cs=%04X-flags=%04X\n",
+        printf("MODEL40:NMI-ENTRY-FRAME:count=%u-read=%u-ss=%04X-base=%08X-sp=%04X-vector2-read=%u-vector2-ip=%04X-vector2-cs=%04X-source-cr0=%08X-source-ip=%04X-source-cs=%04X-source-flags=%04X-ip=%04X-cs=%04X-flags=%04X\n",
             (unsigned)capture.nmi_entry_count, (unsigned)capture.nmi_entry_frame_read,
             (unsigned)capture.nmi_entry_ss, (unsigned)capture.nmi_entry_ss_base,
             (unsigned)capture.nmi_entry_sp,
@@ -1601,11 +1601,11 @@ lib_i32 main(lib_i32 argc, char **argv)
             (unsigned)capture.nmi_entry_frame[1u],
             (unsigned)capture.nmi_entry_frame[2u]);
     }
-    printf("M5:T498:S5:RESET-VECTOR2:read=%u-ip=%04X-cs=%04X\n",
+    printf("MODEL40:RESET-VECTOR2:read=%u-ip=%04X-cs=%04X\n",
         (unsigned)capture.reset_vector2_read, (unsigned)capture.reset_vector2[0u],
         (unsigned)capture.reset_vector2[1u]);
     if (capture.last_software_interrupt_valid) {
-        printf("M5:T498:S5:LAST-SOFTWARE-INT:pc=%08X-vector=%02X-ss=%04X-sp=%04X-target=%08X-read=%u-bytes=%02X,%02X,%02X,%02X-stopped-read=%u-stopped-bytes=%02X,%02X,%02X,%02X\n",
+        printf("MODEL40:LAST-SOFTWARE-INT:pc=%08X-vector=%02X-ss=%04X-sp=%04X-target=%08X-read=%u-bytes=%02X,%02X,%02X,%02X-stopped-read=%u-stopped-bytes=%02X,%02X,%02X,%02X\n",
             (unsigned)capture.last_software_interrupt_pc,
             (unsigned)capture.last_software_interrupt_vector,
             (unsigned)capture.last_software_interrupt_ss,
@@ -1621,7 +1621,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             (unsigned)capture.last_software_interrupt_target_stopped_bytes[1u],
             (unsigned)capture.last_software_interrupt_target_stopped_bytes[2u],
             (unsigned)capture.last_software_interrupt_target_stopped_bytes[3u]);
-        printf("M5:T498:S5:SOFTWARE-INT-TRACE:count=%u",
+        printf("MODEL40:SOFTWARE-INT-TRACE:count=%u",
             (unsigned)capture.software_interrupt_trace_count);
         for (index = 0u; index < capture.software_interrupt_trace_count; ++index) {
             printf("-%08X", (unsigned)capture.software_interrupt_trace[index]);
@@ -1629,7 +1629,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         printf("\n");
     }
     if (capture.zero_code_seen) {
-        printf("M5:T498:S5:ZERO-CODE-TRACE:count=%u",
+        printf("MODEL40:ZERO-CODE-TRACE:count=%u",
             (unsigned)capture.zero_code_trace_count);
         for (index = 0u; index < capture.zero_code_trace_count; ++index) {
             printf("-%08X:%02X", (unsigned)capture.zero_code_trace[index],
@@ -1638,7 +1638,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         printf("\n");
     }
     if (capture.iret_route_seen) {
-        printf("M5:T498:S5:IRET-ROUTE-TRACE:count=%u",
+        printf("MODEL40:IRET-ROUTE-TRACE:count=%u",
             (unsigned)capture.iret_route_trace_count);
         for (index = 0u; index < capture.iret_route_trace_count; ++index) {
             printf("-%08X:%02X", (unsigned)capture.iret_route_trace[index],
@@ -1647,7 +1647,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         printf("\n");
     }
     if (capture.interrupt_handler_entry_seen) {
-        printf("M5:T498:S5:INTERRUPT-HANDLER-ENTRY:count=%u-frame-read=%u-ss=%04X-sp=%04X-source-ip=%04X-source-cs=%04X-source-sp=%04X-ip=%04X-cs=%04X-flags=%04X-vector-found=%u-vector=%02X\n",
+        printf("MODEL40:INTERRUPT-HANDLER-ENTRY:count=%u-frame-read=%u-ss=%04X-sp=%04X-source-ip=%04X-source-cs=%04X-source-sp=%04X-ip=%04X-cs=%04X-flags=%04X-vector-found=%u-vector=%02X\n",
             (unsigned)capture.interrupt_handler_entry_count,
             (unsigned)capture.interrupt_handler_frame_read,
             (unsigned)capture.interrupt_handler_ss,
@@ -1660,14 +1660,14 @@ lib_i32 main(lib_i32 argc, char **argv)
             (unsigned)capture.interrupt_handler_frame[2u],
             (unsigned)capture.interrupt_handler_vector_found,
             (unsigned)capture.interrupt_handler_vector);
-        printf("M5:T498:S5:INTERRUPT-HANDLER-IVT:count=%u",
+        printf("MODEL40:INTERRUPT-HANDLER-IVT:count=%u",
             (unsigned)capture.interrupt_handler_ivt_count);
         for (index = 0u; index < capture.interrupt_handler_ivt_count; ++index) {
             printf("-%02X:%04X", (unsigned)capture.interrupt_handler_ivt_vectors[index],
                 (unsigned)capture.interrupt_handler_ivt_offsets[index]);
         }
         printf("\n");
-        printf("M5:T498:S5:INTERRUPT-HANDLER-TRACE:count=%u",
+        printf("MODEL40:INTERRUPT-HANDLER-TRACE:count=%u",
             (unsigned)capture.interrupt_handler_trace_count);
         for (index = 0u; index < capture.interrupt_handler_trace_count; ++index) {
             printf("-%08X:%02X", (unsigned)capture.interrupt_handler_trace[index],
@@ -1676,7 +1676,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         printf("\n");
     }
     if (capture.interrupt_scan_entry_seen) {
-        printf("M5:T498:S5:INTERRUPT-SCAN-ENTRY:source-ip=%04X-source-cs=%04X-source-sp=%04X-ss=%04X-sp=%04X\n",
+        printf("MODEL40:INTERRUPT-SCAN-ENTRY:source-ip=%04X-source-cs=%04X-source-sp=%04X-ss=%04X-sp=%04X\n",
             (unsigned)capture.interrupt_scan_source_ip,
             (unsigned)capture.interrupt_scan_source_cs,
             (unsigned)capture.interrupt_scan_source_sp,
@@ -1684,7 +1684,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             (unsigned)capture.interrupt_scan_sp);
     }
     if (capture.interrupt_service_entry_seen) {
-        printf("M5:T498:S5:INTERRUPT-SERVICE-ENTRY:count=%u-frame-read=%u-ss=%04X-sp=%04X-source-ip=%04X-source-cs=%04X-source-sp=%04X-ip=%04X-cs=%04X-flags=%04X\n",
+        printf("MODEL40:INTERRUPT-SERVICE-ENTRY:count=%u-frame-read=%u-ss=%04X-sp=%04X-source-ip=%04X-source-cs=%04X-source-sp=%04X-ip=%04X-cs=%04X-flags=%04X\n",
             (unsigned)capture.interrupt_service_entry_count,
             (unsigned)capture.interrupt_service_frame_read,
             (unsigned)capture.interrupt_service_ss,
@@ -1695,7 +1695,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             (unsigned)capture.interrupt_service_frame[0u],
             (unsigned)capture.interrupt_service_frame[1u],
             (unsigned)capture.interrupt_service_frame[2u]);
-        printf("M5:T498:S5:INTERRUPT-SERVICE-TRACE:count=%u",
+        printf("MODEL40:INTERRUPT-SERVICE-TRACE:count=%u",
             (unsigned)capture.interrupt_service_trace_count);
         for (index = 0u; index < capture.interrupt_service_trace_count; ++index) {
             printf("-%08X:%02X", (unsigned)capture.interrupt_service_trace[index],
@@ -1704,7 +1704,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         printf("\n");
     }
     if (capture.low_stack_transition_seen) {
-        printf("M5:T498:S5:LOW-STACK-TRANSITION:pc=%08X-before=%04X-after=%04X-trace-count=%u",
+        printf("MODEL40:LOW-STACK-TRANSITION:pc=%08X-before=%04X-after=%04X-trace-count=%u",
             (unsigned)capture.low_stack_transition_pc,
             (unsigned)capture.low_stack_transition_before,
             (unsigned)capture.low_stack_transition_after,
@@ -1716,7 +1716,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         printf("\n");
     }
     if (capture.stack_exhaustion_seen) {
-        printf("M5:T498:S5:STACK-EXHAUSTION:pc=%08X-before=%04X-after=%04X-trace-count=%u",
+        printf("MODEL40:STACK-EXHAUSTION:pc=%08X-before=%04X-after=%04X-trace-count=%u",
             (unsigned)capture.stack_exhaustion_pc,
             (unsigned)capture.stack_exhaustion_before,
             (unsigned)capture.stack_exhaustion_after,
@@ -1728,7 +1728,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         printf("\n");
     }
     if (capture.minimum_stack_seen) {
-        printf("M5:T498:S5:MINIMUM-STACK:pc=%08X-sp=%04X-trace-count=%u",
+        printf("MODEL40:MINIMUM-STACK:pc=%08X-sp=%04X-trace-count=%u",
             (unsigned)capture.minimum_stack_pc,
             (unsigned)capture.minimum_stack_value,
             (unsigned)capture.minimum_stack_trace_count);
@@ -1739,12 +1739,12 @@ lib_i32 main(lib_i32 argc, char **argv)
         printf("\n");
     }
     if (capture.last_io_valid) {
-        printf("M5:T498:S5:LAST-IO:pc=%08X-direction=%u-port=%04X-value=%08X\n",
+        printf("MODEL40:LAST-IO:pc=%08X-direction=%u-port=%04X-value=%08X\n",
             (unsigned)capture.last_io_pc, (unsigned)capture.last_io_direction,
             (unsigned)capture.last_io_port, (unsigned)capture.last_io_value);
     }
     if (capture.reset_vector_seen) {
-        printf("M5:T498:S5:RESET-VECTOR-PREDECESSOR-IO:valid=%u-pc=%08X-direction=%u-port=%04X-value=%08X\n",
+        printf("MODEL40:RESET-VECTOR-PREDECESSOR-IO:valid=%u-pc=%08X-direction=%u-port=%04X-value=%08X\n",
             (unsigned)capture.reset_vector_io_valid,
             (unsigned)capture.reset_vector_io_pc,
             (unsigned)capture.reset_vector_io_direction,
@@ -1757,7 +1757,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         if (reset_sample_count > MODEL40_CAPTURE_RESET_HISTORY) {
             reset_sample_count = MODEL40_CAPTURE_RESET_HISTORY;
         }
-        printf("M5:T498:S5:WARM-RESET:count=%u", (unsigned)capture.reset_vector_count);
+        printf("MODEL40:WARM-RESET:count=%u", (unsigned)capture.reset_vector_count);
         for (index = 0u; index < reset_sample_count; ++index) {
             printf("-shutdown=%02X-a20=%u",
                 (unsigned)capture.reset_vector_shutdown_status[index],
@@ -1771,12 +1771,12 @@ lib_i32 main(lib_i32 argc, char **argv)
         printf("\n");
     }
     if (capture.reset_instruction_seen) {
-        printf("M5:T498:S5:RESET-INSTRUCTION:port=%02X-value=%02X\n",
+        printf("MODEL40:RESET-INSTRUCTION:port=%02X-value=%02X\n",
             (unsigned)capture.reset_instruction_port,
             (unsigned)capture.reset_instruction_value);
     }
     if (capture.iret_io_count != 0u) {
-        printf("M5:T498:S5:IRET-PREDECESSOR-IO:count=%u",
+        printf("MODEL40:IRET-PREDECESSOR-IO:count=%u",
             (unsigned)capture.iret_io_count);
         for (index = 0u; index < capture.iret_io_count; ++index) {
             printf("-%08X:%u:%04X:%08X", (unsigned)capture.iret_io_pc[index],
@@ -1787,13 +1787,13 @@ lib_i32 main(lib_i32 argc, char **argv)
         printf("\n");
     }
     if (post_c0_io_diagnostic) {
-        printf("M5:T390:S33:POST-C0-IO:terminal=%s port-known=%u port=%04X read=%u "
+        printf("MODEL40:POST-C0-IO:terminal=%s port-known=%u port=%04X read=%u "
             "unallocated=%u status=%u\n", terminal, (unsigned)capture.post_c0_io_port_known,
             (unsigned)capture.post_c0_io_port, (unsigned)capture.post_c0_io_read,
             (unsigned)capture.unallocated, (unsigned)status);
     }
     if (c1_diagnostic) {
-        printf("M5:T390:S29:M40-C1-DIAGNOSTIC:terminal=%s unallocated=%u c1=%u "
+        printf("MODEL40:M40-C1-DIAGNOSTIC:terminal=%s unallocated=%u c1=%u "
             "executed=%u ticks=%llu elapsed-before=%llu elapsed=%llu status=%u\n", terminal,
             (unsigned)capture.unallocated, (unsigned)capture.c1_checkpoint_reached,
             (unsigned)result.executed,

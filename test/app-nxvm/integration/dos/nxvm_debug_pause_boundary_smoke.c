@@ -52,7 +52,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             EMULATOR_MACHINE_RUNNING, 2000u) == 0 ||
         integration_ini_session_pause(&ini_session, 2000u) != LIB_STATUS_OK) goto fail;
     integration_ini_session_close(&ini_session);
-    puts("M5:T45:S1:PAUSE-BOUNDARY:OK");
+    puts("NXVM:PAUSE-BOUNDARY:OK");
     return 0;
 
 fail:

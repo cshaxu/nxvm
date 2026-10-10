@@ -221,13 +221,13 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
 
     if (session == LIB_NULL || name == LIB_NULL) return;
     if (core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK) {
-        printf("T515:INI-BOOT:%s:CPU:%04X:%08X:base=%08X:flags=%08X:halted=%u:FDD=%u:%ux%ux%u\n",
+        printf("NXVM:INI-BOOT:%s:CPU:%04X:%08X:base=%08X:flags=%08X:halted=%u:FDD=%u:%ux%ux%u\n",
             name, cpu.cs, cpu.eip, cpu.cs_base, cpu.eflags, cpu.halted,
             vm_test_fdd_info(session->floppy[0u]).present,
             vm_test_fdd_info(session->floppy[0u]).geometry.cylinders, vm_test_fdd_info(session->floppy[0u]).geometry.heads, vm_test_fdd_info(session->floppy[0u]).geometry.sectors_per_track);
         if (core_machine_capture_observation(session->core_machine, &observation) ==
                 LIB_STATUS_OK) {
-            printf("T515:INI-BOOT:%s:STATE:elapsed=%llu:lifecycle=%u\n", name,
+            printf("NXVM:INI-BOOT:%s:STATE:elapsed=%llu:lifecycle=%u\n", name,
                 (unsigned long long)observation.elapsed_ticks, observation.lifecycle);
         }
         const vm_profile_model40_observation profile =
@@ -235,7 +235,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
         if (profile.fdc_terminal_valid) {
             const core_machine_fdc_terminal_observation *terminal =
                 &profile.fdc_terminal;
-            printf("T515:INI-BOOT:%s:FDC-LAST-TERMINAL:sequence=%llu:cmd=%02X:drive=%u:result=%02X/%02X/%02X/%02X/%02X/%02X/%02X:success=%u\n",
+            printf("NXVM:INI-BOOT:%s:FDC-LAST-TERMINAL:sequence=%llu:cmd=%02X:drive=%u:result=%02X/%02X/%02X/%02X/%02X/%02X/%02X:success=%u\n",
                 name, (unsigned long long)terminal->sequence, terminal->command,
                 terminal->drive, terminal->result[0], terminal->result[1],
                 terminal->result[2], terminal->result[3], terminal->result[4],
@@ -243,44 +243,44 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
         }
         if (core_machine_capture_time_observation(session->core_machine,
                 &time_observation) == LIB_STATUS_OK) {
-            printf("T515:INI-BOOT:%s:TIME:deadline=%llu:valid=%u:progress=%u\n",
+            printf("NXVM:INI-BOOT:%s:TIME:deadline=%llu:valid=%u:progress=%u\n",
                 name, (unsigned long long)time_observation.next_deadline_tick,
                 time_observation.next_deadline_valid,
                 time_observation.progress_disposition);
         }
         if (core_machine_memory_read(session->core_machine, 0x00000410u,
                 equipment, sizeof(equipment)) == LIB_STATUS_OK) {
-            printf("T515:INI-BOOT:%s:BDA:equipment=%02X%02X\n", name,
+            printf("NXVM:INI-BOOT:%s:BDA:equipment=%02X%02X\n", name,
                 equipment[1u], equipment[0u]);
         }
         if (core_machine_memory_read(session->core_machine, 0x0000046au,
                 &interrupt_flag, 1u) == LIB_STATUS_OK) {
-            printf("T516:INI-BOOT:%s:POST-INTR-FLAG=%02X\n", name,
+            printf("NXVM:INI-BOOT:%s:POST-INTR-FLAG=%02X\n", name,
                 interrupt_flag);
         }
         if (core_machine_memory_read(session->core_machine, 0x00000024u,
                 keyboard_vector, sizeof(keyboard_vector)) == LIB_STATUS_OK) {
-            printf("T516:INI-BOOT:%s:INT09=%02X%02X:%02X%02X\n", name,
+            printf("NXVM:INI-BOOT:%s:INT09=%02X%02X:%02X%02X\n", name,
                 keyboard_vector[1u], keyboard_vector[0u], keyboard_vector[3u],
                 keyboard_vector[2u]);
         }
         if (core_machine_memory_read(session->core_machine, 0x000c0000u,
                 option_signature, sizeof(option_signature)) == LIB_STATUS_OK) {
-            printf("T515:INI-BOOT:%s:C0000=%02X%02X\n", name,
+            printf("NXVM:INI-BOOT:%s:C0000=%02X%02X\n", name,
                 option_signature[0u], option_signature[1u]);
         }
         if (core_machine_memory_read(session->core_machine, 0x00007c00u,
                 boot_bytes, sizeof(boot_bytes)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x00007dfeu,
                 boot_signature, sizeof(boot_signature)) == LIB_STATUS_OK) {
-            printf("T516:INI-BOOT:%s:BOOT=%02X/%02X/%02X/%02X:sig=%02X%02X\n",
+            printf("NXVM:INI-BOOT:%s:BOOT=%02X/%02X/%02X/%02X:sig=%02X%02X\n",
                 name, boot_bytes[0u], boot_bytes[1u], boot_bytes[2u], boot_bytes[3u],
                 boot_signature[1u], boot_signature[0u]);
         }
         {
             lib_bool a20;
             if (core_machine_observe_a20(session->core_machine, &a20) == LIB_STATUS_OK)
-                printf("T539:INI-BOOT:%s:A20=%u\n", name, (unsigned int)a20);
+                printf("NXVM:INI-BOOT:%s:A20=%u\n", name, (unsigned int)a20);
         }
         if (trace_probe != LIB_NULL) {
             const lib_u32 retained_samples = trace_probe->retirement_sample_count < 32u ?
@@ -292,7 +292,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                     value->eip, value->tick, value->source, value->eax,
                     (lib_u32)value->port, value->value);
             }
-            printf("T516:INI-BOOT:%s:TRACE:retired=%llu:external=%llu:port61=%llu:low=%llu:high=%llu:ports-pit=%u:last=%04X/%02X:kbc=%u:last=%04X/%02X\n",
+            printf("NXVM:INI-BOOT:%s:TRACE:retired=%llu:external=%llu:port61=%llu:low=%llu:high=%llu:ports-pit=%u:last=%04X/%02X:kbc=%u:last=%04X/%02X\n",
                 name, (unsigned long long)trace_probe->cpu_retires,
                 (unsigned long long)trace_probe->external_cycle_commits,
                 (unsigned long long)trace_probe->port61_reads,
@@ -301,13 +301,13 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 trace_probe->pit_writes, trace_probe->last_pit_address,
                 trace_probe->last_pit_value, trace_probe->kbc_writes,
                 trace_probe->last_kbc_address, trace_probe->last_kbc_value);
-            printf("T516:INI-BOOT:%s:INTA=%u:IRQ1=%u:IRQ6=%u\n", name,
+            printf("NXVM:INI-BOOT:%s:INTA=%u:IRQ1=%u:IRQ6=%u\n", name,
                 trace_probe->interrupt_acknowledges, trace_probe->interrupt_vectors[0x09u],
                 trace_probe->interrupt_vectors[0x0eu]);
-            printf("T516:INI-BOOT:%s:POST-INTR-WRITES=%u:last=%02X\n", name,
+            printf("NXVM:INI-BOOT:%s:POST-INTR-WRITES=%u:last=%02X\n", name,
                 trace_probe->post_interrupt_flag_writes,
                 trace_probe->last_post_interrupt_flag);
-            printf("T516:INI-BOOT:%s:POST-CODES:", name);
+            printf("NXVM:INI-BOOT:%s:POST-CODES:", name);
             const lib_u32 retained_post = trace_probe->post_code_count <
                 BOOT_TRACE_POST_CODES ? trace_probe->post_code_count : BOOT_TRACE_POST_CODES;
             const lib_u32 first_post = trace_probe->post_code_count - retained_post;
@@ -316,7 +316,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                     BOOT_TRACE_POST_CODES]);
             }
             printf("\n");
-            printf("T516:INI-BOOT:%s:KBC-CPU:", name);
+            printf("NXVM:INI-BOOT:%s:KBC-CPU:", name);
             const lib_u32 retained = trace_probe->kbc_transaction_count <
                 BOOT_TRACE_KBC_TRANSACTIONS ? trace_probe->kbc_transaction_count :
                 BOOT_TRACE_KBC_TRANSACTIONS;
@@ -329,7 +329,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                     transaction->value, transaction->kind);
             }
             printf("\n");
-            printf("T516:INI-BOOT:%s:KBC-READS:00=%u:55=%u:65=%u:AA=%u:FA=%u:AB=%u:83=%u\n",
+            printf("NXVM:INI-BOOT:%s:KBC-READS:00=%u:55=%u:65=%u:AA=%u:FA=%u:AB=%u:83=%u\n",
                 name, trace_probe->kbc_data_read_values[0x00u],
                 trace_probe->kbc_data_read_values[0x55u],
                 trace_probe->kbc_data_read_values[0x65u],
@@ -337,7 +337,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 trace_probe->kbc_data_read_values[0xfau],
                 trace_probe->kbc_data_read_values[0xabu],
                 trace_probe->kbc_data_read_values[0x83u]);
-            printf("T516:INI-BOOT:%s:FDC-CPU:", name);
+            printf("NXVM:INI-BOOT:%s:FDC-CPU:", name);
             const lib_u32 retained_fdc = trace_probe->fdc_transaction_count <
                 BOOT_TRACE_FDC_TRANSACTIONS ? trace_probe->fdc_transaction_count :
                 BOOT_TRACE_FDC_TRANSACTIONS;
@@ -368,14 +368,14 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                         registers[captured], &values[captured]) != LIB_STATUS_OK) break;
             }
             if (captured == sizeof(registers) / sizeof(registers[0])) {
-                printf("T515:INI-BOOT:%s:REGS:EAX=%08X:EBX=%08X:ECX=%08X:EDX=%08X:ESI=%08X:EDI=%08X:EBP=%08X\n",
+                printf("NXVM:INI-BOOT:%s:REGS:EAX=%08X:EBX=%08X:ECX=%08X:EDX=%08X:ESI=%08X:EDI=%08X:EBP=%08X\n",
                     name, values[0], values[1], values[2], values[3],
                     values[4], values[5], values[6]);
             }
         }
         if (core_machine_memory_read(session->core_machine, cpu.cs_base + cpu.eip, pc_bytes,
                 sizeof(pc_bytes)) == LIB_STATUS_OK) {
-            printf("T516:INI-BOOT:%s:PC-BYTES:%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X\n",
+            printf("NXVM:INI-BOOT:%s:PC-BYTES:%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X\n",
                 name, pc_bytes[0u], pc_bytes[1u], pc_bytes[2u], pc_bytes[3u],
                 pc_bytes[4u], pc_bytes[5u], pc_bytes[6u], pc_bytes[7u]);
         }
@@ -389,7 +389,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 LIB_STATUS_OK && diagnostic.recent_count != 0u) {
             const core_machine_cpu_execution_point *point =
                 &diagnostic.recent[diagnostic.recent_count - 1u];
-            printf("T515:INI-BOOT:%s:RECENT:CS=%04X:EIP=%08X:bytes=%02X/%02X/%02X\n",
+            printf("NXVM:INI-BOOT:%s:RECENT:CS=%04X:EIP=%08X:bytes=%02X/%02X/%02X\n",
                 name, point->cs, point->eip, point->bytes[0u], point->bytes[1u],
                 point->bytes[2u]);
         }
@@ -404,7 +404,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
             nonblank |= line[index] != ' ';
         }
         line[80u] = '\0';
-        if (nonblank) printf("T515:INI-BOOT:%s:SCREEN:%u:%s\n", name,
+        if (nonblank) printf("NXVM:INI-BOOT:%s:SCREEN:%u:%s\n", name,
             (unsigned int)row, line);
     }
 }
@@ -437,7 +437,7 @@ static lib_i32 boot_cmos_seed_matches(const vm_machine *session)
             core_machine_bus_read(session->core_machine, 0x0071u, &actual) != LIB_STATUS_OK)
             return 0;
         if (actual != expected) {
-            printf("T515:CMOS:index=%02X:expected=%02X:actual=%02X\n", index,
+            printf("NXVM:CMOS:index=%02X:expected=%02X:actual=%02X\n", index,
                 expected, actual);
             return 0;
         }
@@ -470,11 +470,11 @@ int main(int argc, char **argv)
     standard_speed = (argc == 5 && !lib_text_compare(argv[4], "standard")) || argc == 6;
     if (integration_ini_session_open(argv[1], argv[2], &ini_session) ==
         LIB_STATUS_UNSUPPORTED) {
-        printf("T515:INI-BOOT:%s:UNAVAILABLE\n", argv[2]);
+        printf("NXVM:INI-BOOT:%s:UNAVAILABLE\n", argv[2]);
         return ASSET_UNAVAILABLE;
     }
     if (ini_session.session == LIB_NULL) {
-        fprintf(stderr, "T515:INI-BOOT:%s:SESSION-OPEN-FAILED\n", argv[2]);
+        fprintf(stderr, "NXVM:INI-BOOT:%s:SESSION-OPEN-FAILED\n", argv[2]);
         return 1;
     }
     session = ini_session.session;
@@ -485,12 +485,12 @@ int main(int argc, char **argv)
         if (core_machine_set_trace_provider(session->core_machine,
                 &(core_machine_trace_provider) {boot_trace_observe, &trace_probe}) !=
                 LIB_STATUS_OK) {
-            fprintf(stderr, "T515:INI-BOOT:%s:TRACE-SETUP-FAILED\n", argv[2]);
+            fprintf(stderr, "NXVM:INI-BOOT:%s:TRACE-SETUP-FAILED\n", argv[2]);
             goto done;
         }
     }
     if (!boot_cmos_seed_matches(session)) {
-        fprintf(stderr, "T515:INI-BOOT:%s:CMOS-SEED-MISMATCH\n", argv[2]);
+        fprintf(stderr, "NXVM:INI-BOOT:%s:CMOS-SEED-MISMATCH\n", argv[2]);
         goto done;
     }
     if (vm_machine_set_speed(session, standard_speed ? VM_MACHINE_SPEED_STANDARD :
@@ -509,14 +509,14 @@ int main(int argc, char **argv)
     }
     if (terminal == LIB_NULL || keyboard_post_failure_seen) {
         if (keyboard_post_failure_seen) {
-            printf("T515:INI-BOOT:%s:KEYBOARD-POST-FAILURE\n", argv[2]);
+            printf("NXVM:INI-BOOT:%s:KEYBOARD-POST-FAILURE\n", argv[2]);
         }
         if (terminal == LIB_NULL) {
-            printf("T515:INI-BOOT:%s:TERMINAL-TIMEOUT\n", argv[2]);
+            printf("NXVM:INI-BOOT:%s:TERMINAL-TIMEOUT\n", argv[2]);
         }
         goto done;
     }
-    printf("T515:INI-BOOT:%s:%s\n", argv[2], terminal);
+    printf("NXVM:INI-BOOT:%s:%s\n", argv[2], terminal);
     result = 0;
 done:
     integration_ini_session_close(&ini_session);

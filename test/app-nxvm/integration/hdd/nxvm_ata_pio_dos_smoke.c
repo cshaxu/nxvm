@@ -340,7 +340,7 @@ lib_i32 main(lib_i32 argc, char **argv)
 done:
     integration_ini_session_close(&ini_session);
     if (!passed) return 1;
-    printf("M5:T286:S3:ATA-NIEN:DOS:OK\n");
-    printf("M5:T253:S3:ATA-PIO:DOS:OK\n");
+    printf("NXVM:ATA-NIEN:DOS:OK\n");
+    printf("NXVM:ATA-PIO:DOS:OK\n");
     return 0;
 }

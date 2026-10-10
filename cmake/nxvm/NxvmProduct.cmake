@@ -161,12 +161,12 @@ target_link_libraries(vm-model40-byob-boot-media-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-hdc-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_hdc_smoke.c)
 target_link_libraries(vm-model40-hdc-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-console-s20-smoke
-    test/app-mydeskpro386/integration/product/vm_model40_console_s20_smoke.c
+add_executable(vm-model40-console-ini-smoke
+    test/app-mydeskpro386/integration/product/vm_model40_console_ini_smoke.c
     test/app-nxvm/integration/support/nxvm_console_process.c)
-target_include_directories(vm-model40-console-s20-smoke PRIVATE
+target_include_directories(vm-model40-console-ini-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
-target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-app vm-profile-tests)
+target_link_libraries(vm-model40-console-ini-smoke PRIVATE vm-app vm-profile-tests)
 add_executable(my5170-clock-contract-smoke
     test/app-my5170/unit/profiles/ibm_5170_clock_contract_smoke.c)
 target_sources(my5170-clock-contract-smoke PRIVATE
@@ -1529,7 +1529,7 @@ set(PROJECT_INTEGRATION_HDD_TARGETS vm-hdc-hdd-boot-smoke)
 set(PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS
     vm-profile-floppy-boot-matrix)
 set(PROJECT_INTEGRATION_PRODUCT_TARGETS
-    vm-model40-console-s20-smoke
+    vm-model40-console-ini-smoke
     vm-app-console-lifecycle-smoke
     vm-ini-cmos-seed-smoke
     )
@@ -1561,7 +1561,7 @@ elseif(NXVM_PRODUCT_PROFILE STREQUAL "ibm-5170-model-339-1200k")
         vm-ini-cmos-seed-smoke)
 elseif(NXVM_PRODUCT_PROFILE STREQUAL "compaq-deskpro-386-model-40-1200k")
     list(APPEND PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS
-        vm-model40-console-s20-smoke
+        vm-model40-console-ini-smoke
         vm-ini-cmos-seed-smoke)
 endif()
 
@@ -1634,12 +1634,12 @@ set(PROJECT_ASSETS_ROOT "${CMAKE_SOURCE_DIR}/../nxvm-assets/media-nxvm" CACHE PA
     "Owner-provided local asset root for current runtime smoke coverage")
 set(PROJECT_WINDOWS31_CHECKPOINT_HDD_IMAGE "" CACHE FILEPATH
     "Owner-supplied local HDD image for the opt-in Windows readiness checkpoint")
-# T355 S2 keeps the retained Windows HDD/INT13 observation explicitly outside
+# The retained Windows HDD/INT13 observation remains explicitly outside
 # the current gate.  The runner validates this opt-in input before it can
 # execute the host-side diagnostic probe.
 add_custom_target(run-windows31-hdd-checkpoint
     COMMAND "${CMAKE_COMMAND}"
-        "-DPROJECT_T355_CHECKPOINT_EXECUTABLE:FILEPATH=$<TARGET_FILE:vm-windows31-hdd-admission-probe>"
+        "-DPROJECT_WINDOWS31_CHECKPOINT_EXECUTABLE:FILEPATH=$<TARGET_FILE:vm-windows31-hdd-admission-probe>"
         "-DPROJECT_WINDOWS31_CHECKPOINT_HDD_IMAGE:FILEPATH=${PROJECT_WINDOWS31_CHECKPOINT_HDD_IMAGE}"
         -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/run_windows31_hdd_checkpoint.cmake"
     DEPENDS vm-windows31-hdd-admission-probe
@@ -1705,57 +1705,57 @@ function(project_add_test target route)
         TIMEOUT 30)
 endfunction()
 
-function(project_add_t515_ini_boot_case session_file)
-    set(project_t515_session_path "NXVM.ini")
-    if(NOT EXISTS "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}/${project_t515_session_path}")
-        message(FATAL_ERROR "T515 INI boot session is missing: ${session_file}")
+function(project_add_ini_boot_case session_file)
+    set(project_ini_boot_session_path "NXVM.ini")
+    if(NOT EXISTS "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}/${project_ini_boot_session_path}")
+        message(FATAL_ERROR "INI boot session is missing: ${session_file}")
     endif()
-    set(project_t515_test_suffix "vm-profile-floppy-boot-matrix.${session_file}")
-    set(project_t515_test "integration.${project_t515_test_suffix}")
+    set(project_ini_boot_test_suffix "vm-profile-floppy-boot-matrix.${session_file}")
+    set(project_ini_boot_test "integration.${project_ini_boot_test_suffix}")
     # These are real turbo guest boots with a bounded wall-clock terminal.
     # A Model 40 boot alone consumes most of a host core for roughly three
     # minutes; overlapping it with other turbo boots turns that host capacity
     # into an accidental test input.  Keep this finite host resource exclusive
     # without serializing ordinary integration rows.
-    set(project_t515_timeout 190)
-    get_property(project_t515_registered_cases GLOBAL
-        PROPERTY PROJECT_T515_INI_BOOT_REGISTERED_CASES)
-    list(FIND project_t515_registered_cases "${project_t515_test_suffix}"
-        project_t515_registered_index)
-    if(NOT project_t515_registered_index EQUAL -1)
-        message(FATAL_ERROR "T515 INI boot case is registered twice: ${session_file}")
+    set(project_ini_boot_timeout 190)
+    get_property(project_ini_boot_registered_cases GLOBAL
+        PROPERTY PROJECT_INI_BOOT_REGISTERED_CASES)
+    list(FIND project_ini_boot_registered_cases "${project_ini_boot_test_suffix}"
+        project_ini_boot_registered_index)
+    if(NOT project_ini_boot_registered_index EQUAL -1)
+        message(FATAL_ERROR "INI boot case is registered twice: ${session_file}")
     endif()
-    set_property(GLOBAL APPEND PROPERTY PROJECT_T515_INI_BOOT_REGISTERED_CASES
-        "${project_t515_test_suffix}")
-    set(project_t515_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/${project_t515_test}")
-    file(MAKE_DIRECTORY "${project_t515_workspace}")
-    add_test(NAME "${project_t515_test}"
+    set_property(GLOBAL APPEND PROPERTY PROJECT_INI_BOOT_REGISTERED_CASES
+        "${project_ini_boot_test_suffix}")
+    set(project_ini_boot_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/${project_ini_boot_test}")
+    file(MAKE_DIRECTORY "${project_ini_boot_workspace}")
+    add_test(NAME "${project_ini_boot_test}"
         COMMAND "$<TARGET_FILE:vm-profile-floppy-boot-matrix>"
-            "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}" "${project_t515_session_path}")
-    set_tests_properties("${project_t515_test}" PROPERTIES
+            "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}" "${project_ini_boot_session_path}")
+    set_tests_properties("${project_ini_boot_test}" PROPERTIES
         LABELS integration
         SKIP_RETURN_CODE 77
-        TIMEOUT ${project_t515_timeout}
+        TIMEOUT ${project_ini_boot_timeout}
         RUN_SERIAL TRUE
-        WORKING_DIRECTORY "${project_t515_workspace}")
+        WORKING_DIRECTORY "${project_ini_boot_workspace}")
 endfunction()
 
-function(project_add_t515_ini_integration_test target session_file)
-    set(project_t515_test "integration.${target}")
-    set(project_t515_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/${project_t515_test}")
+function(project_add_ini_integration_test target session_file)
+    set(project_ini_boot_test "integration.${target}")
+    set(project_ini_boot_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/${project_ini_boot_test}")
 
-    set(project_t515_session_path "NXVM.ini")
+    set(project_ini_boot_session_path "NXVM.ini")
     if(NOT EXISTS
-       "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}/${project_t515_session_path}")
+       "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}/${project_ini_boot_session_path}")
         message(FATAL_ERROR
-            "T515 INI integration session is missing: ${session_file}")
+            "INI boot integration session is missing: ${session_file}")
     endif()
-    file(MAKE_DIRECTORY "${project_t515_workspace}")
+    file(MAKE_DIRECTORY "${project_ini_boot_workspace}")
     project_add_test(${target} integration "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}"
-        "${project_t515_session_path}" ${ARGN})
-    set_tests_properties("${project_t515_test}" PROPERTIES
+        "${project_ini_boot_session_path}" ${ARGN})
+    set_tests_properties("${project_ini_boot_test}" PROPERTIES
         SKIP_RETURN_CODE 77
-        WORKING_DIRECTORY "${project_t515_workspace}")
+        WORKING_DIRECTORY "${project_ini_boot_workspace}")
 endfunction()
 
 get_property(shared_core_test_names DIRECTORY "${PROJECT_SOURCE_DIR}/test/core" PROPERTY TESTS)
@@ -1809,7 +1809,7 @@ endforeach()
 
 if(NXVM_PRODUCT_PROFILE STREQUAL "default-pc-at-80386-1440k-hdd")
 foreach(target IN LISTS PROJECT_INTEGRATION_FDD_TARGETS)
-    project_add_t515_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
+    project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
 endforeach()
 foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS)
     if(target STREQUAL "vm-dos-prompt-smoke" OR
@@ -1821,32 +1821,32 @@ foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS)
         target STREQUAL "vm-rom-ega-int10-dos-smoke" OR
         target STREQUAL "vm-mouse-driver-dos-smoke" OR
         target STREQUAL "vm-fdc-read-track-dos-smoke")
-        project_add_t515_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
+        project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
     elseif(target STREQUAL "vm-dos-keyboard-smoke")
-        project_add_t515_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini extended)
+        project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini extended)
     else()
-        project_add_t515_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
+        project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
     endif()
 endforeach()
 foreach(target IN LISTS PROJECT_INTEGRATION_HDD_TARGETS)
-    project_add_t515_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
+    project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
 endforeach()
 foreach(target IN LISTS PROJECT_INTEGRATION_FDD_HDD_TARGETS)
     if(target STREQUAL "vm-windows31-checkpoint")
-        project_add_t515_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
+        project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
     elseif(target STREQUAL "vm-full-pc-session-smoke")
-        project_add_t515_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
+        project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
     elseif(target STREQUAL "vm-windows31-int13-trace-probe")
-        project_add_t515_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
+        project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
     elseif(target STREQUAL "vm-app-default-profile-smoke")
-        project_add_t515_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini
+        project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini
             NXVM.ini)
     else()
-        message(FATAL_ERROR "T515 INI integration mapping is missing: ${target}")
+        message(FATAL_ERROR "INI boot integration mapping is missing: ${target}")
     endif()
 endforeach()
 foreach(target IN LISTS PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS)
-    project_add_t515_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
+    project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
 endforeach()
 endif()
 
@@ -1872,16 +1872,16 @@ set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0546)
 add_current_vm_artifact(vm-0-5-0546 "0.5.0546")
 include("${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_selected_composition.cmake")
 
-function(project_add_t533_console_integration_test target)
-    set(project_t533_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/integration.${target}")
-    get_filename_component(project_t533_runtime_directory
+function(project_add_console_integration_test target)
+    set(project_console_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/integration.${target}")
+    get_filename_component(project_console_runtime_directory
         "${PROJECT_CURRENT_VM_RUNTIME_PATH}" DIRECTORY)
-    file(MAKE_DIRECTORY "${project_t533_workspace}")
-    project_add_test(${target} integration "${project_t533_runtime_directory}"
+    file(MAKE_DIRECTORY "${project_console_workspace}")
+    project_add_test(${target} integration "${project_console_runtime_directory}"
         "${PROJECT_CURRENT_VM_RUNTIME_PATH}")
     set_tests_properties("integration.${target}" PROPERTIES
         SKIP_RETURN_CODE 77
-        WORKING_DIRECTORY "${project_t533_workspace}")
+        WORKING_DIRECTORY "${project_console_workspace}")
 endfunction()
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
     include("${CMAKE_SOURCE_DIR}/test/app-my5160/integration/register.cmake")
@@ -1890,8 +1890,8 @@ elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "at")
 elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40")
     include("${CMAKE_SOURCE_DIR}/test/app-mydeskpro386/integration/register.cmake")
 else()
-foreach(project_t515_session IN ITEMS ${NXVM_PRODUCT_PROFILE}.ini)
-    project_add_t515_ini_boot_case(${project_t515_session})
+foreach(project_ini_boot_session IN ITEMS ${NXVM_PRODUCT_PROFILE}.ini)
+    project_add_ini_boot_case(${project_ini_boot_session})
 endforeach()
 endif()
 if(NXVM_PRODUCT_PROFILE STREQUAL "default-pc-at-80386-1440k-hdd")
@@ -1919,10 +1919,10 @@ if(NOT project_unit_test_expected_count EQUAL project_unit_test_registered_count
     message(FATAL_ERROR
         "Unit registration has an unexpected target.")
 endif()
-get_property(project_t515_registered_cases GLOBAL
-    PROPERTY PROJECT_T515_INI_BOOT_REGISTERED_CASES)
-list(LENGTH project_t515_registered_cases project_t515_registered_case_count)
-if(NOT project_t515_registered_case_count EQUAL 1)
+get_property(project_ini_boot_registered_cases GLOBAL
+    PROPERTY PROJECT_INI_BOOT_REGISTERED_CASES)
+list(LENGTH project_ini_boot_registered_cases project_ini_boot_registered_case_count)
+if(NOT project_ini_boot_registered_case_count EQUAL 1)
     message(FATAL_ERROR "Fixed product build must register exactly one matching boot row.")
 endif()
 set(PROJECT_UNIT_TEST_AUXILIARY_TESTS
@@ -1940,21 +1940,21 @@ file(GENERATE
     OUTPUT "${CMAKE_BINARY_DIR}/unit-test-auxiliary-tests.txt"
     CONTENT "$<JOIN:${PROJECT_UNIT_TEST_AUXILIARY_TESTS},\n>\n")
 file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/t515-ini-boot-tests.txt"
-    CONTENT "$<JOIN:${project_t515_registered_cases},\n>\n")
+    OUTPUT "${CMAKE_BINARY_DIR}/ini-boot-tests.txt"
+    CONTENT "$<JOIN:${project_ini_boot_registered_cases},\n>\n")
 add_custom_target(verify-unit-test-registration
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_UNIT_TEST_CURRENT_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/unit-test-targets.txt
         -DPROJECT_UNIT_TEST_AUXILIARY_TESTS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/unit-test-auxiliary-tests.txt
         -DPROJECT_UNIT_TEST_CTEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
-        -DPROJECT_T515_INI_BOOT_CASES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t515-ini-boot-tests.txt
+        -DPROJECT_INI_BOOT_CASES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/ini-boot-tests.txt
         -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_unit_test_registration.cmake"
     COMMENT "Verifying unit registration integrity"
     VERBATIM)
-add_custom_target(verify-t533-integration-ini-boundary
+add_custom_target(verify-integration-ini-boundary
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t533_integration_ini_boundary.cmake"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_integration_ini_boundary.cmake"
     COMMENT "Verifying integration sessions use the INI provider boundary"
     VERBATIM)
 add_custom_target(verify-product-artifact-roots
@@ -2606,7 +2606,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-vm-machine-owner
     verify-vm-machine-lifecycle
     verify-unit-test-registration
-    verify-t533-integration-ini-boundary
+    verify-integration-ini-boundary
     verify-product-artifact-roots
     verify-t382-unit-aggregate
     verify-fpu-boundary

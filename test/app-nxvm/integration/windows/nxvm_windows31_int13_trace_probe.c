@@ -8,7 +8,7 @@
 #include "core/machine/waiting.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
-#define VM_T287_TRACE_BUDGET 2000000u
+#define VM_WINDOWS31_INT13_TRACE_BUDGET 2000000u
 
 lib_i32 main(lib_i32 argc, char **argv)
 {
@@ -34,7 +34,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
             &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
-    for (instruction = 0u; instruction < VM_T287_TRACE_BUDGET; ++instruction) {
+    for (instruction = 0u; instruction < VM_WINDOWS31_INT13_TRACE_BUDGET; ++instruction) {
         lib_i32 returning = 0;
 
         if (core_machine_get_cpu_state(session->core_machine, &cpu_state) !=
@@ -88,7 +88,7 @@ lib_i32 main(lib_i32 argc, char **argv)
                 core_machine_debug_read_register(session->core_machine,
                     CORE_MACHINE_DEBUG_EFLAGS, &eflags) != LIB_STATUS_OK) break;
             ++hdd_returns;
-            printf("M5:T287:S18:INT13 ah=%02X dl=%02X cf=%u ax=%04X "
+            printf("NXVM:INT13 ah=%02X dl=%02X cf=%u ax=%04X "
                 "cx=%04X dx=%04X\n", active_ah, active_dl,
                 eflags & 1u, (lib_u16)eax,
                 (lib_u16)ecx, (lib_u16)edx);
@@ -108,13 +108,13 @@ lib_i32 main(lib_i32 argc, char **argv)
         }
     }
     if (passed) {
-        printf("M5:T287:S18:INT13:OK reads=%u\n", read_count);
+        printf("NXVM:INT13:OK reads=%u\n", read_count);
     } else {
         (void)core_machine_get_cpu_state(session->core_machine, &cpu_state);
         fprintf(stderr,
-            "M5:T287:S18:INT13:FAIL ready=%d calls=%u returns=%u geometry=%d reads=%u\n",
+            "NXVM:INT13:FAIL ready=%d calls=%u returns=%u geometry=%d reads=%u\n",
             int13_ready, hdd_calls, hdd_returns, geometry_ok, read_count);
-        fprintf(stderr, "M5:T287:S18:INT13:VECTOR=%04X:%04X linear=%05X pc=%05X\n",
+        fprintf(stderr, "NXVM:INT13:VECTOR=%04X:%04X linear=%05X pc=%05X\n",
             int13[1], int13[0], int13_linear,
             cpu_state.cs_base + cpu_state.eip);
     }

@@ -84,3 +84,20 @@ real-UD comment anchor, FDC read-track fixture constant/diagnostic, and the
 two Model 40 CECG helpers. Each replacement names the already asserted
 behavior. No unit CTest target or source pathname carried task provenance, so
 registration remains unchanged. Focused x64/x86 receivers pass 5/5 each.
+
+## S5 PC App Integration Receiver
+
+S5 replaces the integration-only identities that were still coupled to their
+historical task numbers.  The helper contracts are now named for INI boot
+registration and Console integration registration; the Model 40 Console
+receiver is named for the asserted INI behavior.  Windows 3.1 and DOS helpers
+are named for the probe they run, while result and diagnostic prefixes retain
+the actual tested subject (`NXVM`, `MODEL40`, `WINDOWS31`).
+
+The replacement leaves CTest labels, working directories, serial/timeout
+policy, session filenames, media paths, command arguments and assertion text
+unchanged.  The renamed Default-PC and Model-40 integration targets compile
+and both `verify-unit-test-registration` and `verify-integration-ini-boundary`
+pass on x64 and x86.  Runtime integration rows were not run: they need their
+owner-provided external firmware/media inputs and no behavioral test change
+was made.

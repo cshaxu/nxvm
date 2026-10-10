@@ -372,7 +372,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         if (core_machine_capture_display_snapshot(session->board,
                 &snapshot) == LIB_STATUS_OK &&
             snapshot.kind == X86_VIDEO_KIND_TEXT) {
-            fprintf(stderr, "M5:T241:MOUSE-DRIVER:MARKER=%02X\n",
+            fprintf(stderr, "NXVM:MOUSE-DRIVER:MARKER=%02X\n",
                 snapshot.characters[VM_MOUSE_DOS_MARKER_CELL]);
         }
     }
@@ -380,9 +380,9 @@ lib_i32 main(lib_i32 argc, char **argv)
 done:
     integration_ini_session_close(&ini_session);
     if (!passed) {
-        fprintf(stderr, "M5:T241:MOUSE-DRIVER:DOS:FAIL:STAGE=%d\n", stage);
+        fprintf(stderr, "NXVM:MOUSE-DRIVER:DOS:FAIL:STAGE=%d\n", stage);
         return 1;
     }
-    printf("M5:T267:S3:AUX:DOS:OK\n");
+    printf("NXVM:AUX:DOS:OK\n");
     return 0;
 }

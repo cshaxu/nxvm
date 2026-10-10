@@ -24,6 +24,6 @@ int main(lib_i32 argc, char **argv)
         return 1;
     }
     integration_ini_session_close(&ini_session);
-    puts("M5:T534:S26:CONTEXT-LIFECYCLE:OK");
+    puts("NXVM:CONTEXT-LIFECYCLE:OK");
     return 0;
 }

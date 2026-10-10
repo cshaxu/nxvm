@@ -20,6 +20,6 @@ lib_i32 main(lib_i32 argc, char **argv)
         return 1;
     }
     integration_ini_session_close(&ini_session);
-    puts("M5:T13:S8:VM-SESSION:OK");
+    puts("NXVM:VM-SESSION:OK");
     return 0;
 }

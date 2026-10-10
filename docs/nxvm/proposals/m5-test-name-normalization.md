@@ -59,7 +59,11 @@ or inconsistent with the same test's registered identity.
 5. **S5 — PC App integration identities.** Normalize active integration
    helper names, registration helpers, diagnostic markers and success markers.
    Preserve their assertions, external inputs and historical evidence paths.
-6. **S6 — Closure.** Run static collision/provenance sweeps, all relevant
+6. **S6 — Static verifier identities.** Normalize task-shaped static-verifier
+   filenames, Ninja targets, local helper names, diagnostics and emitted
+   markers under `cmake/nxvm`. Historical evidence paths and evidence-marker
+   assertions remain as provenance, not live verifier identities.
+7. **S7 — Closure.** Run static collision/provenance sweeps, all relevant
    component manifests and complete repository-only Unit suites on x64/x86.
    This is test/build-only work; artifacts are rebuilt only if a runnable
    product input changes, which is not expected.
