@@ -41,12 +41,12 @@ option(REPOSITORY_BUILD_MYNES "Configure MyNES product targets" ON)
 
 add_subdirectory(src/lib)
 add_subdirectory(src/emulator)
-add_subdirectory(src/product)
+add_subdirectory(src/x86)
 add_subdirectory(src/core)
 add_subdirectory(src/core/product)
 add_subdirectory(test/lib)
 add_subdirectory(test/emulator)
-add_subdirectory(test/product)
+add_subdirectory(test/x86)
 add_subdirectory(test/core)
 
 # The native capture fixture needs its existing larger stack.

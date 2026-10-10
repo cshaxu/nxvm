@@ -100,7 +100,7 @@ Shutdown is permanent and idempotent, unlike the restartable product stop.
 
 Source-only Emulator needs just src/emulator and src/lib. The neutral test suites
 need only src/emulator, src/lib, test/emulator and test/lib. Product CLI/protocol
-and assembly tests are owned by test/product, not the neutral Emulator suite.
+and assembly tests are owned by test/x86, not the neutral Emulator suite.
 No importing-product sources, configuration or resources are needed:
 
 ```text

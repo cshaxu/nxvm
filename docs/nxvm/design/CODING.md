@@ -18,7 +18,7 @@ src/
   lib/                  shared C and platform services
   emulator/{machine,session,ui,product}/
                         ISA-neutral execution, control, UI and composition
-  product/{xasm32,debug,surface}/
+  x86/{xasm32,debug,product}/
                         portable x86 tools and shared IBM PC interaction
   core/{chips,x86,board-base,board-xt,board-at,machine,product}/
                            NXVM-only machine stack and family product support
@@ -48,7 +48,7 @@ core/board-base/pc_at_profile and pc_at_rom. Machine's pc_at_preparation owns th
 one allocated AT candidate and ROM preparation; each App supplies its fixed
 choices and validator. No mixed default/5170 compile guards remain.
 The shared x86/IBM-PC Debug and hotkey implementation lives in
-`src/product/surface`; neutral Machine/Session/UI composition, fixed monitor
+`src/x86/product`; neutral Machine/Session/UI composition, fixed monitor
 command grammar and help/startup framing live in `src/emulator/product` and
 `test/emulator/product`. `core/product`
 contains the NXVM-family INI, Machine adapter and extensions used by the four

@@ -54,7 +54,7 @@ verification and acceptance; the task history retains the cutover sequence.
   receives an already constructed driver plus bounded bind, destroy and
   completed-state translation callbacks; it does not define an INI grammar,
   path construction, identity, board, CPU, firmware or App extension.
-- `product/surface` owns only the shared x86/IBM-PC Console/Debug/hotkey
+- `x86/product` owns only the shared x86/IBM-PC Console/Debug/hotkey
   implementation that supplies Emulator Product capabilities.  It is a SoftPC
   and NXVM shared component, not a `core/product` member and not a dependency
   of MyNES.  The shared PC Machine adapter lives in `core/machine`.
@@ -63,7 +63,7 @@ verification and acceptance; the task history retains the cutover sequence.
   identity. It is a private NXVM-family component, not an IBM PC or SoftPC
   dependency.
 - Each `app-*/product` consumes the shared PC identity/version and supplies its
-  fixed binding to the sole `product/surface`
+  fixed binding to the sole `x86/product`
   process entry, banner and cleanup body. Its fixed composition binding selects
   one Profile's frozen values/assets and preparation for Product's shared factory.
   Product consumes Machine's public creation/INFO/speed API; Machine has no
@@ -105,7 +105,7 @@ verification and acceptance; the task history retains the cutover sequence.
 - `emulator/machine` owns the shared execution/control protocol and paused-debug
   lease; `emulator/session` is the sole product-control reducer;
   `emulator/ui` binds Lib KVM and the Console broker.
-- `product/debug` owns Debug CLI continuations; `product/xasm32` owns assembly and
+- `x86/debug` owns Debug CLI continuations; `x86/xasm32` owns assembly and
   disassembly. Paused Debug operations go through Emulator Machine and the NXVM
   driver to Core, not a second machine path.
 - `lib` owns platform/C-runtime services. Lib/Emulator/product retain their existing
