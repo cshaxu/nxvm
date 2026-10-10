@@ -108,6 +108,17 @@ helpers, historical evidence paths, comments, or diagnostic provenance.  The
 batch must retain all custom-target dependencies and all failure predicates;
 it changes technical identity only.
 
+## S14 Disposition: Fixture-Shape Verification
+
+The live fixture-shape verifier now uses behavior names for its file, target,
+variables and messages. Its 101 retained historical fixture identities remain
+unchanged. A current-tree audit corrected 31 stale renamed source paths,
+removed duplicate paths introduced by the verifier's Glob plus explicit list,
+and classified the two later direct Core constructors for DMA route rollback
+and firmware capability. The verifier now checks 135 unique direct
+constructors and passes on x64 and x86. This is CMake/test verification only:
+no production source, CTest route, external asset or executable input changed.
+
 ## S11 Disposition: CPU Qualification Verification
 
 S11 renamed the live CPU qualification group without touching CTest routes or
