@@ -6,25 +6,27 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: M5 T550 S4; Shared, NXVM and MyNES verification target. |
+| Identifier Mode | Closed: M5 T550; no active implementation task. |
 | Admission And Approval | Owner approved the repository-wide route normalization and instructed automatic admission of the planned S tasks on 2026-10-10. |
-| Objective | Reconcile every active aggregate against the normalized route ledger and run the Shared, Core and App repository-only unit routes once on each supported architecture. |
-| Non-goals | No production/API/firmware/media/INI/snapshot/artifact change; do not execute external integration qualification or call this a desktop qualification run. |
-| Reference Baseline | T550 S1/S2 commits and S3 `d4331453e`/`ffe47bbb3`. |
-| Candidate Proposal | [T550 test route and external harness normalization](../proposals/m5-test-route-and-external-harness-normalization.md), S4. |
-| Files And ABI Surface | Test registration/evidence or task documentation only if a real aggregate/ledger defect is confirmed; no public ABI. |
+| Objective | Record final route qualification and await owner direction for the next queued task. |
+| Non-goals | No production/API/firmware/media/INI/snapshot/artifact change; do not register diagnostics as integration or call diagnostic/desktop evidence a complete product qualification. |
+| Reference Baseline | S4 commits `175eb1f01`, `c3719d53b` and `12699668c`. |
+| Candidate Proposal | [T550 test route and external harness normalization](../proposals/m5-test-route-and-external-harness-normalization.md), closed through S5. |
+| Files And ABI Surface | Test evidence or task documentation only if a result requires a disposition; no public ABI. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`. |
-| Verification | Reconfigure x64/x86 graphs; reconcile route/owner counts; then run Shared, Core and each App's complete `unit` label in that order. |
-| Expected Markers | Each active CTest has one route and one owner; diagnostic targets remain excluded from normal aggregates; separate repository-only and external/desktop results. |
+| Verification | Final x64/x86 root Unit selection and each owner external integration group are recorded below. |
+| Expected Markers | Every integration route has one result or explicit owner disposition; diagnostics remain excluded from normal integration selection; external/desktop evidence stays separate. |
 | Asset Needs | None. Existing deployed inputs are untouched. |
-| Reporting Requirements | Record route/owner counts and every unit result by architecture; report external/desktop work as unexecuted rather than inferred. |
-| Stop Conditions | Stop and report a real registration/ownership defect requiring source, API or protected-input change. |
-| Exit Criteria | Complete repository-only unit routes pass in the stated order on x64/x86, or each exception has an explicit owner disposition. |
+| Reporting Requirements | Record every integration result with architecture and input class; list diagnostics/desktop work separately; do not infer results from unit execution. |
+| Stop Conditions | Stop and report missing protected input, a real registration/ownership defect, or a result requiring source/API/protected-input change. |
+| Exit Criteria | Met: every registered owner integration route ran once on x64/x86; diagnostics remained excluded from normal qualification. |
 | Original Owner Request | Make MyNES classification consistent; create parallel `unit`, `integration`, `diagnostic`, and `setup` ownership; Core owns four-PC shared support and neutral external harnesses. |
-| Similar-Issue Sweep | Compare `ctest -N` route/owner labels, aggregate definitions and actual test selections across both build graphs before executing each tier. |
+| Similar-Issue Sweep | Compare selected integration route names and inputs across x64/x86 graphs before executing; inspect any failure for route/owner/input mismatch before changing code. |
 
 | Work | Progress |
 | --- | --- |
+| T550 S5 | Complete: `6906dbeab` gives the isolated Emulator verifier fixture a 60-second fixture-owned budget after it proved valid alone but exceeded the ordinary 30-second budget under full x86 contention. Every registered external integration ran once on both widths: NXVM 21/21 x64 and 21/21 x86; MyNES 12/12 x64 and 12/12 x86. MyNES's two native desktop routes pass on each width and are recorded separately from its other integration routes. Diagnostics remain opt-in and were not run. Final root Unit selection passes 544/544 on x64 and 544/544 on x86. No production code, firmware, media, INI, snapshot or deployed artifact changed. |
+| T550 | Closed: S1-S5 normalize unit/integration/diagnostic/setup ownership, external harness scope and full two-width qualification. Pushed S1-S4 commits are `47f8e1f74`, `1ea733884`, `e290ba1ed`, `d4331453e`, `ffe47bbb3`, `175eb1f01`, `c3719d53b` and `12699668c`; S5 is `6906dbeab` plus its NXVM state record. |
 | T550 S4 | Complete pending P: normalized unit-route qualification now uses the Lib-owned 180-second budget for its exhaustive layout self-test rather than a MyNES-only override. Shared Lib (51), Emulator (21) and Product (15), Core (244), the four PC Apps (2/6/28/35), and MyNES App (45) all pass on x64 and x86. No external integration, desktop validation, production code, firmware, media, INI, snapshot or deployed artifact changed. |
 | T548 S33 | Complete pending owner review: adopted the selected SoftPC Console and shared Product repairs, then imported SoftPC's three strengthened shared tests (Console metadata/viewport failure, Emulator monitor fault/lifecycle, Product Surface snapshot fault) plus the Product Surface banner-forwarding regression. Lib's naming verifier now scans only Lib source/test corpus; all six manifests use the stable, lexically sorted `sha256-manifest-v1` format. Shared/Core/App x64/x86 unit qualification passes 515/515 for the four PC Apps and 45/45 for MyNES. The eight PC artifacts were rebuilt, deployed and PE-width verified; both MyNES artifact targets were rebuilt and remained byte-identical. No desktop or external runtime qualification was run. |
 | T548 S34 | Complete: `273ba3296` gives `emulator.verifier-negative` the canonical `sha256-manifest-v1` probe header, so it reaches and proves the intended unlisted-path rejection. Emulator x64/x86 suites pass 21/21; repository-only Unit qualification passes 515/515 on both widths. This is test/manifest-only: no production, API or artifact input changed. |
