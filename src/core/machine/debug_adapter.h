@@ -4,7 +4,7 @@
 
 
 #include "emulator/machine/machine_interface.h"
-#include "product/debug/protocol_interface.h"
+#include "x86/debug/protocol_interface.h"
 
 #include "core/machine/machine_interface.h"
 

@@ -28,14 +28,14 @@ void vm_machine_debug_finalize(t_debug *debug)
 }
 
 lib_status vm_machine_debug_set_execution_plan(t_debug *debug,
-    const product_debug_request *request)
+    const x86_debug_request *request)
 {
     if (debug == LIB_NULL || request == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (request->execution_kind != PRODUCT_DEBUG_EXECUTION_TRACE &&
-        request->execution_kind != PRODUCT_DEBUG_EXECUTION_BREAK_REAL &&
-        request->execution_kind != PRODUCT_DEBUG_EXECUTION_BREAK_LINEAR)
+    if (request->execution_kind != X86_DEBUG_EXECUTION_TRACE &&
+        request->execution_kind != X86_DEBUG_EXECUTION_BREAK_REAL &&
+        request->execution_kind != X86_DEBUG_EXECUTION_BREAK_LINEAR)
         return LIB_STATUS_INVALID_ARGUMENT;
-    if (request->execution_kind == PRODUCT_DEBUG_EXECUTION_TRACE &&
+    if (request->execution_kind == X86_DEBUG_EXECUTION_TRACE &&
         request->instruction_count == 0u) return LIB_STATUS_INVALID_ARGUMENT;
     debug->plan = (t_debug_execution_plan) {
         .kind = request->execution_kind,
@@ -54,10 +54,10 @@ lib_u64 vm_machine_debug_limit_instruction_budget(
     const t_debug *debug, lib_u64 requested)
 {
     if (debug == LIB_NULL || requested == 0u) return requested;
-    if (debug->plan.kind == PRODUCT_DEBUG_EXECUTION_TRACE &&
+    if (debug->plan.kind == X86_DEBUG_EXECUTION_TRACE &&
         debug->plan.remaining < requested) return debug->plan.remaining;
-    if (debug->plan.kind == PRODUCT_DEBUG_EXECUTION_BREAK_REAL ||
-        debug->plan.kind == PRODUCT_DEBUG_EXECUTION_BREAK_LINEAR)
+    if (debug->plan.kind == X86_DEBUG_EXECUTION_BREAK_REAL ||
+        debug->plan.kind == X86_DEBUG_EXECUTION_BREAK_LINEAR)
         return 1u;
     return requested;
 }
@@ -65,8 +65,8 @@ lib_u64 vm_machine_debug_limit_instruction_budget(
 lib_bool vm_machine_debug_breakpoint_due(const t_debug *debug)
 {
     if (debug == LIB_NULL || !debug->observation_valid ||
-        (debug->plan.kind != PRODUCT_DEBUG_EXECUTION_BREAK_REAL &&
-         debug->plan.kind != PRODUCT_DEBUG_EXECUTION_BREAK_LINEAR)) return LIB_FALSE;
+        (debug->plan.kind != X86_DEBUG_EXECUTION_BREAK_REAL &&
+         debug->plan.kind != X86_DEBUG_EXECUTION_BREAK_LINEAR)) return LIB_FALSE;
     return debug->observation.cs_base + debug->observation.eip ==
         debug->plan.breakpoint_linear;
 }
@@ -74,12 +74,12 @@ lib_bool vm_machine_debug_breakpoint_due(const t_debug *debug)
 void vm_machine_debug_complete_breakpoint(t_debug *debug)
 {
     if (debug == LIB_NULL || (debug->plan.kind !=
-        PRODUCT_DEBUG_EXECUTION_BREAK_REAL && debug->plan.kind !=
-        PRODUCT_DEBUG_EXECUTION_BREAK_LINEAR)) return;
+        X86_DEBUG_EXECUTION_BREAK_REAL && debug->plan.kind !=
+        X86_DEBUG_EXECUTION_BREAK_LINEAR)) return;
     debug->plan.completion_pending = LIB_TRUE;
     debug->plan.completion_reason = VM_MACHINE_DEBUG_STOP_BREAKPOINT;
     debug->plan.completion_executed = debug->plan.executed;
-    debug->plan.kind = PRODUCT_DEBUG_EXECUTION_NONE;
+    debug->plan.kind = X86_DEBUG_EXECUTION_NONE;
 }
 
 void vm_machine_debug_complete_watchpoint(t_debug *debug)
@@ -99,12 +99,12 @@ void vm_machine_debug_complete_watchpoint(t_debug *debug)
 void vm_machine_debug_complete_run(t_debug *debug, lib_u64 executed)
 {
     if (debug == LIB_NULL || executed == 0u) return;
-    if (debug->plan.kind == PRODUCT_DEBUG_EXECUTION_BREAK_REAL ||
-        debug->plan.kind == PRODUCT_DEBUG_EXECUTION_BREAK_LINEAR) {
+    if (debug->plan.kind == X86_DEBUG_EXECUTION_BREAK_REAL ||
+        debug->plan.kind == X86_DEBUG_EXECUTION_BREAK_LINEAR) {
         debug->plan.executed += executed;
         return;
     }
-    if (debug->plan.kind != PRODUCT_DEBUG_EXECUTION_TRACE) return;
+    if (debug->plan.kind != X86_DEBUG_EXECUTION_TRACE) return;
     debug->plan.executed += executed;
     if (executed < debug->plan.remaining) {
         debug->plan.remaining -= executed;
@@ -113,7 +113,7 @@ void vm_machine_debug_complete_run(t_debug *debug, lib_u64 executed)
     debug->plan.completion_pending = LIB_TRUE;
     debug->plan.completion_reason = VM_MACHINE_DEBUG_STOP_TRACE;
     debug->plan.completion_executed = debug->plan.executed;
-    debug->plan.kind = PRODUCT_DEBUG_EXECUTION_NONE;
+    debug->plan.kind = X86_DEBUG_EXECUTION_NONE;
 }
 
 lib_bool vm_machine_debug_completion_pending(const t_debug *debug,

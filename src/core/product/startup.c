@@ -43,7 +43,7 @@ lib_status vm_app_ini_load_request(const char *name,
 lib_i32 vm_app_run(const char *name, const vm_app_machine_binding *binding)
 {
     vm_session_request request = {0};
-    product_surface_definition definition = {0};
+    x86_product_definition definition = {0};
     char banner[256];
     lib_i32 written;
 
@@ -58,5 +58,5 @@ lib_i32 vm_app_run(const char *name, const vm_app_machine_binding *binding)
     definition.name = name;
     definition.banner = banner;
     definition.configure_extensions = vm_app_configure_standard_extensions;
-    return product_surface_run(&definition);
+    return x86_product_run(&definition);
 }

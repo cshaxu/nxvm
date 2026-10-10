@@ -9,8 +9,8 @@ static lib_bool trace_budgets(void)
     lib_u64 executed;
 
     for (lib_size index = 0u; index < sizeof(counts) / sizeof(counts[0]); ++index) {
-        product_debug_request request = {
-            .execution_kind = PRODUCT_DEBUG_EXECUTION_TRACE,
+        x86_debug_request request = {
+            .execution_kind = X86_DEBUG_EXECUTION_TRACE,
             .instruction_count = counts[index]
         };
         vm_machine_debug_initialize(&debug);
@@ -38,8 +38,8 @@ static lib_bool trace_budgets(void)
 
 static lib_bool breakpoints(void)
 {
-    static const product_debug_execution_plan_kind kinds[] = {
-        PRODUCT_DEBUG_EXECUTION_BREAK_REAL, PRODUCT_DEBUG_EXECUTION_BREAK_LINEAR
+    static const x86_debug_execution_plan_kind kinds[] = {
+        X86_DEBUG_EXECUTION_BREAK_REAL, X86_DEBUG_EXECUTION_BREAK_LINEAR
     };
     t_debug debug;
     vm_machine_debug_stop_reason reason;
@@ -49,7 +49,7 @@ static lib_bool breakpoints(void)
     };
 
     for (lib_size index = 0u; index < sizeof(kinds) / sizeof(kinds[0]); ++index) {
-        product_debug_request request = {
+        x86_debug_request request = {
             .execution_kind = kinds[index], .address = 0x1020u
         };
         vm_machine_debug_initialize(&debug);
@@ -77,7 +77,7 @@ lib_i32 main(void)
     t_debug debug;
     vm_machine_debug_stop_reason reason;
     lib_u64 executed;
-    product_debug_request request = {.execution_kind = PRODUCT_DEBUG_EXECUTION_TRACE};
+    x86_debug_request request = {.execution_kind = X86_DEBUG_EXECUTION_TRACE};
     core_machine_debug_instruction_observation observation = {.watch_hit = LIB_TRUE};
 
     if (!trace_budgets() || !breakpoints()) return 1;

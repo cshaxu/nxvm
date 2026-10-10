@@ -9,7 +9,7 @@ extern "C" {
 #include "lib/types/types_interface.h"
 
 #include "core/x86/debug_interface.h"
-#include "product/debug/protocol_interface.h"
+#include "x86/debug/protocol_interface.h"
 
 #define VM_MACHINE_DEVICE_DEBUG "Unknown Hardware Debugger"
 
@@ -23,7 +23,7 @@ typedef enum vm_machine_debug_stop_reason {
 } vm_machine_debug_stop_reason;
 
 typedef struct {
-    product_debug_execution_plan_kind kind;
+    x86_debug_execution_plan_kind kind;
     lib_u64 remaining;
     lib_u64 executed;
     lib_u32 breakpoint_linear;
@@ -44,7 +44,7 @@ void vm_machine_debug_refresh(t_debug *debug,
     const core_machine_debug_instruction_observation *observation);
 void vm_machine_debug_finalize(t_debug *debug);
 lib_status vm_machine_debug_set_execution_plan(t_debug *debug,
-    const product_debug_request *request);
+    const x86_debug_request *request);
 void vm_machine_debug_clear_execution_plan(t_debug *debug);
 lib_u64 vm_machine_debug_limit_instruction_budget(
     const t_debug *debug, lib_u64 requested);

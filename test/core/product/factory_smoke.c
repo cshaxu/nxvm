@@ -87,9 +87,9 @@ lib_i32 main(void)
     vm_machine_config config;
     const vm_machine_config empty = {0};
     app_composed_machine machine;
-    product_surface_information info;
-    product_surface_speed app_speed;
-    product_surface_command_extensions extensions;
+    x86_product_information info;
+    x86_product_speed app_speed;
+    x86_product_command_extensions extensions;
     emulator_session_command_result result;
     const lib_status expected[] = {LIB_STATUS_OK, LIB_STATUS_UNSUPPORTED,
         LIB_STATUS_NO_MEMORY, LIB_STATUS_INVALID_STATE};
@@ -127,11 +127,11 @@ lib_i32 main(void)
         info.fixed_disk_image_bytes != 4096u || info.floppy_image_bytes != 360u ||
         !info.floppy_media_inserted || !info.fixed_disk_present ||
         !info.fixed_disk_media_connected || !info.external_firmware) return 5;
-    if (machine.set_speed(machine.composition.machine, PRODUCT_SURFACE_SPEED_TURBO) != LIB_STATUS_OK ||
+    if (machine.set_speed(machine.composition.machine, X86_PRODUCT_SPEED_TURBO) != LIB_STATUS_OK ||
         speed != VM_MACHINE_SPEED_TURBO ||
         machine.get_speed(machine.composition.machine, &app_speed) != LIB_STATUS_OK ||
-        app_speed != PRODUCT_SURFACE_SPEED_TURBO ||
-        machine.set_speed(machine.composition.machine, PRODUCT_SURFACE_SPEED_STANDARD) != LIB_STATUS_OK ||
+        app_speed != X86_PRODUCT_SPEED_TURBO ||
+        machine.set_speed(machine.composition.machine, X86_PRODUCT_SPEED_STANDARD) != LIB_STATUS_OK ||
         speed != VM_MACHINE_SPEED_STANDARD) return 6;
     if (vm_app_configure_standard_extensions(&machine, &extensions) != LIB_STATUS_OK ||
         extensions.submit == LIB_NULL ||

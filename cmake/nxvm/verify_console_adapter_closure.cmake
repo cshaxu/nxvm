@@ -9,7 +9,7 @@ if(EXISTS "${obsolete_adapter}")
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/emulator/product/composition.c" composition_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/product/surface/command.c" product_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/command.c" product_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/debug_adapter.c"
     debug_source)
 
@@ -34,8 +34,8 @@ foreach(removed_file
 endforeach()
 
 foreach(required
-    "product_debug_submit_line"
-    "product_debug_open"
+    "x86_debug_submit_line"
+    "x86_debug_open"
     "vm_machine_debug_execute"
     "emulator_product_compose_ui"
     "emulator_ui_create"

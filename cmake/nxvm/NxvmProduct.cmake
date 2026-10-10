@@ -5,7 +5,7 @@ include("${CMAKE_SOURCE_DIR}/src/core/product/build.cmake")
 
 add_executable(nxvm-firmware-build EXCLUDE_FROM_ALL
     src/app-nxvm/firmware/build.c)
-target_link_libraries(nxvm-firmware-build PRIVATE product-xasm32 storage)
+target_link_libraries(nxvm-firmware-build PRIVATE x86-xasm32 storage)
 
 set(nxvm_default_firmware_sources)
 foreach(unit IN ITEMS entry boot video equipment memory system floppy_post
@@ -41,7 +41,7 @@ set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     shared-lib-tests
     shared-emulator-tests
-    shared-product-tests
+    shared-x86-tests
     core-product-tests
     core-x86-tests
     core-board-tests)
@@ -587,7 +587,7 @@ file(GENERATE
 
 # The type-vocabulary verifier has one controlled support header.
 set(PROJECT_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS
-    "test/core/product/debug_fixture.h")
+    "test/core/x86/debug_fixture.h")
 string(REPLACE ";" "\n" project_test_type_vocabulary_support_contents
     "${PROJECT_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS}")
 file(GENERATE
@@ -672,7 +672,7 @@ target_link_libraries(mydeskpro386-d4 PUBLIC core-chip-pit825x core-chip-rtc1468
 target_link_libraries(mydeskpro386-d4-observable PUBLIC core-chip-pit825x core-chip-rtc146818 core-chip-fdc8272 core-chip-hdc core-chip-video core-chip-ps2mouse core-chip-keyboard core-chip-kbc8042 core-chip-ppi8255 core-chip-xtkeyboard)
 target_link_libraries(mydeskpro386-d4 PUBLIC core-board-base core-board-at core-board-xt core-x86)
 
-# Explicit multi-profile fixtures never feed a production product.
+# Explicit multi-profile fixtures never feed a production x86.
 add_library(vm-profile-tests INTERFACE)
 target_link_libraries(vm-profile-tests INTERFACE
     nxvm-profile
@@ -728,12 +728,12 @@ target_include_directories(vm-app PUBLIC
     "${CMAKE_BINARY_DIR}/generated"
 )
 target_link_libraries(vm-app PUBLIC
-    product-surface
+    x86-product
     core-product
     emulator-session
     emulator-ui
-    product-debug
-    product-xasm32
+    x86-debug
+    x86-xasm32
     vm-profile-selected
     storage
     base)
@@ -1023,10 +1023,10 @@ add_executable(vm-unified-debug-backend-smoke
     test/app-nxvm/integration/dos/nxvm_unified_debug_backend_smoke.c)
 target_link_libraries(vm-unified-debug-backend-smoke PRIVATE
     integration-session-ini-support)
-add_executable(vm-product-debug-mapping-smoke
+add_executable(vm-x86-debug-mapping-smoke
     test/app-nxvm/unit/machine/nxvm_x86_debug_mapping_smoke.c
 )
-target_link_libraries(vm-product-debug-mapping-smoke PRIVATE
+target_link_libraries(vm-x86-debug-mapping-smoke PRIVATE
     vm-profile-tests
 )
 add_executable(vm-full-pc-session-smoke
@@ -1324,7 +1324,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-console-pause-resume-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
-    vm-product-debug-mapping-smoke
+    vm-x86-debug-mapping-smoke
     vm-app-session-smoke
     vm-machine-initialization-atomicity-smoke
     vm-machine-media-lifecycle-smoke
@@ -2800,13 +2800,13 @@ file(GENERATE
 set(PROJECT_DIRECT_COMPILATION_PRODUCTION_TARGETS
     mydeskpro386-d4
     core-product
-    product-surface
+    x86-product
     core-board-base
     core-x86
     core-chip-cpu
     emulator-machine
-    product-xasm32
-    product-debug
+    x86-xasm32
+    x86-debug
     vm-profile-selected
     vm-profile-tests
     core-machine-media
