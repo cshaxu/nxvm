@@ -2,19 +2,19 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S19 Active: Normalize Physical Timing Verification Identity)
+## Current Task — M5 T548 (S20 Active: Normalize Jcc Timing Verification Identity)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S19. S1-S18 completed the initial duplicate, ownership and identity classification work. This S normalizes the live physical-timing inventory, eligibility and residual-form verification group. |
+| Identifier Mode | Continuation T548 S20. S1-S19 completed the initial duplicate, ownership and identity classification work. This S normalizes the live Jcc target-lexeme verification identity. |
 | Admission And Approval | Owner instruction in this conversation: close the old T, then admit the first queued T to repair the complete NXVM test corpus cleanly. Standing push approval applies. |
 | Objective | Freeze a complete behavior-level ownership and coverage ledger for every registered repository unit test and production owner, then repair misplaced, duplicated, incomplete or non-independent coverage without losing component, profile, board, CPU, composition or failure evidence. |
 | Non-goals | No production behavior or public ABI change merely to simplify tests; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools as units; no sibling-repository edit. |
 | Reference Baseline | T547 closure commits `5b1d07412`, `08a6a19f4` and `6be3ce8ee`; re-freeze the current committed source/test/build graph before any move, merge or deletion. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | Rename only the live physical timing inventory, successful-sentinel, eligibility and residual-form verifier helpers and custom targets to behavior identities. Preserve all source and evidence assertions. No production or C test source changes. |
+| Files And ABI Surface | Rename only the live Jcc target-lexeme verifier helper and custom target to a behavior identity. Preserve all source and evidence assertions. No production or C test source changes. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | Generate fresh x64/x86 Ninja graphs, enumerate the renamed targets, and run the four unchanged physical-timing verification predicates against those graphs. |
+| Verification | Use the fresh x64/x86 Ninja graphs, enumerate the renamed target, and run its unchanged Jcc target-lexeme predicate. |
 | Expected Markers | Active filenames, targets, variables and generated matrices describe behavior rather than historical task numbers; provenance remains in comments/evidence only. |
 | Asset Needs | None. INIs, media, snapshots and artifacts are not edited. |
 | Reporting Requirements | Report source/target/output before-and-after identities, exact test count delta, line delta and dual-width result. Do not rename historical evidence or claim behavior coverage from names. |
@@ -45,6 +45,7 @@
 | T548 S17 | Complete: direct-compilation and deferred-ownership verifier filenames, targets, variables, generated matrices and diagnostics now use behavior identities. The formerly unpopulated residual ledger now declares the three actual deferred Core Product source rows, allowing the existing exact-ownership predicate to run. The matrix now retains the generated firmware source even in a fresh build tree: fresh x64/x86 CMake graphs prove 500 matrix rows (497 strict, 3 deferred), 151 ownership rows (148 owner tests, 3 residual product entries), the duplicate-row negative self-test and 151-command warning audit. No production or C test source changed; generated executable changes were discarded. |
 | T548 S18 | Complete pending commit: CPU timing inventory/source/seam verifier filenames, targets, variables and diagnostics now use behavior identities. Their historical T359/T360/T435 evidence paths and required provenance anchors remain unchanged. Fresh x64/x86 Ninja graphs prove all three exact predicates and the old target names are absent. No production or C test source changed; no executable artifact is retained. |
 | T548 S19 | Complete pending commit: successful-sentinel, physical-timebase, physical-eligibility and residual-form verifier filenames, targets, variables and diagnostics now use behavior identities. Their T388 evidence files and required evidence markers remain unchanged. Fresh x64/x86 Ninja graphs prove all four exact predicates and the old target names are absent. No production or C test source changed; no executable artifact is retained. |
+| T548 S20 | Complete pending commit: the Jcc target-lexeme verifier filename, target, local variables and diagnostics now use a behavior identity. Its T388 evidence file and required success-marker anchor remain unchanged. Fresh x64/x86 Ninja graphs prove the unchanged predicate. No production or C test source changed; no executable artifact is retained. |
 | T547 S5 | Closed at owner direction. P1 `9131545d8` replaces the live Product with the SoftPC command/keyboard base and App extensions; P2 `09cbfcf93` removes the SoftPC-branded fault message; P3 `3ff1e89f8` moves NXVM identity out of shared Product; P4 `7a2f23574` reduces the shared opening contract to App-provided text. Eight 0546 App artifacts were rebuilt. Product entry/command/manifest focused checks passed on x64; full dual-width Product and complete T547 qualification remain open and are not claimed by this S closure. |
 | T547 S6 | Complete: `bf469c879` adopts SoftPC S16's ownership correction without importing SoftPC runtime code. NXVM-family configuration/factory/extension support and direct tests now live in `src/core/product` and `test/core/product`; the old `ibmpc/nxvm` member is gone. IBM PC and core gates plus 8 focused tests pass on x64 and x86; all eight 0546 product artifacts were rebuilt against the relocated link input. |
 | T547 S7 | Superseded into S8 before P delivery: its uncommitted canonical Core rehome is retained as S8's required receiver baseline rather than split into an unbuildable partial commit. |

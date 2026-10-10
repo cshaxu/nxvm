@@ -261,3 +261,13 @@ unchanged predicate passes in both graphs.  The remaining T388 Jcc and
 80286/80386 LSL verifiers are a separate semantic group for a later receiver.
 No production or C test source, assertion, asset input or executable artifact
 changed.
+
+## S20 Disposition: Jcc Target-Lexeme Verification
+
+The active Jcc target-lexeme verifier now uses a behavior identity for its
+CMake filename, custom target, local variables and runtime diagnostics.  Its
+T388 evidence file and explicit historical success-marker anchor remain
+unchanged as predicate inputs.  Fresh x64 and x86 Ninja graphs each contain
+the replacement target, and the unchanged predicate passes in both graphs.
+No production or C test source, assertion, asset input or executable artifact
+changed.

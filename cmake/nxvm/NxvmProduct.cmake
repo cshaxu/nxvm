@@ -2646,10 +2646,10 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_residual_form_context_ledger.cmake"
         COMMENT "Verifying residual form/context ledger"
         VERBATIM)
-    add_custom_target(verify-t388-jcc-target-lexeme
+    add_custom_target(verify-jcc-target-lexeme
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_jcc_target_lexeme.cmake"
-        COMMENT "Verifying T388 Jcc target-lexeme boundary"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_jcc_target_lexeme.cmake"
+        COMMENT "Verifying Jcc target-lexeme boundary"
         VERBATIM)
     add_custom_target(verify-t388-80286-appendix-b-context
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -2684,7 +2684,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-physical-timebase-inventory
     verify-physical-eligibility-boundary
     verify-residual-form-context-ledger
-    verify-t388-jcc-target-lexeme
+    verify-jcc-target-lexeme
     verify-t388-80286-appendix-b-context
     verify-t388-80286-lsl-architecture-reconciliation
     verify-t388-80386-lsl-granularity-capture
