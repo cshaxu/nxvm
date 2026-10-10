@@ -80,5 +80,5 @@ foreach ($result in $results) {
 if (-not $contract.Contains('M5:T435:S5:I86-DECODER-LEDGER-ZERO-DIFFERENCE:OK')) {
     throw "decoder contract does not record its zero-difference closure"
 }
-Write-Output "M5:T435:S5:I86-XLAT-CORRECTION-SLICE:PASS"
-Write-Output "M5:T435:S5:I86-DECODER-LEDGER-ZERO-DIFFERENCE:PASS:1053"
+Write-Output "I86-XLAT-CORRECTION-SLICE:PASS"
+Write-Output "I86-DECODER-LEDGER-ZERO-DIFFERENCE:PASS:1053"

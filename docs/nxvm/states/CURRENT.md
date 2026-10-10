@@ -2,26 +2,9 @@
 
 ## Current Work
 
-## Current Task — M5 T549 (S6 Active: Static Verifier Identity Normalization)
+## Current Task
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T549 S6. |
-| Admission And Approval | Owner approved normalizing all active NXVM and Shared test identities, beginning with a complete live inventory and old-to-new mapping. |
-| Objective | Give every active NXVM/Shared test a stable behavior-and-owner identity across source filename, build target, CTest route, result marker and live reference. |
-| Non-goals | No assertion, fixture, production, API, component-dependency, firmware/media, external-integration or MyNES-private test change merely for naming. No historical evidence rewrite or compatibility aliases. |
-| Reference Baseline | NXVM `273ba3296`; the six shared trees use the accepted NXVM canonical manifest format. |
-| Candidate Proposal | `proposals/m5-test-name-normalization.md`. |
-| Files And ABI Surface | Active paths under `test/{lib,emulator,product,core,app-my5160,app-my5170,app-mydeskpro386,app-nxvm}`, their CMake registrations/manifests and test-only verifiers. No runtime ABI surface. |
-| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source policy rules; SoftPC is read-only. |
-| Verification | S1 freezes a complete identity/reference mapping and collision scan before any rename. Later S batches run their exact receivers; every S runs repository-only Unit suites on x64/x86. |
-| Expected Markers | No live identity embeds task provenance or a retired owner; each renamed test has one exact current receiver and no duplicate registration. |
-| Asset Needs | None. |
-| Reporting Requirements | Record each old-to-new identity and reference sweep, changes by component target, exact test totals and any intentional retained name. |
-| Stop Conditions | A proposed rename weakens test selection, collides with an active identity, changes a test assertion/fixture semantic, crosses into MyNES, or needs a production/API change. |
-| Exit Criteria | Every live in-scope test identity is normalized or explicitly retained by contract; all manifests/gates and x64/x86 repository Unit suites pass; all target-scoped P commits are pushed. |
-| Original Owner Request | Admit a new task to repair all active NXVM/Shared test-name normalization. |
-| Similar-Issue Sweep | S1 searches tracked active test sources, CMake registrations, success markers and live verifier text. Historical evidence and MyNES-private scope are excluded by task boundary and recorded, not rewritten. |
+No NXVM task is active.
 
 | Work | Progress |
 | --- | --- |
@@ -33,8 +16,9 @@
 | T549 S3 | Complete: committed Core receiver `969eb41a1` renames two paired cross-width task-switch helpers and one software-gate DPL fault helper by behavior. The existing Core routes retain their predicates and the five timing-manifest evidence paths remain intentionally unchanged. Focused x64/x86 receivers pass 2/2 each. |
 | T549 S4 | Complete: commits `e6cc846c1` and `616a87aea` replace task-shaped NXVM/MyDeskPro386 unit markers, fixture names, helper symbols and comment anchors with asserted behaviors. The same five focused unit receivers pass 5/5 on x64 and x86; no route, assertion or profile input changes. |
 | T549 S5 | Complete: pushed as `b055eeb49`. Integration registration helpers, test-local symbols, Model 40 Console identity and live diagnostic/success markers now name their actual INI, Console, Windows 3.1, DOS or Model 40 behavior. The renamed Default-PC and Model-40 receivers plus both static registration gates compile/pass on x64/x86; external media integration execution was not required or run. |
-| T549 S6 | Complete pending commit: live static CMake verifier filenames, targets, local variables, diagnostics and success markers now describe their behavior. Historical evidence filenames and evidence-marker assertions remain provenance. The x64/x86 specialized verifier selections pass after excluding the pre-existing, unrelated `verify-dependency-dag` failure. |
-| T549 S7 | Active: run final collision/provenance sweeps, applicable manifests and the complete repository-only dual-width Unit suites; record the already-canonical Emulator negative-manifest probe without creating a duplicate change. |
+| T549 S6 | Complete: pushed as `1bd6f2d9a`. Live static CMake verifier filenames, targets, local variables, diagnostics and success markers now describe their behavior. Historical evidence filenames and evidence-marker assertions remain provenance. The x64/x86 specialized verifier selections pass after excluding the pre-existing, unrelated `verify-dependency-dag` failure. |
+| T549 S7 | Complete: the final live-output sweep removes the one remaining registered 8086 decoder-ledger task-shaped success marker while preserving evidence paths. Core manifest plus its exact x64/x86 receiver pass; complete repository-only Unit suites pass 515/515 on both widths. |
+| T549 | Closed: behavior-and-owner identities now cover the active NXVM/Shared test, registration, verifier and test-tool surface. Historical evidence remains immutable provenance. Closure record: `history/M5-T549-test-name-normalization.md`. |
 | T547 | Closed at owner direction. Final Shared/NXVM/MyNES commits are `5b1d07412`, `08a6a19f4` and `6be3ce8ee`. Public suites pass 66/66, Core 221/221, NXVM 511/511 and MyNES App 45/45 on x64/x86; all ten deployed artifacts are current. No new manual desktop or external integration qualification is claimed. |
 | T548 S1 | Complete: committed baseline `006a7592d` records the 541-unit-entry/45-integration-C universe, registration owners and first semantic candidate groups. It confirmed the Default-App factory duplicate and protected selected-profile increments from mechanical relocation. |
 | T548 S26 | Complete: Core `c47e7c848`, MyDeskPro386 `41cc1779b`, My5170 `b67332ae1`, My5160 `113514a57`, NXVM `1209e0f35` and Shared registration `2de340bf3` retire or narrow Default-PC duplicates, assign generic predicates to Core and split every outward Core-to-App test edge to its real App receiver. The complete repository-only unit selection passes 515/515 on x64 and x86; Core manifests pass on both widths. No production, firmware, media, INI, snapshot or deployed executable input changed. |

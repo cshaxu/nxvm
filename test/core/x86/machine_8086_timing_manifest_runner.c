@@ -23,8 +23,8 @@
 #endif
 
 /* This runner is deliberately not a passing CTest target until every I86 key
- * has a real recipe.  Its generated metadata prevents handwritten provenance
- * from drifting from the T435 S2 manifest. */
+ * has a real recipe. Its generated metadata prevents handwritten provenance
+ * from drifting from the approved timing manifest. */
 typedef struct timing_manifest_record {
     const char *key_id;
     const char *profile;
