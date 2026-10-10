@@ -1,7 +1,7 @@
 #include "core/machine/machine_interface.h"
 #include "../../support/model40.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_private.h"
@@ -50,7 +50,7 @@ lib_i32 main(void)
     even[0u] = 0x11u;
     odd[0u] = 0x22u;
 #define CHECK(expression) do { ++step; if (!(expression)) { \
-    failed = step; printf("D4-MAP failed step=%d line=%d\n", step, __LINE__); goto done; \
+    failed = step; lib_c_printf("D4-MAP failed step=%d line=%d\n", step, __LINE__); goto done; \
 } } while (0)
     lib_i32 step = 0;
 
@@ -194,10 +194,10 @@ lib_i32 main(void)
     }
 done:
 #undef CHECK
-    if (!failed) printf("D4-ROM-MAP:OK\n");
-    if (!failed) printf("D4-SOLE-ROM-OWNER:OK\n");
-    if (!failed) printf("D4-RESET-ALIAS:OK\n");
-    if (!failed) printf("MODEL40-ROM-DECODE:OK\n");
+    if (!failed) lib_c_printf("D4-ROM-MAP:OK\n");
+    if (!failed) lib_c_printf("D4-SOLE-ROM-OWNER:OK\n");
+    if (!failed) lib_c_printf("D4-RESET-ALIAS:OK\n");
+    if (!failed) lib_c_printf("MODEL40-ROM-DECODE:OK\n");
     vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

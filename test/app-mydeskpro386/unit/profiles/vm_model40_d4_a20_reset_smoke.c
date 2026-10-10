@@ -1,6 +1,6 @@
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "../../../core/board-base/composition/composition_fixture.h"
 #include "core/x86/memory_interface.h"
@@ -44,8 +44,8 @@ lib_i32 main(void)
     }
     vm_machine_destroy(session);
     if (failed) return 1;
-    printf("D4-SKEY-A20:OK\n");
-    printf("CORE-VM-RESET-OWNER:OK\n");
-    printf("MODEL40-A20-POLICY:OK\n");
+    lib_c_printf("D4-SKEY-A20:OK\n");
+    lib_c_printf("CORE-VM-RESET-OWNER:OK\n");
+    lib_c_printf("MODEL40-A20-POLICY:OK\n");
     return 0;
 }

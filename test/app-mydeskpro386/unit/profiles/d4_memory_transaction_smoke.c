@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "app-mydeskpro386/profiles/d4_memory.h"
 #include "../../../core/board-base/composition/composition_fixture.h"
@@ -75,6 +75,6 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     for (lib_u32 mode = 0u; mode < 4u; ++mode) failed |= run_case(mode);
-    if (!failed) printf("D4-MEMORY-TRANSACTION:OK\n");
+    if (!failed) lib_c_printf("D4-MEMORY-TRANSACTION:OK\n");
     return failed ? 1 : 0;
 }

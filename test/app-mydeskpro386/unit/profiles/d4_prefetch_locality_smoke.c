@@ -3,7 +3,7 @@
 #include "app-mydeskpro386/profiles/d4_platform_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/x86/debug_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_u32 prefetch_grants;
 
@@ -105,10 +105,10 @@ lib_i32 main(void)
     }
     core_machine_destroy(machine);
     if (failed) {
-        fprintf(stderr, "D4 prefetch/refresh: grants=%u request=%u ack=%u commit=%u release=%u\n",
+        lib_c_fprintf(lib_c_stderr, "D4 prefetch/refresh: grants=%u request=%u ack=%u commit=%u release=%u\n",
             prefetch_grants, trace.requests, trace.acknowledgements, trace.commits, trace.releases);
         return 1;
     }
-    printf("D4-PREFETCH-REFRESH:OK\n");
+    lib_c_printf("D4-PREFETCH-REFRESH:OK\n");
     return 0;
 }

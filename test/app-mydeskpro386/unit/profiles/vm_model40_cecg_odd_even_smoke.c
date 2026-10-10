@@ -1,7 +1,7 @@
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "core/board-base/display_interface.h"
 #include "core/board-base/vadp_interface.h"
@@ -87,9 +87,9 @@ lib_i32 main(void)
     }
     vm_machine_destroy(session);
     if (failed) {
-        fprintf(stderr, "MODEL40-CECG-ODD-EVEN:FAIL\n");
+        lib_c_fprintf(lib_c_stderr, "MODEL40-CECG-ODD-EVEN:FAIL\n");
         return 1;
     }
-    printf("MODEL40-CECG-ODD-EVEN:OK\n");
+    lib_c_printf("MODEL40-CECG-ODD-EVEN:OK\n");
     return 0;
 }

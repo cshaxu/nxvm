@@ -6,7 +6,7 @@
 #include "../../../core/board-base/composition/time_fixture.h"
 #include "../../../core/board-base/support/composition_fixture.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_private.h"
@@ -162,6 +162,6 @@ lib_i32 main(void)
     failed = !short_video_copy_is_bounded();
 done:
     vm_machine_destroy(session);
-    if (!failed) printf("MODEL40-BYOB-MANIFEST:OK\nMODEL40-BYOB-VALIDATION:OK\nMODEL40-PUBLIC-COMPOSITION:OK\nMODEL40-BYOB-RESET-LIFECYCLE:OK\nMODEL40-IMMUTABLE-CONFIGURATION:OK\n");
+    if (!failed) lib_c_printf("MODEL40-BYOB-MANIFEST:OK\nMODEL40-BYOB-VALIDATION:OK\nMODEL40-PUBLIC-COMPOSITION:OK\nMODEL40-BYOB-RESET-LIFECYCLE:OK\nMODEL40-IMMUTABLE-CONFIGURATION:OK\n");
     return failed;
 }

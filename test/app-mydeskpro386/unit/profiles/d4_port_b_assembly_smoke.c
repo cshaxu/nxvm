@@ -1,6 +1,6 @@
 #include "app-mydeskpro386/profiles/d4_platform_interface.h"
 #include "../../../core/board-base/composition/port_assembly_fixture.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 static lib_status port_assembly_attach_d4(core_machine_board_state *board)
 {

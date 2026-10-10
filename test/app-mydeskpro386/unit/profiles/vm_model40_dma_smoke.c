@@ -1,7 +1,7 @@
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "../../../core/board-base/composition/bus_fixture.h"
 #include "../../../core/board-base/composition/composition_fixture.h"
@@ -60,10 +60,10 @@ lib_i32 main(void)
 done:
     vm_machine_destroy(session);
     if (failed) return 1;
-    printf("DUAL-DMA-TOPOLOGY:OK\n");
-    printf("DMA-WORD-CASCADE:OK\n");
-    printf("DMA-RESET-BINDING:OK\n");
-    printf("D4-DMA-GRANT-WAIT:OK\n");
-    printf("D4-DMA-BUSRDY:OK\n");
+    lib_c_printf("DUAL-DMA-TOPOLOGY:OK\n");
+    lib_c_printf("DMA-WORD-CASCADE:OK\n");
+    lib_c_printf("DMA-RESET-BINDING:OK\n");
+    lib_c_printf("D4-DMA-GRANT-WAIT:OK\n");
+    lib_c_printf("D4-DMA-BUSRDY:OK\n");
     return 0;
 }

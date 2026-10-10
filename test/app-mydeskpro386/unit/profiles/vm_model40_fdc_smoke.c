@@ -5,7 +5,7 @@
 #include "../../../core/board-base/support/controller_fixture.h"
 #include "../../../core/board-base/support/composition_fixture.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "core/machine/machine_private.h"
 #include "core/machine/lifecycle.h"
@@ -268,10 +268,10 @@ lib_i32 main(void)
 done:
     vm_machine_destroy(session);
     if (failed) return 1;
-    printf("FDC-12MB-LOGICAL:OK\n");
-    printf("FDC-DMA2-IRQ6:OK\n");
-    printf("MODEL40-FDC-BINDING:OK\n");
-    printf("MODEL40-FDC-READY-MEDIA-SEPARATION:OK\n");
-    printf("FLOPPY-CHANNEL-FORMAT-RATE-PITCH:OK\n");
+    lib_c_printf("FDC-12MB-LOGICAL:OK\n");
+    lib_c_printf("FDC-DMA2-IRQ6:OK\n");
+    lib_c_printf("MODEL40-FDC-BINDING:OK\n");
+    lib_c_printf("MODEL40-FDC-READY-MEDIA-SEPARATION:OK\n");
+    lib_c_printf("FLOPPY-CHANNEL-FORMAT-RATE-PITCH:OK\n");
     return 0;
 }

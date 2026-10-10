@@ -9,7 +9,7 @@
 #include "../../../core/board-base/support/kbc_state_fixture.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
@@ -187,11 +187,11 @@ lib_i32 main(void)
             LIB_STATUS_OK || test_board_kbc_read_reply(session->board,
             session->core_machine) != 0xeeu;
     }
-    if (!failed) printf("MODEL40-COMPOSITION:OK\n");
-    if (!failed) printf("MODEL40-SPEAKER-SELECTION:OK\n");
-    if (!failed) printf("EXTERNAL-ROM-GUARD:OK\n");
-    if (!failed) printf("MODEL40-DETERMINISTIC-CONTRACT:OK\n");
-    if (!failed) printf("DESKPRO-SESSION-CUTOVER:OK\n");
+    if (!failed) lib_c_printf("MODEL40-COMPOSITION:OK\n");
+    if (!failed) lib_c_printf("MODEL40-SPEAKER-SELECTION:OK\n");
+    if (!failed) lib_c_printf("EXTERNAL-ROM-GUARD:OK\n");
+    if (!failed) lib_c_printf("MODEL40-DETERMINISTIC-CONTRACT:OK\n");
+    if (!failed) lib_c_printf("DESKPRO-SESSION-CUTOVER:OK\n");
     vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

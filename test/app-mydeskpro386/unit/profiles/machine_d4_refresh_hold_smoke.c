@@ -1,6 +1,6 @@
 #include "app-mydeskpro386/profiles/d4_platform_interface.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "d4_refresh_fixture.h"
 
 #include "core/board-base/dma_bus_interface.h"
@@ -237,6 +237,6 @@ lib_i32 main(void)
     core_machine_destroy(machine);
     failed = failed || !refresh_non_d4_contract();
     if (failed) return 1;
-    printf("D4-REFRESH-HOLD:OK\n");
+    lib_c_printf("D4-REFRESH-HOLD:OK\n");
     return 0;
 }

@@ -1,7 +1,7 @@
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "core/board-base/vadp_interface.h"
 #include "../../../core/board-base/composition/bus_fixture.h"
@@ -39,9 +39,9 @@ lib_i32 main(void)
     }
     vm_machine_destroy(session);
     if (!failed) {
-        printf("MODEL40-FEATURE-ENVIRONMENT:OK\n");
+        lib_c_printf("MODEL40-FEATURE-ENVIRONMENT:OK\n");
         return 0;
     }
-    fprintf(stderr, "MODEL40-FEATURE-ENVIRONMENT:FAIL\n");
+    lib_c_fprintf(lib_c_stderr, "MODEL40-FEATURE-ENVIRONMENT:FAIL\n");
     return 1;
 }

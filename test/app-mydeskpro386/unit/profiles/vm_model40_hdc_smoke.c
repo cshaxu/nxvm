@@ -2,7 +2,7 @@
 #include "../../../core/machine/support/media.h"
 #include "../../../core/board-base/support/controller_fixture.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "core/machine/machine_private.h"
 #include "core/machine/media/hdd_interface.h"
@@ -73,6 +73,6 @@ lib_i32 main(void)
     vm_machine_destroy(session);
     lib_release(image);
     if (failed) return 1;
-    printf("MODEL40-HDC-MEMORY-MEDIA:OK\n");
+    lib_c_printf("MODEL40-HDC-MEMORY-MEDIA:OK\n");
     return 0;
 }

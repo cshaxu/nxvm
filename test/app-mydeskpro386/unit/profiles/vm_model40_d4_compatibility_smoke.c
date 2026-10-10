@@ -1,7 +1,7 @@
 #include "../../support/profile.h"
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "core/x86/machine_interface.h"
 #include "../../../core/board-base/support/composition_fixture.h"
@@ -64,9 +64,9 @@ lib_i32 main(void)
         (core_machine_run_budget) {1u, 0u}, &result) != LIB_STATUS_OK ||
         result.executed != 1u ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-    if (!failed) printf("D4-SOLE-ROM-MAP:OK\n");
-    if (!failed) printf("D4-COMPATIBILITY-RESET:OK\n");
-    if (!failed) printf("AT-REFRESH-CLOCK:OK\n");
+    if (!failed) lib_c_printf("D4-SOLE-ROM-MAP:OK\n");
+    if (!failed) lib_c_printf("D4-COMPATIBILITY-RESET:OK\n");
+    if (!failed) lib_c_printf("AT-REFRESH-CLOCK:OK\n");
     vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

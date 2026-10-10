@@ -2,7 +2,7 @@
 #include "core/machine/machine_interface.h"
 #include "../../../core/machine/support/media.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "core/board-base/media_interface.h"
 #include "core/machine/media/media_interface.h"
@@ -47,6 +47,6 @@ lib_i32 main(void)
         !info.present || info.geometry.logical_sector_count != 2400u ||
         info.geometry.bytes_per_sector != 512u;
     vm_machine_destroy(session);
-    if (!failed) printf("MODEL40-BYOB-BOOT-MEDIA:OK\n");
+    if (!failed) lib_c_printf("MODEL40-BYOB-BOOT-MEDIA:OK\n");
     return failed;
 }

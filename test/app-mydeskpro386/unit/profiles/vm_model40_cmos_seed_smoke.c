@@ -2,7 +2,7 @@
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 #include "core/x86/device_support_interface.h"
 
 #include "../../../core/board-base/composition/composition_fixture.h"
@@ -129,6 +129,6 @@ lib_i32 main(void)
     vm_machine_destroy(second);
     vm_machine_destroy(first);
     if (failed) return 1;
-    printf("MODEL40-CMOS-SEED:OK\n");
+    lib_c_printf("MODEL40-CMOS-SEED:OK\n");
     return 0;
 }

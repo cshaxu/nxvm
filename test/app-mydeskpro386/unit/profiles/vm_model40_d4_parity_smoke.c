@@ -1,7 +1,7 @@
 #include "core/machine/machine_interface.h"
 #include "../../support/model40.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "../../../core/board-base/composition/composition_fixture.h"
 #include "core/x86/memory_interface.h"
@@ -85,11 +85,11 @@ done:
 #undef CHECK
     vm_machine_destroy(session);
     if (failed) {
-        printf("D4-PARITY-DIAGNOSTIC:STEP-%u\n", (unsigned int)failed);
+        lib_c_printf("D4-PARITY-DIAGNOSTIC:STEP-%u\n", (unsigned int)failed);
         return 1;
     }
-    printf("D4-PARITY-DIAGNOSTIC:OK\n");
-    printf("D4-IOCHK-CLEAR:OK\n");
-    printf("MEMORY-PARITY-OWNER:OK\n");
+    lib_c_printf("D4-PARITY-DIAGNOSTIC:OK\n");
+    lib_c_printf("D4-IOCHK-CLEAR:OK\n");
+    lib_c_printf("MEMORY-PARITY-OWNER:OK\n");
     return 0;
 }
