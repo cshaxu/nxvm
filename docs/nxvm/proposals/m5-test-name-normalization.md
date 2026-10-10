@@ -53,10 +53,13 @@ or inconsistent with the same test's registered identity.
 3. **S3 — Core identities.** Normalize Core chip, x86, board and machine
    identities; preserve timing-ledger semantics while removing task-shaped
    names from active sources and registrations.
-4. **S4 — PC App identities.** Normalize each fixed App's profile and
-   composition test identities while retaining the selected model as an
-   asserted behavior where it is genuinely App-owned.
-5. **S5 — Closure.** Run static collision/provenance sweeps, all relevant
+4. **S4 — PC App unit identities.** Normalize each fixed App's profile,
+   composition and machine-unit identities while retaining the selected model
+   as an asserted behavior where it is genuinely App-owned.
+5. **S5 — PC App integration identities.** Normalize active integration
+   helper names, registration helpers, diagnostic markers and success markers.
+   Preserve their assertions, external inputs and historical evidence paths.
+6. **S6 — Closure.** Run static collision/provenance sweeps, all relevant
    component manifests and complete repository-only Unit suites on x64/x86.
    This is test/build-only work; artifacts are rebuilt only if a runnable
    product input changes, which is not expected.
