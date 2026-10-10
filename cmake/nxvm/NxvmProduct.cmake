@@ -1695,49 +1695,49 @@ elseif(NXVM_PRODUCT_PROFILE STREQUAL "compaq-deskpro-386-model-40-1200k")
         vm-ini-cmos-seed-smoke)
 endif()
 
-# T344 keeps the current gate as one canonical partition.  A duplicate is a
+# The unit-registration gate keeps one canonical partition.  A duplicate is a
 # registration defect, not an aggregate-list cleanup opportunity.
 list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS ${PROJECT_INTEGRATION_TEST_TARGETS})
-function(project_t344_verify_unit_test_partition)
-    set(project_t344_current_targets)
-    foreach(project_t344_target IN LISTS PROJECT_UNIT_TEST_TARGETS)
-        if(NOT TARGET ${project_t344_target})
+function(project_verify_unit_test_partition)
+    set(project_unit_test_partition_targets)
+    foreach(project_unit_test_target IN LISTS PROJECT_UNIT_TEST_TARGETS)
+        if(NOT TARGET ${project_unit_test_target})
             message(FATAL_ERROR
-                "T344 unit target is missing: ${project_t344_target}")
+                "Unit target is missing: ${project_unit_test_target}")
         endif()
-        list(FIND project_t344_current_targets "${project_t344_target}"
-            project_t344_target_index)
-        if(NOT project_t344_target_index EQUAL -1)
+        list(FIND project_unit_test_partition_targets "${project_unit_test_target}"
+            project_unit_test_target_index)
+        if(NOT project_unit_test_target_index EQUAL -1)
             message(FATAL_ERROR
-                "T344 unit target is duplicated: ${project_t344_target}")
+                "Unit target is duplicated: ${project_unit_test_target}")
         endif()
-        list(APPEND project_t344_current_targets "${project_t344_target}")
+        list(APPEND project_unit_test_partition_targets "${project_unit_test_target}")
     endforeach()
 
-    set(project_t344_media_targets)
-    foreach(project_t344_target IN LISTS PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS)
-            if(NOT TARGET ${project_t344_target})
+    set(project_integration_media_targets)
+    foreach(project_unit_test_target IN LISTS PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS)
+            if(NOT TARGET ${project_unit_test_target})
                 message(FATAL_ERROR
-                    "T344 current media target is missing: ${project_t344_target}")
+                    "Current media target is missing: ${project_unit_test_target}")
             endif()
-            list(FIND project_t344_current_targets "${project_t344_target}"
-                project_t344_target_index)
-            list(FIND project_t344_media_targets "${project_t344_target}"
-                project_t344_media_index)
-            if(NOT project_t344_media_index EQUAL -1)
+            list(FIND project_unit_test_partition_targets "${project_unit_test_target}"
+                project_unit_test_target_index)
+            list(FIND project_integration_media_targets "${project_unit_test_target}"
+                project_integration_media_index)
+            if(NOT project_integration_media_index EQUAL -1)
                 message(FATAL_ERROR
-                    "T344 current media target has multiple classifications: "
-                    "${project_t344_target}")
+                    "Current media target has multiple classifications: "
+                    "${project_unit_test_target}")
             endif()
-            list(APPEND project_t344_media_targets "${project_t344_target}")
-            if(project_t344_target_index EQUAL -1)
-                list(APPEND project_t344_current_targets "${project_t344_target}")
+            list(APPEND project_integration_media_targets "${project_unit_test_target}")
+            if(project_unit_test_target_index EQUAL -1)
+                list(APPEND project_unit_test_partition_targets "${project_unit_test_target}")
             endif()
     endforeach()
-    set(PROJECT_ALL_TEST_TARGETS "${project_t344_current_targets}"
+    set(PROJECT_ALL_TEST_TARGETS "${project_unit_test_partition_targets}"
         PARENT_SCOPE)
 endfunction()
-project_t344_verify_unit_test_partition()
+project_verify_unit_test_partition()
 set(PROJECT_ALL_TEST_TARGETS ${PROJECT_ALL_TEST_TARGETS})
 set(PROJECT_UNIT_TEST_TARGETS ${PROJECT_ALL_TEST_TARGETS})
 list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
@@ -1780,15 +1780,15 @@ function(project_add_test target route)
     if(NOT TARGET ${target})
         message(FATAL_ERROR "Current smoke target is missing: ${target}")
     endif()
-    get_property(project_t344_registered_targets GLOBAL
-        PROPERTY PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS)
-    list(FIND project_t344_registered_targets "${target}"
-        project_t344_registered_index)
-    if(NOT project_t344_registered_index EQUAL -1)
+    get_property(project_unit_test_registered_targets GLOBAL
+        PROPERTY PROJECT_UNIT_TEST_REGISTERED_TARGETS)
+    list(FIND project_unit_test_registered_targets "${target}"
+        project_unit_test_registered_index)
+    if(NOT project_unit_test_registered_index EQUAL -1)
         message(FATAL_ERROR "Current smoke target is registered twice: ${target}")
     endif()
     set_property(GLOBAL APPEND PROPERTY
-        PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS "${target}")
+        PROJECT_UNIT_TEST_REGISTERED_TARGETS "${target}")
     add_test(NAME "${route}.${target}" COMMAND "$<TARGET_FILE:${target}>" ${ARGN})
     set_tests_properties("${route}.${target}" PROPERTIES
         LABELS "${route}"
@@ -1863,13 +1863,13 @@ foreach(target IN LISTS PROJECT_UNIT_TEST_TARGETS)
     if(target IN_LIST shared_core_test_targets AND
        NOT "unit.${target}" IN_LIST shared_core_test_names)
         set_property(GLOBAL APPEND PROPERTY
-            PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS ${target})
+            PROJECT_UNIT_TEST_REGISTERED_TARGETS ${target})
         continue()
     endif()
     if(NOT "unit.${target}" IN_LIST shared_core_test_names)
         project_add_test(${target} unit)
     else()
-        set_property(GLOBAL APPEND PROPERTY PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS ${target})
+        set_property(GLOBAL APPEND PROPERTY PROJECT_UNIT_TEST_REGISTERED_TARGETS ${target})
     endif()
 endforeach()
 
@@ -2036,23 +2036,23 @@ endif()
 set_tests_properties("unit.vm-runner-display-cadence-smoke" PROPERTIES
     RUN_SERIAL TRUE)
 
-get_property(project_t344_registered_targets GLOBAL
-    PROPERTY PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS)
-set(project_t344_single_test_targets ${PROJECT_ALL_TEST_TARGETS})
-list(REMOVE_ITEM project_t344_single_test_targets vm-profile-floppy-boot-matrix)
-foreach(project_t344_target IN LISTS project_t344_single_test_targets)
-    list(FIND project_t344_registered_targets "${project_t344_target}"
-        project_t344_registered_index)
-    if(project_t344_registered_index EQUAL -1)
+get_property(project_unit_test_registered_targets GLOBAL
+    PROPERTY PROJECT_UNIT_TEST_REGISTERED_TARGETS)
+set(project_unit_test_single_targets ${PROJECT_ALL_TEST_TARGETS})
+list(REMOVE_ITEM project_unit_test_single_targets vm-profile-floppy-boot-matrix)
+foreach(project_unit_test_target IN LISTS project_unit_test_single_targets)
+    list(FIND project_unit_test_registered_targets "${project_unit_test_target}"
+        project_unit_test_registered_index)
+    if(project_unit_test_registered_index EQUAL -1)
         message(FATAL_ERROR
-            "T344 canonical unit target is not registered: ${project_t344_target}")
+            "Canonical unit target is not registered: ${project_unit_test_target}")
     endif()
 endforeach()
-list(LENGTH project_t344_single_test_targets project_t344_expected_current_count)
-list(LENGTH project_t344_registered_targets project_t344_registered_current_count)
-if(NOT project_t344_expected_current_count EQUAL project_t344_registered_current_count)
+list(LENGTH project_unit_test_single_targets project_unit_test_expected_count)
+list(LENGTH project_unit_test_registered_targets project_unit_test_registered_count)
+if(NOT project_unit_test_expected_count EQUAL project_unit_test_registered_count)
     message(FATAL_ERROR
-        "T344 unit registration has an unexpected target.")
+        "Unit registration has an unexpected target.")
 endif()
 get_property(project_t515_registered_cases GLOBAL
     PROPERTY PROJECT_T515_INI_BOOT_REGISTERED_CASES)
@@ -2060,32 +2060,31 @@ list(LENGTH project_t515_registered_cases project_t515_registered_case_count)
 if(NOT project_t515_registered_case_count EQUAL 1)
     message(FATAL_ERROR "Fixed product build must register exactly one matching boot row.")
 endif()
-set(PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS
-    ibmpc-build-smoke
+set(PROJECT_UNIT_TEST_AUXILIARY_TESTS
     nxvm-firmware-embedding nxvm-firmware-build fdc-boundary-negative)
 if(POWERSHELL_EXECUTABLE)
-    list(APPEND PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS
+    list(APPEND PROJECT_UNIT_TEST_AUXILIARY_TESTS
         core-machine-8086-timing-results-s5
         core-machine-8088-timing-results-s5
         core-machine-8086-decoder-ledger-s5)
 endif()
 file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/t344-unit-targets.txt"
-    CONTENT "$<JOIN:${project_t344_single_test_targets},\n>\n")
+    OUTPUT "${CMAKE_BINARY_DIR}/unit-test-targets.txt"
+    CONTENT "$<JOIN:${project_unit_test_single_targets},\n>\n")
 file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/t344-unit-auxiliary-tests.txt"
-    CONTENT "$<JOIN:${PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS},\n>\n")
+    OUTPUT "${CMAKE_BINARY_DIR}/unit-test-auxiliary-tests.txt"
+    CONTENT "$<JOIN:${PROJECT_UNIT_TEST_AUXILIARY_TESTS},\n>\n")
 file(GENERATE
     OUTPUT "${CMAKE_BINARY_DIR}/t515-ini-boot-tests.txt"
     CONTENT "$<JOIN:${project_t515_registered_cases},\n>\n")
-add_custom_target(verify-t344-unit-registration
+add_custom_target(verify-unit-test-registration
     COMMAND "${CMAKE_COMMAND}"
-        -DPROJECT_T344_CURRENT_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-unit-targets.txt
-        -DPROJECT_T344_CURRENT_AUXILIARY_TESTS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-unit-auxiliary-tests.txt
-        -DPROJECT_T344_CTEST_TEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
+        -DPROJECT_UNIT_TEST_CURRENT_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/unit-test-targets.txt
+        -DPROJECT_UNIT_TEST_AUXILIARY_TESTS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/unit-test-auxiliary-tests.txt
+        -DPROJECT_UNIT_TEST_CTEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
         -DPROJECT_T515_INI_BOOT_CASES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t515-ini-boot-tests.txt
-        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t344_unit_test_registration.cmake"
-    COMMENT "Verifying T344 unit registration integrity"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_unit_test_registration.cmake"
+    COMMENT "Verifying unit registration integrity"
     VERBATIM)
 add_custom_target(verify-t533-integration-ini-boundary
     COMMAND "${CMAKE_COMMAND}"
@@ -2741,7 +2740,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-core-debug-completion-boundary
     verify-vm-machine-owner
     verify-vm-machine-lifecycle
-    verify-t344-unit-registration
+    verify-unit-test-registration
     verify-t533-integration-ini-boundary
     verify-product-artifact-roots
     verify-t382-unit-aggregate

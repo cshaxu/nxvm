@@ -145,3 +145,19 @@ configuration check rather than gaining a second custom target.  Both x64 and
 x86 CMake configurations passed, so the live registration graph has executed
 the unchanged predicate.  No CTest route, source assertion, production input
 or artifact changed.
+
+## S13 Disposition: Unit Registration Verification
+
+The live unit-registration verifier and generated input names now describe
+their behavior rather than the historical task.  Its CTest route/count
+predicate remains unchanged.  Exercising it exposed two real stale inputs:
+
+- `ibmpc-build-smoke` was an auxiliary entry with neither a target nor a CTest
+  route; it is removed instead of being recreated as an empty test;
+- the verifier read `test/core/CTestTestfile.cmake` twice, creating a false
+  duplicate-route failure; it now reads that child registration once.
+
+All other auxiliary entries retain a real `unit.*` route.  The verifier now
+reports its actual 334 registered routes on both x64 and x86.  No production
+source, test assertion, external asset, CTest route or executable input
+changed.

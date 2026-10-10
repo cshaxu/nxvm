@@ -2,24 +2,24 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S13 Active: Normalize Unit Registration And Ownership Verification Identities)
+## Current Task — M5 T548 (S14 Active: Normalize Fixture-Shape Verification Identities)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S13. S1-S12 completed the initial duplicate, ownership and identity classification work. This S normalizes the unit-registration and direct-ownership CMake verification groups. |
+| Identifier Mode | Continuation T548 S14. S1-S13 completed the initial duplicate, ownership and identity classification work. This S audits and normalizes only the live fixture-shape CMake verifier group. |
 | Admission And Approval | Owner instruction in this conversation: close the old T, then admit the first queued T to repair the complete NXVM test corpus cleanly. Standing push approval applies. |
 | Objective | Freeze a complete behavior-level ownership and coverage ledger for every registered repository unit test and production owner, then repair misplaced, duplicated, incomplete or non-independent coverage without losing component, profile, board, CPU, composition or failure evidence. |
 | Non-goals | No production behavior or public ABI change merely to simplify tests; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools as units; no sibling-repository edit. |
 | Reference Baseline | T547 closure commits `5b1d07412`, `08a6a19f4` and `6be3ce8ee`; re-freeze the current committed source/test/build graph before any move, merge or deletion. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | Rename only the live unit-registration, fixture-shape and direct-ownership CMake verification helpers and custom targets. Preserve their exact route, count and ownership predicates; do not touch integration helpers, historical evidence paths or production code. |
+| Files And ABI Surface | Rename only the live fixture-shape verifier helpers, generated inputs and custom target after checking every encoded source-path expectation against the current tree. Preserve its construction predicates; do not touch direct-ownership groups, integration helpers, historical evidence paths or production code. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | Prove renamed verification targets retain their registration, fixture-shape and direct-ownership predicates; run each affected CMake target on x64 and x86. |
-| Expected Markers | No task-shaped name remains in the selected unit-registration and ownership CMake verifier group; task provenance remains only in evidence or excluded integration helpers. |
+| Verification | Prove the renamed verifier retains its current fixture-shape predicate and run it on x64 and x86. |
+| Expected Markers | The fixture-shape verifier has behavior identities and no stale active source-path expectation; task provenance remains only in evidence or excluded integration helpers. |
 | Asset Needs | None. INIs, media, snapshots and artifacts are not edited. |
 | Reporting Requirements | Report source/target/output before-and-after identities, exact test count delta, line delta and dual-width result. Do not rename historical evidence or claim behavior coverage from names. |
 | Stop Conditions | Ambiguous semantic replacement, an external identity contract, an old reference outside MyDeskPro386 scope, required production change, or loss of an existing assertion. |
-| Exit Criteria | The selected unit-registration and ownership verifier group has behavior-based identities, preserved assertions/dependencies and passing x64/x86 verification. T548 remains open. |
+| Exit Criteria | The fixture-shape verifier has behavior identities, preserved assertions/dependencies, no stale active path and passing x64/x86 verification. T548 remains open. |
 | Original Owner Request | Repair the entire NXVM test suite cleanly after closing the old lifecycle/product task. |
 | Similar-Issue Sweep | Inventory every C/CMake test entry, alias, fixture, negative gate and unit runner outside integration; distinguish component proof, composition increment, App/profile proof and non-unit tooling before assigning a canonical owner. |
 
@@ -38,7 +38,8 @@
 | T548 S10 | Complete: the evidence ledger classifies live unit/corpus verification helpers as semantic receivers, retains historical evidence/provenance and excludes T515/T533 integration helpers. S11 owns the finite behavior-name migration. |
 | T548 S11 | Complete: strict CPU compilation, fixed-width vocabulary and fixture-lifecycle verification now have behavior identities. The prior lifecycle verifier's five retired paths and mismatched chip-local comparison key are corrected; all three targets pass on x64/x86. |
 | T548 S12 | Complete: undefined-opcode source discovery and delivery-disposition verification uses behavior identities and passes in both configuration graphs. Its exact owner/disposition predicate is unchanged. |
-| T548 S13 | Active: normalize the selected live unit-registration, fixture-shape and direct-ownership verifier groups without changing predicates, integration routes or production behavior. |
+| T548 S13 | Complete: unit-registration verification uses behavior identities, no longer requires the nonexistent `ibmpc-build-smoke`, and no longer reads the same Core CTest file twice. It reports 334 real routes on x64/x86. |
+| T548 S14 | Active: audit and normalize only the fixture-shape verifier group without changing construction predicates, integration routes or production behavior. |
 | T547 S5 | Closed at owner direction. P1 `9131545d8` replaces the live Product with the SoftPC command/keyboard base and App extensions; P2 `09cbfcf93` removes the SoftPC-branded fault message; P3 `3ff1e89f8` moves NXVM identity out of shared Product; P4 `7a2f23574` reduces the shared opening contract to App-provided text. Eight 0546 App artifacts were rebuilt. Product entry/command/manifest focused checks passed on x64; full dual-width Product and complete T547 qualification remain open and are not claimed by this S closure. |
 | T547 S6 | Complete: `bf469c879` adopts SoftPC S16's ownership correction without importing SoftPC runtime code. NXVM-family configuration/factory/extension support and direct tests now live in `src/core/product` and `test/core/product`; the old `ibmpc/nxvm` member is gone. IBM PC and core gates plus 8 focused tests pass on x64 and x86; all eight 0546 product artifacts were rebuilt against the relocated link input. |
 | T547 S7 | Superseded into S8 before P delivery: its uncommitted canonical Core rehome is retained as S8's required receiver baseline rather than split into an unbuildable partial commit. |
