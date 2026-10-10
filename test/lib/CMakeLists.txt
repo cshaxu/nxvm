@@ -127,6 +127,23 @@ add_test(NAME library.test-types-boundary-selftest COMMAND "${CMAKE_COMMAND}"
 add_test(NAME library.test-manifest COMMAND "${CMAKE_COMMAND}"
     "-DLIBRARY_ROOT=${CMAKE_CURRENT_SOURCE_DIR}"
     -P "${LIB_ROOT}/verify_manifest.cmake")
+set_tests_properties(
+    lib.test-boundaries
+    lib.test-boundaries-selftest
+    library.types-layout
+    library.manifest
+    library.linux-build-contract
+    library.component-dag
+    library.component-dag-forbidden-include
+    library.component-dag-relative-include
+    library.kvm-naming
+    library.component-control-ownership
+    library.kvm-naming-forbidden
+    library.types-layout-selftest
+    library.test-types-boundary
+    library.test-types-boundary-selftest
+    library.test-manifest
+    PROPERTIES LABELS "unit;lib" TIMEOUT 30)
 
 # One suite-owned build entry for importing products.  CTest registration and
 # standalone configuration remain unchanged; this only builds every executable

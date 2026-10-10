@@ -30,7 +30,7 @@ shared_register_test(emulator session_queue_failure emulator-session)
 shared_register_test(emulator presentation_plan emulator-session)
 shared_register_test(emulator reconciler emulator-session)
 shared_register_test(emulator control_state_matrix emulator-session)
-shared_register_test(emulator control_reconciler_integration emulator-session)
+shared_register_test(emulator control_reconciler emulator-session)
 shared_register_test(emulator input_queue_mouse_fifo emulator-machine)
 shared_register_test(emulator input_queue_ownership emulator-machine)
 shared_register_test(emulator machine_wait emulator-machine)
@@ -73,6 +73,14 @@ add_test(NAME emulator.test-types-boundary COMMAND "${CMAKE_COMMAND}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/../verify_types_boundary.cmake")
 add_test(NAME emulator.test-manifest COMMAND "${CMAKE_COMMAND}"
     "-DEMULATOR_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" -P "${EMULATOR_ROOT}/verify_manifest.cmake")
+set_tests_properties(
+    emulator.test-boundaries
+    emulator.manifest
+    emulator.corpus
+    emulator.verifier-negative
+    emulator.test-types-boundary
+    emulator.test-manifest
+    PROPERTIES LABELS "unit;emulator" TIMEOUT 30)
 
 # One suite-owned build entry for importing products.  CTest registration and
 # standalone configuration remain unchanged.

@@ -70,7 +70,7 @@ add_test(NAME product.test-types-boundary COMMAND "${CMAKE_COMMAND}"
     -P "${CMAKE_CURRENT_LIST_DIR}/../verify_types_boundary.cmake")
 set_tests_properties(product.test-types-boundary PROPERTIES LABELS "unit;product" TIMEOUT 30)
 add_test(NAME product.manifest COMMAND "${CMAKE_COMMAND}"
-    "-DPRODUCT_ROOT=${CMAKE_CURRENT_SOURCE_DIR}"
+    "-DPRODUCT_ROOT=${PRODUCT_ROOT}"
     -P "${PRODUCT_ROOT}/verify_manifest.cmake")
 set_tests_properties(product.manifest PROPERTIES LABELS "unit;product" TIMEOUT 30)
 
