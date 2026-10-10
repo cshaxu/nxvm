@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "core/x86/machine_interface.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 
 lib_i32 main(lib_i32 argc, char **argv)
 {

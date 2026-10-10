@@ -7,7 +7,7 @@
 
 #include "core/board-base/machine_board_interface.h"
 #include "core/chips/hdc/hdc_interface.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 #include "core/machine/waiting.h"
 #include "core/machine/machine_private.h"
 

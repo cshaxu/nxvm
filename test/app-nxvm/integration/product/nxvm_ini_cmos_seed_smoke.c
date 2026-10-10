@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "test/core/board-base/composition/composition_fixture.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 #include VM_PRODUCT_BINDING_HEADER
 #include "core/machine/machine_private.h"
 

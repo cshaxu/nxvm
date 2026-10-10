@@ -3,7 +3,7 @@
 
 #include <windows.h>
 
-#include "test/app-nxvm/integration/support/nxvm_console_process.h"
+#include "test/core/setup/nxvm_console_process.h"
 
 #define NXVM_CONSOLE_WAIT_MILLISECONDS 5000u
 

@@ -9,7 +9,7 @@
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 
 #define VM_DOS_FDISK_FDISK_CELLS (80u * 25u)
 

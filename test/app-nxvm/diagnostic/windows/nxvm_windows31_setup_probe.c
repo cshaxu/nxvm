@@ -10,7 +10,7 @@
 #include "core/x86/debug_interface.h"
 #include "core/x86/machine_interface.h"
 #include "test/core/machine/support/nxvm_presentation_capture.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 #include "core/machine/control.h"
 #include "core/machine/fault.h"
 #include "core/machine/lifecycle.h"

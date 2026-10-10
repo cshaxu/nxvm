@@ -6,7 +6,7 @@
 #include "core/x86/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 
 #define VM_WINDOWS31_INT13_TRACE_BUDGET 2000000u
 

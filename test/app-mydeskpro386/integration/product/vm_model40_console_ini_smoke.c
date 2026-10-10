@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "test/app-nxvm/integration/support/nxvm_console_process.h"
+#include "test/core/setup/nxvm_console_process.h"
 
 lib_i32 main(lib_i32 argc, char **argv)
 {

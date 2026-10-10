@@ -1,5 +1,5 @@
-#ifndef TEST_APP_NXVM_INTEGRATION_MODEL40_PROFILE_H
-#define TEST_APP_NXVM_INTEGRATION_MODEL40_PROFILE_H
+#ifndef TEST_CORE_SETUP_MODEL40_PROFILE_H
+#define TEST_CORE_SETUP_MODEL40_PROFILE_H
 
 #include "core/machine/machine_private.h"
 #include "app-mydeskpro386/profiles/observation_interface.h"

@@ -6,23 +6,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier mode | New M5 T550 S1 |
-| Admission and owner approval | The owner approved the full test-quality audit findings and directed one normalized unit/integration/diagnostic taxonomy across Shared, Core and all five Apps, including MyNES. |
-| Objective | Establish the test-route contract and repair the verified unlabelled/static, duplicate-registration and Core-manifest defects before relocating external harnesses. |
-| Non-goals | No production/API/firmware/media/INI/snapshot/artifact change; no external integration execution in S1; no generic test framework. |
-| Reference baseline | Clean `273ba3296` descendant; x64 static receiver selection had 118/119 pass with `core.test-manifest` failing because it invokes Emulator's manifest verifier on Core's legacy manifest. |
-| Candidate proposal | [T550 test route and external harness normalization](../proposals/m5-test-route-and-external-harness-normalization.md) |
-| Allowed targets | Shared and NXVM. MyNES is reserved for T550 S2; no MyNES file may change in S1. |
-| Files/ABI surface | Test CMake, test-only verifier scripts, test manifests and NXVM task documentation only. No C/H public surface. |
-| Applicable rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`. |
-| Exact verification | Fresh/reconfigured x64/x86 CTest graphs; Shared/Core route verifier; affected static and unit routes; manifests; `git diff --check`. |
-| Expected markers | `TEST-ROUTE-PARTITION:OK`, correct Core manifest verification, and no duplicate Core/Product static registration. |
-| Asset needs | None. Existing deployed inputs are untouched. |
-| Reporting requirements | Report per-route counts, deleted duplicate routes, names changed, and any residual unclassified registration. Do not claim external integration or desktop validation. |
-| Stop conditions | Stop and report if classification requires production behavior, a public API, a second provider/test framework, or an App-to-App production dependency. |
-| Exit criteria | Each S1 CTest registration has exactly one route and one owner; the corrected Core manifest gate and affected x64/x86 Shared/Core unit/static selections pass. |
-| Original owner request | Perform a complete test/code-quality audit, clean unit coverage/ownership before integration execution; classify diagnostics separately and put neutral four-PC setup under `test/core`. |
-| Similar-issue sweep | Inspect all registrations in Shared/Core and all static manifest/boundary entries, not only the two observed duplicates. |
+| Identifier Mode | Continuation: NXVM M5 T550 S3; NXVM/Core is the sole implementation target. |
+| Admission And Approval | Owner approved the repository-wide route normalization and instructed automatic admission of the planned S tasks on 2026-10-10. |
+| Objective | Give neutral four-PC external harness support the Core test owner, place opt-in probes under explicit diagnostic trees, and remove App-to-peer-App test-support includes. |
+| Non-goals | No production/API/firmware/media/INI/snapshot/artifact change; retain normal App external integration cases; do not execute external integration qualification. |
+| Reference Baseline | `e290ba1ed`; T550 S1 and S2 route/owner normalization are pushed. |
+| Candidate Proposal | [T550 test route and external harness normalization](../proposals/m5-test-route-and-external-harness-normalization.md), S3. |
+| Files And ABI Surface | `test/core/{setup,diagnostic}`, NXVM/App integration test sources and CMake registration, Core/NXVM test manifests, NXVM task documentation only; no public ABI. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`. |
+| Verification | Reconfigure x64/x86 graphs; run route ownership/static gates, moved-support consumers and diagnostic build targets; verify manifests and `git diff --check`. |
+| Expected Markers | No include from one App test tree into another; `test/core/setup` owns neutral session/console harnesses; probes do not enter ordinary integration registration. |
+| Asset Needs | None. Existing deployed inputs are untouched. |
+| Reporting Requirements | Report each support/probe disposition, x64/x86 evidence, and unexecuted external/desktop work separately. |
+| Stop Conditions | Stop and report if a test requires a production/API change, its actual assertion cannot be assigned to a single owner, or a diagnostic is discovered to be a required integration qualification. |
+| Exit Criteria | Neutral harness support is Core-owned, diagnostics are opt-in and unregistered, normal App integration entries remain App-owned, no peer-App test-support include remains, and target-scoped verification passes. |
+| Original Owner Request | Make MyNES classification consistent; create parallel `unit`, `integration`, `diagnostic`, and `setup` ownership; Core owns four-PC shared support and neutral external harnesses. |
+| Similar-Issue Sweep | Inspect every App integration support include and every opt-in executable under NXVM test CMake, not only the named Windows and Model 40 probes. |
 
 | Work | Progress |
 | --- | --- |

@@ -4,7 +4,7 @@
 
 #include <windows.h>
 
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 #include "core/product/factory_interface.h"
 #include VM_PRODUCT_BINDING_HEADER
 #include "core/machine/machine_private.h"

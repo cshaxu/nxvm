@@ -19,11 +19,20 @@ include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 shared_register_test(core product/ini core-product)
 shared_register_test(core product/factory core-product)
 
+set(core_external_test_directories
+    "${CMAKE_CURRENT_LIST_DIR}/setup"
+    "${CMAKE_CURRENT_LIST_DIR}/integration"
+    "${CMAKE_CURRENT_LIST_DIR}/diagnostic")
+string(REPLACE ";" "\\;" core_external_test_directories_argument
+    "${core_external_test_directories}")
+
 add_test(NAME core.test-types-boundary COMMAND "${CMAKE_COMMAND}"
     "-DTEST_ROOTS=${CMAKE_CURRENT_LIST_DIR}"
+    "-DTEST_EXCLUDE_DIRECTORIES=${core_external_test_directories_argument}"
     -P "${CMAKE_CURRENT_LIST_DIR}/../verify_types_boundary.cmake")
 add_test(NAME core.test-ownership COMMAND "${CMAKE_COMMAND}"
     "-DTEST_ROOT=${CMAKE_CURRENT_LIST_DIR}" "-DTEST_LAYER=core"
+    "-DTEST_EXCLUDE_DIRECTORIES=${core_external_test_directories_argument}"
     -P "${CMAKE_CURRENT_LIST_DIR}/../verify_test_boundaries.cmake")
 add_test(NAME core.manifest COMMAND "${CMAKE_COMMAND}"
     "-DCORE_ROOT=${CORE_ROOT}" -P "${CORE_ROOT}/verify_manifest.cmake")
@@ -47,6 +56,9 @@ add_test(NAME core.test-manifest COMMAND "${CMAKE_COMMAND}"
 add_test(NAME core.test-route-partition COMMAND "${CMAKE_COMMAND}"
     "-DTEST_DIRECTORY=${CMAKE_BINARY_DIR}"
     -P "${CMAKE_CURRENT_LIST_DIR}/verify_test_route_partition.cmake")
+add_test(NAME core.app-test-support-boundary COMMAND "${CMAKE_COMMAND}"
+    "-DPROJECT_SOURCE_DIR=${CMAKE_CURRENT_LIST_DIR}/../.."
+    -P "${CMAKE_CURRENT_LIST_DIR}/verify_app_test_support_boundary.cmake")
 set_tests_properties(
     core.test-types-boundary
     core.test-ownership
@@ -55,6 +67,7 @@ set_tests_properties(
     core.verifier-negative
     core.test-manifest
     core.test-route-partition
+    core.app-test-support-boundary
     PROPERTIES LABELS "unit;core" TIMEOUT 30)
 add_custom_target(core-product-tests DEPENDS ${SHARED_CORE_TEST_TARGETS})
 set(SHARED_CORE_TEST_TARGETS)

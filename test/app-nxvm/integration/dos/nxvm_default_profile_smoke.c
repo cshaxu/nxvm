@@ -6,7 +6,7 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/media/fdd_interface.h"
 #include "core/machine/media/hdd_interface.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 
 static lib_i32 verify(const char *directory, const char *file_name)
 {

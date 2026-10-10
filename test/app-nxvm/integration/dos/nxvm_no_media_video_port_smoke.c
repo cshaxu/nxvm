@@ -7,7 +7,7 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 
 #define VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET 100000u
 #define VM_NO_MEDIA_TEXT_CELLS (80u * 25u)

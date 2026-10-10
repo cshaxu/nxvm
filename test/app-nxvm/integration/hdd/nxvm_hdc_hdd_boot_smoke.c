@@ -9,7 +9,7 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/waiting.h"
 #include "core/machine/machine_private.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 
 #define VM_HDC_HDD_BOOT_ADDRESS 0x00007c00u
 #define VM_HDC_HDD_BOOT_BYTES 512u

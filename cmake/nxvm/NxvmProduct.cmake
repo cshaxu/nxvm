@@ -150,7 +150,7 @@ add_executable(vm-model40-byob-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_byob_smoke.c)
 target_link_libraries(vm-model40-byob-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-byob-retirement-capture
-    test/app-mydeskpro386/integration/model40/vm_model40_retirement_capture.c
+    test/app-mydeskpro386/diagnostic/model40/vm_model40_retirement_capture.c
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/support/cmos_fixture.c)
 target_link_libraries(vm-model40-byob-retirement-capture PRIVATE
@@ -163,7 +163,7 @@ add_executable(vm-model40-hdc-smoke
 target_link_libraries(vm-model40-hdc-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-console-ini-smoke
     test/app-mydeskpro386/integration/product/vm_model40_console_ini_smoke.c
-    test/app-nxvm/integration/support/nxvm_console_process.c)
+    test/core/setup/nxvm_console_process.c)
 target_include_directories(vm-model40-console-ini-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
 target_link_libraries(vm-model40-console-ini-smoke PRIVATE vm-app vm-profile-tests)
@@ -209,7 +209,7 @@ add_executable(vm-app-default-profile-smoke test/app-nxvm/integration/dos/nxvm_d
 target_link_libraries(vm-app-default-profile-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-app-console-lifecycle-smoke
     test/app-nxvm/integration/product/nxvm_console_lifecycle_smoke.c
-    test/app-nxvm/integration/support/nxvm_console_process.c)
+    test/core/setup/nxvm_console_process.c)
 target_include_directories(vm-app-console-lifecycle-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
 target_link_libraries(vm-app-console-lifecycle-smoke PRIVATE
@@ -218,7 +218,7 @@ if(WIN32)
     # Diagnostic observer only: a captured screen requires semantic review;
     # process survival must not become a passing CTest boot assertion.
     add_executable(nxvm-deployed-boot-probe
-        test/app-nxvm/integration/product/nxvm_deployed_boot_probe.c)
+        test/app-nxvm/diagnostic/product/nxvm_deployed_boot_probe.c)
     target_include_directories(nxvm-deployed-boot-probe PRIVATE "${CMAKE_SOURCE_DIR}/src")
     target_link_libraries(nxvm-deployed-boot-probe PRIVATE gdi32 user32)
 endif()
@@ -780,7 +780,7 @@ add_executable(vm-ata-pio-dos-smoke
 )
 target_link_libraries(vm-ata-pio-dos-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-byob-dos-boot-probe
-    test/app-nxvm/integration/dos/nxvm_byob_dos_boot_probe.c
+    test/core/diagnostic/dos/nxvm_byob_dos_boot_probe.c
     test/core/support/boot_fixture.c
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/support/boot_fixture.c
@@ -791,7 +791,7 @@ add_executable(vm-byob-dos-boot-probe
 )
 target_link_libraries(vm-byob-dos-boot-probe PRIVATE integration-session-ini-support)
 add_library(integration-session-ini-support STATIC
-    test/app-nxvm/integration/support/session_ini.c
+    test/core/setup/session_ini.c
 )
 target_link_libraries(integration-session-ini-support PUBLIC
     vm-profile-tests
@@ -801,7 +801,7 @@ target_include_directories(integration-session-ini-support PUBLIC
     "${CMAKE_SOURCE_DIR}"
 )
 add_executable(vm-profile-floppy-boot-matrix
-    test/app-nxvm/integration/dos/nxvm_profile_floppy_boot_matrix.c
+    test/core/integration/dos/pc_profile_floppy_boot_matrix.c
 )
 target_link_libraries(vm-profile-floppy-boot-matrix PRIVATE
     integration-session-ini-support)
@@ -817,7 +817,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-checkpoint PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-setup-probe
-    test/app-nxvm/integration/windows/nxvm_windows31_setup_probe.c
+    test/app-nxvm/diagnostic/windows/nxvm_windows31_setup_probe.c
     test/core/board-base/support/controller_fixture.c
 )
 target_link_libraries(vm-windows31-setup-probe PRIVATE integration-session-ini-support)
@@ -825,21 +825,21 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-setup-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-int13-trace-probe
-    test/app-nxvm/integration/windows/nxvm_windows31_int13_trace_probe.c
+    test/app-nxvm/diagnostic/windows/nxvm_windows31_int13_trace_probe.c
 )
 target_link_libraries(vm-windows31-int13-trace-probe PRIVATE integration-session-ini-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-int13-trace-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-dos-fdisk-probe
-    test/app-nxvm/integration/dos/nxvm_dos_fdisk_probe.c
+    test/app-nxvm/diagnostic/dos/nxvm_dos_fdisk_probe.c
 )
 target_link_libraries(vm-dos-fdisk-probe PRIVATE integration-session-ini-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-dos-fdisk-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-hdd-admission-probe
-    test/app-nxvm/integration/windows/nxvm_windows31_hdd_admission_probe.c
+    test/app-nxvm/diagnostic/windows/nxvm_windows31_hdd_admission_probe.c
     test/core/board-base/support/controller_fixture.c
 )
 target_link_libraries(vm-windows31-hdd-admission-probe PRIVATE integration-session-ini-support)
@@ -1522,8 +1522,7 @@ set(PROJECT_INTEGRATION_FDD_TARGETS
 set(PROJECT_INTEGRATION_FDD_HDD_TARGETS
     vm-app-default-profile-smoke
     vm-full-pc-session-smoke
-    vm-windows31-checkpoint
-    vm-windows31-int13-trace-probe)
+    vm-windows31-checkpoint)
 set(PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS vm-ata-pio-dos-smoke)
 set(PROJECT_INTEGRATION_HDD_TARGETS vm-hdc-hdd-boot-smoke)
 set(PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS
@@ -1667,6 +1666,8 @@ function(project_test_app_label target out_label)
             list(APPEND project_test_labels app-my5170)
         elseif(project_test_relative_path MATCHES "^test/app-mydeskpro386/")
             list(APPEND project_test_labels app-mydeskpro386)
+        elseif(project_test_relative_path MATCHES "^test/core/(integration|diagnostic)/")
+            list(APPEND project_test_labels core)
         elseif(project_test_relative_path MATCHES "^test/core/machine/qualification/")
             list(APPEND project_test_labels pc-qualification)
         endif()
@@ -1835,8 +1836,6 @@ foreach(target IN LISTS PROJECT_INTEGRATION_FDD_HDD_TARGETS)
     if(target STREQUAL "vm-windows31-checkpoint")
         project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
     elseif(target STREQUAL "vm-full-pc-session-smoke")
-        project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
-    elseif(target STREQUAL "vm-windows31-int13-trace-probe")
         project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
     elseif(target STREQUAL "vm-app-default-profile-smoke")
         project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini

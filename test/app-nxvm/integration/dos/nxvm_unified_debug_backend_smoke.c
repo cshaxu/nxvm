@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "core/machine/machine_private.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 #include "product/debug/protocol_interface.h"
 
 static lib_i32 debug_trace_one(integration_ini_session *session)

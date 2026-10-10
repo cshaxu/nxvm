@@ -1,5 +1,5 @@
 #include "core/machine/machine_interface.h"
-#include "../support/model40_profile.h"
+#include "test/core/setup/model40_profile.h"
 #include "../../../core/machine/support/media.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
@@ -16,7 +16,7 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "core/board-base/floppy_interface.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 
 #define BOOT_TIMEOUT 180000u
 #define BOOT_POLL 10u

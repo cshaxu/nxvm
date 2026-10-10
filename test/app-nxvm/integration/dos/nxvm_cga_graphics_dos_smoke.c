@@ -8,7 +8,7 @@
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 
 #define VM_CGA_DOS_BOOT_BUDGET 6000000u
 #define VM_CGA_DOS_RUN_BUDGET 400000u

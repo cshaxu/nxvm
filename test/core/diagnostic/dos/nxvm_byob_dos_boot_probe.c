@@ -1,6 +1,6 @@
 #include "../../../core/machine/support/guest_input.h"
 #include "core/machine/machine_interface.h"
-#include "../support/model40_profile.h"
+#include "test/core/setup/model40_profile.h"
 #include "../../../core/board-base/support/boot_fixture.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
@@ -17,7 +17,7 @@
 #include "../../../core/board-base/composition/composition_fixture.h"
 #include "core/x86/retirement_observation_interface.h"
 #include "core/x86/trace_interface.h"
-#include "test/app-nxvm/integration/support/session_ini.h"
+#include "test/core/setup/session_ini.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
 #include "core/x86/machine_interface.h"
