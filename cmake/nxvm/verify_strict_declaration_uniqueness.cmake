@@ -25,7 +25,7 @@ foreach(project_strict_declaration_record IN LISTS project_strict_declaration_re
 endforeach()
 project_strict_declaration_has_duplicate("${project_strict_declaration_records}" project_strict_declaration_duplicate)
 if(project_strict_declaration_duplicate)
-    message(FATAL_ERROR "T344 duplicate target-local strict declaration.")
+    message(FATAL_ERROR "Duplicate target-local strict declaration.")
 endif()
 set(project_strict_declaration_negative_records "negative|-Wall" "negative|-Wall")
 project_strict_declaration_has_duplicate("${project_strict_declaration_negative_records}"

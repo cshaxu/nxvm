@@ -2,24 +2,24 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S16 Complete: Repair NXVM Integration Composition Adaptation)
+## Current Task — M5 T548 (S17 Complete: Normalize Direct Compilation Verification Identity)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S16. S1-S15 completed the initial duplicate, ownership and identity classification work. This S repairs the stale NXVM integration composition helper discovered by the strict direct-compilation matrix. |
+| Identifier Mode | Continuation T548 S17. S1-S16 completed the initial duplicate, ownership and identity classification work. This S normalizes the live direct-compilation and deferred-ownership verification group. |
 | Admission And Approval | Owner instruction in this conversation: close the old T, then admit the first queued T to repair the complete NXVM test corpus cleanly. Standing push approval applies. |
 | Objective | Freeze a complete behavior-level ownership and coverage ledger for every registered repository unit test and production owner, then repair misplaced, duplicated, incomplete or non-independent coverage without losing component, profile, board, CPU, composition or failure evidence. |
 | Non-goals | No production behavior or public ABI change merely to simplify tests; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools as units; no sibling-repository edit. |
 | Reference Baseline | T547 closure commits `5b1d07412`, `08a6a19f4` and `6be3ce8ee`; re-freeze the current committed source/test/build graph before any move, merge or deletion. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | Repair only `test/app-nxvm/integration/support/session_ini.c` to use the current `app_composed_machine.composition.machine` layout and initialize the local composition result. No production API, CTest route, asset, firmware, media or executable input changes. |
+| Files And ABI Surface | Rename only the live direct-compilation/deferred-ownership verifier helpers, generated matrices and custom targets to behavior identities. Preserve all strict/deferred classification predicates, negative self-test and warning audit. No production or C test source changes. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | Run the live direct strict-compilation matrix on x64 and x86; it must compile the repaired integration support route as part of the existing 500-row matrix. |
-| Expected Markers | The integration helper uses no retired composition field and preserves its existing restart/teardown flow. |
+| Verification | Generate fresh x64/x86 Ninja graphs, enumerate the renamed targets, and run the direct-compilation, deferred-ownership, negative self-test and warning-audit predicates against those graphs. |
+| Expected Markers | Active filenames, targets, variables and generated matrices describe behavior rather than historical task numbers; provenance remains in comments/evidence only. |
 | Asset Needs | None. INIs, media, snapshots and artifacts are not edited. |
 | Reporting Requirements | Report source/target/output before-and-after identities, exact test count delta, line delta and dual-width result. Do not rename historical evidence or claim behavior coverage from names. |
 | Stop Conditions | Ambiguous semantic replacement, an external identity contract, an old reference outside MyDeskPro386 scope, required production change, or loss of an existing assertion. |
-| Exit Criteria | The integration helper matches the current composition contract and the unchanged direct matrix passes on x64/x86. T548 remains open. |
+| Exit Criteria | The verifier group has behavior identities, preserved assertions/dependencies and passing x64/x86 verification. T548 remains open. |
 | Original Owner Request | Repair the entire NXVM test suite cleanly after closing the old lifecycle/product task. |
 | Similar-Issue Sweep | Inventory every C/CMake test entry, alias, fixture, negative gate and unit runner outside integration; distinguish component proof, composition increment, App/profile proof and non-unit tooling before assigning a canonical owner. |
 
@@ -42,6 +42,7 @@
 | T548 S14 | Complete: fixture-shape verification now has behavior identities, resolves only current test paths and passes on x64/x86. It preserves the 101 historical identities, removes duplicate Glob/explicit inputs, and classifies the two later Core direct constructors, for 135 current constructors. No test assertion, integration route, production code or artifact input changed. |
 | T548 S15 | Complete: strict-declaration uniqueness verification now has behavior identities for its file, target, variables and generated matrix. Its exact 532 target-option declaration predicate passes on x64/x86; direct-compilation/T345 consumers remain untouched. No production code, artifact input or CTest route changed. |
 | T548 S16 | Complete: repaired the stale NXVM integration session helper to initialize `app_composed_machine` and read its current `composition.machine` member rather than the retired direct field. The existing 500-row direct strict-compilation matrix passes on x64 and x86 (497 retained strict, 3 deferred). No production code, CTest route, asset input or executable artifact is retained by this test-only S. |
+| T548 S17 | Complete: direct-compilation and deferred-ownership verifier filenames, targets, variables, generated matrices and diagnostics now use behavior identities. The formerly unpopulated residual ledger now declares the three actual deferred Core Product source rows, allowing the existing exact-ownership predicate to run. The matrix now retains the generated firmware source even in a fresh build tree: fresh x64/x86 CMake graphs prove 500 matrix rows (497 strict, 3 deferred), 151 ownership rows (148 owner tests, 3 residual product entries), the duplicate-row negative self-test and 151-command warning audit. No production or C test source changed; generated executable changes were discarded. |
 | T547 S5 | Closed at owner direction. P1 `9131545d8` replaces the live Product with the SoftPC command/keyboard base and App extensions; P2 `09cbfcf93` removes the SoftPC-branded fault message; P3 `3ff1e89f8` moves NXVM identity out of shared Product; P4 `7a2f23574` reduces the shared opening contract to App-provided text. Eight 0546 App artifacts were rebuilt. Product entry/command/manifest focused checks passed on x64; full dual-width Product and complete T547 qualification remain open and are not claimed by this S closure. |
 | T547 S6 | Complete: `bf469c879` adopts SoftPC S16's ownership correction without importing SoftPC runtime code. NXVM-family configuration/factory/extension support and direct tests now live in `src/core/product` and `test/core/product`; the old `ibmpc/nxvm` member is gone. IBM PC and core gates plus 8 focused tests pass on x64 and x86; all eight 0546 product artifacts were rebuilt against the relocated link input. |
 | T547 S7 | Superseded into S8 before P delivery: its uncommitted canonical Core rehome is retained as S8's required receiver baseline rather than split into an unbuildable partial commit. |

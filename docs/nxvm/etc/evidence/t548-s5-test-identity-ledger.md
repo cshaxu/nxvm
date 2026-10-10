@@ -198,3 +198,32 @@ The unchanged 500-row direct strict-compilation matrix passed on x64 and x86:
 497 retained strict rows and three explicitly deferred rows.  This is a
 test-only compatibility repair; generated executable changes from the build
 graph are discarded rather than published.
+
+## S17 Disposition: Direct Compilation And Deferred Ownership
+
+The active direct-compilation and deferred-ownership verifier group formerly
+exposed historical task identities through CMake filenames, custom targets,
+variables, generated matrix names and diagnostics.  S17 renames only those
+live interfaces to their behavior identities:
+
+- direct-compilation matrix;
+- deferred direct ownership;
+- owner-test strict classification;
+- safe-production strict classification; and
+- residual direct classification.
+
+The matrix semantics are unchanged.  While executing the renamed ownership
+verifier, the pre-existing residual source ledger was shown to be empty even
+though the direct matrix has three deferred `core-product` sources.  The
+verifier correctly rejected that mismatch.  The finite ledger now explicitly
+records `factory.c`, `ini.c` and `startup.c` as the three Core Product residual
+entries, so the existing exact-key predicate can verify rather than remain a
+permanent failing route.
+
+Fresh x64 and x86 configuration graphs each verify 500 direct-compilation rows
+(497 retained strict, three deferred), 151 ownership rows (148 owner tests and
+three exact residual product entries), the duplicate-row negative self-test,
+and a 151-command deferred-warning audit.  No production or C test assertion
+changed.  The existing build directory's Ninja log recompaction was not used
+for this evidence; temporary clean configuration graphs avoid that host-local
+metadata failure, and any generated executable changes were discarded.

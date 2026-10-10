@@ -2807,134 +2807,133 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-control-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-# T345 S2 promotes only non-strict unit executables whose complete
+# owner-test strict classification promotes only non-strict unit executables whose complete
 # direct C source set is project-owned test code. Targets that compile even one
 # production source remain outside this cohort for S3 ownership separation.
-set(PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
-set(PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS)
-foreach(project_t345_target IN LISTS PROJECT_ALL_TEST_TARGETS)
-    get_target_property(project_t345_options ${project_t345_target} COMPILE_OPTIONS)
-    set(project_t345_already_strict TRUE)
-    foreach(project_t345_flag IN ITEMS -Wall -Wextra -Wpedantic -Werror)
-        list(FIND project_t345_options "${project_t345_flag}" project_t345_flag_index)
-        if(project_t345_flag_index EQUAL -1)
-            set(project_t345_already_strict FALSE)
+set(PROJECT_OWNER_TEST_STRICT_TARGETS)
+foreach(project_owner_test_target IN LISTS PROJECT_ALL_TEST_TARGETS)
+    get_target_property(project_owner_test_options ${project_owner_test_target} COMPILE_OPTIONS)
+    set(project_owner_test_already_strict TRUE)
+    foreach(project_owner_test_flag IN ITEMS -Wall -Wextra -Wpedantic -Werror)
+        list(FIND project_owner_test_options "${project_owner_test_flag}" project_owner_test_flag_index)
+        if(project_owner_test_flag_index EQUAL -1)
+            set(project_owner_test_already_strict FALSE)
         endif()
     endforeach()
-    if(project_t345_already_strict)
+    if(project_owner_test_already_strict)
         continue()
     endif()
-    get_target_property(project_t345_sources ${project_t345_target} SOURCES)
-    get_target_property(project_t345_source_dir ${project_t345_target} SOURCE_DIR)
-    set(project_t345_has_c_source FALSE)
-    set(project_t345_all_test_sources TRUE)
-    foreach(project_t345_source IN LISTS project_t345_sources)
-        if(IS_ABSOLUTE "${project_t345_source}")
-            set(project_t345_source_path "${project_t345_source}")
+    get_target_property(project_owner_test_sources ${project_owner_test_target} SOURCES)
+    get_target_property(project_owner_test_source_dir ${project_owner_test_target} SOURCE_DIR)
+    set(project_owner_test_has_c_source FALSE)
+    set(project_owner_test_all_test_sources TRUE)
+    foreach(project_owner_test_source IN LISTS project_owner_test_sources)
+        if(IS_ABSOLUTE "${project_owner_test_source}")
+            set(project_owner_test_source_path "${project_owner_test_source}")
         else()
-            get_filename_component(project_t345_source_path
-                "${project_t345_source}" ABSOLUTE
-                BASE_DIR "${project_t345_source_dir}")
+            get_filename_component(project_owner_test_source_path
+                "${project_owner_test_source}" ABSOLUTE
+                BASE_DIR "${project_owner_test_source_dir}")
         endif()
-        if(NOT project_t345_source_path MATCHES "\\.c$" OR
-                NOT EXISTS "${project_t345_source_path}")
+        if(NOT project_owner_test_source_path MATCHES "\\.c$" OR
+                NOT EXISTS "${project_owner_test_source_path}")
             continue()
         endif()
-        set(project_t345_has_c_source TRUE)
-        file(RELATIVE_PATH project_t345_relative_source
-            "${CMAKE_SOURCE_DIR}" "${project_t345_source_path}")
-        if(NOT project_t345_relative_source MATCHES "^test/")
-            set(project_t345_all_test_sources FALSE)
+        set(project_owner_test_has_c_source TRUE)
+        file(RELATIVE_PATH project_owner_test_relative_source
+            "${CMAKE_SOURCE_DIR}" "${project_owner_test_source_path}")
+        if(NOT project_owner_test_relative_source MATCHES "^test/")
+            set(project_owner_test_all_test_sources FALSE)
         endif()
     endforeach()
-    if(project_t345_has_c_source AND project_t345_all_test_sources)
-        list(APPEND PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS ${project_t345_target})
-    elseif(project_t345_has_c_source)
-        list(APPEND PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS ${project_t345_target})
+    if(project_owner_test_has_c_source AND project_owner_test_all_test_sources)
+        list(APPEND PROJECT_OWNER_TEST_STRICT_TARGETS ${project_owner_test_target})
     endif()
 endforeach()
-list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
-list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(project_t345_s2_pure_count EQUAL 0)
+list(LENGTH PROJECT_OWNER_TEST_STRICT_TARGETS project_owner_test_pure_count)
+if(project_owner_test_pure_count EQUAL 0)
     message(FATAL_ERROR
-        "T345 S2 has no owner-test targets to compile strictly.")
+        "owner-test strict classification has no owner-test targets to compile strictly.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
-        target_compile_options(${project_t345_target} PRIVATE
+    foreach(project_owner_test_target IN LISTS PROJECT_OWNER_TEST_STRICT_TARGETS)
+        target_compile_options(${project_owner_test_target} PRIVATE
             -Wall -Wextra -Wpedantic -Werror)
     endforeach()
 endif()
-string(REPLACE ";" "\n" project_t345_s2_target_contents
-    "${PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS}")
+string(REPLACE ";" "\n" project_owner_test_target_contents
+    "${PROJECT_OWNER_TEST_STRICT_TARGETS}")
 file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt"
-    CONTENT "${project_t345_s2_target_contents}\n")
+    OUTPUT "${CMAKE_BINARY_DIR}/owner-test-strict-targets.txt"
+    CONTENT "${project_owner_test_target_contents}\n")
 
-# T345 S3 promotes only production targets whose complete direct source
+# safe-production strict classification promotes only production targets whose complete direct source
 # surface is independently owned by the target and clean in the S1 audit.
 # Their strictness remains target-local and never substitutes for a linked
 # production dependency.
-set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES)
-set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
-foreach(project_t345_s3_entry IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES)
-    string(REPLACE "|" ";" project_t345_s3_fields "${project_t345_s3_entry}")
-    list(GET project_t345_s3_fields 0 project_t345_s3_target)
-    list(GET project_t345_s3_fields 1 project_t345_s3_source)
-    get_target_property(project_t345_s3_sources ${project_t345_s3_target} SOURCES)
-    get_target_property(project_t345_s3_source_dir ${project_t345_s3_target} SOURCE_DIR)
-    set(project_t345_s3_normalized_sources)
-    foreach(project_t345_s3_current_source IN LISTS project_t345_s3_sources)
-        if(IS_ABSOLUTE "${project_t345_s3_current_source}")
-            set(project_t345_s3_absolute_source "${project_t345_s3_current_source}")
+set(PROJECT_SAFE_PRODUCTION_STRICT_ENTRIES)
+set(PROJECT_SAFE_PRODUCTION_STRICT_TARGETS)
+foreach(project_safe_production_entry IN LISTS PROJECT_SAFE_PRODUCTION_STRICT_ENTRIES)
+    string(REPLACE "|" ";" project_safe_production_fields "${project_safe_production_entry}")
+    list(GET project_safe_production_fields 0 project_safe_production_target)
+    list(GET project_safe_production_fields 1 project_safe_production_source)
+    get_target_property(project_safe_production_sources ${project_safe_production_target} SOURCES)
+    get_target_property(project_safe_production_source_dir ${project_safe_production_target} SOURCE_DIR)
+    set(project_safe_production_normalized_sources)
+    foreach(project_safe_production_current_source IN LISTS project_safe_production_sources)
+        if(IS_ABSOLUTE "${project_safe_production_current_source}")
+            set(project_safe_production_absolute_source "${project_safe_production_current_source}")
         else()
-            get_filename_component(project_t345_s3_absolute_source
-                "${project_t345_s3_current_source}" ABSOLUTE
-                BASE_DIR "${project_t345_s3_source_dir}")
+            get_filename_component(project_safe_production_absolute_source
+                "${project_safe_production_current_source}" ABSOLUTE
+                BASE_DIR "${project_safe_production_source_dir}")
         endif()
-        file(RELATIVE_PATH project_t345_s3_relative_source
-            "${CMAKE_SOURCE_DIR}" "${project_t345_s3_absolute_source}")
-        list(APPEND project_t345_s3_normalized_sources
-            "${project_t345_s3_relative_source}")
+        file(RELATIVE_PATH project_safe_production_relative_source
+            "${CMAKE_SOURCE_DIR}" "${project_safe_production_absolute_source}")
+        list(APPEND project_safe_production_normalized_sources
+            "${project_safe_production_relative_source}")
     endforeach()
-    list(LENGTH project_t345_s3_sources project_t345_s3_source_count)
-    list(FIND project_t345_s3_normalized_sources "${project_t345_s3_source}"
-        project_t345_s3_source_index)
-    if(NOT project_t345_s3_source_count EQUAL 1 OR
-            project_t345_s3_source_index EQUAL -1)
+    list(LENGTH project_safe_production_sources project_safe_production_source_count)
+    list(FIND project_safe_production_normalized_sources "${project_safe_production_source}"
+        project_safe_production_source_index)
+    if(NOT project_safe_production_source_count EQUAL 1 OR
+            project_safe_production_source_index EQUAL -1)
         message(FATAL_ERROR
-            "T345 S3 requires ${project_t345_s3_target} to compile only ${project_t345_s3_source} directly.")
+            "safe-production strict classification requires ${project_safe_production_target} to compile only ${project_safe_production_source} directly.")
     endif()
-    list(APPEND PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS
-        "${project_t345_s3_target}")
+    list(APPEND PROJECT_SAFE_PRODUCTION_STRICT_TARGETS
+        "${project_safe_production_target}")
 endforeach()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    foreach(project_t345_s3_target IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
-        target_compile_options(${project_t345_s3_target} PRIVATE
+    foreach(project_safe_production_target IN LISTS PROJECT_SAFE_PRODUCTION_STRICT_TARGETS)
+        target_compile_options(${project_safe_production_target} PRIVATE
             -Wall -Wextra -Wpedantic -Werror)
     endforeach()
 endif()
-string(REPLACE ";" "\n" project_t345_s3_entry_contents
-    "${PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES}")
+string(REPLACE ";" "\n" project_safe_production_entry_contents
+    "${PROJECT_SAFE_PRODUCTION_STRICT_ENTRIES}")
 file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt"
-    CONTENT "${project_t345_s3_entry_contents}\n")
+    OUTPUT "${CMAKE_BINARY_DIR}/safe-production-strict-entries.txt"
+    CONTENT "${project_safe_production_entry_contents}\n")
 
-# T345 S4 retains every production source that cannot be promoted without
+# Residual direct classification retains every production source that cannot be promoted without
 # mixing inherited/runtime ownership.  This exact source ledger is consumed by
 # the verifier; the supporting evidence and TODO define each domain's risk and
 # next admission condition.
-set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES)
-string(REPLACE ";" "\n" project_t345_s4_residual_contents
-    "${PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES}")
+set(PROJECT_RESIDUAL_DIRECT_ENTRIES
+    "core-product|src/core/product/factory.c|core-product"
+    "core-product|src/core/product/ini.c|core-product"
+    "core-product|src/core/product/startup.c|core-product")
+string(REPLACE ";" "\n" project_residual_direct_residual_contents
+    "${PROJECT_RESIDUAL_DIRECT_ENTRIES}")
 file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/t345-s4-residual-direct-entries.txt"
-    CONTENT "${project_t345_s4_residual_contents}\n")
+    OUTPUT "${CMAKE_BINARY_DIR}/residual-direct-entries.txt"
+    CONTENT "${project_residual_direct_residual_contents}\n")
 
-# T344 owns a direct-command matrix for every production library/current
+# Direct compilation owns a direct-command matrix for every production library/current
 # artifact and every unit executable.  A linked strict library never
 # substitutes for the direct compile command of a smoke source.
-set(PROJECT_T344_PRODUCTION_TARGETS
+set(PROJECT_DIRECT_COMPILATION_PRODUCTION_TARGETS
     mydeskpro386-d4
     core-product
     product-surface
@@ -2952,74 +2951,78 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     vm-app
     emulator-ui
     ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})
-set(PROJECT_T344_DIRECT_COMPILE_TARGETS
-    ${PROJECT_T344_PRODUCTION_TARGETS}
+set(PROJECT_DIRECT_COMPILATION_TARGETS
+    ${PROJECT_DIRECT_COMPILATION_PRODUCTION_TARGETS}
     ${PROJECT_ALL_TEST_TARGETS})
-list(REMOVE_DUPLICATES PROJECT_T344_DIRECT_COMPILE_TARGETS)
+list(REMOVE_DUPLICATES PROJECT_DIRECT_COMPILATION_TARGETS)
 
-set(PROJECT_T344_DIRECT_COMPILE_MATRIX)
-set(PROJECT_T344_STRICT_DIRECT_TARGETS)
-foreach(project_t344_target IN LISTS PROJECT_T344_DIRECT_COMPILE_TARGETS)
-    if(NOT TARGET ${project_t344_target})
-        message(FATAL_ERROR "T344 direct-compilation target is missing: ${project_t344_target}")
+set(PROJECT_DIRECT_COMPILATION_MATRIX)
+set(PROJECT_STRICT_DIRECT_TARGETS)
+foreach(project_direct_compilation_target IN LISTS PROJECT_DIRECT_COMPILATION_TARGETS)
+    if(NOT TARGET ${project_direct_compilation_target})
+        message(FATAL_ERROR "Direct-compilation target is missing: ${project_direct_compilation_target}")
     endif()
-    get_target_property(project_t344_alias ${project_t344_target} ALIASED_TARGET)
-    if(project_t344_alias)
-        set(project_t344_target ${project_t344_alias})
+    get_target_property(project_direct_compilation_alias ${project_direct_compilation_target} ALIASED_TARGET)
+    if(project_direct_compilation_alias)
+        set(project_direct_compilation_target ${project_direct_compilation_alias})
     endif()
-    get_target_property(project_t344_target_sources ${project_t344_target} SOURCES)
-    get_target_property(project_t344_target_source_dir ${project_t344_target} SOURCE_DIR)
-    get_target_property(project_t344_target_options ${project_t344_target} COMPILE_OPTIONS)
-    set(project_t344_target_strict TRUE)
-    foreach(project_t344_required_flag IN ITEMS -Wall -Wextra -Wpedantic -Werror)
-        list(FIND project_t344_target_options "${project_t344_required_flag}"
-            project_t344_flag_index)
-        if(project_t344_flag_index EQUAL -1)
-            set(project_t344_target_strict FALSE)
+    get_target_property(project_direct_compilation_target_sources ${project_direct_compilation_target} SOURCES)
+    get_target_property(project_direct_compilation_target_source_dir ${project_direct_compilation_target} SOURCE_DIR)
+    get_target_property(project_direct_compilation_target_options ${project_direct_compilation_target} COMPILE_OPTIONS)
+    set(project_direct_compilation_target_strict TRUE)
+    foreach(project_direct_compilation_required_flag IN ITEMS -Wall -Wextra -Wpedantic -Werror)
+        list(FIND project_direct_compilation_target_options "${project_direct_compilation_required_flag}"
+            project_direct_compilation_flag_index)
+        if(project_direct_compilation_flag_index EQUAL -1)
+            set(project_direct_compilation_target_strict FALSE)
         endif()
     endforeach()
-    foreach(project_t344_source IN LISTS project_t344_target_sources)
-        if(IS_ABSOLUTE "${project_t344_source}")
-            set(project_t344_source_path "${project_t344_source}")
+    foreach(project_direct_compilation_source IN LISTS project_direct_compilation_target_sources)
+        if(IS_ABSOLUTE "${project_direct_compilation_source}")
+            set(project_direct_compilation_source_path "${project_direct_compilation_source}")
         else()
-            get_filename_component(project_t344_source_path
-                "${project_t344_source}" ABSOLUTE
-                BASE_DIR "${project_t344_target_source_dir}")
+            get_filename_component(project_direct_compilation_source_path
+                "${project_direct_compilation_source}" ABSOLUTE
+                BASE_DIR "${project_direct_compilation_target_source_dir}")
         endif()
-        if(NOT project_t344_source_path MATCHES "\\.c$" OR
-                NOT EXISTS "${project_t344_source_path}")
+        get_source_file_property(project_direct_compilation_source_generated
+            "${project_direct_compilation_source_path}"
+            DIRECTORY "${project_direct_compilation_target_source_dir}" GENERATED)
+        if(NOT project_direct_compilation_source_path MATCHES "\\.c$" OR
+                (NOT EXISTS "${project_direct_compilation_source_path}" AND
+                NOT project_direct_compilation_source_generated))
             continue()
         endif()
-        file(RELATIVE_PATH project_t344_source
-            "${CMAKE_SOURCE_DIR}" "${project_t344_source_path}")
-        get_source_file_property(project_t344_source_options
-            "${project_t344_source_path}" DIRECTORY "${project_t344_target_source_dir}"
+        file(RELATIVE_PATH project_direct_compilation_source
+            "${CMAKE_SOURCE_DIR}" "${project_direct_compilation_source_path}")
+        get_source_file_property(project_direct_compilation_source_options
+            "${project_direct_compilation_source_path}" DIRECTORY "${project_direct_compilation_target_source_dir}"
             COMPILE_OPTIONS)
-        set(project_t344_compile_options ${project_t344_target_options}
-            ${project_t344_source_options})
-        set(project_t344_source_strict TRUE)
-        foreach(project_t344_required_flag IN ITEMS -Wall -Wextra -Wpedantic -Werror)
-            list(FIND project_t344_compile_options "${project_t344_required_flag}"
-                project_t344_flag_index)
-            if(project_t344_flag_index EQUAL -1)
-                set(project_t344_source_strict FALSE)
+        set(project_direct_compilation_compile_options ${project_direct_compilation_target_options}
+            ${project_direct_compilation_source_options})
+        set(project_direct_compilation_source_strict TRUE)
+        foreach(project_direct_compilation_required_flag IN ITEMS -Wall -Wextra -Wpedantic -Werror)
+            list(FIND project_direct_compilation_compile_options "${project_direct_compilation_required_flag}"
+                project_direct_compilation_flag_index)
+            if(project_direct_compilation_flag_index EQUAL -1)
+                set(project_direct_compilation_source_strict FALSE)
             endif()
         endforeach()
-        if(project_t344_source_strict)
-            set(project_t344_status retained-strict)
-            set(project_t344_reason target-and-source-strict-options)
-        elseif(project_t344_source MATCHES "^src/")
-            set(project_t344_status deferred)
-            set(project_t344_reason inherited-or-mixed-production-warning-admission)
+        if(project_direct_compilation_source_strict)
+            set(project_direct_compilation_status retained-strict)
+            set(project_direct_compilation_reason target-and-source-strict-options)
+        elseif(project_direct_compilation_source MATCHES "^src/")
+            set(project_direct_compilation_status deferred)
+            set(project_direct_compilation_reason inherited-or-mixed-production-warning-admission)
         else()
-            set(project_t344_status deferred)
-            set(project_t344_reason owner-test-warning-remediation-admission)
+            set(project_direct_compilation_status deferred)
+            set(project_direct_compilation_reason owner-test-warning-remediation-admission)
         endif()
-        list(APPEND PROJECT_T344_DIRECT_COMPILE_MATRIX
-            "${project_t344_target}|${project_t344_source}|${project_t344_status}|${project_t344_reason}")
+        list(APPEND PROJECT_DIRECT_COMPILATION_MATRIX
+            "${project_direct_compilation_target}|${project_direct_compilation_source}|${project_direct_compilation_status}|${project_direct_compilation_reason}")
     endforeach()
-    if(project_t344_target_strict)
-        list(APPEND PROJECT_T344_STRICT_DIRECT_TARGETS ${project_t344_target})
+    if(project_direct_compilation_target_strict)
+        list(APPEND PROJECT_STRICT_DIRECT_TARGETS ${project_direct_compilation_target})
     endif()
 endforeach()
 
@@ -3056,106 +3059,106 @@ add_custom_target(verify-strict-declaration-uniqueness
         -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_strict_declaration_uniqueness.cmake"
     COMMENT "Verifying strict declaration uniqueness"
     VERBATIM)
-list(LENGTH PROJECT_T344_DIRECT_COMPILE_MATRIX project_t344_matrix_count)
-if(project_t344_matrix_count EQUAL 0)
-    message(FATAL_ERROR "T344 direct-compilation matrix is empty.")
+list(LENGTH PROJECT_DIRECT_COMPILATION_MATRIX project_direct_compilation_matrix_count)
+if(project_direct_compilation_matrix_count EQUAL 0)
+    message(FATAL_ERROR "Direct-compilation matrix is empty.")
 endif()
-string(REPLACE ";" "\n" project_t344_matrix_contents
-    "${PROJECT_T344_DIRECT_COMPILE_MATRIX}")
+string(REPLACE ";" "\n" project_direct_compilation_matrix_contents
+    "${PROJECT_DIRECT_COMPILATION_MATRIX}")
 file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt"
-    CONTENT "${project_t344_matrix_contents}\n")
+    OUTPUT "${CMAKE_BINARY_DIR}/direct-compilation-matrix.txt"
+    CONTENT "${project_direct_compilation_matrix_contents}\n")
 
 if(CMAKE_GENERATOR MATCHES "Ninja")
-    add_custom_target(verify-t344-direct-compilation-matrix
+    add_custom_target(verify-direct-compilation-matrix
         COMMAND "${CMAKE_COMMAND}"
-            -DPROJECT_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
-            -DPROJECT_T344_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t344_direct_compilation_matrix.cmake"
-        DEPENDS ${PROJECT_T344_STRICT_DIRECT_TARGETS}
-        COMMENT "Verifying T344 direct strict-compilation matrix"
+            -DPROJECT_DIRECT_COMPILATION_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/direct-compilation-matrix.txt
+            -DPROJECT_DIRECT_COMPILATION_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_direct_compilation_matrix.cmake"
+        DEPENDS ${PROJECT_STRICT_DIRECT_TARGETS}
+        COMMENT "Verifying direct strict-compilation matrix"
         VERBATIM)
     add_dependencies(verify-current-specialized-gates
-        verify-t344-direct-compilation-matrix)
+        verify-direct-compilation-matrix)
 endif()
 
-# T345 consumes only T344's deferred direct commands. It makes the ownership
+# Deferred direct ownership consumes only Direct compilation's deferred direct commands. It makes the ownership
 # boundary explicit before a later S can promote any target to strict GCC
 # compilation; a linked strict library is never an ownership classification.
-set(PROJECT_T345_DEFERRED_OWNERSHIP_MATRIX)
-foreach(project_t344_entry IN LISTS PROJECT_T344_DIRECT_COMPILE_MATRIX)
-    string(REPLACE "|" ";" project_t345_fields "${project_t344_entry}")
-    list(GET project_t345_fields 0 project_t345_target)
-    list(GET project_t345_fields 1 project_t345_source)
-    list(GET project_t345_fields 2 project_t345_status)
-    list(FIND PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS
-        "${project_t345_target}" project_t345_s2_target_index)
-    list(FIND PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS
-        "${project_t345_target}" project_t345_s3_target_index)
-    if(project_t345_status STREQUAL "retained-strict" AND
-            NOT project_t345_s2_target_index EQUAL -1 AND
-            project_t345_source MATCHES "^test/")
-        set(project_t345_class project-owned-owner-test)
-        set(project_t345_mechanism s2-owner-test-strict-cohort)
-    elseif(project_t345_status STREQUAL "retained-strict" AND
-            NOT project_t345_s3_target_index EQUAL -1)
-        set(project_t345_class safely-separable-production)
-        set(project_t345_mechanism s3-safe-production-strict-cohort)
-    elseif(NOT project_t345_status STREQUAL "deferred")
+set(PROJECT_DEFERRED_DIRECT_OWNERSHIP_MATRIX)
+foreach(project_direct_compilation_entry IN LISTS PROJECT_DIRECT_COMPILATION_MATRIX)
+    string(REPLACE "|" ";" project_deferred_direct_fields "${project_direct_compilation_entry}")
+    list(GET project_deferred_direct_fields 0 project_deferred_direct_target)
+    list(GET project_deferred_direct_fields 1 project_deferred_direct_source)
+    list(GET project_deferred_direct_fields 2 project_deferred_direct_status)
+    list(FIND PROJECT_OWNER_TEST_STRICT_TARGETS
+        "${project_deferred_direct_target}" project_owner_test_target_index)
+    list(FIND PROJECT_SAFE_PRODUCTION_STRICT_TARGETS
+        "${project_deferred_direct_target}" project_safe_production_target_index)
+    if(project_deferred_direct_status STREQUAL "retained-strict" AND
+            NOT project_owner_test_target_index EQUAL -1 AND
+            project_deferred_direct_source MATCHES "^test/")
+        set(project_deferred_direct_class project-owned-owner-test)
+        set(project_deferred_direct_mechanism owner-test-strict-cohort)
+    elseif(project_deferred_direct_status STREQUAL "retained-strict" AND
+            NOT project_safe_production_target_index EQUAL -1)
+        set(project_deferred_direct_class safely-separable-production)
+        set(project_deferred_direct_mechanism safe-production-strict-cohort)
+    elseif(NOT project_deferred_direct_status STREQUAL "deferred")
         continue()
-    elseif(project_t345_source MATCHES "^test/")
-        set(project_t345_class project-owned-owner-test)
-        set(project_t345_mechanism s2-owner-test-strict-cohort)
-    elseif(project_t345_target MATCHES "-smoke$")
-        set(project_t345_class embedded-production-test)
-        set(project_t345_mechanism s3-production-owner-warning-remediation)
+    elseif(project_deferred_direct_source MATCHES "^test/")
+        set(project_deferred_direct_class project-owned-owner-test)
+        set(project_deferred_direct_mechanism owner-test-strict-cohort)
+    elseif(project_deferred_direct_target MATCHES "-smoke$")
+        set(project_deferred_direct_class embedded-production-test)
+        set(project_deferred_direct_mechanism production-owner-warning-remediation)
     else()
-        set(project_t345_class mixed-or-inherited-production)
-        set(project_t345_mechanism s3-ownership-separation-and-warning-remediation)
+        set(project_deferred_direct_class mixed-or-inherited-production)
+        set(project_deferred_direct_mechanism ownership-separation-and-warning-remediation)
     endif()
-    list(APPEND PROJECT_T345_DEFERRED_OWNERSHIP_MATRIX
-        "${project_t345_target}|${project_t345_source}|${project_t345_class}|${project_t345_mechanism}")
+    list(APPEND PROJECT_DEFERRED_DIRECT_OWNERSHIP_MATRIX
+        "${project_deferred_direct_target}|${project_deferred_direct_source}|${project_deferred_direct_class}|${project_deferred_direct_mechanism}")
 endforeach()
-string(REPLACE ";" "\n" project_t345_ownership_contents
-    "${PROJECT_T345_DEFERRED_OWNERSHIP_MATRIX}")
+string(REPLACE ";" "\n" project_deferred_direct_ownership_contents
+    "${PROJECT_DEFERRED_DIRECT_OWNERSHIP_MATRIX}")
 file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/t345-deferred-direct-ownership-matrix.txt"
-    CONTENT "${project_t345_ownership_contents}\n")
-file(WRITE "${CMAKE_BINARY_DIR}/t345-invalid-deferred-direct-ownership-matrix.txt"
-    "duplicate|test/duplicate.c|project-owned-owner-test|s2-owner-test-strict-cohort\n"
-    "duplicate|test/duplicate.c|project-owned-owner-test|s2-owner-test-strict-cohort\n")
-add_custom_target(verify-t345-deferred-direct-ownership
+    OUTPUT "${CMAKE_BINARY_DIR}/deferred-direct-ownership-matrix.txt"
+    CONTENT "${project_deferred_direct_ownership_contents}\n")
+file(WRITE "${CMAKE_BINARY_DIR}/invalid-deferred-direct-ownership-matrix.txt"
+    "duplicate|test/duplicate.c|project-owned-owner-test|owner-test-strict-cohort\n"
+    "duplicate|test/duplicate.c|project-owned-owner-test|owner-test-strict-cohort\n")
+add_custom_target(verify-deferred-direct-ownership
     COMMAND "${CMAKE_COMMAND}"
-        -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
-        -DPROJECT_T345_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-ownership-matrix.txt
-        -DPROJECT_T345_S2_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt
-        -DPROJECT_T345_S3_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt
-        -DPROJECT_T345_S4_RESIDUAL_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s4-residual-direct-entries.txt
-        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t345_deferred_direct_ownership.cmake"
-    COMMENT "Verifying T345 deferred direct-compilation ownership"
+        -DPROJECT_DIRECT_COMPILATION_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/direct-compilation-matrix.txt
+        -DPROJECT_DEFERRED_DIRECT_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/deferred-direct-ownership-matrix.txt
+        -DPROJECT_OWNER_TEST_STRICT_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/owner-test-strict-targets.txt
+        -DPROJECT_SAFE_PRODUCTION_STRICT_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/safe-production-strict-entries.txt
+        -DPROJECT_RESIDUAL_DIRECT_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/residual-direct-entries.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_deferred_direct_ownership.cmake"
+    COMMENT "Verifying Deferred direct-compilation ownership"
     VERBATIM)
-add_custom_target(verify-t345-deferred-direct-ownership-selftest
+add_custom_target(verify-deferred-direct-ownership-selftest
     COMMAND "${CMAKE_COMMAND}"
-        -DPROJECT_T345_VERIFIER:FILEPATH=${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t345_deferred_direct_ownership.cmake
-        -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
-        -DPROJECT_T345_S2_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt
-        -DPROJECT_T345_S3_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt
-        -DPROJECT_T345_S4_RESIDUAL_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s4-residual-direct-entries.txt
-        -DPROJECT_T345_INVALID_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-invalid-deferred-direct-ownership-matrix.txt
-        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t345_deferred_direct_ownership_selftest.cmake"
-    COMMENT "Self-testing T345 deferred direct-compilation ownership verification"
+        -DPROJECT_DEFERRED_DIRECT_OWNERSHIP_VERIFIER:FILEPATH=${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_deferred_direct_ownership.cmake
+        -DPROJECT_DIRECT_COMPILATION_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/direct-compilation-matrix.txt
+        -DPROJECT_OWNER_TEST_STRICT_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/owner-test-strict-targets.txt
+        -DPROJECT_SAFE_PRODUCTION_STRICT_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/safe-production-strict-entries.txt
+        -DPROJECT_RESIDUAL_DIRECT_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/residual-direct-entries.txt
+        -DPROJECT_INVALID_DEFERRED_DIRECT_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/invalid-deferred-direct-ownership-matrix.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_deferred_direct_ownership_selftest.cmake"
+    COMMENT "Self-testing Deferred direct-compilation ownership verification"
     VERBATIM)
 if(CMAKE_GENERATOR MATCHES "Ninja")
-    add_custom_target(audit-t345-deferred-direct-warnings
+    add_custom_target(audit-deferred-direct-warnings
         COMMAND "${CMAKE_COMMAND}"
-            -DPROJECT_T345_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-ownership-matrix.txt
-            -DPROJECT_T345_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
-            -DPROJECT_T345_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -DPROJECT_T345_OUTPUT_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-warning-baseline.txt
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/audit_t345_deferred_direct_warnings.cmake"
-        COMMENT "Auditing T345 deferred direct-compilation warnings"
+            -DPROJECT_DEFERRED_DIRECT_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/deferred-direct-ownership-matrix.txt
+            -DPROJECT_DIRECT_COMPILATION_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
+            -DPROJECT_DIRECT_COMPILATION_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -DPROJECT_DEFERRED_DIRECT_WARNING_BASELINE_FILE:FILEPATH=${CMAKE_BINARY_DIR}/deferred-direct-warning-baseline.txt
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/audit_deferred_direct_warnings.cmake"
+        COMMENT "Auditing Deferred direct-compilation warnings"
         VERBATIM)
 endif()
 add_dependencies(verify-current-specialized-gates
-    verify-t345-deferred-direct-ownership
-    verify-t345-deferred-direct-ownership-selftest)
+    verify-deferred-direct-ownership
+    verify-deferred-direct-ownership-selftest)
