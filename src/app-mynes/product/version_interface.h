@@ -4,6 +4,6 @@
 #define APP_PRODUCT_NAME "MyNES"
 #define APP_PRODUCT_VERSION "0.0.0044"
 #define APP_PRODUCT_BANNER APP_PRODUCT_NAME " [" APP_PRODUCT_VERSION "]\n" \
-    "Copyright (C) 2026 Xu Ha.\n\n"
+    "================\nCopyright (C) 2026 Xu Ha."
 
 #endif

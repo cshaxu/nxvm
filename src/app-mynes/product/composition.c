@@ -1,6 +1,7 @@
 #include "product/composition.h"
 
 #include "product/command.h"
+#include "product/version_interface.h"
 #include "emulator/product/composition_interface.h"
 #include "emulator/product/monitor_interface.h"
 #include "emulator/machine/machine_interface.h"
@@ -236,6 +237,7 @@ lib_i32 app_composition_run(const app_startup_config *config)
         lib_memory_copy(composition->startup_rom_path, config->rom_path,
                         lib_text_length((const char *)config->rom_path) + 1u);
     result = emulator_product_run(&(emulator_product_definition){
+        .banner = APP_PRODUCT_BANNER,
         .machine = {
             .machine = composition,
             .driver = emulator_driver,
