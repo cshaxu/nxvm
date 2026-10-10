@@ -56,3 +56,13 @@ source pathname, test selection, assertion, fixture or external media.
   renamed out of their established records.
 - The inventory is documentation-only; S34's repository-only x64/x86 unit
   qualification remains the source baseline.  No test source changed in S1.
+
+## S2 Shared Corpus Sweep
+
+The three Shared test roots (`test/lib`, `test/emulator` and `test/product`)
+have no active task-shaped filename, target, CTest route, success marker,
+diagnostic or helper symbol.  Their broad lexical hits are solely `LIB_UINT*`
+constants and the negative verifier's literal forbidden-token fixtures.
+Those fixtures intentionally contain standard integer spellings to prove the
+Types boundary and are not test identities.  S2 therefore makes no source,
+CMake or manifest change.
