@@ -2651,20 +2651,20 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_jcc_target_lexeme.cmake"
         COMMENT "Verifying Jcc target-lexeme boundary"
         VERBATIM)
-    add_custom_target(verify-t388-80286-appendix-b-context
+    add_custom_target(verify-80286-appendix-b-context
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_80286_appendix_b_context.cmake"
-        COMMENT "Verifying T388 80286 Appendix-B context"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_80286_appendix_b_context.cmake"
+        COMMENT "Verifying 80286 Appendix-B context"
         VERBATIM)
-    add_custom_target(verify-t388-80286-lsl-architecture-reconciliation
+    add_custom_target(verify-80286-lsl-architecture-reconciliation
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_80286_lsl_architecture_reconciliation.cmake"
-        COMMENT "Verifying T388 80286 LSL architecture reconciliation"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_80286_lsl_architecture_reconciliation.cmake"
+        COMMENT "Verifying 80286 LSL architecture reconciliation"
         VERBATIM)
-    add_custom_target(verify-t388-80386-lsl-granularity-capture
+    add_custom_target(verify-80386-lsl-granularity-capture
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_80386_lsl_granularity_capture.cmake"
-        COMMENT "Verifying T388 80386 LSL granularity capture"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_80386_lsl_granularity_capture.cmake"
+        COMMENT "Verifying 80386 LSL granularity capture"
         VERBATIM)
 endif()
 
@@ -2685,9 +2685,9 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-physical-eligibility-boundary
     verify-residual-form-context-ledger
     verify-jcc-target-lexeme
-    verify-t388-80286-appendix-b-context
-    verify-t388-80286-lsl-architecture-reconciliation
-    verify-t388-80386-lsl-granularity-capture
+    verify-80286-appendix-b-context
+    verify-80286-lsl-architecture-reconciliation
+    verify-80386-lsl-granularity-capture
     verify-documentation-governance
     verify-dependency-dag
     verify-live-machine-authority

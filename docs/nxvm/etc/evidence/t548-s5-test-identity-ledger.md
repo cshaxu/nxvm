@@ -271,3 +271,18 @@ unchanged as predicate inputs.  Fresh x64 and x86 Ninja graphs each contain
 the replacement target, and the unchanged predicate passes in both graphs.
 No production or C test source, assertion, asset input or executable artifact
 changed.
+
+## S21 Disposition: Descriptor Timing Verification
+
+The three active descriptor-timing verifiers now use behavior identities for
+their CMake filenames, custom targets, local variables and runtime diagnostics:
+
+- 80286 Appendix-B context;
+- 80286 LSL architecture reconciliation; and
+- 80386 LSL granularity capture.
+
+Their T388 evidence files and explicit historical success-marker anchors remain
+unchanged as predicate inputs.  Fresh x64 and x86 Ninja graphs each contain
+all three replacement targets and none of the retired target names; every
+unchanged predicate passes in both graphs.  No production or C test source,
+assertion, asset input or executable artifact changed.
