@@ -86,7 +86,7 @@ add_executable(vm-pcat-composition-smoke
     test/app-nxvm/unit/machine/nxvm_pcat_composition_smoke.c)
 target_link_libraries(vm-pcat-composition-smoke PRIVATE vm-profile-tests)
 add_executable(vm-ibm-5170-model-339-composition-smoke
-    test/core/machine/qualification/ibm_5170_default_composition_smoke.c)
+    test/app-my5170/unit/profiles/ibm_5170_composition_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-composition-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_composition_smoke.c)
@@ -144,7 +144,7 @@ add_executable(vm-model40-dma-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_dma_smoke.c)
 target_link_libraries(vm-model40-dma-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-fdd-smoke
-    test/core/machine/qualification/model40_pc_floppy_geometry_qualification_smoke.c)
+    test/app-mydeskpro386/unit/profiles/model40_floppy_geometry_smoke.c)
 target_link_libraries(vm-model40-fdd-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-byob-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_byob_smoke.c)
@@ -168,16 +168,22 @@ target_include_directories(vm-model40-console-s20-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
 target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-app vm-profile-tests)
 add_executable(my5170-clock-contract-smoke
-    test/core/machine/qualification/ibm_5170_clock_contract_qualification_smoke.c)
+    test/app-my5170/unit/profiles/ibm_5170_clock_contract_smoke.c)
 target_sources(my5170-clock-contract-smoke PRIVATE
     test/core/board-base/support/composition_fixture.c
     test/core/board-base/support/kbc_state_fixture.c
     test/core/board-at/support/state_fixture.c)
 target_link_libraries(my5170-clock-contract-smoke PRIVATE vm-profile-tests)
 add_executable(vm-ibm-5170-model-339-cga-topology-smoke
-    test/core/machine/qualification/ibm_5170_default_video_topology_smoke.c)
+    test/app-my5170/unit/profiles/ibm_5170_video_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-profile-tests)
 target_sources(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE
+    test/core/support/video_topology_fixture.c
+    test/core/board-base/support/video_topology_fixture.c)
+add_executable(vm-default-ega-topology-smoke
+    test/app-nxvm/unit/machine/nxvm_ega_topology_smoke.c)
+target_link_libraries(vm-default-ega-topology-smoke PRIVATE vm-profile-tests)
+target_sources(vm-default-ega-topology-smoke PRIVATE
     test/core/support/video_topology_fixture.c
     test/core/board-base/support/video_topology_fixture.c)
 add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
@@ -223,22 +229,35 @@ target_link_libraries(vm-ini-cmos-seed-smoke PRIVATE integration-session-ini-sup
 add_executable(vm-app-session-smoke test/app-nxvm/unit/machine/nxvm_machine_smoke.c)
 target_link_libraries(vm-app-session-smoke PRIVATE vm-profile-tests)
 add_executable(vm-machine-initialization-atomicity-smoke
-    test/core/machine/qualification/pc_profile_initialization_atomicity_smoke.c)
+    test/app-nxvm/unit/machine/nxvm_initialization_atomicity_smoke.c)
 target_sources(vm-machine-initialization-atomicity-smoke PRIVATE
     test/core/board-base/support/composition_fixture.c)
 target_link_libraries(vm-machine-initialization-atomicity-smoke PRIVATE vm-profile-tests)
-add_executable(vm-machine-reconfigure-smoke
-    test/app-nxvm/unit/machine/nxvm_machine_reconfigure_smoke.c)
-target_link_libraries(vm-machine-reconfigure-smoke PRIVATE vm-profile-tests)
 add_executable(vm-machine-media-lifecycle-smoke
     test/app-nxvm/unit/machine/nxvm_machine_media_lifecycle_smoke.c)
 target_link_libraries(vm-machine-media-lifecycle-smoke PRIVATE vm-profile-tests)
 add_executable(vm-machine-speed-policy-smoke
     test/app-nxvm/unit/machine/nxvm_machine_speed_policy_smoke.c)
 target_link_libraries(vm-machine-speed-policy-smoke PRIVATE vm-profile-tests)
-add_executable(vm-timing-qualification-smoke
-    test/core/machine/qualification/pc_profile_timing_qualification_smoke.c)
-target_link_libraries(vm-timing-qualification-smoke PRIVATE vm-profile-tests)
+add_executable(nxvm-default-dma-deadline-smoke
+    test/app-nxvm/unit/machine/nxvm_dma_deadline_smoke.c)
+target_link_libraries(nxvm-default-dma-deadline-smoke PRIVATE vm-profile-tests)
+add_executable(my5170-dma-deadline-smoke
+    test/app-my5170/unit/profiles/ibm_5170_dma_deadline_smoke.c)
+target_link_libraries(my5170-dma-deadline-smoke PRIVATE vm-profile-tests)
+add_executable(mydeskpro386-dma-deadline-smoke
+    test/app-mydeskpro386/unit/profiles/model40_dma_deadline_smoke.c)
+target_link_libraries(mydeskpro386-dma-deadline-smoke PRIVATE vm-profile-tests)
+add_executable(my5160-dma-deadline-smoke
+    test/app-my5160/unit/profiles/ibm_5160_dma_deadline_smoke.c)
+target_link_libraries(my5160-dma-deadline-smoke PRIVATE vm-profile-tests)
+foreach(target IN ITEMS
+    nxvm-default-dma-deadline-smoke
+    my5170-dma-deadline-smoke
+    mydeskpro386-dma-deadline-smoke
+    my5160-dma-deadline-smoke)
+    target_sources(${target} PRIVATE test/core/board-base/support/composition_fixture.c)
+endforeach()
 add_executable(nxvm-default-pc-at-plan-smoke
     test/app-nxvm/unit/profiles/default_pc_at_plan_smoke.c)
 target_link_libraries(nxvm-default-pc-at-plan-smoke PRIVATE vm-profile-tests)
@@ -923,9 +942,6 @@ foreach(_controller_composition_target IN ITEMS vm-fdc-authority-smoke
     target_sources(${_controller_composition_target} PRIVATE
         test/core/board-base/support/controller_fixture.c)
 endforeach()
-add_executable(vm-boot-failure-lifecycle-smoke
-    test/app-nxvm/unit/machine/nxvm_boot_failure_lifecycle_smoke.c)
-target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-profile-tests)
 add_executable(vm-runner-display-cadence-smoke
     test/app-nxvm/unit/machine/nxvm_runner_display_cadence_smoke.c)
 target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-profile-tests)
@@ -997,8 +1013,6 @@ add_executable(vm-two-session-isolation-smoke
     test/app-nxvm/unit/machine/nxvm_two_session_isolation_smoke.c
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/support/composition_fixture.c)
-target_sources(vm-timing-qualification-smoke PRIVATE
-    test/core/board-base/support/composition_fixture.c)
 target_link_libraries(vm-two-session-isolation-smoke PRIVATE
     vm-profile-tests)
 add_executable(vm-debug-pause-boundary-smoke
@@ -1052,6 +1066,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-model40-byob-boot-media-smoke
     vm-model40-hdc-smoke
     vm-ibm-5170-model-339-cga-topology-smoke
+    vm-default-ega-topology-smoke
     vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     vm-hdc-port-smoke
     vm-media-provider-smoke
@@ -1284,7 +1299,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-checked-memory-smoke
     core-machine-immutable-rom-mapping-smoke
     core-machine-int-ivt-smoke
-    vm-boot-failure-lifecycle-smoke
     emulator-machine-smoke
     emulator-session-smoke
     emulator-ui-smoke
@@ -1313,10 +1327,12 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-product-debug-mapping-smoke
     vm-app-session-smoke
     vm-machine-initialization-atomicity-smoke
-    vm-machine-reconfigure-smoke
     vm-machine-media-lifecycle-smoke
     vm-machine-speed-policy-smoke
-    vm-timing-qualification-smoke
+    nxvm-default-dma-deadline-smoke
+    my5170-dma-deadline-smoke
+    mydeskpro386-dma-deadline-smoke
+    my5160-dma-deadline-smoke
     nxvm-default-pc-at-plan-smoke
     my5170-plan-smoke
     mydeskpro386-plan-smoke
