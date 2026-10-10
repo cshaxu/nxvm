@@ -75,3 +75,12 @@ proves software-gate DPL fault delivery.  The test files, targets, CTest routes
 and their predicates are unchanged.  The five `t435`/`t512` manifest filenames
 remain cited only as the approved timing-ledger evidence inputs; they are not
 test identities and changing them would break that evidence chain.
+
+## S4 PC App Unit Receiver
+
+S4 removes five NXVM and one Model 40 task-shaped unit identities: the Default
+PC/AT ROM-materialization success marker, media-lifecycle scratch filename,
+real-UD comment anchor, FDC read-track fixture constant/diagnostic, and the
+two Model 40 CECG helpers. Each replacement names the already asserted
+behavior. No unit CTest target or source pathname carried task provenance, so
+registration remains unchanged. Focused x64/x86 receivers pass 5/5 each.

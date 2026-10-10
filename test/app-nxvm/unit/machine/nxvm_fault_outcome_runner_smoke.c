@@ -15,7 +15,7 @@
 
 static lib_i32 vm_fault_outcome_prepare(vm_machine *session)
 {
-    /* T337_REAL_UD_TERMINAL_GUEST_LIDT: LIDT [0100h] makes vector 6
+    /* REAL_UD_TERMINAL_GUEST_LIDT: LIDT [0100h] makes vector 6
        unavailable before the invalid opcode, without private CPU mutation. */
     const lib_u8 program[] = { 0x0fu, 0x01u, 0x1eu, 0x00u, 0x01u, 0xd6u };
     const lib_u8 idtr[] = { 0x17u, 0u, 0u, 0u, 0u, 0u };

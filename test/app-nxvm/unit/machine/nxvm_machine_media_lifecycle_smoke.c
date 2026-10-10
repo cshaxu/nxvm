@@ -38,7 +38,7 @@ lib_i32 main(void)
     };
     vm_machine *session = LIB_NULL;
     vm_machine_information information;
-    static const char floppy_path[] = "t531-media-lifecycle.img";
+    static const char floppy_path[] = "machine-media-lifecycle.img";
     lib_i32 failed = 0;
 
     if (vm_machine_media_create_floppy(floppy_path) != 0) return 1;

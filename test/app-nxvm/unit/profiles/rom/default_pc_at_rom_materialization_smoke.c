@@ -44,6 +44,6 @@ int main(void)
     }
     vm_machine_destroy(session);
     if (failed) return 1;
-    printf("M5:T515:UNIT:ROM-ASSET-MAPPING:OK\n");
+    printf("NXVM:DEFAULT-PC-AT-ROM-ASSET-MAPPING:OK\n");
     return 0;
 }

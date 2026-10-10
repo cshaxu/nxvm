@@ -10,9 +10,9 @@
 #include "core/machine/media/fdd_interface.h"
 #include "../../support/rom/session_assets.h"
 
-#define VM_FDC_T242_IMAGE_BYTES (1440u * 1024u)
+#define VM_FDC_READ_TRACK_IMAGE_BYTES (1440u * 1024u)
 
-static lib_u8 vm_fdc_read_track_image[VM_FDC_T242_IMAGE_BYTES];
+static lib_u8 vm_fdc_read_track_image[VM_FDC_READ_TRACK_IMAGE_BYTES];
 
 static void vm_fdc_read_track_boot_loop(void)
 {
@@ -175,7 +175,7 @@ done:
     vm_machine_destroy(session);
     if (failed) {
         fprintf(stderr,
-            "T242 read-track failed at %c, data=%02x/%02x result=%02x %02x %02x %02x %02x %02x %02x\n",
+            "FDC read-track failed at %c, data=%02x/%02x result=%02x %02x %02x %02x %02x %02x %02x\n",
             stage, actual[512],
             expected[512], result[0], result[1], result[2], result[3], result[4],
             result[5], result[6]);
