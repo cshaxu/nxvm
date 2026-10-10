@@ -1,6 +1,6 @@
 # Queue
 
-T548 is admitted; its active S1 packet and progress are in `CURRENT.md`.
+T549 is admitted; its active S1 packet and progress are in `CURRENT.md`.
 The entries below are ordered unnumbered candidates.
 
 ## M5 Candidates

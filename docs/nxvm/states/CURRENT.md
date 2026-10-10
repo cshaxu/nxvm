@@ -2,31 +2,33 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S34 Active: Emulator Manifest Negative Coverage)
+## Current Task — M5 T549 (S1 Active: Test-Name Inventory And Mapping)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S34. |
-| Admission And Approval | Owner approved the minimal Emulator negative-test repair: update its probe manifest header to the canonical manifest version and retain the existing missing-path rejection assertion. |
-| Objective | Restore the true `emulator.verifier-negative` predicate: an unlisted corpus path must be rejected after the probe manifest passes its header validation. |
-| Non-goals | No production change; no public API, component-dependency, verifier-semantic, compatibility or artifact change; no SoftPC edit. |
-| Reference Baseline | NXVM `b2f4328a1`; SoftPC `f357b291831d7aee49e8e9f86650b23b10e455fb` plus its owner-visible working-tree six-tree Console update. |
-| Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`, together with the approved shared Product banner ownership decision. |
-| Files And ABI Surface | `test/emulator/verify_negative.cmake` and `test/emulator/MANIFEST.sha256` only. No ABI or runtime surface change. |
+| Identifier Mode | New T549 S1. |
+| Admission And Approval | Owner approved normalizing all active NXVM and Shared test identities, beginning with a complete live inventory and old-to-new mapping. |
+| Objective | Give every active NXVM/Shared test a stable behavior-and-owner identity across source filename, build target, CTest route, result marker and live reference. |
+| Non-goals | No assertion, fixture, production, API, component-dependency, firmware/media, external-integration or MyNES-private test change merely for naming. No historical evidence rewrite or compatibility aliases. |
+| Reference Baseline | NXVM `273ba3296`; the six shared trees use the accepted NXVM canonical manifest format. |
+| Candidate Proposal | `proposals/m5-test-name-normalization.md`. |
+| Files And ABI Surface | Active paths under `test/{lib,emulator,product,core,app-my5160,app-my5170,app-mydeskpro386,app-nxvm}`, their CMake registrations/manifests and test-only verifiers. No runtime ABI surface. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source policy rules; SoftPC is read-only. |
-| Verification | Build Emulator tests on x64/x86; run `emulator.verifier-negative` and complete `test/emulator` suites on both widths; then run the repository-only Unit suite on both widths. |
-| Expected Markers | The negative probe has a valid `sha256-manifest-v1` header and fails specifically because `machine/probe.c` is absent from its manifest. |
+| Verification | S1 freezes a complete identity/reference mapping and collision scan before any rename. Later S batches run their exact receivers; every S runs repository-only Unit suites on x64/x86. |
+| Expected Markers | No live identity embeds task provenance or a retired owner; each renamed test has one exact current receiver and no duplicate registration. |
 | Asset Needs | None. |
-| Reporting Requirements | Report exact test totals, changed paths and confirm no production/API/artifact change. |
-| Stop Conditions | The canonical header does not reach the missing-path assertion, a manifest verifier behavior regression appears, or a distinct unrelated Unit failure occurs. |
-| Exit Criteria | The two test files and manifest are consistent; the negative path and full Emulator x64/x86 suites pass; complete repository-only x64/x86 Unit qualification passes; the Shared P is committed and pushed. |
-| Original Owner Request | Import SoftPC's latest six shared trees; repair banner owner after import; then correct component-local verifier ownership and manifest generation after the diff audit. |
-| Similar-Issue Sweep | Searched `test/emulator` for probe manifest headers. The sole stale `corpus-revision` fixture header was corrected; production verifier headers already use `sha256-manifest-v1`. |
+| Reporting Requirements | Record each old-to-new identity and reference sweep, changes by component target, exact test totals and any intentional retained name. |
+| Stop Conditions | A proposed rename weakens test selection, collides with an active identity, changes a test assertion/fixture semantic, crosses into MyNES, or needs a production/API change. |
+| Exit Criteria | Every live in-scope test identity is normalized or explicitly retained by contract; all manifests/gates and x64/x86 repository Unit suites pass; all target-scoped P commits are pushed. |
+| Original Owner Request | Admit a new task to repair all active NXVM/Shared test-name normalization. |
+| Similar-Issue Sweep | S1 searches tracked active test sources, CMake registrations, success markers and live verifier text. Historical evidence and MyNES-private scope are excluded by task boundary and recorded, not rewritten. |
 
 | Work | Progress |
 | --- | --- |
 | T548 S33 | Complete pending owner review: adopted the selected SoftPC Console and shared Product repairs, then imported SoftPC's three strengthened shared tests (Console metadata/viewport failure, Emulator monitor fault/lifecycle, Product Surface snapshot fault) plus the Product Surface banner-forwarding regression. Lib's naming verifier now scans only Lib source/test corpus; all six manifests use the stable, lexically sorted `sha256-manifest-v1` format. Shared/Core/App x64/x86 unit qualification passes 515/515 for the four PC Apps and 45/45 for MyNES. The eight PC artifacts were rebuilt, deployed and PE-width verified; both MyNES artifact targets were rebuilt and remained byte-identical. No desktop or external runtime qualification was run. |
-| T548 S34 | Complete pending commit: `emulator.verifier-negative` now gives its probe the canonical `sha256-manifest-v1` header, so it reaches and proves the intended unlisted-path rejection. Emulator x64/x86 suites pass 21/21; repository-only Unit qualification passes 515/515 on both widths. This is test/manifest-only: no production, API or artifact input changed. |
+| T548 S34 | Complete: `273ba3296` gives `emulator.verifier-negative` the canonical `sha256-manifest-v1` probe header, so it reaches and proves the intended unlisted-path rejection. Emulator x64/x86 suites pass 21/21; repository-only Unit qualification passes 515/515 on both widths. This is test/manifest-only: no production, API or artifact input changed. |
+| T548 | Closed: S1–S34 complete the approved ownership, naming, shared-import and verifier cleanup scope. Final corrective S34 is pushed as `273ba3296`; current full repository-only Unit qualification is 515/515 on x64 and x86. |
+| T549 S1 | Active: freeze the complete active NXVM/Shared test-identity/reference inventory, classify each name, and define one old-to-new mapping before any source/CMake rename. |
 | T547 | Closed at owner direction. Final Shared/NXVM/MyNES commits are `5b1d07412`, `08a6a19f4` and `6be3ce8ee`. Public suites pass 66/66, Core 221/221, NXVM 511/511 and MyNES App 45/45 on x64/x86; all ten deployed artifacts are current. No new manual desktop or external integration qualification is claimed. |
 | T548 S1 | Complete: committed baseline `006a7592d` records the 541-unit-entry/45-integration-C universe, registration owners and first semantic candidate groups. It confirmed the Default-App factory duplicate and protected selected-profile increments from mechanical relocation. |
 | T548 S26 | Complete: Core `c47e7c848`, MyDeskPro386 `41cc1779b`, My5170 `b67332ae1`, My5160 `113514a57`, NXVM `1209e0f35` and Shared registration `2de340bf3` retire or narrow Default-PC duplicates, assign generic predicates to Core and split every outward Core-to-App test edge to its real App receiver. The complete repository-only unit selection passes 515/515 on x64 and x86; Core manifests pass on both widths. No production, firmware, media, INI, snapshot or deployed executable input changed. |
