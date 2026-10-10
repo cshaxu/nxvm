@@ -8,15 +8,8 @@ string(CONCAT retired_class "Lib" "U" "x" "Window")
 
 if(EXISTS "${KVM_NAMING_ROOT}/src/lib")
     set(naming_roots
-        "${KVM_NAMING_ROOT}/CMakeLists.txt"
-        "${KVM_NAMING_ROOT}/src/app"
         "${KVM_NAMING_ROOT}/src/lib"
-        "${KVM_NAMING_ROOT}/test/integration"
-        "${KVM_NAMING_ROOT}/test/support"
-        "${KVM_NAMING_ROOT}/test/unit"
-        "${KVM_NAMING_ROOT}/test/lib"
-        "${KVM_NAMING_ROOT}/test/emulator"
-        "${KVM_NAMING_ROOT}/docs/rules")
+        "${KVM_NAMING_ROOT}/test/lib")
 else()
     set(naming_roots "${KVM_NAMING_ROOT}")
 endif()

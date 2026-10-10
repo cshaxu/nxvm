@@ -32,7 +32,8 @@ static lib_bool fixture_snapshot(void *context, emulator_machine *machine,
     (void)machine;
     (void)state;
     ++snapshot_submissions;
-    if (lib_text_compare(arguments, "state.bin") != 0) return LIB_FALSE;
+    if (lib_text_compare(arguments, "state.bin") != 0)
+        return LIB_FALSE;
     if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE)
         (void)lib_c_snprintf((char *)out->text, sizeof(out->text),
             "Fixture saved snapshot.\r\n");
@@ -69,7 +70,7 @@ lib_i32 main(void)
     product_surface_command_dispose(&unsupported);
     if (product_surface_command_provider_initialize(&command, (emulator_machine *)&command,
             EMULATOR_SESSION_DISPLAY_CONSOLE,
-            &extensions, &provider) != LIB_STATUS_OK) return 1;
+            &extensions, &provider) != LIB_STATUS_OK) return 16;
     provider.open(provider.context, &result);
     if (lib_text_find_substring(result.text,
             "Control your virtual machine:") == LIB_NULL ||
@@ -116,6 +117,13 @@ lib_i32 main(void)
     if (lib_text_find_substring(result.text, "Fixture loaded snapshot.") == LIB_NULL ||
         !result.arm_prompt || snapshot_submissions != 2u)
         return 13;
+
+    provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_ERROR,
+        "save state.bin", &result);
+    if (lib_text_find_substring(result.text,
+            "Machine has failed; exit and restart the program.") == LIB_NULL ||
+        !result.arm_prompt || snapshot_submissions != 2u)
+        return 17;
 
     provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_PAUSED,
         "floppy insert direct disk.img", &result);

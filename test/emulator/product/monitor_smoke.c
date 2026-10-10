@@ -109,17 +109,26 @@ static void provider_contract(void)
         {"debug", EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG}};
     static const struct {
         const char *line;
+        emulator_product_monitor_command command;
         emulator_session_machine_state state;
         emulator_session_request request;
     } lifecycle_commands[] = {
-        {"start", EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_REQUEST_START},
-        {"resume", EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_RESUME},
-        {"pause", EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_PAUSE},
-        {"stop", EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_STOP},
-        {"stop", EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_STOP},
-        {"reset", EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_REQUEST_RESET},
-        {"reset", EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_RESET},
-        {"reset", EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_RESET}};
+        {"start", EMULATOR_PRODUCT_MONITOR_COMMAND_START,
+            EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_REQUEST_START},
+        {"resume", EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME,
+            EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_RESUME},
+        {"pause", EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE,
+            EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_PAUSE},
+        {"stop", EMULATOR_PRODUCT_MONITOR_COMMAND_STOP,
+            EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_STOP},
+        {"stop", EMULATOR_PRODUCT_MONITOR_COMMAND_STOP,
+            EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_STOP},
+        {"reset", EMULATOR_PRODUCT_MONITOR_COMMAND_RESET,
+            EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_REQUEST_RESET},
+        {"reset", EMULATOR_PRODUCT_MONITOR_COMMAND_RESET,
+            EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_REQUEST_RESET},
+        {"reset", EMULATOR_PRODUCT_MONITOR_COMMAND_RESET,
+            EMULATOR_SESSION_MACHINE_PAUSED, EMULATOR_SESSION_REQUEST_RESET}};
     const emulator_product_monitor_provider provider = {
         .extension_commands = {extensions, sizeof(extensions) / sizeof(extensions[0])},
         .hotkeys = {hotkeys, sizeof(hotkeys) / sizeof(hotkeys[0])},
@@ -163,7 +172,24 @@ static void provider_contract(void)
     lib_test_assert(last_fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD &&
         lib_text_compare(last_fixed_arguments, "state.bin") == 0 && extension_calls == 0u);
     emulator_product_monitor_provider_submit_line((void *)&provider,
+        EMULATOR_SESSION_MACHINE_ERROR, "debug", &result);
+    lib_test_assert(last_fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG &&
+        fixed_calls[EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG] == 2u &&
+        lib_text_compare(last_fixed_arguments, "") == 0 && extension_calls == 0u);
+    for (index = 0u; index < sizeof(lifecycle_commands) /
+            sizeof(lifecycle_commands[0]); ++index) {
+        emulator_product_monitor_provider_submit_line((void *)&provider,
+            EMULATOR_SESSION_MACHINE_ERROR, lifecycle_commands[index].line, &result);
+        lib_test_assert(lib_text_compare(result.text,
+            "Machine has failed; exit and restart the program.\r\n") == 0 &&
+            fixed_calls[lifecycle_commands[index].command] == 0u);
+    }
+    emulator_product_monitor_provider_submit_line((void *)&provider,
         EMULATOR_SESSION_MACHINE_ERROR, "save state.bin", &result);
+    lib_test_assert(lib_text_compare(result.text,
+        "Machine has failed; exit and restart the program.\r\n") == 0);
+    emulator_product_monitor_provider_submit_line((void *)&provider,
+        EMULATOR_SESSION_MACHINE_ERROR, "load state.bin", &result);
     lib_test_assert(lib_text_compare(result.text,
         "Machine has failed; exit and restart the program.\r\n") == 0);
     emulator_product_monitor_provider_submit_line((void *)&provider,
@@ -172,16 +198,21 @@ static void provider_contract(void)
         extension_calls == 1u && lib_text_compare(result.prompt,
             EMULATOR_SESSION_MONITOR_PROMPT) == 0);
     emulator_product_monitor_provider_submit_line((void *)&provider,
+        EMULATOR_SESSION_MACHINE_ERROR, "media attach disk.img", &result);
+    lib_test_assert(lib_text_compare(result.text, "Media attached.\r\n") == 0 &&
+        extension_calls == 2u && lib_text_compare(result.prompt,
+            EMULATOR_SESSION_MONITOR_PROMPT) == 0);
+    emulator_product_monitor_provider_submit_line((void *)&provider,
         EMULATOR_SESSION_MACHINE_STOPPED, "help unexpected", &result);
     lib_test_assert(lib_text_compare(result.text, "Unknown command.\r\n") == 0 &&
-        extension_calls == 1u);
+        extension_calls == 2u);
     emulator_product_monitor_provider_submit_line((void *)&provider,
         EMULATOR_SESSION_MACHINE_STOPPED, "exit", &result);
     lib_test_assert(result.exit_requested && !result.arm_prompt);
     emulator_product_monitor_provider_submit_line((void *)&provider,
         EMULATOR_SESSION_MACHINE_STOPPED, "exit unexpected", &result);
     lib_test_assert(lib_text_compare(result.text, "Unknown command.\r\n") == 0 &&
-        extension_calls == 1u);
+        extension_calls == 2u);
 }
 
 static void unavailable_fixed_commands(void)
@@ -227,6 +258,9 @@ static void lifecycle_contract(void)
         result.arm_prompt);
     emulator_product_monitor_provider_note_runtime((void *)&provider,
         EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_MACHINE_PAUSED, &result);
+    lib_test_assert(result.text[0] == '\0' && !result.arm_prompt);
+    emulator_product_monitor_provider_note_runtime((void *)&provider,
+        EMULATOR_SESSION_MACHINE_INIT, EMULATOR_SESSION_MACHINE_PAUSED, &result);
     lib_test_assert(result.text[0] == '\0' && !result.arm_prompt);
 }
 
