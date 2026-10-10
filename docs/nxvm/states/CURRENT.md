@@ -2,19 +2,19 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S21 Active: Normalize Descriptor Timing Verification Identity)
+## Current Task — M5 T548 (S22 Active: Audit Cross-App Test Isolation)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S21. S1-S20 completed the initial duplicate, ownership and identity classification work. This S normalizes the live 80286/80386 descriptor timing verification group. |
+| Identifier Mode | Continuation T548 S22. S1-S21 completed the initial duplicate, ownership and identity classification work. This S records the current cross-App test-support and mixed-ownership evidence before a behavior-level repair receiver is admitted. |
 | Admission And Approval | Owner instruction in this conversation: close the old T, then admit the first queued T to repair the complete NXVM test corpus cleanly. Standing push approval applies. |
 | Objective | Freeze a complete behavior-level ownership and coverage ledger for every registered repository unit test and production owner, then repair misplaced, duplicated, incomplete or non-independent coverage without losing component, profile, board, CPU, composition or failure evidence. |
 | Non-goals | No production behavior or public ABI change merely to simplify tests; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools as units; no sibling-repository edit. |
 | Reference Baseline | T547 closure commits `5b1d07412`, `08a6a19f4` and `6be3ce8ee`; re-freeze the current committed source/test/build graph before any move, merge or deletion. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | Rename only the live 80286 Appendix-B, 80286 LSL reconciliation and 80386 LSL granularity verifier helpers and custom targets to behavior identities. Preserve all source and evidence assertions. No production or C test source changes. |
+| Files And ABI Surface | Read-only audit of current test ownership and dependency edges; write only task evidence and active-packet status. No production, test assertion, CMake registration, asset or ABI change. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | Generate fresh x64/x86 Ninja graphs, enumerate the renamed targets, and run the three unchanged descriptor-timing verification predicates. |
+| Verification | Reproduce each reported dependency from current source and CMake registrations; distinguish App-specific profile proof from neutral Core mechanisms. |
 | Expected Markers | Active filenames, targets, variables and generated matrices describe behavior rather than historical task numbers; provenance remains in comments/evidence only. |
 | Asset Needs | None. INIs, media, snapshots and artifacts are not edited. |
 | Reporting Requirements | Report source/target/output before-and-after identities, exact test count delta, line delta and dual-width result. Do not rename historical evidence or claim behavior coverage from names. |
