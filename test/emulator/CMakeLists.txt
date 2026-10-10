@@ -40,6 +40,8 @@ shared_register_test(emulator session_monitor emulator-session)
 add_executable(emulator-test-composition product/composition_smoke.c
     "${EMULATOR_ROOT}/product/composition.c")
 target_link_libraries(emulator-test-composition PRIVATE types)
+target_compile_definitions(emulator-test-composition PRIVATE
+    printf=emulator_product_composition_smoke_printf)
 if(MSVC)
     target_compile_options(emulator-test-composition PRIVATE /UNDEBUG)
 else()

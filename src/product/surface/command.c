@@ -7,6 +7,22 @@
 static void product_surface_command_set_prompt(
     const product_surface_command_context *command,
     emulator_session_command_result *out);
+static void product_surface_command_message(emulator_session_command_result *out,
+    const char *text);
+
+static lib_bool product_surface_command_snapshot_not_supported(void *opaque,
+    emulator_machine *machine, emulator_product_monitor_command command,
+    emulator_session_machine_state state, const char *arguments,
+    emulator_session_command_result *out)
+{
+    (void)opaque;
+    (void)machine;
+    (void)command;
+    (void)state;
+    (void)arguments;
+    product_surface_command_message(out, "Feature not implemented.");
+    return LIB_TRUE;
+}
 
 static void product_surface_command_message(emulator_session_command_result *out,
     const char *text)
@@ -36,7 +52,9 @@ static lib_bool product_surface_command_submit_fixed(void *opaque,
     (void)arguments;
     if (command == LIB_NULL || out == LIB_NULL) return LIB_FALSE;
     if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE ||
-        fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD) return LIB_FALSE;
+        fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD)
+        return command->extensions.submit_snapshot(command->extensions.context,
+            command->machine, fixed_command, state, arguments, out);
     if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG) {
         if (product_debug_open(command->debug, command->machine) != LIB_STATUS_OK) {
             product_surface_command_message(out, "Cannot open debugger.");
@@ -149,6 +167,8 @@ lib_status product_surface_command_initialize(product_surface_command_context *c
     lib_memory_set(command, 0, sizeof(*command));
     command->machine = machine;
     if (extensions != LIB_NULL) command->extensions = *extensions;
+    if (command->extensions.submit_snapshot == LIB_NULL)
+        command->extensions.submit_snapshot = product_surface_command_snapshot_not_supported;
     command->monitor = (emulator_product_monitor_provider){
         .context = command,
         .extension_commands = command->extensions.help,

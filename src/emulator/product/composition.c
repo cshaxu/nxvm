@@ -1,4 +1,5 @@
 #include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "emulator/product/composition_interface.h"
 
 struct emulator_product {
@@ -186,11 +187,13 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
     lib_status status = LIB_STATUS_OK;
     lib_status destroy_status;
 
-    if (definition == LIB_NULL || definition->machine.machine == LIB_NULL ||
+    if (definition == LIB_NULL || definition->banner == LIB_NULL ||
+        definition->machine.machine == LIB_NULL ||
         definition->machine.bind == LIB_NULL ||
         definition->machine.destroy == LIB_NULL ||
         definition->configure_control == LIB_NULL || definition->configure_ui == LIB_NULL)
         return 1;
+    lib_c_printf("%s\n\nBuilt on %s %s\n\n", definition->banner, __DATE__, __TIME__);
     status = emulator_product_create(&definition->machine, &product);
     if (status == LIB_STATUS_OK) status = emulator_product_compose_machine(product);
     if (status == LIB_STATUS_OK)

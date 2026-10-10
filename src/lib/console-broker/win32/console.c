@@ -83,7 +83,7 @@ static lib_bool console_broker_fit_viewport(lib_win32_small_rect *viewport,
  * backing buffer is independent from the visible viewport: a narrow desktop
  * may be unable to expose all of an otherwise valid saved buffer. */
 static lib_status console_broker_apply_display(lib_win32_handle output,
-    const lib_win32_console_screen_buffer_infoex *source)
+    const lib_win32_console_screen_buffer_infoex *source, lib_bool restore_cursor)
 {
     lib_win32_console_screen_buffer_infoex display = *source;
     lib_win32_console_screen_buffer_info current;
@@ -97,20 +97,29 @@ static lib_status console_broker_apply_display(lib_win32_handle output,
      * capability boundary. A caller may retain text output when it is absent. */
     if (!lib_win32_set_console_screen_buffer_info_ex(output, &display))
         return LIB_STATUS_UNSUPPORTED;
-    /* The temporary rectangle only made metadata legal. Rebuild the final
-     * rectangle from the saved target after the new backing buffer is active. */
+    /* A Console host may report metadata success while retaining a smaller
+     * backing buffer. The saved buffer is part of this surface's state, not a
+     * viewport preference, so restore and verify it before cursor or viewport
+     * placement. The temporary viewport above already makes this resize legal. */
     if (!lib_win32_get_console_screen_buffer_info(output, &current))
         return LIB_STATUS_IO_ERROR;
-    /* Some Console hosts accept extended metadata but silently retain a
-     * smaller backing buffer. Restore and verify the saved capacity before
-     * fitting the user-visible viewport to the current host limits. */
     if (current.dwSize.X != source->dwSize.X || current.dwSize.Y != source->dwSize.Y) {
         if (!lib_win32_set_console_screen_buffer_size(output, source->dwSize) ||
             !lib_win32_get_console_screen_buffer_info(output, &current) ||
             current.dwSize.X != source->dwSize.X || current.dwSize.Y != source->dwSize.Y)
             return LIB_STATUS_IO_ERROR;
     }
-    if (!console_broker_fit_viewport(&viewport, &source->srWindow,
+    /* The extended metadata setter does not establish the cooked reader's
+     * echo cursor on every Console host. Restore the saved surface cursor
+     * explicitly before restoring its viewport: moving it can scroll that
+     * viewport. Palette updates retain their current cursor. */
+    if (restore_cursor && !lib_win32_set_console_cursor_position(output,
+            source->dwCursorPosition)) return LIB_STATUS_IO_ERROR;
+    /* The temporary rectangle only made metadata legal. Rebuild the final
+     * rectangle from the saved target after cursor movement and the new
+     * backing buffer are active. */
+    if (!lib_win32_get_console_screen_buffer_info(output, &current) ||
+        !console_broker_fit_viewport(&viewport, &source->srWindow,
             current.dwSize, current.dwMaximumWindowSize) ||
         !lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport))
         return LIB_STATUS_IO_ERROR;
@@ -321,7 +330,7 @@ static lib_status console_broker_select_output(console_broker_backend *backend,
     backend->output = output;
     backend->output_ready = LIB_FALSE;
     if (next->cbSize != 0u) {
-        lib_status status = console_broker_apply_display(output, next);
+        lib_status status = console_broker_apply_display(output, next, LIB_TRUE);
         /* Selecting a saved screen has no palette-only fallback: every part
          * of its stored display state is required before it becomes active. */
         if (status != LIB_STATUS_OK)
@@ -660,7 +669,8 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
             for (index = 0u; index < 16u; ++index)
                 info.ColorTable[index] = console_broker_colorref_from_rgb(
                     frame->palette[index]);
-            lib_status status = console_broker_apply_display(backend->output, &info);
+            lib_status status = console_broker_apply_display(backend->output, &info,
+                LIB_FALSE);
             if (status == LIB_STATUS_OK)
                 lib_memory_copy(backend->previous_palette, frame->palette,
                     sizeof(frame->palette));

@@ -7,7 +7,7 @@ static lib_bool product_surface_command_provider_hotkey(void *opaque,
 {
     emulator_product_monitor_provider *monitor = opaque;
     product_surface_command_context *command = monitor != LIB_NULL ? monitor->context : LIB_NULL;
-    if (command == LIB_NULL) return LIB_FALSE;
+    if (command == LIB_NULL || identifier == LIB_NULL) return LIB_FALSE;
     if (lib_text_compare((const char *)identifier, "pause-toggle") == 0) {
         emulator_session_request request;
 

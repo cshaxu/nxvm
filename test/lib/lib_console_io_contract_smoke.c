@@ -32,9 +32,11 @@ static lib_win32_char_info captured_cells[80u * 50u];
 static lib_win32_small_rect captured_region;
 static lib_win32_coord buffer_size={80,30};
 static lib_win32_small_rect viewport={0,0,79,29};
+static lib_win32_coord native_cursor;
 static lib_win32_coord viewport_limit;
 static lib_bool limit_viewport, fail_viewport_set;
 static lib_bool reject_resize, ignore_resize;
+static lib_u32 resize_attempts;
 static lib_win32_small_rect palette_metadata_window;
 static lib_win32_coord palette_resize_size;
 static lib_bool palette_metadata_received, palette_resize_after_set;
@@ -49,10 +51,11 @@ static lib_win32_bool LIB_WIN32_WINAPI screen_info(lib_win32_handle h, lib_win32
         if (p->dwMaximumWindowSize.Y>viewport_limit.Y) p->dwMaximumWindowSize.Y=viewport_limit.Y;
     }
     p->srWindow=viewport;
+    p->dwCursorPosition=native_cursor;
     return LIB_WIN32_TRUE;
 }
 static lib_win32_bool LIB_WIN32_WINAPI resize_buffer(lib_win32_handle h,lib_win32_coord size)
-{ (void)h; if(reject_resize) return LIB_WIN32_FALSE; if(!ignore_resize) buffer_size=size; return LIB_WIN32_TRUE; }
+{ (void)h; ++resize_attempts; if(reject_resize) return LIB_WIN32_FALSE; if(!ignore_resize) buffer_size=size; return LIB_WIN32_TRUE; }
 static lib_win32_bool LIB_WIN32_WINAPI palette_get(lib_win32_handle h, lib_win32_console_screen_buffer_infoex *p)
 { (void)h; ++palette_attempts; p->cbSize=sizeof(*p); p->dwSize=buffer_size; p->srWindow=viewport; return palette_query_ok; }
 static lib_win32_bool LIB_WIN32_WINAPI palette_set(lib_win32_handle h, lib_win32_console_screen_buffer_infoex *p)
@@ -84,8 +87,9 @@ static lib_win32_bool LIB_WIN32_WINAPI write_cells(lib_win32_handle h, const lib
 static lib_win32_console_cursor_info last_cursor;
 static lib_win32_bool LIB_WIN32_WINAPI cursor_info(lib_win32_handle h, const lib_win32_console_cursor_info *p)
 { (void)h; last_cursor=*p; return cursor_ok; }
+static lib_u32 cursor_positions;
 static lib_win32_bool LIB_WIN32_WINAPI cursor_position(lib_win32_handle h, lib_win32_coord p)
-{ (void)h; (void)p; return cursor_ok; }
+{ (void)h; ++cursor_positions; if (cursor_ok) native_cursor=p; return cursor_ok; }
 static lib_u32 readers_started, mode_sets;
 static lib_win32_bool LIB_WIN32_WINAPI set_mode(lib_win32_handle h, lib_win32_dword mode) { (void)h; (void)mode; ++mode_sets; return LIB_WIN32_TRUE; }
 static lib_win32_bool LIB_WIN32_WINAPI flush_input(lib_win32_handle h) { (void)h; return LIB_WIN32_TRUE; }
@@ -138,8 +142,10 @@ static void cooked_restore(void)
     lib_test_assert(lib_console_set_event_sink(c,receive,LIB_NULL)==LIB_STATUS_OK);
     lib_test_assert(console_broker_backend_activate(&b,c,CONSOLE_BROKER_COOKED_LINES,1,0)==0);
     lib_test_assert(!b.reader && !b.cooked_line_pending && readers_started==0);
+    native_cursor=(lib_win32_coord){17,23}; cursor_positions=0u;
     lib_test_assert(console_broker_backend_request_cooked_line(&b)==0);
-    lib_test_assert(b.reader && b.cooked_line_pending && readers_started==1);
+    lib_test_assert(b.reader && b.cooked_line_pending && readers_started==1 &&
+        cursor_positions==0u && native_cursor.X==17 && native_cursor.Y==23);
     /* Cancellation preserves an unfinished request until join. */
     stop=b.stop_event; input="discarded\r\n"; reads=0; cancel_at=1;
     console_broker_reader(&b); cancel_at=0;
@@ -191,14 +197,17 @@ int main(void)
         saved.cbSize = sizeof(saved);
         saved.dwSize = (lib_win32_coord){120,60};
         saved.srWindow = (lib_win32_small_rect){0,0,119,29};
+        saved.dwCursorPosition = (lib_win32_coord){71,47};
         buffer_size = (lib_win32_coord){20,10};
         viewport = (lib_win32_small_rect){0,0,19,9};
         limit_viewport = LIB_TRUE;
         viewport_limit = (lib_win32_coord){120,30};
         palette_set_ok = 1;
         palette_metadata_received=LIB_FALSE;
-        lib_test_assert(console_broker_apply_display(b.output,&saved)==LIB_STATUS_OK);
+        native_cursor=(lib_win32_coord){0,0}; cursor_positions=0u;
+        lib_test_assert(console_broker_apply_display(b.output,&saved,LIB_TRUE)==LIB_STATUS_OK);
         lib_test_assert(palette_metadata_received);
+        lib_test_assert(cursor_positions==1u && native_cursor.X==71 && native_cursor.Y==47);
         lib_test_assert(palette_metadata_window.Left==0 && palette_metadata_window.Top==0 &&
             palette_metadata_window.Right==19 && palette_metadata_window.Bottom==9);
         lib_test_assert(buffer_size.X==120 && buffer_size.Y==60);
@@ -211,25 +220,32 @@ int main(void)
         viewport = (lib_win32_small_rect){0,0,19,9};
         palette_resize_after_set = LIB_TRUE;
         palette_resize_size = (lib_win32_coord){120,29};
-        lib_test_assert(console_broker_apply_display(b.output,&saved)==LIB_STATUS_OK);
+        resize_attempts=0u;
+        native_cursor=(lib_win32_coord){0,0}; cursor_positions=0u;
+        lib_test_assert(console_broker_apply_display(b.output,&saved,LIB_TRUE)==LIB_STATUS_OK);
+        lib_test_assert(resize_attempts==1u && cursor_positions==1u &&
+            native_cursor.X==71 && native_cursor.Y==47);
         lib_test_assert(buffer_size.X==120 && buffer_size.Y==60);
         lib_test_assert(viewport.Left==0 && viewport.Top==0 &&
             viewport.Right==119 && viewport.Bottom==29);
 
         buffer_size = (lib_win32_coord){20,10};
         viewport = (lib_win32_small_rect){0,0,19,9};
-        reject_resize = LIB_TRUE;
-        lib_test_assert(console_broker_apply_display(b.output,&saved)==LIB_STATUS_IO_ERROR);
-        lib_test_assert(buffer_size.X==120 && buffer_size.Y==29);
+        ignore_resize = LIB_TRUE;
+        resize_attempts=0u;
+        native_cursor=(lib_win32_coord){0,0}; cursor_positions=0u;
+        lib_test_assert(console_broker_apply_display(b.output,&saved,LIB_TRUE)==LIB_STATUS_IO_ERROR);
+        lib_test_assert(resize_attempts==1u && cursor_positions==0u);
         lib_test_assert(viewport.Right==19 && viewport.Bottom==9);
-        reject_resize = LIB_FALSE;
+        ignore_resize = LIB_FALSE;
         palette_resize_after_set = LIB_FALSE;
 
         buffer_size = (lib_win32_coord){20,10};
         viewport = (lib_win32_small_rect){0,0,19,9};
         viewport_limit = (lib_win32_coord){80,25};
         palette_metadata_received=LIB_FALSE;
-        lib_test_assert(console_broker_apply_display(b.output,&saved)==LIB_STATUS_OK);
+        native_cursor=(lib_win32_coord){0,0}; cursor_positions=0u;
+        lib_test_assert(console_broker_apply_display(b.output,&saved,LIB_TRUE)==LIB_STATUS_OK);
         lib_test_assert(palette_metadata_received);
         lib_test_assert(palette_metadata_window.Left==0 && palette_metadata_window.Top==0 &&
             palette_metadata_window.Right==19 && palette_metadata_window.Bottom==9);
@@ -241,7 +257,7 @@ int main(void)
         viewport = (lib_win32_small_rect){0,0,19,9};
         viewport_limit = (lib_win32_coord){120,30};
         fail_viewport_set = LIB_TRUE;
-        lib_test_assert(console_broker_apply_display(b.output,&saved)==LIB_STATUS_IO_ERROR);
+        lib_test_assert(console_broker_apply_display(b.output,&saved,LIB_TRUE)==LIB_STATUS_IO_ERROR);
         lib_test_assert(buffer_size.X==120 && buffer_size.Y==60);
         lib_test_assert(viewport.Right==19 && viewport.Bottom==9);
         fail_viewport_set = LIB_FALSE;

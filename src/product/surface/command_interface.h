@@ -17,9 +17,17 @@ typedef lib_bool (*product_surface_command_extension_submit)(void *context,
     emulator_machine *machine, emulator_session_machine_state state,
     const char *line, emulator_session_command_result *out);
 
+/* Emulator Product recognizes the shared snapshot grammar. The selected App
+ * owns the machine image and supplies its already-parsed SAVE/LOAD operation. */
+typedef lib_bool (*product_surface_command_snapshot_submit)(void *context,
+    emulator_machine *machine, emulator_product_monitor_command command,
+    emulator_session_machine_state state, const char *arguments,
+    emulator_session_command_result *out);
+
 typedef struct product_surface_command_extensions {
     void *context;
     product_surface_command_extension_submit submit;
+    product_surface_command_snapshot_submit submit_snapshot;
     /* Command rows only: Product supplies the title, canonical rows, blank
      * separators and shared hotkey section around this App-owned middle. */
     emulator_product_help_map help;

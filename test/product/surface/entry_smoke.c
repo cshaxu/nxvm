@@ -133,6 +133,7 @@ lib_i32 main(void)
 {
     const product_surface_definition definition = {
         .name = "PC",
+        .banner = "PC",
         .machine = {.composition = {.machine = &fixture, .bind = fixture_bind,
             .destroy = fixture_destroy}},
         .ui = {.display = EMULATOR_SESSION_DISPLAY_CONSOLE}

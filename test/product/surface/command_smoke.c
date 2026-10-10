@@ -3,6 +3,7 @@
 #include "product/surface/command_provider_interface.h"
 
 static lib_u32 extension_submissions;
+static lib_u32 snapshot_submissions;
 
 static lib_bool fixture_extension(void *context, emulator_machine *machine,
     emulator_session_machine_state state, const char *line,
@@ -23,19 +24,49 @@ static lib_bool fixture_extension(void *context, emulator_machine *machine,
     return LIB_TRUE;
 }
 
+static lib_bool fixture_snapshot(void *context, emulator_machine *machine,
+    emulator_product_monitor_command command, emulator_session_machine_state state,
+    const char *arguments, emulator_session_command_result *out)
+{
+    (void)context;
+    (void)machine;
+    (void)state;
+    ++snapshot_submissions;
+    if (lib_text_compare(arguments, "state.bin") != 0) return LIB_FALSE;
+    if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE)
+        (void)lib_c_snprintf((char *)out->text, sizeof(out->text),
+            "Fixture saved snapshot.\r\n");
+    else if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD)
+        (void)lib_c_snprintf((char *)out->text, sizeof(out->text),
+            "Fixture loaded snapshot.\r\n");
+    else return LIB_FALSE;
+    out->arm_prompt = LIB_TRUE;
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
     static const emulator_product_help_row help_rows[] = {
         {"info", "fixture information"},
         {"floppy eject", "fixture media command"}};
     product_surface_command_context command = {0};
+    product_surface_command_context unsupported = {0};
     emulator_session_command_result result = {0};
     emulator_session_command_provider provider;
     const product_surface_command_extensions extensions = {
         .submit = fixture_extension,
+        .submit_snapshot = fixture_snapshot,
         .help = {help_rows, sizeof(help_rows) / sizeof(help_rows[0])}
     };
 
+    if (product_surface_command_provider_initialize(&unsupported,
+            (emulator_machine *)&unsupported, EMULATOR_SESSION_DISPLAY_CONSOLE,
+            LIB_NULL, &provider) != LIB_STATUS_OK) return 14;
+    provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_STOPPED,
+        "load state.bin", &result);
+    if (lib_text_find_substring(result.text, "Feature not implemented.") == LIB_NULL ||
+        !result.arm_prompt) return 15;
+    product_surface_command_dispose(&unsupported);
     if (product_surface_command_provider_initialize(&command, (emulator_machine *)&command,
             EMULATOR_SESSION_DISPLAY_CONSOLE,
             &extensions, &provider) != LIB_STATUS_OK) return 1;
@@ -66,6 +97,8 @@ lib_i32 main(void)
         "resume", &result);
     if (result.request != EMULATOR_SESSION_REQUEST_RESUME || extension_submissions != 0u)
         return 6;
+    if (provider.handle_hotkey(provider.context, EMULATOR_SESSION_MACHINE_PAUSED,
+            LIB_NULL, &result)) return 18;
 
     provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_PAUSED,
         "info", &result);
@@ -74,8 +107,15 @@ lib_i32 main(void)
 
     provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_PAUSED,
         "save state.bin", &result);
-    if (lib_text_find_substring(result.text, "Feature not implemented.") == LIB_NULL)
+    if (lib_text_find_substring(result.text, "Fixture saved snapshot.") == LIB_NULL ||
+        !result.arm_prompt || snapshot_submissions != 1u)
         return 8;
+
+    provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_STOPPED,
+        "load state.bin", &result);
+    if (lib_text_find_substring(result.text, "Fixture loaded snapshot.") == LIB_NULL ||
+        !result.arm_prompt || snapshot_submissions != 2u)
+        return 13;
 
     provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_PAUSED,
         "floppy insert direct disk.img", &result);

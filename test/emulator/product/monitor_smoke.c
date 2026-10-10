@@ -163,6 +163,10 @@ static void provider_contract(void)
     lib_test_assert(last_fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD &&
         lib_text_compare(last_fixed_arguments, "state.bin") == 0 && extension_calls == 0u);
     emulator_product_monitor_provider_submit_line((void *)&provider,
+        EMULATOR_SESSION_MACHINE_ERROR, "save state.bin", &result);
+    lib_test_assert(lib_text_compare(result.text,
+        "Machine has failed; exit and restart the program.\r\n") == 0);
+    emulator_product_monitor_provider_submit_line((void *)&provider,
         EMULATOR_SESSION_MACHINE_STOPPED, "media attach disk.img", &result);
     lib_test_assert(lib_text_compare(result.text, "Media attached.\r\n") == 0 &&
         extension_calls == 1u && lib_text_compare(result.prompt,
@@ -221,6 +225,9 @@ static void lifecycle_contract(void)
         EMULATOR_SESSION_MACHINE_RUNNING, EMULATOR_SESSION_MACHINE_RESET_COMPLETED, &result);
     lib_test_assert(lib_text_compare(result.text, "Machine reset and paused.\r\n") == 0 &&
         result.arm_prompt);
+    emulator_product_monitor_provider_note_runtime((void *)&provider,
+        EMULATOR_SESSION_MACHINE_STOPPED, EMULATOR_SESSION_MACHINE_PAUSED, &result);
+    lib_test_assert(result.text[0] == '\0' && !result.arm_prompt);
 }
 
 int main(void)

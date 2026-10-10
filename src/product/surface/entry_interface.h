@@ -20,6 +20,7 @@ typedef lib_status (*product_surface_extensions_configure)(
  * App configuration object, loader callback, or machine-construction API. */
 typedef struct product_surface_definition {
     const char *name;
+    const char *banner;
     app_composed_machine machine;
     app_composed_ui ui;
     product_surface_extensions_configure configure_extensions;
