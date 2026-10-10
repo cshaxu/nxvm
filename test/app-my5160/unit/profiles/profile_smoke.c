@@ -246,13 +246,13 @@ int main(void)
     if (vm_xt_5160_268_contract_is_fixed() ||
         vm_xt_5160_268_topology_constructs_one_xt_route() ||
         vm_xt_5160_268_byob_session_uses_one_xt_route()) return 1;
-    printf("M5:T484:S3:XT-FIXED-PROFILE:OK\n");
-    printf("M5:T484:S5:XT-B2-SHARED-TOPOLOGY:OK\n");
-    printf("M5:T484:S10:XT-FDC-PLAN:OK\n");
-    printf("M5:T484:S10:XT-NO-AT-FDC-ALIAS:OK\n");
-    printf("M5:T484:S11:XT-CGA-PLAN:OK\n");
-    printf("M5:T484:S11:XT-NO-VIDEO-ALIAS:OK\n");
-    printf("M5:T484:S16:XT-TYPE2:OK\n");
-    printf("M5:T484:S21:XT-B6-BYOB-SESSION:OK\n");
+    printf("XT-FIXED-PROFILE:OK\n");
+    printf("XT-B2-SHARED-TOPOLOGY:OK\n");
+    printf("XT-FDC-PLAN:OK\n");
+    printf("XT-NO-AT-FDC-ALIAS:OK\n");
+    printf("XT-CGA-PLAN:OK\n");
+    printf("XT-NO-VIDEO-ALIAS:OK\n");
+    printf("XT-TYPE2:OK\n");
+    printf("XT-B6-BYOB-SESSION:OK\n");
     return 0;
 }

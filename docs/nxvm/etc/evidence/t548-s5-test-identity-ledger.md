@@ -65,6 +65,12 @@ contains one failure diagnostic. This confirms the baseline ledger's four-file
 count without changing a source path, predicate or registration. All four
 targets pass on x64 and x86.
 
+## S9 Disposition: My5160
+
+S9 replaced the eight task-provenance success markers in the XT 5160 profile
+test with behavior-only identities. Its source path and assertions remain
+unchanged, and the target passes on x64 and x86.
+
 ## CMake Registration Debt
 
 Task-shaped CMake helper names are not renamed mechanically. They fall into
