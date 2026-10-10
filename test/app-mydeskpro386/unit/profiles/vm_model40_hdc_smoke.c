@@ -6,7 +6,7 @@
 
 #include "core/machine/machine_private.h"
 #include "core/machine/media/hdd_interface.h"
-#include "../../../core/machine/qualification/model40_session_assets.h"
+#include "../../support/model40_session_assets.h"
 
 #define MODEL40_HDC_BYTES (925u * 5u * 17u * 512u)
 

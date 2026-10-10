@@ -9,7 +9,7 @@
 #include "core/chips/rtc146818/rtc146818_interface.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
-#include "../../../core/machine/qualification/model40_session_assets.h"
+#include "../../support/model40_session_assets.h"
 
 static lib_u8 vm_model40_cmos_read(vm_machine *session,
     lib_u8 index)

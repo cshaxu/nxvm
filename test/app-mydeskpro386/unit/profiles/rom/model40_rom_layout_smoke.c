@@ -5,7 +5,7 @@
 
 #include "core/x86/machine_interface.h"
 #include "core/machine/machine_private.h"
-#include "../../../../core/machine/qualification/model40_session_assets.h"
+#include "../../../support/model40_session_assets.h"
 #include "core/machine/machine_interface.h"
 
 static lib_i32 vm_model40_rom_read(core_machine *machine,

@@ -9,7 +9,7 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/media/fdd_interface.h"
-#include "../../../core/machine/qualification/model40_session_assets.h"
+#include "../../support/model40_session_assets.h"
 
 #define MODEL40_FDD_BYTES (80u * 2u * 15u * 512u)
 

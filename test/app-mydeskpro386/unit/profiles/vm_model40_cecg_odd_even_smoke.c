@@ -9,7 +9,7 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "../../../core/machine/qualification/model40_session_assets.h"
+#include "../../support/model40_session_assets.h"
 
 static lib_i32 t386_s28_session_write(vm_machine *session, lib_u8 value)
 {

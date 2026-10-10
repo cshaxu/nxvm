@@ -14,7 +14,7 @@
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
 #include "core/board-at/kbc_interface.h"
-#include "../../../core/machine/qualification/model40_session_assets.h"
+#include "../../support/model40_session_assets.h"
 #include "core/x86/clock_interface.h"
 
 static lib_bool model40_clock_inputs_match(void)

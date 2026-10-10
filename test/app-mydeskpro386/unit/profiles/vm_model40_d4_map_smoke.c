@@ -5,7 +5,7 @@
 
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_private.h"
-#include "../../../core/machine/qualification/model40_session_assets.h"
+#include "../../support/model40_session_assets.h"
 
 static lib_i32 read_byte(core_machine *machine, lib_u32 physical,
     lib_u8 expected)

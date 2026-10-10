@@ -12,7 +12,7 @@
 #include "core/machine/machine_private.h"
 #include "app-mydeskpro386/profiles/model40_private.h"
 #include "core/machine/machine_interface.h"
-#include "../../../core/machine/qualification/model40_session_assets.h"
+#include "../../support/model40_session_assets.h"
 
 static lib_bool refresh_count_matches(core_machine *machine, lib_u16 expected)
 {
@@ -52,6 +52,19 @@ static lib_bool short_video_copy_is_bounded(void)
     return valid;
 }
 
+static lib_bool observation_argument_contract(const vm_machine *machine)
+{
+    vm_machine_construction unrelated = {0};
+    vm_profile_model40_observation observation = { .fdc_terminal_valid = LIB_TRUE };
+
+    return machine != LIB_NULL &&
+        vm_profile_model40_observe(&unrelated, &observation) == LIB_STATUS_UNSUPPORTED &&
+        observation.fdc_terminal_valid &&
+        vm_profile_model40_observe(LIB_NULL, &observation) == LIB_STATUS_INVALID_ARGUMENT &&
+        vm_profile_model40_observe(vm_test_profile_construction(machine), LIB_NULL) ==
+            LIB_STATUS_INVALID_ARGUMENT;
+}
+
 lib_i32 main(void)
 {
     lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
@@ -84,6 +97,7 @@ lib_i32 main(void)
     if (vm_test_machine_create_from_assets(VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
         &config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || !vm_test_profile_is_model40(vm_test_profile_construction(session))) goto done;
+    if (!observation_argument_contract(session)) goto done;
     const test_board_plan_observation plan = test_board_capture_plan(session->core_machine_plan);
     if (plan.memory_bytes != 2u * 1024u * 1024u ||
         plan.retirement_time_contract !=
