@@ -20,7 +20,7 @@ following receivers.
 | --- | ---: | --- | --- |
 | Shared Lib, Emulator and Product | 0 | Already behavior-owned. | S2 records the clean sweep; no mechanical rename. |
 | Core CMake manifest paths | 5 | Retain: these are historical timing-ledger evidence filenames, not test identities. | S3 verifies they remain evidence-only references. |
-| Core test source | 0 | Already behavior-owned. | S3 records the clean sweep. |
+| Core test source | 3 files / 18 references | Rename `t330` cross-width task-switch helpers and the `t305` software-gate DPL fault helper. | S3 |
 | PC App unit sources | 4 / 10 | Rename task-bearing helper symbols, fixture path/constant, comment anchor and success marker to the asserted machine behavior. | S4 |
 | PC App integration registration | 3 files / 8 references | Rename `project_add_t*` helper names to behavior-owned integration registration helpers. | S5 |
 | NXVM integration support and probes | 20 files / 83 references | Replace task-prefixed diagnostics, helper symbols and markers with stable behavior identities.  Preserve every diagnostic field, assertion, timeout and input. | S5 |
@@ -66,3 +66,12 @@ constants and the negative verifier's literal forbidden-token fixtures.
 Those fixtures intentionally contain standard integer spellings to prove the
 Types boundary and are not test identities.  S2 therefore makes no source,
 CMake or manifest change.
+
+## S3 Core Receiver
+
+S3 renames the two 16-to-32/32-to-16 cross-width task-switch helpers in both
+their Core X86 and CPU-state tests, plus the board interrupt entry helper that
+proves software-gate DPL fault delivery.  The test files, targets, CTest routes
+and their predicates are unchanged.  The five `t435`/`t512` manifest filenames
+remain cited only as the approved timing-ledger evidence inputs; they are not
+test identities and changing them would break that evidence chain.

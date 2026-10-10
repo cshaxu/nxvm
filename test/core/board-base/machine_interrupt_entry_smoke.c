@@ -545,7 +545,7 @@ static lib_i32 ie_test_fault_delivery(lib_u32 mask, lib_u8 vector,
     return !failed;
 }
 
-static lib_i32 ie_test_t305_fault_delivery(void)
+static lib_i32 ie_test_software_gate_dpl_fault_delivery(void)
 {
     interrupt_entry_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -646,7 +646,7 @@ int main(void)
     failed |= !ie_test_fault_delivery(VCPUINS_EXCEPT_GP, 0x0du, 0u, 1);
     failed |= !ie_test_fault_delivery(VCPUINS_EXCEPT_NP, 0x0bu, 0x0018u, 0);
     failed |= !ie_test_fault_delivery(VCPUINS_EXCEPT_SS, 0x0cu, 0x0018u, 0);
-    failed |= !ie_test_t305_fault_delivery();
+    failed |= !ie_test_software_gate_dpl_fault_delivery();
     failed |= !ie_test_fault_delivery_failure(
         INTERRUPT_ENTRY_DELIVERY_INVALID_GATE);
     failed |= !ie_test_fault_delivery_failure(

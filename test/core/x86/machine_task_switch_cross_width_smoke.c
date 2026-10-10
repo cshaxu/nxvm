@@ -332,7 +332,7 @@ typedef enum task_switch_tss32_rejection {
     TASK_SWITCH_TSS32_DEBUG_TRAP_SUCCESS
 } task_switch_tss32_rejection;
 
-static lib_i32 task_switch_expect_t330_16_to_32(lib_u8 nested,
+static lib_i32 task_switch_expect_cross_width_16_to_32(lib_u8 nested,
     lib_u8 task_gate, lib_u8 task_return)
 {
     task_switch_fixture fixture;
@@ -422,7 +422,7 @@ typedef struct task_switch_smoke_tss16_state {
 _Static_assert(sizeof(task_switch_smoke_tss16_state) == 0x1eu,
     "TSS16 test image must retain the complete Intel saved-state span");
 
-static lib_i32 task_switch_expect_t330_32_to_16(lib_u8 nested,
+static lib_i32 task_switch_expect_cross_width_32_to_16(lib_u8 nested,
     lib_u8 task_gate, lib_u8 task_return)
 {
     task_switch_fixture fixture;
@@ -519,21 +519,21 @@ int main(void)
 {
     lib_i32 failed = 0;
 
-    failed |= task_switch_expect_t330_16_to_32(LIB_FALSE, LIB_FALSE,
+    failed |= task_switch_expect_cross_width_16_to_32(LIB_FALSE, LIB_FALSE,
         LIB_FALSE);
-    failed |= task_switch_expect_t330_16_to_32(LIB_TRUE, LIB_FALSE,
+    failed |= task_switch_expect_cross_width_16_to_32(LIB_TRUE, LIB_FALSE,
         LIB_FALSE);
-    failed |= task_switch_expect_t330_16_to_32(LIB_TRUE, LIB_TRUE,
+    failed |= task_switch_expect_cross_width_16_to_32(LIB_TRUE, LIB_TRUE,
         LIB_FALSE);
-    failed |= task_switch_expect_t330_16_to_32(LIB_TRUE, LIB_FALSE,
+    failed |= task_switch_expect_cross_width_16_to_32(LIB_TRUE, LIB_FALSE,
         LIB_TRUE);
-    failed |= task_switch_expect_t330_32_to_16(LIB_FALSE, LIB_FALSE,
+    failed |= task_switch_expect_cross_width_32_to_16(LIB_FALSE, LIB_FALSE,
         LIB_FALSE);
-    failed |= task_switch_expect_t330_32_to_16(LIB_TRUE, LIB_FALSE,
+    failed |= task_switch_expect_cross_width_32_to_16(LIB_TRUE, LIB_FALSE,
         LIB_FALSE);
-    failed |= task_switch_expect_t330_32_to_16(LIB_TRUE, LIB_TRUE,
+    failed |= task_switch_expect_cross_width_32_to_16(LIB_TRUE, LIB_TRUE,
         LIB_FALSE);
-    failed |= task_switch_expect_t330_32_to_16(LIB_TRUE, LIB_FALSE,
+    failed |= task_switch_expect_cross_width_32_to_16(LIB_TRUE, LIB_FALSE,
         LIB_TRUE);
     if (failed) return 1;
     lib_c_printf("TASK-SWITCH:OK\n");
