@@ -2608,22 +2608,22 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying T331 real exception final-delivery construction"
         VERBATIM)
 
-    add_custom_target(verify-t359-instruction-timing-inventory
+    add_custom_target(verify-instruction-timing-inventory
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t359_instruction_timing_inventory.cmake"
-        COMMENT "Verifying T359 four-profile instruction timing inventory"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_instruction_timing_inventory.cmake"
+        COMMENT "Verifying four-profile instruction timing inventory"
         VERBATIM)
 
-    add_custom_target(verify-t360-timing-source-inventory
+    add_custom_target(verify-timing-source-inventory
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t360_timing_source_inventory.cmake"
-        COMMENT "Verifying T360 four-profile timing source inventory"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_timing_source_inventory.cmake"
+        COMMENT "Verifying four-profile timing source inventory"
         VERBATIM)
 
-    add_custom_target(verify-t435-s3-cpu-timing-seam
+    add_custom_target(verify-cpu-timing-seam
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t435_s3_cpu_timing_seam.cmake"
-        COMMENT "Verifying T435 S3 single CPU timing selection/publication seam"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_cpu_timing_seam.cmake"
+        COMMENT "Verifying single CPU timing selection/publication seam"
         VERBATIM)
 
     add_custom_target(verify-t388-successful-sentinel-matrix
@@ -2677,9 +2677,9 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t338-legacy-profile-metadata
     verify-t330-task-transition-construction
     verify-t331-real-exception-final-construction
-    verify-t359-instruction-timing-inventory
-    verify-t360-timing-source-inventory
-    verify-t435-s3-cpu-timing-seam
+    verify-instruction-timing-inventory
+    verify-timing-source-inventory
+    verify-cpu-timing-seam
     verify-t388-successful-sentinel-matrix
     verify-t388-physical-timebase-inventory
     verify-t388-physical-eligibility-boundary

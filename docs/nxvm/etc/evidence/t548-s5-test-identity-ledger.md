@@ -227,3 +227,19 @@ and a 151-command deferred-warning audit.  No production or C test assertion
 changed.  The existing build directory's Ninja log recompaction was not used
 for this evidence; temporary clean configuration graphs avoid that host-local
 metadata failure, and any generated executable changes were discarded.
+
+## S18 Disposition: CPU Timing Verification
+
+The three active CPU timing verifiers now have behavior identities for their
+CMake filenames, custom targets, local variables and runtime diagnostics:
+
+- instruction timing inventory;
+- timing source inventory; and
+- CPU timing selection/publication seam.
+
+The historical T359, T360 and T435 evidence filenames and text anchors remain
+unchanged because they are provenance inputs to the unchanged predicates, not
+live unit-test identities.  Fresh x64 and x86 Ninja graphs each contain all
+three replacement targets and none of the retired target names; all three
+predicates pass in both graphs.  No production or C test source, assertion,
+asset input or executable artifact changed.
