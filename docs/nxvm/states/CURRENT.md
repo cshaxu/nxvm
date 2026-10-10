@@ -2,24 +2,24 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S10 Active: Audit Task-Shaped CMake Test Identities)
+## Current Task — M5 T548 (S11 Active: Normalize Unit/Corpus CMake Verification Identities)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S10. S1-S9 completed the initial duplicate, ownership and identity classification work. This S audits and classifies remaining active task-shaped CMake test identities before any semantic rename. |
+| Identifier Mode | Continuation T548 S11. S1-S10 completed the initial duplicate, ownership and identity classification work. This S renames one finite batch of live unit/corpus CMake verification identities after S10's evidence-backed classification. |
 | Admission And Approval | Owner instruction in this conversation: close the old T, then admit the first queued T to repair the complete NXVM test corpus cleanly. Standing push approval applies. |
 | Objective | Freeze a complete behavior-level ownership and coverage ledger for every registered repository unit test and production owner, then repair misplaced, duplicated, incomplete or non-independent coverage without losing component, profile, board, CPU, composition or failure evidence. |
 | Non-goals | No production behavior or public ABI change merely to simplify tests; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools as units; no sibling-repository edit. |
 | Reference Baseline | T547 closure commits `5b1d07412`, `08a6a19f4` and `6be3ce8ee`; re-freeze the current committed source/test/build graph before any move, merge or deletion. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | Inspect active unit CMake identities with explicit task-shaped names; record each as a semantic rename receiver, retained historical compatibility guard, or lexical false positive. No production API, firmware, media, asset or test assertion change during classification. |
+| Files And ABI Surface | Rename only live unit/corpus CMake verification helpers and custom targets whose S10 disposition is semantic receiver. Preserve predicates, dependencies, CTest routes, historical evidence paths and integration helpers. No production API, firmware, media, asset or test assertion change. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | Produce a current source/CMake inventory with concrete owner and disposition for every task-shaped active identity; preserve historical evidence and distinguish technical identifiers from task provenance. |
-| Expected Markers | Every remaining active task-shaped CMake identity has an evidence-backed disposition; no mechanical name rewrite or behavior claim is made from lexical matching alone. |
+| Verification | Prove renamed verification targets retain their predicates and dependencies; run their affected CMake verification targets on x64 and x86. |
+| Expected Markers | No task-shaped name remains in the selected live unit/corpus verification group; task provenance remains only in evidence or excluded integration helpers. |
 | Asset Needs | None. INIs, media, snapshots and artifacts are not edited. |
 | Reporting Requirements | Report source/target/output before-and-after identities, exact test count delta, line delta and dual-width result. Do not rename historical evidence or claim behavior coverage from names. |
 | Stop Conditions | Ambiguous semantic replacement, an external identity contract, an old reference outside MyDeskPro386 scope, required production change, or loss of an existing assertion. |
-| Exit Criteria | The inventory identifies an unambiguous finite semantic-rename batch and records all retained/non-task entries. T548 remains open. |
+| Exit Criteria | The selected CMake verification group has behavior-based identities, preserved assertions and dependencies, passing x64/x86 verification, and updated manifests if applicable. T548 remains open. |
 | Original Owner Request | Repair the entire NXVM test suite cleanly after closing the old lifecycle/product task. |
 | Similar-Issue Sweep | Inventory every C/CMake test entry, alias, fixture, negative gate and unit runner outside integration; distinguish component proof, composition increment, App/profile proof and non-unit tooling before assigning a canonical owner. |
 
@@ -35,7 +35,8 @@
 | T548 S7 | Complete pending commit: six Default-PC source paths and their CTest registrations now use behavior identities only; all 37 current Default-PC test files have task provenance removed from active output. The six replacement targets pass on x64 and x86; all changed source files compile on both widths. An unrelated full-build failure in `integration-session-ini-support` still references retired `app_composed_machine.machine` and is retained for a later receiver. |
 | T548 S8 | Complete pending commit: four My5170 unit sources now emit behavior-only success or diagnostic markers. The three success-bearing targets and the composition diagnostic receiver pass on x64 and x86. |
 | T548 S9 | Complete pending commit: the My5160 profile test's eight task-formatted success markers now use XT behavior identities. Its target passes on x64 and x86. |
-| T548 S10 | Active: audit and classify remaining active task-shaped CMake unit-test identities before any receiver rename. |
+| T548 S10 | Complete: the evidence ledger classifies live unit/corpus verification helpers as semantic receivers, retains historical evidence/provenance and excludes T515/T533 integration helpers. S11 owns the finite behavior-name migration. |
+| T548 S11 | Active: normalize the selected unit/corpus CMake verification identities without changing predicates, dependencies, integration routes or production behavior. |
 | T547 S5 | Closed at owner direction. P1 `9131545d8` replaces the live Product with the SoftPC command/keyboard base and App extensions; P2 `09cbfcf93` removes the SoftPC-branded fault message; P3 `3ff1e89f8` moves NXVM identity out of shared Product; P4 `7a2f23574` reduces the shared opening contract to App-provided text. Eight 0546 App artifacts were rebuilt. Product entry/command/manifest focused checks passed on x64; full dual-width Product and complete T547 qualification remain open and are not claimed by this S closure. |
 | T547 S6 | Complete: `bf469c879` adopts SoftPC S16's ownership correction without importing SoftPC runtime code. NXVM-family configuration/factory/extension support and direct tests now live in `src/core/product` and `test/core/product`; the old `ibmpc/nxvm` member is gone. IBM PC and core gates plus 8 focused tests pass on x64 and x86; all eight 0546 product artifacts were rebuilt against the relocated link input. |
 | T547 S7 | Superseded into S8 before P delivery: its uncommitted canonical Core rehome is retained as S8's required receiver baseline rather than split into an unbuildable partial commit. |

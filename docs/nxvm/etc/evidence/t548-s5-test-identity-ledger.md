@@ -86,3 +86,24 @@ three kinds:
 The next rename S must take one finite target-scoped group, prove every old
 CTest identity is absent after migration, and preserve its exact predicate.
 It must not rewrite evidence documents merely to erase historical task IDs.
+
+## S10 Disposition: CMake Task-Shaped Identities
+
+The remaining CMake matches were reviewed by execution role rather than by
+their spelling.  No active CTest unit name or test-source path still contains
+an explicit task identifier.  The task-shaped entries below are all CMake
+configuration, verification, or integration helpers.
+
+| Group | Current role | Disposition | Reason |
+| --- | --- | --- | --- |
+| `T317`, `T332`, `T337`, `T344`, `T345`, `T382`, `T388`, `T435`, `T447` | Active unit/corpus verification helpers and custom targets | Semantic rename receiver | These names describe current test qualification behavior, not a preserved external or historical contract.  A later finite CMake-only batch may rename each group to its behavior (for example, strict CPU smoke coverage, undefined-opcode disposition, fixture-shape verification, or timing-inventory verification) while preserving every predicate. |
+| `T264`, `T330`, `T331`, `T338`, `T359`, `T360` | Active ownership, construction, profile-metadata, or timing-ledger verification helpers | Semantic rename receiver | They are live verification targets, not evidence files.  Their historical IDs should remain only in the evidence documents that their predicates consume. |
+| `T515`, `T533` | External-asset and Console integration registration helpers | Retain, out of S10 unit scope | These names register or classify integration routes, not unit CTest identities.  Their eventual rename belongs to an integration-specific receiver so this unit-only S cannot accidentally alter external-asset behavior. |
+| `T296`, `T314`, `T345` comments, and all task IDs embedded in verifier diagnostics | Historical rationale or a diagnostic provenance string | Retain | A textual task ID alone does not name a unit test.  Rewriting it would erase audit provenance without improving source/test ownership. |
+| `pit825x`, `int13`, `sreg`, `tss32`, fixed-width integer tokens | Lexical false positive | Retain | The matched letters/digits are technical identifiers, not task provenance. |
+
+The next finite CMake rename batch is therefore limited to live *unit/corpus*
+verification helpers.  It must not absorb the `T515`/`T533` integration
+helpers, historical evidence paths, comments, or diagnostic provenance.  The
+batch must retain all custom-target dependencies and all failure predicates;
+it changes technical identity only.
