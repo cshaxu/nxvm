@@ -591,6 +591,11 @@ lib_status console_broker_backend_deactivate(console_broker_backend *backend,
     if (backend == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = console_broker_retire_reader(backend);
     if (status != LIB_STATUS_OK) return status;
+    /* The retired reader was the sole owner of input.  Discard its cancelled
+       read fragment and any synthetic wake before a replacement reader can
+       claim the Console. */
+    if (!lib_win32_flush_console_input_buffer(backend->input))
+        return LIB_STATUS_IO_ERROR;
     /* A completed line clears pending before delivery; cancelled reads retain
      * it until this join. Never snapshot it while the reader can still finish. */
     if (out_cooked_request != LIB_NULL)

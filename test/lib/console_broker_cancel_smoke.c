@@ -6,6 +6,7 @@
 
 static lib_win32_handle entered, finish_read, delivered;
 static lib_u32 lines, flushes;
+static lib_bool fail_flush;
 static lib_win32_bool LIB_WIN32_WINAPI read_line(lib_win32_handle h, lib_win32_lpvoid bytes, lib_win32_dword capacity, lib_win32_lpdword count, lib_win32_lpvoid p)
 {
     (void)h; (void)p;
@@ -20,7 +21,12 @@ static lib_win32_bool LIB_WIN32_WINAPI cancel_read(lib_win32_handle h, lib_win32
 static lib_win32_bool LIB_WIN32_WINAPI cancel_thread(lib_win32_handle h) { (void)h; return LIB_WIN32_TRUE; }
 static lib_win32_bool LIB_WIN32_WINAPI wake_read(lib_win32_handle h, const lib_win32_input_record *r, lib_win32_dword n, lib_win32_lpdword written)
 { (void)h; (void)r; *written = n; return LIB_WIN32_TRUE; }
-static lib_win32_bool LIB_WIN32_WINAPI flush(lib_win32_handle h) { (void)h; ++flushes; return LIB_WIN32_TRUE; }
+static lib_win32_bool LIB_WIN32_WINAPI flush(lib_win32_handle h)
+{
+    (void)h;
+    ++flushes;
+    return fail_flush ? LIB_WIN32_FALSE : LIB_WIN32_TRUE;
+}
 static lib_win32_bool LIB_WIN32_WINAPI set_mode(lib_win32_handle h, lib_win32_dword m) { (void)h; (void)m; return LIB_WIN32_TRUE; }
 #undef lib_win32_read_console_a
 #define lib_win32_read_console_a read_line
@@ -75,7 +81,14 @@ int main(void)
     lib_test_assert(!b.reader && lines == 1 && flushes == 2);
     lib_test_assert(console_broker_backend_cancel_cooked_line(&b, &completed) == 0 && completed);
     lib_console_release(b.console);
+    /* Deactivation must expose a native input-flush fault without retiring
+     * the backend state.  A caller can then take the existing retry path. */
+    fail_flush = LIB_TRUE;
+    lib_test_assert(console_broker_backend_deactivate(&b, LIB_NULL) == LIB_STATUS_IO_ERROR);
+    lib_test_assert(b.stop_event != LIB_NULL && b.generation == 1u && flushes == 3);
+    fail_flush = LIB_FALSE;
     lib_test_assert(console_broker_backend_deactivate(&b, LIB_NULL) == 0);
+    lib_test_assert(flushes == 4);
     lib_win32_close_handle(entered); lib_win32_close_handle(finish_read); lib_win32_close_handle(delivered);
     return 0;
 }
