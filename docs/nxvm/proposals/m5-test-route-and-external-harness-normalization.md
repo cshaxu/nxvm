@@ -54,6 +54,7 @@ path.
 | S4 | Shared, NXVM, MyNES | Reconcile all aggregate counts against the ledger, run Shared then Core then every App's complete unit route on x64/x86, and record any external-integration execution plan.  Do not call this an external qualification run. |
 | S5 | NXVM, MyNES | Run each selected external integration group once after unit qualification, report diagnostics separately, and close only if every route and retained external input has an explicit result or owner-approved transfer. |
 | S6 | Shared, NXVM | Audit the current SoftPC public six-component update for raw import eligibility, component ownership, Types usage, dependency direction, test closure and minimality.  Do not import or modify code without a separate owner-approved implementation scope. |
+| S7 | Shared, NXVM | Import SoftPC commit `2f706c37` verbatim for `src/{lib,emulator,product}`, `test/{lib,emulator,product}` and `test/register.cmake`; retain NXVM's established explicit 30-second static-test budgets plus the proven `lib.types-layout-selftest` 180-second and `emulator.verifier-negative` 60-second fixture budgets. Reconcile every affected CTest reference atomically to canonical `lib.*` and source-path identities, then prove shared x64/x86 suites and manifests. |
 
 ## Completion Standard
 
