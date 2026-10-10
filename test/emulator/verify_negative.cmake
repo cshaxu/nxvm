@@ -66,7 +66,7 @@ if(NOT result EQUAL 0)
 endif()
 file(WRITE "${PROBE_ROOT}/machine/probe.c" "")
 file(WRITE "${PROBE_ROOT}/CMakeLists.txt" "")
-file(WRITE "${PROBE_ROOT}/MANIFEST.sha256" "# corpus-revision: probe\n")
+file(WRITE "${PROBE_ROOT}/MANIFEST.sha256" "# sha256-manifest-v1\n")
 execute_process(COMMAND "${CMAKE_COMMAND}" -DEMULATOR_ROOT=${PROBE_ROOT}
     -P "${EMULATOR_ROOT}/verify_manifest.cmake" RESULT_VARIABLE result
     OUTPUT_VARIABLE output ERROR_VARIABLE error)
