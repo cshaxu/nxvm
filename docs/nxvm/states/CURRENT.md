@@ -7,16 +7,16 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation T548 S31. This final S re-audits the frozen ownership ledgers and performs repository-only dual-width qualification. |
-| Admission And Approval | Owner instruction in this conversation to continue the complete test-corpus repair after the S25 Core rehome; standing push approval applies. |
-| Objective | Re-audit every T548 ledger disposition, verify registrations/manifests/dependency gates and run the complete repository-only unit suite once on x64 and x86. |
-| Non-goals | No production behavior or public ABI change; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools; no sibling-repository edit. |
+| Admission And Approval | Owner instruction in this conversation to continue the complete test-corpus repair after the S25 Core rehome; the owner additionally approved the discovered Lib Console backing-buffer restoration repair; standing push approval applies. |
+| Objective | Re-audit every T548 ledger disposition, verify registrations/manifests/dependency gates and run the complete repository-only unit suite once on x64 and x86; repair the exact native Console qualification defect without changing its public contract. |
+| Non-goals | No public ABI change; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools; no sibling-repository edit. |
 | Reference Baseline | S26 commits `c47e7c848` through `b2ff1e9cd`, S27/S28 App ledgers, the S29 shared monitor ledger, the S30 MyNES ledger and the S1 ownership ledger. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | Registrations, verification/evidence and NXVM state only when an exact qualification defect requires correction. No production, assets, ABI or integration input changes. |
+| Files And ABI Surface | Private Lib Console backing-buffer restoration, its existing Lib contract test and manifests, S31 evidence/state, plus current dependent App artifacts. No public API, ABI, integration input, firmware, media, INI or snapshot changes. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
 | Verification | Run all repository-only unit routes on x64 and x86 after manifest, fixture, registration and dependency gates. Recheck all ledger dispositions against current paths and targets. |
 | Expected Markers | Every T548 behavior remains assigned to one canonical owner, with consumer increments visible and no unexplained route loss. |
-| Asset Needs | None. INIs, media, snapshots and artifacts are not edited. |
+| Asset Needs | Rebuild all ten current dependent x64/x86 artifacts after the approved Lib change. INIs, media and snapshots are not edited. |
 | Reporting Requirements | Report exact source/target/output identities, disposition table, test-count and line delta, dual-width results and every retained App increment. Do not rename historical evidence or claim behavior coverage from names. |
 | Stop Conditions | A ledger disposition no longer matches a current route, a qualification failure requires production behavior, a unique assertion is lost, or an external/desktop dependency blocks a repository-only route. |
 | Exit Criteria | All repository-only unit routes pass on x64/x86; manifests, fixture, registration and dependency gates pass; changed path/test-count ledger is reconciled; desktop and external integration remain explicitly unclaimed. |
