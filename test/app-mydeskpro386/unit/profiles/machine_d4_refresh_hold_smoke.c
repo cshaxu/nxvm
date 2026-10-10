@@ -237,6 +237,6 @@ lib_i32 main(void)
     core_machine_destroy(machine);
     failed = failed || !refresh_non_d4_contract();
     if (failed) return 1;
-    printf("M5:T419:S4:D4-REFRESH-HOLD:OK\n");
+    printf("D4-REFRESH-HOLD:OK\n");
     return 0;
 }

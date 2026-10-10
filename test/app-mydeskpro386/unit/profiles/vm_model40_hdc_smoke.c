@@ -73,6 +73,6 @@ lib_i32 main(void)
     vm_machine_destroy(session);
     lib_release(image);
     if (failed) return 1;
-    printf("M5:T386:S26:MODEL40-HDC-MEMORY-MEDIA:OK\n");
+    printf("MODEL40-HDC-MEMORY-MEDIA:OK\n");
     return 0;
 }

@@ -94,7 +94,7 @@ lib_i32 main(void)
             LIB_STATUS_OK || !observation.configured || observation.iochk_enabled ||
         observation.failsafe_enabled || observation.iochk_latched ||
         observation.failsafe_latched || observation.nmi_signaled;
-    if (!failed) printf("M5:T386:S4:D4-PLATFORM-PORT:OK\n");
+    if (!failed) printf("D4-PLATFORM-PORT:OK\n");
     if (!failed) failed |= core_machine_bus_write(machine, 0x0043u, 0x74u) !=
             LIB_STATUS_OK || core_machine_bus_write(machine, 0x0041u, 2u) !=
             LIB_STATUS_OK || core_machine_bus_write(machine, 0x0041u, 0u) !=
@@ -111,7 +111,7 @@ lib_i32 main(void)
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
         (value & 0x20u) != 0x20u || core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK || value != 0x1fu;
-    if (!failed) printf("M5:T386:S25:D4-PORT-B-SYSTEM-PIT:OK\n");
+    if (!failed) printf("D4-PORT-B-SYSTEM-PIT:OK\n");
 
     if (!failed) failed |= core_machine_bus_write(machine, 0x0061u, 0x02u) !=
         LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
@@ -131,7 +131,7 @@ lib_i32 main(void)
         test_core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
         core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
         !speaker.timer_output || !speaker.output;
-    if (!failed) printf("M5:T421:S1:D4-SPEAKER-LINE:OK\n");
+    if (!failed) printf("D4-SPEAKER-LINE:OK\n");
     if (!failed) failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
         !speaker.configured || !speaker.timer_gate || !speaker.data_enabled ||
@@ -150,7 +150,7 @@ lib_i32 main(void)
             LIB_STATUS_OK || core_machine_d4_platform_observe(d4_board,
             &observation) != LIB_STATUS_OK || !observation.nmi_signaled ||
         test_core_machine_fixture_nmi_execute(machine, LIB_TRUE);
-    if (!failed) printf("M5:T386:S4:D4-NMI-MASK:OK\n");
+    if (!failed) printf("D4-NMI-MASK:OK\n");
 
     if (!failed) failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_nmi_prepare(machine) ||
@@ -166,7 +166,7 @@ lib_i32 main(void)
         !observation.failsafe_latched || !observation.nmi_signaled ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
         value != 0x90u || test_core_machine_fixture_nmi_execute(machine, LIB_TRUE);
-    if (!failed) printf("M5:T386:S4:D4-FAILSAFE-ROUTE:OK\n");
+    if (!failed) printf("D4-FAILSAFE-ROUTE:OK\n");
 
     if (!failed) {
         core_machine_run_result result;
@@ -199,9 +199,9 @@ lib_i32 main(void)
     if (!failed) failed |= core_machine_port_b_exclusivity();
     core_machine_destroy(machine);
     if (failed) return 1;
-    printf("M5:T421:S2:PORT-B-EXCLUSIVITY:OK\n");
-    printf("M5:T386:S4:D4-RESET-ISOLATION:OK\n");
-    printf("M5:T386:S23:D4-RESET-ARBITRATION:OK\n");
-    printf("M5:T399:S2:B3-ACTIVE-LOW-NMI:OK\n");
+    printf("PORT-B-EXCLUSIVITY:OK\n");
+    printf("D4-RESET-ISOLATION:OK\n");
+    printf("D4-RESET-ARBITRATION:OK\n");
+    printf("B3-ACTIVE-LOW-NMI:OK\n");
     return 0;
 }

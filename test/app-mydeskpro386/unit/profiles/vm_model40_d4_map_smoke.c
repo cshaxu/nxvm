@@ -194,10 +194,10 @@ lib_i32 main(void)
     }
 done:
 #undef CHECK
-    if (!failed) printf("M5:T386:S16:D4-ROM-MAP:OK\n");
-    if (!failed) printf("M5:T386:S16:D4-SOLE-ROM-OWNER:OK\n");
-    if (!failed) printf("M5:T386:S16:D4-RESET-ALIAS:OK\n");
-    if (!failed) printf("M5:T390:S29:MODEL40-ROM-DECODE:OK\n");
+    if (!failed) printf("D4-ROM-MAP:OK\n");
+    if (!failed) printf("D4-SOLE-ROM-OWNER:OK\n");
+    if (!failed) printf("D4-RESET-ALIAS:OK\n");
+    if (!failed) printf("MODEL40-ROM-DECODE:OK\n");
     vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

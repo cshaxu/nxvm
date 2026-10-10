@@ -64,9 +64,9 @@ lib_i32 main(void)
         (core_machine_run_budget) {1u, 0u}, &result) != LIB_STATUS_OK ||
         result.executed != 1u ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-    if (!failed) printf("M5:T386:S25:D4-SOLE-ROM-MAP:OK\n");
-    if (!failed) printf("M5:T386:S25:D4-COMPATIBILITY-RESET:OK\n");
-    if (!failed) printf("M5:T386:S25:AT-REFRESH-CLOCK:OK\n");
+    if (!failed) printf("D4-SOLE-ROM-MAP:OK\n");
+    if (!failed) printf("D4-COMPATIBILITY-RESET:OK\n");
+    if (!failed) printf("AT-REFRESH-CLOCK:OK\n");
     vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

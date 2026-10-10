@@ -109,6 +109,6 @@ lib_i32 main(void)
             prefetch_grants, trace.requests, trace.acknowledgements, trace.commits, trace.releases);
         return 1;
     }
-    printf("M5:T540:S93:D4-PREFETCH-REFRESH:OK\n");
+    printf("D4-PREFETCH-REFRESH:OK\n");
     return 0;
 }

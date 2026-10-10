@@ -164,7 +164,7 @@ lib_i32 main(void)
     failed = 0;
 done:
     if (failed) {
-        printf("M5:T386:S8:MODEL40-INTEGRATION:FAILED-stage=%u-fdc=%02X/%02X-cmos=%02X-reset=%02X,%02X,%02X,%02X-final=%02X\n",
+        printf("MODEL40-INTEGRATION:FAILED-stage=%u-fdc=%02X/%02X-cmos=%02X-reset=%02X,%02X,%02X,%02X-final=%02X\n",
             (unsigned int)stage,
             (unsigned int)composition.drives.installed_mask,
             (unsigned int)composition.drives.track_zero_active_low_mask,
@@ -172,8 +172,8 @@ done:
             (unsigned int)reset_status[1u], (unsigned int)reset_status[2u],
             (unsigned int)reset_status[3u], (unsigned int)sense_status);
     }
-    if (!failed) printf("M5:T386:S8:MODEL40-INTEGRATION:OK\n");
-    if (!failed) printf("M5:T386:S8:MODEL40-CONTROLS:OK\n");
+    if (!failed) printf("MODEL40-INTEGRATION:OK\n");
+    if (!failed) printf("MODEL40-CONTROLS:OK\n");
     vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

@@ -18,6 +18,15 @@ The inventory was taken after S4 at committed baseline `3d54512ac`:
 
 No rename is authorized by this ledger alone.
 
+## S6 Disposition: Model 40/D4
+
+S6 renamed the twenty MyDeskPro386 paths in the first row to behavior-based
+identities, updated their CMake/CTest identities, and removed the matching
+task provenance prefixes from active success output.  The Model 40/D4
+predicates and fixed-profile context were not changed.  All twenty replacement
+targets pass on x64 and x86; the Core test-boundary verifier also passes.
+Historical evidence remains unchanged.
+
 ## Path Rename Batches
 
 | Scope | Count | Current pattern | Required later receiver |

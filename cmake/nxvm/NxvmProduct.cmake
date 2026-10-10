@@ -106,79 +106,79 @@ target_link_libraries(vm-pcat-composition-s4-smoke PRIVATE vm-profile-tests)
 add_executable(vm-ibm-5170-model-339-composition-smoke
     test/app-my5170/unit/profiles/vm_ibm_5170_model_339_composition_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-private-composition-s7-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_private_composition_s7_smoke.c)
-target_link_libraries(vm-model40-private-composition-s7-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-composition-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_composition_smoke.c)
+target_link_libraries(vm-model40-composition-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cmos-seed-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_cmos_seed_smoke.c
     test/core/board-base/composition/composition_fixture.c)
 target_link_libraries(vm-model40-cmos-seed-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-integration-s8-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_integration_s8_smoke.c)
-target_link_libraries(vm-model40-integration-s8-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-cecg-s9-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_s9_smoke.c)
-target_link_libraries(vm-model40-cecg-s9-smoke PRIVATE vm-profile-tests)
-target_sources(vm-model40-cecg-s9-smoke PRIVATE test/app-nxvm/unit/support/core/video_topology_fixture.c)
-add_executable(vm-model40-cecg-s10-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_s10_smoke.c)
-target_link_libraries(vm-model40-cecg-s10-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-cecg-s11-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_s11_smoke.c)
-target_link_libraries(vm-model40-cecg-s11-smoke PRIVATE vm-profile-tests)
-target_sources(vm-model40-cecg-s11-smoke PRIVATE test/app-nxvm/unit/support/core/video_topology_fixture.c)
-add_executable(vm-model40-cecg-s12-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_s12_smoke.c)
-target_link_libraries(vm-model40-cecg-s12-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-cecg-s13-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_s13_smoke.c)
-target_link_libraries(vm-model40-cecg-s13-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-cecg-s28-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_s28_smoke.c)
-target_link_libraries(vm-model40-cecg-s28-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-rom-layout-s14-smoke
-    test/app-mydeskpro386/unit/profiles/rom/model40_rom_layout_s14_smoke.c)
-target_link_libraries(vm-model40-rom-layout-s14-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-d4-compatibility-s25-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_d4_compatibility_s25_smoke.c)
-target_link_libraries(vm-model40-d4-compatibility-s25-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-d4-map-s16-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_d4_map_s16_smoke.c)
-target_link_libraries(vm-model40-d4-map-s16-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-d4-parity-s22-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_d4_parity_s22_smoke.c
+add_executable(vm-model40-machine-integration-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_machine_integration_smoke.c)
+target_link_libraries(vm-model40-machine-integration-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-cecg-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_smoke.c)
+target_link_libraries(vm-model40-cecg-smoke PRIVATE vm-profile-tests)
+target_sources(vm-model40-cecg-smoke PRIVATE test/app-nxvm/unit/support/core/video_topology_fixture.c)
+add_executable(vm-model40-cecg-feature-environment-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_feature_environment_smoke.c)
+target_link_libraries(vm-model40-cecg-feature-environment-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-cecg-cpu-video-gate-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_cpu_video_gate_smoke.c)
+target_link_libraries(vm-model40-cecg-cpu-video-gate-smoke PRIVATE vm-profile-tests)
+target_sources(vm-model40-cecg-cpu-video-gate-smoke PRIVATE test/app-nxvm/unit/support/core/video_topology_fixture.c)
+add_executable(vm-model40-cecg-io-base-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_io_base_smoke.c)
+target_link_libraries(vm-model40-cecg-io-base-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-cecg-input-status-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_input_status_smoke.c)
+target_link_libraries(vm-model40-cecg-input-status-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-cecg-odd-even-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_odd_even_smoke.c)
+target_link_libraries(vm-model40-cecg-odd-even-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-rom-layout-smoke
+    test/app-mydeskpro386/unit/profiles/rom/model40_rom_layout_smoke.c)
+target_link_libraries(vm-model40-rom-layout-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-d4-compatibility-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_d4_compatibility_smoke.c)
+target_link_libraries(vm-model40-d4-compatibility-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-d4-map-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_d4_map_smoke.c)
+target_link_libraries(vm-model40-d4-map-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-d4-parity-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_d4_parity_smoke.c
     test/core/board-base/composition/composition_fixture.c)
-target_link_libraries(vm-model40-d4-parity-s22-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-fdc-s24-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_fdc_s24_smoke.c
+target_link_libraries(vm-model40-d4-parity-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-fdc-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_fdc_smoke.c
     test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c
     test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
-target_link_libraries(vm-model40-fdc-s24-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-d4-skey-s23-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_d4_skey_s23_smoke.c
+target_link_libraries(vm-model40-fdc-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-d4-a20-reset-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_d4_a20_reset_smoke.c
     test/core/board-base/composition/composition_fixture.c)
-target_link_libraries(vm-model40-d4-skey-s23-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-dma-s17-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_dma_s17_smoke.c)
-target_link_libraries(vm-model40-dma-s17-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-fdd-s18-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_fdd_s18_smoke.c)
-target_link_libraries(vm-model40-fdd-s18-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-byob-s20-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_byob_s20_smoke.c)
-target_link_libraries(vm-model40-byob-s20-smoke PRIVATE vm-profile-tests)
+target_link_libraries(vm-model40-d4-a20-reset-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-dma-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_dma_smoke.c)
+target_link_libraries(vm-model40-dma-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-fdd-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_fdd_smoke.c)
+target_link_libraries(vm-model40-fdd-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-byob-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_byob_smoke.c)
+target_link_libraries(vm-model40-byob-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-byob-retirement-capture
     test/app-mydeskpro386/integration/model40/vm_model40_retirement_capture.c
     test/core/board-base/composition/composition_fixture.c
     test/app-nxvm/unit/support/ibmpc/board-common/cmos_fixture.c)
 target_link_libraries(vm-model40-byob-retirement-capture PRIVATE
     integration-session-ini-support)
-add_executable(vm-model40-byob-boot-media-s5-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_byob_boot_media_s5_smoke.c)
-target_link_libraries(vm-model40-byob-boot-media-s5-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-hdc-s26-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_hdc_s26_smoke.c)
-target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-byob-boot-media-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_byob_boot_media_smoke.c)
+target_link_libraries(vm-model40-byob-boot-media-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-hdc-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_hdc_smoke.c)
+target_link_libraries(vm-model40-hdc-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-console-s20-smoke
     test/app-mydeskpro386/integration/product/vm_model40_console_s20_smoke.c
     test/app-nxvm/integration/support/nxvm_console_process.c)
@@ -876,12 +876,12 @@ target_link_libraries(core-machine-cpu-fault-diagnostic-smoke PRIVATE
     mydeskpro386-d4-observable
 )
 
-add_executable(core-machine-d4-platform-s4-smoke
-    test/app-mydeskpro386/unit/profiles/core_machine_d4_platform_s4_smoke.c
+add_executable(core-machine-d4-platform-smoke
+    test/app-mydeskpro386/unit/profiles/core_machine_d4_platform_smoke.c
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/composition/time_fixture.c
 )
-target_link_libraries(core-machine-d4-platform-s4-smoke PRIVATE mydeskpro386-d4)
+target_link_libraries(core-machine-d4-platform-smoke PRIVATE mydeskpro386-d4)
 add_executable(core-machine-d4-memory-transaction-smoke
     test/app-mydeskpro386/unit/profiles/d4_memory_transaction_smoke.c
     test/core/board-base/composition/composition_fixture.c
@@ -1025,21 +1025,21 @@ foreach(_pcat_composition_target IN ITEMS vm-pcat-topology-s2-smoke
         test/app-nxvm/unit/support/ibmpc/board-at/state_fixture.c)
 endforeach()
 target_link_libraries(vm-cmos-rtc-port-smoke PRIVATE vm-profile-tests)
-target_sources(vm-model40-fdd-s18-smoke PRIVATE
+target_sources(vm-model40-fdd-smoke PRIVATE
     test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c)
-target_sources(vm-model40-hdc-s26-smoke PRIVATE
+target_sources(vm-model40-hdc-smoke PRIVATE
     test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c)
-target_sources(vm-model40-dma-s17-smoke PRIVATE
+target_sources(vm-model40-dma-smoke PRIVATE
     test/core/board-base/composition/composition_fixture.c
     test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
-target_sources(vm-model40-d4-compatibility-s25-smoke PRIVATE
+target_sources(vm-model40-d4-compatibility-smoke PRIVATE
     test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
-target_sources(vm-model40-byob-s20-smoke PRIVATE
+target_sources(vm-model40-byob-smoke PRIVATE
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/composition/time_fixture.c
     test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
-foreach(_model40_composition_target IN ITEMS vm-model40-private-composition-s7-smoke
-        vm-model40-integration-s8-smoke)
+foreach(_model40_composition_target IN ITEMS vm-model40-composition-smoke
+        vm-model40-machine-integration-smoke)
     target_sources(${_model40_composition_target} PRIVATE
         test/core/board-base/composition/composition_fixture.c
         test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c
@@ -1047,7 +1047,7 @@ foreach(_model40_composition_target IN ITEMS vm-model40-private-composition-s7-s
         test/app-nxvm/unit/support/ibmpc/board-common/kbc_state_fixture.c
         test/app-nxvm/unit/support/ibmpc/board-at/state_fixture.c)
 endforeach()
-target_sources(vm-model40-integration-s8-smoke PRIVATE
+target_sources(vm-model40-machine-integration-smoke PRIVATE
     test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c)
 target_sources(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE
     test/core/board-base/composition/composition_fixture.c
@@ -1184,25 +1184,25 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-pcat-topology-s2-smoke
     vm-pcat-composition-s4-smoke
     vm-ibm-5170-model-339-composition-smoke
-    vm-model40-private-composition-s7-smoke
+    vm-model40-composition-smoke
     vm-model40-cmos-seed-smoke
-    vm-model40-integration-s8-smoke
-    vm-model40-cecg-s9-smoke
-    vm-model40-cecg-s10-smoke
-    vm-model40-cecg-s11-smoke
-    vm-model40-cecg-s12-smoke
-    vm-model40-cecg-s13-smoke
-    vm-model40-cecg-s28-smoke
-    vm-model40-d4-compatibility-s25-smoke
-    vm-model40-d4-map-s16-smoke
-    vm-model40-d4-parity-s22-smoke
-    vm-model40-fdc-s24-smoke
-    vm-model40-d4-skey-s23-smoke
-    vm-model40-dma-s17-smoke
-    vm-model40-fdd-s18-smoke
-    vm-model40-byob-s20-smoke
-    vm-model40-byob-boot-media-s5-smoke
-    vm-model40-hdc-s26-smoke
+    vm-model40-machine-integration-smoke
+    vm-model40-cecg-smoke
+    vm-model40-cecg-feature-environment-smoke
+    vm-model40-cecg-cpu-video-gate-smoke
+    vm-model40-cecg-io-base-smoke
+    vm-model40-cecg-input-status-smoke
+    vm-model40-cecg-odd-even-smoke
+    vm-model40-d4-compatibility-smoke
+    vm-model40-d4-map-smoke
+    vm-model40-d4-parity-smoke
+    vm-model40-fdc-smoke
+    vm-model40-d4-a20-reset-smoke
+    vm-model40-dma-smoke
+    vm-model40-fdd-smoke
+    vm-model40-byob-smoke
+    vm-model40-byob-boot-media-smoke
+    vm-model40-hdc-smoke
     vm-ibm-5170-model-339-cga-topology-smoke
     vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     vm-hdc-port-smoke
@@ -1386,7 +1386,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-pit-divider-smoke
     core-machine-pit-irq0-smoke
     core-machine-auxiliary-pit-smoke
-    core-machine-d4-platform-s4-smoke
+    core-machine-d4-platform-smoke
     core-machine-d4-memory-transaction-smoke
     core-machine-rom-route-transaction-smoke
     core-machine-rtc-cmos-smoke
@@ -1497,7 +1497,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-external-time-trace-smoke
     my5170-clock-contract-smoke
     core-machine-plan-smoke
-    vm-model40-rom-layout-s14-smoke
+    vm-model40-rom-layout-smoke
     core-machine-instance-smoke
     core-machine-explicit-time-smoke
     machine-80186-timing-manifest-runner

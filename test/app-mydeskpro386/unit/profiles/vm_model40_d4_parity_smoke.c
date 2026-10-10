@@ -85,11 +85,11 @@ done:
 #undef CHECK
     vm_machine_destroy(session);
     if (failed) {
-        printf("M5:T386:S22:D4-PARITY-DIAGNOSTIC:STEP-%u\n", (unsigned int)failed);
+        printf("D4-PARITY-DIAGNOSTIC:STEP-%u\n", (unsigned int)failed);
         return 1;
     }
-    printf("M5:T386:S22:D4-PARITY-DIAGNOSTIC:OK\n");
-    printf("M5:T386:S22:D4-IOCHK-CLEAR:OK\n");
-    printf("M5:T386:S22:MEMORY-PARITY-OWNER:OK\n");
+    printf("D4-PARITY-DIAGNOSTIC:OK\n");
+    printf("D4-IOCHK-CLEAR:OK\n");
+    printf("MEMORY-PARITY-OWNER:OK\n");
     return 0;
 }

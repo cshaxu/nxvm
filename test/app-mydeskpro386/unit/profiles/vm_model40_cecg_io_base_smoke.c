@@ -43,9 +43,9 @@ lib_i32 main(void)
     }
     vm_machine_destroy(session);
     if (!failed) {
-        printf("M5:T386:S12:MODEL40-IO-BASE:OK\n");
+        printf("MODEL40-IO-BASE:OK\n");
         return 0;
     }
-    fprintf(stderr, "M5:T386:S12:MODEL40-IO-BASE:FAIL\n");
+    fprintf(stderr, "MODEL40-IO-BASE:FAIL\n");
     return 1;
 }

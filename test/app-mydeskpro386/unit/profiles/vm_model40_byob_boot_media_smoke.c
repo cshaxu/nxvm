@@ -47,6 +47,6 @@ lib_i32 main(void)
         !info.present || info.geometry.logical_sector_count != 2400u ||
         info.geometry.bytes_per_sector != 512u;
     vm_machine_destroy(session);
-    if (!failed) printf("M5:T390:S5:MODEL40-BYOB-BOOT-MEDIA:OK\n");
+    if (!failed) printf("MODEL40-BYOB-BOOT-MEDIA:OK\n");
     return failed;
 }

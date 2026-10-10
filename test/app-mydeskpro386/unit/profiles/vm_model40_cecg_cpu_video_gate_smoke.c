@@ -70,9 +70,9 @@ lib_i32 main(void)
     }
     vm_machine_destroy(session);
     if (!failed) {
-        printf("M5:T386:S11:MODEL40-CPU-VIDEO-GATE:OK\n");
+        printf("MODEL40-CPU-VIDEO-GATE:OK\n");
         return 0;
     }
-    fprintf(stderr, "M5:T386:S11:MODEL40-CPU-VIDEO-GATE:FAIL\n");
+    fprintf(stderr, "MODEL40-CPU-VIDEO-GATE:FAIL\n");
     return 1;
 }

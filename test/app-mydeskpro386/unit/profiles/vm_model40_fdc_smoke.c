@@ -268,10 +268,10 @@ lib_i32 main(void)
 done:
     vm_machine_destroy(session);
     if (failed) return 1;
-    printf("M5:T386:S24:FDC-12MB-LOGICAL:OK\n");
-    printf("M5:T386:S24:FDC-DMA2-IRQ6:OK\n");
-    printf("M5:T386:S24:MODEL40-FDC-BINDING:OK\n");
-    printf("M5:T539:S12:MODEL40-FDC-READY-MEDIA-SEPARATION:OK\n");
-    printf("M5:T539:S12:FLOPPY-CHANNEL-FORMAT-RATE-PITCH:OK\n");
+    printf("FDC-12MB-LOGICAL:OK\n");
+    printf("FDC-DMA2-IRQ6:OK\n");
+    printf("MODEL40-FDC-BINDING:OK\n");
+    printf("MODEL40-FDC-READY-MEDIA-SEPARATION:OK\n");
+    printf("FLOPPY-CHANNEL-FORMAT-RATE-PITCH:OK\n");
     return 0;
 }

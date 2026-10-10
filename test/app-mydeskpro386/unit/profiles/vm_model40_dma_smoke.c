@@ -60,10 +60,10 @@ lib_i32 main(void)
 done:
     vm_machine_destroy(session);
     if (failed) return 1;
-    printf("M5:T386:S17:DUAL-DMA-TOPOLOGY:OK\n");
-    printf("M5:T386:S17:DMA-WORD-CASCADE:OK\n");
-    printf("M5:T386:S17:DMA-RESET-BINDING:OK\n");
-    printf("M5:T419:S2:D4-DMA-GRANT-WAIT:OK\n");
-    printf("M5:T419:S3:D4-DMA-BUSRDY:OK\n");
+    printf("DUAL-DMA-TOPOLOGY:OK\n");
+    printf("DMA-WORD-CASCADE:OK\n");
+    printf("DMA-RESET-BINDING:OK\n");
+    printf("D4-DMA-GRANT-WAIT:OK\n");
+    printf("D4-DMA-BUSRDY:OK\n");
     return 0;
 }

@@ -187,11 +187,11 @@ lib_i32 main(void)
             LIB_STATUS_OK || test_board_kbc_read_reply(session->board,
             session->core_machine) != 0xeeu;
     }
-    if (!failed) printf("M5:T386:S7:MODEL40-PRIVATE-COMPOSITION:OK\n");
-    if (!failed) printf("M5:T421:S1:MODEL40-SPEAKER-SELECTION:OK\n");
-    if (!failed) printf("M5:T386:S7:EXTERNAL-ROM-GUARD:OK\n");
-    if (!failed) printf("M5:T390:S34:MODEL40-DETERMINISTIC-CONTRACT:OK\n");
-    if (!failed) printf("M5:T477:S3:DESKPRO-SESSION-CUTOVER:OK\n");
+    if (!failed) printf("MODEL40-COMPOSITION:OK\n");
+    if (!failed) printf("MODEL40-SPEAKER-SELECTION:OK\n");
+    if (!failed) printf("EXTERNAL-ROM-GUARD:OK\n");
+    if (!failed) printf("MODEL40-DETERMINISTIC-CONTRACT:OK\n");
+    if (!failed) printf("DESKPRO-SESSION-CUTOVER:OK\n");
     vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

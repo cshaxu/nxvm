@@ -44,8 +44,8 @@ lib_i32 main(void)
     }
     vm_machine_destroy(session);
     if (failed) return 1;
-    printf("M5:T386:S23:D4-SKEY-A20:OK\n");
-    printf("M5:T386:S23:CORE-VM-RESET-OWNER:OK\n");
-    printf("M5:T390:S31:MODEL40-A20-POLICY:OK\n");
+    printf("D4-SKEY-A20:OK\n");
+    printf("CORE-VM-RESET-OWNER:OK\n");
+    printf("MODEL40-A20-POLICY:OK\n");
     return 0;
 }

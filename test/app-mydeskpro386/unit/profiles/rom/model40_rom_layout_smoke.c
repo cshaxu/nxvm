@@ -55,8 +55,8 @@ lib_i32 main(void)
         (core_machine_run_budget) {1u, 0u}, &result) != LIB_STATUS_OK ||
         result.executed != 1u ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-    if (!failed) printf("M5:T386:S14:MODEL40-ROM-LAYOUT:OK\n");
-    if (!failed) printf("M5:T386:S14:MODEL40-ROM-RESET:OK\n");
+    if (!failed) printf("MODEL40-ROM-LAYOUT:OK\n");
+    if (!failed) printf("MODEL40-ROM-RESET:OK\n");
     vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

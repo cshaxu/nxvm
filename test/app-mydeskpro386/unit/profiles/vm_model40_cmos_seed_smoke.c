@@ -129,6 +129,6 @@ lib_i32 main(void)
     vm_machine_destroy(second);
     vm_machine_destroy(first);
     if (failed) return 1;
-    printf("M5:T513:S4:MODEL40-CMOS-SEED:OK\n");
+    printf("MODEL40-CMOS-SEED:OK\n");
     return 0;
 }

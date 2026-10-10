@@ -78,8 +78,8 @@ done:
     vm_machine_destroy(default_session);
     vm_machine_destroy(model40);
     if (failed) return 1;
-    printf("M5:T386:S18:MODEL40-FDD-GEOMETRY:OK\n");
-    printf("M5:T386:S18:MODEL40-FDD-MEDIA:OK\n");
-    printf("M5:T386:S18:MODEL40-FDD-RESET-BINDING:OK\n");
+    printf("MODEL40-FDD-GEOMETRY:OK\n");
+    printf("MODEL40-FDD-MEDIA:OK\n");
+    printf("MODEL40-FDD-RESET-BINDING:OK\n");
     return 0;
 }

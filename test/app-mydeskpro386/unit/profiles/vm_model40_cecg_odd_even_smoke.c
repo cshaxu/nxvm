@@ -87,9 +87,9 @@ lib_i32 main(void)
     }
     vm_machine_destroy(session);
     if (failed) {
-        fprintf(stderr, "M5:T386:S28:MODEL40-CECG-ODD-EVEN:FAIL\n");
+        fprintf(stderr, "MODEL40-CECG-ODD-EVEN:FAIL\n");
         return 1;
     }
-    printf("M5:T386:S28:MODEL40-CECG-ODD-EVEN:OK\n");
+    printf("MODEL40-CECG-ODD-EVEN:OK\n");
     return 0;
 }

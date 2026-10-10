@@ -75,6 +75,6 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     for (lib_u32 mode = 0u; mode < 4u; ++mode) failed |= run_case(mode);
-    if (!failed) printf("M5:T540:S17:D4-MEMORY-TRANSACTION:OK\n");
+    if (!failed) printf("D4-MEMORY-TRANSACTION:OK\n");
     return failed ? 1 : 0;
 }
