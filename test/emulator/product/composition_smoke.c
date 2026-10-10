@@ -28,6 +28,7 @@ typedef struct composition_fixture {
     lib_u32 session_destroy_count;
     lib_u32 ui_destroy_count;
     lib_u32 teardown_sequence;
+    lib_u32 unbind_attempt_count;
     lib_u32 unbind_sequence;
     lib_u32 emulator_machine_destroy_sequence;
     lib_status shutdown_status;
@@ -73,10 +74,12 @@ static lib_status bind(void *opaque, emulator_machine *emulator)
     if (machine == LIB_NULL || !machine->live) return LIB_STATUS_INVALID_STATE;
     if (emulator != LIB_NULL && fixture.failure == COMPOSITION_FAILURE_MACHINE_BIND)
         return LIB_STATUS_INVALID_STATE;
-    if (emulator == LIB_NULL && fixture.failure == COMPOSITION_FAILURE_MACHINE_UNBIND)
-        return LIB_STATUS_IO_ERROR;
-    if (emulator == LIB_NULL)
+    if (emulator == LIB_NULL) {
+        ++fixture.unbind_attempt_count;
+        if (fixture.failure == COMPOSITION_FAILURE_MACHINE_UNBIND)
+            return LIB_STATUS_IO_ERROR;
         fixture.unbind_sequence = ++fixture.teardown_sequence;
+    }
     machine->bound = emulator;
     return LIB_STATUS_OK;
 }
@@ -202,7 +205,9 @@ static lib_i32 composition_machine_failure_recovers(composition_failure failure)
     composition_fixture_reset(failure);
     if (emulator_product_create(&composition_machine, &app) != LIB_STATUS_OK ||
         emulator_product_compose_machine(app) == LIB_STATUS_OK ||
-        fixture.emulator_machine.live || !fixture.machine.live) return 0;
+        fixture.emulator_machine.live || !fixture.machine.live ||
+        (failure == COMPOSITION_FAILURE_MACHINE_BIND && fixture.unbind_attempt_count != 0u))
+        return 0;
     fixture.failure = COMPOSITION_FAILURE_NONE;
     if (emulator_product_compose_machine(app) != LIB_STATUS_OK ||
         !fixture.emulator_machine.live) return 0;

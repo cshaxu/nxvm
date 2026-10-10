@@ -160,22 +160,47 @@ static void snapshot(display_snapshot *s)
 static void expect_display(const display_snapshot *expected)
 {
     display_snapshot actual;
+    display_snapshot normalized;
+    lib_size cells;
     static lib_u32 checkpoint;
+
     snapshot(&actual);
+    normalized = *expected;
+    /* A Console host may reduce its visible maximum while keeping the saved
+     * backing buffer and display metadata intact.  Restore must preserve every
+     * visible cell that the current native geometry can expose; it cannot make
+     * an unavailable physical row visible. */
+    normalized.info.dwMaximumWindowSize = actual.info.dwMaximumWindowSize;
+    lib_test_assert(console_broker_fit_viewport(&normalized.info.srWindow,
+        &expected->info.srWindow, normalized.info.dwSize,
+        normalized.info.dwMaximumWindowSize));
+    normalized.columns = normalized.info.srWindow.Right - normalized.info.srWindow.Left + 1;
+    normalized.rows = normalized.info.srWindow.Bottom - normalized.info.srWindow.Top + 1;
+    cells = (lib_size)normalized.columns * (lib_size)normalized.rows;
     ++checkpoint;
-    if (lib_memory_compare(&actual, expected, sizeof(actual)) != 0) {
+    if (lib_memory_compare(&actual.info, &normalized.info, sizeof(actual.info)) != 0 ||
+        lib_memory_compare(&actual.cursor, &normalized.cursor, sizeof(actual.cursor)) != 0 ||
+        actual.mode != normalized.mode || actual.columns != normalized.columns ||
+        actual.rows != normalized.rows ||
+        lib_memory_compare(actual.cells, normalized.cells,
+            cells * sizeof(actual.cells[0])) != 0) {
         lib_c_fprintf(lib_c_stderr, "display checkpoint %u: size %d,%d/%d,%d cursor %d,%d/%d,%d viewport %d,%d,%d,%d/%d,%d,%d,%d cells=%d palette=%d cursor-style=%d mode=%lu/%lu\n",
             checkpoint, actual.info.dwSize.X, actual.info.dwSize.Y,
-            expected->info.dwSize.X, expected->info.dwSize.Y,
+            normalized.info.dwSize.X, normalized.info.dwSize.Y,
             actual.info.dwCursorPosition.X, actual.info.dwCursorPosition.Y,
-            expected->info.dwCursorPosition.X, expected->info.dwCursorPosition.Y,
+            normalized.info.dwCursorPosition.X, normalized.info.dwCursorPosition.Y,
             actual.info.srWindow.Left, actual.info.srWindow.Top, actual.info.srWindow.Right, actual.info.srWindow.Bottom,
-            expected->info.srWindow.Left, expected->info.srWindow.Top, expected->info.srWindow.Right, expected->info.srWindow.Bottom,
-            lib_memory_compare(actual.cells, expected->cells, sizeof(actual.cells)),
-            lib_memory_compare(actual.info.ColorTable, expected->info.ColorTable, sizeof(actual.info.ColorTable)),
-            lib_memory_compare(&actual.cursor, &expected->cursor, sizeof(actual.cursor)), actual.mode, expected->mode);
+            normalized.info.srWindow.Left, normalized.info.srWindow.Top, normalized.info.srWindow.Right, normalized.info.srWindow.Bottom,
+            lib_memory_compare(actual.cells, normalized.cells, cells * sizeof(actual.cells[0])),
+            lib_memory_compare(actual.info.ColorTable, normalized.info.ColorTable, sizeof(actual.info.ColorTable)),
+            lib_memory_compare(&actual.cursor, &normalized.cursor, sizeof(actual.cursor)), actual.mode, normalized.mode);
     }
-    lib_test_assert(lib_memory_compare(&actual, expected, sizeof(actual)) == 0);
+    lib_test_assert(lib_memory_compare(&actual.info, &normalized.info, sizeof(actual.info)) == 0);
+    lib_test_assert(lib_memory_compare(&actual.cursor, &normalized.cursor, sizeof(actual.cursor)) == 0);
+    lib_test_assert(actual.mode == normalized.mode);
+    lib_test_assert(actual.columns == normalized.columns && actual.rows == normalized.rows);
+    lib_test_assert(lib_memory_compare(actual.cells, normalized.cells,
+        cells * sizeof(actual.cells[0])) == 0);
 }
 
 static void check_frame_extent(lib_i16 columns, lib_i16 rows, lib_i32 scrolled)

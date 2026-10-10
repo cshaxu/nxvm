@@ -106,7 +106,6 @@ lib_status emulator_product_compose_machine(emulator_product *product)
         status = product->machine.bind(machine, emulator_machine);
     }
     if (status != LIB_STATUS_OK) {
-        (void)product->machine.bind(machine, LIB_NULL);
         lib_status cleanup_status = emulator_machine_destroy(emulator_machine);
 
         if (cleanup_status != LIB_STATUS_OK) {
@@ -211,9 +210,7 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
         status = LIB_STATUS_INTERNAL_ERROR;
     if (product != LIB_NULL)
         destroy_status = emulator_product_destroy(product);
-    else {
-        (void)definition->machine.bind(definition->machine.machine, LIB_NULL);
+    else
         destroy_status = definition->machine.destroy(definition->machine.machine);
-    }
     return status == LIB_STATUS_OK && destroy_status == LIB_STATUS_OK ? 0 : 1;
 }
