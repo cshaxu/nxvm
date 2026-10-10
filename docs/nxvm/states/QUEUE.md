@@ -1,20 +1,21 @@
 # Queue
 
-T547 is admitted; its active S1 packet is in `CURRENT.md`. The remaining
-entries are ordered unnumbered candidates.
+T548 is admitted; its active S1 packet and progress are in `CURRENT.md`.
+The entries below are ordered unnumbered candidates.
 
 ## M5 Candidates
 
-1. [T547 SoftPC four-test-package optimization import](../proposals/m5-t547-softpc-four-test-optimization-import.md) — admitted; S1 active.
+The [T547 SoftPC optimization and consolidation proposal](../history/M5-T547-softpc-four-test-optimization-import-proposal.md)
+is closed; its final product/qualification closure is recorded in `CURRENT.md`.
 
 The separately admitted [T545 eight-corpus refresh](../history/M5-T545-softpc-eight-corpus-refresh.md)
 is closed after full receiving verification. [T546 CPU repair](../history/M5-T546-cpu-audit-gap-repair.md)
 is closed by owner direction with its separately recorded Model40 x86
 host-throughput TODO; all T544 findings remain retained.
 
-2. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
-3. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-4. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+1. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
+2. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+3. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 
 [T544](../history/M5-T544-retained-cpu-qualification.md) is closed as a
 completed CPU audit by owner direction. Its eighteen complete repair/proof
