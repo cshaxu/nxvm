@@ -16,6 +16,7 @@ file(REMOVE "${fixture}/consumer.c" "${fixture}/types/probe.h"
     "${fixture}/kvm-window/win32/probe.c"
     "${fixture}/kvm-base/win32/probe_interface.h"
     "${fixture}/console-broker/win32/encoding_probe.c"
+    "${fixture}/console-broker/win32/lock_probe.c"
     "${fixture}/kvm-window/win32/encoding_probe.c"
     "${fixture}/kvm-window/input_probe.c"
     "${fixture}/kvm-console/input_probe.c")

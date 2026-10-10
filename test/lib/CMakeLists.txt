@@ -69,86 +69,87 @@ if(WIN32)
     target_link_libraries(lib-test-kvm_keyboard_lifetime PRIVATE kvm-console)
     target_link_libraries(lib-test-kvm_shutdown_failure PRIVATE kvm-console)
     # Real native windows/consoles can affect the user's desktop even when hidden.
-    set_property(TEST library.kvm_window_modal library.kvm_window_retirement
-        library.console_broker_display APPEND PROPERTY LABELS desktop)
+    set_property(TEST lib.kvm_window_modal lib.kvm_window_retirement
+        lib.console_broker_display APPEND PROPERTY LABELS desktop)
     # These tests create real native Console/Window state. Serialize only that
     # shared desktop resource; independent tests still run concurrently.
-    set_property(TEST library.kvm_window_modal library.kvm_window_retirement
-        library.console_broker_display PROPERTY RESOURCE_LOCK native_desktop)
+    set_property(TEST lib.kvm_window_modal lib.kvm_window_retirement
+        lib.console_broker_display PROPERTY RESOURCE_LOCK native_desktop)
 endif()
 
-add_test(NAME library.types-layout
+add_test(NAME lib.types-layout
         COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${LIB_ROOT}
             -P "${LIB_ROOT}/verify_types_layout.cmake")
-    add_test(NAME library.manifest
+    add_test(NAME lib.manifest
         COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${LIB_ROOT}
             -P "${LIB_ROOT}/verify_manifest.cmake")
-    add_test(NAME library.linux-build-contract
+    add_test(NAME lib.linux-build-contract
         COMMAND "${CMAKE_COMMAND}" -DLIBRARY_CMAKE:FILEPATH=${LIB_ROOT}/CMakeLists.txt
             -P "${LIB_ROOT}/verify_linux_build_contract.cmake")
-    add_test(NAME library.component-dag
+    add_test(NAME lib.component-dag
         COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${LIB_ROOT}
             -P "${LIB_ROOT}/verify_component_dependencies.cmake")
-    add_test(NAME library.component-dag-forbidden-include
+    add_test(NAME lib.component-dag-forbidden-include
         COMMAND "${CMAKE_COMMAND}"
             -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_SOURCE_DIR}/fixtures/lib-component-dag
             -DLIBRARY_VERIFIER:FILEPATH=${LIB_ROOT}/verify_component_dependencies.cmake
             "-DLIBRARY_EXPECTED_ERROR:STRING=Forbidden component edge: console-broker -> kvm-window"
             -P "${CMAKE_CURRENT_SOURCE_DIR}/component_dag_forbidden_include_smoke.cmake")
-    add_test(NAME library.component-dag-relative-include
+    add_test(NAME lib.component-dag-relative-include
         COMMAND "${CMAKE_COMMAND}"
             -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_SOURCE_DIR}/fixtures/lib-component-relative-include
             -DLIBRARY_VERIFIER:FILEPATH=${LIB_ROOT}/verify_component_dependencies.cmake
             "-DLIBRARY_EXPECTED_ERROR:STRING=canonical lib/"
             -P "${CMAKE_CURRENT_SOURCE_DIR}/component_dag_forbidden_include_smoke.cmake")
-    add_test(NAME library.kvm-naming
+    add_test(NAME lib.kvm-naming
         COMMAND "${CMAKE_COMMAND}" -DKVM_NAMING_ROOT:PATH=${LIB_ROOT}
             -P "${LIB_ROOT}/verify_kvm_naming.cmake")
-    add_test(NAME library.component-control-ownership
+    add_test(NAME lib.component-control-ownership
         COMMAND "${CMAKE_COMMAND}"
             -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_SOURCE_DIR}/fixtures/lib-control-ownership
             -DLIBRARY_VERIFIER:FILEPATH=${LIB_ROOT}/verify_component_dependencies.cmake
             "-DLIBRARY_EXPECTED_ERROR:STRING=Window controls belong to kvm-window"
             -P "${CMAKE_CURRENT_SOURCE_DIR}/component_dag_forbidden_include_smoke.cmake")
-    add_test(NAME library.kvm-naming-forbidden
+    add_test(NAME lib.kvm-naming-forbidden
         COMMAND "${CMAKE_COMMAND}"
             -DKVM_NAMING_ROOT:PATH=${CMAKE_CURRENT_SOURCE_DIR}/fixtures/kvm-naming
             -DKVM_NAMING_VERIFIER:FILEPATH=${LIB_ROOT}/verify_kvm_naming.cmake
             -P "${CMAKE_CURRENT_SOURCE_DIR}/kvm_naming_forbidden_smoke.cmake")
-add_test(NAME library.types-layout-selftest COMMAND "${CMAKE_COMMAND}"
+add_test(NAME lib.types-layout-selftest COMMAND "${CMAKE_COMMAND}"
     "-DLIBRARY_ROOT=${LIB_ROOT}" "-DTEST_WORK_DIR=${CMAKE_CURRENT_BINARY_DIR}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/types_layout_selftest.cmake")
-add_test(NAME library.test-types-boundary COMMAND "${CMAKE_COMMAND}"
+add_test(NAME lib.test-types-boundary COMMAND "${CMAKE_COMMAND}"
     "-DTEST_ROOTS=${CMAKE_CURRENT_SOURCE_DIR}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/../verify_types_boundary.cmake")
-add_test(NAME library.test-types-boundary-selftest COMMAND "${CMAKE_COMMAND}"
+add_test(NAME lib.test-types-boundary-selftest COMMAND "${CMAKE_COMMAND}"
     "-DTEST_WORK_DIR=${CMAKE_CURRENT_BINARY_DIR}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/../types_boundary_selftest.cmake")
-add_test(NAME library.test-manifest COMMAND "${CMAKE_COMMAND}"
+add_test(NAME lib.test-manifest COMMAND "${CMAKE_COMMAND}"
     "-DLIBRARY_ROOT=${CMAKE_CURRENT_SOURCE_DIR}"
     -P "${LIB_ROOT}/verify_manifest.cmake")
 set_tests_properties(
     lib.test-boundaries
     lib.test-boundaries-selftest
-    library.types-layout
-    library.manifest
-    library.linux-build-contract
-    library.component-dag
-    library.component-dag-forbidden-include
-    library.component-dag-relative-include
-    library.kvm-naming
-    library.component-control-ownership
-    library.kvm-naming-forbidden
-    library.types-layout-selftest
-    library.test-types-boundary
-    library.test-types-boundary-selftest
-    library.test-manifest
+    lib.types-layout
+    lib.manifest
+    lib.linux-build-contract
+    lib.component-dag
+    lib.component-dag-forbidden-include
+    lib.component-dag-relative-include
+    lib.kvm-naming
+    lib.component-control-ownership
+    lib.kvm-naming-forbidden
+    lib.types-layout-selftest
+    lib.test-types-boundary
+    lib.test-types-boundary-selftest
+    lib.test-manifest
     PROPERTIES LABELS "unit;lib" TIMEOUT 30)
 
 # This self-test intentionally configures several isolated negative layout
-# fixtures.  It is a Lib-owned validation and may exceed the ordinary unit
+# fixtures. It is a Lib-owned validation and may exceed the ordinary unit
 # timeout on a cold compiler cache, so keep its contract with the suite.
-set_tests_properties(library.types-layout-selftest PROPERTIES TIMEOUT 180)
+set_tests_properties(lib.types-layout-selftest PROPERTIES TIMEOUT 180)
+shared_verify_test_registration(lib)
 
 # One suite-owned build entry for importing products.  CTest registration and
 # standalone configuration remain unchanged; this only builds every executable

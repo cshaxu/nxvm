@@ -247,20 +247,23 @@ static void check_surface_damage(void)
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
     lib_test_assert(invalidations==before+2);
-    frame=(kvm_window_frame){.valid=LIB_TRUE};
+    lib_memory_set(&frame,0,sizeof(frame));
+    frame.valid=LIB_TRUE;
     frame.text.base.text_columns=frame.text.base.text_rows=1;
     frame.text.base.font_height=8; /* Same pixel dimensions as graphics. */
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
     lib_test_assert(c.surface_valid && invalidations==before+3);
-    frame=(kvm_window_frame){.valid=LIB_TRUE,.graphics=1};
+    lib_memory_set(&frame,0,sizeof(frame));
+    frame.valid=frame.graphics=LIB_TRUE;
     frame.image.width=frame.image.stride=frame.image.height=8;
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
     lib_test_assert(c.surface_valid && invalidations==before+3);
     lib_test_assert(invalidated.left==0 && invalidated.top==0 && invalidated.right==8 && invalidated.bottom==8);
     /* Same black bitmap, but a new cursor overlay must still invalidate. */
-    frame=(kvm_window_frame){.valid=LIB_TRUE};
+    lib_memory_set(&frame,0,sizeof(frame));
+    frame.valid=LIB_TRUE;
     frame.text.base.text_columns=1; frame.text.base.text_rows=2;
     frame.text.base.font_height=4;
     frame.text.base.cursor_visible=LIB_TRUE;

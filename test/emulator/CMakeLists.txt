@@ -30,7 +30,7 @@ shared_register_test(emulator session_queue_failure emulator-session)
 shared_register_test(emulator presentation_plan emulator-session)
 shared_register_test(emulator reconciler emulator-session)
 shared_register_test(emulator control_state_matrix emulator-session)
-shared_register_test(emulator control_reconciler emulator-session)
+shared_register_test(emulator control_reconciler_integration emulator-session)
 shared_register_test(emulator input_queue_mouse_fifo emulator-machine)
 shared_register_test(emulator input_queue_ownership emulator-machine)
 shared_register_test(emulator machine_wait emulator-machine)
@@ -50,8 +50,8 @@ endif()
 set(emulator_composition_work_directory
     "${CMAKE_CURRENT_BINARY_DIR}/test/emulator-test-composition")
 file(MAKE_DIRECTORY "${emulator_composition_work_directory}")
-add_test(NAME emulator.composition COMMAND emulator-test-composition)
-set_tests_properties(emulator.composition PROPERTIES LABELS "unit;emulator" TIMEOUT 30
+add_test(NAME emulator.product/composition COMMAND emulator-test-composition)
+set_tests_properties(emulator.product/composition PROPERTIES LABELS "unit;emulator" TIMEOUT 30
     WORKING_DIRECTORY "${emulator_composition_work_directory}")
 list(APPEND SHARED_EMULATOR_TEST_TARGETS emulator-test-composition)
 shared_register_test(emulator product/monitor emulator-product)
@@ -82,9 +82,10 @@ set_tests_properties(
     emulator.test-manifest
     PROPERTIES LABELS "unit;emulator" TIMEOUT 30)
 
-# The verifier configures isolated CMake fixtures.  On a cold 32-bit cache it
+# The verifier configures isolated CMake fixtures. On a cold 32-bit cache it
 # can exceed the ordinary unit-test budget while competing with the suite.
 set_tests_properties(emulator.verifier-negative PROPERTIES TIMEOUT 60)
+shared_verify_test_registration(emulator)
 
 # One suite-owned build entry for importing products.  CTest registration and
 # standalone configuration remain unchanged.
