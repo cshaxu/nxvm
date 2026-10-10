@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S30 Active: Audit MyNES Unit Ownership)
+## Current Task — M5 T548 (S31 Active: Complete Qualification)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S30. This S consumes the MyNES App behavior batch following the completed shared-monitor ownership review. |
+| Identifier Mode | Continuation T548 S31. This final S re-audits the frozen ownership ledgers and performs repository-only dual-width qualification. |
 | Admission And Approval | Owner instruction in this conversation to continue the complete test-corpus repair after the S25 Core rehome; standing push approval applies. |
-| Objective | Establish behavior-level ownership for every MyNES unit entry. Retain NES CPU/PPU/APU/mapper, media, snapshot and App-provider increments; move or retire only a documented duplicate with an equal-or-stronger canonical receiver. |
+| Objective | Re-audit every T548 ledger disposition, verify registrations/manifests/dependency gates and run the complete repository-only unit suite once on x64 and x86. |
 | Non-goals | No production behavior or public ABI change; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools; no sibling-repository edit. |
-| Reference Baseline | S26 commits `c47e7c848` through `b2ff1e9cd`, S27/S28 App ledgers, the S29 shared monitor ledger and the S1 ownership ledger. |
+| Reference Baseline | S26 commits `c47e7c848` through `b2ff1e9cd`, S27/S28 App ledgers, the S29 shared monitor ledger, the S30 MyNES ledger and the S1 ownership ledger. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | `test/app-mynes/unit/**`, shared receiver comparison only where a documented disposition requires it, registrations/support fixtures and NXVM evidence/state. No production, assets, ABI or integration input changes. |
+| Files And ABI Surface | Registrations, verification/evidence and NXVM state only when an exact qualification defect requires correction. No production, assets, ABI or integration input changes. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | Before any move, record each MyNES behavior, shared comparison and canonical receiver. Build/run every changed receiver on x64/x86; preserve routes/counts unless a documented equal-or-stronger receiver retires a duplicate; run manifests, fixture and registration gates. |
-| Expected Markers | Every reviewed MyNES behavior has one canonical App or shared receiver. No path is moved merely because it calls a shared component. |
+| Verification | Run all repository-only unit routes on x64 and x86 after manifest, fixture, registration and dependency gates. Recheck all ledger dispositions against current paths and targets. |
+| Expected Markers | Every T548 behavior remains assigned to one canonical owner, with consumer increments visible and no unexplained route loss. |
 | Asset Needs | None. INIs, media, snapshots and artifacts are not edited. |
 | Reporting Requirements | Report exact source/target/output identities, disposition table, test-count and line delta, dual-width results and every retained App increment. Do not rename historical evidence or claim behavior coverage from names. |
-| Stop Conditions | Missing equal-or-stronger receiver, ambiguous generic-versus-NES assertion, external identity contract, required production change, or loss of an existing assertion. |
-| Exit Criteria | Every MyNES unit entry has a documented disposition. Every changed behavior has one canonical App or shared owner; App increments remain visible; affected x64/x86 tests and gates pass. T548 remains open for final qualification. |
+| Stop Conditions | A ledger disposition no longer matches a current route, a qualification failure requires production behavior, a unique assertion is lost, or an external/desktop dependency blocks a repository-only route. |
+| Exit Criteria | All repository-only unit routes pass on x64/x86; manifests, fixture, registration and dependency gates pass; changed path/test-count ledger is reconciled; desktop and external integration remain explicitly unclaimed. |
 | Original Owner Request | Repair the entire NXVM test suite cleanly after closing the old lifecycle/product task. |
-| Similar-Issue Sweep | Review NES CPU/APU/PPU/mapper/media/snapshot and App-provider entries together; compare shared monitor and emulator receivers before moving or removing any case. |
+| Similar-Issue Sweep | Recheck every S26–S30 disposition, target removal, shared boundary and App receiver before final closure. |
 
 | Work | Progress |
 | --- | --- |
@@ -31,6 +31,7 @@
 | T548 S27 | Complete pending commit: all two My5160 and six My5170 unit entries are classified in `etc/evidence/t548-s27-my5160-my5170-ownership-ledger.md`. Every assertion selects a fixed profile, firmware, topology, clock or composed route that Core does not own; none is rehomed or retired. Two raw-CRT/duplicate-include test-boundary cleanups compile and the complete eight-entry App batch passes on x64/x86. No production, asset, firmware, media, INI, snapshot or executable input changed. |
 | T548 S28 | Complete pending commit: all 25 Model 40 unit entries are classified in `etc/evidence/t548-s28-mydeskpro386-ownership-ledger.md`. Every assertion selects D4, CMOS, ROM, media geometry, CECG or a Model 40 composed route that Core does not own; none is rehomed or retired. Twenty-five raw-CRT test boundary cleanups compile and all 28 MyDeskPro386 routes pass on x64/x86. No production, asset, firmware, media, INI, snapshot or executable input changed. |
 | T548 S29 | Complete pending commit: `etc/evidence/t548-s29-shared-monitor-ownership-ledger.md` assigns the shared monitor behavior by contract. Lib retains host-console mechanics; Emulator Session retains reader/prompt/result delivery; Emulator Product retains fixed grammar/help/lifecycle formatting; Product Surface retains IBM-PC adapter/debug/hotkey binding. MyNES retains its NES execution and provider increments. No equal-or-stronger duplicate exists, so no C/H, CMake, manifest, asset or executable input changes. |
+| T548 S30 | Complete pending commit: `etc/evidence/t548-s30-mynes-unit-ownership-ledger.md` classifies all 44 MyNES unit entries. The 40 Core entries retain 6502/NES peripheral, cartridge/mapper, media/snapshot and complete-machine contracts; the four Product entries retain MyNES configuration, concrete composition, battery-failure and provider binding. No equal-or-stronger Shared receiver exists, so no C/H, CMake, manifest, asset or executable input changes. |
 | T548 S2 | Complete: retired `nxvm_ini_smoke.c` and both `vm-app-ini-smoke` registrations. Reconfigured x64/x86 CTest graphs contain only `core.factory`; it passes on both widths. Core ownership and manifest gates pass. This is test/CMake-only, so no executable input or artifact changed. |
 | T548 S3 | Complete: pushed as `ac7fbc5dc`. The unmodified eight-by-five Core CPU/PIC negative matrix now has one `core.cpu-bus-boundary-negative` registration, runs on x64/x86, and the old App identity is absent. The FDC assembly gate remains App-owned. Core ownership and both Core manifests pass. No production or artifact input changed. |
 | T548 S4 | Complete: the mixed Default-App plan test is split into one Default-PC, one My5170 and one MyDeskPro386 receiver; the 5170 clock contract also moves to My5170. All four targets pass on x64/x86, and no old mixed path/target remains in active test/CMake sources. This is test/CMake-only, so no executable input or artifact changed. |
