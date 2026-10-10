@@ -6,27 +6,27 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Closed: M5 T550; no active implementation task. |
+| Identifier Mode | Continuation: M5 T550; S6 audit complete, awaiting an import decision. |
 | Admission And Approval | Owner approved the repository-wide route normalization and instructed automatic admission of the planned S tasks on 2026-10-10. |
-| Objective | Record final route qualification and await owner direction for the next queued task. |
-| Non-goals | No production/API/firmware/media/INI/snapshot/artifact change; do not register diagnostics as integration or call diagnostic/desktop evidence a complete product qualification. |
-| Reference Baseline | S4 commits `175eb1f01`, `c3719d53b` and `12699668c`. |
-| Candidate Proposal | [T550 test route and external harness normalization](../proposals/m5-test-route-and-external-harness-normalization.md), closed through S5. |
-| Files And ABI Surface | Test evidence or task documentation only if a result requires a disposition; no public ABI. |
+| Objective | Retain the S6 import audit and await the owner's disposition on the identified SoftPC public-test baseline. |
+| Non-goals | No import, code, public API, firmware, media, INI, snapshot or artifact change. Do not resolve a difference by weakening a component boundary or test contract. |
+| Reference Baseline | Closed S5 commits `6906dbeab` and `599c4d14c`; current approved SoftPC public six-component worktree. |
+| Candidate Proposal | [T550 test route and external harness normalization](../proposals/m5-test-route-and-external-harness-normalization.md), S6. |
+| Files And ABI Surface | Read-only comparison and NXVM task documentation only; no public ABI. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`. |
-| Verification | Final x64/x86 root Unit selection and each owner external integration group are recorded below. |
-| Expected Markers | Every integration route has one result or explicit owner disposition; diagnostics remain excluded from normal integration selection; external/desktop evidence stays separate. |
-| Asset Needs | None. Existing deployed inputs are untouched. |
-| Reporting Requirements | Record every integration result with architecture and input class; list diagnostics/desktop work separately; do not infer results from unit execution. |
-| Stop Conditions | Stop and report missing protected input, a real registration/ownership defect, or a result requiring source/API/protected-input change. |
-| Exit Criteria | Met: every registered owner integration route ran once on x64/x86; diagnostics remained excluded from normal qualification. |
+| Verification | Compare SoftPC's current `src/{lib,emulator,product}` and matching test roots against NXVM; inspect manifest, Types, dependency and test-route gates without modifying either corpus. |
+| Expected Markers | A finite difference ledger separates raw-import-ready changes, NXVM-only retained changes, SoftPC-only defects and any blocker requiring owner direction. |
+| Asset Needs | None. Both repositories and deployed inputs are read-only for this audit. |
+| Reporting Requirements | Report every source/test/manifest difference by owner and explain whether it is eligible for raw import, must remain NXVM-local, or blocks import. |
+| Stop Conditions | Stop and report an uncommitted/ambiguous SoftPC baseline, a license/source-policy issue, or any required code/import action before touching source. |
+| Exit Criteria | S6 met: the current SoftPC six-component audit has a clear raw-import disposition and no unreviewed source modification. T550 remains open until one reusable full x64/x86 repository build has rebuilt every App artifact and every registered component/App `unit`, `setup` and `integration` route passes. |
 | Original Owner Request | Make MyNES classification consistent; create parallel `unit`, `integration`, `diagnostic`, and `setup` ownership; Core owns four-PC shared support and neutral external harnesses. |
-| Similar-Issue Sweep | Compare selected integration route names and inputs across x64/x86 graphs before executing; inspect any failure for route/owner/input mismatch before changing code. |
+| Similar-Issue Sweep | Check all six source/test roots, not only modified files; ensure manifest bytes, Types ownership, component DAG and test closure are assessed independently. |
 
 | Work | Progress |
 | --- | --- |
+| T550 S6 | Complete: read-only comparison finds `src/{lib,emulator,product}` byte-identical. The public test roots differ only in Lib/Emulator/Product CMake/manifests, one Lib fixture cleanup and one identical Emulator fixture rename, plus shared `test/register.cmake`. SoftPC's active public-test worktree is uncommitted (seven test files plus the helper), so it is not a fixed raw-import baseline. Its `lib.*` grammar and configure-time registration verifier are sound targets, but cannot be imported alone: NXVM still owns `library.*` registrations and its established 30/180-second fixture budgets, while SoftPC omits those script-test budgets. The Lib fixture cleanup for abandoned `console-broker/win32/lock_probe.c` is independently valid. SoftPC test manifests verify against the current worktree; no source/API/dependency/Types difference was found. The revised task closure requires one reusable full x64 and x86 repository build that compiles every component/App and rebuilds every App artifact without duplicate component graphs, then every registered component/App `unit`, `setup` and `integration` route passes; zero-route categories must be explicit. |
 | T550 S5 | Complete: `6906dbeab` gives the isolated Emulator verifier fixture a 60-second fixture-owned budget after it proved valid alone but exceeded the ordinary 30-second budget under full x86 contention. Every registered external integration ran once on both widths: NXVM 21/21 x64 and 21/21 x86; MyNES 12/12 x64 and 12/12 x86. MyNES's two native desktop routes pass on each width and are recorded separately from its other integration routes. Diagnostics remain opt-in and were not run. Final root Unit selection passes 544/544 on x64 and 544/544 on x86. No production code, firmware, media, INI, snapshot or deployed artifact changed. |
-| T550 | Closed: S1-S5 normalize unit/integration/diagnostic/setup ownership, external harness scope and full two-width qualification. Pushed S1-S4 commits are `47f8e1f74`, `1ea733884`, `e290ba1ed`, `d4331453e`, `ffe47bbb3`, `175eb1f01`, `c3719d53b` and `12699668c`; S5 is `6906dbeab` plus its NXVM state record. |
 | T550 S4 | Complete pending P: normalized unit-route qualification now uses the Lib-owned 180-second budget for its exhaustive layout self-test rather than a MyNES-only override. Shared Lib (51), Emulator (21) and Product (15), Core (244), the four PC Apps (2/6/28/35), and MyNES App (45) all pass on x64 and x86. No external integration, desktop validation, production code, firmware, media, INI, snapshot or deployed artifact changed. |
 | T548 S33 | Complete pending owner review: adopted the selected SoftPC Console and shared Product repairs, then imported SoftPC's three strengthened shared tests (Console metadata/viewport failure, Emulator monitor fault/lifecycle, Product Surface snapshot fault) plus the Product Surface banner-forwarding regression. Lib's naming verifier now scans only Lib source/test corpus; all six manifests use the stable, lexically sorted `sha256-manifest-v1` format. Shared/Core/App x64/x86 unit qualification passes 515/515 for the four PC Apps and 45/45 for MyNES. The eight PC artifacts were rebuilt, deployed and PE-width verified; both MyNES artifact targets were rebuilt and remained byte-identical. No desktop or external runtime qualification was run. |
 | T548 S34 | Complete: `273ba3296` gives `emulator.verifier-negative` the canonical `sha256-manifest-v1` probe header, so it reaches and proves the intended unlisted-path rejection. Emulator x64/x86 suites pass 21/21; repository-only Unit qualification passes 515/515 on both widths. This is test/manifest-only: no production, API or artifact input changed. |

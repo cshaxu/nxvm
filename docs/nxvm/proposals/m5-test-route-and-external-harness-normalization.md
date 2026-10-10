@@ -53,6 +53,7 @@ path.
 | S3 | NXVM | Rehome neutral four-PC external harness support to `test/core/setup`; move opt-in probes to App/Core `diagnostic`; retain actual App integration cases.  Add a boundary gate rejecting peer-App test-support includes. |
 | S4 | Shared, NXVM, MyNES | Reconcile all aggregate counts against the ledger, run Shared then Core then every App's complete unit route on x64/x86, and record any external-integration execution plan.  Do not call this an external qualification run. |
 | S5 | NXVM, MyNES | Run each selected external integration group once after unit qualification, report diagnostics separately, and close only if every route and retained external input has an explicit result or owner-approved transfer. |
+| S6 | Shared, NXVM | Audit the current SoftPC public six-component update for raw import eligibility, component ownership, Types usage, dependency direction, test closure and minimality.  Do not import or modify code without a separate owner-approved implementation scope. |
 
 ## Completion Standard
 
@@ -61,3 +62,14 @@ diagnostic resides in an `integration` directory or normal integration
 aggregate.  Shared support has a single Core owner and no App-to-peer-App
 test include remains.  The final report separates repository-only unit proof,
 desktop proof, diagnostics, and external integration proof.
+
+T550 may close only after one complete reusable x64 build and one complete
+reusable x86 build have compiled the whole repository: Lib, Emulator, Product,
+Core and every App.  Each App artifact must be rebuilt from those configured
+graphs while reusing already-built shared/component targets; an App build must
+not independently rebuild a second component graph.  Then every registered
+route owned by every component and every App in each of `unit`, `setup` and
+`integration` must pass on both widths.  A category with zero registered routes
+must be explicitly recorded as zero; it is never silently inferred.  A focused
+selection, a compile-only result, diagnostics, or manual desktop evidence
+cannot substitute for a required route.
