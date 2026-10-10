@@ -2,31 +2,32 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S25 Complete: Rehome Core Timing, Decoder And FDC Tests)
+## Current Task — M5 T548 (S26 Complete: Audit Default-PC Unit Ownership)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S25. S22 completed the repository-wide topology audit. This S rehomes test support to its narrowest real owner and gives each PC App an independently selectable unit-test package; semantic assertion splitting remains a later receiver. |
-| Admission And Approval | Owner instruction in this conversation: close the old T, then admit the first queued T to repair the complete NXVM test corpus cleanly. Standing push approval applies. |
-| Objective | Freeze a complete behavior-level ownership and coverage ledger for every registered repository unit test and production owner, then repair misplaced, duplicated, incomplete or non-independent coverage without losing component, profile, board, CPU, composition or failure evidence. |
-| Non-goals | No production behavior or public ABI change merely to simplify tests; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools as units; no sibling-repository edit. |
-| Reference Baseline | T547 closure commits `5b1d07412`, `08a6a19f4` and `6be3ce8ee`; re-freeze the current committed source/test/build graph before any move, merge or deletion. |
+| Identifier Mode | Continuation T548 S26. This S consumes the Default-PC App batch of the S1 ownership ledger. |
+| Admission And Approval | Owner instruction in this conversation to continue the complete test-corpus repair after the S25 Core rehome; standing push approval applies. |
+| Objective | Establish behavior-level ownership for every Default-PC unit entry. Rehome only a generic assertion whose Core receiver retains the same context and failure predicate; retain Default-PC profile, firmware, selected composition and App-machine increments. |
+| Non-goals | No production behavior or public ABI change; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools; no sibling-repository edit. |
+| Reference Baseline | S25 commit `5b9aaca83`; the S1 ownership ledger and S24/S25 receiver evidence. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | Test C/H fixtures, CMake registration, test manifests and task evidence only. No production, test assertion semantics, asset or ABI change. Core fixtures may move into `test/core`; App-private fixtures remain in their App roots; multi-App qualification support is not placed under a single App. |
+| Files And ABI Surface | `test/app-nxvm/unit/**`, `test/app-my5160/unit/profiles/**`, `test/app-my5170/unit/profiles/**`, `test/app-mydeskpro386/unit/profiles/**`, `test/core/**`, affected CMake registration/manifests and NXVM evidence only. The multi-profile timing source is an existing outward Core-test violation discovered by the required complete suite; it splits into one receiver per actual App owner while its generic Core DMA predicate remains Core-owned. No production, assets, ABI or integration input changes. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | Prove no App unit source includes another App's test support; configure and build each App's selectable package on x64/x86; preserve existing test routes/counts unless a later semantic S explicitly changes them; run manifests and ownership gates. |
-| Expected Markers | Active filenames, targets, variables and generated matrices describe behavior rather than historical task numbers; provenance remains in comments/evidence only. |
+| Verification | Before any move, record each Default-PC test's asserted behavior, selected-profile fact, Core receiver and disposition. Build/run every changed receiver on x64/x86; preserve routes/counts unless a documented equal-or-stronger receiver retires a duplicate; run manifests, fixture and registration gates. Repair any complete-suite Types/ownership gate failure that directly blocks this evidence, then rerun the full dual-width suite. |
+| Expected Markers | Every Default-PC unit has a behavior-level disposition: Core receiver, retained App increment, split receiver, or explicit later owner. No path is moved merely because it includes a Core private header. |
 | Asset Needs | None. INIs, media, snapshots and artifacts are not edited. |
-| Reporting Requirements | Report source/target/output before-and-after identities, exact test count delta, line delta and dual-width result. Do not rename historical evidence or claim behavior coverage from names. |
-| Stop Conditions | Ambiguous semantic replacement, an external identity contract, an old reference outside MyDeskPro386 scope, required production change, or loss of an existing assertion. |
-| Exit Criteria | Generic support has one non-App owner, App-private profile/ROM support has one App owner, cross-profile support is visibly qualification-only, and each PC App has a package target/label without peer-App test dependencies. T548 remains open for semantic split and duplicate consolidation. |
+| Reporting Requirements | Report exact source/target/output identities, disposition table, test-count and line delta, dual-width results and every retained App increment. Do not rename historical evidence or claim behavior coverage from names. |
+| Stop Conditions | Missing equal-or-stronger receiver, ambiguous Core-versus-profile assertion, external identity contract, required production change, or loss of an existing assertion. |
+| Exit Criteria | All 32 current Default-PC unit entries have a documented disposition. Every changed behavior has one canonical Core or App owner; profile/firmware/composition increments remain visible; affected x64/x86 tests and gates pass. T548 remains open for the other owner batches and final qualification. |
 | Original Owner Request | Repair the entire NXVM test suite cleanly after closing the old lifecycle/product task. |
-| Similar-Issue Sweep | Inventory every C/CMake test entry, alias, fixture, negative gate and unit runner outside integration; distinguish component proof, composition increment, App/profile proof and non-unit tooling before assigning a canonical owner. |
+| Similar-Issue Sweep | Review Default-PC machine, firmware, product, profile and static-gate entries together; search Core for same behavior and failure predicate before moving or removing any case. |
 
 | Work | Progress |
 | --- | --- |
 | T547 | Closed at owner direction. Final Shared/NXVM/MyNES commits are `5b1d07412`, `08a6a19f4` and `6be3ce8ee`. Public suites pass 66/66, Core 221/221, NXVM 511/511 and MyNES App 45/45 on x64/x86; all ten deployed artifacts are current. No new manual desktop or external integration qualification is claimed. |
 | T548 S1 | Complete: committed baseline `006a7592d` records the 541-unit-entry/45-integration-C universe, registration owners and first semantic candidate groups. It confirmed the Default-App factory duplicate and protected selected-profile increments from mechanical relocation. |
+| T548 S26 | Complete pending scoped commits: Default-PC duplicates are retired or narrowed, generic Core predicates now have Core receivers, and every outward Core-to-App test edge is split to its real App receiver. The complete repository-only unit selection passes 515/515 on x64 and x86; Core manifests pass on both widths. No production, firmware, media, INI, snapshot or deployed executable input changed. |
 | T548 S2 | Complete: retired `nxvm_ini_smoke.c` and both `vm-app-ini-smoke` registrations. Reconfigured x64/x86 CTest graphs contain only `core.factory`; it passes on both widths. Core ownership and manifest gates pass. This is test/CMake-only, so no executable input or artifact changed. |
 | T548 S3 | Complete: pushed as `ac7fbc5dc`. The unmodified eight-by-five Core CPU/PIC negative matrix now has one `core.cpu-bus-boundary-negative` registration, runs on x64/x86, and the old App identity is absent. The FDC assembly gate remains App-owned. Core ownership and both Core manifests pass. No production or artifact input changed. |
 | T548 S4 | Complete: the mixed Default-App plan test is split into one Default-PC, one My5170 and one MyDeskPro386 receiver; the 5170 clock contract also moves to My5170. All four targets pass on x64/x86, and no old mixed path/target remains in active test/CMake sources. This is test/CMake-only, so no executable input or artifact changed. |

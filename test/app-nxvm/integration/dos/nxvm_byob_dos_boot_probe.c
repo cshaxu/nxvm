@@ -1,6 +1,6 @@
 #include "../../../core/machine/support/guest_input.h"
 #include "core/machine/machine_interface.h"
-#include "../../../core/machine/qualification/model40_profile.h"
+#include "../support/model40_profile.h"
 #include "../../../core/board-base/support/boot_fixture.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
@@ -1752,8 +1752,7 @@ int main(lib_i32 argc, char **argv)
     }
     trace.machine = session->core_machine;
     trace.board = session->board;
-    if (pc_qualification_profile_is_model40(
-            pc_qualification_profile_construction(session))) {
+    if (pc_qualification_profile_is_model40(&session->construction)) {
         if (!test_core_boot_bind_write_observer(session->core_machine,
                 vm_byob_model40_memory_write_observe, &trace)) {
             printf("BOOT-PROBE=setup-failed\n");

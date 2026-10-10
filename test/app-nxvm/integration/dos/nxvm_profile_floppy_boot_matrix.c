@@ -1,5 +1,5 @@
 #include "core/machine/machine_interface.h"
-#include "../../../core/machine/qualification/model40_profile.h"
+#include "../support/model40_profile.h"
 #include "../../../core/machine/support/media.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
