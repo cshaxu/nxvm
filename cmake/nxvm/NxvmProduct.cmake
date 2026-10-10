@@ -95,9 +95,9 @@ add_executable(vm-model40-cmos-seed-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_cmos_seed_smoke.c
     test/core/board-base/composition/composition_fixture.c)
 target_link_libraries(vm-model40-cmos-seed-smoke PRIVATE vm-profile-tests)
-add_executable(vm-model40-machine-integration-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_machine_integration_smoke.c)
-target_link_libraries(vm-model40-machine-integration-smoke PRIVATE vm-profile-tests)
+add_executable(vm-model40-machine-contract-smoke
+    test/app-mydeskpro386/unit/profiles/vm_model40_machine_contract_smoke.c)
+target_link_libraries(vm-model40-machine-contract-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cecg-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_cecg_smoke.c)
 target_link_libraries(vm-model40-cecg-smoke PRIVATE vm-profile-tests)
@@ -915,7 +915,7 @@ target_sources(vm-model40-byob-smoke PRIVATE
     test/core/board-base/composition/time_fixture.c
     test/core/board-base/support/composition_fixture.c)
 foreach(_model40_composition_target IN ITEMS vm-model40-composition-smoke
-        vm-model40-machine-integration-smoke)
+        vm-model40-machine-contract-smoke)
     target_sources(${_model40_composition_target} PRIVATE
         test/core/board-base/composition/composition_fixture.c
         test/core/board-base/support/composition_fixture.c
@@ -923,7 +923,7 @@ foreach(_model40_composition_target IN ITEMS vm-model40-composition-smoke
         test/core/board-base/support/kbc_state_fixture.c
         test/core/board-at/support/state_fixture.c)
 endforeach()
-target_sources(vm-model40-machine-integration-smoke PRIVATE
+target_sources(vm-model40-machine-contract-smoke PRIVATE
     test/core/board-base/support/controller_fixture.c)
 target_sources(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE
     test/core/board-base/composition/composition_fixture.c
@@ -1048,7 +1048,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-ibm-5170-model-339-composition-smoke
     vm-model40-composition-smoke
     vm-model40-cmos-seed-smoke
-    vm-model40-machine-integration-smoke
+    vm-model40-machine-contract-smoke
     vm-model40-cecg-smoke
     vm-model40-cecg-feature-environment-smoke
     vm-model40-cecg-cpu-video-gate-smoke

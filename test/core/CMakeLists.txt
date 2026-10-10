@@ -43,7 +43,19 @@ add_test(NAME unit.fdc-boundary-negative COMMAND "${CMAKE_COMMAND}"
     -P "${CMAKE_CURRENT_LIST_DIR}/fdc_boundary_negative.cmake")
 set_tests_properties(unit.fdc-boundary-negative PROPERTIES LABELS "unit;core" TIMEOUT 30)
 add_test(NAME core.test-manifest COMMAND "${CMAKE_COMMAND}"
-    "-DEMULATOR_ROOT=${CMAKE_CURRENT_LIST_DIR}" -P "${CORE_ROOT}/../emulator/verify_manifest.cmake")
+    "-DCORE_ROOT=${CMAKE_CURRENT_LIST_DIR}" -P "${CORE_ROOT}/verify_manifest.cmake")
+add_test(NAME core.test-route-partition COMMAND "${CMAKE_COMMAND}"
+    "-DTEST_DIRECTORY=${CMAKE_BINARY_DIR}"
+    -P "${CMAKE_CURRENT_LIST_DIR}/verify_test_route_partition.cmake")
+set_tests_properties(
+    core.test-types-boundary
+    core.test-ownership
+    core.manifest
+    core.corpus
+    core.verifier-negative
+    core.test-manifest
+    core.test-route-partition
+    PROPERTIES LABELS "unit;core" TIMEOUT 30)
 add_custom_target(core-product-tests DEPENDS ${SHARED_CORE_TEST_TARGETS})
 set(SHARED_CORE_TEST_TARGETS)
 

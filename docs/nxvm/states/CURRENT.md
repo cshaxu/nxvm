@@ -4,7 +4,25 @@
 
 ## Current Task
 
-No NXVM task is active.
+| Field | Required record |
+| --- | --- |
+| Identifier mode | New M5 T550 S1 |
+| Admission and owner approval | The owner approved the full test-quality audit findings and directed one normalized unit/integration/diagnostic taxonomy across Shared, Core and all five Apps, including MyNES. |
+| Objective | Establish the test-route contract and repair the verified unlabelled/static, duplicate-registration and Core-manifest defects before relocating external harnesses. |
+| Non-goals | No production/API/firmware/media/INI/snapshot/artifact change; no external integration execution in S1; no generic test framework. |
+| Reference baseline | Clean `273ba3296` descendant; x64 static receiver selection had 118/119 pass with `core.test-manifest` failing because it invokes Emulator's manifest verifier on Core's legacy manifest. |
+| Candidate proposal | [T550 test route and external harness normalization](../proposals/m5-test-route-and-external-harness-normalization.md) |
+| Allowed targets | Shared and NXVM. MyNES is reserved for T550 S2; no MyNES file may change in S1. |
+| Files/ABI surface | Test CMake, test-only verifier scripts, test manifests and NXVM task documentation only. No C/H public surface. |
+| Applicable rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`. |
+| Exact verification | Fresh/reconfigured x64/x86 CTest graphs; Shared/Core route verifier; affected static and unit routes; manifests; `git diff --check`. |
+| Expected markers | `TEST-ROUTE-PARTITION:OK`, correct Core manifest verification, and no duplicate Core/Product static registration. |
+| Asset needs | None. Existing deployed inputs are untouched. |
+| Reporting requirements | Report per-route counts, deleted duplicate routes, names changed, and any residual unclassified registration. Do not claim external integration or desktop validation. |
+| Stop conditions | Stop and report if classification requires production behavior, a public API, a second provider/test framework, or an App-to-App production dependency. |
+| Exit criteria | Each S1 CTest registration has exactly one route and one owner; the corrected Core manifest gate and affected x64/x86 Shared/Core unit/static selections pass. |
+| Original owner request | Perform a complete test/code-quality audit, clean unit coverage/ownership before integration execution; classify diagnostics separately and put neutral four-PC setup under `test/core`. |
+| Similar-issue sweep | Inspect all registrations in Shared/Core and all static manifest/boundary entries, not only the two observed duplicates. |
 
 | Work | Progress |
 | --- | --- |

@@ -165,10 +165,6 @@ if(POWERSHELL_EXECUTABLE)
         WORKING_DIRECTORY "${CORE_TEST_REPOSITORY_ROOT}")
 endif()
 
-add_test(NAME core.x86-test-boundaries COMMAND "${CMAKE_COMMAND}"
-    "-DTEST_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" "-DTEST_LAYER=core"
-    -P "${CMAKE_CURRENT_SOURCE_DIR}/../verify_test_boundaries.cmake")
-
 add_library(core-machine-prefetch-scheduler-test OBJECT
     "${CORE_ROOT}/x86/machine_scheduler.c")
 target_link_libraries(core-machine-prefetch-scheduler-test PRIVATE core-x86)
