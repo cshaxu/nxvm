@@ -11,14 +11,14 @@
 #include "core/machine/machine_interface.h"
 #include "../../support/model40_session_assets.h"
 
-static lib_i32 t386_s28_session_write(vm_machine *session, lib_u8 value)
+static lib_i32 vm_model40_cecg_session_write(vm_machine *session, lib_u8 value)
 {
     return core_machine_memory_write(session->core_machine,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, &value,
         sizeof(value)) == LIB_STATUS_OK;
 }
 
-static void t386_s28_select_ega_320(vm_machine *session)
+static void vm_model40_cecg_select_ega_320(vm_machine *session)
 {
     test_core_machine_fixture_write_port(session->core_machine,
         0x03d4u, 0x01u);
@@ -48,17 +48,17 @@ lib_i32 main(void)
     failed |= vm_model40_fixture_create(&session) !=
         LIB_STATUS_OK || session == LIB_NULL;
     if (!failed) {
-        t386_s28_select_ega_320(session);
+        vm_model40_cecg_select_ega_320(session);
         test_core_machine_fixture_write_port(session->core_machine,
             0x03ceu, 6u);
         test_core_machine_fixture_write_port(session->core_machine,
             0x03cfu, 0x07u);
-        failed |= !t386_s28_session_write(session, 0x80u) ||
+        failed |= !vm_model40_cecg_session_write(session, 0x80u) ||
             !core_machine_display_capture_snapshot_from(session->display_provider,
             &snapshot) || snapshot.pixels[0] != 15u;
         test_core_machine_fixture_write_port(session->core_machine,
             0x03c2u, 0x20u);
-        failed |= !t386_s28_session_write(session, 0x00u) ||
+        failed |= !vm_model40_cecg_session_write(session, 0x00u) ||
             !core_machine_display_capture_snapshot_from(session->display_provider,
             &snapshot) || snapshot.pixels[0] != 0u ||
             core_machine_observe_display_snapshot(session->board,
@@ -77,7 +77,7 @@ lib_i32 main(void)
     }
     if (!failed) {
         vm_machine_reset(session);
-        t386_s28_select_ega_320(session);
+        vm_model40_cecg_select_ega_320(session);
         test_core_machine_fixture_write_port(session->core_machine,
             0x03ceu, 6u);
         test_core_machine_fixture_write_port(session->core_machine,
