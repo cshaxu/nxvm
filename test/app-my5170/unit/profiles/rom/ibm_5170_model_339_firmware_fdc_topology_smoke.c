@@ -1,6 +1,6 @@
 #include "core/machine/machine_interface.h"
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 
 #include "../../../../core/board-base/composition/composition_fixture.h"
 #include "../../../../core/board-base/support/composition_fixture.h"
@@ -9,7 +9,7 @@
 #include "app-my5170/profiles/profile_interface.h"
 #include "../../../support/session_assets.h"
 
-int main(void)
+lib_i32 main(void)
 {
     const vm_machine_config config = {0};
     const vm_profile_default_pc_at_descriptor *profile =
@@ -38,6 +38,6 @@ int main(void)
 done:
     vm_machine_destroy(session);
     if (failed) return 1;
-    printf("MODEL339-FIRMWARE-FDC-TOPOLOGY:OK\n");
+    lib_c_printf("MODEL339-FIRMWARE-FDC-TOPOLOGY:OK\n");
     return 0;
 }
