@@ -2,30 +2,30 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S33 Active: SoftPC Shared Six-Component Import And Banner Ownership)
+## Current Task — M5 T548 (S33 Active: Shared Boundary And Manifest Canonicalization)
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation T548 S33. |
-| Admission And Approval | Owner approved importing SoftPC's latest six shared trees into NXVM, then repairing banner ownership locally before qualification and release. |
-| Objective | Import SoftPC's current `src/{lib,emulator,product}` and `test/{lib,emulator,product}` corpus; make `emulator/product` the sole banner formatter, with each App injecting its own identity text; preserve all other approved upstream behavior. |
-| Non-goals | No SoftPC edit; no product-specific branch in Emulator; no second banner path; no external asset or firmware change; no unapproved public contract expansion. |
+| Admission And Approval | Owner approved importing SoftPC's latest six shared trees into NXVM, repairing banner ownership locally, then correcting the discovered component-boundary and manifest-generation defects. |
+| Objective | Keep each shared component's verifier within its own source/test corpus; make all six shared manifests deterministic and byte-identical for identical corpus content; retain `emulator/product` as the sole banner formatter. |
+| Non-goals | No SoftPC edit; no cross-component verifier; no product-specific branch in Emulator; no second banner path; no external asset or firmware change; no unapproved public contract expansion. |
 | Reference Baseline | NXVM `b2f4328a1`; SoftPC `f357b291831d7aee49e8e9f86650b23b10e455fb` plus its owner-visible working-tree six-tree Console update. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`, together with the approved shared Product banner ownership decision. |
-| Files And ABI Surface | Shared six source/test trees and their manifests; necessary App identity bindings; ten existing artifact binaries. Banner opening-text injection may refine the existing product definition contract, but no platform API may leak. |
+| Files And ABI Surface | Shared six source/test trees and their manifests, the three existing manifest verifiers, Lib's naming verifier, and necessary App identity bindings. No public runtime API changes. |
 | Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source policy rules; SoftPC is read-only. |
-| Verification | Verify six-tree equality against the selected SoftPC snapshot except the approved banner-owner delta; run manifest, dependency and type gates; run shared, Core and App tests on x64/x86; rebuild and PE-verify all ten artifacts. |
-| Expected Markers | Product has one opening formatter in `emulator/product`; Apps inject only their opening identity text; every full corpus import difference is documented. |
+| Verification | Verify every manifest header, lexical path order and hash; prove Lib's naming verifier no longer visits Emulator/Product/App paths; run the six shared suites on x64/x86. |
+| Expected Markers | Every verifier has one component-local corpus; equal shared content yields equal manifest text; Product has one opening formatter in `emulator/product`. |
 | Asset Needs | Existing authorized build-time profile assets only. |
 | Reporting Requirements | Report imported/repaired paths, interface delta, exact build/test results, artifact hashes and desktop/external tests not run. |
 | Stop Conditions | A required upstream input cannot be read, an import requires provenance review, a public contract conflict lacks an owner decision, or a test failure identifies a distinct behavioral defect. |
 | Exit Criteria | Six trees are adopted, banner ownership is correct, manifests and gates pass, x64/x86 qualification passes, ten artifacts are rebuilt and verified, and committed/pushed evidence records the bounded result. |
-| Original Owner Request | Import SoftPC's latest six shared trees; repair banner owner after import; build ten EXEs, run full tests, commit and push. |
-| Similar-Issue Sweep | Scan every startup/banner caller and definition initializer so no Product/App duplicate formatting survives. |
+| Original Owner Request | Import SoftPC's latest six shared trees; repair banner owner after import; then correct component-local verifier ownership and manifest generation after the diff audit. |
+| Similar-Issue Sweep | Scan all shared manifest verifiers and all Lib-owned gates so no component scans peer code or task-specific metadata prevents byte-identical imports. |
 
 | Work | Progress |
 | --- | --- |
-| T548 S33 | Complete pending owner review: adopted the selected SoftPC Console and shared Product repairs, retaining NXVM's stricter KVM naming gate. `emulator/product` is now the sole opening-banner formatter; each App supplies only its identity text. The six shared trees, Core and all Apps pass complete CTest qualification on x64 (565/565, 411.53 s) and x86 (565/565, 211.31 s). All ten x64/x86 artifacts were rebuilt and PE-width verified. No manual desktop validation or external runtime qualification was performed. |
+| T548 S33 | Complete pending owner review: adopted the selected SoftPC Console and shared Product repairs, then imported SoftPC's three strengthened shared tests (Console metadata/viewport failure, Emulator monitor fault/lifecycle, Product Surface snapshot fault). Lib's naming verifier now scans only Lib source/test corpus; all six manifests use the stable, lexically sorted `sha256-manifest-v1` format. Shared x64/x86 suites pass 66/66 each. This test/governance-only follow-up does not change runtime binaries; no desktop or external runtime qualification was run. |
 | T547 | Closed at owner direction. Final Shared/NXVM/MyNES commits are `5b1d07412`, `08a6a19f4` and `6be3ce8ee`. Public suites pass 66/66, Core 221/221, NXVM 511/511 and MyNES App 45/45 on x64/x86; all ten deployed artifacts are current. No new manual desktop or external integration qualification is claimed. |
 | T548 S1 | Complete: committed baseline `006a7592d` records the 541-unit-entry/45-integration-C universe, registration owners and first semantic candidate groups. It confirmed the Default-App factory duplicate and protected selected-profile increments from mechanical relocation. |
 | T548 S26 | Complete: Core `c47e7c848`, MyDeskPro386 `41cc1779b`, My5170 `b67332ae1`, My5160 `113514a57`, NXVM `1209e0f35` and Shared registration `2de340bf3` retire or narrow Default-PC duplicates, assign generic predicates to Core and split every outward Core-to-App test edge to its real App receiver. The complete repository-only unit selection passes 515/515 on x64 and x86; Core manifests pass on both widths. No production, firmware, media, INI, snapshot or deployed executable input changed. |
