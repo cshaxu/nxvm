@@ -20,7 +20,7 @@ foreach(required IN ITEMS "dma_clock" "pit_clock" "vadp_clock" "kbc_clock"
     "provider_clock" "core_machine_clock_domain_advance" "advance_time")
     string(FIND "${machine_source}" "${required}" position)
     if(position EQUAL -1)
-        message(FATAL_ERROR "T256 core scheduler lacks required clock-domain path: ${required}")
+        message(FATAL_ERROR "core scheduler lacks required clock-domain path: ${required}")
     endif()
 endforeach()
 
@@ -30,7 +30,7 @@ foreach(forbidden IN ITEMS "pit_elapsed_tick_remainder"
     string(FIND "${machine_source}" "${forbidden}" machine_position)
     string(FIND "${clock_source}" "${forbidden}" clock_position)
     if(NOT machine_position EQUAL -1 OR NOT clock_position EQUAL -1)
-        message(FATAL_ERROR "T256 clock implementation retains forbidden path: ${forbidden}")
+        message(FATAL_ERROR "clock implementation retains forbidden path: ${forbidden}")
     endif()
 endforeach()
 
@@ -45,7 +45,7 @@ if(provider_position EQUAL -1 OR NOT lifecycle_position EQUAL -1 OR
     NOT cmos_position EQUAL -1 OR
     rtc_position EQUAL -1 OR rtc_configured_position EQUAL -1 OR
     profile_position EQUAL -1)
-    message(FATAL_ERROR "T256 core-owned RTC scheduler route is incomplete")
+    message(FATAL_ERROR "core-owned RTC scheduler route is incomplete")
 endif()
 
-message("M5:T256:S2:RATIONAL-CLOCK-BOUNDARY:OK")
+message("RATIONAL-CLOCK-BOUNDARY:OK")

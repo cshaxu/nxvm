@@ -56,4 +56,4 @@ foreach(source_text IN ITEMS "${hdd_source}" "${fdd_source}")
     endforeach()
 endforeach()
 
-message("M5:T524:S10:MEDIA-SOLE-ROUTE:OK")
+message("MEDIA-SOLE-ROUTE:OK")

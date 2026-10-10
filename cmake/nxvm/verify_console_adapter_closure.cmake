@@ -8,7 +8,7 @@ if(EXISTS "${obsolete_adapter}")
     message(FATAL_ERROR "Retired Console-to-composition adapter remains")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/product/surface/composition.c" app_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/emulator/product/composition.c" composition_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/product/surface/command.c" product_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/debug_adapter.c"
     debug_source)
@@ -19,7 +19,7 @@ foreach(obsolete_helper
     "vm_machine_borrow_selected"
     "vm_machine_selection"
     "selected_session.h")
-    string(FIND "${app_source}\n${product_source}\n${debug_source}" "${obsolete_helper}" obsolete_position)
+    string(FIND "${composition_source}\n${product_source}\n${debug_source}" "${obsolete_helper}" obsolete_position)
     if(NOT obsolete_position EQUAL -1)
         message(FATAL_ERROR "Console adapter retained obsolete selected-session wrapper")
     endif()
@@ -37,10 +37,10 @@ foreach(required
     "product_debug_submit_line"
     "product_debug_open"
     "vm_machine_debug_execute"
-    "vm_app_compose_ui"
+    "emulator_product_compose_ui"
     "emulator_ui_create"
     "emulator_ui_destroy")
-    string(FIND "${app_source}\n${product_source}\n${debug_source}" "${required}" debug_position)
+    string(FIND "${composition_source}\n${product_source}\n${debug_source}" "${required}" debug_position)
     if(debug_position EQUAL -1)
         message(FATAL_ERROR "Console debugger callback lost required behavior: ${required}")
     endif()
@@ -53,4 +53,4 @@ foreach(forbidden "emulator_ui_create(" "emulator_ui_destroy(")
     endif()
 endforeach()
 
-message("M5:T526:PRODUCT-DEBUGGER-ADAPTER-CLOSURE:OK")
+message("PRODUCT-DEBUGGER-ADAPTER-CLOSURE:OK")

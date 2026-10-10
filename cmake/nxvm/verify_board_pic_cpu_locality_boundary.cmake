@@ -45,4 +45,4 @@ foreach(required ".pic_pending = core_machine_board_pic_pending"
         message(FATAL_ERROR "Board PIC provider not bound: ${required}")
     endif()
 endforeach()
-message("M5:T540:S29:BOARD-PIC-CPU-LOCALITY:OK")
+message("BOARD-PIC-CPU-LOCALITY:OK")

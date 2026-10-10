@@ -23,4 +23,4 @@ foreach ($file in $source) {
     }
 }
 if ($failures.Count) { $failures | ForEach-Object { Write-Error $_ }; exit 1 }
-Write-Output 'M5:T526:S4:PRODUCT-SINGLE-SESSION:OK'
+Write-Output 'PRODUCT-SINGLE-SESSION:OK'

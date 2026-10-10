@@ -11,7 +11,7 @@ string(REGEX MATCH "${forbidden_vm_cpu_pic_wiring}" vm_cpu_pic_wiring
     "${machine_source}")
 if(vm_cpu_pic_wiring)
     message(FATAL_ERROR
-        "VM machine retains T295 CPU/PIC initialization wiring: ${vm_cpu_pic_wiring}")
+        "VM machine retains CPU/PIC initialization wiring: ${vm_cpu_pic_wiring}")
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c" core_source)
@@ -159,4 +159,4 @@ foreach(consumer IN LISTS pic_consumers)
         message(FATAL_ERROR "Private/old PIC dependency: ${consumer}")
     endif()
 endforeach()
-message(STATUS "M5 T295 CPU/PIC lifecycle and T539 chip boundary: OK")
+message(STATUS "CPU/PIC lifecycle and chip boundary: OK")

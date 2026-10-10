@@ -17,4 +17,4 @@ if(direct_fpu_undefined)
     message(FATAL_ERROR "Direct FPU ESC undefined mapping found: ${direct_fpu_undefined}")
 endif()
 
-message(STATUS "M5 T158 CPU/FPU static closure: OK")
+message(STATUS "CPU/FPU static closure: OK")

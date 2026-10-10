@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c" source)
-file(READ "${PROJECT_SOURCE_DIR}/src/product/surface/composition.c" app_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/emulator/product/composition.c" composition_source)
 
 if(source MATCHES "vm_platform_|run_handle|executor_fifo")
         message(FATAL_ERROR "VM machine lifecycle retains a platform run-handle path")
@@ -21,11 +21,10 @@ foreach(helper IN ITEMS
     endif()
 endforeach()
 
-foreach(helper IN ITEMS emulator_machine_create app->factory.prepare
-    app->factory.bind)
-    string(FIND "${app_source}" "${helper}" helper_position)
+foreach(helper IN ITEMS emulator_machine_create product->machine.bind)
+    string(FIND "${composition_source}" "${helper}" helper_position)
     if(helper_position EQUAL -1)
-        message(FATAL_ERROR "App Common composition helper is missing: ${helper}")
+        message(FATAL_ERROR "Product composition helper is missing: ${helper}")
     endif()
 endforeach()
 
@@ -33,4 +32,4 @@ if(source MATCHES "emulator_machine_create")
     message(FATAL_ERROR "VM machine lifecycle still constructs Common")
 endif()
 
-message("M5:T526:MACHINE-LIFECYCLE-BOUNDARY:OK")
+message("MACHINE-LIFECYCLE-BOUNDARY:OK")

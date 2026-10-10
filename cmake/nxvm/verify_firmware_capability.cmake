@@ -53,4 +53,4 @@ foreach(required "core_machine_rollback_immutable_rom_mappings"
     endif()
 endforeach()
 
-message("M5:T297:S3:FIRMWARE-CAPABILITY-STATIC:OK")
+message("FIRMWARE-CAPABILITY-STATIC:OK")

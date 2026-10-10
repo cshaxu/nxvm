@@ -61,4 +61,4 @@ foreach(binding "core_machine_board_refresh_request" "core_machine_board_refresh
         message(FATAL_ERROR "Board refresh provider not bound: ${binding}")
     endif()
 endforeach()
-message("M5:T540:S26:BOARD-REFRESH-REQUEST:OK")
+message("BOARD-REFRESH-REQUEST:OK")

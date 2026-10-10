@@ -26,10 +26,10 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h" event_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c" lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/product/surface/composition.c" app_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/emulator/product/composition.c" composition_source)
 
-# Common owns the sole lifecycle queue and worker.  App composition constructs
-# it from the vm/machine driver, then forwards copied facts to Common Session.
+# Common owns the sole lifecycle queue and worker. Product composition constructs
+# it from the machine driver, then forwards copied facts to Common Session.
 foreach(required IN ITEMS
     "emulator_machine_start"
     "emulator_machine_pause"
@@ -43,12 +43,11 @@ foreach(required IN ITEMS
 endforeach()
 
 foreach(required IN ITEMS
-    "app->factory.prepare"
     "emulator_machine_create"
-    "app->factory.bind")
-    string(FIND "${app_source}" "${required}" position)
+    "product->machine.bind")
+    string(FIND "${composition_source}" "${required}" position)
     if(position EQUAL -1)
-        message(FATAL_ERROR "VM app Common composition lacks ${required}")
+        message(FATAL_ERROR "Product Common composition lacks ${required}")
     endif()
 endforeach()
 
@@ -62,9 +61,9 @@ foreach(required IN ITEMS
     "emulator_machine_set_frame_sink"
     "emulator_session_enqueue_runtime_completed"
     "emulator_session_enqueue_frame_completed")
-    string(FIND "${app_source}" "${required}" position)
+    string(FIND "${composition_source}" "${required}" position)
     if(position EQUAL -1)
-        message(FATAL_ERROR "VM app does not forward Common fact ${required}")
+        message(FATAL_ERROR "Product does not forward Common fact ${required}")
     endif()
 endforeach()
 

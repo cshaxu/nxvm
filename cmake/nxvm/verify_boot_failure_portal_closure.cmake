@@ -51,4 +51,4 @@ foreach(path IN LISTS profile_sources)
     endif()
 endforeach()
 
-message(STATUS "M5:T539:S12:IMMUTABLE-ROM-CLOSURE:OK")
+message(STATUS "IMMUTABLE-ROM-CLOSURE:OK")

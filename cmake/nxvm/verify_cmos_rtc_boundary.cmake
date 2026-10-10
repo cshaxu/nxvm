@@ -90,4 +90,4 @@ if(machine_advance_position EQUAL -1 OR machine_binding_position EQUAL -1 OR
     message(FATAL_ERROR "CMOS RTC clock binding is incomplete")
 endif()
 
-message("M5:T232:S3:CMOS-RTC-BOUNDARY:OK")
+message("CMOS-RTC-BOUNDARY:OK")

@@ -41,4 +41,4 @@ foreach(required "attachment->connect.set_a20"
     endif()
 endforeach()
 
-message("M5:T540:S19:A20-FALLBACK-ROUTES:OK")
+message("A20-FALLBACK-ROUTES:OK")

@@ -129,4 +129,4 @@ foreach(forbidden IN ITEMS "pCurrByte" "transCount" "transfer_read" "transfer_wr
     endif()
 endforeach()
 
-message("M5:T231:S3:FDC-STATE-MACHINE-BOUNDARY:OK")
+message("FDC-STATE-MACHINE-BOUNDARY:OK")

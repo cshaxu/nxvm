@@ -33,4 +33,4 @@ foreach ($rule in $rules) {
     }
 }
 if ($failures.Count) { $failures | ForEach-Object { Write-Error $_ }; exit 1 }
-Write-Output 'M5:T86:EXECUTOR-CLOSURE:OK'
+Write-Output 'EXECUTOR-CLOSURE:OK'

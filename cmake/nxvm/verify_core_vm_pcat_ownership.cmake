@@ -48,4 +48,4 @@ foreach(source IN LISTS vm_sources)
     endif()
 endforeach()
 
-message(STATUS "M5:T264:S3:CORE-VM-PCAT-OWNERSHIP:OK")
+message(STATUS "CORE-VM-PCAT-OWNERSHIP:OK")

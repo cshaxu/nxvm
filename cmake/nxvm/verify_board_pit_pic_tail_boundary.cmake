@@ -43,4 +43,4 @@ foreach(required ".pit_ticks = core_machine_board_pit_ticks_advance"
         message(FATAL_ERROR "Board PIT/PIC provider not bound: ${required}")
     endif()
 endforeach()
-message("M5:T540:S28:BOARD-PIT-PIC-TAIL:OK")
+message("BOARD-PIT-PIC-TAIL:OK")

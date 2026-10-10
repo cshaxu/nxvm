@@ -11,10 +11,10 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_plan.c" machine_pla
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_display.c" machine_display_source)
 
 if(vadp_source MATCHES "#include[ \t]+\"(vm/|vdm/|core/platform/|core/product/)")
-    message(FATAL_ERROR "T236 VADP imports a product or platform owner")
+    message(FATAL_ERROR "VADP imports a product or platform owner")
 endif()
 if(memory_source MATCHES "GRAPHICS_REGISTER|ATTRIBUTE_REGISTER|VADP_PORT")
-    message(FATAL_ERROR "T236 RAM acquired graphics-controller policy")
+    message(FATAL_ERROR "RAM acquired graphics-controller policy")
 endif()
 
 foreach(required IN ITEMS
@@ -27,18 +27,18 @@ foreach(required IN ITEMS
     set(source_text "${profile_source}\n${at_wiring}")
     string(FIND "${source_text}" "${required}" position)
     if(position EQUAL -1)
-        message(FATAL_ERROR "T236 profile/composition binding is missing ${required}")
+        message(FATAL_ERROR "profile/composition binding is missing ${required}")
     endif()
 endforeach()
 
 string(FIND "${profile_source}" "topology.display = (core_machine_display_config)" position)
 if(position EQUAL -1)
-    message(FATAL_ERROR "T236 profile resolver does not publish its display plan")
+    message(FATAL_ERROR "profile resolver does not publish its display plan")
 endif()
 string(FIND "${machine_plan_source}" "topology->display_present" display_present_position)
 string(FIND "${machine_display_source}" "core_machine_configure_display(" configure_display_position)
 if(display_present_position EQUAL -1 OR configure_display_position EQUAL -1)
-    message(FATAL_ERROR "T236 Core plan materialization is missing core_machine_configure_display")
+    message(FATAL_ERROR "Core plan materialization is missing core_machine_configure_display")
 endif()
 
-message("M5:T236:EGA-CONTROLLER:BOUNDARY:OK")
+message("EGA-CONTROLLER:BOUNDARY:OK")

@@ -21,4 +21,4 @@ $arguments += @('--parallel', $ParallelJobs)
 
 & $runner -FilePath $CTestPath -ArgumentList $arguments `
     -DeadlineSeconds $DeadlineSeconds -WorkingDirectory $TestDirectory `
-    -DiagnosticPrefix 'T382:CURRENT-GATE'
+    -DiagnosticPrefix 'UNIT-AGGREGATE'

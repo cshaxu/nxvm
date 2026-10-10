@@ -51,5 +51,5 @@ if ($failures.Count) {
     $failures | ForEach-Object { Write-Error $_ }
     exit 1
 }
-Write-Output 'M5:T299:S3:PUBLIC-RAW-BORROW-CLOSURE:OK'
-Write-Output 'M5:T300:S4:PUBLIC-INTERFACE-BOUNDARY:OK'
+Write-Output 'PUBLIC-RAW-BORROW-CLOSURE:OK'
+Write-Output 'PUBLIC-INTERFACE-BOUNDARY:OK'

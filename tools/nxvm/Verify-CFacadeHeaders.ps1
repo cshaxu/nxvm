@@ -52,4 +52,4 @@ if ($failures.Count -ne 0) {
     exit 1
 }
 
-Write-Output 'M5:T113:C-FACADE-HEADERS:OK'
+Write-Output 'C-FACADE-HEADERS:OK'

@@ -34,4 +34,4 @@ foreach(forbidden
     endif()
 endforeach()
 
-message("M5:T204:S1:CURRENT-MEDIA-SMOKE-CLASSIFICATION:OK")
+message("CURRENT-MEDIA-SMOKE-CLASSIFICATION:OK")

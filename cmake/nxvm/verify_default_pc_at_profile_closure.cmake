@@ -55,4 +55,4 @@ foreach(source_text IN ITEMS "${rtc_source}" "${fdc_source}")
     endforeach()
 endforeach()
 
-message("M5:T208:S4:DEFAULT-PC-AT-PROFILE-CLOSURE:OK")
+message("DEFAULT-PC-AT-PROFILE-CLOSURE:OK")

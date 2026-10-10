@@ -43,4 +43,4 @@ foreach(required ".dma_ticks = core_machine_board_dma_ticks"
         message(FATAL_ERROR "Board DMA provider not bound: ${required}")
     endif()
 endforeach()
-message("M5:T540:S27:BOARD-DMA-ARBITRATION:OK")
+message("BOARD-DMA-ARBITRATION:OK")

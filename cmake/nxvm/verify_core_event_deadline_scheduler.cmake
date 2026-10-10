@@ -27,21 +27,21 @@ foreach(forbidden IN ITEMS "core_machine_arbitration_tick"
     "core_machine_kbc_refresh(t_kbc")
     string(FIND "${core_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
-        message(FATAL_ERROR "T499 retains periodic scheduler route: ${forbidden}")
+        message(FATAL_ERROR "retains periodic scheduler route: ${forbidden}")
     endif()
 endforeach()
 
 string(FIND "${machine_interface_source}" "core_machine_advance_time("
     public_advance_time_position)
 if(NOT public_advance_time_position EQUAL -1)
-    message(FATAL_ERROR "T499 exposes arbitrary source-tick advancement outside Core")
+    message(FATAL_ERROR "exposes arbitrary source-tick advancement outside Core")
 endif()
 
 foreach(forbidden IN ITEMS "(*refresh)(void *context)" "provider->refresh")
     string(FIND "${execution_provider_source}${machine_source}" "${forbidden}"
         position)
     if(NOT position EQUAL -1)
-        message(FATAL_ERROR "T499 retains dead execution-provider refresh path: ${forbidden}")
+        message(FATAL_ERROR "retains dead execution-provider refresh path: ${forbidden}")
     endif()
 endforeach()
 
@@ -49,7 +49,7 @@ foreach(required IN ITEMS "else if (board.fast_advance_blocked)"
     "due_tick = machine->elapsed_ticks + 1u")
     string(FIND "${scheduler_source}" "${required}" position)
     if(position EQUAL -1)
-        message(FATAL_ERROR "T499 lacks its explicit active-L1 blocker route: ${required}")
+        message(FATAL_ERROR "lacks its explicit active-L1 blocker route: ${required}")
     endif()
 endforeach()
 
@@ -58,7 +58,7 @@ foreach(required IN ITEMS "core_machine_publish_elapsed_ticks"
     "core_machine_fdc_next_due_tick" "core_machine_kbc_ticks_until_event")
     string(FIND "${core_source}" "${required}" position)
     if(position EQUAL -1)
-        message(FATAL_ERROR "T499 lacks Core deadline scheduler seam: ${required}")
+        message(FATAL_ERROR "lacks Core deadline scheduler seam: ${required}")
     endif()
 endforeach()
 
@@ -72,7 +72,7 @@ foreach(required IN ITEMS "core_machine_dma_advance_transaction"
     "x86_xt_keyboard_advance" "core_machine_vadp_advance")
     string(FIND "${scheduler_source}${board_advance_source}" "${required}" position)
     if(position EQUAL -1)
-        message(FATAL_ERROR "T499 lacks scheduler-owned controller migration: ${required}")
+        message(FATAL_ERROR "lacks scheduler-owned controller migration: ${required}")
     endif()
 endforeach()
 
@@ -87,8 +87,8 @@ foreach(forbidden IN ITEMS "vm_machine_execution_provider_refresh"
     "vm_machine_fdd_refresh" "vm_machine_hdd_refresh")
     string(FIND "${vm_refresh_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
-        message(FATAL_ERROR "T499 retains VM/media refresh maintenance path: ${forbidden}")
+        message(FATAL_ERROR "retains VM/media refresh maintenance path: ${forbidden}")
     endif()
 endforeach()
 
-message("M5:T499:S2:CORE-EVENT-DEADLINE-SCHEDULER:OK")
+message("CORE-EVENT-DEADLINE-SCHEDULER:OK")

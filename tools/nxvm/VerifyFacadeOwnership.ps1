@@ -37,7 +37,7 @@ foreach ($rule in $rules) {
             }
         }
     }
-    Write-Output ("M5:T75:FACADE-OWNERSHIP:{0}: {1}" -f $rule.Name, ($matches -join ', '))
+    Write-Output ("FACADE-OWNERSHIP:{0}: {1}" -f $rule.Name, ($matches -join ', '))
 }
 
 if ($failures.Count -ne 0) {
@@ -45,4 +45,4 @@ if ($failures.Count -ne 0) {
     exit 1
 }
 
-Write-Output 'M5:T75:FACADE-OWNERSHIP:OK'
+Write-Output 'FACADE-OWNERSHIP:OK'

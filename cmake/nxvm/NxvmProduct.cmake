@@ -452,7 +452,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(machine-task-switch32-paging-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-# These established corpus owners assert handler-visible results.  T361 S3
+# These established corpus owners assert handler-visible results.  the handler-result migration
 # keeps fault delivery and handler retirement as two public runs; compile the
 # owners against the fixture adapter so their retained assertions observe the
 # latter only after the zero-retirement delivery boundary.
@@ -1993,11 +1993,11 @@ if(POWERSHELL_EXECUTABLE)
         VERBATIM)
     add_dependencies(run-integration-tests ${PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS})
 
-    add_custom_target(verify-t382-unit-aggregate
+    add_custom_target(verify-unit-aggregate
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
             -File "${CMAKE_SOURCE_DIR}/tools/nxvm/VerifyTestAggregate.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
-        COMMENT "Verifying T382 unit aggregate deadline and cleanup"
+        COMMENT "Verifying unit aggregate deadline and cleanup"
         VERBATIM)
 else()
     add_custom_target(run-unit-tests
@@ -2025,11 +2025,11 @@ add_custom_target(verify-fixture-shapes
     COMMENT "Verifying fixture-shape ownership contracts"
     VERBATIM)
 
-add_custom_target(verify-t338-legacy-profile-metadata
+add_custom_target(verify-legacy-profile-metadata
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t338_legacy_profile_metadata.cmake"
-    COMMENT "Verifying T338 8086/80186 profile metadata and LOCK ownership"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_legacy_profile_metadata.cmake"
+    COMMENT "Verifying 8086/80186 profile metadata and LOCK ownership"
     VERBATIM)
 
 
@@ -2153,22 +2153,22 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
 
 
 
-    add_custom_target(verify-t447-build-ownership
+    add_custom_target(verify-build-ownership
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t447_build_ownership.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_build_ownership.cmake"
         COMMENT "Verifying VM build source and native-library ownership"
         VERBATIM)
 
-    add_custom_target(verify-t447-debugger-boundary
+    add_custom_target(verify-debugger-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t447_debugger_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_debugger_boundary.cmake"
         COMMENT "Verifying Core debugger interpreter ownership"
         VERBATIM)
 
 
-    add_custom_target(verify-t447-collaborator-plan-boundary
+    add_custom_target(verify-collaborator-plan-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t447_collaborator_plan_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_collaborator_plan_boundary.cmake"
         COMMENT "Verifying Core-owned machine collaborator and plan endpoints"
         VERBATIM)
 
@@ -2183,13 +2183,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
     add_custom_target(verify-firmware-capability
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_firmware_capability.cmake"
-        COMMENT "Verifying M5 T297 firmware capability closure"
+        COMMENT "Verifying firmware capability closure"
         VERBATIM)
 
     add_custom_target(verify-debugger-capability
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_debugger_capability.cmake"
-        COMMENT "Verifying M5 T298 debugger capability closure"
+        COMMENT "Verifying debugger capability closure"
         VERBATIM)
 
 
@@ -2238,53 +2238,53 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying default PC/AT profile ownership closure"
         VERBATIM)
 
-    add_custom_target(verify-t264-core-vm-pcat-ownership
+    add_custom_target(verify-core-vm-pcat-ownership
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t264_core_vm_ownership.cmake"
-        COMMENT "Verifying M5 T264 core/VM PC/AT ownership closure"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_vm_pcat_ownership.cmake"
+        COMMENT "Verifying Core/VM PC/AT ownership closure"
         VERBATIM)
 
     add_custom_target(verify-ega-sequencer-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_ega_sequencer_boundary.cmake"
-        COMMENT "Verifying M5 T235 EGA sequencer ownership boundary"
+        COMMENT "Verifying EGA sequencer ownership boundary"
         VERBATIM)
 
     add_custom_target(verify-ega-controller-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_ega_controller_boundary.cmake"
-        COMMENT "Verifying M5 T236 EGA controller ownership boundary"
+        COMMENT "Verifying EGA controller ownership boundary"
         VERBATIM)
 
     add_custom_target(verify-ega-crtc-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_ega_crtc_boundary.cmake"
-        COMMENT "Verifying T314 EGA CRTC boundary closure"
+        COMMENT "Verifying EGA CRTC boundary closure"
         VERBATIM)
 
 
     add_custom_target(verify-rom-ega-int10-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_rom_ega_int10_boundary.cmake"
-        COMMENT "Verifying M5 T239 ROM EGA INT 10h boundary"
+        COMMENT "Verifying ROM EGA INT 10h boundary"
         VERBATIM)
 
     add_custom_target(verify-keyboard-portal-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_keyboard_portal_closure.cmake"
-        COMMENT "Verifying M5 T210 keyboard portal retirement"
+        COMMENT "Verifying keyboard portal retirement"
         VERBATIM)
 
     add_custom_target(verify-boot-failure-portal-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_boot_failure_portal_closure.cmake"
-        COMMENT "Verifying M5 T211 boot-failure portal retirement"
+        COMMENT "Verifying boot-failure portal retirement"
         VERBATIM)
 
     add_custom_target(verify-hdc-portal-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_hdc_portal_closure.cmake"
-        COMMENT "Verifying M5 T213 HDC portal retirement"
+        COMMENT "Verifying HDC portal retirement"
         VERBATIM)
 
     add_custom_target(verify-cmos-rtc-boundary
@@ -2434,43 +2434,43 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
     add_custom_target(verify-fpu-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_fpu_boundary.cmake"
-        COMMENT "Verifying T262 core-owned FPU boundary"
+        COMMENT "Verifying Core-owned FPU boundary"
         VERBATIM)
 
     add_custom_target(verify-core-cpu-pic-authority
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_cpu_pic_authority.cmake"
-        COMMENT "Verifying T295 core-owned CPU/PIC lifecycle authority"
+        COMMENT "Verifying Core-owned CPU/PIC lifecycle authority"
         VERBATIM)
 
     add_custom_target(verify-core-display-authority
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_display_authority.cmake"
-        COMMENT "Verifying T296 core-owned display and port authority"
+        COMMENT "Verifying Core-owned display and port authority"
         VERBATIM)
 
     add_custom_target(verify-core-dma-rtc-authority
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_dma_rtc_authority.cmake"
-        COMMENT "Verifying T296 core-owned DMA and RTC/CMOS/NMI authority"
+        COMMENT "Verifying Core-owned DMA and RTC/CMOS/NMI authority"
         VERBATIM)
 
     add_custom_target(verify-core-controller-authority
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_controller_authority.cmake"
-        COMMENT "Verifying T296 core-owned FDC/HDC controller authority"
+        COMMENT "Verifying Core-owned FDC/HDC controller authority"
         VERBATIM)
 
-    add_custom_target(verify-t330-task-transition-construction
+    add_custom_target(verify-task-transition-construction
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t330_task_transition_construction.cmake"
-        COMMENT "Verifying T330 task-transition construction closure"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_task_transition_construction.cmake"
+        COMMENT "Verifying task-transition construction closure"
         VERBATIM)
 
-    add_custom_target(verify-t331-real-exception-final-construction
+    add_custom_target(verify-real-exception-final-construction
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t331_real_exception_final_construction.cmake"
-        COMMENT "Verifying T331 real exception final-delivery construction"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_real_exception_final_construction.cmake"
+        COMMENT "Verifying real exception final-delivery construction"
         VERBATIM)
 
     add_custom_target(verify-instruction-timing-inventory
@@ -2539,9 +2539,9 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-cpu-fixture-lifecycle
     verify-fixture-shapes
     verify-strict-declaration-uniqueness
-    verify-t338-legacy-profile-metadata
-    verify-t330-task-transition-construction
-    verify-t331-real-exception-final-construction
+    verify-legacy-profile-metadata
+    verify-task-transition-construction
+    verify-real-exception-final-construction
     verify-instruction-timing-inventory
     verify-timing-source-inventory
     verify-cpu-timing-seam
@@ -2565,9 +2565,9 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-bounded-formatting
     verify-vm-provider-composition
     verify-ram-reconfigure-closure
-    verify-t447-build-ownership
-    verify-t447-debugger-boundary
-    verify-t447-collaborator-plan-boundary
+    verify-build-ownership
+    verify-debugger-boundary
+    verify-collaborator-plan-boundary
     verify-current-artifact-target
     verify-dma-fdc-boundary
     verify-fdc-state-machine-boundary
@@ -2576,11 +2576,11 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-current-media-smoke-classification
     verify-linux-adapter-hygiene
     verify-default-pc-at-profile-closure
-    verify-t264-core-vm-pcat-ownership
+    verify-core-vm-pcat-ownership
     verify-ega-sequencer-boundary
     verify-ega-controller-boundary
     verify-keyboard-portal-closure
-    verify-t285-ega-mode10
+    verify-ega-crtc-boundary
     verify-boot-failure-portal-closure
     verify-cmos-rtc-boundary
     verify-board-port-b-boundary
@@ -2608,7 +2608,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-unit-test-registration
     verify-integration-ini-boundary
     verify-product-artifact-roots
-    verify-t382-unit-aggregate
+    verify-unit-aggregate
     verify-fpu-boundary
     verify-core-cpu-pic-authority
     verify-core-display-authority

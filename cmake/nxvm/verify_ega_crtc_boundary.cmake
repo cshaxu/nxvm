@@ -29,25 +29,25 @@ foreach(required IN ITEMS
     "adapter->data.crtc[adapter->data.crtc_index]")
     string(FIND "${vadp_source}" "${required}" position)
     if(position EQUAL -1)
-        message(FATAL_ERROR "T314 CRTC boundary is missing ${required}")
+        message(FATAL_ERROR "CRTC boundary is missing ${required}")
     endif()
 endforeach()
 
 string(FIND "${vadp_source}" "!x86_video_supported_crtc_index(adapter,\n            high_index) ||" word_guard)
 string(FIND "${vadp_source}" "!x86_video_supported_crtc_index(adapter, low_index)" low_guard)
 if(word_guard EQUAL -1 OR low_guard EQUAL -1)
-    message(FATAL_ERROR "T314 CRTC word access is not predicate guarded")
+    message(FATAL_ERROR "CRTC word access is not predicate guarded")
 endif()
 
 string(FIND "${vadp_source}" "x86_video_crtc_index_readable(adapter,\n        adapter->data.crtc_index) ?" read_guard)
 string(FIND "${vadp_source}" "!x86_video_crtc_index_writable(adapter, adapter->data.crtc_index))" write_guard)
 if(read_guard EQUAL -1 OR write_guard EQUAL -1)
-    message(FATAL_ERROR "T314 port CRTC access is not predicate guarded")
+    message(FATAL_ERROR "port CRTC access is not predicate guarded")
 endif()
 
 set(known_bypass "adapter->data.crtc[index]")
 if(NOT known_bypass MATCHES "crtc\\[[a-z][a-z_]*\\]")
-    message(FATAL_ERROR "T314 verifier self-test no longer recognizes a dynamic CRTC bypass")
+    message(FATAL_ERROR "verifier self-test no longer recognizes a dynamic CRTC bypass")
 endif()
 
 set(dynamic_scan "${vadp_source}")
@@ -59,7 +59,7 @@ foreach(allowed IN ITEMS
 endforeach()
 if(dynamic_scan MATCHES "crtc\\[[a-z][a-z_]*\\]" OR
     dynamic_scan MATCHES "crtc\\[adapter")
-    message(FATAL_ERROR "T314 found an unclassified dynamic CRTC subscript")
+    message(FATAL_ERROR "found an unclassified dynamic CRTC subscript")
 endif()
 
-message("M5:T314:S6:EGA-CRTC-BOUNDARY:OK")
+message("EGA-CRTC-BOUNDARY:OK")

@@ -17,4 +17,4 @@ foreach(source_file IN LISTS product_sources)
     endif()
 endforeach()
 
-message(STATUS "M5 T159 core lifecycle ownership: OK")
+message(STATUS "core lifecycle ownership: OK")

@@ -38,4 +38,4 @@ if(position LESS 0)
     message(FATAL_ERROR "Core owner-scoped route removal is missing")
 endif()
 
-message("M5:T540:S14:HDC-PORT-ROUTES:OK")
+message("HDC-PORT-ROUTES:OK")

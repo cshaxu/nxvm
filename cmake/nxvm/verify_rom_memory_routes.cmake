@@ -42,4 +42,4 @@ if(position LESS 0)
     message(FATAL_ERROR "Core reset-overlay route mode is missing")
 endif()
 
-message("M5:T540:S18:ROM-MEMORY-ROUTES:OK")
+message("ROM-MEMORY-ROUTES:OK")

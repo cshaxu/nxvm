@@ -29,4 +29,4 @@ foreach(binding "core_machine_board_media_advance" "core_machine_board_rtc_advan
         message(FATAL_ERROR "Readiness provider is not bound: ${binding}")
     endif()
 endforeach()
-message("M5:T540:S24:BOARD-READINESS:OK")
+message("BOARD-READINESS:OK")

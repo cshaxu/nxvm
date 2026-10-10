@@ -45,4 +45,4 @@ if(PROJECT_CURRENT_PROFILE STREQUAL "default-pc-at-80386-1440k-hdd")
     endif()
 endif()
 
-message("M5:T197:S1:CURRENT-ARTIFACT-TARGET:${current_target}:OK")
+message("CURRENT-ARTIFACT-TARGET:${current_target}:OK")

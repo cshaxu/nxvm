@@ -44,4 +44,4 @@ if(keypress_surface_position EQUAL -1 OR keypress_operation_position EQUAL -1 OR
     message(FATAL_ERROR "VM keyboard transport lost its real keypress path")
 endif()
 
-message("M5:T249:S2:INPUT-TRANSPORT-SURFACE:OK")
+message("INPUT-TRANSPORT-SURFACE:OK")

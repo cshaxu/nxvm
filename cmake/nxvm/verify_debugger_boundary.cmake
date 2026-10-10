@@ -18,4 +18,4 @@ foreach(file IN ITEMS
     endforeach()
 endforeach()
 
-message(STATUS "M5 T527 x86 Debug command boundary: OK")
+message(STATUS "x86 Debug command boundary: OK")

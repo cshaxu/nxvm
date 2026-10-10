@@ -44,4 +44,4 @@ if(project_deployment MATCHES "file\\([ \t\r\n]*(WRITE|APPEND)[ \t\r\n]")
     message(FATAL_ERROR "EXE deployment must not write owner configuration files")
 endif()
 
-message(STATUS "M6:T41:S10:PRODUCT-ARTIFACT-ROOTS:OK")
+message(STATUS "PRODUCT-ARTIFACT-ROOTS:OK")

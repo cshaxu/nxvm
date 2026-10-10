@@ -7,13 +7,13 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/fpu/fpu.c" fpu_source)
 string(REGEX MATCH "(^|[^A-Za-z0-9_])(float|double)([^A-Za-z0-9_]|$)"
     host_floating_point "${fpu_source}")
 if(host_floating_point)
-    message(FATAL_ERROR "T262 FPU must not use host floating point: ${host_floating_point}")
+    message(FATAL_ERROR "FPU must not use host floating point: ${host_floating_point}")
 endif()
 
 string(REGEX MATCH "_Thread_local|static[ \t\r\n]+x86_fpu[ \t*]+[A-Za-z_][A-Za-z0-9_]*[ \t]*[;=]"
     implicit_fpu_state "${fpu_source}")
 if(implicit_fpu_state)
-    message(FATAL_ERROR "T262 FPU has implicit state: ${implicit_fpu_state}")
+    message(FATAL_ERROR "FPU has implicit state: ${implicit_fpu_state}")
 endif()
 
 file(GLOB_RECURSE consumers
@@ -59,4 +59,4 @@ foreach(path IN LISTS consumers)
     endif()
 endforeach()
 
-message(STATUS "M5 T262 core FPU boundary: OK")
+message(STATUS "core FPU boundary: OK")

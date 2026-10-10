@@ -36,4 +36,4 @@ foreach(required "core_machine_debug_capture_instruction_observation"
     endif()
 endforeach()
 
-message("M5:T298:S3:DEBUGGER-CAPABILITY-STATIC:OK")
+message("DEBUGGER-CAPABILITY-STATIC:OK")

@@ -29,4 +29,4 @@ if(NOT return_break STREQUAL "")
     message(FATAL_ERROR "Linux adapter retains break after return")
 endif()
 
-message("M5:T204:S1:LINUX-ADAPTER-HYGIENE:OK")
+message("LINUX-ADAPTER-HYGIENE:OK")

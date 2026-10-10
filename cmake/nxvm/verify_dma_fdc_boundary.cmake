@@ -34,4 +34,4 @@ if(binding_position EQUAL -1 OR assert_position EQUAL -1 OR
     message(FATAL_ERROR "DMA/FDC ownership route is incomplete")
 endif()
 
-message("M5:T230:S3:DMA-FDC-BOUNDARY:OK")
+message("DMA-FDC-BOUNDARY:OK")

@@ -51,4 +51,4 @@ foreach(required "core_machine_dma_memory_cycle(context->machine"
     endif()
 endforeach()
 
-message("M5:T540:S20:DMA-CORE-CYCLE:OK")
+message("DMA-CORE-CYCLE:OK")

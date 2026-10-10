@@ -9,4 +9,4 @@ foreach(source IN LISTS production_sources)
     endif()
 endforeach()
 
-message("M5:T279:S3:BOUNDED-FORMAT-SOURCE:OK")
+message("BOUNDED-FORMAT-SOURCE:OK")

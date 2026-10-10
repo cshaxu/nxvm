@@ -101,3 +101,26 @@ and both `verify-unit-test-registration` and `verify-integration-ini-boundary`
 pass on x64 and x86.  Runtime integration rows were not run: they need their
 owner-provided external firmware/media inputs and no behavioral test change
 was made.
+
+## S6 Static Verifier Receiver
+
+S6 normalizes the active static-verifier surface under `cmake/nxvm` without
+rewriting historical evidence. Eight task-shaped verifier filenames, their
+Ninja targets, local variable prefixes, diagnostics and emitted markers now
+name the asserted owner or behavior. The corresponding receiver registrations
+are updated in `NxvmProduct.cmake`; no compatibility target or duplicate
+registration remains.
+
+The sweep also repairs four stale verifier references exposed by the current
+source layout: the Console, VADP, machine-lifecycle and machine-owner checks
+now inspect their current Emulator Product and Core board receivers. Two
+marker assertions now match the existing behavior-only test markers. This does
+not change a production rule or a test predicate; it restores the verifiers'
+ability to inspect the intended current owners.
+
+The specialized verifier selections pass on both x64 and x86. The selection
+intentionally excludes `verify-dependency-dag`: it reports a pre-existing Core
+allowlist disagreement outside this naming-only task and is retained for its
+own governed receiver. The canonical Emulator negative-manifest probe already
+uses `# sha256-manifest-v1` in committed `273ba3296`; it needs no duplicate
+change in T549.

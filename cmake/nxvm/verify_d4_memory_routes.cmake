@@ -126,4 +126,4 @@ foreach(required IN ITEMS "core_machine_reconfigure_memory(core_machine *machine
         message(FATAL_ERROR "Core RAM admission operation is missing ${required}")
     endif()
 endforeach()
-message("M5:T540:S17:D4-MEMORY-ROUTES:OK")
+message("D4-MEMORY-ROUTES:OK")

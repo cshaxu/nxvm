@@ -28,10 +28,10 @@ foreach(forbidden "t_port" "core_machine_port_add_"
     endif()
 endforeach()
 
-if(NOT targets MATCHES "board-common/fdc\\.c board-common/hdc\\.c board-common/vadp\\.c" OR
+if(NOT targets MATCHES "board-base/fdc\\.c board-base/hdc\\.c board-base/vadp\\.c" OR
     NOT targets MATCHES "add_library\\(core-board-base STATIC" OR
-    app_targets MATCHES "src/(app-nxvm/devices|core/board-base)/vadp\\.c")
+    app_targets MATCHES "src/app-[^/]+/.*/vadp\\.c")
     message(FATAL_ERROR "VADP must be built once by the Shared board source list, not App")
 endif()
 
-message("M5:T540:S15:VADP-PORT-ROUTES:OK")
+message("VADP-PORT-ROUTES:OK")

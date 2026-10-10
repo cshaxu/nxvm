@@ -22,7 +22,7 @@ foreach(forbidden IN ITEMS
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/CMakeLists.txt" cmake_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/product/CMakeLists.txt" cmake_source)
 foreach(required IN ITEMS
     "debug/command.c")
     string(FIND "${cmake_source}" "${required}" position)
@@ -31,4 +31,4 @@ foreach(required IN ITEMS
     endif()
 endforeach()
 
-message(STATUS "M5 T527 x86 Debug boundary: OK")
+message(STATUS "x86 Debug boundary: OK")

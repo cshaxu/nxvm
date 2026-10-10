@@ -29,4 +29,4 @@ foreach(forbidden "t_ram" "adapter->memory"
     endif()
 endforeach()
 
-message("M5:T540:S16:VADP-MEMORY-ROUTES:OK")
+message("VADP-MEMORY-ROUTES:OK")

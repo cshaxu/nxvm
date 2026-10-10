@@ -68,4 +68,4 @@ if(finalize_position LESS 0)
     message(FATAL_ERROR "Port-B parity rollback and finalization must share one release")
 endif()
 
-message("M5:T540:S13:BOARD-PORT-B-BOUNDARY:OK")
+message("BOARD-PORT-B-BOUNDARY:OK")
