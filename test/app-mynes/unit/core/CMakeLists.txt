@@ -282,3 +282,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 mynes_enable_strict_warnings(mynes-core-mapper-mapping-smoke)
 add_test(NAME mynes.core.mapper-mapping-smoke COMMAND mynes-core-mapper-mapping-smoke)
+
+get_property(MYNES_CORE_UNIT_TESTS DIRECTORY PROPERTY TESTS)
+set_tests_properties(${MYNES_CORE_UNIT_TESTS} PROPERTIES LABELS "unit;app-mynes")

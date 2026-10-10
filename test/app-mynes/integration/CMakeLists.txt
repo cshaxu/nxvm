@@ -1,12 +1,9 @@
 add_executable(mynes-lifecycle-smoke lifecycle_smoke.c)
-add_executable(mynes-performance-probe performance_probe.c)
-target_link_libraries(mynes-performance-probe PRIVATE mynes-core-driver base storage)
-mynes_enable_strict_warnings(mynes-performance-probe)
-# Explicit benchmark only: timing variance is not an ordinary CTest assertion.
 target_link_libraries(mynes-lifecycle-smoke PRIVATE mynes-core-driver emulator-machine storage base)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(mynes-lifecycle-smoke PRIVATE -UNDEBUG)
 endif()
+
 add_test(NAME mynes.integration.lifecycle-smoke COMMAND mynes-lifecycle-smoke)
 
 add_executable(mynes-snapshot-transaction-smoke snapshot_transaction_smoke.c)
@@ -14,6 +11,7 @@ target_link_libraries(mynes-snapshot-transaction-smoke PRIVATE mynes-core-driver
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(mynes-snapshot-transaction-smoke PRIVATE -UNDEBUG)
 endif()
+
 add_test(NAME mynes.integration.snapshot-transaction-smoke COMMAND mynes-snapshot-transaction-smoke)
 
 add_executable(mynes-app-snapshot-commands-smoke app_snapshot_commands_smoke.c)
@@ -82,7 +80,6 @@ if(WIN32)
     add_test(NAME mynes.integration.native-window-smoke COMMAND mynes-native-window-smoke)
     # This test creates a native Window and samples its composed client pixels.
     # It is a desktop integration check, not a headless automatic unit gate.
-    set_property(TEST mynes.integration.native-window-smoke APPEND PROPERTY LABELS desktop)
 
     add_executable(mynes-native-console-smoke native_console_smoke.c)
     target_link_libraries(mynes-native-console-smoke PRIVATE mynes-app mynes-core-driver
@@ -93,5 +90,13 @@ if(WIN32)
     add_test(NAME mynes.integration.native-console-smoke COMMAND mynes-native-console-smoke)
     # It drives and samples a native Console; keep it with the other
     # desktop-composition checks rather than the headless automatic suite.
-    set_property(TEST mynes.integration.native-console-smoke APPEND PROPERTY LABELS desktop)
+endif()
+
+get_property(MYNES_INTEGRATION_TESTS DIRECTORY PROPERTY TESTS)
+set_tests_properties(${MYNES_INTEGRATION_TESTS} PROPERTIES LABELS "integration;app-mynes")
+if(WIN32)
+    set_property(TEST
+        mynes.integration.native-window-smoke
+        mynes.integration.native-console-smoke
+        APPEND PROPERTY LABELS desktop)
 endif()

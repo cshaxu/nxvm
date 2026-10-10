@@ -26,6 +26,7 @@ test/
   app-mynes/
     unit/{product,core}/
     integration/
+    diagnostic/               opt-in probes; never a normal CTest route
   app-nxvm/                    independently owned NXVM tests
 tools/{shared,mynes,nxvm}/
 assets/{mynes,nxvm}/
@@ -185,7 +186,8 @@ readability, never a line-count quota. Do not expose a helper just to test it.
 
 Tests live under the matching repository-root `test/` owner. MyNES repository-only
 tests use `test/app-mynes/unit/{product,core}`; admitted external-ROM scenarios
-use `test/app-mynes/integration`. Shared suites use `test/{lib,common,x86}`. Core tests are flat under
+use `test/app-mynes/integration`; opt-in probes use `test/app-mynes/diagnostic`
+and are not registered as ordinary CTest cases. Shared suites use `test/{lib,common,x86}`. Core tests are flat under
 `test/app-mynes/unit/core`, without an extra machine directory. There is no test/support:
 fixture helpers stay beside the tests of their owning component, or within
 integration when specific to integrated scenarios. Existing shared tests remain
@@ -212,8 +214,8 @@ of the four roots may differ by product; root paths are explicit build inputs,
 not edits to shared source or product-name conditionals. Transfer `test/register.cmake` alongside the four roots; each suite remains
 independently buildable and selectable. The optional x86 source/test pair uses
 the same helper. There is no parallel `src/test/` tree or staging code copy.
-Product driver tests belong under `test/app-mynes/unit/core` or
-`test/app-mynes/integration`.
+Product driver tests belong under `test/app-mynes/unit/core`,
+`test/app-mynes/integration`, or the explicit opt-in diagnostic tree.
 
 The adopted neutral corpus excludes x86 debug/assembler implementations.
 Receiving x86 products compose their own optional x86-debug/x86-xasm32 modules

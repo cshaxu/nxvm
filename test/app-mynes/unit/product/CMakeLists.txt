@@ -25,3 +25,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(mynes-app-battery-failure-smoke PRIVATE -UNDEBUG)
 endif()
 add_test(NAME mynes.app.battery-failure-smoke COMMAND mynes-app-battery-failure-smoke)
+
+get_property(MYNES_PRODUCT_UNIT_TESTS DIRECTORY PROPERTY TESTS)
+set_tests_properties(${MYNES_PRODUCT_UNIT_TESTS} PROPERTIES LABELS "unit;app-mynes")

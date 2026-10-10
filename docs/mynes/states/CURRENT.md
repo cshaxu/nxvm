@@ -2,6 +2,25 @@
 
 ## Current Work
 
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: NXVM M5 T550 S2; MyNES is the sole implementation target. |
+| Admission And Approval | Owner approved the repository-wide route normalization on 2026-10-10, including MyNES `unit`, `integration`, and `diagnostic` parity. |
+| Objective | Give every registered MyNES test exactly one route and the `app-mynes` owner label; relocate the opt-in performance probe into the explicit diagnostic tree. |
+| Non-goals | No MyNES production, ROM, snapshot, INI, artifact, Shared, or NXVM change; do not execute external integration qualification. |
+| Reference Baseline | `1ea733884`; [NXVM T550 proposal](../../nxvm/proposals/m5-test-route-and-external-harness-normalization.md), S2. |
+| Candidate Proposal | The admitted T550 S2 batch: test registration labels and directory ownership only. |
+| Files And ABI Surface | `test/app-mynes/{unit,integration,diagnostic}`, `cmake/mynes/MyNesProduct.cmake`, this packet; no public ABI. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; MyNES README and coding/architecture authorities. |
+| Verification | Configure x64/x86; verify MyNES unit and integration label selections and route ownership; run the changed route tests. |
+| Expected Markers | Every `mynes.core.*`/`mynes.app.*` test has `unit;app-mynes`; every registered `mynes.integration.*` test has `integration;app-mynes`; performance probe is diagnostic-only and unregistered. |
+| Asset Needs | None. |
+| Reporting Requirements | Report route counts, changed paths, x64/x86 results, and unexecuted desktop/external work separately. |
+| Stop Conditions | Stop for any required Shared/API/production change, route ambiguity, or unexpected artifact modification. |
+| Exit Criteria | All MyNES registrations have one owner and route, focused x64/x86 route tests pass, documentation/manifest requirements are satisfied, and the target-scoped P is pushed. |
+| Original Owner Request | Make MyNES test classification consistent with the rest of the repository; establish `unit`, `integration`, `diagnostic`, and setup ownership. |
+| Similar-Issue Sweep | Inspect all registered MyNES tests and unregistered test executables, not only the performance probe. |
+
 M7 T44 is closed. Its accepted S1 palette lookup and S2 selective Mapper
 simplification remain qualified in the current 0044 pair. Corrective S4/S5
 also closed the declared Shared receiving gaps without changing MyNES runtime

@@ -24,6 +24,7 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/src/app-mynes/product" app-mynes-product)
 add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/unit/core" test-app-mynes-unit-core)
 add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/unit/product" test-app-mynes-unit-product)
 add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/integration" test-app-mynes-integration)
+add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/diagnostic" test-app-mynes-diagnostic)
 
 # Preserve the upstream exception for its intentionally exhaustive CMake
 # layout self-test.  Ordinary MyNES tests retain their imported timeout.
@@ -47,6 +48,8 @@ get_property(mynes_integration_test_targets DIRECTORY
     "${CMAKE_SOURCE_DIR}/test/app-mynes/integration" PROPERTY BUILDSYSTEM_TARGETS)
 add_dependencies(mynes-integration-test-binaries ${mynes_integration_test_targets})
 
+add_custom_target(mynes-diagnostic-binaries DEPENDS mynes-performance-probe)
+
 add_custom_target(mynes-test-binaries)
 add_dependencies(mynes-test-binaries
     mynes-unit-test-binaries
@@ -54,14 +57,14 @@ add_dependencies(mynes-test-binaries
 
 add_custom_target(run-mynes-unit-tests
     COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
-        --output-on-failure --no-tests=error -R "^mynes\\.(core|app)\\."
+        --output-on-failure --no-tests=error -L "^unit$" -R "^mynes\\.(core|app)\\."
     DEPENDS mynes-unit-test-binaries
     COMMENT "Executing MyNES unit tests"
     VERBATIM)
 
 add_custom_target(run-mynes-integration-tests
     COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
-        --output-on-failure --no-tests=error -R "^mynes\\.integration\\."
+        --output-on-failure --no-tests=error -L "^integration$" -R "^mynes\\.integration\\."
     DEPENDS mynes-integration-test-binaries
     COMMENT "Executing MyNES integration tests"
     VERBATIM)
