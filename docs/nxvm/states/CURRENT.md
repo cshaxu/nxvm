@@ -2,29 +2,30 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S31 Active: Complete Qualification)
+## Current Task — M5 T548 (S33 Active: SoftPC Shared Six-Component Import And Banner Ownership)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S31. This final S re-audits the frozen ownership ledgers and performs repository-only dual-width qualification. |
-| Admission And Approval | Owner instruction in this conversation to continue the complete test-corpus repair after the S25 Core rehome; the owner additionally approved the discovered Lib Console backing-buffer restoration repair; standing push approval applies. |
-| Objective | Re-audit every T548 ledger disposition, verify registrations/manifests/dependency gates and run the complete repository-only unit suite once on x64 and x86; repair the exact native Console qualification defect without changing its public contract. |
-| Non-goals | No public ABI change; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools; no sibling-repository edit. |
-| Reference Baseline | S26 commits `c47e7c848` through `b2ff1e9cd`, S27/S28 App ledgers, the S29 shared monitor ledger, the S30 MyNES ledger and the S1 ownership ledger. |
-| Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | Private Lib Console backing-buffer restoration, its existing Lib contract test and manifests, S31 evidence/state, plus current dependent App artifacts. No public API, ABI, integration input, firmware, media, INI or snapshot changes. |
-| Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | Run all repository-only unit routes on x64 and x86 after manifest, fixture, registration and dependency gates. Recheck all ledger dispositions against current paths and targets. |
-| Expected Markers | Every T548 behavior remains assigned to one canonical owner, with consumer increments visible and no unexplained route loss. |
-| Asset Needs | Rebuild all ten current dependent x64/x86 artifacts after the approved Lib change. INIs, media and snapshots are not edited. |
-| Reporting Requirements | Report exact source/target/output identities, disposition table, test-count and line delta, dual-width results and every retained App increment. Do not rename historical evidence or claim behavior coverage from names. |
-| Stop Conditions | A ledger disposition no longer matches a current route, a qualification failure requires production behavior, a unique assertion is lost, or an external/desktop dependency blocks a repository-only route. |
-| Exit Criteria | All repository-only unit routes pass on x64/x86; manifests, fixture, registration and dependency gates pass; changed path/test-count ledger is reconciled; desktop and external integration remain explicitly unclaimed. |
-| Original Owner Request | Repair the entire NXVM test suite cleanly after closing the old lifecycle/product task. |
-| Similar-Issue Sweep | Recheck every S26–S30 disposition, target removal, shared boundary and App receiver before final closure. |
+| Identifier Mode | Continuation T548 S33. |
+| Admission And Approval | Owner approved importing SoftPC's latest six shared trees into NXVM, then repairing banner ownership locally before qualification and release. |
+| Objective | Import SoftPC's current `src/{lib,emulator,product}` and `test/{lib,emulator,product}` corpus; make `emulator/product` the sole banner formatter, with each App injecting its own identity text; preserve all other approved upstream behavior. |
+| Non-goals | No SoftPC edit; no product-specific branch in Emulator; no second banner path; no external asset or firmware change; no unapproved public contract expansion. |
+| Reference Baseline | NXVM `b2f4328a1`; SoftPC `f357b291831d7aee49e8e9f86650b23b10e455fb` plus its owner-visible working-tree six-tree Console update. |
+| Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`, together with the approved shared Product banner ownership decision. |
+| Files And ABI Surface | Shared six source/test trees and their manifests; necessary App identity bindings; ten existing artifact binaries. Banner opening-text injection may refine the existing product definition contract, but no platform API may leak. |
+| Applicable Rules | NXVM guide; Execution, Architecture, Coding, Documentation and source policy rules; SoftPC is read-only. |
+| Verification | Verify six-tree equality against the selected SoftPC snapshot except the approved banner-owner delta; run manifest, dependency and type gates; run shared, Core and App tests on x64/x86; rebuild and PE-verify all ten artifacts. |
+| Expected Markers | Product has one opening formatter in `emulator/product`; Apps inject only their opening identity text; every full corpus import difference is documented. |
+| Asset Needs | Existing authorized build-time profile assets only. |
+| Reporting Requirements | Report imported/repaired paths, interface delta, exact build/test results, artifact hashes and desktop/external tests not run. |
+| Stop Conditions | A required upstream input cannot be read, an import requires provenance review, a public contract conflict lacks an owner decision, or a test failure identifies a distinct behavioral defect. |
+| Exit Criteria | Six trees are adopted, banner ownership is correct, manifests and gates pass, x64/x86 qualification passes, ten artifacts are rebuilt and verified, and committed/pushed evidence records the bounded result. |
+| Original Owner Request | Import SoftPC's latest six shared trees; repair banner owner after import; build ten EXEs, run full tests, commit and push. |
+| Similar-Issue Sweep | Scan every startup/banner caller and definition initializer so no Product/App duplicate formatting survives. |
 
 | Work | Progress |
 | --- | --- |
+| T548 S33 | Complete pending owner review: adopted the selected SoftPC Console and shared Product repairs, retaining NXVM's stricter KVM naming gate. `emulator/product` is now the sole opening-banner formatter; each App supplies only its identity text. The six shared trees, Core and all Apps pass complete CTest qualification on x64 (565/565, 411.53 s) and x86 (565/565, 211.31 s). All ten x64/x86 artifacts were rebuilt and PE-width verified. No manual desktop validation or external runtime qualification was performed. |
 | T547 | Closed at owner direction. Final Shared/NXVM/MyNES commits are `5b1d07412`, `08a6a19f4` and `6be3ce8ee`. Public suites pass 66/66, Core 221/221, NXVM 511/511 and MyNES App 45/45 on x64/x86; all ten deployed artifacts are current. No new manual desktop or external integration qualification is claimed. |
 | T548 S1 | Complete: committed baseline `006a7592d` records the 541-unit-entry/45-integration-C universe, registration owners and first semantic candidate groups. It confirmed the Default-App factory duplicate and protected selected-profile increments from mechanical relocation. |
 | T548 S26 | Complete: Core `c47e7c848`, MyDeskPro386 `41cc1779b`, My5170 `b67332ae1`, My5160 `113514a57`, NXVM `1209e0f35` and Shared registration `2de340bf3` retire or narrow Default-PC duplicates, assign generic predicates to Core and split every outward Core-to-App test edge to its real App receiver. The complete repository-only unit selection passes 515/515 on x64 and x86; Core manifests pass on both widths. No production, firmware, media, INI, snapshot or deployed executable input changed. |

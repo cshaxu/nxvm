@@ -5,12 +5,6 @@
 #include "lib/base/process_interface.h"
 #include "lib/types/file.h"
 
-void vm_app_print_banner(const char *banner)
-{
-    if (banner == LIB_NULL) return;
-    lib_c_printf("%s", banner);
-}
-
 lib_status vm_app_ini_executable_path(const char *name, lib_u8 *path,
     lib_size capacity)
 {
@@ -45,17 +39,19 @@ lib_status vm_app_ini_load_request(const char *name,
     return vm_app_ini_load(path, out_request);
 }
 
-lib_i32 vm_app_run(const char *name, const vm_app_machine_binding *binding)
+lib_i32 vm_app_run(const char *name, const char *banner,
+    const vm_app_machine_binding *binding)
 {
     vm_session_request request = {0};
     product_surface_definition definition = {0};
 
-    if (name == LIB_NULL || binding == LIB_NULL ||
+    if (name == LIB_NULL || banner == LIB_NULL || binding == LIB_NULL ||
         vm_app_ini_load_request("nxvm.ini", &request) != LIB_STATUS_OK ||
         vm_app_configure_ui(&request, &definition.ui) != LIB_STATUS_OK ||
         vm_app_compose_machine(binding, &request, &definition.machine) != LIB_STATUS_OK)
         return 1;
     definition.name = name;
+    definition.banner = banner;
     definition.configure_extensions = vm_app_configure_standard_extensions;
     return product_surface_run(&definition);
 }
