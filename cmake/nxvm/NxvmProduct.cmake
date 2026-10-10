@@ -2626,25 +2626,25 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying single CPU timing selection/publication seam"
         VERBATIM)
 
-    add_custom_target(verify-t388-successful-sentinel-matrix
+    add_custom_target(verify-successful-sentinel-matrix
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_successful_sentinel_matrix.cmake"
-        COMMENT "Verifying T388 successful-sentinel matrix"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_successful_sentinel_matrix.cmake"
+        COMMENT "Verifying successful-sentinel matrix"
         VERBATIM)
-    add_custom_target(verify-t388-physical-timebase-inventory
+    add_custom_target(verify-physical-timebase-inventory
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_physical_timebase_inventory.cmake"
-        COMMENT "Verifying T388 four-profile physical-timebase inventory"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_physical_timebase_inventory.cmake"
+        COMMENT "Verifying four-profile physical-timebase inventory"
         VERBATIM)
-    add_custom_target(verify-t388-physical-eligibility-boundary
+    add_custom_target(verify-physical-eligibility-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_physical_eligibility_boundary.cmake"
-        COMMENT "Verifying T388 physical-eligibility boundary"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_physical_eligibility_boundary.cmake"
+        COMMENT "Verifying physical-eligibility boundary"
         VERBATIM)
-    add_custom_target(verify-t388-residual-form-context-ledger
+    add_custom_target(verify-residual-form-context-ledger
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_residual_form_context_ledger.cmake"
-        COMMENT "Verifying T388 residual form/context ledger"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_residual_form_context_ledger.cmake"
+        COMMENT "Verifying residual form/context ledger"
         VERBATIM)
     add_custom_target(verify-t388-jcc-target-lexeme
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -2680,10 +2680,10 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-instruction-timing-inventory
     verify-timing-source-inventory
     verify-cpu-timing-seam
-    verify-t388-successful-sentinel-matrix
-    verify-t388-physical-timebase-inventory
-    verify-t388-physical-eligibility-boundary
-    verify-t388-residual-form-context-ledger
+    verify-successful-sentinel-matrix
+    verify-physical-timebase-inventory
+    verify-physical-eligibility-boundary
+    verify-residual-form-context-ledger
     verify-t388-jcc-target-lexeme
     verify-t388-80286-appendix-b-context
     verify-t388-80286-lsl-architecture-reconciliation
