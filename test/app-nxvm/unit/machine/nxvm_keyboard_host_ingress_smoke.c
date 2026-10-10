@@ -30,7 +30,7 @@ lib_i32 main(void)
     event.kind = (core_machine_guest_input_kind)2;
     if (vm_test_submit_host_input(session, &event) != LIB_STATUS_INVALID_ARGUMENT) goto fail;
     vm_machine_destroy(session);
-    printf("M5:T226:S2:HOST-INGRESS:OK\n");
+    printf("HOST-INGRESS:OK\n");
     return 0;
 
 fail:

@@ -112,10 +112,10 @@ lib_i32 main(void)
 done:
     vm_machine_destroy(session);
     if (!passed) {
-        fprintf(stderr, "M5:T515:S3:KBC-AUX-UNIT:stage=%d create=%d plan=%d count=%u bytes=%02X/%02X/%02X/%02X\n",
+        fprintf(stderr, "KBC-AUX-UNIT:stage=%d create=%d plan=%d count=%u bytes=%02X/%02X/%02X/%02X\n",
             stage, create_status, plan_status, count, bytes[0], bytes[1], bytes[2], bytes[3]);
         return 1;
     }
-    printf("M5:T229:S3:AUX:GUEST:OK\n");
+    printf("AUX:GUEST:OK\n");
     return 0;
 }

@@ -158,6 +158,6 @@ int main(void)
             return 1;
         }
     }
-    printf("M5:T508:S4:FOUR-PROFILE-DMA-DEADLINE:OK\n");
+    printf("FOUR-PROFILE-DMA-DEADLINE:OK\n");
     return 0;
 }

@@ -19,6 +19,6 @@ lib_i32 main(void)
         vector.cs != 0xf000u || vector.ip != 0xfff0u;
     vm_machine_destroy(session);
     if (failed) return 1;
-    lib_c_printf("M5:T173:S1:SESSION-RECONFIGURE:OK\n");
+    lib_c_printf("SESSION-RECONFIGURE:OK\n");
     return 0;
 }

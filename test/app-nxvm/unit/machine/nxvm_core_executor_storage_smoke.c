@@ -29,6 +29,6 @@ lib_i32 main(void)
         return 1;
     }
     vm_machine_destroy(machine);
-    puts("M5:T83:S2:CORE-EXECUTOR-STORAGE:OK");
+    puts("CORE-EXECUTOR-STORAGE:OK");
     return 0;
 }

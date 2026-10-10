@@ -76,6 +76,6 @@ lib_i32 main(void)
 done:
     vm_machine_destroy(session);
     if (!passed) return 1;
-    printf("M5:T228:S3:CGA:SYSTEM:OK\n");
+    printf("CGA:SYSTEM:OK\n");
     return 0;
 }

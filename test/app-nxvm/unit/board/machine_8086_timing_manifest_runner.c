@@ -360,7 +360,7 @@ static lib_i32 timing_manifest_run_lock_companion(
             run.ticks, capture.observation.source_ticks,
             capture.observation.timing_origin, capture.observation.formula_inputs,
             capture.observation.control_outcome, capture.count);
-        lib_c_printf("M5:T435:S5:I86-LOCK-COMPANION:FAIL:%s\n", key);
+        lib_c_printf("I86-LOCK-COMPANION:FAIL:%s\n", key);
     }
     return failed;
 }
@@ -426,7 +426,7 @@ static lib_i32 timing_manifest_run_exact_recipe_with_inputs_and_formula(
             capture.observation.timing_key_id, capture.count,
             capture.observation.control_outcome,
             capture.observation.timing_disposition);
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n",
+        lib_c_printf("I86-MANIFEST-RECIPE:FAIL:%s\n",
             recipe == LIB_NULL ? "<null>" : recipe->key_id);
     }
     if (!failed && timing_manifest_run_lock_companion(record, recipe->key_id,
@@ -592,7 +592,7 @@ static lib_i32 timing_manifest_run_l3_memory_recipe_with_inputs_internal(
             capture.observation.timing_origin, capture.observation.formula_inputs,
             (lib_u16)ax, (lib_u16)cx,
             memory_value, capture.count);
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n",
+        lib_c_printf("I86-MANIFEST-RECIPE:FAIL:%s\n",
             recipe == LIB_NULL ? "<null>" : recipe->key_id);
     }
     core_machine_destroy(machine);
@@ -763,7 +763,7 @@ static lib_i32 timing_manifest_run_string_primitive_with_prefix_internal(
             (lib_u16)ax,
             (lib_u16)si,
             (lib_u16)di);
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n",
+        lib_c_printf("I86-MANIFEST-RECIPE:FAIL:%s\n",
             recipe == LIB_NULL ? "<null>" : recipe->key_id);
     }
     core_machine_destroy(machine);
@@ -926,7 +926,7 @@ static lib_i32 timing_manifest_run_repeat_recipe(
             CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT, recipe->zero_ticks);
     }
     if (failed) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+        lib_c_printf("I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
     }
     core_machine_destroy(machine);
     return failed;
@@ -992,7 +992,7 @@ static lib_i32 timing_manifest_probe_decoder_lexeme_candidates(void)
         "[\"F0\"]\n}\n") < 0;
     if (lib_c_fclose(file) != 0) failed = 1;
     if (failed) return 1;
-    lib_c_printf("M5:T435:S5:I86-DECODER-LEXEME-CANDIDATES:%u:%u\n", accepted,
+    lib_c_printf("I86-DECODER-LEXEME-CANDIDATES:%u:%u\n", accepted,
         accepted_opcodes);
     return 0;
 }
@@ -1053,7 +1053,7 @@ static lib_i32 timing_manifest_probe_xlat_function(void)
             !timing_manifest_ticks_match(capture.observation.source_ticks, 11u) ||
             !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY);
     }
-    if (failed) lib_c_printf("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-XLAT-FUNCTION\n");
+    if (failed) lib_c_printf("I86-MANIFEST-RECIPE:FAIL:I86-XLAT-FUNCTION\n");
     core_machine_destroy(machine);
     return failed;
 }
@@ -1090,7 +1090,7 @@ static lib_i32 timing_manifest_probe_pop_cs_function(void)
             !timing_manifest_ticks_match(capture.observation.source_ticks, 8u) ||
             !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY);
     }
-    if (failed) lib_c_printf("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-POP-SEG-CS-FUNCTION\n");
+    if (failed) lib_c_printf("I86-MANIFEST-RECIPE:FAIL:I86-POP-SEG-CS-FUNCTION\n");
     core_machine_destroy(machine);
     return failed;
 }
@@ -1148,7 +1148,7 @@ static lib_i32 timing_manifest_probe_alu_function(void)
         }
         core_machine_destroy(machine);
         if (failed) {
-            lib_c_printf("M5:T435:S5:I86-FUNCTION:FAIL:ALU:%u\n", (unsigned)index);
+            lib_c_printf("I86-FUNCTION:FAIL:ALU:%u\n", (unsigned)index);
             return 1;
         }
     }
@@ -1205,7 +1205,7 @@ static lib_i32 timing_manifest_probe_adjustment_function(void)
         }
         core_machine_destroy(machine);
         if (failed) {
-            lib_c_printf("M5:T435:S5:I86-FUNCTION:FAIL:ADJUST:%u\n", (unsigned)index);
+            lib_c_printf("I86-FUNCTION:FAIL:ADJUST:%u\n", (unsigned)index);
             return 1;
         }
     }
@@ -1273,7 +1273,7 @@ static lib_i32 timing_manifest_probe_data_stack_function(void)
             (lib_u16)snapshot.esp != 0x8002u;
     } else if (!failed) failed = 1;
     core_machine_destroy(machine);
-    if (failed) lib_c_printf("M5:T435:S5:I86-FUNCTION:FAIL:DATA-STACK\n");
+    if (failed) lib_c_printf("I86-FUNCTION:FAIL:DATA-STACK\n");
     return failed;
 }
 
@@ -1324,7 +1324,7 @@ static lib_i32 timing_manifest_probe_group3_function(void)
         }
         core_machine_destroy(machine);
         if (failed) {
-            lib_c_printf("M5:T435:S5:I86-FUNCTION:FAIL:GROUP3:%u\n", (unsigned)index);
+            lib_c_printf("I86-FUNCTION:FAIL:GROUP3:%u\n", (unsigned)index);
             return 1;
         }
     }
@@ -1371,7 +1371,7 @@ static lib_i32 timing_manifest_probe_branch_function(void)
                     recipes[index].expected_cx;
         }
         if (failed) {
-            lib_c_printf("M5:T435:S5:I86-FUNCTION:FAIL:BRANCH:%u:ip=%u:cx=%u\n",
+            lib_c_printf("I86-FUNCTION:FAIL:BRANCH:%u:ip=%u:cx=%u\n",
                 (unsigned)index, (lib_u16)snapshot.eip,
                 (lib_u16)snapshot.ecx);
             core_machine_destroy(machine);
@@ -1422,7 +1422,7 @@ static lib_i32 timing_manifest_probe_flag_function(void)
         }
         core_machine_destroy(machine);
         if (failed) {
-            lib_c_printf("M5:T435:S5:I86-FUNCTION:FAIL:FLAGS:%u\n", (unsigned)index);
+            lib_c_printf("I86-FUNCTION:FAIL:FLAGS:%u\n", (unsigned)index);
             return 1;
         }
     }
@@ -1600,7 +1600,7 @@ static lib_i32 timing_manifest_probe_general_lock_prefix(void)
         }
         core_machine_destroy(machine);
         if (failed) {
-            lib_c_printf("M5:T435:S5:I86-LOCK-GENERAL:FAIL:%s\n",
+            lib_c_printf("I86-LOCK-GENERAL:FAIL:%s\n",
                 recipes[index].key_id);
             return 1;
         }
@@ -1654,7 +1654,7 @@ static lib_i32 timing_manifest_probe_adjustments(void)
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         if (timing_manifest_run_exact_recipe(&recipes[index])) {
-            lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:%s\n",
+            lib_c_printf("I86-MANIFEST-PROBE:FAIL:%s\n",
                 recipes[index].key_id);
             return 1;
         }
@@ -2155,7 +2155,7 @@ static lib_i32 timing_manifest_probe_group3_l2(void)
                 (lib_u16)snapshot.eax,
                 (lib_u16)snapshot.edx,
                 capture.count);
-            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe.key_id);
+            lib_c_printf("I86-MANIFEST-RECIPE:FAIL:%s\n", recipe.key_id);
             core_machine_destroy(machine);
             return 1;
         }
@@ -2242,7 +2242,7 @@ static lib_i32 timing_manifest_probe_group3_l2(void)
         }
         core_machine_destroy(machine);
         if (failed) {
-            lib_c_printf("M5:T435:S5:I86-G3-LOCK:FAIL:%s\n", recipe.key_id);
+            lib_c_printf("I86-G3-LOCK:FAIL:%s\n", recipe.key_id);
             return 1;
         }
     }
@@ -2355,7 +2355,7 @@ static lib_i32 timing_manifest_probe_group3_memory_contexts(void)
                      recipe->required_formula_inputs);
         }
         if (failed) {
-            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            lib_c_printf("I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
             core_machine_destroy(machine);
             return 1;
         }
@@ -2423,7 +2423,7 @@ static lib_i32 timing_manifest_probe_group3_memory_contexts(void)
             }
             core_machine_destroy(locked_machine);
             if (locked_failed) {
-                lib_c_printf("M5:T435:S5:I86-G3-CONTEXT-LOCK:FAIL:%s\n", key);
+                lib_c_printf("I86-G3-CONTEXT-LOCK:FAIL:%s\n", key);
                 return 1;
             }
         }
@@ -3247,7 +3247,7 @@ static lib_i32 timing_manifest_probe_repeat_manifest_contexts(void)
             recipe.opcode = 0xafu; recipe.first_ticks = 24u;
             recipe.continuation_ticks = 15u; recipe.zero_ticks = 9u; odd_addition = 4u;
         } else {
-            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:UNMAPPED-REP:%s\n",
+            lib_c_printf("I86-MANIFEST-RECIPE:FAIL:UNMAPPED-REP:%s\n",
                 record->key_id);
             return 1;
         }
@@ -3445,7 +3445,7 @@ static lib_i32 timing_manifest_probe_pointer_load_forms(void)
                 (lib_u16)snapshot.ebx != 0x1000u;
         }
         if (failed) {
-            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:I86-LEA-M\n");
+            lib_c_printf("I86-MANIFEST-RECIPE:FAIL:I86-LEA-M\n");
             core_machine_destroy(machine);
             return 1;
         }
@@ -3510,7 +3510,7 @@ static lib_i32 timing_manifest_probe_pointer_load_forms(void)
                     snapshot.es.selector != 0x0800u);
         }
         if (failed) {
-            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            lib_c_printf("I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
             core_machine_destroy(machine);
             return 1;
         }
@@ -3679,7 +3679,7 @@ static lib_i32 timing_manifest_run_indirect_control_recipe(
             (lib_u16)snapshot.esp,
             capture.observation.source_timing_form_id,
             capture.observation.timing_key_id);
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n",
+        lib_c_printf("I86-MANIFEST-RECIPE:FAIL:%s\n",
             recipe == LIB_NULL ? "<null>" : recipe->key_id);
     }
     core_machine_destroy(machine);
@@ -3897,7 +3897,7 @@ static lib_i32 timing_manifest_probe_return_forms(void)
                 (lib_u16)snapshot.esp,
                 capture.observation.source_timing_form_id,
                 capture.observation.timing_key_id);
-            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            lib_c_printf("I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
             core_machine_destroy(machine);
             return 1;
         }
@@ -3988,7 +3988,7 @@ static lib_i32 timing_manifest_probe_software_interrupt_forms(void)
                 capture.observation.control_outcome,
                 capture.observation.source_timing_form_id,
                 capture.observation.timing_key_id);
-            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            lib_c_printf("I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
             core_machine_destroy(machine);
             return 1;
         }
@@ -4124,7 +4124,7 @@ static lib_i32 timing_manifest_probe_memory_stack_forms(void)
                 observed != transfer_word;
         }
         if (failed) {
-            lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            lib_c_printf("I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
             core_machine_destroy(machine);
             return 1;
         }
@@ -4155,7 +4155,7 @@ static lib_i32 timing_manifest_probe_hlt(void)
             !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
             core_machine_debug_read_cpu(machine, &cpu) != LIB_STATUS_OK || !cpu.halted;
     }
-    if (failed) lib_c_printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:I86-FLAG-HLT\n");
+    if (failed) lib_c_printf("I86-MANIFEST-RECIPE:FAIL:I86-FLAG-HLT\n");
     core_machine_destroy(machine);
     if (failed) return 1;
     {
@@ -4186,7 +4186,7 @@ static lib_i32 timing_manifest_probe_hlt(void)
         }
         core_machine_destroy(locked_machine);
         if (locked_failed) {
-            lib_c_printf("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-FLAG-HLT-LOCK\n");
+            lib_c_printf("I86-MANIFEST-RECIPE:FAIL:I86-FLAG-HLT-LOCK\n");
         }
         return locked_failed;
     }
@@ -4319,163 +4319,163 @@ lib_i32 main(void)
             timing_manifest_probe_general_lock_prefix() ||
             timing_manifest_probe_adjustments()) return 1;
     if (timing_manifest_probe_alu_register_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-REGISTER\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:ALU-REGISTER\n");
         return 1;
     }
     if (timing_manifest_probe_compare_and_test_register_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:CMP-TEST-REGISTER\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:CMP-TEST-REGISTER\n");
         return 1;
     }
     if (timing_manifest_probe_register_data_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:REGISTER-DATA\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:REGISTER-DATA\n");
         return 1;
     }
     if (timing_manifest_probe_stack_register_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STACK-REGISTER\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:STACK-REGISTER\n");
         return 1;
     }
     if (timing_manifest_probe_conditional_branches()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:JCC\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:JCC\n");
         return 1;
     }
     if (timing_manifest_probe_counted_branches()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:LOOP\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:LOOP\n");
         return 1;
     }
     if (timing_manifest_probe_wait_and_escape()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:WAIT-ESC\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:WAIT-ESC\n");
         return 1;
     }
     if (timing_manifest_probe_escape_memory_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ESC-MEMORY\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:ESC-MEMORY\n");
         return 1;
     }
     if (timing_manifest_probe_group2_register_one()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-R1\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:GROUP2-R1\n");
         return 1;
     }
     if (timing_manifest_probe_group2_register_cl()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-RCL\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:GROUP2-RCL\n");
         return 1;
     }
     if (timing_manifest_probe_immediate_port_io()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:PORT-IMM\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:PORT-IMM\n");
         return 1;
     }
     if (timing_manifest_probe_dx_port_io()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:PORT-DX\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:PORT-DX\n");
         return 1;
     }
     if (timing_manifest_probe_near_control_transfers()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:NEAR-CONTROL\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:NEAR-CONTROL\n");
         return 1;
     }
     if (timing_manifest_probe_group3_l2()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP3-L2\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:GROUP3-L2\n");
         return 1;
     }
     if (timing_manifest_probe_group3_memory_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP3-CONTEXT\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:GROUP3-CONTEXT\n");
         return 1;
     }
     if (timing_manifest_probe_alu_memory_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-MEMORY\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:ALU-MEMORY\n");
         return 1;
     }
     if (timing_manifest_probe_primary_memory_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:PRIMARY-MEMORY\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:PRIMARY-MEMORY\n");
         return 1;
     }
     if (timing_manifest_probe_alu_segment_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-SEGMENT\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:ALU-SEGMENT\n");
         return 1;
     }
     if (timing_manifest_probe_alu_odd_word_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-ODD-WORD\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:ALU-ODD-WORD\n");
         return 1;
     }
     if (timing_manifest_probe_lock_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:LOCK\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:LOCK\n");
         return 1;
     }
     if (timing_manifest_probe_alu_segment_odd_word_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-SEGMENT-ODD-WORD\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:ALU-SEGMENT-ODD-WORD\n");
         return 1;
     }
     if (timing_manifest_probe_group2_memory_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-MEMORY\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:GROUP2-MEMORY\n");
         return 1;
     }
     if (timing_manifest_probe_group2_segment_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-SEGMENT\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:GROUP2-SEGMENT\n");
         return 1;
     }
     if (timing_manifest_probe_group2_odd_word_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-ODD-WORD\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:GROUP2-ODD-WORD\n");
         return 1;
     }
     if (timing_manifest_probe_group2_segment_odd_word_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-SEGMENT-ODD\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:GROUP2-SEGMENT-ODD\n");
         return 1;
     }
     if (timing_manifest_probe_string_primitives()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-PRIMITIVE\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:STRING-PRIMITIVE\n");
         return 1;
     }
     if (timing_manifest_probe_repeat_base_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:REP-BASE\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:REP-BASE\n");
         return 1;
     }
     if (timing_manifest_probe_repeat_manifest_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:REP-CONTEXT\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:REP-CONTEXT\n");
         return 1;
     }
     if (timing_manifest_probe_string_segment_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-SEGMENT\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:STRING-SEGMENT\n");
         return 1;
     }
     if (timing_manifest_probe_string_odd_word_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-ODD-WORD\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:STRING-ODD-WORD\n");
         return 1;
     }
     if (timing_manifest_probe_string_segment_odd_word_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-SEGMENT-ODD\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:STRING-SEGMENT-ODD\n");
         return 1;
     }
     if (timing_manifest_probe_pointer_load_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:POINTER-LOAD\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:POINTER-LOAD\n");
         return 1;
     }
     if (timing_manifest_probe_segment_mov_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:MOV-SREG\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:MOV-SREG\n");
         return 1;
     }
     if (timing_manifest_probe_far_direct_control_transfers()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:FAR-DIRECT\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:FAR-DIRECT\n");
         return 1;
     }
     if (timing_manifest_probe_indirect_control_transfers()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:INDIRECT-CONTROL\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:INDIRECT-CONTROL\n");
         return 1;
     }
     if (timing_manifest_probe_return_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:RETURN\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:RETURN\n");
         return 1;
     }
     if (timing_manifest_probe_software_interrupt_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:SOFTWARE-INT\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:SOFTWARE-INT\n");
         return 1;
     }
     if (timing_manifest_probe_memory_stack_forms()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:MEMORY-STACK\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:MEMORY-STACK\n");
         return 1;
     }
     if (timing_manifest_probe_hlt()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:HLT\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:HLT\n");
         return 1;
     }
     if (timing_manifest_probe_xchg_memory_contexts()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:XCHG-CONTEXT\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:XCHG-CONTEXT\n");
         return 1;
     }
     for (index = 0u; index < sizeof(timing_manifest_records) /
@@ -4483,20 +4483,20 @@ lib_i32 main(void)
         if (timing_manifest_is_active(&timing_manifest_records[index]) &&
                 timing_manifest_covered[index]) ++covered_count;
         else if (timing_manifest_is_active(&timing_manifest_records[index])) {
-            lib_c_printf("M5:T435:S4:I86-MANIFEST-MISSING:%s\n",
+            lib_c_printf("I86-MANIFEST-MISSING:%s\n",
                 timing_manifest_records[index].key_id);
         }
     }
     if (covered_count != i86_count) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:PARTIAL:%llu/%llu\n",
+        lib_c_printf("I86-MANIFEST-PROBE:PARTIAL:%llu/%llu\n",
             (unsigned long long)covered_count, (unsigned long long)i86_count);
         return 1;
     }
     if (timing_manifest_write_results()) {
-        lib_c_printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:RESULTS\n");
+        lib_c_printf("I86-MANIFEST-PROBE:FAIL:RESULTS\n");
         return 1;
     }
-    lib_c_printf("M5:T435:S5:I86-MANIFEST-PROBE:PASS:%llu/%llu\n", (unsigned long long)covered_count,
+    lib_c_printf("I86-MANIFEST-PROBE:PASS:%llu/%llu\n", (unsigned long long)covered_count,
         (unsigned long long)i86_count);
     return 0;
 }

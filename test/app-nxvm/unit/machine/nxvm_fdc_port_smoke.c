@@ -147,6 +147,6 @@ done:
     vm_machine_destroy(session);
     (void)remove(protected_path);
     if (failed) return 1;
-    puts("M5:T231:S3:FDC-PORT:OK");
+    puts("FDC-PORT:OK");
     return 0;
 }

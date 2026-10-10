@@ -139,6 +139,6 @@ lib_i32 main(void)
 done:
     core_machine_destroy(machine);
     if (failed) return 1;
-    printf("M5:T217:S2:TIME:OK\n");
+    printf("TIME:OK\n");
     return 0;
 }

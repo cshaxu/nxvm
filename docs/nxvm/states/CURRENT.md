@@ -2,24 +2,24 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S7 Active: Normalize Default-PC Unit-Test Identities)
+## Current Task — M5 T548 (S8 Active: Normalize My5170 Unit-Test Output Identities)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S7. S1-S6 completed the initial duplicate, ownership and identity classification work. This S owns only the NXVM Default-PC rename and marker batch. |
+| Identifier Mode | Continuation T548 S8. S1-S7 completed the initial duplicate, ownership and identity classification work. This S owns only the My5170 output-marker batch. |
 | Admission And Approval | Owner instruction in this conversation: close the old T, then admit the first queued T to repair the complete NXVM test corpus cleanly. Standing push approval applies. |
 | Objective | Freeze a complete behavior-level ownership and coverage ledger for every registered repository unit test and production owner, then repair misplaced, duplicated, incomplete or non-independent coverage without losing component, profile, board, CPU, composition or failure evidence. |
 | Non-goals | No production behavior or public ABI change merely to simplify tests; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools as units; no sibling-repository edit. |
 | Reference Baseline | T547 closure commits `5b1d07412`, `08a6a19f4` and `6be3ce8ee`; re-freeze the current committed source/test/build graph before any move, merge or deletion. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | Rename only the six NXVM Default-PC unit source paths with explicit task suffixes, their CMake target/CTest names and their explicit task-formatted success markers. Update affected manifests and T548 evidence. No production API, firmware, media, asset or assertion change. |
+| Files And ABI Surface | Replace only My5170 active task-formatted unit-test output markers with behavior identities. Update T548 evidence. No production API, firmware, media, asset, source path or assertion change. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | Map each old source/target/output identity to its semantic Default-PC replacement; reconfigure and build affected NXVM units on x64/x86; run each replacement target and prove old active identities are absent. |
-| Expected Markers | Default-PC behavior identities contain no task number; exact existing test predicates remain; historical evidence is not rewritten. |
+| Verification | Map each old My5170 output marker to its behavior identity; reconfigure and compile every affected source on x64/x86; run every affected target and prove old active markers are absent. |
+| Expected Markers | My5170 behavior identities contain no task number; exact existing test predicates remain; historical evidence is not rewritten. |
 | Asset Needs | None. INIs, media, snapshots and artifacts are not edited. |
 | Reporting Requirements | Report source/target/output before-and-after identities, exact test count delta, line delta and dual-width result. Do not rename historical evidence or claim behavior coverage from names. |
 | Stop Conditions | Ambiguous semantic replacement, an external identity contract, an old reference outside MyDeskPro386 scope, required production change, or loss of an existing assertion. |
-| Exit Criteria | All six Default-PC source path task suffixes and corresponding active target/output task markers are replaced semantically; dual-width affected tests and manifests pass. T548 remains open. |
+| Exit Criteria | All My5170 active task-formatted output markers are replaced semantically; dual-width affected tests pass. T548 remains open. |
 | Original Owner Request | Repair the entire NXVM test suite cleanly after closing the old lifecycle/product task. |
 | Similar-Issue Sweep | Inventory every C/CMake test entry, alias, fixture, negative gate and unit runner outside integration; distinguish component proof, composition increment, App/profile proof and non-unit tooling before assigning a canonical owner. |
 
@@ -31,8 +31,9 @@
 | T548 S3 | Complete: pushed as `ac7fbc5dc`. The unmodified eight-by-five Core CPU/PIC negative matrix now has one `core.cpu-bus-boundary-negative` registration, runs on x64/x86, and the old App identity is absent. The FDC assembly gate remains App-owned. Core ownership and both Core manifests pass. No production or artifact input changed. |
 | T548 S4 | Complete: the mixed Default-App plan test is split into one Default-PC, one My5170 and one MyDeskPro386 receiver; the 5170 clock contract also moves to My5170. All four targets pass on x64/x86, and no old mixed path/target remains in active test/CMake sources. This is test/CMake-only, so no executable input or artifact changed. |
 | T548 S5 | Complete: committed ledger `etc/evidence/t548-s5-test-identity-ledger.md` distinguishes 26 real active source-path markers, 67 explicit success-marker files and broad CMake lexical matches. It allocates separate target-scoped follow-up batches and leaves historical evidence untouched. |
-| T548 S6 | Complete pending commit: twenty MyDeskPro386 Model 40/D4 task-suffixed source paths, registrations and task-formatted markers now use behavior identities only. All 20 affected tests pass on x64 and x86; Core boundary verification passes. No production, artifact, firmware, media or assertion changed. |
-| T548 S7 | Active: remove only NXVM Default-PC task suffixes/markers from the six selected unit source paths, preserving their predicates and fixed-profile context. |
+| T548 S6 | Complete: pushed as `6624da0af`. Twenty MyDeskPro386 Model 40/D4 task-suffixed source paths, registrations and task-formatted markers now use behavior identities only. All 20 affected tests pass on x64 and x86; Core boundary verification passes. No production, artifact, firmware, media or assertion changed. |
+| T548 S7 | Complete pending commit: six Default-PC source paths and their CTest registrations now use behavior identities only; all 37 current Default-PC test files have task provenance removed from active output. The six replacement targets pass on x64 and x86; all changed source files compile on both widths. An unrelated full-build failure in `integration-session-ini-support` still references retired `app_composed_machine.machine` and is retained for a later receiver. |
+| T548 S8 | Active: replace the four My5170 active task-formatted unit-test output markers with behavior identities, preserving tests and source paths. |
 | T547 S5 | Closed at owner direction. P1 `9131545d8` replaces the live Product with the SoftPC command/keyboard base and App extensions; P2 `09cbfcf93` removes the SoftPC-branded fault message; P3 `3ff1e89f8` moves NXVM identity out of shared Product; P4 `7a2f23574` reduces the shared opening contract to App-provided text. Eight 0546 App artifacts were rebuilt. Product entry/command/manifest focused checks passed on x64; full dual-width Product and complete T547 qualification remain open and are not claimed by this S closure. |
 | T547 S6 | Complete: `bf469c879` adopts SoftPC S16's ownership correction without importing SoftPC runtime code. NXVM-family configuration/factory/extension support and direct tests now live in `src/core/product` and `test/core/product`; the old `ibmpc/nxvm` member is gone. IBM PC and core gates plus 8 focused tests pass on x64 and x86; all eight 0546 product artifacts were rebuilt against the relocated link input. |
 | T547 S7 | Superseded into S8 before P delivery: its uncommitted canonical Core rehome is retained as S8's required receiver baseline rather than split into an unbuildable partial commit. |

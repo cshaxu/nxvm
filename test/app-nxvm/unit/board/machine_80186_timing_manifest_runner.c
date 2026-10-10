@@ -735,14 +735,14 @@ static lib_i32 timing_80186_manifest_run_repeat_phase_context(
         failed = timing_80186_manifest_run_repeat_step(machine, &capture,
             first_key, CORE_MACHINE_RETIREMENT_REPEAT_FIRST, first_ticks,
             required_inputs);
-        if (failed) lib_c_printf("M5:T435:S9:I186-REP-CONTEXT-STEP:FAIL:%s:expected=%llu:observed=%llu:inputs=%u\\n",
+        if (failed) lib_c_printf("I186-REP-CONTEXT-STEP:FAIL:%s:expected=%llu:observed=%llu:inputs=%u\\n",
             first_key, first_ticks, capture.observation.source_ticks,
             capture.observation.formula_inputs);
         if (!failed) {
             failed = timing_80186_manifest_run_repeat_step(machine, &capture,
                 continuation_key, CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION,
                 continuation_ticks, required_inputs);
-            if (failed) lib_c_printf("M5:T435:S9:I186-REP-CONTEXT-STEP:FAIL:%s:expected=%llu:observed=%llu:inputs=%u\\n",
+            if (failed) lib_c_printf("I186-REP-CONTEXT-STEP:FAIL:%s:expected=%llu:observed=%llu:inputs=%u\\n",
                 continuation_key, continuation_ticks,
                 capture.observation.source_ticks,
                 capture.observation.formula_inputs);
@@ -758,7 +758,7 @@ static lib_i32 timing_80186_manifest_run_repeat_phase_context(
         if (!failed) failed = timing_80186_manifest_run_repeat_step(machine, &capture, zero_key,
             CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT, zero_ticks,
             segment_override ? CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u);
-        if (failed) lib_c_printf("M5:T435:S9:I186-REP-CONTEXT-STEP:FAIL:%s:expected=%llu:observed=%llu:inputs=%u\\n",
+        if (failed) lib_c_printf("I186-REP-CONTEXT-STEP:FAIL:%s:expected=%llu:observed=%llu:inputs=%u\\n",
             zero_key, zero_ticks, capture.observation.source_ticks,
             capture.observation.formula_inputs);
     }
@@ -849,7 +849,7 @@ static lib_i32 timing_80186_manifest_run_string_odd_recipe(const char *key_id,
             (capture.observation.formula_inputs &
                 CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD) == 0u;
     }
-    if (failed) lib_c_printf("M5:T435:S9:I186-STRING-ODD:FAIL:%s:expected=%llu:observed=%llu:inputs=%u\n",
+    if (failed) lib_c_printf("I186-STRING-ODD:FAIL:%s:expected=%llu:observed=%llu:inputs=%u\n",
         key_id, expected_ticks, capture.observation.source_ticks,
         capture.observation.formula_inputs);
     core_machine_destroy(machine);
@@ -1055,7 +1055,7 @@ static void timing_80186_manifest_report_failure(
         observation = &timing_80186_manifest_results[
             timing_80186_manifest_current_index];
     }
-    lib_c_printf("M5:T435:S9:I186-MANIFEST-RECIPE:FAIL:%s:expected=%llu:observed=%llu:origin=%u:disposition=%u:inputs=%u\n",
+    lib_c_printf("I186-MANIFEST-RECIPE:FAIL:%s:expected=%llu:observed=%llu:origin=%u:disposition=%u:inputs=%u\n",
         recipe->key_id, recipe->ticks,
         observation != LIB_NULL ? observation->source_ticks : 0u,
         observation != LIB_NULL ? (lib_u32)observation->timing_origin : 0u,
@@ -1741,7 +1741,7 @@ lib_i32 main(void)
     for (index = 0u; index < sizeof(repeat_recipes) / sizeof(repeat_recipes[0]);
             ++index) {
         if (timing_80186_manifest_run_repeat_recipe(&repeat_recipes[index])) {
-            lib_c_printf("M5:T435:S9:I186-MANIFEST-REPEAT:FAIL:%s\n",
+            lib_c_printf("I186-MANIFEST-REPEAT:FAIL:%s\n",
                 repeat_recipes[index].key_id);
             return 1;
         }
@@ -1753,19 +1753,19 @@ lib_i32 main(void)
             return 1;
         if (timing_80186_manifest_run_repeat_phase_context(&repeat_recipes[index],
                 "SEGMENT-REP-PHASE", 1, 0)) {
-            lib_c_printf("M5:T435:S9:I186-REP-COMBINATION:FAIL:%s:SEGMENT\n",
+            lib_c_printf("I186-REP-COMBINATION:FAIL:%s:SEGMENT\n",
                 repeat_recipes[index].key_id);
             return 1;
         }
         if (timing_80186_manifest_run_repeat_phase_context(&repeat_recipes[index],
                 "ODD-WORD-REP-PHASE", 0, 1)) {
-            lib_c_printf("M5:T435:S9:I186-REP-COMBINATION:FAIL:%s:ODD\n",
+            lib_c_printf("I186-REP-COMBINATION:FAIL:%s:ODD\n",
                 repeat_recipes[index].key_id);
             return 1;
         }
         if (timing_80186_manifest_run_repeat_phase_context(&repeat_recipes[index],
                 "SEGMENT-ODD-WORD-REP-PHASE", 1, 1)) {
-            lib_c_printf("M5:T435:S9:I186-REP-COMBINATION:FAIL:%s:SEGMENT-ODD\n",
+            lib_c_printf("I186-REP-COMBINATION:FAIL:%s:SEGMENT-ODD\n",
                 repeat_recipes[index].key_id);
             return 1;
         }
@@ -1856,7 +1856,7 @@ lib_i32 main(void)
         if (!timing_80186_manifest_is_i186(record) ||
             lib_text_compare(record->context, "ODD-WORD") != 0) continue;
         if (timing_80186_manifest_observed[index]) ++odd_word_records;
-        else lib_c_printf("M5:T435:S9:I186-MANIFEST-ODD-WORD-MISSING:%s\n",
+        else lib_c_printf("I186-MANIFEST-ODD-WORD-MISSING:%s\n",
             record->key_id);
     }
     for (index = 0u; index < sizeof(timing_80186_manifest_records) /
@@ -1867,7 +1867,7 @@ lib_i32 main(void)
         if (!timing_80186_manifest_is_i186(record) ||
             lib_text_compare(record->context, "SEGMENT") != 0) continue;
         if (timing_80186_manifest_observed[index]) ++segment_records;
-        else lib_c_printf("M5:T435:S9:I186-MANIFEST-SEGMENT-MISSING:%s\n",
+        else lib_c_printf("I186-MANIFEST-SEGMENT-MISSING:%s\n",
             record->key_id);
     }
     for (index = 0u; index < sizeof(timing_80186_manifest_records) /
@@ -1916,28 +1916,28 @@ lib_i32 main(void)
     if (repeat_phase_records != 54u) return 1;
     if (lock_records != 19u) return 1;
     if (lock_segment_records != 19u) return 1;
-    lib_c_printf("M5:T435:S9:I186-MANIFEST-BASE-COVERAGE:%u\n",
+    lib_c_printf("I186-MANIFEST-BASE-COVERAGE:%u\n",
         (lib_u32)base_records);
-    lib_c_printf("M5:T435:S9:I186-MANIFEST-REP-PHASE-COVERAGE:%u\n",
+    lib_c_printf("I186-MANIFEST-REP-PHASE-COVERAGE:%u\n",
         (lib_u32)repeat_phase_records);
-    lib_c_printf("M5:T435:S9:I186-MANIFEST-LOCK-COVERAGE:%u\n",
+    lib_c_printf("I186-MANIFEST-LOCK-COVERAGE:%u\n",
         (lib_u32)lock_records);
-    lib_c_printf("M5:T435:S9:I186-MANIFEST-LOCK-SEGMENT-COVERAGE:%u\n",
+    lib_c_printf("I186-MANIFEST-LOCK-SEGMENT-COVERAGE:%u\n",
         (lib_u32)lock_segment_records);
-    lib_c_printf("M5:T435:S9:I186-MANIFEST-ODD-WORD-COVERAGE:%u\n",
+    lib_c_printf("I186-MANIFEST-ODD-WORD-COVERAGE:%u\n",
         (lib_u32)odd_word_records);
     if (odd_word_records != 87u) return 1;
-    lib_c_printf("M5:T435:S9:I186-MANIFEST-SEGMENT-COVERAGE:%u\n",
+    lib_c_printf("I186-MANIFEST-SEGMENT-COVERAGE:%u\n",
         (lib_u32)segment_records);
     if (segment_records != 88u) return 1;
-    lib_c_printf("M5:T435:S9:I186-MANIFEST-REP-COMBINATION-COVERAGE:%u\n",
+    lib_c_printf("I186-MANIFEST-REP-COMBINATION-COVERAGE:%u\n",
         (lib_u32)repeat_combination_records);
     if (repeat_combination_records != 63u) return 1;
-    lib_c_printf("M5:T435:S9:I186-MANIFEST-COMBINATION-COVERAGE:%u\n",
+    lib_c_printf("I186-MANIFEST-COMBINATION-COVERAGE:%u\n",
         (lib_u32)combined_records);
     if (combined_records != 89u) return 1;
     if (timing_80186_manifest_write_results()) return 1;
-    lib_c_printf("M5:T435:S9:I186-MANIFEST-OBSERVED:%u\n",
+    lib_c_printf("I186-MANIFEST-OBSERVED:%u\n",
         (lib_u32)observed);
     return 0;
 }

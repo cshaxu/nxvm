@@ -51,7 +51,7 @@ done:
     vm_test_emulator_machine_state_waiter_finalize(&waiter);
     vm_machine_destroy(session);
     if (failed) return 1;
-    puts("M5:T212:S2:RUNNER-CADENCE:OK");
-    puts("M5:T526:S5:COMPOSITION-RUNNER-CADENCE:OK");
+    puts("RUNNER-CADENCE:OK");
+    puts("COMPOSITION-RUNNER-CADENCE:OK");
     return 0;
 }

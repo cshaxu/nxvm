@@ -20,6 +20,6 @@ lib_i32 main(void)
         return 1;
     }
     vm_machine_destroy(session);
-    printf("M5:T211:S3:BOOT-FAILURE-LIFECYCLE:OK\n");
+    printf("BOOT-FAILURE-LIFECYCLE:OK\n");
     return 0;
 }

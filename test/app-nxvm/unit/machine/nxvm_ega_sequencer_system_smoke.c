@@ -38,6 +38,6 @@ lib_i32 main(void)
 done:
     vm_machine_destroy(session);
     if (failed) return 1;
-    printf("M5:T235:S3:EGA-SEQUENCER:SYSTEM:OK\n");
+    printf("EGA-SEQUENCER:SYSTEM:OK\n");
     return 0;
 }

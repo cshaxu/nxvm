@@ -22,7 +22,7 @@ lib_i32 main(void)
     event.data.key.pressed = LIB_TRUE;
     if (vm_test_submit_host_input(session, &event) != LIB_STATUS_OK) goto fail;
     vm_machine_destroy(session);
-    printf("M5:T201:S3:HOST-CANCELLATION:OK\n");
+    printf("HOST-CANCELLATION:OK\n");
     return 0;
 
 fail:

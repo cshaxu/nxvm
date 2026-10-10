@@ -284,8 +284,8 @@ lib_i32 main(void)
     }
     vm_machine_destroy(no_media);
     if (failed) return 1;
-    printf("M5:T286:S3:ATA-NIEN:VM-PORT:OK\n");
-    printf("M5:T253:S2:ATA-PIO-PROGRESS:PORT:OK lba=%04X irq=14\n",
+    printf("ATA-NIEN:VM-PORT:OK\n");
+    printf("ATA-PIO-PROGRESS:PORT:OK lba=%04X irq=14\n",
         0x5aa5u);
     return 0;
 

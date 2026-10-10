@@ -101,6 +101,6 @@ done:
     }
     vm_test_emulator_machine_state_waiter_finalize(&waiter);
     if (!succeeded) return 1;
-    printf("M5:T534:S24:RUNNER-ERROR-PROPAGATION:OK\n");
+    printf("RUNNER-ERROR-PROPAGATION:OK\n");
     return 0;
 }

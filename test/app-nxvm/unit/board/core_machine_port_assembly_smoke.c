@@ -24,7 +24,7 @@ lib_i32 main(void)
         failed |= port_assembly_fdc_transaction(fail_at);
 
     if (failed) return 1;
-    puts("M5:T313:S3:PORT-ASSEMBLY:OK");
+    puts("PORT-ASSEMBLY:OK");
 
     failed = port_assembly_rtc_transaction(1u) || port_assembly_rtc_transaction(2u) ||
         port_assembly_rtc_collision();
@@ -46,6 +46,6 @@ lib_i32 main(void)
         0u, LIB_FALSE, LIB_TRUE);
 
     if (failed) return 1;
-    puts("M5:T313:S4:CONTROLLER-ROLLBACK:OK");
+    puts("CONTROLLER-ROLLBACK:OK");
     return 0;
 }

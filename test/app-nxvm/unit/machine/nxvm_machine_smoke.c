@@ -116,6 +116,6 @@ lib_i32 main(lib_i32 argc, char **argv)
         verify_selected_cpu_uses_the_resolved_topology() != 0 ||
         verify_initialize_once() != 0 || verify_rejects_unattached_media_slots() != 0)
         return 1;
-    puts("M5:T7:S1:NXVM-SESSION:OK");
+    puts("NXVM-SESSION:OK");
     return 0;
 }

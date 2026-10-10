@@ -68,6 +68,6 @@ done:
     vm_machine_destroy(session);
     vm_machine_destroy(other);
     if (failed) return 1;
-    puts("M5:T264:S3:PCAT-OWNERSHIP:OK");
+    puts("PCAT-OWNERSHIP:OK");
     return 0;
 }

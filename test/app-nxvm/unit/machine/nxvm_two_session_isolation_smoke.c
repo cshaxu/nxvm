@@ -67,6 +67,6 @@ lib_i32 main(void)
     vm_machine_destroy(first);
 
     if (failed) return 1;
-    puts("M5:T73:S1:TWO-SESSION-ISOLATION:OK");
+    puts("TWO-SESSION-ISOLATION:OK");
     return 0;
 }

@@ -42,6 +42,6 @@ lib_i32 main(void)
     vm_test_emulator_machine_state_waiter_finalize(&waiter);
     vm_machine_destroy(session);
     if (failed) return 1;
-    puts("M5:T526:S5:COMPOSITION-PAUSE-RESUME:OK");
+    puts("COMPOSITION-PAUSE-RESUME:OK");
     return 0;
 }

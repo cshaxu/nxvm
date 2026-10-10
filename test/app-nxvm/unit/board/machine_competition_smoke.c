@@ -259,9 +259,9 @@ lib_i32 main(void)
     core_machine_destroy(machine);
     failed = failed || !competition_dma_wait_contract();
     if (failed) return 1;
-    printf("M5:T354:S3:COMPETITION:OK\n");
-    printf("M5:T419:S1:D4-DMA-NO-WAIT:OK\n");
-    printf("M5:T419:S3:D4-DMA-BUSRDY:OK\n");
-    printf("M5:T369:S3:PCAT-HOLD:OK\n");
+    printf("COMPETITION:OK\n");
+    printf("D4-DMA-NO-WAIT:OK\n");
+    printf("D4-DMA-BUSRDY:OK\n");
+    printf("PCAT-HOLD:OK\n");
     return 0;
 }

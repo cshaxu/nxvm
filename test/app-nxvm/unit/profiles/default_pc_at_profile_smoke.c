@@ -114,6 +114,6 @@ lib_i32 main(void)
         !vm_profile_default_pc_at_core_config_materialize(profile, &contract,
             &configuration, &timing_rules) || configuration.kbc_aux_absent) return 1;
 
-    puts("M5:T208:S2:DEFAULT-PC-AT-PROFILE:OK");
+    puts("DEFAULT-PC-AT-PROFILE:OK");
     return 0;
 }

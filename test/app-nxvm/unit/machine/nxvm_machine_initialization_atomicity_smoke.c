@@ -229,9 +229,9 @@ lib_i32 main(void)
         verify_option_rom_argument_contract() != 0) {
         return 1;
     }
-    printf("M5:T300:S3:SESSION-INITIALIZATION-ATOMICITY:OK\n");
-    printf("M5:T332:S1:SESSION-CONFIG-MATERIALIZATION:OK\n");
-    printf("M5:T332:S2:SESSION-CONSTRUCTION-TRANSACTION:OK\n");
-    printf("M5:T439:S1:SESSION-FIRMWARE-REJECTION:OK\n");
+    printf("SESSION-INITIALIZATION-ATOMICITY:OK\n");
+    printf("SESSION-CONFIG-MATERIALIZATION:OK\n");
+    printf("SESSION-CONSTRUCTION-TRANSACTION:OK\n");
+    printf("SESSION-FIRMWARE-REJECTION:OK\n");
     return 0;
 }

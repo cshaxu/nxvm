@@ -36,7 +36,7 @@ lib_i32 main(void)
     failed |= core_machine_debug_write_port(session->core_machine, 0x03c0u, 0x10u) != LIB_STATUS_OK || core_machine_debug_read_port(session->core_machine, 0x03c1u, &port_value) != LIB_STATUS_OK || port_value != 0x01u;
     vm_machine_destroy(session);
     if (failed) return 1;
-    printf("M5:T236:S3:EGA-CONTROLLER:SYSTEM:OK\n");
-    printf("M5:T480:S3:REGRESSIONS:OK\n");
+    printf("EGA-CONTROLLER:SYSTEM:OK\n");
+    printf("REGRESSIONS:OK\n");
     return 0;
 }

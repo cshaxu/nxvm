@@ -195,7 +195,7 @@ lib_i32 main(void)
     vm_test_emulator_machine_unbind(machine);
     vm_test_emulator_machine_state_waiter_finalize(&waiter);
     vm_machine_destroy(machine);
-    puts("M5:T531:S27:VM-X86-DEBUG-MAPPING:OK");
+    puts("VM-X86-DEBUG-MAPPING:OK");
     return 0;
 
 failed:

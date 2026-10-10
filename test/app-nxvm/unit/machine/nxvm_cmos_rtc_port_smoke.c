@@ -154,6 +154,6 @@ lib_i32 main(void)
     }
     vm_machine_destroy(session);
     if (failed) return 1;
-    puts("M5:T232:S1:CMOS-RTC-PORT:OK");
+    puts("CMOS-RTC-PORT:OK");
     return 0;
 }

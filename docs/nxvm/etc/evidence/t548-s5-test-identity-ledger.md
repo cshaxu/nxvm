@@ -27,6 +27,16 @@ predicates and fixed-profile context were not changed.  All twenty replacement
 targets pass on x64 and x86; the Core test-boundary verifier also passes.
 Historical evidence remains unchanged.
 
+## S7 Disposition: Default PC
+
+S7 renamed the six Default-PC source paths in the second row to behavior-based
+identities, updated their CMake/CTest registrations, and removed task
+provenance from every active Default-PC unit-test output marker.  The six
+replacement executables pass on x64 and x86; all changed Default-PC test
+sources compile on both widths.  A full-graph build independently exposed the
+pre-existing `integration-session-ini-support` reference to retired
+`app_composed_machine.machine`; it is not part of this identity-only change.
+
 ## Path Rename Batches
 
 | Scope | Count | Current pattern | Required later receiver |

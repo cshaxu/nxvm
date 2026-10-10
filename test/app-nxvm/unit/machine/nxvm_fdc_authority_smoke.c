@@ -31,7 +31,7 @@ lib_i32 main(void)
         return 1;
     }
     vm_machine_destroy(session);
-    puts("M5:T230:S3:FDC-DMA-BINDING:OK");
-    puts("M5:T290:S2:FDC-TOPOLOGY:VM:OK");
+    puts("FDC-DMA-BINDING:OK");
+    puts("FDC-TOPOLOGY:VM:OK");
     return 0;
 }

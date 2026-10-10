@@ -97,12 +97,12 @@ target_compile_definitions(mydeskpro386-d4-observable PUBLIC
 add_executable(vm-default-pc-at-profile-smoke
     test/app-nxvm/unit/profiles/default_pc_at_profile_smoke.c)
 target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile-tests)
-add_executable(vm-pcat-topology-s2-smoke
-    test/app-nxvm/unit/machine/nxvm_pcat_topology_s2_smoke.c)
-target_link_libraries(vm-pcat-topology-s2-smoke PRIVATE vm-profile-tests)
-add_executable(vm-pcat-composition-s4-smoke
-    test/app-nxvm/unit/machine/nxvm_pcat_composition_s4_smoke.c)
-target_link_libraries(vm-pcat-composition-s4-smoke PRIVATE vm-profile-tests)
+add_executable(vm-pcat-topology-smoke
+    test/app-nxvm/unit/machine/nxvm_pcat_topology_smoke.c)
+target_link_libraries(vm-pcat-topology-smoke PRIVATE vm-profile-tests)
+add_executable(vm-pcat-composition-smoke
+    test/app-nxvm/unit/machine/nxvm_pcat_composition_smoke.c)
+target_link_libraries(vm-pcat-composition-smoke PRIVATE vm-profile-tests)
 add_executable(vm-ibm-5170-model-339-composition-smoke
     test/app-my5170/unit/profiles/vm_ibm_5170_model_339_composition_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-profile-tests)
@@ -248,9 +248,9 @@ target_link_libraries(vm-machine-initialization-atomicity-smoke PRIVATE vm-profi
 add_executable(vm-machine-reconfigure-smoke
     test/app-nxvm/unit/machine/nxvm_machine_reconfigure_smoke.c)
 target_link_libraries(vm-machine-reconfigure-smoke PRIVATE vm-profile-tests)
-add_executable(vm-machine-media-lifecycle-s3-smoke
-    test/app-nxvm/unit/machine/nxvm_machine_media_lifecycle_s3_smoke.c)
-target_link_libraries(vm-machine-media-lifecycle-s3-smoke PRIVATE vm-profile-tests)
+add_executable(vm-machine-media-lifecycle-smoke
+    test/app-nxvm/unit/machine/nxvm_machine_media_lifecycle_smoke.c)
+target_link_libraries(vm-machine-media-lifecycle-smoke PRIVATE vm-profile-tests)
 add_executable(vm-machine-speed-policy-smoke
     test/app-nxvm/unit/machine/nxvm_machine_speed_policy_smoke.c)
 target_link_libraries(vm-machine-speed-policy-smoke PRIVATE vm-profile-tests)
@@ -298,12 +298,12 @@ add_executable(model40-d4-prefetch-locality-smoke
 target_link_libraries(model40-d4-prefetch-locality-smoke PRIVATE
     model40-d4-prefetch-scheduler-test mydeskpro386-d4-observable)
 
-add_executable(core-machine-competition-s3-smoke
-    test/app-nxvm/unit/board/machine_competition_s3_smoke.c
+add_executable(core-machine-competition-smoke
+    test/app-nxvm/unit/board/machine_competition_smoke.c
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/composition/time_fixture.c
     test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c)
-target_link_libraries(core-machine-competition-s3-smoke PRIVATE mydeskpro386-d4-observable)
+target_link_libraries(core-machine-competition-smoke PRIVATE mydeskpro386-d4-observable)
 
 add_executable(core-machine-d4-refresh-hold-smoke
     test/app-mydeskpro386/unit/profiles/machine_d4_refresh_hold_smoke.c
@@ -744,8 +744,8 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-firmware-floppy-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(mydeskpro386-d4 PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-pcat-topology-s2-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-pcat-composition-s4-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-pcat-topology-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-pcat-composition-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-hdc-port-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-hdc-hdd-boot-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-apply-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -974,12 +974,12 @@ add_executable(vm-ega-controller-system-smoke
     test/app-nxvm/unit/machine/nxvm_ega_controller_system_smoke.c
 )
 target_link_libraries(vm-ega-controller-system-smoke PRIVATE vm-profile-tests)
-add_executable(vm-display-composition-s5-smoke
-    test/app-nxvm/unit/machine/nxvm_display_composition_s5_smoke.c
+add_executable(vm-display-composition-smoke
+    test/app-nxvm/unit/machine/nxvm_display_composition_smoke.c
 )
-target_link_libraries(vm-display-composition-s5-smoke PRIVATE vm-profile-tests)
+target_link_libraries(vm-display-composition-smoke PRIVATE vm-profile-tests)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(vm-display-composition-s5-smoke PRIVATE
+    target_compile_options(vm-display-composition-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-ega-sequencer-system-smoke
@@ -1016,8 +1016,8 @@ target_sources(vm-default-pc-at-apply-smoke PRIVATE
     test/core/board-base/composition/time_fixture.c
     test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c
     test/app-nxvm/unit/support/ibmpc/board-common/cmos_fixture.c)
-foreach(_pcat_composition_target IN ITEMS vm-pcat-topology-s2-smoke
-        vm-pcat-composition-s4-smoke vm-ibm-5170-model-339-composition-smoke)
+foreach(_pcat_composition_target IN ITEMS vm-pcat-topology-smoke
+        vm-pcat-composition-smoke vm-ibm-5170-model-339-composition-smoke)
     target_sources(${_pcat_composition_target} PRIVATE
         test/core/board-base/composition/composition_fixture.c
         test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c
@@ -1058,11 +1058,11 @@ add_executable(vm-fdc-authority-smoke test/app-nxvm/unit/machine/nxvm_fdc_author
 target_link_libraries(vm-fdc-authority-smoke PRIVATE vm-profile-tests)
 add_executable(vm-fdc-port-smoke test/app-nxvm/unit/machine/nxvm_fdc_port_smoke.c)
 target_link_libraries(vm-fdc-port-smoke PRIVATE vm-profile-tests)
-add_executable(vm-fdc-t242-corpus-port-smoke
-    test/app-nxvm/unit/machine/nxvm_fdc_t242_corpus_port_smoke.c)
-target_link_libraries(vm-fdc-t242-corpus-port-smoke PRIVATE vm-profile-tests)
+add_executable(vm-fdc-read-track-smoke
+    test/app-nxvm/unit/machine/nxvm_fdc_read_track_smoke.c)
+target_link_libraries(vm-fdc-read-track-smoke PRIVATE vm-profile-tests)
 foreach(_controller_composition_target IN ITEMS vm-fdc-authority-smoke
-        vm-fdc-port-smoke vm-fdc-t242-corpus-port-smoke vm-hdc-port-smoke)
+        vm-fdc-port-smoke vm-fdc-read-track-smoke vm-hdc-port-smoke)
     target_sources(${_controller_composition_target} PRIVATE
         test/app-nxvm/unit/support/ibmpc/board-common/controller_fixture.c)
 endforeach()
@@ -1181,8 +1181,8 @@ target_sources(core-machine-port-assembly-smoke PRIVATE
 set(PROJECT_UNIT_TEST_TARGETS
     nxvm-firmware-floppy-smoke
     vm-default-pc-at-profile-smoke
-    vm-pcat-topology-s2-smoke
-    vm-pcat-composition-s4-smoke
+    vm-pcat-topology-smoke
+    vm-pcat-composition-smoke
     vm-ibm-5170-model-339-composition-smoke
     vm-model40-composition-smoke
     vm-model40-cmos-seed-smoke
@@ -1227,7 +1227,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-transaction-smoke
     core-machine-prefetch-locality-smoke
     model40-d4-prefetch-locality-smoke
-    core-machine-competition-s3-smoke
+    core-machine-competition-smoke
     core-machine-d4-refresh-hold-smoke
     core-machine-competition-80386-smoke
     core-machine-transaction-lifecycle-smoke
@@ -1431,7 +1431,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-ega-sequencer-system-smoke
     vm-cga-graphics-system-smoke
     vm-ega-controller-system-smoke
-    vm-display-composition-s5-smoke
+    vm-display-composition-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-cpu-pic-lifecycle-smoke
     core-machine-cpu-reset-identity-smoke
@@ -1459,7 +1459,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-cmos-rtc-port-smoke
     vm-pcat-ownership-smoke
     vm-fdc-port-smoke
-    vm-fdc-t242-corpus-port-smoke
+    vm-fdc-read-track-smoke
     vm-hdc-hdd-boot-smoke
     vm-runner-display-cadence-smoke
     vm-console-pause-resume-smoke
@@ -1469,7 +1469,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-app-session-smoke
     vm-machine-initialization-atomicity-smoke
     vm-machine-reconfigure-smoke
-    vm-machine-media-lifecycle-s3-smoke
+    vm-machine-media-lifecycle-smoke
     vm-machine-speed-policy-smoke
     vm-timing-qualification-smoke
     nxvm-default-pc-at-plan-smoke

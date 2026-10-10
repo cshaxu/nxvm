@@ -61,7 +61,7 @@ lib_i32 main(void)
         core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) !=
         LIB_STATUS_OK || diagnostic.first_fault.valid) goto fail;
     vm_machine_destroy(session);
-    printf("M5:T214:S3:FAULT-OUTCOME:OK\n");
+    printf("FAULT-OUTCOME:OK\n");
     return 0;
 
 fail:

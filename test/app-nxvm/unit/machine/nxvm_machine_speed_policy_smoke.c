@@ -87,6 +87,6 @@ int main(void)
     failed |= verify_wait_speed(default_session, VM_MACHINE_SPEED_TURBO);
     vm_machine_destroy(default_session);
     if (failed) return 1;
-    puts("M5:T459:S2:SESSION-SPEED-POLICY:OK");
+    puts("SESSION-SPEED-POLICY:OK");
     return 0;
 }

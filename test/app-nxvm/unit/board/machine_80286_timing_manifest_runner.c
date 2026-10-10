@@ -1301,7 +1301,7 @@ static lib_i32 timing_80286_manifest_run(
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
     if (failed) {
-        printf("M5:T435:S10:I286-MANIFEST-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
+        printf("I286-MANIFEST-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
             recipe->key_id, recipe->ticks, run.ticks,
             capture.observation.source_ticks, capture.count,
             (lib_u32)capture.observation.timing_origin,
@@ -1390,7 +1390,7 @@ static lib_i32 timing_80286_manifest_run_repeat_recipe(
         failed = timing_80286_manifest_run_repeat_step(machine, &capture,
             first_key, CORE_MACHINE_RETIREMENT_REPEAT_FIRST,
             recipe->first_ticks + odd_ticks, required_inputs);
-        if (failed) printf("M5:T435:S10:I286-REP-DETAIL:%s:expected=%llu:observed=%llu:phase=%u:inputs=%u\n",
+        if (failed) printf("I286-REP-DETAIL:%s:expected=%llu:observed=%llu:phase=%u:inputs=%u\n",
             first_key, recipe->first_ticks + odd_ticks,
             capture.observation.source_ticks,
             (lib_u32)capture.observation.repeat_phase,
@@ -1399,7 +1399,7 @@ static lib_i32 timing_80286_manifest_run_repeat_recipe(
             failed = timing_80286_manifest_run_repeat_step(machine, &capture,
                 continuation_key, CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION,
                 recipe->continuation_ticks + odd_ticks, required_inputs);
-            if (failed) printf("M5:T435:S10:I286-REP-DETAIL:%s:expected=%llu:observed=%llu:phase=%u:inputs=%u\n",
+            if (failed) printf("I286-REP-DETAIL:%s:expected=%llu:observed=%llu:phase=%u:inputs=%u\n",
                 continuation_key, recipe->continuation_ticks + odd_ticks,
                 capture.observation.source_ticks,
                 (lib_u32)capture.observation.repeat_phase,
@@ -1468,7 +1468,7 @@ static lib_i32 timing_80286_manifest_run_string_recipe(
             (odd_word && (capture.observation.formula_inputs &
                 CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD) == 0u);
     }
-    if (failed) printf("M5:T435:S10:I286-STRING-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u\n",
+    if (failed) printf("I286-STRING-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u\n",
         key_id, expected_ticks, run.ticks,
         capture.observation.source_ticks, capture.count);
     core_machine_destroy(machine);
@@ -1497,7 +1497,7 @@ static lib_i32 timing_80286_manifest_run_hlt_recipe(void)
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
-    if (failed) printf("M5:T435:S10:I286-HLT-DETAIL:run=%llu:source=%llu:count=%u:reason=%u\n",
+    if (failed) printf("I286-HLT-DETAIL:run=%llu:source=%llu:count=%u:reason=%u\n",
         run.ticks, capture.observation.source_ticks, capture.count,
         (lib_u32)run.reason);
     core_machine_destroy(machine);
@@ -1574,7 +1574,7 @@ static lib_i32 timing_80286_manifest_run_repeat_base_recipe(
             (odd_word && (capture.observation.formula_inputs &
                 CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD) == 0u);
     }
-    if (failed) printf("M5:T435:S10:I286-REP-ODD-DETAIL:%s:expected=%llu:run=%llu:source=%llu:inputs=%u\n",
+    if (failed) printf("I286-REP-ODD-DETAIL:%s:expected=%llu:run=%llu:source=%llu:inputs=%u\n",
             key_id, recipe->first_ticks + (odd_word ? 2u : 0u), run.ticks,
         capture.observation.source_ticks, capture.observation.formula_inputs);
     core_machine_destroy(machine);
@@ -1875,7 +1875,7 @@ static lib_i32 timing_80286_manifest_run_into_next_byte_recipe(lib_i32 taken,
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
     if (failed) {
-        printf("M5:T436:S5:I286-INTO-DETAIL:%s:taken=%u:bytes=%u:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
+        printf("I286-INTO-DETAIL:%s:taken=%u:bytes=%u:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
             key_id, (lib_u32)taken, (lib_u32)next_bytes,
             run.ticks, capture.observation.source_ticks, capture.count,
             (lib_u32)capture.observation.timing_origin,
@@ -2599,12 +2599,12 @@ static lib_i32 timing_80286_manifest_run_task_transfer_recipe(
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     if (failed) {
-        printf("M5:T436:S6:I286-TASK-DETAIL:%s:run=%llu:source=%llu:count=%u:tr=%04x\n",
+        printf("I286-TASK-DETAIL:%s:run=%llu:source=%llu:count=%u:tr=%04x\n",
             key_id != LIB_NULL ? key_id : "task-gate", run.ticks,
             capture.observation.source_ticks, capture.count,
             snapshot.tr.selector);
     } else {
-        printf("M5:T436:S6:I286-TASK-OBSERVED:%s:ticks=%llu\n",
+        printf("I286-TASK-OBSERVED:%s:ticks=%llu\n",
             key_id != LIB_NULL ? key_id : "task-gate", run.ticks);
     }
     core_machine_destroy(fixture.machine);
@@ -2840,7 +2840,7 @@ static lib_i32 timing_80286_manifest_run_task_iret_recipe(const char *key_id,
         snapshot.tr.selector != 0x0028u ||
         snapshot.eip != 8u;
     if (failed) {
-        printf("M5:T436:S6:I286-IRET-TASK-DETAIL:%s:run=%llu:source=%llu:count=%u:tr=%04x:eip=%04x\n",
+        printf("I286-IRET-TASK-DETAIL:%s:run=%llu:source=%llu:count=%u:tr=%04x:eip=%04x\n",
             key_id, run.ticks, capture.observation.source_ticks, capture.count,
             snapshot.tr.selector,
             snapshot.eip);
@@ -2875,7 +2875,7 @@ static lib_i32 timing_80286_manifest_run_protected_system(
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
     if (failed) {
-        printf("M5:T435:S10:I286-PROTECTED-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
+        printf("I286-PROTECTED-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
             recipe->key_id, recipe->ticks, run.ticks,
             capture.observation.source_ticks, capture.count,
             (lib_u32)capture.observation.timing_origin,
@@ -2929,7 +2929,7 @@ static lib_i32 timing_80286_manifest_run_control(
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
     if (failed) {
-        printf("M5:T435:S10:I286-CONTROL-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\\n",
+        printf("I286-CONTROL-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\\n",
             recipe->key_id, recipe->ticks, run.ticks,
             capture.observation.source_ticks, capture.count,
             (lib_u32)capture.observation.timing_origin,
@@ -3697,7 +3697,7 @@ lib_i32 main(void)
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         if (timing_80286_manifest_run(&recipes[index])) {
-            printf("M5:T435:S10:I286-MANIFEST-RECIPE:FAIL:%s\n",
+            printf("I286-MANIFEST-RECIPE:FAIL:%s\n",
                 recipes[index].key_id);
             return 1;
         }
@@ -3705,14 +3705,14 @@ lib_i32 main(void)
     for (index = 0u; index < sizeof(control_recipes) / sizeof(control_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run_control(&control_recipes[index])) {
-            printf("M5:T435:S10:I286-CONTROL-RECIPE:FAIL:%s\n",
+            printf("I286-CONTROL-RECIPE:FAIL:%s\n",
                 control_recipes[index].key_id);
             return 1;
         }
     }
     for (index = 2u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_jmp_next_byte_recipe((lib_u8)index)) {
-            printf("M5:T435:S10:I286-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3721,7 +3721,7 @@ lib_i32 main(void)
         if (index == 2u) continue;
         if (timing_80286_manifest_run_far_jmp_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-FAR-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-FAR-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3729,7 +3729,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_far_indirect_call_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-FAR-INDIRECT-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-FAR-INDIRECT-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3737,7 +3737,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_far_ret_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-FAR-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-FAR-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3745,7 +3745,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_iret_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-IRET-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-IRET-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3753,7 +3753,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_far_call_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-FAR-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-FAR-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3761,7 +3761,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_ret_imm_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-RET-IMM-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-RET-IMM-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3769,7 +3769,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_indirect_call_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-INDIRECT-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-INDIRECT-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3777,7 +3777,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_indirect_jmp_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-INDIRECT-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-INDIRECT-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3794,19 +3794,19 @@ lib_i32 main(void)
                 (lib_u8)index, taken_key)) ||
             timing_80286_manifest_run_into_next_byte_recipe(0,
                 (lib_u8)index, not_key)) {
-            printf("M5:T435:S10:I286-INTO-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-INTO-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     if (timing_80286_manifest_run_into_next_byte_recipe(1, 1u,
             "I286-INTO-TAKEN")) {
-        printf("M5:T436:S5:I286-INTO-BASE-RECIPE:FAIL\n");
+        printf("I286-INTO-BASE-RECIPE:FAIL\n");
         return 1;
     }
     if (timing_80286_manifest_run_into_next_byte_recipe(0, 1u,
             "I286-INTO-NOT")) {
-        printf("M5:T436:S5:I286-INTO-NOT-BASE-RECIPE:FAIL\n");
+        printf("I286-INTO-NOT-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
@@ -3815,21 +3815,21 @@ lib_i32 main(void)
                 (lib_u8)index) ||
             timing_80286_manifest_run_interrupt_next_byte_recipe(1,
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-INT-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-INT-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     for (index = 2u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_ret_next_byte_recipe((lib_u8)index)) {
-            printf("M5:T435:S10:I286-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     for (index = 2u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_call_next_byte_recipe((lib_u8)index)) {
-            printf("M5:T435:S10:I286-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3837,7 +3837,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_far_memory_call_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-PROTECTED-FAR-MEMORY-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-PROTECTED-FAR-MEMORY-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3845,7 +3845,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_far_call_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-PROTECTED-FAR-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-PROTECTED-FAR-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3853,7 +3853,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_far_memory_jmp_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-PROTECTED-FAR-MEMORY-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-PROTECTED-FAR-MEMORY-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3861,7 +3861,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_far_ret_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-PROTECTED-FAR-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-PROTECTED-FAR-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3869,7 +3869,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_iret_next_byte_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-PROTECTED-IRET-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-PROTECTED-IRET-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3877,7 +3877,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_outer_ret_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-PROTECTED-OUTER-RET-RECIPE:FAIL:%u\n",
+            printf("I286-PROTECTED-OUTER-RET-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3885,7 +3885,7 @@ lib_i32 main(void)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_outer_iret_recipe(
                 (lib_u8)index)) {
-            printf("M5:T435:S10:I286-PROTECTED-OUTER-IRET-RECIPE:FAIL:%u\n",
+            printf("I286-PROTECTED-OUTER-IRET-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3904,7 +3904,7 @@ lib_i32 main(void)
             timing_80286_manifest_run_task_transfer_recipe(
                 TASK_SWITCH_CASE_SUCCESS, jmp_key, (lib_u8)index,
                 175u)) {
-            printf("M5:T436:S6:I286-TASK-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("I286-TASK-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3915,7 +3915,7 @@ lib_i32 main(void)
             TASK_SWITCH_CASE_SUCCESS, "I286-JMP-TASK", 1u, 175u) ||
         timing_80286_manifest_run_task_transfer_recipe(
             TASK_SWITCH_CASE_TASK_GATE_SUCCESS, LIB_NULL, 1u, 182u)) {
-        printf("M5:T436:S6:I286-TASK-BASE-RECIPE:FAIL\n");
+        printf("I286-TASK-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
@@ -3926,14 +3926,14 @@ lib_i32 main(void)
                 (lib_u32)index) < 0 ||
             timing_80286_manifest_run_call_gate_recipe(call_key, 0x9au,
                 LIB_FALSE, (lib_u8)index, 82u)) {
-            printf("M5:T436:S6:I286-MORE-GATE-RECIPE:FAIL:%u\n",
+            printf("I286-MORE-GATE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     if (timing_80286_manifest_run_call_gate_recipe("I286-CALL-GATE-MORE",
             0x9au, LIB_FALSE, 1u, 82u)) {
-        printf("M5:T436:S6:I286-MORE-GATE-BASE-RECIPE:FAIL\n");
+        printf("I286-MORE-GATE-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
@@ -3948,7 +3948,7 @@ lib_i32 main(void)
                 LIB_TRUE, (lib_u8)index, 41u) ||
             timing_80286_manifest_run_call_gate_recipe(jmp_key, 0xeau,
                 LIB_TRUE, (lib_u8)index, 38u)) {
-            printf("M5:T436:S6:I286-SAME-GATE-RECIPE:FAIL:%u\n",
+            printf("I286-SAME-GATE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3957,7 +3957,7 @@ lib_i32 main(void)
             0x9au, LIB_TRUE, 1u, 41u) ||
         timing_80286_manifest_run_call_gate_recipe("I286-JMP-GATE", 0xeau,
             LIB_TRUE, 1u, 38u)) {
-        printf("M5:T436:S6:I286-SAME-GATE-BASE-RECIPE:FAIL\n");
+        printf("I286-SAME-GATE-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
@@ -3972,7 +3972,7 @@ lib_i32 main(void)
                 (lib_u8)index) ||
             timing_80286_manifest_run_protected_int_more_recipe(more_key,
                 (lib_u8)index)) {
-            printf("M5:T436:S6:I286-PROTECTED-INT-RECIPE:FAIL:%u\n",
+            printf("I286-PROTECTED-INT-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3980,7 +3980,7 @@ lib_i32 main(void)
     if (timing_80286_manifest_run_protected_int_same_recipe("I286-INT-PM-SAME",
             1u) || timing_80286_manifest_run_protected_int_more_recipe(
             "I286-INT-PM-MORE", 1u)) {
-        printf("M5:T436:S6:I286-PROTECTED-INT-BASE-RECIPE:FAIL\n");
+        printf("I286-PROTECTED-INT-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
@@ -3991,14 +3991,14 @@ lib_i32 main(void)
             timing_80286_manifest_run_task_transfer_recipe(
                 TASK_SWITCH_CASE_IDT_TASK_GATE, key_id, (lib_u8)index,
                 167u)) {
-            printf("M5:T436:S6:I286-INT-TASK-RECIPE:FAIL:%u\n",
+            printf("I286-INT-TASK-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     if (timing_80286_manifest_run_task_transfer_recipe(
             TASK_SWITCH_CASE_IDT_TASK_GATE, "I286-INT-TASK", 1u, 167u)) {
-        printf("M5:T436:S6:I286-INT-TASK-BASE-RECIPE:FAIL\n");
+        printf("I286-INT-TASK-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
@@ -4008,20 +4008,20 @@ lib_i32 main(void)
                 "I286-RET-IRET-TASK-NEXT-BYTE-%u", (lib_u32)index) <
                 0 || timing_80286_manifest_run_task_iret_recipe(key_id,
                 (lib_u8)index)) {
-            printf("M5:T436:S6:I286-IRET-TASK-RECIPE:FAIL:%u\n",
+            printf("I286-IRET-TASK-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     if (timing_80286_manifest_run_task_iret_recipe("I286-RET-IRET-TASK", 1u)) {
-        printf("M5:T436:S6:I286-IRET-TASK-BASE-RECIPE:FAIL\n");
+        printf("I286-IRET-TASK-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 0u; index < sizeof(protected_system_recipes) /
         sizeof(protected_system_recipes[0]); ++index) {
         if (timing_80286_manifest_run_protected_system(
                 &protected_system_recipes[index])) {
-            printf("M5:T435:S10:I286-PROTECTED-RECIPE:FAIL:%s\n",
+            printf("I286-PROTECTED-RECIPE:FAIL:%s\n",
                 protected_system_recipes[index].key_id);
             return 1;
         }
@@ -4029,14 +4029,14 @@ lib_i32 main(void)
     for (index = 0u; index < sizeof(segment_recipes) / sizeof(segment_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run(&segment_recipes[index])) {
-            printf("M5:T435:S10:I286-SEGMENT-RECIPE:FAIL:%s\n",
+            printf("I286-SEGMENT-RECIPE:FAIL:%s\n",
                 segment_recipes[index].key_id);
             return 1;
         }
     }
     for (index = 0u; index < sizeof(ea_recipes) / sizeof(ea_recipes[0]); ++index) {
         if (timing_80286_manifest_run(&ea_recipes[index])) {
-            printf("M5:T435:S10:I286-EA-RECIPE:FAIL:%s\n",
+            printf("I286-EA-RECIPE:FAIL:%s\n",
                 ea_recipes[index].key_id);
             return 1;
         }
@@ -4044,7 +4044,7 @@ lib_i32 main(void)
     for (index = 0u; index < sizeof(odd_word_recipes) /
         sizeof(odd_word_recipes[0]); ++index) {
         if (timing_80286_manifest_run(&odd_word_recipes[index])) {
-            printf("M5:T435:S10:I286-ODD-WORD-RECIPE:FAIL:%s\n",
+            printf("I286-ODD-WORD-RECIPE:FAIL:%s\n",
                 odd_word_recipes[index].key_id);
             return 1;
         }
@@ -4052,7 +4052,7 @@ lib_i32 main(void)
     for (index = 0u; index < sizeof(ea_odd_word_recipes) /
         sizeof(ea_odd_word_recipes[0]); ++index) {
         if (timing_80286_manifest_run(&ea_odd_word_recipes[index])) {
-            printf("M5:T436:S3:I286-EA-ODD-WORD-RECIPE:FAIL:%s\n",
+            printf("I286-EA-ODD-WORD-RECIPE:FAIL:%s\n",
                 ea_odd_word_recipes[index].key_id);
             return 1;
         }
@@ -4060,44 +4060,44 @@ lib_i32 main(void)
     for (index = 0u; index < sizeof(string_recipes) / sizeof(string_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run_string_recipe(&string_recipes[index], 0)) {
-            printf("M5:T435:S10:I286-STRING-RECIPE:FAIL:%s\n",
+            printf("I286-STRING-RECIPE:FAIL:%s\n",
                 string_recipes[index].key_id);
             return 1;
         }
         if ((string_recipes[index].program[0] & 1u) != 0u &&
             timing_80286_manifest_run_string_recipe(&string_recipes[index], 1)) {
-            printf("M5:T435:S10:I286-STRING-ODD-RECIPE:FAIL:%s\n",
+            printf("I286-STRING-ODD-RECIPE:FAIL:%s\n",
                 string_recipes[index].key_id);
             return 1;
         }
     }
     if (timing_80286_manifest_run_hlt_recipe()) {
-        printf("M5:T435:S10:I286-HLT-RECIPE:FAIL\n");
+        printf("I286-HLT-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 0u; index < sizeof(repeat_recipes) / sizeof(repeat_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run_repeat_recipe(&repeat_recipes[index], 0)) {
-            printf("M5:T435:S10:I286-REP-RECIPE:FAIL:%s\n",
+            printf("I286-REP-RECIPE:FAIL:%s\n",
                 repeat_recipes[index].key_id);
             return 1;
         }
         if ((repeat_recipes[index].opcode & 1u) != 0u &&
             timing_80286_manifest_run_repeat_recipe(&repeat_recipes[index], 1)) {
-            printf("M5:T435:S10:I286-REP-ODD-RECIPE:FAIL:%s\n",
+            printf("I286-REP-ODD-RECIPE:FAIL:%s\n",
                 repeat_recipes[index].key_id);
             return 1;
         }
         if ((repeat_recipes[index].opcode & 1u) != 0u &&
             timing_80286_manifest_run_repeat_base_recipe(
                 &repeat_recipes[index], 1)) {
-            printf("M5:T436:S4:I286-REP-ODD-BASE-RECIPE:FAIL:%s\n",
+            printf("I286-REP-ODD-BASE-RECIPE:FAIL:%s\n",
                 repeat_recipes[index].key_id);
             return 1;
         }
         if (timing_80286_manifest_run_repeat_base_recipe(
                 &repeat_recipes[index], 0)) {
-            printf("M5:T436:S4:I286-REP-BASE-RECIPE:FAIL:%s\n",
+            printf("I286-REP-BASE-RECIPE:FAIL:%s\n",
                 repeat_recipes[index].key_id);
             return 1;
         }
@@ -4105,7 +4105,7 @@ lib_i32 main(void)
     for (index = 0u; index < sizeof(lock_recipes) / sizeof(lock_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run(&lock_recipes[index])) {
-            printf("M5:T435:S10:I286-LOCK-RECIPE:FAIL:%s\n",
+            printf("I286-LOCK-RECIPE:FAIL:%s\n",
                 lock_recipes[index].key_id);
             return 1;
         }
@@ -4113,7 +4113,7 @@ lib_i32 main(void)
     for (index = 0u; index < sizeof(lock_recipes) / sizeof(lock_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run_lock_ea_recipe(&lock_recipes[index])) {
-            printf("M5:T435:S10:I286-LOCK-EA-RECIPE:FAIL:%s\n",
+            printf("I286-LOCK-EA-RECIPE:FAIL:%s\n",
                 lock_recipes[index].key_id);
             return 1;
         }
@@ -4153,7 +4153,7 @@ lib_i32 main(void)
             !timing_80286_manifest_s5_results_complete() ||
             !timing_80286_manifest_s6_results_complete() ||
             !timing_80286_manifest_s7_results_complete()) {
-            printf("M5:T436:S7:I286-GATE-DETAIL:captured=%u:probes=%u:s3=%u:s4=%u:s5=%u:s6=%u:s7=%u:s7expected=%u\n",
+            printf("I286-GATE-DETAIL:captured=%u:probes=%u:s3=%u:s4=%u:s5=%u:s6=%u:s7=%u:s7expected=%u\n",
                 captured, probes, s3_captured, s4_captured, s5_captured,
                 s6_captured, s7_captured,
                 timing_80286_manifest_s7_expected_count());
@@ -4162,7 +4162,7 @@ lib_i32 main(void)
                 if (timing_80286_manifest_is_s7(
                         &timing_80286_manifest_records[index]) &&
                     !timing_80286_manifest_observed[index]) {
-                    printf("M5:T436:S7:I286-SYSTEM-MISSING:%s\n",
+                    printf("I286-SYSTEM-MISSING:%s\n",
                         timing_80286_manifest_records[index].key_id);
                 }
             }
@@ -4172,37 +4172,37 @@ lib_i32 main(void)
                 PROJECT_TEST_80286_RESULTS_PATH, 1) != 0) {
             return 1;
         }
-        printf("M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=%u:canonical=%u\n",
+        printf("I286-RESULT-PRODUCER:PASS:observed=%u:canonical=%u\n",
             captured, timing_80286_manifest_expected_count());
-        printf("M5:T436:S8:I286-RESULT-CLOSURE:PASS:canonical=%u\n",
+        printf("I286-RESULT-CLOSURE:PASS:canonical=%u\n",
             timing_80286_manifest_expected_count());
-        printf("M5:T436:S3:I286-NONCONTROL-OBSERVED:%u\n", s3_captured);
-        printf("M5:T436:S3:I286-NONCONTROL-COVERAGE:PASS:canonical=%u\n",
+        printf("I286-NONCONTROL-OBSERVED:%u\n", s3_captured);
+        printf("I286-NONCONTROL-COVERAGE:PASS:canonical=%u\n",
             timing_80286_manifest_s3_expected_count());
-        printf("M5:T436:S3:I286-MEMORY-INPUTS:PASS\n");
-        printf("M5:T436:S4:I286-STRING-OBSERVED:%u\n", s4_captured);
-        printf("M5:T436:S4:I286-STRING-COVERAGE:PASS:canonical=%u\n",
+        printf("I286-MEMORY-INPUTS:PASS\n");
+        printf("I286-STRING-OBSERVED:%u\n", s4_captured);
+        printf("I286-STRING-COVERAGE:PASS:canonical=%u\n",
             timing_80286_manifest_s4_expected_count());
-        printf("M5:T436:S4:I286-REPEAT-INPUTS:PASS\n");
-        printf("M5:T436:S5:I286-CONDITIONAL-OBSERVED:%u\n", s5_captured);
-        printf("M5:T436:S5:I286-CONDITIONAL-COVERAGE:PASS:canonical=%u\n",
+        printf("I286-REPEAT-INPUTS:PASS\n");
+        printf("I286-CONDITIONAL-OBSERVED:%u\n", s5_captured);
+        printf("I286-CONDITIONAL-COVERAGE:PASS:canonical=%u\n",
             timing_80286_manifest_s5_expected_count());
-        printf("M5:T436:S5:I286-OUTCOME-NEXT-BYTE:PASS\n");
-        printf("M5:T436:S6:I286-TRANSFER-OBSERVED:%u:canonical=%u\n",
+        printf("I286-OUTCOME-NEXT-BYTE:PASS\n");
+        printf("I286-TRANSFER-OBSERVED:%u:canonical=%u\n",
             s6_captured, timing_80286_manifest_s6_expected_count());
-        printf("M5:T436:S6:I286-TRANSFER-COVERAGE:PASS:canonical=%u\n",
+        printf("I286-TRANSFER-COVERAGE:PASS:canonical=%u\n",
             timing_80286_manifest_s6_expected_count());
-        printf("M5:T436:S6:I286-PROTECTED-PATHS:PASS\n");
-        printf("M5:T436:S7:I286-SYSTEM-OBSERVED:%u:canonical=%u\n",
+        printf("I286-PROTECTED-PATHS:PASS\n");
+        printf("I286-SYSTEM-OBSERVED:%u:canonical=%u\n",
             s7_captured, timing_80286_manifest_s7_expected_count());
-        printf("M5:T436:S7:I286-SYSTEM-COVERAGE:PASS:canonical=%u\n",
+        printf("I286-SYSTEM-COVERAGE:PASS:canonical=%u\n",
             timing_80286_manifest_s7_expected_count());
-        printf("M5:T436:S7:I286-SEGMENT-DESCRIPTOR-PATHS:PASS\n");
+        printf("I286-SEGMENT-DESCRIPTOR-PATHS:PASS\n");
         for (index = 0u; index < sizeof(timing_80286_manifest_records) /
                 sizeof(timing_80286_manifest_records[0]); ++index) {
             if (timing_80286_manifest_is_s6(&timing_80286_manifest_records[index]) &&
                 !timing_80286_manifest_observed[index]) {
-                printf("M5:T436:S6:I286-TRANSFER-MISSING:%s\n",
+                printf("I286-TRANSFER-MISSING:%s\n",
                     timing_80286_manifest_records[index].key_id);
             }
         }
@@ -4210,11 +4210,11 @@ lib_i32 main(void)
                 sizeof(timing_80286_manifest_records[0]); ++index) {
             if (timing_80286_manifest_is_s7(&timing_80286_manifest_records[index]) &&
                 !timing_80286_manifest_observed[index]) {
-                printf("M5:T436:S7:I286-SYSTEM-MISSING:%s\n",
+                printf("I286-SYSTEM-MISSING:%s\n",
                     timing_80286_manifest_records[index].key_id);
             }
         }
-        printf("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
+        printf("I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
             captured);
     }
     return 0;

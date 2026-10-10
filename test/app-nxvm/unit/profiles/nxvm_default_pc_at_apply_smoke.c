@@ -165,6 +165,6 @@ lib_i32 main(void)
         return 1;
     }
     if (!vm_default_pc_at_80186_refresh_polling_is_live()) return 1;
-    puts("M5:T208:S3:DEFAULT-PC-AT-APPLY:OK");
+    puts("DEFAULT-PC-AT-APPLY:OK");
     return 0;
 }

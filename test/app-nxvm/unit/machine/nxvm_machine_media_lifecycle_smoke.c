@@ -59,6 +59,6 @@ lib_i32 main(void)
     vm_machine_destroy(session);
     (void)lib_c_remove(floppy_path);
     if (failed) return 1;
-    lib_c_printf("M5:T404:S3:MEDIA-LIFECYCLE:OK\n");
+    lib_c_printf("MEDIA-LIFECYCLE:OK\n");
     return 0;
 }
