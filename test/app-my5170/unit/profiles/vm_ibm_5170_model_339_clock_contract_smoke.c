@@ -2,14 +2,14 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "../support/ibmpc/board-common/composition_fixture.h"
-#include "../support/ibmpc/board-common/kbc_state_fixture.h"
+#include "../../../app-nxvm/unit/support/ibmpc/board-common/composition_fixture.h"
+#include "../../../app-nxvm/unit/support/ibmpc/board-common/kbc_state_fixture.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
 #include "app-my5170/profiles/profile_interface.h"
 #include "app-nxvm/profiles/profile_interface.h"
-#include "../support/rom/session_assets.h"
+#include "../../../app-nxvm/unit/support/rom/session_assets.h"
 
 static lib_i32 vm_model_339_clock_contract_is_selected(void)
 {

@@ -2,24 +2,24 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S3 Active: Rehome Core CPU-Bus Boundary Gate)
+## Current Task — M5 T548 (S5 Active: Classify Historical Test-Identity Debt)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T548 S3. S1 froze the test-entry baseline and candidate ledger; S2 retired the confirmed Default-App factory duplicate. This S owns only the confirmed Core CPU-bus boundary gate rehome. |
+| Identifier Mode | Continuation T548 S5. S1-S4 completed the initial duplicate and ownership repairs. This S owns only a finite classification of historical task identifiers in active test paths, CTest targets and success markers before any rename. |
 | Admission And Approval | Owner instruction in this conversation: close the old T, then admit the first queued T to repair the complete NXVM test corpus cleanly. Standing push approval applies. |
 | Objective | Freeze a complete behavior-level ownership and coverage ledger for every registered repository unit test and production owner, then repair misplaced, duplicated, incomplete or non-independent coverage without losing component, profile, board, CPU, composition or failure evidence. |
 | Non-goals | No production behavior or public ABI change merely to simplify tests; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools as units; no sibling-repository edit. |
 | Reference Baseline | T547 closure commits `5b1d07412`, `08a6a19f4` and `6be3ce8ee`; re-freeze the current committed source/test/build graph before any move, merge or deletion. |
 | Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | Move `test/app-nxvm/unit/board/cpu_bus_boundary_negative.cmake` to `test/core/`, transfer only its CTest registration from `cmake/nxvm/NxvmProduct.cmake` to `test/core/CMakeLists.txt`, update `test/core/MANIFEST.sha256` and the T548 ledger. No production API, firmware, media, asset or assertion change. |
+| Files And ABI Surface | Read active test/CMake identities only and record a finite rename ledger under T548 evidence. Historical documentation is not rewritten. No source, registration, assertion, production API, firmware, media or artifact change is authorized until later target-scoped S packets admit individual rename batches. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | Reconfigure x64 and x86 graphs; prove `core.cpu-bus-boundary-negative` is registered and passes, the retired `unit.cpu-bus-boundary-negative` identity is absent, Core manifest/ownership gates pass, and the App FDC assembly gate remains registered. |
-| Expected Markers | One Core-owned CPU/PIC boundary gate with its original negative matrix; no Default-App registration or auxiliary-list alias; `fdc-boundary-negative` remains an App-owned assembly proof. |
+| Verification | Inventory only active `test/` and CMake registration/output identities; distinguish task provenance from domain terms such as `tss32`, source citations and normal helper names. Map each actual task identifier to a semantic replacement and owner scope, or explicitly retain it when it is externally contractual. |
+| Expected Markers | A finite, owner-scoped rename ledger with no history rewrite, no accidental alteration of source-defined architectural terms, and no unsupported claim that all textual `S`/`T` tokens are task markers. |
 | Asset Needs | None. INIs, media, snapshots and artifacts are not edited. |
-| Reporting Requirements | Report the ownership evidence, moved registration/list entries, exact test identity/count delta and dual-width result. Do not claim runtime coverage from static links. |
-| Stop Conditions | A selected-App assertion in the CPU gate, a missing Core registration, weakened negative predicate, a stale App alias, or an undeclared production change. |
-| Exit Criteria | The unmodified CPU bus boundary matrix runs from Core on both widths; the old App path/registration/list identity is absent; FDC remains App-owned; Core manifest/ownership gates and ledger pass. T548 remains open. |
+| Reporting Requirements | Report exact identities, classification evidence, intended semantic name and target scope. Do not rename historical evidence or claim behavior coverage from names. |
+| Stop Conditions | Ambiguous term whose meaning cannot be established from active source/registration, external test identity contract, required production change, or a rename that would cross target scopes. |
+| Exit Criteria | Every active task-derived test identity is classified into a narrow later S receiver, retained exception, or explicit non-task lexical match. T548 remains open. |
 | Original Owner Request | Repair the entire NXVM test suite cleanly after closing the old lifecycle/product task. |
 | Similar-Issue Sweep | Inventory every C/CMake test entry, alias, fixture, negative gate and unit runner outside integration; distinguish component proof, composition increment, App/profile proof and non-unit tooling before assigning a canonical owner. |
 
@@ -28,7 +28,9 @@
 | T547 | Closed at owner direction. Final Shared/NXVM/MyNES commits are `5b1d07412`, `08a6a19f4` and `6be3ce8ee`. Public suites pass 66/66, Core 221/221, NXVM 511/511 and MyNES App 45/45 on x64/x86; all ten deployed artifacts are current. No new manual desktop or external integration qualification is claimed. |
 | T548 S1 | Complete: committed baseline `006a7592d` records the 541-unit-entry/45-integration-C universe, registration owners and first semantic candidate groups. It confirmed the Default-App factory duplicate and protected selected-profile increments from mechanical relocation. |
 | T548 S2 | Complete: retired `nxvm_ini_smoke.c` and both `vm-app-ini-smoke` registrations. Reconfigured x64/x86 CTest graphs contain only `core.factory`; it passes on both widths. Core ownership and manifest gates pass. This is test/CMake-only, so no executable input or artifact changed. |
-| T548 S3 | Active: L3 evidence confirms the CPU-bus negative matrix copies only Core inputs and exercises the Core CPU/PIC authority gate; it is being moved with its sole registration to Core. The FDC matrix remains an App assembly gate and is not moved. |
+| T548 S3 | Complete: pushed as `ac7fbc5dc`. The unmodified eight-by-five Core CPU/PIC negative matrix now has one `core.cpu-bus-boundary-negative` registration, runs on x64/x86, and the old App identity is absent. The FDC assembly gate remains App-owned. Core ownership and both Core manifests pass. No production or artifact input changed. |
+| T548 S4 | Complete: the mixed Default-App plan test is split into one Default-PC, one My5170 and one MyDeskPro386 receiver; the 5170 clock contract also moves to My5170. All four targets pass on x64/x86, and no old mixed path/target remains in active test/CMake sources. This is test/CMake-only, so no executable input or artifact changed. |
+| T548 S5 | Active: classify active historical task identifiers before changing names. The initial scan found many real legacy markers but also source terms such as `tss32`; later renames must be owner-scoped and semantic, not mechanical search-and-replace. |
 | T547 S5 | Closed at owner direction. P1 `9131545d8` replaces the live Product with the SoftPC command/keyboard base and App extensions; P2 `09cbfcf93` removes the SoftPC-branded fault message; P3 `3ff1e89f8` moves NXVM identity out of shared Product; P4 `7a2f23574` reduces the shared opening contract to App-provided text. Eight 0546 App artifacts were rebuilt. Product entry/command/manifest focused checks passed on x64; full dual-width Product and complete T547 qualification remain open and are not claimed by this S closure. |
 | T547 S6 | Complete: `bf469c879` adopts SoftPC S16's ownership correction without importing SoftPC runtime code. NXVM-family configuration/factory/extension support and direct tests now live in `src/core/product` and `test/core/product`; the old `ibmpc/nxvm` member is gone. IBM PC and core gates plus 8 focused tests pass on x64 and x86; all eight 0546 product artifacts were rebuilt against the relocated link input. |
 | T547 S7 | Superseded into S8 before P delivery: its uncommitted canonical Core rehome is retained as S8's required receiver baseline rather than split into an unbuildable partial commit. |

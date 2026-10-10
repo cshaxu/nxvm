@@ -1,12 +1,8 @@
-#include "lib/types/types_interface.h"
-#include <stdio.h>
-
-#include "core/board-base/machine_board_interface.h"
 #include "app-my5170/profiles/profile_interface.h"
-#include "app-nxvm/profiles/profile_interface.h"
-#include "app-mydeskpro386/profiles/model40_private.h"
+#include "core/board-base/machine_board_interface.h"
+#include "lib/types/types_interface.h"
 
-static lib_i32 vm_ibm_5170_direct_plan_is_complete(void)
+static lib_i32 ibm_5170_plan_is_complete(void)
 {
     vm_profile_default_pc_at_plan_snapshot profile;
     core_machine_plan *plan = LIB_NULL;
@@ -35,7 +31,7 @@ static lib_i32 vm_ibm_5170_direct_plan_is_complete(void)
     return status != LIB_STATUS_OK;
 }
 
-static lib_i32 vm_ibm_5170_memory_options_stay_bounded(void)
+static lib_i32 ibm_5170_memory_options_stay_bounded(void)
 {
     vm_profile_default_pc_at_plan_snapshot expanded;
     vm_profile_default_pc_at_plan_snapshot rejected;
@@ -45,7 +41,7 @@ static lib_i32 vm_ibm_5170_memory_options_stay_bounded(void)
             1536u * 1024u || expanded.descriptor.default_memory_bytes !=
             1536u * 1024u || expanded.descriptor.cmos.base_memory_kib != 0x0280u ||
         expanded.descriptor.unpopulated_extended_memory ||
-        expanded.values.allowed_session_options != VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY) {
+        expanded.values.allowed_session_options != VM_PROFILE_5170_SESSION_OPTION_MEMORY) {
         return 1;
     }
     return vm_profile_ibm_5170_plan_create_memory(1024u * 1024u, &rejected) ==
@@ -53,42 +49,7 @@ static lib_i32 vm_ibm_5170_memory_options_stay_bounded(void)
             &rejected) == LIB_STATUS_OK;
 }
 
-static lib_i32 vm_model40_direct_plan_is_complete(void)
-{
-    vm_profile_contract_values values;
-
-    return vm_profile_model40_values_create(&values) != LIB_STATUS_OK ||
-        values.core.configuration.memory_bytes != 2u * 1024u * 1024u ||
-        values.core.configuration.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
-        values.core.configuration.pic_topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED ||
-        values.core.configuration.dma_controller_count != CORE_MACHINE_DMA_CONTROLLER_COUNT ||
-        values.firmware_policy != VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BYOB ||
-        values.media_policy != VM_PROFILE_CONTRACT_MEDIA_POLICY_SESSION;
-}
-
-static lib_i32 vm_default_at_direct_plan_is_complete(void)
-{
-    const vm_profile_default_at_request request = {
-        VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
-        VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY |
-        VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY,
-        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE,
-        32u * 1024u * 1024u, 0x40u};
-    vm_profile_default_pc_at_plan_snapshot profile;
-
-    return vm_profile_default_at_plan_create(&request, &profile) != LIB_STATUS_OK ||
-        profile.values.core.configuration.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
-        profile.values.core.configuration.memory_bytes != 32u * 1024u * 1024u ||
-        profile.values.allowed_session_options !=
-            (VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
-             VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY |
-             VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY) ||
-        profile.descriptor.cmos.floppy_type != 0x40u;
-}
-
 lib_i32 main(void)
 {
-    return vm_ibm_5170_direct_plan_is_complete() ||
-        vm_ibm_5170_memory_options_stay_bounded() ||
-        vm_model40_direct_plan_is_complete() || vm_default_at_direct_plan_is_complete();
+    return ibm_5170_plan_is_complete() || ibm_5170_memory_options_stay_bounded();
 }

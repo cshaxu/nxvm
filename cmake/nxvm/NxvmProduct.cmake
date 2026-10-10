@@ -185,13 +185,13 @@ add_executable(vm-model40-console-s20-smoke
 target_include_directories(vm-model40-console-s20-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
 target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-app vm-profile-tests)
-add_executable(vm-model-339-clock-contract-smoke
-    test/app-nxvm/unit/machine/nxvm_model_339_clock_contract_smoke.c)
-target_sources(vm-model-339-clock-contract-smoke PRIVATE
+add_executable(my5170-clock-contract-smoke
+    test/app-my5170/unit/profiles/vm_ibm_5170_model_339_clock_contract_smoke.c)
+target_sources(my5170-clock-contract-smoke PRIVATE
     test/app-nxvm/unit/support/ibmpc/board-common/composition_fixture.c
     test/app-nxvm/unit/support/ibmpc/board-common/kbc_state_fixture.c
     test/app-nxvm/unit/support/ibmpc/board-at/state_fixture.c)
-target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-profile-tests)
+target_link_libraries(my5170-clock-contract-smoke PRIVATE vm-profile-tests)
 add_executable(vm-ibm-5170-model-339-cga-topology-smoke
     test/app-my5170/unit/profiles/vm_ibm_5170_model_339_cga_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-profile-tests)
@@ -257,10 +257,16 @@ target_link_libraries(vm-machine-speed-policy-smoke PRIVATE vm-profile-tests)
 add_executable(vm-timing-qualification-smoke
     test/app-nxvm/unit/machine/nxvm_timing_qualification_smoke.c)
 target_link_libraries(vm-timing-qualification-smoke PRIVATE vm-profile-tests)
-add_executable(vm-ibm-5170-direct-plan-smoke
-    test/app-nxvm/unit/machine/nxvm_ibm_5170_direct_plan_smoke.c)
-target_link_libraries(vm-ibm-5170-direct-plan-smoke PRIVATE
+add_executable(nxvm-default-pc-at-plan-smoke
+    test/app-nxvm/unit/profiles/default_pc_at_plan_smoke.c)
+target_link_libraries(nxvm-default-pc-at-plan-smoke PRIVATE vm-profile-tests)
+add_executable(my5170-plan-smoke
+    test/app-my5170/unit/profiles/ibm_5170_plan_smoke.c)
+target_link_libraries(my5170-plan-smoke PRIVATE
     vm-profile-tests core-board-base core-x86)
+add_executable(mydeskpro386-plan-smoke
+    test/app-mydeskpro386/unit/profiles/model40_plan_smoke.c)
+target_link_libraries(mydeskpro386-plan-smoke PRIVATE vm-profile-tests)
 add_executable(vm-xt-5160-268-profile-smoke
     test/app-my5160/unit/profiles/profile_smoke.c)
 target_sources(vm-xt-5160-268-profile-smoke PRIVATE
@@ -1466,7 +1472,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-machine-media-lifecycle-s3-smoke
     vm-machine-speed-policy-smoke
     vm-timing-qualification-smoke
-    vm-ibm-5170-direct-plan-smoke
+    nxvm-default-pc-at-plan-smoke
+    my5170-plan-smoke
+    mydeskpro386-plan-smoke
     vm-xt-5160-268-profile-smoke)
 list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
     emulator-machine-smoke
@@ -1487,7 +1495,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-neutral-link-smoke
     core-machine-trace-smoke
     core-machine-external-time-trace-smoke
-    vm-model-339-clock-contract-smoke
+    my5170-clock-contract-smoke
     core-machine-plan-smoke
     vm-model40-rom-layout-s14-smoke
     core-machine-instance-smoke
