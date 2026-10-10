@@ -1,41 +1,41 @@
-if(NOT DEFINED PROJECT_T332_SOURCE_DIR OR
-    NOT DEFINED PROJECT_T332_INVENTORY_FILE)
-    message(FATAL_ERROR "T332 CPU fixture lifecycle verifier needs source and inventory paths.")
+if(NOT DEFINED PROJECT_CPU_FIXTURE_LIFECYCLE_SOURCE_DIR OR
+    NOT DEFINED PROJECT_STRICT_CPU_SMOKE_INVENTORY_FILE)
+    message(FATAL_ERROR "CPU fixture lifecycle verifier needs source and inventory paths.")
 endif()
 
-if(NOT EXISTS "${PROJECT_T332_INVENTORY_FILE}")
-    message(FATAL_ERROR "T332 CPU fixture lifecycle inventory is missing.")
+if(NOT EXISTS "${PROJECT_STRICT_CPU_SMOKE_INVENTORY_FILE}")
+    message(FATAL_ERROR "CPU fixture lifecycle inventory is missing.")
 endif()
 
-file(STRINGS "${PROJECT_T332_INVENTORY_FILE}" project_t332_inventory)
-list(LENGTH project_t332_inventory project_t332_count)
-if(NOT project_t332_count EQUAL 44)
-    message(FATAL_ERROR "T332 CPU fixture lifecycle inventory must contain 44 owner smokes.")
+file(STRINGS "${PROJECT_STRICT_CPU_SMOKE_INVENTORY_FILE}" project_cpu_fixture_lifecycle_inventory)
+list(LENGTH project_cpu_fixture_lifecycle_inventory project_cpu_fixture_lifecycle_count)
+if(NOT project_cpu_fixture_lifecycle_count EQUAL 44)
+    message(FATAL_ERROR "CPU fixture lifecycle inventory must contain 44 owner smokes.")
 endif()
 
-set(project_t332_wrapper_sources
-    "test/core/board-base/core_machine_cli_sti_s48_smoke.c"
-    "test/core/board-base/core_machine_hlt_s49_smoke.c"
-    "test/core/board-base/core_machine_iret_s51_smoke.c"
-    "test/core/board-base/core_machine_software_int_s50_smoke.c")
-set(project_t332_neutral_core_sources
-    "test/core/x86/machine_fpu_interface_s65_smoke.c")
-set(project_t332_inherited_sources
+set(project_cpu_fixture_lifecycle_wrapper_sources
+    "test/core/board-base/core_machine_cli_sti_profiles_smoke.c"
+    "test/core/board-base/core_machine_hlt_profiles_smoke.c"
+    "test/core/board-base/core_machine_iret_profiles_smoke.c"
+    "test/core/board-base/core_machine_software_int_profiles_smoke.c")
+set(project_cpu_fixture_lifecycle_neutral_core_sources
+    "test/core/x86/machine_fpu_interface_smoke.c")
+set(project_cpu_fixture_lifecycle_inherited_sources
     "test/core/board-base/machine_interrupt_entry_smoke.c"
     "test/core/board-base/machine_cli_sti_interrupt_smoke.c"
     "test/core/x86/machine_protected_iret_smoke.c")
-set(project_t332_public_board_sources
+set(project_cpu_fixture_lifecycle_public_board_sources
     "test/core/x86/machine_protected_iret_smoke.c"
     "test/core/board-base/machine_interrupt_entry_smoke.c"
     "test/core/board-base/machine_cli_sti_interrupt_smoke.c"
     "test/core/board-base/machine_debug_state_board_smoke.c"
-    "test/core/board-base/composition/core_machine_legacy_alu_s2_smoke.c"
-    "test/core/board-base/composition/core_machine_legacy_lock_s1_smoke.c"
+    "test/core/board-base/composition/core_machine_legacy_alu_smoke.c"
+    "test/core/board-base/composition/core_machine_legacy_lock_smoke.c"
     "test/core/board-base/core_machine_bit_scan_smoke.c"
     "test/core/board-base/core_machine_bit_test_smoke.c"
     "test/core/board-base/core_machine_double_shift_smoke.c"
     "test/core/board-base/core_machine_imul2_smoke.c"
-    "test/core/board-base/core_machine_imul_immediate_s56_smoke.c"
+    "test/core/board-base/core_machine_imul_immediate_profiles_smoke.c"
     "test/core/board-base/core_machine_rotate_smoke.c"
     "test/core/board-base/core_machine_setcc_smoke.c"
     "test/core/board-base/core_machine_sign_extend_smoke.c"
@@ -57,15 +57,15 @@ set(project_t332_public_board_sources
     "test/core/board-base/core_machine_sreg_mov_smoke.c"
     "test/core/board-base/composition/core_machine_operand_address_smoke.c"
     "test/core/board-base/core_machine_prefix_attributes_smoke.c")
-set(project_t332_public_limit_sources
+set(project_cpu_fixture_lifecycle_public_limit_sources
     "test/core/board-base/core_machine_bit_scan_smoke.c"
     "test/core/board-base/core_machine_bit_test_smoke.c"
     "test/core/board-base/core_machine_double_shift_smoke.c"
     "test/core/board-base/core_machine_imul2_smoke.c"
-    "test/core/board-base/core_machine_imul_immediate_s56_smoke.c"
+    "test/core/board-base/core_machine_imul_immediate_profiles_smoke.c"
     "test/core/board-base/core_machine_rotate_smoke.c"
     "test/core/board-base/core_machine_setcc_smoke.c")
-set(project_t332_cpu_instruction_fixture_sources
+set(project_cpu_fixture_lifecycle_cpu_instruction_fixture_sources
     "chips/cpu/cpu_debug_state_smoke.c"
     "chips/cpu/cpu_control_state_smoke.c"
     "chips/cpu/cpu_control_transfer_branch_smoke.c"
@@ -76,51 +76,55 @@ set(project_t332_cpu_instruction_fixture_sources
     "chips/cpu/cpu_protected_far_smoke.c"
     "chips/cpu/cpu_protected_data_access_smoke.c"
     "chips/cpu/cpu_descriptor_system_smoke.c"
-    "chips/cpu/cpu_dttr_s61_smoke.c"
+    "chips/cpu/cpu_descriptor_table_register_smoke.c"
     "chips/cpu/cpu_lar_lsl_smoke.c"
     "chips/cpu/cpu_lgdt_lidt_smoke.c"
     "chips/cpu/cpu_sgdt_sidt_smoke.c"
     "chips/cpu/cpu_verr_verw_smoke.c")
-set(project_t332_task_switch16_cpu_fixture_sources
+set(project_cpu_fixture_lifecycle_task_switch16_cpu_fixture_sources
     "chips/cpu/cpu_task_switch16_smoke.c"
     "chips/cpu/cpu_task_switch32_decode_smoke.c"
     )
-set(project_t332_task_switch32_cpu_fixture_sources
+set(project_cpu_fixture_lifecycle_task_switch32_cpu_fixture_sources
     "chips/cpu/cpu_task_switch32_state_smoke.c")
-set(project_t332_protected_cpu_fixture_sources
+set(project_cpu_fixture_lifecycle_protected_cpu_fixture_sources
     "chips/cpu/cpu_protected_far_smoke.c"
     "chips/cpu/cpu_protected_data_access_smoke.c")
-set(project_t332_outer_return_cpu_fixture_sources
+set(project_cpu_fixture_lifecycle_outer_return_cpu_fixture_sources
     "chips/cpu/cpu_outer_return_smoke.c")
-set(project_t332_descriptor_query_fixture_sources
+set(project_cpu_fixture_lifecycle_descriptor_query_fixture_sources
     "chips/cpu/cpu_lar_lsl_smoke.c"
     "chips/cpu/cpu_verr_verw_smoke.c")
 
-file(READ "${PROJECT_T332_SOURCE_DIR}/test/core/board-base/cpu_board_limit_fixture.h"
-    project_t332_limit_helper)
+file(READ "${PROJECT_CPU_FIXTURE_LIFECYCLE_SOURCE_DIR}/test/core/board-base/cpu_board_limit_fixture.h"
+    project_cpu_fixture_lifecycle_limit_helper)
 foreach(operation core_machine_create core_machine_freeze_execution_providers
         core_machine_reset core_machine_debug_patch_registers)
-    if(NOT project_t332_limit_helper MATCHES "${operation}[ \t\r\n]*\\(")
+    if(NOT project_cpu_fixture_lifecycle_limit_helper MATCHES "${operation}[ \t\r\n]*\\(")
         message(FATAL_ERROR "Public board limit helper misses ${operation}.")
     endif()
 endforeach()
 
-function(project_t332_source_path source out)
+function(project_cpu_fixture_lifecycle_source_path source out)
     if(source MATCHES "^(devices|chips)/")
-        set(path "${PROJECT_T332_SOURCE_DIR}/test/core/${source}")
+        set(path "${PROJECT_CPU_FIXTURE_LIFECYCLE_SOURCE_DIR}/test/core/${source}")
     else()
-        set(path "${PROJECT_T332_SOURCE_DIR}/${source}")
+        set(path "${PROJECT_CPU_FIXTURE_LIFECYCLE_SOURCE_DIR}/${source}")
     endif()
     set(${out} "${path}" PARENT_SCOPE)
 endfunction()
 
-function(project_t332_require_shared_lifecycle source)
-    project_t332_source_path("${source}" path)
+function(project_cpu_fixture_lifecycle_require_shared_lifecycle source)
+    project_cpu_fixture_lifecycle_source_path("${source}" path)
     if(NOT EXISTS "${path}")
-        message(FATAL_ERROR "T332 CPU fixture source is missing: ${source}")
+        message(FATAL_ERROR "CPU fixture source is missing: ${source}")
     endif()
     file(READ "${path}" content)
-    if(source IN_LIST project_t332_neutral_core_sources)
+    set(project_cpu_fixture_lifecycle_cpu_source "${source}")
+    string(REGEX REPLACE "^test/core/" ""
+        project_cpu_fixture_lifecycle_cpu_source
+        "${project_cpu_fixture_lifecycle_cpu_source}")
+    if(source IN_LIST project_cpu_fixture_lifecycle_neutral_core_sources)
         foreach(operation core_machine_neutral_create core_machine_bind_execution_provider
                 core_machine_freeze_execution_providers core_machine_reset
                 core_machine_debug_patch_registers)
@@ -135,18 +139,18 @@ function(project_t332_require_shared_lifecycle source)
         endif()
         return()
     endif()
-    if(source IN_LIST project_t332_public_board_sources)
-        if(source IN_LIST project_t332_public_limit_sources)
+    if(source IN_LIST project_cpu_fixture_lifecycle_public_board_sources)
+        if(source IN_LIST project_cpu_fixture_lifecycle_public_limit_sources)
             if(NOT content MATCHES "cpu_board_limit_fixture[.]h" OR
                 NOT content MATCHES "test_cpu_board_limit_prepare[ \t\r\n]*\\(")
                 message(FATAL_ERROR "Public board fixture misses shared limit setup: ${source}")
             endif()
         else()
-            set(project_t332_constructor core_machine_create)
+            set(project_cpu_fixture_lifecycle_constructor core_machine_create)
             if(source STREQUAL "test/core/x86/machine_protected_iret_smoke.c")
-                set(project_t332_constructor core_machine_neutral_create)
+                set(project_cpu_fixture_lifecycle_constructor core_machine_neutral_create)
             endif()
-            foreach(operation ${project_t332_constructor} core_machine_freeze_execution_providers
+            foreach(operation ${project_cpu_fixture_lifecycle_constructor} core_machine_freeze_execution_providers
                     core_machine_reset core_machine_debug_patch_registers)
                 if(NOT content MATCHES "${operation}[ \t\r\n]*\\(")
                     message(FATAL_ERROR "Public board fixture misses ${operation}: ${source}")
@@ -158,7 +162,8 @@ function(project_t332_require_shared_lifecycle source)
         endif()
         return()
     endif()
-    if(source STREQUAL "chips/cpu/cpu_eflags_local_smoke.c")
+    if(project_cpu_fixture_lifecycle_cpu_source STREQUAL
+            "chips/cpu/cpu_eflags_local_smoke.c")
         if(NOT content MATCHES "support/cpu_bus_fixture[.]h" OR
             NOT content MATCHES "cpu_bus_prepare" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")
@@ -166,14 +171,16 @@ function(project_t332_require_shared_lifecycle source)
         endif()
         return()
     endif()
-    if(source IN_LIST project_t332_descriptor_query_fixture_sources)
+    if(project_cpu_fixture_lifecycle_cpu_source IN_LIST
+            project_cpu_fixture_lifecycle_descriptor_query_fixture_sources)
         if(NOT content MATCHES "support/cpu_descriptor_query_fixture[.]h" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")
             message(FATAL_ERROR "CPU-local descriptor-query test must use only its instruction fixture: ${source}")
         endif()
         return()
     endif()
-    if(source IN_LIST project_t332_protected_cpu_fixture_sources)
+    if(project_cpu_fixture_lifecycle_cpu_source IN_LIST
+            project_cpu_fixture_lifecycle_protected_cpu_fixture_sources)
         if(NOT content MATCHES "support/cpu_protected_fixture[.]h" OR
             NOT content MATCHES "cpu_protected_prepare" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \t]*\\(")
@@ -181,7 +188,8 @@ function(project_t332_require_shared_lifecycle source)
         endif()
         return()
     endif()
-    if(source IN_LIST project_t332_outer_return_cpu_fixture_sources)
+    if(project_cpu_fixture_lifecycle_cpu_source IN_LIST
+            project_cpu_fixture_lifecycle_outer_return_cpu_fixture_sources)
         if(NOT content MATCHES "support/cpu_outer_return_fixture[.]h" OR
             NOT content MATCHES "cpu_outer_return_prepare[ \t\r\n]*\\(" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \t]*\\(")
@@ -189,7 +197,8 @@ function(project_t332_require_shared_lifecycle source)
         endif()
         return()
     endif()
-    if(source IN_LIST project_t332_cpu_instruction_fixture_sources)
+    if(project_cpu_fixture_lifecycle_cpu_source IN_LIST
+            project_cpu_fixture_lifecycle_cpu_instruction_fixture_sources)
         if(NOT content MATCHES "support/cpu_instruction_fixture[.]h" OR
             NOT content MATCHES "cpu_instruction_prepare[ \\t\\r\\n]*\\(" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")
@@ -197,7 +206,8 @@ function(project_t332_require_shared_lifecycle source)
         endif()
         return()
     endif()
-    if(source IN_LIST project_t332_task_switch16_cpu_fixture_sources)
+    if(project_cpu_fixture_lifecycle_cpu_source IN_LIST
+            project_cpu_fixture_lifecycle_task_switch16_cpu_fixture_sources)
         if(NOT content MATCHES "support/cpu_task_switch16_fixture[.]h" OR
             NOT content MATCHES "cpu_task16_prepare[ \\t\\r\\n]*\\(" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")
@@ -205,7 +215,8 @@ function(project_t332_require_shared_lifecycle source)
         endif()
         return()
     endif()
-    if(source IN_LIST project_t332_task_switch32_cpu_fixture_sources)
+    if(project_cpu_fixture_lifecycle_cpu_source IN_LIST
+            project_cpu_fixture_lifecycle_task_switch32_cpu_fixture_sources)
         if(NOT content MATCHES "support/cpu_instruction_fixture[.]h" OR
             NOT content MATCHES "cpu_instruction_prepare[ \\t\\r\\n]*\\(" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")
@@ -216,49 +227,49 @@ function(project_t332_require_shared_lifecycle source)
     if(NOT "${content}" MATCHES "(machine_cpu|core_machine_board)_fixture[.]h" OR
         NOT "${content}" MATCHES
         "test_core_machine_fixture_(create_bind_freeze_reset|bind_freeze_reset)")
-        message(FATAL_ERROR "T332 CPU fixture source omits shared setup: ${source}")
+        message(FATAL_ERROR "CPU fixture source omits shared setup: ${source}")
     endif()
     if("${content}" MATCHES "core_machine_bind_execution_provider" OR
         "${content}" MATCHES "core_machine_freeze_execution_providers")
-        message(FATAL_ERROR "T332 CPU fixture source restores direct bind/freeze: ${source}")
+        message(FATAL_ERROR "CPU fixture source restores direct bind/freeze: ${source}")
     endif()
 endfunction()
 
-foreach(project_t332_entry IN LISTS project_t332_inventory)
-    string(REPLACE "|" ";" project_t332_fields "${project_t332_entry}")
-    list(GET project_t332_fields 1 project_t332_source)
-    project_t332_source_path("${project_t332_source}" project_t332_path)
-    if(NOT EXISTS "${project_t332_path}")
-        message(FATAL_ERROR "T332 CPU fixture source is missing: ${project_t332_source}")
+foreach(project_cpu_fixture_lifecycle_entry IN LISTS project_cpu_fixture_lifecycle_inventory)
+    string(REPLACE "|" ";" project_cpu_fixture_lifecycle_fields "${project_cpu_fixture_lifecycle_entry}")
+    list(GET project_cpu_fixture_lifecycle_fields 1 project_cpu_fixture_lifecycle_source)
+    project_cpu_fixture_lifecycle_source_path("${project_cpu_fixture_lifecycle_source}" project_cpu_fixture_lifecycle_path)
+    if(NOT EXISTS "${project_cpu_fixture_lifecycle_path}")
+        message(FATAL_ERROR "CPU fixture source is missing: ${project_cpu_fixture_lifecycle_source}")
     endif()
-    file(READ "${project_t332_path}" project_t332_content)
-    list(FIND project_t332_wrapper_sources "${project_t332_source}"
-        project_t332_wrapper_index)
-    if(project_t332_wrapper_index EQUAL -1)
-        project_t332_require_shared_lifecycle("${project_t332_source}")
-    elseif(NOT "${project_t332_content}" MATCHES "#include \".*\\.c\"")
+    file(READ "${project_cpu_fixture_lifecycle_path}" project_cpu_fixture_lifecycle_content)
+    list(FIND project_cpu_fixture_lifecycle_wrapper_sources "${project_cpu_fixture_lifecycle_source}"
+        project_cpu_fixture_lifecycle_wrapper_index)
+    if(project_cpu_fixture_lifecycle_wrapper_index EQUAL -1)
+        project_cpu_fixture_lifecycle_require_shared_lifecycle("${project_cpu_fixture_lifecycle_source}")
+    elseif(NOT "${project_cpu_fixture_lifecycle_content}" MATCHES "#include \".*\\.c\"")
         message(FATAL_ERROR
-            "T332 CPU fixture wrapper omits its inherited lifecycle owner: ${project_t332_source}")
+            "CPU fixture wrapper omits its inherited lifecycle owner: ${project_cpu_fixture_lifecycle_source}")
     endif()
-    if(NOT project_t332_source IN_LIST project_t332_public_board_sources AND
-       NOT project_t332_source IN_LIST project_t332_neutral_core_sources AND
-       ("${project_t332_content}" MATCHES "core_machine_bind_execution_provider" OR
-        "${project_t332_content}" MATCHES "core_machine_freeze_execution_providers"))
+    if(NOT project_cpu_fixture_lifecycle_source IN_LIST project_cpu_fixture_lifecycle_public_board_sources AND
+       NOT project_cpu_fixture_lifecycle_source IN_LIST project_cpu_fixture_lifecycle_neutral_core_sources AND
+       ("${project_cpu_fixture_lifecycle_content}" MATCHES "core_machine_bind_execution_provider" OR
+        "${project_cpu_fixture_lifecycle_content}" MATCHES "core_machine_freeze_execution_providers"))
         message(FATAL_ERROR
-            "T332 CPU fixture owner restores direct bind/freeze setup: ${project_t332_source}")
+            "CPU fixture owner restores direct bind/freeze setup: ${project_cpu_fixture_lifecycle_source}")
     endif()
 endforeach()
 
-foreach(project_t332_source IN LISTS project_t332_inherited_sources)
-    project_t332_require_shared_lifecycle("${project_t332_source}")
+foreach(project_cpu_fixture_lifecycle_source IN LISTS project_cpu_fixture_lifecycle_inherited_sources)
+    project_cpu_fixture_lifecycle_require_shared_lifecycle("${project_cpu_fixture_lifecycle_source}")
 endforeach()
 
-set(project_t332_positive
+set(project_cpu_fixture_lifecycle_positive
     "test_core_machine_fixture_bind_freeze_reset(machine, provider, owner)")
-set(project_t332_negative "core_machine_freeze_execution_providers(machine)")
-if(NOT project_t332_positive MATCHES "test_core_machine_fixture_(create_bind_freeze_reset|bind_freeze_reset)" OR
-    NOT project_t332_negative MATCHES "core_machine_freeze_execution_providers")
-    message(FATAL_ERROR "T332 CPU fixture lifecycle verifier self-check failed.")
+set(project_cpu_fixture_lifecycle_negative "core_machine_freeze_execution_providers(machine)")
+if(NOT project_cpu_fixture_lifecycle_positive MATCHES "test_core_machine_fixture_(create_bind_freeze_reset|bind_freeze_reset)" OR
+    NOT project_cpu_fixture_lifecycle_negative MATCHES "core_machine_freeze_execution_providers")
+    message(FATAL_ERROR "CPU fixture lifecycle verifier self-check failed.")
 endif()
 
-message(STATUS "T332 CPU fixture lifecycle closure passed: 44 owners use shared setup, explicit public board setup or CPU-local fixtures.")
+message(STATUS "CPU fixture lifecycle closure passed: 44 owners use shared setup, explicit public board setup or CPU-local fixtures.")

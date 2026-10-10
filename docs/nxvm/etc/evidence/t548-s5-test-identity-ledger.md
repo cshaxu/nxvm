@@ -107,3 +107,29 @@ verification helpers.  It must not absorb the `T515`/`T533` integration
 helpers, historical evidence paths, comments, or diagnostic provenance.  The
 batch must retain all custom-target dependencies and all failure predicates;
 it changes technical identity only.
+
+## S11 Disposition: CPU Qualification Verification
+
+S11 renamed the live CPU qualification group without touching CTest routes or
+CPU assertions:
+
+| Previous identity | Behavior identity |
+| --- | --- |
+| `project_configure_t317_strict_cpu_smokes` | `project_configure_strict_cpu_smokes` |
+| `verify-t317-test-type-vocabulary` | `verify-test-type-vocabulary` |
+| `verify-t317-strict-cpu-smoke-coverage` | `verify-strict-cpu-smoke-coverage` |
+| `verify-t332-cpu-fixture-lifecycle` | `verify-cpu-fixture-lifecycle` |
+
+The associated three verifier filenames, two type-vocabulary fixtures,
+generated inventory names and internal CMake variables now use the same
+behavior vocabulary.  During the rename, the fixture-lifecycle verifier was
+shown to contain a real stale-reference defect: it named five retired test
+paths and compared full inventory paths against chip-relative classifier
+entries.  It now references the active paths and normalizes only the local
+comparison key.  The existing 44-owner predicate is unchanged; it now checks
+the intended current files.
+
+Both x64 and x86 configurations passed all three affected targets:
+fixed-width vocabulary, strict CPU smoke compilation and CPU fixture
+lifecycle.  This S changes CMake/test verification only; it does not change
+production behavior, CTest count, assets or executable inputs.

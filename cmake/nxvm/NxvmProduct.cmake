@@ -598,11 +598,11 @@ endforeach()
 
 
 
-# T317 owns this exact source-to-target inventory.  Keep strict options on the
+# The strict CPU qualification owns this exact source-to-target inventory.  Keep strict options on the
 # smoke executables themselves: mydeskpro386-d4 is a linked dependency and is not
 # evidence of strict compilation for a smoke source.
-function(project_configure_t317_strict_cpu_smokes)
-set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
+function(project_configure_strict_cpu_smokes)
+set(PROJECT_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-cli-sti-smoke|test/core/board-base/core_machine_cli_sti_profiles_smoke.c"
     "machine-cli-sti-interrupt-smoke|test/core/board-base/machine_cli_sti_interrupt_smoke.c"
     "x86-test-cpu_control_state|test/core/chips/cpu/cpu_control_state_smoke.c"
@@ -648,92 +648,92 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "machine-debug-state-board-smoke|test/core/board-base/machine_debug_state_board_smoke.c"
     "core-machine-xchg-smoke|test/core/board-base/core_machine_xchg_smoke.c")
 
-list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 44)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 44 entries.")
+list(LENGTH PROJECT_STRICT_CPU_SMOKE_INVENTORY project_strict_cpu_inventory_count)
+if(NOT project_strict_cpu_inventory_count EQUAL 44)
+    message(FATAL_ERROR "Strict CPU smoke inventory must contain 44 entries.")
 endif()
 
-set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
-set(PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
-foreach(project_t317_inventory_entry IN LISTS PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY)
-    string(REPLACE "|" ";" project_t317_inventory_fields
-        "${project_t317_inventory_entry}")
-    list(GET project_t317_inventory_fields 0 project_t317_target)
-    list(GET project_t317_inventory_fields 1 project_t317_source)
-    if(NOT TARGET ${project_t317_target})
-        message(FATAL_ERROR "T317 strict CPU smoke target is missing: ${project_t317_target}")
+set(PROJECT_STRICT_CPU_SMOKE_TARGETS)
+set(PROJECT_STRICT_CPU_SMOKE_SOURCES)
+foreach(project_strict_cpu_inventory_entry IN LISTS PROJECT_STRICT_CPU_SMOKE_INVENTORY)
+    string(REPLACE "|" ";" project_strict_cpu_inventory_fields
+        "${project_strict_cpu_inventory_entry}")
+    list(GET project_strict_cpu_inventory_fields 0 project_strict_cpu_target)
+    list(GET project_strict_cpu_inventory_fields 1 project_strict_cpu_source)
+    if(NOT TARGET ${project_strict_cpu_target})
+        message(FATAL_ERROR "Strict CPU smoke target is missing: ${project_strict_cpu_target}")
     endif()
-    get_target_property(project_t317_target_sources ${project_t317_target} SOURCES)
-    get_target_property(project_t317_target_directory ${project_t317_target} SOURCE_DIR)
-    set(project_t317_absolute_sources)
-    foreach(project_t317_target_source IN LISTS project_t317_target_sources)
-        get_filename_component(project_t317_absolute_source
-            "${project_t317_target_source}" ABSOLUTE
-            BASE_DIR "${project_t317_target_directory}")
-        list(APPEND project_t317_absolute_sources "${project_t317_absolute_source}")
+    get_target_property(project_strict_cpu_target_sources ${project_strict_cpu_target} SOURCES)
+    get_target_property(project_strict_cpu_target_directory ${project_strict_cpu_target} SOURCE_DIR)
+    set(project_strict_cpu_absolute_sources)
+    foreach(project_strict_cpu_target_source IN LISTS project_strict_cpu_target_sources)
+        get_filename_component(project_strict_cpu_absolute_source
+            "${project_strict_cpu_target_source}" ABSOLUTE
+            BASE_DIR "${project_strict_cpu_target_directory}")
+        list(APPEND project_strict_cpu_absolute_sources "${project_strict_cpu_absolute_source}")
     endforeach()
-    if(project_t317_source MATCHES "^test/")
-        set(project_t317_inventory_directory "${CMAKE_SOURCE_DIR}")
+    if(project_strict_cpu_source MATCHES "^test/")
+        set(project_strict_cpu_inventory_directory "${CMAKE_SOURCE_DIR}")
     else()
-        set(project_t317_inventory_directory "${project_t317_target_directory}")
+        set(project_strict_cpu_inventory_directory "${project_strict_cpu_target_directory}")
     endif()
-    get_filename_component(project_t317_expected_source "${project_t317_source}"
-        ABSOLUTE BASE_DIR "${project_t317_inventory_directory}")
-    list(FIND project_t317_absolute_sources "${project_t317_expected_source}"
-        project_t317_source_index)
-    if(project_t317_source_index EQUAL -1)
+    get_filename_component(project_strict_cpu_expected_source "${project_strict_cpu_source}"
+        ABSOLUTE BASE_DIR "${project_strict_cpu_inventory_directory}")
+    list(FIND project_strict_cpu_absolute_sources "${project_strict_cpu_expected_source}"
+        project_strict_cpu_source_index)
+    if(project_strict_cpu_source_index EQUAL -1)
         message(FATAL_ERROR
-            "T317 strict CPU smoke mapping is invalid: ${project_t317_target} does not own ${project_t317_source}")
+            "Strict CPU smoke mapping is invalid: ${project_strict_cpu_target} does not own ${project_strict_cpu_source}")
     endif()
-    list(APPEND PROJECT_T317_STRICT_CPU_SMOKE_TARGETS ${project_t317_target})
-    list(APPEND PROJECT_T317_STRICT_CPU_SMOKE_SOURCES ${project_t317_source})
+    list(APPEND PROJECT_STRICT_CPU_SMOKE_TARGETS ${project_strict_cpu_target})
+    list(APPEND PROJECT_STRICT_CPU_SMOKE_SOURCES ${project_strict_cpu_source})
 endforeach()
-list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
-list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
-list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
-list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 44 OR NOT project_t317_source_count EQUAL 44)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 44 unique targets and sources.")
+list(REMOVE_DUPLICATES PROJECT_STRICT_CPU_SMOKE_TARGETS)
+list(REMOVE_DUPLICATES PROJECT_STRICT_CPU_SMOKE_SOURCES)
+list(LENGTH PROJECT_STRICT_CPU_SMOKE_TARGETS project_strict_cpu_target_count)
+list(LENGTH PROJECT_STRICT_CPU_SMOKE_SOURCES project_strict_cpu_source_count)
+if(NOT project_strict_cpu_target_count EQUAL 44 OR NOT project_strict_cpu_source_count EQUAL 44)
+    message(FATAL_ERROR "Strict CPU smoke inventory must have 44 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    foreach(project_t317_target IN LISTS PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
-        target_compile_options(${project_t317_target} PRIVATE
+    foreach(project_strict_cpu_target IN LISTS PROJECT_STRICT_CPU_SMOKE_TARGETS)
+        target_compile_options(${project_strict_cpu_target} PRIVATE
             -Wall -Wextra -Wpedantic -Werror)
     endforeach()
 endif()
 
-string(REPLACE ";" "\n" project_t317_inventory_contents
-    "${PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY}")
+string(REPLACE ";" "\n" project_strict_cpu_inventory_contents
+    "${PROJECT_STRICT_CPU_SMOKE_INVENTORY}")
 file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt"
-    CONTENT "${project_t317_inventory_contents}\n")
+    OUTPUT "${CMAKE_BINARY_DIR}/strict-cpu-smoke-inventory.txt"
+    CONTENT "${project_strict_cpu_inventory_contents}\n")
 
-# S2 consumes the S1 inventory above and no broader test or source surface.
-set(PROJECT_T317_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS
+# The type-vocabulary verifier has one controlled support header.
+set(PROJECT_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS
     "test/core/product/debug_fixture.h")
-string(REPLACE ";" "\n" project_t317_type_support_contents
-    "${PROJECT_T317_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS}")
+string(REPLACE ";" "\n" project_test_type_vocabulary_support_contents
+    "${PROJECT_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS}")
 file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/t317-test-type-vocabulary-support-headers.txt"
-    CONTENT "${project_t317_type_support_contents}\n")
+    OUTPUT "${CMAKE_BINARY_DIR}/test-type-vocabulary-support-headers.txt"
+    CONTENT "${project_test_type_vocabulary_support_contents}\n")
 add_custom_target(verify-global-fixed-width-vocabulary
     COMMAND "${CMAKE_COMMAND}"
-        -DPROJECT_T317_TYPE_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t317_test_type_vocabulary.cmake"
+        -DPROJECT_TEST_TYPE_VOCABULARY_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_test_type_vocabulary.cmake"
     COMMENT "Verifying global fixed-width type vocabulary"
     VERBATIM)
-add_custom_target(verify-t317-test-type-vocabulary
+add_custom_target(verify-test-type-vocabulary
     DEPENDS verify-global-fixed-width-vocabulary)
 
 if(CMAKE_GENERATOR MATCHES "Ninja")
-    add_custom_target(verify-t317-strict-cpu-smoke-coverage
+    add_custom_target(verify-strict-cpu-smoke-coverage
         COMMAND "${CMAKE_COMMAND}"
-            -DPROJECT_T317_STRICT_INVENTORY_FILE=${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt
-            -DPROJECT_T317_STRICT_NINJA=${CMAKE_MAKE_PROGRAM}
-            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t317_strict_cpu_smoke_coverage.cmake"
-        DEPENDS ${PROJECT_T317_STRICT_CPU_SMOKE_TARGETS}
-        COMMENT "Verifying T317 target-local strict CPU smoke compilation"
+            -DPROJECT_STRICT_CPU_SMOKE_INVENTORY_FILE=${CMAKE_BINARY_DIR}/strict-cpu-smoke-inventory.txt
+            -DPROJECT_STRICT_CPU_SMOKE_NINJA=${CMAKE_MAKE_PROGRAM}
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_strict_cpu_smoke_coverage.cmake"
+        DEPENDS ${PROJECT_STRICT_CPU_SMOKE_TARGETS}
+        COMMENT "Verifying target-local strict CPU smoke compilation"
         VERBATIM)
 endif()
 
@@ -2144,14 +2144,14 @@ else()
         COMMENT "run-integration-tests requires PowerShell process-tree cleanup on this host")
 endif()
 
-project_configure_t317_strict_cpu_smokes()
+project_configure_strict_cpu_smokes()
 
-add_custom_target(verify-t332-cpu-fixture-lifecycle
+add_custom_target(verify-cpu-fixture-lifecycle
     COMMAND "${CMAKE_COMMAND}"
-        -DPROJECT_T332_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-        -DPROJECT_T332_INVENTORY_FILE=${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt
-        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t332_cpu_fixture_lifecycle.cmake"
-    COMMENT "Verifying T332 CPU smoke fixture lifecycle closure"
+        -DPROJECT_CPU_FIXTURE_LIFECYCLE_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -DPROJECT_STRICT_CPU_SMOKE_INVENTORY_FILE=${CMAKE_BINARY_DIR}/strict-cpu-smoke-inventory.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_cpu_fixture_lifecycle.cmake"
+    COMMENT "Verifying CPU smoke fixture lifecycle closure"
     VERBATIM)
 
 add_custom_target(verify-t344-historical-fixture-shapes
@@ -2670,9 +2670,9 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
 endif()
 
 set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
-    verify-t317-test-type-vocabulary
-    verify-t317-strict-cpu-smoke-coverage
-    verify-t332-cpu-fixture-lifecycle
+    verify-test-type-vocabulary
+    verify-strict-cpu-smoke-coverage
+    verify-cpu-fixture-lifecycle
     verify-t344-historical-fixture-shapes
     verify-t344-strict-declaration-uniqueness
     verify-t338-legacy-profile-metadata
