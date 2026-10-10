@@ -6,25 +6,26 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: NXVM M5 T550 S3; NXVM/Core is the sole implementation target. |
+| Identifier Mode | Continuation: M5 T550 S4; Shared, NXVM and MyNES verification target. |
 | Admission And Approval | Owner approved the repository-wide route normalization and instructed automatic admission of the planned S tasks on 2026-10-10. |
-| Objective | Give neutral four-PC external harness support the Core test owner, place opt-in probes under explicit diagnostic trees, and remove App-to-peer-App test-support includes. |
-| Non-goals | No production/API/firmware/media/INI/snapshot/artifact change; retain normal App external integration cases; do not execute external integration qualification. |
-| Reference Baseline | `e290ba1ed`; T550 S1 and S2 route/owner normalization are pushed. |
-| Candidate Proposal | [T550 test route and external harness normalization](../proposals/m5-test-route-and-external-harness-normalization.md), S3. |
-| Files And ABI Surface | `test/core/{setup,diagnostic}`, NXVM/App integration test sources and CMake registration, Core/NXVM test manifests, NXVM task documentation only; no public ABI. |
+| Objective | Reconcile every active aggregate against the normalized route ledger and run the Shared, Core and App repository-only unit routes once on each supported architecture. |
+| Non-goals | No production/API/firmware/media/INI/snapshot/artifact change; do not execute external integration qualification or call this a desktop qualification run. |
+| Reference Baseline | T550 S1/S2 commits and S3 `d4331453e`/`ffe47bbb3`. |
+| Candidate Proposal | [T550 test route and external harness normalization](../proposals/m5-test-route-and-external-harness-normalization.md), S4. |
+| Files And ABI Surface | Test registration/evidence or task documentation only if a real aggregate/ledger defect is confirmed; no public ABI. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`. |
-| Verification | Reconfigure x64/x86 graphs; run route ownership/static gates, moved-support consumers and diagnostic build targets; verify manifests and `git diff --check`. |
-| Expected Markers | No include from one App test tree into another; `test/core/setup` owns neutral session/console harnesses; probes do not enter ordinary integration registration. |
+| Verification | Reconfigure x64/x86 graphs; reconcile route/owner counts; then run Shared, Core and each App's complete `unit` label in that order. |
+| Expected Markers | Each active CTest has one route and one owner; diagnostic targets remain excluded from normal aggregates; separate repository-only and external/desktop results. |
 | Asset Needs | None. Existing deployed inputs are untouched. |
-| Reporting Requirements | Report each support/probe disposition, x64/x86 evidence, and unexecuted external/desktop work separately. |
-| Stop Conditions | Stop and report if a test requires a production/API change, its actual assertion cannot be assigned to a single owner, or a diagnostic is discovered to be a required integration qualification. |
-| Exit Criteria | Neutral harness support is Core-owned, diagnostics are opt-in and unregistered, normal App integration entries remain App-owned, no peer-App test-support include remains, and target-scoped verification passes. |
+| Reporting Requirements | Record route/owner counts and every unit result by architecture; report external/desktop work as unexecuted rather than inferred. |
+| Stop Conditions | Stop and report a real registration/ownership defect requiring source, API or protected-input change. |
+| Exit Criteria | Complete repository-only unit routes pass in the stated order on x64/x86, or each exception has an explicit owner disposition. |
 | Original Owner Request | Make MyNES classification consistent; create parallel `unit`, `integration`, `diagnostic`, and `setup` ownership; Core owns four-PC shared support and neutral external harnesses. |
-| Similar-Issue Sweep | Inspect every App integration support include and every opt-in executable under NXVM test CMake, not only the named Windows and Model 40 probes. |
+| Similar-Issue Sweep | Compare `ctest -N` route/owner labels, aggregate definitions and actual test selections across both build graphs before executing each tier. |
 
 | Work | Progress |
 | --- | --- |
+| T550 S4 | Complete pending P: normalized unit-route qualification now uses the Lib-owned 180-second budget for its exhaustive layout self-test rather than a MyNES-only override. Shared Lib (51), Emulator (21) and Product (15), Core (244), the four PC Apps (2/6/28/35), and MyNES App (45) all pass on x64 and x86. No external integration, desktop validation, production code, firmware, media, INI, snapshot or deployed artifact changed. |
 | T548 S33 | Complete pending owner review: adopted the selected SoftPC Console and shared Product repairs, then imported SoftPC's three strengthened shared tests (Console metadata/viewport failure, Emulator monitor fault/lifecycle, Product Surface snapshot fault) plus the Product Surface banner-forwarding regression. Lib's naming verifier now scans only Lib source/test corpus; all six manifests use the stable, lexically sorted `sha256-manifest-v1` format. Shared/Core/App x64/x86 unit qualification passes 515/515 for the four PC Apps and 45/45 for MyNES. The eight PC artifacts were rebuilt, deployed and PE-width verified; both MyNES artifact targets were rebuilt and remained byte-identical. No desktop or external runtime qualification was run. |
 | T548 S34 | Complete: `273ba3296` gives `emulator.verifier-negative` the canonical `sha256-manifest-v1` probe header, so it reaches and proves the intended unlisted-path rejection. Emulator x64/x86 suites pass 21/21; repository-only Unit qualification passes 515/515 on both widths. This is test/manifest-only: no production, API or artifact input changed. |
 | T548 | Closed: S1–S34 complete the approved ownership, naming, shared-import and verifier cleanup scope. Final corrective S34 is pushed as `273ba3296`; current full repository-only Unit qualification is 515/515 on x64 and x86. |
