@@ -238,9 +238,6 @@ add_executable(vm-ini-cmos-seed-smoke
     test/app-nxvm/integration/product/nxvm_ini_cmos_seed_smoke.c
     test/core/board-base/composition/composition_fixture.c)
 target_link_libraries(vm-ini-cmos-seed-smoke PRIVATE integration-session-ini-support)
-add_executable(vm-app-ini-smoke
-    test/app-nxvm/unit/product/nxvm_ini_smoke.c)
-target_link_libraries(vm-app-ini-smoke PRIVATE vm-app)
 add_executable(vm-app-session-smoke test/app-nxvm/unit/machine/nxvm_machine_smoke.c)
 target_link_libraries(vm-app-session-smoke PRIVATE vm-profile-tests)
 add_executable(vm-machine-initialization-atomicity-smoke
@@ -1493,7 +1490,6 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     vm-model-339-clock-contract-smoke
     core-machine-plan-smoke
     vm-model40-rom-layout-s14-smoke
-    vm-app-ini-smoke
     core-machine-instance-smoke
     core-machine-explicit-time-smoke
     machine-80186-timing-manifest-runner

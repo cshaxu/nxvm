@@ -63,7 +63,7 @@ direction, not semantic assertion ownership.
 
 | ID | Evidence | Status and required receiver decision |
 | --- | --- | --- |
-| L1 | `test/app-nxvm/unit/product/nxvm_ini_smoke.c` tests `vm_app_configure_machine(..., NULL, ...)` clearing output. `test/core/product/factory_smoke.c` already covers the same Core factory null-request/output-clearing contract. | **Confirmed overlap.** S2 must either remove the duplicate clause or replace it with a real default-App binding assertion; it may not remove the Core assertion. |
+| L1 | `test/app-nxvm/unit/product/nxvm_ini_smoke.c` tested `vm_app_configure_machine(..., NULL, ...)` clearing output. `test/core/product/factory_smoke.c` already covers the same Core factory null-request/output-clearing contract. | **Resolved by S2.** The App file and both `vm-app-ini-smoke` registrations are removed. Reconfigured x64/x86 CTest graphs retain only `core.factory`, which passes on both widths. |
 | L2 | 79 test C files include a `core/*_private.h`; 53 of those are PC-App unit entries. | **Review trigger, not a violation.** Selected-profile and board-wiring proof can legitimately need a private fixture. S2-S4 must map every App assertion to a genuine selected-profile increment or a Core receiver. |
 | L3 | `test/app-nxvm/unit/board/{cpu_bus_boundary_negative,fdc_boundary_negative}.cmake` are product-registered static gates that copy Core source/test inputs. | **Candidate misownership.** S2 must decide whether each is a Core boundary gate with an App-specific increment, or a true App assembly gate. No copy/alias is permitted. |
 | L4 | 31 test source paths retain historical task markers such as `_s20`, `_s28` or `_t242`. | **Naming debt.** S5 may rename only after each test's behavior/receiver is documented; task history belongs in evidence, not target/file/output identifiers. |
@@ -71,10 +71,12 @@ direction, not semantic assertion ownership.
 | L6 | 5170 and Model 40 tests use the same Core private construction surfaces while asserting ROM, CMOS, D4, CECG, drive geometry, refresh and model-specific routing. | **Likely legitimate profile increments.** Retain unless a specific assertion is duplicated in the same execution context by Core. |
 | L7 | Shared Emulator/Product and App MyNES/PC monitor tests coexist. | **Candidate consumer overlap.** S5 must preserve shared grammar/format tests in Emulator/Product and retain only App delegation, preflight, extension, Debug and snapshot increments above them. |
 
-## S1 Completion Gate
+## S1 Disposition
 
-S1 remains active. It is complete only when the table above is expanded to a
-behavior-level mapping for every candidate group: present registration/label,
+S1 closed after freezing the reproducible entry/registration universe and its
+first bounded semantic candidate groups. It does not claim that source-file
+names or links prove runtime coverage. Each later S must expand its affected
+candidate group to a behavior-level mapping: present registration/label,
 production function, input/failure predicate, canonical owner, any required
 higher-layer increment, and explicit retain/move/split/remove/defer decision.
-No candidate has been altered from this ledger yet.
+No group other than L1 is authorized for relocation by this record.

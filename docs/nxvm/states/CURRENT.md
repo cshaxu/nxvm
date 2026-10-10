@@ -2,31 +2,32 @@
 
 ## Current Work
 
-## Current Task — M5 T548 (S1 Active: Unit-Test Ownership Inventory)
+## Current Task — M5 T548 (S2 Complete: Retire Confirmed Default-App Factory Duplicate)
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T548 S1. Owner approved the queue head on 2026-10-09 after closing T547; declared targets are Shared, NXVM and MyNES. |
+| Identifier Mode | Continuation T548 S2. S1 froze the test-entry baseline and candidate ledger; this S owns only the confirmed Default-App factory duplicate. |
 | Admission And Approval | Owner instruction in this conversation: close the old T, then admit the first queued T to repair the complete NXVM test corpus cleanly. Standing push approval applies. |
 | Objective | Freeze a complete behavior-level ownership and coverage ledger for every registered repository unit test and production owner, then repair misplaced, duplicated, incomplete or non-independent coverage without losing component, profile, board, CPU, composition or failure evidence. |
 | Non-goals | No production behavior or public ABI change merely to simplify tests; no firmware, media, INI, snapshot, timing or machine-identity change; no deletion or relabeling of integration, desktop, benchmark or research tools as units; no sibling-repository edit. |
 | Reference Baseline | T547 closure commits `5b1d07412`, `08a6a19f4` and `6be3ce8ee`; re-freeze the current committed source/test/build graph before any move, merge or deletion. |
-| Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; S1 executes its inventory and durable-ledger batch only. Its live ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
-| Files And ABI Surface | `test/`, registrations, test-only fixtures, manifests, finite boundary verifiers and task evidence across Shared, NXVM Core/four Apps and MyNES. Production APIs are excluded unless separately approved. |
+| Candidate Proposal | `proposals/m5-unit-test-ownership-consolidation.md`; the S1 ledger is `etc/evidence/t548-s1-unit-test-ownership-ledger.md`. |
+| Files And ABI Surface | `test/app-nxvm/unit/product/nxvm_ini_smoke.c` and its two `cmake/nxvm/NxvmProduct.cmake` registrations only. No production API, manifest, asset or other test owner changes. |
 | Applicable Rules | NXVM/MyNES guides; Execution, Architecture, Coding and Documentation rules; selected product design authorities; target-scoped commits and cross-target proof rules. |
-| Verification | S1 records the tracked test, registration and fixture universe; freezes registered counts and ownership assertions; runs static ownership/dependency/manifest checks and focused dual-width inventory checks. Subsequent S packets own test changes and final qualification. |
-| Expected Markers | Durable ledger maps every production file and cohesive assertion group to a canonical owner, higher-layer increment, disposition and evidence; no test changes precede its mapped receiver proof. |
+| Verification | Reconfigure/build x64 and x86 NXVM test graphs; prove `vm-app-ini-smoke` is absent, `core-product-factory` remains registered and passing, and manifests/gates remain valid. |
+| Expected Markers | The App duplicate and its target registrations are absent; Core factory retains the equivalent null-request/output-clearing assertion. |
 | Asset Needs | None for S1. INIs, media, snapshots and artifacts are not edited. |
-| Reporting Requirements | Report frozen universe/counts, confirmed versus candidate conflicts, proposed receiver, target scope and any required production change before it is made. Do not claim runtime coverage from static links. |
-| Stop Conditions | Missing equivalent receiver, weakened failure condition, required production change, protected source, peer-App dependency or ownership ambiguity. |
-| Exit Criteria | S1 ledger/baseline is complete, reproducible and reviewed; every initial candidate has a bounded disposition/receiver; no test relocation occurs before proof. T548 remains open for implementation batches. |
+| Reporting Requirements | Report the retired assertion, its exact Core receiver, registration/count deltas and dual-width result. Do not claim runtime coverage from static links. |
+| Stop Conditions | Missing equivalent receiver, a configuration graph that retains the retired target, a weakened Core predicate or an undeclared production change. |
+| Exit Criteria | Only the duplicate App test/registrations are removed, Core receiver proof passes on both widths, all affected static gates pass and the ledger records the final disposition. T548 remains open. |
 | Original Owner Request | Repair the entire NXVM test suite cleanly after closing the old lifecycle/product task. |
 | Similar-Issue Sweep | Inventory every C/CMake test entry, alias, fixture, negative gate and unit runner outside integration; distinguish component proof, composition increment, App/profile proof and non-unit tooling before assigning a canonical owner. |
 
 | Work | Progress |
 | --- | --- |
 | T547 | Closed at owner direction. Final Shared/NXVM/MyNES commits are `5b1d07412`, `08a6a19f4` and `6be3ce8ee`. Public suites pass 66/66, Core 221/221, NXVM 511/511 and MyNES App 45/45 on x64/x86; all ten deployed artifacts are current. No new manual desktop or external integration qualification is claimed. |
-| T548 S1 | Active: freeze the complete unit-test ownership and coverage ledger plus current registrations before moving, merging or deleting any test. |
+| T548 S1 | Complete: committed baseline `006a7592d` records the 541-unit-entry/45-integration-C universe, registration owners and first semantic candidate groups. It confirmed the Default-App factory duplicate and protected selected-profile increments from mechanical relocation. |
+| T548 S2 | Complete: retired `nxvm_ini_smoke.c` and both `vm-app-ini-smoke` registrations. Reconfigured x64/x86 CTest graphs contain only `core.factory`; it passes on both widths. Core ownership and manifest gates pass. This is test/CMake-only, so no executable input or artifact changed. |
 | T547 S5 | Closed at owner direction. P1 `9131545d8` replaces the live Product with the SoftPC command/keyboard base and App extensions; P2 `09cbfcf93` removes the SoftPC-branded fault message; P3 `3ff1e89f8` moves NXVM identity out of shared Product; P4 `7a2f23574` reduces the shared opening contract to App-provided text. Eight 0546 App artifacts were rebuilt. Product entry/command/manifest focused checks passed on x64; full dual-width Product and complete T547 qualification remain open and are not claimed by this S closure. |
 | T547 S6 | Complete: `bf469c879` adopts SoftPC S16's ownership correction without importing SoftPC runtime code. NXVM-family configuration/factory/extension support and direct tests now live in `src/core/product` and `test/core/product`; the old `ibmpc/nxvm` member is gone. IBM PC and core gates plus 8 focused tests pass on x64 and x86; all eight 0546 product artifacts were rebuilt against the relocated link input. |
 | T547 S7 | Superseded into S8 before P delivery: its uncommitted canonical Core rehome is retained as S8's required receiver baseline rather than split into an unbuildable partial commit. |
