@@ -45,6 +45,15 @@ Artifact evidence: [S10 registration and byte boolean](../etc/evidence/m6-t43-s1
 
 ## Current Technical Baseline
 
+- Workspace-hygiene delivery on 2026-10-09 rebuilt the existing 0044 pair
+  from repository commit `03bf41c02`; no MyNES source, configuration, media or
+  runtime contract changed.  The deployed x64 SHA-256 is
+  `91FC6F42F0EEF5F77685F2676944E6FFC741A99D3A82BA6B0C29FE268E812FE8`; the
+  deployed x86 SHA-256 is
+  `0E56CA61C904A15BED3D633002823CA743904F59593916FE8F9A5B9830A51C5A`.
+  The existing MyNES unit route passes 45/45 on each host width.  This records
+  artifact reconciliation during NXVM T548 and does not reopen a MyNES task.
+
 - MyNES: optimized stripped 0044 x64/x86 pair in `assets/mynes/`, built from
   S2 implementation b22a3bb89 and identified by the hashes in
   [S2 evidence](../etc/evidence/m7-t44-s2-mapper-performance.md).
