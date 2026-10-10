@@ -32,6 +32,11 @@ add_test(NAME core.corpus COMMAND "${CMAKE_COMMAND}"
 add_test(NAME core.verifier-negative COMMAND "${CMAKE_COMMAND}"
     "-DCORE_ROOT=${CORE_ROOT}" "-DPROBE_ROOT=${CMAKE_CURRENT_BINARY_DIR}/verifier-probe"
     -P "${CMAKE_CURRENT_LIST_DIR}/verify_negative.cmake")
+add_test(NAME core.cpu-bus-boundary-negative COMMAND "${CMAKE_COMMAND}"
+    "-DPROJECT_SOURCE_DIR=${CMAKE_CURRENT_LIST_DIR}/../.."
+    "-DWORK=${CMAKE_CURRENT_BINARY_DIR}/cpu-bus-boundary-negative"
+    -P "${CMAKE_CURRENT_LIST_DIR}/cpu_bus_boundary_negative.cmake")
+set_tests_properties(core.cpu-bus-boundary-negative PROPERTIES LABELS "unit;core" TIMEOUT 600)
 add_test(NAME core.test-manifest COMMAND "${CMAKE_COMMAND}"
     "-DEMULATOR_ROOT=${CMAKE_CURRENT_LIST_DIR}" -P "${CORE_ROOT}/../emulator/verify_manifest.cmake")
 add_custom_target(core-product-tests DEPENDS ${SHARED_CORE_TEST_TARGETS})
