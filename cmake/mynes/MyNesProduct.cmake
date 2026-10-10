@@ -26,11 +26,6 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/unit/product" test-app-myne
 add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/integration" test-app-mynes-integration)
 add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/diagnostic" test-app-mynes-diagnostic)
 
-# Preserve the upstream exception for its intentionally exhaustive CMake
-# layout self-test.  Ordinary MyNES tests retain their imported timeout.
-set_property(TEST library.types-layout-selftest DIRECTORY
-    "${CMAKE_SOURCE_DIR}/test/lib" PROPERTY TIMEOUT 180)
-
 # Imported MyNES test CMake owns direct CTest registration. Keep a
 # product-local execution route without registering a second copy of those
 # cases.
