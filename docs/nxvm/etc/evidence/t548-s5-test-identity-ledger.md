@@ -181,3 +181,20 @@ All other auxiliary entries retain a real `unit.*` route.  The verifier now
 reports its actual 334 registered routes on both x64 and x86.  No production
 source, test assertion, external asset, CTest route or executable input
 changed.
+
+## S16 Disposition: NXVM Integration Composition Adaptation
+
+The direct strict-compilation matrix exposed a stale integration-only helper:
+`integration_ini_session_restart()` still read the retired
+`app_composed_machine.machine` field.  The current composition contract owns
+the borrowed machine through `app_composed_machine.composition.machine`.
+
+The receiver initializes its local `app_composed_machine` to zero before
+composition, preserving its existing null/failed-composition handling, then
+reads the current member.  It does not change the integration route, restart
+flow, assertions, production contract or CTest registration.
+
+The unchanged 500-row direct strict-compilation matrix passed on x64 and x86:
+497 retained strict rows and three explicitly deferred rows.  This is a
+test-only compatibility repair; generated executable changes from the build
+graph are discarded rather than published.

@@ -43,7 +43,7 @@ lib_i32 integration_ini_session_assets_present(
 
 lib_status integration_ini_session_restart(integration_ini_session *session)
 {
-    app_composed_machine composed;
+    app_composed_machine composed = {0};
     void *machine = LIB_NULL;
     lib_status status;
 
@@ -59,7 +59,7 @@ lib_status integration_ini_session_restart(integration_ini_session *session)
         session->session = LIB_NULL;
     }
     status = vm_app_compose_machine(&vm_app_machine, &session->request, &composed);
-    machine = composed.machine;
+    machine = composed.composition.machine;
     session->session = machine;
     if (status != LIB_STATUS_OK || session->session == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
     if (session->transform != LIB_NULL && session->transform(session,
