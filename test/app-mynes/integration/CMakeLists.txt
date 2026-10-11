@@ -90,6 +90,13 @@ if(WIN32)
     add_test(NAME mynes.integration.native-console-smoke COMMAND mynes-native-console-smoke)
     # It drives and samples a native Console; keep it with the other
     # desktop-composition checks rather than the headless automatic suite.
+    # Both desktop probes manipulate process-visible Window/Console state.
+    # Serialize them so their result proves their own composition contract,
+    # rather than host foreground or Console arbitration.
+    set_tests_properties(
+        mynes.integration.native-window-smoke
+        mynes.integration.native-console-smoke
+        PROPERTIES RUN_SERIAL TRUE)
 endif()
 
 get_property(MYNES_INTEGRATION_TESTS DIRECTORY PROPERTY TESTS)
