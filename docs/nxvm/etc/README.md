@@ -7,6 +7,10 @@ decision, but it cannot redefine current architecture, source layout, product
 UX, roadmap, rules, status, queue, or debt. Conflicts are resolved by the
 principal documents named in [the NXVM documentation guide](../README.md).
 
+T553 S1: [four PC App ownership ledger](evidence/t553-s1-four-pc-app-ownership-ledger.md)
+records the complete four-App inventory, inward dependency proof, ownership
+dispositions and the one App-local receiving repair.
+
 T546 S19: [CPU external/NPX/Bus evidence](evidence/t546-s19-cpu-external-npx-bus.md)
 records the sourced interruptible `WAIT`/TEST/ESC ownership, L3/L2 timing
 disposition, direct receiver proof and excluded inputs.

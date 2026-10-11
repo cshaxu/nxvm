@@ -25,3 +25,13 @@ does not alter firmware, media, INI runtime semantics or sibling-App behavior
 without a reproduced contract defect and a separately admitted receiver.
 Each App remains the owner of its fixed identity, composition, firmware binding,
 application-local commands, assets and App-specific tests.
+
+## S1 — Inventory and ownership ledger
+
+S1 completed without runtime, source, test, CMake-graph or asset changes. The
+[ownership ledger](../etc/evidence/t553-s1-four-pc-app-ownership-ledger.md)
+classifies every apparent overlap. It proves the four App/test boundaries and
+selected composition graph on both existing default architectures. The only
+demonstrated repair is one duplicate `core-machine` item in MyDeskPro386's
+private CMake link list; S2 receives that isolated cleanup. No Core or Shared
+transfer, dead path, or cross-App dependency was found.
