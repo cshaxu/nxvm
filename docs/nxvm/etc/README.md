@@ -11,6 +11,10 @@ T553 S1: [four PC App ownership ledger](evidence/t553-s1-four-pc-app-ownership-l
 records the complete four-App inventory, inward dependency proof, ownership
 dispositions and the one App-local receiving repair.
 
+T553 S3: [four PC App contract audit](evidence/t553-s3-four-pc-app-contract-audit.md)
+records the single Core-owned request/composition/deployment route, the App
+fixed-binding distinctions and the eight static configuration-graph checks.
+
 T546 S19: [CPU external/NPX/Bus evidence](evidence/t546-s19-cpu-external-npx-bus.md)
 records the sourced interruptible `WAIT`/TEST/ESC ownership, L3/L2 timing
 disposition, direct receiver proof and excluded inputs.
