@@ -51,13 +51,13 @@ confirmed defects from design concerns and unverified hardware hypotheses.
 Passing static gates or current units is not a substitute for actual-code
 review of the graphs and mechanisms.
 
-## S1: Core Inventory And Initial 8042 Mechanism Repair
+## S1: Core Inventory And Convergence Ledger
 
 S1 establishes the full source/test/build inventory and convergence ledger
-across all audit dimensions before implementing its bounded 8042 repair.
-The two demonstrated defects below are initial findings, not the whole Core
-audit. Record other findings with owner, priority and later receivers so S1
-does not grow into an unbounded rewrite.
+across all audit dimensions before any implementation. The two demonstrated
+8042 defects below are initial findings, not the whole Core audit. Record
+other findings with owner, priority and later receivers so S1 does not grow
+into an unbounded rewrite.
 
 ### Demonstrated Defects
 
@@ -84,38 +84,38 @@ sources directly. Its ignored build output is not durable qualification:
 S1 must retain independent owner-local regressions and a reproducible evidence
 record before relying on these results for acceptance.
 
-### Implementation And Similar-Issue Sweep
-
-Make response-delay progress independent of the visibility-poll gate, with
-an explicit ordering contract for replies whose delay has completed. Make
-deadline queries agree with the conditions under which `advance()` can
-actually publish a reply. Do not compensate with fabricated one-tick
-advances, BIOS-command detection, a second scheduler or dropped bytes.
-
-Sweep controller replies, keyboard ACK/BAT and AUX replies; serial backlog,
-FIFO full/empty, scanning enabled/disabled, translation, reset, IRQ edges
-and zero/nonzero delay/poll combinations. Trace the same predicates through
-Core board-at, board-base, x86 scheduler and Machine waiting callers.
-Inventory all four PC construction inputs before judging deployment reach.
-
 ### Verification And Exit
 
-- Add chip-owned regressions for the two failing combinations, asserting
-  reply contents, bounded progress, guest-visible ordering and IRQ behavior.
-- Cover query/advance agreement while serial work or FIFO capacity blocks
-  publication; prove that no false zero deadline hides the next real event.
-- Add only the board/scheduler integration assertions needed to prove the
-  shared deadline contract, without duplicating chip logic tests.
-- Run affected Core unit routes on x64/x86, applicable corpus/manifest and
-  architecture gates, and the affected PC firmware/input integration routes
-  identified by the caller/input inventory. Record required external-input
-  unavailability explicitly; do not substitute unit success for boot proof.
-- Retain a source/caller/change/evidence ledger. Close S1 only when both
-  defects and every swept variant are repaired or explicitly transferred,
-  with no weakened oracle or unsupported hardware/timing claim.
-- Deliver the complete Core inventory, separate source/test dependency maps,
-  audit-dimension coverage ledger and evidence-led later-S allocation. The
-  8042 repair alone does not meet S1's planning exit or the T's objective.
+- Retain a source/caller/evidence ledger, complete Core inventory and
+  separate source/test dependency maps.
+- Record the reproduced 8042 mechanism states, direct callers and the
+  minimal owner-local repair design without changing runtime behavior.
+- Freeze the numbered receiver plan below. A newly found issue may be added
+  only with a ledger row, a bounded owner and a new linear S number.
+- Run only the read-only/static and focused baseline checks needed to prove
+  the inventory; no production implementation is accepted in S1.
+
+## Frozen Linear S Plan
+
+The task uses a single linear sequence. Each S has one mechanism owner and
+one independently reviewable exit; no alphabetic child tasks or mixed-owner
+"cleanup" batches are permitted.
+
+| S | Owner and bounded objective | Exit condition |
+| --- | --- | --- |
+| S1 | Core inventory and convergence ledger; reproduce and design the two KBC defects. | Complete disposition ledger and frozen receiver map; no runtime change. |
+| S2 | `core/chips/kbc8042`: response delay progresses independently of the visibility-poll gate. | Owner-local controller proof covers delay/poll combinations, controller/keyboard/AUX replies, OBF, IRQ and ordering on x64/x86. |
+| S3 | `core/chips/kbc8042`: truthful executable deadline while serial/FIFO work blocks a reply; board deadline assertion only if required to prove forwarding. | Query/advance agreement for serial/FIFO/scan/translation/reset combinations; no false zero deadline or fabricated tick. |
+| S4 | KBC caller qualification through board-at, board-base, x86 scheduler and machine waiting. | One non-duplicative cross-owner route proves the chip deadline contract reaches the scheduler; affected PC input route is qualified or explicitly unavailable. |
+| S5 | Core build and warning qualification, beginning with the CPU `-w` and debug warning exceptions. | Every exception is independently reproduced and retained, narrowed, repaired or transferred; no blanket warning-policy change. |
+| S6 | Core test ownership and fixed-profile qualification support, including Model 40 setup/App observation edges. | Each support edge has an explicit owner and predicate disposition; no production App dependency is introduced. |
+| S7 | Machine/lifecycle/failure-return candidates: runner result state, media replacement and teardown close behavior. | Each candidate is reproduced then repaired, retained or transferred with a direct contract test. |
+| S8 | Board compatibility/source receivers, including Compaq CECG alias and PC/AT bounded-L1 policy. | Primary-source or explicit model-grade evidence supports retain/repair/transfer; no speculative simplification. |
+| S9 | CPU/Core boundary reconciliation for compatibility timing recipes. | CPU-owned items are transferred to the active CPU authority or closed with current evidence; no duplicate CPU implementation path. |
+
+Each completed implementation S receives a target-scoped commit, dual-width
+build and focused unit evidence. Only T closure performs the complete Core and
+affected-App qualification matrix required below.
 
 ## Later Audit Receivers And Convergence
 

@@ -6,25 +6,27 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Closed: M5 T551. |
-| Admission And Approval | Owner approved importing the audited SoftPC shared-six governance improvements on 2026-10-10, with the duplicated X86 command-test marker repaired here before SoftPC adopts it. |
-| Objective | Bring the shared Lib/Emulator/x86 source-and-test corpus to the audited SoftPC baseline: remove Lib's outer-component naming exception, neutralize Emulator/X86 responsibility wording, adopt independent test-manifest verification, normalize shared test identities, and repair the one duplicated X86 success marker. |
-| Non-goals | Do not import SoftPC App code, binaries, documentation, configuration, or unrelated uncommitted changes; do not change public APIs, runtime behavior, firmware, media, INI, snapshots, Core, or App code. |
-| Reference Baseline | NXVM `b0da3073c`; SoftPC `4608b898825b97c2d287bcc66e32be092b8e6d5b` plus its inspected worktree changes. The audit found no C/H production behavior difference across the six roots. |
-| Candidate Proposal | [T551 shared Product-to-x86 normalization](../proposals/M5-T551-shared-product-x86-normalization-proposal.md), corrective S3. |
-| Files And ABI Surface | `src/lib/verify_kvm_naming.cmake`; `src/{emulator,x86}` README/verifier/manifests; `test/verify_manifest.cmake`; and `test/{lib,emulator,x86}` CMake, README, negative checks, command marker and manifests. No public header, API, target-link graph or executable input changes. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`; source policy. |
-| Verification | Verify all six manifests and corpus boundaries, run all Shared Lib/Emulator/x86 unit routes on x64/x86, then run the complete repository-only unit suite on both widths. Review receiving App impact and record why test/verifier-only changes do not require new EXEs. |
-| Expected Markers | Lib does not special-case Emulator; each test root verifies itself through the neutral test manifest tool; CTest names retain their component ownership; success output is `X86 Product command policy: OK`. |
-| Asset Needs | None: no executable source, build recipe or runtime input changes. Preserve the current ten deployed artifacts. |
-| Reporting Requirements | Record exact imported SoftPC paths, the deliberately corrected non-identical marker, dual-width Shared/full-unit results, manifests/boundaries, and the no-artifact determination. |
-| Stop Conditions | Stop and report if the imported test tool requires a product dependency, a manifest/boundary gate fails, a public/runtime change is required, or the receiving-App review finds an executable input. |
-| Exit Criteria | All admitted Shared paths and manifests are synchronized with the audited SoftPC governance changes except the approved corrected marker; dual-width Shared and complete repository-only unit proof passes; source impact and no-artifact determination are documented and committed/pushed. |
-| Original Owner Request | Import every audited SoftPC shared-six improvement that preserves the component boundaries, and repair the duplicated X86 command-test marker before SoftPC imports NXVM's final shared corpus. |
-| Similar-Issue Sweep | Recheck all three source and test manifests, every test-manifest registration, component naming/boundary verifiers, and surviving outer-component vocabulary. |
+| Identifier Mode | Active: M5 T552 S2. |
+| Admission And Approval | Owner approved the frozen linear S1-S9 plan on 2026-10-10. S1 established `t552-s1-core-convergence-ledger.md`, reproduced the controller ownership and closed with no runtime change. S2 is automatically admitted as the approved response-delay/status-poll owner repair. |
+| Objective | Repair the KBC8042 reply-delay/status-poll circular wait at its sole chip owner, preserving the profile-owned visibility-poll ordering and all existing serial/FIFO reply rules. |
+| Non-goals | Do not alter Shared, MyNES, sibling App production, firmware/media/INI semantics, asset inputs or unrelated CPU/chip/board behavior. Do not add BIOS/profile special cases, a second scheduler, fabricated ticks, a new queue or a public API. Do not repair the serial/FIFO deadline defect before S3. |
+| Reference Baseline | T552 S1 ledger against NXVM `5ce73c840`, plus the S1 governance/evidence commit. The focused existing KBC routes pass x64/x86 but do not cover combined nonzero delay/poll. |
+| Candidate Proposal | [M5 Core code quality audit and repair](../proposals/m5-core-code-quality-audit-repair.md), S2. |
+| Files And ABI Surface | `src/core/chips/kbc8042/controller.c`, `test/core/chips/kbc8042/controller_contract_smoke.c`, their Core manifests and only directly required Core test registration/evidence. No board/scheduler production source change is admitted. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`; source policy. Apply the Core-to-App inward dependency rule and preserve fixed machine distinctions. |
+| Verification | Add chip-owned regressions for controller, keyboard ACK/BAT and AUX replies with combined nonzero delay/poll values. Prove delay progresses with elapsed time before status polls are consumed; prove OBF/IRQ/output ordering. Run affected Core x64/x86 units, Core manifest/corpus gates and a direct similar-reply sweep. |
+| Expected Markers | A pending reply's delay reaches zero solely through elapsed time; only then do profile-owned status reads release its visibility gate. Existing zero-delay/zero-poll reply behavior and keyboard serial ordering remain unchanged. |
+| Asset Needs | None initially. Rebuild/deploy PC artifacts only if admitted executable source/build inputs change; preserve all external firmware/media and adjacent INI files. |
+| Reporting Requirements | Before implementation, preserve the S1 source/caller design evidence. At S delivery report exact source/test line change, reply-variant sweep, x64/x86 result and any unverified integration boundary. |
+| Stop Conditions | Stop for a required Shared/public-API change, protected-source/asset need, a timing downgrade, evidence contradicting the delay/poll mechanism, a Core-to-App ownership conflict, or a scope expansion into S3's deadline work. |
+| Exit Criteria | The chip owner implements the single delay-then-poll contract with independent direct regressions for controller, keyboard and AUX replies; affected Core x64/x86 proof and gates pass; actual diff review and scoped P commit are complete. T552 remains open for S3-S9. |
+| Original Owner Request | Close the preceding T and admit the queue-head Core code-quality audit/repair task. |
+| Similar-Issue Sweep | Inspect controller command/AUX/keyboard reply paths, serial backlog, FIFO states, scan/translation/reset/IRQ edges, `ticks_until_event()` and board/scheduler consumers; independently classify all Core owners, test predicates, caller edges, names, duplicate paths and warning suppressions in the ledger. |
 
 | Work | Progress |
 | --- | --- |
+| T552 S2 | Active: repair/prove KBC8042 reply-delay/status-poll progress at the chip owner only. |
+| T552 S1 | Complete: committed the durable Core ownership/convergence ledger, direct KBC source/caller reproductions and frozen linear S1-S9 receiver plan; Core manifest/corpus gates and existing focused KBC routes pass x64/x86. No runtime source changed. |
 | T551 S1 | Complete: Shared `1e35f83c1` moved the portable corpus and tests to `x86`, renamed the former Surface subsystem to `x86/product`, refreshed both manifests, and passed focused x64/x86 x86 gates and units. NXVM `7e81e37ea` rewired Core/App consumers in a separate target-scoped commit. |
 | T551 S2 | Complete: retired the eight 0546 PC binaries; rebuilt, deployed and PE-verified the eight 0.5.0551 PC and two current 0.0.0044 MyNES x64/x86 binaries. Root unit passes 544/544 and external integration passes 21/21 on each width; MyNES passes 57/57 on each width; both product documentation gates pass. |
 | T551 S3 | Complete: imported the audited SoftPC Shared-six verifier, test-manifest and documentation improvements; corrected the duplicate X86 command success marker; source/test roots now match SoftPC exactly. Direct manifest, corpus, naming and documentation gates pass. Shared routes and complete repository-only units pass on both widths (544/544 each); no executable input changed, so the existing ten artifacts remain valid. |
