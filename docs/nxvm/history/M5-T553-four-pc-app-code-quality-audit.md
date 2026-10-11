@@ -54,3 +54,19 @@ that Core retains the one request/compose/destroy/deploy route and each App
 only provides its fixed machine facts. All eight existing App-selection graphs
 pass their static boundaries; dual-width artifact/build ownership checks pass.
 S4 receives complete four-App qualification.
+
+## S4 — Final four-App qualification and closure
+
+The final [qualification record](../etc/evidence/t553-s4-four-pc-app-qualification.md)
+passes every registered App-labelled route on both widths: My5160 2/2,
+My5170 6/6, MyDeskPro386 29/29 and NXVM 55/55, totaling 92/92 x64 and 92/92
+x86. This includes 71 unit and 21 integration routes per width. All App
+boundary/configuration proof plus product-artifact, current-artifact,
+build-ownership and documentation-governance gates pass on both widths.
+
+The only production-adjacent repair in T553 is S2's removal of a duplicate
+MyDeskPro386 CMake link item. The current artifact target therefore required
+no rebuild and no executable bytes changed. No manual desktop, external
+firmware-boot or hardware qualification is implied by this closure.
+
+T553 is closed.

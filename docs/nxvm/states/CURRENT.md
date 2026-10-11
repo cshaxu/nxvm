@@ -6,29 +6,30 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New: M5 T553 S4. |
-| Admission And Approval | Owner approved the queue-head Four PC App code-quality audit on 2026-10-10. S1–S3 completed their scoped inventory, cleanup and contract audit; S4 is automatically admitted under the frozen sequence. |
-| Objective | Qualify the four PC Apps after the completed audit: preserve clean ownership and run the applicable x64/x86 App tests, static gates and documentation governance. |
-| Non-goals | Do not alter production behavior, Shared/Core, firmware/media/INI semantics, external assets or a sibling App merely to force a qualification result. Record any external or desktop limitation honestly. |
-| Reference Baseline | T552 closure `5e4bdeb38`; four fixed PC Apps, current deployed 0.5.0551 pairs and their adjacent owner INIs. |
-| Candidate Proposal | [M5 Four PC App code quality audit](../proposals/m5-four-pc-app-code-quality-audit.md), S4. |
-| Files And ABI Surface | No production surface is presumed to change. S4 may add only necessary evidence/status documentation unless a directly reproduced App-local defect requires a separately justified repair. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`; source policy if any external material is encountered. Preserve the App → Core → Shared dependency direction. |
-| Verification | Run the four App-labelled x64/x86 test routes, all four App-boundary/configuration checks, artifact/build ownership gates and documentation governance. Rebuild artifacts only if executable inputs changed. |
-| Expected Markers | Four App routes pass on both widths, static ownership/deployment proof remains green, and final evidence explicitly distinguishes unrun manual/external validation. |
+| Identifier Mode | No active packet. |
+| Admission And Approval | T553 closed on 2026-10-10 after its frozen S1–S4 sequence. |
+| Objective | Await owner admission of the next queue candidate. |
+| Non-goals | Do not begin a queued task, alter production behavior, assets, firmware/media/INI semantics or sibling-App behavior before admission. |
+| Reference Baseline | T553 closure evidence and current deployed 0.5.0551 App artifact pairs. |
+| Candidate Proposal | Next candidate: [selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md). |
+| Files And ABI Surface | No active change surface. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`. |
+| Verification | No active verification. |
+| Expected Markers | New task packet only after explicit owner admission. |
 | Asset Needs | None. Preserve all external firmware/media, adjacent INIs, snapshots and current artifacts. |
-| Reporting Requirements | Report each width's qualified route counts, gates, artifact disposition and any failed/unrun route. Do not call local CTest success external/manual proof. |
-| Stop Conditions | Stop for a reproducible production defect outside T553's App scope, protected asset/source need, external test input failure or a hardware/manual result needing user action. |
-| Exit Criteria | Applicable four-App x64/x86 qualification and documentation gate pass; final diff/evidence is committed and pushed; then T553 may close. |
-| Original Owner Request | Admit the next queue-head NXVM task after completing T552. |
-| Similar-Issue Sweep | Confirm the tested routes retain no cross-App source/test edge and every deployed App root still contains only its current paired artifacts plus its owner INI. |
+| Reporting Requirements | Report the next proposed scope and evidence plan before modifying its owners. |
+| Stop Conditions | No active task. |
+| Exit Criteria | No active task. |
+| Original Owner Request | Complete T553, then await the next NXVM request. |
+| Similar-Issue Sweep | T553 closure confirms no cross-App source/test edge and current paired App artifacts; later work must reassess its own scope. |
 
 | Work | Progress |
 | --- | --- |
 | T553 S1 | Complete: the ownership ledger records all four source/test/CMake/asset roots, no cross-App edge, valid machine-specific distinctions and one narrow MyDeskPro386 CMake duplicate for S2. Default x64/x86 configuration passes all four App/test boundaries and selected-composition proof. |
 | T553 S2 | Complete: removed MyDeskPro386's duplicated private `core-machine` link item. Its x64/x86 plan smoke, boundary configure and documentation governance pass; no executable input changed. |
 | T553 S3 | Complete: no App-owned lifecycle/configuration/composition/teardown/artifact defect reproduced. Core remains the sole request/compose/destroy/deploy owner; all eight App-selection graphs and dual-width artifact/build ownership gates pass. |
-| T553 S4 | Active: run final dual-width four-App qualification and documentation governance; record any external/manual limitation without speculative source changes. |
+| T553 S4 | Complete: every registered App-labelled route passes on x64/x86 (My5160 2/2, My5170 6/6, MyDeskPro386 29/29, NXVM 55/55; 92/92 per width). Static ownership/deployment and documentation gates pass; no executable input changed, and manual/external limitations are recorded. |
+| T553 | Closed: S1–S4 complete the four-App ownership, cleanup, contract and qualification audit. The sole App repair removes one duplicate MyDeskPro386 CMake link item; all other candidate distinctions remain correctly owned. |
 | T552 S9 | Complete: CPU owns all timing recipes and their origin/source-allocation classification; Core owns only copied-result publication and physical eligibility. Five CPU manifest, four transfer and two Core consumer receivers pass x64/x86. |
 | T552 S8 | Complete: retained the CECG B0000h compatibility window as one VADP storage contract while transferring any physical firmware equivalence claim; retained bounded-L1 as a declared Core control policy, not a device duration. Focused CECG/time routes and Core gates pass x64/x86. |
 | T552 S7 | Complete: Core replacement now preserves its atomic new-medium state and propagates an old-lease close failure. The owner-local close injector proves both replacement and removal failure contracts for FDD/HDD; run-result and teardown candidates were retained with direct owner evidence. |

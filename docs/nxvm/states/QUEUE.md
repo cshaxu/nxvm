@@ -15,10 +15,13 @@ quality audit and repair](../history/M5-T552-core-code-quality-audit-repair.md)
 is closed; its CPU timing boundary and Core/App qualification are recorded in
 the closure history.
 
-1. [Four PC App code quality audit](../proposals/m5-four-pc-app-code-quality-audit.md) — Audit My5160, My5170, MyDeskPro386 and NXVM application-owned code for ownership, duplication, boundary, configuration, lifecycle, test and artifact defects; transfer Shared/Core candidates to their proper receivers.
-2. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
-3. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-4. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+The [T553 four PC App code-quality audit](../history/M5-T553-four-pc-app-code-quality-audit.md)
+is closed after its App-local ownership cleanup and complete dual-width
+qualification.
+
+1. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
+2. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+3. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 
 [T544](../history/M5-T544-retained-cpu-qualification.md) is closed as a
 completed CPU audit by owner direction. Its eighteen complete repair/proof

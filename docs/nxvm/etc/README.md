@@ -15,6 +15,10 @@ T553 S3: [four PC App contract audit](evidence/t553-s3-four-pc-app-contract-audi
 records the single Core-owned request/composition/deployment route, the App
 fixed-binding distinctions and the eight static configuration-graph checks.
 
+T553 S4: [four PC App qualification](evidence/t553-s4-four-pc-app-qualification.md)
+records the complete x64/x86 App-labelled route matrix, static-gate proof,
+artifact disposition and explicit manual/external limits.
+
 T546 S19: [CPU external/NPX/Bus evidence](evidence/t546-s19-cpu-external-npx-bus.md)
 records the sourced interruptible `WAIT`/TEST/ESC ownership, L3/L2 timing
 disposition, direct receiver proof and excluded inputs.
