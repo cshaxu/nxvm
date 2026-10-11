@@ -50,6 +50,24 @@ static lib_bool x86_kbc8042_keyboard_scan_delivery_enabled(const x86_kbc8042 *co
         (controller->data.input_port & 0x80u) != 0u);
 }
 
+static lib_bool x86_kbc8042_keyboard_serial_delivery_pending(
+    const x86_kbc8042 *controller)
+{
+    return controller != LIB_NULL && controller->data.keyboard_serial_count != 0u &&
+        controller->link.keyboard_inputs(controller->link.context).scanning &&
+        x86_kbc8042_keyboard_scan_delivery_enabled(controller,
+            controller->data.command_byte);
+}
+
+static lib_bool x86_kbc8042_response_can_publish(const x86_kbc8042 *controller)
+{
+    return controller != LIB_NULL && controller->data.delayed_response_count != 0u &&
+        controller->data.response_status_polls_remaining == 0u &&
+        !x86_kbc8042_keyboard_serial_delivery_pending(controller) &&
+        controller->data.delayed_response_count <=
+        KBC_FIFO_CAPACITY - controller->data.fifo_count;
+}
+
 static void x86_kbc8042_set_command_byte(x86_kbc8042 *controller,
     lib_u8 value)
 {
@@ -265,15 +283,12 @@ static void x86_kbc8042_drain_keyboard_serial(x86_kbc8042 *controller)
 
     if (controller == LIB_NULL ||
         controller->data.serial_delivery_remaining_ticks != 0u ||
-        !controller->link.keyboard_inputs(controller->link.context).scanning ||
-        !x86_kbc8042_keyboard_scan_delivery_enabled(controller,
-            controller->data.command_byte)) return;
+        !x86_kbc8042_keyboard_serial_delivery_pending(controller)) return;
     /* The keyboard serial stream may have private backlog, but only one
      * scan byte may enter the controller output path at a time.  Firmware
      * such as the 5170 POST disables the keyboard and clears one OBF byte;
      * admitting a whole host key chord past that boundary is not hardware. */
-    if (controller->data.keyboard_serial_count != 0u &&
-        controller->data.fifo_count == 0u) {
+    if (controller->data.fifo_count == 0u) {
         native_byte = controller->data.keyboard_serial[
             controller->data.keyboard_serial_head];
         status = x86_kbc8042_publish_native_byte(controller, native_byte);
@@ -578,13 +593,7 @@ void x86_kbc8042_advance(x86_kbc8042 *controller, lib_u64 elapsed_ticks)
             controller->data.response_remaining_ticks -= elapsed_ticks;
         } else {
             controller->data.response_remaining_ticks = 0u;
-            if (controller->data.response_status_polls_remaining == 0u &&
-                (controller->data.keyboard_serial_count == 0u ||
-                    !controller->link.keyboard_inputs(controller->link.context).scanning ||
-                    !x86_kbc8042_keyboard_scan_delivery_enabled(controller,
-                        controller->data.command_byte)) &&
-                controller->data.delayed_response_count <=
-                KBC_FIFO_CAPACITY - controller->data.fifo_count) {
+            if (x86_kbc8042_response_can_publish(controller)) {
                 while (controller->data.delayed_response_index <
                         controller->data.delayed_response_count) {
                     (void)x86_kbc8042_enqueue(controller,
@@ -613,7 +622,8 @@ lib_status x86_kbc8042_ticks_until_event(const x86_kbc8042 *controller,
     if (controller == LIB_NULL || out_ticks == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (controller->data.serial_delivery_remaining_ticks != 0u) {
+    if (x86_kbc8042_keyboard_serial_delivery_pending(controller) &&
+        controller->data.fifo_count == 0u) {
         ticks = controller->data.serial_delivery_remaining_ticks;
     }
     keyboard = controller->link.keyboard_inputs(controller->link.context);
@@ -621,8 +631,7 @@ lib_status x86_kbc8042_ticks_until_event(const x86_kbc8042 *controller,
         controller->data.delayed_response_count == 0u) {
         ticks = 0u;
     }
-    if (controller->data.delayed_response_count != 0u && controller->data.fifo_count == 0u &&
-        controller->data.response_status_polls_remaining == 0u &&
+    if (x86_kbc8042_response_can_publish(controller) &&
         controller->data.response_remaining_ticks < ticks) {
         ticks = controller->data.response_remaining_ticks;
     }

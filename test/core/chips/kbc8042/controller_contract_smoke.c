@@ -351,6 +351,70 @@ static lib_bool response_delay_then_status_poll(controller_fixture *f)
     return failed;
 }
 
+static lib_bool response_deadline_matches_publishability(controller_fixture *f)
+{
+    const lib_u8 keys[] = { 0x1cu, 0x32u };
+    const lib_u8 packet[3] = { 8u, 2u, 3u };
+    x86_kbc8042 *c = f->controller;
+    lib_u64 ticks = 0u;
+    lib_bool failed = LIB_FALSE;
+    lib_u8 index;
+
+    x86_kbc8042_set_command_response_timing(c, 0u);
+    x86_kbc8042_set_command_response_status_polls(c, 0u);
+    x86_kbc8042_set_serial_delivery_timing(c, 3u);
+    x86_keyboard_reset(f->keyboard);
+    x86_kbc8042_reset(c);
+    failed |= x86_kbc8042_receive_keyboard_bytes(c, keys, sizeof(keys)) !=
+        LIB_STATUS_OK;
+    x86_kbc8042_write_command(c, 0x20u);
+    failed |= x86_kbc8042_ticks_until_event(c, &ticks) != LIB_STATUS_OK ||
+        ticks != 3u;
+    x86_kbc8042_advance(c, 2u);
+    failed |= x86_kbc8042_ticks_until_event(c, &ticks) != LIB_STATUS_OK ||
+        ticks != 1u;
+    x86_kbc8042_advance(c, 1u);
+    failed |= x86_kbc8042_read_data(c) != 0x1eu ||
+        x86_kbc8042_ticks_until_event(c, &ticks) != LIB_STATUS_OK || ticks != 3u;
+    x86_kbc8042_advance(c, 3u);
+    failed |= x86_kbc8042_read_data(c) != 0x30u ||
+        x86_kbc8042_read_data(c) != 0x43u;
+
+    x86_keyboard_reset(f->keyboard);
+    x86_kbc8042_reset(c);
+    failed |= x86_kbc8042_receive_keyboard_bytes(c, keys, sizeof(keys)) !=
+        LIB_STATUS_OK;
+    x86_kbc8042_write_data(c, 0xf5u);
+    failed |= (x86_kbc8042_read_status(c) & 1u) == 0u ||
+        x86_kbc8042_read_data(c) != 0xfau;
+
+    x86_kbc8042_set_serial_delivery_timing(c, 0u);
+    x86_kbc8042_set_command_response_timing(c, 2u);
+    x86_keyboard_reset(f->keyboard);
+    x86_kbc8042_reset(c);
+    failed |= x86_kbc8042_receive_keyboard_byte(c, 0x1cu) != LIB_STATUS_OK;
+    x86_kbc8042_write_command(c, 0x20u);
+    failed |= x86_kbc8042_ticks_until_event(c, &ticks) != LIB_STATUS_OK ||
+        ticks != 2u;
+    x86_kbc8042_advance(c, 2u);
+    failed |= x86_kbc8042_read_data(c) != 0x1eu ||
+        x86_kbc8042_read_data(c) != 0x43u;
+
+    x86_kbc8042_set_command_response_timing(c, 0u);
+    x86_kbc8042_reset(c);
+    for (index = 0u; index < 21u; ++index) {
+        failed |= x86_kbc8042_receive_aux_packet(c, packet) != LIB_STATUS_OK;
+    }
+    x86_kbc8042_write_command(c, 0x20u);
+    x86_kbc8042_write_command(c, 0x20u);
+    failed |= x86_kbc8042_ticks_until_event(c, &ticks) != LIB_STATUS_INVALID_STATE;
+
+    x86_kbc8042_set_command_response_timing(c, 0u);
+    x86_kbc8042_set_command_response_status_polls(c, 0u);
+    x86_kbc8042_set_serial_delivery_timing(c, 0u);
+    return failed;
+}
+
 int main(void)
 {
     controller_fixture fixture = { 0 };
@@ -364,6 +428,7 @@ int main(void)
     failed |= packet_saturation(&fixture);
     failed |= configuration_and_serial(&fixture);
     failed |= response_delay_then_status_poll(&fixture);
+    failed |= response_deadline_matches_publishability(&fixture);
     destroy(&fixture);
     failed |= fixture.irq[0] || fixture.irq[1];
     return failed ? 1 : 0;
