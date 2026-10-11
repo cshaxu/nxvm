@@ -14,17 +14,6 @@ static inline lib_bool pc_qualification_profile_is_model40(
 
 /* This view is qualification-only: it observes a selected Model 40 without
  * making an App test depend on MyDeskPro386 test support. */
-static inline vm_profile_model40_observation pc_qualification_model40_observation(
-    const vm_machine *machine)
-{
-    vm_profile_model40_observation observation = {0};
-
-    if (machine != LIB_NULL)
-        (void)vm_profile_model40_observe(&machine->construction,
-            &observation);
-    return observation;
-}
-
 static inline lib_status pc_qualification_model40_d4_observe(const vm_machine *machine,
     core_machine_d4_platform_observation *out_observation)
 {

@@ -1,5 +1,4 @@
 #include "core/machine/machine_interface.h"
-#include "test/core/setup/model40_profile.h"
 #include "../../../core/machine/support/media.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
@@ -229,17 +228,6 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 LIB_STATUS_OK) {
             printf("NXVM:INI-BOOT:%s:STATE:elapsed=%llu:lifecycle=%u\n", name,
                 (unsigned long long)observation.elapsed_ticks, observation.lifecycle);
-        }
-        const vm_profile_model40_observation profile =
-            pc_qualification_model40_observation(session);
-        if (profile.fdc_terminal_valid) {
-            const core_machine_fdc_terminal_observation *terminal =
-                &profile.fdc_terminal;
-            printf("NXVM:INI-BOOT:%s:FDC-LAST-TERMINAL:sequence=%llu:cmd=%02X:drive=%u:result=%02X/%02X/%02X/%02X/%02X/%02X/%02X:success=%u\n",
-                name, (unsigned long long)terminal->sequence, terminal->command,
-                terminal->drive, terminal->result[0], terminal->result[1],
-                terminal->result[2], terminal->result[3], terminal->result[4],
-                terminal->result[5], terminal->result[6], terminal->successful);
         }
         if (core_machine_capture_time_observation(session->core_machine,
                 &time_observation) == LIB_STATUS_OK) {
