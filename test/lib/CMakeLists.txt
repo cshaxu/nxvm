@@ -80,7 +80,10 @@ endif()
 add_test(NAME lib.types-layout
         COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${LIB_ROOT}
             -P "${LIB_ROOT}/verify_types_layout.cmake")
-    add_test(NAME lib.manifest
+add_test(NAME lib.test-manifest
+    COMMAND "${CMAKE_COMMAND}" -DTEST_ROOT:PATH=${CMAKE_CURRENT_SOURCE_DIR}
+        -P "${CMAKE_CURRENT_LIST_DIR}/../verify_manifest.cmake")
+add_test(NAME lib.manifest
         COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${LIB_ROOT}
             -P "${LIB_ROOT}/verify_manifest.cmake")
     add_test(NAME lib.linux-build-contract
@@ -124,9 +127,6 @@ add_test(NAME lib.test-types-boundary COMMAND "${CMAKE_COMMAND}"
 add_test(NAME lib.test-types-boundary-selftest COMMAND "${CMAKE_COMMAND}"
     "-DTEST_WORK_DIR=${CMAKE_CURRENT_BINARY_DIR}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/../types_boundary_selftest.cmake")
-add_test(NAME lib.test-manifest COMMAND "${CMAKE_COMMAND}"
-    "-DLIBRARY_ROOT=${CMAKE_CURRENT_SOURCE_DIR}"
-    -P "${LIB_ROOT}/verify_manifest.cmake")
 set_tests_properties(
     lib.test-boundaries
     lib.test-boundaries-selftest

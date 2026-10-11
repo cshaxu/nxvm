@@ -27,7 +27,7 @@ foreach(naming_root IN LISTS naming_roots)
     foreach(naming_file IN LISTS naming_files)
         file(RELATIVE_PATH naming_path "${KVM_NAMING_ROOT}" "${naming_file}")
         string(REPLACE "\\" "/" naming_path "${naming_path}")
-        if(naming_path MATCHES "^emulator/ui/" OR naming_path MATCHES "^test/lib/fixtures/")
+        if(naming_path MATCHES "^test/lib/fixtures/")
             continue()
         endif()
         if(naming_path MATCHES "(^|/)${retired_prefix}-" OR
@@ -35,10 +35,6 @@ foreach(naming_root IN LISTS naming_roots)
             message(FATAL_ERROR "Obsolete KVM spelling in path: ${naming_path}")
         endif()
         file(READ "${naming_file}" naming_text)
-        # emulator/ui is intentionally the product-independent interaction
-        # owner.  Its canonical public include is not the retired lib UI
-        # component taxonomy this verifier rejects.
-        string(REPLACE "emulator/ui/ui_interface.h" "" naming_text "${naming_text}")
         if(naming_text MATCHES "(^|[^A-Za-z0-9_])${retired_prefix}_" OR
            naming_text MATCHES "(^|[^A-Za-z0-9_])${retired_prefix_upper}_" OR
            naming_text MATCHES "(^|[^A-Za-z0-9_])${retired_class}([^A-Za-z0-9_]|$)")

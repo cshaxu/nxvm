@@ -70,13 +70,13 @@ allocation/formatting and native write failures remain explicit.
 owners. No other emulator component edge is permitted. Application and host code may
 compose only the root `*_interface.h` contracts; implementation headers and
 source files remain component-local. Importing products decide whether to inject
-an adapter or expose a command. Emulator never depends on Product.
+an adapter or expose a command. Emulator never depends on an outer component.
 The machine debug contract is synchronous to the control-thread caller and
 serviced by the existing paused executor.
 Machine copies opaque pointer-free request/response bytes with explicit lengths,
 bounded by 128/1536 bytes in its single request slot. It does not interpret CPU
-operations. Protocol vocabulary belongs to the requesting frontend and product
-adapter, which use aligned typed copies.
+operations. Protocol vocabulary belongs to the requesting frontend and its
+architecture-specific adapter, which use aligned typed copies.
 Driver execution validates protocol-specific sizes and access constraints.
 Failures return zero response length without changing caller output bytes.
 Request admission and executor claiming share one lock. Failed completion reset
@@ -86,7 +86,7 @@ wait on its independent task cancellation and join before returning an error.
 Commands are never replayed. Concurrent failure of native completion and task
 cancellation, or inability to prove thread exit, is outside recoverable operation:
 retain all callback/stream contexts until successful shutdown. Debug cancellation
-clears product plans, not in-flight requests. Emulator builds only its four neutral components; products separately
+clears frontend plans, not in-flight requests. Emulator builds only its four neutral components; products separately
 select any architecture-specific frontend.
 
 Machine shutdown synchronously joins its worker and all callbacks without
@@ -99,9 +99,9 @@ Shutdown is permanent and idempotent, unlike the restartable product stop.
 ## Independent verification
 
 Source-only Emulator needs just src/emulator and src/lib. The neutral test suites
-need only src/emulator, src/lib, test/emulator and test/lib. Importing-component
-CLI/protocol and assembly tests are outside the neutral Emulator suite. No
-importing-component sources, configuration or resources are needed:
+need only src/emulator, src/lib, test/emulator and test/lib. Outer CLI/protocol
+and assembly tests are not part of the neutral Emulator suite. No importing
+application sources, configuration or resources are needed:
 
 ```text
 cmake -S test/emulator -B build/emulator

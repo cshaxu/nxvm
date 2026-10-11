@@ -38,7 +38,7 @@ if(MSVC)
 else()
     target_compile_options(x86-product-entry-smoke PRIVATE -UNDEBUG)
 endif()
-set(x86_product_entry_work_directory "${CMAKE_CURRENT_BINARY_DIR}/test/x86-product-entry")
+set(x86_product_entry_work_directory "${CMAKE_CURRENT_BINARY_DIR}/test/x86-product-entry-smoke")
 file(MAKE_DIRECTORY "${x86_product_entry_work_directory}")
 add_test(NAME x86.product/entry COMMAND x86-product-entry-smoke)
 set_tests_properties(x86.product/entry PROPERTIES LABELS "unit;x86" TIMEOUT 30
@@ -62,15 +62,15 @@ add_test(NAME x86.corpus-negative COMMAND "${CMAKE_COMMAND}"
     -P "${CMAKE_CURRENT_LIST_DIR}/verify_negative.cmake")
 set_tests_properties(x86.corpus-negative PROPERTIES LABELS "unit;x86" TIMEOUT 30)
 add_test(NAME x86.test-manifest COMMAND "${CMAKE_COMMAND}"
-    "-DX86_ROOT=${CMAKE_CURRENT_SOURCE_DIR}"
-    -P "${X86_ROOT}/verify_manifest.cmake")
+    "-DTEST_ROOT=${CMAKE_CURRENT_SOURCE_DIR}"
+    -P "${CMAKE_CURRENT_LIST_DIR}/../verify_manifest.cmake")
 set_tests_properties(x86.test-manifest PROPERTIES LABELS "unit;x86" TIMEOUT 30)
 add_test(NAME x86.test-types-boundary COMMAND "${CMAKE_COMMAND}"
     "-DTEST_ROOTS=${CMAKE_CURRENT_SOURCE_DIR}"
     -P "${CMAKE_CURRENT_LIST_DIR}/../verify_types_boundary.cmake")
 set_tests_properties(x86.test-types-boundary PROPERTIES LABELS "unit;x86" TIMEOUT 30)
 add_test(NAME x86.manifest COMMAND "${CMAKE_COMMAND}"
-    "-DX86_ROOT=${CMAKE_CURRENT_SOURCE_DIR}"
+    "-DX86_ROOT=${X86_ROOT}"
     -P "${X86_ROOT}/verify_manifest.cmake")
 set_tests_properties(x86.manifest PROPERTIES LABELS "unit;x86" TIMEOUT 30)
 shared_verify_test_registration(x86)

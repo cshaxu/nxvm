@@ -1,7 +1,7 @@
-# x86
+# X86
 
-This portable x86 corpus owns shared PC command policy, debugger/assembly tools
-and product composition. It depends on Lib and Emulator. `emulator/product` owns
-neutral Machine/Session/UI construction and ordered teardown; this component
-retains the PC command implementation, hotkey policy and product binding used
-by both NXVM and SoftPC.
+X86 owns shared x86 debugger/assembly tools and the `x86/product` command,
+hotkey and composition policy. It depends only on Lib and Emulator.
+`emulator/product` owns neutral Machine/Session/UI construction and ordered
+teardown; X86 owns the PC command implementation and surface binding used by
+both NXVM and SoftPC.

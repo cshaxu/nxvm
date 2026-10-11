@@ -15,6 +15,6 @@ function(expect_rejected suffix appended)
     endif()
 endfunction()
 
-expect_rejected("outer-product" "target_link_libraries(x86-xasm32 PRIVATE x86-debug)")
+expect_rejected("outer-x86" "target_link_libraries(x86-xasm32 PRIVATE x86-debug)")
 expect_rejected("outer-emulator" "target_link_libraries(x86-xasm32 PRIVATE emulator-machine)")
 message(STATUS "x86 dependency negative coverage: OK")

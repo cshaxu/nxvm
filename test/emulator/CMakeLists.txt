@@ -37,23 +37,23 @@ shared_register_test(emulator machine_wait emulator-machine)
 shared_register_test(emulator physical_key_identity emulator-session)
 shared_register_test(emulator session_frame emulator-session)
 shared_register_test(emulator session_monitor emulator-session)
-add_executable(emulator-test-composition product/composition_smoke.c
+add_executable(emulator-product-composition-smoke product/composition_smoke.c
     "${EMULATOR_ROOT}/product/composition.c")
-target_link_libraries(emulator-test-composition PRIVATE types)
-target_compile_definitions(emulator-test-composition PRIVATE
+target_link_libraries(emulator-product-composition-smoke PRIVATE types)
+target_compile_definitions(emulator-product-composition-smoke PRIVATE
     printf=emulator_product_composition_smoke_printf)
 if(MSVC)
-    target_compile_options(emulator-test-composition PRIVATE /UNDEBUG)
+    target_compile_options(emulator-product-composition-smoke PRIVATE /UNDEBUG)
 else()
-    target_compile_options(emulator-test-composition PRIVATE -UNDEBUG)
+    target_compile_options(emulator-product-composition-smoke PRIVATE -UNDEBUG)
 endif()
 set(emulator_composition_work_directory
-    "${CMAKE_CURRENT_BINARY_DIR}/test/emulator-test-composition")
+    "${CMAKE_CURRENT_BINARY_DIR}/test/emulator-product-composition-smoke")
 file(MAKE_DIRECTORY "${emulator_composition_work_directory}")
-add_test(NAME emulator.product/composition COMMAND emulator-test-composition)
+add_test(NAME emulator.product/composition COMMAND emulator-product-composition-smoke)
 set_tests_properties(emulator.product/composition PROPERTIES LABELS "unit;emulator" TIMEOUT 30
     WORKING_DIRECTORY "${emulator_composition_work_directory}")
-list(APPEND SHARED_EMULATOR_TEST_TARGETS emulator-test-composition)
+list(APPEND SHARED_EMULATOR_TEST_TARGETS emulator-product-composition-smoke)
 shared_register_test(emulator product/monitor emulator-product)
 if(WIN32)
     shared_register_test(emulator machine emulator-machine)
@@ -72,7 +72,8 @@ add_test(NAME emulator.test-types-boundary COMMAND "${CMAKE_COMMAND}"
     "-DTEST_ROOTS=${CMAKE_CURRENT_SOURCE_DIR}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/../verify_types_boundary.cmake")
 add_test(NAME emulator.test-manifest COMMAND "${CMAKE_COMMAND}"
-    "-DEMULATOR_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" -P "${EMULATOR_ROOT}/verify_manifest.cmake")
+    "-DTEST_ROOT=${CMAKE_CURRENT_SOURCE_DIR}"
+    -P "${CMAKE_CURRENT_LIST_DIR}/../verify_manifest.cmake")
 set_tests_properties(
     emulator.test-boundaries
     emulator.manifest

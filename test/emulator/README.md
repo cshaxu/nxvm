@@ -5,8 +5,9 @@ GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
 
 This neutral suite needs only sibling `src/emulator` and `src/lib` corpora.
 The four-directory set `src/lib`, `src/emulator`, `test/lib`, `test/emulator`
-plus the shared CMake tools directly in test/ builds and tests without any outer
-or importing-product files. Emulator tests also run without test/lib. Shared tools
+plus the shared CMake tools directly in test/ builds and tests without any
+outer-layer or importing-application files. Emulator tests also run without
+test/lib. Shared tools
 register/check tests only; each package selects and owns its own suite.
 
 ```text
@@ -30,6 +31,6 @@ test packages own their own minimal drivers. No architecture
 commands or registers belong to this fixture. The scripted `machine_wait` test
 separately covers failure interleavings without scheduling or desktop input.
 
-CLI bindings, original machine execution, cooked/raw product presentation,
-firmware and media integration remain in the importing product's test suite.
-They are not copied or weakened to turn them into Emulator unit tests.
+CLI bindings, original machine execution, cooked/raw presentation, firmware
+and media integration remain in the importing application's test suite. They
+are not copied or weakened to turn them into Emulator unit tests.
