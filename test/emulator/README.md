@@ -5,7 +5,7 @@ GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
 
 This neutral suite needs only sibling `src/emulator` and `src/lib` corpora.
 The four-directory set `src/lib`, `src/emulator`, `test/lib`, `test/emulator`
-plus the shared CMake tools directly in test/ builds and tests without any x86
+plus the shared CMake tools directly in test/ builds and tests without any outer
 or importing-product files. Emulator tests also run without test/lib. Shared tools
 register/check tests only; each package selects and owns its own suite.
 

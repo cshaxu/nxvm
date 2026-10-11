@@ -132,6 +132,6 @@ lib_i32 main(void)
     if (extension_submissions != 2u)
         return 10;
 
-    lib_c_printf("Product command policy: OK\n");
+    lib_c_printf("x86 Product command policy: OK\n");
     return 0;
 }

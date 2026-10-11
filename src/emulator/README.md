@@ -99,9 +99,9 @@ Shutdown is permanent and idempotent, unlike the restartable product stop.
 ## Independent verification
 
 Source-only Emulator needs just src/emulator and src/lib. The neutral test suites
-need only src/emulator, src/lib, test/emulator and test/lib. Product CLI/protocol
-and assembly tests are owned by test/x86, not the neutral Emulator suite.
-No importing-product sources, configuration or resources are needed:
+need only src/emulator, src/lib, test/emulator and test/lib. Importing-component
+CLI/protocol and assembly tests are outside the neutral Emulator suite. No
+importing-component sources, configuration or resources are needed:
 
 ```text
 cmake -S test/emulator -B build/emulator
