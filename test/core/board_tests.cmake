@@ -227,6 +227,9 @@ foreach(board_case IN ITEMS dma-binding-token compaq-hdc-machine auxiliary-pit
     list(APPEND CORE_BOARD_TEST_TARGETS ${board_target})
 endforeach()
 
+target_sources(core-machine-dma-rtc-authority-smoke PRIVATE
+    ${CORE_TEST_ROOT}/board-base/composition/time_fixture.c)
+
 foreach(board_instruction IN ITEMS
         gpr-mov gpr-push-pop lea moffs sign-extend xchg push-immediate
         pusha-popa enter-leave legacy-sreg-stack les-lds-board les-lds

@@ -7,18 +7,24 @@ implementation and tests. The ordered remaining candidates are in [QUEUE.md](QUE
 
 ## Current Task
 
-| Field | Value |
+| Field | Required record |
 | --- | --- |
-| Identifier | M5 T555 S2 |
-| Identifier Mode | New |
-| Title | Selected-controller and board qualification — PIC/PIT/DMA board routes |
-| Proposal | [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md) |
-| Targets | NXVM Core, its four fixed-PC Apps and their tests/documentation; Shared components are read-only unless a later S proves an admitted owner gap. |
+| Identifier Mode | Continuation: M5 T555 S2; S1 is complete, T555 remains open. |
+| Admission And Approval | Owner admitted controller/board qualification and automatic S execution; current goal repeats that approval on 2026-10-10. NXVM Core and four PC consumers only; Shared and MyNES remain read-only. No exception to ownership or source policy. |
 | Objective | Reconcile the current PIC, PIT, DMA, refresh and interrupt board routes against the S1 baseline without creating a second clock, request path, scheduler or controller owner. |
-| Authorities | `docs/nxvm/README.md`; `docs/nxvm/design/{ROADMAP,ARCHITECTURE,CODING}.md`; `docs/nxvm/etc/operations/policy/source-policy.md`; `docs/rules/{EXECUTION,ARCHITECTURE,CODING,DOCUMENT}.md`; `CONTRIBUTING.md`; this proposal. |
-| Boundaries | Use current Core/App ownership and selected source evidence. Shared is read-only; no asset, firmware, media or INI change. Historical evidence is a lead, never automatic proof. |
-| Acceptance | Every selected PIC/PIT/DMA/refresh/IRQ relation is either directly proven by the current owner path and test, repaired once at that owner, or retained as explicit L2/L1/L4 with a named reason. |
-| Verification | Focused x64/x86 owner tests and current App composition receivers; no test or production change before its specific owner gap is proven. |
+| Non-goals | No CPU instruction changes, BIOS-specific workaround, Shared edit, MyNES rebuild, profile retirement, user INI/media/snapshot change or new framework. |
+| Reference Baseline | Clean `710e0da4f`; current Core chip/board paths and [S1 ledger](../etc/evidence/t555-s1-controller-board-baseline.md). Original Intel 8253/8254, 8259A and 8237A manuals in the owner archive; historical findings are leads, not proof. |
+| Candidate Proposal | [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md), consuming its PIC/PIT/DMA/refresh/IRQ batch. |
+| Files And ABI Surface | `src/core/chips/{pit825x,pic8259,dma8237}`, relevant `src/core/board-*`, Core refresh arbitration and selected App clock declarations, matching tests/manifests, NXVM task evidence and affected eight PC EXEs. The reported refresh-duration gap admits one appended `transaction_contract.refresh_cycle_source_ticks` value under the owner's automatic timing-upgrade approval; no new function, enum, Shared interface or CPU instruction change. The DMA request-owner empty-software-request loop may be skipped without changing register, service, time or qualification semantics; renewed full qualification is required. |
+| Applicable Rules | `CONTRIBUTING.md`, NXVM guide, design Architecture/Coding/Roadmap, source policy and shared Execution/Architecture/Coding/Document. Prove one chip-state owner, one board wiring owner, inward dependencies, Lib Types vocabulary, exact source provenance, failure/reset/deadline behavior and actual-diff review. |
+| Verification | Original release-ccache Ninja trees, x64/x86 focused chip/board tests followed by complete repository-only units; relevant four-App integration after runnable change. Core source/test manifest and corpus gates, documentation governance, stripped PE architecture/hash checks for eight affected EXEs. No desktop behavior claim without observation. |
+| Expected Markers | Named CTest routes finish with zero failures; manifest/corpus/documentation gates report success; each four-App pair has the task revision and correct PE width. A containment budget is not a hardware checkpoint. |
+| Asset Needs | Read original manuals from external `manuals-nxvm`; reuse approved BYOB build inputs and overlay integration media. Generated manual renderings remain ignored under `build/t555-manual-review`; originals and user media are untouched. |
+| Reporting Requirements | Report proven defect, source/caller evidence, repair plan and estimated line delta before production edits; retain before/after tests, similar-issue dispositions, actual source/test deltas, artifacts and pushed P identity. |
+| Stop Conditions | Report unresolved source conflict, new ABI requirement, reverse dependency, Shared defect or unexpected asset mutation; do not invent a compatibility fact or claim qualification from boot alone. |
+| Exit Criteria | Complete batch disposition with direct evidence; all confirmed defects repaired at their owner; focused and complete units pass both widths, applicable four-App regressions and artifacts current, manifests and actual-diff review complete. T-level qualification remains open for S3-S6. |
+| Original Owner Request | Audit all four PC Apps' controllers and board wiring against original manuals, repair confirmed gaps and complete cross-machine validation; every audit item disposed, relevant tests/integration passing and artifacts updated under single-person dual-role execution. |
+| Similar-Issue Sweep | Inspect all six PIT modes and both personalities for GATE/load/trigger/output deadline agreement; PIC source aggregation/cascade/poll/reset; DMA request/grant/service/reset/deadline. Record every hit and retained source/model boundary in S2 evidence. |
 
 | Work | Progress |
 | --- | --- |
@@ -41,7 +47,7 @@ implementation and tests. The ordered remaining candidates are in [QUEUE.md](QUE
 | T554 S3 | Complete: default App x64/x86 artifacts were rebuilt and architecture-verified; each complete 56-route App selection passed. Owner accepted Console and Window cursor behavior. |
 | T554 | Closed: S1 identified missing default-firmware CRTC initialization; S2 repaired it and added guest-execution coverage; S3 completed dual-width build/test/deployment and owner acceptance. Commit `b25e2ca8d` carries the source, test, task packet and default-App artifacts. No Shared/Core or other App source changed. |
 | T555 S1 | Complete: [baseline ledger](../etc/evidence/t555-s1-controller-board-baseline.md) inventories current Core/App owners, direct tests, source tiers and bounded remaining gaps. It corrects obsolete proposal path/deployment claims and splits S2--S6; no source/test/asset or external-material change. |
-| T555 S2 | Active: reconcile selected PIC/PIT/DMA/refresh/IRQ board routes against the S1 ledger. |
+| T555 S2 | Executor delivery ready for review: final complete units pass 546/546 per width (249.97/77.20 seconds); all four selected integration groups pass both widths (32/32 each), including DeskPro x86 boot in 179.93 seconds under its original budget. Eight stripped PE-verified 0555 PC EXEs are rebuilt. Earlier failures remain in evidence. No Shared/MyNES or owner INI change; coordinator acceptance remains pending. |
 | T552 S9 | Complete: CPU owns all timing recipes and their origin/source-allocation classification; Core owns only copied-result publication and physical eligibility. Five CPU manifest, four transfer and two Core consumer receivers pass x64/x86. |
 | T552 S8 | Complete: retained the CECG B0000h compatibility window as one VADP storage contract while transferring any physical firmware equivalence claim; retained bounded-L1 as a declared Core control policy, not a device duration. Focused CECG/time routes and Core gates pass x64/x86. |
 | T552 S7 | Complete: Core replacement now preserves its atomic new-medium state and propagates an old-lease close failure. The owner-local close injector proves both replacement and removal failure contracts for FDD/HDD; run-result and teardown candidates were retained with direct owner evidence. |

@@ -57,15 +57,23 @@ static void x86_pit_sync_count(x86_pit *pit, lib_u8 id)
         pit->data.remaining[id]);
 }
 
+static void x86_pit_decrement_count(x86_pit *pit, lib_u8 id)
+{
+    if (pit->data.remaining[id] == 0u) {
+        pit->data.remaining[id] =
+            (pit->data.cw[id] & VPIT_CW_BCD) != 0u ? 10000u : 65536u;
+    }
+    --pit->data.remaining[id];
+    x86_pit_sync_count(pit, id);
+}
+
 static void x86_pit_set_output_level(x86_pit *pit,
-    lib_u8 id, lib_bool asserted, lib_bool notify_rise)
+    lib_u8 id, lib_bool asserted)
 {
     if (pit->data.flagOutput[id] == asserted) return;
     pit->data.flagOutput[id] = asserted;
     if (pit->connect.output[id] == LIB_NULL) return;
-    if (!asserted || notify_rise) {
-        pit->connect.output[id](pit->connect.output_owner[id], asserted);
-    }
+    pit->connect.output[id](pit->connect.output_owner[id], asserted);
 }
 
 static lib_u32 x86_pit_mode3_high_length(const x86_pit *pit,
@@ -83,7 +91,9 @@ static lib_u32 x86_pit_mode3_low_length(const x86_pit *pit,
 static lib_u32 x86_pit_mode3_count(const x86_pit *pit,
     lib_u8 id)
 {
-    return pit->data.reload[id] - (pit->data.reload[id] & 1u);
+    return pit->data.reload[id] -
+        (pit->personality == X86_PIT_PERSONALITY_8254 ?
+            (pit->data.reload[id] & 1u) : 0u);
 }
 
 static void x86_pit_load(x86_pit *pit, lib_u8 id)
@@ -208,7 +218,7 @@ static void x86_pit_write_counter(x86_pit *pit, lib_u8 id,
                 pit->data.flagReady[id] = LIB_FALSE;
                 pit->data.flagActive[id] = LIB_FALSE;
                 pit->data.flagPulseLow[id] = LIB_FALSE;
-                x86_pit_set_output_level(pit, id, LIB_FALSE, LIB_TRUE);
+                x86_pit_set_output_level(pit, id, LIB_FALSE);
             }
         }
         break;
@@ -226,7 +236,7 @@ static void x86_pit_write_counter(x86_pit *pit, lib_u8 id,
         if (x86_pit_mode(pit, id) == 0u) {
             pit->data.flagActive[id] = LIB_FALSE;
             pit->data.flagPulseLow[id] = LIB_FALSE;
-            x86_pit_set_output_level(pit, id, LIB_FALSE, LIB_TRUE);
+            x86_pit_set_output_level(pit, id, LIB_FALSE);
         }
     }
 }
@@ -245,38 +255,34 @@ static void x86_pit_tick_mode0(x86_pit *pit, lib_u8 id)
     if (!pit->data.flagActive[id] || !pit->connect.flagGate[id]) return;
     if (--pit->data.remaining[id] == 0u) {
         pit->data.flagActive[id] = LIB_FALSE;
-        x86_pit_set_output_level(pit, id, LIB_TRUE, LIB_TRUE);
+        x86_pit_set_output_level(pit, id, LIB_TRUE);
     }
     x86_pit_sync_count(pit, id);
 }
 
 static void x86_pit_tick_mode1(x86_pit *pit, lib_u8 id)
 {
-    /* Mode 1 loads CE on the clock following a completed count write.  The
-     * later gate trigger starts the one-shot; it does not defer that load. */
-    if (pit->data.flagLoadPending[id]) {
-        x86_pit_commit_pending(pit, id);
-        return;
-    }
     if (pit->data.flagTrigger[id]) {
         pit->data.flagTrigger[id] = LIB_FALSE;
-        pit->data.remaining[id] = pit->data.reload[id];
+        if (pit->data.flagLoadPending[id]) x86_pit_commit_pending(pit, id);
+        else pit->data.remaining[id] = pit->data.reload[id];
         pit->data.flagPulseLow[id] = LIB_FALSE;
         x86_pit_sync_count(pit, id);
         pit->data.flagActive[id] = LIB_TRUE;
-        x86_pit_set_output_level(pit, id, LIB_FALSE, LIB_TRUE);
+        x86_pit_set_output_level(pit, id, LIB_FALSE);
         return;
     }
     if (!pit->data.flagActive[id]) return;
     if (--pit->data.remaining[id] == 0u) {
         pit->data.flagActive[id] = LIB_FALSE;
-        x86_pit_set_output_level(pit, id, LIB_TRUE, LIB_TRUE);
+        x86_pit_set_output_level(pit, id, LIB_TRUE);
     }
     x86_pit_sync_count(pit, id);
 }
 
 static void x86_pit_tick_mode2(x86_pit *pit, lib_u8 id)
 {
+    lib_u32 terminal = pit->personality == X86_PIT_PERSONALITY_8253 ? 0u : 1u;
     if (pit->data.flagRestart[id]) {
         x86_pit_commit_pending(pit, id);
         return;
@@ -290,12 +296,12 @@ static void x86_pit_tick_mode2(x86_pit *pit, lib_u8 id)
         pit->data.flagPulseLow[id] = LIB_FALSE;
         if (pit->data.flagLoadPending[id]) x86_pit_commit_pending(pit, id);
         else pit->data.remaining[id] = pit->data.reload[id];
-        x86_pit_set_output_level(pit, id, LIB_TRUE, LIB_TRUE);
-        if (pit->data.remaining[id] > 0u) --pit->data.remaining[id];
-    } else if (pit->data.remaining[id] <= 1u) {
-        pit->data.remaining[id] = 0u;
+        if (terminal == 0u) --pit->data.remaining[id];
+        x86_pit_set_output_level(pit, id, LIB_TRUE);
+    } else if (pit->data.remaining[id] <= terminal + 1u) {
+        pit->data.remaining[id] = terminal;
         pit->data.flagPulseLow[id] = LIB_TRUE;
-        x86_pit_set_output_level(pit, id, LIB_FALSE, LIB_TRUE);
+        x86_pit_set_output_level(pit, id, LIB_FALSE);
     } else {
         --pit->data.remaining[id];
     }
@@ -305,6 +311,7 @@ static void x86_pit_tick_mode2(x86_pit *pit, lib_u8 id)
 static void x86_pit_tick_mode3(x86_pit *pit, lib_u8 id)
 {
     lib_bool was_output;
+    lib_u32 decrement = 2u;
     if (pit->data.flagRestart[id]) {
         x86_pit_commit_pending(pit, id);
         return;
@@ -314,7 +321,12 @@ static void x86_pit_tick_mode3(x86_pit *pit, lib_u8 id)
         return;
     }
     if (!pit->data.flagActive[id] || !pit->connect.flagGate[id]) return;
-    if (pit->data.remaining[id] > 1u) pit->data.remaining[id] -= 2u;
+    if (pit->personality == X86_PIT_PERSONALITY_8253 &&
+        (pit->data.reload[id] & 1u) != 0u &&
+        pit->data.phase[id] == (pit->data.flagOutput[id] ?
+            x86_pit_mode3_high_length(pit, id) : x86_pit_mode3_low_length(pit, id)))
+        decrement = pit->data.flagOutput[id] ? 1u : 3u;
+    if (pit->data.remaining[id] > decrement) pit->data.remaining[id] -= decrement;
     else pit->data.remaining[id] = 0u;
     if (--pit->data.phase[id] == 0u) {
         was_output = pit->data.flagOutput[id];
@@ -325,11 +337,11 @@ static void x86_pit_tick_mode3(x86_pit *pit, lib_u8 id)
             if (pit->data.phase[id] == 0u) {
                 pit->data.phase[id] = x86_pit_mode3_high_length(pit, id);
             } else {
-                x86_pit_set_output_level(pit, id, LIB_FALSE, LIB_TRUE);
+                x86_pit_set_output_level(pit, id, LIB_FALSE);
             }
         } else {
             pit->data.phase[id] = x86_pit_mode3_high_length(pit, id);
-            x86_pit_set_output_level(pit, id, LIB_TRUE, LIB_TRUE);
+            x86_pit_set_output_level(pit, id, LIB_TRUE);
         }
     }
     x86_pit_sync_count(pit, id);
@@ -339,6 +351,7 @@ static void x86_pit_tick_mode4_or_5(x86_pit *pit,
     lib_u8 id)
 {
     if (x86_pit_mode(pit, id) == 4u && pit->data.flagLoadPending[id]) {
+        x86_pit_set_output_level(pit, id, LIB_TRUE);
         x86_pit_commit_pending(pit, id);
         return;
     }
@@ -351,31 +364,46 @@ static void x86_pit_tick_mode4_or_5(x86_pit *pit,
             x86_pit_sync_count(pit, id);
         }
         pit->data.flagActive[id] = LIB_TRUE;
-        x86_pit_set_output_level(pit, id, LIB_TRUE, LIB_FALSE);
+        x86_pit_set_output_level(pit, id, LIB_TRUE);
         return;
     }
     if (!pit->data.flagActive[id]) return;
-    if (x86_pit_mode(pit, id) == 4u && !pit->connect.flagGate[id]) {
+    if (x86_pit_mode(pit, id) == 4u && !pit->connect.flagGate[id] &&
+        !pit->data.flagPulseLow[id]) {
         return;
     }
     if (pit->data.flagPulseLow[id]) {
+        if (pit->connect.flagGate[id] || x86_pit_mode(pit, id) == 5u) {
+            x86_pit_decrement_count(pit, id);
+        }
         pit->data.flagPulseLow[id] = LIB_FALSE;
         pit->data.flagActive[id] = LIB_FALSE;
-        x86_pit_set_output_level(pit, id, LIB_TRUE, LIB_TRUE);
+        x86_pit_set_output_level(pit, id, LIB_TRUE);
     } else if (--pit->data.remaining[id] == 0u) {
         pit->data.flagPulseLow[id] = LIB_TRUE;
-        x86_pit_set_output_level(pit, id, LIB_FALSE, LIB_TRUE);
+        x86_pit_set_output_level(pit, id, LIB_FALSE);
     }
     x86_pit_sync_count(pit, id);
 }
 
 static void x86_pit_tick(x86_pit *pit, lib_u8 id)
 {
+    lib_u8 mode = x86_pit_mode(pit, id);
+
     /* A completed CR write is intentionally not ready until this CLK commits
      * it into CE; it must nevertheless reach its mode-specific load edge. */
     if (!pit->data.flagReady[id] && !pit->data.flagLoadPending[id] &&
         !pit->data.flagTrigger[id]) return;
-    switch (x86_pit_mode(pit, id)) {
+    /* Terminal count ends the OUT sequence, not the loaded counter. */
+    if (!pit->data.flagActive[id] && pit->data.reload[id] != 0u &&
+        !pit->data.flagTrigger[id] && !pit->data.flagRestart[id] &&
+        (mode == 1u || mode == 5u ||
+            ((mode == 0u || mode == 4u) && !pit->data.flagLoadPending[id])) &&
+        (pit->connect.flagGate[id] || mode == 1u || mode == 5u)) {
+        x86_pit_decrement_count(pit, id);
+        return;
+    }
+    switch (mode) {
     case 0u: x86_pit_tick_mode0(pit, id); break;
     case 1u: x86_pit_tick_mode1(pit, id); break;
     case 2u: x86_pit_tick_mode2(pit, id); break;
@@ -417,13 +445,14 @@ static void x86_pit_write_control(x86_pit *pit, lib_u8 value)
     pit->data.flagActive[id] = LIB_FALSE;
     pit->data.flagPulseLow[id] = LIB_FALSE;
     pit->data.remaining[id] = 0u;
+    pit->data.reload[id] = 0u;
     pit->data.phase[id] = 0u;
     pit->data.count[id] = 0u;
     pit->data.flagRead[id] = VPIT_GetCW_RW(value) == 2u ?
         VPIT_STATUS_RW_MSB : VPIT_STATUS_RW_LSB;
     pit->data.flagWrite[id] = pit->data.flagRead[id];
     x86_pit_set_output_level(pit, id,
-        x86_pit_mode(pit, id) != 0u, LIB_FALSE);
+        x86_pit_mode(pit, id) != 0u);
 }
 
 void x86_pit_set_output(x86_pit *pit, lib_u8 id,
@@ -447,7 +476,7 @@ void x86_pit_set_gate(x86_pit *pit, lib_u8 id,
     if (!asserted) {
         if (mode == 2u || mode == 3u) {
             pit->data.flagPulseLow[id] = LIB_FALSE;
-            x86_pit_set_output_level(pit, id, LIB_TRUE, LIB_FALSE);
+            x86_pit_set_output_level(pit, id, LIB_TRUE);
         }
         return;
     }
@@ -474,15 +503,19 @@ lib_status x86_pit_ticks_until_output(const x86_pit *pit,
     if (pit == LIB_NULL || out_ticks == LIB_NULL || id >= 3u) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (pit->data.flagLoadPending[id] || pit->data.flagRestart[id] ||
-        pit->data.flagTrigger[id]) {
+    mode = x86_pit_mode(pit, id);
+    if (pit->data.flagRestart[id] || pit->data.flagTrigger[id] ||
+        (pit->data.flagLoadPending[id] &&
+            (mode == 0u || mode == 4u ||
+                ((mode == 2u || mode == 3u) && !pit->data.flagActive[id])))) {
         *out_ticks = 1u;
         return LIB_STATUS_OK;
     }
-    if (!pit->data.flagActive[id] || !pit->connect.flagGate[id]) {
+    if (!pit->data.flagActive[id] ||
+        (!pit->connect.flagGate[id] && mode != 1u && mode != 5u &&
+            !(mode == 4u && pit->data.flagPulseLow[id]))) {
         return LIB_STATUS_INVALID_STATE;
     }
-    mode = x86_pit_mode(pit, id);
     switch (mode) {
     case 0u:
     case 1u:
@@ -490,7 +523,8 @@ lib_status x86_pit_ticks_until_output(const x86_pit *pit,
         break;
     case 2u:
         *out_ticks = pit->data.flagPulseLow[id] ||
-            pit->data.remaining[id] <= 1u ? 1u : pit->data.remaining[id] - 1u;
+            pit->data.remaining[id] <= 1u ? 1u : pit->data.remaining[id] -
+                (pit->personality == X86_PIT_PERSONALITY_8253 ? 0u : 1u);
         break;
     case 3u:
         *out_ticks = pit->data.phase[id];

@@ -192,6 +192,7 @@ static void core_machine_fdc_write_dma2(core_machine *port, lib_u16 address,
     test_fdc_port_write(port, 0x0081u, 0u);
     test_fdc_port_write(port, 0x000bu, 0x46u);
     test_fdc_port_write(port, 0x000au, 0x02u);
+    test_fdc_port_write(port, 0x00d4u, 0x00u);
 }
 
 static lib_i32 core_machine_fdc_read_result(core_machine_fdc *fdc, core_machine *port,

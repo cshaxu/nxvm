@@ -85,7 +85,8 @@ static lib_bool model40_fdc_write_dma2(core_machine *machine, lib_u16 address,
         core_machine_bus_write(machine, 0x0005u, count >> 8u) == LIB_STATUS_OK &&
         core_machine_bus_write(machine, 0x0081u, 0u) == LIB_STATUS_OK &&
         core_machine_bus_write(machine, 0x000bu, 0x46u) == LIB_STATUS_OK &&
-        core_machine_bus_write(machine, 0x000au, 0x02u) == LIB_STATUS_OK;
+        core_machine_bus_write(machine, 0x000au, 0x02u) == LIB_STATUS_OK &&
+        core_machine_bus_write(machine, 0x00d4u, 0x00u) == LIB_STATUS_OK;
 }
 lib_i32 main(void)
 {

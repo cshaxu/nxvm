@@ -100,6 +100,7 @@ static lib_i32 pic_ocw3_test_read_and_poll(void)
     test_pic_port_write(fixture.machine, 0x00a0u, 0x0cu);
     failed |= test_pic_port_read(fixture.machine, 0x00a0u) !=
         (VPIC_POLL_I | 6u) || test_pic_read(fixture.slave, 0x0bu) != VPIC_ISR_IRQ(6u);
+    failed |= test_pic_read(fixture.master, 0x0au) != 0u;
     pic_ocw3_finalize(&fixture);
     irq4 = irq5 = irq14 = LIB_NULL;
     return failed;

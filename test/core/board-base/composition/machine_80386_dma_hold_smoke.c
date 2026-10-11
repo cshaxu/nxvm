@@ -92,6 +92,7 @@ static void competition_program_dma_channel2(t_port *port)
     core_machine_port_write(port, 0x0081u, 1u);
     core_machine_port_write(port, 0x000bu, 0x46u);
     core_machine_port_write(port, 0x000au, 0x02u);
+    core_machine_port_write(port, 0x00d4u, 0u);
 }
 
 lib_i32 main(void)

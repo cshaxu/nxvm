@@ -30,8 +30,9 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
 
     plan = test_board_capture_plan(session->core_machine_plan);
     board = test_board_capture_composition(session->board);
-    failed = failed || model_339->clock_plan.dma.numerator != 3u ||
-        model_339->clock_plan.dma.denominator != 8u ||
+    failed = failed || model_339->clock_plan.dma.numerator != 1u ||
+        model_339->clock_plan.dma.denominator != 2u ||
+        model_339->transaction_contract.refresh_cycle_source_ticks != 8u ||
         model_339->clock_plan.pit.numerator != 596591u ||
         model_339->clock_plan.pit.denominator != 4000000u ||
         model_339->clock_plan.pit.reset_phase != 0u ||
@@ -50,8 +51,8 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
             CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
         plan.controller_timing.dma_service !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
-        board.dma_clock.numerator != 3u ||
-        board.dma_clock.denominator != 8u ||
+        board.dma_clock.numerator != 1u ||
+        board.dma_clock.denominator != 2u ||
         board.pit_clock.numerator != 596591u ||
         board.pit_clock.denominator != 4000000u ||
         board.pit_clock.reset_phase != 0u ||

@@ -74,6 +74,13 @@ lib_i32 main(void)
         pit_port_write(machine, 0x0048u, 0x22u);
         failed |= test_core_machine_advance_time(machine, 4u) != LIB_STATUS_OK;
         pit_port_write(machine, 0x004bu, 0x00u);
+        failed |= pit_port_read(machine, 0x0048u) != 0u ||
+            pit_port_read(machine, 0x0048u) != 0u;
+        /* Mode 1 loads CE only on the clock following a GATE trigger. */
+        x86_pit_set_gate(board->auxiliary_pit, 0u, LIB_FALSE);
+        x86_pit_set_gate(board->auxiliary_pit, 0u, LIB_TRUE);
+        failed |= test_core_machine_advance_time(machine, 4u) != LIB_STATUS_OK;
+        pit_port_write(machine, 0x004bu, 0x00u);
         failed |= pit_port_read(machine, 0x0048u) != 0x22u ||
             pit_port_read(machine, 0x0048u) != 0x22u;
         failed |= core_machine_reset(machine) != LIB_STATUS_OK;

@@ -13,6 +13,12 @@ tests, source tier and a bounded qualification disposition. It corrects the
 pre-migration names in the candidate proposal; it is an admission ledger, not
 a claim that every L2/L1/L4 boundary is already complete.
 
+T555 S2: [controller route reconciliation](evidence/t555-s2-controller-route-reconciliation.md)
+  records primary-manual review, reproduced PIC/PIT/DMA/refresh defects,
+  owner-local repairs, dual-width complete units and all four selected App
+  integration groups. It qualifies the S2 batch, not the remaining
+RTC/keyboard/storage/video batches or complete controller/product domain.
+
 T553 S1: [four PC App ownership ledger](evidence/t553-s1-four-pc-app-ownership-ledger.md)
 records the complete four-App inventory, inward dependency proof, ownership
 dispositions and the one App-local receiving repair.

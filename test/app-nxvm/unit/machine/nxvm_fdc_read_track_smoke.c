@@ -32,7 +32,8 @@ static lib_bool vm_fdc_read_track_write_dma2(core_machine *machine)
         core_machine_bus_write(machine, 0x0005u, 0x23u) == LIB_STATUS_OK &&
         core_machine_bus_write(machine, 0x0081u, 0u) == LIB_STATUS_OK &&
         core_machine_bus_write(machine, 0x000bu, 0x86u) == LIB_STATUS_OK &&
-        core_machine_bus_write(machine, 0x000au, 0x02u) == LIB_STATUS_OK;
+        core_machine_bus_write(machine, 0x000au, 0x02u) == LIB_STATUS_OK &&
+        core_machine_bus_write(machine, 0x00d4u, 0x00u) == LIB_STATUS_OK;
 }
 
 static lib_bool vm_fdc_read_track_command(core_machine_board_state *board, core_machine *machine,

@@ -85,6 +85,7 @@ lib_i32 test_plan_core_dma_deadline(core_machine *machine,
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     core_machine_port_write(&machine->executor_port, 0x000bu, 0x46u);
     core_machine_port_write(&machine->executor_port, 0x000au, 0x02u);
+    core_machine_port_write(&machine->executor_port, 0x00d4u, 0x00u);
     core_machine_dma_request_assert(dma, binding);
     failed |= !failed && core_machine_capture_time_observation(machine, &observation) !=
         LIB_STATUS_OK;

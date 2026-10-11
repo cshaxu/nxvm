@@ -85,6 +85,9 @@ static void core_machine_capture_time_with_board(const core_machine *machine,
             immediate_due = LIB_TRUE;
         }
     }
+    if (machine->refresh_cycle_ticks_remaining != 0u &&
+        (source_ticks == 0u || machine->refresh_cycle_ticks_remaining < source_ticks))
+        source_ticks = machine->refresh_cycle_ticks_remaining;
     if (machine->attachment.deadline != LIB_NULL)
         machine->attachment.deadline(machine->attachment.context,
             machine->elapsed_ticks, machine->timing_declarations_copied, &board);
@@ -141,10 +144,25 @@ static void core_machine_dma_grant_advance(core_machine *machine)
             machine->attachment.dma_advance(machine->attachment.context, 1u);
     }
 }
-static void core_machine_d4_refresh_hold_advance(core_machine *machine)
+void core_machine_refresh_hold_advance(core_machine *machine, lib_u64 source_ticks)
 {
     lib_u8 address;
-    if (machine == LIB_NULL || machine->attachment.refresh_request == LIB_NULL ||
+
+    if (machine == LIB_NULL) return;
+    if (machine->refresh_cycle_ticks_remaining != 0u) {
+        if (source_ticks < machine->refresh_cycle_ticks_remaining) {
+            machine->refresh_cycle_ticks_remaining -= (lib_u32)source_ticks;
+            return;
+        }
+        machine->refresh_cycle_ticks_remaining = 0u;
+        core_machine_transaction_commit(&machine->transaction);
+        if (machine->attachment.refresh_complete != LIB_NULL)
+            machine->attachment.refresh_complete(machine->attachment.context);
+        core_machine_transaction_hold_release(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_REFRESH);
+        return;
+    }
+    if (machine->attachment.refresh_request == LIB_NULL ||
         !machine->attachment.refresh_request(machine->attachment.context, &address)) return;
     if (core_machine_transaction_hold_request(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_REFRESH, address) !=
@@ -155,7 +173,10 @@ static void core_machine_d4_refresh_hold_advance(core_machine *machine)
             CORE_MACHINE_TRANSACTION_OWNER_REFRESH,
             CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE,
             address, 0u, 0u) == LIB_STATUS_OK) {
-        /* Bus occupation only: Core has no DRAM electrical refresh model. */
+        /* Core models bus occupation, not DRAM charge retention. */
+        machine->refresh_cycle_ticks_remaining =
+            machine->transaction_contract.refresh_cycle_source_ticks;
+        if (machine->refresh_cycle_ticks_remaining != 0u) return;
         core_machine_transaction_commit(&machine->transaction);
         if (machine->attachment.refresh_complete != LIB_NULL)
             machine->attachment.refresh_complete(machine->attachment.context);
@@ -170,6 +191,7 @@ static void core_machine_arbitration_advance(core_machine *machine,
     core_machine_attachment_pit_ticks pit_ticks = {0u, 0u};
     lib_u8 refresh_pending;
     lib_u8 refresh_address;
+    lib_bool refresh_occupied;
 
     if (machine == LIB_NULL || source_ticks == 0u) return;
     dma_ticks = machine->attachment.dma_ticks != LIB_NULL ?
@@ -180,8 +202,13 @@ static void core_machine_arbitration_advance(core_machine *machine,
     refresh_pending = machine->attachment.refresh_request != LIB_NULL &&
         machine->attachment.refresh_request(machine->attachment.context,
             &refresh_address);
-    core_machine_d4_refresh_hold_advance(machine);
-    if (machine->transaction_contract.dma_cycle_wait_quanta != 0u && dma_ticks != 0u) {
+    refresh_occupied = machine->refresh_cycle_ticks_remaining != 0u;
+    core_machine_refresh_hold_advance(machine, source_ticks);
+    refresh_occupied = refresh_occupied || machine->refresh_cycle_ticks_remaining != 0u;
+    if (refresh_occupied) {
+        /* The clock still advances; occupied intervals cannot become a later
+         * DMA grant or advance a DMA service phase. */
+    } else if (machine->transaction_contract.dma_cycle_wait_quanta != 0u && dma_ticks != 0u) {
         lib_u64 tick;
         for (tick = 0u; tick < dma_ticks; ++tick) {
             if (machine->attachment.dma_request != LIB_NULL &&
@@ -274,6 +301,8 @@ static void core_machine_advance_scheduler(core_machine *machine,
         lib_u64 due_tick = target_tick;
         lib_u64 source_ticks;
 
+        if (machine->transaction_contract.refresh_cycle_source_ticks != 0u)
+            core_machine_refresh_hold_advance(machine, 0u);
         core_machine_capture_time_with_board(machine, &observation, &board);
         if (board.l1_compatibility) {
             due_tick = machine->elapsed_ticks + 1u;

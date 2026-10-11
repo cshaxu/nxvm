@@ -104,7 +104,7 @@ lib_i32 main(void)
             LIB_STATUS_OK || core_machine_bus_read(machine, 0x0061u, &value) !=
             LIB_STATUS_OK || (value & 0x30u) != 0x30u ||
         core_machine_bus_write(machine, 0x0061u, 0x0au) != LIB_STATUS_OK ||
-        test_core_machine_advance_time(machine, 3u) != LIB_STATUS_OK ||
+        test_core_machine_advance_time(machine, 2u) != LIB_STATUS_OK ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
         (value & 0x30u) != 0x20u ||
         core_machine_bus_write(machine, 0x0061u, 0x0bu) != LIB_STATUS_OK ||
@@ -126,7 +126,7 @@ lib_i32 main(void)
         LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
         LIB_STATUS_OK || !speaker.timer_gate || !speaker.data_enabled ||
         !speaker.timer_output || !speaker.output || test_core_machine_advance_time(machine,
-        3u) != LIB_STATUS_OK || core_machine_get_speaker_observation(board,
+        2u) != LIB_STATUS_OK || core_machine_get_speaker_observation(board,
         &speaker) != LIB_STATUS_OK || speaker.timer_output || speaker.output ||
         test_core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
         core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||

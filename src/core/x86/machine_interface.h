@@ -99,6 +99,9 @@ typedef struct core_machine_transaction_contract {
     lib_u8 dma_cycle_bus_ready_gate_enabled;
     lib_u8 cpu_cycle_bus_ready_gate_enabled;
     lib_u8 cpu_prefetch_reservation_enabled;
+    /* Zero retains point-service refresh. Nonzero occupies the sole bus for
+     * this many source ticks; the selected board declares their provenance. */
+    lib_u32 refresh_cycle_source_ticks;
 } core_machine_transaction_contract;
 
 #define CORE_MACHINE_TIMING_CAPABILITY_COUNT 30u

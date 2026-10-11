@@ -101,6 +101,8 @@ struct core_machine_board_state {
     core_machine_dma_request_binding fdc_dma_request;
     core_machine_dma_request_binding hdc_dma_request;
     core_machine_dma_request_binding refresh_dma_request;
+    lib_bool refresh_hold_pending;
+    lib_u8 refresh_row;
     lib_u8 dma_configured;
     core_machine_rtc_cmos_config rtc_cmos_config;
     lib_u8 rtc_cmos_configured;

@@ -38,6 +38,14 @@ static lib_i32 check_bus(lib_u8 controllers)
         core_machine_dma_get_signals(bus, 0u).requests != 4u) goto done;
     core_machine_dma_request_deassert(bus, &request);
     if (core_machine_dma_has_pending_request(bus)) goto done;
+    if (core_machine_bus_write(machine, 0x0du, 0u) != LIB_STATUS_OK ||
+        core_machine_bus_read(machine, 0x81u, &value) != LIB_STATUS_OK ||
+        value != 0x12u) goto done;
+    if (controllers == 2u &&
+        (core_machine_bus_write(machine, 0x89u, 0x34u) != LIB_STATUS_OK ||
+         core_machine_bus_write(machine, 0xdau, 0u) != LIB_STATUS_OK ||
+         core_machine_bus_read(machine, 0x89u, &value) != LIB_STATUS_OK ||
+         value != 0x34u)) goto done;
     core_machine_dma_reset(bus);
     if (core_machine_bus_read(machine, 0x81u, &value) != LIB_STATUS_OK ||
         value != 0u || request.core_token == 0u) goto done;

@@ -218,6 +218,7 @@ lib_status core_machine_board_create(core_machine *machine,
 
     dma_controller_count = config->dma_controller_count == 0u ?
         CORE_MACHINE_DMA_CONTROLLER_COUNT : config->dma_controller_count;
+    board->dma_wiring.controller_count = dma_controller_count;
     board->keyboard_topology = config->keyboard_topology;
     /* Zero is an explicit profile choice: without a calibrated guest-time
      * mapping, core-generated keyboard repeat must remain disabled. */
@@ -625,7 +626,7 @@ static lib_status core_machine_rtc_cmos_port_write(void *owner,
 }
 
 
-static void core_machine_dma_refresh_pit_output(void *owner,
+static void core_machine_refresh_pit_output(void *owner,
     lib_u8 asserted);
 
 /* AT parity wiring programs the fixed counter-1 refresh divider on reset.
@@ -724,6 +725,8 @@ void core_machine_board_reset_devices(void *owner)
         }
     }
     core_machine_dma_reset(board->shared_dma);
+    board->refresh_hold_pending = LIB_FALSE;
+    board->refresh_row = 0u;
     if (board->rtc_cmos_configured) x86_rtc_reset(board->shared_rtc);
     core_machine_at_parity_reset(board->planar_parity);
     board->speaker_output = LIB_FALSE;
@@ -792,7 +795,7 @@ void core_machine_board_after_pit_reset(core_machine_board_state *board)
     if (board == LIB_NULL) return;
     if (board->dma_configured && !board->profile_binding.owns_refresh_output) {
         x86_pit_set_output(board->shared_pit, 1u,
-            core_machine_dma_refresh_pit_output, board);
+            core_machine_refresh_pit_output, board);
     }
     if (board->planar_parity != LIB_NULL) {
         core_machine_pc_at_refresh_timer_program(board);
@@ -869,11 +872,20 @@ static void core_machine_hdc_dma_request_deassert(void *owner,
     core_machine_dma_request_deassert(board->shared_dma, binding);
 }
 
-static void core_machine_dma_refresh_pit_output(void *owner, lib_u8 asserted)
+static void core_machine_refresh_pit_output(void *owner, lib_u8 asserted)
 {
     core_machine_board_state *board = owner;
 
     if (board == LIB_NULL) return;
+    if (board->planar_parity != LIB_NULL) {
+        /* AT OUT1 clocks a set-only request latch. REFRESH completion clears
+         * it; a falling OUT1 edge cannot withdraw the accepted request. */
+        if (asserted) {
+            board->refresh_hold_pending = LIB_TRUE;
+            core_machine_cpu_bus_refresh_pulse(board->core);
+        }
+        return;
+    }
     if (asserted) {
         core_machine_dma_request_deassert(board->shared_dma, &board->refresh_dma_request);
     } else {
@@ -908,7 +920,8 @@ lib_status core_machine_configure_dma(core_machine_board_state *board,
         board->dma_configured) {
         return LIB_STATUS_INVALID_STATE;
     }
-    if (!core_machine_dma_wiring_is_valid(wiring) || out_fdc_request == LIB_NULL) {
+    if (!core_machine_dma_wiring_is_valid(wiring) || out_fdc_request == LIB_NULL ||
+        wiring->controller_count != board->dma_wiring.controller_count) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     board->fdc_dma_request = (core_machine_dma_request_binding) {0};
@@ -918,11 +931,15 @@ lib_status core_machine_configure_dma(core_machine_board_state *board,
             &board->fdc_dma_request);
         if (status != LIB_STATUS_OK) return status;
     }
-    status = core_machine_dma_bind_channel(board->shared_dma, 0u,
-        &core_machine_dma_refresh_provider, board, &board->refresh_dma_request);
-    if (status != LIB_STATUS_OK) return status;
-    x86_pit_set_output(board->shared_pit, 1u,
-        core_machine_dma_refresh_pit_output, board);
+    if (!board->profile_binding.owns_refresh_output) {
+        if (board->planar_parity == LIB_NULL) {
+            status = core_machine_dma_bind_channel(board->shared_dma, 0u,
+                &core_machine_dma_refresh_provider, board, &board->refresh_dma_request);
+            if (status != LIB_STATUS_OK) return status;
+        }
+        x86_pit_set_output(board->shared_pit, 1u,
+            core_machine_refresh_pit_output, board);
+    }
     board->dma_wiring = *wiring;
     board->dma_configured = LIB_TRUE;
     *out_fdc_request = board->fdc_dma_request;
@@ -1080,15 +1097,24 @@ static lib_status core_machine_absent_memory_query(void *owner,
 lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address)
 {
     const core_machine_board_state *board = owner;
-    return board != LIB_NULL && board->profile_binding.refresh_request != LIB_NULL &&
-        board->profile_binding.refresh_request(board->profile_binding.context, out_address);
+    if (board == LIB_NULL || out_address == LIB_NULL) return LIB_FALSE;
+    if (board->profile_binding.refresh_request != LIB_NULL)
+        return board->profile_binding.refresh_request(board->profile_binding.context, out_address);
+    if (!board->refresh_hold_pending) return LIB_FALSE;
+    *out_address = board->refresh_row;
+    return LIB_TRUE;
 }
 
 void core_machine_board_refresh_complete(void *owner)
 {
     core_machine_board_state *board = owner;
-    if (board != LIB_NULL && board->profile_binding.refresh_complete != LIB_NULL)
+    if (board == LIB_NULL) return;
+    if (board->profile_binding.refresh_complete != LIB_NULL)
         board->profile_binding.refresh_complete(board->profile_binding.context);
+    else if (board->refresh_hold_pending) {
+        board->refresh_hold_pending = LIB_FALSE;
+        board->refresh_row = (lib_u8)(board->refresh_row + 1u);
+    }
 }
 
 

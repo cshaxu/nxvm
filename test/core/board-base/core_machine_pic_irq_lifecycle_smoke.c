@@ -26,6 +26,7 @@ lib_i32 main(void)
     core_machine_pic_irq_source *irq1 = LIB_NULL;
     core_machine_pic_irq_source *irq6 = LIB_NULL;
     core_machine_pic_irq_source *irq14 = LIB_NULL;
+    core_machine_pic_irq_source *peers[2] = {LIB_NULL, LIB_NULL};
     lib_i32 failed = 0;
 
     const core_machine_executor_config config = { .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES };
@@ -41,6 +42,64 @@ lib_i32 main(void)
         core_machine_pic_irq_source_bind(&irq1, master, slave, 1u) != LIB_STATUS_OK ||
         core_machine_pic_irq_source_bind(&irq6, master, slave, 6u) != LIB_STATUS_OK ||
         core_machine_pic_irq_source_bind(&irq14, master, slave, 14u) != LIB_STATUS_OK;
+    if (failed) goto cleanup;
+
+    /* Shared sources only create an edge when their combined line rises. */
+    for (lib_u8 index = 0u; index < 2u; ++index) {
+        core_machine_pic_irq_source *source = index == 0u ? irq6 : irq14;
+        const lib_u8 irq = index == 0u ? 6u : 14u;
+        const lib_u8 vector = index == 0u ? 0x0eu : 0x76u;
+        failed |= core_machine_pic_irq_source_bind(&peers[index], master,
+            slave, irq) != LIB_STATUS_OK;
+        if (failed) goto cleanup;
+        core_machine_pic_irq_source_assert(source);
+        failed |= core_machine_pic_get_interrupt(master, slave) != vector;
+        core_machine_pic_irq_source_assert(peers[index]);
+        if (index != 0u) test_pic_port_write(port, 0x00a0u, 0x20u);
+        test_pic_port_write(port, 0x0020u, 0x20u);
+        failed |= core_machine_pic_scan_interrupt(master, slave);
+        core_machine_pic_irq_source_deassert(source);
+        core_machine_pic_irq_source_assert(source);
+        failed |= core_machine_pic_scan_interrupt(master, slave);
+        core_machine_pic_irq_source_deassert(peers[index]);
+        core_machine_pic_irq_source_deassert(source);
+        core_machine_pic_irq_source_assert(source);
+        failed |= core_machine_pic_get_interrupt(master, slave) != vector;
+        core_machine_pic_irq_source_deassert(source);
+        if (index != 0u) test_pic_port_write(port, 0x00a0u, 0x20u);
+        test_pic_port_write(port, 0x0020u, 0x20u);
+        failed |= core_machine_pic_scan_interrupt(master, slave);
+        core_machine_pic_reset(master, slave);
+        failed |= !initialize_pic(port, 0x11u);
+    }
+    if (failed) goto cleanup;
+
+    /* PIC reset does not change the producers' physical input levels. */
+    for (lib_u8 level = 0u; level < 2u; ++level) {
+        for (lib_u8 index = 0u; index < 2u; ++index) {
+            core_machine_pic_irq_source *source = index == 0u ? irq6 : irq14;
+            const lib_u8 vector = index == 0u ? 0x0eu : 0x76u;
+            core_machine_pic_irq_source_assert(source);
+            core_machine_pic_irq_source_assert(peers[index]);
+            core_machine_pic_reset(master, slave);
+            failed |= !initialize_pic(port, level ? 0x19u : 0x11u);
+            failed |= !core_machine_pic_irq_source_is_asserted(source) ||
+                !core_machine_pic_irq_source_is_asserted(peers[index]);
+            failed |= core_machine_pic_scan_interrupt(master, slave) != level;
+            core_machine_pic_irq_source_deassert(source);
+            failed |= core_machine_pic_scan_interrupt(master, slave) != level;
+            core_machine_pic_irq_source_deassert(peers[index]);
+            failed |= core_machine_pic_scan_interrupt(master, slave);
+            core_machine_pic_irq_source_assert(source);
+            failed |= core_machine_pic_get_interrupt(master, slave) != vector;
+            core_machine_pic_irq_source_deassert(source);
+            if (index != 0u) test_pic_port_write(port, 0x00a0u, 0x20u);
+            test_pic_port_write(port, 0x0020u, 0x20u);
+            failed |= core_machine_pic_scan_interrupt(master, slave);
+        }
+    }
+    core_machine_pic_reset(master, slave);
+    failed |= !initialize_pic(port, 0x11u);
     if (failed) goto cleanup;
 
     core_machine_pic_irq_source_assert(irq6);

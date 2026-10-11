@@ -88,8 +88,9 @@ static lib_bool cascade(void)
     x86_pic_set_inputs(master, 0u, 0u, 4u);
     /* SFNM permits a higher-priority slave request through its in-service line. */
     failed |= x86_pic_select(master, &request) != LIB_STATUS_OK || !request.cascade;
-    /* Poll remains local and does not apply that pair-level SFNM override. */
-    failed |= read(master, 0x0cu) != 0u;
+    /* Poll acknowledges the same eligible SFNM line as the INT path. */
+    failed |= read(master, 0x0cu) != 0x82u;
+    failed |= read(slave, 0x0cu) != 0x80u;
     x86_pic_set_inputs(master, 0u, 0u, 0u);
     failed |= x86_pic_select(master, &request) != LIB_STATUS_INVALID_STATE;
     x86_pic_destroy(slave);
@@ -97,7 +98,60 @@ static lib_bool cascade(void)
     return failed;
 }
 
+static lib_bool initialization_and_level(void)
+{
+    x86_pic *pic = LIB_NULL;
+    x86_pic_request request = {0u, 0xa5u, LIB_FALSE};
+    lib_u32 timing[8] = {0u, 3u};
+    lib_u64 ticks = 0u;
+    lib_bool failed = LIB_FALSE;
+    if (x86_pic_create(LIB_FALSE, &pic) != LIB_STATUS_OK) return LIB_TRUE;
+    program(pic, 0x20u, 0u, 1u);
+    x86_pic_set_irq_timing(pic, timing);
+    x86_pic_write_register(pic, 1u, 2u);
+    x86_pic_set_inputs(pic, 0u, 2u, 0u);
+    x86_pic_write_register(pic, 1u, 0u);
+    failed |= x86_pic_ticks_until_event(pic, &ticks) != LIB_STATUS_OK || ticks != 3u;
+    x86_pic_write_register(pic, 0u, 0x11u);
+    x86_pic_set_inputs(pic, 0u, 2u, 0u);
+    failed |= x86_pic_select(pic, &request) != LIB_STATUS_INVALID_STATE;
+    failed |= request.vector != 0xa5u;
+    x86_pic_write_register(pic, 1u, 0x20u);
+    failed |= x86_pic_select(pic, &request) != LIB_STATUS_INVALID_STATE;
+    x86_pic_write_register(pic, 1u, 0u);
+    failed |= x86_pic_select(pic, &request) != LIB_STATUS_INVALID_STATE;
+    x86_pic_write_register(pic, 1u, 1u);
+    x86_pic_set_inputs(pic, 0u, 2u, 0u);
+    failed |= x86_pic_ticks_until_event(pic, &ticks) != LIB_STATUS_INVALID_STATE;
+    failed |= x86_pic_acknowledge(pic).vector != 0x21u;
+    x86_pic_write_register(pic, 0u, 0x20u);
+    x86_pic_write_register(pic, 1u, 2u);
+    x86_pic_set_inputs(pic, 0u, 2u, 0u);
+    x86_pic_write_register(pic, 1u, 0u);
+    failed |= x86_pic_ticks_until_event(pic, &ticks) != LIB_STATUS_OK || ticks != 3u;
+
+    for (lib_u8 mode = 1u; mode <= 3u; mode += 2u) {
+        x86_pic_write_register(pic, 0u, 0x1bu);
+        x86_pic_write_register(pic, 1u, 0x20u);
+        x86_pic_write_register(pic, 1u, mode);
+        x86_pic_set_inputs(pic, 8u, 8u, 0u);
+        failed |= x86_pic_acknowledge(pic).vector != 0x23u;
+        if (mode == 1u) {
+            failed |= x86_pic_select(pic, &request) != LIB_STATUS_INVALID_STATE;
+            x86_pic_write_register(pic, 0u, 0x20u);
+        }
+        /* A held level needs no second input update after EOI/AEOI. */
+        failed |= x86_pic_select(pic, &request) != LIB_STATUS_OK;
+        failed |= x86_pic_acknowledge(pic).vector != 0x23u;
+        x86_pic_set_inputs(pic, 0u, 0u, 0u);
+        if (mode == 1u) x86_pic_write_register(pic, 0u, 0x20u);
+        failed |= x86_pic_select(pic, &request) != LIB_STATUS_INVALID_STATE;
+    }
+    x86_pic_destroy(pic);
+    return failed;
+}
+
 int main(void)
 {
-    return single_chip() | cascade();
+    return single_chip() | cascade() | initialization_and_level();
 }

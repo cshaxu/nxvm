@@ -51,6 +51,7 @@ static void refresh_program_dma_channel2(core_machine *machine)
     test_core_machine_fixture_write_port(machine, 0x0081u, 1u);
     test_core_machine_fixture_write_port(machine, 0x000bu, 0x46u);
     test_core_machine_fixture_write_port(machine, 0x000au, 0x02u);
+    test_core_machine_fixture_write_port(machine, 0x00d4u, 0x00u);
 }
 
 static lib_i32 refresh_find_transaction_after(const refresh_probe *probe,
@@ -188,7 +189,7 @@ lib_i32 main(void)
     if (!failed) test_board_dma_request_assert(board, &binding);
     failed = failed || core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
     start = probe.count;
-    failed = failed || test_core_machine_advance_time(machine, 19u) != LIB_STATUS_OK;
+    failed = failed || test_core_machine_advance_time(machine, 18u) != LIB_STATUS_OK;
     failed = failed || !test_model40_refresh_hold_matches(d4_board, LIB_TRUE, 0u) ||
         !test_core_dma_wait_remaining_matches(machine, 0u);
     failed = failed || !test_core_refresh_request(machine, &refresh_address) || refresh_address != 0u;

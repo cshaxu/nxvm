@@ -4,6 +4,7 @@
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_state.h"
 #include "core_machine_board_fixture.h"
+#include "composition/time_fixture.h"
 
 static void core_machine_dma_rtc_initialize_pic(core_machine *machine)
 {
@@ -29,6 +30,88 @@ static lib_u8 core_machine_dma_rtc_cmos_read(core_machine *machine,
 {
     test_pic_port_write(machine, 0x0070u, index);
     return (lib_u8)test_pic_port_read(machine, 0x0071u);
+}
+
+static lib_i32 core_machine_at_refresh_leaves_dma0_available(void)
+{
+    const core_machine_planar_parity_config port_b = {
+        .port = 0x0061u,
+        .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1
+    };
+    const core_machine_dma_wiring wiring = {
+        .fdc_channel = 2u,
+        .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL
+    };
+    const core_machine_dma_channel_provider provider = {0};
+    core_machine_dma_request_binding fdc_request = {0};
+    core_machine_dma_request_binding spare_request = {0};
+    core_machine_config configuration = {0};
+    core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
+    core_machine_run_result result = {0};
+    core_machine_time_observation time = {0};
+    core_machine_cpu_state state = {0};
+    lib_u8 address = 0xa5u;
+    const lib_u8 nop = 0x90u;
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+        .values = {[CORE_MACHINE_DEBUG_EIP] = 0x0200u}
+    };
+    lib_i32 failed;
+    lib_i32 stage = 1;
+
+    configuration.transaction_contract.refresh_cycle_source_ticks = 8u;
+    failed = core_machine_create(&configuration, &machine, &board) != LIB_STATUS_OK ||
+        core_machine_configure_planar_parity(board, &port_b) != LIB_STATUS_OK ||
+        core_machine_configure_dma(board, &wiring, &fdc_request) != LIB_STATUS_OK ||
+        core_machine_dma_bind_channel(board->shared_dma, 0u, &provider,
+            &spare_request, &spare_request) != LIB_STATUS_OK ||
+        (stage = 2, test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+            0x000ffff0u, 16u)) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        !core_machine_board_refresh_request(board, &address) || address != 0u ||
+        test_core_machine_advance_time(machine, 8u) != LIB_STATUS_OK ||
+        core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x0200u, &nop, 1u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0043u, 0x74u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0041u, 32u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0041u, 0u) != LIB_STATUS_OK ||
+        (stage = 3, test_core_machine_advance_time(machine, 32u)) != LIB_STATUS_OK ||
+        x86_pit_get_output(board->shared_pit, 1u) ||
+        core_machine_board_refresh_request(board, &address) ||
+        (stage = 4, test_core_machine_advance_time(machine, 1u)) != LIB_STATUS_OK ||
+        !core_machine_board_refresh_request(board, &address) || address != 1u ||
+        core_machine_dma_has_pending_request(board->shared_dma) ||
+        core_machine_bus_write(machine, 0x0043u, 0x70u) != LIB_STATUS_OK ||
+        !core_machine_board_refresh_request(board, &address) ||
+        (stage = 5, core_machine_run(machine, (core_machine_run_budget){0u, 7u}, &result)) !=
+            LIB_STATUS_OK || result.executed != 0u || result.ticks != 7u ||
+        !core_machine_board_refresh_request(board, &address) ||
+        core_machine_get_cpu_state(machine, &state) != LIB_STATUS_OK || state.eip != 0x0200u ||
+        (stage = 6, core_machine_capture_time_observation(machine, &time)) != LIB_STATUS_OK ||
+        !time.next_deadline_valid || time.next_deadline_tick != time.elapsed_ticks + 1u ||
+        (stage = 7, core_machine_run(machine, (core_machine_run_budget){1u, 0u}, &result)) !=
+            LIB_STATUS_OK || result.executed != 1u || result.ticks != 4u ||
+        core_machine_board_refresh_request(board, &address) || board->refresh_row != 2u ||
+        (stage = 8, core_machine_reset(machine)) != LIB_STATUS_OK || board->refresh_row != 0u ||
+        !core_machine_board_refresh_request(board, &address) || address != 0u ||
+        (stage = 9, core_machine_run(machine, (core_machine_run_budget){0u, 7u}, &result)) !=
+            LIB_STATUS_OK || result.executed != 0u || result.ticks != 7u ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        (stage = 10, test_core_machine_advance_time(machine, 1u)) != LIB_STATUS_OK ||
+        board->refresh_row != 0u || !core_machine_board_refresh_request(board, &address) ||
+        test_core_machine_advance_time(machine, 7u) != LIB_STATUS_OK ||
+        board->refresh_row != 1u || core_machine_board_refresh_request(board, &address);
+    if (failed) lib_c_printf("AT-REFRESH:LATCH-DURATION:FAIL:%d ticks=%u executed=%u row=%u pending=%u deadline=%u/%u\n",
+        stage, (lib_u32)result.ticks, (lib_u32)result.executed,
+        board != LIB_NULL ? board->refresh_row : 0u,
+        board != LIB_NULL ? board->refresh_hold_pending : 0u,
+        (lib_u32)time.next_deadline_tick, time.next_deadline_valid);
+    core_machine_destroy(machine);
+    return failed;
 }
 
 static lib_i32 core_machine_dma_refresh_follows_pit_channel_1(void)
@@ -62,8 +145,8 @@ static lib_i32 core_machine_dma_refresh_follows_pit_channel_1(void)
         core_machine_bus_write(machine, 0x0043u, 0x74u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x0041u, 2u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x0041u, 0u) != LIB_STATUS_OK ||
-        core_machine_run(machine, (core_machine_run_budget){3u, 0u}, &result) !=
-            LIB_STATUS_OK || result.executed != 3u || result.ticks != 3u ||
+        core_machine_run(machine, (core_machine_run_budget){2u, 0u}, &result) !=
+            LIB_STATUS_OK || result.executed != 2u || result.ticks != 2u ||
         x86_pit_get_output(board->shared_pit, 1u) ||
         (test_pic_port_read(machine, 8u) & 0x10u) == 0u ||
         core_machine_run(machine, (core_machine_run_budget){1u, 0u}, &result) !=
@@ -71,6 +154,36 @@ static lib_i32 core_machine_dma_refresh_follows_pit_channel_1(void)
         !x86_pit_get_output(board->shared_pit, 1u) ||
         (test_pic_port_read(machine, 8u) & 0x10u) != 0u;
     core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 core_machine_dma_wiring_matches_constructed_controllers(void)
+{
+    lib_i32 failed = 0;
+    for (lib_u8 count = 1u; count <= 2u; ++count) {
+        const core_machine_config configuration = {.dma_controller_count = count};
+        core_machine_dma_wiring wiring = {
+            .fdc_channel = CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND,
+            .controller_count = count == 1u ? 2u : 1u,
+            .cascade_channel = count == 1u ? CORE_MACHINE_DMA_CASCADE_CHANNEL : 0u
+        };
+        core_machine_dma_request_binding request = {77u, 7u};
+        core_machine *machine = LIB_NULL;
+        core_machine_board_state *board = LIB_NULL;
+        if (core_machine_create(&configuration, &machine, &board) != LIB_STATUS_OK) {
+            failed = 1;
+        } else {
+            failed |= core_machine_configure_dma(board, &wiring, &request) !=
+                LIB_STATUS_INVALID_ARGUMENT || board->dma_configured ||
+                request.core_token != 77u || request.channel != 7u ||
+                board->dma_wiring.controller_count != count;
+            wiring.controller_count = count;
+            wiring.cascade_channel = count == 2u ? CORE_MACHINE_DMA_CASCADE_CHANNEL : 0u;
+            failed |= core_machine_configure_dma(board, &wiring, &request) !=
+                LIB_STATUS_OK || !board->dma_configured || request.core_token != 0u;
+        }
+        core_machine_destroy(machine);
+    }
     return failed;
 }
 
@@ -96,7 +209,9 @@ int main(void)
     lib_i32 failed = 0;
     lib_i32 stage = 1;
 
+    failed |= core_machine_at_refresh_leaves_dma0_available();
     failed |= core_machine_dma_refresh_follows_pit_channel_1();
+    failed |= core_machine_dma_wiring_matches_constructed_controllers();
     failed |= core_machine_configure_dma(LIB_NULL, &dma_wiring, &fdc_request) !=
         LIB_STATUS_INVALID_STATE ||
         core_machine_get_fdc_dma_request_binding(LIB_NULL, &fdc_request) !=

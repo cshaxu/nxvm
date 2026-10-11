@@ -12,13 +12,13 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
     { { 0u, 0u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
-        {{0}}, 0u, LIB_FALSE, LIB_FALSE, LIB_FALSE },
+        {{0}}, 0u, LIB_FALSE, LIB_FALSE, LIB_FALSE, 8u },
     /* IBM 6280099, System Board 1-22 and 1-57: 8254 at 1.193182 MHz,
      * RTC at 32.768 kHz. The CGA character rate is the constrained v6.0
      * 86Box IBM-CGA reference rate 157500000/88 Hz. Ratios are to this
      * profile's nominal 8 MHz CPU source; they do not model availability,
      * waits, monitor output, or host elapsed time. */
-    { { 3u, 8u, 0u }, { 596591u, 4000000u, 0u }, { 1u, 1u, 0u },
+    { { 1u, 2u, 0u }, { 596591u, 4000000u, 0u }, { 1u, 1u, 0u },
         { 64u, 15625u, 0u }, { 315u, 1408u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u } },
     { CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 8000000u },
@@ -65,8 +65,8 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     /* IBM specifies counter 1 as the refresh-request source, but not the
      * readable port-61h waveform.  PCjs's Rev-3 model ties that observation
      * to the 8 MHz cycle axis and documents a 64-cycle half period required
-     * by this ROM's two refresh POST checks.  Keep the physical PIT1-to-DMA
-     * route in Board; this frozen Other-L2 board observation owns only bit 4. */
+     * by this ROM's two refresh POST checks. The independent PIT1 refresh
+     * request remains Board-owned; this Other-L2 observation owns only bit 4. */
     CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
     64u,
     LIB_FALSE,

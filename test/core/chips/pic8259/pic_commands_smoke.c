@@ -122,6 +122,22 @@ static lib_i32 pic_command_priority_test_aeoi(void)
     raise(pic, 4u);
     failed |= x86_pic_acknowledge(pic).vector != 0x0cu ||
         pic->data.isr != 0u;
+    x86_pic_write_register(pic, 0u, 0x80u);
+    x86_pic_write_register(pic, 0u, 0x20u);
+    raise(pic, 1u);
+    failed |= x86_pic_acknowledge(pic).vector != 0x09u ||
+        pic->data.irx != 2u;
+    x86_pic_write_register(pic, 0u, 0x00u);
+    x86_pic_write_register(pic, 0u, 0xc4u);
+    raise(pic, 6u);
+    failed |= x86_pic_acknowledge(pic).vector != 0x0eu ||
+        pic->data.irx != 5u;
+    /* Specific rotation changes priority even when no ISR bit is set. */
+    x86_pic_write_register(pic, 0u, 0xe2u);
+    failed |= pic->data.irx != 3u || pic->data.isr != 0u;
+    raise(pic, 4u);
+    failed |= x86_pic_acknowledge(pic).vector != 0x0cu ||
+        pic->data.irx != 3u;
     x86_pic_destroy(pic);
     return failed;
 }

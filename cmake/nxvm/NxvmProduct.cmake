@@ -1882,8 +1882,8 @@ function(add_current_vm_artifact target version)
         "${directory}" vm-app nxvm-product-firmware)
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0551)
-add_current_vm_artifact(vm-0-5-0551 "0.5.0551")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0555)
+add_current_vm_artifact(vm-0-5-0555 "0.5.0555")
 include("${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_selected_composition.cmake")
 
 function(project_add_console_integration_test target)

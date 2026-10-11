@@ -65,7 +65,8 @@ static lib_bool pic_select_controller(const x86_pic *pic,
     lib_u8 offset;
     lib_u8 id;
 
-    if (pic == LIB_NULL || out_id == LIB_NULL) return LIB_FALSE;
+    if (pic == LIB_NULL || out_id == LIB_NULL || pic->data.status != OCW1)
+        return LIB_FALSE;
     for (offset = 0u; offset < VPIC_MAX_IRQ_COUNT; ++offset) {
         id = (lib_u8)((pic->data.irx + offset) % VPIC_MAX_IRQ_COUNT);
         if (pic->data.unmask_remaining_ticks[id] == 0u &&
@@ -88,7 +89,8 @@ static void RespondINTR(x86_pic *rpic, lib_u8 id,
     PIC_BIT_SET(rpic->data.isr, VPIC_ISR_IRQ(id)); /* put lib_i32 into ISR */
     if (cascade_request) {
         PIC_BIT_CLEAR(rpic->data.cascade_irr, VPIC_IRR_IRQ(id));
-    } else {
+    } else if (!PIC_BIT_IS_SET(rpic->data.icw1, VPIC_ICW1_LTIM) ||
+        !PIC_BIT_IS_SET(rpic->input_levels, VPIC_IRR_IRQ(id))) {
         PIC_BIT_CLEAR(rpic->data.irr, VPIC_IRR_IRQ(id));
     }
     if (PIC_BIT_IS_SET(rpic->data.icw4, VPIC_ICW4_AEOI)) {
@@ -115,6 +117,8 @@ static void pic_begin_initialization(x86_pic *pic,
     pic->data.ocw3 = VPIC_OCW3_RR;
     pic->data.irx = 0u;
     pic->data.cascade_irr = 0u;
+    lib_memory_set(pic->data.unmask_remaining_ticks, 0u,
+        sizeof(pic->data.unmask_remaining_ticks));
     pic->data.status = ICW2;
 }
 
@@ -140,18 +144,17 @@ static lib_bool pic_is_level(const x86_pic *pic)
  * Reference: PC.PDF, Page 950
  */
 static void io_read_00x0(x86_pic *rpic, lib_u8 *io_value) {
-    lib_u8 id;
+    x86_pic_request request;
 
     if (PIC_BIT_IS_SET(rpic->data.ocw3, VPIC_OCW3_P)) {
         /* P=1 (Poll Command) */
-        if (!pic_select_controller(rpic, &id)) {
+        if (x86_pic_select(rpic, &request) != LIB_STATUS_OK) {
             /* set all bits to 0 if there's no interrupt in queue */
             *io_value = 0u;
         } else {
             /* A poll read acknowledges the selected controller request. */
-            *io_value = VPIC_POLL_I | id;
-            RespondINTR(rpic, id, PIC_BIT_IS_SET(rpic->data.cascade_irr,
-                VPIC_IRR_IRQ(id)));
+            *io_value = VPIC_POLL_I | request.line;
+            RespondINTR(rpic, request.line, request.cascade);
         }
         PIC_BIT_CLEAR(rpic->data.ocw3, VPIC_OCW3_P);
     } else {
@@ -242,7 +245,6 @@ static void io_write_00x0(x86_pic *rpic, lib_u8 *io_value) {
                 /* 001: Non-specific EOI Command */
                 /* Set bit of highest priority interrupt in ISR to 0,
                  IR0 > IR1 > IR2(IR8 > ... > IR15) > IR3 > ... > IR7 */
-                rpic->data.ocw2 = *io_value;
                 id = pic_eoi_service(rpic);
                 if (id != VPIC_MAX_IRQ_COUNT) {
                     PIC_BIT_CLEAR(rpic->data.isr, VPIC_ISR_IRQ(id));
@@ -250,17 +252,15 @@ static void io_write_00x0(x86_pic *rpic, lib_u8 *io_value) {
                 break;
             case 0x60:
                 /* 011: Specific EOI Command */
-                rpic->data.ocw2 = *io_value;
                 if (rpic->data.isr) {
                     /* Get L2,L1,L0 */
-                    id = rpic->data.ocw2 & VPIC_OCW2_L;
+                    id = *io_value & VPIC_OCW2_L;
                     PIC_BIT_CLEAR(rpic->data.isr, VPIC_ISR_IRQ(id));
                 }
                 /* Bug in easyVM: "isr &= (1 << i)" */
                 break;
             case 0xa0:
                 /* 101: Rotate Priorities on Non-specific EOI */
-                rpic->data.ocw2 = *io_value;
                 id = pic_eoi_service(rpic);
                 if (id != VPIC_MAX_IRQ_COUNT) {
                     PIC_BIT_CLEAR(rpic->data.isr, VPIC_ISR_IRQ(id));
@@ -269,17 +269,13 @@ static void io_write_00x0(x86_pic *rpic, lib_u8 *io_value) {
                 break;
             case 0xe0:
                 /* 111: Rotate Priority on Specific EOI Command */
-                rpic->data.ocw2 = *io_value;
-                if (rpic->data.isr) {
-                    id = rpic->data.ocw2 & VPIC_OCW2_L;
-                    PIC_BIT_CLEAR(rpic->data.isr, VPIC_ISR_IRQ(id));
-                    rpic->data.irx = ((rpic->data.ocw2 & VPIC_OCW2_L) + 1) % VPIC_MAX_IRQ_COUNT;
-                }
+                id = *io_value & VPIC_OCW2_L;
+                PIC_BIT_CLEAR(rpic->data.isr, VPIC_ISR_IRQ(id));
+                rpic->data.irx = (id + 1u) % VPIC_MAX_IRQ_COUNT;
                 break;
             case 0xc0:
                 /* 110: Set Priority (does not reset current ISR bit) */
-                rpic->data.ocw2 = *io_value;
-                rpic->data.irx = (VPIC_GetOCW2_L(rpic->data.ocw2) + 1) % VPIC_MAX_IRQ_COUNT;
+                rpic->data.irx = (VPIC_GetOCW2_L(*io_value) + 1) % VPIC_MAX_IRQ_COUNT;
                 break;
             case 0x40:
                 /* 010: No Operation */
@@ -484,6 +480,7 @@ lib_status x86_pic_select(const x86_pic *pic, x86_pic_request *out_request)
     if (pic == LIB_NULL || out_request == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
+    if (pic->data.status != OCW1) return LIB_STATUS_INVALID_STATE;
     if (!pic->cascade_master) {
         if (!pic_select_controller(pic, &id)) return LIB_STATUS_INVALID_STATE;
         out_request->line = id;

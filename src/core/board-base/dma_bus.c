@@ -25,6 +25,15 @@ static void core_machine_dma_controller_reset(t_dma *dma)
     if (dma->device != LIB_NULL) x86_dma_reset(dma->device);
 }
 
+static void core_machine_dma_update_cascade(t_dma *primary)
+{
+    x86_dma_signals signals;
+    if (primary->connect.peer->device == LIB_NULL) return;
+    signals = x86_dma_get_signals(primary->device);
+    x86_dma_set_request(primary->connect.peer->device, 0u,
+        signals.enabled && (signals.requests || signals.active_channel < 4u));
+}
+
 static t_dma *dma_controller(t_dma *primary, lib_u16 port_id)
 {
     return ((port_id >= 0x0089u && port_id <= 0x008fu) ||
@@ -101,9 +110,8 @@ static lib_status dma_port_write(void *owner, lib_u16 port_id, lib_u32 value)
     }
     dma = port_id >= 0xc0u ? primary->connect.peer : primary;
     selector = (lib_u8)(port_id >= 0xc0u ? (port_id - 0xc0u) >> 1 : port_id);
-    /* Preserve the existing board master-clear fanout, including page latches. */
-    if (selector == 13u) core_machine_dma_controller_reset(dma);
-    else x86_dma_write_register(dma->device, selector, (lib_u8)value);
+    x86_dma_write_register(dma->device, selector, (lib_u8)value);
+    core_machine_dma_update_cascade(primary);
     return LIB_STATUS_OK;
 }
 
@@ -198,6 +206,7 @@ static void core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
     t_dma *dma = channel < 4u ? primary : secondary;
     if (channel == 4u || channel > 7u || dma->device == LIB_NULL) return;
     x86_dma_set_request(dma->device, channel & 3u, asserted);
+    core_machine_dma_update_cascade(primary);
 }
 
 lib_status core_machine_dma_bind_channel(core_machine_dma_bus *bus, lib_u8 drq_id,
@@ -424,7 +433,7 @@ static void core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
         return;
     }
     requests = second.requests & 0x0eu;
-    if (first.enabled && first.requests) requests |= 1u;
+    if (first.enabled && first.requests) requests |= second.requests & 1u;
     channel = x86_dma_select(secondary->device, requests);
     if (channel == 4u) return;
     x86_dma_grant(secondary->device, channel, channel == 0u);
@@ -448,7 +457,8 @@ lib_bool core_machine_dma_has_pending_request(const core_machine_dma_bus *bus)
     second = x86_dma_get_signals(secondary->device);
     if (!second.enabled) return LIB_FALSE;
     return second.active_channel < 4u || (second.requests & 0x0eu) ||
-        (first.enabled && (first.active_channel < 4u || first.requests));
+        (first.enabled && (first.active_channel < 4u || first.requests) &&
+            (second.requests & 1u));
 }
 
 void core_machine_dma_advance_transaction(core_machine_dma_bus *bus,
@@ -458,6 +468,7 @@ void core_machine_dma_advance_transaction(core_machine_dma_bus *bus,
     if (bus == LIB_NULL || bus->primary.device == LIB_NULL || machine == LIB_NULL) return;
     for (tick = 0u; tick < elapsed_ticks; ++tick) {
         core_machine_dma_advance_one(&bus->latch, &bus->primary, &bus->secondary, machine);
+        core_machine_dma_update_cascade(&bus->primary);
     }
 }
 

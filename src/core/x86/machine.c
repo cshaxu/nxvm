@@ -610,6 +610,7 @@ static lib_status core_machine_cold_reset(core_machine *machine)
     machine->fault_detail = 0u;
     machine->elapsed_ticks = 0u;
     machine->dma_cycle_wait_remaining = 0u;
+    machine->refresh_cycle_ticks_remaining = 0u;
     machine->dma_cycle_bus_ready = LIB_TRUE;
     machine->cpu_cycle_bus_ready = LIB_TRUE;
     machine->external_cycle_page_tag = 0u;
@@ -852,6 +853,28 @@ lib_status core_machine_run(
                 result->reason = CORE_MACHINE_STOP_RESET_REQUESTED;
                 result->linear_pc = core_machine_linear_pc(machine);
                 return LIB_STATUS_OK;
+            }
+            if (machine->transaction_contract.refresh_cycle_source_ticks != 0u)
+                core_machine_refresh_hold_advance(machine, 0u);
+            if (machine->refresh_cycle_ticks_remaining != 0u) {
+                lib_u64 ticks = machine->refresh_cycle_ticks_remaining;
+
+                if (budget.ticks != 0u && ticks > budget.ticks - result->ticks)
+                    ticks = budget.ticks - result->ticks;
+                if (LIB_UINT64_MAX - result->ticks < ticks ||
+                    LIB_UINT64_MAX - machine->elapsed_ticks < ticks) {
+                    (void)core_machine_report_fault(machine, 0x54494d45u);
+                    result->reason = CORE_MACHINE_STOP_FAULT;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->detail = machine->fault_detail;
+                    return LIB_STATUS_INTERNAL_ERROR;
+                }
+                if (core_machine_publish_elapsed_ticks(machine, ticks,
+                        CORE_MACHINE_TIME_PUBLICATION_DEADLINE) != LIB_STATUS_OK)
+                    return LIB_STATUS_INTERNAL_ERROR;
+                result->ticks += ticks;
+                result->elapsed_ticks = machine->elapsed_ticks;
+                continue;
             }
             if (machine->cpu_retirement_wait_pending) {
                 if (machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled &&

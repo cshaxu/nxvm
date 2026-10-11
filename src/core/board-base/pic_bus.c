@@ -32,6 +32,7 @@ lib_status core_machine_pic_read_register(core_machine_pic_bus *bus,
     if (bus == LIB_NULL || out_value == LIB_NULL || selector > 1u)
         return LIB_STATUS_INVALID_ARGUMENT;
     x86_pic_read_register(bus->device, selector, out_value);
+    if (bus == bus->slave) core_machine_pic_refresh(bus->master, bus->slave);
     return LIB_STATUS_OK;
 }
 
@@ -120,10 +121,9 @@ lib_status core_machine_pic_initialize(core_machine_pic_bus **out_master,
 void core_machine_pic_reset(core_machine_pic_bus *master, core_machine_pic_bus *slave)
 {
     if (master == LIB_NULL || slave == LIB_NULL) return;
-    lib_memory_set(master->asserted, 0u, sizeof(master->asserted));
-    lib_memory_set(slave->asserted, 0u, sizeof(slave->asserted));
     x86_pic_reset(master->device);
     x86_pic_reset(slave->device);
+    core_machine_pic_refresh(master, slave);
 }
 
 void core_machine_pic_finalize(core_machine_pic_bus *master, core_machine_pic_bus *slave)
@@ -214,13 +214,15 @@ void core_machine_pic_irq_source_assert(core_machine_pic_irq_source *source)
 {
     core_machine_pic_bus *bus;
     lib_u8 line;
+    lib_u8 edge;
     if (source == LIB_NULL || source->asserted || source->master == LIB_NULL ||
         source->slave == LIB_NULL || source->irq >= 16u) return;
     bus = source->irq < 8u ? source->master : source->slave;
     line = source->irq & 7u;
+    edge = bus->asserted[line] == 0u ? (lib_u8)(1u << line) : 0u;
     source->asserted = LIB_TRUE;
     if (bus->asserted[line] != 0xffu) ++bus->asserted[line];
-    x86_pic_set_inputs(bus->device, pic_bus_levels(bus), (lib_u8)(1u << line), 0u);
+    x86_pic_set_inputs(bus->device, pic_bus_levels(bus), edge, 0u);
     core_machine_pic_refresh(source->master, source->slave);
 }
 

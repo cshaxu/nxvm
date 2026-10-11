@@ -2,8 +2,19 @@
 #include "core/chips/dma8237/dma.h"
 
 void x86_dma_reset(x86_dma *rdma) {
-    lib_memory_set((void *)(&rdma->data), 0u, sizeof(x86_dma_data));
+    /* Reset does not clear the programmed address, count or mode registers. */
+    rdma->data.command = 0u;
+    rdma->data.status = 0u;
     rdma->data.mask = VDMA_MASK_VALID;
+    rdma->data.request = 0u;
+    rdma->data.acknowledged = 0u;
+    rdma->data.temp = 0u;
+    rdma->data.drx = 0u;
+    rdma->data.flagMSB = LIB_FALSE;
+    rdma->data.flagEOP = LIB_FALSE;
+    rdma->data.flagM2MWrite = LIB_FALSE;
+    rdma->data.phase = VDMA_PHASE_IDLE;
+    rdma->data.isr = 0u;
 }
 
 
@@ -110,6 +121,7 @@ static lib_u8 dma_pending_requests(const x86_dma *dma)
         (lib_u8)~dma->data.mask;
     lib_u8 channel;
 
+    if (dma->data.request == 0u) return pending;
     for (channel = 0u; channel < VDMA_CHANNEL_COUNT; ++channel) {
         if (dma_software_request_is_valid(dma, channel)) {
             DMA_BIT_SET(pending, VDMA_REQUEST_DRQ(channel));
@@ -149,7 +161,7 @@ void x86_dma_read_register(x86_dma *dma, lib_u8 selector, lib_u8 *io_value)
         if ((selector & 1u) == 0u) dma_read_address(dma, io_value, selector >> 1);
         else dma_read_count(dma, io_value, selector >> 1);
     } else if (selector == 8u) {
-        *io_value = dma->data.status;
+        *io_value = dma->data.status | (lib_u8)(dma->data.request << 4u);
         DMA_BIT_CLEAR(dma->data.status, VDMA_STATUS_TCS);
     } else if (selector == 13u) {
         *io_value = dma->data.temp;
@@ -214,6 +226,7 @@ static lib_bool Transmission(x86_dma *dma, const x86_dma_bus *bus,
         return LIB_FALSE;
     }
     dma->data.currCount[channel]--;
+    if (dma->data.currCount[channel] == 0xffffu) dma->data.flagEOP = LIB_TRUE;
     if (DMA_BIT_IS_SET(dma->data.mode[channel], VDMA_MODE_AIDS)) {
         DecreaseCurrAddr(dma, channel);
     } else {
@@ -223,7 +236,7 @@ static lib_bool Transmission(x86_dma *dma, const x86_dma_bus *bus,
 }
 
 static void dma_complete_transfer(x86_dma *dma, const x86_dma_bus *bus,
-    lib_u8 channel, lib_bool memory_to_memory, lib_bool terminal_count)
+    lib_u8 channel, lib_bool memory_to_memory)
 {
     lib_u8 first = memory_to_memory ? 0u : channel;
     lib_u8 last = memory_to_memory ? 1u : channel;
@@ -238,15 +251,12 @@ static void dma_complete_transfer(x86_dma *dma, const x86_dma_bus *bus,
         if (DMA_BIT_IS_SET(dma->data.mode[index], VDMA_MODE_AI)) {
             dma->data.currAddr[index] = dma->data.baseAddr[index];
             dma->data.currCount[index] = dma->data.baseCount[index];
-            DMA_BIT_CLEAR(dma->data.mask, VDMA_MASK_DRQ(index));
         } else {
             DMA_BIT_SET(dma->data.mask, VDMA_MASK_DRQ(index));
         }
     }
-    if (terminal_count) {
-        DMA_BIT_SET(dma->data.status,
-            VDMA_STATUS_TC(memory_to_memory ? 1u : channel));
-    }
+    DMA_BIT_SET(dma->data.status,
+        VDMA_STATUS_TC(memory_to_memory ? 1u : channel));
 }
 
 static void Execute(x86_dma *rdma, const x86_dma_bus *bus, lib_u8 id) {
@@ -260,7 +270,7 @@ static void Execute(x86_dma *rdma, const x86_dma_bus *bus, lib_u8 id) {
     if (flagM2M) {
         /* Memory-to-memory is two logical services: channel 0 reads the
          * temporary register first, then channel 1 writes it. */
-        if (rdma->data.currCount[1] != 0xffff && !rdma->data.flagEOP) {
+        if (!rdma->data.flagEOP) {
             lib_u8 byte = rdma->data.temp;
 
             if (!rdma->data.flagM2MWrite) {
@@ -280,6 +290,7 @@ static void Execute(x86_dma *rdma, const x86_dma_bus *bus, lib_u8 id) {
             }
             rdma->data.flagM2MWrite = LIB_FALSE;
             rdma->data.currCount[1]--;
+            if (rdma->data.currCount[1] == 0xffffu) rdma->data.flagEOP = LIB_TRUE;
             if (DMA_BIT_IS_SET(rdma->data.mode[1u], VDMA_MODE_AIDS)) {
                 DecreaseCurrAddr(rdma, 1u);
             } else {
@@ -293,16 +304,12 @@ static void Execute(x86_dma *rdma, const x86_dma_bus *bus, lib_u8 id) {
                 }
             }
         }
-        if (rdma->data.currCount[1] == 0xffffu) {
-            rdma->data.flagEOP = LIB_TRUE;
-        }
     } else {
         /* select mode and command */
         switch (VDMA_GetMODE_M(rdma->data.mode[id])) {
         case 0x00:
             /* demand */
-            if (request_asserted && rdma->data.currCount[id] !=
-                0xffffu && !rdma->data.flagEOP) {
+            if (request_asserted && !rdma->data.flagEOP) {
                 if (!Transmission(rdma, bus, id)) {
                     x86_dma_release(rdma);
                     return;
@@ -312,7 +319,7 @@ static void Execute(x86_dma *rdma, const x86_dma_bus *bus, lib_u8 id) {
             break;
         case 0x01:
             /* single */
-            if (!Transmission(rdma, bus, id)) {
+            if (!rdma->data.flagEOP && !Transmission(rdma, bus, id)) {
                 x86_dma_release(rdma);
                 return;
             }
@@ -320,8 +327,7 @@ static void Execute(x86_dma *rdma, const x86_dma_bus *bus, lib_u8 id) {
             break;
         case 0x02:
             /* block */
-            if (rdma->data.currCount[id] != 0xffffu &&
-                !rdma->data.flagEOP) {
+            if (!rdma->data.flagEOP) {
                 if (!Transmission(rdma, bus, id)) {
                     x86_dma_release(rdma);
                     return;
@@ -336,14 +342,9 @@ static void Execute(x86_dma *rdma, const x86_dma_bus *bus, lib_u8 id) {
         default:
             break;
         }
-        if (rdma->data.currCount[id] == 0xffffu) {
-            rdma->data.flagEOP = LIB_TRUE;
-        }
     }
     if (rdma->data.flagEOP) {
-        dma_complete_transfer(rdma, bus, id, flagM2M,
-            rdma->data.currCount[flagM2M ? 1u : id] == 0xffffu ||
-            !DMA_BIT_IS_SET(rdma->data.mode[flagM2M ? 1u : id], VDMA_MODE_AI));
+        dma_complete_transfer(rdma, bus, id, flagM2M);
     }
     rdma->data.flagEOP = LIB_FALSE;
 }

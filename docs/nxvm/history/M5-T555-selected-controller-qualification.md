@@ -18,6 +18,26 @@ uses the current Core/App paths and is the only admission input for follow-up
 controller work. This S did not modify source, tests, assets or external
 materials.
 
+## S2 — Implementation delivery: PIC/PIT/DMA and refresh/IRQ
+
+The [S2 reconciliation record](../etc/evidence/t555-s2-controller-route-reconciliation.md)
+disposes the complete selected register/mode/reset/request/consumer batch
+against original Intel and IBM sources. Chip mechanisms remain chip-owned;
+board wiring and single-bus scheduler service remain distinct owners. One
+approved appended refresh-duration contract value is the only public change.
+No CPU instruction, Shared-six or MyNES source/test/artifact changed.
+
+Final complete repository-only units pass 546/546 per width; the four selected
+integration groups pass 32/32 per width with unchanged checkpoints/budgets.
+DeskPro x86 boot passes in 179.93 seconds; earlier failures remain evidence,
+and that narrow-margin pass is not a statistical host-throughput guarantee.
+Eight 0555 optimized stripped PC artifacts replace the prior 0551 pairs;
+four adjacent owner INIs remain hash-identical. Manual desktop acceptance is
+not claimed. Source is +244/-111 (net +133), tests/registration +814/-44
+(net +770), excluding documentation, manifests and generated artifacts.
+Coordinator actual-pushed-diff acceptance is still required; T555 remains
+open for S3-S6.
+
 ## Remaining Ordered S Work
 
 | S | Boundary | Exit condition |

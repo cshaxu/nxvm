@@ -111,6 +111,7 @@ lib_i32 main(void)
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088,
         .fpu_profile = X86_FPU_PROFILE_NONE,
+        .dma_controller_count = 1u,
         .ticks_per_instruction = 1u
     };
     const core_machine_dma_wiring dma = {

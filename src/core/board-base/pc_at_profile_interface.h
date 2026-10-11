@@ -101,7 +101,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     lib_u8 hdc_present;
     lib_u8 planar_parity_present;
     /* Port 61h bit 4 is a frozen board input.  It is independent of PIT1's
-     * DMA-refresh request wiring, which remains owned by Board. */
+     * refresh request wiring, which remains owned by Board. */
     core_machine_planar_parity_refresh_status_source refresh_status_source;
     lib_u32 refresh_status_toggle_ticks;
     lib_u8 ega_present;

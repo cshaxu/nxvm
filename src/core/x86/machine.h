@@ -124,6 +124,7 @@ struct core_machine {
     lib_i32 execution_provider_frozen;
     /* Core scheduler state is private; attachments use the copied contract. */
     lib_u32 dma_cycle_wait_remaining;
+    lib_u32 refresh_cycle_ticks_remaining;
     lib_u8 dma_cycle_bus_ready;
     lib_u8 cpu_cycle_bus_ready;
     core_machine_attachment attachment;
@@ -138,6 +139,7 @@ void core_machine_trace_finalize(core_machine *machine);
 #endif
 void core_machine_cpu_diagnostic_initialize(core_machine *machine);
 void core_machine_cpu_diagnostic_reset(core_machine *machine);
+void core_machine_refresh_hold_advance(core_machine *machine, lib_u64 source_ticks);
 void core_machine_retirement_observation_initialize(core_machine *machine);
 void core_machine_retirement_observation_reset(core_machine *machine);
 void core_machine_retirement_observation_capture_instruction(core_machine *machine,

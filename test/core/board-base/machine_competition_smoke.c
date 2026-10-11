@@ -95,6 +95,7 @@ static void competition_program_dma_channel2(core_machine *machine)
     test_core_machine_fixture_write_port(machine, 0x0081u, 1u);
     test_core_machine_fixture_write_port(machine, 0x000bu, 0x46u);
     test_core_machine_fixture_write_port(machine, 0x000au, 0x02u);
+    test_core_machine_fixture_write_port(machine, 0x00d4u, 0u);
 }
 
 static lib_i32 competition_dma_wait_contract(void)
@@ -138,6 +139,83 @@ static lib_i32 competition_dma_wait_contract(void)
     core_machine_destroy(machine);
     return !failed;
 }
+static lib_i32 competition_at_refresh_contract(void)
+{
+    const core_machine_dma_wiring wiring = {
+        .fdc_channel = CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND,
+        .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL
+    };
+    const core_machine_planar_parity_config port_b = {
+        .port = 0x0061u,
+        .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1
+    };
+    static const core_machine_dma_channel_provider provider = {
+        competition_dma_read, LIB_NULL, LIB_NULL };
+    core_machine_config config = {0};
+    core_machine_dma_request_binding binding = {0};
+    core_machine_dma_request_binding fdc_request = {0};
+    competition_dma_source source = {0xa5u};
+    competition_probe probe = {{{0}}, 0u};
+    const core_machine_trace_provider trace = {competition_trace, &probe};
+    core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
+    lib_u32 refresh_begin = 0u;
+    lib_u32 refresh_commit = 0u;
+    lib_u32 dma_begin = 0u;
+    lib_u8 value = 0u;
+    lib_i32 failed = 0;
+
+    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.transaction_contract.refresh_cycle_source_ticks = 8u;
+    failed = core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
+        core_machine_configure_planar_parity(board, &port_b) != LIB_STATUS_OK ||
+        core_machine_configure_dma(board, &wiring, &fdc_request) != LIB_STATUS_OK ||
+        test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+            0x000ffff0u, 16u) != LIB_STATUS_OK ||
+        test_board_dma_bind_channel(board, 2u, &provider, &source, &binding) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        test_core_machine_advance_time(machine, 8u) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x11234u, &value, 1u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0043u, 0x70u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0041u, 1u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0041u, 0u) != LIB_STATUS_OK ||
+        test_core_machine_advance_time(machine, 2u) != LIB_STATUS_OK ||
+        core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
+    if (!failed) competition_program_dma_channel2(machine);
+    if (!failed) test_board_dma_request_assert(board, &binding);
+    failed = failed || test_core_machine_advance_time(machine, 7u) != LIB_STATUS_OK ||
+        core_machine_memory_read(machine, 0x11234u, &value, 1u) != LIB_STATUS_OK || value != 0u ||
+        competition_find_transaction(&probe, CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA,
+            CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, &dma_begin) ||
+        competition_find_transaction(&probe, CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
+            CORE_MACHINE_TRANSACTION_OWNER_REFRESH,
+            CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE, &refresh_commit) ||
+        test_core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
+        core_machine_memory_read(machine, 0x11234u, &value, 1u) != LIB_STATUS_OK || value != 0u ||
+        !competition_find_transaction(&probe, CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
+            CORE_MACHINE_TRANSACTION_OWNER_REFRESH,
+            CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE, &refresh_begin) ||
+        !competition_find_transaction(&probe, CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
+            CORE_MACHINE_TRANSACTION_OWNER_REFRESH,
+            CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE, &refresh_commit) ||
+        probe.events[refresh_commit].timeline_ticks -
+            probe.events[refresh_begin].timeline_ticks != 8u ||
+        test_core_machine_advance_time(machine, 9u) != LIB_STATUS_OK ||
+        core_machine_memory_read(machine, 0x11234u, &value, 1u) != LIB_STATUS_OK || value != 0xa5u ||
+        !competition_find_transaction(&probe, CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA,
+            CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, &dma_begin) || dma_begin <= refresh_commit;
+    if (failed) lib_c_printf("AT-REFRESH:DMA-EXCLUSION:FAIL events=%u value=%02x begin=%u/%u commit=%u/%u dma=%u\n",
+        probe.count, value, refresh_begin,
+        (lib_u32)probe.events[refresh_begin].timeline_ticks, refresh_commit,
+        (lib_u32)probe.events[refresh_commit].timeline_ticks, dma_begin);
+    core_machine_destroy(machine);
+    return !failed;
+}
+
 lib_i32 main(void)
 {
     static const core_machine_dma_channel_provider dma_provider = {
@@ -249,6 +327,7 @@ lib_i32 main(void)
 
     core_machine_destroy(machine);
     failed = failed || !competition_dma_wait_contract();
+    failed = failed || !competition_at_refresh_contract();
     if (failed) return 1;
     lib_c_printf("COMPETITION:OK\n");
     lib_c_printf("DMA-NO-WAIT:OK\n");

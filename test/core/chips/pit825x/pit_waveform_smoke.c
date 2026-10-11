@@ -97,6 +97,230 @@ static lib_i32 x86_pit_waveform_deadline_cases(x86_pit *pit)
     return failed;
 }
 
+static lib_i32 x86_pit_waveform_terminal_cases(x86_pit *pit)
+{
+    static const lib_u8 modes[] = {0u, 1u, 4u, 5u};
+    x86_pit_waveform_probe probe;
+    lib_uptr row;
+    lib_i32 failed = 0;
+    lib_memory_set(&probe, 0u, sizeof(probe));
+    x86_pit_set_output(pit, 0u, x86_pit_waveform_output, &probe);
+    for (row = 0u; row < 8u; ++row) {
+        lib_u8 mode = modes[row / 2u];
+        lib_bool bcd = (row & 1u) != 0u;
+        lib_bool triggered = mode == 1u || mode == 5u;
+        lib_u16 count;
+        lib_u64 ticks = 0u;
+        x86_pit_reset(pit);
+        x86_pit_set_gate(pit, 0u, triggered ? LIB_FALSE : LIB_TRUE);
+        x86_pit_waveform_write(pit, (lib_u8)(0x30u | mode << 1u | bcd), 2u);
+        if (triggered) {
+            x86_pit_set_gate(pit, 0u, LIB_TRUE);
+            x86_pit_advance(pit, 1u);
+        }
+        x86_pit_advance(pit, 3u);
+        x86_pit_write_register(pit, 3u, 0u);
+        count = x86_pit_waveform_read(pit, 0u);
+        count |= (lib_u16)x86_pit_waveform_read(pit, 0u) << 8u;
+        failed |= count != (bcd ? 0x9999u : 0xffffu);
+        failed |= !x86_pit_get_output(pit, 0u);
+        failed |= x86_pit_ticks_until_output(pit, 0u, &ticks) != LIB_STATUS_INVALID_STATE;
+        x86_pit_set_gate(pit, 0u, LIB_FALSE);
+        x86_pit_advance(pit, 1u);
+        x86_pit_write_register(pit, 3u, 0u);
+        count = x86_pit_waveform_read(pit, 0u);
+        count |= (lib_u16)x86_pit_waveform_read(pit, 0u) << 8u;
+        failed |= count != (triggered ? (bcd ? 0x9998u : 0xfffeu) :
+            (bcd ? 0x9999u : 0xffffu));
+        if (!triggered) x86_pit_set_gate(pit, 0u, LIB_TRUE);
+        lib_memory_set(&probe, 0u, sizeof(probe));
+        x86_pit_advance(pit, bcd ? 10000u : 65536u);
+        failed |= !x86_pit_get_output(pit, 0u) || probe.count != 0u;
+    }
+    for (row = 0u; row < 2u; ++row) {
+        x86_pit_reset(pit);
+        x86_pit_set_gate(pit, 0u, row == 1u ? LIB_FALSE : LIB_TRUE);
+        x86_pit_waveform_write(pit, row == 1u ? 0x3au : 0x38u, 2u);
+        if (row == 1u) {
+            x86_pit_set_gate(pit, 0u, LIB_TRUE);
+            x86_pit_advance(pit, 1u);
+        }
+        x86_pit_advance(pit, 2u);
+        failed |= x86_pit_get_output(pit, 0u);
+        lib_memory_set(&probe, 0u, sizeof(probe));
+        x86_pit_write_register(pit, 0u, 3u);
+        x86_pit_write_register(pit, 0u, 0u);
+        if (row == 1u) {
+            x86_pit_set_gate(pit, 0u, LIB_FALSE);
+            x86_pit_set_gate(pit, 0u, LIB_TRUE);
+        }
+        x86_pit_advance(pit, 1u);
+        failed |= !x86_pit_get_output(pit, 0u);
+        failed |= x86_pit_waveform_expect_deadline(pit, 3u);
+        failed |= probe.count != 1u || probe.level[0] != LIB_TRUE;
+    }
+    x86_pit_set_output(pit, 0u, LIB_NULL, LIB_NULL);
+    return failed;
+}
+
+static lib_i32 x86_pit_waveform_mode3_count_cases(x86_pit *pit,
+    x86_pit_personality personality)
+{
+    static const lib_u8 count_8253[] = {5u, 4u, 2u, 5u, 2u, 5u};
+    static const lib_u8 count_8254[] = {4u, 2u, 0u, 4u, 2u, 4u};
+    static const lib_u8 deadlines[] = {3u, 2u, 1u, 2u, 1u, 3u};
+    const lib_u8 *counts = personality == X86_PIT_PERSONALITY_8253 ?
+        count_8253 : count_8254;
+    lib_u8 bcd;
+    lib_u32 index;
+    lib_i32 failed = 0;
+
+    for (bcd = 0u; bcd < 2u; ++bcd) {
+        x86_pit_reset(pit);
+        x86_pit_waveform_write(pit, (lib_u8)(0x36u | bcd), 5u);
+        for (index = 0u; index < sizeof(count_8253); ++index) {
+            x86_pit_write_register(pit, 3u, 0u);
+            failed |= x86_pit_waveform_read(pit, 0u) != counts[index];
+            failed |= x86_pit_waveform_read(pit, 0u) != 0u;
+            failed |= x86_pit_get_output(pit, 0u) !=
+                (index < 3u || index == 5u);
+            failed |= x86_pit_waveform_expect_deadline(pit, deadlines[index]);
+            x86_pit_advance(pit, 1u);
+        }
+    }
+    return failed;
+}
+
+static lib_i32 x86_pit_waveform_mode2_count_cases(x86_pit *pit,
+    x86_pit_personality personality)
+{
+    static const lib_u8 count_8253[] = {3u, 2u, 1u, 0u, 2u, 1u, 0u};
+    static const lib_u8 count_8254[] = {3u, 2u, 1u, 3u, 2u, 1u, 3u};
+    lib_bool is_8253 = personality == X86_PIT_PERSONALITY_8253;
+    const lib_u8 *counts = is_8253 ? count_8253 : count_8254;
+    lib_u8 bcd;
+    lib_i32 failed = 0;
+
+    for (bcd = 0u; bcd < 2u; ++bcd) {
+        lib_uptr index;
+        x86_pit_reset(pit);
+        x86_pit_waveform_write(pit, (lib_u8)(0x34u | bcd), 3u);
+        for (index = 0u; index < sizeof(count_8253); ++index) {
+            lib_u16 count;
+            lib_bool low = counts[index] == (is_8253 ? 0u : 1u);
+            lib_u64 deadline = low ? 1u : counts[index] - (is_8253 ? 0u : 1u);
+            x86_pit_write_register(pit, 3u, 0u);
+            count = x86_pit_waveform_read(pit, 0u);
+            count |= (lib_u16)x86_pit_waveform_read(pit, 0u) << 8u;
+            failed |= count != counts[index] ||
+                x86_pit_get_output(pit, 0u) != !low;
+            failed |= x86_pit_waveform_expect_deadline(pit, deadline);
+            x86_pit_advance(pit, 1u);
+        }
+    }
+    return failed;
+}
+
+static lib_i32 x86_pit_waveform_output_cases(x86_pit *pit,
+    x86_pit_personality personality)
+{
+    x86_pit_waveform_probe probe = {0};
+    lib_u8 mode;
+    lib_i32 failed = 0;
+
+    x86_pit_set_output(pit, 0u, x86_pit_waveform_output, &probe);
+    for (mode = 1u; mode < 6u; ++mode) {
+        x86_pit_reset(pit);
+        lib_memory_set(&probe, 0u, sizeof(probe));
+        x86_pit_write_register(pit, 3u, (lib_u8)(0x30u | mode << 1u));
+        failed |= probe.count != 1u || probe.level[0] != LIB_TRUE;
+        x86_pit_write_register(pit, 3u, (lib_u8)(0x30u | mode << 1u));
+        failed |= probe.count != 1u;
+        x86_pit_write_register(pit, 3u, 0x30u);
+        failed |= probe.count != 2u || probe.level[1] != LIB_FALSE;
+    }
+    for (mode = 2u; mode <= 3u; ++mode) {
+        x86_pit_reset(pit);
+        x86_pit_waveform_write(pit, (lib_u8)(0x30u | mode << 1u), 4u);
+        x86_pit_advance(pit, mode == 2u ?
+            (personality == X86_PIT_PERSONALITY_8253 ? 4u : 3u) : 2u);
+        failed |= x86_pit_get_output(pit, 0u);
+        lib_memory_set(&probe, 0u, sizeof(probe));
+        x86_pit_set_gate(pit, 0u, LIB_FALSE);
+        failed |= !x86_pit_get_output(pit, 0u) ||
+            probe.count != 1u || probe.level[0] != LIB_TRUE;
+        x86_pit_set_gate(pit, 0u, LIB_FALSE);
+        x86_pit_advance(pit, 3u);
+        failed |= probe.count != 1u;
+    }
+    x86_pit_set_output(pit, 0u, LIB_NULL, LIB_NULL);
+    return failed;
+}
+
+static lib_i32 x86_pit_waveform_pending_cases(x86_pit *pit,
+    x86_pit_personality personality)
+{
+    static const lib_u8 controls[] = {0x32u, 0x3au};
+    lib_uptr index;
+    lib_i32 failed = 0;
+    lib_u64 ticks = 0u;
+
+    for (index = 0u; index < sizeof(controls) / sizeof(controls[0]); ++index) {
+        x86_pit_reset(pit);
+        x86_pit_set_gate(pit, 0u, LIB_FALSE);
+        x86_pit_write_register(pit, 3u, controls[index]);
+        x86_pit_write_register(pit, 0u, 4u);
+        x86_pit_write_register(pit, 0u, 0u);
+        failed |= x86_pit_ticks_until_output(pit, 0u, &ticks) !=
+            LIB_STATUS_INVALID_STATE;
+        x86_pit_set_gate(pit, 0u, LIB_TRUE);
+        x86_pit_advance(pit, 1u);
+        failed |= x86_pit_waveform_expect_deadline(pit, 4u);
+        failed |= x86_pit_get_output(pit, 0u) != (index != 0u);
+        x86_pit_set_gate(pit, 0u, LIB_FALSE);
+        x86_pit_advance(pit, 1u);
+        failed |= x86_pit_waveform_expect_deadline(pit, 3u);
+        x86_pit_write_register(pit, 0u, 6u);
+        x86_pit_write_register(pit, 0u, 0u);
+        failed |= x86_pit_waveform_expect_deadline(pit, 3u);
+        x86_pit_advance(pit, 3u);
+        failed |= x86_pit_get_output(pit, 0u) != (index == 0u);
+        if (index != 0u) {
+            failed |= x86_pit_waveform_expect_deadline(pit, 1u);
+            x86_pit_advance(pit, 1u);
+        }
+        failed |= x86_pit_ticks_until_output(pit, 0u, &ticks) !=
+            LIB_STATUS_INVALID_STATE;
+        x86_pit_set_gate(pit, 0u, LIB_TRUE);
+        x86_pit_advance(pit, 1u);
+        failed |= x86_pit_waveform_expect_deadline(pit, 6u);
+    }
+
+    x86_pit_reset(pit);
+    x86_pit_waveform_write(pit, 0x34u, 6u);
+    x86_pit_write_register(pit, 0u, 8u);
+    x86_pit_write_register(pit, 0u, 0u);
+    failed |= x86_pit_waveform_expect_deadline(pit,
+        personality == X86_PIT_PERSONALITY_8253 ? 6u : 5u);
+    x86_pit_reset(pit);
+    x86_pit_waveform_write(pit, 0x36u, 8u);
+    x86_pit_write_register(pit, 0u, 6u);
+    x86_pit_write_register(pit, 0u, 0u);
+    failed |= x86_pit_waveform_expect_deadline(pit, 4u);
+    x86_pit_reset(pit);
+    x86_pit_waveform_write(pit, 0x38u, 2u);
+    x86_pit_advance(pit, 2u);
+    failed |= x86_pit_get_output(pit, 0u) != LIB_FALSE;
+    x86_pit_set_gate(pit, 0u, LIB_FALSE);
+    failed |= x86_pit_waveform_expect_deadline(pit, 1u);
+    x86_pit_advance(pit, 1u);
+    failed |= x86_pit_get_output(pit, 0u) != LIB_TRUE;
+    x86_pit_write_register(pit, 3u, 0u);
+    failed |= x86_pit_waveform_read(pit, 0u) != 0u;
+    failed |= x86_pit_waveform_read(pit, 0u) != 0u;
+    return failed;
+}
+
 lib_i32 main(void)
 {
     x86_pit *pit = LIB_NULL;
@@ -175,9 +399,6 @@ lib_i32 main(void)
     x86_pit_write_register(pit, 0u, 0u);
     x86_pit_advance(pit, 1u);
     failed |= x86_pit_waveform_expect(
-        x86_pit_get_output(pit, 0u), LIB_TRUE);
-    x86_pit_advance(pit, 1u);
-    failed |= x86_pit_waveform_expect(
         x86_pit_get_output(pit, 0u), LIB_FALSE);
     x86_pit_advance(pit, 1u);
     failed |= x86_pit_waveform_expect(
@@ -185,10 +406,13 @@ lib_i32 main(void)
     x86_pit_advance(pit, 1u);
     failed |= x86_pit_waveform_expect(
         x86_pit_get_output(pit, 0u), LIB_FALSE);
+    x86_pit_advance(pit, 1u);
+    failed |= x86_pit_waveform_expect(
+        x86_pit_get_output(pit, 0u), LIB_TRUE);
     x86_pit_advance(pit, 2u);
     x86_pit_set_gate(pit, 0u, LIB_FALSE);
     x86_pit_set_gate(pit, 0u, LIB_TRUE);
-    x86_pit_advance(pit, 3u);
+    x86_pit_advance(pit, 2u);
     failed |= x86_pit_waveform_expect(
         x86_pit_get_output(pit, 0u), LIB_FALSE);
     x86_pit_advance(pit, 1u);
@@ -197,7 +421,7 @@ lib_i32 main(void)
 
     /* Mode 2 produces one low tick, then reloads high. */
     x86_pit_waveform_write(pit, 0x34u, 3u);
-    x86_pit_advance(pit, 3u);
+    x86_pit_advance(pit, 2u);
     failed |= x86_pit_waveform_expect(
         x86_pit_get_output(pit, 0u), LIB_FALSE);
     x86_pit_advance(pit, 1u);
@@ -211,7 +435,7 @@ lib_i32 main(void)
 
     /* Encodings 6 and 7 are the documented aliases of modes 2 and 3. */
     x86_pit_waveform_write(pit, 0x3cu, 2u);
-    x86_pit_advance(pit, 2u);
+    x86_pit_advance(pit, 1u);
     failed |= x86_pit_waveform_expect(
         x86_pit_get_output(pit, 0u), LIB_FALSE);
     x86_pit_waveform_write(pit, 0x3eu, 4u);
@@ -275,7 +499,7 @@ lib_i32 main(void)
     x86_pit_set_gate(pit, 0u, LIB_FALSE);
     x86_pit_waveform_write(pit, 0x34u, 3u);
     x86_pit_set_gate(pit, 0u, LIB_TRUE);
-    x86_pit_advance(pit, 3u);
+    x86_pit_advance(pit, 2u);
     failed |= x86_pit_waveform_expect(
         x86_pit_get_output(pit, 0u), LIB_TRUE);
     x86_pit_advance(pit, 1u);
@@ -325,6 +549,18 @@ lib_i32 main(void)
     /* Mode 2 contributes an OUT low/high pair to its output consumer. */
     failed |= probe.count < 2u;
     failed |= x86_pit_waveform_deadline_cases(pit);
+    failed |= x86_pit_waveform_pending_cases(pit, X86_PIT_PERSONALITY_8254);
+    failed |= x86_pit_waveform_terminal_cases(pit);
+    failed |= x86_pit_waveform_output_cases(pit, X86_PIT_PERSONALITY_8254);
+    failed |= x86_pit_waveform_mode2_count_cases(pit, X86_PIT_PERSONALITY_8254);
+    failed |= x86_pit_waveform_mode3_count_cases(pit, X86_PIT_PERSONALITY_8254);
+    x86_pit_destroy(pit);
+    if (x86_pit_create(X86_PIT_PERSONALITY_8253, &pit) != LIB_STATUS_OK) return 1;
+    failed |= x86_pit_waveform_pending_cases(pit, X86_PIT_PERSONALITY_8253);
+    failed |= x86_pit_waveform_terminal_cases(pit);
+    failed |= x86_pit_waveform_output_cases(pit, X86_PIT_PERSONALITY_8253);
+    failed |= x86_pit_waveform_mode2_count_cases(pit, X86_PIT_PERSONALITY_8253);
+    failed |= x86_pit_waveform_mode3_count_cases(pit, X86_PIT_PERSONALITY_8253);
     x86_pit_destroy(pit);
     if (failed) return 1;
     return 0;

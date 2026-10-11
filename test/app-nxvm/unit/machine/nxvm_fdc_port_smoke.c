@@ -1,6 +1,7 @@
 #include "core/machine/machine_interface.h"
 #include "../../../core/machine/support/media.h"
 #include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 #include "../../../core/board-base/support/controller_fixture.h"
 #include <stdio.h>
 
@@ -58,6 +59,7 @@ lib_i32 main(void)
     };
     lib_u8 format_id[] = { 0x00u, 0x00u, 0x01u, 0x02u };
     lib_i32 failed = 1;
+    lib_u32 stage = 1u;
     static lib_u8 protected_image[80u * 2u * 18u * 512u];
     lib_storage_file_writer *writer = LIB_NULL;
     const char *protected_path = "fdc-write-protect.img";
@@ -66,11 +68,17 @@ lib_i32 main(void)
         session == LIB_NULL || !session->active ||
         session->core_machine == LIB_NULL) goto done;
     machine = session->core_machine;
-    if (core_machine_bus_write(machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
+    /* The HLT-only fixture firmware does not perform BIOS PIC initialization. */
+    if (core_machine_bus_write(machine, 0x0020u, 0x11u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0021u, 0x08u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0021u, 0x04u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0021u, 0x01u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x03f7u, 0x00u) != LIB_STATUS_OK) goto done;
     /* 1.44MB: 500 kbps. */
 
     /* No image is an FDC result, not a host or BIOS shortcut. */
+    stage = 2u;
     if (!fdc_command(session->board, machine, read_sector, sizeof(read_sector)) ||
         core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
         (value & TEST_FDC_MSR_DIO) == 0u ||
@@ -78,6 +86,7 @@ lib_i32 main(void)
         (result[0] & TEST_FDC_ST0_ABNORMAL) == 0u) goto done;
 
     vm_machine_fdd_create_for(session->floppy[0u]);
+    stage = 3u;
     test_board_fdc_refresh(session->board);
     if (core_machine_bus_read(machine, 0x03f7u, &value) != LIB_STATUS_OK ||
         (value & 0x80u) == 0u) goto done;
@@ -92,6 +101,7 @@ lib_i32 main(void)
     if (core_machine_bus_read(machine, 0x03f7u, &value) != LIB_STATUS_OK ||
         (value & 0x80u) != 0u) goto done;
 
+    stage = 4u;
     if (!fdc_command(session->board, machine, specify_non_dma, sizeof(specify_non_dma)) ||
         !fdc_command(session->board, machine, format_track, sizeof(format_track)) ||
         !fdc_command(session->board, machine, format_id, sizeof(format_id)) ||
@@ -104,6 +114,7 @@ lib_i32 main(void)
         result[0] != 0x80u) goto done;
 
     /* Protection is a real medium access mode, not a private flag mutation. */
+    stage = 5u;
     lib_memory_set(protected_image, 0xa5u, sizeof(protected_image));
     if (lib_storage_file_writer_open(protected_path,
             LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) != LIB_STATUS_OK ||
@@ -125,6 +136,7 @@ lib_i32 main(void)
             LIB_STORAGE_MEDIUM_OVERLAY)) goto done;
 
     /* Reserved rate is rejected; restore this medium's 500-kbps rate. */
+    stage = 6u;
     if (core_machine_bus_write(machine, 0x03f7u, 0x03u) != LIB_STATUS_OK ||
         !fdc_command(session->board, machine, read_sector, sizeof(read_sector)) ||
         !fdc_read_result(session->board, machine, result, sizeof(result)) ||
@@ -146,7 +158,10 @@ done:
     if (writer != LIB_NULL) (void)lib_storage_file_writer_close(writer);
     vm_machine_destroy(session);
     (void)remove(protected_path);
-    if (failed) return 1;
+    if (failed) {
+        lib_c_printf("FDC-PORT:FAIL:%u\n", stage);
+        return 1;
+    }
     puts("FDC-PORT:OK");
     return 0;
 }

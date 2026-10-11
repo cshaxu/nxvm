@@ -64,6 +64,8 @@ static inline lib_i32 test_core_dma_deadline_assert(const char *name,
     }
     if (!failed)
         failed = core_machine_bus_write(machine, 0x000au, 0x02u) != LIB_STATUS_OK;
+    if (!failed && wiring.controller_count == 2u)
+        failed = core_machine_bus_write(machine, 0x00d4u, 0x00u) != LIB_STATUS_OK;
     if (!failed) {
         test_board_dma_request_assert(board, &request);
         status = core_machine_capture_time_observation(machine, &observation);
