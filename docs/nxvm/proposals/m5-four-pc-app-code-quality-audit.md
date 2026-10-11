@@ -165,6 +165,15 @@ integration receiver remains the sole owner of direct ATA-command proof.
 Run both integrations sequentially on x64/x86 before resuming final
 qualification.
 
+#### S10 Completion Evidence
+
+The reusable default x64 and x86 trees each pass all 567 registered CTest
+routes. The profile-specific integration receivers also pass on both widths:
+My5160 2/2, My5170 4/4, and MyDeskPro386 4/4. Lib/Core manifest, Core corpus,
+dependency-DAG and documentation-governance gates pass on both widths. S10 and
+S11 change only test/support and documentation inputs; no executable build
+input changed, so the deployed artifacts require no rebuild for this closure.
+
 ## Exit Criteria
 
 - Every four-App file is accounted for in the ownership ledger.
