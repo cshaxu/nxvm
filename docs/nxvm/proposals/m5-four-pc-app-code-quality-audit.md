@@ -126,6 +126,13 @@ its name describes its cross-App PC behavior while retaining the one shared
 gates; prove both affected App routes and the independent Core package remain
 correct.
 
+This S also removes stale internal path terminology from Core comments. It
+does not mechanically rename stable `vm_machine_*`, `vm_app_*`, `vm_profile_*`
+or `vm_at_*` contracts merely because the repository directories moved: those
+are current, selected-binding or hardware-domain names. The only symbol rename
+is the demonstrated cross-App test helper whose `nxvm_` name falsely claims
+single-App ownership.
+
 ### S8: Core Test Failure-Semantics Repair
 
 Make `session_ini` propagate the existing `lib_status` of composition and
@@ -134,7 +141,15 @@ Classify adjacent status compression and ignored results by contract, changing
 only demonstrated lossy paths. Add failure injection at the helper boundary
 and sweep every caller that receives the same status.
 
-### S9: Corrective Full-Route Qualification And Closure Review
+### S9: App-Facing Path-Reference Cleanup
+
+Repair the confirmed obsolete `src/vm/profile/default_profile/firmware/`
+reference in the NXVM firmware documentation and sweep the four App roots for
+the same retired-layout wording. This is an App-facing documentation receiver,
+not a pretext to rename selected-binding symbols or change fixed hardware
+composition. Run the affected documentation/manifest gates.
+
+### S10: Corrective Full-Route Qualification And Closure Review
 
 Run the repaired dependency/ownership/manifest gates, then all four App
 x64/x86 unit, setup and integration routes using the reusable build trees.
