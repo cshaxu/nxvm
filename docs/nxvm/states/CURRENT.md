@@ -6,26 +6,27 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Active: M5 T552 S8. |
-| Admission And Approval | Owner approved the frozen linear S1-S9 plan on 2026-10-10. S7 has repaired Core media replacement close-result propagation and is complete. S8 is automatically admitted. |
-| Objective | Audit Core board compatibility/source receivers, including the Compaq CECG alias and PC/AT bounded-L1 policy. |
-| Non-goals | Do not alter Shared, MyNES, sibling App production, firmware/media/INI semantics or unrelated CPU/chip/board behavior. Do not add compatibility managers, fallback paths or a production App dependency. |
-| Reference Baseline | T552 S7 evidence. Core replacement retains its committed new medium and returns an old-lease close error; removal has the same visible failure contract. |
-| Candidate Proposal | [M5 Core code quality audit and repair](../proposals/m5-core-code-quality-audit-repair.md), S8. |
-| Files And ABI Surface | Expected Core board compatibility/source evidence and owner-local tests only. No public API, App or Shared change is presumed. |
+| Identifier Mode | Active: M5 T552 S9. |
+| Admission And Approval | Owner approved the frozen linear S1-S9 plan on 2026-10-10. S8 has classified the CECG compatibility window and PC/AT bounded-L1 policy without speculative behavior changes. S9 is automatically admitted. |
+| Objective | Reconcile CPU/Core boundary ownership for compatibility timing recipes and transfer CPU-owned correctness work to its active authority. |
+| Non-goals | Do not alter Shared, MyNES, sibling App production, firmware/media/INI semantics or board behavior. Do not create a duplicate CPU path, guessed timing recipe, or a production App dependency. |
+| Reference Baseline | T552 S8 evidence. CECG B0000h compatibility remains a bounded VADP contract; L1 remains a Core control policy rather than a physical duration. |
+| Candidate Proposal | [M5 Core code quality audit and repair](../proposals/m5-core-code-quality-audit-repair.md), S9. |
+| Files And ABI Surface | Expected CPU/Core ownership evidence and owner-local test or documentation changes only. No public API, App or Shared change is presumed. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`; source policy. Apply the Core-to-App inward dependency rule and preserve fixed machine distinctions. |
-| Verification | Trace each compatibility receiver to primary/source-grade evidence or an existing explicit model contract; run direct owner-local tests and required Core gates. |
-| Expected Markers | Each receiver has a named evidence grade and retain/repair/transfer disposition; no speculative compatibility behavior is added. |
+| Verification | Trace every compatibility timing recipe to CPU or Core ownership, direct test receiver and active CPU authority; run only direct owner-local checks required by actual repair. |
+| Expected Markers | Each recipe has a single owner and transfer/retain/repair disposition; no Core duplicate or unsupported timing claim remains. |
 | Asset Needs | None initially. Rebuild/deploy PC artifacts only if admitted executable source/build inputs change; preserve all external firmware/media and adjacent INI files. |
-| Reporting Requirements | Record each source/evidence location, applicable machine boundary and exact behavior disposition. At S delivery distinguish primary/manual evidence from compatibility inference. |
-| Stop Conditions | Stop for a required Shared/public-API change, protected-source need, a non-Core owner, an owner policy decision or a behavior change requiring firmware/media/INI alteration. |
-| Exit Criteria | Each admitted receiver has direct evidence and a repair/retain/transfer disposition; actual diff review and scoped P commit are complete. T552 remains open for S9. |
+| Reporting Requirements | Record each candidate's code/test route, reason it belongs to CPU or Core, and any resulting authority transfer. At S delivery distinguish an actual implementation repair from a documentation-only reconciliation. |
+| Stop Conditions | Stop for a required Shared/public-API change, protected-source need, an unresolved CPU policy decision, a non-Core owner, or an asset/INI behavior change. |
+| Exit Criteria | Every admitted recipe has one owner disposition and direct evidence; actual diff review and scoped P commit are complete. T552 closes only after S9's final review. |
 | Original Owner Request | Close the preceding T and admit the queue-head Core code-quality audit/repair task. |
 | Similar-Issue Sweep | Inspect controller command/AUX/keyboard reply paths, serial backlog, FIFO states, scan/translation/reset/IRQ edges, `ticks_until_event()` and board/scheduler consumers; independently classify all Core owners, test predicates, caller edges, names, duplicate paths and warning suppressions in the ledger. |
 
 | Work | Progress |
 | --- | --- |
-| T552 S8 | Active: audit Core board compatibility/source receivers, including the Compaq CECG alias and PC/AT bounded-L1 policy. |
+| T552 S9 | Active: reconcile CPU/Core boundary ownership for compatibility timing recipes and transfer CPU-owned correctness work to its active authority. |
+| T552 S8 | Complete: retained the CECG B0000h compatibility window as one VADP storage contract while transferring any physical firmware equivalence claim; retained bounded-L1 as a declared Core control policy, not a device duration. Focused CECG/time routes and Core gates pass x64/x86. |
 | T552 S7 | Complete: Core replacement now preserves its atomic new-medium state and propagates an old-lease close failure. The owner-local close injector proves both replacement and removal failure contracts for FDD/HDD; run-result and teardown candidates were retained with direct owner evidence. |
 | T552 S6 | Complete: generic Core floppy boot integration no longer takes an unnecessary Model 40 FDC observation. The remaining Model 40 bridge is narrowed to two test-only diagnostic helpers used by the generic BYOB probe; it does not affect test outcome or introduce a production Core-to-App edge. Affected Core diagnostic/integration receivers and Core gates pass x64/x86. |
 | T552 S5 | Complete: removed Core's blanket GNU `-w`; `cpu.c` now has no exception and `cpu_instructions.c` retains only five reproduced trace/profile-shaped warning classes. Repaired the uncalled task-switch declaration, control-register grouping, lexeme-width comparison and CPU read/output temporary initialization. Strict direct compilation plus Core CPU timing/manifest routes pass x64/x86; all eight PC artifacts were rebuilt and PE-width verified. |
