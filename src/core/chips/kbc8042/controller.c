@@ -573,13 +573,13 @@ void x86_kbc8042_advance(x86_kbc8042 *controller, lib_u64 elapsed_ticks)
         (void)x86_kbc8042_enqueue(controller, KBC_BAT_OK,
             X86_KBC8042_OUTPUT_KEYBOARD);
     }
-    if (controller->data.delayed_response_count != 0u &&
-        controller->data.response_status_polls_remaining == 0u) {
+    if (controller->data.delayed_response_count != 0u) {
         if (elapsed_ticks < controller->data.response_remaining_ticks) {
             controller->data.response_remaining_ticks -= elapsed_ticks;
         } else {
             controller->data.response_remaining_ticks = 0u;
-            if ((controller->data.keyboard_serial_count == 0u ||
+            if (controller->data.response_status_polls_remaining == 0u &&
+                (controller->data.keyboard_serial_count == 0u ||
                     !controller->link.keyboard_inputs(controller->link.context).scanning ||
                     !x86_kbc8042_keyboard_scan_delivery_enabled(controller,
                         controller->data.command_byte)) &&

@@ -309,6 +309,48 @@ static lib_bool configuration_and_serial(controller_fixture *f)
     return failed;
 }
 
+static lib_bool response_delay_then_status_poll(controller_fixture *f)
+{
+    x86_kbc8042 *c = f->controller;
+    lib_bool failed = LIB_FALSE;
+
+    x86_kbc8042_set_command_response_timing(c, 2u);
+    x86_kbc8042_set_command_response_status_polls(c, 1u);
+
+    x86_keyboard_reset(f->keyboard);
+    x86_ps2_mouse_reset(f->mouse);
+    x86_kbc8042_reset(c);
+    x86_kbc8042_write_command(c, 0x20u);
+    x86_kbc8042_advance(c, 1u);
+    failed |= (x86_kbc8042_read_status(c) & 1u) != 0u;
+    x86_kbc8042_advance(c, 1u);
+    failed |= (x86_kbc8042_read_status(c) & 1u) != 0u;
+    failed |= (x86_kbc8042_read_status(c) & 1u) == 0u ||
+        x86_kbc8042_read_data(c) != 0x43u;
+
+    x86_keyboard_reset(f->keyboard);
+    x86_kbc8042_reset(c);
+    x86_kbc8042_write_data(c, 0xf2u);
+    x86_kbc8042_advance(c, 2u);
+    failed |= (x86_kbc8042_read_status(c) & 1u) != 0u;
+    failed |= !f->irq[0] || x86_kbc8042_read_data(c) != 0xfau ||
+        x86_kbc8042_read_data(c) != 0xabu ||
+        x86_kbc8042_read_data(c) != 0x41u;
+
+    x86_ps2_mouse_reset(f->mouse);
+    x86_kbc8042_reset(c);
+    x86_kbc8042_write_command(c, 0xd4u);
+    x86_kbc8042_write_data(c, 0xf2u);
+    x86_kbc8042_advance(c, 2u);
+    failed |= (x86_kbc8042_read_status(c) & 1u) != 0u;
+    failed |= !f->irq[1] || (x86_kbc8042_read_status(c) & 0x21u) != 0x21u ||
+        x86_kbc8042_read_data(c) != 0xfau || x86_kbc8042_read_data(c) != 0u;
+
+    x86_kbc8042_set_command_response_timing(c, 0u);
+    x86_kbc8042_set_command_response_status_polls(c, 0u);
+    return failed;
+}
+
 int main(void)
 {
     controller_fixture fixture = { 0 };
@@ -321,6 +363,7 @@ int main(void)
     failed |= parameter_interleaving(&fixture);
     failed |= packet_saturation(&fixture);
     failed |= configuration_and_serial(&fixture);
+    failed |= response_delay_then_status_poll(&fixture);
     destroy(&fixture);
     failed |= fixture.irq[0] || fixture.irq[1];
     return failed ? 1 : 0;
