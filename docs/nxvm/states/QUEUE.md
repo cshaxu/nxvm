@@ -16,8 +16,8 @@ is closed; its CPU timing boundary and Core/App qualification are recorded in
 the closure history.
 
 The [T553 four PC App code-quality audit](../proposals/m5-four-pc-app-code-quality-audit.md)
-is reopened for corrective full-route audit and repair; it remains active ahead
-of the candidates below.
+is closed after its corrective full-route audit, repair and dual-width
+qualification; its closure record is in `CURRENT.md`.
 
 1. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
 2. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
