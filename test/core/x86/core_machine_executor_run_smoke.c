@@ -5,7 +5,7 @@
 
 #include "core/x86/machine_interface.h"
 #include "core/x86/machine.h"
-#include "memory_alias_fixture.h"
+#include "../support/memory_alias_fixture.h"
 
 lib_i32 main(void)
 {

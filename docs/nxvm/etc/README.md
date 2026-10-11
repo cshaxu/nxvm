@@ -19,6 +19,14 @@ T553 S4: [four PC App qualification](evidence/t553-s4-four-pc-app-qualification.
 records the complete x64/x86 App-labelled route matrix, static-gate proof,
 artifact disposition and explicit manual/external limits.
 
+T553 S12: [Core and four-App quality audit](evidence/t553-s12-core-four-app-quality-audit.md)
+freezes the current owner batches and evidence/disposition contract for the
+corrective Core-and-App source audit; it does not claim a production repair.
+
+T553 S13: [Core fixture and INI-owner repair](evidence/t553-s13-core-test-fixture-and-ini-owner-repair.md)
+records the one-owner Core-test fixture relocation and Architecture correction;
+it does not change Shared or production code.
+
 T546 S19: [CPU external/NPX/Bus evidence](evidence/t546-s19-cpu-external-npx-bus.md)
 records the sourced interruptible `WAIT`/TEST/ESC ownership, L3/L2 timing
 disposition, direct receiver proof and excluded inputs.

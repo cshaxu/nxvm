@@ -3,7 +3,7 @@
 
 #include "core/x86/clock_interface.h"
 #include "core/x86/machine_interface.h"
-#include "memory_alias_fixture.h"
+#include "../support/memory_alias_fixture.h"
 
 #define RATIONAL_CLOCK_STEPS 4u
 

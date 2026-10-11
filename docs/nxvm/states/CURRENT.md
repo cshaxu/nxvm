@@ -6,22 +6,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Closed: M5 T553. |
-| Admission And Approval | Owner rejected the premature S4 closure on 2026-10-10 and explicitly requires this T to find and repair every confirmed four-App route defect, rather than deferring it to separate owner tasks. |
-| Objective | Complete a finite full-route code-quality audit across My5160, My5170, MyDeskPro386 and NXVM, repair confirmed defects at their actual owner, and leave one clean implementation path per repaired mechanism. |
-| Non-goals | Do not move an owner into an App, invent speculative architecture, alter protected firmware/media, or claim untested desktop/external behavior. A non-reproduced concern is documented, not patched. |
-| Reference Baseline | S1 ownership ledger `4a0d8ca38`, S2 build repair `6daef3515`, S3 contract audit `a50b51088`, and S4 qualification `0187a92d8`; current deployed 0.5.0551 pairs and owner INIs. |
-| Candidate Proposal | [M5 Four PC App code quality audit](../proposals/m5-four-pc-app-code-quality-audit.md), closed after corrective full-route qualification and closure review S10. |
-| Files And ABI Surface | S10 made no source or ABI change. It reconfigured reusable build trees, ran the repaired Core ownership/manifest routes and every registered four-App unit, setup and integration route on x64/x86, then performed actual-diff closure review. |
+| Identifier Mode | Corrective: M5 T553 S13. |
+| Admission And Approval | Owner explicitly approved this bounded repair on 2026-10-10 after accepting S12's two confirmed Core test/documentation findings. This is the narrow corrective-S exception for the most recently closed numeric task. |
+| Objective | Give the two Core-test fixtures one owner at `test/core/support/`, and correct the NXVM Architecture authority's stale INI-owner statement. |
+| Non-goals | Do not modify production behavior, Lib, Emulator, top-level x86/Product, Apps, protected firmware/media, INIs, snapshots or deployed artifacts. Do not create a shared-test abstraction or alter a fixture's Core/x86 public-contract dependency. |
+| Reference Baseline | T553 S12 Core-and-four-App audit ledger, T553 S1 ownership ledger `4a0d8ca38`, S5--S11 corrective evidence, completed T553 S10 dual-width qualification `ca2750ef2`, and the current Core/App source graph. |
+| Candidate Proposal | [M5 Four PC App code quality audit](../proposals/m5-four-pc-app-code-quality-audit.md), corrective fixture/documentation repair S13. |
+| Files And ABI Surface | `test/core/support/`, all direct Core/x86 and Core/board-base fixture callers, `test/core/MANIFEST.sha256`, direct NXVM task/evidence records and `docs/nxvm/design/ARCHITECTURE.md`. Test-only relocation and documentation correction; no public or production ABI changes. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`; each component-local guidance reached by a repair. Preserve App → Core → Shared dependency direction. |
-| Verification | All registered CTest routes were run from the reusable x64/x86 build trees; Core/Shared gates, manifests, ownership, documentation and final worktree/artifact-input diff were checked. |
-| Expected Markers | Met: all registered unit, setup and integration routes pass on both widths; no unreviewed source, asset or artifact diff remains; no production input changed, so no EXE rebuild was required. |
+| Verification | Prove exactly one copy of each fixture is owned by `test/core/support/`; prove no direct caller names either old path; run affected Core units, Core manifest/corpus gates and documentation governance on x64/x86. Review the actual diff and confirm no excluded component changed. |
+| Expected Markers | One Core support owner per fixture, no duplicate paths, valid Core test manifest, Architecture text naming `core/product` as NXVM.ini owner, and no production/API/artifact diff. |
 | Asset Needs | None. Preserve all external firmware/media, adjacent INIs, snapshots and current artifacts. |
-| Reporting Requirements | Report the frozen ledger batches, each confirmed defect and its actual owner before repair; report exact changed surface, similar-issue result, x64/x86 proof, artifact disposition and untested manual/external limits. |
-| Stop Conditions | Stop for a protected asset/source need, a defect whose repair would change product policy without owner direction, or an unreproducible external/hardware-only assertion. |
-| Exit Criteria | The full route ledger is exhausted; every confirmed four-App-route defect is repaired in T553 at its actual owner; all required dual-width routes/gates pass; actual-diff closure review and push complete. |
-| Original Owner Request | “没有各自独立任务，就在这里找问题和修复。” |
-| Similar-Issue Sweep | For every repaired mechanism, inspect all four App callers and same-owner variants; retain only distinct hardware facts with evidence. |
+| Reporting Requirements | Report old/new fixture ownership, each updated caller, manifest result, direct documentation correction, actual diff and excluded-component check. Separate focused unit results from unrun desktop/external tests. |
+| Stop Conditions | Stop and report any need to change production/Shared code, a fixture consumer outside Core, a task scope conflict, or an incompatible test/build failure. |
+| Exit Criteria | Both fixture duplicates have one Core support owner; all direct callers use it; manifest/corpus, affected Core x64/x86 tests and documentation governance pass; actual diff contains only admitted Core-test/NXVM-doc/task evidence records. |
+| Original Owner Request | “以上，准入新S修复” after approving the exact duplicate-fixture and stale INI-owner findings. |
+| Similar-Issue Sweep | Search the entire Core test tree for both old include forms and exact duplicate content; search Architecture for competing NXVM.ini ownership statements. |
 
 | Work | Progress |
 | --- | --- |
@@ -36,7 +36,9 @@
 | T553 S9 | Complete: the active firmware recovery guide now names its current App-owned location; the four App roots have no remaining retired-current-layout claim. Documentation governance passes; historical evidence remains untouched. |
 | T553 S10 | Complete: default x64/x86 CTest routes pass 567/567 each; the 5160, 5170 and DeskPro profile-specific integration receivers pass 2/2, 4/4 and 4/4 on each width. Lib/Core manifest, Core corpus, dependency-DAG and documentation-governance gates pass x64/x86. No production or artifact input changed. |
 | T553 S11 | Complete: Windows checkpoint now proves C-drive/BDA visibility only; independent HDD boot remains the sole direct ATA-command receiver. Both routes pass sequentially x64/x86; no production or artifact input changed. |
-| T553 | Closed: S1–S11 establish the inventory, repair every confirmed four-App route defect at its actual owner, and finish the full dual-width route qualification. |
+| T553 S12 | Complete: corrective Core-and-four-App audit records two confirmed narrow receivers—duplicate Core fixtures shared by Core/x86 and Core/board-base, and one stale NXVM.ini owner statement. No production or Shared change was made. |
+| T553 S13 | Complete pending owner review: both fixture pairs now have the one `test/core/support/` owner; all Core/x86 and Core/board-base callers use it, the Core test manifest is current, and the Architecture authority names `core/product` as NXVM.ini owner. Affected Core x64/x86 units, Core static gates and documentation governance pass; no production, Shared, App or artifact input changed. |
+| T553 | Reopened: S12 corrects the prior closure's overbroad Core/App quality claim by completing the admitted evidence-led audit before any later closure decision. |
 | T552 S9 | Complete: CPU owns all timing recipes and their origin/source-allocation classification; Core owns only copied-result publication and physical eligibility. Five CPU manifest, four transfer and two Core consumer receivers pass x64/x86. |
 | T552 S8 | Complete: retained the CECG B0000h compatibility window as one VADP storage contract while transferring any physical firmware equivalence claim; retained bounded-L1 as a declared Core control policy, not a device duration. Focused CECG/time routes and Core gates pass x64/x86. |
 | T552 S7 | Complete: Core replacement now preserves its atomic new-medium state and propagates an old-lease close failure. The owner-local close injector proves both replacement and removal failure contracts for FDD/HDD; run-result and teardown candidates were retained with direct owner evidence. |

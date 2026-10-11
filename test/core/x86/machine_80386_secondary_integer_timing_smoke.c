@@ -3,7 +3,7 @@
 
 #include "core/x86/machine_interface.h"
 #include "core/x86/debug_interface.h"
-#include "exception_fixture.h"
+#include "../support/exception_fixture.h"
 
 #define SECONDARY_INTEGER_TIMING_RESET_LINEAR 0xfffffff0u
 #define SECONDARY_INTEGER_TIMING_RESET_PHYSICAL 0x000ffff0u

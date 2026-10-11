@@ -2,7 +2,7 @@
 #include "lib/types/file.h"
 
 #include "core/x86/machine_interface.h"
-#include "memory_alias_fixture.h"
+#include "../support/memory_alias_fixture.h"
 
 #define RESET_LINEAR 0xfffffff0u
 #define RESET_PHYSICAL 0x000ffff0u

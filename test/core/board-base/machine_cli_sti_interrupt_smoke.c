@@ -8,7 +8,7 @@
 #include "core/board-base/pic_bus_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "composition/debug_fixture.h"
-#include "composition/exception_fixture.h"
+#include "../support/exception_fixture.h"
 
 typedef struct cli_sti_machine {
     core_machine *machine;

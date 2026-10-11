@@ -4,7 +4,7 @@
 
 #include "core/x86/machine_interface.h"
 #include "core/x86/debug_interface.h"
-#include "exception_fixture.h"
+#include "../support/exception_fixture.h"
 
 typedef struct cpu_profile_machine {
     core_machine *machine;

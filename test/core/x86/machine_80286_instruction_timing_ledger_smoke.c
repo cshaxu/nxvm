@@ -6,7 +6,7 @@
 
 #include "core/x86/machine_interface.h"
 #include "core/chips/cpu/cpu_interface.h"
-#include "exception_fixture.h"
+#include "../support/exception_fixture.h"
 
 #define TIMING_80286_RESET_LINEAR 0x00fffff0u
 #define TIMING_80286_RESET_PHYSICAL 0x000ffff0u

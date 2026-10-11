@@ -7,7 +7,7 @@
 #include "core/x86/memory_interface.h"
 #include "core/x86/port.h"
 #include "core/x86/transaction.h"
-#include "memory_alias_fixture.h"
+#include "../../support/memory_alias_fixture.h"
 #include "core/x86/machine.h"
 
 typedef struct transaction_probe {

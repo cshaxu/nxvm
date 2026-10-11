@@ -4,7 +4,7 @@
 #include "core/x86/machine.h"
 #include "core/x86/machine_interface.h"
 #include "../core_machine_board_fixture.h"
-#include "exception_fixture.h"
+#include "../../support/exception_fixture.h"
 
 #define TIMING_LEDGER_RESET_LINEAR 0xfffffff0u
 #define TIMING_LEDGER_RESET_PHYSICAL 0x000ffff0u

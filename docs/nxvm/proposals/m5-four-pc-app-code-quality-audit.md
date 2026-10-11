@@ -174,6 +174,46 @@ dependency-DAG and documentation-governance gates pass on both widths. S10 and
 S11 change only test/support and documentation inputs; no executable build
 input changed, so the deployed artifacts require no rebuild for this closure.
 
+### S12: Corrective Core And Four-App Quality Audit
+
+The prior S10 qualification proves every registered route passed, but it does
+not itself prove that Core and every four-App production owner received a
+complete code-quality audit. Freeze a current owner ledger for `src/core`, the
+four `src/app-*` roots, their matching tests and CMake registrations. For each
+owner group, inspect dependency direction, public-interface exposure, lifecycle
+and failure boundaries, duplicate/parallel mechanisms, configuration/asset
+boundaries, test ownership and CMake registration. Classify each row as
+verified-clean, confirmed defect, not applicable, or transferred; a confirmed
+defect must name its source/caller evidence and bounded repair receiver.
+
+This is read-only except for the ledger and task records. It does not treat a
+small test count, a historical record, a large file or a passing suite as proof
+of a defect or of completeness. It does not edit Lib, Emulator, x86, firmware,
+media, INIs, snapshots or artifacts. A later repair S requires its own explicit
+scope and similar-issue sweep.
+
+The discovered Core/x86 test-fixture class also requires a read-only scan of
+all repository test packages for exact duplicate fixtures and cross-package
+test includes. This is classification only: it does not broaden S12 into a
+Shared code or test modification.
+
+### S13: Core Shared-Test Fixture And INI-Owner Documentation Repair
+
+Move the two exact Core-owned fixture duplicates (`exception_fixture.h` and
+`memory_alias_fixture.h`) to the existing `test/core/support/` owner, update
+all Core/x86 and Core/board-base callers, and remove both former copies. The
+fixtures remain Core-test infrastructure: they consume the public Core/x86
+contract but serve both Core/x86 and Core/board-base tests, so they do not
+belong in either child owner or in the repository-level shared x86 corpus.
+
+Correct the stale Architecture paragraph so that it matches the implemented
+owner: `core/product` owns the one NXVM.ini grammar and executable-relative
+runtime-media path resolution; Apps own fixed identity and profile bindings.
+Do not modify production source, Shared Lib/Emulator/x86/Product, Apps,
+assets, INIs or deployed executables. Update the Core test manifest and prove
+the affected Core units plus Core manifest/corpus and documentation governance
+gates on x64 and x86.
+
 ## Exit Criteria
 
 - Every four-App file is accounted for in the ownership ledger.

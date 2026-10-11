@@ -4,7 +4,7 @@
 #include "core/x86/machine.h"
 #include "core/x86/transaction.h"
 #include "../dma_competition_fixture.h"
-#include "memory_alias_fixture.h"
+#include "../../support/memory_alias_fixture.h"
 
 typedef struct competition_probe {
     core_machine_trace_event events[256];

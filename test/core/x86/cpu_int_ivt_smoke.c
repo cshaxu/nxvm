@@ -2,7 +2,7 @@
 #include "lib/types/file.h"
 
 #include "core/x86/machine_interface.h"
-#include "memory_alias_fixture.h"
+#include "../support/memory_alias_fixture.h"
 
 static lib_i32 run_case(core_machine_cpu_profile profile)
 {

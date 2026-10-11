@@ -3,7 +3,7 @@
 #include "pic_fixture.h"
 #include "core/board-base/machine_board_state.h"
 #include "core_machine_board_fixture.h"
-#include "composition/exception_fixture.h"
+#include "../support/exception_fixture.h"
 #include "core/chips/cpu/cpu_interface.h"
 #include "core/x86/device_support_interface.h"
 #include "core/board-base/machine_board_interface.h"

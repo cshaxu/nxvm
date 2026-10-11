@@ -5,7 +5,7 @@
 #include "core/board-base/machine_board_interface.h"
 #include "composition/debug_fixture.h"
 #include "composition/bus_fixture.h"
-#include "composition/memory_alias_fixture.h"
+#include "../support/memory_alias_fixture.h"
 
 static inline lib_i32 test_core_machine_fixture_nmi_prepare(core_machine *machine)
 {

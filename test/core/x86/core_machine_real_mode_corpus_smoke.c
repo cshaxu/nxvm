@@ -6,7 +6,7 @@
 #include "core/x86/machine_interface.h"
 #include "core/x86/memory_interface.h"
 #include "core/x86/port_interface.h"
-#include "memory_alias_fixture.h"
+#include "../support/memory_alias_fixture.h"
 
 /* REAL_UD_DELIVERY_CONTRACT: the corpus installs and observes vector 6. */
 

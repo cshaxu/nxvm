@@ -4,7 +4,7 @@
 #include "core/x86/debug_interface.h"
 #include "core/x86/machine_interface.h"
 #include "core/x86/memory_interface.h"
-#include "memory_alias_fixture.h"
+#include "../support/memory_alias_fixture.h"
 
 #define TEST_RESET_LINEAR 0xfffffff0u
 #define TEST_RESET_PHYSICAL 0x000ffff0u

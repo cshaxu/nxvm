@@ -5,7 +5,7 @@
 
 #include "core/x86/machine.h"
 #include "debug_fixture.h"
-#include "exception_fixture.h"
+#include "../support/exception_fixture.h"
 
 typedef struct fpu_interface_machine {
     core_machine *machine;
