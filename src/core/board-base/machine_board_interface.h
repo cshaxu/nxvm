@@ -89,6 +89,8 @@ typedef struct core_machine_config {
      * holds a completed KBC command reply through this many status reads. */
     lib_u8 kbc_command_response_status_polls;
     lib_u32 kbc_serial_delivery_ticks;
+    /* Existing KBC service-axis units; zero is an order-only pulse model. */
+    lib_u32 kbc_output_pulse_ticks;
     /* Optional product-selected 8254 topology; no output consumer is implied. */
     lib_u8 auxiliary_pit_present;
     lib_u16 auxiliary_pit_base_port;
@@ -269,7 +271,8 @@ lib_status core_machine_create_from_plan(const core_machine_plan *plan,
  * device-native stream. */
 typedef enum core_machine_keyboard_scan_set {
     CORE_MACHINE_KEYBOARD_SCAN_SET_1 = 1u,
-    CORE_MACHINE_KEYBOARD_SCAN_SET_2 = 2u
+    CORE_MACHINE_KEYBOARD_SCAN_SET_2 = 2u,
+    CORE_MACHINE_KEYBOARD_SCAN_SET_3 = 3u
 } core_machine_keyboard_scan_set;
 
 lib_status core_machine_keyboard_get_native_scan_set(const core_machine_board_state *board,

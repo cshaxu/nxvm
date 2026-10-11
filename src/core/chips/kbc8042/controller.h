@@ -10,6 +10,7 @@
 #define KBC_COMMAND_IRQ12 0x02u
 #define KBC_COMMAND_DISABLE_KEYBOARD 0x10u
 #define KBC_COMMAND_DISABLE_AUX 0x20u
+#define KBC_COMMAND_PC_MODE 0x20u
 #define KBC_COMMAND_INHIBIT_OVERRIDE 0x08u
 
 #define KBC_STATUS_OBF 0x01 /* output buffer contains a byte */
@@ -43,6 +44,7 @@ typedef struct kbc_data {
     kbc_pending_write pending_write;
     lib_bool input_buffer_full;
     lib_bool last_write_command;
+    lib_bool output_inhibit_released;
     lib_bool irq1_asserted;
     lib_bool irq12_asserted;
     lib_bool aux_enabled;
@@ -58,6 +60,9 @@ typedef struct kbc_data {
     lib_u64 serial_delivery_remaining_ticks;
     lib_u32 command_response_ticks;
     lib_u32 serial_delivery_ticks;
+    lib_u32 output_pulse_ticks;
+    lib_u64 output_pulse_remaining_ticks;
+    lib_u8 output_pulse_mask;
     lib_u8 command_response_status_polls;
 } kbc_data;
 

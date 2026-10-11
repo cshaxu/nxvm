@@ -9,11 +9,18 @@ typedef struct x86_xt_keyboard_timing {
     lib_u64 bat_ticks;
     lib_u64 first_edge_ticks;
     lib_u64 clock_ticks;
+    /* Both zero disable typematic; otherwise both must be positive. */
+    lib_u64 repeat_delay_ticks;
+    lib_u64 repeat_period_ticks;
 } x86_xt_keyboard_timing;
 
 /* Qualified nine-bit XT serial model, not a keyboard MCU. Durations use the
  * caller's single service unit. All zero disables timed delivery; otherwise
  * all four durations must be positive. No host or board clock is owned here.
+ * Optional typematic owns the last admitted one-byte set-1 make until its
+ * break/reset. It shares the FIFO and serial deadline. Line inhibition,
+ * full FIFO and refused completion freeze repeat time, without catch-up.
+ * Multi-byte extensions are transported but not qualified 83-key repeats.
  * One execution owner. The borrowed receiver/context live until destroy and
  * must not reenter this object. OK accepts one byte; any failure accepts none.
  * Refused completion remains pending until receiver_ready or line release;

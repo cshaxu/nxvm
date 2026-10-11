@@ -44,6 +44,10 @@ void core_machine_xt_ppi_keyboard_bind_nmi(core_machine_xt_ppi_keyboard *keyboar
     core_machine_xt_ppi_nmi_request request, void *owner);
 void core_machine_xt_ppi_keyboard_bind_speaker(core_machine_xt_ppi_keyboard *keyboard,
     core_machine_xt_ppi_speaker_update update, void *owner);
+/* Borrowed PIT channel-2 OUT input for PC5; the context outlives this handle.
+ * Sampled during serialized port reads, never a second timer state. */
+void core_machine_xt_ppi_keyboard_bind_timer_output(core_machine_xt_ppi_keyboard *keyboard,
+    lib_bool (*output)(void *owner), void *owner);
 void core_machine_xt_ppi_keyboard_bind_keyboard_observer(
     core_machine_xt_ppi_keyboard *keyboard, core_machine_xt_ppi_line_observer observer,
     void *owner, core_machine_xt_ppi_byte_released released);

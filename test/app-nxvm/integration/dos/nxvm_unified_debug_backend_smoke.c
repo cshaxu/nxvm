@@ -21,9 +21,7 @@ static lib_i32 debug_trace_one(integration_ini_session *session)
         emulator_machine_debug_execute_with_lease(session->emulator_machine, &lease,
             &request, sizeof(request), &response, sizeof(response),
             &response_size) != LIB_STATUS_OK || response_size != sizeof(response) ||
-        integration_ini_session_resume(session, 2000u) != LIB_STATUS_OK ||
-        integration_ini_session_wait_for_state(session, EMULATOR_MACHINE_PAUSED,
-            2000u) == 0 ||
+        integration_ini_session_resume_until_paused(session, 2000u) != LIB_STATUS_OK ||
         emulator_machine_debug_acquire(session->emulator_machine, &lease) != LIB_STATUS_OK) {
         return 0;
     }

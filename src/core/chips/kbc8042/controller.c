@@ -9,18 +9,25 @@
 static void x86_kbc8042_drain_keyboard_serial(x86_kbc8042 *controller);
 static void x86_kbc8042_refresh_current_irq(x86_kbc8042 *controller);
 
-static lib_status x86_kbc8042_queue_native_byte(x86_kbc8042 *controller,
-    lib_u8 native_byte)
+static lib_bool x86_kbc8042_translation_enabled(const x86_kbc8042 *controller)
 {
-    lib_u8 tail;
+    return (controller->data.command_byte & KBC_COMMAND_TRANSLATION) != 0u &&
+        (controller->aux_present ||
+        (controller->data.command_byte & KBC_COMMAND_PC_MODE) == 0u);
+}
 
-    if (controller->data.keyboard_serial_count >=
-        KBC_KEYBOARD_SERIAL_CAPACITY) return LIB_STATUS_NO_MEMORY;
-    tail = (lib_u8)((controller->data.keyboard_serial_head +
-        controller->data.keyboard_serial_count) % KBC_KEYBOARD_SERIAL_CAPACITY);
-    controller->data.keyboard_serial[tail] = native_byte;
-    ++controller->data.keyboard_serial_count;
-    if (controller->data.serial_delivery_ticks != 0u &&
+static lib_status x86_kbc8042_queue_native_bytes(x86_kbc8042 *controller,
+    const lib_u8 *bytes, lib_size count)
+{
+    if (count > KBC_KEYBOARD_SERIAL_CAPACITY -
+        controller->data.keyboard_serial_count) return LIB_STATUS_NO_MEMORY;
+    for (lib_size index = 0u; index < count; ++index) {
+        const lib_u8 tail = (lib_u8)((controller->data.keyboard_serial_head +
+            controller->data.keyboard_serial_count) % KBC_KEYBOARD_SERIAL_CAPACITY);
+        controller->data.keyboard_serial[tail] = bytes[index];
+        ++controller->data.keyboard_serial_count;
+    }
+    if (count != 0u && controller->data.serial_delivery_ticks != 0u &&
         controller->data.serial_delivery_remaining_ticks == 0u) {
         controller->data.serial_delivery_remaining_ticks = controller->data.serial_delivery_ticks;
     }
@@ -78,8 +85,6 @@ static void x86_kbc8042_set_command_byte(x86_kbc8042 *controller,
     controller->data.command_byte = value & 0x7du;
     if (controller->aux_present) {
         controller->data.command_byte |= value & KBC_COMMAND_IRQ12;
-    } else {
-        controller->data.command_byte |= KBC_COMMAND_DISABLE_AUX;
     }
     controller->data.aux_enabled = controller->aux_present &&
         (controller->data.command_byte & KBC_COMMAND_DISABLE_AUX) == 0u;
@@ -109,7 +114,8 @@ static void x86_kbc8042_refresh_current_irq(x86_kbc8042 *controller)
         return;
     }
     origin = controller->data.fifo_origin[controller->data.fifo_head];
-    if (origin == X86_KBC8042_OUTPUT_KEYBOARD) {
+    if (origin == X86_KBC8042_OUTPUT_KEYBOARD ||
+        (!controller->aux_present && origin == X86_KBC8042_OUTPUT_CONTROLLER)) {
         x86_kbc8042_deassert_irq12(controller);
         /* ADh inhibits new keyboard serial input.  It does not suppress an
          * already-generated keyboard-controller reply: IBM's POST sends ADh,
@@ -139,13 +145,11 @@ static void x86_kbc8042_flush_output(x86_kbc8042 *controller)
     if (controller == LIB_NULL) return;
     controller->data.fifo_head = 0u;
     controller->data.fifo_count = 0u;
-    controller->data.keyboard_serial_head = 0u;
-    controller->data.keyboard_serial_count = 0u;
+    x86_kbc8042_reset_keyboard_stream(controller);
     controller->data.delayed_response_count = 0u;
     controller->data.delayed_response_index = 0u;
     controller->data.response_remaining_ticks = 0u;
     controller->data.response_status_polls_remaining = 0u;
-    controller->data.serial_delivery_remaining_ticks = 0u;
     controller->link.keyboard_clear_bat(controller->link.context);
     x86_kbc8042_deassert_irq1(controller);
     x86_kbc8042_deassert_irq12(controller);
@@ -165,6 +169,10 @@ static lib_status x86_kbc8042_enqueue(x86_kbc8042 *controller, lib_u8 value,
     controller->data.fifo[tail] = value;
     controller->data.fifo_origin[tail] = origin;
     ++controller->data.fifo_count;
+    if (controller->data.fifo_count == 1u) {
+        controller->data.output_inhibit_released =
+            (controller->data.input_port & 0x80u) != 0u;
+    }
     if (origin == X86_KBC8042_OUTPUT_KEYBOARD) {
         controller->link.keyboard_accepted(controller->link.context, value);
     }
@@ -269,7 +277,7 @@ static lib_status x86_kbc8042_publish_native_byte(x86_kbc8042 *controller,
 {
     if (controller == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (controller->link.keyboard_inputs(controller->link.context).scan_set == 2u &&
-        (controller->data.command_byte & KBC_COMMAND_TRANSLATION) != 0u) {
+        x86_kbc8042_translation_enabled(controller)) {
         return x86_kbc8042_translate_set2_byte(controller, native_byte);
     }
     return x86_kbc8042_enqueue(controller, native_byte,
@@ -315,9 +323,14 @@ static lib_u8 x86_kbc8042_dequeue(x86_kbc8042 *controller)
     controller->data.fifo_head = (lib_u8)((controller->data.fifo_head + 1u) %
         KBC_FIFO_CAPACITY);
     --controller->data.fifo_count;
+    if (controller->data.fifo_count != 0u) {
+        controller->data.output_inhibit_released =
+            (controller->data.input_port & 0x80u) != 0u;
+    }
     /* Reading 60h acknowledges exactly the current origin. A queued successor
      * gets a fresh edge only after promotion through the one PIC boundary. */
-    if (origin == X86_KBC8042_OUTPUT_KEYBOARD) {
+    if (origin == X86_KBC8042_OUTPUT_KEYBOARD ||
+        (!controller->aux_present && origin == X86_KBC8042_OUTPUT_CONTROLLER)) {
         x86_kbc8042_deassert_irq1(controller);
     } else if (origin == X86_KBC8042_OUTPUT_AUX) {
         x86_kbc8042_deassert_irq12(controller);
@@ -341,7 +354,7 @@ static lib_u8 x86_kbc8042_status(const x86_kbc8042 *controller)
         status |= KBC_STATUS_SYS;
     }
     if (controller->data.last_write_command) status |= KBC_STATUS_CD;
-    if ((controller->data.input_port & 0x80u) != 0u) status |= KBC_STATUS_INHIBIT;
+    if (controller->data.output_inhibit_released) status |= KBC_STATUS_INHIBIT;
     if (controller->data.fifo_count != 0u &&
         controller->data.fifo_origin[controller->data.fifo_head] ==
             X86_KBC8042_OUTPUT_AUX) status |= KBC_STATUS_AUX;
@@ -352,7 +365,8 @@ static void x86_kbc8042_apply_output_port(x86_kbc8042 *controller, lib_u8 value)
 {
     if (controller == LIB_NULL) return;
     controller->data.output_port = value;
-    controller->link.output_port(controller->link.context, value);
+    controller->link.output_port(controller->link.context,
+        value & (lib_u8)~controller->data.output_pulse_mask);
 }
 
 void x86_kbc8042_receive_reply(x86_kbc8042 *controller,
@@ -364,7 +378,7 @@ void x86_kbc8042_receive_reply(x86_kbc8042 *controller,
     if (controller == LIB_NULL || bytes == LIB_NULL) return;
     if (origin == X86_KBC8042_OUTPUT_KEYBOARD && count == 3u && bytes[0] == 0xfau && bytes[1] == 0xabu &&
         bytes[2] == 0x83u &&
-        (controller->data.command_byte & KBC_COMMAND_TRANSLATION) != 0u) {
+        x86_kbc8042_translation_enabled(controller)) {
         lib_memory_copy(translated, bytes, sizeof(translated));
         translated[2] = 0x41u;
         bytes = translated;
@@ -375,6 +389,9 @@ void x86_kbc8042_receive_reply(x86_kbc8042 *controller,
 void x86_kbc8042_reset_keyboard_stream(x86_kbc8042 *controller)
 {
     if (controller == LIB_NULL) return;
+    controller->data.keyboard_serial_head = 0u;
+    controller->data.keyboard_serial_count = 0u;
+    controller->data.serial_delivery_remaining_ticks = 0u;
     controller->data.set2_break_pending = LIB_FALSE;
     controller->data.set2_pause_count = 0u;
 }
@@ -437,7 +454,6 @@ void x86_kbc8042_write_data(x86_kbc8042 *controller, lib_u8 value)
         break;
     }
     controller->data.input_buffer_full = LIB_FALSE;
-    controller->data.last_write_command = LIB_FALSE;
 }
 
 void x86_kbc8042_write_command(x86_kbc8042 *controller, lib_u8 command)
@@ -455,10 +471,10 @@ void x86_kbc8042_write_command(x86_kbc8042 *controller, lib_u8 command)
         controller->data.pending_write = KBC_PENDING_COMMAND_BYTE;
         break;
     case 0xaau:
-        /* IBM PC/AT initialization specifies that a successful controller
-         * self-test inhibits the keyboard interface before reporting 55h.
-         * The host must explicitly re-enable it with AEh or a command byte. */
+        /* Compaq's initialization table explicitly disables the interface.
+         * IBM's completed-command inhibit state remains a declared model. */
         x86_kbc8042_flush_output(controller);
+        controller->data.pending_write = KBC_PENDING_NONE;
         x86_kbc8042_set_command_byte(controller,
             controller->data.command_byte | KBC_COMMAND_DISABLE_KEYBOARD);
         controller->data.command_byte |= KBC_COMMAND_SYSTEM;
@@ -478,17 +494,15 @@ void x86_kbc8042_write_command(x86_kbc8042 *controller, lib_u8 command)
             controller->data.command_byte & ~KBC_COMMAND_DISABLE_KEYBOARD);
         break;
     case 0xa7u:
+        if (!controller->aux_present) break;
         controller->data.aux_enabled = LIB_FALSE;
         controller->data.command_byte |= KBC_COMMAND_DISABLE_AUX;
         x86_kbc8042_refresh_current_irq(controller);
         break;
     case 0xa8u:
+        if (!controller->aux_present) break;
         controller->data.aux_enabled = controller->aux_present;
-        if (controller->aux_present) {
-            controller->data.command_byte &= ~KBC_COMMAND_DISABLE_AUX;
-        } else {
-            controller->data.command_byte |= KBC_COMMAND_DISABLE_AUX;
-        }
+        controller->data.command_byte &= ~KBC_COMMAND_DISABLE_AUX;
         x86_kbc8042_refresh_current_irq(controller);
         break;
     case 0xa9u:
@@ -519,17 +533,19 @@ void x86_kbc8042_write_command(x86_kbc8042 *controller, lib_u8 command)
             controller->data.test_inputs, X86_KBC8042_OUTPUT_CONTROLLER);
         break;
     default:
-        /* IBM PC/AT 8042 commands F0h--FFh pulse output-port bits selected
-         * by zero command bits. Bit 0 is the reset line. The pulse must not
-         * overwrite the persistent D1h output-port/A20 state. Its duration
-         * belongs to the board timing contract, not this functional owner. */
-        if (command >= 0xf0u && (command & 0x01u) == 0u) {
-            controller->link.reset_pulse(controller->link.context);
+        if (command >= 0xf0u && command != 0xffu) {
+            controller->data.output_pulse_mask |= (lib_u8)(~command & 0x0fu);
+            controller->data.output_pulse_remaining_ticks =
+                controller->data.output_pulse_ticks;
+            x86_kbc8042_apply_output_port(controller, controller->data.output_port);
+            if (controller->data.output_pulse_remaining_ticks == 0u) {
+                controller->data.output_pulse_mask = 0u;
+                x86_kbc8042_apply_output_port(controller, controller->data.output_port);
+            }
         }
         break;
     }
     controller->data.input_buffer_full = LIB_FALSE;
-    controller->data.last_write_command = LIB_FALSE;
 }
 
 void x86_kbc8042_set_reset_output_port(x86_kbc8042 *controller,
@@ -545,37 +561,60 @@ void x86_kbc8042_reset(x86_kbc8042 *controller)
     lib_u32 command_response_ticks;
     lib_u8 command_response_status_polls;
     lib_u32 serial_delivery_ticks;
+    lib_u32 output_pulse_ticks;
 
     if (controller == LIB_NULL) return;
     command_response_ticks = controller->data.command_response_ticks;
     command_response_status_polls =
         controller->data.command_response_status_polls;
     serial_delivery_ticks = controller->data.serial_delivery_ticks;
+    output_pulse_ticks = controller->data.output_pulse_ticks;
     lib_memory_set(&controller->data, 0u, sizeof(controller->data));
     controller->data.command_response_ticks = command_response_ticks;
     controller->data.command_response_status_polls =
         command_response_status_polls;
     controller->data.serial_delivery_ticks = serial_delivery_ticks;
+    controller->data.output_pulse_ticks = output_pulse_ticks;
     controller->link.irq(controller->link.context, LIB_FALSE, LIB_FALSE);
     controller->link.irq(controller->link.context, LIB_TRUE, LIB_FALSE);
     controller->data.command_byte = KBC_COMMAND_IRQ1 |
-        (controller->aux_present ? KBC_COMMAND_IRQ12 :
-            KBC_COMMAND_DISABLE_AUX) |
+        (controller->aux_present ? KBC_COMMAND_IRQ12 : 0u) |
         KBC_COMMAND_TRANSLATION;
     controller->data.output_port = controller->reset_output_port;
     controller->data.aux_enabled = controller->aux_present;
     controller->data.input_port = 0x80u;
+    controller->data.output_inhibit_released = LIB_TRUE;
     x86_kbc8042_apply_output_port(controller, controller->data.output_port);
 }
 
-static void x86_kbc8042_repeat(void *context, lib_u8 byte)
+static lib_status x86_kbc8042_repeat(void *context, const lib_u8 *bytes,
+    lib_size count)
 {
-    (void)x86_kbc8042_queue_native_byte(context, byte);
+    return x86_kbc8042_queue_native_bytes(context, bytes, count);
+}
+
+static lib_bool x86_kbc8042_repeat_can_publish(const x86_kbc8042 *controller,
+    x86_kbc8042_keyboard_inputs keyboard)
+{
+    return keyboard.repeat_pending && keyboard.repeat_bytes != 0u &&
+        keyboard.scanning && x86_kbc8042_keyboard_scan_delivery_enabled(
+            controller, controller->data.command_byte) &&
+        keyboard.repeat_bytes <= KBC_KEYBOARD_SERIAL_CAPACITY -
+            controller->data.keyboard_serial_count;
 }
 
 void x86_kbc8042_advance(x86_kbc8042 *controller, lib_u64 elapsed_ticks)
 {
     if (controller == LIB_NULL) return;
+    if (controller->data.output_pulse_mask != 0u) {
+        if (elapsed_ticks < controller->data.output_pulse_remaining_ticks) {
+            controller->data.output_pulse_remaining_ticks -= elapsed_ticks;
+        } else {
+            controller->data.output_pulse_remaining_ticks = 0u;
+            controller->data.output_pulse_mask = 0u;
+            x86_kbc8042_apply_output_port(controller, controller->data.output_port);
+        }
+    }
     if (elapsed_ticks >= controller->data.serial_delivery_remaining_ticks) {
         controller->data.serial_delivery_remaining_ticks = 0u;
     } else {
@@ -607,7 +646,9 @@ void x86_kbc8042_advance(x86_kbc8042 *controller, lib_u64 elapsed_ticks)
             }
         }
     }
-    if (controller->link.keyboard_advance(controller->link.context, elapsed_ticks,
+    if (x86_kbc8042_repeat_can_publish(controller,
+            controller->link.keyboard_inputs(controller->link.context)) &&
+        controller->link.keyboard_advance(controller->link.context, elapsed_ticks,
             x86_kbc8042_repeat, controller)) {
         x86_kbc8042_drain_keyboard_serial(controller);
     }
@@ -622,9 +663,12 @@ lib_status x86_kbc8042_ticks_until_event(const x86_kbc8042 *controller,
     if (controller == LIB_NULL || out_ticks == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
+    if (controller->data.output_pulse_mask != 0u)
+        ticks = controller->data.output_pulse_remaining_ticks;
     if (x86_kbc8042_keyboard_serial_delivery_pending(controller) &&
         controller->data.fifo_count == 0u) {
-        ticks = controller->data.serial_delivery_remaining_ticks;
+        if (controller->data.serial_delivery_remaining_ticks < ticks)
+            ticks = controller->data.serial_delivery_remaining_ticks;
     }
     keyboard = controller->link.keyboard_inputs(controller->link.context);
     if (keyboard.bat_ready && controller->data.fifo_count == 0u &&
@@ -635,7 +679,8 @@ lib_status x86_kbc8042_ticks_until_event(const x86_kbc8042 *controller,
         controller->data.response_remaining_ticks < ticks) {
         ticks = controller->data.response_remaining_ticks;
     }
-    if (keyboard.repeat_pending && keyboard.repeat_ticks < ticks) {
+    if (x86_kbc8042_repeat_can_publish(controller, keyboard) &&
+        keyboard.repeat_ticks < ticks) {
         ticks = keyboard.repeat_ticks;
     }
     if (ticks == LIB_UINT64_MAX) return LIB_STATUS_INVALID_STATE;
@@ -666,35 +711,24 @@ void x86_kbc8042_set_serial_delivery_timing(x86_kbc8042 *controller,
     x86_kbc8042_drain_keyboard_serial(controller);
 }
 
-static lib_status x86_kbc8042_admit_native_byte(x86_kbc8042 *controller,
-    lib_u8 native_byte)
+void x86_kbc8042_set_output_pulse_timing(x86_kbc8042 *controller,
+    lib_u32 pulse_ticks)
 {
-    if (controller == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (!x86_kbc8042_keyboard_scan_delivery_enabled(controller,
-            controller->data.command_byte)) return LIB_STATUS_INVALID_STATE;
-    return controller->link.keyboard_admit(controller->link.context, native_byte);
+    if (controller != LIB_NULL) controller->data.output_pulse_ticks = pulse_ticks;
 }
 
 lib_status x86_kbc8042_receive_keyboard_byte(x86_kbc8042 *controller,
     lib_u8 native_byte)
 {
-    lib_status status;
-
-    if (controller == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (controller->data.keyboard_serial_count >=
-        KBC_KEYBOARD_SERIAL_CAPACITY) return LIB_STATUS_NO_MEMORY;
-    status = x86_kbc8042_admit_native_byte(controller, native_byte);
-    if (status != LIB_STATUS_OK) return status;
-    status = x86_kbc8042_queue_native_byte(controller, native_byte);
-    if (status != LIB_STATUS_OK) return status;
-    x86_kbc8042_drain_keyboard_serial(controller);
-    return LIB_STATUS_OK;
+    return x86_kbc8042_receive_keyboard_bytes(controller, &native_byte, 1u);
 }
 
 lib_status x86_kbc8042_receive_keyboard_bytes(x86_kbc8042 *controller,
     const lib_u8 *native_bytes, lib_size count)
 {
-    lib_size index;
+    lib_u8 output[KBC_KEYBOARD_SERIAL_CAPACITY];
+    lib_size output_count;
+    lib_status status;
 
     if (controller == LIB_NULL || (native_bytes == LIB_NULL && count != 0u)) {
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -704,13 +738,12 @@ lib_status x86_kbc8042_receive_keyboard_bytes(x86_kbc8042 *controller,
             controller->data.command_byte)) {
         return LIB_STATUS_INVALID_STATE;
     }
-    if (count > KBC_KEYBOARD_SERIAL_CAPACITY -
-        controller->data.keyboard_serial_count) return LIB_STATUS_NO_MEMORY;
-    for (index = 0u; index < count; ++index) {
-        if (x86_kbc8042_admit_native_byte(controller, native_bytes[index]) !=
-            LIB_STATUS_OK) return LIB_STATUS_INVALID_STATE;
-        (void)x86_kbc8042_queue_native_byte(controller, native_bytes[index]);
-    }
+    status = controller->link.keyboard_admit(controller->link.context,
+        native_bytes, count, output, KBC_KEYBOARD_SERIAL_CAPACITY -
+        controller->data.keyboard_serial_count, &output_count);
+    if (status != LIB_STATUS_OK) return status;
+    status = x86_kbc8042_queue_native_bytes(controller, output, output_count);
+    if (status != LIB_STATUS_OK) return status;
     x86_kbc8042_drain_keyboard_serial(controller);
     return LIB_STATUS_OK;
 }
@@ -744,7 +777,7 @@ lib_status x86_kbc8042_create(const x86_kbc8042_link *link, x86_kbc8042 **out_co
         link->keyboard_write == LIB_NULL || link->aux_write == LIB_NULL ||
         link->keyboard_accepted == LIB_NULL || link->keyboard_admit == LIB_NULL ||
         link->keyboard_advance == LIB_NULL || link->irq == LIB_NULL ||
-        link->output_port == LIB_NULL || link->reset_pulse == LIB_NULL) {
+        link->output_port == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     controller = lib_allocate_zero(1u, sizeof(*controller));
@@ -772,9 +805,9 @@ void x86_kbc8042_set_aux_present(x86_kbc8042 *controller, lib_bool present)
     if (!present) {
         controller->data.aux_enabled = LIB_FALSE;
         controller->data.command_byte &= ~KBC_COMMAND_IRQ12;
-        controller->data.command_byte |= KBC_COMMAND_DISABLE_AUX;
         x86_kbc8042_deassert_irq12(controller);
     }
+    x86_kbc8042_refresh_current_irq(controller);
 }
 
 lib_bool x86_kbc8042_aux_enabled(const x86_kbc8042 *controller)

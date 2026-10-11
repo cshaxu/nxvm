@@ -1,6 +1,69 @@
 /* Copyright 2012-2026 Neko. */
 #include "core/chips/keyboard/keyboard.h"
 
+#define KEYBOARD_KEY_MAKE 0x01u
+#define KEYBOARD_KEY_BREAK 0x02u
+#define KEYBOARD_KEY_REPEAT 0x04u
+#define KEYBOARD_KEY_TYPEMATIC (KEYBOARD_KEY_MAKE | KEYBOARD_KEY_REPEAT)
+#define KEYBOARD_KEY_MAKE_BREAK (KEYBOARD_KEY_MAKE | KEYBOARD_KEY_BREAK)
+#define KEYBOARD_KEY_ALL (KEYBOARD_KEY_MAKE_BREAK | KEYBOARD_KEY_REPEAT)
+
+/* IBM March 1986, 4-58--60: only the selected 101-key layout. */
+static const lib_u8 keyboard_default_key_types[0x85] = {
+    [0x0e] = KEYBOARD_KEY_TYPEMATIC, [0x16] = KEYBOARD_KEY_TYPEMATIC,
+    [0x1e] = KEYBOARD_KEY_TYPEMATIC, [0x26] = KEYBOARD_KEY_TYPEMATIC,
+    [0x25] = KEYBOARD_KEY_TYPEMATIC, [0x2e] = KEYBOARD_KEY_TYPEMATIC,
+    [0x36] = KEYBOARD_KEY_TYPEMATIC, [0x3d] = KEYBOARD_KEY_TYPEMATIC,
+    [0x3e] = KEYBOARD_KEY_TYPEMATIC, [0x46] = KEYBOARD_KEY_TYPEMATIC,
+    [0x45] = KEYBOARD_KEY_TYPEMATIC, [0x4e] = KEYBOARD_KEY_TYPEMATIC,
+    [0x55] = KEYBOARD_KEY_TYPEMATIC, [0x66] = KEYBOARD_KEY_TYPEMATIC,
+    [0x0d] = KEYBOARD_KEY_TYPEMATIC, [0x15] = KEYBOARD_KEY_TYPEMATIC,
+    [0x1d] = KEYBOARD_KEY_TYPEMATIC, [0x24] = KEYBOARD_KEY_TYPEMATIC,
+    [0x2d] = KEYBOARD_KEY_TYPEMATIC, [0x2c] = KEYBOARD_KEY_TYPEMATIC,
+    [0x35] = KEYBOARD_KEY_TYPEMATIC, [0x3c] = KEYBOARD_KEY_TYPEMATIC,
+    [0x43] = KEYBOARD_KEY_TYPEMATIC, [0x44] = KEYBOARD_KEY_TYPEMATIC,
+    [0x4d] = KEYBOARD_KEY_TYPEMATIC, [0x54] = KEYBOARD_KEY_TYPEMATIC,
+    [0x5b] = KEYBOARD_KEY_TYPEMATIC, [0x5c] = KEYBOARD_KEY_TYPEMATIC,
+    [0x1c] = KEYBOARD_KEY_TYPEMATIC, [0x1b] = KEYBOARD_KEY_TYPEMATIC,
+    [0x23] = KEYBOARD_KEY_TYPEMATIC, [0x2b] = KEYBOARD_KEY_TYPEMATIC,
+    [0x34] = KEYBOARD_KEY_TYPEMATIC, [0x33] = KEYBOARD_KEY_TYPEMATIC,
+    [0x3b] = KEYBOARD_KEY_TYPEMATIC, [0x42] = KEYBOARD_KEY_TYPEMATIC,
+    [0x4b] = KEYBOARD_KEY_TYPEMATIC, [0x4c] = KEYBOARD_KEY_TYPEMATIC,
+    [0x52] = KEYBOARD_KEY_TYPEMATIC, [0x5a] = KEYBOARD_KEY_TYPEMATIC,
+    [0x1a] = KEYBOARD_KEY_TYPEMATIC, [0x22] = KEYBOARD_KEY_TYPEMATIC,
+    [0x21] = KEYBOARD_KEY_TYPEMATIC, [0x2a] = KEYBOARD_KEY_TYPEMATIC,
+    [0x32] = KEYBOARD_KEY_TYPEMATIC, [0x31] = KEYBOARD_KEY_TYPEMATIC,
+    [0x3a] = KEYBOARD_KEY_TYPEMATIC, [0x41] = KEYBOARD_KEY_TYPEMATIC,
+    [0x49] = KEYBOARD_KEY_TYPEMATIC, [0x4a] = KEYBOARD_KEY_TYPEMATIC,
+    [0x29] = KEYBOARD_KEY_TYPEMATIC, [0x64] = KEYBOARD_KEY_TYPEMATIC,
+    [0x61] = KEYBOARD_KEY_TYPEMATIC, [0x63] = KEYBOARD_KEY_TYPEMATIC,
+    [0x60] = KEYBOARD_KEY_TYPEMATIC, [0x6a] = KEYBOARD_KEY_TYPEMATIC,
+    [0x7c] = KEYBOARD_KEY_TYPEMATIC,
+    [0x14] = KEYBOARD_KEY_MAKE_BREAK, [0x12] = KEYBOARD_KEY_MAKE_BREAK,
+    [0x59] = KEYBOARD_KEY_MAKE_BREAK, [0x11] = KEYBOARD_KEY_MAKE_BREAK,
+    [0x19] = KEYBOARD_KEY_MAKE_BREAK,
+    [0x39] = KEYBOARD_KEY_MAKE, [0x58] = KEYBOARD_KEY_MAKE,
+    [0x67] = KEYBOARD_KEY_MAKE, [0x6e] = KEYBOARD_KEY_MAKE,
+    [0x65] = KEYBOARD_KEY_MAKE, [0x6f] = KEYBOARD_KEY_MAKE,
+    [0x6d] = KEYBOARD_KEY_MAKE, [0x76] = KEYBOARD_KEY_MAKE,
+    [0x6c] = KEYBOARD_KEY_MAKE, [0x6b] = KEYBOARD_KEY_MAKE,
+    [0x69] = KEYBOARD_KEY_MAKE, [0x77] = KEYBOARD_KEY_MAKE,
+    [0x75] = KEYBOARD_KEY_MAKE, [0x73] = KEYBOARD_KEY_MAKE,
+    [0x72] = KEYBOARD_KEY_MAKE, [0x70] = KEYBOARD_KEY_MAKE,
+    [0x7e] = KEYBOARD_KEY_MAKE, [0x7d] = KEYBOARD_KEY_MAKE,
+    [0x74] = KEYBOARD_KEY_MAKE, [0x7a] = KEYBOARD_KEY_MAKE,
+    [0x71] = KEYBOARD_KEY_MAKE, [0x84] = KEYBOARD_KEY_MAKE,
+    [0x79] = KEYBOARD_KEY_MAKE, [0x08] = KEYBOARD_KEY_MAKE,
+    [0x07] = KEYBOARD_KEY_MAKE, [0x0f] = KEYBOARD_KEY_MAKE,
+    [0x17] = KEYBOARD_KEY_MAKE, [0x1f] = KEYBOARD_KEY_MAKE,
+    [0x27] = KEYBOARD_KEY_MAKE, [0x2f] = KEYBOARD_KEY_MAKE,
+    [0x37] = KEYBOARD_KEY_MAKE, [0x3f] = KEYBOARD_KEY_MAKE,
+    [0x47] = KEYBOARD_KEY_MAKE, [0x4f] = KEYBOARD_KEY_MAKE,
+    [0x56] = KEYBOARD_KEY_MAKE, [0x5e] = KEYBOARD_KEY_MAKE,
+    [0x57] = KEYBOARD_KEY_MAKE, [0x5f] = KEYBOARD_KEY_MAKE,
+    [0x62] = KEYBOARD_KEY_MAKE
+};
+
 lib_u8 x86_keyboard_set2_to_set1(lib_u8 set2,
     lib_bool *out_known)
 {
@@ -43,18 +106,22 @@ static void keyboard_apply_typematic(x86_keyboard *keyboard)
         ((lib_u64)keyboard->nominal_initial_ticks * delay) / 2u);
     keyboard->repeat_ticks = (lib_u32)(
         ((lib_u64)keyboard->nominal_repeat_ticks * rate) / 24u);
+    if (keyboard->initial_ticks == 0u || keyboard->repeat_ticks == 0u) {
+        keyboard->repeat_count = 0u;
+        keyboard->remaining_ticks = 0u;
+    }
 }
 
 static void keyboard_defaults(x86_keyboard *keyboard)
 {
+    lib_memory_copy(keyboard->key_types, keyboard_default_key_types,
+        sizeof(keyboard->key_types));
     keyboard->scan_set = 2u;
-    keyboard->leds = 0u;
     keyboard->typematic = 0x2cu;
     keyboard_apply_typematic(keyboard);
-    keyboard->repeat_active = LIB_FALSE;
     keyboard->remaining_ticks = 0u;
-    keyboard->repeat_byte = 0u;
-    keyboard->break_pending = LIB_FALSE;
+    keyboard->repeat_count = 0u;
+    keyboard->input_count = 0u;
 }
 
 lib_status x86_keyboard_create(x86_keyboard **out_keyboard)
@@ -98,6 +165,20 @@ static void keyboard_reset_stream(const x86_keyboard_link *link)
     if (link->stream_reset != LIB_NULL) link->stream_reset(link->context);
 }
 
+static void keyboard_clear_stream(x86_keyboard *keyboard,
+    const x86_keyboard_link *link)
+{
+    keyboard->remaining_ticks = 0u;
+    keyboard->repeat_count = 0u;
+    keyboard->input_count = 0u;
+    keyboard_reset_stream(link);
+}
+
+static lib_bool keyboard_scanning(const x86_keyboard *keyboard)
+{
+    return keyboard->scanning && keyboard->pending == KEYBOARD_PARAMETER_NONE;
+}
+
 void x86_keyboard_write(x86_keyboard *keyboard, lib_u8 value,
     const x86_keyboard_link *link)
 {
@@ -106,6 +187,8 @@ void x86_keyboard_write(x86_keyboard *keyboard, lib_u8 value,
     if (keyboard == LIB_NULL || link == LIB_NULL || link->reply == LIB_NULL) return;
     pending = keyboard->pending;
     keyboard->pending = KEYBOARD_PARAMETER_NONE;
+    /* ED--FF are commands, not options for an incomplete transaction. */
+    if (value >= 0xedu) pending = KEYBOARD_PARAMETER_NONE;
     switch (pending) {
     case KEYBOARD_PARAMETER_LEDS:
         keyboard->leds = value & 0x07u;
@@ -120,10 +203,24 @@ void x86_keyboard_write(x86_keyboard *keyboard, lib_u8 value,
         if (value == 0u) {
             reply[1] = keyboard->scan_set;
             link->reply(link->context, reply, 2u);
-        } else if (value == 1u || value == 2u) {
+        } else if (value >= 1u && value <= 3u) {
             keyboard->scan_set = value;
             keyboard_reply(link, 0xfau);
         } else keyboard_reply(link, 0xfeu);
+        return;
+    case KEYBOARD_PARAMETER_KEY_TYPEMATIC:
+    case KEYBOARD_PARAMETER_KEY_MAKE_BREAK:
+    case KEYBOARD_PARAMETER_KEY_MAKE:
+        if (value >= sizeof(keyboard_default_key_types) ||
+            keyboard_default_key_types[value] == 0u) {
+            keyboard_reply(link, 0xfeu);
+            keyboard->pending = pending;
+        } else {
+            keyboard->key_types[value] = pending == KEYBOARD_PARAMETER_KEY_TYPEMATIC ?
+                KEYBOARD_KEY_TYPEMATIC : pending == KEYBOARD_PARAMETER_KEY_MAKE_BREAK ?
+                KEYBOARD_KEY_MAKE_BREAK : KEYBOARD_KEY_MAKE;
+            keyboard_reply(link, 0xfau);
+        }
         return;
     default:
         break;
@@ -134,6 +231,7 @@ void x86_keyboard_write(x86_keyboard *keyboard, lib_u8 value,
         keyboard->startup_released = LIB_TRUE;
         keyboard->bat_pending = LIB_TRUE;
         keyboard_defaults(keyboard);
+        keyboard->leds = 0u;
         keyboard_reset_stream(link);
         keyboard->scanning = LIB_TRUE;
         break;
@@ -145,8 +243,9 @@ void x86_keyboard_write(x86_keyboard *keyboard, lib_u8 value,
         keyboard_reply(link, 0xeeu);
         break;
     case 0xf0u:
-        keyboard_reply(link, 0xfau);
+        keyboard_clear_stream(keyboard, link);
         keyboard->pending = KEYBOARD_PARAMETER_SCAN_SET;
+        keyboard_reply(link, 0xfau);
         break;
     case 0xf3u:
         keyboard_reply(link, 0xfau);
@@ -154,8 +253,7 @@ void x86_keyboard_write(x86_keyboard *keyboard, lib_u8 value,
         break;
     case 0xf4u:
         keyboard->scanning = LIB_TRUE;
-        keyboard->repeat_active = LIB_FALSE;
-        keyboard->repeat_byte = 0u;
+        keyboard_clear_stream(keyboard, link);
         keyboard_reply(link, 0xfau);
         break;
     case 0xf5u:
@@ -167,6 +265,7 @@ void x86_keyboard_write(x86_keyboard *keyboard, lib_u8 value,
     case 0xf6u:
         keyboard_defaults(keyboard);
         keyboard_reset_stream(link);
+        keyboard->scanning = LIB_TRUE;
         keyboard_reply(link, 0xfau);
         break;
     case 0xf2u:
@@ -176,7 +275,22 @@ void x86_keyboard_write(x86_keyboard *keyboard, lib_u8 value,
         keyboard_reply(link, keyboard->last_output == 0xfeu && keyboard->has_output ?
             keyboard->previous_output : keyboard->last_output);
         break;
-    case 0xfdu: case 0xfcu: case 0xfbu: case 0xf7u:
+    case 0xf7u: case 0xf8u: case 0xf9u: case 0xfau:
+        for (lib_size index = 0u; index < sizeof(keyboard->key_types); ++index) {
+            if (keyboard_default_key_types[index] != 0u) {
+                keyboard->key_types[index] = value == 0xf7u ? KEYBOARD_KEY_TYPEMATIC :
+                    value == 0xf8u ? KEYBOARD_KEY_MAKE_BREAK :
+                    value == 0xf9u ? KEYBOARD_KEY_MAKE : KEYBOARD_KEY_ALL;
+            }
+        }
+        keyboard_clear_stream(keyboard, link);
+        keyboard_reply(link, 0xfau);
+        break;
+    case 0xfbu: case 0xfcu: case 0xfdu:
+        keyboard_clear_stream(keyboard, link);
+        keyboard->scanning = LIB_FALSE;
+        keyboard->pending = value == 0xfbu ? KEYBOARD_PARAMETER_KEY_TYPEMATIC :
+            value == 0xfcu ? KEYBOARD_PARAMETER_KEY_MAKE_BREAK : KEYBOARD_PARAMETER_KEY_MAKE;
         keyboard_reply(link, 0xfau);
         break;
     default:
@@ -192,12 +306,13 @@ void x86_keyboard_cancel_parameter(x86_keyboard *keyboard)
 
 x86_keyboard_signals x86_keyboard_get_signals(const x86_keyboard *keyboard)
 {
-    x86_keyboard_signals signals = { 0u, 0u, LIB_FALSE, LIB_FALSE };
+    x86_keyboard_signals signals = { 0u, 0u, LIB_FALSE, LIB_FALSE, 0u };
     if (keyboard != LIB_NULL) {
         signals.scan_set = keyboard->scan_set;
         signals.leds = keyboard->leds;
-        signals.scanning = keyboard->scanning;
+        signals.scanning = keyboard_scanning(keyboard);
         signals.bat_ready = keyboard->bat_pending;
+        signals.repeat_bytes = keyboard_scanning(keyboard) ? keyboard->repeat_count : 0u;
     }
     return signals;
 }
@@ -241,38 +356,123 @@ static lib_bool keyboard_is_repeatable(lib_u8 scan_code)
     }
 }
 
-lib_status x86_keyboard_admit(x86_keyboard *keyboard, lib_u8 byte)
+static lib_status keyboard_track_native_byte(x86_keyboard *keyboard, lib_u8 byte)
 {
+    static const lib_u8 pause_set1[] = { 0xe1u, 0x1du, 0x45u, 0xe1u, 0x9du, 0xc5u };
+    static const lib_u8 pause_set2[] = { 0xe1u, 0x14u, 0x77u, 0xe1u, 0xf0u, 0x14u, 0xf0u, 0x77u };
     lib_bool known;
+    lib_bool released;
+    lib_bool extended;
+    lib_u8 make[2];
+    lib_u8 make_count;
     lib_u8 set1;
-    if (keyboard == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (!keyboard->scanning) return LIB_STATUS_INVALID_STATE;
-    if (keyboard->scan_set == 2u && byte == 0xf0u) keyboard->break_pending = LIB_TRUE;
-    if (keyboard->scan_set == 1u && (byte & 0x80u) != 0u &&
-        (byte & 0x7fu) == keyboard->repeat_byte) {
-        keyboard->repeat_active = LIB_FALSE;
-    } else if (keyboard->scan_set == 1u && keyboard->initial_ticks != 0u &&
-        keyboard->repeat_ticks != 0u && (byte & 0x80u) == 0u &&
-        keyboard_is_repeatable(byte)) {
-        keyboard->repeat_byte = byte;
-        keyboard->remaining_ticks = keyboard->initial_ticks;
-        keyboard->repeat_active = LIB_TRUE;
-    }
-    if (keyboard->scan_set == 2u) {
-        set1 = x86_keyboard_set2_to_set1(byte, &known);
-        if (keyboard->break_pending && known && byte == keyboard->repeat_byte) {
-            keyboard->repeat_active = LIB_FALSE;
-        } else if (!keyboard->break_pending && byte != 0xe0u && byte != 0xe1u &&
-            byte != 0xf0u && known && keyboard->initial_ticks != 0u &&
-            keyboard->repeat_ticks != 0u && keyboard_is_repeatable(set1)) {
-            keyboard->repeat_byte = byte;
-            keyboard->remaining_ticks = keyboard->initial_ticks;
-            keyboard->repeat_active = LIB_TRUE;
+
+    if (keyboard->input_count >= sizeof(keyboard->input_prefix))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (keyboard->input_count != 0u && keyboard->input_prefix[0] != 0xe1u &&
+        (byte == 0xe0u || byte == 0xe1u ||
+        (byte == 0xf0u && keyboard->input_prefix[keyboard->input_count - 1u] == 0xf0u)))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    keyboard->input_prefix[keyboard->input_count++] = byte;
+    if (keyboard->input_prefix[0] == 0xe1u) {
+        const lib_u8 *pause = keyboard->scan_set == 1u ? pause_set1 : pause_set2;
+        if (byte != pause[keyboard->input_count - 1u]) return LIB_STATUS_INVALID_ARGUMENT;
+        if (keyboard->input_count == (keyboard->scan_set == 1u ? 6u : 8u)) {
+            keyboard->input_count = 0u; /* Pause is not a typematic make. */
         }
+        return LIB_STATUS_OK;
     }
-    if (keyboard->scan_set == 2u && byte != 0xe0u && byte != 0xe1u && byte != 0xf0u) {
-        keyboard->break_pending = LIB_FALSE;
+    extended = keyboard->input_prefix[0] == 0xe0u;
+    if (extended && keyboard->input_count == 1u) return LIB_STATUS_OK;
+    if (keyboard->scan_set == 2u && byte == 0xf0u) return LIB_STATUS_OK;
+    make_count = extended ? 2u : 1u;
+    make[0] = extended ? 0xe0u : byte;
+    make[make_count - 1u] = keyboard->scan_set == 1u ? byte & 0x7fu : byte;
+    released = keyboard->scan_set == 1u ? (byte & 0x80u) != 0u :
+        keyboard->input_prefix[extended ? 1u : 0u] == 0xf0u;
+    keyboard->input_count = 0u;
+    if (keyboard->scan_set == 1u) {
+        set1 = byte & 0x7fu;
+        known = set1 != 0u;
+    } else {
+        set1 = x86_keyboard_set2_to_set1(byte, &known);
     }
+    if (!known) return LIB_STATUS_OK;
+    if (released) {
+        if (keyboard->repeat_count == make_count &&
+            lib_memory_compare(keyboard->repeat_bytes, make, make_count) == 0) {
+            keyboard->repeat_count = 0u;
+            keyboard->remaining_ticks = 0u;
+        }
+    } else if (keyboard->initial_ticks != 0u && keyboard->repeat_ticks != 0u &&
+        keyboard_is_repeatable(set1) && !(extended && set1 == 0x37u)) {
+        lib_memory_copy(keyboard->repeat_bytes, make, make_count);
+        keyboard->repeat_count = make_count;
+        keyboard->remaining_ticks = keyboard->initial_ticks;
+    }
+    return LIB_STATUS_OK;
+}
+
+static lib_status keyboard_prepare_set3_byte(x86_keyboard *keyboard,
+    lib_u8 byte, lib_u8 *output, lib_size capacity, lib_size *count)
+{
+    lib_bool released;
+    lib_u8 type;
+    lib_size needed;
+    if (byte == 0xf0u) {
+        if (keyboard->input_count != 0u) return LIB_STATUS_INVALID_ARGUMENT;
+        keyboard->input_prefix[0] = byte;
+        keyboard->input_count = 1u;
+        return LIB_STATUS_OK;
+    }
+    if (byte >= sizeof(keyboard->key_types) || keyboard->key_types[byte] == 0u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    released = keyboard->input_count != 0u;
+    type = keyboard->key_types[byte];
+    needed = !released ? 1u : (type & KEYBOARD_KEY_BREAK) != 0u ? 2u : 0u;
+    if (needed > capacity - *count) return LIB_STATUS_NO_MEMORY;
+    keyboard->input_count = 0u;
+    if (released) {
+        if (keyboard->repeat_count == 1u && keyboard->repeat_bytes[0] == byte) {
+            keyboard->repeat_count = 0u;
+            keyboard->remaining_ticks = 0u;
+        }
+        if (needed != 0u) output[(*count)++] = 0xf0u;
+    } else if ((type & KEYBOARD_KEY_REPEAT) != 0u &&
+        keyboard->initial_ticks != 0u && keyboard->repeat_ticks != 0u) {
+        keyboard->repeat_bytes[0] = byte;
+        keyboard->repeat_count = 1u;
+        keyboard->remaining_ticks = keyboard->initial_ticks;
+    }
+    if (needed != 0u) output[(*count)++] = byte;
+    return LIB_STATUS_OK;
+}
+
+lib_status x86_keyboard_admit(x86_keyboard *keyboard, const lib_u8 *bytes,
+    lib_size count, lib_u8 *output, lib_size capacity, lib_size *output_count)
+{
+    x86_keyboard candidate;
+    lib_size prepared = 0u;
+
+    if (output_count == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *output_count = 0u;
+    if (keyboard == LIB_NULL || (count != 0u &&
+        (bytes == LIB_NULL || output == LIB_NULL))) return LIB_STATUS_INVALID_ARGUMENT;
+    if (!keyboard_scanning(keyboard)) return LIB_STATUS_INVALID_STATE;
+    if (keyboard->scan_set != 3u && count > capacity) return LIB_STATUS_NO_MEMORY;
+    candidate = *keyboard;
+    for (lib_size index = 0u; index < count; ++index) {
+        const lib_status status = candidate.scan_set == 3u ?
+            keyboard_prepare_set3_byte(&candidate, bytes[index], output, capacity, &prepared) :
+            keyboard_track_native_byte(&candidate, bytes[index]);
+        if (status != LIB_STATUS_OK) return status;
+    }
+    if (candidate.scan_set != 3u) {
+        if (count != 0u) lib_memory_copy(output, bytes, count);
+        prepared = count;
+    }
+    *keyboard = candidate;
+    *output_count = prepared;
     return LIB_STATUS_OK;
 }
 
@@ -286,30 +486,31 @@ void x86_keyboard_set_typematic_timing(x86_keyboard *keyboard,
 }
 
 lib_bool x86_keyboard_advance(x86_keyboard *keyboard, lib_u64 elapsed_ticks,
-    void (*repeat)(void *context, lib_u8 byte), void *context)
+    lib_status (*repeat)(void *context, const lib_u8 *bytes, lib_size count),
+    void *context)
 {
-    if (keyboard == LIB_NULL || repeat == LIB_NULL || elapsed_ticks == 0u ||
-        !keyboard->repeat_active) return LIB_FALSE;
-    if (elapsed_ticks < keyboard->remaining_ticks) {
-        keyboard->remaining_ticks -= elapsed_ticks;
-        return LIB_FALSE;
+    lib_bool accepted = LIB_FALSE;
+    if (keyboard == LIB_NULL || repeat == LIB_NULL ||
+        keyboard->repeat_count == 0u || !keyboard_scanning(keyboard)) return LIB_FALSE;
+    while (elapsed_ticks >= keyboard->remaining_ticks) {
+        elapsed_ticks -= keyboard->remaining_ticks;
+        if (repeat(context, keyboard->repeat_bytes, keyboard->repeat_count) !=
+            LIB_STATUS_OK) {
+            keyboard->remaining_ticks = 0u;
+            return accepted;
+        }
+        accepted = LIB_TRUE;
+        keyboard->remaining_ticks = keyboard->repeat_ticks;
     }
-    elapsed_ticks -= keyboard->remaining_ticks;
-    keyboard->remaining_ticks = keyboard->repeat_ticks;
-    repeat(context, keyboard->repeat_byte);
-    while (keyboard->repeat_ticks != 0u && elapsed_ticks >= keyboard->repeat_ticks) {
-        elapsed_ticks -= keyboard->repeat_ticks;
-        repeat(context, keyboard->repeat_byte);
-    }
-    if (keyboard->repeat_ticks != 0u) keyboard->remaining_ticks -= elapsed_ticks;
-    return LIB_TRUE;
+    keyboard->remaining_ticks -= elapsed_ticks;
+    return accepted;
 }
 
 lib_status x86_keyboard_ticks_until_repeat(const x86_keyboard *keyboard,
     lib_u64 *out_ticks)
 {
     if (keyboard == LIB_NULL || out_ticks == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (!keyboard->repeat_active) return LIB_STATUS_INVALID_STATE;
+    if (keyboard->repeat_count == 0u || !keyboard_scanning(keyboard)) return LIB_STATUS_INVALID_STATE;
     *out_ticks = keyboard->remaining_ticks;
     return LIB_STATUS_OK;
 }

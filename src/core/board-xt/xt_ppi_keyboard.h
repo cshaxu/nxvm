@@ -26,6 +26,8 @@ struct core_machine_xt_ppi_keyboard {
     void *nmi_owner;
     core_machine_xt_ppi_speaker_update speaker_update;
     void *speaker_owner;
+    lib_bool (*timer_output)(void *owner);
+    void *timer_output_owner;
     core_machine_xt_ppi_line_observer line_observer;
     void *line_observer_owner;
     core_machine_xt_ppi_byte_released byte_released;

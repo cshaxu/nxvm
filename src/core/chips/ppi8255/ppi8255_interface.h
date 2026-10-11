@@ -13,7 +13,7 @@ typedef struct x86_ppi8255_pins {
  * write-only control. Inputs are sampled copied values. No ports or wiring.
  * Mode-1/2 encodings retain the existing inactive model: A reads its latch,
  * B samples input, C reads zero, and no output is driven. A mode-set write
- * retains latches in this qualified model; reset clears them. This is not a
+ * clears all output latches; BSR preserves A/B and the mode word. This is not a
  * claim of complete 8255 silicon behavior. One stopped-before-destroy owner. */
 lib_status x86_ppi8255_create(x86_ppi8255 **out_ppi);
 void x86_ppi8255_destroy(x86_ppi8255 *ppi);

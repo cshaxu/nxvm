@@ -36,6 +36,8 @@ void core_machine_kbc_set_command_response_status_polls(t_kbc *controller,
     lib_u8 status_polls);
 void core_machine_kbc_set_serial_delivery_timing(t_kbc *controller,
     lib_u32 delivery_ticks);
+void core_machine_kbc_set_output_pulse_timing(t_kbc *controller,
+    lib_u32 pulse_ticks);
 lib_status core_machine_kbc_submit_native_byte(t_kbc *controller, lib_u8 byte);
 lib_status core_machine_kbc_submit_native_bytes(t_kbc *controller,
     const lib_u8 *bytes, lib_size count);

@@ -17,6 +17,7 @@ struct integration_ini_session {
     vm_session_request request;
     vm_machine *session;
     emulator_machine *emulator_machine;
+    lib_atomic_u32 paused_count;
     integration_ini_session_overlay_transform transform;
     void *transform_opaque;
 };
@@ -44,6 +45,9 @@ lib_i32 integration_ini_session_wait_for_state(const integration_ini_session *se
 lib_status integration_ini_session_pause(integration_ini_session *session,
     lib_u32 milliseconds);
 lib_status integration_ini_session_resume(integration_ini_session *session,
+    lib_u32 milliseconds);
+/* Wait for a new completed pause, never the pre-resume PAUSED state. */
+lib_status integration_ini_session_resume_until_paused(integration_ini_session *session,
     lib_u32 milliseconds);
 lib_status integration_ini_session_reset(integration_ini_session *session,
     lib_u32 milliseconds);

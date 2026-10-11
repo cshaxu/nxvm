@@ -23,7 +23,7 @@ struct x86_rtc {
     lib_u32 ticks_per_second;
     lib_u32 uip_lead_ticks;
     lib_u32 update_ticks;
-    lib_bool square_wave;
+    lib_bool daylight_fallback_done;
 };
 
 #endif

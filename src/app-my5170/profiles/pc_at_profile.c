@@ -97,7 +97,9 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     /* PCjs corroborates that the Rev-3 ROM reads this D/S/P-board endpoint
      * before enabling its 360 KB-in-1.2 MB compatibility path. It is an
      * explicit Other-L2 board capability, never a firmware exception. */
-    0x01u, 0x01u, {80u, 0u, 0u, 0u}, 0u, 0x03f1u, 0x50u, LIB_TRUE, vm_profile_ibm_5170_descriptor_validate
+    0x01u, 0x01u, {80u, 0u, 0u, 0u}, 0u, 0x03f1u, 0x50u, LIB_TRUE, vm_profile_ibm_5170_descriptor_validate,
+    /* IBM's nominal 6 us pulse mapped to the selected 8 MHz L2 macro axis. */
+    48u
 };
 
 static const lib_u32 ibm_5170_contract_ids[] = {1u};

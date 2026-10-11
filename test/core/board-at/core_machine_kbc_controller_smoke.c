@@ -24,6 +24,13 @@ lib_bool test_kbc_bat_ready(const t_kbc *kbc)
     return x86_keyboard_get_signals(kbc->connect.keyboard).bat_ready;
 }
 
+static lib_status admit_byte(x86_keyboard *keyboard, lib_u8 byte)
+{
+    lib_u8 output;
+    lib_size count;
+    return x86_keyboard_admit(keyboard, &byte, 1u, &output, 1u, &count);
+}
+
 static lib_bool kbc_construction_rollback(void)
 {
     t_kbc kbc;
@@ -51,9 +58,11 @@ static lib_bool keyboard_has_repeat(const t_kbc *kbc)
     return x86_keyboard_ticks_until_repeat(kbc->connect.keyboard, &ticks) == LIB_STATUS_OK;
 }
 
-static void keyboard_repeat_byte(void *context, lib_u8 byte)
+static lib_status keyboard_repeat_byte(void *context, const lib_u8 *bytes, lib_size count)
 {
-    *(lib_u8 *)context = byte;
+    if (count != 1u) return LIB_STATUS_INVALID_ARGUMENT;
+    *(lib_u8 *)context = bytes[0];
+    return LIB_STATUS_OK;
 }
 
 static lib_bool keyboard_cadence_is(t_kbc *kbc, lib_u64 initial, lib_u64 interval)
@@ -61,12 +70,12 @@ static lib_bool keyboard_cadence_is(t_kbc *kbc, lib_u64 initial, lib_u64 interva
     x86_keyboard *keyboard = kbc->connect.keyboard;
     lib_u64 ticks = 0u;
     lib_u8 byte = 0u;
-    lib_bool failed = x86_keyboard_admit(keyboard, 0x1cu) != LIB_STATUS_OK;
+    lib_bool failed = admit_byte(keyboard, 0x1cu) != LIB_STATUS_OK;
     failed |= x86_keyboard_ticks_until_repeat(keyboard, &ticks) != LIB_STATUS_OK || ticks != initial;
     failed |= !x86_keyboard_advance(keyboard, initial, keyboard_repeat_byte, &byte) || byte != 0x1cu;
     failed |= x86_keyboard_ticks_until_repeat(keyboard, &ticks) != LIB_STATUS_OK || ticks != interval;
-    failed |= x86_keyboard_admit(keyboard, 0xf0u) != LIB_STATUS_OK;
-    failed |= x86_keyboard_admit(keyboard, 0x1cu) != LIB_STATUS_OK;
+    failed |= admit_byte(keyboard, 0xf0u) != LIB_STATUS_OK;
+    failed |= admit_byte(keyboard, 0x1cu) != LIB_STATUS_OK;
     return !failed;
 }
 
@@ -80,6 +89,37 @@ void test_kbc_initialize_pic(core_machine *port)
     test_kbc_port_write(port, 0x00a1u, 0x70u);
     test_kbc_port_write(port, 0x00a1u, 0x02u);
     test_kbc_port_write(port, 0x00a1u, 0x01u);
+}
+
+static lib_i32 core_machine_kbc_original_at_reply_irq(void)
+{
+    static const lib_u8 commands[] = {0x20u, 0xabu, 0xc0u, 0xd0u, 0xe0u, 0xaau};
+    static const lib_u8 replies[] = {0x41u, 0u, 0x80u, 1u, 0u, 0x55u};
+    t_kbc kbc;
+    test_kbc_irq_wiring irq = {0};
+    core_machine_pic_bus *master = LIB_NULL, *slave = LIB_NULL;
+    core_machine *machine = test_kbc_create_executor();
+    lib_i32 failed = 0;
+    core_machine_pic_initialize(&master, &slave, machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
+    core_machine_kbc_initialize(&kbc, machine);
+    failed |= test_kbc_bind_irq(&irq, master, slave) != LIB_STATUS_OK;
+    core_machine_kbc_bind_core_services(&kbc, test_kbc_irq_output, &irq,
+        LIB_NULL, LIB_NULL, LIB_NULL, LIB_NULL, LIB_FALSE);
+    test_kbc_initialize_pic(machine);
+    for (lib_size index = 0u; index < sizeof(commands); ++index) {
+        test_kbc_port_write(machine, 0x64u, commands[index]);
+        core_machine_pic_refresh(master, slave);
+        failed |= !core_machine_pic_irq_source_is_asserted(irq.keyboard) ||
+            core_machine_pic_irq_source_is_asserted(irq.auxiliary);
+        failed |= core_machine_pic_get_interrupt(master, slave) != 0x09u;
+        failed |= core_machine_kbc_read_byte(machine, 0x60u) != replies[index] ||
+            core_machine_pic_irq_source_is_asserted(irq.keyboard);
+        test_kbc_port_write(machine, 0x20u, 0x20u);
+    }
+    core_machine_kbc_finalize(&kbc);
+    core_machine_pic_finalize(master, slave);
+    core_machine_destroy(machine);
+    return failed;
 }
 
 static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
@@ -173,7 +213,7 @@ static lib_i32 core_machine_kbc_set2_translation(void)
     x86_kbc8042_set_aux_present(kbc.chip, LIB_FALSE);
     core_machine_kbc_reset(&kbc);
     test_kbc_port_write(port, 0x64u, 0x20u);
-    failed |= (core_machine_kbc_read_byte(port, 0x60u) & CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u ||
+    failed |= (core_machine_kbc_read_byte(port, 0x60u) & CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) != 0u ||
         core_machine_kbc_submit_native_byte(&kbc, 0x05u) != LIB_STATUS_OK ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0x3bu;
     for (index = 0u; index < sizeof(function_set2); ++index) {
@@ -512,19 +552,25 @@ lib_i32 main(void)
     failed |= ibm_5170_post_contract_failed;
     failed |= cpu_reset_irq1_failed;
     failed |= core_machine_kbc_typematic_output_boundary();
+    failed |= core_machine_kbc_original_at_reply_irq();
 
     failed |= core_machine_kbc_read_byte(port, 0x0064u) != 0x10u;
     core_machine_kbc_set_input_port(&kbc, 0x80u);
     core_machine_kbc_set_test_inputs(&kbc, 0x03u);
     test_kbc_port_write(port, 0x0064u, 0xc0u);
+    failed |= (core_machine_kbc_read_byte(port, 0x0064u) & VKBC_STATUS_CD) == 0u;
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0x80u;
     test_kbc_port_write(port, 0x0064u, 0xe0u);
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0x03u;
     core_machine_kbc_set_input_port(&kbc, 0u);
-    failed |= (core_machine_kbc_read_byte(port, 0x0064u) & VKBC_STATUS_INHIBIT) != 0u ||
+    /* The switch changed after E0h output; the sampled status is retained. */
+    failed |= (core_machine_kbc_read_byte(port, 0x0064u) & VKBC_STATUS_INHIBIT) == 0u ||
         core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_INVALID_STATE;
     test_kbc_port_write(port, 0x0064u, 0x60u);
+    failed |= (core_machine_kbc_read_byte(port, 0x0064u) & VKBC_STATUS_CD) == 0u;
     test_kbc_port_write(port, 0x0060u, 0x09u);
+    failed |= (core_machine_kbc_read_byte(port, 0x0064u) &
+        (VKBC_STATUS_CD | VKBC_STATUS_INHIBIT)) != 0u;
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xaau ||
         core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0x1eu;
@@ -674,7 +720,7 @@ lib_i32 main(void)
 
     test_kbc_port_write(port, 0x0060u, 0xf5u);
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xfau ||
-        x86_keyboard_get_signals(kbc.connect.keyboard).leds != 0u ||
+        x86_keyboard_get_signals(kbc.connect.keyboard).leds != 7u ||
         x86_keyboard_get_signals(kbc.connect.keyboard).scan_set != 2u ||
         x86_keyboard_get_signals(kbc.connect.keyboard).scanning || keyboard_has_repeat(&kbc) ||
         core_machine_kbc_submit_native_byte(&kbc, 0x1eu) !=
@@ -685,11 +731,18 @@ lib_i32 main(void)
         core_machine_kbc_read_byte(port, 0x0060u) != 0x1eu;
     test_kbc_port_write(port, 0x0060u, 0xf6u);
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xfau ||
-        x86_keyboard_get_signals(kbc.connect.keyboard).leds != 0u ||
+        x86_keyboard_get_signals(kbc.connect.keyboard).leds != 7u ||
         !x86_keyboard_get_signals(kbc.connect.keyboard).scanning;
     test_kbc_port_write(port, 0x0060u, 0xfdu);
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xfau ||
-        !x86_keyboard_get_signals(kbc.connect.keyboard).scanning || x86_keyboard_get_signals(kbc.connect.keyboard).leds != 0u ||
+        x86_keyboard_get_signals(kbc.connect.keyboard).scanning;
+    test_kbc_port_write(port, 0x0060u, 0x1cu);
+    failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xfau ||
+        x86_keyboard_get_signals(kbc.connect.keyboard).scanning;
+    test_kbc_port_write(port, 0x0060u, 0xf4u);
+    failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xfau ||
+        !x86_keyboard_get_signals(kbc.connect.keyboard).scanning ||
+        x86_keyboard_get_signals(kbc.connect.keyboard).leds != 7u ||
         !keyboard_cadence_is(&kbc, 3u, 2u);
     test_kbc_port_write(port, 0x0060u, 0xfeu);
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xfau;
@@ -737,6 +790,17 @@ lib_i32 main(void)
     failed |= a20_enabled ||
         reset_pulses != 2u;
 
+    test_kbc_port_write(port, 0x0064u, 0xd1u);
+    test_kbc_port_write(port, 0x0060u, 0x03u);
+    core_machine_kbc_set_output_pulse_timing(&kbc, 32u);
+    test_kbc_port_write(port, 0x0064u, 0xfdu);
+    failed |= a20_enabled || reset_pulses != 2u;
+    core_machine_kbc_advance(&kbc, 31u);
+    failed |= a20_enabled;
+    core_machine_kbc_advance(&kbc, 1u);
+    failed |= !a20_enabled || reset_pulses != 2u;
+    core_machine_kbc_set_output_pulse_timing(&kbc, 0u);
+
     core_machine_kbc_reset(&kbc);
     test_kbc_port_write(port, 0x0064u, 0x60u);
     test_kbc_port_write(port, 0x0060u, 0x07u);
@@ -748,7 +812,9 @@ lib_i32 main(void)
             core_machine_kbc_read_byte(port, 0x0060u) != 0x1eu ||
             !keyboard_has_repeat(&kbc);
         for (index = 0u; index < 3u; ++index) {
-            failed |= core_machine_kbc_submit_native_byte(&kbc, 0xe0u) != LIB_STATUS_OK;
+            /* Complete non-typematic makes fill OBF/typeahead without
+             * replacing the held key; repeated E0 alone is not a key stream. */
+            failed |= core_machine_kbc_submit_native_byte(&kbc, 0x14u) != LIB_STATUS_OK;
         }
         /* A full physical OBF must not discard a complete Set-2 break;
          * accepting it cancels typematic before the bytes become CPU-visible. */
@@ -759,7 +825,7 @@ lib_i32 main(void)
      * guest drains the one physical output buffer; it is never lost. */
     test_kbc_port_write(port, 0x0060u, 0xf2u);
     for (index = 0u; index < 3u; ++index) {
-        failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xe0u;
+        failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0x14u;
         core_machine_kbc_advance(&kbc, 0u);
     }
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xf0u ||

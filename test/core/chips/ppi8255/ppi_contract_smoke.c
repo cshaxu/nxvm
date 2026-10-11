@@ -22,6 +22,11 @@ int main(void)
         }
         lib_test_assert(x86_ppi8255_write(ppi, 3u, (lib_u8)control) == LIB_STATUS_OK);
         for (lib_u8 port = 0u; port < 3u; ++port) {
+            lib_test_assert(x86_ppi8255_output(ppi, port, &pins) == LIB_STATUS_OK);
+            lib_test_assert(pins.latch == 0u && pins.output_mask == masks[port]);
+            lib_test_assert(x86_ppi8255_write(ppi, port, 0xa5u) == LIB_STATUS_OK);
+        }
+        for (lib_u8 port = 0u; port < 3u; ++port) {
             lib_u8 expected = mode0 ? (0xa5u & masks[port]) | (0x5au & (lib_u8)~masks[port]) :
                 port == 0u ? 0xa5u : port == 1u ? 0x5au : 0u;
             lib_test_assert(x86_ppi8255_read(ppi, port, 0x5au, &value) == LIB_STATUS_OK);
@@ -32,12 +37,20 @@ int main(void)
     }
     x86_ppi8255_reset(ppi);
     lib_test_assert(x86_ppi8255_write(ppi, 3u, 0x80u) == LIB_STATUS_OK);
+    lib_test_assert(x86_ppi8255_write(ppi, 0u, 0xa5u) == LIB_STATUS_OK);
+    lib_test_assert(x86_ppi8255_write(ppi, 1u, 0x5au) == LIB_STATUS_OK);
     for (lib_u8 bit = 0u; bit < 8u; ++bit) {
         lib_test_assert(x86_ppi8255_write(ppi, 3u, (lib_u8)(bit * 2u + 1u)) == LIB_STATUS_OK);
         lib_test_assert(x86_ppi8255_read(ppi, 2u, 0u, &value) == LIB_STATUS_OK);
         lib_test_assert(value == (1u << bit));
         lib_test_assert(x86_ppi8255_write(ppi, 3u, (lib_u8)(bit * 2u)) == LIB_STATUS_OK);
         lib_test_assert(x86_ppi8255_read(ppi, 2u, 0u, &value) == LIB_STATUS_OK && value == 0u);
+        lib_test_assert(x86_ppi8255_output(ppi, 0u, &pins) == LIB_STATUS_OK);
+        lib_test_assert(pins.latch == 0xa5u && pins.output_mask == 0xffu);
+        lib_test_assert(x86_ppi8255_output(ppi, 1u, &pins) == LIB_STATUS_OK);
+        lib_test_assert(pins.latch == 0x5au && pins.output_mask == 0xffu);
+        lib_test_assert(x86_ppi8255_output(ppi, 2u, &pins) == LIB_STATUS_OK);
+        lib_test_assert(pins.output_mask == 0xffu);
     }
     lib_test_assert(x86_ppi8255_read(ppi, 3u, 0u, &value) == LIB_STATUS_UNSUPPORTED);
     lib_test_assert(x86_ppi8255_read(ppi, 4u, 0u, &value) == LIB_STATUS_INVALID_ARGUMENT);

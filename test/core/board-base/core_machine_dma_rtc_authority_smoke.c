@@ -187,6 +187,88 @@ static lib_i32 core_machine_dma_wiring_matches_constructed_controllers(void)
     return failed;
 }
 
+static lib_i32 core_machine_rtc_clock_deadline_route(lib_u32 source_rate)
+{
+    const core_machine_config configuration = {
+        .time_axis = {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, source_rate},
+        .clock_plan.rtc = {32768u, source_rate, 0u}
+    };
+    const core_machine_rtc_cmos_config rtc = {
+        .index_port = 0x70u, .data_port = 0x71u, .irq = 8u,
+        .nmi_mask_bit = 0x80u, .ticks_per_second = 32768u,
+        .timing = {8u, 65u, CORE_MACHINE_RTC_TIMING_L3_SOURCE}
+    };
+    const core_machine_plan_topology topology = {
+        .rtc_cmos_present = LIB_TRUE, .rtc_cmos = rtc
+    };
+    core_machine_plan *plan = LIB_NULL;
+    core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
+    core_machine_time_observation time = {0};
+    lib_i32 failed = core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
+
+    failed |= !failed && core_machine_plan_set_topology(plan, &topology) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
+    if (failed) goto done;
+    core_machine_dma_rtc_initialize_pic(machine);
+    core_machine_dma_rtc_cmos_write(machine, X86_RTC_REG_A, 0x20u);
+    core_machine_dma_rtc_cmos_write(machine, X86_RTC_SECOND_ALARM, 1u);
+    core_machine_dma_rtc_cmos_write(machine, X86_RTC_MINUTE_ALARM, 0xc0u);
+    core_machine_dma_rtc_cmos_write(machine, X86_RTC_HOUR_ALARM, 0xc0u);
+    core_machine_dma_rtc_cmos_write(machine, CORE_MACHINE_RTC_EQUIPMENT, 0x5au);
+    core_machine_dma_rtc_cmos_write(machine, X86_RTC_REG_B,
+        X86_RTC_REG_B_24H | X86_RTC_REG_B_AIE);
+    failed |= core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK;
+    failed |= !time.next_deadline_valid || time.next_deadline_tick != source_rate;
+    failed |= test_core_machine_advance_time(machine, source_rate - 1u) != LIB_STATUS_OK;
+    failed |= core_machine_dma_rtc_cmos_read(machine, X86_RTC_SECOND) != 0u ||
+        core_machine_pic_irq_source_is_asserted(board->rtc_irq_source);
+    failed |= core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK;
+    failed |= !time.next_deadline_valid || time.next_deadline_tick != time.elapsed_ticks + 1u;
+    failed |= test_core_machine_advance_time(machine, 1u) != LIB_STATUS_OK;
+    core_machine_pic_refresh(board->shared_pic_master, board->shared_pic_slave);
+    failed |= core_machine_dma_rtc_cmos_read(machine, X86_RTC_SECOND) != 1u ||
+        !core_machine_pic_irq_source_is_asserted(board->rtc_irq_source) ||
+        core_machine_pic_get_interrupt(board->shared_pic_master, board->shared_pic_slave) != 0x70u;
+    failed |= core_machine_dma_rtc_cmos_read(machine, X86_RTC_REG_C) !=
+        (X86_RTC_REG_C_AF | X86_RTC_REG_C_UF | X86_RTC_REG_C_IRQF) ||
+        core_machine_pic_irq_source_is_asserted(board->rtc_irq_source);
+    failed |= core_machine_bus_write(machine, 0xa0u, 0x20u) != LIB_STATUS_OK;
+    failed |= core_machine_bus_write(machine, 0x20u, 0x20u) != LIB_STATUS_OK;
+    core_machine_pic_refresh(board->shared_pic_master, board->shared_pic_slave);
+    failed |= core_machine_pic_scan_interrupt(board->shared_pic_master, board->shared_pic_slave);
+    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= core_machine_dma_rtc_cmos_read(machine, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au ||
+        core_machine_dma_rtc_cmos_read(machine, X86_RTC_SECOND) != 1u ||
+        core_machine_dma_rtc_cmos_read(machine, X86_RTC_REG_C) != 0u;
+    core_machine_dma_rtc_initialize_pic(machine);
+    core_machine_dma_rtc_cmos_write(machine, X86_RTC_REG_A, 0x26u);
+    core_machine_dma_rtc_cmos_write(machine, X86_RTC_REG_B,
+        X86_RTC_REG_B_24H | X86_RTC_REG_B_PIE);
+    failed |= core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK;
+    {
+        const lib_u32 period = (source_rate + 1023u) / 1024u;
+        failed |= !time.next_deadline_valid ||
+            time.next_deadline_tick != time.elapsed_ticks + period;
+        failed |= test_core_machine_advance_time(machine, period - 1u) != LIB_STATUS_OK ||
+            core_machine_pic_irq_source_is_asserted(board->rtc_irq_source);
+        failed |= test_core_machine_advance_time(machine, 1u) != LIB_STATUS_OK;
+        core_machine_pic_refresh(board->shared_pic_master, board->shared_pic_slave);
+        failed |= !core_machine_pic_irq_source_is_asserted(board->rtc_irq_source) ||
+            core_machine_pic_get_interrupt(board->shared_pic_master, board->shared_pic_slave) != 0x70u;
+        failed |= core_machine_dma_rtc_cmos_read(machine, X86_RTC_REG_C) !=
+            (X86_RTC_REG_C_PF | X86_RTC_REG_C_IRQF) ||
+            core_machine_pic_irq_source_is_asserted(board->rtc_irq_source);
+    }
+done:
+    core_machine_destroy(machine);
+    core_machine_plan_destroy(plan);
+    if (failed) lib_c_printf("RTC-CLOCK-DEADLINE:FAIL\n");
+    return failed;
+}
+
 int main(void)
 {
     core_machine_config machine_config = {0};
@@ -212,6 +294,9 @@ int main(void)
     failed |= core_machine_at_refresh_leaves_dma0_available();
     failed |= core_machine_dma_refresh_follows_pit_channel_1();
     failed |= core_machine_dma_wiring_matches_constructed_controllers();
+    failed |= core_machine_rtc_clock_deadline_route(1000000u);
+    failed |= core_machine_rtc_clock_deadline_route(8000000u);
+    failed |= core_machine_rtc_clock_deadline_route(16000000u);
     failed |= core_machine_configure_dma(LIB_NULL, &dma_wiring, &fdc_request) !=
         LIB_STATUS_INVALID_STATE ||
         core_machine_get_fdc_dma_request_binding(LIB_NULL, &fdc_request) !=

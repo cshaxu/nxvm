@@ -14,6 +14,7 @@ lib_i32 main(void)
     return vm_profile_default_at_plan_create(&request, &profile) != LIB_STATUS_OK ||
         profile.values.core.configuration.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         profile.values.core.configuration.memory_bytes != 32u * 1024u * 1024u ||
+        profile.values.core.configuration.kbc_output_pulse_ticks != 0u ||
         profile.values.allowed_session_options !=
             (VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
              VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY |

@@ -57,6 +57,16 @@ neighbour:
 4. CGA/EGA/CECG video and profile-selected aperture/clock/presentation routes.
 5. Cross-profile board reset, firmware, deadline and integration closure.
 
+The S3 original-source reconciliation assigns the complete DeskPro KBC
+speed-control class to S6's cross-device board receiver: A3/A4 selection,
+A5 no-OBF special read, auxiliary PIT counter-2 refresh trigger and CPU HOLD
+extension with DMA arbitration. The [S3 source ledger](../etc/evidence/t555-s3-rtc-keyboard-source-ledger.md)
+records the exact original authorities and rejects mapping speed to output
+bits 2/3. Missing A1/A2/A6 definitions require source reconciliation, not
+invented firmware behavior. This transfer keeps every member in T555's
+completion predicate; a successful boot or retained timing model cannot
+close a confirmed missing function or connection.
+
 Each admitted S must use current paths, identify its source tier, preserve the
 single owner, and distinguish a genuine repair from a proof-only closure. A
 fact outside the selected controller, adapter, drive, monitor or board source

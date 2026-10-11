@@ -87,6 +87,12 @@ static void core_machine_xt_ppi_update_speaker(void *owner,
         data_enabled);
 }
 
+static lib_bool core_machine_xt_ppi_timer_output(void *owner)
+{
+    const core_machine_board_state *board = owner;
+    return x86_pit_get_output(board->shared_pit, 2u);
+}
+
 lib_i32 core_machine_board_config_is_valid(
     const core_machine_config *config)
 {
@@ -278,7 +284,10 @@ lib_status core_machine_board_create(core_machine *machine,
                 core_machine_xt_keyboard_duration(rate, 12500u),
                 core_machine_xt_keyboard_duration(rate, 300000u),
                 core_machine_xt_keyboard_duration(rate, 60u),
-                core_machine_xt_keyboard_duration(rate, 25u)
+                core_machine_xt_keyboard_duration(rate, 25u),
+                /* L2 nominal 83-key repeat model, not enhanced-keyboard timing. */
+                core_machine_xt_keyboard_duration(rate, 500000u),
+                core_machine_xt_keyboard_duration(rate, 100000u)
             };
             status = x86_xt_keyboard_create(&timing,
                 core_machine_xt_keyboard_deliver, board->xt_ppi_keyboard,
@@ -348,6 +357,8 @@ lib_status core_machine_board_create(core_machine *machine,
             core_machine_xt_ppi_request_nmi, machine);
         core_machine_xt_ppi_keyboard_bind_speaker(board->xt_ppi_keyboard,
             core_machine_xt_ppi_update_speaker, board);
+        core_machine_xt_ppi_keyboard_bind_timer_output(board->xt_ppi_keyboard,
+            core_machine_xt_ppi_timer_output, board);
         core_machine_xt_ppi_keyboard_bind_keyboard_observer(board->xt_ppi_keyboard,
             core_machine_xt_keyboard_lines, board->xt_keyboard,
             core_machine_xt_keyboard_released);
@@ -379,6 +390,8 @@ lib_status core_machine_board_create(core_machine *machine,
             board->kbc_command_response_status_polls);
         core_machine_kbc_set_serial_delivery_timing(board->shared_kbc,
             board->kbc_serial_delivery_ticks);
+        core_machine_kbc_set_output_pulse_timing(board->shared_kbc,
+            config->kbc_output_pulse_ticks);
     }
     x86_pit_set_output(board->shared_pit, 1, LIB_NULL, LIB_NULL);
     *out_board = board;
@@ -652,8 +665,7 @@ static void core_machine_speaker_refresh(core_machine_board_state *board)
     if (board == LIB_NULL) return;
     value = core_machine_speaker_source_value(board);
     board->speaker_output = (value & 0x02u) != 0u &&
-        ((value & 0x01u) == 0u ||
-        x86_pit_get_output(board->shared_pit, 2u));
+        x86_pit_get_output(board->shared_pit, 2u);
 }
 
 static void core_machine_speaker_timer_output(void *owner,

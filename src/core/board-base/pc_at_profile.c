@@ -103,6 +103,7 @@ lib_i32 vm_profile_default_pc_at_core_config_materialize(
         .kbc_typematic_initial_ticks = contract->kbc_typematic_initial_ticks,
         .kbc_typematic_repeat_ticks = contract->kbc_typematic_repeat_ticks,
         .kbc_command_response_ticks = contract->kbc_command_response_ticks,
+        .kbc_output_pulse_ticks = descriptor->kbc_output_pulse_ticks,
         .kbc_command_response_status_polls =
             contract->kbc_command_response_status_polls,
         .kbc_reset_output_port_configured =

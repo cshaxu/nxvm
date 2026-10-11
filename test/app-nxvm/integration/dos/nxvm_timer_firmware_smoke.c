@@ -36,9 +36,8 @@ static lib_i32 vm_timer_debug_break_real(integration_ini_session *session,
     x86_debug_response response;
 
     if (!vm_timer_debug_execute(session, &request, &response) ||
-        integration_ini_session_resume(session, 2000u) != LIB_STATUS_OK ||
-        !integration_ini_session_wait_for_state(session, EMULATOR_MACHINE_PAUSED,
-            2000u)) return 0;
+        integration_ini_session_resume_until_paused(session, 2000u) != LIB_STATUS_OK)
+        return 0;
     request = (x86_debug_request) { .operation = X86_DEBUG_GET_EXECUTION_RESULT };
     return vm_timer_debug_execute(session, &request, &response) && response.enabled;
 }

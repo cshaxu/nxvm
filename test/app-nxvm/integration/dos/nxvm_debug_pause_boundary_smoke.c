@@ -16,46 +16,71 @@ static lib_i32 debug_trace_one(integration_ini_session *session)
     };
     x86_debug_response response;
     lib_size response_size = 0u;
+    lib_status status;
 
     if (session == LIB_NULL || session->emulator_machine == LIB_NULL ||
         emulator_machine_debug_acquire(session->emulator_machine, &lease) != LIB_STATUS_OK ||
         emulator_machine_debug_execute_with_lease(session->emulator_machine, &lease,
             &request, sizeof(request), &response, sizeof(response),
             &response_size) != LIB_STATUS_OK || response_size != sizeof(response) ||
-        integration_ini_session_resume(session, 2000u) != LIB_STATUS_OK ||
-        !integration_ini_session_wait_for_state(session, EMULATOR_MACHINE_PAUSED,
-            2000u) ||
+        integration_ini_session_resume_until_paused(session, 2000u) != LIB_STATUS_OK ||
         emulator_machine_debug_acquire(session->emulator_machine, &lease) != LIB_STATUS_OK) {
+        printf("trace-one setup failed: response-size=%u state=%u\n",
+            (unsigned)response_size, session == LIB_NULL ||
+            session->emulator_machine == LIB_NULL ? 0u :
+            (unsigned)emulator_machine_state_get(session->emulator_machine));
         return 0;
     }
     request.operation = X86_DEBUG_GET_EXECUTION_RESULT;
     request.execution_kind = X86_DEBUG_EXECUTION_NONE;
     request.instruction_count = 0u;
     response_size = 0u;
-    return emulator_machine_debug_execute_with_lease(session->emulator_machine, &lease,
-        &request, sizeof(request), &response, sizeof(response), &response_size) ==
-        LIB_STATUS_OK && response_size == sizeof(response) && response.enabled &&
-        response.value == 1u;
+    status = emulator_machine_debug_execute_with_lease(
+        session->emulator_machine, &lease, &request, sizeof(request),
+        &response, sizeof(response), &response_size);
+    if (status != LIB_STATUS_OK || response_size != sizeof(response) ||
+        !response.enabled || response.value != 1u) {
+        printf("trace-one result failed: status=%u response-size=%u\n",
+            (unsigned)status, (unsigned)response_size);
+        return 0;
+    }
+    return 1;
 }
 
 lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
+    const char *stage = "start";
+    lib_status status;
     if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
             &ini_session) != LIB_STATUS_OK) return 77;
-    if (integration_ini_session_start(&ini_session) != LIB_STATUS_OK ||
-        integration_ini_session_pause(&ini_session, 2000u) != LIB_STATUS_OK ||
-        integration_ini_session_reset(&ini_session, 2000u) != LIB_STATUS_OK ||
-        !debug_trace_one(&ini_session) ||
-        integration_ini_session_resume(&ini_session, 2000u) != LIB_STATUS_OK ||
-        integration_ini_session_wait_for_state(&ini_session,
-            EMULATOR_MACHINE_RUNNING, 2000u) == 0 ||
-        integration_ini_session_pause(&ini_session, 2000u) != LIB_STATUS_OK) goto fail;
+    status = integration_ini_session_start(&ini_session);
+    if (status != LIB_STATUS_OK) goto fail;
+    stage = "pause";
+    status = integration_ini_session_pause(&ini_session, 2000u);
+    if (status != LIB_STATUS_OK) goto fail;
+    stage = "reset";
+    status = integration_ini_session_reset(&ini_session, 2000u);
+    if (status != LIB_STATUS_OK) goto fail;
+    stage = "trace-one";
+    if (!debug_trace_one(&ini_session)) goto fail;
+    stage = "resume";
+    status = integration_ini_session_resume(&ini_session, 2000u);
+    if (status != LIB_STATUS_OK) goto fail;
+    stage = "wait-running";
+    if (!integration_ini_session_wait_for_state(&ini_session,
+            EMULATOR_MACHINE_RUNNING, 2000u)) goto fail;
+    stage = "pause-after-resume";
+    status = integration_ini_session_pause(&ini_session, 2000u);
+    if (status != LIB_STATUS_OK) goto fail;
     integration_ini_session_close(&ini_session);
     puts("NXVM:PAUSE-BOUNDARY:OK");
     return 0;
 
 fail:
+    printf("pause-boundary failed: stage=%s status=%u state=%u\n", stage,
+        (unsigned)status, ini_session.emulator_machine == LIB_NULL ? 0u :
+        (unsigned)emulator_machine_state_get(ini_session.emulator_machine));
     integration_ini_session_close(&ini_session);
     return 1;
 }

@@ -45,6 +45,18 @@ T555 remains open for S3-S6; the eight admitted PC artifacts are 0.5.0555.
 
 ## Remaining Ordered S Work
 
+S3 executor delivery reconciles the complete 38-row RTC/CMOS,
+KBC/enhanced-keyboard and XT-PPI/keyboard batch in its
+[source ledger](../etc/evidence/t555-s3-rtc-keyboard-source-ledger.md).
+Current-production units pass 546/546 per width; current-fixture four-App
+integration passes 32/32 per width. All eight 0555 optimized stripped
+artifacts are rebuilt and PE/hash verified. Source is +683/-219 (net +464),
+tests/registration +1951/-93 (net +1858), excluding manifests/documents/EXEs.
+Compaq speed/read/HOLD remains required S6 repair work; the unexplained
+earlier DOS keyboard result and narrow-margin DeskPro x86 boot remain
+explicit limitations. Shared-six, MyNES and owner INIs are unchanged.
+Coordinator actual-pushed-diff acceptance and S3 closure remain pending.
+
 | S | Boundary | Exit condition |
 | --- | --- | --- |
 | S3 | RTC/CMOS and keyboard/KBC/XT-PPI | Current reset, port, NMI, clock and firmware-facing routes are classified; no controller-local timing or board duplicate is introduced. |

@@ -39,7 +39,8 @@ static x86_kbc8042_keyboard_inputs kbc_keyboard_inputs(void *context)
     x86_kbc8042_keyboard_inputs inputs = {
         .scan_set = signals.scan_set,
         .scanning = signals.scanning,
-        .bat_ready = signals.bat_ready
+        .bat_ready = signals.bat_ready,
+        .repeat_bytes = signals.repeat_bytes
     };
     inputs.repeat_pending = x86_keyboard_ticks_until_repeat(
         attachment->connect.keyboard, &inputs.repeat_ticks) == LIB_STATUS_OK;
@@ -107,14 +108,17 @@ static void kbc_keyboard_accepted(void *context, lib_u8 byte)
     x86_keyboard_note_output(attachment->connect.keyboard, byte);
 }
 
-static lib_status kbc_keyboard_admit(void *context, lib_u8 byte)
+static lib_status kbc_keyboard_admit(void *context, const lib_u8 *bytes,
+    lib_size count, lib_u8 *output, lib_size capacity, lib_size *output_count)
 {
     t_kbc *attachment = context;
-    return x86_keyboard_admit(attachment->connect.keyboard, byte);
+    return x86_keyboard_admit(attachment->connect.keyboard, bytes, count,
+        output, capacity, output_count);
 }
 
 static lib_bool kbc_keyboard_advance(void *context, lib_u64 ticks,
-    void (*emit)(void *context, lib_u8 byte), void *emit_context)
+    lib_status (*emit)(void *context, const lib_u8 *bytes, lib_size count),
+    void *emit_context)
 {
     t_kbc *attachment = context;
     return x86_keyboard_advance(attachment->connect.keyboard, ticks, emit, emit_context);
@@ -185,7 +189,6 @@ lib_status core_machine_kbc_initialize(t_kbc *attachment, core_machine *machine)
         .keyboard_advance = kbc_keyboard_advance,
         .irq = kbc_irq,
         .output_port = kbc_output_port,
-        .reset_pulse = kbc_reset_pulse,
         .context = attachment
     };
 
@@ -288,6 +291,11 @@ void core_machine_kbc_set_command_response_status_polls(t_kbc *attachment, lib_u
 void core_machine_kbc_set_serial_delivery_timing(t_kbc *attachment, lib_u32 ticks)
 {
     if (attachment != LIB_NULL) x86_kbc8042_set_serial_delivery_timing(attachment->chip, ticks);
+}
+
+void core_machine_kbc_set_output_pulse_timing(t_kbc *attachment, lib_u32 ticks)
+{
+    if (attachment != LIB_NULL) x86_kbc8042_set_output_pulse_timing(attachment->chip, ticks);
 }
 
 lib_status core_machine_kbc_submit_native_byte(t_kbc *attachment, lib_u8 byte)

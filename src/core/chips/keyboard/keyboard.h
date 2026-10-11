@@ -7,7 +7,10 @@ typedef enum keyboard_parameter {
     KEYBOARD_PARAMETER_NONE,
     KEYBOARD_PARAMETER_LEDS,
     KEYBOARD_PARAMETER_TYPEMATIC,
-    KEYBOARD_PARAMETER_SCAN_SET
+    KEYBOARD_PARAMETER_SCAN_SET,
+    KEYBOARD_PARAMETER_KEY_TYPEMATIC,
+    KEYBOARD_PARAMETER_KEY_MAKE_BREAK,
+    KEYBOARD_PARAMETER_KEY_MAKE
 } keyboard_parameter;
 
 struct x86_keyboard {
@@ -15,12 +18,14 @@ struct x86_keyboard {
     lib_u8 scan_set;
     lib_u8 leds;
     lib_u8 typematic;
-    lib_u8 repeat_byte;
+    lib_u8 key_types[0x85];
+    lib_u8 repeat_bytes[8];
+    lib_u8 repeat_count;
+    lib_u8 input_prefix[8];
+    lib_u8 input_count;
     lib_u8 last_output;
     lib_u8 previous_output;
     lib_bool scanning;
-    lib_bool repeat_active;
-    lib_bool break_pending;
     lib_bool has_output;
     lib_bool bat_pending;
     lib_bool startup_released;

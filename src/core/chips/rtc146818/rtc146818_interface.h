@@ -47,7 +47,8 @@ typedef struct x86_rtc_config {
  * context is borrowed until destroy. Output callbacks deliver logical IRQ
  * levels and must not recursively execute or destroy this RTC.
  * Durations use the configured ticks/second, never host time. Zero phase
- * inputs retain the existing 244/1984 microsecond conversion, rounded down
+ * inputs use 244 microseconds lead and 248/1984 microseconds update for
+ * fast/32-kHz bases, rounded down
  * with a one-tick minimum; the caller owns its precision/provenance claim. */
 lib_status x86_rtc_create(const x86_rtc_config *config,
     x86_rtc_output_provider output, void *context, x86_rtc **out_rtc);

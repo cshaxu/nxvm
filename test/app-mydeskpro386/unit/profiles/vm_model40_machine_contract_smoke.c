@@ -66,7 +66,7 @@ lib_i32 main(void)
         test_board_kbc_aux_enabled(session->board) ||
         !test_board_kbc_command_matches(session->board,
             session->core_machine, 0x20u,
-            0x20u, 0x20u)) goto done;
+            0x20u, 0u)) goto done;
     stage = 2;
     {
         core_machine_guest_input_event event = {0};
@@ -84,7 +84,7 @@ lib_i32 main(void)
             test_board_kbc_aux_enabled(session->board) ||
             !test_board_kbc_command_matches(session->board,
             session->core_machine, 0x20u,
-            0x20u, 0x20u)) goto done;
+            0x20u, 0u)) goto done;
         composition = test_board_capture_composition(session->board);
         if (composition.drives.installed_mask != 0x03u ||
             composition.drives.double_sided_mask != 0x03u ||

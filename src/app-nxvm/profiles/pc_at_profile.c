@@ -73,7 +73,8 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     vm_pc_at_firmware_services,
     sizeof(vm_pc_at_firmware_services) /
         sizeof(vm_pc_at_firmware_services[0]),
-    0x01u, 0x01u, {80u, 0u, 0u, 0u}, 0u, 0u, 0u, LIB_FALSE, vm_profile_default_descriptor_validate
+    0x01u, 0x01u, {80u, 0u, 0u, 0u}, 0u, 0u, 0u, LIB_FALSE, vm_profile_default_descriptor_validate,
+    0u /* Uncalibrated service axis: pulse ordering only. */
 };
 
 static const lib_u32 default_pc_at_contract_ids[] = {1u};

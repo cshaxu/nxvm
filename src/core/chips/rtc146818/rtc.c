@@ -41,15 +41,15 @@ static lib_bool rtc_divider_running(const x86_rtc *rtc)
 {
     lib_u8 divider = rtc->registers[X86_RTC_REG_A] & 0x70u;
 
-    return divider == 0x20u || divider == 0x50u || divider == 0x60u;
+    return divider <= 0x20u;
 }
 
 static lib_u32 rtc_divider_hz(const x86_rtc *rtc)
 {
     switch (rtc->registers[X86_RTC_REG_A] & 0x70u) {
     case 0x20u: return 32768u;
-    case 0x50u: return 1048576u;
-    case 0x60u: return 4194304u;
+    case 0x10u: return 1048576u;
+    case 0x00u: return 4194304u;
     default: return 0u;
     }
 }
@@ -60,9 +60,25 @@ static lib_u32 rtc_periodic_hz(const x86_rtc *rtc)
     lib_u32 base = rtc_divider_hz(rtc);
 
     if (base == 0u || rate == 0u) return 0u;
-    if (rate == 1u) return base / 128u;
-    if (rate == 2u) return base / 256u;
-    return rate <= 15u ? base >> (rate - 1u) : 0u;
+    if (rate == 1u) return base == 32768u ? 256u : 32768u;
+    if (rate == 2u) return base == 32768u ? 128u : 16384u;
+    return 32768u >> (rate - 1u);
+}
+
+static lib_u32 rtc_phase_ticks(lib_u32 configured,
+    lib_u32 ticks_per_second, lib_u32 microseconds)
+{
+    lib_u64 converted;
+
+    if (configured != 0u) return configured;
+    converted = ((lib_u64)ticks_per_second * microseconds) / 1000000u;
+    return converted == 0u ? 1u : (lib_u32)converted;
+}
+
+static lib_u32 rtc_update_ticks(const x86_rtc *rtc)
+{
+    return rtc_phase_ticks(rtc->update_ticks, rtc->ticks_per_second,
+        rtc_divider_hz(rtc) == 32768u ? 1984u : 248u);
 }
 
 static void rtc_refresh_irq(x86_rtc *rtc)
@@ -111,8 +127,19 @@ static void rtc_increment_second(x86_rtc *rtc)
     if (rtc->calendar.minute < 60u) return;
     rtc->calendar.minute = 0u;
     ++rtc->calendar.hour;
+    if ((rtc->registers[X86_RTC_REG_B] & 0x01u) != 0u &&
+        rtc->calendar.hour == 2u && rtc->calendar.day_week == 1u) {
+        if (rtc->calendar.month == 4u && rtc->calendar.day_month >= 24u) {
+            rtc->calendar.hour = 3u;
+        } else if (rtc->calendar.month == 10u && rtc->calendar.day_month >= 25u &&
+            !rtc->daylight_fallback_done) {
+            rtc->calendar.hour = 1u;
+            rtc->daylight_fallback_done = LIB_TRUE;
+        }
+    }
     if (rtc->calendar.hour < 24u) return;
     rtc->calendar.hour = 0u;
+    rtc->daylight_fallback_done = LIB_FALSE;
     rtc->calendar.day_week = rtc->calendar.day_week == 7u ? 1u :
         (lib_u8)(rtc->calendar.day_week + 1u);
     ++rtc->calendar.day_month;
@@ -148,7 +175,8 @@ static lib_status rtc_ticks_until_alarm(const x86_rtc *rtc,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     candidate = *rtc;
-    for (second = 1u; second <= 86400u; ++second) {
+    /* A civil day may contain the one-hour autumn DSE repeat. */
+    for (second = 1u; second <= 25u * 60u * 60u; ++second) {
         rtc_increment_second(&candidate);
         if (!rtc_alarm_matches(&candidate)) continue;
         ticks = rtc->ticks_per_second - rtc->calendar.second_ticks;
@@ -163,7 +191,7 @@ static lib_status rtc_ticks_until_alarm(const x86_rtc *rtc,
 
 static lib_bool rtc_uip_active(const x86_rtc *rtc)
 {
-    lib_u64 window = (lib_u64)rtc->uip_lead_ticks + rtc->update_ticks;
+    lib_u64 window = (lib_u64)rtc->uip_lead_ticks + rtc_update_ticks(rtc);
 
     return rtc_divider_running(rtc) &&
         (rtc->registers[X86_RTC_REG_B] & X86_RTC_REG_B_SET) == 0u &&
@@ -200,10 +228,14 @@ lib_u8 x86_rtc_read_register(x86_rtc *rtc, lib_u8 reg)
 void x86_rtc_write_register(x86_rtc *rtc, lib_u8 reg,
     lib_u8 value)
 {
-    lib_bool was_running;
+    lib_bool was_reset;
 
     if (rtc == LIB_NULL || reg >= X86_RTC_REGISTER_COUNT) return;
-    was_running = rtc_divider_running(rtc);
+    was_reset = (rtc->registers[X86_RTC_REG_A] & 0x60u) == 0x60u;
+    if (reg == X86_RTC_HOUR || reg == X86_RTC_DAY_WEEK ||
+        reg == X86_RTC_DAY_MONTH || reg == X86_RTC_MONTH || reg == X86_RTC_YEAR) {
+        rtc->daylight_fallback_done = LIB_FALSE;
+    }
     switch (reg) {
     case X86_RTC_SECOND: rtc->calendar.second = rtc_decode(rtc, value & 0x7fu); break;
     case X86_RTC_MINUTE: rtc->calendar.minute = rtc_decode(rtc, value); break;
@@ -217,23 +249,21 @@ void x86_rtc_write_register(x86_rtc *rtc, lib_u8 reg,
         if (!rtc_divider_running(rtc)) {
             rtc->calendar.second_ticks = 0u;
             rtc->calendar.periodic_ticks = 0u;
-        } else if (!was_running) rtc->calendar.second_ticks = rtc->ticks_per_second / 2u;
+        } else if (was_reset) {
+            lib_u64 completion = (lib_u64)rtc->ticks_per_second / 2u + rtc_update_ticks(rtc);
+            rtc->calendar.second_ticks = completion < rtc->ticks_per_second ?
+                rtc->ticks_per_second - completion : 0u;
+        }
+        break;
+    case X86_RTC_REG_B:
+        if ((value & X86_RTC_REG_B_SET) != 0u) value &= (lib_u8)~X86_RTC_REG_B_UIE;
+        rtc->registers[reg] = value;
         break;
     case X86_RTC_REG_C:
     case X86_RTC_REG_D: break;
     default: rtc->registers[reg] = value; break;
     }
     rtc_refresh_irq(rtc);
-}
-
-static lib_u32 rtc_phase_ticks(lib_u32 configured,
-    lib_u32 ticks_per_second, lib_u32 microseconds)
-{
-    lib_u64 converted;
-
-    if (configured != 0u) return configured;
-    converted = ((lib_u64)ticks_per_second * microseconds) / 1000000u;
-    return converted == 0u ? 1u : (lib_u32)converted;
 }
 
 lib_status x86_rtc_create(const x86_rtc_config *config,
@@ -250,8 +280,7 @@ lib_status x86_rtc_create(const x86_rtc_config *config,
     rtc->ticks_per_second = config->ticks_per_second;
     rtc->uip_lead_ticks = rtc_phase_ticks(config->uip_lead_ticks,
         rtc->ticks_per_second, 244u);
-    rtc->update_ticks = rtc_phase_ticks(config->update_ticks,
-        rtc->ticks_per_second, 1984u);
+    rtc->update_ticks = config->update_ticks;
     rtc->output = output;
     rtc->output_context = context;
     rtc->calendar.day_week = 6u;
@@ -272,36 +301,35 @@ void x86_rtc_reset(x86_rtc *rtc)
         X86_RTC_REG_B_DM | X86_RTC_REG_B_24H | 0x01u;
     (void)x86_rtc_read_register(rtc, X86_RTC_REG_C);
     rtc->registers[X86_RTC_REG_D] = X86_RTC_REG_D_VRT;
-    rtc->square_wave = LIB_FALSE;
 }
 
 void x86_rtc_advance(x86_rtc *rtc, lib_u64 elapsed_ticks)
 {
     lib_u32 periodic_hz;
 
-    if (rtc == LIB_NULL || !rtc_divider_running(rtc)) return;
+    if (rtc == LIB_NULL || elapsed_ticks == 0u || !rtc_divider_running(rtc)) return;
     periodic_hz = rtc_periodic_hz(rtc);
-    if (periodic_hz != 0u) {
+    {
         lib_u64 seconds = elapsed_ticks / rtc->ticks_per_second;
         lib_u64 partial = elapsed_ticks % rtc->ticks_per_second;
-        lib_u64 phase = rtc->calendar.periodic_ticks + partial * periodic_hz;
-        lib_u64 edges = phase / rtc->ticks_per_second;
+        lib_u64 phase = rtc->calendar.periodic_ticks + partial;
+        lib_u64 edges = phase * periodic_hz / rtc->ticks_per_second -
+            rtc->calendar.periodic_ticks * periodic_hz / rtc->ticks_per_second;
 
         rtc->calendar.periodic_ticks = phase % rtc->ticks_per_second;
-        if (seconds != 0u || edges != 0u) {
+        if (periodic_hz != 0u && (seconds != 0u || edges != 0u)) {
             rtc->registers[X86_RTC_REG_C] |= X86_RTC_REG_C_PF;
-            if ((rtc->registers[X86_RTC_REG_B] & X86_RTC_REG_B_SQWE) != 0u) {
-                if (((seconds & 1u) != 0u && (periodic_hz & 1u) != 0u) ^
-                    ((edges & 1u) != 0u)) {
-                    rtc->square_wave = rtc->square_wave ? LIB_FALSE : LIB_TRUE;
-                }
-            }
         }
     }
-    if ((rtc->registers[X86_RTC_REG_B] & X86_RTC_REG_B_SET) == 0u) {
-        rtc->calendar.second_ticks += elapsed_ticks;
-        while (rtc->calendar.second_ticks >= rtc->ticks_per_second) {
-            rtc->calendar.second_ticks -= rtc->ticks_per_second;
+    {
+        lib_u64 seconds = elapsed_ticks / rtc->ticks_per_second;
+        lib_u64 phase = rtc->calendar.second_ticks + elapsed_ticks % rtc->ticks_per_second;
+
+        seconds += phase / rtc->ticks_per_second;
+        rtc->calendar.second_ticks = phase % rtc->ticks_per_second;
+        if ((rtc->registers[X86_RTC_REG_B] & X86_RTC_REG_B_SET) != 0u) seconds = 0u;
+        while (seconds != 0u) {
+            --seconds;
             rtc_increment_second(rtc);
             rtc->registers[X86_RTC_REG_C] |= X86_RTC_REG_C_UF;
             if (rtc_alarm_matches(rtc)) rtc->registers[X86_RTC_REG_C] |=
@@ -334,7 +362,7 @@ lib_status x86_rtc_ticks_until_irq(const x86_rtc *rtc,
     periodic_hz = rtc_periodic_hz(rtc);
     if ((enable & X86_RTC_REG_B_PIE) != 0u && periodic_hz != 0u) {
         lib_u64 remaining = rtc->ticks_per_second -
-            rtc->calendar.periodic_ticks;
+            (rtc->calendar.periodic_ticks * periodic_hz) % rtc->ticks_per_second;
 
         ticks = remaining / periodic_hz;
         if (remaining % periodic_hz != 0u) ++ticks;
@@ -357,5 +385,8 @@ lib_status x86_rtc_ticks_until_irq(const x86_rtc *rtc,
 
 lib_bool x86_rtc_get_square_wave(const x86_rtc *rtc)
 {
-    return rtc == LIB_NULL ? LIB_FALSE : rtc->square_wave;
+    if (rtc == LIB_NULL || !rtc_divider_running(rtc) ||
+        (rtc->registers[X86_RTC_REG_B] & X86_RTC_REG_B_SQWE) == 0u) return LIB_FALSE;
+    return ((rtc->calendar.periodic_ticks * rtc_periodic_hz(rtc)) %
+        rtc->ticks_per_second) * 2u >= rtc->ticks_per_second;
 }

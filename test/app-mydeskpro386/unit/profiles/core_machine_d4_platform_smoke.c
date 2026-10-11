@@ -116,7 +116,7 @@ lib_i32 main(void)
     if (!failed) failed |= core_machine_bus_write(machine, 0x0061u, 0x02u) !=
         LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
         LIB_STATUS_OK || !speaker.configured || speaker.timer_gate ||
-        !speaker.data_enabled || !speaker.output ||
+        !speaker.data_enabled || speaker.output != speaker.timer_output ||
         core_machine_bus_write(machine, 0x0061u, 0x00u) != LIB_STATUS_OK ||
         core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
         speaker.output || core_machine_bus_write(machine, 0x0043u, 0xb4u) !=

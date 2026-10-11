@@ -73,7 +73,10 @@ lib_status x86_ppi8255_write(x86_ppi8255 *ppi, lib_u8 selector, lib_u8 value)
 {
     if (ppi == LIB_NULL || selector > 3u) return LIB_STATUS_INVALID_ARGUMENT;
     if (selector < 3u) ppi->latch[selector] = value;
-    else if ((value & 0x80u) != 0u) ppi->control = value;
+    else if ((value & 0x80u) != 0u) {
+        ppi->control = value;
+        lib_memory_set(ppi->latch, 0, sizeof(ppi->latch));
+    }
     else {
         lib_u8 mask = (lib_u8)(1u << ((value >> 1u) & 0x07u));
         if ((value & 0x01u) != 0u) ppi->latch[2] |= mask;

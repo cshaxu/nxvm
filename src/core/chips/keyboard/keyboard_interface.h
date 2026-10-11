@@ -10,10 +10,12 @@ typedef struct x86_keyboard_signals {
     lib_u8 leds;
     lib_bool scanning;
     lib_bool bat_ready;
+    lib_u8 repeat_bytes;
 } x86_keyboard_signals;
 
 /* Scoped connection, not retained. A reply is copied before return. A stream
- * reset invalidates the receiver's partial encoding, not its queued bytes.
+ * reset discards unsent native bytes and partial encoding, never controller
+ * output already accepted or command replies.
  * Delivery may record accepted output and take pending BAT; it may not issue
  * another command, reset, advance or destroy this keyboard recursively. */
 typedef struct x86_keyboard_link {
@@ -42,16 +44,21 @@ void x86_keyboard_clear_bat(x86_keyboard *keyboard);
  * enter this history. Preserves the existing qualified resend observation. */
 void x86_keyboard_note_output(x86_keyboard *keyboard, lib_u8 byte);
 
-/* Record a native input byte after transport capacity/gating preflight.
- * This updates typematic make/break state but does not deliver the byte. */
-lib_status x86_keyboard_admit(x86_keyboard *keyboard, lib_u8 byte);
+/* Admit a bounded native stream and prepare bytes for the caller's transport.
+ * The caller queues output only on OK. Failure leaves endpoint state intact
+ * and output_count zero; output storage itself may have been written. Partial
+ * wire prefixes may span calls, but one submitted array is failure-atomic. */
+lib_status x86_keyboard_admit(x86_keyboard *keyboard, const lib_u8 *bytes,
+    lib_size count, lib_u8 *output, lib_size capacity, lib_size *output_count);
 void x86_keyboard_set_typematic_timing(x86_keyboard *keyboard,
     lib_u32 initial_ticks, lib_u32 repeat_ticks);
 /* Units are caller-configured service ticks. The scoped sink receives repeat
- * attempts through the same bounded transport as ordinary input; no byte
- * backlog is kept here. True means at least one repeat attempt occurred. */
+ * sequences through the same bounded transport as ordinary input; no byte
+ * backlog is kept here. True means at least one sequence was accepted. Failed
+ * delivery retains one due repeat, not a backlog of elapsed repeats. */
 lib_bool x86_keyboard_advance(x86_keyboard *keyboard, lib_u64 elapsed_ticks,
-    void (*repeat)(void *context, lib_u8 byte), void *context);
+    lib_status (*repeat)(void *context, const lib_u8 *bytes, lib_size count),
+    void *context);
 lib_status x86_keyboard_ticks_until_repeat(const x86_keyboard *keyboard,
     lib_u64 *out_ticks);
 

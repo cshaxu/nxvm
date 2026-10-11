@@ -18,6 +18,7 @@ static lib_i32 ibm_5170_plan_is_complete(void)
         profile.values.core.configuration.time_axis.kind !=
             CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
         profile.values.core.configuration.time_axis.ticks_per_second != 8000000u ||
+        profile.values.core.configuration.kbc_output_pulse_ticks != 48u ||
         profile.values.port_leaf_count == 0u || profile.values.irq_route_count != 4u ||
         profile.values.drq_route_count != 1u || !profile.topology.display_present ||
         !profile.topology.dma_present || !profile.topology.rtc_cmos_present ||

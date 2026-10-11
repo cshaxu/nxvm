@@ -74,16 +74,32 @@ lib_status integration_ini_session_restart(integration_ini_session *session)
     return LIB_STATUS_OK;
 }
 
+static void integration_ini_session_state_fact(void *context,
+    emulator_machine_state state, lib_u32 run_generation)
+{
+    integration_ini_session *session = context;
+
+    (void)run_generation;
+    if (state == EMULATOR_MACHINE_PAUSED) {
+        (void)lib_atomic_u32_fetch_add_explicit(&session->paused_count,
+            1u, LIB_MEMORY_ORDER_SEQ_CST);
+    }
+}
+
 lib_status integration_ini_session_start(integration_ini_session *session)
 {
     emulator_machine_driver driver;
 
     if (session == LIB_NULL || session->session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (session->emulator_machine == LIB_NULL &&
-        (vm_machine_describe_emulator_driver(session->session, &driver) != LIB_STATUS_OK ||
-        emulator_machine_create(&session->emulator_machine, &driver) != LIB_STATUS_OK ||
-        vm_machine_bind_emulator_machine(session->session, session->emulator_machine) !=
-            LIB_STATUS_OK)) return LIB_STATUS_INTERNAL_ERROR;
+    if (session->emulator_machine == LIB_NULL) {
+        lib_atomic_u32_initialize(&session->paused_count, 0u);
+        if (vm_machine_describe_emulator_driver(session->session, &driver) != LIB_STATUS_OK ||
+            emulator_machine_create(&session->emulator_machine, &driver) != LIB_STATUS_OK ||
+            vm_machine_bind_emulator_machine(session->session, session->emulator_machine) !=
+                LIB_STATUS_OK) return LIB_STATUS_INTERNAL_ERROR;
+        emulator_machine_set_state_sink(session->emulator_machine,
+            integration_ini_session_state_fact, session);
+    }
     return emulator_machine_start(session->emulator_machine) ? LIB_STATUS_OK :
         LIB_STATUS_INVALID_STATE;
 }
@@ -119,6 +135,28 @@ lib_status integration_ini_session_resume(integration_ini_session *session,
     if (session == LIB_NULL || session->emulator_machine == LIB_NULL ||
         !emulator_machine_resume(session->emulator_machine)) return LIB_STATUS_INVALID_STATE;
     return LIB_STATUS_OK;
+}
+
+lib_status integration_ini_session_resume_until_paused(integration_ini_session *session,
+    lib_u32 milliseconds)
+{
+    lib_u32 before_pause;
+    lib_u32 elapsed;
+    lib_status status;
+
+    if (session == LIB_NULL || session->emulator_machine == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    before_pause = lib_atomic_u32_load_explicit(&session->paused_count,
+        LIB_MEMORY_ORDER_SEQ_CST);
+    status = integration_ini_session_resume(session, milliseconds);
+    if (status != LIB_STATUS_OK) return status;
+    for (elapsed = 0u; elapsed < milliseconds; ++elapsed) {
+        if (lib_atomic_u32_load_explicit(&session->paused_count,
+                LIB_MEMORY_ORDER_SEQ_CST) != before_pause) return LIB_STATUS_OK;
+        base_sync_sleep_milliseconds(1u);
+    }
+    return lib_atomic_u32_load_explicit(&session->paused_count,
+        LIB_MEMORY_ORDER_SEQ_CST) != before_pause ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
 lib_status integration_ini_session_reset(integration_ini_session *session,

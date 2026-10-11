@@ -21,6 +21,8 @@ static lib_i32 core_machine_xt_ppi_keyboard_path(void)
     lib_u32 value = 0u;
     lib_u8 scan_set = 0u;
     core_machine_speaker_observation speaker;
+    lib_u8 output;
+    lib_u8 lines;
     lib_i32 failed = 0;
 
     failed |= core_machine_create(&configuration, &machine, &board) != LIB_STATUS_OK;
@@ -48,10 +50,37 @@ static lib_i32 core_machine_xt_ppi_keyboard_path(void)
     failed |= !failed && (core_machine_bus_write(machine, 0x0061u, 0x02u) !=
         LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
         LIB_STATUS_OK || speaker.timer_gate || !speaker.data_enabled ||
-        !speaker.output);
+        speaker.output != speaker.timer_output);
     failed |= !failed && (core_machine_bus_write(machine, 0x0061u, 0x03u) !=
         LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
         LIB_STATUS_OK || !speaker.timer_gate || !speaker.data_enabled);
+    /* PB0 gates counting, not the AND input: low OUT2 stays low with PB0=0. */
+    for (output = 0u; output < 2u && !failed; ++output) {
+        failed |= core_machine_bus_write(machine, 0x0043u, 0xb0u) != LIB_STATUS_OK;
+        failed |= core_machine_bus_write(machine, 0x0042u, 1u) != LIB_STATUS_OK;
+        failed |= core_machine_bus_write(machine, 0x0042u, 0u) != LIB_STATUS_OK;
+        failed |= core_machine_bus_write(machine, 0x0061u, 1u) != LIB_STATUS_OK;
+        if (output != 0u) x86_pit_advance(board->shared_pit, 2u);
+        failed |= x86_pit_get_output(board->shared_pit, 2u) != (output != 0u);
+        for (lines = 0u; lines < 4u && !failed; ++lines) {
+            failed |= core_machine_bus_write(machine, 0x0061u, lines) != LIB_STATUS_OK;
+            failed |= core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK;
+            failed |= speaker.timer_gate != ((lines & 1u) != 0u) ||
+                speaker.data_enabled != ((lines & 2u) != 0u) ||
+                speaker.timer_output != (output != 0u) ||
+                speaker.output != (output != 0u && (lines & 2u) != 0u);
+            failed |= core_machine_bus_read(machine, 0x0062u, &value) != LIB_STATUS_OK;
+            failed |= value != (0x0du | (output != 0u ? 0x20u : 0u));
+        }
+    }
+    /* Mode-set clears driven PB; writes while PB is input drive no speaker. */
+    failed |= !failed && (core_machine_bus_write(machine, 0x0063u, 0x99u) !=
+        LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
+        LIB_STATUS_OK || speaker.timer_gate || speaker.data_enabled || speaker.output);
+    failed |= !failed && (core_machine_bus_write(machine, 0x0063u, 0x9bu) !=
+        LIB_STATUS_OK || core_machine_bus_write(machine, 0x0061u, 0x03u) !=
+        LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
+        LIB_STATUS_OK || speaker.timer_gate || speaker.data_enabled || speaker.output);
     failed |= !failed && (core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
         !speaker.configured || speaker.timer_gate || speaker.data_enabled ||
@@ -82,6 +111,14 @@ static lib_i32 core_machine_xt_ppi_keyboard_path(void)
     failed |= !failed && core_machine_bus_read(machine, 0x0060u, &value) !=
         LIB_STATUS_OK;
     failed |= !failed && value != 0x1eu;
+    /* An input PB latch cannot acknowledge the external shift register. */
+    failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x9bu) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0xc0u) != LIB_STATUS_OK;
+    failed |= !failed && test_xt_ppi_expect_byte_ready(board->xt_ppi_keyboard, LIB_TRUE);
+    failed |= !failed && test_xt_ppi_expect_irq1(board->xt_ppi_keyboard, LIB_TRUE);
+    failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) != LIB_STATUS_OK;
+    failed |= !failed && (core_machine_bus_read(machine, 0x0060u, &value) != LIB_STATUS_OK || value != 0x1eu);
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0xc0u) !=
         LIB_STATUS_OK;
     failed |= !failed && test_xt_ppi_expect_byte_ready(board->xt_ppi_keyboard, LIB_FALSE);
@@ -264,6 +301,60 @@ static lib_i32 core_machine_xt_keyboard_reset_bat_path(void)
     return failed;
 }
 
+static lib_i32 core_machine_xt_keyboard_repeat_path(void)
+{
+    const core_machine_config configuration = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .time_axis = {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 1000000u},
+        .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
+        .xt_ppi_keyboard = {0x60u, 0x61u, 0x62u, 0x63u, 1u}
+    };
+    core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
+    core_machine_time_observation observation;
+    lib_u32 value = 0u;
+    lib_i32 failed = 0;
+
+    failed |= core_machine_create(&configuration, &machine, &board) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_bus_write(machine, 0x63u, 0x99u) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_bus_write(machine, 0x61u, 0x40u) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_keyboard_receive_native_byte(board, 0x1eu) != LIB_STATUS_OK;
+    failed |= !failed && test_core_machine_advance_time(machine, 260u) != LIB_STATUS_OK;
+    failed |= !failed && test_xt_ppi_expect_irq1(board->xt_ppi_keyboard, LIB_TRUE);
+    failed |= !failed && (core_machine_bus_read(machine, 0x60u, &value) != LIB_STATUS_OK || value != 0x1eu);
+    failed |= !failed && core_machine_bus_write(machine, 0x61u, 0xc0u) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_bus_write(machine, 0x61u, 0x40u) != LIB_STATUS_OK;
+    /* Nominal L2 repeat delay uses the same guest clock as the serial edges. */
+    failed |= !failed && core_machine_capture_time_observation(machine, &observation) != LIB_STATUS_OK;
+    failed |= !failed && (!observation.next_deadline_valid ||
+        observation.next_deadline_tick != observation.elapsed_ticks + 499740u);
+    failed |= !failed && test_core_machine_advance_time(machine, 499739u) != LIB_STATUS_OK;
+    failed |= !failed && test_xt_ppi_expect_byte_ready(board->xt_ppi_keyboard, LIB_FALSE);
+    failed |= !failed && test_xt_ppi_expect_irq1(board->xt_ppi_keyboard, LIB_FALSE);
+    failed |= !failed && test_core_machine_advance_time(machine, 1u) != LIB_STATUS_OK;
+    failed |= !failed && test_xt_ppi_expect_byte_ready(board->xt_ppi_keyboard, LIB_FALSE);
+    failed |= !failed && core_machine_capture_time_observation(machine, &observation) != LIB_STATUS_OK;
+    failed |= !failed && (!observation.next_deadline_valid ||
+        observation.next_deadline_tick != observation.elapsed_ticks + 60u);
+    failed |= !failed && test_core_machine_advance_time(machine, 260u) != LIB_STATUS_OK;
+    failed |= !failed && test_xt_ppi_expect_irq1(board->xt_ppi_keyboard, LIB_TRUE);
+    failed |= !failed && (core_machine_bus_read(machine, 0x60u, &value) != LIB_STATUS_OK || value != 0x1eu);
+    failed |= !failed && core_machine_bus_write(machine, 0x61u, 0xc0u) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_bus_write(machine, 0x61u, 0x40u) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_keyboard_receive_native_byte(board, 0x9eu) != LIB_STATUS_OK;
+    failed |= !failed && test_core_machine_advance_time(machine, 260u) != LIB_STATUS_OK;
+    failed |= !failed && (core_machine_bus_read(machine, 0x60u, &value) != LIB_STATUS_OK || value != 0x9eu);
+    failed |= !failed && core_machine_bus_write(machine, 0x61u, 0xc0u) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_bus_write(machine, 0x61u, 0x40u) != LIB_STATUS_OK;
+    failed |= !failed && test_core_machine_advance_time(machine, 100000u) != LIB_STATUS_OK;
+    failed |= !failed && test_xt_ppi_expect_byte_ready(board->xt_ppi_keyboard, LIB_FALSE);
+    failed |= !failed && test_xt_ppi_expect_irq1(board->xt_ppi_keyboard, LIB_FALSE);
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static lib_i32 core_machine_xt_keyboard_refused_completion(lib_bool bat,
     lib_bool reset_pending, lib_bool mode_release)
 {
@@ -317,6 +408,9 @@ static lib_i32 core_machine_xt_keyboard_refused_completion(lib_bool bat,
     if (mode_release) {
         failed |= !failed && (core_machine_bus_read(machine, 0x0060u, &value) != LIB_STATUS_OK || value != 0u);
         failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) != LIB_STATUS_OK;
+        /* Mode-set clears PB, so the input-mode write cannot release clock. */
+        failed |= !failed && (core_machine_bus_read(machine, 0x0060u, &value) != LIB_STATUS_OK || value != 0u);
+        failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) != LIB_STATUS_OK;
     }
     failed |= !failed && (core_machine_bus_read(machine, 0x0060u, &value) != LIB_STATUS_OK ||
         value != (reset_pending ? 0u : bat ? 0xaau : 0x9eu));
@@ -386,6 +480,7 @@ int main(void)
         core_machine_xt_ppi_does_not_change_at_8042() ||
         core_machine_xt_ppi_parity_nmi_path() ||
         core_machine_xt_keyboard_reset_bat_path() ||
+        core_machine_xt_keyboard_repeat_path() ||
         core_machine_xt_keyboard_refused_completion(LIB_FALSE, LIB_FALSE, LIB_FALSE) ||
         core_machine_xt_keyboard_refused_completion(LIB_TRUE, LIB_FALSE, LIB_FALSE) ||
         core_machine_xt_keyboard_refused_completion(LIB_FALSE, LIB_TRUE, LIB_FALSE) ||

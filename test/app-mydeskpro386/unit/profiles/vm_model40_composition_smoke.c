@@ -26,6 +26,7 @@ static lib_bool model40_clock_inputs_match(void)
     lib_bool valid;
 
     vm_profile_model40_core_config_initialize(&config);
+    if (config.kbc_output_pulse_ticks != 32u) return LIB_FALSE;
     if (core_machine_clock_domain_initialize(&clock, &config.clock_plan.pit) !=
             LIB_STATUS_OK || x86_pit_create(X86_PIT_PERSONALITY_8254, &pit) !=
             LIB_STATUS_OK) return LIB_FALSE;
@@ -141,14 +142,14 @@ lib_i32 main(void)
             LIB_STATUS_OK || core_machine_get_speaker_observation(
             session->board, &speaker) != LIB_STATUS_OK ||
         !speaker.configured || speaker.timer_gate || !speaker.data_enabled ||
-        !speaker.output || core_machine_bus_write(session->core_machine, 0x0061u,
+        speaker.output != speaker.timer_output || core_machine_bus_write(session->core_machine, 0x0061u,
             0x0fu) != LIB_STATUS_OK ||
         plan.memory_bytes != 2u * 1024u * 1024u ||
         plan.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         test_board_kbc_aux_enabled(session->board) ||
         !test_board_kbc_command_matches(session->board,
             session->core_machine, 0x20u,
-            0x20u, 0x20u);
+            0x20u, 0u);
     }
     if (!failed) {
         /* Model-40 selects the existing generic-AT 2-tick initial prefetch
@@ -173,7 +174,7 @@ lib_i32 main(void)
             core_machine_bus_write(session->core_machine, 0x0064u, 0xa8u) !=
             LIB_STATUS_OK || test_board_kbc_aux_enabled(session->board) ||
             !test_board_kbc_command_matches(session->board,
-                session->core_machine, 0x20u, 0x20u, 0x20u) ||
+                session->core_machine, 0x20u, 0x20u, 0u) ||
             core_machine_bus_write(session->core_machine, 0x0060u, 0xf5u) !=
             LIB_STATUS_OK || test_board_kbc_read_reply(session->board,
                 session->core_machine) != 0xfau ||

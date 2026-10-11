@@ -129,6 +129,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     lib_bool kbc_aux_absent;
     /* Model constraints stay with the immutable App definition. */
     lib_i32 (*validate)(const struct vm_profile_default_pc_at_descriptor *descriptor);
+    lib_u32 kbc_output_pulse_ticks;
 } vm_profile_default_pc_at_descriptor;
 
 #define VM_PROFILE_DEFAULT_PC_AT_PLAN_PORT_LEAF_CAPACITY 96u

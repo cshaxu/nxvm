@@ -34,6 +34,7 @@ void core_machine_xt_ppi_keyboard_destroy(core_machine_xt_ppi_keyboard *keyboard
 #define CORE_MACHINE_XT_PPI_PORT_B_DISABLE_RAM_PARITY 0x10u
 #define CORE_MACHINE_XT_PPI_PORT_B_DISABLE_IO_CHECK 0x20u
 #define CORE_MACHINE_XT_PPI_PORT_C_IO_CHECK 0x40u
+#define CORE_MACHINE_XT_PPI_PORT_C_TIMER_OUTPUT 0x20u
 #define CORE_MACHINE_XT_PPI_PORT_C_RAM_PARITY 0x80u
 
 static x86_ppi8255_pins core_machine_xt_ppi_port_b(
@@ -49,6 +50,10 @@ static lib_u8 core_machine_xt_ppi_keyboard_port_c_input(
 {
     lib_u8 value = (core_machine_xt_ppi_port_b(keyboard).latch & 0x08u) != 0u ?
         keyboard->config.switches_high & 0x0fu : keyboard->config.switches_low & 0x0fu;
+    if (keyboard->timer_output != LIB_NULL &&
+        keyboard->timer_output(keyboard->timer_output_owner)) {
+        value |= CORE_MACHINE_XT_PPI_PORT_C_TIMER_OUTPUT;
+    }
     if (keyboard->io_check_asserted) value |= CORE_MACHINE_XT_PPI_PORT_C_IO_CHECK;
     if (keyboard->ram_parity_asserted) value |= CORE_MACHINE_XT_PPI_PORT_C_RAM_PARITY;
     return value;
@@ -92,6 +97,7 @@ static void core_machine_xt_ppi_keyboard_publish_speaker(
     x86_ppi8255_pins pins;
     if (keyboard == LIB_NULL || keyboard->speaker_update == LIB_NULL) return;
     pins = core_machine_xt_ppi_port_b(keyboard);
+    pins.latch &= pins.output_mask;
     keyboard->speaker_update(keyboard->speaker_owner,
         (pins.latch & 0x01u) != 0u, (pins.latch & 0x02u) != 0u);
 }
@@ -109,6 +115,7 @@ static void core_machine_xt_ppi_keyboard_publish_lines(core_machine_xt_ppi_keybo
     x86_ppi8255_pins pins;
     if (keyboard->line_observer == LIB_NULL) return;
     pins = core_machine_xt_ppi_port_b(keyboard);
+    pins.latch &= pins.output_mask;
     keyboard->line_observer(keyboard->line_observer_owner,
         (pins.latch & CORE_MACHINE_XT_PPI_PORT_B_CLOCK_NOT_HELD) == 0u,
         (pins.latch & CORE_MACHINE_XT_PPI_PORT_B_CLEAR_KEYBOARD) != 0u);
@@ -156,18 +163,14 @@ static lib_status core_machine_xt_ppi_keyboard_write(void *owner,
         port > keyboard->config.control_port) return LIB_STATUS_INVALID_ARGUMENT;
     status = x86_ppi8255_write(keyboard->ppi, (lib_u8)(port - keyboard->config.port_a), byte);
     if (status != LIB_STATUS_OK) return status;
-    if (port == keyboard->config.port_b) {
+    if (port == keyboard->config.port_b || port == keyboard->config.control_port) {
+        x86_ppi8255_pins pins = core_machine_xt_ppi_port_b(keyboard);
         core_machine_xt_ppi_keyboard_publish_speaker(keyboard);
-        if ((byte & CORE_MACHINE_XT_PPI_PORT_B_CLEAR_KEYBOARD) != 0u) {
+        if (port == keyboard->config.port_b &&
+            (pins.latch & pins.output_mask & CORE_MACHINE_XT_PPI_PORT_B_CLEAR_KEYBOARD) != 0u) {
             core_machine_xt_ppi_keyboard_clear_byte(keyboard);
         }
         core_machine_xt_ppi_keyboard_publish_lines(keyboard);
-    } else if (port == keyboard->config.control_port && !keyboard->byte_ready &&
-        core_machine_xt_ppi_keyboard_delivery_enabled(keyboard)) {
-        /* Direction changes can reopen delivery without another PB write. */
-        core_machine_xt_ppi_keyboard_publish_lines(keyboard);
-    }
-    if (port == keyboard->config.port_b || port == keyboard->config.control_port) {
         core_machine_xt_ppi_keyboard_refresh_nmi(keyboard);
     }
     return LIB_STATUS_OK;
@@ -251,6 +254,14 @@ void core_machine_xt_ppi_keyboard_bind_keyboard_observer(
     core_machine_xt_ppi_keyboard_publish_lines(keyboard);
 }
 
+void core_machine_xt_ppi_keyboard_bind_timer_output(core_machine_xt_ppi_keyboard *keyboard,
+    lib_bool (*output)(void *owner), void *owner)
+{
+    if (keyboard == LIB_NULL) return;
+    keyboard->timer_output = output;
+    keyboard->timer_output_owner = owner;
+}
+
 void core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL) return;
@@ -262,11 +273,14 @@ void core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard)
     keyboard->ram_parity_asserted = LIB_FALSE;
     keyboard->nmi_signaled = LIB_FALSE;
     core_machine_xt_ppi_keyboard_publish_speaker(keyboard);
+    core_machine_xt_ppi_keyboard_publish_lines(keyboard);
 }
 
 void core_machine_xt_ppi_keyboard_finalize(core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL) return;
+    keyboard->line_observer = LIB_NULL;
+    keyboard->line_observer_owner = LIB_NULL;
     core_machine_xt_ppi_keyboard_reset(keyboard);
     x86_ppi8255_destroy(keyboard->ppi);
     keyboard->ppi = LIB_NULL;
@@ -274,8 +288,8 @@ void core_machine_xt_ppi_keyboard_finalize(core_machine_xt_ppi_keyboard *keyboar
     keyboard->nmi_owner = LIB_NULL;
     keyboard->speaker_update = LIB_NULL;
     keyboard->speaker_owner = LIB_NULL;
-    keyboard->line_observer = LIB_NULL;
-    keyboard->line_observer_owner = LIB_NULL;
+    keyboard->timer_output = LIB_NULL;
+    keyboard->timer_output_owner = LIB_NULL;
     keyboard->byte_released = LIB_NULL;
     keyboard->byte_released_owner = LIB_NULL;
 }

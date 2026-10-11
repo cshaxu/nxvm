@@ -19,6 +19,11 @@ T555 S2: [controller route reconciliation](evidence/t555-s2-controller-route-rec
   integration groups. It qualifies the S2 batch, not the remaining
 RTC/keyboard/storage/video batches or complete controller/product domain.
 
+T555 S3: [RTC and keyboard source ledger](evidence/t555-s3-rtc-keyboard-source-ledger.md)
+records original-scan provenance, all 38 RTC/PPI/KBC/keyboard/board row
+dispositions, owner-local repairs and receiving evidence. Compaq speed/HOLD
+gaps retain their required S6 receiver; final S3 qualification is pending.
+
 T553 S1: [four PC App ownership ledger](evidence/t553-s1-four-pc-app-ownership-ledger.md)
 records the complete four-App inventory, inward dependency proof, ownership
 dispositions and the one App-local receiving repair.

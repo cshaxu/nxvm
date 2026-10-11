@@ -52,6 +52,8 @@ void vm_profile_model40_core_config_initialize(core_machine_config *out_config)
         .dma_controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS,
         .kbc_serial_delivery_ticks = 1u,
+        /* Compaq's nominal 2 us pulse on the existing 16 MHz L2 macro axis. */
+        .kbc_output_pulse_ticks = 32u,
         /* D3PE pp. 4-5 and schematic sheets 5-6 supply the input clocks.
          * Ratios against the 16 MHz macro axis remain L2, not physical L3.
          * DCLK uses the nominal 4 MHz approximation; bus resynchronization

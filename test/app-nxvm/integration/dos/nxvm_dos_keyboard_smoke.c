@@ -23,13 +23,19 @@ static lib_i32 vm_dos_keyboard_submit_key(vm_machine *session,
     lib_u16 scan_code, lib_u16 virtual_key, lib_i32 pressed)
 {
     core_machine_guest_input_event event = { 0 };
+    lib_status status;
 
     if (session == LIB_NULL) return 0;
     event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
     event.data.key.scan_code = scan_code;
     event.data.key.virtual_key = virtual_key;
     event.data.key.pressed = pressed != 0;
-    return vm_test_submit_host_input(session, &event) == LIB_STATUS_OK;
+    status = vm_test_submit_host_input(session, &event);
+    if (status != LIB_STATUS_OK) {
+        printf("keyboard input rejected: scan=%04x key=%04x pressed=%u status=%u\n",
+            scan_code, virtual_key, (unsigned)(pressed != 0), (unsigned)status);
+    }
+    return status == LIB_STATUS_OK;
 }
 
 static lib_i32 vm_dos_keyboard_submit_return(vm_machine *session)
@@ -190,11 +196,13 @@ lib_i32 main(lib_i32 argc, char **argv)
     DWORD prompt_timeout = argc == 4 ? 20000u : 3000u;
     DWORD edit_timeout = argc == 4 ? 20000u : 5000u;
     lib_i32 display_ok = 0;
+    const char *stage = "start";
 
     if ((argc != 3 && argc != 4) || integration_ini_session_open(argv[1], argv[2],
             &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
     if (integration_ini_session_start(&ini_session) != LIB_STATUS_OK) goto fail;
+    stage = "prompt";
     for (elapsed = 0u; elapsed < prompt_timeout; elapsed += 10u) {
         if (vm_dos_keyboard_has_prompt(session) ||
             vm_dos_keyboard_has_date_prompt(session)) break;
@@ -213,11 +221,13 @@ lib_i32 main(lib_i32 argc, char **argv)
         goto fail;
     }
     if (vm_dos_keyboard_has_date_prompt(session)) {
+        stage = "date-input";
         if (!vm_dos_keyboard_submit_return(session)) goto fail;
         for (elapsed = 0u; elapsed < prompt_timeout; elapsed += 10u) {
             if (vm_dos_keyboard_has_time_prompt(session)) break;
             Sleep(10u);
         }
+        stage = "time-input";
         if (elapsed == prompt_timeout || !vm_dos_keyboard_submit_return(session)) goto fail;
         for (elapsed = 0u; elapsed < prompt_timeout; elapsed += 10u) {
             if (vm_dos_keyboard_has_prompt(session)) break;
@@ -236,6 +246,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             goto fail;
         }
     }
+    stage = "command-input";
     for (index = 0u; index < sizeof(scan_codes); ++index) {
         if (!vm_dos_keyboard_submit_key(session, scan_codes[index],
                 virtual_keys[index], 1)) goto fail;
@@ -285,6 +296,10 @@ lib_i32 main(lib_i32 argc, char **argv)
     return 0;
 
 fail:
+    printf("keyboard smoke failed: stage=%s active=%u state=%u\n", stage,
+        session == LIB_NULL ? 0u : (unsigned)session->active,
+        ini_session.emulator_machine == LIB_NULL ? 0u :
+        (unsigned)emulator_machine_state_get(ini_session.emulator_machine));
     if (session != LIB_NULL) vm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     return 1;

@@ -92,13 +92,13 @@ static lib_i32 vm_model_339_selected_contract(void)
     failed |= (core_machine_bus_write(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
         0x02u) != LIB_STATUS_OK || core_machine_get_speaker_observation(
         session->board, &speaker) != LIB_STATUS_OK || !speaker.configured ||
-        speaker.timer_gate || !speaker.data_enabled || !speaker.output) ? 0x0004 : 0;
+        speaker.timer_gate || !speaker.data_enabled || speaker.output != speaker.timer_output) ? 0x0004 : 0;
     failed |= (core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
         LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) ? 0x0008 : 0;
     failed |= (test_board_kbc_aux_enabled(session->board) ||
         !test_board_kbc_command_matches(session->board,
             session->core_machine, 0x20u,
-            0x20u, 0x20u)) ? 0x0010 : 0;
+            0x20u, 0u)) ? 0x0010 : 0;
     failed |= (!test_board_kbc_command_matches(session->board,
             session->core_machine, 0xd0u, 0xffu, 0x03u) ||
         !test_core_a20_is_enabled(session->core_machine)) ? 0x0011 : 0;

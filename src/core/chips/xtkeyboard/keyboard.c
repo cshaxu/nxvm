@@ -10,11 +10,22 @@ struct x86_xt_keyboard {
     lib_u64 serial_remaining_ticks;
     lib_u64 bat_remaining_ticks;
     lib_u64 clock_low_ticks;
+    lib_u64 repeat_remaining_ticks;
     lib_u8 fifo[X86_XT_KEYBOARD_FIFO_CAPACITY];
     lib_u8 fifo_head, fifo_count, serial_byte, serial_bits_remaining;
     lib_bool clock_held, clear_asserted, serial_active, serial_response;
     lib_bool bat_active, bat_result_pending;
+    lib_u8 repeat_byte;
 };
+
+static lib_bool x86_xt_keyboard_repeat_enabled(const x86_xt_keyboard *keyboard)
+{
+    return keyboard->repeat_byte != 0u && keyboard->timing.repeat_delay_ticks != 0u &&
+        !keyboard->clock_held && !keyboard->clear_asserted &&
+        !keyboard->bat_active && !keyboard->bat_result_pending &&
+        keyboard->fifo_count < X86_XT_KEYBOARD_FIFO_CAPACITY &&
+        !(keyboard->serial_active && keyboard->serial_bits_remaining == 0u);
+}
 
 static void x86_xt_keyboard_finish_serial(x86_xt_keyboard *keyboard)
 {
@@ -67,6 +78,8 @@ lib_status x86_xt_keyboard_create(const x86_xt_keyboard_timing *timing,
         timing->first_edge_ticks == 0u || timing->clock_ticks == 0u)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
+    if ((timing->repeat_delay_ticks == 0u) != (timing->repeat_period_ticks == 0u) ||
+        (disabled && timing->repeat_delay_ticks != 0u)) return LIB_STATUS_INVALID_ARGUMENT;
     keyboard = lib_allocate_zero(1u, sizeof(*keyboard));
     if (keyboard == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     keyboard->timing = *timing;
@@ -83,6 +96,8 @@ void x86_xt_keyboard_reset(x86_xt_keyboard *keyboard)
     keyboard->serial_remaining_ticks = 0u;
     keyboard->bat_remaining_ticks = 0u;
     keyboard->clock_low_ticks = 0u;
+    keyboard->repeat_remaining_ticks = 0u;
+    keyboard->repeat_byte = 0u;
     keyboard->fifo_head = 0u;
     keyboard->fifo_count = 0u;
     keyboard->serial_byte = 0u;
@@ -107,9 +122,9 @@ void x86_xt_keyboard_set_lines(x86_xt_keyboard *keyboard,
     if (keyboard->clock_held && !clock_held) {
         if (keyboard->timing.reset_ticks != 0u &&
             keyboard->clock_low_ticks >= keyboard->timing.reset_ticks) {
+            x86_xt_keyboard_reset(keyboard);
             keyboard->bat_active = LIB_TRUE;
             keyboard->bat_remaining_ticks = keyboard->timing.bat_ticks;
-            keyboard->serial_active = LIB_FALSE;
         }
         keyboard->clock_low_ticks = 0u;
     }
@@ -132,9 +147,8 @@ lib_status x86_xt_keyboard_receive_native_bytes(x86_xt_keyboard *keyboard,
     if (keyboard == LIB_NULL || (bytes == LIB_NULL && count != 0u)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    /* The XT reference requires a sequence that cannot fit to be discarded
-     * whole and reported as one FF overrun character, replacing the last
-     * queued character if the FIFO is already full. */
+    /* The selected 83-key model retains last-slot FF on overflow. The source
+     * proves sixteen-code capacity, not this exact overflow-slot policy. */
     if (count > X86_XT_KEYBOARD_FIFO_CAPACITY - keyboard->fifo_count) {
         tail = (lib_u8)((keyboard->fifo_head + keyboard->fifo_count - 1u) %
             X86_XT_KEYBOARD_FIFO_CAPACITY);
@@ -153,6 +167,17 @@ lib_status x86_xt_keyboard_receive_native_bytes(x86_xt_keyboard *keyboard,
         keyboard->fifo[tail] = bytes[index];
         ++keyboard->fifo_count;
     }
+    /* The selected 83-key endpoint uses one-byte set-1 make/break codes.
+     * Extended input remains transportable, but is not a qualified XT key. */
+    if (count == 1u) {
+        if (bytes[0] != 0u && bytes[0] < 0x80u) {
+            keyboard->repeat_byte = bytes[0];
+            keyboard->repeat_remaining_ticks = keyboard->timing.repeat_delay_ticks;
+        } else if ((bytes[0] & 0x7fu) == keyboard->repeat_byte) {
+            keyboard->repeat_byte = 0u;
+            keyboard->repeat_remaining_ticks = 0u;
+        }
+    }
     x86_xt_keyboard_start_serial(keyboard);
     return LIB_STATUS_OK;
 }
@@ -167,6 +192,9 @@ void x86_xt_keyboard_advance(x86_xt_keyboard *keyboard,
         return;
     }
     while (ticks != 0u) {
+        lib_u64 step;
+        lib_bool repeating;
+        if (keyboard->clear_asserted && !keyboard->bat_active) return;
         if (keyboard->bat_active) {
             if (ticks < keyboard->bat_remaining_ticks) {
                 keyboard->bat_remaining_ticks -= ticks;
@@ -179,15 +207,32 @@ void x86_xt_keyboard_advance(x86_xt_keyboard *keyboard,
         }
         if (keyboard->bat_result_pending) x86_xt_keyboard_start_serial(keyboard);
         if (keyboard->serial_active && keyboard->serial_bits_remaining == 0u) return;
-        if (!keyboard->serial_active || ticks < keyboard->serial_remaining_ticks) {
-            if (keyboard->serial_active) keyboard->serial_remaining_ticks -= ticks;
-            return;
+        repeating = x86_xt_keyboard_repeat_enabled(keyboard);
+        if (!keyboard->serial_active && !repeating) return;
+        step = ticks;
+        if (keyboard->serial_active && step > keyboard->serial_remaining_ticks) {
+            step = keyboard->serial_remaining_ticks;
         }
-        ticks -= keyboard->serial_remaining_ticks;
-        if (--keyboard->serial_bits_remaining == 0u) {
-            x86_xt_keyboard_finish_serial(keyboard);
-        } else {
-            keyboard->serial_remaining_ticks = keyboard->timing.clock_ticks;
+        if (repeating && step > keyboard->repeat_remaining_ticks) {
+            step = keyboard->repeat_remaining_ticks;
+        }
+        ticks -= step;
+        if (repeating) keyboard->repeat_remaining_ticks -= step;
+        if (keyboard->serial_active) {
+            keyboard->serial_remaining_ticks -= step;
+            if (keyboard->serial_remaining_ticks == 0u) {
+                if (--keyboard->serial_bits_remaining == 0u) {
+                    x86_xt_keyboard_finish_serial(keyboard);
+                } else keyboard->serial_remaining_ticks = keyboard->timing.clock_ticks;
+            }
+        }
+        if (repeating && keyboard->repeat_remaining_ticks == 0u) {
+            if (x86_xt_keyboard_repeat_enabled(keyboard)) {
+                /* Capacity was checked above; this uses the ordinary FIFO. */
+                (void)x86_xt_keyboard_receive_native_bytes(keyboard,
+                    &keyboard->repeat_byte, 1u);
+            }
+            keyboard->repeat_remaining_ticks = keyboard->timing.repeat_period_ticks;
         }
     }
 }
@@ -197,9 +242,15 @@ lib_status x86_xt_keyboard_ticks_until_event(const x86_xt_keyboard *keyboard,
 {
     if (keyboard == LIB_NULL || out_ticks == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (keyboard->bat_active) *out_ticks = keyboard->bat_remaining_ticks;
-    else if (keyboard->serial_active && !keyboard->clock_held) {
+    else if (keyboard->serial_active && !keyboard->clock_held && !keyboard->clear_asserted) {
         *out_ticks = keyboard->serial_remaining_ticks;
     }
-    else return LIB_STATUS_UNSUPPORTED;
+    else if (x86_xt_keyboard_repeat_enabled(keyboard)) {
+        *out_ticks = keyboard->repeat_remaining_ticks;
+    } else return LIB_STATUS_UNSUPPORTED;
+    if (x86_xt_keyboard_repeat_enabled(keyboard) &&
+        keyboard->repeat_remaining_ticks < *out_ticks) {
+        *out_ticks = keyboard->repeat_remaining_ticks;
+    }
     return *out_ticks == 0u ? LIB_STATUS_UNSUPPORTED : LIB_STATUS_OK;
 }
