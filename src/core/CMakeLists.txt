@@ -48,8 +48,8 @@ add_library(core-chip-cpu STATIC
 target_include_directories(core-chip-cpu PUBLIC ${CORE_SOURCE_ROOT})
 target_link_libraries(core-chip-cpu PUBLIC types PRIVATE core-chip-fpu)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    set_source_files_properties(chips/cpu/cpu.c chips/cpu/cpu_instructions.c
-        PROPERTIES COMPILE_OPTIONS "-w")
+    set_source_files_properties(chips/cpu/cpu_instructions.c PROPERTIES
+        COMPILE_OPTIONS "-Wno-unused-parameter;-Wno-unused-variable;-Wno-unused-but-set-variable;-Wno-unused-function;-Wno-empty-body")
 endif()
 
 set(core_x86_sources

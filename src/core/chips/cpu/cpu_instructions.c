@@ -1115,7 +1115,7 @@ static void _ksa_prepare_code_sreg(core_machine_cpu_execution_context *context,
     lib_u16 selector, lib_u8 cpl, t_cpu_data_sreg *rsreg,
     lib_u64 *rdescriptor)
 {
-    lib_u64 descriptor;
+    lib_u64 descriptor = 0u;
 
     CPU_TRACE_CALL_BEGIN("_ksa_prepare_code_sreg");
     CPU_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector,
@@ -1146,7 +1146,7 @@ static void _ksa_prepare_stack_sreg(core_machine_cpu_execution_context *context,
     lib_u16 selector, lib_u8 cpl, t_cpu_data_sreg *rsreg,
     lib_u64 *rdescriptor)
 {
-    lib_u64 descriptor;
+    lib_u64 descriptor = 0u;
 
     CPU_TRACE_CALL_BEGIN("_ksa_prepare_stack_sreg");
     CPU_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector,
@@ -1199,7 +1199,7 @@ static void _ksa_load_real_sreg(t_cpu_data_sreg *rsreg,
 }
 static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u16 selector)
 {
-    lib_u64 descriptor;
+    lib_u64 descriptor = 0u;
     CPU_TRACE_CALL_BEGIN("_ksa_load_sreg");
     switch (rsreg->sregtype)
     {
@@ -2201,8 +2201,9 @@ static void _kdf_modrm_with_mod_quirk(core_machine_cpu_execution_context *contex
     lib_i8 disp8;
     lib_u16 disp16;
     lib_u32 disp32;
-    lib_u32 sibindex;
-    lib_u8 modrm, sib;
+    lib_u32 sibindex = 0u;
+    lib_u8 modrm = 0u;
+    lib_u8 sib = 0u;
     CPU_TRACE_CALL_BEGIN("_kdf_modrm");
     CPU_TRACE_CHECK_RETURN(_kdf_code(context, X86_CPU_REFERENCE_OF(modrm), 1));
     instruction_state.data.flagMem = LIB_TRUE;
@@ -3172,7 +3173,6 @@ static void _kec_call_near(core_machine_cpu_execution_context *context, lib_u32 
     cpu_state.data.eip = neweip;
     CPU_TRACE_CALL_END;
 }
-_______todo _kec_task_switch(lib_u16 newtss);
 static void _kec_jmp_far(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
 {
     t_cpu_data_sreg ccs = cpu_state.data.cs;
@@ -3304,7 +3304,7 @@ static void _ser_call_far_real(core_machine_cpu_execution_context *context, lib_
 }
 _______todo _ser_call_far_cs_conf(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
 {
-    lib_u64 descriptor;
+    lib_u64 descriptor = 0u;
     CPU_TRACE_CALL_BEGIN("_ser_call_far_cs_conf");
     if (!_IsProtected)
         CPU_TRACE_IMPOSSIBLE_RETURN;
@@ -4502,7 +4502,7 @@ static void _s_task_validate_data_selector(
     lib_u16 selector, t_cpu_data_sreg_type sregtype, lib_u8 cpl,
     t_cpu_data_sreg *out_cache)
 {
-    lib_u64 descriptor;
+    lib_u64 descriptor = 0u;
 
     CPU_TRACE_CALL_BEGIN("_s_task_validate_data_selector");
     if (_IsSelectorNull(selector)) {
@@ -4977,7 +4977,7 @@ static void _ser_task_transition_tss(core_machine_cpu_execution_context *context
     lib_u16 newcs, lib_u8 nested, lib_u8 returning,
     lib_u8 check_tss_privilege)
 {
-    lib_u64 cross_descriptor;
+    lib_u64 cross_descriptor = 0u;
     lib_u8 old_is_32;
     lib_u8 new_is_32;
 
@@ -7975,7 +7975,7 @@ static lib_u8 core_machine_cpu_instruction_lexeme_modrm_form_valid(
         if ((opcode == 0x21u || opcode == 0x23u) && (reg == 4u || reg == 5u)) return LIB_FALSE;
         if ((opcode == 0x24u || opcode == 0x26u) && reg < 6u) return LIB_FALSE;
         if (opcode == 0x01u && (reg == 5u || reg == 7u)) return LIB_FALSE;
-        if (opcode >= 0x20u && opcode <= 0x24u || opcode == 0x26u) {
+        if ((opcode >= 0x20u && opcode <= 0x24u) || opcode == 0x26u) {
             if ((opcode == 0x20u || opcode == 0x22u) &&
                 cpu_80386_cr_mov_ignores_mod) return LIB_TRUE;
             return (modrm >> 6u) == 3u;
@@ -8130,8 +8130,8 @@ static lib_u8 core_machine_cpu_instruction_lexeme_scan_with_options(
     }
     immediate = core_machine_cpu_instruction_lexeme_immediate_bytes(opcode,
         extended, modrm, operand_bytes, address_bytes);
-    if ((lib_u16)index + displacement + immediate > available_bytes ||
-        (lib_u16)index + displacement + immediate > 15u) return LIB_FALSE;
+    if ((lib_u32)index + displacement + immediate > available_bytes ||
+        (lib_u32)index + displacement + immediate > 15u) return LIB_FALSE;
     if (displacement != 0u) {
         index = (lib_u8)(index + displacement);
         ++components;
@@ -8321,8 +8321,8 @@ static void FPU_ESCAPE(core_machine_cpu_execution_context *context)
     x86_fpu_escape_action action;
     core_machine_cpu_instruction_metadata metadata;
     x86_fpu_operation_metadata fpu_metadata;
-    lib_u8 escape_opcode;
-    lib_u8 modrm;
+    lib_u8 escape_opcode = 0u;
+    lib_u8 modrm = 0u;
     lib_u32 fpu_m32;
 
     CPU_TRACE_CALL_BEGIN("FPU_ESCAPE");
