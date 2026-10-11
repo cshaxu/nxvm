@@ -9,8 +9,8 @@ ROMs through the same immutable-byte packaging route.
 ## Recovery Baseline
 
 The owner authorized recovery under the root MIT license in T539 S12.
-Source revision: `1cf34c1f452f4e76b7a6e88eccb0953c70ba9cd9`, historical directory
-`src/vm/profile/default_profile/firmware/`.
+Source revision: `1cf34c1f452f4e76b7a6e88eccb0953c70ba9cd9`; the recovered firmware
+source now lives in this directory.
 
 - `bios.h`: boot, video, equipment, memory and system services.
 - `fdc_firmware.h`: floppy POST, IRQ and INT 40h services.

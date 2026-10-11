@@ -6,16 +6,16 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective: M5 T553 S8. |
+| Identifier Mode | Corrective: M5 T553 S9. |
 | Admission And Approval | Owner rejected the premature S4 closure on 2026-10-10 and explicitly requires this T to find and repair every confirmed four-App route defect, rather than deferring it to separate owner tasks. |
 | Objective | Complete a finite full-route code-quality audit across My5160, My5170, MyDeskPro386 and NXVM, repair confirmed defects at their actual owner, and leave one clean implementation path per repaired mechanism. |
 | Non-goals | Do not move an owner into an App, invent speculative architecture, alter protected firmware/media, or claim untested desktop/external behavior. A non-reproduced concern is documented, not patched. |
 | Reference Baseline | S1 ownership ledger `4a0d8ca38`, S2 build repair `6daef3515`, S3 contract audit `a50b51088`, and S4 qualification `0187a92d8`; current deployed 0.5.0551 pairs and owner INIs. |
-| Candidate Proposal | [M5 Four PC App code quality audit](../proposals/m5-four-pc-app-code-quality-audit.md), Core test failure-semantics repair S8. |
-| Files And ABI Surface | `test/core/setup/session_ini.*` and its existing Core callers/tests only. Preserve the integration helper ABI; propagate existing statuses only where no boundary translation is required. |
+| Candidate Proposal | [M5 Four PC App code quality audit](../proposals/m5-four-pc-app-code-quality-audit.md), App-facing path-reference cleanup S9. |
+| Files And ABI Surface | App-facing documentation only. Repair the active firmware-location wording without renaming stable selected-binding symbols or changing fixed hardware composition. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`; each component-local guidance reached by a repair. Preserve App → Core → Shared dependency direction. |
-| Verification | Classify every status compression and ignored cleanup result in the helper before change; add focused failure injection only for a demonstrated lossy path; rerun Core manifests/corpus and affected x64/x86 integration receivers. |
-| Expected Markers | Composition and overlay transformation failures retain their original `lib_status` where the helper owns no translation; each retained conversion has a distinct contract reason. |
+| Verification | Sweep the four App source/documentation roots for the retired layout wording; review changed documentation links and run the affected documentation gate. |
+| Expected Markers | No active four-App documentation presents the retired firmware location as the current owner. |
 | Asset Needs | None. Preserve all external firmware/media, adjacent INIs, snapshots and current artifacts. |
 | Reporting Requirements | Report the frozen ledger batches, each confirmed defect and its actual owner before repair; report exact changed surface, similar-issue result, x64/x86 proof, artifact disposition and untested manual/external limits. |
 | Stop Conditions | Stop for a protected asset/source need, a defect whose repair would change product policy without owner direction, or an unreproducible external/hardware-only assertion. |
@@ -32,7 +32,8 @@
 | T553 S5 | Complete: App audit finds no App-owned production rewrite: the four fixed bindings remain valid identity/firmware facts and `core/product` is the sole common PC-family route. Core audit froze the stale dependency-DAG gate, Model 40 diagnostic misownership, misleading cross-App Console helper name, stale Core path wording and lossy `session_ini` status compression. Stable `vm_*` selected-binding and hardware-domain ABI names are not mechanical rename candidates. |
 | T553 S6 | Complete: retired the obsolete `core/vm/vdm` classifier and migration allowlist. The replacement names the current Lib/Emulator/x86/Core/App graph, accepts current inward edges and rejects both a chip-to-App and chip-to-Machine probe. Core manifest/corpus, DAG and focused negative routes pass x64/x86; no production API or artifact input changed. |
 | T553 S7 | Complete: Model 40 BYOB diagnostic/profile helper now belong to MyDeskPro386, the shared Console harness is neutral `pc_console_process`, and the 5170 route carries its own identity. Core comments, CMake, manifests and INI-boundary verifier were updated. Core gates plus My5170 and Model40 Console routes pass x64/x86; no product source or artifact input changed. |
-| T553 S8 | Active: classify and repair demonstrated lossy `lib_status` compression in the Core INI session helper; preserve intentional lifecycle-result mappings and prove the affected failure contract on x64/x86. |
+| T553 S8 | Complete: `session_ini` now preserves exact composition and transform failures rather than compressing them into `INTERNAL_ERROR`. Its focused failure receiver proves invalid composition and rejected transform cleanup across Default, XT, AT and DeskPro x64/x86 registrations; Core manifest/corpus and dependency gates pass. No production source or artifact input changed. |
+| T553 S9 | Active: remove the confirmed active firmware-documentation reference to the retired VM profile layout, then sweep all four App roots for the same obsolete current-owner claim. |
 | T553 | Reopened: S1–S4 establish inventory, one build cleanup, contract review and qualification baseline. S5 must repair all confirmed defects found on the four App routes at their actual owners before closure. |
 | T552 S9 | Complete: CPU owns all timing recipes and their origin/source-allocation classification; Core owns only copied-result publication and physical eligibility. Five CPU manifest, four transfer and two Core consumer receivers pass x64/x86. |
 | T552 S8 | Complete: retained the CECG B0000h compatibility window as one VADP storage contract while transferring any physical firmware equivalence claim; retained bounded-L1 as a declared Core control policy, not a device duration. Focused CECG/time routes and Core gates pass x64/x86. |
