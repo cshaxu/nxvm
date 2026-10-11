@@ -812,9 +812,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-ata-pio-dos-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-checkpoint
-    test/app-nxvm/integration/windows/nxvm_windows31_checkpoint.c
-    test/core/board-base/support/controller_fixture.c
-)
+    test/app-nxvm/integration/windows/nxvm_windows31_checkpoint.c)
 target_link_libraries(vm-windows31-checkpoint PRIVATE integration-session-ini-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-checkpoint PRIVATE -Wall -Wextra -Wpedantic -Werror)

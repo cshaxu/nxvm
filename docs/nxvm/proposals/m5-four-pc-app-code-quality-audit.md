@@ -156,6 +156,15 @@ x64/x86 unit, setup and integration routes using the reusable build trees.
 Rebuild only executable pairs whose production inputs changed. Perform an
 actual-diff and clean-worktree review before proposing T closure.
 
+### S11: Windows HDD Checkpoint Responsibility Repair
+
+Keep the Windows checkpoint focused on guest-visible C-drive availability and
+the BIOS BDA fixed-disk count. Remove its redundant dependence on the mutable
+board ATA command counter and controller test fixture; the existing HDD boot
+integration receiver remains the sole owner of direct ATA-command proof.
+Run both integrations sequentially on x64/x86 before resuming final
+qualification.
+
 ## Exit Criteria
 
 - Every four-App file is accounted for in the ownership ledger.

@@ -1,6 +1,5 @@
 #include "../../../core/machine/support/guest_input.h"
 #include "core/machine/machine_interface.h"
-#include "../../../core/board-base/support/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -94,11 +93,8 @@ static void vm_windows31_checkpoint_report(const vm_machine *session, const char
     lib_size column;
 
     if (session == LIB_NULL) return;
-    printf("NXVM:WINDOWS31:CHECKPOINT:FAIL stage=%s running=%d "
-        "ata_commands=%u last_command=%02X\n", stage,
-        vm_machine_control_is_running(&session->control),
-        test_board_hdc_observe(session->board).command_count,
-        test_board_hdc_observe(session->board).last_command);
+    printf("NXVM:WINDOWS31:CHECKPOINT:FAIL stage=%s running=%d\n", stage,
+        vm_machine_control_is_running(&session->control));
     if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
             LIB_STATUS_OK && diagnostic.first_fault.valid) {
         lib_size index;
@@ -151,7 +147,6 @@ lib_i32 main(lib_i32 argc, char **argv)
     vm_machine *session = LIB_NULL;
     lib_u8 hdd_count = 0u;
     lib_u8 hdd_bda[4] = {0};
-    lib_u32 ata_commands = 0u;
     lib_i32 c_present;
     const char *drive_result;
     const char *boot_text;
@@ -205,13 +200,11 @@ lib_i32 main(lib_i32 argc, char **argv)
     stage = "bda-hdd-count";
     if (core_machine_debug_read_memory(session->core_machine, 0x0474u, hdd_bda,
             sizeof(hdd_bda)) == LIB_STATUS_OK) hdd_count = hdd_bda[1];
-    ata_commands = test_board_hdc_observe(session->board).command_count;
     vm_machine_stop(session);
     vm_windows31_checkpoint_report_frame(session);
-    if (c_present && ata_commands != 0u) {
+    if (c_present && hdd_count != 0u) {
         printf("NXVM:WINDOWS31:CHECKPOINT:OK result=c-drive-present "
-            "observed_bda_hdd_count=%u ata_commands=%u\n", hdd_count,
-            ata_commands);
+            "observed_bda_hdd_count=%u\n", hdd_count);
         integration_ini_session_close(&ini_session);
         return 0;
     }
