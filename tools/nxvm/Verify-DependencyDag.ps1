@@ -1,7 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$RepositoryRoot,
-    [string]$AllowlistPath
+    [string]$RepositoryRoot
 )
 
 $ErrorActionPreference = "Stop"
@@ -9,27 +8,37 @@ if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) {
     $RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 }
 $RepositoryRoot = (Resolve-Path $RepositoryRoot).Path
-if ([string]::IsNullOrWhiteSpace($AllowlistPath)) {
-    $AllowlistPath = Join-Path $PSScriptRoot "dependency-dag-allowlist.txt"
-}
 $sourceRoot = Join-Path $RepositoryRoot "src"
-$allowlist = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
-
-Get-Content $AllowlistPath | ForEach-Object {
-    $entry = $_.Trim()
-    if ($entry.Length -gt 0 -and -not $entry.StartsWith("#")) {
-        [void]$allowlist.Add($entry)
-    }
+if (-not (Test-Path $sourceRoot -PathType Container)) {
+    throw "Source root is missing: $sourceRoot"
 }
 
-function Get-Owner([string]$path) {
-    if ($path -match '^app-nxvm/(devices|machine|profiles|product)/') {
-        return "app-nxvm/$($Matches[1])"
+function Get-Owner([string]$Path) {
+    if ($Path -match '^lib/') { return "lib" }
+    if ($Path -match '^emulator/') { return "emulator" }
+    if ($Path -match '^x86/') { return "x86" }
+    if ($Path -match '^core/chips/[^/]+/') { return "core/chips" }
+    if ($Path -match '^core/(x86|board-base|board-xt|board-at|machine|product)/') {
+        return "core/$($Matches[1])"
     }
-    if ($path -match '^(core|vm|vdm)/([^/]+)/') {
-        return "$($Matches[1])/$($Matches[2])"
-    }
+    if ($Path -match '^app-([^/]+)/') { return "app/$($Matches[1])" }
     return $null
+}
+
+# This is the current source-level component DAG. It follows the public
+# component layout rather than preserving the retired core/vm/vdm migration
+# graph. Same-owner includes are local implementation details.
+$allowedTargets = @{
+    "lib" = @()
+    "emulator" = @("lib")
+    "x86" = @("lib", "emulator")
+    "core/chips" = @("lib")
+    "core/x86" = @("lib", "core/chips")
+    "core/board-at" = @("lib", "core/chips", "core/x86")
+    "core/board-xt" = @("lib", "core/chips", "core/x86")
+    "core/board-base" = @("lib", "core/chips", "core/x86", "core/board-at", "core/board-xt")
+    "core/machine" = @("lib", "emulator", "x86", "core/chips", "core/x86", "core/board-base")
+    "core/product" = @("lib", "emulator", "x86", "core/machine")
 }
 
 $observed = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
@@ -38,40 +47,29 @@ Get-ChildItem $sourceRoot -Recurse -File | Where-Object {
 } | ForEach-Object {
     $source = $_.FullName.Substring($sourceRoot.Length + 1).Replace('\', '/')
     $sourceOwner = Get-Owner $source
-    if ($null -ne $sourceOwner) {
-        Get-Content $_.FullName | ForEach-Object {
-            if ($_ -match '^\s*#include\s+"([^"]+)"') {
-                $targetOwner = Get-Owner $Matches[1]
-                if ($null -ne $targetOwner) {
-                    $forbidden =
-                        ((($sourceOwner -like "core/*") -or
-                          ($sourceOwner -match '^app-nxvm/(devices|machine|profiles)$')) -and
-                         ($targetOwner -ne $sourceOwner) -and
-                         ($targetOwner -ne "core/utils")) -or
-                        (($sourceOwner -match '^(vm|vdm)/') -and
-                            ($sourceOwner -notmatch '^(vm|vdm)/composition$') -and
-                            ($targetOwner -match '^(vm|vdm)/') -and
-                            ($targetOwner -ne 'vm/composition') -and
-                            ($targetOwner -ne $sourceOwner))
-                    if ($forbidden) {
-                        [void]$observed.Add("src/$source|$targetOwner")
-                    }
-                }
-            }
+    if ($null -eq $sourceOwner) { return }
+
+    Get-Content $_.FullName | ForEach-Object {
+        if ($_ -notmatch '^\s*#include\s+"([^"]+)"') { return }
+        $targetOwner = Get-Owner $Matches[1]
+        if ($null -eq $targetOwner -or $targetOwner -eq $sourceOwner) { return }
+
+        $allowed = $false
+        if ($sourceOwner.StartsWith("app/")) {
+            $allowed = -not $targetOwner.StartsWith("app/")
+        } elseif ($allowedTargets.ContainsKey($sourceOwner)) {
+            $allowed = $allowedTargets[$sourceOwner] -contains $targetOwner
+        }
+        if (-not $allowed) {
+            [void]$observed.Add("src/$source|$targetOwner")
         }
     }
 }
 
-$unexpected = $observed.Where({ -not $allowlist.Contains($_) }) | Sort-Object
-$stale = $allowlist.Where({ -not $observed.Contains($_) }) | Sort-Object
-if ($unexpected.Count -gt 0 -or $stale.Count -gt 0) {
-    if ($unexpected.Count -gt 0) {
-        Write-Error ("New forbidden dependency edge(s):`n" + ($unexpected -join "`n"))
-    }
-    if ($stale.Count -gt 0) {
-        Write-Error ("Stale dependency allowlist edge(s):`n" + ($stale -join "`n"))
-    }
+$unexpected = $observed | Sort-Object
+if ($unexpected.Count -gt 0) {
+    Write-Error ("Forbidden source dependency edge(s):`n" + ($unexpected -join "`n"))
     exit 1
 }
 
-Write-Output "Dependency DAG source allowlist matches $($observed.Count) known migration edges."
+Write-Output "Dependency DAG source graph verified against current component owners."

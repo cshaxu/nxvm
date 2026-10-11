@@ -59,6 +59,13 @@ add_test(NAME core.test-route-partition COMMAND "${CMAKE_COMMAND}"
 add_test(NAME core.app-test-support-boundary COMMAND "${CMAKE_COMMAND}"
     "-DPROJECT_SOURCE_DIR=${CMAKE_CURRENT_LIST_DIR}/../.."
     -P "${CMAKE_CURRENT_LIST_DIR}/verify_app_test_support_boundary.cmake")
+if(POWERSHELL_EXECUTABLE)
+    add_test(NAME core.dependency-dag-negative COMMAND "${CMAKE_COMMAND}"
+        "-DPROJECT_SOURCE_DIR=${CMAKE_CURRENT_LIST_DIR}/../.."
+        "-DPOWERSHELL_EXECUTABLE=${POWERSHELL_EXECUTABLE}"
+        "-DWORK=${CMAKE_CURRENT_BINARY_DIR}/dependency-dag-negative"
+        -P "${CMAKE_CURRENT_LIST_DIR}/dependency_dag_negative.cmake")
+endif()
 set_tests_properties(
     core.test-types-boundary
     core.test-ownership
@@ -69,6 +76,10 @@ set_tests_properties(
     core.test-route-partition
     core.app-test-support-boundary
     PROPERTIES LABELS "unit;core" TIMEOUT 30)
+if(POWERSHELL_EXECUTABLE)
+    set_tests_properties(core.dependency-dag-negative
+        PROPERTIES LABELS "unit;core" TIMEOUT 30)
+endif()
 add_custom_target(core-product-tests DEPENDS ${SHARED_CORE_TEST_TARGETS})
 set(SHARED_CORE_TEST_TARGETS)
 
