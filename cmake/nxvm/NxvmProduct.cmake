@@ -779,6 +779,9 @@ add_executable(vm-ata-pio-dos-smoke
     test/app-nxvm/integration/hdd/nxvm_ata_pio_dos_smoke.c
 )
 target_link_libraries(vm-ata-pio-dos-smoke PRIVATE integration-session-ini-support)
+add_executable(session-ini-status-smoke
+    test/core/integration/session_ini_status_smoke.c)
+target_link_libraries(session-ini-status-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-model40-byob-dos-boot-probe
     test/app-mydeskpro386/diagnostic/model40/model40_byob_dos_boot_probe.c
     test/core/support/boot_fixture.c
@@ -1531,6 +1534,7 @@ set(PROJECT_INTEGRATION_PRODUCT_TARGETS
     vm-model40-console-ini-smoke
     my5170-console-lifecycle-smoke
     vm-ini-cmos-seed-smoke
+    session-ini-status-smoke
     )
 set(PROJECT_INTEGRATION_TEST_TARGETS
     ${PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS}
@@ -1553,15 +1557,21 @@ if(NXVM_PRODUCT_PROFILE STREQUAL "default-pc-at-80386-1440k-hdd")
         ${PROJECT_INTEGRATION_FDD_TARGETS}
         ${PROJECT_INTEGRATION_HDD_TARGETS}
         ${PROJECT_INTEGRATION_FDD_HDD_TARGETS}
-        ${PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS})
+        ${PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS}
+        session-ini-status-smoke)
+elseif(NXVM_PRODUCT_PROFILE STREQUAL "ibm-5160-model-268-360k")
+    list(APPEND PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS
+        session-ini-status-smoke)
 elseif(NXVM_PRODUCT_PROFILE STREQUAL "ibm-5170-model-339-1200k")
     list(APPEND PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS
         my5170-console-lifecycle-smoke
-        vm-ini-cmos-seed-smoke)
+        vm-ini-cmos-seed-smoke
+        session-ini-status-smoke)
 elseif(NXVM_PRODUCT_PROFILE STREQUAL "compaq-deskpro-386-model-40-1200k")
     list(APPEND PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS
         vm-model40-console-ini-smoke
-        vm-ini-cmos-seed-smoke)
+        vm-ini-cmos-seed-smoke
+        session-ini-status-smoke)
 endif()
 
 # The unit-registration gate keeps one canonical partition.  A duplicate is a
@@ -1847,6 +1857,8 @@ endforeach()
 foreach(target IN LISTS PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS)
     project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
 endforeach()
+project_add_ini_integration_test(session-ini-status-smoke
+    default-pc-at-80386-1440k-hdd.ini)
 endif()
 
 

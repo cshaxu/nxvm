@@ -61,12 +61,15 @@ lib_status integration_ini_session_restart(integration_ini_session *session)
     status = vm_app_compose_machine(&vm_app_machine, &session->request, &composed);
     machine = composed.composition.machine;
     session->session = machine;
-    if (status != LIB_STATUS_OK || session->session == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
-    if (session->transform != LIB_NULL && session->transform(session,
-            session->transform_opaque) != LIB_STATUS_OK) {
+    if (status != LIB_STATUS_OK) return status;
+    if (session->session == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
+    if (session->transform != LIB_NULL) {
+        status = session->transform(session, session->transform_opaque);
+    }
+    if (status != LIB_STATUS_OK) {
         vm_machine_destroy(session->session);
         session->session = LIB_NULL;
-        return LIB_STATUS_INTERNAL_ERROR;
+        return status;
     }
     return LIB_STATUS_OK;
 }
@@ -171,7 +174,7 @@ lib_status integration_ini_session_open_with_overlay_transform(const char *direc
         fprintf(stderr, "NXVM:INI-SESSION:%s:OPEN-FAILED:%d\n",
             file_name, (lib_i32)status);
         integration_ini_session_close(out_session);
-        return LIB_STATUS_INTERNAL_ERROR;
+        return status == LIB_STATUS_OK ? LIB_STATUS_INTERNAL_ERROR : status;
     }
     return LIB_STATUS_OK;
 }

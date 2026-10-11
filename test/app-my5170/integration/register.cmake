@@ -3,4 +3,6 @@
 project_add_console_integration_test(my5170-console-lifecycle-smoke)
 project_add_ini_integration_test(vm-ini-cmos-seed-smoke
     ibm-5170-model-339-1200k.ini)
+project_add_ini_integration_test(session-ini-status-smoke
+    ibm-5170-model-339-1200k.ini)
 project_add_ini_boot_case(ibm-5170-model-339-1200k.ini)
