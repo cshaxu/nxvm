@@ -2,68 +2,25 @@
 
 ## Current Work
 
-M5 T555 is active: qualify retained controllers and board wiring for the
-four fixed PC Apps. S1/S2 are accepted; S3's complete delivery awaits
-implementation push and coordinator actual-pushed-diff acceptance.
-The accepted runnable baseline is implementation `69dca87fb`, recorded in
-[S2 evidence](../etc/evidence/t555-s2-controller-route-reconciliation.md).
+M5 T555 remains open: qualify retained controllers and board wiring for the
+four fixed PC Apps. S1--S3 are accepted; no S packet is active between S3
+closure and S4 admission. The accepted runnable implementation is
+`2ad955473`, recorded in the [S3 source ledger](../etc/evidence/t555-s3-rtc-keyboard-source-ledger.md).
 
-S3's [source ledger](../etc/evidence/t555-s3-rtc-keyboard-source-ledger.md)
-reconciles all 38 RTC/PPI/KBC/keyboard/board rows. Owner-local repairs and
-direct chip/board/KVM receiving proof are complete. Eight stripped 0555
-PC candidates are rebuilt and hash/PE verified; owner INIs, Shared-six and
-MyNES remain unchanged. The final production candidate passes complete
-units 546/546 per width (x64 253.86 s, x86 88.17 s). DeskPro x86 receiving
-passes 4/4, boot 179.76 s, with little margin under the unchanged budget.
+S3 reconciles all 38 RTC/PPI/KBC/keyboard/board rows, repairs confirmed
+owner-local gaps and passes complete units 546/546 per width plus four-App
+integration 32/32 per width. Eight optimized stripped 0.5.0555 PC artifacts
+are current and PE/hash verified; Shared-six, MyNES and owner INIs are unchanged.
+Coordinator actual-pushed-diff review accepts the complete S3 delivery.
+Interactive desktop acceptance is not claimed. The earlier unexplained DOS
+keyboard failure and narrow-margin DeskPro x86 boot remain recorded limitations.
 
-Pipeline 9601 ended at default x64 receiving, 20/22: Debug pause-boundary
-and DOS keyboard failed without stage output. Six later groups did not run.
-The existing receivers now report stages/status. Source inspection confirms
-Debug's stale pre-resume PAUSED observation; its test now waits for a new
-completed PAUSED sink fact. This is test-only, not a Shared/driver change.
-DOS's cause is still unconfirmed; diagnostic and later passing results are
-not reported as a confirmed production fix.
-
-The in-scope receiving repair includes `test/core/setup/session_ini.{c,h}`
-and the existing default-App Debug, unified Debug, timer-firmware and DOS
-keyboard receivers. One fixture-owned PAUSED notification counter replaces
-three stale-state waits; it adds no production state or Shared interface.
-The current four-receiver batch passes 4/4 on x64 (11.68 s) and x86 (13.88 s).
-Pipeline 31923 completed default integration 22/22 on x64 (64.54 s) and
-x86 (80.04 s), then was deliberately stopped when the XT default build
-selected unrelated targets. Pipeline 97921 builds only the actual registered
-integration receivers in the remaining six original selected trees and runs
-each group once. XT passes 2/2 per width (23.04/28.46 s); AT passes 4/4
-per width (46.79/60.39 s); DeskPro passes 4/4 per width (149.50/180.22 s,
-boot 148.34/179.28 s). Handle 97921 is terminal, exit zero. Current-source
-receiving therefore passes 32/32 per width with original budgets unchanged.
-The DeskPro x86 pass has little throughput margin, not a stability guarantee.
-
+Remaining ordered work is S4 storage, S5 video, then S6 cross-profile closure.
 Compaq A3/A4/A5 speed/read control and auxiliary-PIT refresh HOLD remain
-required S6 gaps, not electrical-only exclusions or supported functions.
-Original Figure 2-15 rejects assigning speed control to output bits 2/3.
-Missing A1/A2/A6 definitions require original-source reconciliation.
+required S6 gaps. Missing A1/A2/A6 source definitions must be reconciled; these
+are not electrical-only exclusions or functions proven by successful boot.
 
-## Current Task
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T555 S3; S1/S2 are complete, T555 remains open. |
-| Admission And Approval | Owner's controller/board goal and automatic S execution approval, reiterated 2026-10-11. NXVM Core and four PC consumers only; Shared-six and MyNES read-only. Single-person sequential coordinator/executor roles. |
-| Objective | Audit and reconcile the complete retained RTC/CMOS, KBC/AT keyboard and XT PPI/keyboard batch against original manuals and selected board facts, then repair confirmed owner-local gaps. |
-| Non-goals | No CPU instruction, BIOS workaround, new scheduler/store/input path, Shared or MyNES change, profile retirement, owner INI/media/snapshot mutation or new framework. The existing AB83 enhanced endpoint selects the Compaq two-byte FB/FC/FD transaction with scanning disabled until F4; IBM's unspecified list termination stays a declared model/source boundary, not a new keyboard personality or original 84-key MCU claim. |
-| Reference Baseline | Clean pushed `f474ed9dd`, implementation `69dca87fb`; S1 controller ledger and accepted S2 chip/board route proof. Historical findings are leads, not current evidence. |
-| Candidate Proposal | [Selected-controller qualification](../proposals/m5-selected-controller-qualification.md); S1 RTC/KBC/PPI rows and [S3 source ledger](../etc/evidence/t555-s3-rtc-keyboard-source-ledger.md), including reset/port/NMI/clock receivers. |
-| Files And ABI Surface | `src/core/chips/{rtc146818,kbc8042,keyboard,ppi8255,xtkeyboard}`, relevant `core/board-{base,at,xt}` wiring and four App descriptors, matching tests/manifests, NXVM evidence and affected eight 0555 PC artifacts. Reported necessary Core input expansions: borrowed PIT2 OUT-to-PC5 binding; paired XT repeat timing inputs; existing native scan-set enum appends `SCAN_SET_3 = 3`. Enhanced `x86_keyboard_admit` and its KBC link now use bounded byte-array input/output and an output count, replacing the old byte operation; existing advance/link repeat callbacks now use a whole-array `lib_status` sink; copied keyboard/KBC signals append the derived repeat byte count for capacity/deadline gating. No second interpreter is planned. Reported pulse correction appends board/profile pulse ticks, adds chip/board output-pulse timing setters and removes the redundant reset_pulse link callback; one chip mask/deadline restores the persistent output latch through the existing output_port sink. IBM 48 and Compaq 32 macro ticks are L2; uncalibrated zero is synchronous L1, not physical timing. Mapper and existing receivers are included; F0=3 is implemented with selected 101-key default/all/per-key filtering and focused dual-width receiving proof; complete S3/artifact qualification remains pending. Any further public surface need is reported before edits. |
-| Applicable Rules | NXVM guide, CONTRIBUTING, shared Execution/Architecture/Coding/Document; NXVM Architecture/Coding/Roadmap and source policy. One chip state, board signal/decode, guest-time and publication owner; inward dependencies, Lib Types, exact source provenance and failure/reset/deadline contracts. |
-| Verification | Original persistent Ninja/ccache x64/x86 trees with jobs 8; source-conditioned chip and actual board receivers, then complete repository-only units both widths. Four selected App integrations and eight rebuilt stripped PE/hash-verified artifacts if runnable inputs change. Core manifests/corpus and documentation checks. Desktop/manual acceptance reported separately. |
-| Expected Markers | Registered receivers finish zero failures; direct manifest/corpus/documentation gates pass; four PC pairs remain 0.5.0555 with correct width. No wall-clock budget or boot alone counts as controller coverage. |
-| Asset Needs | Read external `manuals-nxvm` MC146818A, UPI-41A/42AH, 8255A and selected IBM/Compaq board sources; approved firmware/media unchanged. Ignored extracts/renderings under `build/t555-manual-review`; no protected originals committed. |
-| Reporting Requirements | Before production edits, report complete batch dispositions, exact defect/source/caller evidence, proposed files and estimated delta. Preserve rejected candidates, source tiers, similar-issue sweep, final actual code/test deltas, tests/artifact identities and pushed P. Reported existing stream-reset contract correction: discard unsent native keyboard backlog and partial encoding, preserving controller output/replies; F4 also clears endpoint prefixes. No new API/state. F6 continues scanning as documented; no preserve-disabled change. |
-| Stop Conditions | Report source conflict, required public ABI expansion, timing downgrade, Shared need, reversed dependency or unexpected protected-asset change; do not infer firmware implementation from UPI instruction hardware or promote modeled timing. |
-| Exit Criteria | Every finite RTC/KBC/PPI/keyboard register, transition, reset, IRQ/NMI/A20 and selected-clock/deadline row has direct proof or explicit retained source/model boundary; confirmed gaps repaired; focused/full dual-width units and applicable receiving integration/artifacts current; complete actual-diff review and scoped pushed P acceptance. T remains open for S4-S6. |
-| Original Owner Request | Fully audit four PC Apps' controllers and board wiring from original manuals, repair confirmed gaps and validate across machines under single-person dual-role governance. |
-| Similar-Issue Sweep | RTC divider/rate/UIP/SET/reset/read-clear/calendar/IRQ and CMOS/NMI routes; KBC command/FIFO/serial/reply/translation/BAT/reset/A20/IRQ/AUX capabilities; XT shift/latch/ack/clock/BAT/PPI modes/port61/NMI/reset. Compare all selected variants and actual downstream consumers, no per-ROM exception. |
+## Retained Progress
 
 | Work | Progress |
 | --- | --- |
@@ -87,7 +44,7 @@ Missing A1/A2/A6 definitions require original-source reconciliation.
 | T554 | Closed: S1 identified missing default-firmware CRTC initialization; S2 repaired it and added guest-execution coverage; S3 completed dual-width build/test/deployment and owner acceptance. Commit `b25e2ca8d` carries the source, test, task packet and default-App artifacts. No Shared/Core or other App source changed. |
 | T555 S1 | Complete: [baseline ledger](../etc/evidence/t555-s1-controller-board-baseline.md) inventories current Core/App owners, direct tests, source tiers and bounded remaining gaps. It corrects obsolete proposal path/deployment claims and splits S2--S6; no source/test/asset or external-material change. |
 | T555 S2 | Complete: coordinator actual-pushed-diff review accepts `69dca87fb`. Complete units pass 546/546 per width and four selected integration groups pass 32/32 per width; eight 0555 stripped PC artifacts are current. Earlier failures and narrow-margin DeskPro x86 throughput remain explicit evidence. No Shared/MyNES or owner INI change. T555 remains open for S3-S6. |
-| T555 S3 | Complete executor delivery awaiting push/review: [source ledger](../etc/evidence/t555-s3-rtc-keyboard-source-ledger.md) reconciles all 38 RTC/PPI/KBC/keyboard/board rows; Compaq speed/HOLD gaps remain required S6 work. Current production units pass 546/546 per width, current-fixture integration 32/32 per width. All eight 0555 stripped PC candidates are built, PE/hash verified; Core gates and documentation governance pass. Executor actual-diff review records production +683/-219 and tests +1951/-93. Earlier failures remain evidence, including the unexplained DOS keyboard result and narrow-margin DeskPro throughput. Shared/MyNES and owner INIs are unchanged. S3 is not yet coordinator-accepted; T555 remains open. |
+| T555 S3 | Complete: coordinator actual-pushed-diff review accepts `2ad955473`. All 38 RTC/PPI/KBC/keyboard/board rows have direct proof, explicit model/source boundaries or the complete required Compaq S6 receiver. Current units pass 546/546 per width and four-App integration 32/32 per width; eight 0555 stripped PC artifacts and Core/documentation gates are current. Source +683/-219, tests +1951/-93. The integration fixture now waits for a new PAUSED fact; DOS's earlier failure remains unexplained and DeskPro x86 retains narrow throughput margin. Shared-six, MyNES and owner INIs are unchanged. T555 remains open for S4--S6. |
 | T552 S9 | Complete: CPU owns all timing recipes and their origin/source-allocation classification; Core owns only copied-result publication and physical eligibility. Five CPU manifest, four transfer and two Core consumer receivers pass x64/x86. |
 | T552 S8 | Complete: retained the CECG B0000h compatibility window as one VADP storage contract while transferring any physical firmware equivalence claim; retained bounded-L1 as a declared Core control policy, not a device duration. Focused CECG/time routes and Core gates pass x64/x86. |
 | T552 S7 | Complete: Core replacement now preserves its atomic new-medium state and propagates an old-lease close failure. The owner-local close injector proves both replacement and removal failure contracts for FDD/HDD; run-result and teardown candidates were retained with direct owner evidence. |

@@ -22,7 +22,8 @@ RTC/keyboard/storage/video batches or complete controller/product domain.
 T555 S3: [RTC and keyboard source ledger](evidence/t555-s3-rtc-keyboard-source-ledger.md)
 records original-scan provenance, all 38 RTC/PPI/KBC/keyboard/board row
 dispositions, owner-local repairs and receiving evidence. Compaq speed/HOLD
-gaps retain their required S6 receiver; final S3 qualification is pending.
+gaps retain their required S6 receiver; S3 is accepted at `2ad955473` with
+complete dual-width unit and four-App receiving proof.
 
 T553 S1: [four PC App ownership ledger](evidence/t553-s1-four-pc-app-ownership-ledger.md)
 records the complete four-App inventory, inward dependency proof, ownership

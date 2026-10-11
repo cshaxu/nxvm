@@ -43,9 +43,9 @@ ownership, naming, source-policy and documentation checks are satisfied.
 Existing electrical/timing exclusions remain explicit, not promoted by boot.
 T555 remains open for S3-S6; the eight admitted PC artifacts are 0.5.0555.
 
-## Remaining Ordered S Work
+## S3 — Complete: RTC/CMOS and keyboard/KBC/XT-PPI
 
-S3 executor delivery reconciles the complete 38-row RTC/CMOS,
+S3 reconciles the complete 38-row RTC/CMOS,
 KBC/enhanced-keyboard and XT-PPI/keyboard batch in its
 [source ledger](../etc/evidence/t555-s3-rtc-keyboard-source-ledger.md).
 Current-production units pass 546/546 per width; current-fixture four-App
@@ -55,11 +55,17 @@ tests/registration +1951/-93 (net +1858), excluding manifests/documents/EXEs.
 Compaq speed/read/HOLD remains required S6 repair work; the unexplained
 earlier DOS keyboard result and narrow-margin DeskPro x86 boot remain
 explicit limitations. Shared-six, MyNES and owner INIs are unchanged.
-Coordinator actual-pushed-diff acceptance and S3 closure remain pending.
+Coordinator actual-pushed-diff review accepts implementation `2ad955473`.
+The review maps every changed source/test/build/artifact and the finite row
+dispositions to the original S3 brief, including failure atomicity, stream
+ownership, selected model grades and the test observer correction. No
+confirmed transferred gap is hidden by a successful boot. S3 closes; T555
+remains open for S4--S6.
+
+## Remaining Ordered S Work
 
 | S | Boundary | Exit condition |
 | --- | --- | --- |
-| S3 | RTC/CMOS and keyboard/KBC/XT-PPI | Current reset, port, NMI, clock and firmware-facing routes are classified; no controller-local timing or board duplicate is introduced. |
 | S4 | FDC/media and HDC personalities | Each selected controller/media route has an explicit grammar, request/IRQ/DMA consumer and reset/deadline disposition. |
 | S5 | Video and selected board display routes | CGA/EGA/CECG owner, aperture, clock and copied-frame routes are qualified without adding a renderer or second framebuffer. |
 | S6 | Cross-profile closure | Four fixed-App route matrix, exact remaining L1/L2/L4 exclusions, relevant unit/integration proof and documentation closure are complete. |

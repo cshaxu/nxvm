@@ -1710,3 +1710,28 @@ S6 receiver; confirmed owner-local repairs, similar-issue sweeps, manifests,
 dual-width unit/receiving tests and artifacts are complete. Implementation P
 push and coordinator review of that actual immutable delivery are still
 required for S closure. No interactive desktop acceptance was performed.
+
+### Coordinator Acceptance Of P1
+
+Implementation `2ad955473` is pushed to `origin/master`; local and remote
+tracking revisions match and the implementation worktree is clean. The
+coordinator reviewed the immutable actual change, not only the executor
+summary: production register/default/phase/sequence changes, all changed
+Core/App test and build paths, manifest entries, eight deployed artifacts,
+task packet and source/disposition record were compared against the S3
+brief and applicable ownership, coding, source and execution rules.
+
+The complete 38-row matrix is reconciled. Source-backed logical behavior
+has direct receivers; electrical/undefined/non-selected behavior is explicitly
+non-eligible rather than invented. The Compaq speed/read/HOLD class stays
+required S6 work, with no T-level completion claim. Public Core changes
+match the reported packet surface; no Shared or MyNES implementation or
+owner configuration change entered P1. The test observer uses the existing
+state sink and setup owner, not a product state mirror or new thread.
+
+Final 546/546 units and 32/32 four-App integrations per width, both Core
+manifest/corpus checks, documentation governance and verified current
+artifact identities satisfy the assigned S3 gate. The earlier unexplained
+DOS result and DeskPro narrow-margin timing remain truthful limitations,
+not silently reclassified fixes. Coordinator accepts P1 and closes S3
+through the separate pure-governance P2. T555 remains open for S4--S6.
