@@ -15,9 +15,9 @@ quality audit and repair](../history/M5-T552-core-code-quality-audit-repair.md)
 is closed; its CPU timing boundary and Core/App qualification are recorded in
 the closure history.
 
-The [T553 four PC App code-quality audit](../history/M5-T553-four-pc-app-code-quality-audit.md)
-is closed after its App-local ownership cleanup and complete dual-width
-qualification.
+The [T553 four PC App code-quality audit](../proposals/m5-four-pc-app-code-quality-audit.md)
+is reopened for corrective full-route audit and repair; it remains active ahead
+of the candidates below.
 
 1. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
 2. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)

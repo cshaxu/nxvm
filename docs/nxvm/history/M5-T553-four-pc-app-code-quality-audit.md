@@ -55,7 +55,7 @@ only provides its fixed machine facts. All eight existing App-selection graphs
 pass their static boundaries; dual-width artifact/build ownership checks pass.
 S4 receives complete four-App qualification.
 
-## S4 — Final four-App qualification and closure
+## S4 — Final four-App qualification
 
 The final [qualification record](../etc/evidence/t553-s4-four-pc-app-qualification.md)
 passes every registered App-labelled route on both widths: My5160 2/2,
@@ -69,4 +69,6 @@ MyDeskPro386 CMake link item. The current artifact target therefore required
 no rebuild and no executable bytes changed. No manual desktop, external
 firmware-boot or hardware qualification is implied by this closure.
 
-T553 is closed.
+The owner rejected closure because the earlier audit transferred potential
+route defects instead of completing their repair. S4 remains valid dated
+qualification evidence; T553 continues with corrective S5.

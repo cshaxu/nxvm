@@ -6,22 +6,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | No active packet. |
-| Admission And Approval | T553 closed on 2026-10-10 after its frozen S1–S4 sequence. |
-| Objective | Await owner admission of the next queue candidate. |
-| Non-goals | Do not begin a queued task, alter production behavior, assets, firmware/media/INI semantics or sibling-App behavior before admission. |
-| Reference Baseline | T553 closure evidence and current deployed 0.5.0551 App artifact pairs. |
-| Candidate Proposal | Next candidate: [selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md). |
-| Files And ABI Surface | No active change surface. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`. |
-| Verification | No active verification. |
-| Expected Markers | New task packet only after explicit owner admission. |
+| Identifier Mode | Corrective: M5 T553 S5. |
+| Admission And Approval | Owner rejected the premature S4 closure on 2026-10-10 and explicitly requires this T to find and repair every confirmed four-App route defect, rather than deferring it to separate owner tasks. |
+| Objective | Complete a finite full-route code-quality audit across My5160, My5170, MyDeskPro386 and NXVM, repair confirmed defects at their actual owner, and leave one clean implementation path per repaired mechanism. |
+| Non-goals | Do not move an owner into an App, invent speculative architecture, alter protected firmware/media, or claim untested desktop/external behavior. A non-reproduced concern is documented, not patched. |
+| Reference Baseline | S1 ownership ledger `4a0d8ca38`, S2 build repair `6daef3515`, S3 contract audit `a50b51088`, and S4 qualification `0187a92d8`; current deployed 0.5.0551 pairs and owner INIs. |
+| Candidate Proposal | [M5 Four PC App code quality audit](../proposals/m5-four-pc-app-code-quality-audit.md), corrective S5. |
+| Files And ABI Surface | The complete four-App execution routes: App, Core and shared code/tests/CMake/configuration reached by those routes. Any changed owner must retain its existing public boundary unless a reproduced defect requires a minimal contract correction. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`; each component-local guidance reached by a repair. Preserve App → Core → Shared dependency direction. |
+| Verification | Freeze a route ledger before repair; for each confirmed issue run its owner-local regression and a similar-path sweep; before final closure rerun all four App x64/x86 unit/setup/integration routes, manifests, ownership gates and documentation governance. Rebuild only affected artifact pairs. |
+| Expected Markers | Every ledger path is accepted with direct proof or explicitly non-applicable; each real defect has one owner-local repair and regression; no potential defect is silently transferred merely for component ownership. |
 | Asset Needs | None. Preserve all external firmware/media, adjacent INIs, snapshots and current artifacts. |
-| Reporting Requirements | Report the next proposed scope and evidence plan before modifying its owners. |
-| Stop Conditions | No active task. |
-| Exit Criteria | No active task. |
-| Original Owner Request | Complete T553, then await the next NXVM request. |
-| Similar-Issue Sweep | T553 closure confirms no cross-App source/test edge and current paired App artifacts; later work must reassess its own scope. |
+| Reporting Requirements | Report the frozen ledger batches, each confirmed defect and its actual owner before repair; report exact changed surface, similar-issue result, x64/x86 proof, artifact disposition and untested manual/external limits. |
+| Stop Conditions | Stop for a protected asset/source need, a defect whose repair would change product policy without owner direction, or an unreproducible external/hardware-only assertion. |
+| Exit Criteria | The full route ledger is exhausted; every confirmed four-App-route defect is repaired in T553 at its actual owner; all required dual-width routes/gates pass; actual-diff closure review and push complete. |
+| Original Owner Request | “没有各自独立任务，就在这里找问题和修复。” |
+| Similar-Issue Sweep | For every repaired mechanism, inspect all four App callers and same-owner variants; retain only distinct hardware facts with evidence. |
 
 | Work | Progress |
 | --- | --- |
@@ -29,7 +29,8 @@
 | T553 S2 | Complete: removed MyDeskPro386's duplicated private `core-machine` link item. Its x64/x86 plan smoke, boundary configure and documentation governance pass; no executable input changed. |
 | T553 S3 | Complete: no App-owned lifecycle/configuration/composition/teardown/artifact defect reproduced. Core remains the sole request/compose/destroy/deploy owner; all eight App-selection graphs and dual-width artifact/build ownership gates pass. |
 | T553 S4 | Complete: every registered App-labelled route passes on x64/x86 (My5160 2/2, My5170 6/6, MyDeskPro386 29/29, NXVM 55/55; 92/92 per width). Static ownership/deployment and documentation gates pass; no executable input changed, and manual/external limitations are recorded. |
-| T553 | Closed: S1–S4 complete the four-App ownership, cleanup, contract and qualification audit. The sole App repair removes one duplicate MyDeskPro386 CMake link item; all other candidate distinctions remain correctly owned. |
+| T553 S5 | Active: corrective full-route quality ledger and repair. Previous S4 qualification is evidence only; it does not close the task. |
+| T553 | Reopened: S1–S4 establish inventory, one build cleanup, contract review and qualification baseline. S5 must repair all confirmed defects found on the four App routes at their actual owners before closure. |
 | T552 S9 | Complete: CPU owns all timing recipes and their origin/source-allocation classification; Core owns only copied-result publication and physical eligibility. Five CPU manifest, four transfer and two Core consumer receivers pass x64/x86. |
 | T552 S8 | Complete: retained the CECG B0000h compatibility window as one VADP storage contract while transferring any physical firmware equivalence claim; retained bounded-L1 as a declared Core control policy, not a device duration. Focused CECG/time routes and Core gates pass x64/x86. |
 | T552 S7 | Complete: Core replacement now preserves its atomic new-medium state and propagates an old-lease close failure. The owner-local close injector proves both replacement and removal failure contracts for FDD/HDD; run-result and teardown candidates were retained with direct owner evidence. |

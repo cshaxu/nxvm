@@ -29,10 +29,13 @@ The audit must separately identify:
   documentation paths;
 - incomplete error, teardown, asset and artifact contracts.
 
-It must not make speculative architecture changes, alter Shared or Core merely
-because a common-looking pattern exists, or change firmware/media/INI runtime
-semantics without a reproduced contract defect and a separately admitted
-receiving task.
+It must not make speculative architecture changes or change firmware/media/INI
+runtime semantics without a reproduced contract defect. A real defect exposed
+by one of the four App routes remains in T553 until it is repaired at its
+actual owner and verified through every affected App route; it is not deferred
+to a separate task merely because that owner is Core or a shared component.
+The repair must preserve the inward dependency direction rather than moving
+the owner into an App.
 
 ## Proposed S Tasks
 
@@ -62,11 +65,23 @@ manifest and documentation gates. Rebuild only those artifact pairs whose
 runtime build input changed. Report residual distinctions and transferred work;
 do not claim broader Core or Shared correctness.
 
+### S5: Corrective Full-Route Quality Audit And Repair
+
+Reopen the task after the incomplete S4 closure. Build a finite ledger of all
+production, test, CMake and configuration paths reached by the four Apps;
+audit code quality, failure paths, ownership, duplicate mechanisms and user
+visible behavior. Repair every confirmed defect in this T at its actual owner,
+including Core or a shared component when it is on a four-App route. Perform a
+similar-issue sweep for each repaired mechanism, then requalify all affected
+Apps on x64 and x86 before a later closure review.
+
 ## Exit Criteria
 
 - Every four-App file is accounted for in the ownership ledger.
-- Confirmed App-owned defects are repaired with owner-local tests.
-- Shared/Core candidates are transferred rather than patched in an App.
+- Confirmed defects reached by a four-App route are repaired at their actual
+  owner in this T, with owner-local tests and affected-App regression proof.
+- No App-local compatibility patch or separate-task deferral substitutes for a
+  confirmed Core/Shared repair.
 - No App production or test path depends on a sibling App.
 - Relevant x64/x86 App routes, manifests and documentation gates pass.
 - Artifact updates correspond only to changed executable inputs.
