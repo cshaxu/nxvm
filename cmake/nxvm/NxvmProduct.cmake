@@ -163,7 +163,7 @@ add_executable(vm-model40-hdc-smoke
 target_link_libraries(vm-model40-hdc-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-console-ini-smoke
     test/app-mydeskpro386/integration/product/vm_model40_console_ini_smoke.c
-    test/core/setup/nxvm_console_process.c)
+    test/core/setup/pc_console_process.c)
 target_include_directories(vm-model40-console-ini-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
 target_link_libraries(vm-model40-console-ini-smoke PRIVATE vm-app vm-profile-tests)
@@ -207,12 +207,12 @@ add_executable(vm-timer-firmware-smoke
 target_link_libraries(vm-timer-firmware-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-app-default-profile-smoke test/app-nxvm/integration/dos/nxvm_default_profile_smoke.c)
 target_link_libraries(vm-app-default-profile-smoke PRIVATE integration-session-ini-support)
-add_executable(vm-app-console-lifecycle-smoke
-    test/app-nxvm/integration/product/nxvm_console_lifecycle_smoke.c
-    test/core/setup/nxvm_console_process.c)
-target_include_directories(vm-app-console-lifecycle-smoke PRIVATE
+add_executable(my5170-console-lifecycle-smoke
+    test/app-my5170/integration/product/my5170_console_lifecycle_smoke.c
+    test/core/setup/pc_console_process.c)
+target_include_directories(my5170-console-lifecycle-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
-target_link_libraries(vm-app-console-lifecycle-smoke PRIVATE
+target_link_libraries(my5170-console-lifecycle-smoke PRIVATE
     vm-app vm-profile-tests)
 if(WIN32)
     # Diagnostic observer only: a captured screen requires semantic review;
@@ -626,7 +626,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-hdc-hdd-boot-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-apply-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-app-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-app-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(my5170-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-app-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-machine-initialization-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -779,8 +779,8 @@ add_executable(vm-ata-pio-dos-smoke
     test/app-nxvm/integration/hdd/nxvm_ata_pio_dos_smoke.c
 )
 target_link_libraries(vm-ata-pio-dos-smoke PRIVATE integration-session-ini-support)
-add_executable(vm-byob-dos-boot-probe
-    test/core/diagnostic/dos/nxvm_byob_dos_boot_probe.c
+add_executable(vm-model40-byob-dos-boot-probe
+    test/app-mydeskpro386/diagnostic/model40/model40_byob_dos_boot_probe.c
     test/core/support/boot_fixture.c
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/support/boot_fixture.c
@@ -789,7 +789,7 @@ add_executable(vm-byob-dos-boot-probe
     test/core/board-at/support/boot_fixture.c
     test/core/board-xt/support/boot_fixture.c
 )
-target_link_libraries(vm-byob-dos-boot-probe PRIVATE integration-session-ini-support)
+target_link_libraries(vm-model40-byob-dos-boot-probe PRIVATE integration-session-ini-support)
 add_library(integration-session-ini-support STATIC
     test/core/setup/session_ini.c
 )
@@ -1529,7 +1529,7 @@ set(PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS
     vm-profile-floppy-boot-matrix)
 set(PROJECT_INTEGRATION_PRODUCT_TARGETS
     vm-model40-console-ini-smoke
-    vm-app-console-lifecycle-smoke
+    my5170-console-lifecycle-smoke
     vm-ini-cmos-seed-smoke
     )
 set(PROJECT_INTEGRATION_TEST_TARGETS
@@ -1556,7 +1556,7 @@ if(NXVM_PRODUCT_PROFILE STREQUAL "default-pc-at-80386-1440k-hdd")
         ${PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS})
 elseif(NXVM_PRODUCT_PROFILE STREQUAL "ibm-5170-model-339-1200k")
     list(APPEND PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS
-        vm-app-console-lifecycle-smoke
+        my5170-console-lifecycle-smoke
         vm-ini-cmos-seed-smoke)
 elseif(NXVM_PRODUCT_PROFILE STREQUAL "compaq-deskpro-386-model-40-1200k")
     list(APPEND PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS

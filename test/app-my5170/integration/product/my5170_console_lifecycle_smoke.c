@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "test/core/setup/nxvm_console_process.h"
+#include "test/core/setup/pc_console_process.h"
 
 lib_i32 main(lib_i32 argc, char **argv)
 {
@@ -12,9 +12,9 @@ lib_i32 main(lib_i32 argc, char **argv)
         "Speed: turbo", "Control your virtual machine:", "Machine:           ibm-5170-model-339", ""
     };
 
-    if (argc != 3 || !nxvm_console_process_run(argv[2], argv[1],
+    if (argc != 3 || !pc_console_process_run(argv[2], argv[1],
             "NXVM.ini", commands, markers,
             sizeof(commands) / sizeof(commands[0]))) return 1;
-    printf("NXVM:CONSOLE-INI-LIFECYCLE:OK\n");
+    printf("MY5170:CONSOLE-INI-LIFECYCLE:OK\n");
     return 0;
 }

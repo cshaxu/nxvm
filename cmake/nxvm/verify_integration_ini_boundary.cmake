@@ -44,7 +44,7 @@ foreach(source IN LISTS integration_sources)
         continue()
     endif()
     if(source MATCHES "\\.c$" AND NOT text MATCHES
-        "integration_ini_session_|vm_app_ini_load|nxvm_console_process_run")
+        "integration_ini_session_|vm_app_ini_load|pc_console_process_run")
         message(FATAL_ERROR "integration lacks an INI session consumer: ${source}")
     endif()
 endforeach()

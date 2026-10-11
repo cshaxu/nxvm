@@ -3,11 +3,11 @@
 
 #include <windows.h>
 
-#include "test/core/setup/nxvm_console_process.h"
+#include "test/core/setup/pc_console_process.h"
 
-#define NXVM_CONSOLE_WAIT_MILLISECONDS 5000u
+#define PC_CONSOLE_WAIT_MILLISECONDS 5000u
 
-static lib_i32 nxvm_console_send_key(HANDLE input, WORD virtual_key,
+static lib_i32 pc_console_send_key(HANDLE input, WORD virtual_key,
     CHAR character, lib_i32 pressed)
 {
     INPUT_RECORD record = {0};
@@ -21,7 +21,7 @@ static lib_i32 nxvm_console_send_key(HANDLE input, WORD virtual_key,
     return WriteConsoleInputA(input, &record, 1u, &written) && written == 1u;
 }
 
-static lib_i32 nxvm_console_send_text(HANDLE input, const char *text)
+static lib_i32 pc_console_send_text(HANDLE input, const char *text)
 {
     lib_size index;
 
@@ -30,13 +30,13 @@ static lib_i32 nxvm_console_send_text(HANDLE input, const char *text)
         CHAR character = text[index];
         WORD virtual_key = character == '\r' ? VK_RETURN : 0u;
 
-        if (!nxvm_console_send_key(input, virtual_key, character, LIB_TRUE) ||
-            !nxvm_console_send_key(input, virtual_key, 0, LIB_FALSE)) return 0;
+        if (!pc_console_send_key(input, virtual_key, character, LIB_TRUE) ||
+            !pc_console_send_key(input, virtual_key, 0, LIB_FALSE)) return 0;
     }
     return 1;
 }
 
-static lib_i32 nxvm_console_has_text(HANDLE output, const char *text)
+static lib_i32 pc_console_has_text(HANDLE output, const char *text)
 {
     CONSOLE_SCREEN_BUFFER_INFO info;
     char buffer[4096];
@@ -62,19 +62,19 @@ static lib_i32 nxvm_console_has_text(HANDLE output, const char *text)
     return 0;
 }
 
-static lib_i32 nxvm_console_wait_for_text(HANDLE output, const char *text,
+static lib_i32 pc_console_wait_for_text(HANDLE output, const char *text,
     DWORD timeout)
 {
     DWORD deadline = GetTickCount() + timeout;
 
     do {
-        if (nxvm_console_has_text(output, text)) return 1;
+        if (pc_console_has_text(output, text)) return 1;
         Sleep(20u);
     } while ((LONG)(GetTickCount() - deadline) < 0);
     return 0;
 }
 
-lib_i32 nxvm_console_process_run(const char *executable,
+lib_i32 pc_console_process_run(const char *executable,
     const char *session_directory, const char *profile_file,
     const char *const *commands, const char *const *markers,
     lib_size command_count)
@@ -99,7 +99,7 @@ lib_i32 nxvm_console_process_run(const char *executable,
         return 0;
     (void)FreeConsole();
     stage = "console attachment";
-    for (index = 0u; index < NXVM_CONSOLE_WAIT_MILLISECONDS / 20u; ++index) {
+    for (index = 0u; index < PC_CONSOLE_WAIT_MILLISECONDS / 20u; ++index) {
         if (AttachConsole(process.dwProcessId)) break;
         Sleep(20u);
     }
@@ -111,17 +111,17 @@ lib_i32 nxvm_console_process_run(const char *executable,
         stage = "console handles";
         goto done;
     }
-    if (!nxvm_console_wait_for_text(output, "> ", NXVM_CONSOLE_WAIT_MILLISECONDS)) {
+    if (!pc_console_wait_for_text(output, "> ", PC_CONSOLE_WAIT_MILLISECONDS)) {
         stage = "monitor prompt";
         goto done;
     }
     for (index = 0u; index < command_count; ++index) {
-        if (!nxvm_console_send_text(input, commands[index])) {
+        if (!pc_console_send_text(input, commands[index])) {
             stage = "command input";
             goto done;
         }
-        if (markers[index][0] != '\0' && !nxvm_console_wait_for_text(output,
-                markers[index], NXVM_CONSOLE_WAIT_MILLISECONDS)) {
+        if (markers[index][0] != '\0' && !pc_console_wait_for_text(output,
+                markers[index], PC_CONSOLE_WAIT_MILLISECONDS)) {
             stage = "command result";
             goto done;
         }
@@ -129,17 +129,17 @@ lib_i32 nxvm_console_process_run(const char *executable,
     result = 1;
 done:
     if (result && command_count != 0u &&
-        WaitForSingleObject(process.hProcess, NXVM_CONSOLE_WAIT_MILLISECONDS) !=
+        WaitForSingleObject(process.hProcess, PC_CONSOLE_WAIT_MILLISECONDS) !=
             WAIT_OBJECT_0) result = 0;
     if (!result) {
         DWORD exit_code = STILL_ACTIVE;
 
         (void)GetExitCodeProcess(process.hProcess, &exit_code);
-        fprintf(stderr, "NXVM Console integration failed at %s "
+        fprintf(stderr, "PC Console integration failed at %s "
             "(error=%lu exit=%lu).\n", stage, (unsigned long)GetLastError(),
             (unsigned long)exit_code);
         (void)TerminateProcess(process.hProcess, 1u);
-        (void)WaitForSingleObject(process.hProcess, NXVM_CONSOLE_WAIT_MILLISECONDS);
+        (void)WaitForSingleObject(process.hProcess, PC_CONSOLE_WAIT_MILLISECONDS);
     }
     if (input != INVALID_HANDLE_VALUE) CloseHandle(input);
     if (output != INVALID_HANDLE_VALUE) CloseHandle(output);

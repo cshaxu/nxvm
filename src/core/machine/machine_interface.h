@@ -20,7 +20,7 @@ typedef struct vm_machine_reset_vector {
     lib_u16 ip;
 } vm_machine_reset_vector;
 
-/* Copied monitor facts.  The product formats these facts; vm/machine never
+/* Copied monitor facts.  The product formats these facts; core/machine never
  * writes monitor text or exposes its Core, media or control objects. */
 typedef struct vm_machine_information {
     core_machine_cpu_profile cpu_profile;
@@ -49,7 +49,7 @@ typedef struct vm_machine_information {
 lib_status vm_machine_create(const vm_machine_config *config,
     const vm_machine_construction *construction, vm_machine **out_session);
 void vm_machine_destroy(vm_machine *session);
-/* vm/machine supplies this value-only driver; App composition owns the Common
+/* core/machine supplies this value-only driver; App composition owns the Common
  * machine it constructs from it. */
 lib_status vm_machine_describe_emulator_driver(vm_machine *session,
     emulator_machine_driver *out_driver);

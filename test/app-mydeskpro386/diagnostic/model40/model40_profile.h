@@ -1,20 +1,18 @@
-#ifndef TEST_CORE_SETUP_MODEL40_PROFILE_H
-#define TEST_CORE_SETUP_MODEL40_PROFILE_H
+#ifndef TEST_APP_MYDESKPRO386_DIAGNOSTIC_MODEL40_PROFILE_H
+#define TEST_APP_MYDESKPRO386_DIAGNOSTIC_MODEL40_PROFILE_H
 
 #include "core/machine/machine_private.h"
 #include "app-mydeskpro386/profiles/observation_interface.h"
 #include "app-mydeskpro386/profiles/model40_private.h"
 
-static inline lib_bool pc_qualification_profile_is_model40(
+static inline lib_bool model40_profile_is_selected(
     const vm_machine_construction *construction)
 {
     return construction != LIB_NULL &&
         construction->firmware_provider == vm_profile_model40_firmware_provider();
 }
 
-/* This view is qualification-only: it observes a selected Model 40 without
- * making an App test depend on MyDeskPro386 test support. */
-static inline lib_status pc_qualification_model40_d4_observe(const vm_machine *machine,
+static inline lib_status model40_profile_d4_observe(const vm_machine *machine,
     core_machine_d4_platform_observation *out_observation)
 {
     vm_profile_model40_observation observation;
