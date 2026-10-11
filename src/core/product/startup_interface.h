@@ -4,7 +4,7 @@
 #include "core/product/factory_interface.h"
 
 
-/* Compose the App-selected configuration name beside its executable. */
+/* Compose the caller-selected configuration name beside its executable. */
 lib_status vm_app_ini_executable_path(const char *name, lib_u8 *path,
     lib_size capacity);
 

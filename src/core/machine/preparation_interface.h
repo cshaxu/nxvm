@@ -6,7 +6,7 @@
 /* Call begin before allocating a candidate; out_construction has no owned
  * context on failure. finish consumes the candidate lifetime: it releases on
  * failure or publishes one copied construction for vm_machine_create to own.
- * Inputs and output are distinct values; callbacks/context remain App-owned. */
+ * Inputs and output are distinct values; callbacks/context remain caller-owned. */
 lib_status vm_machine_construction_begin(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine_construction *out_construction);
 lib_status vm_machine_construction_finish(vm_machine_construction *candidate,

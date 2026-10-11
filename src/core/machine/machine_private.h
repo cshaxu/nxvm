@@ -19,7 +19,7 @@
 
 struct vm_machine {
     lib_bool active;
-    /* Non-owning App-composition link. */
+    /* Non-owning composition link. */
     emulator_machine *executor;
     core_machine_plan *core_machine_plan;
     vm_machine_construction construction;

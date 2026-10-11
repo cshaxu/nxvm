@@ -63,7 +63,7 @@ endif()
 set(cpu_negative_tokens t_ram t_port core_machine_transaction
     firmware_interrupt software_interrupt core_machine_pic_scan_interrupt
     "#include \"core/x86/machine.h\""
-    "#include \"app-nxvm/devices/cpu_bus.h\"")
+    "#include \"outer/cpu_bus.h\"")
 list(LENGTH cpu_negative_files cpu_negative_file_count)
 list(LENGTH cpu_negative_tokens cpu_negative_token_count)
 if(NOT cpu_negative_file_count EQUAL cpu_negative_token_count)
