@@ -11,7 +11,7 @@ add_library(mydeskpro386-profile STATIC
     ${MYDESKPRO386_D4_SOURCES}
     ${MYDESKPRO386_COMPOSITION_SOURCES})
 target_include_directories(mydeskpro386-profile PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(mydeskpro386-profile PUBLIC core-machine core-board-base core-x86 core-machine)
+target_link_libraries(mydeskpro386-profile PUBLIC core-machine core-board-base core-x86)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(mydeskpro386-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

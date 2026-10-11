@@ -35,3 +35,12 @@ selected composition graph on both existing default architectures. The only
 demonstrated repair is one duplicate `core-machine` item in MyDeskPro386's
 private CMake link list; S2 receives that isolated cleanup. No Core or Shared
 transfer, dead path, or cross-App dependency was found.
+
+## S2 — App-local build cleanup
+
+S2 removed the one duplicated `core-machine` item from MyDeskPro386's private
+profile link list. The target still receives its required `core-machine`,
+`core-board-base` and `core-x86` dependencies exactly once. No App interface,
+runtime behavior, sibling edge, Core/Shared dependency, asset or artifact input
+changed. The affected `mydeskpro386-plan-smoke` route and documentation
+governance pass on x64 and x86.

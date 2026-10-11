@@ -6,27 +6,28 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New: M5 T553 S2. |
-| Admission And Approval | Owner approved the queue-head Four PC App code-quality audit on 2026-10-10. S1 completed its inventory evidence; S2 is automatically admitted under the frozen S1–S4 sequence. |
-| Objective | Repair only demonstrated App-local boundary, naming, build/test ownership or documentation defects in the four fixed PC Apps. |
-| Non-goals | Do not change Shared, Core, firmware/media/INI semantics, external assets, deployed artifacts or a sibling App without a separately demonstrated receiving predicate. Do not add a generic build/configuration facade merely to remove similar App CMake spelling. |
+| Identifier Mode | New: M5 T553 S3. |
+| Admission And Approval | Owner approved the queue-head Four PC App code-quality audit on 2026-10-10. S1/S2 completed their scoped inventory and App-local build cleanup; S3 is automatically admitted under the frozen S1–S4 sequence. |
+| Objective | Audit App-owned lifecycle, configuration, composition, failure, teardown and artifact contracts; repair only a reproduced App-local defect. |
+| Non-goals | Do not change Shared/Core, firmware/media/INI semantics, external assets, deployed artifacts or a sibling App without a separately demonstrated owner-local predicate. Do not treat stale artifacts or an external input absence as a source defect. |
 | Reference Baseline | T552 closure `5e4bdeb38`; four fixed PC Apps, current deployed 0.5.0551 pairs and their adjacent owner INIs. |
-| Candidate Proposal | [M5 Four PC App code quality audit](../proposals/m5-four-pc-app-code-quality-audit.md), S2. |
-| Files And ABI Surface | S2 starts with the demonstrated MyDeskPro386 private CMake duplicate; any further App-local repair must have an explicit owner/predicate. No public API or Shared/Core surface is presumed to change. |
+| Candidate Proposal | [M5 Four PC App code quality audit](../proposals/m5-four-pc-app-code-quality-audit.md), S3. |
+| Files And ABI Surface | S3 may change an App-local lifecycle/configuration/composition/teardown or artifact receiver only after direct reproduction. No Shared/Core API surface is presumed to change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`; source policy if any external material is encountered. Preserve the App → Core → Shared dependency direction. |
-| Verification | Run affected App CMake/static gates and targeted x64/x86 build/test routes. Run documentation governance before S2 closure. Artifacts change only if executable input changes. |
-| Expected Markers | Every S2 edit is App-local and necessary; the duplicate link item is absent; no sibling, Core or Shared ownership edge is introduced. |
+| Verification | Inspect all four App request, binding, construction, entry, cleanup, artifact and test routes. Reproduce any claimed defect before repair; run focused x64/x86 tests and rebuild only affected artifacts. |
+| Expected Markers | Every lifecycle/configuration finding has an owner and reproducible predicate; valid fixed-machine distinctions remain intact; no speculative repair is admitted. |
 | Asset Needs | None. Preserve all external firmware/media, adjacent INIs, snapshots and current artifacts. |
-| Reporting Requirements | Report actual App-local diff, retained valid distinctions, test/build evidence and any newly discovered cross-owner transfer without implementing it. |
-| Stop Conditions | Stop for a required Shared/Core or sibling-App receiver, protected asset/source need, unresolved product behavior decision, or a necessary runtime change outside the narrow S2 repair. |
-| Exit Criteria | The demonstrated repair and any independently proven App-local findings have focused x64/x86 evidence; documentation governance passes; S3 is then automatically eligible. |
+| Reporting Requirements | Report each inspected owner route, reproduction/result, repaired or retained disposition, artifact impact and any cross-owner transfer without implementing it. |
+| Stop Conditions | Stop for a required Shared/Core or sibling-App receiver, protected asset/source need, unresolved product behavior decision, or an external/deployment fact that cannot establish an App source predicate. |
+| Exit Criteria | All four App lifecycle/configuration/composition/teardown/artifact routes have a durable disposition; any reproduced App-local repair has focused proof; S4 is then automatically eligible. |
 | Original Owner Request | Admit the next queue-head NXVM task after completing T552. |
-| Similar-Issue Sweep | Recheck all four App CMake link lists and direct sibling references; retain machine-specific construction, firmware and test routes unless a real same-owner defect is demonstrated. |
+| Similar-Issue Sweep | Compare fixed identity, request parsing, machine prepare/bind/destroy, setup failure, runtime stop, teardown and binary/INI deployment routes across all four Apps without collapsing valid profile differences. |
 
 | Work | Progress |
 | --- | --- |
 | T553 S1 | Complete: the ownership ledger records all four source/test/CMake/asset roots, no cross-App edge, valid machine-specific distinctions and one narrow MyDeskPro386 CMake duplicate for S2. Default x64/x86 configuration passes all four App/test boundaries and selected-composition proof. |
-| T553 S2 | Active: repair only the demonstrated App-local CMake ownership/naming/build/test/documentation findings; start with MyDeskPro386's duplicate `core-machine` link item. |
+| T553 S2 | Complete: removed MyDeskPro386's duplicated private `core-machine` link item. Its x64/x86 plan smoke, boundary configure and documentation governance pass; no executable input changed. |
+| T553 S3 | Active: audit all four App lifecycle/configuration/composition/failure/teardown/artifact contracts, repairing only a directly reproduced App-local defect. |
 | T552 S9 | Complete: CPU owns all timing recipes and their origin/source-allocation classification; Core owns only copied-result publication and physical eligibility. Five CPU manifest, four transfer and two Core consumer receivers pass x64/x86. |
 | T552 S8 | Complete: retained the CECG B0000h compatibility window as one VADP storage contract while transferring any physical firmware equivalence claim; retained bounded-L1 as a declared Core control policy, not a device duration. Focused CECG/time routes and Core gates pass x64/x86. |
 | T552 S7 | Complete: Core replacement now preserves its atomic new-medium state and propagates an old-lease close failure. The owner-local close injector proves both replacement and removal failure contracts for FDD/HDD; run-result and teardown candidates were retained with direct owner evidence. |
