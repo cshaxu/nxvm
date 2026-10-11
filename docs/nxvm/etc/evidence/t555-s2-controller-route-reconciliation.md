@@ -2,7 +2,7 @@
 
 ## Status And Baseline
 
-S2 implementation is ready for coordinator review against `710e0da4f`. This record supplements, rather than
+S2 is accepted in implementation `69dca87fb` against `710e0da4f`. This record supplements, rather than
 replaces, the S1 coverage universe. It is not complete controller qualification.
 The final PIC/PIT/DMA and board/refresh/request candidate passes complete units
 on both widths, and eight current PC artifacts are rebuilt. Final integration

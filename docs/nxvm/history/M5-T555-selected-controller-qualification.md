@@ -18,7 +18,7 @@ uses the current Core/App paths and is the only admission input for follow-up
 controller work. This S did not modify source, tests, assets or external
 materials.
 
-## S2 — Implementation delivery: PIC/PIT/DMA and refresh/IRQ
+## S2 — Complete: PIC/PIT/DMA and refresh/IRQ
 
 The [S2 reconciliation record](../etc/evidence/t555-s2-controller-route-reconciliation.md)
 disposes the complete selected register/mode/reset/request/consumer batch
@@ -35,14 +35,18 @@ Eight 0555 optimized stripped PC artifacts replace the prior 0551 pairs;
 four adjacent owner INIs remain hash-identical. Manual desktop acceptance is
 not claimed. Source is +244/-111 (net +133), tests/registration +814/-44
 (net +770), excluding documentation, manifests and generated artifacts.
-Coordinator actual-pushed-diff acceptance is still required; T555 remains
-open for S3-S6.
+Coordinator actual-pushed-diff review accepts implementation `69dca87fb`.
+It reconciles the S1/S2 finite batch, actual source/test/build/artifact changes,
+primary-source classifications and final receiving results; no unresolved
+confirmed S2 repair is hidden by a later boot checkpoint. Required packet,
+ownership, naming, source-policy and documentation checks are satisfied.
+Existing electrical/timing exclusions remain explicit, not promoted by boot.
+T555 remains open for S3-S6; the eight admitted PC artifacts are 0.5.0555.
 
 ## Remaining Ordered S Work
 
 | S | Boundary | Exit condition |
 | --- | --- | --- |
-| S2 | PIC/PIT/DMA and board IRQ/refresh | Every selected request, counter output, cascade, refresh and scheduler observation has one current proof or one bounded Core/board repair. |
 | S3 | RTC/CMOS and keyboard/KBC/XT-PPI | Current reset, port, NMI, clock and firmware-facing routes are classified; no controller-local timing or board duplicate is introduced. |
 | S4 | FDC/media and HDC personalities | Each selected controller/media route has an explicit grammar, request/IRQ/DMA consumer and reset/deadline disposition. |
 | S5 | Video and selected board display routes | CGA/EGA/CECG owner, aperture, clock and copied-frame routes are qualified without adding a renderer or second framebuffer. |
