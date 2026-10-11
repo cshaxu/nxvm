@@ -10,13 +10,15 @@ is closed; its final product/qualification closure is recorded in `CURRENT.md`.
 The separately admitted [T545 eight-corpus refresh](../history/M5-T545-softpc-eight-corpus-refresh.md)
 is closed after full receiving verification. [T546 CPU repair](../history/M5-T546-cpu-audit-gap-repair.md)
 is closed by owner direction with its separately recorded Model40 x86
-host-throughput TODO; all T544 findings remain retained.
+host-throughput TODO; all T544 findings remain retained. [T552 Core code
+quality audit and repair](../history/M5-T552-core-code-quality-audit-repair.md)
+is closed; its CPU timing boundary and Core/App qualification are recorded in
+the closure history.
 
-1. [Core code quality audit and repair](../proposals/m5-core-code-quality-audit-repair.md) — Source/test dependencies, naming, duplicate paths, architecture, failure contracts and compatibility branches; S1 establishes the inventory and repairs the reproduced 8042 defects.
-2. [Four PC App code quality audit](../proposals/m5-four-pc-app-code-quality-audit.md) — Audit My5160, My5170, MyDeskPro386 and NXVM application-owned code for ownership, duplication, boundary, configuration, lifecycle, test and artifact defects; transfer Shared/Core candidates to their proper receivers.
-3. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
-4. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-5. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+1. [Four PC App code quality audit](../proposals/m5-four-pc-app-code-quality-audit.md) — Audit My5160, My5170, MyDeskPro386 and NXVM application-owned code for ownership, duplication, boundary, configuration, lifecycle, test and artifact defects; transfer Shared/Core candidates to their proper receivers.
+2. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
+3. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+4. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 
 [T544](../history/M5-T544-retained-cpu-qualification.md) is closed as a
 completed CPU audit by owner direction. Its eighteen complete repair/proof
