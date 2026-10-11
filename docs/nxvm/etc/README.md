@@ -7,6 +7,12 @@ decision, but it cannot redefine current architecture, source layout, product
 UX, roadmap, rules, status, queue, or debt. Conflicts are resolved by the
 principal documents named in [the NXVM documentation guide](../README.md).
 
+T555 S1: [selected-controller and board baseline](evidence/t555-s1-controller-board-baseline.md)
+maps every retained current Core/App controller route to its owner, direct
+tests, source tier and a bounded qualification disposition. It corrects the
+pre-migration names in the candidate proposal; it is an admission ledger, not
+a claim that every L2/L1/L4 boundary is already complete.
+
 T553 S1: [four PC App ownership ledger](evidence/t553-s1-four-pc-app-ownership-ledger.md)
 records the complete four-App inventory, inward dependency proof, ownership
 dispositions and the one App-local receiving repair.

@@ -11,16 +11,18 @@ RTC, keyboard, video or storage chip identity.
 The completed fixed-product cutover selects one Profile per implemented XT, AT, DeskPro and
 default product. Controller work starts from that construction: external BYOB
 firmware is resolved by the selected Profile, NXVM.ini supplies only runtime
-media/presentation, and current deployment is `assets/nxvm/<profile>/`. A repair
-must not recreate a YAML/catalog machine selector or board-specific second
-execution path.
+media/presentation, and each App deploys its pair in its own `assets/<app>`
+root. A repair must not recreate a YAML/catalog machine selector or
+board-specific second execution path.
 
 This candidate follows [chip extraction](m5-shared-chip-extraction.md),
 [common PC integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and
 [independent Apps](../history/M5-T543-four-pc-apps-proposal.md). Its ledgers must address the
-resulting `x86/chips` chip owners, the flat `ibmpc/board-*` shared-board mechanisms and
-App-specific compositions, using the admitted deployment map. Migration does
-not replace the source/function/timing qualification required here.
+resulting `core/chips` chip owners, `core/board-base`, `core/board-at` and
+`core/board-xt` board mechanisms, `core/machine` composition, and App-specific
+Profile inputs, using the admitted deployment map. Migration does not replace
+the source/function/timing qualification required here. Historical paths in
+supporting evidence remain provenance only.
 
 ## Scope And Batches
 
@@ -38,6 +40,27 @@ refresh, IRQ/DRQ, memory decode, firmware and reset dependencies in each ledger.
 Any PC110 chipset subfunction reusing Intel semantics still needs proof for
 its routing/extensions. External timing inputs can satisfy a chip contract;
 unknown internal timing cannot become L3 merely by accepting a number.
+
+## T555 Execution Order
+
+T555 begins with a current-path audit rather than reusing a historical
+controller finding as implementation authority. Its S1 ledger assigns every
+retained route to one of three outcomes: a current source-backed route, a
+bounded Core/board repair, or an explicit L2/L1/L4 boundary. Later S work is
+admitted in this order so a cross-device repair never invents an input for its
+neighbour:
+
+1. PIC, PIT, DMA and refresh/IRQ board routes.
+2. RTC/CMOS, KBC/XT keyboard/PPI and their reset/NMI/clock routes.
+3. FDC/media and the four HDC personalities, including their PIC/DMA/media
+   consumers.
+4. CGA/EGA/CECG video and profile-selected aperture/clock/presentation routes.
+5. Cross-profile board reset, firmware, deadline and integration closure.
+
+Each admitted S must use current paths, identify its source tier, preserve the
+single owner, and distinguish a genuine repair from a proof-only closure. A
+fact outside the selected controller, adapter, drive, monitor or board source
+stays explicitly L2/L1/L4; it is not converted into a compatibility constant.
 
 ## Exit And Boundaries
 

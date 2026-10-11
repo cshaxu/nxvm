@@ -2,15 +2,23 @@
 
 ## Current Work
 
-No NXVM implementation task is active. M5 T554 closed on 2026-10-10 after
-default-firmware cursor repair, dual-width qualification and owner Console /
-Window acceptance. The ordered remaining candidates are in [QUEUE.md](QUEUE.md).
+M5 T555 is active: audit retained controller and board qualification evidence,
+implementation and tests. The ordered remaining candidates are in [QUEUE.md](QUEUE.md).
 
 ## Current Task
 
 | Field | Value |
 | --- | --- |
-No active task packet.
+| Identifier | M5 T555 S2 |
+| Identifier Mode | New |
+| Title | Selected-controller and board qualification — PIC/PIT/DMA board routes |
+| Proposal | [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md) |
+| Targets | NXVM Core, its four fixed-PC Apps and their tests/documentation; Shared components are read-only unless a later S proves an admitted owner gap. |
+| Objective | Reconcile the current PIC, PIT, DMA, refresh and interrupt board routes against the S1 baseline without creating a second clock, request path, scheduler or controller owner. |
+| Authorities | `docs/nxvm/README.md`; `docs/nxvm/design/{ROADMAP,ARCHITECTURE,CODING}.md`; `docs/nxvm/etc/operations/policy/source-policy.md`; `docs/rules/{EXECUTION,ARCHITECTURE,CODING,DOCUMENT}.md`; `CONTRIBUTING.md`; this proposal. |
+| Boundaries | Use current Core/App ownership and selected source evidence. Shared is read-only; no asset, firmware, media or INI change. Historical evidence is a lead, never automatic proof. |
+| Acceptance | Every selected PIC/PIT/DMA/refresh/IRQ relation is either directly proven by the current owner path and test, repaired once at that owner, or retained as explicit L2/L1/L4 with a named reason. |
+| Verification | Focused x64/x86 owner tests and current App composition receivers; no test or production change before its specific owner gap is proven. |
 
 | Work | Progress |
 | --- | --- |
@@ -32,6 +40,8 @@ No active task packet.
 | T554 S2 | Complete: the default mode-03 handler now writes CRTC maximum raster 7 and cursor shape 6--7 before CRTC offset. New guest-execution receiver observes the resulting 8-raster visible cursor; it passes x64/x86. No Core, Lib, Emulator or other App source changed. |
 | T554 S3 | Complete: default App x64/x86 artifacts were rebuilt and architecture-verified; each complete 56-route App selection passed. Owner accepted Console and Window cursor behavior. |
 | T554 | Closed: S1 identified missing default-firmware CRTC initialization; S2 repaired it and added guest-execution coverage; S3 completed dual-width build/test/deployment and owner acceptance. Commit `b25e2ca8d` carries the source, test, task packet and default-App artifacts. No Shared/Core or other App source changed. |
+| T555 S1 | Complete: [baseline ledger](../etc/evidence/t555-s1-controller-board-baseline.md) inventories current Core/App owners, direct tests, source tiers and bounded remaining gaps. It corrects obsolete proposal path/deployment claims and splits S2--S6; no source/test/asset or external-material change. |
+| T555 S2 | Active: reconcile selected PIC/PIT/DMA/refresh/IRQ board routes against the S1 ledger. |
 | T552 S9 | Complete: CPU owns all timing recipes and their origin/source-allocation classification; Core owns only copied-result publication and physical eligibility. Five CPU manifest, four transfer and two Core consumer receivers pass x64/x86. |
 | T552 S8 | Complete: retained the CECG B0000h compatibility window as one VADP storage contract while transferring any physical firmware equivalence claim; retained bounded-L1 as a declared Core control policy, not a device duration. Focused CECG/time routes and Core gates pass x64/x86. |
 | T552 S7 | Complete: Core replacement now preserves its atomic new-medium state and propagates an old-lease close failure. The owner-local close injector proves both replacement and removal failure contracts for FDD/HDD; run-result and teardown candidates were retained with direct owner evidence. |

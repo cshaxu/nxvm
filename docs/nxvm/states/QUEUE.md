@@ -6,7 +6,10 @@ The entries below are ordered unnumbered candidates.
 
 The [T554 default-PC text cursor restoration](../history/M5-T554-pc-text-cursor-restoration.md)
 is closed after owner Console/Window acceptance; its archived proposal remains
-with the task history.
+with the task history. The first candidate, [selected-controller and board
+qualification](../proposals/m5-selected-controller-qualification.md), is
+admitted as T555; S1's current-path inventory is complete and S2 is active in
+`CURRENT.md`.
 
 The [T547 SoftPC optimization and consolidation proposal](../history/M5-T547-softpc-four-test-optimization-import-proposal.md)
 is closed; its final product/qualification closure is recorded in `CURRENT.md`.
