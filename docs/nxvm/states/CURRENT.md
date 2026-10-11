@@ -6,26 +6,26 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Active: M5 T552 S9. |
-| Admission And Approval | Owner approved the frozen linear S1-S9 plan on 2026-10-10. S8 has classified the CECG compatibility window and PC/AT bounded-L1 policy without speculative behavior changes. S9 is automatically admitted. |
-| Objective | Reconcile CPU/Core boundary ownership for compatibility timing recipes and transfer CPU-owned correctness work to its active authority. |
+| Identifier Mode | Closed: M5 T552. No successor is admitted. |
+| Admission And Approval | Owner approved the frozen linear S1-S9 plan on 2026-10-10. All nine S receivers completed; final Core/App qualification is recorded below. |
+| Objective | Completed Core code-quality audit and repair. CPU owns compatibility timing selection; Core only publishes and qualifies copied results. |
 | Non-goals | Do not alter Shared, MyNES, sibling App production, firmware/media/INI semantics or board behavior. Do not create a duplicate CPU path, guessed timing recipe, or a production App dependency. |
 | Reference Baseline | T552 S8 evidence. CECG B0000h compatibility remains a bounded VADP contract; L1 remains a Core control policy rather than a physical duration. |
-| Candidate Proposal | [M5 Core code quality audit and repair](../proposals/m5-core-code-quality-audit-repair.md), S9. |
-| Files And ABI Surface | Expected CPU/Core ownership evidence and owner-local test or documentation changes only. No public API, App or Shared change is presumed. |
+| Candidate Proposal | [M5 Core code quality audit and repair](../proposals/m5-core-code-quality-audit-repair.md), closed. |
+| Files And ABI Surface | S2–S7 changed Core/test owners and rebuilt the eight PC artifacts. S8/S9/closure add evidence and task records only; no Shared or MyNES change was admitted. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`; source policy. Apply the Core-to-App inward dependency rule and preserve fixed machine distinctions. |
-| Verification | Trace every compatibility timing recipe to CPU or Core ownership, direct test receiver and active CPU authority; run only direct owner-local checks required by actual repair. |
+| Verification | S9 direct x64/x86 CPU/Core receivers pass 11/11. Final Core passes 244/244 per width; four-PC-App routes pass 91/91 per width; external integration passes 21/21 per width; documentation governance passes on both widths. |
 | Expected Markers | Each recipe has a single owner and transfer/retain/repair disposition; no Core duplicate or unsupported timing claim remains. |
 | Asset Needs | None initially. Rebuild/deploy PC artifacts only if admitted executable source/build inputs change; preserve all external firmware/media and adjacent INI files. |
 | Reporting Requirements | Record each candidate's code/test route, reason it belongs to CPU or Core, and any resulting authority transfer. At S delivery distinguish an actual implementation repair from a documentation-only reconciliation. |
 | Stop Conditions | Stop for a required Shared/public-API change, protected-source need, an unresolved CPU policy decision, a non-Core owner, or an asset/INI behavior change. |
-| Exit Criteria | Every admitted recipe has one owner disposition and direct evidence; actual diff review and scoped P commit are complete. T552 closes only after S9's final review. |
+| Exit Criteria | Met. Every frozen receiver has an owner disposition and evidence; final diff review and the proposal's Core/App qualification matrix are complete. See [T552 history](../history/M5-T552-core-code-quality-audit-repair.md). |
 | Original Owner Request | Close the preceding T and admit the queue-head Core code-quality audit/repair task. |
 | Similar-Issue Sweep | Inspect controller command/AUX/keyboard reply paths, serial backlog, FIFO states, scan/translation/reset/IRQ edges, `ticks_until_event()` and board/scheduler consumers; independently classify all Core owners, test predicates, caller edges, names, duplicate paths and warning suppressions in the ledger. |
 
 | Work | Progress |
 | --- | --- |
-| T552 S9 | Active: reconcile CPU/Core boundary ownership for compatibility timing recipes and transfer CPU-owned correctness work to its active authority. |
+| T552 S9 | Complete: CPU owns all timing recipes and their origin/source-allocation classification; Core owns only copied-result publication and physical eligibility. Five CPU manifest, four transfer and two Core consumer receivers pass x64/x86. |
 | T552 S8 | Complete: retained the CECG B0000h compatibility window as one VADP storage contract while transferring any physical firmware equivalence claim; retained bounded-L1 as a declared Core control policy, not a device duration. Focused CECG/time routes and Core gates pass x64/x86. |
 | T552 S7 | Complete: Core replacement now preserves its atomic new-medium state and propagates an old-lease close failure. The owner-local close injector proves both replacement and removal failure contracts for FDD/HDD; run-result and teardown candidates were retained with direct owner evidence. |
 | T552 S6 | Complete: generic Core floppy boot integration no longer takes an unnecessary Model 40 FDC observation. The remaining Model 40 bridge is narrowed to two test-only diagnostic helpers used by the generic BYOB probe; it does not affect test outcome or introduce a production Core-to-App edge. Affected Core diagnostic/integration receivers and Core gates pass x64/x86. |
@@ -34,6 +34,7 @@
 | T552 S3 | Complete: a private shared publishability predicate now owns serial/FIFO reply eligibility for both `advance()` and `ticks_until_event()`. Direct controller proof covers serial cadence, scan-disabled backlog, FIFO-room reply publication, full-FIFO blocking, translation and reset; KBC/board focused units and gates pass x64/x86, and all eight PC artifacts were rebuilt. |
 | T552 S2 | Complete: controller delay now progresses independently of configured visibility polls; a chip-owned delay-plus-poll regression proves controller, keyboard and AUX reply contents, OBF/IRQ and ordering. Focused KBC controller/serial/board tests pass x64/x86; all eight PC artifacts were rebuilt from their original profile directories. |
 | T552 S1 | Complete: committed the durable Core ownership/convergence ledger, direct KBC source/caller reproductions and frozen linear S1-S9 receiver plan; Core manifest/corpus gates and existing focused KBC routes pass x64/x86. No runtime source changed. |
+| T552 | Closed: S1–S9 completed the frozen Core audit/repair plan. Final Core passes 244/244, four-PC-App routes 91/91 and external integration 21/21 on both x64/x86; Core production changes refreshed and PE-verified the eight PC artifacts before documentation-only S8/S9 closure. |
 | T551 S1 | Complete: Shared `1e35f83c1` moved the portable corpus and tests to `x86`, renamed the former Surface subsystem to `x86/product`, refreshed both manifests, and passed focused x64/x86 x86 gates and units. NXVM `7e81e37ea` rewired Core/App consumers in a separate target-scoped commit. |
 | T551 S2 | Complete: retired the eight 0546 PC binaries; rebuilt, deployed and PE-verified the eight 0.5.0551 PC and two current 0.0.0044 MyNES x64/x86 binaries. Root unit passes 544/544 and external integration passes 21/21 on each width; MyNES passes 57/57 on each width; both product documentation gates pass. |
 | T551 S3 | Complete: imported the audited SoftPC Shared-six verifier, test-manifest and documentation improvements; corrected the duplicate X86 command success marker; source/test roots now match SoftPC exactly. Direct manifest, corpus, naming and documentation gates pass. Shared routes and complete repository-only units pass on both widths (544/544 each); no executable input changed, so the existing ten artifacts remain valid. |

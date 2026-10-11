@@ -1001,6 +1001,8 @@ condition. The governance gate verifies that every supporting Markdown file is
 covered by one of those index forms. `etc/` is not a shortcut for adding
 another principal document.
 
+| `evidence/t552-s9-cpu-core-timing-boundary.md` | Core timing owner | T552 S9 records the sole CPU compatibility-timing selector, the Core copied-result/eligibility consumer, direct receiver ownership and the retained source-unallocated boundary. Retain with T552 history. |
+
 | `evidence/t467-s2-cga-current-code-gap-audit.md` | Verification owner | T467 S2 reconciles all 17 IBM-CGA rows to the sole VADP/Core/profile/snapshot path and records their final L3/L2 disposition. Retain with T467 history. |
 | `evidence/t484-s19-xt-ppi-parity-nmi.md` | Verification owner | T484 S19 records the IBM-qualified XT PPI-B parity/I/O-check controls, PPI-C source inputs, sole owner-to-Core NMI edge, focused proof and remaining physical transfers. Retain with active T484 evidence. |
 | `evidence/t484-s20-xt-b6-session-contract.md` | Verification owner | T484 S20 freezes the lawful IBM 5160 base/optional-Xebec ROM BYOB slots, sole product/session/Core flow and the exact non-Model-40 session assumptions blocking a runnable XT route. Retain with active T484 evidence. |

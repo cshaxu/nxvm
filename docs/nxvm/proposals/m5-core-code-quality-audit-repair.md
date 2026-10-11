@@ -117,6 +117,24 @@ Each completed implementation S receives a target-scoped commit, dual-width
 build and focused unit evidence. Only T closure performs the complete Core and
 affected-App qualification matrix required below.
 
+### S9 Boundary Disposition
+
+`core/chips/cpu` is the only timing-recipe owner.  Its selector chooses every
+candidate source and the retained deterministic compatibility endpoint, labels
+the resulting origin and source-allocation state, and returns one copied timing
+result.  The Core executor consumes that result only to account for external
+cycles, publish a retirement observation and enforce the already-declared
+physical-time eligibility policy.  It does not select, alter or reproduce a
+CPU timing formula.
+
+The retained compatibility endpoint is deliberately deterministic but
+source-unallocated.  It may support non-physical execution progress, but it
+cannot qualify a physical retirement observation.  CPU-local timing-manifest
+and transfer-boundary tests own exact formula/origin proof; Core observation
+tests own propagation and eligibility proof.  S9 therefore makes no duplicate
+Core implementation or speculative formula change.  Its evidence record must
+name this split and the direct dual-width receivers.
+
 ## Later Audit Receivers And Convergence
 
 Before the first implementation S, establish one durable convergence ledger
