@@ -6,26 +6,27 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Active: M5 T552 S7. |
-| Admission And Approval | Owner approved the frozen linear S1-S9 plan on 2026-10-10. S6 has narrowed the sole Model 40 App-observation edge in generic Core test support and is complete. S7 is automatically admitted. |
-| Objective | Reproduce and classify Core machine/lifecycle/failure-return candidates: runner result state, media replacement and teardown close behavior. |
-| Non-goals | Do not alter Shared, MyNES, sibling App production, firmware/media/INI semantics or unrelated CPU/chip/board behavior. Do not add lifecycle managers, fallback paths or a production App dependency. |
-| Reference Baseline | T552 S6 evidence. Generic Core boot integration no longer observes Model 40 FDC diagnostics; the retained BYOB observation is test-only and never selects an outcome. |
-| Candidate Proposal | [M5 Core code quality audit and repair](../proposals/m5-core-code-quality-audit-repair.md), S7. |
-| Files And ABI Surface | Expected Core machine/lifecycle/media failure receivers and owner-local tests. No public API, App or Shared change is presumed. |
+| Identifier Mode | Active: M5 T552 S8. |
+| Admission And Approval | Owner approved the frozen linear S1-S9 plan on 2026-10-10. S7 has repaired Core media replacement close-result propagation and is complete. S8 is automatically admitted. |
+| Objective | Audit Core board compatibility/source receivers, including the Compaq CECG alias and PC/AT bounded-L1 policy. |
+| Non-goals | Do not alter Shared, MyNES, sibling App production, firmware/media/INI semantics or unrelated CPU/chip/board behavior. Do not add compatibility managers, fallback paths or a production App dependency. |
+| Reference Baseline | T552 S7 evidence. Core replacement retains its committed new medium and returns an old-lease close error; removal has the same visible failure contract. |
+| Candidate Proposal | [M5 Core code quality audit and repair](../proposals/m5-core-code-quality-audit-repair.md), S8. |
+| Files And ABI Surface | Expected Core board compatibility/source evidence and owner-local tests only. No public API, App or Shared change is presumed. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`; source policy. Apply the Core-to-App inward dependency rule and preserve fixed machine distinctions. |
-| Verification | Reproduce each runner result, media replacement and teardown close candidate; run the direct contract receivers and required Core gates. |
-| Expected Markers | Each candidate has a named failure/result owner and direct retain/repair/transfer disposition; no new lifecycle or fallback path is introduced. |
+| Verification | Trace each compatibility receiver to primary/source-grade evidence or an existing explicit model contract; run direct owner-local tests and required Core gates. |
+| Expected Markers | Each receiver has a named evidence grade and retain/repair/transfer disposition; no speculative compatibility behavior is added. |
 | Asset Needs | None initially. Rebuild/deploy PC artifacts only if admitted executable source/build inputs change; preserve all external firmware/media and adjacent INI files. |
-| Reporting Requirements | Record every candidate's trigger, outcome, cleanup ownership and caller reach. At S delivery separate direct failure proof from unverified static concerns. |
-| Stop Conditions | Stop for a required Shared/public-API change, protected-source need, a non-Core owner, a policy decision or a change that requires media/firmware/INI alteration. |
-| Exit Criteria | Each admitted candidate has direct evidence and a repair/retain/transfer disposition; actual diff review and scoped P commit are complete. T552 remains open for S8-S9. |
+| Reporting Requirements | Record each source/evidence location, applicable machine boundary and exact behavior disposition. At S delivery distinguish primary/manual evidence from compatibility inference. |
+| Stop Conditions | Stop for a required Shared/public-API change, protected-source need, a non-Core owner, an owner policy decision or a behavior change requiring firmware/media/INI alteration. |
+| Exit Criteria | Each admitted receiver has direct evidence and a repair/retain/transfer disposition; actual diff review and scoped P commit are complete. T552 remains open for S9. |
 | Original Owner Request | Close the preceding T and admit the queue-head Core code-quality audit/repair task. |
 | Similar-Issue Sweep | Inspect controller command/AUX/keyboard reply paths, serial backlog, FIFO states, scan/translation/reset/IRQ edges, `ticks_until_event()` and board/scheduler consumers; independently classify all Core owners, test predicates, caller edges, names, duplicate paths and warning suppressions in the ledger. |
 
 | Work | Progress |
 | --- | --- |
-| T552 S7 | Active: reproduce and classify Core machine/lifecycle/failure-return candidates: runner result state, media replacement and teardown close behavior. |
+| T552 S8 | Active: audit Core board compatibility/source receivers, including the Compaq CECG alias and PC/AT bounded-L1 policy. |
+| T552 S7 | Complete: Core replacement now preserves its atomic new-medium state and propagates an old-lease close failure. The owner-local close injector proves both replacement and removal failure contracts for FDD/HDD; run-result and teardown candidates were retained with direct owner evidence. |
 | T552 S6 | Complete: generic Core floppy boot integration no longer takes an unnecessary Model 40 FDC observation. The remaining Model 40 bridge is narrowed to two test-only diagnostic helpers used by the generic BYOB probe; it does not affect test outcome or introduce a production Core-to-App edge. Affected Core diagnostic/integration receivers and Core gates pass x64/x86. |
 | T552 S5 | Complete: removed Core's blanket GNU `-w`; `cpu.c` now has no exception and `cpu_instructions.c` retains only five reproduced trace/profile-shaped warning classes. Repaired the uncalled task-switch declaration, control-register grouping, lexeme-width comparison and CPU read/output temporary initialization. Strict direct compilation plus Core CPU timing/manifest routes pass x64/x86; all eight PC artifacts were rebuilt and PE-width verified. |
 | T552 S4 | Complete: a physical-time AT board route proves the truthful serial-blocked KBC deadline survives Board-AT wiring and Board-Base conversion, becomes the x86 scheduler's next deadline, and drives the actual peripheral callback to publish the first translated scan byte. No caller production change or App qualification gap was found. |

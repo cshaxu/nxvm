@@ -226,9 +226,9 @@ static lib_status vm_machine_fdd_install_medium(t_fdd *fdd,
     fdd->connect.flagReadOnly = readonly;
     fdd->connect.flagDiskExist = LIB_TRUE;
     ++fdd->connect.media_generation;
-    lib_storage_medium_destroy(&old_medium);
+    status = lib_storage_medium_destroy(&old_medium);
     lib_release(old_marks);
-    return LIB_STATUS_OK;
+    return status;
 }
 
 lib_status vm_machine_fdd_replace_bytes(t_fdd *fdd, const void *bytes,

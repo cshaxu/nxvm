@@ -22,8 +22,11 @@ int main(void)
     };
     static const lib_u8 fdd_bytes[512] = { 0xa5u };
     static const lib_u8 hdd_bytes[512] = { 0x5au };
+    static const lib_u8 replacement_fdd_bytes[512] = { 0x3cu };
+    static const lib_u8 replacement_hdd_bytes[512] = { 0xc3u };
     t_fdd fdd;
     t_hdd hdd;
+    lib_u8 byte;
 
     if (vm_machine_fdd_initialize_with_geometry(&fdd, &fdd_geometry) != LIB_STATUS_OK)
         return 1;
@@ -31,6 +34,19 @@ int main(void)
     if (vm_machine_fdd_replace_bytes(&fdd, fdd_bytes, sizeof(fdd_bytes)) != LIB_STATUS_OK ||
         vm_machine_hdd_replace_bytes(&hdd, hdd_bytes, sizeof(hdd_bytes)) != LIB_STATUS_OK)
         return 1;
+
+    vm_media_close_failure_pending = LIB_TRUE;
+    if (vm_machine_fdd_replace_bytes(&fdd, replacement_fdd_bytes,
+            sizeof(replacement_fdd_bytes)) != LIB_STATUS_IO_ERROR ||
+        !vm_machine_fdd_has_media(&fdd) ||
+        vm_machine_fdd_read_byte(&fdd, 0u, 0u, 1u, 0u, &byte) != LIB_STATUS_OK ||
+        byte != replacement_fdd_bytes[0u]) return 1;
+    vm_media_close_failure_pending = LIB_TRUE;
+    if (vm_machine_hdd_replace_bytes(&hdd, replacement_hdd_bytes,
+            sizeof(replacement_hdd_bytes)) != LIB_STATUS_IO_ERROR ||
+        !vm_machine_hdd_has_media(&hdd) ||
+        vm_machine_hdd_media_provider()->read_bytes(&hdd, 0u, &byte, 1u) !=
+            CORE_MACHINE_MEDIA_RESULT_OK || byte != replacement_hdd_bytes[0u]) return 1;
 
     vm_media_close_failure_pending = LIB_TRUE;
     if (vm_machine_fdd_remove_for(&fdd) != LIB_STATUS_IO_ERROR ||

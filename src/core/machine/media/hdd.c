@@ -201,8 +201,7 @@ static lib_status vm_machine_hdd_install_medium(t_hdd *hdd,
     hdd->connect.flagReadOnly = readonly;
     hdd->connect.flagDiskExist = LIB_TRUE;
     ++hdd->connect.media_generation;
-    lib_storage_medium_destroy(&old_medium);
-    return LIB_STATUS_OK;
+    return lib_storage_medium_destroy(&old_medium);
 }
 
 void vm_machine_hdd_initialize(t_hdd *hdd) {
