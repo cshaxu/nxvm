@@ -6,26 +6,27 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Active: M5 T552 S4. |
-| Admission And Approval | Owner approved the frozen linear S1-S9 plan on 2026-10-10. S3 repaired and proved the chip executable-deadline contract without a board/scheduler source change. S4 is automatically admitted for bounded caller qualification. |
-| Objective | Qualify the repaired KBC reply/deadline contract across board-at wiring, board-base deadline conversion, x86 scheduler and machine waiting, using one non-duplicative cross-owner route and a minimal affected PC input route. |
-| Non-goals | Do not alter Shared, MyNES, sibling App production, firmware/media/INI semantics, asset inputs or unrelated CPU/chip/board behavior. Do not duplicate owner-local KBC state matrices or introduce a scheduler workaround, a new time source, a public API, BIOS/profile special case or synthetic tick. |
-| Reference Baseline | T552 S3 implementation/evidence commit. Chip-local replies and executable deadlines are proven on x64/x86; board-base remains a transparent deadline converter. |
-| Candidate Proposal | [M5 Core code quality audit and repair](../proposals/m5-core-code-quality-audit-repair.md), S4. |
-| Files And ABI Surface | Expected existing Core board-at/board-base/x86/machine tests and selected App input qualification only. No production source modification is presumed; a test may be added only if the existing route cannot prove the chip-to-scheduler contract. |
+| Identifier Mode | Active: M5 T552 S5. |
+| Admission And Approval | Owner approved the frozen linear S1-S9 plan on 2026-10-10. S4 has qualified the existing chip-to-scheduler route without an outer production workaround. S5 is automatically admitted for warning qualification. |
+| Objective | Reproduce and classify Core's retained CPU/debug warning exceptions; narrow, repair or explicitly retain each exception without a blanket warning-policy change. |
+| Non-goals | Do not alter Shared, MyNES, sibling App production, firmware/media/INI semantics, asset inputs or unrelated CPU/chip/board behavior. Do not suppress new warnings, change the global compiler policy or mix warning repair with unrelated refactoring. |
+| Reference Baseline | T552 S4 evidence. Board-AT KBC wiring, Board-Base conversion and the x86 scheduler preserve the positive executable deadline through the sole production route. |
+| Candidate Proposal | [M5 Core code quality audit and repair](../proposals/m5-core-code-quality-audit-repair.md), S5. |
+| Files And ABI Surface | Expected Core CMake warning exceptions and their exact receivers. No public API, App or Shared change is presumed. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; `docs/nxvm/design/ARCHITECTURE.md`, `CODING.md`; source policy. Apply the Core-to-App inward dependency rule and preserve fixed machine distinctions. |
-| Verification | Trace a KBC deadline through board clock conversion and scheduler selection; prove no false immediate work and no loss of a real serial deadline. Run the selected Core/PC boundary route on x64/x86; document unavailable external input rather than substitute a unit claim. |
-| Expected Markers | The same nonzero chip deadline reaches board/scheduler unchanged except for its declared clock conversion; zero is not manufactured by an outer layer; output ordering remains chip-owned. |
+| Verification | Reproduce each retained warning exception under current x64/x86 compiler settings; identify its exact source and whether it masks a real warning. Run only the affected target and static gates required by the disposition. |
+| Expected Markers | Each exception has a named owner, direct compiler evidence and an explicit retain/repair/transfer decision; no broad warning suppression is added. |
 | Asset Needs | None initially. Rebuild/deploy PC artifacts only if admitted executable source/build inputs change; preserve all external firmware/media and adjacent INI files. |
-| Reporting Requirements | Before a test addition, record why existing owners cannot prove the boundary. At S delivery report the exact caller route, source/test change, x64/x86 result and unverified external boundary. |
-| Stop Conditions | Stop for a required Shared/public-API change, protected-source/asset need, a timing downgrade, evidence contradicting the caller chain, a Core-to-App ownership conflict, or any need to change outer production code. |
-| Exit Criteria | One cross-owner proof qualifies chip-to-scheduler forwarding without duplicating KBC logic; affected PC input route is qualified or explicitly unavailable; actual diff review and scoped P commit are complete. T552 remains open for S5-S9. |
+| Reporting Requirements | Before implementation, record every exception's command, output, ownership and proposed disposition. At S delivery report retained exceptions separately from repairs and list unverified compilers. |
+| Stop Conditions | Stop for a required Shared/public-API change, a warning-policy downgrade, protected-source need, a compiler-specific behavior that cannot be reproduced, or a change that reaches an App. |
+| Exit Criteria | Every current Core warning exception is independently reproduced and narrowed, repaired or explicitly retained with evidence; actual diff review and scoped P commit are complete. T552 remains open for S6-S9. |
 | Original Owner Request | Close the preceding T and admit the queue-head Core code-quality audit/repair task. |
 | Similar-Issue Sweep | Inspect controller command/AUX/keyboard reply paths, serial backlog, FIFO states, scan/translation/reset/IRQ edges, `ticks_until_event()` and board/scheduler consumers; independently classify all Core owners, test predicates, caller edges, names, duplicate paths and warning suppressions in the ledger. |
 
 | Work | Progress |
 | --- | --- |
-| T552 S4 | Active: qualify the repaired KBC deadline through Core callers; no outer production workaround is admitted. |
+| T552 S5 | Active: reproduce and classify retained Core CPU/debug warning exceptions without a blanket policy change. |
+| T552 S4 | Complete: a physical-time AT board route proves the truthful serial-blocked KBC deadline survives Board-AT wiring and Board-Base conversion, becomes the x86 scheduler's next deadline, and drives the actual peripheral callback to publish the first translated scan byte. No caller production change or App qualification gap was found. |
 | T552 S3 | Complete: a private shared publishability predicate now owns serial/FIFO reply eligibility for both `advance()` and `ticks_until_event()`. Direct controller proof covers serial cadence, scan-disabled backlog, FIFO-room reply publication, full-FIFO blocking, translation and reset; KBC/board focused units and gates pass x64/x86, and all eight PC artifacts were rebuilt. |
 | T552 S2 | Complete: controller delay now progresses independently of configured visibility polls; a chip-owned delay-plus-poll regression proves controller, keyboard and AUX reply contents, OBF/IRQ and ordering. Focused KBC controller/serial/board tests pass x64/x86; all eight PC artifacts were rebuilt from their original profile directories. |
 | T552 S1 | Complete: committed the durable Core ownership/convergence ledger, direct KBC source/caller reproductions and frozen linear S1-S9 receiver plan; Core manifest/corpus gates and existing focused KBC routes pass x64/x86. No runtime source changed. |
