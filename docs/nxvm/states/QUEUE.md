@@ -4,8 +4,9 @@ The entries below are ordered unnumbered candidates.
 
 ## M5 Candidates
 
-The [PC text cursor restoration proposal](../proposals/m5-pc-text-cursor-restoration.md)
-was admitted as T554 after T553 closure; its active packet is in `CURRENT.md`.
+The [T554 default-PC text cursor restoration](../history/M5-T554-pc-text-cursor-restoration.md)
+is closed after owner Console/Window acceptance; its archived proposal remains
+with the task history.
 
 The [T547 SoftPC optimization and consolidation proposal](../history/M5-T547-softpc-four-test-optimization-import-proposal.md)
 is closed; its final product/qualification closure is recorded in `CURRENT.md`.

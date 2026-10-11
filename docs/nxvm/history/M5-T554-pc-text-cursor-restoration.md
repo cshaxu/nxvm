@@ -21,7 +21,14 @@ before setting CRTC offset. The App-owned guest-execution receiver observes
 the resulting 8-raster visible cursor and passes on x64/x86. No Core, Lib,
 Emulator or other App source changed.
 
-## S3 — Active: Default-App delivery
+## S3 — Complete: Default-App delivery
 
 Default x64/x86 artifacts are rebuilt and architecture-verified. Each complete
-56-route App selection passes. Owner Console/Window validation remains.
+56-route App selection passes. The owner accepted Console and Window cursor
+behavior.
+
+## Closure
+
+T554 closes with `b25e2ca8d`. The only production change is the default App's
+mode-03 CRTC initialization; both default-App artifacts were rebuilt and
+deployed. Core, Lib, Emulator and the other PC Apps remain unchanged.
