@@ -75,6 +75,72 @@ including Core or a shared component when it is on a four-App route. Perform a
 similar-issue sweep for each repaired mechanism, then requalify all affected
 Apps on x64 and x86 before a later closure review.
 
+#### S5 Audit Conclusions And Receiver Plan
+
+The App-owned branch is now audited before receiver work begins:
+
+- no App production source directly includes a peer App or reaches inward
+  through an App-private Core path;
+- the four `main` and fixed-binding implementations are intentionally small
+  identity/firmware facts, not duplicated lifecycle, UI, configuration or
+  machine-owner implementations; and
+- the shared `core/product` route remains the sole common NXVM-family INI,
+  compose, banner and Product-runner owner.
+
+Accordingly, no App production rewrite is admitted merely to make the four
+bindings look alike. The confirmed full-route defects are below their actual
+Core or Core-test owners. S5 remains responsible for their repair and for any
+additional demonstrated four-App-route defect; it does not close merely
+because the App-owned source branch is clean.
+
+The initial Core audit also establishes these facts:
+
+- production Core has no direct include of an App root, and its existing
+  `core/verify_corpus.cmake` correctly rejects an outer-component include;
+- the old repository-wide dependency-DAG checker has not been migrated to the
+  current `core/{chips,x86,board-base,board-xt,board-at,machine,product}`
+  topology. It therefore reports designed directional Core edges as forbidden
+  migration exceptions and cannot serve as architecture evidence;
+- `test/core` contains a Model 40-only DOS diagnostic and private helper under
+  a generic Core root, and a cross-App Console integration helper retains an
+  NXVM-only name despite serving NXVM and DeskPro routes; and
+- `test/core/setup/session_ini.c` unnecessarily compresses several existing
+  `lib_status` failures to `LIB_STATUS_INTERNAL_ERROR`. The exact status
+  contract of every remaining compression and ignored cleanup result must be
+  classified before changing it; no blanket mechanical rewrite is allowed.
+
+### S6: Core Dependency-DAG Gate Repair
+
+Replace the pre-restructure owner classifier and migration allowlist with one
+current Core component graph. Derive allowed direction from actual public
+interfaces and CMake links, retain rejection of App/outer dependencies and
+add a focused negative proof. Inspect every apparent reverse edge before
+allowing it; do not turn the checker into an unconstrained allowlist.
+
+### S7: Core Test Ownership And Shared-Harness Repair
+
+Move the Model 40-only diagnostic and its private profile helper to the
+MyDeskPro386 test owner. Rename or narrow the shared Console process helper so
+its name describes its cross-App PC behavior while retaining the one shared
+`NXVM.ini` contract. Update registrations, manifests and route/ownership
+gates; prove both affected App routes and the independent Core package remain
+correct.
+
+### S8: Core Test Failure-Semantics Repair
+
+Make `session_ini` propagate the existing `lib_status` of composition and
+overlay transformation failures where no boundary translation is required.
+Classify adjacent status compression and ignored results by contract, changing
+only demonstrated lossy paths. Add failure injection at the helper boundary
+and sweep every caller that receives the same status.
+
+### S9: Corrective Full-Route Qualification And Closure Review
+
+Run the repaired dependency/ownership/manifest gates, then all four App
+x64/x86 unit, setup and integration routes using the reusable build trees.
+Rebuild only executable pairs whose production inputs changed. Perform an
+actual-diff and clean-worktree review before proposing T closure.
+
 ## Exit Criteria
 
 - Every four-App file is accounted for in the ownership ledger.
