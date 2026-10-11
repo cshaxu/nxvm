@@ -72,3 +72,23 @@ firmware-boot or hardware qualification is implied by this closure.
 The owner rejected closure because the earlier audit transferred potential
 route defects instead of completing their repair. S4 remains valid dated
 qualification evidence; T553 continues with corrective S5.
+
+## Corrective Audit And Final Closure
+
+The corrective S5--S11 receivers completed the demonstrated Core/App route
+repairs and qualification without widening this App-quality task into a Public
+six-component rewrite. S12 then re-audited the current Core and four-App
+owners against the project execution, architecture and coding authorities. It
+identified two remaining, bounded defects: two exact duplicate Core-test
+fixtures shared by private Core/x86 and Core/board-base tests, and one stale
+NXVM.ini ownership statement in the architecture authority.
+
+S13 gave both fixtures their one valid owner at `test/core/support/`, updated
+all direct callers and the Core test manifest, and corrected the INI ownership
+statement to name `core/product`. The repair was delivered in `63782fdc9`.
+Focused Core x64/x86 tests, Core manifest/corpus/static gates, documentation
+governance, whitespace review and exact target rebuilds passed. No public
+Lib/Emulator/x86/Product component, App production source, protected media,
+INI, snapshot or executable input changed.
+
+The owner accepted this final corrective result and closed T553 on 2026-10-10.
