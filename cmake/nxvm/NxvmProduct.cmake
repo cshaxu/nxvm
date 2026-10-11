@@ -28,6 +28,9 @@ add_custom_command(OUTPUT "${nxvm_test_firmware_source}"
 add_executable(nxvm-firmware-floppy-smoke
     test/app-nxvm/unit/firmware/floppy_smoke.c "${nxvm_test_firmware_source}")
 target_link_libraries(nxvm-firmware-floppy-smoke PRIVATE vm-profile-tests)
+add_executable(nxvm-firmware-text-cursor-smoke
+    test/app-nxvm/unit/firmware/text_cursor_smoke.c "${nxvm_test_firmware_source}")
+target_link_libraries(nxvm-firmware-text-cursor-smoke PRIVATE vm-profile-tests)
 add_custom_command(OUTPUT "${nxvm_default_firmware_rom}"
     COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_BINARY_DIR}/generated"
     COMMAND nxvm-firmware-build "${CMAKE_SOURCE_DIR}/src/app-nxvm/firmware"
@@ -618,6 +621,7 @@ endfunction()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-firmware-build PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-firmware-floppy-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-firmware-text-cursor-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(mydeskpro386-d4 PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-pcat-topology-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1043,6 +1047,7 @@ target_link_libraries(vm-core-executor-storage-smoke PRIVATE
 
 set(PROJECT_UNIT_TEST_TARGETS
     nxvm-firmware-floppy-smoke
+    nxvm-firmware-text-cursor-smoke
     vm-default-pc-at-profile-smoke
     vm-pcat-topology-smoke
     vm-pcat-composition-smoke

@@ -2,13 +2,24 @@
 
 ## Current Work
 
-No NXVM implementation task is active. M5 T553 closed on 2026-10-10 after
-its corrective S12/S13 audit and repair. The ordered candidate tasks remain in
-[QUEUE.md](QUEUE.md).
+M5 T554 is active: restore the missing guest text cursor in Console and Window
+for the default NXVM App.  T553 closed on 2026-10-10; the ordered remaining
+candidates are in [QUEUE.md](QUEUE.md).
 
 ## Current Task
 
-No active task packet.
+| Field | Value |
+| --- | --- |
+| Identifier | M5 T554 S3 |
+| Identifier Mode | Continuation |
+| Title | Default-PC text cursor restoration — qualification and delivery |
+| Proposal | [PC text cursor restoration](../proposals/m5-pc-text-cursor-restoration.md) |
+| Targets | Default NXVM App firmware and its owned tests. Core, Lib, Emulator and the other PC Apps are read-only comparison evidence. |
+| Objective | Repair the default NXVM firmware's text-mode CRTC initialization so Console and Window receive a valid cursor. |
+| Authorities | `docs/nxvm/README.md`; `docs/nxvm/design/{ARCHITECTURE,CODING,UI}.md`; `docs/rules/{EXECUTION,ARCHITECTURE,CODING,DOCUMENT}.md`; `CONTRIBUTING.md`; this proposal. |
+| Boundaries | No App-specific presenter workaround, second display path, or Shared/Core modification. The custom default firmware owns the missing initialization fact. |
+| Acceptance | The default firmware establishes a valid text cell height and visible cursor shape; an App-owned guest-execution receiver proves the copied text snapshot. |
+| Verification | Default-App x64/x86 build, artifact architecture proof and the complete 56-route App selection per width. |
 
 | Work | Progress |
 | --- | --- |
@@ -26,6 +37,9 @@ No active task packet.
 | T553 S12 | Complete: corrective Core-and-four-App audit records two confirmed narrow receivers—duplicate Core fixtures shared by Core/x86 and Core/board-base, and one stale NXVM.ini owner statement. No production or Shared change was made. |
 | T553 S13 | Complete: both fixture pairs now have the one `test/core/support/` owner; all Core/x86 and Core/board-base callers use it, the Core test manifest is current, and the Architecture authority names `core/product` as NXVM.ini owner. Affected Core x64/x86 units, Core static gates and documentation governance pass; no production, Shared, App or artifact input changed. |
 | T553 | Closed: S1--S13 complete. The corrective S12 audit identified only the two admitted Core-test/documentation defects; S13 repaired them in commit `63782fdc9`. No Public-six, App production, firmware/media, INI, snapshot or artifact input changed. |
+| T554 S1 | Complete: initial Core-wide reset hypothesis was rejected by owner evidence—My5160, My5170 and MyDeskPro386 render correctly using the same Core/Emulator/Lib path. The candidate Core edit was reverted before build or commit. The default App's `INT 10h` mode 03h handler writes only CRTC offset while reset leaves maximum raster at one; its otherwise valid cursor scanlines 6--7 are therefore hidden by the copied-frame contract. The other Apps' external firmware initializes those CRTC registers. |
+| T554 S2 | Complete: the default mode-03 handler now writes CRTC maximum raster 7 and cursor shape 6--7 before CRTC offset. New guest-execution receiver observes the resulting 8-raster visible cursor; it passes x64/x86. No Core, Lib, Emulator or other App source changed. |
+| T554 S3 | Active: default App x64/x86 artifacts are rebuilt, architecture-verified and each complete 56-route App selection passes. Awaiting owner Console/Window verification before T closure. |
 | T552 S9 | Complete: CPU owns all timing recipes and their origin/source-allocation classification; Core owns only copied-result publication and physical eligibility. Five CPU manifest, four transfer and two Core consumer receivers pass x64/x86. |
 | T552 S8 | Complete: retained the CECG B0000h compatibility window as one VADP storage contract while transferring any physical firmware equivalence claim; retained bounded-L1 as a declared Core control policy, not a device duration. Focused CECG/time routes and Core gates pass x64/x86. |
 | T552 S7 | Complete: Core replacement now preserves its atomic new-medium state and propagates an old-lease close failure. The owner-local close injector proves both replacement and removal failure contracts for FDD/HDD; run-result and teardown candidates were retained with direct owner evidence. |

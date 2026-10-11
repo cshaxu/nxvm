@@ -301,6 +301,24 @@ inc dx
 mov al, 09
 out dx, al
 mov dx, 03d4
+mov al, 09
+out dx, al
+inc dx
+mov al, 07
+out dx, al
+dec dx
+mov al, 0a
+out dx, al
+inc dx
+mov al, 06
+out dx, al
+dec dx
+mov al, 0b
+out dx, al
+inc dx
+mov al, 07
+out dx, al
+dec dx
 mov al, 13
 out dx, al
 inc dx
