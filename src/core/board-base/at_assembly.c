@@ -7,7 +7,7 @@ lib_status vm_at_topology_materialize(const vm_at_port_leaf *leaves,
     const vm_at_device_role roles[] = { VM_AT_DEVICE_VADP_ATTRIBUTE,
         VM_AT_DEVICE_VADP_SEQUENCER, VM_AT_DEVICE_VADP_GRAPHICS,
         VM_AT_DEVICE_VADP, VM_AT_DEVICE_CMOS };
-    const lib_size ordinals[] = {1u, 1u, 1u, 4u, 1u};
+    const lib_size ordinals[] = {0u, 1u, 1u, 4u, 1u};
     const vm_at_port_leaf *first[5u];
     const vm_at_port_leaf *last[5u];
     const vm_at_route *rtc = vm_at_route_find(routes, route_count, VM_AT_ROUTE_CMOS_IRQ8);
@@ -32,7 +32,8 @@ lib_status vm_at_topology_materialize(const vm_at_port_leaf *leaves,
     }
     result.display.ports = (core_machine_display_port_topology) {
         first[0] == LIB_NULL ? 0u : first[0]->port,
-        last[0] == LIB_NULL ? 0u : last[0]->port,
+        /* Adjacent read-data address is part of the range, not an EGA route. */
+        first[0] == LIB_NULL ? 0u : (lib_u16)(first[0]->port + 1u),
         first[1] == LIB_NULL ? 0u : first[1]->port,
         last[1] == LIB_NULL ? 0u : last[1]->port,
         first[2] == LIB_NULL ? 0u : first[2]->port,

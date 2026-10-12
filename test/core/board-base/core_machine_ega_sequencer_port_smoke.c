@@ -3,6 +3,7 @@
 #include "video_fixture.h"
 #include "core/board-base/vadp.h"
 #include "core/board-base/machine_board_interface.h"
+#include "../support/memory_alias_fixture.h"
 
 static lib_i32 core_machine_ega_write(core_machine *machine, lib_u32 physical,
     lib_u8 value)
@@ -42,20 +43,45 @@ lib_i32 main(void)
     lib_i32 failed = 0;
     machine = test_video_create(&vadp);
     failed |= core_machine_vadp_configure(&vadp, &config) != LIB_STATUS_OK;
-    failed |= test_video_port_read(machine, 0x03c4u) != 0u;
-    failed |= test_video_port_read(machine, 0x03c5u) != 0x03u;
+    failed |= test_core_machine_fixture_register_reset_mapping(machine,
+        0xfffffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;
+    {
+        static const lib_u16 read_ports[] = { 0x03c1u, 0x03c4u, 0x03c5u, 0x03ceu, 0x03cfu };
+
+        for (lib_size index = 0u; index < sizeof(read_ports) / sizeof(read_ports[0]); ++index)
+            failed |= test_video_port_is_owned(machine, read_ports[index], LIB_FALSE);
+    }
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c4u);
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c5u);
 
     test_video_port_write(machine, 0x03c4u, 1u);
     test_video_port_write(machine, 0x03c5u, 0xffu);
-    failed |= test_video_port_read(machine, 0x03c5u) != 0x3du;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c5u);
     test_video_port_write(machine, 0x03c4u, 2u);
     test_video_port_write(machine, 0x03c5u, 0xa5u);
-    failed |= test_video_port_read(machine, 0x03c5u) != 0x05u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c5u);
     test_video_port_write(machine, 0x03c4u, 3u);
     test_video_port_write(machine, 0x03c5u, 0xffu);
-    failed |= test_video_port_read(machine, 0x03c5u) != 0x3fu;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c5u);
     test_video_port_write(machine, 0x03c4u, 2u);
-    failed |= test_video_port_read(machine, 0x03c5u) != 0x05u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c5u);
+
+    {
+        static const lib_u8 masks[] = { 0x03u, 0x0fu, 0x0fu, 0x0fu, 0x07u };
+
+        /* Observe normalized writes through the existing public generation:
+         * replaying each canonical value must not change stored state. */
+        for (lib_u8 index = 0u; index < sizeof(masks); ++index) {
+            test_video_port_write(machine, 0x03c4u, index);
+            test_video_port_write(machine, 0x03c5u, 0xffu);
+            x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
+            dirty_generation = observation.generation;
+            test_video_port_write(machine, 0x03c5u, masks[index]);
+            x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
+            failed |= observation.generation != dirty_generation ||
+                !test_video_port_read_is_unsupported(machine, 0x03c5u);
+        }
+    }
 
     x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
     dirty_generation = observation.generation;
@@ -79,6 +105,42 @@ lib_i32 main(void)
     failed |= !core_machine_ega_read(machine, CORE_MACHINE_VADP_VIDEO_BASE, &value) ||
         value != 0u;
 
+    {
+        /* MOV DX,3C5h; IN AL,DX; MOV [0500h],AL; HLT. The actual CPU
+         * uses Core's unregistered bus model, not the paused inspection API. */
+        static const lib_u8 program[] = { 0xbau, 0xc5u, 0x03u, 0xecu,
+            0xa2u, 0x00u, 0x05u, 0xf4u };
+        core_machine_run_result result;
+        core_machine_cpu_state cpu;
+
+        value = 0xa5u;
+        failed |= core_machine_memory_write(machine, 0x000ffff0u, program,
+                sizeof(program)) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x0500u, &value, 1u) != LIB_STATUS_OK ||
+            core_machine_run(machine, (core_machine_run_budget){ 4u, 0u },
+                &result) != LIB_STATUS_OK || result.executed != 4u ||
+            result.reason == CORE_MACHINE_STOP_FAULT ||
+            core_machine_get_cpu_state(machine, &cpu) != LIB_STATUS_OK || !cpu.halted ||
+            core_machine_memory_read(machine, 0x0500u, &value, 1u) != LIB_STATUS_OK ||
+            value != 0u;
+    }
+    {
+        /* A mixed CRTC port is still registered for readable indices. Reading
+         * a write-only index must not cancel the actual processor I/O cycle. */
+        static const lib_u8 program[] = {0xbau, 0xd5u, 0x03u, 0xecu,
+            0xa2u, 0x00u, 0x05u, 0xf4u};
+        core_machine_run_result result;
+
+        failed |= core_machine_reset(machine) != LIB_STATUS_OK;
+        test_video_port_write(machine, 0x03c2u, 3u);
+        test_video_port_write(machine, 0x03d4u, 0x13u);
+        test_video_port_write(machine, 0x03d5u, 0x77u);
+        failed |= core_machine_memory_write(machine, 0x000ffff0u, program,
+                sizeof(program)) != LIB_STATUS_OK ||
+            core_machine_run(machine, (core_machine_run_budget){4u, 0u}, &result) != LIB_STATUS_OK ||
+            result.executed != 4u || result.reason == CORE_MACHINE_STOP_FAULT ||
+            core_machine_memory_read(machine, 0x0500u, &value, 1u) != LIB_STATUS_OK || value != 0x77u;
+    }
     core_machine_vadp_finalize(&vadp);
     core_machine_destroy(machine);
     if (failed) return 1;

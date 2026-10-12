@@ -27,27 +27,36 @@ static void core_machine_ega_graphics_write(core_machine *machine, lib_u8 index,
 
 static void core_machine_ega_planar_select_mode_d(core_machine *machine)
 {
+    (void)test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x30u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 1u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x01u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x27u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x07u);
-    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x00u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x10u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x12u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xc7u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x13u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x14u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x09u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x17u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xe3u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x18u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xffu);
 }
 
 lib_i32 main(void)
 {
     const x86_video_ega_sequencer_config sequencer = {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE
+        0x03u, 0x00u, 0x0fu, 0x06u, LIB_TRUE
     };
     const x86_video_ega_controller_config controllers = {
         { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
         { 0x00u, 0x01u, 0x02u, 0x03u, 0x04u, 0x05u, 0x06u, 0x07u,
             0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
-            0x01u, 0x00u, 0x0fu, 0x00u, 0x00u }
+            0x00u, 0x00u, 0x0fu, 0x00u, 0x00u }
     };
     core_machine *machine;
     t_vadp vadp;
@@ -60,6 +69,7 @@ lib_i32 main(void)
     lib_u8 copied_pixel_two;
     lib_u32 copied_palette_fifteen;
     core_machine_memory_route route;
+    x86_video_bus_observation bus;
     lib_i32 failed = 0;
     core_machine_display_config config = {
         .text_timing = {48u, 8u, 8u}, .ega_present = LIB_TRUE
@@ -70,8 +80,10 @@ lib_i32 main(void)
     failed |= core_machine_vadp_configure(&vadp, &config) != LIB_STATUS_OK;
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT, 1u);
 
-    /* EGA text fallback and planar graphics share the Attribute Controller's
+    /* EGA text and planar graphics share the Attribute Controller's
        display-enable state; it is not a renderer-local visibility flag. */
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x04u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_MODE, 0x09u);
     value = 'T';
     failed |= !core_machine_ega_planar_write(machine, CORE_MACHINE_VADP_TEXT_BASE,
@@ -79,20 +91,22 @@ lib_i32 main(void)
     value = 0x1fu;
     failed |= !core_machine_ega_planar_write(machine,
         CORE_MACHINE_VADP_TEXT_BASE + 1u, value);
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
+    failed |= core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_TEXT || snapshot.characters[0] != 'T';
     (void)test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x00u);
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
+    failed |= core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_TEXT || snapshot.characters[0] != 0x20u ||
         snapshot.attributes[0] != 0u;
     (void)test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x20u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
     core_machine_ega_planar_select_mode_d(machine);
 
     status_first = test_video_port_read(machine, 0x03dau);
     status_second = test_video_port_read(machine, 0x03dau);
-    failed |= (status_first & 0x30u) != 0x30u || (status_second & 0x30u) != 0u;
+    failed |= (status_first & 0x30u) != 0u || (status_second & 0x30u) != 0u;
 
     failed |= !x86_video_ega_aperture_contains(vadp.chip, 0x000a0000u,
         0x00010000u);
@@ -102,27 +116,27 @@ lib_i32 main(void)
 
     test_video_port_write(machine, 0x03c4u, 2u);
     test_video_port_write(machine, 0x03c5u, 0x0fu);
-    failed |= test_video_port_read(machine, 0x03c5u) != 0x0fu;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c5u);
     test_video_port_write(machine, 0x03ceu, 5u);
     test_video_port_write(machine, 0x03cfu, 0x00u);
-    failed |= test_video_port_read(machine, 0x03cfu) != 0x00u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03cfu);
     test_video_port_write(machine, 0x03ceu, 6u);
-    failed |= test_video_port_read(machine, 0x03cfu) != 0x05u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03cfu);
     test_video_port_write(machine, 0x03cfu, 0x05u);
     (void)test_video_port_read(machine, 0x03dau);
     test_video_port_write(machine, 0x03c0u, 0x30u);
     test_video_port_write(machine, 0x03c0u, 0x01u);
-    failed |= test_video_port_read(machine, 0x03c1u) != 0x01u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c1u);
 
     failed |= !core_machine_ega_planar_write(machine, 0x000a0000u, 0xa5u);
     failed |= !core_machine_ega_planar_read(machine, 0x000a0000u, &value) ||
         value != 0xa5u;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
+    failed |= core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         snapshot.pixel_width != 320u || snapshot.pixel_height != 200u ||
         snapshot.pixels[0] != 15u || snapshot.pixels[1] != 0u ||
-        snapshot.pixels[2] != 15u || snapshot.palette_rgb[15] != 0xffffffu;
+        snapshot.pixels[2] != 15u || snapshot.palette_rgb[15] != 0xaaaaffu;
     copied_kind = snapshot.kind;
     copied_pixel_zero = snapshot.pixels[0];
     copied_pixel_two = snapshot.pixels[2];
@@ -184,32 +198,38 @@ lib_i32 main(void)
     failed |= core_machine_memory_query(machine, 0x000a0005u, 1u,
         CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
-        !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
+        core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         snapshot.pixels[0] != 0u;
     core_machine_ega_graphics_write(machine, 5u, 0u);
 
     test_video_port_write(machine, 0x03c4u, 0u);
     test_video_port_write(machine, 0x03c5u, 0x02u);
-    failed |= test_video_port_read(machine, 0x03c5u) != 0x02u ||
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c5u) ||
+        core_machine_vadp_observe_bus(&vadp, &bus) != LIB_STATUS_OK ||
+        bus.sequencer_reset != 0x02u ||
         !core_machine_ega_planar_write(machine, 0x000a0000u, 0x00u) ||
         core_machine_memory_query(machine, 0x000a0000u, 1u,
         CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
-        !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
+        core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         snapshot.pixels[0] != 0u;
     test_video_port_write(machine, 0x03c5u, 0x01u);
-    failed |= test_video_port_read(machine, 0x03c5u) != 0x01u ||
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c5u) ||
+        core_machine_vadp_observe_bus(&vadp, &bus) != LIB_STATUS_OK ||
+        bus.sequencer_reset != 0x01u ||
         !core_machine_ega_planar_read(machine, 0x000a0000u, &value) ||
         core_machine_memory_query(machine, 0x000a0000u, 1u,
         CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
-        !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
+        core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         snapshot.pixels[0] != 0u;
     test_video_port_write(machine, 0x03c5u, 0x03u);
-    failed |= test_video_port_read(machine, 0x03c5u) != 0x03u ||
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c5u) ||
+        core_machine_vadp_observe_bus(&vadp, &bus) != LIB_STATUS_OK ||
+        bus.sequencer_reset != 0x03u ||
         !core_machine_ega_planar_read(machine, 0x000a0000u, &value) ||
         value != 0xa5u || core_machine_memory_query(machine,
         0x000a0000u, 1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) !=
@@ -253,19 +273,86 @@ lib_i32 main(void)
     test_video_port_write(machine, 0x03cfu, 0x05u);
     status_first = test_video_port_read(machine, 0x03dau);
     status_second = test_video_port_read(machine, 0x03dau);
-    failed |= (status_first & 0x30u) != 0x30u || (status_second & 0x30u) != 0u;
+    failed |= (status_first & 0x30u) != 0u || (status_second & 0x30u) != 0u;
 
     failed |= !x86_video_ega_aperture_contains(vadp.chip, 0x000a0000u,
         0x00010000u);
     failed |= !core_machine_ega_planar_read(machine, 0x000a0000u, &value) ||
         value != 0u;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
+    failed |= core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         snapshot.pixels[0] != 0u || !snapshot.buffer_changed;
     failed |= copied_kind != X86_VIDEO_KIND_EGA_320X200X16 ||
         copied_pixel_zero != 15u || copied_pixel_two != 15u ||
-        copied_palette_fifteen != 0xffffffu;
+        copied_palette_fifteen != 0xaaaaffu;
+
+    test_video_port_write(machine, 0x03c4u, 4u);
+    test_video_port_write(machine, 0x03c5u, 2u);
+    test_video_port_write(machine, 0x03ceu, 5u);
+    test_video_port_write(machine, 0x03cfu, 0x10u);
+    test_video_port_write(machine, 0x03ceu, 4u);
+    test_video_port_write(machine, 0x03cfu, 0u);
+    failed |= !core_machine_ega_planar_write(machine, 0xa0002u, 0x43u) ||
+        !core_machine_ega_planar_write(machine, 0xa0003u, 0x1fu) ||
+        !core_machine_ega_planar_read(machine, 0xa0002u, &value) || value != 0x43u ||
+        !core_machine_ega_planar_read(machine, 0xa0003u, &value) || value != 0x1fu;
+    /* Changing only write addressing cannot change the read-plane selector. */
+    test_video_port_write(machine, 0x03c4u, 4u);
+    test_video_port_write(machine, 0x03c5u, 6u);
+    failed |= !core_machine_ega_planar_read(machine, 0xa0003u, &value) || value != 0x1fu;
+    test_video_port_write(machine, 0x03ceu, 5u);
+    test_video_port_write(machine, 0x03cfu, 0u);
+    failed |= !core_machine_ega_planar_read(machine, 0xa0003u, &value) || value != 0u;
+
+    /* The selected Board ports must feed the same display-address owner as
+     * direct chip capture; processor aperture addressing remains separate. */
+    test_video_port_write(machine, 0x03c4u, 2u);
+    test_video_port_write(machine, 0x03c5u, 15u);
+    core_machine_ega_graphics_write(machine, 1u, 0u);
+    core_machine_ega_graphics_write(machine, 8u, 0xffu);
+    failed |= !core_machine_ega_planar_write(machine, 0xa0000u, 0x80u) ||
+        !core_machine_ega_planar_write(machine, 0xa0002u, 0x40u) ||
+        !core_machine_ega_planar_write(machine, 0xa0028u, 0x20u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x13u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 1u);
+    failed |= core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
+        snapshot.pixels[321u] != 15u || snapshot.pixels[322u] != 0u;
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 20u);
+    failed |= core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
+        snapshot.pixels[321u] != 0u || snapshot.pixels[322u] != 15u;
+    (void)test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x33u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 3u);
+    failed |= !core_machine_ega_planar_write(machine, 0xa0000u, 0x10u) ||
+        core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 15u;
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x07u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x18u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0u);
+    failed |= core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
+        snapshot.pixels[320u] != 15u;
+
+    test_video_port_write(machine, 0x03c4u, 1u);
+    test_video_port_write(machine, 0x03c5u, 1u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 40u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 6u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 208u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 7u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x10u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x15u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 200u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x18u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xffu);
+    (void)test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x33u);
+    test_video_port_write(machine, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0u);
+    failed |= !core_machine_ega_planar_write(machine, 0xa0008u, 0x80u) ||
+        (test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS) & 0x30u) != 0x30u ||
+        (test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS) & 0x30u) != 0x30u;
+    core_machine_vadp_advance(&vadp, 1u);
+    failed |= (test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS) & 0x30u) != 0u;
 
     core_machine_vadp_finalize(&vadp);
     core_machine_destroy(machine);

@@ -28,6 +28,8 @@ static lib_i32 vm_display_composition_capture(vm_machine *session,
 
 static lib_i32 vm_display_composition_enable_planar(vm_machine *session)
 {
+    vm_display_composition_port_write(session, 0x03c4u, 4u);
+    vm_display_composition_port_write(session, 0x03c5u, 6u);
     vm_display_composition_port_write(session, 0x03c4u, 2u);
     vm_display_composition_port_write(session, 0x03c5u, 0x0fu);
     vm_display_composition_port_write(session, 0x03ceu, 5u);
@@ -41,12 +43,49 @@ static lib_i32 vm_display_composition_enable_planar(vm_machine *session)
     vm_display_composition_port_write(session, 0x03d4u, 0x01u);
     vm_display_composition_port_write(session, 0x03d5u, 0x27u);
     vm_display_composition_port_write(session, 0x03d4u, 0x07u);
-    vm_display_composition_port_write(session, 0x03d5u, 0x00u);
+    vm_display_composition_port_write(session, 0x03d5u, 0x10u);
     vm_display_composition_port_write(session, 0x03d4u, 0x12u);
     vm_display_composition_port_write(session, 0x03d5u, 0xc7u);
     vm_display_composition_port_write(session, 0x03d4u, 0x13u);
     vm_display_composition_port_write(session, 0x03d5u, 0x14u);
+    vm_display_composition_port_write(session, 0x03d4u, 0x09u);
+    vm_display_composition_port_write(session, 0x03d5u, 0u);
+    vm_display_composition_port_write(session, 0x03d4u, 0x17u);
+    vm_display_composition_port_write(session, 0x03d5u, 0xe3u);
+    vm_display_composition_port_write(session, 0x03d4u, 0x18u);
+    vm_display_composition_port_write(session, 0x03d5u, 0xffu);
     return 1;
+}
+
+static lib_i32 vm_display_composition_delivery(vm_machine *session)
+{
+    emulator_machine_driver driver;
+    static emulator_machine_frame delivered;
+    lib_u32 sequence;
+    lib_u32 width;
+    lib_i32 failed = 0;
+
+    if (vm_machine_describe_emulator_driver(session, &driver) != LIB_STATUS_OK)
+        return 0;
+    delivered.window.valid = LIB_FALSE;
+    failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_OK ||
+        !delivered.window.valid || !delivered.window.graphics;
+    sequence = delivered.sequence;
+    delivered.window.valid = LIB_FALSE;
+    failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_OK ||
+        delivered.window.valid || delivered.sequence != sequence;
+    if (vm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK) return 0;
+    width = session->latest_frame.window.image.width;
+    session->latest_frame.window.image.width = 0u;
+    failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_IO_ERROR ||
+        delivered.window.valid || delivered.sequence != sequence;
+    session->latest_frame.window.image.width = width;
+    failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_OK ||
+        !delivered.window.valid || delivered.sequence <= sequence;
+    delivered.window.valid = LIB_FALSE;
+    failed |= driver.copy_frame(driver.context, &delivered) != LIB_STATUS_OK ||
+        delivered.window.valid;
+    return !failed;
 }
 
 lib_i32 main(void)
@@ -72,8 +111,30 @@ lib_i32 main(void)
     failed |= !vm_display_composition_capture(session, &frame, X86_VIDEO_KIND_TEXT) ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u || frame.palette_rgb[0u] != 0x000000u ||
-        frame.palette_rgb[15u] != 0xffffffu;
+        frame.palette_rgb[15u] != 0xaaaaffu;
     text_generation = frame.generation;
+
+    {
+        static const lib_u8 colors[] = {1u, 4u, 0x3fu};
+        static const lib_u32 rgb[] = {0x0000aau, 0xaa0000u, 0xffffffu};
+
+        vm_display_composition_port_write(session, 0x03c2u, 0x01u);
+        for (lib_size color = 0u; color < sizeof(colors); ++color) {
+            (void)test_core_machine_fixture_read_bus(session->core_machine, 0x03dau);
+            vm_display_composition_port_write(session, 0x03c0u, 1u);
+            vm_display_composition_port_write(session, 0x03c0u, colors[color]);
+            (void)test_core_machine_fixture_read_bus(session->core_machine, 0x03dau);
+            vm_display_composition_port_write(session, 0x03c0u, 0x20u);
+            (void)test_core_machine_fixture_read_bus(session->core_machine, 0x03dau);
+            failed |= !vm_display_composition_capture(session, &frame, X86_VIDEO_KIND_TEXT) ||
+                frame.palette_rgb[1] != rgb[color] || frame.generation <= text_generation ||
+                session->latest_frame.window.text.base.text_palette[1] != rgb[color];
+            text_generation = frame.generation;
+            session->last_display_publish_milliseconds = 0u;
+            failed |= vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
+                session->display_generation != text_generation;
+        }
+    }
 
     {
         emulator_machine_driver driver;
@@ -95,6 +156,18 @@ lib_i32 main(void)
         }
     }
 
+    /* Graphics-sized CRTC values do not make borrowed text memory owned. */
+    vm_display_composition_port_write(session, 0x03d4u, 1u);
+    vm_display_composition_port_write(session, 0x03d5u, 79u);
+    vm_display_composition_port_write(session, 0x03d4u, 7u);
+    vm_display_composition_port_write(session, 0x03d5u, 0u);
+    vm_display_composition_port_write(session, 0x03d4u, 0x12u);
+    vm_display_composition_port_write(session, 0x03d5u, 199u);
+    failed |= core_machine_observe_display_snapshot(session->board, LIB_TRUE,
+        0u, &observation) != LIB_STATUS_OK ||
+        observation.generation_reliable || !observation.capture_required;
+
+    /* Retained logical CGA compatibility uses borrowed memory, not EGA VRAM. */
     vm_display_composition_port_write(session, 0x03d8u, 0x0au);
     vm_display_composition_port_write(session, 0x03d9u, 0x00u);
     failed |= core_machine_memory_write(session->core_machine,
@@ -126,8 +199,28 @@ lib_i32 main(void)
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS ||
         frame.pixel_width != 320u || frame.pixel_height != 200u ||
         frame.pixels[0] != 15u || frame.pixels[1] != 0u ||
-        frame.pixels[2] != 15u || frame.palette_rgb[15] != 0xffffffu ||
+        frame.pixels[2] != 15u || frame.palette_rgb[15] != 0xaaaaffu ||
         frame.generation <= cga_generation;
+    {
+        static emulator_machine_frame saved;
+        const lib_u64 generation = session->display_generation;
+        const lib_u64 acknowledged = session->display_snapshot_generation;
+        const lib_bool pending = session->display_frame_pending;
+        const lib_bool valid = session->display_snapshot_generation_valid;
+
+        lib_memory_copy(&saved, &session->latest_frame, sizeof(saved));
+        vm_display_composition_port_write(session, 0x03d4u, 1u);
+        vm_display_composition_port_write(session, 0x03d5u, 0u);
+        failed |= vm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
+            session->display_generation != generation ||
+            session->display_snapshot_generation != acknowledged ||
+            session->display_snapshot_generation_valid != valid ||
+            session->display_frame_pending != pending ||
+            lib_memory_compare(&saved, &session->latest_frame, sizeof(saved)) != 0;
+        vm_display_composition_port_write(session, 0x03d5u, 0x27u);
+        failed |= vm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK;
+    }
+    failed |= !vm_display_composition_delivery(session);
     ega_snapshot_generation = session->display_snapshot_generation;
     failed |= !session->display_snapshot_generation_valid ||
         core_machine_observe_display_snapshot(session->board, LIB_TRUE,
@@ -156,6 +249,30 @@ lib_i32 main(void)
         frame.pixels[0] != 0u || session->display_snapshot_generation !=
         observation.generation;
 
+    /* A pitch-only change must traverse the real Machine publication path,
+     * not merely a direct chip capture or a forced redraw. */
+    failed |= core_machine_memory_write(session->core_machine,
+        CORE_MACHINE_VADP_EGA_APERTURE_BASE + 2u, &(lib_u8){0x40u}, 1u) != LIB_STATUS_OK ||
+        core_machine_memory_write(session->core_machine,
+        CORE_MACHINE_VADP_EGA_APERTURE_BASE + 40u, &(lib_u8){0x20u}, 1u) != LIB_STATUS_OK;
+    vm_display_composition_port_write(session, 0x03d4u, 0x13u);
+    vm_display_composition_port_write(session, 0x03d5u, 1u);
+    session->last_display_publish_milliseconds = 0u;
+    failed |= vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
+        test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
+        frame.pixels[321u] != 15u || frame.pixels[322u] != 0u;
+    ega_snapshot_generation = frame.generation;
+    session->last_display_publish_milliseconds = 0u;
+    failed |= vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
+        test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
+        frame.generation != ega_snapshot_generation;
+    vm_display_composition_port_write(session, 0x03d5u, 20u);
+    session->last_display_publish_milliseconds = 0u;
+    failed |= vm_machine_publish_display(session, LIB_FALSE) != LIB_STATUS_OK ||
+        test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
+        frame.generation <= ega_snapshot_generation ||
+        frame.pixels[321u] != 0u || frame.pixels[322u] != 15u;
+
     vm_machine_reset(session);
     failed |= core_machine_get_timeline_observation(session->core_machine,
         &timeline) != LIB_STATUS_OK || timeline.now != 0u ||
@@ -163,7 +280,7 @@ lib_i32 main(void)
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
-        frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xffffffu ||
+        frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xaaaaffu ||
         core_machine_capture_display_snapshot(session->board, &snapshot) !=
             LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT;
 

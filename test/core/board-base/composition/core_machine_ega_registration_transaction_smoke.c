@@ -148,8 +148,9 @@ lib_i32 test_video_registration_routes(t_vadp *adapter)
             0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE }
     };
     const x86_video_cecg_config compaq = {
-        0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
+        0x41u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
         0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE };
+    static const lib_size port_counts[] = { 15u, 27u, 22u };
     core_machine machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
     t_ram *memory = &machine.executor_memory;
     t_port *port = &machine.executor_port;
@@ -291,7 +292,7 @@ lib_i32 test_video_registration_routes(t_vadp *adapter)
                 X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
             selected.cecg = compaq;
         }
-        for (lib_size fail_at = 1u; fail_at <= (variant ? 27u : 20u); ++fail_at) {
+        for (lib_size fail_at = 1u; fail_at <= port_counts[variant]; ++fail_at) {
             core_machine_port_test_allocation allocation = { fail_at, 0u };
 
             if (!initialize(adapter, memory, &machine)) return 1;
@@ -310,10 +311,12 @@ lib_i32 test_video_registration_routes(t_vadp *adapter)
                 core_machine_port_has_read(port, 0x7c6u) ||
                 !core_machine_port_has_write(port, 0x3d4u) ||
                 core_machine_port_read(port, 0x80u) != 0x5au;
-            allocation.fail_at = 0u;
+            allocation.fail_at = port_counts[variant] + 1u;
+            allocation.attempts = 0u;
             failed |= core_machine_vadp_configure(adapter, &selected) !=
                 LIB_STATUS_OK;
-            failed |= memory->connect.device_provider_count != 2u ||
+            failed |= allocation.attempts != port_counts[variant] ||
+                memory->connect.device_provider_count != 2u ||
                 memory->connect.write_observer_count != 2u ||
                 !core_machine_port_has_write(port, 0x3c4u) ||
                 core_machine_port_has_write(port, 0x3c9u) != selected.vga_present ||

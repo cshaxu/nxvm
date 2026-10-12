@@ -97,7 +97,7 @@ static lib_i32 vm_dos_keyboard_has_edit_menu(const vm_machine *session)
 
 static lib_i32 vm_dos_keyboard_verify_text_frame(vm_machine *session)
 {
-    core_machine_guest_display_frame frame;
+    x86_video_snapshot frame;
     lib_u8 text[TEXT_VIDEO_CELLS * 2u];
     lib_size cell;
     lib_size title_cell = TEXT_VIDEO_CELLS;
@@ -108,14 +108,13 @@ static lib_i32 vm_dos_keyboard_verify_text_frame(vm_machine *session)
         printf("edit display: text memory unavailable\n");
         return 0;
     }
-    /* The caller has acknowledged pause. Compare the same frozen guest state,
-     * not the previous frame retained by the ordinary 16 ms display cadence. */
-    (void)vm_machine_publish_display(session, LIB_TRUE);
-    if (test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) {
+    /* Paused inspection compares frozen Core values. The published UI frame
+     * may precede pause by one cadence; observers cannot enter its producer. */
+    if (core_machine_capture_display_snapshot(session->board, &frame) != LIB_STATUS_OK) {
         printf("edit display: paused frame unavailable\n");
         return 0;
     }
-    if (frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
+    if (frame.kind != X86_VIDEO_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u) {
         printf("edit display: kind=%u columns=%u rows=%u\n", frame.kind,
             frame.columns, frame.rows);

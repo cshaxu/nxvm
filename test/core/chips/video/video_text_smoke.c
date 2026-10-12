@@ -46,7 +46,7 @@ lib_i32 main(void)
         X86_VIDEO_TEXT_BASE + 1u, &value,
         sizeof(value)) != LIB_STATUS_OK;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !x86_video_capture_text_snapshot_from(vadp, &memory_reader, &snapshot);
+    failed |= x86_video_capture_snapshot_from(vadp, &memory_reader, &snapshot) != LIB_STATUS_OK;
     failed |= snapshot.columns != 80u || snapshot.rows != 25u ||
         snapshot.text_cell_height != 1u ||
         snapshot.characters[0] != 'A' || snapshot.attributes[0] != 0x1fu ||
@@ -61,10 +61,10 @@ lib_i32 main(void)
      * text frame indefinitely. */
     write_crtc(vadp, 0x01u, 80u);
     write_crtc(vadp, 0x06u, 13u);
-    failed |= !x86_video_capture_text_snapshot_from(vadp, &memory_reader, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, &memory_reader, &snapshot) != LIB_STATUS_OK ||
         snapshot.columns != 80u || snapshot.rows != 13u || !snapshot.buffer_changed;
     write_crtc(vadp, 0x06u, 25u);
-    failed |= !x86_video_capture_text_snapshot_from(vadp, &memory_reader, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, &memory_reader, &snapshot) != LIB_STATUS_OK ||
         snapshot.columns != 80u || snapshot.rows != 25u || !snapshot.buffer_changed;
     write_crtc(vadp, 0x01u, 0u);
     write_crtc(vadp, 0x06u, 0u);
@@ -90,7 +90,7 @@ lib_i32 main(void)
     }
     failed |= !saw_vertical_retrace || !saw_display_interference ||
         !saw_buffer_access;
-    failed |= !x86_video_capture_text_snapshot_from(vadp, &memory_reader, &snapshot);
+    failed |= x86_video_capture_snapshot_from(vadp, &memory_reader, &snapshot) != LIB_STATUS_OK;
     failed |= !snapshot.cursor_changed || snapshot.cursor_x != 1u ||
         snapshot.cursor_y != 0u || snapshot.cursor_top != 2u ||
         snapshot.cursor_bottom != 6u || snapshot.text_cell_height != 8u;
@@ -99,13 +99,13 @@ lib_i32 main(void)
     failed |= video_test_backing_write(&memory,
         X86_VIDEO_TEXT_BASE + 2u, &value,
         sizeof(value)) != LIB_STATUS_OK;
-    failed |= !x86_video_capture_text_snapshot_from(vadp, &memory_reader, &snapshot);
+    failed |= x86_video_capture_snapshot_from(vadp, &memory_reader, &snapshot) != LIB_STATUS_OK;
     failed |= !snapshot.buffer_changed || snapshot.characters[1] != 'B';
 
-    /* Explicit text capture remains available independently of mode dispatch. */
+    /* The sole capture entry follows mode dispatch, not a text-only bypass. */
     (void)x86_video_register_write(vadp, X86_VIDEO_REGISTER_MODE, 0x12u);
-    failed |= !x86_video_capture_text_snapshot_from(vadp, &memory_reader, &snapshot) ||
-        snapshot.kind != X86_VIDEO_KIND_TEXT;
+    failed |= x86_video_capture_snapshot_from(vadp, &memory_reader, &snapshot) != LIB_STATUS_OK ||
+        snapshot.kind != X86_VIDEO_KIND_CGA_640X200X2;
 
     {
         video_test_backing fixture = {0};
@@ -118,20 +118,20 @@ lib_i32 main(void)
         (void)x86_video_register_write(vadp, X86_VIDEO_REGISTER_MODE, 0x0du);
         write_crtc(vadp, 0x0cu, 0x1fu);
         write_crtc(vadp, 0x0du, 0xffu);
-        failed |= x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot);
-        failed |= x86_video_capture_snapshot_from(vadp, &missing, &snapshot);
+        failed |= x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) != LIB_STATUS_INVALID_ARGUMENT;
+        failed |= x86_video_capture_snapshot_from(vadp, &missing, &snapshot) != LIB_STATUS_INVALID_ARGUMENT;
         for (fixture.fail_on = 1u; fixture.fail_on <= 2u; ++fixture.fail_on) {
             fixture.calls = 0u;
-            failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot);
+            failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_IO_ERROR;
             failed |= fixture.calls != fixture.fail_on;
         }
         fixture.fail_on = 0u;
         fixture.calls = 0u;
-        failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot) ||
+        failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
             fixture.calls != 2u || snapshot.characters[0] != 'Z' ||
             snapshot.characters[1] != 'Y' || snapshot.attributes[0] != 0x1fu ||
             !snapshot.buffer_changed;
-        failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot) ||
+        failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
             snapshot.buffer_changed;
     }
 

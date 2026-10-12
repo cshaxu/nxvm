@@ -22,7 +22,7 @@ lib_i32 main(void)
 {
     const x86_video_ega_sequencer_config sequencer = {
         X86_VIDEO_EGA_APERTURE_BASE, X86_VIDEO_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE
+        0x03u, 0x00u, 0x0fu, 0x06u, LIB_TRUE
     };
     const x86_video_ega_controller_config controllers = {
         { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
@@ -49,13 +49,17 @@ lib_i32 main(void)
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x01u);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x4fu);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x07u);
-    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x02u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x12u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x17u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0xe3u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x18u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0xffu);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x12u);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x5du);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0cu);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x00u);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0du);
-    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, _EGA_MODE10_START_WORD);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, _EGA_MODE10_START_BYTE);
 
     video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_INDEX, 2u);
     video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_DATA, 0x0fu);
@@ -79,7 +83,7 @@ lib_i32 main(void)
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0x0cu);
 
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot);
+    failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK;
     failed |= snapshot.kind != X86_VIDEO_KIND_EGA_640X350X16 ||
         snapshot.pixel_width != _EGA_MODE10_WIDTH ||
         snapshot.pixel_height != _EGA_MODE10_HEIGHT ||
@@ -87,22 +91,30 @@ lib_i32 main(void)
             _EGA_MODE10_WIDTH * _EGA_MODE10_HEIGHT ||
         snapshot.pixels[0] != 15u ||
         snapshot.pixels[(_EGA_MODE10_HEIGHT - 1u) * _EGA_MODE10_WIDTH] != 15u ||
-        snapshot.palette_rgb[15] != 0xff5555u;
+        snapshot.palette_rgb[15] != 0xaa0055u;
 
     (void)video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS);
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0x0fu);
-    failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_640X350X16 ||
         snapshot.pixel_width != _EGA_MODE10_WIDTH ||
         snapshot.pixel_height != _EGA_MODE10_HEIGHT || !snapshot.buffer_changed ||
         snapshot.pixels[0] != 0u ||
         snapshot.pixels[(_EGA_MODE10_HEIGHT - 1u) * _EGA_MODE10_WIDTH] != 0u;
 
-    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x01u);
-    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x00u);
-    failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot) ||
-        snapshot.kind != X86_VIDEO_KIND_TEXT || !snapshot.buffer_changed ||
-        snapshot.characters[0] != 0x20u || snapshot.attributes[0] != 0u;
+    {
+        x86_video_snapshot *saved = lib_allocate_zero(1u, sizeof(*saved));
+        const lib_u64 generation = vadp->data.captured_generation;
+
+        if (saved == LIB_NULL) return 1;
+        lib_memory_copy(saved, &snapshot, sizeof(snapshot));
+        video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x01u);
+        video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x00u);
+        failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_UNSUPPORTED ||
+            lib_memory_compare(saved, &snapshot, sizeof(snapshot)) != 0 ||
+            vadp->data.captured_generation != generation;
+        lib_release(saved);
+    }
 
     x86_video_destroy(vadp);
 

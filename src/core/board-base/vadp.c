@@ -3,6 +3,16 @@
 #include "core/x86/port_interface.h"
 #include "core/x86/memory_interface.h"
 
+static void video_refresh_interrupt(t_vadp *adapter)
+{
+    x86_video_bus_observation observation;
+
+    if (adapter == LIB_NULL || !adapter->configured ||
+        x86_video_observe_bus(adapter->chip, &observation) != LIB_STATUS_OK) return;
+    if (observation.vertical_interrupt) core_machine_pic_irq_source_assert(adapter->irq_source);
+    else core_machine_pic_irq_source_deassert(adapter->irq_source);
+}
+
 lib_status core_machine_vadp_create(core_machine *machine, t_vadp **out_adapter)
 {
     t_vadp *adapter;
@@ -29,12 +39,18 @@ void core_machine_vadp_destroy(t_vadp *adapter)
 
 void core_machine_vadp_reset(t_vadp *adapter)
 {
-    if (adapter != LIB_NULL) x86_video_reset(adapter->chip);
+    if (adapter != LIB_NULL) {
+        x86_video_reset(adapter->chip);
+        video_refresh_interrupt(adapter);
+    }
 }
 
 void core_machine_vadp_advance(t_vadp *adapter, lib_u64 ticks)
 {
-    if (adapter != LIB_NULL) x86_video_advance(adapter->chip, ticks);
+    if (adapter != LIB_NULL) {
+        x86_video_advance(adapter->chip, ticks);
+        video_refresh_interrupt(adapter);
+    }
 }
 
 void core_machine_vadp_observe_snapshot(const t_vadp *adapter,
@@ -65,14 +81,9 @@ static const video_port_route ega_ports[] = {
     { CORE_MACHINE_VADP_PORT_MODE, LIB_FALSE },
     { CORE_MACHINE_VADP_PORT_COLOR, LIB_FALSE },
     { CORE_MACHINE_VADP_PORT_ATTRIBUTE, LIB_TRUE },
-    { CORE_MACHINE_VADP_PORT_ATTRIBUTE_DATA_READ, LIB_FALSE },
-    { CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, LIB_FALSE },
     { CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, LIB_TRUE },
-    { CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, LIB_FALSE },
     { CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, LIB_TRUE },
-    { CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX, LIB_FALSE },
     { CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX, LIB_TRUE },
-    { CORE_MACHINE_VADP_PORT_SEQUENCER_DATA, LIB_FALSE },
     { CORE_MACHINE_VADP_PORT_SEQUENCER_DATA, LIB_TRUE },
 };
 
@@ -88,6 +99,11 @@ static const video_port_route generic_ports[] = {
 };
 
 static const video_port_route vga_ports[] = {
+    { CORE_MACHINE_VADP_PORT_ATTRIBUTE_DATA_READ, LIB_FALSE },
+    { CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, LIB_FALSE },
+    { CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, LIB_FALSE },
+    { CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX, LIB_FALSE },
+    { CORE_MACHINE_VADP_PORT_SEQUENCER_DATA, LIB_FALSE },
     { CORE_MACHINE_VADP_PORT_VGA_DAC_MASK, LIB_FALSE },
     { CORE_MACHINE_VADP_PORT_VGA_DAC_MASK, LIB_TRUE },
     { CORE_MACHINE_VADP_PORT_VGA_DAC_READ_INDEX, LIB_FALSE },
@@ -164,9 +180,11 @@ static lib_status video_read(void *context, lib_u16 address, lib_u64 tick,
 static lib_status video_write(void *context, lib_u16 address, lib_u32 value)
 {
     t_vadp *adapter = context;
+    const lib_status status = x86_video_register_write(adapter->chip,
+        video_register(address), (lib_u8)value);
 
-    return x86_video_register_write(adapter->chip, video_register(address),
-        (lib_u8)value);
+    if (status == LIB_STATUS_OK) video_refresh_interrupt(adapter);
+    return status;
 }
 
 static lib_size append_ports(core_machine_port_route *routes, lib_size offset,
@@ -278,6 +296,8 @@ static lib_i32 core_machine_display_ports_are_vadp(
 lib_bool core_machine_vadp_config_is_valid(const core_machine_display_config *config)
 {
     return core_machine_display_ports_are_vadp(config) &&
+        config->vertical_irq < 16u && config->vertical_irq != 2u &&
+        (config->vertical_irq == 0u || config->ega_present) &&
         (!config->ega_present || config->ega_personality !=
         X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR ||
         x86_video_cecg_config_is_valid(&config->cecg));
@@ -302,6 +322,8 @@ lib_status core_machine_vadp_configure(t_vadp *adapter,
     if (config->vga_present && (!config->ega_present ||
         config->ega_personality != X86_VIDEO_EGA_PERSONALITY_GENERIC))
         return LIB_STATUS_INVALID_ARGUMENT;
+    if (config->vertical_irq >= 16u || config->vertical_irq == 2u ||
+        (config->vertical_irq != 0u && !config->ega_present)) return LIB_STATUS_INVALID_ARGUMENT;
     status = x86_video_create(&candidate);
     if (status != LIB_STATUS_OK) return status;
     status = x86_video_configure_text_timing(candidate, &config->text_timing);
@@ -368,6 +390,7 @@ lib_status core_machine_vadp_configure(t_vadp *adapter,
 void core_machine_vadp_finalize(t_vadp *adapter)
 {
     if (adapter == LIB_NULL) return;
+    core_machine_pic_irq_source_deassert(adapter->irq_source);
     if (adapter->machine != LIB_NULL)
         (void)core_machine_remove_port_routes(adapter->machine, adapter);
     if (adapter->configured)
@@ -389,12 +412,13 @@ lib_status core_machine_vadp_observe_bus(const t_vadp *adapter,
         x86_video_observe_bus(adapter->chip, out_observation);
 }
 
-lib_i32 core_machine_vadp_capture_snapshot(t_vadp *adapter,
+lib_status core_machine_vadp_capture_snapshot(t_vadp *adapter,
     x86_video_snapshot *out_snapshot)
 {
     const x86_video_memory_reader reader = { read_backing,
         adapter == LIB_NULL ? LIB_NULL : adapter->machine };
 
-    return adapter != LIB_NULL && x86_video_capture_snapshot_from(adapter->chip,
+    if (adapter == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return x86_video_capture_snapshot_from(adapter->chip,
         adapter->machine == LIB_NULL ? LIB_NULL : &reader, out_snapshot);
 }

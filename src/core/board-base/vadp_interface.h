@@ -29,6 +29,7 @@ typedef struct core_machine_display_config {
     x86_video_ega_controller_config ega_controllers;
     core_machine_display_port_topology ports;
     lib_bool vga_present;
+    lib_u8 vertical_irq; /* Zero is unconnected; board selects the PIC route. */
 } core_machine_display_config;
 
 /* Serialized board adapter owns its video chip and Core routes. Configure
@@ -45,7 +46,7 @@ void core_machine_vadp_reset(t_vadp *adapter);
 void core_machine_vadp_advance(t_vadp *adapter, lib_u64 ticks);
 lib_status core_machine_vadp_observe_bus(const t_vadp *adapter,
     x86_video_bus_observation *out_observation);
-lib_i32 core_machine_vadp_capture_snapshot(t_vadp *adapter,
+lib_status core_machine_vadp_capture_snapshot(t_vadp *adapter,
     x86_video_snapshot *out_snapshot);
 void core_machine_vadp_observe_snapshot(const t_vadp *adapter,
     lib_u8 acknowledged_generation_valid, lib_u64 acknowledged_generation,

@@ -70,6 +70,7 @@ mov bx, 0040
 mov ds, bx
 mov byte ds:[0049], 0d
 pop ds
+call near $(label_int_10_ega_graphics_common)
 mov dx, 03c4
 mov al, 02
 out dx, al
@@ -98,7 +99,7 @@ dec dx
 mov al, 07
 out dx, al
 inc dx
-xor al, al
+mov al, 10
 out dx, al
 dec dx
 mov al, 12
@@ -132,6 +133,7 @@ mov bx, 0040
 mov ds, bx
 mov byte ds:[0049], 0e
 pop ds
+call near $(label_int_10_ega_graphics_common)
 mov dx, 03c4
 mov al, 02
 out dx, al
@@ -160,7 +162,7 @@ dec dx
 mov al, 07
 out dx, al
 inc dx
-xor al, al
+mov al, 10
 out dx, al
 dec dx
 mov al, 12
@@ -194,6 +196,7 @@ mov bx, 0040
 mov ds, bx
 mov byte ds:[0049], 10
 pop ds
+call near $(label_int_10_ega_graphics_common)
 mov dx, 03c4
 mov al, 02
 out dx, al
@@ -222,7 +225,7 @@ dec dx
 mov al, 07
 out dx, al
 inc dx
-mov al, 02
+mov al, 12
 out dx, al
 dec dx
 mov al, 12
@@ -259,6 +262,127 @@ pop dx
 pop bx
 pop ax
 iret
+
+$(label_int_10_ega_graphics_common):
+; CPU RAM access, eight-dot characters and sequential extended plane memory.
+mov dx, 03c2
+mov al, 03
+out dx, al
+mov dx, 03c4
+mov al, 01
+out dx, al
+inc dx
+mov al, 01
+out dx, al
+dec dx
+mov al, 04
+out dx, al
+inc dx
+mov al, 06
+out dx, al
+; Reset processor data transforms and masks inherited from the prior mode.
+push cx
+xor bx, bx
+mov cx, 0005
+mov dx, 03ce
+$(label_int_10_ega_graphics_clear):
+mov al, bl
+out dx, al
+inc dx
+xor al, al
+out dx, al
+dec dx
+inc bl
+loop $(label_int_10_ega_graphics_clear)
+mov al, 07
+out dx, al
+inc dx
+mov al, 0f
+out dx, al
+dec dx
+mov al, 08
+out dx, al
+inc dx
+mov al, ff
+out dx, al
+pop cx
+; One raster per row, no preset or inherited display start.
+mov dx, 03d4
+mov al, 08
+out dx, al
+inc dx
+xor al, al
+out dx, al
+dec dx
+mov al, 09
+out dx, al
+inc dx
+xor al, al
+out dx, al
+dec dx
+mov al, 0c
+out dx, al
+inc dx
+xor al, al
+out dx, al
+dec dx
+mov al, 0d
+out dx, al
+inc dx
+xor al, al
+out dx, al
+; Byte addressing without raster-bit substitution; disable line compare.
+dec dx
+mov al, 17
+out dx, al
+inc dx
+mov al, e3
+out dx, al
+dec dx
+mov al, 18
+out dx, al
+inc dx
+mov al, ff
+out dx, al
+mov dx, 03da
+in al, dx
+mov dx, 03c0
+mov al, 33
+out dx, al
+xor al, al
+out dx, al
+call near $(label_int_10_ega_palette)
+ret
+
+$(label_int_10_ega_palette):
+; Program RGBI colours through the EGA's six digital palette outputs.
+push bx
+push cx
+mov dx, 03da
+in al, dx
+mov dx, 03c0
+xor bx, bx
+mov cx, 0010
+$(label_int_10_ega_palette_next):
+mov al, bl
+or al, 20
+out dx, al
+mov al, bl
+cmp al, 06
+jnz $(label_int_10_ega_palette_intensity)
+mov al, 14
+jmp $(label_int_10_ega_palette_write)
+$(label_int_10_ega_palette_intensity):
+cmp al, 08
+jb $(label_int_10_ega_palette_write)
+or al, 30
+$(label_int_10_ega_palette_write):
+out dx, al
+inc bl
+loop $(label_int_10_ega_palette_next)
+pop cx
+pop bx
+ret
 
 $(label_int_10_set_cga_06):
 push ax
@@ -298,7 +422,7 @@ mov dx, 03ce
 mov al, 06
 out dx, al
 inc dx
-mov al, 09
+mov al, 08
 out dx, al
 mov dx, 03d4
 mov al, 09
@@ -324,6 +448,7 @@ out dx, al
 inc dx
 xor al, al
 out dx, al
+call near $(label_int_10_ega_palette)
 pop dx
 pop bx
 pop ax

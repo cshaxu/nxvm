@@ -16,7 +16,7 @@ static lib_i32 query_route(core_machine *machine, core_machine_memory_route expe
 lib_i32 main(void)
 {
     const x86_video_cecg_config config = {
-        0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
+        0x41u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
         0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE
     };
     core_machine *machine;

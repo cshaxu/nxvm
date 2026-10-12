@@ -3,6 +3,7 @@
 #define CORE_MACHINE_VADP_H
 #include "core/chips/video/video_interface.h"
 #include "core/board-base/vadp_interface.h"
+#include "core/board-base/pic_bus_interface.h"
 
 #define CORE_MACHINE_DEVICE_VADP "CGA Adapter"
 #define CORE_MACHINE_VADP_VIDEO_BASE 0x000b8000u
@@ -54,12 +55,11 @@ struct t_vadp {
     x86_video *chip;
     core_machine *machine;
     lib_bool configured;
+    core_machine_pic_irq_source *irq_source; /* Borrowed; PIC outlives VADP. */
 };
 
 lib_status core_machine_vadp_initialize(t_vadp *adapter, core_machine *machine);
 lib_status core_machine_vadp_configure(t_vadp *adapter,
     const core_machine_display_config *config);
 void core_machine_vadp_finalize(t_vadp *adapter);
-lib_i32 core_machine_vadp_capture_snapshot(t_vadp *adapter,
-    x86_video_snapshot *out_snapshot);
 #endif

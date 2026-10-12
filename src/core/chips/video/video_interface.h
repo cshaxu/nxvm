@@ -12,6 +12,7 @@ typedef struct x86_video_bus_observation {
     lib_bool cpu_memory_disabled;
     lib_u8 graphics_miscellaneous;
     lib_u8 sequencer_reset;
+    lib_bool vertical_interrupt;
 } x86_video_bus_observation;
 
 lib_status x86_video_observe_bus(const x86_video *video,
@@ -55,6 +56,11 @@ typedef enum x86_video_memory_region {
  * Values and snapshots are copied; no mutable layout or host service is exposed.
  * Reset retains configuration, clears VRAM and retains the established CRTC rules.
  * Register reads preserve the supplied byte when the selected operation is inactive.
+ * Configured EGA/CECG indexed controls are write-only; direct reads return
+ * UNSUPPORTED without modifying the supplied byte. Board read routes are absent.
+ * Mixed CRTC data ports remain readable for their readable indices. Other
+ * indices supply no data and preserve the caller's bus value, as inactive
+ * routes do; Video does not define a physical open-bus value.
  * Backing-memory capture failure is not a successful frame publication. */
 lib_status x86_video_register_read(x86_video *adapter,
     x86_video_register port_id, lib_u8 *out_value);
@@ -71,6 +77,10 @@ void x86_video_reset(x86_video *adapter);
 lib_status x86_video_configure_text_glyphs(x86_video *adapter,
     const x86_video_text_glyph_config *config);
 void x86_video_advance(x86_video *adapter, lib_u64 elapsed_ticks);
+/* Same logical reference-clock units as advance; chip mode dividers apply
+ * inside the programmed raster. No eligible programmed
+ * interrupt edge returns UNSUPPORTED and preserves out_ticks. */
+lib_status x86_video_ticks_until_event(const x86_video *video, lib_u64 *out_ticks);
 lib_status x86_video_configure_text_timing(x86_video *adapter,
     const x86_video_text_timing *timing);
 lib_status x86_video_configure_cga_memory(x86_video *adapter);
@@ -80,13 +90,13 @@ lib_status x86_video_configure_ega_controllers(x86_video *adapter,
     const x86_video_ega_controller_config *config);
 lib_i32 x86_video_ega_aperture_contains(const x86_video *adapter,
     lib_u32 physical, lib_size bytes);
-lib_i32 x86_video_capture_text_snapshot_from(x86_video *adapter, const x86_video_memory_reader *memory,
-    x86_video_snapshot *out_snapshot);
 void x86_video_observe_snapshot(const x86_video *adapter,
     lib_u8 acknowledged_generation_valid,
     lib_u64 acknowledged_generation,
     x86_video_snapshot_observation *out_observation);
-lib_i32 x86_video_capture_snapshot_from(x86_video *adapter, const x86_video_memory_reader *memory,
+/* OK publishes a complete copy. UNSUPPORTED has no representable frame.
+ * Every failure preserves the destination and capture acknowledgement. */
+lib_status x86_video_capture_snapshot_from(x86_video *adapter, const x86_video_memory_reader *memory,
     x86_video_snapshot *out_snapshot);
 lib_status x86_video_create(x86_video **out_video);
 void x86_video_destroy(x86_video *video);

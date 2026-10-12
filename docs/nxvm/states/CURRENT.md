@@ -15,7 +15,33 @@ Coordinator actual-pushed-diff review accepts the complete S3 delivery.
 Interactive desktop acceptance is not claimed. The earlier unexplained DOS
 keyboard failure and narrow-margin DeskPro x86 boot remain recorded limitations.
 
-Remaining ordered work is active S5 video, then S6 cross-profile closure.
+The owner approved a bounded S5 delivery and separate glyph-capacity task on
+2026-10-12. S5 verification and delivery are in progress; it is not yet closed.
+Next is S6 Shared fixed 32-byte glyph slots, then S7 remaining video
+qualification, then S8 cross-profile closure (formerly planned S6).
+The owner requires the failing DeskPro x64 boot receiver to remain in S5 and
+be repaired before S6 admission. The latest complete units pass 546/546 per
+width; the x64 integration batch passes default 22/22, XT 2/2 and AT 4/4,
+but DeskPro passes only 3/4: its boot receiver misses the original terminal
+within 180 seconds. This is not qualified as a performance-only failure.
+The paused diagnostic subsequently identifies GC Miscellaneous 06h=0Eh
+(text) while the new dispatcher selected graphics from Attribute Mode=01h.
+The source-correct GC selector repair passes the original DeskPro x64 boot
+receiver in 134.92 seconds. Final dual-width full qualification is still in
+progress; that focused pass does not supersede the recorded failed batch.
+S5 remains open and uncommitted; no Shared glyph-capacity change is admitted.
+Executor qualification is now complete on the corrected candidate: final units
+pass 546/546 x64 (218.83 seconds) and x86 (77.31 seconds), and all four selected
+integration groups pass 32/32 per width with unchanged budgets. DeskPro boot
+passes at 135.85/164.44 seconds. Eight optimized stripped 0555 PC artifacts
+are rebuilt and width/deployment checked; final hashes and code counts are in
+the video ledger. Core/documentation gates and whitespace pass. Complete P
+delivery and coordinator actual-pushed-diff acceptance are still required.
+The unresolved video classes are transferred intact, not marked qualified:
+V08 CPU RAM enable, V09 clock/reset consumers, V17 live text/font production,
+V18 remaining raster/MUX, V19 advanced text geometry, V20 Restore/blanking
+priority and V28 retained VGA cursor bounds. S6 consumes the V25 capacity
+prerequisite; S7 still owns the real hardware producers and receiving proof.
 S4 executor work is complete on the frozen candidate: all 22 FDC/HDC/media/time
 rows have an explicit source/model and receiver disposition. The approved
 [ECC L2 model](../etc/evidence/t555-s4-storage-ecc-model-review.md), Format/Long,
@@ -35,6 +61,215 @@ actual-pushed-diff review accepts complete implementation `44340d5c1`; S4 closes
 Physical ID/raw-track/check-wire/circuit/mechanical timing bounds remain
 explicit; no interactive desktop or universal physical ECC proof is claimed.
 S5 additionally owns the Core cached-graphics/new-publication driver contract.
+Its [in-progress video ledger](../etc/evidence/t555-s5-video-source-ledger.md)
+defines 28 current-path review units and the actual CGA/generic-EGA/CECG
+bindings. Original-page and test reconciliation is incomplete; internal
+V07/V11 arithmetic, V21 Environment independence and V26/V27 pending-frame
+delivery are repaired with direct and actual worker proof. The
+expanded 41 focused receivers pass per width,
+but no final S5 dynamic qualification is claimed. Existing
+selected video baseline passes 39/39 per width. The
+[video boundary review](../etc/evidence/t555-s5-video-boundary-review.md)
+identifies required Core copied-text/IRQ/deadline review and the default
+project-firmware programming prerequisite. The owner subsequently explicitly
+approved all three reviewed S5 boundaries: existing snapshot 50-row/dual-font
+extension, vertical IRQ output/deadline/board route, and project-authored default
+BIOS EGA RAM/window/font initialization. This approval does not authorize a
+Shared change, third-party ROM modification or BIOS-specific chip workaround.
+Approved internal V07/V11 arithmetic repair may proceed without those new
+contracts: subtraction-first video range checks and a widened timing sum,
+with existing test receivers. This does not authorize a partial P or S5
+closure; the full 28-row batch remains intact.
+The same standing internal-repair authority covers V21 Environment/Feature
+Control independence using the existing config/register boundary. Original
+CECG 4-7 proves reserved/support bits; no new public field or platform path
+is needed. Correct the selected DeskPro declaration and chip/port/reset
+receivers together. This remains part of the one complete S5 delivery.
+V26/V27 now implement the already-admitted cached-frame handoff using the
+existing flag as pending delivery. Copy success consumes it; failure retains
+it. Direct copy/failure and actual bound instruction/first/reset receivers
+extend existing tests; bound observers never invoke the execution-owned
+producer. No public or Shared boundary is changed.
+The actual worker receiver executes two four-instruction traces: the first
+publishes one graphics frame; the unchanged second trace does not republish.
+Reset publishes a new paused text frame with the current run generation.
+Current focused receivers pass 41/41 and Core static gates 6/6 per width;
+remaining hardware/source reconciliation and complete S5 qualification are open.
+The owner-approved copied-text ABI and Core converter now carry 50-row
+capacity and both glyph banks, preserving the selected CGA 25-row limit.
+Current transport/Video/driver tests pass on both widths; live EGA font/row
+production, vertical IRQ/deadline wiring and default BIOS programming remain
+in progress. They are not claimed done merely because the transport works.
+The source-proven CECG cursor-end decoder is now repaired with original-table
+vectors and a real selected DeskPro port-to-Machine-frame receiver. Current
+focused tests pass 41/41 on both widths; this is not complete S5 qualification.
+Earlier review identified a separate Shared font-capacity need:
+existing Window font slots have 16 rows, but exact EGA/CECG character export
+needs up to 32. The boundary review proposes preserving default height 16 while
+extending slot capacity and the copied Core glyph-height fact. Shared-six and
+MyNES remain unchanged until the separately approved S6. The owner has now
+approved that exact expansion after bounded S5 closure; independent Core work
+and the approved capacity task retain separate delivery boundaries.
+V09's internal sequencer mask/reset repair now preserves EGA/CECG alpha and
+bandwidth, isolates retained VGA masks, restores chip capability before reset
+initialization and clears generic-EGA Character Map only under its sourced
+asynchronous reset. Its 7,680-context mask matrix and actual board receiver
+pass within the current 41/41 focused and 6/6 static checks per width. CECG
+reset-side-effect reconciliation, port direction and clock consumers remain
+open; this is not complete V09 or S5 qualification.
+V15 now leaves write-only EGA/CECG indexed-control read routes unregistered,
+returns UNSUPPORTED with an unchanged byte at the direct chip boundary and
+preserves VGA's real read routes. An actual CPU IN receiver proves the existing
+Core idle-bus value rather than adding a Video-owned substitute value. Updated
+independent registration counts cover every allocation failure and successful
+retry. The final current focused set passes 43/43 and Core static gates 6/6
+on each width; complete S5 qualification, artifacts and delivery remain pending.
+V06's existing CGA 320/640 packed decoders now consume CRTC display start and
+wrap within the independently selected even/odd 8-KiB bank. They reuse the
+existing graphics capture generation; no state or public interface was added.
+The new chip regression fails before repair, and chip plus actual Board-port
+receivers pass after repair. Final current focused receivers pass 43/43 and
+Core static gates 6/6 per width. IRQ/raster, live EGA text/font/palette and
+project-firmware work remain open; no whole-S5 or artifact qualification follows.
+The approved V18 IRQ boundary is now implemented: Video owns one latch and
+the next programmed vertical-blank edge; VADP borrows a PIC source, selected
+EGA/CECG AT declarations route IRQ9, and Board-Base reuses the existing
+video clock/deadline reducer. CRTC clear/disable and reset release the line;
+VADP finalizes before PIC. Direct tests cover latch versus sync, held clear,
+disable/re-enable, reset, large advance and nine-bit blank start. The real
+Board receiver checks a 1:2 clock conversion, slave IRR, quiet reusable lease
+on configuration failure and asserted teardown. Current focused receivers pass
+44/44 and Core static gates 6/6 per width. The programmed raster is explicitly
+L2 where terminal-count/physical-frequency evidence is not exact; diagnostic
+video MUX, complete blanking/clock behavior and remaining video rows stay open.
+V16/V24 now share the EGA/CECG six-digital-output palette conversion, feed
+Attribute palette/plane enable into copied text and reuse one captured
+generation for text semantic freshness. Display-disabled text is black and
+has no visible cursor; no additional cache/state/API was added. Three
+old-algorithm mutations fail the new direct regression. The actual default
+port-to-Machine/Emulator-frame receiver proves palette-only color updates
+and non-forced unchanged retention. After correcting false RGBI goldens and
+the incomplete CECG cursor fixture, focused tests pass 44/44 and Core gates
+6/6 per width. Live plane/font geometry, diagnostic MUX and default firmware
+initialization remain open; Shared-six, MyNES, owner INIs/media and EXEs are
+unchanged. This is not final S5 qualification or delivery.
+V14's sole planar reader/writer now handles read and write odd/even plane
+selection independently. The complete selector table, preserved inspection
+latches, Map Mask intersections and actual Board port-to-memory receiver pass;
+intended sequential graphics fixtures explicitly program Memory Mode 6.
+Removing either selector fails its regression. The source-proven MC6845 R10
+mask now preserves both cursor mode bits, with all-byte mask coverage; blink
+timing is not claimed complete. Final current focused tests pass 44/44 per
+width and Core static gates 6/6 per width. Address remapping, live text/fonts,
+remaining raster/MUX and default firmware programming stay in active S5.
+The existing CGA raster now drives the source-proven 16/32-field cursor modes
+through one private field phase and one consolidated arithmetic helper. Real
+Board advance marks the existing generation at a cursor edge; the receiver
+proves unchanged-before/change-at-edge capture and hidden cursor output.
+Four-mode/reset/maximum-tick/programmed-period tests pass in the final 44/44
+focused and 6/6 static checks per width. Character blink/intensity and complete
+clock/extended-video reconciliation remain open, not qualified by cursor proof.
+CGA Mode Control bit 5 now selects copied character blink or background
+intensity through the same private field phase, with no new state/API.
+The all-attribute/full-cycle table and actual Board port/memory/generation
+receiver prove hidden foreground and unchanged raw VRAM; disabling the mode
+restores intensity. A disabled-blink mutation fails both receivers, then the
+restored implementation passes. Current focused tests remain 44/44 and Core
+gates 6/6 per width. Native host cursor timing is not physical-chip proof;
+Shared remains read-only. Complete S5 units/integrations/artifacts are pending.
+Programmed CGA raster now applies the bit-0 character-clock divider at the
+chip owner, consistently for period and status. Four-mode chip tests and real
+Board port/315:1408 clock-chain tests prove horizontal and retrace boundaries;
+an always-one-divider mutation fails both receivers. Original Ninja builds,
+44/44 focused tests and 6/6 Core gates pass per width. Fallback clock models
+and enhanced-card timing remain distinct; this is not physical/electrical or
+full S5 qualification. Firmware and font/address/MUX repairs remain pending.
+CPU chain/page address replacement is now separate from CRTC display start.
+The wrong CECG-only whole-address shift/display-page helper is removed; all
+CPU operations use one corrected offset decoder and capture uses the actual
+CRTC byte/word/wrap inputs. The independent address matrix and real chip,
+Board and DeskPro receivers pass, and both deliberately broken algorithms
+fail their regressions. Focused tests pass 44/44 and Core gates 6/6 per width;
+the final register-constant naming is rebuilt and its six affected receivers
+pass per width. Live text/fonts, stride/panning/split, RAM gate, MUX and BIOS
+receivers remain active work. No complete-S5/desktop or physical mux claim.
+No Shared/MyNES/artifact change or partial implementation P is delivered.
+V19 coherent graphics layout now consumes programmed pitch, raster, panning,
+split and address mux inputs at the existing decoder, without new state/API.
+Independent offset/bit vectors and real Board port/memory receivers pass;
+vertical divide is also proven through both chip IRQ and Board deadline routes.
+The current focused set passes 44/44 per width after original Ninja builds.
+Unsupported-shape eligibility, advanced text representation, live fonts and
+default firmware remain open; this is not complete S5 qualification.
+V10 generic EGA cursor start now follows original IBM page 33's one-less
+encoding without changing CECG, CGA or retained VGA lower-bit decoding.
+Both 1,024-pair matrices and the actual default guest-firmware receiver pass;
+the expanded focused set is 45/45 per width. The nonselected VGA upper-bit
+mask limitation stays explicit rather than silently importing a new model.
+Full live glyph/geometry and firmware initialization remain active S5 work.
+The default guest BIOS now shares one EGA graphics initializer for modes
+0Dh/0Eh/10h, rather than inheriting text/address/data-transform state.
+The actual IVT/ROM/CPU receiver pollutes the prior mode, executes INT 10h,
+checks shape/pixels and retained registers/stack. Both firmware builds and
+three related tests pass per width, with byte-identical generated ROMs.
+Text/font initialization and remaining raster/MUX contracts remain open;
+no whole-S5 artifact qualification or partial implementation P is delivered.
+V24 text capture now preserves caller output/cache when either wrapped backing
+read fails; initialization follows successful reads. Existing failure/retry
+fixtures and the analogous planar receiver pass 3/3 on each width. Neighboring
+capture/converter failure ordering is retained where already correct.
+The separate Shared 32-row glyph-capacity/height request remains unapproved;
+no Shared or MyNES edits follow from the three original Core/firmware approvals.
+Selected eight-dot graphics diagnostic MUX now samples the same display address
+and plane index as frame capture, with original IBM/CECG tables and no read-count
+state. The retained VGA counter is isolated rather than called selected proof.
+One horizontal scale also fixes half-rate active-display extent. All 512 MUX
+vectors, stable/time-driven reads, processor-latch and CPU-gate independence,
+and actual Board port/memory receiver pass; the focused set is 45/45 per width.
+Final added assertions pass on both widths. Text/serializer MUX, remaining
+clock/blanking inputs and complete S5 qualification remain open.
+V20's CECG Control Mode grammar is now source-correct: EGA mode is low bits
+01, not high Restore bits, and reserved bit 2 always reads zero. Default and
+selected DeskPro construction use 41; all-byte construction/runtime and real
+DeskPro port/reset receivers pass in the current 45/45 set per width.
+Monitor-control effects are not qualified by these stored-value assertions;
+remaining text/font/clock/blanking work and whole S5 delivery remain open.
+V20 selected monitor blank now affects the existing output-enable predicate,
+copied palette/characters/cursor and display-active status, independently of
+CPU VRAM. All eight combinations, repeat freshness and actual DeskPro port
+receiver pass in the current 45/45 set per width. No new state/API/Shared path.
+Diagnostic/Restore compatibility, fonts, remaining clock and capture eligibility
+still require completion; no full S5 qualification or partial P is delivered.
+V08 inactive mono/color CRTC-data/status reads now honor the existing supplied-
+byte preservation contract, with no Attribute-phase or device-state mutation.
+Both selected EGA personalities and positive active directions pass with CECG
+I/O-base and retained VGA receivers, 3/3 per width. No new API/helper/state.
+Remaining live text/font/RAM/clock and eligibility work stays in active S5;
+these direct contracts do not establish complete external/desktop qualification.
+V20 Diagnostic now disables normal raster blanking at the sole existing status
+owner, following visually checked CECG 4-3. Sync, IRQ and next-event state stay
+unchanged; on/off chip and actual VADP port receivers reject the old algorithm.
+Final focused tests pass 45/45 per width after original Ninja rebuilds. No
+new state/helper/API or Shared change. Restore and combined compatibility
+effects remain unqualified; this does not close V20 or the complete S5.
+V02/V10's mixed CRTC read repair now preserves the supplied Core bus value
+for unreadable indices. An UNSUPPORTED candidate passed direct checks but
+failed actual CPU I/O, so it is withdrawn without altering Core port behavior.
+The real IN/store/HLT receiver and all-index direct matrix pass; three receiving
+tests now retain Core's actual latch rather than falsely demanding zero from
+inactive/write-only Video reads. Current focused tests pass 45/45 per width;
+this is not complete S5 unit/integration/artifact or desktop qualification.
+Completion review confirms a separate capture-result boundary: bool conflates
+unsupported/unprepared frames with real failed reads, and the current graphics
+classifier failure falls back to Text. The video review now specifies one
+existing status-return chain and removal of the test-only text capture export.
+The owner explicitly approved that existing return-contract convergence and
+withdrawal of the test-only public text entry. Subsequent Core-only interface
+repairs are covered by the owner's standing authorization; Shared changes still
+need separate approval. The existing wrong
+Mode10 oracle is baseline evidence, not a pass proving correct eligibility.
+The Shared glyph-capacity request is approved for the separate next S6. No new API,
+state, wrapper or Shared edit is introduced by this read-only completion review.
 Compaq A3/A4/A5 speed/read control and auxiliary-PIT refresh HOLD remain
 required S6 gaps. Missing A1/A2/A6 source definitions must be reconciled; these
 are not electrical-only exclusions or functions proven by successful boot.
@@ -44,19 +279,19 @@ are not electrical-only exclusions or functions proven by successful boot.
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation: next unused S5 in open T555 after accepted S4 implementation `44340d5c1`; S4 governance closure is P2. |
-| Admission And Approval | Owner's standing automatic S admission and whole-T instruction authorize NXVM-only original-source/current-code audit and confirmed owner-local repairs. Single-person sequential coordinator/executor. Shared-six, MyNES and owner INIs/media remain read-only; no prior storage exception grants a new video ABI. |
+| Admission And Approval | Owner's standing automatic S admission and whole-T instruction authorize NXVM-only original-source/current-code audit and confirmed owner-local repairs. Owner then explicitly approved the three boundaries in the video review: snapshot 50-row/dual-font extension, vertical interrupt output/deadline/board IRQ route, and source-correct project-authored default BIOS EGA RAM/window/font initialization. Single-person sequential coordinator/executor. Shared-six, MyNES, third-party ROMs and owner INIs/media remain read-only. |
 | Objective | Reconcile retained CGA/EGA/CECG register, VRAM/aperture, reset, cursor/palette/font, clock/raster and copied-presentation routes against selected original manuals and current consumers; repair confirmed gaps and prove all four fixed bindings. |
-| Non-goals | No CPU instruction changes, Shared/MyNES changes, BIOS workaround, new card/profile, alternate renderer/framebuffer, second clock/queue or owner firmware/media/INI/snapshot modification. Storage stays at accepted S4; Compaq speed/AUX-PIT/HOLD remains S6. |
+| Non-goals | No CPU instruction changes, Shared/MyNES changes, BIOS-specific controller workaround, new card/profile, alternate renderer/framebuffer, second clock/queue or third-party firmware/media/INI/snapshot modification. Project-authored default BIOS programming is the explicitly approved receiving repair, not host BIOS emulation. Storage stays at accepted S4; Compaq speed/AUX-PIT/HOLD remains S8. |
 | Reference Baseline | Accepted runnable `44340d5c1`, its S4 source ledger and S1 video inventory. Historical T507/T521 video records are research leads, not current implementation proof. Original editions/pages/hashes and selected profile facts must be rechecked before assigning source/timing grades. |
 | Candidate Proposal | `proposals/m5-selected-controller-qualification.md`, video/presentation batch in T555 execution order, including S4's cached-graphics/new-delivery handoff. |
-| Files And ABI Surface | Existing `core/chips/video`, Board-Base VADP/display owners, selected Board-AT/XT and App construction facts only when current audit confirms need, Core Machine frame/display/driver boundary, corresponding Core/App tests, NXVM evidence/manifests and affected eight 0555 artifacts. Begin with a finite current-path gap ledger and estimated diffs; existing public contracts are the default. Any new public API or timing downgrade requires exact need and owner review before modification. |
+| Files And ABI Surface | Existing `core/chips/video`, Board-Base VADP/display owners, selected Board-AT/XT and App construction facts, Core Machine frame/display/driver boundary, project-authored `app-nxvm/firmware` EGA initialization and its guest-execution receivers, corresponding Core/App tests, NXVM evidence/manifests and affected eight 0555 artifacts. The finite V01--V28 ledger and boundary review freeze the approved snapshot/output/deadline/IRQ and capture-result convergence. The owner authorizes further Core-only interface repairs without individual review; Shared requirements and timing downgrades still need separate exact approval. |
 | Applicable Rules | NXVM guide, shared Execution/Architecture/Coding/Document, NXVM Architecture/Coding and Product UX for visible behavior, source policy, architecture-governance and coding-governance skills; selected original source editions/hashes, S1 inventory and S4 handoff. |
 | Verification | Original-source/function/timing ledger; focused chip/board/frame/driver receivers x64/x86; complete repository-only units and four selected App integration groups once per width after the frozen repair boundary, using original Ninja/ccache trees and unchanged budgets. Core manifests/corpus/dependency and documentation/whitespace gates; changed optimized stripped eight-PC artifact PE/hash checks. No interactive desktop or electrical claim without actual evidence. |
 | Expected Markers | Every retained video port/register/aperture/reset/cursor/palette/font/clock/capture route has an original source or explicit grade/boundary, a sole current owner and a direct/receiving disposition. Cached-frame validity cannot stand in for new delivery; first, reset and paused publication must be proven through the actual Core-to-Emulator path. |
 | Asset Needs | Read-only owner-managed original manuals, existing external ROM/font/firmware/media, preserved four INIs and masters. Original build caches/persistent ccache only; artifact change requires executable-input change, not a documentation-only audit. No raw protected material enters Git. |
 | Reporting Requirements | First report complete current-path findings, sources, dependency/owner gaps, proposed files and estimated additions/deletions; freeze a finite receiver ledger before repair. Record each retained/transferred fact, source/model tier, new state/helper necessity, actual code counts and verification boundaries. Deliver one complete implementation P, immediate push, actual-pushed-diff coordinator review, then closure; no individual local-vector or partial repair P. |
 | Stop Conditions | Report required Shared/MyNES change, new ABI, timing downgrade, unsupported source invention, protected-asset need or out-of-scope repair. Read-only `repos.external` reference implementations may supply pinned L2 evidence under the standing authorization, never copied/transliterated code or false selected-hardware timing proof. No enlarged budget, firmware-specific controller response or second presentation route. |
-| Exit Criteria | Entire frozen video/presentation batch reconciled; confirmed in-scope gaps repaired at sole owner with direct and actual receiving proof; required dual-width complete tests/gates and changed artifacts qualified; complete P pushed and actual diff accepted. T remains open for S6 cross-profile closure. |
+| Exit Criteria | Owner-directed bounded closure on 2026-10-12 supersedes the former indivisible V01--V28 delivery: existing Core video/capture/publication and firmware repairs have direct and actual receiving proof; complete dual-width units, selected-App integrations, gates and eight changed artifacts pass; complete P pushed and actual diff accepted. Unresolved classes transfer intact to S7, Shared glyph capacity to S6 and cross-profile work to S8. No complete-video claim. |
 | Original Owner Request | Audit original chip/board manuals for four PC Apps, repair confirmed controller and wiring gaps, and verify cross-profile behavior without narrowing the whole-T goal. |
 | Similar-Issue Sweep | Inspect selected video variants and all real consumers for bounds/units, memory decode, reset/read/write/latch semantics, palette/cursor/font geometry, clock origin, copied-frame validity/generation/failure and owner-thread publication. Map every hit to repair, source-backed retention or an explicit complete S6/out-of-scope receiver; boot alone is not disposition. |
 

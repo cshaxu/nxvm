@@ -27,15 +27,23 @@ lib_i32 main(void)
             snapshot.characters[0] != 'O' || snapshot.characters[1] != 'K';
     }
     if (!failed) {
-        test_core_machine_fixture_write_port(session->core_machine,
-            0x03dau, 0x03u);
         failed |= test_core_machine_fixture_read_bus(session->core_machine,
-            0x07c6u) != 0x03u;
+            0x07c6u) != 0x0du;
+        for (lib_u8 feature = 0u; feature < 4u; ++feature) {
+            test_core_machine_fixture_write_port(session->core_machine,
+                0x03dau, feature);
+            failed |= test_core_machine_fixture_read_bus(session->core_machine,
+                0x07c6u) != 0x0du;
+        }
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x07c6u, 0xffu);
+        failed |= test_core_machine_fixture_read_bus(session->core_machine,
+            0x07c6u) != 0x0du;
     }
     if (!failed) {
         vm_machine_reset(session);
         failed |= test_core_machine_fixture_read_bus(session->core_machine,
-            0x07c6u) != 0x00u;
+            0x07c6u) != 0x0du;
     }
     vm_machine_destroy(session);
     if (!failed) {

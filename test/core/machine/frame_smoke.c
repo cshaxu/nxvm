@@ -37,6 +37,22 @@ lib_i32 main(void)
         destination.characters.primary[219u] != 0x2588u ||
         destination.window.text.font[4095u] != 0x5au) return 1;
 
+    source.rows = 43u;
+    source.characters[3439u] = 'G';
+    source.attributes[3439u] = 0x18u;
+    source.text_font_selection = LIB_TRUE;
+    source.secondary_text_glyphs[4095u] = 0xa6u;
+    if (vm_machine_frame_from_display(&source, 8u, &destination) != LIB_STATUS_OK ||
+        destination.window.text.base.text_rows != 43u ||
+        destination.window.text.base.cells[3439u].glyph_index != 'G' ||
+        destination.window.text.base.cells[3439u].glyph_bank != 1u ||
+        destination.window.text.base.cells[3440u].glyph_index != 0u ||
+        destination.window.text.font[4095u] != 0x5au ||
+        destination.window.text.secondary_font[4095u] != 0xa6u) return 1;
+    source.text_font_selection = LIB_FALSE;
+    if (vm_machine_frame_from_display(&source, 8u, &destination) != LIB_STATUS_OK ||
+        destination.window.text.base.cells[3439u].glyph_bank != 0u) return 1;
+
     source.columns = 40u;
     source.rows = 1u;
     source.characters[40u] = 'X';

@@ -67,8 +67,10 @@ remains open for S4--S6.
 | S | Boundary | Exit condition |
 | --- | --- | --- |
 | S4 | FDC/media and HDC personalities | Each selected controller/media route has an explicit grammar, request/IRQ/DMA consumer and reset/deadline disposition. |
-| S5 | Video and selected board display routes | CGA/EGA/CECG owner, aperture, clock and copied-frame routes are qualified without adding a renderer or second framebuffer. |
-| S6 | Cross-profile closure | Four fixed-App route matrix, exact remaining L1/L2/L4 exclusions, relevant unit/integration proof and documentation closure are complete. |
+| S5 | Bounded video delivery, owner split 2026-10-12 | Existing register/raster/palette/capture/publication and firmware repair batch passes full units, selected integrations and eight artifacts; unresolved video classes transfer intact, not qualified. |
+| S6 | Approved Shared 32-scanline glyph slots | Default remains 16; fixed slot layout, validation/render/copy and Core adapter are consistent; public-six quality gates, full dual-width tests and all ten App artifacts pass; owner acceptance follows delivery. |
+| S7 | Remaining video qualification | V08/V09/V17--V20/V28 residual hardware producers and source/receiving classes are exhausted with direct and actual wiring proof; copied-capacity proof alone does not qualify live hardware. |
+| S8 | Cross-profile closure, formerly planned S6 | Four fixed-App route matrix, Compaq speed/AUX-PIT/HOLD class, exact remaining L1/L2/L4 exclusions, relevant unit/integration proof and documentation closure are complete. |
 
 ## Frozen Boundaries
 

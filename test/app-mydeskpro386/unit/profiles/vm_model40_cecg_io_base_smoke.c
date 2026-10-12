@@ -28,18 +28,19 @@ lib_i32 main(void)
         test_core_machine_fixture_write_port(core, 0x03b4u, 0x0eu);
         test_core_machine_fixture_write_port(core, 0x03b5u, 0x34u);
         test_core_machine_fixture_write_port(core, 0x03bau, 0x03u);
-        failed |= test_core_machine_fixture_read_bus(core, 0x03d5u) != 0u ||
+        /* Inactive routes preserve the last Core bus write, not a chip zero. */
+        failed |= test_core_machine_fixture_read_bus(core, 0x03d5u) != 3u ||
             test_core_machine_fixture_read_bus(core, 0x03b5u) != 0x34u ||
-            test_core_machine_fixture_read_bus(core, 0x07c6u) != 0x03u;
+            test_core_machine_fixture_read_bus(core, 0x07c6u) != 0x0du;
     }
     if (!failed) {
         vm_machine_reset(session);
         core = session->core_machine;
         test_core_machine_fixture_write_port(core, 0x03d4u, 0x0eu);
         test_core_machine_fixture_write_port(core, 0x03d5u, 0x25u);
-        failed |= test_core_machine_fixture_read_bus(core, 0x03b5u) != 0u ||
+        failed |= test_core_machine_fixture_read_bus(core, 0x03b5u) != 0x25u ||
             test_core_machine_fixture_read_bus(core, 0x03d5u) != 0x25u ||
-            test_core_machine_fixture_read_bus(core, 0x07c6u) != 0x00u;
+            test_core_machine_fixture_read_bus(core, 0x07c6u) != 0x0du;
     }
     vm_machine_destroy(session);
     if (!failed) {

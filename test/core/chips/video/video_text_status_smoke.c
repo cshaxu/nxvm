@@ -21,7 +21,7 @@ static lib_i32 vadp_capture(x86_video *vadp, video_test_backing *memory,
     lib_memory_set(snapshot, 0, sizeof(*snapshot));
     const x86_video_memory_reader reader = { video_test_backing_read, memory };
 
-    return x86_video_capture_text_snapshot_from(vadp, &reader, snapshot);
+    return x86_video_capture_snapshot_from(vadp, &reader, snapshot) == LIB_STATUS_OK;
 }
 
 lib_i32 main(void)
@@ -99,7 +99,81 @@ lib_i32 main(void)
     x86_video_advance(vadp, 1u);
     failed |= video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS) != 0x00u;
 
+    vadp_write_crtc(vadp, 0x0cu, 0u);
+    vadp_write_crtc(vadp, 0x0du, 0u);
+    vadp_write_crtc(vadp, 0x0eu, 0u);
+    vadp_write_crtc(vadp, 0x0fu, 0u);
+    vadp_write_crtc(vadp, 0x0bu, 6u);
+    {
+        lib_u8 mode;
+        lib_u8 field;
+
+        for (mode = 0u; mode < 4u; ++mode) {
+            x86_video_reset(vadp);
+            video_test_write(vadp, X86_VIDEO_REGISTER_MODE, 0x0du);
+            vadp_write_crtc(vadp, 0x0au, (lib_u8)((mode << 5u) | 6u));
+            for (field = 0u; field < 32u; ++field) {
+                const lib_bool visible = mode == 0u ||
+                    (mode == 2u && field % 16u < 8u) ||
+                    (mode == 3u && field < 16u);
+
+                if (field != 0u) x86_video_advance(vadp, 6u);
+                failed |= !vadp_capture(vadp, &memory, &snapshot) ||
+                    snapshot.cursor_visible != visible || snapshot.cursor_top != 6u ||
+                    snapshot.cursor_bottom != 6u;
+                failed |= !vadp_capture(vadp, &memory, &snapshot) ||
+                    snapshot.cursor_changed || snapshot.buffer_changed;
+            }
+        }
+        /* Reset restores the visible logical phase; full-width elapsed ticks
+         * count fields without narrowing. MAX/6 modulo 32 is ten. */
+        x86_video_reset(vadp);
+        video_test_write(vadp, X86_VIDEO_REGISTER_MODE, 0x0du);
+        vadp_write_crtc(vadp, 0x0au, 0x46u);
+        failed |= !vadp_capture(vadp, &memory, &snapshot) || !snapshot.cursor_visible;
+        x86_video_advance(vadp, LIB_UINT64_MAX);
+        failed |= !vadp_capture(vadp, &memory, &snapshot) || snapshot.cursor_visible;
+        x86_video_advance(vadp, 36u);
+        failed |= !vadp_capture(vadp, &memory, &snapshot) || !snapshot.cursor_visible;
+    }
+
     vadp_write_crtc(vadp, 0x00u, 0x04u);
+    {
+        lib_u16 attribute;
+        lib_u8 blink;
+        lib_u8 field;
+
+        for (attribute = 0u; attribute < 256u; ++attribute) {
+            memory.bytes[attribute * 2u] = 'B';
+            memory.bytes[attribute * 2u + 1u] = (lib_u8)attribute;
+        }
+        for (blink = 0u; blink < 2u; ++blink) {
+            x86_video_reset(vadp);
+            video_test_write(vadp, X86_VIDEO_REGISTER_MODE,
+                blink ? 0x2du : 0x0du);
+            vadp_write_crtc(vadp, 0x0au, 0x26u);
+            for (field = 0u; field < 16u; ++field) {
+                if (field != 0u) x86_video_advance(vadp, 6u);
+                failed |= !vadp_capture(vadp, &memory, &snapshot);
+                for (attribute = 0u; attribute < 256u; ++attribute) {
+                    lib_u8 colour = (lib_u8)attribute;
+
+                    if (blink) {
+                        colour &= 0x7fu;
+                        if (attribute >= 128u && field >= 8u)
+                            colour = (lib_u8)((attribute & 0x70u) |
+                                ((attribute >> 4u) & 7u));
+                    }
+                    failed |= snapshot.characters[attribute] != 'B' ||
+                        snapshot.attributes[attribute] != colour ||
+                        memory.bytes[attribute * 2u + 1u] != (lib_u8)attribute;
+                }
+                failed |= !vadp_capture(vadp, &memory, &snapshot) ||
+                    snapshot.buffer_changed || snapshot.cursor_changed;
+            }
+        }
+        video_test_write(vadp, X86_VIDEO_REGISTER_MODE, 0x0du);
+    }
     vadp_write_crtc(vadp, 0x01u, 0x03u);
     vadp_write_crtc(vadp, 0x02u, 0x03u);
     vadp_write_crtc(vadp, 0x03u, 0x11u);
@@ -138,6 +212,48 @@ lib_i32 main(void)
     failed |= video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS) != 0x01u;
     x86_video_advance(vadp, 37u);
     failed |= video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS) != 0x09u;
+
+    /* Programmed MC6845 timing: 5 clocks * (3 rows * 4 rasters + 1) = 65.
+     * Test each edge, not a presenter clock or a private counter assignment. */
+    x86_video_reset(vadp);
+    video_test_write(vadp, X86_VIDEO_REGISTER_MODE, 0x0du);
+    vadp_write_crtc(vadp, 0x0au, 0x46u);
+    vadp_write_crtc(vadp, 0x0bu, 6u);
+    x86_video_advance(vadp, 8u * 65u - 1u);
+    failed |= !vadp_capture(vadp, &memory, &snapshot) || !snapshot.cursor_visible;
+    x86_video_advance(vadp, 1u);
+    failed |= !vadp_capture(vadp, &memory, &snapshot) || snapshot.cursor_visible ||
+        !snapshot.cursor_changed;
+    x86_video_advance(vadp, 8u * 65u - 1u);
+    failed |= !vadp_capture(vadp, &memory, &snapshot) || snapshot.cursor_visible ||
+        snapshot.cursor_changed;
+    x86_video_advance(vadp, 1u);
+    failed |= !vadp_capture(vadp, &memory, &snapshot) || !snapshot.cursor_visible ||
+        !snapshot.cursor_changed;
+
+    {
+        static const lib_u8 modes[] = {0x0du, 0x0cu, 0x0au, 0x1au};
+        static const lib_u8 clocks[] = {1u, 2u, 2u, 2u};
+
+        for (lib_size mode = 0u; mode < sizeof(modes); ++mode) {
+            const lib_u32 scale = clocks[mode];
+
+            x86_video_reset(vadp);
+            video_test_write(vadp, X86_VIDEO_REGISTER_MODE, modes[mode]);
+            x86_video_advance(vadp, 65u * scale);
+            failed |= video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS) != 0u;
+            x86_video_advance(vadp, 3u * scale - 1u);
+            failed |= video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS) != 0u;
+            x86_video_advance(vadp, 1u);
+            failed |= video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS) != 1u;
+            x86_video_advance(vadp, 2u * scale);
+            failed |= video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS) != 0u;
+            x86_video_advance(vadp, 35u * scale - 1u);
+            failed |= (video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS) & 8u) != 0u;
+            x86_video_advance(vadp, 1u);
+            failed |= video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS) != 9u;
+        }
+    }
 
     x86_video_destroy(vadp);
     if (failed) return 1;

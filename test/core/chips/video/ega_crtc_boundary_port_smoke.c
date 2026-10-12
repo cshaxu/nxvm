@@ -17,8 +17,11 @@ static void core_machine_ega_crtc_write(x86_video *port, lib_u8 index,
 
 static lib_u8 core_machine_ega_crtc_read(x86_video *port, lib_u8 index)
 {
+    lib_u8 value = 0xa5u;
+
     video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, index);
-    return video_test_read(port, X86_VIDEO_REGISTER_COLOR_CRTC_DATA);
+    return x86_video_register_read(port, X86_VIDEO_REGISTER_COLOR_CRTC_DATA,
+        &value) == LIB_STATUS_OK ? value : 0xffu;
 }
 
 lib_i32 main(void)
@@ -68,33 +71,33 @@ lib_i32 main(void)
     core_machine_ega_crtc_write(vadp, 0x07u, 0x02u);
     core_machine_ega_crtc_write(vadp, 0x13u, 0x28u);
 
-    failed |= core_machine_ega_crtc_read(vadp, 0x13u) != 0u ||
+    failed |= core_machine_ega_crtc_read(vadp, 0x13u) != 0xa5u ||
         vadp->data.crtc[0x13u] != 0x28u ||
         vadp->data.crtc[_CRTC_ADJACENT_INDEX] != 0x5du ||
         video_test_read(vadp, X86_VIDEO_REGISTER_MODE) != mode ||
         video_test_read(vadp, X86_VIDEO_REGISTER_COLOR) != color;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_640X350X16;
 
     core_machine_ega_crtc_write(vadp, 0x07u, 0x00u);
     core_machine_ega_crtc_write(vadp, 0x12u, 0xc7u);
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_640X200X16 ||
         snapshot.pixel_width != 640u || snapshot.pixel_height != 200u;
 
     core_machine_ega_crtc_write(vadp, 0x01u, 0x27u);
     core_machine_ega_crtc_write(vadp, 0x13u, 0x14u);
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_320X200X16;
 
     for (index = 0u; index <= X86_VIDEO_CRTC_EGA_LAST; ++index) {
         core_machine_ega_crtc_write(vadp, index, 0xffu);
         failed |= vadp->data.crtc[index] != masks[index] ||
             core_machine_ega_crtc_read(vadp, index) !=
-            (index >= 0x0cu && index <= 0x0fu ? masks[index] : 0u);
+            (index >= 0x0cu && index <= 0x0fu ? masks[index] : 0xa5u);
     }
     x86_video_reset(vadp);
     failed |= vadp->data.crtc[X86_VIDEO_CRTC_EGA_LAST] != 0u ||

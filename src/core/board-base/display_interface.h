@@ -3,7 +3,7 @@
 #define CORE_MACHINE_DISPLAY_INTERFACE_H
 #include "core/chips/video/video_values_interface.h"
 
-typedef lib_i32 (*core_machine_display_snapshot_provider)(void *context,
+typedef lib_status (*core_machine_display_snapshot_provider)(void *context,
     x86_video_snapshot *out_snapshot);
 
 typedef struct core_machine_display_provider_slot core_machine_display_provider_slot;
@@ -17,7 +17,7 @@ void core_machine_display_provider_slot_freeze(
     core_machine_display_provider_slot *slot);
 void core_machine_display_provider_slot_destroy(
     core_machine_display_provider_slot *slot);
-lib_i32 core_machine_display_capture_snapshot_from(
+lib_status core_machine_display_capture_snapshot_from(
     const core_machine_display_provider_slot *slot,
     x86_video_snapshot *out_snapshot);
 

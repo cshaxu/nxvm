@@ -1,6 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/board-base/machine_board_state.h"
+#include "core/board-base/vadp.h"
 
 static lib_u8 board_consider_relative(lib_u64 source_ticks, lib_u64 *io_source_ticks)
 {
@@ -73,6 +74,11 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     /* A frozen fallback ratio remains an L2 timing claim, but is still a
      * Core-local conversion for a programmed PIT wake edge. */
     if (timing_qualified) {
+        if (board->shared_vadp->irq_source != LIB_NULL &&
+            x86_video_ticks_until_event(board->shared_vadp->chip, &device_ticks) ==
+                LIB_STATUS_OK && board_consider_clock(&board->vadp_clock,
+                    device_ticks, &out_observation->source_ticks))
+            out_observation->immediate_due = LIB_TRUE;
         if (board_consider_pit(board->shared_pit, &board->pit_clock,
                 &out_observation->source_ticks))
             out_observation->immediate_due = LIB_TRUE;

@@ -128,7 +128,7 @@ lib_i32 main(void)
             LIB_STATUS_OK || !d4.configured || d4.iochk_enabled ||
         d4.failsafe_enabled ||
         core_machine_bus_read(session->core_machine, 0x07c6u, &value) !=
-            LIB_STATUS_OK || value != 0u ||
+            LIB_STATUS_OK || value != 0x0du ||
         core_machine_bus_read(session->core_machine, 0x0bc6u, &value) !=
             LIB_STATUS_OK || value != 0x30u ||
         core_machine_bus_read(session->core_machine, 0x0fc6u, &value) !=

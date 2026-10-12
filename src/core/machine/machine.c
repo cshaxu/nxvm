@@ -75,9 +75,14 @@ lib_status vm_machine_copy_emulator_frame(vm_machine *machine, emulator_machine_
     if (machine == LIB_NULL || frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = vm_machine_publish_display(machine, LIB_FALSE);
     if (status != LIB_STATUS_OK) return status;
-    if (!machine->latest_frame_valid) return LIB_STATUS_OK;
-    return emulator_machine_frame_copy(frame, &machine->latest_frame) ?
-        LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
+    if (!machine->display_frame_pending) {
+        frame->window.valid = LIB_FALSE;
+        return LIB_STATUS_OK;
+    }
+    if (!emulator_machine_frame_copy(frame, &machine->latest_frame))
+        return LIB_STATUS_IO_ERROR;
+    machine->display_frame_pending = LIB_FALSE;
+    return LIB_STATUS_OK;
 }
 
 static lib_status vm_machine_copy_path(char *destination, lib_size capacity,

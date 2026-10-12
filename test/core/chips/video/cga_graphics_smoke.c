@@ -46,7 +46,7 @@ lib_i32 main(void)
     failed |= !cga_write_byte(vadp, 0u, 0x1bu);
     failed |= !cga_write_byte(vadp, 0x2000u, 0xe4u);
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot);
+    failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK;
     failed |= snapshot.kind != X86_VIDEO_KIND_CGA_320X200X4 ||
         snapshot.pixel_width != 320u || snapshot.pixel_height != 200u;
     failed |= snapshot.pixels[0] != 0u || snapshot.pixels[1] != 1u ||
@@ -67,24 +67,74 @@ lib_i32 main(void)
         observation.generation == generation;
 
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR, 0x20u);
-    failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot);
+    failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK;
     failed |= snapshot.palette_rgb[1] != 0x00aaaau ||
         snapshot.palette_rgb[2] != 0xaa00aau ||
         snapshot.palette_rgb[3] != 0xaaaaaau || !snapshot.buffer_changed;
 
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR, 0x10u);
-    failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
         snapshot.palette_rgb[1] != 0x55ff55u ||
         snapshot.palette_rgb[2] != 0xff5555u ||
         snapshot.palette_rgb[3] != 0xffff55u || !snapshot.buffer_changed;
 
+    {
+        static const lib_u8 modes[] = {0x0au, 0x1au};
+
+        failed |= !cga_write_byte(vadp, 0u, 0x1bu) ||
+            !cga_write_byte(vadp, 2u, 0x55u) ||
+            !cga_write_byte(vadp, 0x1ffeu, 0x90u) ||
+            !cga_write_byte(vadp, 0x2000u, 0xe4u) ||
+            !cga_write_byte(vadp, 0x2002u, 0xaau) ||
+            !cga_write_byte(vadp, 0x3ffeu, 0x60u) ||
+            !cga_write_byte(vadp, 78u, 0xc0u) ||
+            !cga_write_byte(vadp, 0x204eu, 0x40u);
+        for (lib_size mode = 0u; mode < sizeof(modes); ++mode) {
+            const lib_u32 width = mode == 0u ? 320u : 640u;
+
+            video_test_write(vadp, X86_VIDEO_REGISTER_MODE, modes[mode]);
+            video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0du);
+            video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 1u);
+            failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
+                !snapshot.buffer_changed || snapshot.pixels[0] != (mode == 0u ? 1u : 0u) ||
+                snapshot.pixels[1] != 1u ||
+                snapshot.pixels[width] != (mode == 0u ? 2u : 1u);
+            failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
+                snapshot.buffer_changed;
+
+            video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0cu);
+            video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x0fu);
+            video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0du);
+            video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0xffu);
+            failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
+                !snapshot.buffer_changed || snapshot.pixels[0] != (mode == 0u ? 2u : 1u) ||
+                snapshot.pixels[width] != (mode == 0u ? 1u : 0u) ||
+                snapshot.pixels[width * 2u] != (mode == 0u ? 3u : 1u) ||
+                snapshot.pixels[width * 3u] != (mode == 0u ? 1u : 0u) ||
+                snapshot.pixels[mode == 0u ? 9u : 19u] != 1u;
+
+            video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0cu);
+            video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x10u);
+            video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0du);
+            video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0u);
+            failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
+                !snapshot.buffer_changed || snapshot.pixels[0] != 0u ||
+                snapshot.pixels[width] != (mode == 0u ? 3u : 1u);
+            video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0cu);
+            video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0u);
+            failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
+                !snapshot.buffer_changed;
+            failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
+                snapshot.buffer_changed;
+        }
+    }
     video_test_write(vadp, X86_VIDEO_REGISTER_MODE, 0x1au);
-    failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_CGA_640X200X2 ||
         snapshot.palette_rgb[0] != 0x000000u ||
         snapshot.palette_rgb[1] != 0x000000u;
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR, 0x1fu);
-    failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
         snapshot.palette_rgb[0] != 0x000000u ||
         snapshot.palette_rgb[1] != 0xffffffu || !snapshot.buffer_changed;
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_LIGHTPEN_SET, 0u);
@@ -92,14 +142,14 @@ lib_i32 main(void)
     x86_video_reset(vadp);
     failed |= (video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS) & 0x02u) != 0u;
     video_test_write(vadp, X86_VIDEO_REGISTER_MODE, 0x0du);
-    failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot);
+    failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK;
     failed |= snapshot.kind != X86_VIDEO_KIND_TEXT;
     x86_video_observe_snapshot(vadp, LIB_FALSE, 0u, &observation);
     generation = observation.generation;
     x86_video_observe_snapshot(vadp, LIB_TRUE, generation, &observation);
     failed |= !observation.generation_reliable || observation.capture_required;
     video_test_write(vadp, X86_VIDEO_REGISTER_MODE, 0x05u);
-    failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
         snapshot.characters[0] != 0x20u || snapshot.attributes[0] != 0u;
 
     x86_video_destroy(vadp);

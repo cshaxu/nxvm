@@ -2,6 +2,7 @@
 #include "core/board-base/machine_board_interface.h"
 
 #include "core/board-base/machine_board_state.h"
+#include "core/board-base/vadp.h"
 
 lib_status core_machine_capture_display_snapshot(const core_machine_board_state *board,
     x86_video_snapshot *out_snapshot)
@@ -17,8 +18,7 @@ lib_status core_machine_capture_display_snapshot(const core_machine_board_state 
         return LIB_STATUS_INVALID_STATE;
     }
     return core_machine_vadp_capture_snapshot(mutable_board->shared_vadp,
-        out_snapshot) ? LIB_STATUS_OK :
-        LIB_STATUS_UNSUPPORTED;
+        out_snapshot);
 }
 
 lib_status core_machine_observe_display_snapshot(const core_machine_board_state *board,
@@ -52,8 +52,14 @@ lib_status core_machine_configure_display(core_machine_board_state *board,
     }
 
     if (!core_machine_vadp_config_is_valid(config)) return LIB_STATUS_INVALID_ARGUMENT;
+    if (config->vertical_irq != 0u) {
+        status = core_machine_pic_irq_source_bind(&board->shared_vadp->irq_source,
+            board->shared_pic_master, board->shared_pic_slave, config->vertical_irq);
+        if (status != LIB_STATUS_OK) return status;
+    }
     status = core_machine_vadp_configure(board->shared_vadp, config);
     if (status != LIB_STATUS_OK) return status;
+    if (config->vertical_irq == 0u) board->shared_vadp->irq_source = LIB_NULL;
     board->display_ports = config->ports;
     board->display_configured = LIB_TRUE;
     return LIB_STATUS_OK;

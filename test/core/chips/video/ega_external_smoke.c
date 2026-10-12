@@ -89,7 +89,7 @@ lib_i32 main(void)
         X86_VIDEO_EGA_APERTURE_BASE, chain4_bytes,
         sizeof(chain4_bytes)) != LIB_STATUS_OK;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_VGA_320X200X256 ||
         snapshot.pixel_width != 320u || snapshot.pixel_height != 200u ||
         snapshot.pixels[0] != 0x10u || snapshot.pixels[1] != 0x11u ||

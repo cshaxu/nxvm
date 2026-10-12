@@ -48,11 +48,16 @@ static lib_i32 vm_ega_dos_install_program(lib_u8 *image, DWORD image_size)
         0x4au, 0xb0u, 0x12u, 0xeeu, 0x42u, 0xb0u, 0xc7u, 0xeeu,
         0x4au, 0xb0u, 0x13u, 0xeeu, 0x42u, 0xb0u, 0x14u, 0xeeu,
         0xb8u, 0x00u, 0xa0u, 0x8eu, 0xc0u,
+        /* Disable odd/even writes before populating all four planes. */
+        0xbau, 0xc4u, 0x03u, 0xb0u, 0x04u, 0xeeu, 0x42u, 0xb0u, 0x06u, 0xeeu,
         0xbau, 0xc4u, 0x03u, 0xb0u, 0x02u, 0xeeu, 0x42u, 0xb0u, 0x0fu, 0xeeu,
         0xbau, 0xceu, 0x03u, 0xb0u, 0x05u, 0xeeu, 0x42u, 0x30u, 0xc0u, 0xeeu,
         0x4au, 0xb0u, 0x06u, 0xeeu, 0x42u, 0xb0u, 0x05u, 0xeeu,
         0xbau, 0xdau, 0x03u, 0xecu, 0xbau, 0xc0u, 0x03u, 0xb0u, 0x30u, 0xeeu,
-        0xb0u, 0x01u, 0xeeu, 0x31u, 0xffu, 0xb0u, 0xa5u, 0xaau,
+        0xb0u, 0x01u, 0xeeu,
+        /* Palette index 15 is white only when all six EGA outputs are set. */
+        0xb0u, 0x2fu, 0xeeu, 0xb0u, 0x3fu, 0xeeu,
+        0x31u, 0xffu, 0xb0u, 0xa5u, 0xaau,
         0xb8u, 0x00u, 0x4cu, 0xcdu, 0x21u
     };
 #endif
@@ -163,18 +168,23 @@ static lib_i32 vm_ega_dos_run_until(vm_machine *session, lib_u32 limit,
     lib_u32 executed = 0u;
 
     while (executed < limit) {
+        lib_status capture_status;
+
         if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason == CORE_MACHINE_STOP_FAULT ||
-            core_machine_capture_display_snapshot(session->board,
-                &snapshot) != LIB_STATUS_OK) return 0;
+            result.reason == CORE_MACHINE_STOP_FAULT) return 0;
+        capture_status = core_machine_capture_display_snapshot(session->board, &snapshot);
+        if (capture_status != LIB_STATUS_OK && capture_status != LIB_STATUS_UNSUPPORTED)
+            return 0;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_bool advanced = LIB_FALSE;
 
             if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) return 0;
         }
-        if (!want_graphics && vm_ega_dos_has_prompt(&snapshot)) return 1;
-        if (want_graphics && snapshot.kind == X86_VIDEO_KIND_EGA_320X200X16 &&
+        if (capture_status == LIB_STATUS_OK && !want_graphics &&
+            vm_ega_dos_has_prompt(&snapshot)) return 1;
+        if (capture_status == LIB_STATUS_OK && want_graphics &&
+            snapshot.kind == X86_VIDEO_KIND_EGA_320X200X16 &&
             snapshot.pixels[0] == 15u && snapshot.pixels[1] == 0u &&
             snapshot.pixels[2] == 15u && snapshot.palette_rgb[15] == 0xffffffu) {
             return 1;

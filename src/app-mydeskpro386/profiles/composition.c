@@ -62,18 +62,19 @@ lib_status vm_profile_model40_topology_materialize(
     display.text_timing = (x86_video_text_timing) {48u, 8u, 8u};
     display.cga_vram_present = LIB_FALSE;
     display.ega_present = LIB_TRUE;
+    display.vertical_irq = 9u;
     display.ega_personality = X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
     display.cecg = (x86_video_cecg_config) {
-        0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
+        0x41u, 0x0du, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
         0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE };
     display.ega_sequencer = (x86_video_ega_sequencer_config) {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
         0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE };
     display.ega_controllers = (x86_video_ega_controller_config) {
-        { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
+        { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x04u, 0x00u, 0xffu },
         { 0x00u, 0x01u, 0x02u, 0x03u, 0x04u, 0x05u, 0x06u, 0x07u,
           0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
-          0x01u, 0x00u, 0x0fu, 0x00u, 0x00u } };
+          0x00u, 0x00u, 0x0fu, 0x00u, 0x00u } };
     rtc.nmi_mask_bit = 0x80u;
     rtc.ticks_per_second = 32768u;
     rtc.timing = (core_machine_rtc_timing_plan) {8u, 65u,

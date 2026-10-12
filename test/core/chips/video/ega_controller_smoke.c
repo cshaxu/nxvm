@@ -23,21 +23,26 @@ lib_i32 main(void)
     failed |= x86_video_configure_ega_sequencer(vadp, &sequencer) != LIB_STATUS_OK;
     failed |= x86_video_configure_ega_controllers(vadp, &controllers) != LIB_STATUS_OK;
 
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX) != 0u;
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0u;
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX) != 0xffu ||
+        vadp->data.graphics_index != 0u;
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0xffu ||
+        vadp->data.graphics[0] != 0u;
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 6u);
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0x05u;
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0xffu ||
+        vadp->data.graphics[6] != 0x05u;
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 0u);
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0u;
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0xffu ||
+        vadp->data.graphics[0] != 0u;
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 6u);
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA, 0xffu);
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0x0fu ||
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0xffu ||
         vadp->data.graphics[6] != 0x0fu;
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 31u);
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA, 0xa5u);
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0u;
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0xffu ||
+        vadp->data.graphics[6] != 0x0fu;
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 6u);
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0x0fu ||
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0xffu ||
         vadp->data.graphics[6] != 0x0fu;
 
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 6u);
@@ -66,26 +71,27 @@ lib_i32 main(void)
 
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0x31u);
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0xffu);
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ATTRIBUTE_DATA) != 0x3fu ||
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ATTRIBUTE_DATA) != 0xffu ||
         vadp->data.attribute[17] != 0x3fu ||
         !vadp->data.attribute_display_enabled;
     (void)video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS);
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0x00u);
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ATTRIBUTE_DATA) != 0x3fu ||
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ATTRIBUTE_DATA) != 0xffu ||
         vadp->data.attribute[0] != 0x3fu;
     (void)video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS);
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0x12u);
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0xf5u);
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ATTRIBUTE_DATA) != 0x05u ||
-        vadp->data.attribute[18] != 0x05u;
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ATTRIBUTE_DATA) != 0xffu ||
+        vadp->data.attribute[18] != 0x35u;
     (void)video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS);
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0x1fu);
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0xffu);
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ATTRIBUTE_DATA) != 0u;
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ATTRIBUTE_DATA) != 0xffu ||
+        vadp->data.attribute[18] != 0x35u;
     (void)video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS);
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0x12u);
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ATTRIBUTE_DATA) != 0x05u ||
-        vadp->data.attribute[18] != 0x05u;
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ATTRIBUTE_DATA) != 0xffu ||
+        vadp->data.attribute[18] != 0x35u;
 
     (void)video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS);
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0x10u);
@@ -107,10 +113,12 @@ lib_i32 main(void)
     /* Non-planar RAM round trip remains a board receiver assertion. */
 
     x86_video_reset(vadp);
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_SEQUENCER_INDEX) != 0u ||
-        video_test_read(vadp, X86_VIDEO_REGISTER_SEQUENCER_DATA) != 0x03u;
-    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX) != 0u ||
-        video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0u;
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_SEQUENCER_INDEX) != 0xffu ||
+        video_test_read(vadp, X86_VIDEO_REGISTER_SEQUENCER_DATA) != 0xffu ||
+        vadp->data.sequencer_index != 0u || vadp->data.sequencer[0] != 0x03u;
+    failed |= video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX) != 0xffu ||
+        video_test_read(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA) != 0xffu ||
+        vadp->data.graphics_index != 0u || vadp->data.graphics[0] != 0u;
 
     if (failed) {
         lib_c_fprintf(lib_c_stderr,

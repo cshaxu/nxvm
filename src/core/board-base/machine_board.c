@@ -779,9 +779,9 @@ void core_machine_board_finalize_devices(void *owner)
     core_machine_fdc_destroy(board->fdc);
     core_machine_dma_finalize(board->shared_dma);
     x86_rtc_destroy(board->shared_rtc);
+    core_machine_vadp_destroy(board->shared_vadp);
     core_machine_pic_finalize(board->shared_pic_master,
         board->shared_pic_slave);
-    core_machine_vadp_destroy(board->shared_vadp);
     lib_release(board);
 }
 

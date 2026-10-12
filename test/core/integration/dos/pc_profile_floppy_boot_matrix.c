@@ -395,8 +395,33 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 point->bytes[2u]);
         }
     }
-    if (test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
-        frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT) return;
+    {
+        const lib_status status = test_nxvm_machine_capture_presentation(session, &frame);
+        x86_video_snapshot snapshot;
+        const lib_status capture = core_machine_capture_display_snapshot(
+            session->board, &snapshot);
+        lib_c_printf("NXVM:INI-BOOT:%s:DISPLAY:published-status=%u:kind=%u:core-status=%u:kind=%u\n",
+            name, (lib_u32)status, status == LIB_STATUS_OK ? (lib_u32)frame.kind : 0u,
+            (lib_u32)capture, capture == LIB_STATUS_OK ? (lib_u32)snapshot.kind : 0u);
+        if (capture == LIB_STATUS_OK) {
+            lib_c_printf("NXVM:INI-BOOT:%s:CORE-DISPLAY:text=%ux%u:cell=%u:pixels=%ux%u\n",
+                name, (lib_u32)snapshot.columns, (lib_u32)snapshot.rows,
+                (lib_u32)snapshot.text_cell_height, (lib_u32)snapshot.pixel_width,
+                (lib_u32)snapshot.pixel_height);
+        }
+        {
+            lib_u8 video_bda[6];
+            if (core_machine_memory_read(session->core_machine, 0x449u,
+                    video_bda, sizeof(video_bda)) == LIB_STATUS_OK) {
+                lib_c_printf("NXVM:INI-BOOT:%s:VIDEO-BDA:mode=%02X:columns=%u:page-size=%u\n",
+                    name, (lib_u32)video_bda[0],
+                    (lib_u32)video_bda[1] | ((lib_u32)video_bda[2] << 8u),
+                    (lib_u32)video_bda[3] | ((lib_u32)video_bda[4] << 8u));
+            }
+        }
+        if (status != LIB_STATUS_OK || frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT)
+            return;
+    }
     for (row = 0u; row < 25u; ++row) {
         lib_i32 nonblank = 0;
         for (index = 0u; index < 80u; ++index) {

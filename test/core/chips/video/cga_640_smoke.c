@@ -24,7 +24,7 @@ lib_i32 main(void)
     failed |= video_test_backing_write(&backing,
         X86_VIDEO_VIDEO_BASE + 0x2000u, &pixel,
         sizeof(pixel)) != LIB_STATUS_OK;
-    failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_CGA_640X200X2 ||
         snapshot.pixel_width != 640u || snapshot.pixel_height != 200u ||
         snapshot.pixels[0] != 1u || snapshot.pixels[1] != 0u ||
@@ -35,7 +35,7 @@ lib_i32 main(void)
     failed |= video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS) != status;
     video_test_write(vadp, X86_VIDEO_REGISTER_MODE, 0x12u);
     video_test_write(vadp, X86_VIDEO_REGISTER_MODE, 0x05u);
-    failed |= !x86_video_capture_snapshot_from(vadp, &reader, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_TEXT;
     x86_video_destroy(vadp);
     if (failed) return 1;

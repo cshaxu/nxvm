@@ -35,7 +35,7 @@ struct vm_machine {
     emulator_machine_executor_callback executor_callback;
     void *executor_callback_context;
     emulator_machine_frame latest_frame;
-    lib_bool latest_frame_valid;
+    lib_bool display_frame_pending;
     lib_u64 display_generation;
     lib_u64 display_snapshot_generation;
     lib_bool display_snapshot_generation_valid;

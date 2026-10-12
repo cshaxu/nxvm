@@ -6,9 +6,10 @@
 
 #include "guest_display.h"
 #include "core/machine/machine_private.h"
+#include "core/machine/display.h"
 
-/* Test-only view of the one production Common frame. It never publishes or
- * stores a frame, so production has no second presentation route. */
+/* Unbound owner tests refresh/inspect the sole cache without consuming driver
+ * delivery. Bound observers read only the executor's published frame. */
 static inline lib_status test_nxvm_machine_capture_presentation(const vm_machine *machine,
     core_machine_guest_display_frame *out_frame)
 {
@@ -21,8 +22,10 @@ static inline lib_status test_nxvm_machine_capture_presentation(const vm_machine
         if (!emulator_machine_copy_published_frame(machine->executor, &frame,
                 emulator_machine_run_generation(machine->executor)))
             return LIB_STATUS_INVALID_STATE;
-    } else if (vm_machine_copy_emulator_frame((vm_machine *)machine, &frame) !=
-            LIB_STATUS_OK) return LIB_STATUS_INVALID_STATE;
+    } else if (vm_machine_publish_display((vm_machine *)machine, LIB_FALSE) !=
+            LIB_STATUS_OK ||
+        !emulator_machine_frame_copy(&frame, &machine->latest_frame))
+        return LIB_STATUS_INVALID_STATE;
     lib_memory_set(out_frame, 0, sizeof(*out_frame));
     out_frame->generation = frame.sequence;
     if (frame.window.graphics) {

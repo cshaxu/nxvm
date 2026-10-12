@@ -35,6 +35,15 @@ records the owner-approved sourced L2 polynomial, encoding, bounded correction,
 media and test contracts. Its independent arithmetic checkpoints do not claim
 selected-hardware identity; runtime qualification is in the storage ledger.
 
+T555 S5: [video source and receiver ledger](evidence/t555-s5-video-source-ledger.md)
+records the in-progress 28-row video/presentation audit, actual selected-card
+bindings and source prerequisites. It does not claim repair or qualification.
+
+T555 S5: [video boundary review](evidence/t555-s5-video-boundary-review.md)
+records proposed Core copied-text and video IRQ/deadline interfaces, the
+default guest-firmware receiving prerequisite and estimated owner-local diffs.
+It requests review; it does not approve those changes or close a ledger row.
+
 T553 S1: [four PC App ownership ledger](evidence/t553-s1-four-pc-app-ownership-ledger.md)
 records the complete four-App inventory, inward dependency proof, ownership
 dispositions and the one App-local receiving repair.

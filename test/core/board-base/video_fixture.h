@@ -43,6 +43,16 @@ static inline void test_video_port_write(core_machine *machine,
         lib_test_assert(LIB_FALSE);
 }
 
+static inline lib_bool test_video_port_read_is_unsupported(core_machine *machine,
+    lib_u16 port)
+{
+    lib_u32 value = 0xa5u;
+
+    test_video_ready(machine);
+    return core_machine_bus_read(machine, port, &value) == LIB_STATUS_UNSUPPORTED &&
+        value == 0xa5u;
+}
+
 static inline lib_status test_video_probe_read(void *owner, lib_u16 port,
     lib_u64 tick, lib_u32 *value)
 {

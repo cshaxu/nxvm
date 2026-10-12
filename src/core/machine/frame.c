@@ -111,7 +111,9 @@ lib_status vm_machine_frame_from_display(
             cell % X86_VIDEO_MAX_COLUMNS >= source->columns) continue;
         lib_u8 attribute = source->attributes[cell];
         destination->window.text.base.cells[cell] = (kvm_text_cell){
-            source->characters[cell], 0u, attribute & 0x0fu, attribute >> 4u };
+            source->characters[cell],
+            source->text_font_selection && (attribute & 0x08u) != 0u ? 1u : 0u,
+            attribute & 0x0fu, attribute >> 4u };
     }
     for (cell = 0u; cell < 256u; ++cell) {
         lib_u16 character = cell < 32u ? cp437_controls[cell] :
@@ -125,6 +127,9 @@ lib_status vm_machine_frame_from_display(
     if (source->text_glyphs_present) {
         lib_memory_copy(destination->window.text.font, source->text_glyphs,
             sizeof(destination->window.text.font));
+        lib_memory_copy(destination->window.text.secondary_font,
+            source->secondary_text_glyphs,
+            sizeof(destination->window.text.secondary_font));
     }
     return LIB_STATUS_OK;
 }

@@ -22,7 +22,7 @@ lib_i32 main(void)
     failed |= core_machine_memory_write(machine,
         CORE_MACHINE_VADP_VIDEO_BASE + 0x2000u, &pixel,
         sizeof(pixel)) != LIB_STATUS_OK;
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
+    failed |= core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_CGA_640X200X2 ||
         snapshot.pixel_width != 640u || snapshot.pixel_height != 200u ||
         snapshot.pixels[0] != 1u || snapshot.pixels[1] != 0u ||
@@ -33,7 +33,7 @@ lib_i32 main(void)
     failed |= test_video_port_read(machine, 0x03dau) != status;
     test_video_port_write(machine, 0x03d8u, 0x12u);
     test_video_port_write(machine, 0x03d8u, 0x05u);
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
+    failed |= core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_TEXT;
     core_machine_vadp_finalize(&vadp);
     core_machine_destroy(machine);

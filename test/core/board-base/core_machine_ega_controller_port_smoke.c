@@ -33,6 +33,7 @@ lib_i32 main(void)
     core_machine *machine;
     t_vadp vadp;
     lib_u8 value = 0u;
+    x86_video_bus_observation bus;
     core_machine_display_config config = {
         .text_timing = {48u, 8u, 8u}, .ega_present = LIB_TRUE
     };
@@ -45,20 +46,20 @@ lib_i32 main(void)
      * this fixture uses the color alias to reset the attribute flip-flop. */
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT, 1u);
 
-    failed |= test_video_port_read(machine, 0x03ceu) != 0u;
-    failed |= test_video_port_read(machine, 0x03cfu) != 0u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03ceu);
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03cfu);
     test_video_port_write(machine, 0x03ceu, 6u);
-    failed |= test_video_port_read(machine, 0x03cfu) != 0x05u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03cfu);
     test_video_port_write(machine, 0x03ceu, 0u);
-    failed |= test_video_port_read(machine, 0x03cfu) != 0u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03cfu);
     test_video_port_write(machine, 0x03ceu, 6u);
     test_video_port_write(machine, 0x03cfu, 0xffu);
-    failed |= test_video_port_read(machine, 0x03cfu) != 0x0fu;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03cfu);
     test_video_port_write(machine, 0x03ceu, 31u);
     test_video_port_write(machine, 0x03cfu, 0xa5u);
-    failed |= test_video_port_read(machine, 0x03cfu) != 0u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03cfu);
     test_video_port_write(machine, 0x03ceu, 6u);
-    failed |= test_video_port_read(machine, 0x03cfu) != 0x0fu;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03cfu);
 
     test_video_port_write(machine, 0x03ceu, 6u);
     test_video_port_write(machine, 0x03cfu, 0x00u);
@@ -82,34 +83,34 @@ lib_i32 main(void)
 
     test_video_port_write(machine, 0x03c0u, 0x31u);
     test_video_port_write(machine, 0x03c0u, 0xffu);
-    failed |= test_video_port_read(machine, 0x03c1u) != 0x3fu;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c1u);
     (void)test_video_port_read(machine, 0x03dau);
     test_video_port_write(machine, 0x03c0u, 0x00u);
-    failed |= test_video_port_read(machine, 0x03c1u) != 0x3fu;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c1u);
     (void)test_video_port_read(machine, 0x03dau);
     test_video_port_write(machine, 0x03c0u, 0x12u);
     test_video_port_write(machine, 0x03c0u, 0xf5u);
-    failed |= test_video_port_read(machine, 0x03c1u) != 0x05u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c1u);
     (void)test_video_port_read(machine, 0x03dau);
     test_video_port_write(machine, 0x03c0u, 0x1fu);
     test_video_port_write(machine, 0x03c0u, 0xffu);
-    failed |= test_video_port_read(machine, 0x03c1u) != 0u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c1u);
     (void)test_video_port_read(machine, 0x03dau);
     test_video_port_write(machine, 0x03c0u, 0x12u);
-    failed |= test_video_port_read(machine, 0x03c1u) != 0x05u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c1u);
 
     (void)test_video_port_read(machine, 0x03dau);
     test_video_port_write(machine, 0x03c0u, 0x10u);
     test_video_port_write(machine, 0x03c0u, 0xffu);
-    failed |= test_video_port_read(machine, 0x03c1u) != 0x0fu;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c1u);
     (void)test_video_port_read(machine, 0x03dau);
     test_video_port_write(machine, 0x03c0u, 0x13u);
     test_video_port_write(machine, 0x03c0u, 0xffu);
-    failed |= test_video_port_read(machine, 0x03c1u) != 0x0fu;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c1u);
     (void)test_video_port_read(machine, 0x03dau);
     test_video_port_write(machine, 0x03c0u, 0x14u);
     test_video_port_write(machine, 0x03c0u, 0xffu);
-    failed |= test_video_port_read(machine, 0x03c1u) != 0u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c1u);
 
     test_video_port_write(machine, 0x03c4u, 2u);
     test_video_port_write(machine, 0x03c5u, 0x05u);
@@ -120,10 +121,12 @@ lib_i32 main(void)
         value != 0xa6u;
 
     x86_video_reset(vadp.chip);
-    failed |= test_video_port_read(machine, 0x03c4u) != 0u ||
-        test_video_port_read(machine, 0x03c5u) != 0x03u;
-    failed |= test_video_port_read(machine, 0x03ceu) != 0u ||
-        test_video_port_read(machine, 0x03cfu) != 0u;
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03c4u) ||
+        !test_video_port_read_is_unsupported(machine, 0x03c5u);
+    failed |= !test_video_port_read_is_unsupported(machine, 0x03ceu) ||
+        !test_video_port_read_is_unsupported(machine, 0x03cfu);
+    failed |= core_machine_vadp_observe_bus(&vadp, &bus) != LIB_STATUS_OK ||
+        bus.sequencer_reset != 0x03u || bus.graphics_miscellaneous != 0x05u;
 
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "EGA-CONTROLLER:FAIL\n");

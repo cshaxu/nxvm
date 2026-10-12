@@ -6,7 +6,7 @@
 lib_i32 main(void)
 {
     const x86_video_cecg_config config = {
-        0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
+        0x41u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
         0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE
     };
     x86_video *vadp = LIB_NULL;
@@ -32,13 +32,13 @@ lib_i32 main(void)
     failed |= video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA) != 0u;
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_STATUS, 0x03u);
     failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ENVIRONMENT) !=
-        0x00u;
+        0x0du;
     video_test_write(vadp, X86_VIDEO_REGISTER_MONO_CRTC_INDEX, 0x0eu);
     video_test_write(vadp, X86_VIDEO_REGISTER_MONO_CRTC_DATA, 0x34u);
     video_test_write(vadp, X86_VIDEO_REGISTER_MONO_STATUS, 0x02u);
     video_test_write(vadp, X86_VIDEO_REGISTER_MONO_LIGHTPEN_SET, 0u);
     failed |= video_test_read(vadp, X86_VIDEO_REGISTER_MONO_CRTC_DATA) != 0x34u ||
-        video_test_read(vadp, X86_VIDEO_REGISTER_ENVIRONMENT) != 0x02u ||
+        video_test_read(vadp, X86_VIDEO_REGISTER_ENVIRONMENT) != 0x0du ||
         (video_test_read(vadp, X86_VIDEO_REGISTER_MONO_STATUS) & 0x02u) == 0u;
     video_test_write(vadp, X86_VIDEO_REGISTER_EXTERNAL_CONTROL,
         0x01u);
@@ -48,7 +48,7 @@ lib_i32 main(void)
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0eu);
     failed |= video_test_read(vadp, X86_VIDEO_REGISTER_MONO_CRTC_DATA) != 0u ||
         video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA) != 0x34u ||
-        video_test_read(vadp, X86_VIDEO_REGISTER_ENVIRONMENT) != 0u;
+        video_test_read(vadp, X86_VIDEO_REGISTER_ENVIRONMENT) != 0x0du;
 
     x86_video_destroy(generic_vadp);
     x86_video_destroy(vadp);

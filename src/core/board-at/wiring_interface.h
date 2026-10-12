@@ -45,7 +45,7 @@ typedef struct vm_at_route {
 
 /* Immutable AT endpoint grammar; compositions select enabled device bits.
  * These are declarations, never live chip/register state or a model selector. */
-#define VM_AT_PORT_LEAF_COUNT 79u
+#define VM_AT_PORT_LEAF_COUNT 78u
 extern const vm_at_port_leaf vm_at_port_leaves[VM_AT_PORT_LEAF_COUNT];
 extern const vm_at_route vm_at_routes_with_aux[5u];
 extern const vm_at_route vm_at_routes_without_aux[4u];

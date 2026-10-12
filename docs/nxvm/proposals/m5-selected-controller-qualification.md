@@ -55,7 +55,19 @@ neighbour:
 3. FDC/media and the four HDC personalities, including their PIC/DMA/media
    consumers.
 4. CGA/EGA/CECG video and profile-selected aperture/clock/presentation routes.
-5. Cross-profile board reset, firmware, deadline and integration closure.
+5. Owner-approved Shared 32-scanline copied glyph capacity and receiving adapters.
+6. Remaining video qualification, including live EGA/CECG font production,
+   RAM/clock/blanking and advanced text geometry.
+7. Cross-profile board reset, firmware, deadline and integration closure.
+
+The owner explicitly split the former video S5 on 2026-10-12. S5 delivers
+the existing bounded Core register/raster/palette/capture/publication and
+project-firmware repairs; it does not claim complete V01--V28 qualification.
+The complete unresolved video classes remain in the video ledger and transfer
+to S7. New S6 owns the approved fixed 32-byte glyph slots (default height 16),
+Core copied-value adaptation, public-six quality review, full dual-width tests
+and ten rebuilt App artifacts. It adds no renderer, thread, compatibility path
+or dynamic font format. S8 replaces the formerly planned cross-profile S6.
 
 S4's presentation-reader repair also exposes a retained S5 adapter contract
 to qualify: `core/machine` copies its ready cached frame even when no new
@@ -67,7 +79,7 @@ Keep this in the Core presentation owner: no Shared API, second renderer,
 polling manager or additional guest clock is implied by the finding.
 
 The S3 original-source reconciliation assigns the complete DeskPro KBC
-speed-control class to S6's cross-device board receiver: A3/A4 selection,
+speed-control class to S8's cross-device board receiver: A3/A4 selection,
 A5 no-OBF special read, auxiliary PIT counter-2 refresh trigger and CPU HOLD
 extension with DMA arbitration. The [S3 source ledger](../etc/evidence/t555-s3-rtc-keyboard-source-ledger.md)
 records the exact original authorities and rejects mapping speed to output

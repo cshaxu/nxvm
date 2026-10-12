@@ -16,7 +16,8 @@ static inline lib_status video_test_backing_read(void *context, lib_u32 address,
     video_test_backing *fixture = context;
 
     if (address < X86_VIDEO_TEXT_BASE ||
-        (lib_u64)address - X86_VIDEO_TEXT_BASE + bytes > sizeof(fixture->bytes))
+        address - X86_VIDEO_TEXT_BASE > sizeof(fixture->bytes) ||
+        bytes > sizeof(fixture->bytes) - (address - X86_VIDEO_TEXT_BASE))
         return LIB_STATUS_INVALID_ARGUMENT;
     if (++fixture->calls == fixture->fail_on) return LIB_STATUS_IO_ERROR;
     lib_memory_copy(destination, fixture->bytes + address - X86_VIDEO_TEXT_BASE, bytes);
@@ -27,7 +28,8 @@ static inline lib_status video_test_backing_write(video_test_backing *fixture,
     lib_u32 address, const lib_u8 *source, lib_size bytes)
 {
     if (address < X86_VIDEO_TEXT_BASE ||
-        (lib_u64)address - X86_VIDEO_TEXT_BASE + bytes > sizeof(fixture->bytes))
+        address - X86_VIDEO_TEXT_BASE > sizeof(fixture->bytes) ||
+        bytes > sizeof(fixture->bytes) - (address - X86_VIDEO_TEXT_BASE))
         return LIB_STATUS_INVALID_ARGUMENT;
     lib_memory_copy(fixture->bytes + address - X86_VIDEO_TEXT_BASE, source, bytes);
     return LIB_STATUS_OK;

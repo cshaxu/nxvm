@@ -15,6 +15,7 @@
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/lifecycle.h"
+#include "core/machine/display.h"
 #include "../../support/model40_session_assets.h"
 
 lib_i32 main(void)
@@ -54,7 +55,7 @@ lib_i32 main(void)
             LIB_STATUS_OK || !d4.configured || d4.iochk_enabled ||
         d4.failsafe_enabled ||
         core_machine_bus_read(session->core_machine, 0x07c6u, &value) !=
-            LIB_STATUS_OK || value != 0u ||
+            LIB_STATUS_OK || value != 0x0du ||
         core_machine_bus_read(session->core_machine, 0x0bc6u, &value) !=
             LIB_STATUS_OK || value != 0x30u ||
         core_machine_bus_read(session->core_machine, 0x0fc6u, &value) !=
@@ -160,6 +161,27 @@ lib_i32 main(void)
             (value & X86_HDC_STATUS_ERR) == 0u ||
             core_machine_bus_read(session->core_machine, 0x01f1u, &value) != LIB_STATUS_OK ||
             value != X86_HDC_ERROR_ABORT) goto done;
+    }
+    stage = 6;
+    {
+        /* Real selected CECG ports -> snapshot -> the sole Machine frame.
+         * Start 12/end 0 means the last two rows of a 14-row cell. */
+        if (core_machine_bus_write(session->core_machine, 0x03d4u, 0x09u) != LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x03d5u, 13u) != LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x03d4u, 0x0au) != LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x03d5u, 12u) != LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x03d4u, 0x0bu) != LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x03d5u, 0u) != LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x03d4u, 0x0eu) != LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x03d5u, 0u) != LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x03d4u, 0x0fu) != LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x03d5u, 0u) != LIB_STATUS_OK ||
+            vm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
+            !session->latest_frame.window.valid || session->latest_frame.window.graphics ||
+            !session->latest_frame.window.text.base.cursor_visible ||
+            session->latest_frame.window.text.base.font_height != 16u ||
+            session->latest_frame.window.text.base.cursor_top != 13u ||
+            session->latest_frame.window.text.base.cursor_bottom != 15u) goto done;
     }
     failed = 0;
 done:

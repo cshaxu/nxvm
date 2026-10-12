@@ -65,7 +65,7 @@ lib_i32 main(void)
         .text_timing = {48u, 8u, 8u},
         .ega_present = LIB_TRUE,
         .ega_sequencer = {0xa0000u, 0x10000u, 3u, 0u, 15u, 2u, LIB_TRUE},
-        .cecg = {0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
+        .cecg = {0x41u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
             0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE}
     };
     lib_i32 failed = !invalid_cecg_is_failure_atomic();
@@ -83,6 +83,47 @@ lib_i32 main(void)
                 test_video_port_is_owned(machine, expected[index].address, LIB_TRUE) :
                 test_video_port_is_owned(machine, expected[index].address, LIB_FALSE)) !=
                     expected[index].present;
+        }
+        if (!generic) {
+            static const lib_u8 crtc[][2] = {
+                {0u, 3u}, {1u, 1u}, {6u, 6u}, {7u, 0u},
+                {16u, 5u}, {17u, 0x17u}, {18u, 3u}, {21u, 4u}
+            };
+            static const struct { lib_u8 phase; lib_u8 status; } samples[] = {
+                {0u, 1u}, {2u, 0u}, {20u, 0u}, {25u, 8u}, {35u, 0u}
+            };
+            lib_u8 phase = 0u;
+
+            core_machine_vadp_reset(&adapter);
+            test_video_port_write(machine, CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT, 1u);
+            for (lib_size index = 0u; index < sizeof(crtc) / sizeof(crtc[0]); ++index) {
+                test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, crtc[index][0]);
+                test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, crtc[index][1]);
+            }
+            /* Reset begins at tick 8; advance to this field's next origin. */
+            core_machine_vadp_advance(&adapter, 32u);
+            test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 17u);
+            test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 7u);
+            test_video_port_write(machine, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x17u);
+            for (lib_size index = 0u; index < sizeof(samples) / sizeof(samples[0]); ++index) {
+                x86_video_bus_observation before = {0}, after = {0};
+
+                core_machine_vadp_advance(&adapter, samples[index].phase - phase);
+                phase = samples[index].phase;
+                test_video_port_write(machine, CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE, 0x41u);
+                failed |= (test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS) & 9u) !=
+                    samples[index].status ||
+                    core_machine_vadp_observe_bus(&adapter, &before) != LIB_STATUS_OK ||
+                    before.vertical_interrupt != (phase >= 20u);
+                test_video_port_write(machine, CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE, 0xc1u);
+                failed |= (test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS) & 9u) !=
+                    (samples[index].status | 1u) ||
+                    core_machine_vadp_observe_bus(&adapter, &after) != LIB_STATUS_OK ||
+                    after.vertical_interrupt != before.vertical_interrupt;
+                test_video_port_write(machine, CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE, 0x41u);
+                failed |= (test_video_port_read(machine, CORE_MACHINE_VADP_PORT_STATUS) & 9u) !=
+                    samples[index].status;
+            }
         }
         core_machine_vadp_finalize(&adapter);
         core_machine_destroy(machine);

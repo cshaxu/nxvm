@@ -23,17 +23,19 @@ lib_i32 main(void)
     }
     vm_machine_reset(session);
     failed |= core_machine_debug_write_port(session->core_machine, 0x03ceu, 6u) != LIB_STATUS_OK;
-    failed |= core_machine_debug_read_port(session->core_machine, 0x03cfu, &port_value) != LIB_STATUS_OK || port_value != 0x05u;
+    failed |= core_machine_bus_read(session->core_machine, 0x03cfu, &port_value) != LIB_STATUS_UNSUPPORTED || port_value != 0u;
     failed |= core_machine_debug_write_port(session->core_machine, 0x03cfu, 0x09u) != LIB_STATUS_OK;
-    failed |= core_machine_debug_read_port(session->core_machine, 0x03cfu, &port_value) != LIB_STATUS_OK || port_value != 0x09u;
+    failed |= core_machine_bus_read(session->core_machine, 0x03cfu, &port_value) != LIB_STATUS_UNSUPPORTED || port_value != 0u;
     failed |= core_machine_memory_write(session->core_machine, 0x000b0000u,
         &value, sizeof(value)) != LIB_STATUS_OK;
     failed |= core_machine_memory_read(session->core_machine, 0x000b0000u,
         &read_value, sizeof(read_value)) != LIB_STATUS_OK || read_value != value;
     failed |= core_machine_debug_write_port(session->core_machine, 0x03c0u, 0x32u) != LIB_STATUS_OK || core_machine_debug_write_port(session->core_machine, 0x03c0u, 0xffu) != LIB_STATUS_OK;
-    failed |= core_machine_debug_read_port(session->core_machine, 0x03c1u, &port_value) != LIB_STATUS_OK || port_value != 0x0fu;
+    failed |= core_machine_bus_read(session->core_machine, 0x03c1u, &port_value) != LIB_STATUS_UNSUPPORTED || port_value != 0u;
     (void)core_machine_debug_read_port(session->core_machine, 0x03dau, &port_value);
-    failed |= core_machine_debug_write_port(session->core_machine, 0x03c0u, 0x10u) != LIB_STATUS_OK || core_machine_debug_read_port(session->core_machine, 0x03c1u, &port_value) != LIB_STATUS_OK || port_value != 0x01u;
+    failed |= core_machine_debug_write_port(session->core_machine, 0x03c0u, 0x10u) != LIB_STATUS_OK;
+    port_value = 0x5au;
+    failed |= core_machine_bus_read(session->core_machine, 0x03c1u, &port_value) != LIB_STATUS_UNSUPPORTED || port_value != 0x5au;
     vm_machine_destroy(session);
     if (failed) return 1;
     printf("EGA-CONTROLLER:SYSTEM:OK\n");

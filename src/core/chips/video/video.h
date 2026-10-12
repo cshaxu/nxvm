@@ -5,6 +5,7 @@
 #define X86_VIDEO_VIDEO_BYTES 0x00004000u
 #define X86_VIDEO_TEXT_BASE X86_VIDEO_VIDEO_BASE
 #define X86_VIDEO_TEXT_BYTES X86_VIDEO_VIDEO_BYTES
+#define X86_VIDEO_CGA_TEXT_MAX_ROWS 25u
 #define X86_VIDEO_CRTC_EGA_LAST 0x18u
 #define X86_VIDEO_CRTC_REGISTER_COUNT \
     (X86_VIDEO_CRTC_EGA_LAST + 1u)
@@ -20,7 +21,6 @@
     X86_VIDEO_EGA_ATTRIBUTE_REGISTER_COUNT
 #define X86_VIDEO_EGA_PLANES 4u
 #define X86_VIDEO_EGA_PLANE_BYTES X86_VIDEO_EGA_APERTURE_BYTES
-#define X86_VIDEO_EGA_ODD_EVEN_PAGE_BYTES 0x00004000u
 
 
 typedef void *(*x86_video_allocate_zero)(void *context,
@@ -48,7 +48,7 @@ typedef struct x86_video_data {
     lib_u8 attribute[X86_VIDEO_ATTRIBUTE_REGISTER_COUNT];
     lib_u8 attribute_data_phase;
     lib_u8 attribute_display_enabled;
-    lib_u8 ega_status_diagnostic_high;
+    lib_u8 vga_status_diagnostic_high;
     lib_u8 ega_controller_configured;
     lib_u8 vga_configured;
     lib_u8 vga_dac_mask;
@@ -60,10 +60,12 @@ typedef struct x86_video_data {
     lib_u8 ega_planar_enabled;
     lib_u8 *ega_planar_vram;
     lib_u8 ega_latches[X86_VIDEO_EGA_PLANES];
-    lib_u64 captured_ega_dirty_generation;
+    lib_u64 captured_generation;
     x86_video_text_timing text_timing;
     x86_video_text_glyph_config text_glyphs;
     lib_u32 raster_phase;
+    lib_u8 cga_field_phase;
+    lib_bool vertical_interrupt_pending;
     lib_u8 crtc_initialized;
     lib_u8 cga_logical_raster_started;
     lib_u16 columns;

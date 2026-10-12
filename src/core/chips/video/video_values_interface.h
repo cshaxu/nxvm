@@ -14,7 +14,7 @@ typedef struct x86_video_memory_reader {
 } x86_video_memory_reader;
 
 #define X86_VIDEO_MAX_COLUMNS 80u
-#define X86_VIDEO_MAX_ROWS 25u
+#define X86_VIDEO_MAX_ROWS 50u
 #define X86_VIDEO_GRAPHICS_WIDTH 320u
 #define X86_VIDEO_CGA_HIGH_RES_WIDTH 640u
 #define X86_VIDEO_GRAPHICS_HEIGHT 200u
@@ -71,7 +71,7 @@ typedef struct x86_video_cecg_config {
     lib_u8 sw1_closed_mask;
     lib_u8 clock_switch_select;
     lib_u8 special_features_present;
-    lib_u8 vertical_retrace_irq_enabled;
+    lib_u8 vertical_retrace_irq_enabled; /* Construction/reset preset, not live CRTC state. */
     lib_u8 odd_even_high_page;
 } x86_video_cecg_config;
 
@@ -106,6 +106,9 @@ typedef struct x86_video_snapshot {
     lib_i32 cursor_changed;
     lib_u8 text_glyphs_present;
     lib_u8 text_glyphs[X86_VIDEO_TEXT_GLYPH_BYTES];
+    /* Attribute bit 3 selects the copied secondary glyph bank when enabled. */
+    lib_bool text_font_selection;
+    lib_u8 secondary_text_glyphs[X86_VIDEO_TEXT_GLYPH_BYTES];
     lib_u8 characters[X86_VIDEO_MAX_COLUMNS * X86_VIDEO_MAX_ROWS];
     lib_u8 attributes[X86_VIDEO_MAX_COLUMNS * X86_VIDEO_MAX_ROWS];
     lib_u16 pixel_width;

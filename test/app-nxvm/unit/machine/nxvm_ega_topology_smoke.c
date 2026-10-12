@@ -17,9 +17,11 @@ lib_i32 main(void)
     if (!failed) failed |= test_video_ega_ports(session->core_machine) |
         (test_video_aperture_mismatch(session->board, LIB_TRUE) << 5);
     if (!failed) {
+        lib_u32 value = 0xa5u;
+
         test_core_machine_fixture_write_port(session->core_machine, 0x3ceu, 6u);
-        failed |= (test_core_machine_fixture_read_bus(session->core_machine,
-            0x3cfu) != 0x05u) << 6;
+        failed |= (core_machine_bus_read(session->core_machine, 0x3cfu, &value) !=
+            LIB_STATUS_UNSUPPORTED || value != 0xa5u) << 6;
     }
     vm_machine_destroy(session);
     if (failed) return 1;

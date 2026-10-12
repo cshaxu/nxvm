@@ -157,6 +157,7 @@ lib_status vm_profile_default_pc_at_topology_materialize(
         .text_timing = descriptor->cga_text_timing,
         .cga_vram_present = descriptor->cga_vram_present,
         .ega_present = descriptor->ega_present,
+        .vertical_irq = descriptor->ega_present ? 9u : 0u,
         .ega_sequencer = descriptor->ega_sequencer,
         .ega_controllers = descriptor->ega_controllers
     };

@@ -28,13 +28,13 @@ static lib_bool vm_machine_display_publish_is_due(vm_machine *machine, lib_bool 
     return LIB_TRUE;
 }
 
-static lib_i32 vm_machine_capture_display_snapshot(void *context,
+static lib_status vm_machine_capture_display_snapshot(void *context,
     x86_video_snapshot *out_snapshot)
 {
     vm_machine *session = (vm_machine *)context;
 
-    return session != LIB_NULL && core_machine_capture_display_snapshot(
-        session->board, out_snapshot) == LIB_STATUS_OK;
+    if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return core_machine_capture_display_snapshot(session->board, out_snapshot);
 }
 
 lib_status vm_machine_publish_display(vm_machine *machine,
@@ -55,15 +55,16 @@ lib_status vm_machine_publish_display(vm_machine *machine,
         return LIB_STATUS_OK;
     }
     lib_memory_set(&observation, 0, sizeof(observation));
-    if (!core_machine_display_capture_snapshot_from(machine->display_provider,
-        &snapshot)) return LIB_STATUS_IO_ERROR;
+    status = core_machine_display_capture_snapshot_from(machine->display_provider, &snapshot);
+    if (status == LIB_STATUS_UNSUPPORTED) return LIB_STATUS_OK;
+    if (status != LIB_STATUS_OK) return status;
     buffer_changed = snapshot.buffer_changed;
     cursor_changed = snapshot.cursor_changed;
     if (!force && !buffer_changed && !cursor_changed) return LIB_STATUS_OK;
     status = vm_machine_frame_from_display(&snapshot, machine->display_generation + 1u,
         &machine->latest_frame);
     if (status != LIB_STATUS_OK) return status;
-    machine->latest_frame_valid = LIB_TRUE;
+    machine->display_frame_pending = LIB_TRUE;
     machine->display_kind = snapshot.kind;
     ++machine->display_generation;
     if (core_machine_observe_display_snapshot(machine->board,

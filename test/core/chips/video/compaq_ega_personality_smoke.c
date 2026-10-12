@@ -14,7 +14,7 @@ static lib_i32 configure_ega(x86_video *vadp)
 {
     const x86_video_ega_sequencer_config sequencer = {
         X86_VIDEO_EGA_APERTURE_BASE, X86_VIDEO_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE
+        0x03u, 0x00u, 0x0fu, 0x06u, LIB_TRUE
     };
     const x86_video_ega_controller_config controllers = {
         { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
@@ -40,7 +40,7 @@ lib_i32 main(void)
     failed |= x86_video_configure_ega_personality(vadp,
         X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != LIB_STATUS_OK;
     failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ENVIRONMENT) !=
-        0x00u || video_test_read(vadp,
+        0x0du || video_test_read(vadp,
         X86_VIDEO_REGISTER_DISPLAY_TYPE) != 0x30u ||
         video_test_read(vadp, X86_VIDEO_REGISTER_INITIAL_MODE) !=
         0x01u;
@@ -49,11 +49,15 @@ lib_i32 main(void)
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x01u);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x4fu);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x07u);
-    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x02u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x12u);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x12u);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x5du);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x13u);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x28u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x17u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0xe3u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x18u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0xffu);
     video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_INDEX, 2u);
     video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_DATA, 0x0fu);
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 6u);
@@ -65,13 +69,13 @@ lib_i32 main(void)
         0x80u);
 
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) ||
+    failed |= x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_EGA_640X350X16 ||
         snapshot.pixels[0] != 15u || snapshot.palette_rgb[15u] != 0x5500aau;
 
     x86_video_reset(vadp);
     failed |= video_test_read(vadp, X86_VIDEO_REGISTER_ENVIRONMENT) !=
-        0x00u || video_test_read(vadp,
+        0x0du || video_test_read(vadp,
         X86_VIDEO_REGISTER_DISPLAY_TYPE) != 0x30u ||
         video_test_read(vadp, X86_VIDEO_REGISTER_INITIAL_MODE) !=
         0x01u;

@@ -16,7 +16,7 @@ static void effective_values(void)
         lib_size port_count;
         lib_bool cga;
     } cases[] = {
-        {CORE_MACHINE_CPU_PROFILE_80386, 1024u * 1024u, all, vm_at_routes_with_aux, 5u, 79u, LIB_FALSE},
+        {CORE_MACHINE_CPU_PROFILE_80386, 1024u * 1024u, all, vm_at_routes_with_aux, 5u, 78u, LIB_FALSE},
         {CORE_MACHINE_CPU_PROFILE_80286, 512u * 1024u, all & ~video_planes,
             vm_at_routes_without_aux, 4u, 73u, LIB_TRUE},
         {CORE_MACHINE_CPU_PROFILE_80386, 2u * 1024u * 1024u, all & ~video_planes,

@@ -32,7 +32,8 @@ lib_i32 main(void)
 {
     const vm_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
-        .fpu_profile = X86_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE,
+        .bios_count = 1u
     };
     const core_machine_entry_plan_preload preload = {
         0x0200u, vm_cga_graphics_program, sizeof(vm_cga_graphics_program) };
@@ -46,10 +47,20 @@ lib_i32 main(void)
     core_machine_run_result result;
     x86_video_snapshot snapshot;
     vm_machine *session = LIB_NULL;
+    vm_machine_construction construction;
+    vm_machine_assets assets;
+    lib_u8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
     lib_u32 instruction;
     lib_i32 passed = 0;
 
-    if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
+    vm_test_default_pc_at_assets(&assets, rom);
+    if (vm_test_profile_construction_create(VM_MACHINE_PROFILE_DEFAULT_PC_AT,
+            &config, &assets, &construction) != LIB_STATUS_OK) goto done;
+    /* This instruction receiver needs a CGA board, not the default EGA card. */
+    construction.topology.display.cga_vram_present = LIB_TRUE;
+    construction.topology.display.ega_present = LIB_FALSE;
+    construction.topology.display.vertical_irq = 0u;
+    if (vm_machine_create(&config, &construction, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || core_machine_apply_entry_plan(session->core_machine,
             &plan) != LIB_STATUS_OK) goto done;
     for (instruction = 0u; instruction < VM_CGA_GRAPHICS_BOOT_BUDGET;

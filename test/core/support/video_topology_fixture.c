@@ -25,7 +25,12 @@ lib_i32 test_video_ega_ports(core_machine *machine)
     return (!core_machine_port_has_write(port, 0x03c0u) << 1) |
         (!core_machine_port_has_read(port, 0x03d8u) << 2) |
         (!core_machine_port_has_read(port, 0x03d9u) << 3) |
-        (!core_machine_port_has_read(port, 0x03c4u) << 4);
+        (core_machine_port_has_read(port, 0x03c4u) << 4) |
+        (core_machine_port_has_read(port, 0x03c5u) << 5) |
+        (core_machine_port_has_read(port, 0x03ceu) << 6) |
+        (core_machine_port_has_read(port, 0x03cfu) << 7) |
+        (core_machine_port_has_read(port, 0x03c1u) << 8) |
+        (core_machine_port_has_read(port, 0x03c0u) << 9);
 }
 
 lib_i32 test_video_memory_route(core_machine *machine, lib_u32 physical,

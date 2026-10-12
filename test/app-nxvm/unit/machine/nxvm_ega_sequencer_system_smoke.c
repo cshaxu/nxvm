@@ -24,10 +24,10 @@ lib_i32 main(void)
         goto done;
     }
     failed = vm_machine_reset(session) != LIB_STATUS_OK ||
-        core_machine_debug_read_port(session->core_machine, 0x03c4u, &port_value) != LIB_STATUS_OK || port_value != 0u ||
-        core_machine_debug_read_port(session->core_machine, 0x03c5u, &port_value) != LIB_STATUS_OK || port_value != 0x03u ||
+        core_machine_bus_read(session->core_machine, 0x03c4u, &port_value) != LIB_STATUS_UNSUPPORTED || port_value != 0u ||
+        core_machine_bus_read(session->core_machine, 0x03c5u, &port_value) != LIB_STATUS_UNSUPPORTED || port_value != 0u ||
         core_machine_debug_write_port(session->core_machine, 0x03c4u, 4u) != LIB_STATUS_OK || core_machine_debug_write_port(session->core_machine, 0x03c5u, 0xffu) != LIB_STATUS_OK ||
-        core_machine_debug_read_port(session->core_machine, 0x03c5u, &port_value) != LIB_STATUS_OK || port_value != 0x0eu ||
+        core_machine_bus_read(session->core_machine, 0x03c5u, &port_value) != LIB_STATUS_UNSUPPORTED || port_value != 0u ||
         core_machine_memory_write(session->core_machine,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, &aperture_value,
         sizeof(aperture_value)) != LIB_STATUS_OK ||

@@ -59,13 +59,13 @@ lib_i32 main(void)
     ega_write_crtc(machine, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX, 0x0eu, 0x12u);
     failed |= ega_read_crtc(machine, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX, 0x0eu) !=
         0x12u || ega_read_crtc(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu) !=
-        0u;
+        0x0eu;
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT,
         0x01u);
     ega_write_crtc(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu, 0x34u);
     failed |= ega_read_crtc(machine, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu) !=
         0x34u || ega_read_crtc(machine, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX,
-        0x0eu) != 0u;
+        0x0eu) != 0x0eu;
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_MONO,
         0x03u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_COLOR,
@@ -98,7 +98,7 @@ lib_i32 main(void)
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, chain4_bytes,
         sizeof(chain4_bytes)) != LIB_STATUS_OK;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
+    failed |= core_machine_vadp_capture_snapshot(&vadp, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_VGA_320X200X256 ||
         snapshot.pixel_width != 320u || snapshot.pixel_height != 200u ||
         snapshot.pixels[0] != 0x10u || snapshot.pixels[1] != 0x11u ||

@@ -34,17 +34,23 @@ static void select_ega_320(x86_video *port)
     video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x01u);
     video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x27u);
     video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x07u);
-    video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x00u);
+    video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x10u);
     video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x12u);
     video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0xc7u);
     video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x13u);
     video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x14u);
+    video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x09u);
+    video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0u);
+    video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x17u);
+    video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0xe3u);
+    video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x18u);
+    video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0xffu);
 }
 
 lib_i32 main(void)
 {
     const x86_video_cecg_config config = {
-        0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
+        0x41u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
         0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE
     };
     const x86_video_ega_sequencer_config sequencer = {
@@ -72,21 +78,42 @@ lib_i32 main(void)
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 6u);
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA, 0x07u);
     failed |= !write(vadp, 0x80u) || !read(vadp, &value) ||
-        value != 0x80u || !x86_video_capture_snapshot_from(vadp, LIB_NULL,
-        &snapshot) || snapshot.pixels[0] != 15u;
+        value != 0x80u || x86_video_capture_snapshot_from(vadp, LIB_NULL,
+        &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 5u;
     video_test_write(vadp, X86_VIDEO_REGISTER_EXTERNAL_CONTROL,
         0x20u);
     failed |= !write(vadp, 0x00u) || !read(vadp, &value) ||
-        value != 0x00u || !x86_video_capture_snapshot_from(vadp, LIB_NULL,
-        &snapshot) || snapshot.pixels[0] != 0u || !snapshot.buffer_changed;
+        value != 0x00u || x86_video_capture_snapshot_from(vadp, LIB_NULL,
+        &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 5u || !snapshot.buffer_changed;
     video_test_write(vadp, X86_VIDEO_REGISTER_EXTERNAL_CONTROL,
         0x00u);
     failed |= !read(vadp, &value) || value != 0x80u ||
-        !x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) ||
-        snapshot.pixels[0] != 15u || !snapshot.buffer_changed;
-    /* Both enhanced-color aliases address the same planar store. */
+        x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) != LIB_STATUS_OK ||
+        snapshot.pixels[0] != 5u || !snapshot.buffer_changed;
+    /* Display start is independent of the CPU page; byte and word output
+     * can select the odd plane address without moving CPU memory. */
     video_test_write(vadp, X86_VIDEO_REGISTER_EXTERNAL_CONTROL,
         0x01u);
+    failed |= !write_at(vadp, X86_VIDEO_EGA_APERTURE_BASE + 2u, 0x80u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x17u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0xe3u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0du);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 1u);
+    failed |= !read(vadp, &value) || value != 0x80u ||
+        x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 0u;
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x17u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0xa3u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0cu);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x80u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0du);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0u);
+    failed |= x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 0u;
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x17u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x83u);
+    failed |= x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 5u;
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0cu);
+    video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0u);
+    /* Retained L2 B000 compatibility alias shares the same planar store. */
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 6u);
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA, 0x0eu);
     failed |= !write_at(vadp, 0x000b0000u, 0x11u) ||
@@ -97,7 +124,7 @@ lib_i32 main(void)
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 6u);
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA, 0x07u);
     failed |= !read(vadp, &value) || value != 0u ||
-        !x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) ||
+        x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) != LIB_STATUS_OK ||
         snapshot.pixels[0] != 0u;
 
     x86_video_destroy(vadp);

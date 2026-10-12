@@ -42,12 +42,11 @@ void core_machine_display_provider_slot_destroy(
     lib_release(slot);
 }
 
-lib_i32 core_machine_display_capture_snapshot_from(
+lib_status core_machine_display_capture_snapshot_from(
     const core_machine_display_provider_slot *slot,
     x86_video_snapshot *out_snapshot)
 {
-    if (slot == LIB_NULL || slot->snapshot_provider == LIB_NULL || out_snapshot == LIB_NULL) {
-        return 0;
-    }
+    if (slot == LIB_NULL || out_snapshot == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (slot->snapshot_provider == LIB_NULL) return LIB_STATUS_INVALID_STATE;
     return slot->snapshot_provider(slot->snapshot_context, out_snapshot);
 }

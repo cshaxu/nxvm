@@ -20,6 +20,9 @@ static lib_i32 vm_model40_cecg_session_write(vm_machine *session, lib_u8 value)
 
 static void vm_model40_cecg_select_ega_320(vm_machine *session)
 {
+    (void)test_core_machine_fixture_read_bus(session->core_machine, 0x03dau);
+    test_core_machine_fixture_write_port(session->core_machine, 0x03c0u, 0x30u);
+    test_core_machine_fixture_write_port(session->core_machine, 0x03c0u, 1u);
     test_core_machine_fixture_write_port(session->core_machine,
         0x03d4u, 0x01u);
     test_core_machine_fixture_write_port(session->core_machine,
@@ -27,7 +30,7 @@ static void vm_model40_cecg_select_ega_320(vm_machine *session)
     test_core_machine_fixture_write_port(session->core_machine,
         0x03d4u, 0x07u);
     test_core_machine_fixture_write_port(session->core_machine,
-        0x03d5u, 0x00u);
+        0x03d5u, 0x10u);
     test_core_machine_fixture_write_port(session->core_machine,
         0x03d4u, 0x12u);
     test_core_machine_fixture_write_port(session->core_machine,
@@ -36,6 +39,18 @@ static void vm_model40_cecg_select_ega_320(vm_machine *session)
         0x03d4u, 0x13u);
     test_core_machine_fixture_write_port(session->core_machine,
         0x03d5u, 0x14u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d4u, 0x09u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d5u, 0u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d4u, 0x17u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d5u, 0xe3u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d4u, 0x18u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d5u, 0xffu);
 }
 
 lib_i32 main(void)
@@ -54,16 +69,24 @@ lib_i32 main(void)
         test_core_machine_fixture_write_port(session->core_machine,
             0x03cfu, 0x07u);
         failed |= !vm_model40_cecg_session_write(session, 0x80u) ||
-            !core_machine_display_capture_snapshot_from(session->display_provider,
-            &snapshot) || snapshot.pixels[0] != 15u;
+            core_machine_display_capture_snapshot_from(session->display_provider,
+            &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 5u;
+        failed |= core_machine_memory_write(session->core_machine,
+            CORE_MACHINE_VADP_EGA_APERTURE_BASE + 2u, &(lib_u8){0x80u}, 1u) != LIB_STATUS_OK;
         test_core_machine_fixture_write_port(session->core_machine,
-            0x03c2u, 0x20u);
+            0x03c2u, 0x21u);
         failed |= !vm_model40_cecg_session_write(session, 0x00u) ||
-            !core_machine_display_capture_snapshot_from(session->display_provider,
-            &snapshot) || snapshot.pixels[0] != 0u ||
+            core_machine_display_capture_snapshot_from(session->display_provider,
+            &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 5u ||
             core_machine_observe_display_snapshot(session->board,
                 LIB_FALSE, 0u, &observation) != LIB_STATUS_OK ||
             !observation.generation_reliable;
+        test_core_machine_fixture_write_port(session->core_machine, 0x03d4u, 0x17u);
+        test_core_machine_fixture_write_port(session->core_machine, 0x03d5u, 0xe3u);
+        test_core_machine_fixture_write_port(session->core_machine, 0x03d4u, 0x0du);
+        test_core_machine_fixture_write_port(session->core_machine, 0x03d5u, 1u);
+        failed |= core_machine_display_capture_snapshot_from(session->display_provider,
+            &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 0u;
         if (!failed) {
             /* The selected high page remains VADP-owned, so a Core write must
              * publish a fresh copied-frame generation. */
@@ -82,8 +105,8 @@ lib_i32 main(void)
             0x03ceu, 6u);
         test_core_machine_fixture_write_port(session->core_machine,
             0x03cfu, 0x07u);
-        failed |= !core_machine_display_capture_snapshot_from(session->display_provider,
-            &snapshot) || snapshot.pixels[0] != 0u;
+        failed |= core_machine_display_capture_snapshot_from(session->display_provider,
+            &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 0u;
     }
     vm_machine_destroy(session);
     if (failed) {
