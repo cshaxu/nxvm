@@ -38,13 +38,8 @@ static core_machine_media_result core_machine_compaq_hdc_machine_fdc_read(void *
 }
 
 static const core_machine_media_provider core_machine_compaq_hdc_machine_fdc_provider = {
-    core_machine_compaq_hdc_machine_fdc_query,
-    core_machine_compaq_hdc_machine_fdc_read,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL
+    .query = core_machine_compaq_hdc_machine_fdc_query,
+    .read_bytes = core_machine_compaq_hdc_machine_fdc_read,
 };
 
 static core_machine_media_result core_machine_compaq_hdc_machine_hdc_query(void *opaque,
@@ -75,13 +70,8 @@ static core_machine_media_result core_machine_compaq_hdc_machine_hdc_read(void *
 }
 
 static const core_machine_media_provider core_machine_compaq_hdc_machine_hdc_provider = {
-    core_machine_compaq_hdc_machine_hdc_query,
-    core_machine_compaq_hdc_machine_hdc_read,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL
+    .query = core_machine_compaq_hdc_machine_hdc_query,
+    .read_bytes = core_machine_compaq_hdc_machine_hdc_read,
 };
 
 lib_i32 main(void)
@@ -151,7 +141,7 @@ lib_i32 main(void)
             failed = core_machine_bus_write(machine, 0x01f6u, 0x2au) !=
                 LIB_STATUS_OK ||
                 core_machine_bus_read(machine, 0x03f7u, &drive_address) !=
-                LIB_STATUS_OK || (drive_address & 0x1fu) != 0x0au ? 0x04 : 0;
+                LIB_STATUS_OK || (drive_address & 0x7fu) != 0x76u ? 0x04 : 0;
         }
     }
     core_machine_destroy(machine);

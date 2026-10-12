@@ -37,8 +37,8 @@ static core_machine_media_result vm_xt_5160_268_fdd_query(void *context,
 }
 
 static const core_machine_media_provider vm_xt_5160_268_fdd_provider = {
-    vm_xt_5160_268_fdd_query, LIB_NULL, LIB_NULL, LIB_NULL, LIB_NULL,
-    LIB_NULL, LIB_NULL};
+    .query = vm_xt_5160_268_fdd_query,
+};
 
 static lib_i32 vm_xt_5160_268_contract_is_fixed(void)
 {

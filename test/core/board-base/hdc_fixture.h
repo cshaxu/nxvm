@@ -21,7 +21,8 @@ static inline lib_u32 test_hdc_port_read(core_machine *machine, lib_u16 port)
 static inline x86_hdc_observation hdc_observe(const core_machine_hdc *hdc)
 {
     x86_hdc_observation result = {0};
-    if (hdc != LIB_NULL) (void)x86_hdc_capture(hdc->chip, &result);
+    if (hdc != LIB_NULL)
+        (void)x86_hdc_capture(hdc->chips[hdc->selected_controller], &result);
     return result;
 }
 

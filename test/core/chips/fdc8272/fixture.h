@@ -1,6 +1,6 @@
 #ifndef TEST_X86_FDC_FIXTURE_H
 #define TEST_X86_FDC_FIXTURE_H
-#include "core/chips/fdc8272/fdc8272_interface.h"
+#include "core/chips/fdc8272/fdc.h"
 
 typedef struct fixture {
     x86_fdc *chip;
@@ -8,12 +8,15 @@ typedef struct fixture {
     lib_u16 cylinder[4];
     lib_u16 step_count[4];
     lib_u8 bytes[1536];
+    lib_u8 head_bytes[1536];
     lib_u8 ready_mask;
     lib_bool deleted[3];
+    lib_bool head_deleted[3];
     lib_bool irq, drq;
     lib_bool present, protected;
     lib_bool track_zero_missing, channel_unreadable;
     lib_u32 terminals, read_count, track_queries;
+    x86_fdc_record last_record;
 } fixture;
 
 static x86_fdc_pins sample(void *context, lib_u8 unit)
@@ -51,10 +54,12 @@ static x86_fdc_record_result read_byte(void *context, lib_u8 unit,
 {
     fixture *state = context;
     (void)unit;
-    if (!state->present || record->sector == 0u || record->sector > 3u ||
+    if (!state->present || record->head > 1u || record->sector == 0u || record->sector > 3u ||
         record->offset >= 512u) return X86_FDC_RECORD_ABSENT;
     ++state->read_count;
-    *out_byte = state->bytes[(record->sector - 1u) * 512u + record->offset];
+    state->last_record = *record;
+    *out_byte = (record->head == 0u ? state->bytes : state->head_bytes)
+        [(record->sector - 1u) * 512u + record->offset];
     return X86_FDC_RECORD_OK;
 }
 
@@ -66,7 +71,8 @@ static x86_fdc_record_result write_byte(void *context, lib_u8 unit,
     x86_fdc_record_result result = read_byte(context, unit, record, &old);
     if (state->protected) return X86_FDC_RECORD_PROTECTED;
     if (result != X86_FDC_RECORD_OK) return result;
-    state->bytes[(record->sector - 1u) * 512u + record->offset] = byte;
+    (record->head == 0u ? state->bytes : state->head_bytes)
+        [(record->sector - 1u) * 512u + record->offset] = byte;
     return X86_FDC_RECORD_OK;
 }
 
@@ -75,8 +81,10 @@ static x86_fdc_record_result read_mark(void *context, lib_u8 unit,
 {
     fixture *state = context;
     (void)unit;
-    if (record->sector == 0u || record->sector > 3u) return X86_FDC_RECORD_ABSENT;
-    *out_deleted = state->deleted[record->sector - 1u];
+    if (record->head > 1u || record->sector == 0u || record->sector > 3u)
+        return X86_FDC_RECORD_ABSENT;
+    *out_deleted = (record->head == 0u ? state->deleted : state->head_deleted)
+        [record->sector - 1u];
     return X86_FDC_RECORD_OK;
 }
 
@@ -86,8 +94,10 @@ static x86_fdc_record_result write_mark(void *context, lib_u8 unit,
     fixture *state = context;
     (void)unit;
     if (state->protected) return X86_FDC_RECORD_PROTECTED;
-    if (record->sector == 0u || record->sector > 3u) return X86_FDC_RECORD_ABSENT;
-    state->deleted[record->sector - 1u] = deleted;
+    if (record->head > 1u || record->sector == 0u || record->sector > 3u)
+        return X86_FDC_RECORD_ABSENT;
+    (record->head == 0u ? state->deleted : state->head_deleted)
+        [record->sector - 1u] = deleted;
     return X86_FDC_RECORD_OK;
 }
 
@@ -97,7 +107,8 @@ static x86_fdc_record_result format(void *context, lib_u8 unit,
     fixture *state = context;
     x86_fdc_record_result result = write_mark(context, unit, record, LIB_FALSE);
     if (result != X86_FDC_RECORD_OK) return result;
-    lib_memory_set(state->bytes + (record->sector - 1u) * 512u, fill, 512u);
+    lib_memory_set((record->head == 0u ? state->bytes : state->head_bytes) +
+        (record->sector - 1u) * 512u, fill, 512u);
     return X86_FDC_RECORD_OK;
 }
 
@@ -119,12 +130,17 @@ static void fixture_command(fixture *state, const lib_u8 *bytes, lib_size count)
 {
     for (lib_size index = 0u; index < count; ++index) x86_fdc_write_data(state->chip, bytes[index]);
     advance(state);
+    /* Payload/cause callers request a settled command. Head-timer receivers
+     * submit raw command bytes instead, so they can assert the waiting phase. */
+    if (state->chip->data.phase == x86_fdc_PHASE_HEAD_LOAD) {
+        state->now = state->chip->data.head_load_due_tick;
+        x86_fdc_advance_at(state->chip, state->now);
+    }
 }
 
 static inline void fixture_arm(fixture *state)
 {
     x86_fdc_reset(state->chip);
-    x86_fdc_set_service_enabled(state->chip, LIB_TRUE);
     x86_fdc_set_reset(state->chip, LIB_TRUE);
 }
 

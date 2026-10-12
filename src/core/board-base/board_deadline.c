@@ -2,6 +2,14 @@
 #include "core/board-base/machine_board_interface.h"
 #include "core/board-base/machine_board_state.h"
 
+static lib_u8 board_consider_relative(lib_u64 source_ticks, lib_u64 *io_source_ticks)
+{
+    if (source_ticks == 0u) return LIB_TRUE;
+    if (*io_source_ticks == 0u || source_ticks < *io_source_ticks)
+        *io_source_ticks = source_ticks;
+    return LIB_FALSE;
+}
+
 static lib_u8 board_consider_clock(const core_machine_clock_domain *clock,
     lib_u64 device_ticks, lib_u64 *io_source_ticks)
 {
@@ -10,21 +18,14 @@ static lib_u8 board_consider_clock(const core_machine_clock_domain *clock,
     if (device_ticks == 0u) return LIB_TRUE;
     if (core_machine_clock_domain_source_ticks_until(clock, device_ticks,
             &source_ticks) != LIB_STATUS_OK) return LIB_FALSE;
-    if (*io_source_ticks == 0u || source_ticks < *io_source_ticks)
-        *io_source_ticks = source_ticks;
-    return LIB_FALSE;
+    return board_consider_relative(source_ticks, io_source_ticks);
 }
 
 static lib_u8 board_consider_absolute(lib_u64 now, lib_u64 due_tick,
     lib_u64 *io_source_ticks)
 {
-    lib_u64 source_ticks;
-
     if (due_tick <= now) return LIB_TRUE;
-    source_ticks = due_tick - now;
-    if (*io_source_ticks == 0u || source_ticks < *io_source_ticks)
-        *io_source_ticks = source_ticks;
-    return LIB_FALSE;
+    return board_consider_relative(due_tick - now, io_source_ticks);
 }
 
 static lib_u8 board_consider_pit(const x86_pit *pit,
@@ -112,15 +113,13 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
         out_observation->immediate_due = LIB_TRUE;
     if (core_machine_pic_ticks_until_event(board->shared_pic_master,
             board->shared_pic_slave, &device_ticks) == LIB_STATUS_OK &&
-        board_consider_absolute(now, now + device_ticks,
+        board_consider_relative(device_ticks,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;
     if (board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
         x86_xt_keyboard_ticks_until_event(board->xt_keyboard,
             &device_ticks) == LIB_STATUS_OK) {
-        if (device_ticks == 0u) out_observation->immediate_due = LIB_TRUE;
-        else if (out_observation->source_ticks == 0u ||
-            device_ticks < out_observation->source_ticks)
-            out_observation->source_ticks = device_ticks;
+        if (board_consider_relative(device_ticks, &out_observation->source_ticks))
+            out_observation->immediate_due = LIB_TRUE;
     }
 }

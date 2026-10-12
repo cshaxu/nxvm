@@ -4,6 +4,11 @@
 #include "../hdc_fixture.h"
 #include "../dma_fixture.h"
 
+lib_bool test_board_fdc_finish_command_wait(core_machine_board_state *board)
+{
+    return board != LIB_NULL && test_fdc_finish_command_wait(board->fdc);
+}
+
 lib_bool test_board_fdc_binding_matches(const core_machine_board_state *board,
     const core_machine *machine, core_machine_media_id media_id, lib_u8 dma_channel)
 {

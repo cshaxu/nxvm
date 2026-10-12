@@ -17,7 +17,8 @@ typedef enum core_machine_media_result {
     CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE,
     CORE_MACHINE_MEDIA_RESULT_TRANSIENT,
     CORE_MACHINE_MEDIA_RESULT_PERMANENT,
-    CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED
+    CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED,
+    CORE_MACHINE_MEDIA_RESULT_BAD_TRACK
 } core_machine_media_result;
 
 typedef enum core_machine_media_capability {
@@ -51,6 +52,25 @@ typedef struct core_machine_media_info {
     core_machine_media_geometry geometry;
 } core_machine_media_info;
 
+/* HDD record facts live with the installed medium, not its controller.
+ * Missing ECC is explicit; it is never represented by four zero bytes. */
+typedef struct core_machine_media_record {
+    lib_u8 data[512];
+    lib_u8 ecc[4];
+    lib_bool ecc_present;
+} core_machine_media_record;
+
+/* IDs are zero-based logical offsets, listed in physical track order.
+ * Metadata belongs to the installed lease; byte writes do not clear bad flags. */
+typedef struct core_machine_media_track {
+    lib_u64 first_sector;
+    lib_u32 sector_count;
+    lib_u8 ids[256];
+    lib_bool bad[256];
+    lib_u8 fill;
+    lib_bool fill_payload;
+} core_machine_media_track;
+
 typedef core_machine_media_result (*core_machine_media_query_provider)(
     void *context, core_machine_media_info *out_info);
 typedef core_machine_media_result (*core_machine_media_read_provider)(
@@ -76,6 +96,12 @@ typedef struct core_machine_media_provider {
     core_machine_media_flush_provider flush;
     core_machine_media_get_address_mark_provider get_address_mark;
     core_machine_media_set_address_mark_provider set_address_mark;
+    core_machine_media_result (*read_record)(void *context, lib_u64 sector,
+        core_machine_media_record *out_record);
+    core_machine_media_result (*write_record)(void *context, lib_u64 sector,
+        const core_machine_media_record *record);
+    core_machine_media_result (*format_track)(void *context,
+        const core_machine_media_track *track);
 } core_machine_media_provider;
 
 typedef struct core_machine_media_registry core_machine_media_registry;
@@ -113,5 +139,18 @@ lib_status core_machine_media_get_address_mark(const core_machine_media_registry
 lib_status core_machine_media_set_address_mark(const core_machine_media_registry *registry,
     core_machine_media_id id, lib_u64 logical_sector,
     core_machine_media_address_mark mark, core_machine_media_result *out_result);
+
+/* One 512-byte HDD record. Output is published only after a successful read.
+ * Byte-only providers have no ECC; writes carrying ECC require record support. */
+lib_status core_machine_media_read_record(const core_machine_media_registry *registry,
+    core_machine_media_id id, lib_u64 sector, core_machine_media_record *out_record,
+    core_machine_media_result *out_result);
+lib_status core_machine_media_write_record(const core_machine_media_registry *registry,
+    core_machine_media_id id, lib_u64 sector, const core_machine_media_record *record,
+    core_machine_media_result *out_result);
+
+lib_status core_machine_media_format_track(const core_machine_media_registry *registry,
+    core_machine_media_id id, const core_machine_media_track *track,
+    core_machine_media_result *out_result);
 
 #endif

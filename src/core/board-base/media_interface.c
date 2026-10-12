@@ -44,6 +44,7 @@ static lib_status core_machine_media_get_binding(
     binding = core_machine_media_find(registry, id);
     if (binding == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_binding = binding;
+    core_machine_media_set_result(out_result, CORE_MACHINE_MEDIA_RESULT_OK);
     return LIB_STATUS_OK;
 }
 
@@ -191,6 +192,72 @@ lib_status core_machine_media_read_sectors(const core_machine_media_registry *re
         out_result);
 }
 
+static lib_status core_machine_media_get_record_binding(
+    const core_machine_media_registry *registry, core_machine_media_id id,
+    lib_u64 sector, const core_machine_media_binding **out_binding,
+    core_machine_media_result *out_result)
+{
+    core_machine_media_info info;
+    lib_status status = core_machine_media_query(registry, id, &info, out_result);
+
+    if (status != LIB_STATUS_OK || *out_result != CORE_MACHINE_MEDIA_RESULT_OK)
+        return status;
+    if (info.geometry.bytes_per_sector != 512u ||
+        sector >= info.geometry.logical_sector_count || sector > LIB_UINT64_MAX / 512u) {
+        *out_result = CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+        return LIB_STATUS_OK;
+    }
+    return core_machine_media_get_binding(registry, id, out_binding, out_result);
+}
+
+lib_status core_machine_media_read_record(const core_machine_media_registry *registry,
+    core_machine_media_id id, lib_u64 sector, core_machine_media_record *out_record,
+    core_machine_media_result *out_result)
+{
+    const core_machine_media_binding *binding;
+    core_machine_media_record candidate = {0};
+    lib_status status;
+
+    if (out_record == LIB_NULL || out_result == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    status = core_machine_media_get_record_binding(registry, id, sector, &binding, out_result);
+    if (status != LIB_STATUS_OK || *out_result != CORE_MACHINE_MEDIA_RESULT_OK)
+        return status;
+    if (binding->provider->read_record != LIB_NULL) {
+        *out_result = binding->provider->read_record(binding->context, sector, &candidate);
+    } else {
+        status = core_machine_media_read_bytes(registry, id, sector * 512u,
+            candidate.data, sizeof(candidate.data), out_result);
+    }
+    if (status == LIB_STATUS_OK && *out_result == CORE_MACHINE_MEDIA_RESULT_OK)
+        *out_record = candidate;
+    return status;
+}
+
+lib_status core_machine_media_write_record(const core_machine_media_registry *registry,
+    core_machine_media_id id, lib_u64 sector, const core_machine_media_record *record,
+    core_machine_media_result *out_result)
+{
+    const core_machine_media_binding *binding;
+    lib_status status;
+
+    if (record == LIB_NULL || out_result == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    status = core_machine_media_get_record_binding(registry, id, sector, &binding, out_result);
+    if (status != LIB_STATUS_OK || *out_result != CORE_MACHINE_MEDIA_RESULT_OK)
+        return status;
+    if (binding->provider->write_record != LIB_NULL) {
+        *out_result = binding->provider->write_record(binding->context, sector, record);
+        return LIB_STATUS_OK;
+    }
+    if (record->ecc_present) {
+        *out_result = CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED;
+        return LIB_STATUS_OK;
+    }
+    return core_machine_media_write_bytes(registry, id, sector * 512u,
+        record->data, sizeof(record->data), out_result);
+}
+
 lib_status core_machine_media_write_sectors(const core_machine_media_registry *registry,
     core_machine_media_id id, lib_u64 logical_sector, lib_u32 sector_count,
     const void *buffer, core_machine_media_result *out_result)
@@ -237,6 +304,55 @@ lib_status core_machine_media_format_sectors(const core_machine_media_registry *
     }
     core_machine_media_set_result(out_result, binding->provider->format_sectors(
         binding->context, logical_sector, sector_count, fill));
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_media_format_track(const core_machine_media_registry *registry,
+    core_machine_media_id id, const core_machine_media_track *track,
+    core_machine_media_result *out_result)
+{
+    const core_machine_media_binding *binding;
+    core_machine_media_info info;
+    lib_bool seen[256] = {0};
+    lib_status status;
+
+    if (track == LIB_NULL || out_result == LIB_NULL ||
+        track->sector_count == 0u || track->sector_count > sizeof(track->ids) ||
+        (track->fill_payload != LIB_FALSE && track->fill_payload != LIB_TRUE))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    for (lib_u32 index = 0u; index < track->sector_count; ++index) {
+        const lib_u8 sector = track->ids[index];
+        if (sector >= track->sector_count || seen[sector] ||
+            (track->bad[index] != LIB_FALSE && track->bad[index] != LIB_TRUE))
+            return LIB_STATUS_INVALID_ARGUMENT;
+        seen[sector] = LIB_TRUE;
+    }
+    status = core_machine_media_query(registry, id, &info, out_result);
+    if (status != LIB_STATUS_OK || *out_result != CORE_MACHINE_MEDIA_RESULT_OK)
+        return status;
+    if ((info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u) {
+        *out_result = CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
+        return LIB_STATUS_OK;
+    }
+    if ((info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_FORMATTABLE) == 0u) {
+        *out_result = CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED;
+        return LIB_STATUS_OK;
+    }
+    if (info.geometry.bytes_per_sector != 512u ||
+        track->first_sector >= info.geometry.logical_sector_count ||
+        track->sector_count > info.geometry.logical_sector_count - track->first_sector ||
+        track->first_sector % track->sector_count != 0u) {
+        *out_result = CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+        return LIB_STATUS_OK;
+    }
+    status = core_machine_media_get_binding(registry, id, &binding, out_result);
+    if (status != LIB_STATUS_OK || *out_result != CORE_MACHINE_MEDIA_RESULT_OK)
+        return status;
+    if (binding->provider->format_track == LIB_NULL) {
+        *out_result = CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED;
+        return LIB_STATUS_OK;
+    }
+    *out_result = binding->provider->format_track(binding->context, track);
     return LIB_STATUS_OK;
 }
 

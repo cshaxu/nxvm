@@ -16,6 +16,10 @@ typedef struct core_machine_hdc_fixture_media {
     lib_u8 read_only;
     core_machine_media_result forced_read_result;
     core_machine_media_result forced_write_result;
+    lib_u32 format_count;
+    core_machine_media_track formatted;
+    lib_u8 ecc[2][4];
+    lib_bool ecc_present[2];
 } core_machine_hdc_fixture_media;
 
 static core_machine_media_result core_machine_hdc_fixture_query(void *context,
@@ -31,7 +35,8 @@ static core_machine_media_result core_machine_hdc_fixture_query(void *context,
     out_info->generation = media->generation;
     out_info->present = media->present;
     out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN |
-        CORE_MACHINE_MEDIA_CAPABILITY_CHANGE_DETECTABLE;
+        CORE_MACHINE_MEDIA_CAPABILITY_CHANGE_DETECTABLE |
+        CORE_MACHINE_MEDIA_CAPABILITY_FORMATTABLE;
     if (media->read_only) out_info->capabilities |= CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY;
     out_info->geometry.cylinders = 1u;
     out_info->geometry.heads = 1u;
@@ -77,17 +82,57 @@ static core_machine_media_result core_machine_hdc_fixture_write(void *context,
     }
     ++media->write_count;
     lib_memory_copy(media->sector[offset / 512u], buffer, sizeof(media->sector[0]));
+    media->ecc_present[offset / 512u] = LIB_FALSE;
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static core_machine_media_result core_machine_hdc_fixture_read_record(void *context,
+    lib_u64 sector, core_machine_media_record *record)
+{
+    core_machine_hdc_fixture_media *media = context;
+    core_machine_media_result result;
+
+    if (sector >= 2u) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    result = core_machine_hdc_fixture_read(context, sector * 512u, record->data, 512u);
+    if (result == CORE_MACHINE_MEDIA_RESULT_OK) {
+        lib_memory_copy(record->ecc, media->ecc[sector], sizeof(record->ecc));
+        record->ecc_present = media->ecc_present[sector];
+    }
+    return result;
+}
+
+static core_machine_media_result core_machine_hdc_fixture_write_record(void *context,
+    lib_u64 sector, const core_machine_media_record *record)
+{
+    core_machine_hdc_fixture_media *media = context;
+    core_machine_media_result result;
+
+    if (sector >= 2u) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    result = core_machine_hdc_fixture_write(context, sector * 512u, record->data, 512u);
+    if (result == CORE_MACHINE_MEDIA_RESULT_OK) {
+        lib_memory_copy(media->ecc[sector], record->ecc, sizeof(record->ecc));
+        media->ecc_present[sector] = record->ecc_present;
+    }
+    return result;
+}
+
+static core_machine_media_result core_machine_hdc_fixture_format(void *context,
+    const core_machine_media_track *track)
+{
+    core_machine_hdc_fixture_media *media = context;
+    ++media->format_count;
+    media->formatted = *track;
+    if (track->fill_payload) lib_memory_set(media->sector, track->fill, sizeof(media->sector));
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static const core_machine_media_provider core_machine_hdc_fixture_provider = {
-    core_machine_hdc_fixture_query,
-    core_machine_hdc_fixture_read,
-    core_machine_hdc_fixture_write,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL
+    .query = core_machine_hdc_fixture_query,
+    .read_bytes = core_machine_hdc_fixture_read,
+    .write_bytes = core_machine_hdc_fixture_write,
+    .format_track = core_machine_hdc_fixture_format,
+    .read_record = core_machine_hdc_fixture_read_record,
+    .write_record = core_machine_hdc_fixture_write_record,
 };
 
 static lib_i32 core_machine_hdc_write(core_machine *machine, lib_u16 port,
@@ -131,6 +176,21 @@ static lib_i32 core_machine_hdc_drain(core_machine *machine, core_machine_board_
     }
     hdc_service(board->hdc);
     return 1;
+}
+
+static lib_i32 core_machine_hdc_drain_long(core_machine *machine,
+    core_machine_board_state *board, const core_machine_hdc_task_file_config *config,
+    lib_u16 *first_word)
+{
+    lib_u32 byte;
+    if (!core_machine_hdc_drain(machine, board, config, first_word)) return 0;
+    if (hdc_observe(board->hdc).phase != X86_HDC_PHASE_DATA_READ ||
+        hdc_observe(board->hdc).data_index != 512u) return 0;
+    for (lib_u32 index = 0u; index < 4u; ++index)
+        if (!core_machine_hdc_read(machine, config->data_port, &byte) || byte > 0xffu)
+            return 0;
+    hdc_service(board->hdc);
+    return hdc_observe(board->hdc).phase == X86_HDC_PHASE_IDLE;
 }
 
 static lib_i32 core_machine_hdc_fill(core_machine *machine, core_machine_board_state *board,
@@ -197,6 +257,12 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
             !core_machine_hdc_write(machine, hdc_config.drive_head_port, 0xa0u) ||
             !core_machine_hdc_command(machine, board, &hdc_config, 0x22u) ||
             !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
+            status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC | X86_HDC_STATUS_DRQ) ||
+            hdc_observe(board->hdc).error != 0u ||
+            !core_machine_hdc_drain_long(machine, board, &hdc_config, &word) || word != 0x5678u ||
+            !core_machine_hdc_write(machine, hdc_config.sector_count_port, 1u) ||
+            !core_machine_hdc_command(machine, board, &hdc_config, 0x20u) ||
+            !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
             status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC |
                 X86_HDC_STATUS_DRQ) ||
             !core_machine_hdc_drain(machine, board, &hdc_config, &word) || word != 0x5678u ||
@@ -228,6 +294,52 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
             hdc_observe(board->hdc).error != X86_HDC_ERROR_ABORT) {
             failed = 1;
         }
+    }
+    if (!failed) {
+        if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
+            !core_machine_hdc_write(machine, hdc_config.sector_count_port, 2u) ||
+            !core_machine_hdc_command(machine, board, &hdc_config, 0x91u) ||
+            !core_machine_hdc_command(machine, board, &hdc_config, 0x50u) ||
+            core_machine_hdc_irq_pending(board->hdc)) failed = 1;
+        for (lib_u32 index = 0u; index < 255u; ++index)
+            if (!core_machine_hdc_write(machine, hdc_config.data_port,
+                    index == 0u ? 0x0200u : index == 1u ? 0x0180u : 0u)) failed = 1;
+        if (media.format_count != 0u ||
+            !core_machine_hdc_write(machine, hdc_config.data_port, 0u)) failed = 1;
+        hdc_service(board->hdc);
+        if (media.format_count != 1u || media.formatted.ids[0] != 1u ||
+            media.formatted.ids[1] != 0u || !media.formatted.bad[1] ||
+            !media.formatted.fill_payload || media.sector[0][0] != 0u ||
+            !core_machine_hdc_irq_pending(board->hdc) ||
+            !core_machine_pic_irq_source_is_asserted(board->hdc->connect.irq_source)) failed = 1;
+    }
+    if (!failed) {
+        core_machine_hdc_write(machine, hdc_config.sector_number_port, 2u);
+        core_machine_hdc_write(machine, hdc_config.sector_count_port, 1u);
+        core_machine_hdc_command(machine, board, &hdc_config, 0x32u);
+        for (lib_u32 index = 0u; index < 256u; ++index)
+            core_machine_hdc_write(machine, hdc_config.data_port, 0x4a4au);
+        if (media.ecc_present[1] || hdc_observe(board->hdc).data_index != 512u)
+            failed = 1;
+        for (lib_u32 index = 0u; index < 4u; ++index)
+            core_machine_hdc_write(machine, hdc_config.data_port, 0x21u + index);
+        hdc_service(board->hdc);
+        if (!media.ecc_present[1] || media.ecc[1][3] != 0x24u ||
+            !core_machine_hdc_irq_pending(board->hdc)) failed = 1;
+        core_machine_hdc_write(machine, hdc_config.sector_count_port, 1u);
+        core_machine_hdc_command(machine, board, &hdc_config, 0x22u);
+        core_machine_hdc_read(machine, hdc_config.status_command_port, &status);
+        for (lib_u32 index = 0u; index < 256u; ++index) {
+            core_machine_hdc_read(machine, hdc_config.data_port, &status);
+            if (status != 0x4a4au) failed = 1;
+        }
+        if (hdc_observe(board->hdc).data_index != 512u) failed = 1;
+        for (lib_u32 index = 0u; index < 4u; ++index) {
+            core_machine_hdc_read(machine, hdc_config.data_port, &status);
+            if (status != 0x21u + index) failed = 1;
+        }
+        hdc_service(board->hdc);
+        if (hdc_observe(board->hdc).phase != X86_HDC_PHASE_IDLE) failed = 1;
     }
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(registry);

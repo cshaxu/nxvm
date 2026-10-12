@@ -52,13 +52,8 @@ static core_machine_media_result fixture_media_read(void *context,
 }
 
 static const core_machine_media_provider fixture_media_provider = {
-    fixture_media_query,
-    fixture_media_read,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL
+    .query = fixture_media_query,
+    .read_bytes = fixture_media_read,
 };
 
 lib_i32 main(void)

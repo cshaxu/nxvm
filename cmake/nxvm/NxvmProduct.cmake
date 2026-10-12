@@ -809,6 +809,7 @@ target_include_directories(integration-session-ini-support PUBLIC
 )
 add_executable(vm-profile-floppy-boot-matrix
     test/core/integration/dos/pc_profile_floppy_boot_matrix.c
+    test/core/board-base/support/controller_fixture.c
 )
 target_link_libraries(vm-profile-floppy-boot-matrix PRIVATE
     integration-session-ini-support)

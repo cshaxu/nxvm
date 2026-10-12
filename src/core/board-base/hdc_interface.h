@@ -8,7 +8,9 @@
 typedef struct core_machine_hdc core_machine_hdc;
 
 /* The board owns this opaque candidate through serialized Core teardown.
- * Configuration creates the chip once; the board publishes its port routes
+ * Configuration creates one controller, or independent Compaq C/D controllers
+ * for its C/D endpoints. An unbound image is absent media, not controller
+ * hotplug. The board publishes one set of port routes
  * through Core's sole route transaction. Provider callbacks borrow the handle
  * and cannot retain transfer scratch or survive destruction. */
 lib_status core_machine_hdc_create(core_machine_hdc **out_hdc);

@@ -24,7 +24,8 @@ typedef struct core_machine_hdc_connection {
 
 
 struct core_machine_hdc {
-    x86_hdc *chip;
+    x86_hdc *chips[2];
+    lib_u8 selected_controller;
     core_machine_hdc_connection connect;
 };
 

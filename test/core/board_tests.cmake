@@ -52,13 +52,9 @@ foreach(media_case IN ITEMS provider direct_readonly)
     list(APPEND CORE_BOARD_TEST_TARGETS ${media_target})
 endforeach()
 
-# Compile the two media owners with a test-only final-close result injector.
-# Production retains the single Storage destroy path and has no test seam.
-add_executable(vm-media-close-failure-smoke ${CORE_TEST_ROOT}/machine/media/close_failure_smoke.c
-    "${CORE_ROOT}/machine/media/fdd.c" "${CORE_ROOT}/machine/media/hdd.c")
-set_source_files_properties("${CORE_ROOT}/machine/media/fdd.c"
-    "${CORE_ROOT}/machine/media/hdd.c" PROPERTIES
-    COMPILE_DEFINITIONS "lib_storage_medium_destroy=vm_media_close_failure_destroy")
+# Compile the media owners with owner-local resource/I/O failure injection.
+# Production retains its single Storage path and has no test seam.
+add_executable(vm-media-close-failure-smoke ${CORE_TEST_ROOT}/machine/media/close_failure_smoke.c)
 target_link_libraries(vm-media-close-failure-smoke PRIVATE types storage)
 add_test(NAME unit.vm-media-close-failure-smoke COMMAND vm-media-close-failure-smoke)
 set_tests_properties(unit.vm-media-close-failure-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)

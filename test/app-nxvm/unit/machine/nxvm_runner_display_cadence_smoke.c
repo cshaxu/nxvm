@@ -17,9 +17,6 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
-        vm_test_emulator_machine_bind(session) != LIB_STATUS_OK ||
-        vm_test_emulator_machine_state_waiter_initialize(session, &waiter) !=
-            LIB_STATUS_OK ||
         vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != LIB_STATUS_OK) {
         failed = 1;
         goto done;
@@ -28,6 +25,9 @@ lib_i32 main(void)
         vm_machine_copy_emulator_frame(session, &frame) != LIB_STATUS_OK ||
         frame.window.text.base.text_columns != 80u ||
         frame.window.text.base.text_rows != 25u ||
+        vm_test_emulator_machine_bind(session) != LIB_STATUS_OK ||
+        vm_test_emulator_machine_state_waiter_initialize(session, &waiter) !=
+            LIB_STATUS_OK ||
         vm_machine_resume(session) != LIB_STATUS_OK ||
         !vm_test_emulator_machine_wait_state(session, &waiter,
             EMULATOR_MACHINE_RUNNING, 2000u) ||

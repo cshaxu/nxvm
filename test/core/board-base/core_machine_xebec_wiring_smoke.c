@@ -9,7 +9,13 @@
 #include "core/board-base/media_interface.h"
 
 typedef struct xebec_media {
-    lib_u8 bytes[2u * CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR];
+    lib_u8 bytes[CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK *
+        CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR];
+    lib_u32 reads;
+    lib_u8 ecc[CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK][4];
+    lib_bool ecc_present[CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK];
+    lib_bool bad_track;
+    core_machine_media_track formatted;
 } xebec_media;
 
 static core_machine_media_result xebec_media_query(void *opaque,
@@ -19,7 +25,8 @@ static core_machine_media_result xebec_media_query(void *opaque,
     if (out_info == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     *out_info = (core_machine_media_info) {
         .present = LIB_TRUE,
-        .capabilities = CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN,
+        .capabilities = CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN |
+            CORE_MACHINE_MEDIA_CAPABILITY_FORMATTABLE,
         .geometry = {
             CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT,
             CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR,
@@ -39,6 +46,7 @@ static core_machine_media_result xebec_media_read(void *opaque,
         sizeof(media->bytes) - CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR ||
         count != CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     lib_memory_copy(buffer, media->bytes + offset, count);
+    ++media->reads;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
@@ -51,12 +59,58 @@ static core_machine_media_result xebec_media_write(void *opaque,
         sizeof(media->bytes) - CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR ||
         count != CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     lib_memory_copy(media->bytes + offset, buffer, count);
+    media->ecc_present[offset / 512u] = LIB_FALSE;
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static core_machine_media_result xebec_media_read_record(void *opaque,
+    lib_u64 sector, core_machine_media_record *out_record)
+{
+    xebec_media *media = opaque;
+    if (sector >= CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK)
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    if (media->bad_track) return CORE_MACHINE_MEDIA_RESULT_BAD_TRACK;
+    out_record->ecc_present = media->ecc_present[sector];
+    lib_memory_copy(out_record->ecc, media->ecc[sector], sizeof(out_record->ecc));
+    return xebec_media_read(opaque, sector * 512u, out_record->data, 512u);
+}
+
+static core_machine_media_result xebec_media_write_record(void *opaque,
+    lib_u64 sector, const core_machine_media_record *record)
+{
+    xebec_media *media = opaque;
+    core_machine_media_result result;
+    if (sector >= CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK)
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    result = xebec_media_write(opaque, sector * 512u, record->data, 512u);
+    if (result == CORE_MACHINE_MEDIA_RESULT_OK) {
+        lib_memory_copy(media->ecc[sector], record->ecc, sizeof(record->ecc));
+        media->ecc_present[sector] = record->ecc_present;
+    }
+    return result;
+}
+
+static core_machine_media_result xebec_media_format_track(void *opaque,
+    const core_machine_media_track *track)
+{
+    xebec_media *media = opaque;
+    if (track->first_sector != 0u ||
+        track->sector_count != CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK)
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    if (track->fill_payload) lib_memory_set(media->bytes, track->fill, sizeof(media->bytes));
+    lib_memory_set(media->ecc_present, 0, sizeof(media->ecc_present));
+    media->bad_track = track->bad[0];
+    media->formatted = *track;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static const core_machine_media_provider xebec_media_provider = {
-    xebec_media_query, xebec_media_read, xebec_media_write,
-    LIB_NULL, LIB_NULL, LIB_NULL, LIB_NULL
+    .query = xebec_media_query,
+    .read_bytes = xebec_media_read,
+    .write_bytes = xebec_media_write,
+    .read_record = xebec_media_read_record,
+    .write_record = xebec_media_write_record,
+    .format_track = xebec_media_format_track,
 };
 
 static lib_bool xebec_routes_match(core_machine *machine)
@@ -144,7 +198,7 @@ lib_i32 main(void)
         }
     };
     core_machine_media_registry *registry = LIB_NULL;
-    xebec_media media = {{0}};
+    xebec_media media = {0};
     core_machine_dma_request_binding fdc_binding = {0};
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
@@ -153,10 +207,11 @@ lib_i32 main(void)
     const lib_u8 initialize_dcb[] = {0x0cu, 0u, 0u, 0u, 0u, 0u};
     const lib_u8 response[] = {0x22u};
     const lib_u8 sense_dcb[] = {0x03u, 0x20u, 0u, 0u, 0u, 0u};
-    const lib_u8 sense[] = {0x04u, 0u, 0u, 0u};
+    const lib_u8 sense[] = {0x04u, 0u, 0u, 0u, 0x20u};
     const lib_u8 invalid_dcb[] = {0x02u, 0u, 0u, 0u, 0u, 0u};
     const lib_u8 read_dcb[] = {0x08u, 0u, 0u, 0u, 2u, 0u};
     const lib_u8 write_dcb[] = {0x0au, 0u, 0u, 0u, 1u, 0u};
+    const lib_u8 controller_diagnostics[] = {0xe0u, 0xe4u};
     const core_machine_dma_channel_provider *dma_provider;
     lib_u8 dma_bytes[2u * CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR];
     lib_u64 due_tick = 0u;
@@ -321,21 +376,158 @@ lib_i32 main(void)
                 if (hdc_observe(board->hdc).xebec_mask != 0x5au) failed |= 0x20000;
             }
             if (!failed) {
+                lib_u8 buffer_dcb[] = {0x0fu, 0u, 255u, 255u, 0u, 255u};
+                test_hdc_port_write(machine, 0x0323u, 0x02u);
+                for (lib_u32 pass = 0u; pass < 2u; ++pass) {
+                    buffer_dcb[0] = pass == 0u ? 0x0fu : 0x0eu;
+                    test_hdc_port_write(machine, 0x0322u, 0u);
+                    for (index = 0u; index < sizeof(buffer_dcb); ++index)
+                        test_hdc_port_write(machine, 0x0320u, buffer_dcb[index]);
+                    hdc_service(board->hdc);
+                    if ((test_hdc_port_read(machine, 8u) & 0x80u) != 0u ||
+                        core_machine_hdc_irq_pending(board->hdc)) failed |= 0x200000;
+                    for (index = 0u; index < 512u; ++index) {
+                        if (pass == 0u)
+                            test_hdc_port_write(machine, 0x0320u, (lib_u8)(index ^ 0x5au));
+                        else if (test_hdc_port_read(machine, 0x0320u) !=
+                            (lib_u8)(index ^ 0x5au)) failed |= 0x200000;
+                    }
+                    if (!core_machine_hdc_irq_pending(board->hdc) ||
+                        test_hdc_port_read(machine, 0x0320u) != 0u ||
+                        core_machine_hdc_irq_pending(board->hdc) ||
+                        (test_hdc_port_read(machine, 8u) & 0x80u) != 0u ||
+                        media.bytes[0] != 0xffu || media.bytes[511] != 0u)
+                        failed |= 0x200000;
+                }
+            }
+            for (lib_size diagnostic = 0u;
+                !failed && diagnostic < sizeof(controller_diagnostics); ++diagnostic) {
+                const lib_u32 reads = media.reads;
+                const lib_u8 controller_dcb[] = {controller_diagnostics[diagnostic],
+                    0u, 255u, 255u, 255u, 255u};
+                test_hdc_port_write(machine, 0x0323u, 1u);
+                test_hdc_port_write(machine, 0x0322u, 0u);
+                for (index = 0u; index < sizeof(controller_dcb); ++index)
+                    test_hdc_port_write(machine, 0x0320u, controller_dcb[index]);
+                hdc_service(board->hdc);
+                test_hdc_port_write(machine, 0x0323u, 1u);
+                if (core_machine_hdc_irq_pending(board->hdc) ||
+                    core_machine_pic_irq_source_is_asserted(board->hdc->connect.irq_source) ||
+                    media.reads != reads) failed |= 0x800000;
+                test_hdc_port_write(machine, 0x0323u, 3u);
+                if (!core_machine_hdc_irq_pending(board->hdc) ||
+                    !core_machine_pic_irq_source_is_asserted(board->hdc->connect.irq_source) ||
+                    media.reads != reads) failed |= 0x800000;
+                if (media.reads != reads ||
+                    !core_machine_hdc_irq_pending(board->hdc) ||
+                    (test_hdc_port_read(machine, 8u) & 0x80u) != 0u ||
+                    test_hdc_port_read(machine, 0x0320u) != 0u ||
+                    core_machine_hdc_irq_pending(board->hdc) ||
+                    media.bytes[0] != 0xffu || media.bytes[511] != 0u)
+                    failed |= 0x800000;
+            }
+            if (!failed) {
+                const lib_u32 reads = media.reads;
+                const lib_u8 diagnostic_dcb[] = {0xe3u, 0x1fu, 63u, 255u, 0u, 255u};
+                const lib_u8 diagnostic_sense[] = {0xa1u, 1u, 0u, 0u, 0u};
+                const lib_u8 request_sense[] = {3u, 0u, 0u, 0u, 0u, 0u};
+                test_hdc_port_write(machine, 0x0322u, 0u);
+                for (index = 0u; index < sizeof(diagnostic_dcb); ++index)
+                    test_hdc_port_write(machine, 0x0320u, diagnostic_dcb[index]);
+                hdc_service(board->hdc);
+                /* This range-injecting provider has only track zero's data. */
+                if (media.reads != reads + 1u ||
+                    !core_machine_hdc_irq_pending(board->hdc) ||
+                    (test_hdc_port_read(machine, 8u) & 0x80u) != 0u ||
+                    test_hdc_port_read(machine, 0x0320u) != 2u ||
+                    core_machine_hdc_irq_pending(board->hdc) ||
+                    media.bytes[0] != 0xffu || media.bytes[511] != 0u)
+                    failed |= 0x400000;
+                test_hdc_port_write(machine, 0x0322u, 0u);
+                for (index = 0u; index < sizeof(request_sense); ++index)
+                    test_hdc_port_write(machine, 0x0320u, request_sense[index]);
+                hdc_service(board->hdc);
+                for (index = 0u; index < sizeof(diagnostic_sense); ++index)
+                    if (test_hdc_port_read(machine, 0x0320u) != diagnostic_sense[index])
+                        failed |= 0x400000;
+            }
+            if (!failed) {
+                const lib_u8 parameters[] = {0u, 1u, 1u, 0u, 128u, 0u, 64u, 11u};
+                const lib_u8 diagnostic[] = {0xe3u, 0u, 0u, 0u, 0u, 0u};
+                const lib_u32 reads = media.reads;
                 test_hdc_port_write(machine, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(initialize_dcb); ++index)
                     test_hdc_port_write(machine, 0x0320u, initialize_dcb[index]);
                 if (hdc_observe(board->hdc).xebec_phase != X86_XEBEC_PHASE_INITIALIZE) failed |= 0x40000;
                 if (failed) goto cleanup;
-                for (index = 0u; index < sizeof(hdc_observe(board->hdc).xebec_initialize); ++index)
-                    test_hdc_port_write(machine, 0x0320u, 0u);
+                for (index = 0u; index < sizeof(parameters); ++index)
+                    test_hdc_port_write(machine, 0x0320u, parameters[index]);
                 hdc_service(board->hdc);
-                if (hdc_observe(board->hdc).xebec_phase != X86_XEBEC_PHASE_RESPONSE) failed |= 0x80000;
+                if (!core_machine_hdc_irq_pending(board->hdc) ||
+                    test_hdc_port_read(machine, 0x0320u) != 0u ||
+                    core_machine_hdc_irq_pending(board->hdc) ||
+                    (test_hdc_port_read(machine, 8u) & 0x80u) != 0u || media.reads != reads)
+                    failed |= 0x80000;
+                test_hdc_port_write(machine, 0x0322u, 0u);
+                for (index = 0u; index < sizeof(diagnostic); ++index)
+                    test_hdc_port_write(machine, 0x0320u, diagnostic[index]);
+                hdc_service(board->hdc);
+                if (media.reads != reads + 1u ||
+                    !core_machine_hdc_irq_pending(board->hdc) ||
+                    test_hdc_port_read(machine, 0x0320u) != 0u ||
+                    core_machine_hdc_irq_pending(board->hdc) ||
+                    media.bytes[0] != 0xffu || media.bytes[511] != 0u)
+                    failed |= 0x80000;
             }
             if (!failed) {
+                const lib_u8 diagnostic[] = {0xe3u, 0u, 0u, 0u, 0u, 0u};
+                const lib_u32 reads = media.reads;
                 test_hdc_port_write(machine, 0x0321u, 0u);
                 if (hdc_observe(board->hdc).xebec_dcb_count != 0u ||
                     hdc_observe(board->hdc).xebec_mask != 0u ||
                     hdc_observe(board->hdc).xebec_phase != X86_XEBEC_PHASE_IDLE) failed |= 0x100000;
+                test_hdc_port_write(machine, 0x0323u, 2u);
+                test_hdc_port_write(machine, 0x0322u, 0u);
+                for (index = 0u; index < sizeof(diagnostic); ++index)
+                    test_hdc_port_write(machine, 0x0320u, diagnostic[index]);
+                hdc_service(board->hdc);
+                if (media.reads != reads + 1u ||
+                    test_hdc_port_read(machine, 0x0320u) != 2u)
+                    failed |= 0x100000;
+            }
+            if (!failed) {
+                const lib_u8 bad_track[] = {0x07u, 0u, 0u, 0u, 3u, 0u};
+                const lib_u8 read[] = {0x08u, 0u, 0u, 0u, 1u, 0u};
+                const lib_u8 request[] = {0x03u, 0u, 0u, 0u, 0u, 0u};
+                const lib_u8 expected[] = {0x99u, 0u, 0u, 0u, 0u};
+                const lib_u32 reads = media.reads;
+
+                test_hdc_port_write(machine, 0x0323u, 3u);
+                test_hdc_port_write(machine, 0x0322u, 0u);
+                for (index = 0u; index < sizeof(bad_track); ++index)
+                    test_hdc_port_write(machine, 0x0320u, bad_track[index]);
+                hdc_service(board->hdc);
+                if (!media.bad_track || media.formatted.ids[3] != 1u ||
+                    !core_machine_hdc_irq_pending(board->hdc) ||
+                    test_hdc_port_read(machine, 0x0320u) != 0u) failed |= 0x1000000;
+                test_hdc_port_write(machine, 0x0321u, 0u);
+                test_hdc_port_write(machine, 0x0323u, 3u);
+                test_hdc_port_write(machine, 0x0322u, 0u);
+                for (index = 0u; index < sizeof(read); ++index)
+                    test_hdc_port_write(machine, 0x0320u, read[index]);
+                hdc_service(board->hdc);
+                if (!core_machine_hdc_irq_pending(board->hdc) ||
+                    !core_machine_pic_irq_source_is_asserted(board->hdc->connect.irq_source) ||
+                    (test_hdc_port_read(machine, 8u) & 0x80u) != 0u ||
+                    test_hdc_port_read(machine, 0x0320u) != 2u || media.reads != reads)
+                    failed |= 0x1000000;
+                test_hdc_port_write(machine, 0x0322u, 0u);
+                for (index = 0u; index < sizeof(request); ++index)
+                    test_hdc_port_write(machine, 0x0320u, request[index]);
+                hdc_service(board->hdc);
+                for (index = 0u; index < sizeof(expected); ++index)
+                    if (test_hdc_port_read(machine, 0x0320u) != expected[index])
+                        failed |= 0x1000000;
             }
         }
     }

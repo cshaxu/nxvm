@@ -55,7 +55,8 @@ static lib_bool model40_fdc_command(core_machine_board_state *board, core_machin
     for (index = 0u; index < count; ++index)
         if (core_machine_bus_write(machine, 0x03f5u, bytes[index]) != LIB_STATUS_OK)
             return LIB_FALSE;
-    return test_board_fdc_advance_ticks(board, 1u);
+    return test_board_fdc_advance_ticks(board, 1u) &&
+        test_board_fdc_finish_command_wait(board);
 }
 
 static lib_i32 model40_fdc_result(core_machine_board_state *board, core_machine *machine,
@@ -95,7 +96,8 @@ lib_i32 main(void)
     static lib_u8 image[MODEL40_FDC_BYTES];
     static const lib_u8 specify[] = {0x03u, 0xdfu, 0x03u};
     static const lib_u8 specify_dma[] = {0x03u, 0xdfu, 0x02u};
-    static const lib_u8 read_last[] = {0xe6u, 0u, 0u, 0u, 15u, 2u, 15u, 0x1bu, 0xffu};
+    static const lib_u8 read_last[] = {0x66u, 0u, 0u, 0u, 15u, 2u, 15u, 0x1bu, 0xffu};
+    static const lib_u8 read_last_dma[] = {0xe6u, 0u, 0u, 0u, 15u, 2u, 15u, 0x1bu, 0xffu};
     static const lib_u8 read_oob[] = {0xe6u, 0u, 0u, 0u, 16u, 2u, 16u, 0x1bu, 0xffu};
     vm_machine *session = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
@@ -126,7 +128,7 @@ lib_i32 main(void)
             value != 0xb4u) goto done;
         const core_machine_fdc_config config = test_board_fdc_connection_config(board);
         const core_machine_fdc_drive_bindings drives = test_board_fdc_drive_bindings(board);
-        const lib_u64 byte_ticks = config.clock_ticks_per_second / 1000000u * 15u;
+        const lib_u64 byte_ticks = config.clock_ticks_per_second / 1000000u * 16u;
         if (config.irq != 6u || config.dma_channel != 2u ||
             config.ready_mask != 0x0fu ||
             config.clock_ticks_per_second != 16000000u ||
@@ -156,8 +158,9 @@ lib_i32 main(void)
             !model40_fdc_command(board, machine, specify, sizeof(specify)) ||
             !model40_fdc_command(board, machine, read_last, sizeof(read_last)) ||
             vm_test_model40_observation(session).fdc_terminal_valid ||
+            !test_board_fdc_irq_source_is_asserted(board) ||
             core_machine_bus_read(machine, 0x03f5u, &value) != LIB_STATUS_OK ||
-            value != 0xa5u) goto done;
+            value != 0xa5u || test_board_fdc_irq_source_is_asserted(board)) goto done;
         for (index = 1u; index < 512u; ++index) {
             if (!test_board_fdc_advance_ticks(board, byte_ticks) ||
                 core_machine_bus_read(machine, 0x03f5u, &value) != LIB_STATUS_OK) goto done;
@@ -166,12 +169,12 @@ lib_i32 main(void)
             result[0] != TEST_FDC_ST0_NORMAL || result[1] != 0u ||
             result[5] != 16u || result[6] != 2u ||
             !vm_test_model40_observation(session).fdc_terminal_valid ||
-            vm_test_model40_observation(session).fdc_terminal.command != 0xe6u ||
+            vm_test_model40_observation(session).fdc_terminal.command != 0x66u ||
             vm_test_model40_observation(session).fdc_terminal.result[0] != result[0] ||
             vm_test_model40_observation(session).fdc_terminal.result[1] != result[1] ||
             !model40_fdc_command(board, machine, specify_dma, sizeof(specify_dma)) ||
             !model40_fdc_write_dma2(machine, 0x0600u, 511u) ||
-            !model40_fdc_command(board, machine, read_last, sizeof(read_last))) goto done;
+            !model40_fdc_command(board, machine, read_last_dma, sizeof(read_last_dma))) goto done;
         for (index = 0u; index < 512u; ++index) {
             test_board_dma_transfers(board, machine, 1u, 2u);
             if (index + 1u < 512u && !test_board_fdc_advance_ticks(board, byte_ticks)) goto done;
@@ -226,9 +229,9 @@ lib_i32 main(void)
     {
         static const struct { lib_u8 bytes[9]; lib_u8 count; } commands[] = {
             {{0xe6u, 0u, 0u, 0u, 1u, 2u, 15u, 0x1bu, 0xffu}, 9u},
-            {{0xe5u, 0u, 0u, 0u, 1u, 2u, 15u, 0x1bu, 0xffu}, 9u},
+            {{0xc5u, 0u, 0u, 0u, 1u, 2u, 15u, 0x1bu, 0xffu}, 9u},
             {{0xecu, 0u, 0u, 0u, 1u, 2u, 15u, 0x1bu, 0xffu}, 9u},
-            {{0xe9u, 0u, 0u, 0u, 1u, 2u, 15u, 0x1bu, 0xffu}, 9u},
+            {{0xc9u, 0u, 0u, 0u, 1u, 2u, 15u, 0x1bu, 0xffu}, 9u},
             {{0x51u, 0u, 0u, 0u, 1u, 2u, 15u, 0x1bu, 1u}, 9u},
             {{0x59u, 0u, 0u, 0u, 1u, 2u, 15u, 0x1bu, 1u}, 9u},
             {{0x5du, 0u, 0u, 0u, 1u, 2u, 15u, 0x1bu, 1u}, 9u},

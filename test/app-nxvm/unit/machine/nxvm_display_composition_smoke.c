@@ -75,6 +75,26 @@ lib_i32 main(void)
         frame.palette_rgb[15u] != 0xffffffu;
     text_generation = frame.generation;
 
+    {
+        emulator_machine_driver driver;
+        emulator_machine *executor = LIB_NULL;
+        const lib_u64 publish_time = session->last_display_publish_milliseconds;
+
+        if (vm_machine_describe_emulator_driver(session, &driver) != LIB_STATUS_OK ||
+            emulator_machine_create(&executor, &driver) != LIB_STATUS_OK) failed = 1;
+        else {
+            failed |= vm_machine_bind_emulator_machine(session, executor) != LIB_STATUS_OK;
+            /* A ready local frame is not a frame published by this executor.
+             * The test reader must neither enter the driver nor force a publish. */
+            failed |= test_nxvm_machine_capture_presentation(session, &frame) !=
+                LIB_STATUS_INVALID_STATE || frame.generation != text_generation ||
+                session->display_generation != text_generation ||
+                session->last_display_publish_milliseconds != publish_time;
+            failed |= vm_machine_bind_emulator_machine(session, LIB_NULL) != LIB_STATUS_OK;
+            failed |= emulator_machine_destroy(executor) != LIB_STATUS_OK;
+        }
+    }
+
     vm_display_composition_port_write(session, 0x03d8u, 0x0au);
     vm_display_composition_port_write(session, 0x03d9u, 0x00u);
     failed |= core_machine_memory_write(session->core_machine,

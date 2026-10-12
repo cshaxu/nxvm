@@ -52,6 +52,23 @@ static inline lib_bool test_fdc_finish_seeks(core_machine_fdc *fdc)
     return LIB_FALSE;
 }
 
+static inline lib_bool test_fdc_finish_command_wait(core_machine_fdc *fdc)
+{
+    /* One active load plus at most four retained unload deadlines. Do not
+     * service data bytes: a ready RQM/DRQ ends this command-entry wait. */
+    for (lib_u8 event = 0u; event < X86_FDC_DRIVE_COUNT + 2u; ++event) {
+        x86_fdc_observation observation;
+        lib_u64 due;
+        if (x86_fdc_capture(fdc->chip, &observation) != LIB_STATUS_OK) return LIB_FALSE;
+        if ((observation.msr & 0xf0u) != 0x10u || observation.drq) return LIB_TRUE;
+        if (core_machine_fdc_next_due_tick(fdc, &due) != LIB_STATUS_OK ||
+            due <= observation.elapsed_ticks) return LIB_TRUE;
+        if (event == X86_FDC_DRIVE_COUNT + 1u) return LIB_FALSE;
+        core_machine_fdc_advance_at(fdc, due);
+    }
+    return LIB_FALSE;
+}
+
 static inline lib_bool test_fdc_interrupt_matches(const core_machine_fdc *fdc,
     lib_bool asserted)
 {

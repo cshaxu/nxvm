@@ -145,13 +145,20 @@ static void core_machine_fdc_step(void *context, lib_u8 unit, lib_bool outward)
     core_machine_fdc_observe_drive(fdc, drive);
 }
 
+static lib_u32 core_machine_fdc_recording_rate(const core_machine_fdc *fdc)
+{
+    static const lib_u32 rates[] = {500000u, 300000u, 250000u};
+    const lib_u8 rate = fdc->connect.config.control_port == 0u ?
+        VFDC_CCR_RATE_250 : fdc->data.ccr;
+    return rate < sizeof(rates) / sizeof(rates[0]) ? rates[rate] : 0u;
+}
+
 static lib_bool core_machine_fdc_track(void *context, lib_u8 unit, lib_bool mfm,
     x86_fdc_track *out_track)
 {
     const core_machine_fdc *fdc = context;
     const lib_u8 drive = fdc->data.dor & VFDC_DOR_DS;
-    static const lib_u32 rates[] = {500000u, 300000u, 250000u};
-    const lib_u8 rate = fdc->connect.config.control_port == 0u ? VFDC_CCR_RATE_250 : fdc->data.ccr;
+    const lib_u32 rate = core_machine_fdc_recording_rate(fdc);
     core_machine_media_info info = {0};
     core_machine_media_result result = CORE_MACHINE_MEDIA_RESULT_ABSENT;
     *out_track = (x86_fdc_track) {.cylinder = fdc->drive_cylinder[drive]};
@@ -164,10 +171,10 @@ static lib_bool core_machine_fdc_track(void *context, lib_u8 unit, lib_bool mfm,
     out_track->heads = (lib_u16)info.geometry.heads;
     out_track->sectors = (lib_u16)info.geometry.sectors_per_track;
     out_track->bytes_per_sector = (lib_u16)info.geometry.bytes_per_sector;
-    if (rate >= sizeof(rates) / sizeof(rates[0])) return LIB_TRUE;
+    if (rate == 0u) return LIB_TRUE;
     if (fdc->connect.drives.channel.sample != LIB_NULL)
         out_track->id_readable = fdc->connect.drives.channel.sample(fdc->connect.drives.channel.context,
-            drive, &info.geometry, fdc->drive_cylinder[drive], rates[rate], mfm,
+            drive, &info.geometry, fdc->drive_cylinder[drive], rate, mfm,
             &out_track->cylinder);
     else out_track->id_readable = out_track->cylinder < info.geometry.cylinders;
     return LIB_TRUE;
@@ -288,6 +295,7 @@ static x86_fdc_record_result core_machine_fdc_record_format(void *context, lib_u
 static void core_machine_fdc_irq(void *context, lib_bool asserted)
 {
     core_machine_fdc *fdc = context;
+    asserted = asserted && (fdc->data.dor & VFDC_DOR_ENRQ) != 0u;
     if (asserted) core_machine_pic_irq_source_assert(fdc->connect.irq_source);
     else core_machine_pic_irq_source_deassert(fdc->connect.irq_source);
 }
@@ -295,6 +303,7 @@ static void core_machine_fdc_irq(void *context, lib_bool asserted)
 static void core_machine_fdc_drq(void *context, lib_bool asserted)
 {
     core_machine_fdc *fdc = context;
+    asserted = asserted && (fdc->data.dor & VFDC_DOR_ENRQ) != 0u;
     core_machine_fdc_dma_request_operation operation = asserted ?
         fdc->connect.dma_request_assert : fdc->connect.dma_request_deassert;
     if (operation != LIB_NULL) operation(fdc->connect.dma_request_owner, &fdc->connect.dma_request);
@@ -322,22 +331,33 @@ static lib_u64 core_machine_fdc_duration(const core_machine_fdc *fdc, lib_u64 mi
     return scaled / 1000000u + (scaled % 1000000u != 0u);
 }
 
+static lib_u64 core_machine_fdc_rate_duration(const core_machine_fdc *fdc,
+    lib_u64 microseconds)
+{
+    const lib_u64 frequency = fdc->connect.config.clock_ticks_per_second;
+    const lib_u64 denominator = 2u * (lib_u64)core_machine_fdc_recording_rate(fdc);
+    lib_u64 scaled;
+
+    /* Datasheet durations refer to 500 kbit/s. Convert the selected rate
+     * directly to the guest axis, with one rounding operation. */
+    if (denominator == 0u || frequency == 0u ||
+        microseconds > LIB_UINT64_MAX / frequency) return 0u;
+    scaled = frequency * microseconds;
+    return scaled / denominator + (scaled % denominator != 0u);
+}
+
 static x86_fdc_timing core_machine_fdc_timing(const core_machine_fdc *fdc)
 {
-    lib_u64 fm = 31u, mfm = 15u;
-    if (fdc->data.ccr == VFDC_CCR_RATE_300) {
-        fm = (fm * 5u + 2u) / 3u;
-        mfm = (mfm * 5u + 2u) / 3u;
-    } else if (fdc->data.ccr != VFDC_CCR_RATE_500) {
-        fm = 0u;
-        mfm = 0u;
-    }
     return (x86_fdc_timing) {
         .reset_ticks = core_machine_fdc_duration(fdc, 1024u),
         .step_numerator = fdc->connect.config.clock_ticks_per_second,
         .step_denominator = 1000u,
-        .fm_byte_ticks = core_machine_fdc_duration(fdc, fm),
-        .mfm_byte_ticks = core_machine_fdc_duration(fdc, mfm)
+        .fm_byte_ticks = core_machine_fdc_rate_duration(fdc, 32u),
+        .mfm_byte_ticks = core_machine_fdc_rate_duration(fdc, 16u),
+        .fm_read_service_ticks = core_machine_fdc_rate_duration(fdc, 27u),
+        .mfm_read_service_ticks = core_machine_fdc_rate_duration(fdc, 13u),
+        .fm_write_service_ticks = core_machine_fdc_rate_duration(fdc, 31u),
+        .mfm_write_service_ticks = core_machine_fdc_rate_duration(fdc, 15u)
     };
 }
 
@@ -402,7 +422,6 @@ static lib_status core_machine_fdc_port_write(void *owner, lib_u16 id,
     if (fdc == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (id == fdc->connect.config.dor_port) {
         fdc->data.dor = (lib_u8)value;
-        x86_fdc_set_service_enabled(fdc->chip, (fdc->data.dor & VFDC_DOR_ENRQ) != 0u);
         x86_fdc_set_reset(fdc->chip, (fdc->data.dor & VFDC_DOR_NRS) != 0u);
         core_machine_fdc_update_dir(fdc);
         x86_fdc_refresh(fdc->chip);

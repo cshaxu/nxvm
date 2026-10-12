@@ -44,13 +44,8 @@ static core_machine_media_result core_machine_fdc_topology_read(void *context,
 }
 
 static const core_machine_media_provider core_machine_fdc_topology_provider = {
-    core_machine_fdc_topology_query,
-    core_machine_fdc_topology_read,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL
+    .query = core_machine_fdc_topology_query,
+    .read_bytes = core_machine_fdc_topology_read,
 };
 
 static void core_machine_fdc_topology_command(core_machine_fdc *fdc, core_machine *port,
@@ -62,6 +57,7 @@ static void core_machine_fdc_topology_command(core_machine_fdc *fdc, core_machin
         test_fdc_port_write(port, 0x03f5u, bytes[index]);
     }
     test_fdc_advance(fdc);
+    lib_test_assert(test_fdc_finish_command_wait(fdc));
 }
 
 static lib_i32 core_machine_fdc_topology_result(core_machine_fdc *fdc, core_machine *port,
@@ -79,13 +75,13 @@ static lib_i32 core_machine_fdc_topology_result(core_machine_fdc *fdc, core_mach
 static lib_i32 core_machine_fdc_topology_read_sector(core_machine_fdc *fdc, core_machine *port,
     lib_u8 unit, lib_u8 expected, lib_u8 *result)
 {
-    const lib_u8 command[] = {0xe6u, unit, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu};
+    const lib_u8 command[] = {0x66u, unit, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu};
     lib_u32 index;
 
     core_machine_fdc_topology_command(fdc, port, command, sizeof(command));
     if (test_fdc_port_read(port, 0x03f5u) != expected) return 0;
     for (index = 1u; index < 512u; ++index) {
-        if (!test_fdc_advance_ticks(fdc, 128u)) return 0;
+        if (!test_fdc_advance_ticks(fdc, 256u)) return 0;
         (void)test_fdc_port_read(port, 0x03f5u);
     }
     return core_machine_fdc_topology_result(fdc, port, result, 7u) &&

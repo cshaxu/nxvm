@@ -294,6 +294,32 @@ lib_i32 main(void)
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE ||
         deadline_probe.calls != 4u;
 
+    /* Same-owner clock injection isolates the representable time horizon;
+     * the normal scheduler still delivers the production attachment bundle. */
+    deadline_probe.value.fast_advance_blocked = LIB_FALSE;
+    machine->elapsed_ticks = LIB_UINT64_MAX - 5u;
+    core_machine_capture_time_observation_private(machine, &observation);
+    failed |= !observation.next_deadline_valid ||
+        observation.next_deadline_tick != LIB_UINT64_MAX ||
+        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE;
+    {
+        lib_u8 advanced = LIB_FALSE;
+        const lib_u64 before = provider_probe.advanced_ticks;
+        const lib_u32 before_calls = board_probe.media_calls;
+        failed |= core_machine_advance_to_next_deadline(machine, &advanced) !=
+            LIB_STATUS_OK || !advanced || machine->elapsed_ticks != LIB_UINT64_MAX ||
+            provider_probe.advanced_ticks != before + 5u ||
+            board_probe.media_calls != before_calls + 1u ||
+            board_probe.media_due_tick != LIB_UINT64_MAX;
+        core_machine_capture_time_observation_private(machine, &observation);
+        failed |= observation.next_deadline_valid ||
+            observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE;
+        failed |= core_machine_publish_elapsed_ticks(machine, 1u,
+            CORE_MACHINE_TIME_PUBLICATION_DEADLINE) != LIB_STATUS_INVALID_ARGUMENT ||
+            machine->elapsed_ticks != LIB_UINT64_MAX ||
+            provider_probe.advanced_ticks != before + 5u;
+    }
+
     machine->attachment = board_probe.production;
     core_machine_destroy(machine);
     if (failed) return 1;

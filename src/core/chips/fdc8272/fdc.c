@@ -19,6 +19,7 @@
 
 #define x86_fdc_ST1_NO_DATA 0x04u
 #define x86_fdc_ST1_NOT_WRITABLE 0x02u
+#define x86_fdc_ST1_OVERRUN 0x10u
 #define x86_fdc_ST1_END_OF_CYLINDER 0x80u
 #define x86_fdc_ST2_WRONG_CYLINDER 0x10u
 #define x86_fdc_ST2_BAD_CYLINDER 0x02u
@@ -69,19 +70,28 @@ static lib_u8 x86_fdc_msr(const x86_fdc *fdc)
 
     switch (fdc->data.phase) {
     case x86_fdc_PHASE_PENDING_COMMAND:
+    case x86_fdc_PHASE_HEAD_LOAD:
     case x86_fdc_PHASE_PENDING_COMPLETE:
     case x86_fdc_PHASE_EXECUTION_WRITE_TAIL:
         value = VFDC_MSR_CB; break;
     case x86_fdc_PHASE_RESULT:
         value = VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_CB; break;
     case x86_fdc_PHASE_EXECUTION_READ:
-        value = fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending ? VFDC_MSR_RQM | VFDC_MSR_DIO |
-            VFDC_MSR_NDM | VFDC_MSR_CB : VFDC_MSR_CB; break;
+        value = VFDC_MSR_CB;
+        if (fdc->data.flagNDMA) {
+            value |= VFDC_MSR_DIO | VFDC_MSR_NDM;
+            if (!fdc->data.ndma_byte_gate_pending) value |= VFDC_MSR_RQM;
+        }
+        break;
     case x86_fdc_PHASE_EXECUTION_WRITE:
     case x86_fdc_PHASE_EXECUTION_SCAN:
     case x86_fdc_PHASE_EXECUTION_FORMAT:
-        value = fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending ? VFDC_MSR_RQM | VFDC_MSR_NDM |
-            VFDC_MSR_CB : VFDC_MSR_CB; break;
+        value = VFDC_MSR_CB;
+        if (fdc->data.flagNDMA) {
+            value |= VFDC_MSR_NDM;
+            if (!fdc->data.ndma_byte_gate_pending) value |= VFDC_MSR_RQM;
+        }
+        break;
     default:
         value = VFDC_MSR_RQM; break;
     }
@@ -114,8 +124,11 @@ static void x86_fdc_deassert_dma(x86_fdc *fdc)
 
 static lib_i32 x86_fdc_execution_active(const x86_fdc *fdc);
 
-static void x86_fdc_request_assert(x86_fdc *fdc)
+static void x86_fdc_start_service(x86_fdc *fdc, lib_u64 requested_at);
+
+static void x86_fdc_request_assert(x86_fdc *fdc, lib_u64 requested_at)
 {
+    x86_fdc_start_service(fdc, requested_at);
     fdc->drq = LIB_TRUE;
     fdc->connect.drq(fdc->connect.context, LIB_TRUE);
 }
@@ -126,27 +139,66 @@ static lib_u64 x86_fdc_dma_byte_ticks(const x86_fdc *fdc)
         fdc->timing.mfm_byte_ticks : fdc->timing.fm_byte_ticks;
 }
 
+static lib_u64 x86_fdc_deadline(lib_u64 now, lib_u64 ticks)
+{
+    return ticks > LIB_UINT64_MAX - now ? LIB_UINT64_MAX : now + ticks;
+}
+
+static void x86_fdc_start_service(x86_fdc *fdc, lib_u64 requested_at)
+{
+    lib_u64 ticks;
+    const lib_bool mfm = (fdc->data.cmd[0] & 0x40u) != 0u;
+
+    if (fdc->data.service_pending) return;
+    switch (fdc->data.phase) {
+    case x86_fdc_PHASE_EXECUTION_READ:
+    case x86_fdc_PHASE_EXECUTION_SCAN:
+        ticks = mfm ? fdc->timing.mfm_read_service_ticks :
+            fdc->timing.fm_read_service_ticks;
+        break;
+    case x86_fdc_PHASE_EXECUTION_WRITE:
+    case x86_fdc_PHASE_EXECUTION_FORMAT:
+        ticks = mfm ? fdc->timing.mfm_write_service_ticks :
+            fdc->timing.fm_write_service_ticks;
+        break;
+    default:
+        return;
+    }
+    if (ticks == 0u) return;
+    /* Retain this byte's admission while its gate is open. The next byte
+     * follows that axis, not the host's possibly late acknowledgement. */
+    if (fdc->data.flagNDMA) fdc->data.next_ndma_byte_tick = requested_at;
+    else fdc->data.next_dma_byte_tick = requested_at;
+    fdc->data.service_due_tick = x86_fdc_deadline(requested_at, ticks);
+    fdc->data.service_pending = LIB_TRUE;
+}
+
 static void x86_fdc_schedule_dma_byte(x86_fdc *fdc)
 {
     lib_u64 ticks = x86_fdc_dma_byte_ticks(fdc);
+    const lib_u64 origin = fdc->data.service_pending ?
+        fdc->data.next_dma_byte_tick : fdc->data.elapsed_ticks;
 
-    if (fdc == LIB_NULL || fdc->data.flagNDMA ||
+    /* After TC, filling the media tail is internal in both transfer modes. */
+    if (fdc == LIB_NULL ||
+        (fdc->data.flagNDMA && fdc->data.phase != x86_fdc_PHASE_EXECUTION_WRITE_TAIL) ||
         (fdc->data.phase != x86_fdc_PHASE_EXECUTION_READ &&
         fdc->data.phase != x86_fdc_PHASE_EXECUTION_WRITE &&
         fdc->data.phase != x86_fdc_PHASE_EXECUTION_WRITE_TAIL &&
         fdc->data.phase != x86_fdc_PHASE_EXECUTION_SCAN &&
         fdc->data.phase != x86_fdc_PHASE_EXECUTION_FORMAT)) return;
+    fdc->data.service_pending = LIB_FALSE;
     x86_fdc_deassert_dma(fdc);
     /* No selected service-time conversion retains the existing logical
      * handoff: each completed single-mode DMA service makes the next byte
      * eligible on the next Core progression point.  Reasserting inside the
      * DMA callback would be cleared by that same completed DMA service. */
     if (ticks == 0u) {
-        fdc->data.next_dma_byte_tick = fdc->data.elapsed_ticks + 1u;
+        fdc->data.next_dma_byte_tick = x86_fdc_deadline(fdc->data.elapsed_ticks, 1u);
         fdc->data.dma_byte_gate_pending = LIB_TRUE;
         return;
     }
-    fdc->data.next_dma_byte_tick = fdc->data.elapsed_ticks + ticks;
+    fdc->data.next_dma_byte_tick = x86_fdc_deadline(origin, ticks);
     fdc->data.dma_byte_gate_pending = LIB_TRUE;
 }
 
@@ -172,19 +224,23 @@ static void x86_fdc_publish_due_dma_byte(x86_fdc *fdc)
         (fdc->data.phase == x86_fdc_PHASE_EXECUTION_READ ||
         fdc->data.phase == x86_fdc_PHASE_EXECUTION_SCAN) &&
         !x86_fdc_prepare_read_sector(fdc)) return;
-    x86_fdc_request_assert(fdc);
+    x86_fdc_request_assert(fdc, fdc->data.next_dma_byte_tick);
 }
 
 static void x86_fdc_schedule_ndma_byte(x86_fdc *fdc)
 {
     lib_u64 ticks = x86_fdc_dma_byte_ticks(fdc);
+    const lib_u64 origin = fdc->data.service_pending ?
+        fdc->data.next_ndma_byte_tick : fdc->data.elapsed_ticks;
+
+    fdc->data.service_pending = LIB_FALSE;
 
     if (fdc == LIB_NULL || !fdc->data.flagNDMA || ticks == 0u ||
         (fdc->data.phase != x86_fdc_PHASE_EXECUTION_READ &&
         fdc->data.phase != x86_fdc_PHASE_EXECUTION_WRITE &&
         fdc->data.phase != x86_fdc_PHASE_EXECUTION_SCAN &&
         fdc->data.phase != x86_fdc_PHASE_EXECUTION_FORMAT)) return;
-    fdc->data.next_ndma_byte_tick = fdc->data.elapsed_ticks + ticks;
+    fdc->data.next_ndma_byte_tick = x86_fdc_deadline(origin, ticks);
     fdc->data.ndma_byte_gate_pending = LIB_TRUE;
 }
 
@@ -194,17 +250,42 @@ static void x86_fdc_publish_due_ndma_byte(x86_fdc *fdc)
         fdc->data.elapsed_ticks < fdc->data.next_ndma_byte_tick ||
         !x86_fdc_execution_active(fdc)) return;
     fdc->data.ndma_byte_gate_pending = LIB_FALSE;
+    if (fdc->data.byte_offset == 0u &&
+        (fdc->data.phase == x86_fdc_PHASE_EXECUTION_READ ||
+        fdc->data.phase == x86_fdc_PHASE_EXECUTION_SCAN))
+        (void)x86_fdc_prepare_read_sector(fdc);
+    x86_fdc_start_service(fdc, fdc->data.next_ndma_byte_tick);
 }
 
 static void x86_fdc_raise_irq(x86_fdc *fdc)
 {
-    if (!fdc->service_enabled) return;
     x86_fdc_set_irq(fdc, LIB_TRUE);
     fdc->data.flagINTR = LIB_TRUE;
 }
 
+static void x86_fdc_publish_ndma_request(x86_fdc *fdc)
+{
+    if (fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending &&
+        (fdc->data.phase == x86_fdc_PHASE_EXECUTION_READ ||
+        fdc->data.phase == x86_fdc_PHASE_EXECUTION_WRITE ||
+        fdc->data.phase == x86_fdc_PHASE_EXECUTION_SCAN ||
+        fdc->data.phase == x86_fdc_PHASE_EXECUTION_FORMAT)) {
+        x86_fdc_start_service(fdc, fdc->data.elapsed_ticks);
+        if (!fdc->irq) x86_fdc_raise_irq(fdc);
+    }
+}
+
+static void x86_fdc_acknowledge_ndma_byte(x86_fdc *fdc)
+{
+    /* Data RD/WR acknowledges only its byte request, not queued SIS causes. */
+    fdc->data.flagINTR = fdc->data.seek_result_count != 0u ||
+        fdc->data.ready_sense_mask != 0u;
+    if (!fdc->data.flagINTR) x86_fdc_set_irq(fdc, LIB_FALSE);
+}
+
 static void x86_fdc_cancel_execution(x86_fdc *fdc)
 {
+    fdc->data.service_pending = LIB_FALSE;
     x86_fdc_deassert_dma(fdc);
     fdc->data.dma_byte_gate_pending = LIB_FALSE;
     fdc->data.next_dma_byte_tick = 0u;
@@ -250,8 +331,8 @@ static void x86_fdc_result_phase(x86_fdc *fdc, lib_u8 length)
 static void x86_fdc_set_result(x86_fdc *fdc, lib_u8 st0,
     lib_u8 st1, lib_u8 st2)
 {
-    /* Table 12: IC is separate from Seek End and from HD/US identity. */
-    st0 |= fdc->data.cmd[1] & 0x07u;
+    /* HD was captured at completion, separately from the returned next ID. */
+    st0 |= fdc->data.selected_drive & 0x03u;
     fdc->data.st0 = st0;
     fdc->data.st1 = st1;
     fdc->data.st2 = st2;
@@ -276,9 +357,12 @@ static void x86_fdc_publish_terminal_result(x86_fdc *fdc)
     fdc->connect.terminal(fdc->connect.context, &observation);
 }
 
+static void x86_fdc_end_head_execution(x86_fdc *fdc);
+
 static void x86_fdc_complete_transfer_with_status(x86_fdc *fdc,
     lib_u8 st0, lib_u8 st1)
 {
+    fdc->data.service_pending = LIB_FALSE;
     if (st1 != 0u || (st0 & 0xc0u) != 0u)
         fdc->data.pending_st2 &= (lib_u8)~VFDC_ST2_SCAN_MATCH;
     x86_fdc_deassert_dma(fdc);
@@ -289,8 +373,11 @@ static void x86_fdc_complete_transfer_with_status(x86_fdc *fdc,
     fdc->data.next_dma_byte_tick = 0u;
     fdc->data.ndma_byte_gate_pending = LIB_FALSE;
     fdc->data.next_ndma_byte_tick = 0u;
-    fdc->data.pending_st0 = st0;
+    fdc->data.pending_st0 = (st0 != 0u ? st0 :
+        st1 != 0u ? x86_fdc_ST0_ABNORMAL : x86_fdc_ST0_NORMAL) |
+        ((fdc->data.head & 1u) << 2u);
     fdc->data.pending_st1 = st1;
+    x86_fdc_end_head_execution(fdc);
     fdc->data.phase = x86_fdc_PHASE_PENDING_COMPLETE;
 }
 
@@ -316,11 +403,84 @@ static lib_bool x86_fdc_track_zero(const x86_fdc *fdc, lib_u8 unit)
         unit).track_zero;
 }
 
+static lib_u64 x86_fdc_timer_ticks(const x86_fdc *fdc, lib_u16 units)
+{
+    const lib_u64 denominator = fdc->timing.step_denominator;
+    const lib_u64 quotient = fdc->timing.step_numerator / denominator;
+    const lib_u64 remainder = fdc->timing.step_numerator % denominator;
+    lib_u64 fraction = 0u;
+    lib_u64 ticks;
+    if (units == 0u) return 0u;
+    if (quotient > LIB_UINT64_MAX / units) return LIB_UINT64_MAX;
+    ticks = quotient * units;
+    /* Bounded Specify units avoid multiplying an arbitrary 64-bit ratio. */
+    for (lib_u16 i = 0u; i < units; ++i) {
+        if (fraction >= denominator - remainder) {
+            fraction -= denominator - remainder;
+            if (ticks == LIB_UINT64_MAX) return ticks;
+            ++ticks;
+        } else fraction += remainder;
+    }
+    return fraction != 0u && ticks != LIB_UINT64_MAX ? ticks + 1u : ticks;
+}
+
 static lib_u64 x86_fdc_step_ticks(const x86_fdc *fdc)
 {
-    lib_u64 value = (16u - fdc->data.srt) * fdc->timing.step_numerator;
-    return value / fdc->timing.step_denominator +
-        (value % fdc->timing.step_denominator != 0u);
+    return x86_fdc_timer_ticks(fdc, 16u - fdc->data.srt);
+}
+
+static void x86_fdc_end_head_execution(x86_fdc *fdc)
+{
+    const lib_u8 drive = fdc->data.selected_drive;
+    const lib_u8 mask = (lib_u8)(1u << drive);
+    if ((fdc->data.head_loaded_mask & mask) == 0u) return;
+    fdc->data.head_unload_due_tick[drive] = x86_fdc_deadline(fdc->data.elapsed_ticks,
+        x86_fdc_timer_ticks(fdc, (lib_u16)fdc->data.hut * 16u));
+    fdc->data.head_unload_mask |= mask;
+}
+
+static void x86_fdc_unload_due_heads(x86_fdc *fdc)
+{
+    for (lib_u8 drive = 0u; drive < X86_FDC_DRIVE_COUNT; ++drive) {
+        const lib_u8 mask = (lib_u8)(1u << drive);
+        if ((fdc->data.head_unload_mask & mask) != 0u &&
+            fdc->data.head_unload_due_tick[drive] <= fdc->data.elapsed_ticks) {
+            fdc->data.head_unload_mask &= (lib_u8)~mask;
+            fdc->data.head_loaded_mask &= (lib_u8)~mask;
+        }
+    }
+}
+
+static lib_i32 x86_fdc_drive_ready(const x86_fdc *fdc);
+
+static lib_bool x86_fdc_wait_head_load(x86_fdc *fdc, lib_u8 opcode)
+{
+    lib_u8 mask;
+    switch (opcode) {
+    case x86_fdc_CMD_READ_DATA:
+    case x86_fdc_CMD_WRITE_DATA:
+    case x86_fdc_CMD_READ_DELETED_DATA:
+    case x86_fdc_CMD_WRITE_DELETED_DATA:
+    case x86_fdc_CMD_READ_TRACK:
+    case x86_fdc_CMD_READ_ID:
+    case x86_fdc_CMD_FORMAT_TRACK:
+    case x86_fdc_CMD_SCAN_EQUAL:
+    case x86_fdc_CMD_SCAN_LOW_OR_EQUAL:
+    case x86_fdc_CMD_SCAN_HIGH_OR_EQUAL:
+        break;
+    default: return LIB_FALSE;
+    }
+    fdc->data.selected_drive = fdc->data.cmd[1] & 3u;
+    if (!x86_fdc_drive_ready(fdc)) return LIB_FALSE;
+    mask = (lib_u8)(1u << fdc->data.selected_drive);
+    fdc->data.head_unload_mask &= (lib_u8)~mask;
+    if ((fdc->data.head_loaded_mask & mask) != 0u) return LIB_FALSE;
+    fdc->data.head_loaded_mask |= mask;
+    fdc->data.head_load_due_tick = x86_fdc_deadline(fdc->data.elapsed_ticks,
+        x86_fdc_timer_ticks(fdc, (lib_u16)fdc->data.hlt * 2u));
+    if (fdc->data.head_load_due_tick == fdc->data.elapsed_ticks) return LIB_FALSE;
+    fdc->data.phase = x86_fdc_PHASE_HEAD_LOAD;
+    return LIB_TRUE;
 }
 
 static void x86_fdc_begin_seek(x86_fdc *fdc, lib_u16 target)
@@ -336,9 +496,9 @@ static void x86_fdc_begin_seek(x86_fdc *fdc, lib_u16 target)
     if (fdc->data.seek_recalibrate[drive]) fdc->data.pcn[drive] = 0u;
     complete = fdc->data.seek_recalibrate[drive] ?
         x86_fdc_track_zero(fdc, fdc->data.selected_drive) : fdc->data.pcn[drive] == target;
-    fdc->data.seek_due_tick[drive] = fdc->data.elapsed_ticks +
+    fdc->data.seek_due_tick[drive] = x86_fdc_deadline(fdc->data.elapsed_ticks,
         (complete || !x86_fdc_drive_status_ready(fdc, drive) ?
-            0u : x86_fdc_step_ticks(fdc));
+            0u : x86_fdc_step_ticks(fdc)));
     fdc->data.seek_pending[drive] = LIB_TRUE;
     x86_fdc_command_phase(fdc);
 }
@@ -369,8 +529,21 @@ static void x86_fdc_advance_position(x86_fdc *fdc)
     fdc->data.sector += x86_fdc_sector_step(fdc);
 }
 
+static void x86_fdc_prepare_next_track(x86_fdc *fdc)
+{
+    /* MT continues at R=1 on side 1 of this cylinder, only after EOT.
+     * A Scan step that misses EOT must retain its abnormal termination. */
+    if (fdc->data.transfer_remaining != 0u && fdc->data.head == 0u &&
+        (fdc->data.cmd[0] & 0x80u) != 0u &&
+        fdc->data.sector == fdc->data.eot + x86_fdc_sector_step(fdc)) {
+        fdc->data.head = 1u;
+        fdc->data.sector = 1u;
+    }
+}
+
 static void x86_fdc_complete_dma_data(x86_fdc *fdc)
 {
+    x86_fdc_complete_transfer(fdc, 0u);
     /* Intel Table 8 describes the ID after the final transferred sector,
      * including TC within that sector; it does not move the physical head. */
     if (fdc->data.byte_offset != 0u) ++fdc->data.sector;
@@ -382,14 +555,15 @@ static void x86_fdc_complete_dma_data(x86_fdc *fdc)
             fdc->data.head ^= 1u;
         } else ++fdc->data.cylinder;
     }
-    x86_fdc_complete_transfer(fdc, 0u);
 }
 
 static lib_i32 x86_fdc_transfer_byte(x86_fdc *fdc, lib_u8 *byte,
     lib_bool write_to_media)
 {
-    x86_fdc_record record = x86_fdc_record_at(fdc);
+    x86_fdc_record record;
     x86_fdc_record_result result;
+    x86_fdc_prepare_next_track(fdc);
+    record = x86_fdc_record_at(fdc);
     if (fdc->data.transfer_remaining == 0u) {
         x86_fdc_complete_transfer(fdc, x86_fdc_ST1_NO_DATA);
         return LIB_TRUE;
@@ -425,8 +599,7 @@ static lib_i32 x86_fdc_transfer_byte(x86_fdc *fdc, lib_u8 *byte,
         if (fdc->data.phase == x86_fdc_PHASE_EXECUTION_WRITE_TAIL)
             x86_fdc_complete_dma_data(fdc);
         else x86_fdc_complete_transfer(fdc, 0u);
-    } else if (!write_to_media && fdc->data.flagNDMA && fdc->data.byte_offset == 0u)
-        (void)x86_fdc_prepare_read_sector(fdc);
+    }
     return LIB_FALSE;
 }
 
@@ -436,6 +609,7 @@ static lib_i32 x86_fdc_prepare_read_sector(x86_fdc *fdc)
     lib_bool deleted;
 
     while (fdc->data.transfer_remaining != 0u) {
+        x86_fdc_prepare_next_track(fdc);
         record = x86_fdc_record_at(fdc);
         if (fdc->data.sector > fdc->data.eot || !x86_fdc_record_valid(fdc, &record)) {
             x86_fdc_complete_transfer(fdc, x86_fdc_ST1_END_OF_CYLINDER);
@@ -480,8 +654,11 @@ static void x86_fdc_scan_byte(x86_fdc *fdc,
     lib_u8 compare_byte)
 {
     lib_u8 media_byte;
-    x86_fdc_record record = x86_fdc_record_at(fdc);
+    x86_fdc_record record;
     lib_i32 byte_satisfies;
+
+    x86_fdc_prepare_next_track(fdc);
+    record = x86_fdc_record_at(fdc);
 
     if (!x86_fdc_drive_ready(fdc)) {
         x86_fdc_complete_missing_input(fdc);
@@ -500,23 +677,20 @@ static void x86_fdc_scan_byte(x86_fdc *fdc,
         x86_fdc_complete_transfer(fdc, x86_fdc_ST1_NO_DATA);
         return;
     }
-    byte_satisfies = compare_byte == 0xffu;
-    if (!byte_satisfies) {
-        /* Table 10 compares disk against processor data. SH means equality,
-         * not merely satisfaction of a Low/High-or-Equal command. */
-        if (compare_byte != media_byte)
-            fdc->data.pending_st2 &= (lib_u8)~VFDC_ST2_SCAN_MATCH;
-        switch (fdc->data.scan_mode) {
-        case x86_fdc_SCAN_EQUAL:
-            byte_satisfies = compare_byte == media_byte;
-            break;
-        case x86_fdc_SCAN_LOW_OR_EQUAL:
-            byte_satisfies = media_byte <= compare_byte;
-            break;
-        default:
-            byte_satisfies = media_byte >= compare_byte;
-            break;
-        }
+    /* Table 10 compares disk against processor data. SH means equality,
+     * not merely satisfaction of a Low/High-or-Equal command. */
+    if (compare_byte != media_byte)
+        fdc->data.pending_st2 &= (lib_u8)~VFDC_ST2_SCAN_MATCH;
+    switch (fdc->data.scan_mode) {
+    case x86_fdc_SCAN_EQUAL:
+        byte_satisfies = compare_byte == media_byte;
+        break;
+    case x86_fdc_SCAN_LOW_OR_EQUAL:
+        byte_satisfies = media_byte <= compare_byte;
+        break;
+    default:
+        byte_satisfies = media_byte >= compare_byte;
+        break;
     }
     if (!byte_satisfies) fdc->data.scan_sector_satisfies = LIB_FALSE;
     fdc->data.transfer_remaining--;
@@ -534,7 +708,6 @@ static void x86_fdc_scan_byte(x86_fdc *fdc,
     } else {
         fdc->data.scan_sector_satisfies = LIB_TRUE;
         fdc->data.pending_st2 |= VFDC_ST2_SCAN_MATCH;
-        if (fdc->data.flagNDMA) (void)x86_fdc_prepare_read_sector(fdc);
     }
 }
 
@@ -565,7 +738,7 @@ static void x86_fdc_format_byte(x86_fdc *fdc, lib_u8 byte)
         return;
     }
     fdc->data.format_headers_remaining--;
-    fdc->data.sector = fdc->data.format_id[2];
+    fdc->data.sector = (lib_u16)fdc->data.format_id[2] + 1u;
     if (fdc->data.format_headers_remaining == 0u) x86_fdc_complete_transfer(fdc, 0u);
 }
 
@@ -613,7 +786,7 @@ void x86_fdc_terminal_count(x86_fdc *fdc)
         (fdc->data.phase == x86_fdc_PHASE_EXECUTION_READ ||
         fdc->data.phase == x86_fdc_PHASE_EXECUTION_WRITE ||
         (fdc->data.phase == x86_fdc_PHASE_PENDING_COMPLETE &&
-        fdc->data.transfer_remaining == 0u && fdc->data.pending_st0 == 0u &&
+        fdc->data.transfer_remaining == 0u && (fdc->data.pending_st0 & 0xf8u) == 0u &&
         fdc->data.pending_st1 == 0u && fdc->data.pending_st2 == 0u))) {
         x86_fdc_complete_dma_data(fdc);
         return;
@@ -625,9 +798,31 @@ void x86_fdc_terminal_count(x86_fdc *fdc)
     }
 }
 
+static lib_u8 x86_fdc_command_opcode(lib_u8 command)
+{
+    lib_u8 flags;
+    lib_u8 opcode = command & 0x1fu;
+
+    /* Intel Table 4 fixes the unused high bits for each command form. */
+    switch (opcode) {
+    case x86_fdc_CMD_READ_DATA:
+    case x86_fdc_CMD_READ_DELETED_DATA:
+    case x86_fdc_CMD_SCAN_EQUAL:
+    case x86_fdc_CMD_SCAN_LOW_OR_EQUAL:
+    case x86_fdc_CMD_SCAN_HIGH_OR_EQUAL: flags = 0xe0u; break;
+    case x86_fdc_CMD_WRITE_DATA:
+    case x86_fdc_CMD_WRITE_DELETED_DATA: flags = 0xc0u; break;
+    case x86_fdc_CMD_READ_TRACK: flags = 0x60u; break;
+    case x86_fdc_CMD_READ_ID:
+    case x86_fdc_CMD_FORMAT_TRACK: flags = 0x40u; break;
+    default: flags = 0u; break;
+    }
+    return (command & 0xe0u & (lib_u8)~flags) == 0u ? opcode : 0xffu;
+}
+
 static lib_u8 x86_fdc_command_length(lib_u8 opcode)
 {
-    switch (opcode & 0x1fu) {
+    switch (x86_fdc_command_opcode(opcode)) {
     case x86_fdc_CMD_SPECIFY: return 3u;
     case x86_fdc_CMD_SENSE_DRIVE_STATUS: return 2u;
     case x86_fdc_CMD_RECALIBRATE: return 2u;
@@ -688,14 +883,19 @@ static void x86_fdc_start_transfer(x86_fdc *fdc,
     fdc->data.phase = phase;
     fdc->data.transfer_remaining = (lib_u32)((fdc->data.eot -
         fdc->data.sector) / x86_fdc_sector_step(fdc) + 1u) * 512u;
+    if (fdc->data.head == 0u && (fdc->data.cmd[0] & 0x80u) != 0u &&
+        (fdc->data.eot - fdc->data.sector) % x86_fdc_sector_step(fdc) == 0u)
+        fdc->data.transfer_remaining += (lib_u32)((fdc->data.eot - 1u) /
+            x86_fdc_sector_step(fdc) + 1u) * 512u;
     if (phase == x86_fdc_PHASE_EXECUTION_SCAN) {
         fdc->data.pending_st2 |= VFDC_ST2_SCAN_MATCH;
     }
     if ((phase == x86_fdc_PHASE_EXECUTION_SCAN ||
         phase == x86_fdc_PHASE_EXECUTION_READ) &&
         !x86_fdc_prepare_read_sector(fdc)) return;
-    if (!fdc->data.flagNDMA && fdc->service_enabled) {
-        x86_fdc_request_assert(fdc);
+    x86_fdc_start_service(fdc, fdc->data.elapsed_ticks);
+    if (!fdc->data.flagNDMA) {
+        x86_fdc_request_assert(fdc, fdc->data.elapsed_ticks);
     }
 }
 
@@ -712,31 +912,30 @@ static void x86_fdc_start_read_track(x86_fdc *fdc)
         x86_fdc_complete_missing_input(fdc);
         return;
     }
-    if (fdc->data.cmd[0] != 0x42u || fdc->data.flagNDMA ||
-        x86_fdc_sector_size(fdc->data.cmd[5]) != 2u ||
-        fdc->data.selected_drive != 0u ||
+    if (x86_fdc_sector_size(fdc->data.cmd[5]) != 2u ||
         !x86_fdc_track_info(fdc, &info) || !info.id_readable ||
         fdc->data.head >= info.heads ||
         fdc->data.cylinder >= info.cylinders ||
         fdc->data.cylinder != info.cylinder ||
         fdc->data.sector != 1u ||
-        fdc->data.eot != info.sectors) {
+        fdc->data.eot == 0u || fdc->data.eot > info.sectors) {
         x86_fdc_complete_transfer(fdc, x86_fdc_ST1_NO_DATA);
         return;
     }
     fdc->data.transfer_remaining = (lib_u32)
-        info.sectors * 512u;
+        fdc->data.eot * 512u;
     fdc->data.transfer_expect_deleted = LIB_FALSE;
     fdc->data.phase = x86_fdc_PHASE_EXECUTION_READ;
     if (!x86_fdc_prepare_read_sector(fdc)) return;
-    if (fdc->service_enabled) {
-        x86_fdc_request_assert(fdc);
+    x86_fdc_start_service(fdc, fdc->data.elapsed_ticks);
+    if (!fdc->data.flagNDMA) {
+        x86_fdc_request_assert(fdc, fdc->data.elapsed_ticks);
     }
 }
 
 static void x86_fdc_execute(x86_fdc *fdc)
 {
-    lib_u8 opcode = fdc->data.cmd[0] & 0x1fu;
+    lib_u8 opcode = x86_fdc_command_opcode(fdc->data.cmd[0]);
     x86_fdc_track info = {0};
     lib_i32 media_ok;
 
@@ -763,6 +962,7 @@ static void x86_fdc_execute(x86_fdc *fdc)
         fdc->data.reset_pending = LIB_FALSE;
         x86_fdc_set_irq(fdc, LIB_FALSE);
     }
+    if (x86_fdc_wait_head_load(fdc, opcode)) return;
     switch (opcode) {
     case x86_fdc_CMD_SPECIFY:
         fdc->data.hut = fdc->data.cmd[1] & 0x0fu;
@@ -844,11 +1044,14 @@ static void x86_fdc_execute(x86_fdc *fdc)
         fdc->data.head = (fdc->data.cmd[1] >> 2u) & 1u;
         if (!x86_fdc_drive_ready(fdc) || !media_ok) {
             x86_fdc_complete_missing_input(fdc);
-        } else if (!info.id_readable || fdc->data.head >= info.heads) {
+        } else if (!info.id_readable || info.sectors == 0u ||
+            info.bytes_per_sector != 512u || fdc->data.head >= info.heads) {
             x86_fdc_complete_transfer(fdc, x86_fdc_ST1_NO_DATA);
         } else {
-            if (fdc->data.sector == 0u) fdc->data.sector = 1u;
-            x86_fdc_set_result(fdc, x86_fdc_ST0_NORMAL, 0u, 0u);
+            /* Flat sequential IDs have no rotational position: the first is 1. */
+            fdc->data.sector = 1u;
+            x86_fdc_set_result(fdc, (fdc->data.head & 1u) << 2u, 0u, 0u);
+            x86_fdc_end_head_execution(fdc);
             x86_fdc_result_phase(fdc, 7u);
             x86_fdc_publish_terminal_result(fdc);
             x86_fdc_raise_irq(fdc);
@@ -905,8 +1108,9 @@ static void x86_fdc_execute(x86_fdc *fdc)
             x86_fdc_complete_transfer(fdc, x86_fdc_ST1_NO_DATA);
         } else {
             fdc->data.phase = x86_fdc_PHASE_EXECUTION_FORMAT;
-            if (!fdc->data.flagNDMA && fdc->service_enabled) {
-                x86_fdc_request_assert(fdc);
+            x86_fdc_start_service(fdc, fdc->data.elapsed_ticks);
+            if (!fdc->data.flagNDMA) {
+                x86_fdc_request_assert(fdc, fdc->data.elapsed_ticks);
             }
         }
         break;
@@ -920,12 +1124,14 @@ static void x86_fdc_execute(x86_fdc *fdc)
 static void x86_fdc_reset_controller(x86_fdc *fdc)
 {
     lib_u8 hut = fdc->data.hut, hlt = fdc->data.hlt, srt = fdc->data.srt;
+    lib_bool ndma = fdc->data.flagNDMA;
     lib_u64 elapsed_ticks = fdc->data.elapsed_ticks;
     x86_fdc_cancel_execution(fdc);
     lib_memory_set(&fdc->data, 0u, sizeof(fdc->data));
     fdc->data.hut = hut;
     fdc->data.hlt = hlt;
     fdc->data.srt = srt;
+    fdc->data.flagNDMA = ndma;
     fdc->data.elapsed_ticks = elapsed_ticks;
     x86_fdc_sample_ready(fdc);
     x86_fdc_command_phase(fdc);
@@ -950,8 +1156,8 @@ static void x86_fdc_schedule_reset_completion(x86_fdc *fdc)
         x86_fdc_drive_status_ready(fdc, 2u) ||
         x86_fdc_drive_status_ready(fdc, 3u)) ? 0u :
         (lib_u8)((1u << X86_FDC_DRIVE_COUNT) - 1u);
-    fdc->data.reset_due_tick = fdc->data.elapsed_ticks +
-        fdc->timing.reset_ticks;
+    fdc->data.reset_due_tick = x86_fdc_deadline(fdc->data.elapsed_ticks,
+        fdc->timing.reset_ticks);
     fdc->data.reset_pending = fdc->data.reset_sense_mask != 0u;
     x86_fdc_publish_due_reset(fdc);
 }
@@ -977,9 +1183,14 @@ void x86_fdc_read_data(x86_fdc *fdc, lib_u8 *io_byte)
         if (fdc->data.result_index >= fdc->data.result_length) x86_fdc_command_phase(fdc);
     } else if (fdc->data.phase == x86_fdc_PHASE_EXECUTION_READ &&
         fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending) {
+        /* Zero-cadence logical callers may request the next byte without an
+         * advance. Defer its address mark until that actual admission, not TC. */
+        if (fdc->data.byte_offset == 0u && !x86_fdc_prepare_read_sector(fdc)) return;
+        x86_fdc_acknowledge_ndma_byte(fdc);
         value = 0u;
         (void)x86_fdc_transfer_byte(fdc, &value, LIB_FALSE);
         x86_fdc_schedule_ndma_byte(fdc);
+        x86_fdc_publish_ndma_request(fdc);
         *io_byte = value;
     }
 }
@@ -989,20 +1200,27 @@ void x86_fdc_write_data(x86_fdc *fdc, lib_u8 byte)
     if (fdc == LIB_NULL) return;
     if (fdc->data.phase == x86_fdc_PHASE_EXECUTION_WRITE && fdc->data.flagNDMA &&
         !fdc->data.ndma_byte_gate_pending) {
+        x86_fdc_acknowledge_ndma_byte(fdc);
         (void)x86_fdc_transfer_byte(fdc, &byte, LIB_TRUE);
         x86_fdc_schedule_ndma_byte(fdc);
+        x86_fdc_publish_ndma_request(fdc);
         return;
     }
     if (fdc->data.phase == x86_fdc_PHASE_EXECUTION_SCAN && fdc->data.flagNDMA &&
         !fdc->data.ndma_byte_gate_pending) {
+        if (fdc->data.byte_offset == 0u && !x86_fdc_prepare_read_sector(fdc)) return;
+        x86_fdc_acknowledge_ndma_byte(fdc);
         x86_fdc_scan_byte(fdc, byte);
         x86_fdc_schedule_ndma_byte(fdc);
+        x86_fdc_publish_ndma_request(fdc);
         return;
     }
     if (fdc->data.phase == x86_fdc_PHASE_EXECUTION_FORMAT && fdc->data.flagNDMA &&
         !fdc->data.ndma_byte_gate_pending) {
+        x86_fdc_acknowledge_ndma_byte(fdc);
         x86_fdc_format_byte(fdc, byte);
         x86_fdc_schedule_ndma_byte(fdc);
+        x86_fdc_publish_ndma_request(fdc);
         return;
     }
     if (fdc->data.phase != x86_fdc_PHASE_COMMAND) return;
@@ -1023,7 +1241,6 @@ void x86_fdc_reset(x86_fdc *fdc)
     x86_fdc_set_irq(fdc, LIB_FALSE);
     x86_fdc_reset_controller(fdc);
     fdc->reset_released = LIB_FALSE;
-    fdc->service_enabled = LIB_FALSE;
 }
 
 static void x86_fdc_finish_seek(x86_fdc *fdc,
@@ -1083,21 +1300,23 @@ static void x86_fdc_advance_seeks(x86_fdc *fdc)
         else if (fdc->data.seek_recalibrate[next] && fdc->data.seek_steps[next] == 77u)
             x86_fdc_finish_seek(fdc, next,
                 x86_fdc_ST0_ABNORMAL | VFDC_ST0_EQUIPMENT_CHECK);
-        else fdc->data.seek_due_tick[next] = due + x86_fdc_step_ticks(fdc);
+        else fdc->data.seek_due_tick[next] = x86_fdc_deadline(due, x86_fdc_step_ticks(fdc));
     }
 }
 
 void x86_fdc_advance_at(x86_fdc *fdc,
     lib_u64 elapsed_ticks)
 {
-    if (fdc == LIB_NULL) return;
+    if (fdc == LIB_NULL || elapsed_ticks < fdc->data.elapsed_ticks) return;
     fdc->data.elapsed_ticks = elapsed_ticks;
+    x86_fdc_unload_due_heads(fdc);
+    if (fdc->data.phase == x86_fdc_PHASE_HEAD_LOAD &&
+        (elapsed_ticks >= fdc->data.head_load_due_tick || !x86_fdc_drive_ready(fdc)))
+        fdc->data.phase = x86_fdc_PHASE_PENDING_COMMAND;
     if (fdc->data.phase == x86_fdc_PHASE_PENDING_COMMAND) {
         x86_fdc_execute(fdc);
     } else if (fdc->data.phase == x86_fdc_PHASE_PENDING_COMPLETE) {
-        x86_fdc_set_result(fdc, fdc->data.pending_st0 != 0u ?
-            fdc->data.pending_st0 : (fdc->data.pending_st1 == 0u ?
-            x86_fdc_ST0_NORMAL : x86_fdc_ST0_ABNORMAL),
+        x86_fdc_set_result(fdc, fdc->data.pending_st0,
             fdc->data.pending_st1, fdc->data.pending_st2);
         x86_fdc_result_phase(fdc, 7u);
         x86_fdc_publish_terminal_result(fdc);
@@ -1109,6 +1328,9 @@ void x86_fdc_advance_at(x86_fdc *fdc,
     x86_fdc_advance_seeks(fdc);
     x86_fdc_publish_due_dma_byte(fdc);
     x86_fdc_publish_due_ndma_byte(fdc);
+    x86_fdc_publish_ndma_request(fdc);
+    if (fdc->data.service_pending && elapsed_ticks >= fdc->data.service_due_tick)
+        x86_fdc_complete_transfer(fdc, x86_fdc_ST1_OVERRUN);
 }
 
 lib_status x86_fdc_next_due_tick(const x86_fdc *fdc,
@@ -1116,6 +1338,7 @@ lib_status x86_fdc_next_due_tick(const x86_fdc *fdc,
 {
     lib_u64 due_tick = LIB_UINT64_MAX;
     lib_u8 drive;
+    lib_bool pending;
 
     if (fdc == LIB_NULL || out_due_tick == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -1125,10 +1348,20 @@ lib_status x86_fdc_next_due_tick(const x86_fdc *fdc,
         *out_due_tick = fdc->data.elapsed_ticks;
         return LIB_STATUS_OK;
     }
+    pending = fdc->data.reset_pending || fdc->data.dma_byte_gate_pending ||
+        fdc->data.ndma_byte_gate_pending || fdc->data.service_pending ||
+        fdc->data.head_unload_mask != 0u ||
+        fdc->data.phase == x86_fdc_PHASE_HEAD_LOAD;
+    if (fdc->data.phase == x86_fdc_PHASE_HEAD_LOAD)
+        due_tick = fdc->data.head_load_due_tick;
     if (fdc->data.reset_pending && fdc->data.reset_due_tick < due_tick) {
         due_tick = fdc->data.reset_due_tick;
     }
     for (drive = 0u; drive < X86_FDC_DRIVE_COUNT; ++drive) {
+        if ((fdc->data.head_unload_mask & (1u << drive)) != 0u &&
+            fdc->data.head_unload_due_tick[drive] < due_tick)
+            due_tick = fdc->data.head_unload_due_tick[drive];
+        pending |= fdc->data.seek_pending[drive];
         if (fdc->data.seek_pending[drive] && fdc->data.seek_due_tick[drive] < due_tick) {
             due_tick = fdc->data.seek_due_tick[drive];
         }
@@ -1139,7 +1372,9 @@ lib_status x86_fdc_next_due_tick(const x86_fdc *fdc,
     if (fdc->data.ndma_byte_gate_pending && fdc->data.next_ndma_byte_tick < due_tick) {
         due_tick = fdc->data.next_ndma_byte_tick;
     }
-    if (due_tick == LIB_UINT64_MAX) return LIB_STATUS_INVALID_STATE;
+    if (fdc->data.service_pending && fdc->data.service_due_tick < due_tick)
+        due_tick = fdc->data.service_due_tick;
+    if (!pending) return LIB_STATUS_INVALID_STATE;
     *out_due_tick = due_tick;
     return LIB_STATUS_OK;
 }
@@ -1160,8 +1395,11 @@ void x86_fdc_poll_ready(x86_fdc *fdc)
 
 void x86_fdc_refresh(x86_fdc *fdc)
 {
-    if (fdc != LIB_NULL && fdc->reset_released && x86_fdc_execution_active(fdc) &&
+    if (fdc == LIB_NULL) return;
+    if (fdc->reset_released && x86_fdc_execution_active(fdc) &&
         !x86_fdc_drive_ready(fdc)) x86_fdc_complete_missing_input(fdc);
+    fdc->connect.irq(fdc->connect.context, fdc->irq);
+    fdc->connect.drq(fdc->connect.context, fdc->drq);
 }
 
 lib_status x86_fdc_set_timing(x86_fdc *fdc, const x86_fdc_timing *timing)
@@ -1210,11 +1448,6 @@ void x86_fdc_set_reset(x86_fdc *fdc, lib_bool released)
     }
     fdc->reset_released = released;
     if (released && !old) x86_fdc_schedule_reset_completion(fdc);
-}
-
-void x86_fdc_set_service_enabled(x86_fdc *fdc, lib_bool enabled)
-{
-    if (fdc != LIB_NULL) fdc->service_enabled = enabled;
 }
 
 void x86_fdc_destroy(x86_fdc *fdc)

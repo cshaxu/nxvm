@@ -21,6 +21,36 @@ lib_status vm_machine_hdd_allocate(t_hdd **out_hdd)
     return LIB_STATUS_OK;
 }
 
+static void vm_machine_hdd_clear_records(t_hdd *hdd)
+{
+    while (hdd->connect.tracks != LIB_NULL) {
+        vm_machine_hdd_track *track = hdd->connect.tracks;
+        hdd->connect.tracks = track->next;
+        lib_release(track);
+    }
+    while (hdd->connect.records != LIB_NULL) {
+        vm_machine_hdd_ecc_record *record = hdd->connect.records;
+        hdd->connect.records = record->next;
+        lib_release(record);
+    }
+}
+
+static void vm_machine_hdd_invalidate_records(t_hdd *hdd,
+    lib_u64 offset, lib_u64 byte_count)
+{
+    vm_machine_hdd_ecc_record **slot = &hdd->connect.records;
+    lib_u64 first = offset / 512u;
+    lib_u64 last = (offset + byte_count - 1u) / 512u;
+
+    while (*slot != LIB_NULL) {
+        vm_machine_hdd_ecc_record *record = *slot;
+        if (record->sector >= first && record->sector <= last) {
+            *slot = record->next;
+            lib_release(record);
+        } else slot = &record->next;
+    }
+}
+
 void vm_machine_hdd_destroy(t_hdd **hdd)
 {
     if (hdd == LIB_NULL || *hdd == LIB_NULL) return;
@@ -75,6 +105,7 @@ static core_machine_media_result vm_machine_hdd_media_write(void *context,
 {
     t_hdd *hdd = (t_hdd *)context;
     lib_size image_size;
+    lib_status status;
 
     if (hdd == LIB_NULL || !hdd->connect.flagDiskExist)
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
@@ -85,9 +116,83 @@ static core_machine_media_result vm_machine_hdd_media_write(void *context,
     if (byte_count == 0u) return CORE_MACHINE_MEDIA_RESULT_OK;
     if (buffer == LIB_NULL || hdd->connect.medium == LIB_NULL)
         return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
-    return lib_storage_medium_write_at(hdd->connect.medium, (lib_size)offset,
-        buffer, byte_count) == LIB_STATUS_OK ? CORE_MACHINE_MEDIA_RESULT_OK :
-        CORE_MACHINE_MEDIA_RESULT_PERMANENT;
+    status = lib_storage_medium_write_at(hdd->connect.medium, (lib_size)offset,
+        buffer, byte_count);
+    if (status != LIB_STATUS_OK) return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
+    vm_machine_hdd_invalidate_records(hdd, offset, byte_count);
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static lib_bool vm_machine_hdd_sector_is_bad(const t_hdd *hdd, lib_u64 sector)
+{
+    for (const vm_machine_hdd_track *track = hdd->connect.tracks;
+        track != LIB_NULL; track = track->next) {
+        if (sector < track->format.first_sector ||
+            sector - track->format.first_sector >= track->format.sector_count) continue;
+        for (lib_u32 index = 0u; index < track->format.sector_count; ++index)
+            if (track->format.ids[index] == sector - track->format.first_sector)
+                return track->format.bad[index];
+        break;
+    }
+    return LIB_FALSE;
+}
+
+static core_machine_media_result vm_machine_hdd_media_read_record(void *context,
+    lib_u64 sector, core_machine_media_record *out_record)
+{
+    t_hdd *hdd = context;
+    core_machine_media_record candidate = {0};
+    core_machine_media_result result;
+    const vm_machine_hdd_ecc_record *record;
+
+    if (hdd == LIB_NULL || !hdd->connect.flagDiskExist)
+        return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (sector >= hdd->connect.virtual_byte_count / 512u)
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    if (out_record == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
+    if (vm_machine_hdd_sector_is_bad(hdd, sector)) return CORE_MACHINE_MEDIA_RESULT_BAD_TRACK;
+    result = vm_machine_hdd_media_read(hdd, sector * 512u, candidate.data, 512u);
+    if (result != CORE_MACHINE_MEDIA_RESULT_OK) return result;
+    for (record = hdd->connect.records; record != LIB_NULL; record = record->next) {
+        if (record->sector != sector) continue;
+        lib_memory_copy(candidate.ecc, record->ecc, sizeof(candidate.ecc));
+        candidate.ecc_present = LIB_TRUE;
+        break;
+    }
+    *out_record = candidate;
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static core_machine_media_result vm_machine_hdd_media_write_record(void *context,
+    lib_u64 sector, const core_machine_media_record *record)
+{
+    t_hdd *hdd = context;
+    vm_machine_hdd_ecc_record *candidate = LIB_NULL;
+    core_machine_media_result result;
+
+    if (hdd == LIB_NULL || !hdd->connect.flagDiskExist)
+        return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (hdd->connect.flagReadOnly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
+    if (sector >= hdd->connect.virtual_byte_count / 512u)
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    if (record == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
+    if (vm_machine_hdd_sector_is_bad(hdd, sector)) return CORE_MACHINE_MEDIA_RESULT_BAD_TRACK;
+    if (record->ecc_present) {
+        candidate = lib_allocate_zero(1u, sizeof(*candidate));
+        if (candidate == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_TRANSIENT;
+        candidate->sector = sector;
+        lib_memory_copy(candidate->ecc, record->ecc, sizeof(candidate->ecc));
+    }
+    result = vm_machine_hdd_media_write(hdd, sector * 512u, record->data, 512u);
+    if (result != CORE_MACHINE_MEDIA_RESULT_OK) {
+        lib_release(candidate);
+        return result;
+    }
+    if (candidate != LIB_NULL) {
+        candidate->next = hdd->connect.records;
+        hdd->connect.records = candidate;
+    }
+    return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result vm_machine_hdd_media_format(void *context,
@@ -108,20 +213,68 @@ static core_machine_media_result vm_machine_hdd_media_format(void *context,
         (lib_size)(logical_sector * hdd->data.nbyte),
         (lib_size)sector_count * hdd->data.nbyte, fill) != LIB_STATUS_OK)
         return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
+    if (sector_count != 0u)
+        vm_machine_hdd_invalidate_records(hdd, logical_sector * hdd->data.nbyte,
+            (lib_u64)sector_count * hdd->data.nbyte);
     ++hdd->connect.media_generation;
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static core_machine_media_result vm_machine_hdd_media_format_track(void *context,
+    const core_machine_media_track *format)
+{
+    t_hdd *hdd = context;
+    vm_machine_hdd_track *candidate;
+    vm_machine_hdd_track **slot;
+    core_machine_media_result result;
+
+    if (hdd == LIB_NULL || !hdd->connect.flagDiskExist)
+        return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (hdd->connect.flagReadOnly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
+    if (format == LIB_NULL || format->sector_count == 0u ||
+        format->sector_count > sizeof(format->ids) ||
+        format->first_sector >= hdd->connect.virtual_byte_count / 512u ||
+        format->sector_count > hdd->connect.virtual_byte_count / 512u - format->first_sector)
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    candidate = lib_allocate_zero(1u, sizeof(*candidate));
+    if (candidate == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_TRANSIENT;
+    candidate->format = *format;
+    if (format->fill_payload) {
+        result = vm_machine_hdd_media_format(hdd, format->first_sector,
+            format->sector_count, format->fill);
+        if (result != CORE_MACHINE_MEDIA_RESULT_OK) {
+            lib_release(candidate);
+            return result;
+        }
+    } else {
+        vm_machine_hdd_invalidate_records(hdd, format->first_sector * 512u,
+            (lib_u64)format->sector_count * 512u);
+        ++hdd->connect.media_generation;
+    }
+    slot = &hdd->connect.tracks;
+    while (*slot != LIB_NULL) {
+        vm_machine_hdd_track *track = *slot;
+        if (track->format.first_sector < format->first_sector + format->sector_count &&
+            format->first_sector < track->format.first_sector + track->format.sector_count) {
+            *slot = track->next;
+            lib_release(track);
+        } else slot = &track->next;
+    }
+    candidate->next = hdd->connect.tracks;
+    hdd->connect.tracks = candidate;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 const core_machine_media_provider *vm_machine_hdd_media_provider(void)
 {
     static const core_machine_media_provider provider = {
-        vm_machine_hdd_media_query,
-        vm_machine_hdd_media_read,
-        vm_machine_hdd_media_write,
-        vm_machine_hdd_media_format,
-        LIB_NULL,
-        LIB_NULL,
-        LIB_NULL
+        .query = vm_machine_hdd_media_query,
+        .read_bytes = vm_machine_hdd_media_read,
+        .write_bytes = vm_machine_hdd_media_write,
+        .format_sectors = vm_machine_hdd_media_format,
+        .read_record = vm_machine_hdd_media_read_record,
+        .write_record = vm_machine_hdd_media_write_record,
+        .format_track = vm_machine_hdd_media_format_track,
     };
     return &provider;
 }
@@ -189,6 +342,7 @@ static lib_status vm_machine_hdd_install_medium(t_hdd *hdd,
         lib_storage_medium_destroy(&candidate);
         return status;
     }
+    vm_machine_hdd_clear_records(hdd);
     hdd->connect.raw_byte_count = raw_byte_count;
     hdd->connect.virtual_byte_count = virtual_byte_count;
     hdd->connect.geometry_cylinders = 0u;
@@ -228,6 +382,7 @@ void vm_machine_hdd_reset(t_hdd *hdd) {
 void vm_machine_hdd_finalize(t_hdd *hdd) {
     if (hdd != LIB_NULL) lib_storage_medium_destroy(&hdd->connect.medium);
     if (hdd != LIB_NULL) {
+        vm_machine_hdd_clear_records(hdd);
         hdd->connect.raw_byte_count = 0u;
         hdd->connect.virtual_byte_count = 0u;
     }
@@ -304,6 +459,7 @@ lib_status vm_machine_hdd_remove(t_hdd *hdd) {
 
     if (hdd == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = lib_storage_medium_destroy(&hdd->connect.medium);
+    vm_machine_hdd_clear_records(hdd);
     hdd->connect.flagDiskExist = LIB_FALSE;
     hdd->connect.flagReadOnly = LIB_FALSE;
     hdd->connect.raw_byte_count = 0u;

@@ -20,11 +20,24 @@ typedef struct {
     lib_u16 nbyte;   /* bytes per sector */
 } t_hdd_data;
 
+typedef struct vm_machine_hdd_ecc_record {
+    lib_u64 sector;
+    lib_u8 ecc[4];
+    struct vm_machine_hdd_ecc_record *next;
+} vm_machine_hdd_ecc_record;
+
+typedef struct vm_machine_hdd_track {
+    core_machine_media_track format;
+    struct vm_machine_hdd_track *next;
+} vm_machine_hdd_track;
+
 typedef struct {
     lib_bool flagReadOnly;  /* write protect status */
     lib_bool flagDiskExist; /* medium presence */
 
     lib_storage_medium *medium;      /* sole owner of file or overlay bytes */
+    vm_machine_hdd_ecc_record *records; /* supplied ECC, installed-lease lifetime */
+    vm_machine_hdd_track *tracks; /* formatted IDs and bad flags, same lease */
     lib_size raw_byte_count; /* exact bytes read from the backing image */
     lib_size virtual_byte_count; /* guest-visible rounded sector capacity */
     lib_u32 media_generation; /* advances on create, insert, remove, format */

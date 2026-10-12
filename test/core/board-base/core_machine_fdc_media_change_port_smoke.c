@@ -56,13 +56,8 @@ static core_machine_media_result core_machine_fdc_change_read(void *context,
 }
 
 static const core_machine_media_provider core_machine_fdc_change_provider = {
-    core_machine_fdc_change_query,
-    core_machine_fdc_change_read,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL,
-    LIB_NULL
+    .query = core_machine_fdc_change_query,
+    .read_bytes = core_machine_fdc_change_read,
 };
 
 static void core_machine_fdc_change_command(core_machine_fdc *fdc, core_machine *port,

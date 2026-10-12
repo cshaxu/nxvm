@@ -3,22 +3,62 @@
 ## Current Work
 
 M5 T555 remains open: qualify retained controllers and board wiring for the
-four fixed PC Apps. S1--S3 are accepted; no S packet is active between S3
-closure and S4 admission. The accepted runnable implementation is
+four fixed PC Apps. S1--S3 are accepted; S4 storage qualification is active.
+The accepted runnable implementation is
 `2ad955473`, recorded in the [S3 source ledger](../etc/evidence/t555-s3-rtc-keyboard-source-ledger.md).
 
 S3 reconciles all 38 RTC/PPI/KBC/keyboard/board rows, repairs confirmed
 owner-local gaps and passes complete units 546/546 per width plus four-App
-integration 32/32 per width. Eight optimized stripped 0.5.0555 PC artifacts
-are current and PE/hash verified; Shared-six, MyNES and owner INIs are unchanged.
+integration 32/32 per width. That accepted S3 delivery includes eight optimized
+stripped 0.5.0555 PC artifacts; Shared-six, MyNES and owner INIs are unchanged.
 Coordinator actual-pushed-diff review accepts the complete S3 delivery.
 Interactive desktop acceptance is not claimed. The earlier unexplained DOS
 keyboard failure and narrow-margin DeskPro x86 boot remain recorded limitations.
 
-Remaining ordered work is S4 storage, S5 video, then S6 cross-profile closure.
+Remaining ordered work is active S4 storage, S5 video, then S6 cross-profile closure.
+S4 executor work is complete on the frozen candidate: all 22 FDC/HDC/media/time
+rows have an explicit source/model and receiver disposition. The approved
+[ECC L2 model](../etc/evidence/t555-s4-storage-ecc-model-review.md), Format/Long,
+Compaq two-instance topology, independent command/data/deadline and combined
+IRQ/control routes have direct and receiving proof. The private Console
+receiver and bound-executor frame-reader defects are repaired without Shared
+or product-policy changes. Historical failures remain in the
+[storage ledger](../etc/evidence/t555-s4-storage-source-ledger.md).
+
+Final complete units pass 546/546 x64 and 546/546 x86; the final once-per-App/width
+integration batch passes 32/32 per width with unchanged budgets. DeskPro x86
+boot passes in 177.38 seconds and still has narrow host-time margin. Core
+manifests, whitespace and documentation governance pass. Eight optimized
+stripped 0555 PC EXEs are rebuilt, architecture-verified and hash-matched to
+assets; owner INIs/media, Shared-six and MyNES are unchanged. S4 still awaits
+complete-P push and coordinator actual-pushed-diff acceptance before closure.
+Physical ID/raw-track/check-wire/circuit/mechanical timing bounds remain
+explicit; no interactive desktop or universal physical ECC proof is claimed.
+S5 additionally owns the Core cached-graphics/new-publication driver contract.
 Compaq A3/A4/A5 speed/read control and auxiliary-PIT refresh HOLD remain
 required S6 gaps. Missing A1/A2/A6 source definitions must be reconciled; these
 are not electrical-only exclusions or functions proven by successful boot.
+
+## Current Task — M5 T555 S4 Storage Qualification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: next unused S4 in open T555, after accepted S3 implementation `2ad955473` and governance `476f9fea5`. |
+| Admission And Approval | Owner's standing automatic S admission and current whole-T instruction authorize NXVM-only controller/board audit and confirmed repairs; Shared-six and MyNES remain read-only. On 2026-10-11 the owner approved Compaq's two independent HDC instances with one implementation and scheduler. The subsequent explicit reply approved the concrete ECC L2 model in `etc/evidence/t555-s4-storage-ecc-model-review.md`: Fire/WD-family polynomials, fixed encoding, bounded correction and retained Long transport; proceed to implementation without claiming exact selected-hardware ECC. Single-person sequential coordinator/executor. |
+| Objective | Reconcile the complete retained FDC/media and four HDC-personality batch against original manuals and current consumers, repair confirmed owner-local defects and prove selected-board wiring. |
+| Non-goals | No CPU instruction changes, Shared/MyNES changes, BIOS workaround, alternate storage backend, second clock/queue/controller implementation, raw-media invention or owner INI/media/snapshot modification. The approved Compaq physical topology uses two instances of the existing HDC, not another implementation or scheduler. Video and Compaq speed/HOLD remain S5/S6. |
+| Reference Baseline | Clean `476f9fea5`, runnable S3 `2ad955473`; S1 controller baseline and historical FDC/HDC ledgers are research leads, not current correctness proof. Owner-authorized L2 references are pinned in the S4 ledger. E4 may use their healthy-controller approximation while exercising existing buffer RAM; actual controller-ROM checksum and physical ECC-circuit fault simulation are explicitly not claimed. |
+| Candidate Proposal | `proposals/m5-selected-controller-qualification.md`, storage batch in T555 execution order. |
+| Files And ABI Surface | Existing `core/chips/fdc8272`, `core/chips/hdc`, Board-Base FDC/HDC/media and Machine media owners, selected App construction inputs and corresponding Core/App tests; T01 includes the existing Board-Base deadline reducer and scheduler receivers. Evidence/manifests and affected eight 0555 artifacts. Owner approved four FM/MFM read/scan and write service-duration fields in `x86_fdc_timing`, preserving byte cadence, and subsequently approved extending the existing HDC/media record interface with installed-lease-only ECC, bad-track and formatted-ID metadata on 2026-10-11. That boundary now includes copied HDC/media track requests, appended format-track callbacks, the Registry format-track operation and appended bad-track results; existing enum values and callback fields are preserved. The record-boundary design in the S4 ledger defines that exception; it does not authorize a second backend, sidecar or invented ECC algorithm. Any other new public API or timing downgrade requires reporting the exact need. |
+| Applicable Rules | NXVM guide, shared Execution/Architecture/Coding/Document, NXVM Architecture/Coding, source policy, architecture-governance and coding-governance skills; original source editions/hashes and S1 inventory. |
+| Verification | Original-source/function/timing ledger; focused chip/board/provider tests on x64/x86; complete repository-only units and all four selected App integration groups once per width on the original Ninja/ccache trees; Core manifests/corpus, documentation and whitespace gates; affected optimized stripped EXE PE/hash checks. Diagnose the current DeskPro x86 boot failure with the existing trace CLI, unchanged 180-second internal limit and 190-second process-tree containment. Fixed-size diagnostic rings/counters emit only terminal summaries; no raw recorder file or enlarged qualification budget. The existing bounded-process wrapper owns child cleanup. Diagnostic execution is not another passing qualification claim. |
+| Expected Markers | Every retained FDC command, phase/reset/IRQ/DRQ/TC/ready/timing/media route and each ATA/IBM WD1003/Compaq WD/Xebec grammar/status/data/reset/IRQ/DMA/deadline route has a source, current owner, direct receiver and explicit disposition; no unresolved confirmed defect is hidden by boot success. |
+| Asset Needs | Read-only owner-managed original manuals and existing external firmware/media; preserve four INIs and masters. Original build caches and persistent ccache only; eight PC artifacts change only for executable-input changes. |
+| Reporting Requirements | Before production edits report full batch findings, proposed files and estimated line changes; the S4 storage ledger's coordinator matrix freezes all 22 repair/retention/research-prerequisite dispositions. Source-confirmed owner-local work may proceed while named source prerequisites are reconciled, but no unresolved member or partial implementation P is eligible for acceptance. Retain source tier/model boundaries, similar-path dispositions, actual diff counts, tests/artifacts and unverified desktop scope. Complete P push, independent actual-pushed-diff coordinator review, then governance closure. |
+| Stop Conditions | Report required Shared/MyNES change, new ABI, timing downgrade, missing authority requiring invention, protected-asset need or out-of-scope repair. The owner authorized read-only `repos.external` emulator implementations as L2 evidence, Compaq's two-instance topology and the specific reviewed ECC L2 model. A different ECC model or new public boundary requires renewed review; neither unsupported ECC nor always-success behavior disposes generation/check/correction. Pin sources, state actual limitations and validate adopted behavior with project-owned receivers. No third-party source copying, false original-hardware claim, enlarged budget or firmware-derived hardware fact. |
+| Exit Criteria | Entire finite storage batch reconciled; confirmed defects repaired at sole owner with direct and receiving proof; required dual-width tests/gates and artifacts complete; scope/diff reviewed and complete implementation P pushed before S closure. T remains open for S5/S6. |
+| Original Owner Request | Audit original chip/board manuals for four PC Apps, repair confirmed controller and wiring gaps, and verify cross-profile behavior without narrowing the whole-T goal. |
+| Similar-Issue Sweep | Inspect all FDC/HDC command admission, result/status acknowledgement, FIFO/data phases, IRQ/DRQ/TC, reset, medium errors, deadline arithmetic and selected consumer wiring; map every hit to repair, source-proven retained behavior or explicit S5/S6/out-of-scope receiver. |
 
 ## Retained Progress
 

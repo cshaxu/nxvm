@@ -35,7 +35,7 @@ static lib_i32 read_first_sector(vm_machine *session, lib_u8 drive_head,
             return 0;
     }
     test_board_hdc_service(session->board);
-    if (!test_board_hdc_irq_pending(session->board)) return 0;
+    if (test_board_hdc_irq_pending(session->board)) return 0;
     if (core_machine_bus_read(session->core_machine, 0x01f7u, &value) != LIB_STATUS_OK ||
         core_machine_bus_write(session->core_machine, 0x01f7u, 0xecu) != LIB_STATUS_OK) return 0;
     test_board_hdc_service(session->board);

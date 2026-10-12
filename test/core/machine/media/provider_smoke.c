@@ -1,8 +1,9 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/media_interface.h"
-#include "core/machine/media/fdd_interface.h"
+#include "core/machine/media/fdd.h"
 #include "core/machine/media/hdd_interface.h"
+#include "core/machine/media/hdd.h"
 #include "lib/storage/file_interface.h"
 
 static const char vm_media_fdd_path[] = "vm-media-overlay-fdd.img";
@@ -36,6 +37,191 @@ static lib_i32 vm_media_read_first(const char *path, lib_u8 expected)
     if (reader != LIB_NULL && lib_storage_file_reader_close(reader) !=
             LIB_STATUS_OK) failed = LIB_TRUE;
     return failed;
+}
+
+static lib_i32 vm_media_fdd_marks_survive_reset(t_fdd *fdd,
+    const core_machine_media_registry *registry)
+{
+    core_machine_media_info before = {0}, after = {0};
+    core_machine_media_address_mark mark;
+    core_machine_media_result result;
+    lib_u8 byte = 0u;
+
+    if (core_machine_media_query(registry, 1u, &before, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        core_machine_media_set_address_mark(registry, 1u, 0u,
+            CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK) return LIB_TRUE;
+    vm_machine_fdd_reset(fdd);
+    if (core_machine_media_query(registry, 1u, &after, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || after.generation != before.generation ||
+        core_machine_media_get_address_mark(registry, 1u, 0u, &mark, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA ||
+        core_machine_media_read_bytes(registry, 1u, 0u, &byte, 1u, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || byte != 0x11u) return LIB_TRUE;
+    /* A rejected replacement cannot erase the installed record metadata. */
+    if (vm_machine_fdd_insert_for(fdd, vm_media_hdd_path,
+            LIB_STORAGE_MEDIUM_OVERLAY) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_media_get_address_mark(registry, 1u, 0u, &mark, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA)
+        return LIB_TRUE;
+    if (vm_machine_fdd_insert_for(fdd, vm_media_fdd_path,
+            LIB_STORAGE_MEDIUM_OVERLAY) != LIB_STATUS_OK ||
+        core_machine_media_query(registry, 1u, &after, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || after.generation != before.generation + 1u ||
+        core_machine_media_get_address_mark(registry, 1u, 0u, &mark, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA)
+        return LIB_TRUE;
+    return LIB_FALSE;
+}
+
+static lib_bool vm_media_hdd_record_lifetime(t_hdd *hdd,
+    const core_machine_media_registry *registry)
+{
+    core_machine_media_record record = {0}, observed = {0};
+    core_machine_media_result result;
+    const lib_u8 ecc[] = {0x13u, 0x57u, 0x9bu, 0xdfu};
+    lib_u8 byte = 0x31u;
+    static const lib_u8 replacement[1024] = {0x22u};
+
+    if (core_machine_media_read_record(registry, 2u, 0u, &observed, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        observed.ecc_present || observed.data[0] != 0x22u) return LIB_TRUE;
+    record.data[0] = 0x42u;
+    record.ecc_present = LIB_TRUE;
+    lib_memory_copy(record.ecc, ecc, sizeof(ecc));
+    if (core_machine_media_write_record(registry, 2u, 0u, &record, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK)
+        return LIB_TRUE;
+    vm_machine_hdd_reset(hdd);
+    if (vm_machine_hdd_insert(hdd, "missing-hdd-record-image.img",
+            LIB_STORAGE_MEDIUM_OVERLAY) == LIB_STATUS_OK ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        !observed.ecc_present || observed.data[0] != 0x42u ||
+        lib_memory_compare(observed.ecc, ecc, sizeof(ecc)) != 0)
+        return LIB_TRUE;
+    /* Partial byte writes and format cannot retain ECC for changed payload. */
+    if (core_machine_media_write_bytes(registry, 2u, 7u, &byte, 1u, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        observed.ecc_present || observed.data[7] != byte ||
+        core_machine_media_write_record(registry, 2u, 0u, &record, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        core_machine_media_format_sectors(registry, 2u, 0u, 1u, 0x11u, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        observed.ecc_present || observed.data[0] != 0x11u)
+        return LIB_TRUE;
+    if (core_machine_media_write_record(registry, 2u, 0u, &record, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        vm_machine_hdd_replace_bytes(hdd, replacement, sizeof(replacement)) !=
+            LIB_STATUS_OK ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        observed.ecc_present || observed.data[0] != 0x22u)
+        return LIB_TRUE;
+    /* A failed read never publishes a partial or stale record. */
+    observed.data[0] = 0xabu;
+    observed.ecc_present = LIB_TRUE;
+    if (core_machine_media_read_record(registry, 2u, 2u, &observed, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ||
+        observed.data[0] != 0xabu || !observed.ecc_present ||
+        vm_machine_hdd_remove(hdd) != LIB_STATUS_OK ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_ABSENT ||
+        observed.data[0] != 0xabu || !observed.ecc_present)
+        return LIB_TRUE;
+    if (vm_machine_hdd_insert(hdd, vm_media_hdd_path,
+            LIB_STORAGE_MEDIUM_READONLY) != LIB_STATUS_OK ||
+        core_machine_media_write_record(registry, 2u, 0u, &record, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_READ_ONLY ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        observed.ecc_present || observed.data[0] != 0x22u ||
+        vm_machine_hdd_remove(hdd) != LIB_STATUS_OK)
+        return LIB_TRUE;
+    /* Direct stores payload in the file, but ECC still belongs to the lease. */
+    record.data[0] = 0x22u;
+    if (vm_machine_hdd_insert(hdd, vm_media_hdd_path,
+            LIB_STORAGE_MEDIUM_DIRECT) != LIB_STATUS_OK ||
+        core_machine_media_write_record(registry, 2u, 0u, &record, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        !observed.ecc_present || lib_memory_compare(observed.ecc, ecc, sizeof(ecc)) != 0 ||
+        vm_machine_hdd_remove(hdd) != LIB_STATUS_OK ||
+        vm_machine_hdd_insert(hdd, vm_media_hdd_path,
+            LIB_STORAGE_MEDIUM_OVERLAY) != LIB_STATUS_OK ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) !=
+            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK || observed.ecc_present)
+        return LIB_TRUE;
+    return LIB_FALSE;
+}
+
+static lib_bool vm_media_hdd_track_lifetime(t_hdd *hdd,
+    const core_machine_media_registry *registry)
+{
+    core_machine_media_track track = {.sector_count = 2u, .ids = {1u, 0u},
+        .bad = {LIB_FALSE, LIB_TRUE}};
+    core_machine_media_record observed = {.data = {0xabu}};
+    const core_machine_media_record tagged = {.data = {0x77u},
+        .ecc = {0x12u, 0x34u, 0x56u, 0x78u}, .ecc_present = LIB_TRUE};
+    core_machine_media_result result;
+    lib_u8 byte = 0x55u;
+
+    if (core_machine_media_write_record(registry, 2u, 1u, &tagged, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        core_machine_media_read_record(registry, 2u, 1u, &observed, &result) != LIB_STATUS_OK ||
+        !observed.ecc_present || observed.data[0] != 0x77u) return LIB_TRUE;
+    observed.data[0] = 0xabu;
+    if (core_machine_media_format_track(registry, 2u, &track, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || hdd->connect.tracks == LIB_NULL ||
+        hdd->connect.tracks->format.ids[0] != 1u ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_BAD_TRACK || observed.data[0] != 0xabu ||
+        core_machine_media_read_record(registry, 2u, 1u, &observed, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || observed.ecc_present ||
+        observed.data[0] != 0x77u) return LIB_TRUE;
+    vm_machine_hdd_reset(hdd);
+    if (core_machine_media_write_bytes(registry, 2u, 0u, &byte, 1u, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_BAD_TRACK ||
+        core_machine_media_write_record(registry, 2u, 0u, &observed, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_BAD_TRACK) return LIB_TRUE;
+    track.ids[1] = 1u;
+    if (core_machine_media_format_track(registry, 2u, &track, &result) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_BAD_TRACK) return LIB_TRUE;
+    track.ids[1] = 0u;
+    track.first_sector = 2u;
+    if (core_machine_media_format_track(registry, 2u, &track, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE) return LIB_TRUE;
+    track.first_sector = 0u;
+    if (vm_machine_hdd_insert(hdd, "missing-track-replacement.img",
+            LIB_STORAGE_MEDIUM_OVERLAY) == LIB_STATUS_OK ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_BAD_TRACK) return LIB_TRUE;
+    track.bad[1] = LIB_FALSE;
+    track.fill_payload = LIB_TRUE;
+    track.fill = 0x66u;
+    if (core_machine_media_format_track(registry, 2u, &track, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || observed.data[0] != 0x66u || observed.ecc_present ||
+        vm_machine_hdd_remove(hdd) != LIB_STATUS_OK || hdd->connect.tracks != LIB_NULL ||
+        vm_machine_hdd_insert(hdd, vm_media_hdd_path, LIB_STORAGE_MEDIUM_READONLY) != LIB_STATUS_OK ||
+        core_machine_media_format_track(registry, 2u, &track, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_READ_ONLY || hdd->connect.tracks != LIB_NULL ||
+        vm_machine_hdd_insert(hdd, vm_media_hdd_path, LIB_STORAGE_MEDIUM_OVERLAY) != LIB_STATUS_OK ||
+        hdd->connect.tracks != LIB_NULL ||
+        core_machine_media_read_record(registry, 2u, 0u, &observed, &result) != LIB_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || observed.data[0] != 0x22u)
+        return LIB_TRUE;
+    return LIB_FALSE;
 }
 
 lib_i32 main(void)
@@ -92,6 +278,9 @@ lib_i32 main(void)
         core_machine_media_registry_bind(registry, 2u, hdd,
             vm_machine_hdd_media_provider()) != LIB_STATUS_OK ||
         core_machine_media_registry_freeze(registry) != LIB_STATUS_OK ||
+        vm_media_fdd_marks_survive_reset(fdd, registry) ||
+        vm_media_hdd_record_lifetime(hdd, registry) ||
+        vm_media_hdd_track_lifetime(hdd, registry) ||
         core_machine_media_query(registry, 2u, &hdd_info, &result) != LIB_STATUS_OK ||
         result != CORE_MACHINE_MEDIA_RESULT_OK ||
         (hdd_info.capabilities & (CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |

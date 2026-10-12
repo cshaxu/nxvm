@@ -43,21 +43,29 @@ static lib_i32 pc_console_has_text(HANDLE output, const char *text)
     COORD origin = {0};
     DWORD read = 0u;
     DWORD count;
+    DWORD offset = 0u;
+    DWORD limit;
     lib_size index;
     lib_size length;
 
     if (output == INVALID_HANDLE_VALUE || text == LIB_NULL ||
         !GetConsoleScreenBufferInfo(output, &info)) return 0;
-    origin.X = info.srWindow.Left;
-    origin.Y = info.srWindow.Top;
-    count = (DWORD)(info.srWindow.Right - info.srWindow.Left + 1) *
-        (DWORD)(info.srWindow.Bottom - info.srWindow.Top + 1);
-    if (count >= sizeof(buffer)) count = sizeof(buffer) - 1u;
-    if (!ReadConsoleOutputCharacterA(output, buffer, count, origin, &read)) return 0;
-    buffer[read] = '\0';
     length = lib_text_length(text);
-    for (index = 0u; index + length <= read; ++index) {
-        if (lib_memory_compare(buffer + index, text, length) == 0) return 1;
+    if (length == 0u) return 1;
+    if (length >= sizeof(buffer)) return 0;
+    /* Monitor output may already have scrolled outside the visible viewport. */
+    limit = (DWORD)info.dwSize.X * ((DWORD)info.dwCursorPosition.Y + 1u);
+    while (offset < limit) {
+        origin.X = (SHORT)(offset % (DWORD)info.dwSize.X);
+        origin.Y = (SHORT)(offset / (DWORD)info.dwSize.X);
+        count = limit - offset;
+        if (count >= sizeof(buffer)) count = sizeof(buffer) - 1u;
+        if (!ReadConsoleOutputCharacterA(output, buffer, count, origin, &read)) return 0;
+        for (index = 0u; index + length <= read; ++index) {
+            if (lib_memory_compare(buffer + index, text, length) == 0) return 1;
+        }
+        if (read < length) return 0;
+        offset += read - (DWORD)length + 1u;
     }
     return 0;
 }
@@ -116,12 +124,25 @@ lib_i32 pc_console_process_run(const char *executable,
         goto done;
     }
     for (index = 0u; index < command_count; ++index) {
+        CONSOLE_SCREEN_BUFFER_INFO info;
+        DWORD cleared = 0u;
+        DWORD count;
+
+        /* This private test Console must not satisfy a command with old output.
+         * Leave its cursor, geometry and input stream untouched. */
+        stage = "old output removal";
+        if (!GetConsoleScreenBufferInfo(output, &info)) goto done;
+        count = (DWORD)info.dwSize.X * ((DWORD)info.dwCursorPosition.Y + 1u);
+        if (!FillConsoleOutputCharacterA(output, ' ', count, (COORD){0}, &cleared) ||
+            cleared != count) goto done;
         if (!pc_console_send_text(input, commands[index])) {
             stage = "command input";
             goto done;
         }
         if (markers[index][0] != '\0' && !pc_console_wait_for_text(output,
                 markers[index], PC_CONSOLE_WAIT_MILLISECONDS)) {
+            fprintf(stderr, "PC Console expected result %zu: %s.\n",
+                index, markers[index]);
             stage = "command result";
             goto done;
         }

@@ -210,31 +210,33 @@ static lib_i32 specify_reset(fixture *state)
 
     fixture_arm(state);
     fixture_command(state, (const lib_u8[]){0x03u, 0xdfu, 0x03u}, 3u);
-    /* Both reset edges preserve the programmed SRT/HUT/HLT fields. */
+    /* Reset retains the complete last Specify command, including ND. */
     failed |= fdc->data.srt != 0x0du || fdc->data.hut != 0x0fu ||
-        fdc->data.hlt != 0x01u;
+        fdc->data.hlt != 0x01u || !fdc->data.flagNDMA;
     x86_fdc_set_reset(fdc, LIB_FALSE);
     failed |= fdc->data.srt != 0x0du || fdc->data.hut != 0x0fu ||
-        fdc->data.hlt != 0x01u;
+        fdc->data.hlt != 0x01u || !fdc->data.flagNDMA;
     x86_fdc_set_reset(fdc, LIB_TRUE);
     state->now = fdc->data.reset_due_tick;
     x86_fdc_advance_at(fdc, state->now);
     failed |= fdc->data.srt != 0x0du || fdc->data.hut != 0x0fu ||
-        fdc->data.hlt != 0x01u;
+        fdc->data.hlt != 0x01u || !fdc->data.flagNDMA;
     if (failed) lib_c_fprintf(lib_c_stderr, "FDC SPECIFY reset retention failed\n");
     return failed;
 }
 
-static lib_i32 seek_cadence(fixture *state)
+static lib_i32 seek_cadence(void)
 {
-    x86_fdc *fdc = state->chip;
-    const x86_fdc_timing timing = {0u, 8000u, 1u, 248u, 120u};
+    fixture local = {.present = LIB_TRUE, .ready_mask = 0x0fu};
+    fixture *state = &local;
+    const x86_fdc_timing timing = {.reset_ticks = 0u, .step_numerator = 8000u, .step_denominator = 1u, .fm_byte_ticks = 248u, .mfm_byte_ticks = 120u};
     lib_u8 result[2];
     lib_i32 failed = 0;
+    if (fixture_create(state, &timing) != LIB_STATUS_OK) return 1;
+    x86_fdc *fdc = state->chip;
 
     /* A fresh local axis avoids the old mixed fixture's backward time jump.
      * Only reset latency is zero here; each step retains the 24000-tick oracle. */
-    failed |= x86_fdc_set_timing(fdc, &timing) != LIB_STATUS_OK;
     fixture_arm(state);
     state->now = 0u;
     state->track_zero_missing = LIB_FALSE;
@@ -273,6 +275,7 @@ static lib_i32 seek_cadence(fixture *state)
     failed |= !fixture_result(state, result, 2u) ||
         (result[0] & 3u) != 0u || result[1] != 7u;
     if (failed) lib_c_fprintf(lib_c_stderr, "FDC step cadence/parallel seek failed\n");
+    x86_fdc_destroy(fdc);
     return failed;
 }
 
@@ -308,16 +311,378 @@ static lib_i32 recalibrate_pulses(fixture *state)
     return failed;
 }
 
+static lib_i32 ndma_byte_interrupts(void)
+{
+    static const lib_u8 commands[] = {0x46u, 0x45u, 0x51u, 0x4du};
+    lib_i32 failed = 0;
+
+    for (lib_size row = 0u; row < sizeof(commands); ++row) {
+        fixture state = {.present = LIB_TRUE, .ready_mask = 0x0fu};
+        const x86_fdc_timing timing = {.reset_ticks = 0u, .step_numerator = 1u, .step_denominator = 1u, .fm_byte_ticks = 31u, .mfm_byte_ticks = 15u};
+        lib_u8 byte = 0xa5u;
+        if (fixture_create(&state, &timing) != LIB_STATUS_OK) return 1;
+        fixture_arm(&state);
+        fixture_command(&state, (const lib_u8[]){3u, 0xdfu, 3u}, 3u);
+        if (commands[row] == 0x4du)
+            fixture_command(&state, (const lib_u8[]){0x4du, 0u, 2u, 1u, 0x1bu, 0u}, 6u);
+        else
+            fixture_command(&state, (const lib_u8[]){commands[row], 0u, 0u, 0u,
+                1u, 2u, 1u, 0x1bu, 1u}, 9u);
+        failed |= !state.irq || state.drq ||
+            (x86_fdc_read_status(state.chip) & 0x80u) == 0u;
+        if (commands[row] == 0x46u) x86_fdc_read_data(state.chip, &byte);
+        else x86_fdc_write_data(state.chip, 0u);
+        failed |= state.irq || state.drq ||
+            x86_fdc_read_status(state.chip) !=
+                (commands[row] == 0x46u ? 0x70u : 0x30u);
+        /* An early data access cannot acknowledge or consume the next byte. */
+        const lib_u16 offset = state.chip->data.byte_offset;
+        if (commands[row] == 0x46u) x86_fdc_read_data(state.chip, &byte);
+        else x86_fdc_write_data(state.chip, 0u);
+        failed |= state.chip->data.byte_offset != offset || state.irq;
+        state.now = state.chip->data.next_ndma_byte_tick - 1u;
+        x86_fdc_advance_at(state.chip, state.now);
+        failed |= state.irq;
+        advance(&state);
+        failed |= !state.irq || state.drq ||
+            (x86_fdc_read_status(state.chip) & 0x80u) == 0u;
+        x86_fdc_reset(state.chip);
+        failed |= state.irq || state.drq;
+        x86_fdc_destroy(state.chip);
+        if (failed) {
+            lib_c_fprintf(lib_c_stderr, "FDC NDMA byte interrupt command=%02x\n", commands[row]);
+            return 1;
+        }
+    }
+    return failed;
+}
+
+static lib_i32 deadline_boundaries(void)
+{
+    lib_i32 failed = 0;
+    for (lib_u8 row = 0u; row < 4u; ++row) {
+        fixture state = {.present = LIB_TRUE, .ready_mask = 0x0fu};
+        const x86_fdc_timing timing = {.reset_ticks = 5u, .step_numerator = 5u, .step_denominator = 1u, .fm_byte_ticks = 5u, .mfm_byte_ticks = 5u};
+        lib_u64 due = 0u;
+        lib_u8 byte = 0u;
+        if (fixture_create(&state, &timing) != LIB_STATUS_OK) return 1;
+        fixture_arm(&state);
+        x86_fdc_advance_at(state.chip, 10u);
+        x86_fdc_advance_at(state.chip, 9u);
+        failed |= state.chip->data.elapsed_ticks != 10u;
+        if (row == 0u) {
+            x86_fdc_set_reset(state.chip, LIB_FALSE);
+            x86_fdc_advance_at(state.chip, LIB_UINT64_MAX - 2u);
+            x86_fdc_set_reset(state.chip, LIB_TRUE);
+        } else {
+            /* Drain reset completion before isolating seek or byte cadence. */
+            for (lib_u8 drive = 0u; drive < 4u; ++drive) {
+                x86_fdc_write_data(state.chip, 8u);
+                x86_fdc_advance_at(state.chip, 10u);
+                x86_fdc_read_data(state.chip, &byte);
+                x86_fdc_read_data(state.chip, &byte);
+            }
+            x86_fdc_write_data(state.chip, 3u);
+            x86_fdc_write_data(state.chip, 0xf0u);
+            x86_fdc_write_data(state.chip, row == 3u ? 1u : 0u);
+            x86_fdc_advance_at(state.chip, 10u);
+            x86_fdc_advance_at(state.chip, LIB_UINT64_MAX - 2u);
+            const lib_u8 seek[] = {0x0fu, 0u, 2u};
+            const lib_u8 read[] = {0x46u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 1u};
+            for (lib_size i = 0u; i < (row == 1u ? sizeof(seek) : sizeof(read)); ++i)
+                x86_fdc_write_data(state.chip, row == 1u ? seek[i] : read[i]);
+            x86_fdc_advance_at(state.chip, LIB_UINT64_MAX - 2u);
+            if (row == 2u) x86_fdc_dma_read(state.chip, &byte);
+            if (row == 3u) x86_fdc_read_data(state.chip, &byte);
+        }
+        failed |= x86_fdc_next_due_tick(state.chip, &due) != LIB_STATUS_OK ||
+            due != LIB_UINT64_MAX;
+        x86_fdc_advance_at(state.chip, LIB_UINT64_MAX - 1u);
+        failed |= row == 0u ? state.irq :
+            (row == 1u ? state.step_count[0] != 0u : (row == 2u ? state.drq : state.irq));
+        x86_fdc_advance_at(state.chip, LIB_UINT64_MAX);
+        failed |= row == 1u ? state.step_count[0] != 2u :
+            (row == 2u ? !state.drq : !state.irq);
+        failed |= x86_fdc_next_due_tick(state.chip, &due) != LIB_STATUS_INVALID_STATE;
+        x86_fdc_destroy(state.chip);
+    }
+    if (failed) lib_c_fprintf(lib_c_stderr, "FDC deadline boundary failed\n");
+    return failed;
+}
+
+static lib_i32 head_timers(void)
+{
+    lib_i32 failed = 0;
+    for (lib_u8 ndma = 0u; ndma < 2u; ++ndma) {
+        fixture state = {.present = LIB_TRUE, .ready_mask = 0x0fu};
+        const x86_fdc_timing timing = {.reset_ticks = 0u, .step_numerator = 3u, .step_denominator = 2u, .fm_byte_ticks = 0u, .mfm_byte_ticks = 0u};
+        const lib_u8 command[] = {0x46u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 1u};
+        lib_u8 result[7], byte = 0u;
+        lib_u64 due, origin;
+        if (fixture_create(&state, &timing) != LIB_STATUS_OK) return 1;
+        fixture_arm(&state);
+        fixture_command(&state, (const lib_u8[]){3u, 0xd2u, (lib_u8)(6u | ndma)}, 3u);
+        origin = ++state.now;
+        for (lib_size i = 0u; i < sizeof(command); ++i)
+            x86_fdc_write_data(state.chip, command[i]);
+        x86_fdc_advance_at(state.chip, state.now);
+        failed |= state.chip->data.phase != x86_fdc_PHASE_HEAD_LOAD ||
+            state.drq || state.irq || state.read_count != 0u ||
+            x86_fdc_read_status(state.chip) != 0x10u ||
+            x86_fdc_next_due_tick(state.chip, &due) != LIB_STATUS_OK || due != origin + 9u;
+        state.now = due - 1u;
+        x86_fdc_advance_at(state.chip, state.now);
+        failed |= state.drq || state.irq || state.read_count != 0u;
+        advance(&state);
+        failed |= state.chip->data.phase != x86_fdc_PHASE_EXECUTION_READ ||
+            (ndma ? !state.irq || state.drq : !state.drq || state.irq);
+        if (ndma) x86_fdc_read_data(state.chip, &byte);
+        else x86_fdc_dma_read(state.chip, &byte);
+        x86_fdc_terminal_count(state.chip);
+        due = state.now + 48u;
+        failed |= state.chip->data.head_unload_due_tick[0] != due ||
+            !fixture_result(&state, result, 7u);
+        /* Another unit cannot borrow the first unit's loaded head. */
+        for (lib_size i = 0u; i < sizeof(command); ++i)
+            x86_fdc_write_data(state.chip, i == 1u ? 1u : command[i]);
+        advance(&state);
+        failed |= state.chip->data.phase != x86_fdc_PHASE_HEAD_LOAD ||
+            state.chip->data.selected_drive != 1u;
+        state.now = state.chip->data.head_load_due_tick;
+        x86_fdc_advance_at(state.chip, state.now);
+        x86_fdc_terminal_count(state.chip);
+        failed |= !fixture_result(&state, result, 7u);
+        /* The selected unit stays loaded throughout HUT: no second HLT. */
+        fixture_command(&state, command, sizeof(command));
+        failed |= state.chip->data.phase != x86_fdc_PHASE_EXECUTION_READ;
+        x86_fdc_terminal_count(state.chip);
+        due = state.chip->data.head_unload_due_tick[0];
+        failed |= !fixture_result(&state, result, 7u);
+        state.now = due - 1u;
+        x86_fdc_advance_at(state.chip, state.now);
+        failed |= (state.chip->data.head_loaded_mask & 1u) == 0u;
+        advance(&state);
+        failed |= (state.chip->data.head_loaded_mask & 1u) != 0u;
+        for (lib_size i = 0u; i < sizeof(command); ++i)
+            x86_fdc_write_data(state.chip, command[i]);
+        advance(&state);
+        failed |= state.chip->data.phase != x86_fdc_PHASE_HEAD_LOAD;
+        x86_fdc_reset(state.chip);
+        failed |= state.chip->data.head_loaded_mask != 0u ||
+            state.chip->data.head_unload_mask != 0u ||
+            state.chip->data.hlt != 3u || state.chip->data.hut != 2u;
+        fixture_arm(&state);
+        state.now = LIB_UINT64_MAX - 2u;
+        x86_fdc_advance_at(state.chip, state.now);
+        for (lib_size i = 0u; i < sizeof(command); ++i)
+            x86_fdc_write_data(state.chip, command[i]);
+        x86_fdc_advance_at(state.chip, state.now);
+        failed |= x86_fdc_next_due_tick(state.chip, &due) != LIB_STATUS_OK ||
+            due != LIB_UINT64_MAX;
+        x86_fdc_advance_at(state.chip, LIB_UINT64_MAX - 1u);
+        failed |= state.drq || state.irq;
+        x86_fdc_advance_at(state.chip, LIB_UINT64_MAX);
+        failed |= state.chip->data.phase != x86_fdc_PHASE_EXECUTION_READ;
+        x86_fdc_terminal_count(state.chip);
+        x86_fdc_advance_at(state.chip, LIB_UINT64_MAX);
+        failed |= state.chip->data.head_loaded_mask != 0u ||
+            state.chip->data.head_unload_mask != 0u;
+        x86_fdc_destroy(state.chip);
+    }
+    {
+        fixture state = {.present = LIB_TRUE, .ready_mask = 0x0fu};
+        const x86_fdc_timing timing = {.reset_ticks = 0u, .step_numerator = 3u, .step_denominator = 2u, .fm_byte_ticks = 0u, .mfm_byte_ticks = 0u};
+        const lib_u8 command[] = {0x4au, 0u};
+        lib_u8 result[7];
+        lib_u64 due;
+        if (fixture_create(&state, &timing) != LIB_STATUS_OK) return 1;
+        fixture_arm(&state);
+        fixture_command(&state, (const lib_u8[]){3u, 0xd2u, 6u}, 3u);
+        for (lib_size i = 0u; i < sizeof(command); ++i)
+            x86_fdc_write_data(state.chip, command[i]);
+        advance(&state);
+        failed |= state.chip->data.phase != x86_fdc_PHASE_HEAD_LOAD ||
+            state.irq || state.drq ||
+            x86_fdc_next_due_tick(state.chip, &due) != LIB_STATUS_OK ||
+            due != state.now + 9u;
+        state.now = due - 1u;
+        x86_fdc_advance_at(state.chip, state.now);
+        failed |= state.irq || state.drq;
+        advance(&state);
+        due = state.now + 48u;
+        failed |= !state.irq || state.drq ||
+            state.chip->data.head_unload_due_tick[0] != due ||
+            !fixture_result(&state, result, 7u) ||
+            result[0] != 0u || result[1] != 0u || result[2] != 0u ||
+            result[5] != 1u || result[6] != 2u;
+        /* Read ID reuses a loaded head and restarts HUT at its own completion. */
+        fixture_command(&state, command, sizeof(command));
+        failed |= state.chip->data.phase != x86_fdc_PHASE_RESULT ||
+            state.chip->data.head_unload_due_tick[0] != state.now + 48u ||
+            !fixture_result(&state, result, 7u);
+        x86_fdc_destroy(state.chip);
+    }
+    for (lib_u8 ndma = 0u; ndma < 2u; ++ndma) {
+        fixture state = {.present = LIB_TRUE, .ready_mask = 0x0fu};
+        const x86_fdc_timing timing = {.reset_ticks = 0u, .step_numerator = 3u, .step_denominator = 2u, .fm_byte_ticks = 0u, .mfm_byte_ticks = 0u};
+        const lib_u8 command[] = {0x4du, 0u, 2u, 1u, 0x1bu, 0xa5u};
+        const lib_u8 id[] = {0u, 0u, 1u, 2u};
+        lib_u8 result[7];
+        lib_u64 due;
+        if (fixture_create(&state, &timing) != LIB_STATUS_OK) return 1;
+        fixture_arm(&state);
+        fixture_command(&state, (const lib_u8[]){3u, 0xd2u, (lib_u8)(6u | ndma)}, 3u);
+        for (lib_size i = 0u; i < sizeof(command); ++i)
+            x86_fdc_write_data(state.chip, command[i]);
+        advance(&state);
+        failed |= state.chip->data.phase != x86_fdc_PHASE_HEAD_LOAD ||
+            state.irq || state.drq || state.bytes[0] != 0u ||
+            x86_fdc_next_due_tick(state.chip, &due) != LIB_STATUS_OK ||
+            due != state.now + 9u;
+        state.now = due - 1u;
+        x86_fdc_advance_at(state.chip, state.now);
+        failed |= state.irq || state.drq;
+        advance(&state);
+        failed |= state.chip->data.phase != x86_fdc_PHASE_EXECUTION_FORMAT ||
+            (ndma ? !state.irq || state.drq : !state.drq || state.irq);
+        for (lib_size i = 0u; i < sizeof(id); ++i) {
+            if (ndma) x86_fdc_write_data(state.chip, id[i]);
+            else x86_fdc_dma_write(state.chip, id[i]);
+        }
+        failed |= state.chip->data.head_unload_due_tick[0] != state.now + 48u ||
+            state.bytes[0] != 0xa5u || state.bytes[511] != 0xa5u ||
+            !fixture_result(&state, result, 7u) ||
+            result[0] != 0u || result[1] != 0u || result[2] != 0u || result[5] != 2u;
+        x86_fdc_destroy(state.chip);
+    }
+    {
+        fixture state = {.present = LIB_TRUE, .ready_mask = 0x0fu};
+        const x86_fdc_timing timing = {.reset_ticks = 0u, .step_numerator = LIB_UINT64_MAX / 16u, .step_denominator = LIB_UINT64_MAX, .fm_byte_ticks = 0u, .mfm_byte_ticks = 0u};
+        const lib_u8 command[] = {0x46u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 1u};
+        lib_u64 due;
+        if (fixture_create(&state, &timing) != LIB_STATUS_OK) return 1;
+        fixture_arm(&state);
+        fixture_command(&state, (const lib_u8[]){3u, 0xdfu, 0xfeu}, 3u);
+        for (lib_size i = 0u; i < sizeof(command); ++i)
+            x86_fdc_write_data(state.chip, command[i]);
+        advance(&state);
+        failed |= x86_fdc_next_due_tick(state.chip, &due) != LIB_STATUS_OK ||
+            due != state.now + 16u;
+        state.now = due;
+        x86_fdc_advance_at(state.chip, state.now);
+        x86_fdc_terminal_count(state.chip);
+        failed |= state.chip->data.head_unload_due_tick[0] != state.now + 15u;
+        x86_fdc_destroy(state.chip);
+    }
+    if (failed) lib_c_fprintf(lib_c_stderr, "FDC head load/unload timing failed\n");
+    return failed;
+}
+
+static lib_i32 service_deadlines(void)
+{
+    static const lib_u8 commands[] = {6u, 12u, 5u, 9u, 17u, 25u, 29u, 2u, 13u};
+    const x86_fdc_timing timing = {
+        .step_numerator = 1u, .step_denominator = 1u,
+        .fm_byte_ticks = 32u, .mfm_byte_ticks = 16u,
+        .fm_read_service_ticks = 27u, .mfm_read_service_ticks = 13u,
+        .fm_write_service_ticks = 31u, .mfm_write_service_ticks = 15u
+    };
+    lib_i32 failed = 0;
+
+    for (lib_size command = 0u; command < sizeof(commands); ++command) {
+        const lib_bool writing = commands[command] == 5u ||
+            commands[command] == 9u || commands[command] == 13u;
+        const lib_bool reading = commands[command] == 6u ||
+            commands[command] == 12u || commands[command] == 2u;
+        for (lib_u8 mode = 0u; mode < 4u; ++mode) {
+            const lib_bool ndma = (mode & 1u) != 0u;
+            const lib_bool mfm = (mode & 2u) != 0u;
+            const lib_u64 service = writing ? (mfm ? 15u : 31u) :
+                (mfm ? 13u : 27u);
+            for (lib_u8 action = 0u; action < 4u; ++action) {
+                fixture state = {.present = LIB_TRUE, .ready_mask = 15u};
+                lib_u8 result[7], byte = 0xa5u;
+                lib_u64 due;
+                const lib_u8 opcode = commands[command] | (mfm ? 0x40u : 0u);
+                if (fixture_create(&state, &timing) != LIB_STATUS_OK) return 1;
+                state.deleted[0] = commands[command] == 12u;
+                lib_memory_set(state.bytes, 0x5au, sizeof(state.bytes));
+                fixture_arm(&state);
+                fixture_command(&state, (const lib_u8[]){3u, 0xf0u, ndma}, 3u);
+                if (commands[command] == 13u)
+                    fixture_command(&state, (const lib_u8[]){opcode, 0u, 2u, 1u, 0x1bu, 0u}, 6u);
+                else
+                    fixture_command(&state,
+                        (const lib_u8[]){opcode, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 1u}, 9u);
+                due = state.now + service;
+                failed |= !state.chip->data.service_pending ||
+                    x86_fdc_next_due_tick(state.chip, &state.now) != LIB_STATUS_OK ||
+                    state.now != due;
+                state.now = due - 1u;
+                x86_fdc_advance_at(state.chip, state.now);
+                /* Polling MSR is not data service and cannot renew the limit. */
+                for (lib_u8 poll = 0u; poll < 4u; ++poll)
+                    (void)x86_fdc_read_status(state.chip);
+                failed |= state.chip->data.service_due_tick != due ||
+                    !state.chip->data.service_pending;
+                if (action == 1u) {
+                    if (reading) {
+                        if (ndma) x86_fdc_read_data(state.chip, &byte);
+                        else x86_fdc_dma_read(state.chip, &byte);
+                        failed |= byte != 0x5au;
+                    } else {
+                        if (ndma) x86_fdc_write_data(state.chip, byte);
+                        else x86_fdc_dma_write(state.chip, byte);
+                    }
+                    failed |= state.chip->data.service_pending;
+                    failed |= x86_fdc_next_due_tick(state.chip, &state.now) != LIB_STATUS_OK;
+                    x86_fdc_advance_at(state.chip, state.now);
+                    due = state.now + service;
+                    failed |= !state.chip->data.service_pending ||
+                        state.chip->data.service_due_tick != due;
+                } else if (action == 2u) {
+                    x86_fdc_terminal_count(state.chip);
+                    failed |= state.chip->data.service_pending;
+                } else if (action == 3u) {
+                    x86_fdc_reset(state.chip);
+                    failed |= state.chip->data.service_pending;
+                }
+                state.now = due;
+                x86_fdc_advance_at(state.chip, state.now);
+                if (action != 3u) {
+                    failed |= !fixture_result(&state, result, 7u) ||
+                        result[0] != (action == 2u ? 0u : 0x40u) ||
+                        result[1] != (action == 2u ? 0u : 0x10u) ||
+                        result[3] != 0u || result[4] != 0u || result[5] != 1u ||
+                        state.terminals != 1u || state.drq;
+                } else failed |= state.terminals != 0u || state.irq || state.drq;
+                failed |= state.read_count != (action == 1u && commands[command] != 13u ? 1u : 0u);
+                failed |= state.bytes[0] !=
+                    (action == 1u && writing && commands[command] != 13u ? 0xa5u : 0x5au);
+                for (lib_size index = 1u; index < sizeof(state.bytes); ++index)
+                    failed |= state.bytes[index] != 0x5au;
+                x86_fdc_destroy(state.chip);
+            }
+        }
+    }
+    if (failed) lib_c_fprintf(lib_c_stderr, "FDC byte-service deadlines failed\n");
+    return failed;
+}
+
 int main(void)
 {
     fixture state = {.present = LIB_TRUE, .ready_mask = 0x0fu};
-    const x86_fdc_timing timing = {8192u, 8000u, 1u, 248u, 120u};
+    const x86_fdc_timing timing = {.reset_ticks = 8192u, .step_numerator = 8000u, .step_denominator = 1u, .fm_byte_ticks = 248u, .mfm_byte_ticks = 120u};
     if (fixture_create(&state, &timing) != LIB_STATUS_OK) return 1;
     lib_i32 failed = ready_edges(&state);
     failed |= seek_ownership(&state);
     failed |= specify_reset(&state);
-    failed |= seek_cadence(&state);
+    failed |= seek_cadence();
     failed |= recalibrate_pulses(&state);
+    failed |= ndma_byte_interrupts();
+    failed |= deadline_boundaries();
+    failed |= head_timers();
+    failed |= service_deadlines();
     x86_fdc_destroy(state.chip);
     return failed != 0;
 }

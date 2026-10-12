@@ -115,6 +115,41 @@ static lib_i32 rational_clock_deadline_contract(void)
         LIB_STATUS_INVALID_ARGUMENT || source != 99u;
 }
 
+static lib_i32 rational_clock_selected_horizon(void)
+{
+    const struct {
+        core_machine_clock_ratio ratio;
+        lib_u64 ticks;
+        lib_u32 phase;
+    } cases[] = {
+        {{1u, 1u, 0u}, LIB_UINT64_MAX, 0u},
+        {{1u, 2u, 0u}, 9223372036854775807ull, 1u},
+        {{1u, 4u, 0u}, 4611686018427387903ull, 3u},
+        {{596591u, 4000000u, 0u}, 2751290373419613776ull, 3544465u},
+        {{715909u, 9600000u, 0u}, 1375644802402638686ull, 1543035u},
+        {{256u, 125000u, 0u}, 37778931862957161ull, 88440u},
+        {{64u, 15625u, 0u}, 75557863725914323ull, 6485u},
+        {{315u, 1408u, 0u}, 4126934931263145425ull, 325u}
+    };
+    for (lib_size i = 0u; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        core_machine_clock_domain whole, split;
+        lib_u64 first, last;
+        if (core_machine_clock_domain_initialize(&whole, &cases[i].ratio) !=
+                LIB_STATUS_OK ||
+            core_machine_clock_domain_initialize(&split, &cases[i].ratio) !=
+                LIB_STATUS_OK ||
+            core_machine_clock_domain_advance(&whole, LIB_UINT64_MAX) !=
+                cases[i].ticks) return 1;
+        first = core_machine_clock_domain_advance(&split, LIB_UINT64_MAX - 1u);
+        last = core_machine_clock_domain_advance(&split, 1u);
+        if (first > LIB_UINT64_MAX - last || first + last != cases[i].ticks ||
+            whole.delivered_ticks != cases[i].ticks ||
+            split.delivered_ticks != cases[i].ticks ||
+            whole.phase != cases[i].phase || split.phase != cases[i].phase) return 1;
+    }
+    return 0;
+}
+
 lib_i32 main(void)
 {
     core_machine_clock_domain domain;
@@ -126,7 +161,7 @@ lib_i32 main(void)
     rational_clock_probe reset = { { 0u }, 0u };
     rational_clock_probe split = { { 0u }, 0u };
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = rational_clock_deadline_contract();
+    lib_i32 failed = rational_clock_deadline_contract() || rational_clock_selected_horizon();
 
     failed |= core_machine_clock_domain_initialize(&domain, &ratio) !=
         LIB_STATUS_OK;

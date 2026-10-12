@@ -16,8 +16,13 @@ static inline lib_status test_nxvm_machine_capture_presentation(const vm_machine
     lib_size cell;
 
     if (machine == LIB_NULL || out_frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (vm_machine_copy_emulator_frame((vm_machine *)machine, &frame) != LIB_STATUS_OK)
-        return LIB_STATUS_INVALID_STATE;
+    if (machine->executor != LIB_NULL) {
+        /* The test reader cannot enter the bound executor's display driver. */
+        if (!emulator_machine_copy_published_frame(machine->executor, &frame,
+                emulator_machine_run_generation(machine->executor)))
+            return LIB_STATUS_INVALID_STATE;
+    } else if (vm_machine_copy_emulator_frame((vm_machine *)machine, &frame) !=
+            LIB_STATUS_OK) return LIB_STATUS_INVALID_STATE;
     lib_memory_set(out_frame, 0, sizeof(*out_frame));
     out_frame->generation = frame.sequence;
     if (frame.window.graphics) {

@@ -160,13 +160,12 @@ static core_machine_media_result vm_machine_fdd_media_set_address_mark(
 const core_machine_media_provider *vm_machine_fdd_media_provider(void)
 {
     static const core_machine_media_provider provider = {
-        vm_machine_fdd_media_query,
-        vm_machine_fdd_media_read,
-        vm_machine_fdd_media_write,
-        vm_machine_fdd_media_format,
-        LIB_NULL,
-        vm_machine_fdd_media_get_address_mark,
-        vm_machine_fdd_media_set_address_mark
+        .query = vm_machine_fdd_media_query,
+        .read_bytes = vm_machine_fdd_media_read,
+        .write_bytes = vm_machine_fdd_media_write,
+        .format_sectors = vm_machine_fdd_media_format,
+        .get_address_mark = vm_machine_fdd_media_get_address_mark,
+        .set_address_mark = vm_machine_fdd_media_set_address_mark,
     };
     return &provider;
 }

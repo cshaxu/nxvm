@@ -8,6 +8,10 @@ typedef struct x86_xebec_data {
     lib_u8 dcb_count;
     lib_u8 initialize[8];
     lib_u8 initialize_count;
+    lib_u8 ecc_limit;
+    lib_u8 corrected_burst;
+    lib_u16 cylinders;
+    lib_u8 heads;
     lib_u8 response[5];
     lib_u8 response_count;
     lib_u8 response_index;
@@ -26,8 +30,8 @@ typedef struct x86_hdc_data {
     lib_u8 cylinder_low;
     lib_u8 cylinder_high;
     lib_u8 drive_head;
-    /* WD head extension is distinct from ATA device control. */
-    lib_u8 fixed_disk_register;
+    lib_u8 drive_heads[2];
+    lib_u8 drive_sectors_per_track[2];
     lib_u8 step_rate_selector;
     lib_u16 step_pulse_limit;
     lib_u32 step_rate_ticks;
@@ -49,7 +53,7 @@ typedef struct x86_hdc_data {
     lib_u64 next_service_tick;
     x86_hdc_phase phase;
     lib_u16 data_index;
-    lib_u8 data[512];
+    x86_hdc_record record;
 } x86_hdc_data;
 
 struct x86_hdc {

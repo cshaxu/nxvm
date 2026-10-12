@@ -29,5 +29,6 @@ lib_u8 test_board_hdc_irq_pending(const core_machine_board_state *board);
 core_machine_media_id test_board_hdc_slave_media_id(const core_machine_board_state *board);
 core_machine_hdc_config test_board_hdc_connection_config(const core_machine_board_state *board);
 lib_bool test_board_fdc_advance_due(core_machine_board_state *board);
+lib_bool test_board_fdc_finish_command_wait(core_machine_board_state *board);
 lib_bool test_board_fdc_irq_source_is_asserted(const core_machine_board_state *board);
 #endif

@@ -57,6 +57,15 @@ neighbour:
 4. CGA/EGA/CECG video and profile-selected aperture/clock/presentation routes.
 5. Cross-profile board reset, firmware, deadline and integration closure.
 
+S4's presentation-reader repair also exposes a retained S5 adapter contract
+to qualify: `core/machine` copies its ready cached frame even when no new
+display generation is available. Emulator's graphics path therefore can
+republish unchanged data; cache validity is not the same fact as pending
+delivery. S5 must reconcile that existing producer contract, preserve first
+publication/reset/paused output, and test the actual Core-to-Emulator route.
+Keep this in the Core presentation owner: no Shared API, second renderer,
+polling manager or additional guest clock is implied by the finding.
+
 The S3 original-source reconciliation assigns the complete DeskPro KBC
 speed-control class to S6's cross-device board receiver: A3/A4 selection,
 A5 no-OBF special read, auxiliary PIT counter-2 refresh trigger and CPU HOLD

@@ -25,6 +25,16 @@ dispositions, owner-local repairs and receiving evidence. Compaq speed/HOLD
 gaps retain their required S6 receiver; S3 is accepted at `2ad955473` with
 complete dual-width unit and four-App receiving proof.
 
+T555 S4: [storage source ledger](evidence/t555-s4-storage-source-ledger.md)
+records all 22 FDC/four-HDC/media/timing dispositions, original-manual hashes,
+repairs, model bounds and final dual-width qualification. Executor completion
+is distinct from pushed-diff coordinator acceptance recorded in CURRENT.
+
+T555 S4: [ECC model review](evidence/t555-s4-storage-ecc-model-review.md)
+records the owner-approved sourced L2 polynomial, encoding, bounded correction,
+media and test contracts. Its independent arithmetic checkpoints do not claim
+selected-hardware identity; runtime qualification is in the storage ledger.
+
 T553 S1: [four PC App ownership ledger](evidence/t553-s1-four-pc-app-ownership-ledger.md)
 records the complete four-App inventory, inward dependency proof, ownership
 dispositions and the one App-local receiving repair.

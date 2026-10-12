@@ -74,8 +74,26 @@ typedef enum x86_hdc_record_result {
     X86_HDC_RECORD_ABSENT,
     X86_HDC_RECORD_RANGE,
     X86_HDC_RECORD_PROTECTED,
-    X86_HDC_RECORD_FAILURE
+    X86_HDC_RECORD_FAILURE,
+    X86_HDC_RECORD_BAD_TRACK
 } x86_hdc_record_result;
+
+typedef struct x86_hdc_record {
+    lib_u8 data[512];
+    lib_u8 ecc[4];
+    lib_bool ecc_present;
+} x86_hdc_record;
+
+/* Zero-based logical IDs in physical order, not a raw on-disk byte encoding.
+ * The installed medium owns successful format metadata across chip reset. */
+typedef struct x86_hdc_track {
+    lib_u64 first_sector;
+    lib_u32 sector_count;
+    lib_u8 ids[256];
+    lib_bool bad[256];
+    lib_u8 fill;
+    lib_bool fill_payload;
+} x86_hdc_track;
 
 typedef struct x86_hdc_config {
     x86_hdc_protocol protocol;
@@ -86,7 +104,8 @@ typedef struct x86_hdc_config {
 } x86_hdc_config;
 
 /* Unit is the controller's drive selection, not a registry or file identity.
- * Read/write transfer exactly one 512-byte sector. Failed queries leave no
+ * Read/write transfer one copied record; unavailable ECC stays explicit.
+ * Only successful reads publish record bytes. Failed queries leave no
  * usable geometry. All callbacks are synchronous, non-reentrant and borrowed
  * until destroy completes; one execution owner calls this component.
  * IRQ/DRQ are level outputs, including withdrawal on reset/destruction.
@@ -94,11 +113,13 @@ typedef struct x86_hdc_config {
  * transfer. A missing signal callback leaves that output unconnected. */
 typedef struct x86_hdc_connection {
     x86_hdc_record_result (*query)(void *context, lib_u8 unit, x86_hdc_medium *out_medium);
-    x86_hdc_record_result (*read)(void *context, lib_u8 unit, lib_u64 sector, lib_u8 *data);
-    x86_hdc_record_result (*write)(void *context, lib_u8 unit, lib_u64 sector, const lib_u8 *data);
+    x86_hdc_record_result (*read)(void *context, lib_u8 unit, lib_u64 sector, x86_hdc_record *record);
+    x86_hdc_record_result (*write)(void *context, lib_u8 unit, lib_u64 sector, const x86_hdc_record *record);
     void (*irq)(void *context, lib_bool asserted);
     void (*drq)(void *context, lib_bool asserted);
     void *context;
+    x86_hdc_record_result (*format_track)(void *context, lib_u8 unit,
+        const x86_hdc_track *track);
 } x86_hdc_connection;
 
 /* Copied diagnostics, not a mutable command or scheduling interface. */

@@ -12,7 +12,8 @@ typedef enum x86_fdc_phase {
     x86_fdc_PHASE_EXECUTION_SCAN,
     x86_fdc_PHASE_EXECUTION_FORMAT,
     x86_fdc_PHASE_PENDING_COMPLETE,
-    x86_fdc_PHASE_RESULT
+    x86_fdc_PHASE_RESULT,
+    x86_fdc_PHASE_HEAD_LOAD
 } x86_fdc_phase;
 
 typedef struct {
@@ -65,8 +66,14 @@ typedef struct {
     lib_u8 observed_ready[X86_FDC_DRIVE_COUNT];
     lib_u8 ready_sense_mask;
     lib_u8 ready_poll_enabled;
+    lib_u8 head_loaded_mask;
+    lib_u8 head_unload_mask;
+    lib_u64 head_load_due_tick;
+    lib_u64 head_unload_due_tick[X86_FDC_DRIVE_COUNT];
     lib_u8 dma_byte_gate_pending;
     lib_u8 ndma_byte_gate_pending;
+    lib_bool service_pending;
+    lib_u64 service_due_tick;
     lib_u64 elapsed_ticks;
     lib_u64 next_dma_byte_tick;
     lib_u64 next_ndma_byte_tick;
@@ -78,7 +85,6 @@ struct x86_fdc {
     x86_fdc_connection connect;
     x86_fdc_timing timing;
     lib_bool reset_released;
-    lib_bool service_enabled;
     lib_bool irq;
     lib_bool drq;
 };

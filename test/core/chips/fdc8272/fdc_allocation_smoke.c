@@ -32,7 +32,7 @@ static void release(void *memory)
 int main(void)
 {
     fixture state = {.present = LIB_TRUE, .ready_mask = 0x0fu};
-    x86_fdc_timing timing = {0u, 1u, 1u, 1u, 1u};
+    x86_fdc_timing timing = {.reset_ticks = 0u, .step_numerator = 1u, .step_denominator = 1u, .fm_byte_ticks = 1u, .mfm_byte_ticks = 1u};
 
     for (lib_u8 retry = 0u; retry < 3u; ++retry) {
         fail_allocation = LIB_TRUE;
@@ -49,7 +49,6 @@ int main(void)
         timing.step_denominator = 1u;
         lib_test_assert(fixture_create(&state, &timing) == LIB_STATUS_OK);
         lib_test_assert(state.chip != LIB_NULL && live_allocations == 1u);
-        x86_fdc_set_service_enabled(state.chip, LIB_TRUE);
         x86_fdc_set_reset(state.chip, LIB_TRUE);
         fixture_command(&state, (const lib_u8[]){0x03u, 0xf0u, 0u}, 3u);
         fixture_command(&state, (const lib_u8[]){0x46u, 0u, 0u, 0u, 1u, 2u, 1u, 0u, 0u}, 9u);

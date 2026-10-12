@@ -16,6 +16,7 @@
 #include "core/machine/machine_private.h"
 #include "core/board-base/floppy_interface.h"
 #include "test/core/setup/session_ini.h"
+#include "test/core/board-base/support/controller_fixture.h"
 
 #define BOOT_TIMEOUT 180000u
 #define BOOT_POLL 10u
@@ -165,38 +166,34 @@ static lib_i32 boot_text_has(const core_machine_guest_display_frame *frame, cons
     return 0;
 }
 
-static lib_i32 boot_terminal(const vm_machine *session, const char **out_name)
+static lib_i32 boot_terminal(const core_machine_guest_display_frame *frame,
+    const char **out_name)
 {
-    core_machine_guest_display_frame frame;
     lib_size cell;
 
-    if (session == LIB_NULL || out_name == LIB_NULL ||
-        test_nxvm_machine_capture_presentation(session, &frame) !=
-            LIB_STATUS_OK || frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT) return 0;
+    if (frame == LIB_NULL || out_name == LIB_NULL ||
+        frame->kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT) return 0;
     for (cell = 0u; cell + 3u < TEXT_CELLS; ++cell) {
-        if (isalpha((lib_u8)frame.characters[cell]) && frame.characters[cell + 1u] == ':' &&
-            frame.characters[cell + 2u] == '\\' && frame.characters[cell + 3u] == '>') {
+        if (isalpha((lib_u8)frame->characters[cell]) && frame->characters[cell + 1u] == ':' &&
+            frame->characters[cell + 2u] == '\\' && frame->characters[cell + 3u] == '>') {
             *out_name = "dos-prompt";
             return 1;
         }
     }
-    if (boot_text_has(&frame, "Enter new date")) { *out_name = "date-input"; return 1; }
-    if (boot_text_has(&frame, "ENTER=Continue")) { *out_name = "installer-ready"; return 1; }
-    if (boot_text_has(&frame, "Setup is determining your system configuration")) {
+    if (boot_text_has(frame, "Enter new date")) { *out_name = "date-input"; return 1; }
+    if (boot_text_has(frame, "ENTER=Continue")) { *out_name = "installer-ready"; return 1; }
+    if (boot_text_has(frame, "Setup is determining your system configuration")) {
         *out_name = "installer-running";
         return 1;
     }
     return 0;
 }
 
-static lib_i32 boot_post_reports_keyboard_failure(const vm_machine *session)
+static lib_i32 boot_post_reports_keyboard_failure(
+    const core_machine_guest_display_frame *frame)
 {
-    core_machine_guest_display_frame frame;
-
-    return session != LIB_NULL &&
-        test_nxvm_machine_capture_presentation(session, &frame) ==
-            LIB_STATUS_OK && frame.kind == CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT &&
-        (boot_text_has(&frame, "301-Keyboard") || boot_text_has(&frame, "303-Keyboard"));
+    return frame != LIB_NULL && frame->kind == CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT &&
+        (boot_text_has(frame, "301-Keyboard") || boot_text_has(frame, "303-Keyboard"));
 }
 
 static void boot_timeout_report(const vm_machine *session, const char *name,
@@ -270,6 +267,18 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
             if (core_machine_observe_a20(session->core_machine, &a20) == LIB_STATUS_OK)
                 printf("NXVM:INI-BOOT:%s:A20=%u\n", name, (unsigned int)a20);
         }
+        {
+            x86_fdc_observation fdc;
+            if (test_board_fdc_capture(session->board, &fdc) == LIB_STATUS_OK)
+                lib_c_printf("NXVM:INI-BOOT:%s:FDC:phase=%u:msr=%02X:cmd=%02X:st=%02X/%02X/%02X:remaining=%u:result=%u/%u:irq=%u:wire=%u:drq=%u\n",
+                    name, (lib_u32)fdc.phase, (lib_u32)fdc.msr,
+                    (lib_u32)fdc.command[0], (lib_u32)fdc.st0, (lib_u32)fdc.st1,
+                    (lib_u32)fdc.st2, fdc.transfer_remaining,
+                    (lib_u32)fdc.result_index, (lib_u32)fdc.result_length,
+                    (lib_u32)fdc.irq,
+                    (lib_u32)test_board_fdc_irq_source_is_asserted(session->board),
+                    (lib_u32)fdc.drq);
+        }
         if (trace_probe != LIB_NULL) {
             const lib_u32 retained_samples = trace_probe->retirement_sample_count < 32u ?
                 trace_probe->retirement_sample_count : 32u;
@@ -280,6 +289,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                     value->eip, value->tick, value->source, value->eax,
                     (lib_u32)value->port, value->value);
             }
+#if CORE_MACHINE_RUNTIME_TRACE_ENABLED
             printf("NXVM:INI-BOOT:%s:TRACE:retired=%llu:external=%llu:port61=%llu:low=%llu:high=%llu:ports-pit=%u:last=%04X/%02X:kbc=%u:last=%04X/%02X\n",
                 name, (unsigned long long)trace_probe->cpu_retires,
                 (unsigned long long)trace_probe->external_cycle_commits,
@@ -339,6 +349,9 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                     transaction->value, transaction->kind);
             }
             printf("\n");
+#else
+            lib_c_printf("NXVM:INI-BOOT:%s:TRACE:unavailable-release-build\n", name);
+#endif
         }
         {
             const core_machine_debug_register registers[] = {
@@ -486,8 +499,11 @@ int main(int argc, char **argv)
         integration_ini_session_start(&ini_session) != LIB_STATUS_OK) goto done;
     started = GetTickCount64();
     while (GetTickCount64() - started < timeout) {
-        if (boot_post_reports_keyboard_failure(session)) keyboard_post_failure_seen = 1;
-        if (boot_terminal(session, &terminal)) break;
+        core_machine_guest_display_frame frame;
+        if (test_nxvm_machine_capture_presentation(session, &frame) == LIB_STATUS_OK) {
+            if (boot_post_reports_keyboard_failure(&frame)) keyboard_post_failure_seen = 1;
+            if (boot_terminal(&frame, &terminal)) break;
+        }
         Sleep(BOOT_POLL);
     }
     if (terminal == LIB_NULL || keyboard_post_failure_seen) {

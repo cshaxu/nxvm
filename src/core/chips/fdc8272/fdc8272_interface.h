@@ -48,6 +48,12 @@ typedef struct x86_fdc_timing {
     lib_u64 step_denominator;
     lib_u64 fm_byte_ticks;
     lib_u64 mfm_byte_ticks;
+    /* Outstanding-byte service limits, distinct from byte cadence.
+     * Zero retains a logical model without a physical overrun deadline. */
+    lib_u64 fm_read_service_ticks;
+    lib_u64 mfm_read_service_ticks;
+    lib_u64 fm_write_service_ticks;
+    lib_u64 mfm_write_service_ticks;
 } x86_fdc_timing;
 
 typedef struct x86_fdc_terminal {
@@ -107,7 +113,6 @@ lib_status x86_fdc_create(const x86_fdc_connection *connection,
 void x86_fdc_destroy(x86_fdc *fdc);
 void x86_fdc_reset(x86_fdc *fdc);
 void x86_fdc_set_reset(x86_fdc *fdc, lib_bool released);
-void x86_fdc_set_service_enabled(x86_fdc *fdc, lib_bool enabled);
 lib_status x86_fdc_set_timing(x86_fdc *fdc, const x86_fdc_timing *timing);
 lib_u8 x86_fdc_read_status(const x86_fdc *fdc);
 /* Unavailable reads leave *io_byte unchanged. */
@@ -116,6 +121,8 @@ void x86_fdc_write_data(x86_fdc *fdc, lib_u8 byte);
 void x86_fdc_dma_read(x86_fdc *fdc, lib_u8 *io_byte);
 void x86_fdc_dma_write(x86_fdc *fdc, lib_u8 byte);
 void x86_fdc_terminal_count(x86_fdc *fdc);
+/* Resample transfer inputs and republish native IRQ/DRQ levels. Board-owned
+ * output gates do not cancel chip causes or restart its service deadlines. */
 void x86_fdc_refresh(x86_fdc *fdc);
 /* Sample READY transitions into SIS causes; distinct from transfer-input
  * refresh, which aborts unavailable records without manufacturing a poll. */
