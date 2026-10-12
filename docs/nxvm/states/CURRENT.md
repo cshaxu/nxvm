@@ -3,19 +3,21 @@
 ## Current Work
 
 M5 T555 remains open: qualify retained controllers and board wiring for four
-fixed PC Apps. S1--S5 are closed; S6 copied-glyph capacity is admitted.
-Accepted runnable implementation is `3cfadc6d4`, pushed to origin/master.
-Coordinator actual-pushed-diff review accepts the complete bounded S5 batch;
-its [video source/receiver ledger](../etc/evidence/t555-s5-video-source-ledger.md)
-records original sources, repaired/retained/transferred classes and artifacts.
+fixed PC Apps. S1--S6 are closed; S7 remaining video qualification is admitted.
+Accepted runnable delivery is S6 `73d796724`, pushed to origin/master.
+The owner's instruction to admit the next S accepts the delivered S6 batch.
+Its [delivery record](../etc/evidence/t555-s6-copied-glyph-capacity.md) and
+the [video ledger](../etc/evidence/t555-s5-video-source-ledger.md) preserve
+proved boundaries and the complete remaining source/receiver classes.
 
-S5 final full units pass 546/546 x64 (218.83 seconds) and x86 (77.31 seconds).
-Four-App integrations pass 32/32 per width with original budgets. DeskPro's
-wrong scanout selector is repaired in S5, not transferred: the original boot
-receiver passes in 135.85/164.44 seconds. All eight optimized stripped 0555 PC
-EXEs are rebuilt/deployed and PE-width checked; hashes are in the ledger.
-Core manifests/corpus/Types/dependencies and documentation/whitespace pass.
-Shared-six, exact MyNES artifacts and owner INIs/disks/snapshots are unchanged.
+S6 final full units pass 591/591 per width, four-PC integrations 32/32 per
+width and MyNES integrations 12/12 per width. All ten optimized stripped
+current-version EXEs are rebuilt/deployed and PE-width checked. DeskPro's
+owner-approved boot wait is 300 seconds; final boot takes 172.91/206.06
+seconds. Prior failed attempts remain evidence. Manifests, component-local
+Types/dependencies and documentation/whitespace pass. Owner INIs, disks and
+snapshots are unchanged. Latest read-only comparison confirms both repositories'
+six Shared trees are byte-identical across all 246 files, including manifests.
 Automated desktop-labelled checks pass; no manual desktop, electrical or
 complete-video qualification is claimed.
 
@@ -26,35 +28,33 @@ remaining raster/MUX, V19 advanced text geometry, V20 Restore/blanking and V28
 retained VGA cursor bounds. S8 owns cross-profile speed/AUX-PIT/HOLD and final
 controller closure. Capacity alone cannot qualify live hardware production.
 
-## Current Task — M5 T555 S6 Shared Copied-Glyph Capacity
+## Current Task — M5 T555 S7 Remaining Video Qualification
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: next numeric S6 in open T555 after complete pushed/accepted S5 `3cfadc6d4`. |
-| Admission And Approval | Owner explicitly approved fixed 32-row glyph slots and directed separate S6 after repaired S5. On 2026-10-12 the owner additionally required explicit DEFAULT names, actual slot names without MAX, a shared coding rule and a six-tree naming audit/repair proposal. Single-person sequential coordinator/executor. Owner subsequently approved the three bounded repairs: KVM Base owns the default text font height; Console line storage uses CAPACITY; Debug argument storage uses CAPACITY and the unused assembler-argument constant is deleted. All other audit candidates remain report-only; siblings remain read-only. |
-| Objective | Transport/render glyph rows 0--31 without changing the existing default height 16, copied ownership, single rendering path or product UX; adapt Core consumers safely and qualify all five Apps on both widths. |
-| Reference Baseline | Accepted S5 `3cfadc6d4`; the approved glyph review in `etc/evidence/t555-s5-video-boundary-review.md`. |
-| Candidate Proposal | [Selected controller qualification](../proposals/m5-selected-controller-qualification.md), the admitted S6 copied-capacity batch; [glyph review](../etc/evidence/t555-s5-video-boundary-review.md). |
-| Files And ABI Surface | Shared: existing Lib Window frame/render/geometry/README, their tests, two Emulator publication-test glyph indexes and affected manifests; KVM Base/Console default-height callers, Console/broker line-capacity callers and x86 Debug's private argument constant/direct test. Shared Coding rule is delivered independently by accepted Td S178 ccca1540a. NXVM: Core copied snapshot/capture/converter/preparation, actual Core/App glyph consumers/tests, eight PC artifacts and NXVM evidence including the six-tree constant audit. MyNES: receiving qualification and its two current artifacts; no planned MyNES production change. Each P has exactly one target. |
-| Design Contract | Keep the KVM Base-owned `KVM_TEXT_FONT_DEFAULT_HEIGHT=16` and zero-height default. Add `KVM_WINDOW_FONT_HEIGHT=32`; both existing arrays use fixed 256-by-32 slots and renderer uses that stride. Explicit heights 1--32 are valid, 33 is rejected. Core construction font remains normalized 256-by-16; per-glyph copies pad the enlarged output, never read 8192 bytes from a 4096-byte input. A copied bitmap-height fact describes actual supplied glyph data, separate from CRTC cell/cursor geometry; unchanged normalized producers retain height 16 until live font work in S7. |
-| Public Boundary | One Base-owned default-height constant, actual Window slot height and enlargement of existing arrays; obsolete default/capacity names are removed, not aliased. No new Shared function/type/state. Existing Core snapshot capacity/height facts and converter are adapted under the approved review. No dynamic packed stride, second renderer/cache/framebuffer, thread, queue or compatibility wrapper. |
-| Non-goals | No additional raster/clock/keyboard/storage/lifecycle changes, no real live-font qualification from synthetic capacity tests, no sibling edits, protected asset import, owner INI/media/snapshot changes or MyNES semantic rewrite. |
-| Applicable Rules | NXVM/MyNES guides and active receiving packets, shared Execution/Architecture/Coding/Document, affected product architecture/coding/source policies, approved boundary/source ledgers and architecture/coding governance review. |
-| Estimated Diff | Shared production C/H +8..16/-5..10; Core production +25..55/-12..30; existing Shared/Core receiving tests +80..140/-15..35. Approved three-name batch estimates +9/-8 for default ownership, +7/-7 for Console capacity and +4/-5 for Debug capacity/dead definition, plus manifests. Report measured additions/deletions/net, helpers/state/API necessity and actual exceptions; do not treat estimates as qualification. |
-| Verification | Existing tests cover zero/default, heights 1--32, 8/14/16/24/32, both banks, last glyph/last row, reject 33, copied size/damage/cursor and normalized-input padding. Validate all six manifests and component-local Types/dependency/owner gates. Complete Shared/Core/PC units plus MyNES units per width, selected four-PC and MyNES integrations per width; build/deploy all ten optimized current-version EXEs in original Ninja/ccache trees with shared objects/cache reuse and PE/hash checks. Report automated native desktop versus unexecuted manual desktop separately. |
-| Expected Markers | CTest reports zero failed tests for each qualified selection; all six manifests and affected Core ownership gates report OK; artifact deployment reports matching x64/x86 PE architecture. A timeout or unavailable asset is not a successful integration. |
-| Asset Needs | Existing owner-provided embedded firmware and external integration media only; no import or mutation. Deploy eight 0555 PC and two current 0044 MyNES EXEs, preserving INIs, disks and snapshots. |
-| Reporting Requirements | Report actual source/test additions, deletions and net change, each scoped pushed P, artifact hashes, failed attempts and final qualification separately; do not count manual desktop or complete hardware qualification as executed. |
-| Similar-Issue Sweep | Inspect every copied-font producer, consumer, slot index and capacity test; distinguish 16-row construction storage from 32-row copied slots. Check both glyph banks, highest valid indexes and invalid-input preservation; scan all consumers for the three obsolete constant names and unnamed zero-height defaults. Preserve genuine protocol/numeric/platform bounds and the original Debug table style. |
-| Exit Criteria | Frozen full dual-width qualification, all ten artifacts, public-six actual-diff quality review, updated manifests/evidence, target-scoped complete P commits immediately pushed. After commit/push, perform a final code-quality and actual-immutable-diff audit. S6 remains open until owner acceptance; T stays open, no S7 auto-admission before that feedback. |
-| Stop Conditions | Report any need beyond the approved Shared boundary, unsupported font data invention, timing downgrade, second owner, protected/user-file mutation or unrelated App change. A test failure is not a pass or an excuse to transfer mandatory S6 qualification. |
-| Original Owner Request | Close repaired S5 first; admit the approved glyph-capacity change separately, complete code/tests/full qualification/ten artifacts/commit/push, then perform post-push quality audit and wait for acceptance. |
+| Identifier Mode | Continuation: next unused S7 in open T555 after accepted and pushed S6 `73d796724`; no task-level closure or new T. |
+| Admission And Approval | Owner instructs admission of the next S after S6 delivery and the successful read-only Shared comparison. This accepts S6 and admits the already planned remaining video batch. Single-person sequential coordinator/executor; NXVM target only. Standing approval covers Core repairs; new Shared changes or timing downgrades require separate review. |
+| Objective | Reconcile and repair the complete residual V08/V09/V17/V18/V19/V20/V28 video batch, with original-source facts and real chip-to-board-to-Machine receiving proof. A 32-row transport or successful DOS boot alone does not qualify live hardware. |
+| Reference Baseline | Accepted S6 `73d796724`; S5's complete V01--V28 source/receiver ledger and the approved Core video boundary review. |
+| Candidate Proposal | [Selected controller qualification](../proposals/m5-selected-controller-qualification.md), remaining-video S7; [video ledger](../etc/evidence/t555-s5-video-source-ledger.md), complete transferred residual classes. |
+| Files And ABI Surface | NXVM only: existing src/core/chips/video, relevant core/board-base and core/machine consumers, selected App profile/project-firmware inputs only when source reconciliation proves the need, their matching tests, Core manifests, NXVM evidence and affected PC EXEs. Reuse current 32-row copied snapshots and existing IRQ/deadline/capture-result interfaces. No Shared source/test/build or MyNES change is admitted. |
+| Non-goals | No CPU, storage, keyboard, unrelated lifecycle/monitor change; no S8 speed/AUX-PIT/HOLD work, new card/model, second framebuffer/scheduler/renderer, sibling edit, protected-file import, owner INI/media/snapshot mutation or inferred physical timing grade. The publication stack-cost observation is not this video qualification's implementation scope. |
+| Applicable Rules | NXVM guide, Contributing, shared Execution/Architecture/Coding/Document; NXVM architecture/coding/UI and source policy; selected-controller proposal, S5 video ledger and approved video boundary review. Read the originals for each consumed fact before implementation. |
+| Design Contract | Chip owns VRAM/register/raster/font/reset; board owns decode, source-clock and IRQ wiring; Machine owns copied publication. Live font selection consumes actual plane-2 VRAM with source-specific EGA/CECG bank addresses and fixed 32-byte glyph slots. Preserve CGA and nonselected VGA distinctions, failure atomicity, one deadline owner and existing product UX. |
+| Estimated Diff | Admission changes NXVM status/history/queue only. Before any production edit, reconcile all seven residual classes, name exact files and source tiers, and report per-mechanism expected additions/deletions/net plus interface/state necessity. The residual audit is a prerequisite, not a partial implementation P or a claimed repair. |
+| Verification | Establish current owner-local regression baseline; prove each changed fact through chip and real board/Machine routes, including reset, failure preservation and both font banks. Reuse original x64/x86 Ninja/ccache trees and component objects. Final complete repository units and selected four-PC integrations pass once per width; preserve DeskPro 300-second startup budget. Update relevant manifests and run Types/corpus/dependency/test-owner/documentation gates. |
+| Expected Markers | Every residual row has direct accepted proof or an explicitly reviewed source-bound disposition; final selected CTest groups have zero failures, Core gates pass and deployed affected PC EXEs have correct PE widths and matching hashes. Timeout, skipped asset and stored-but-unconsumed registers are not qualification success. |
+| Asset Needs | Read existing external original manuals/firmware/media under source policy; no new protected import or mutation. Rebuild/deploy affected optimized stripped 0555 PC x64/x86 pairs after production edits; preserve the exact MyNES pair when its executable inputs are unchanged. |
+| Reporting Requirements | First report full residual inventory, source conflicts, design, file surface and estimated diff before production edits. Then report named mechanism progress and final actual C/H additions/deletions/net, retained paths/state, complete proof, artifacts and pushed P. Separate automated native checks from unexecuted manual/electrical qualification. |
+| Similar-Issue Sweep | Sweep selected CGA/EGA/CECG and retained VGA register consumers for RAM/clock/reset gates, live font address/height/bank, raster/status/IRQ, panning/split/stride and Restore/blanking priority. Map every relevant caller and test oracle to the ledger; preserve valid variant differences rather than copying generic EGA rules into CECG/VGA. |
+| Exit Criteria | Exhaust the complete admitted residual batch against sources/current code and real receivers; freeze dual-width final units/integration and current affected PC pairs, updated manifests/evidence, complete scoped implementation P immediately pushed, coordinator actual-diff review and truthful S closure. T555 stays open for S8. No partial vectors or later boot checkpoint may hide an unresolved class. |
+| Stop Conditions | Report any Shared requirement, timing downgrade, unsupported source invention, reversed ownership, second execution/display path, protected/user-file mutation or material scope expansion. Source uncertainty requires an explicit model/disposition, not a silent implementation guess. |
+| Original Owner Request | Admit the next S after delivery/acceptance of S6; continue the approved T555 sequence with residual video qualification and preserve the completed Shared copied-glyph contract. |
 
 Td S178 is closed: coordinator actual-pushed-diff review accepts the 18-line
 shared rule in `ccca1540a`; NXVM/MyNES documentation and whitespace checks
-pass. This governance-only step changes no executable input. S6 resumes with
-the owner's three bounded naming/ownership repairs, complete receiving build/
-test/publication requirements and explicit owner-acceptance gate intact.
+pass. Its default/dimension/capacity rule remains applicable to S7; this
+admission changes no executable input.
 
 ## Retained Progress
 
@@ -80,12 +80,13 @@ and whitespace checks pass after push; changed Shared files remain LF.
 The final selected manifest/Types/corpus/DAG/naming/boundary regressions pass
 34/34 per width (63.11/68.31 seconds); actual P deltas and qualification logs
 are recorded in the [S6 evidence](../etc/evidence/t555-s6-copied-glyph-capacity.md).
-S6 is delivered but remains open for owner acceptance; T555 stays open and
-S7 is not admitted. Manual desktop and complete live-font/electrical
+The owner's next-S admission accepts and closes S6; T555 stays open and
+S7 is admitted. Manual desktop and complete live-font/electrical
 qualification remain unexecuted, not inferred from automated tests.
 
 | Work | Progress |
 | --- | --- |
+| T555 S6 | Closed: owner accepts the delivered batch by directing next-S admission. Actual pushed-diff review accepts P1--P5 through `73d796724`; full units 591/591, PC integrations 32/32 and MyNES integrations 12/12 per width, ten current artifacts and final owner gates pass. Public six trees are subsequently verified byte-identical to SoftPC across 246 files. Live video remains S7, cross-profile closure S8; no complete electrical or hardware claim is added. |
 | T555 S4 | Complete: coordinator actual-pushed-diff review accepts `44340d5c1`. All 22 storage rows have source/model and direct/receiving dispositions; complete units 546/546 per width and four-App integration 32/32 per width pass with unchanged budgets. Eight optimized stripped 0555 PC artifacts match current build outputs; Core/documentation gates pass. Source C/H +1589/-341, test C/H +3795/-250. Bound-executor readers use published frames and private Console tests search emitted backing rows without old-output false positives. Physical raw-ID/check-wire/circuit timing limits, narrow DeskPro x86 margin, S5 publication contract and S6 speed/HOLD remain explicit. Shared-six, MyNES, INIs and masters unchanged. |
 | T553 S1 | Complete: the ownership ledger records all four source/test/CMake/asset roots, no cross-App edge, valid machine-specific distinctions and one narrow MyDeskPro386 CMake duplicate for S2. Default x64/x86 configuration passes all four App/test boundaries and selected-composition proof. |
 | T553 S2 | Complete: removed MyDeskPro386's duplicated private `core-machine` link item. Its x64/x86 plan smoke, boundary configure and documentation governance pass; no executable input changed. |

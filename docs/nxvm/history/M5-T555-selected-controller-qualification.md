@@ -102,8 +102,23 @@ checked; owner INIs, media and snapshots remain unchanged. See
 [S6 delivery evidence](../etc/evidence/t555-s6-copied-glyph-capacity.md) and
 [six-tree naming audit](../etc/evidence/t555-s6-shared-constant-naming-audit.md).
 Automated native desktop checks pass; no manual desktop or complete live
-font/electrical qualification is claimed. S6 waits for owner acceptance after
-its actual-pushed-diff audit; T555 stays open and S7 is not admitted.
+font/electrical qualification is claimed. The owner's next-S admission accepts
+the delivered S6 batch after its actual-pushed-diff audit. S6 closes; T555
+stays open and S7 is admitted.
+
+## S7 Admission
+
+S7 consumes the complete transferred V08/V09/V17/V18/V19/V20/V28 batch,
+not the first subsequent guest failure. It starts with original-source and
+current-path reconciliation of RAM gating, clock/reset consumers, live
+plane-2 fonts, raster/status/IRQ, panning/split/stride, CECG Restore/blanking
+and retained VGA regression limits. Report exact file surface, necessary
+interfaces/state and expected diff before production edits. Core owns the
+repair; Shared six, MyNES and sibling repositories stay read-only.
+Final dual-width repository units, four-PC integrations, affected 0555 pairs
+and actual-diff acceptance remain required. DeskPro retains the approved
+300-second startup wait. T555 stays open for S8; admission alone changes no
+executable input and does not justify new binaries or runtime qualification.
 
 ## Original Audit Frozen Boundaries
 
