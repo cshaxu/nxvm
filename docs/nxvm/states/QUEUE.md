@@ -9,7 +9,8 @@ is closed after owner Console/Window acceptance; its archived proposal remains
 with the task history. The first candidate, [selected-controller and board
 qualification](../proposals/m5-selected-controller-qualification.md), is
 admitted as T555; S1's current-path inventory and S2 PIC/PIT/DMA batch are
-complete. S3 RTC/keyboard and S4 storage are accepted; S5 video is next. `CURRENT.md`
+complete. S3 RTC/keyboard, S4 storage and bounded S5 video are accepted;
+S6 copied-glyph capacity is admitted. `CURRENT.md`
 owns admission and status.
 
 The [T547 SoftPC optimization and consolidation proposal](../history/M5-T547-softpc-four-test-optimization-import-proposal.md)

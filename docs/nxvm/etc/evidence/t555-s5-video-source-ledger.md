@@ -2,6 +2,21 @@
 
 ## Baseline And Review State
 
+### Coordinator Actual-Pushed-Diff Acceptance
+
+Coordinator review accepts complete implementation `3cfadc6d4`, pushed to
+origin/master. The immutable 91-file diff contains only the admitted NXVM
+Core/video/Board/Machine, selected App construction/project firmware, their
+receivers, NXVM evidence/manifests and eight 0555 artifacts. Actual changed
+public boundaries match the owner-approved Core snapshot, IRQ/deadline and
+capture-result review. No Shared-six, MyNES or owner INI/media/snapshot file
+is changed. Earlier failed receivers have explicit repairs and final proof;
+the new GC selector has original-page and independent direct/receiving proof.
+
+This review accepts bounded S5, not complete V01--V28 or physical video/timing.
+All residual classes retain the S6/S7/S8 owners recorded below. S5 closes;
+the separately approved Shared glyph-capacity S6 may now be admitted.
+
 ### Final S5 Executor Qualification, 2026-10-12
 
 The frozen corrected candidate passes complete repository-only units 546/546

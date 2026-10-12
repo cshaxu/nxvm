@@ -64,6 +64,16 @@ remains open for S4--S6.
 
 ## Remaining Ordered S Work
 
+Bounded S5 implementation `3cfadc6d4` is pushed and accepted after actual-diff
+review. Complete units pass 546/546 per width and four-App integrations 32/32
+per width; DeskPro's GC scanout-selection failure is repaired in S5 and passes
+within its original 180-second budget. Eight optimized stripped 0555 PC EXEs
+are deployed and checked; Shared-six, MyNES and owner files are unchanged.
+Source C/H +632/-276, tests +2470/-286, project firmware +129/-4. Remaining
+video classes are explicitly transferred, not qualified. S6 is now admitted
+for the already-approved Shared copied-glyph capacity and ten-App-artifact
+qualification; owner acceptance is required after its delivery.
+
 | S | Boundary | Exit condition |
 | --- | --- | --- |
 | S4 | FDC/media and HDC personalities | Each selected controller/media route has an explicit grammar, request/IRQ/DMA consumer and reset/deadline disposition. |
