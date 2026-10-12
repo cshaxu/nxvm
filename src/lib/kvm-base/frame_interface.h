@@ -14,6 +14,7 @@
  * cell fallback. Console approximates the visible height, not its position. */
 #define KVM_TEXT_COLUMNS 80u
 #define KVM_TEXT_ROWS 50u
+#define KVM_TEXT_FONT_DEFAULT_HEIGHT 16u
 
 typedef struct kvm_text_cell {
     lib_u8 glyph_index;

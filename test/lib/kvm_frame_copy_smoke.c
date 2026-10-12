@@ -5,6 +5,10 @@
 #include "lib/console/console_interface.h"
 #include "lib/kvm-base/event_interface.h"
 
+#if defined(KVM_WINDOW_FONT_DEFAULT_HEIGHT) || defined(KVM_WINDOW_FONT_MAX_HEIGHT) || defined(LIB_CONSOLE_LINE_MAX)
+#error "Retired default/capacity names must not be exported"
+#endif
+
 #define ASSERT_BOOLEAN(type, member) \
     _Static_assert(_Generic(((type *)0)->member, lib_bool: 1, default: 0), \
         #type "." #member " must use the boolean value contract")
@@ -30,6 +34,7 @@ _Static_assert(lib_offsetof(kvm_text_cell, background) == 3u, "background offset
 static void check_validation(void)
 {
     kvm_console_text_frame text = {0};
+    lib_test_assert(KVM_TEXT_FONT_DEFAULT_HEIGHT == 16u);
     source = (kvm_window_frame){0};
     lib_test_assert(kvm_window_frame_validate(LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_INVALID_ARGUMENT);
@@ -37,14 +42,18 @@ static void check_validation(void)
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_INVALID_ARGUMENT);
     source.text.base.text_columns = source.text.base.text_rows = 1u;
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_OK);
-    source.text.base.font_height = KVM_WINDOW_FONT_HEIGHT;
+    source.text.base.font_height = KVM_TEXT_FONT_DEFAULT_HEIGHT;
     source.text.base.text_columns = KVM_TEXT_COLUMNS;
     source.text.base.text_rows = KVM_TEXT_ROWS;
     source.text.base.cursor_visible = LIB_TRUE;
     source.text.base.cursor_column = -1;
     source.text.base.cursor_row = 500;
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_OK);
-    source.text.base.font_height++;
+    for (lib_u32 height = 1u; height <= KVM_WINDOW_FONT_HEIGHT; ++height) {
+        source.text.base.font_height = height;
+        lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_OK);
+    }
+    source.text.base.font_height = KVM_WINDOW_FONT_HEIGHT + 1u;
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_UNSUPPORTED);
     text.base = source.text.base; /* Console does not own bitmap bounds. */
     lib_test_assert(kvm_console_text_frame_validate(&text) == LIB_STATUS_OK);
@@ -105,7 +114,7 @@ int main(void)
 {
     lib_u32 generation, old;
     lib_test_assert(sizeof(kvm_text_frame) == 16084);
-    lib_test_assert(sizeof(kvm_window_text_frame) == 24276);
+    lib_test_assert(sizeof(kvm_window_text_frame) == 32468);
     lib_test_assert(sizeof(kvm_console_text_frame) == 17108);
     lib_test_assert(sizeof(kvm_window_frame) == 984080);
     check_validation();

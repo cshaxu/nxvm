@@ -35,8 +35,10 @@ timeout remains; native move/size/menu loops dispatch the same timer message.
 Timer startup/transition failures use the existing failure path. Native Window
 timer delivery advances the original 250ms phase grid, including missed periods;
 it does not restart a new 250ms interval at every delayed message. Text glyphs
-and cursor geometry use the same frame font height (8/14/16 rows, 16-row storage
-stride), so a short glyph is not drawn above an unrelated 16-row cursor cell.
+and cursor geometry use the same active frame font height (1--32 rows), with
+a fixed 32-byte glyph-slot stride. Zero height uses the Base-owned
+`KVM_TEXT_FONT_DEFAULT_HEIGHT` (16), so a short glyph is not drawn above an
+unrelated default-height cursor cell.
 Native Window destruction removes its timer; stale queued ticks cannot bypass
 frozen/due checks.
 Checked destroy uses the shared 5000 ms join contract; a failed join retains the

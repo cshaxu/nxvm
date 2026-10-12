@@ -17,7 +17,7 @@
 
 typedef struct lib_console lib_console;
 
-#define LIB_CONSOLE_LINE_MAX 1024u
+#define LIB_CONSOLE_LINE_CAPACITY 1024u
 
 typedef enum lib_console_event_kind {
     LIB_CONSOLE_EVENT_RAW_KEY,
@@ -66,7 +66,7 @@ typedef struct lib_console_raw_mouse {
 
 typedef struct lib_console_line {
     lib_u32 length;
-    char text[LIB_CONSOLE_LINE_MAX];
+    char text[LIB_CONSOLE_LINE_CAPACITY];
 } lib_console_line;
 
 typedef struct lib_console_event {

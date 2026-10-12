@@ -193,8 +193,8 @@ static void rendering(void)
     /* A short visible row still has an 80-cell storage stride. */
     lib_u32 grid[16u * 32u];
     text.text.base.text_columns = text.text.base.text_rows = 2;
-    text.text.font[3u * 16u] = 0x80;
-    text.text.secondary_font[5u * 16u] = 0x40;
+    text.text.font[3u * KVM_WINDOW_FONT_HEIGHT] = 0x80;
+    text.text.secondary_font[5u * KVM_WINDOW_FONT_HEIGHT] = 0x40;
     for (lib_u32 row = 0; row < 2; ++row) {
         for (lib_u32 column = 0; column < 2; ++column) {
             lib_u8 fg = (lib_u8)(1u + row * 4u + column * 2u);
@@ -224,8 +224,8 @@ static void text_coverage(void)
     frame.text.base.text_palette[1] = 0x123456u;
     frame.text.base.text_palette[2] = 0xabcdefu;
     for (lib_u32 scan = 0; scan < KVM_WINDOW_FONT_HEIGHT; ++scan) {
-        frame.text.font[16u + scan] = 0x55u;
-        frame.text.secondary_font[16u + scan] = 0xaau;
+        frame.text.font[KVM_WINDOW_FONT_HEIGHT + scan] = 0x55u;
+        frame.text.secondary_font[KVM_WINDOW_FONT_HEIGHT + scan] = 0xaau;
     }
     for (lib_u32 i = 0; i < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++i)
         frame.text.base.cells[i] = (kvm_text_cell){ (lib_u8)(i % 2u),
@@ -235,7 +235,7 @@ static void text_coverage(void)
         frame.text.base.text_rows = rows[grid];
         for (lib_u32 font_height = 0; font_height <= KVM_WINDOW_FONT_HEIGHT; ++font_height) {
             lib_u32 width = columns[grid] * 8u;
-            lib_u32 cell_height = font_height ? font_height : KVM_WINDOW_FONT_HEIGHT;
+            lib_u32 cell_height = font_height ? font_height : KVM_TEXT_FONT_DEFAULT_HEIGHT;
             lib_u32 height = rows[grid] * cell_height;
             lib_size count = (lib_size)width * height;
             frame.text.base.font_height = font_height;
@@ -253,6 +253,36 @@ static void text_coverage(void)
                 lib_test_assert(guarded[i + 1u] == (foreground ? 0x123456u : 0xabcdefu));
             }
         }
+    }
+    /* Last slot/last scanline and a 24-row bitmap retain the fixed stride. */
+    {
+        const lib_size last = (KVM_WINDOW_FONT_GLYPHS - 1u) * KVM_WINDOW_FONT_HEIGHT;
+        kvm_window_frame tall = {.valid = LIB_TRUE};
+        tall.text.base.text_columns = tall.text.base.text_rows = 1u;
+        tall.text.base.font_height = KVM_WINDOW_FONT_HEIGHT;
+        tall.text.base.cells[0] = (kvm_text_cell){255u, 0u, 1u, 2u};
+        tall.text.base.text_palette[1] = 0x123456u;
+        tall.text.base.text_palette[2] = 0xabcdefu;
+        tall.text.font[last + 31u] = 0x80u;
+        tall.text.secondary_font[last + 31u] = 0x40u;
+        valid = LIB_FALSE;
+        lib_test_assert(kvm_window_render_frame(&tall, guarded + 1u, 8u, 32u, &valid, &changed));
+        lib_test_assert(guarded[1u + 31u * 8u] == 0x123456u &&
+            guarded[2u + 31u * 8u] == 0xabcdefu);
+        lib_test_assert(!kvm_window_render_frame(&tall, guarded + 1u, 8u, 32u, &valid, &changed));
+        tall.text.base.cells[0].glyph_bank = 1u;
+        lib_test_assert(kvm_window_render_frame(&tall, guarded + 1u, 8u, 32u, &valid, &changed));
+        lib_test_assert(changed.top == 31 && changed.bottom == 32 &&
+            changed.left == 0 && changed.right == 2 &&
+            guarded[1u + 31u * 8u] == 0xabcdefu &&
+            guarded[2u + 31u * 8u] == 0x123456u);
+        tall.text.base.font_height = 24u;
+        tall.text.base.cells[0].glyph_bank = 0u;
+        tall.text.font[last + 20u] = 0x80u;
+        valid = LIB_FALSE;
+        lib_test_assert(kvm_window_render_frame(&tall, guarded + 1u, 8u, 24u, &valid, &changed));
+        lib_test_assert(guarded[1u + 20u * 8u] == 0x123456u &&
+            guarded[1u + 19u * 8u] == 0xabcdefu);
     }
     /* Equal pixel extents still compare all rows when the cell grid changes. */
     frame.text.base.text_rows = 25;
@@ -280,7 +310,7 @@ static void text_coverage(void)
     lib_test_assert(guarded[1] == sentinel);
     frame.valid = LIB_FALSE;
     lib_test_assert(!kvm_window_render_frame(&frame, guarded + 1, KVM_TEXT_COLUMNS * 8u,
-        KVM_TEXT_ROWS * KVM_WINDOW_FONT_HEIGHT, &valid, &changed));
+        KVM_TEXT_ROWS * KVM_TEXT_FONT_DEFAULT_HEIGHT, &valid, &changed));
     lib_test_assert(guarded[1] == sentinel);
 }
 int main(void) { damage(); motion(); rendering(); text_coverage(); return 0; }

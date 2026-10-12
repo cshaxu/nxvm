@@ -5,7 +5,7 @@ lib_bool kvm_window_frame_size(const kvm_window_frame *frame, lib_u32 *width, li
     if (kvm_window_frame_validate(frame) != LIB_STATUS_OK || !width || !height) return LIB_FALSE;
     *width = frame->graphics ? frame->image.width : frame->text.base.text_columns * 8u;
     *height = frame->graphics ? frame->image.height : frame->text.base.text_rows *
-        (frame->text.base.font_height != 0u ? frame->text.base.font_height : KVM_WINDOW_FONT_HEIGHT);
+        (frame->text.base.font_height != 0u ? frame->text.base.font_height : KVM_TEXT_FONT_DEFAULT_HEIGHT);
     return LIB_TRUE;
 }
 
@@ -25,7 +25,7 @@ lib_bool kvm_window_render_frame(const kvm_window_frame *frame, lib_u32 *pixels,
 {
     kvm_window_rect damage = {(lib_i32)width, (lib_i32)height, 0, 0};
     lib_u32 row;
-    lib_u32 frame_width, frame_height, cell_height = KVM_WINDOW_FONT_HEIGHT;
+    lib_u32 frame_width, frame_height, cell_height = KVM_TEXT_FONT_DEFAULT_HEIGHT;
 
     if (!pixels || !valid || !changed ||
         !kvm_window_frame_size(frame, &frame_width, &frame_height) ||

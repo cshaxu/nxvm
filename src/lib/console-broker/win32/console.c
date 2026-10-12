@@ -222,7 +222,7 @@ static lib_win32_dword LIB_WIN32_WINAPI console_broker_reader(void *context)
 {
     console_broker_backend *backend = (console_broker_backend *)context;
     if (backend->mode == CONSOLE_BROKER_COOKED_LINES) {
-        char text[LIB_CONSOLE_LINE_MAX];
+        char text[LIB_CONSOLE_LINE_CAPACITY];
         lib_console_event event = { 0 };
         lib_bool overflow = LIB_FALSE, complete = LIB_FALSE;
         /* ReadConsole may return a buffer fragment rather than a whole line.
@@ -230,7 +230,7 @@ static lib_win32_dword LIB_WIN32_WINAPI console_broker_reader(void *context)
         while (!complete) {
             lib_win32_dword read = 0u, i;
             if (!lib_win32_read_console_a(backend->input, text,
-                    LIB_CONSOLE_LINE_MAX - 1u, &read, LIB_NULL) || read == 0u) {
+                    LIB_CONSOLE_LINE_CAPACITY - 1u, &read, LIB_NULL) || read == 0u) {
                 if (lib_win32_wait_for_single_object(backend->stop_event, 0u) !=
                         LIB_WIN32_WAIT_OBJECT_0)
                     lib_win32_interlocked_exchange(&backend->cooked_line_pending, 0);
@@ -243,7 +243,7 @@ static lib_win32_dword LIB_WIN32_WINAPI console_broker_reader(void *context)
             for (i = 0u; i < read; ++i) {
                 if (text[i] == '\n') { complete = LIB_TRUE; break; }
                 if (text[i] == '\r') continue;
-                if (event.value.line.length == LIB_CONSOLE_LINE_MAX - 1u)
+                if (event.value.line.length == LIB_CONSOLE_LINE_CAPACITY - 1u)
                     overflow = LIB_TRUE;
                 else event.value.line.text[event.value.line.length++] = text[i];
             }

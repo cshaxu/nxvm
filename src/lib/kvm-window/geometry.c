@@ -117,7 +117,7 @@ lib_bool kvm_window_cursor_rect(const kvm_window_frame *frame, const kvm_window_
     cursor->right = display->left+(lib_i32)((lib_i64)(frame->text.base.cursor_column+1)*width/frame->text.base.text_columns);
     cursor->top = display->top+cell_top;
     cursor->bottom = display->top+cell_bottom;
-    font_height = frame->text.base.font_height ? frame->text.base.font_height : KVM_WINDOW_FONT_HEIGHT;
+    font_height = frame->text.base.font_height ? frame->text.base.font_height : KVM_TEXT_FONT_DEFAULT_HEIGHT;
     if (frame->text.base.cursor_bottom >= frame->text.base.cursor_top) {
         top = frame->text.base.cursor_top;
         if (top >= font_height) return LIB_FALSE;

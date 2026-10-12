@@ -226,6 +226,13 @@ storage to at least 80 columns and the frame's active rows; it preserves the
 host viewport, font fit and scroll position. Lower rows left by a taller frame
 are cleared within the 50-row capacity. A failed or silently ineffective backing
 resize returns IO_ERROR, not success.
+
+Window bitmap fonts use two copied banks of 256 fixed 32-byte glyph slots.
+The active glyph height is 1--32; zero uses the KVM Base-owned
+`KVM_TEXT_FONT_DEFAULT_HEIGHT` (16), also consumed by Console.
+Glyph slot stride is always 32, independent of active height. Producers pad
+unused rows; the renderer reads only the active rows. Console carries no bitmap.
+
 The broker alone sequences deactivation, including failed initial activation.
 Backend disposal frees inactive resources without repeating mode restoration
 or reader retirement. KVM Console disposal similarly follows its worker's sink

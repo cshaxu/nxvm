@@ -597,10 +597,10 @@ int main(void)
     after.characters.secondary[65] = 0x2665u;
     lib_test_assert(emulator_machine_text_frame_changed(&before, &after));
     before = after;
-    after.window.text.font[65 * 16] = 0xffu;
+    after.window.text.font[65u * KVM_WINDOW_FONT_HEIGHT] = 0xffu;
     lib_test_assert(emulator_machine_text_frame_changed(&before, &after));
     before = after;
-    after.window.text.secondary_font[65 * 16] = 0x81u;
+    after.window.text.secondary_font[65u * KVM_WINDOW_FONT_HEIGHT] = 0x81u;
     lib_test_assert(emulator_machine_text_frame_changed(&before, &after));
     check(BASE_SYNC_WAIT_FAULT, 0u);
     check(BASE_SYNC_WAIT_INVALID_ARGUMENT, 0u);

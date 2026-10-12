@@ -13,6 +13,10 @@ static void cancel(emulator_machine *machine) { (void)machine; }
 #define emulator_machine_debug_cancel cancel
 #include "x86/debug/command.c"
 
+#if defined(DEBUG_MAXNARG) || defined(DEBUG_MAXNASMARG)
+#error "Retired Debug capacity names must not remain"
+#endif
+
 int main(void)
 {
     x86_debug *command;
@@ -50,14 +54,15 @@ int main(void)
     command->command_buffer[255] = '\0';
     parse(command);
     lib_test_assert(command->argument_count == 128u && command->arguments[128] == LIB_NULL);
-    lib_test_assert(sizeof(command->arguments) == DEBUG_MAXNARG * sizeof(char *));
+    lib_test_assert(X86_DEBUG_ARGUMENT_CAPACITY == 256u);
+    lib_test_assert(sizeof(command->arguments) == X86_DEBUG_ARGUMENT_CAPACITY * sizeof(char *));
     lib_test_assert(x86_debug_submit_line(command, "v", &result) == LIB_STATUS_OK);
     x86_debug_close(command);
     x86_debug_close(command);
     lib_test_assert(x86_debug_submit_line(command, "?", &result) == LIB_STATUS_INVALID_ARGUMENT);
     lib_test_assert(x86_debug_open(command, (emulator_machine *)command) == LIB_STATUS_OK);
     lib_test_assert(allocations == 1u && command->argument_count == 0u);
-    for (lib_u32 i = 0u; i < DEBUG_MAXNARG; ++i) lib_test_assert(command->arguments[i] == LIB_NULL);
+    for (lib_u32 i = 0u; i < X86_DEBUG_ARGUMENT_CAPACITY; ++i) lib_test_assert(command->arguments[i] == LIB_NULL);
     lib_test_assert(x86_debug_submit_line(command, "?", &result) == LIB_STATUS_OK);
     lib_test_assert(lib_text_find_substring(result.text, "assemble") && lib_text_compare(result.prompt, "-") == 0);
     x86_debug_destroy(command);

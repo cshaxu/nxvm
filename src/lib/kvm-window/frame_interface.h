@@ -7,11 +7,12 @@
 #define KVM_WINDOW_GRAPHICS_MAX_HEIGHT 768u
 #define KVM_WINDOW_GRAPHICS_MAX_PIXELS (KVM_WINDOW_GRAPHICS_MAX_WIDTH * KVM_WINDOW_GRAPHICS_MAX_HEIGHT)
 #define KVM_WINDOW_GRAPHICS_PALETTE_ENTRIES 256u
-#define KVM_WINDOW_FONT_HEIGHT 16u
+#define KVM_WINDOW_FONT_HEIGHT 32u
 #define KVM_WINDOW_FONT_GLYPHS 256u
 
 typedef struct kvm_window_text_frame {
     kvm_text_frame base;
+    /* Fixed slot stride; active height (zero defaults to 16) is in base. */
     lib_u8 font[KVM_WINDOW_FONT_GLYPHS * KVM_WINDOW_FONT_HEIGHT];
     lib_u8 secondary_font[KVM_WINDOW_FONT_GLYPHS * KVM_WINDOW_FONT_HEIGHT];
 } kvm_window_text_frame;

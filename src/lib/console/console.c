@@ -21,7 +21,7 @@ static lib_bool lib_console_event_valid(const lib_console_event *event)
     if (event == LIB_NULL) return LIB_FALSE;
     if (event->kind == LIB_CONSOLE_EVENT_COOKED_LINE ||
         event->kind == LIB_CONSOLE_EVENT_REJECTED_LINE)
-        return event->value.line.length < LIB_CONSOLE_LINE_MAX;
+        return event->value.line.length < LIB_CONSOLE_LINE_CAPACITY;
     return event->kind == LIB_CONSOLE_EVENT_RAW_KEY ||
         event->kind == LIB_CONSOLE_EVENT_RAW_MOUSE ||
         event->kind == LIB_CONSOLE_EVENT_IO_FAILURE ||

@@ -81,7 +81,8 @@ int main(void)
     lib_test_assert(lib_console_deliver_event(console, &event) == LIB_STATUS_OK);
     lib_test_assert(probe.events == 2u);
     event.kind = LIB_CONSOLE_EVENT_COOKED_LINE;
-    event.value.line.length = LIB_CONSOLE_LINE_MAX;
+    lib_test_assert(LIB_CONSOLE_LINE_CAPACITY == 1024u);
+    event.value.line.length = LIB_CONSOLE_LINE_CAPACITY;
     lib_test_assert(lib_console_deliver_event(console, &event) == LIB_STATUS_INVALID_ARGUMENT);
     lib_test_assert(lib_console_set_output_binding(LIB_NULL, &binding) == LIB_STATUS_INVALID_ARGUMENT);
     lib_test_assert(lib_console_set_output_binding(console, &binding) == LIB_STATUS_OK);

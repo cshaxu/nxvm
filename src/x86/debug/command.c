@@ -8,8 +8,7 @@
 #include "lib/storage/file_interface.h"
 #include "lib/storage/medium_interface.h"
 
-#define DEBUG_MAXNARG 256
-#define DEBUG_MAXNASMARG 4
+#define X86_DEBUG_ARGUMENT_CAPACITY 256u
 
 typedef enum command_continuation {
     COMMAND_CONTINUATION_NONE,
@@ -44,7 +43,7 @@ struct x86_debug {
     char input_prompt[X86_DEBUG_PROMPT_CAPACITY];
     lib_size error_position;
     lib_size argument_count;
-    char *arguments[DEBUG_MAXNARG];
+    char *arguments[X86_DEBUG_ARGUMENT_CAPACITY];
     lib_bool exit_requested;
     char command_buffer[0x100];
     char command_copy[0x100];

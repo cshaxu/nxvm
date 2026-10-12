@@ -468,7 +468,7 @@ static void check_character_banks(void)
         frame.base.cursor_bottom = cases[i].bottom;
         frame.base.cursor_visible = frame.base.cursor_phase = LIB_TRUE;
         lib_test_assert(kvm_console_publish_text_frame(&console, &frame) == LIB_STATUS_OK);
-        lib_test_assert(captured.font_height == (cases[i].height ? cases[i].height : 16));
+        lib_test_assert(captured.font_height == (cases[i].height ? cases[i].height : KVM_TEXT_FONT_DEFAULT_HEIGHT));
         lib_test_assert(captured.cursor_visible == cases[i].visible);
         lib_test_assert(captured.cursor_top == cases[i].top && captured.cursor_bottom == cases[i].out_bottom);
         lib_test_assert(captured.cursor_phase == 1);
