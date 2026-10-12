@@ -2,6 +2,19 @@
 
 ## Current Work
 
+MyNES receives the owner-approved NXVM M5 T555 S6 Shared copied-glyph update;
+the cross-target admission and delivery authority is the
+[NXVM S6 packet](../../nxvm/states/CURRENT.md). MyNES production, tests,
+configuration, ROM, media and snapshots are unchanged. Its current 0044 pair
+is rebuilt in the two existing unified Ninja/ccache graphs; 45 MyNES units
+and all 12 integrations pass on each width, including automated native Window
+and Console receivers. No manual interactive acceptance is claimed.
+The [receiving record](../etc/evidence/t555-s6-shared-glyph-receiving.md)
+records the updated artifact hashes, superseding older 0044 hash records.
+This receiving delivery does not admit a new MyNES implementation task.
+
+## Retained T550 S2 Reading Packet
+
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation: NXVM M5 T550 S2; MyNES is the sole implementation target. |

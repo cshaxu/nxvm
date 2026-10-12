@@ -3,6 +3,8 @@
 These records support the principal authorities and do not define a competing
 architecture, rule set or current task state.
 
+- `evidence/t555-s6-shared-glyph-receiving.md`: [Shared glyph receiving delivery](evidence/t555-s6-shared-glyph-receiving.md); unchanged MyNES code, final dual-width unit/integration results and current 0044 artifact hashes.
+
 - `evidence/m7-t44-s3-closure.md`: [T44 closure audit](evidence/m7-t44-s3-closure.md); final candidate/requirement dispositions, unchanged accepted inputs and reused qualification.
 
 - `evidence/m7-t44-s2-mapper-performance.md`: [S2 Mapper qualification](evidence/m7-t44-s2-mapper-performance.md); address simplification, failure-atomic snapshot repair, paired measurements and 0044 delivery.
