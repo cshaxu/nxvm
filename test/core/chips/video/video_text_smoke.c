@@ -29,7 +29,7 @@ lib_i32 main(void)
     lib_memory_set(&memory, 0, sizeof(memory));
     if (x86_video_create(&vadp) != LIB_STATUS_OK) return 1;
     glyphs.present = LIB_TRUE;
-    glyphs.bytes['A' * X86_VIDEO_TEXT_GLYPH_ROWS] = 0x81u;
+    glyphs.bytes['A' * X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS] = 0x81u;
     failed |= x86_video_configure_text_glyphs(vadp, &glyphs) !=
         LIB_STATUS_OK;
     failed |= x86_video_configure_text_timing(vadp, &timing) !=

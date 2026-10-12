@@ -37,9 +37,11 @@ lib_i32 main(void)
         return 1;
     }
     glyphs.present = LIB_TRUE;
-    glyphs.bytes['A' * X86_VIDEO_TEXT_GLYPH_ROWS] = 0x81u;
+    glyphs.bytes['A' * X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS] = 0x81u;
+    glyphs.bytes[X86_VIDEO_TEXT_GLYPH_DEFAULT_BYTES - 1u] = 0xa6u;
     failed |= x86_video_configure_text_glyphs(video, &glyphs) != LIB_STATUS_OK;
-    glyphs.bytes['A' * X86_VIDEO_TEXT_GLYPH_ROWS] = 0u;
+    glyphs.bytes['A' * X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS] = 0u;
+    glyphs.bytes[X86_VIDEO_TEXT_GLYPH_DEFAULT_BYTES - 1u] = 0u;
     x86_video_reset(video);
     failed |= x86_video_register_write(video, X86_VIDEO_REGISTER_MODE, 0x0du) !=
         LIB_STATUS_OK;
@@ -51,6 +53,12 @@ lib_i32 main(void)
         !snapshot->buffer_changed || !snapshot->text_glyphs_present ||
         snapshot->text_glyphs['A' * X86_VIDEO_TEXT_GLYPH_ROWS] != 0x81u ||
         snapshot->palette_rgb[1] != 0x0000aau;
+    failed |= snapshot->text_glyph_height != X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS ||
+        snapshot->text_glyphs[255u * X86_VIDEO_TEXT_GLYPH_ROWS + 15u] != 0xa6u;
+    for (lib_size glyph = 0u; glyph < X86_VIDEO_TEXT_GLYPH_COUNT; ++glyph)
+        for (lib_size row = X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS; row < X86_VIDEO_TEXT_GLYPH_ROWS; ++row)
+            failed |= snapshot->text_glyphs[glyph * X86_VIDEO_TEXT_GLYPH_ROWS + row] != 0u ||
+                snapshot->secondary_text_glyphs[glyph * X86_VIDEO_TEXT_GLYPH_ROWS + row] != 0u;
     failed |= x86_video_capture_snapshot_from(video, &reader, snapshot) != LIB_STATUS_OK ||
         snapshot->buffer_changed;
     {

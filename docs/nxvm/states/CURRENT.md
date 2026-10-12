@@ -30,7 +30,7 @@ controller closure. Capacity alone cannot qualify live hardware production.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Next numeric S6 in open T555 after complete pushed/accepted S5 `3cfadc6d4`. |
+| Identifier Mode | Continuation: next numeric S6 in open T555 after complete pushed/accepted S5 `3cfadc6d4`. |
 | Admission And Approval | Owner explicitly approved fixed 32-row glyph slots and directed separate S6 after repaired S5. On 2026-10-12 the owner additionally required explicit DEFAULT names, actual slot names without MAX, a shared coding rule and a six-tree naming audit/repair proposal. Single-person sequential coordinator/executor. Owner subsequently approved the three bounded repairs: KVM Base owns the default text font height; Console line storage uses CAPACITY; Debug argument storage uses CAPACITY and the unused assembler-argument constant is deleted. All other audit candidates remain report-only; siblings remain read-only. |
 | Objective | Transport/render glyph rows 0--31 without changing the existing default height 16, copied ownership, single rendering path or product UX; adapt Core consumers safely and qualify all five Apps on both widths. |
 | Reference Baseline | Accepted S5 `3cfadc6d4`; the approved glyph review in `etc/evidence/t555-s5-video-boundary-review.md`. |
@@ -57,6 +57,19 @@ the owner's three bounded naming/ownership repairs, complete receiving build/
 test/publication requirements and explicit owner-acceptance gate intact.
 
 ## Retained Progress
+
+S6 owner-approved qualification budget update: Model 40's existing boot
+receiver now receives 300000 milliseconds on both widths. Its CTest envelope
+is 310 seconds; the selected integration aggregate is 330 seconds to include
+setup, the other rows and cleanup. Other profiles and the 300-second unit
+aggregate are unchanged. This modifies only NXVM test registration, not guest
+timing, Shared code or executable inputs. The earlier 180-second x86 timeout
+remains a failed attempt. The approved-budget qualification passes 4/4
+DeskPro rows per width (boot 172.91 seconds x64, 206.06 seconds x86).
+Final complete units pass 591/591 per width, four-PC integrations 32/32 per
+width and MyNES integrations 12/12 per width. All ten receiving EXEs are
+rebuilt. S6 delivery and immutable-diff review remain pending; no closure or
+S7 admission is implied by this verification checkpoint.
 
 | Work | Progress |
 | --- | --- |

@@ -1728,11 +1728,16 @@ function(project_add_ini_boot_case session_file)
     set(project_ini_boot_test_suffix "vm-profile-floppy-boot-matrix.${session_file}")
     set(project_ini_boot_test "integration.${project_ini_boot_test_suffix}")
     # These are real turbo guest boots with a bounded wall-clock terminal.
-    # A Model 40 boot alone consumes most of a host core for roughly three
-    # minutes; overlapping it with other turbo boots turns that host capacity
+    # A Model 40 boot alone consumes most of a host core; overlapping it
+    # with other turbo boots turns that host capacity
     # into an accidental test input.  Keep this finite host resource exclusive
     # without serializing ordinary integration rows.
     set(project_ini_boot_timeout 190)
+    set(project_ini_boot_arguments)
+    if(NXVM_PRODUCT_PROFILE STREQUAL "compaq-deskpro-386-model-40-1200k")
+        set(project_ini_boot_arguments 300000)
+        set(project_ini_boot_timeout 310)
+    endif()
     get_property(project_ini_boot_registered_cases GLOBAL
         PROPERTY PROJECT_INI_BOOT_REGISTERED_CASES)
     list(FIND project_ini_boot_registered_cases "${project_ini_boot_test_suffix}"
@@ -1746,7 +1751,8 @@ function(project_add_ini_boot_case session_file)
     file(MAKE_DIRECTORY "${project_ini_boot_workspace}")
     add_test(NAME "${project_ini_boot_test}"
         COMMAND "$<TARGET_FILE:vm-profile-floppy-boot-matrix>"
-            "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}" "${project_ini_boot_session_path}")
+            "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}" "${project_ini_boot_session_path}"
+            ${project_ini_boot_arguments})
     set_tests_properties("${project_ini_boot_test}" PROPERTIES
         LABELS integration
         SKIP_RETURN_CODE 77
@@ -1996,13 +2002,18 @@ if(POWERSHELL_EXECUTABLE)
         VERBATIM)
     add_dependencies(run-unit-tests build-unit-tests)
 
+    set(project_integration_deadline "${PROJECT_UNIT_TEST_DEADLINE_SECONDS}")
+    if(NXVM_PRODUCT_PROFILE STREQUAL "compaq-deskpro-386-model-40-1200k")
+        # Allow the 300-second boot receiver plus setup, other rows and cleanup.
+        set(project_integration_deadline 330)
+    endif()
     add_custom_target(run-integration-tests
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
             -File "${CMAKE_SOURCE_DIR}/tools/nxvm/RunTestAggregate.ps1"
             -CTestPath "${CMAKE_CTEST_COMMAND}"
             -TestDirectory "${CMAKE_BINARY_DIR}"
             -ParallelJobs "${PROJECT_INTEGRATION_TEST_JOBS}"
-            -DeadlineSeconds "${PROJECT_UNIT_TEST_DEADLINE_SECONDS}"
+            -DeadlineSeconds "${project_integration_deadline}"
             -Route integration
         COMMENT "Building and executing owner-provided integration tests"
         VERBATIM)

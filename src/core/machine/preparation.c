@@ -20,9 +20,9 @@ static lib_status vm_machine_prepare_text_glyphs(vm_machine_construction *candid
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     for (character = 0u; character < X86_VIDEO_TEXT_GLYPH_COUNT; ++character) {
-        lib_memory_copy(&candidate->text_glyphs.bytes[character * X86_VIDEO_TEXT_GLYPH_ROWS],
+        lib_memory_copy(&candidate->text_glyphs.bytes[character * X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS],
             &source.data[character * 8u], 8u);
-        lib_memory_copy(&candidate->text_glyphs.bytes[character * X86_VIDEO_TEXT_GLYPH_ROWS + 8u],
+        lib_memory_copy(&candidate->text_glyphs.bytes[character * X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS + 8u],
             &source.data[VM_MACHINE_TEXT_GLYPH_ROW_PLANE_BYTES + character * 8u], 8u);
     }
     candidate->text_glyphs.present = LIB_TRUE;

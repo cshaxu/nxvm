@@ -2,6 +2,10 @@
 
 #include "core/machine/frame_interface.h"
 
+_Static_assert(X86_VIDEO_TEXT_GLYPH_COUNT == KVM_WINDOW_FONT_GLYPHS &&
+    X86_VIDEO_TEXT_GLYPH_ROWS == KVM_WINDOW_FONT_HEIGHT,
+    "Core copied glyph slots must match Window glyph slots");
+
 static lib_status vm_machine_frame_validate_source(const x86_video_snapshot *source)
 {
     switch (source->kind) {
@@ -9,7 +13,8 @@ static lib_status vm_machine_frame_validate_source(const x86_video_snapshot *sou
         if (source->columns == 0u || source->rows == 0u)
             return LIB_STATUS_INVALID_ARGUMENT;
         if (source->columns > X86_VIDEO_MAX_COLUMNS || source->rows > X86_VIDEO_MAX_ROWS ||
-            source->text_cell_height == 0u || source->text_cell_height > 32u)
+            source->text_cell_height == 0u || source->text_cell_height > 32u ||
+            source->text_glyph_height > KVM_WINDOW_FONT_HEIGHT)
             return LIB_STATUS_UNSUPPORTED;
         return LIB_STATUS_OK;
     case X86_VIDEO_KIND_CGA_320X200X4:
@@ -87,10 +92,9 @@ lib_status vm_machine_frame_from_display(
     lib_memory_set(&destination->characters, 0, sizeof(destination->characters));
     destination->window.text.base.text_columns = source->columns;
     destination->window.text.base.text_rows = source->rows;
-    /* The CRTC cell height describes cursor raster coordinates. The copied
-     * glyph asset remains 8x16, so preserve its rendering geometry and map
-     * the CRTC interval into that one glyph coordinate system. */
-    destination->window.text.base.font_height = 16u;
+    /* CRTC cursor coordinates and the supplied bitmap height are distinct. */
+    destination->window.text.base.font_height = source->text_glyph_height != 0u ?
+        source->text_glyph_height : KVM_TEXT_FONT_DEFAULT_HEIGHT;
     destination->window.text.base.cursor_column = source->cursor_x;
     destination->window.text.base.cursor_row = source->cursor_y;
     if (source->cursor_top < source->text_cell_height) {

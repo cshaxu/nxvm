@@ -2179,8 +2179,11 @@ static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const
     lib_memory_copy(out_snapshot->attributes, adapter->data.attributes,
         sizeof(out_snapshot->attributes));
     out_snapshot->text_glyphs_present = adapter->data.text_glyphs.present;
-    lib_memory_copy(out_snapshot->text_glyphs, adapter->data.text_glyphs.bytes,
-        sizeof(out_snapshot->text_glyphs));
+    out_snapshot->text_glyph_height = X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS;
+    for (lib_size glyph = 0u; glyph < X86_VIDEO_TEXT_GLYPH_COUNT; ++glyph)
+        lib_memory_copy(out_snapshot->text_glyphs + glyph * X86_VIDEO_TEXT_GLYPH_ROWS,
+            adapter->data.text_glyphs.bytes + glyph * X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS,
+            X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS);
     cursor_changed = !adapter->data.captured ||
         adapter->data.captured_cursor_top != out_snapshot->cursor_top ||
         adapter->data.captured_cursor_bottom != out_snapshot->cursor_bottom ||

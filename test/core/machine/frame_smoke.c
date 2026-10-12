@@ -6,6 +6,7 @@ lib_i32 main(void)
     x86_video_snapshot source = {0};
     static emulator_machine_frame destination;
     static emulator_machine_frame before;
+    const lib_size normalized_last = 255u * X86_VIDEO_TEXT_GLYPH_ROWS + 15u;
 
     source.kind = X86_VIDEO_KIND_TEXT;
     source.columns = 80u;
@@ -19,7 +20,7 @@ lib_i32 main(void)
     source.attributes[1999u] = 0x4fu;
     source.palette_rgb[14u] = 0x00ffff00u;
     source.text_glyphs_present = LIB_TRUE;
-    source.text_glyphs[4095u] = 0x5au;
+    source.text_glyphs[normalized_last] = 0x5au;
     if (vm_machine_frame_from_display(&source, 7u, &destination) != LIB_STATUS_OK ||
         destination.sequence != 7u ||
         !destination.window.valid || destination.window.graphics ||
@@ -35,23 +36,50 @@ lib_i32 main(void)
         destination.window.text.base.cursor_bottom != 15u ||
         destination.characters.primary[0u] != 0x0020u ||
         destination.characters.primary[219u] != 0x2588u ||
-        destination.window.text.font[4095u] != 0x5au) return 1;
+        destination.window.text.font[normalized_last] != 0x5au) return 1;
 
     source.rows = 43u;
     source.characters[3439u] = 'G';
     source.attributes[3439u] = 0x18u;
     source.text_font_selection = LIB_TRUE;
-    source.secondary_text_glyphs[4095u] = 0xa6u;
+    source.secondary_text_glyphs[normalized_last] = 0xa6u;
     if (vm_machine_frame_from_display(&source, 8u, &destination) != LIB_STATUS_OK ||
         destination.window.text.base.text_rows != 43u ||
         destination.window.text.base.cells[3439u].glyph_index != 'G' ||
         destination.window.text.base.cells[3439u].glyph_bank != 1u ||
         destination.window.text.base.cells[3440u].glyph_index != 0u ||
-        destination.window.text.font[4095u] != 0x5au ||
-        destination.window.text.secondary_font[4095u] != 0xa6u) return 1;
+        destination.window.text.font[normalized_last] != 0x5au ||
+        destination.window.text.secondary_font[normalized_last] != 0xa6u) return 1;
     source.text_font_selection = LIB_FALSE;
     if (vm_machine_frame_from_display(&source, 8u, &destination) != LIB_STATUS_OK ||
         destination.window.text.base.cells[3439u].glyph_bank != 0u) return 1;
+
+    {
+        static const lib_u8 heights[] = {8u, 14u, 16u, 24u, 32u};
+        const lib_size last = X86_VIDEO_TEXT_GLYPH_BYTES - 1u;
+        source.text_cell_height = 32u;
+        source.cursor_top = 30u;
+        source.cursor_bottom = 31u;
+        source.text_glyphs[last] = 0x80u;
+        source.secondary_text_glyphs[last] = 0x40u;
+        for (lib_size index = 0u; index < sizeof(heights); ++index) {
+            source.text_glyph_height = heights[index];
+            if (vm_machine_frame_from_display(&source, 8u, &destination) != LIB_STATUS_OK ||
+                destination.window.text.base.font_height != heights[index] ||
+                destination.window.text.font[last] != 0x80u ||
+                destination.window.text.secondary_font[last] != 0x40u ||
+                destination.window.text.base.cursor_bottom != heights[index] - 1u)
+                return 1;
+        }
+        before = destination;
+        source.text_glyph_height = 33u;
+        if (vm_machine_frame_from_display(&source, 8u, &destination) != LIB_STATUS_UNSUPPORTED ||
+            lib_memory_compare(&before, &destination, sizeof(destination)) != 0) return 1;
+        source.text_glyph_height = 0u;
+        source.text_cell_height = 8u;
+        source.cursor_top = 6u;
+        source.cursor_bottom = 7u;
+    }
 
     source.columns = 40u;
     source.rows = 1u;

@@ -26,9 +26,12 @@ typedef struct x86_video_memory_reader {
 #define X86_VIDEO_EGA_GRAPHICS_REGISTER_COUNT 9u
 #define X86_VIDEO_EGA_ATTRIBUTE_REGISTER_COUNT 21u
 #define X86_VIDEO_TEXT_GLYPH_COUNT 256u
-#define X86_VIDEO_TEXT_GLYPH_ROWS 16u
+#define X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS 16u
+#define X86_VIDEO_TEXT_GLYPH_ROWS 32u
 #define X86_VIDEO_TEXT_GLYPH_BYTES \
     (X86_VIDEO_TEXT_GLYPH_COUNT * X86_VIDEO_TEXT_GLYPH_ROWS)
+#define X86_VIDEO_TEXT_GLYPH_DEFAULT_BYTES \
+    (X86_VIDEO_TEXT_GLYPH_COUNT * X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS)
 
 typedef struct x86_video_text_timing {
     lib_u32 active_display_ticks;
@@ -40,7 +43,7 @@ typedef struct x86_video_text_timing {
  * VADP thereafter owns the copied 8x16 glyph state exposed to presenters. */
 typedef struct x86_video_text_glyph_config {
     lib_u8 present;
-    lib_u8 bytes[X86_VIDEO_TEXT_GLYPH_BYTES];
+    lib_u8 bytes[X86_VIDEO_TEXT_GLYPH_DEFAULT_BYTES];
 } x86_video_text_glyph_config;
 
 typedef struct x86_video_ega_sequencer_config {
@@ -105,6 +108,8 @@ typedef struct x86_video_snapshot {
     lib_i32 buffer_changed;
     lib_i32 cursor_changed;
     lib_u8 text_glyphs_present;
+    /* Supplied bitmap height; zero defaults to the normalized asset height. */
+    lib_u8 text_glyph_height;
     lib_u8 text_glyphs[X86_VIDEO_TEXT_GLYPH_BYTES];
     /* Attribute bit 3 selects the copied secondary glyph bank when enabled. */
     lib_bool text_font_selection;

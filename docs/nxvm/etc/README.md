@@ -36,13 +36,23 @@ media and test contracts. Its independent arithmetic checkpoints do not claim
 selected-hardware identity; runtime qualification is in the storage ledger.
 
 T555 S5: [video source and receiver ledger](evidence/t555-s5-video-source-ledger.md)
-records the in-progress 28-row video/presentation audit, actual selected-card
-bindings and source prerequisites. It does not claim repair or qualification.
+records the 28-row video/presentation audit, actual selected-card bindings,
+bounded accepted S5 repairs and source/receiving proof. Residual hardware
+classes remain explicit; it does not claim complete video qualification.
 
 T555 S5: [video boundary review](evidence/t555-s5-video-boundary-review.md)
-records proposed Core copied-text and video IRQ/deadline interfaces, the
-default guest-firmware receiving prerequisite and estimated owner-local diffs.
-It requests review; it does not approve those changes or close a ledger row.
+records reviewed Core copied-text and video IRQ/deadline interfaces, default
+guest-firmware prerequisites and the approved separate glyph-capacity boundary.
+CURRENT alone owns admission and closure.
+
+T555 S6: [copied glyph capacity](evidence/t555-s6-copied-glyph-capacity.md)
+records the fixed 32-byte slot contract, normalized-input padding, component
+quality review and full receiving qualification. It does not imply live chip
+font production is qualified.
+
+T555 S6: [shared constant naming audit](evidence/t555-s6-shared-constant-naming-audit.md)
+records the six-tree default/dimension/capacity review, corrected glyph names
+and report-only follow-up proposals. Coding rules remain the naming authority.
 
 T553 S1: [four PC App ownership ledger](evidence/t553-s1-four-pc-app-ownership-ledger.md)
 records the complete four-App inventory, inward dependency proof, ownership

@@ -84,6 +84,31 @@ qualification; owner acceptance is required after its delivery.
 
 ## Frozen Boundaries
 
+## S6 Receiving Delivery
+
+Shared P1 `a7e69a14b` is pushed: fixed copied glyph slots are 32 rows,
+Base uniquely owns the default height 16, Console line storage is CAPACITY
+and Debug's unchanged argument storage is CAPACITY. Core retains normalized
+16-row construction input and copies/pads into the enlarged output slots.
+Production C/H is +38/-25 (net +13); receiving tests +105/-24 (net +81).
+No new Shared function/type/state, helper, thread, queue or renderer is added.
+
+Final full units pass 591/591 per width; four-PC integrations pass 32/32
+per width and MyNES integrations 12/12 per width. The final x86 Model 40
+180-second failure remains recorded. The owner explicitly approved a
+300-second startup budget, with bounded outer cleanup allowances; the final
+DeskPro receiver passes in 172.91 seconds x64 and 206.06 seconds x86.
+No guest timing or production input is changed for that budget adjustment.
+All ten optimized stripped receiving EXEs are rebuilt, deployed and PE-width
+checked; owner INIs, media and snapshots remain unchanged. See
+[S6 delivery evidence](../etc/evidence/t555-s6-copied-glyph-capacity.md) and
+[six-tree naming audit](../etc/evidence/t555-s6-shared-constant-naming-audit.md).
+Automated native desktop checks pass; no manual desktop or complete live
+font/electrical qualification is claimed. S6 waits for owner acceptance after
+its actual-pushed-diff audit; T555 stays open and S7 is not admitted.
+
+## Original Audit Frozen Boundaries
+
 Vendor manuals and ROMs remain in `nxvm-assets`; S1 may only read their
 repository evidence/provenance. Shared Lib/Emulator/x86 code is read-only. No
 asset, firmware, media, INI, test or production change is permitted until the
