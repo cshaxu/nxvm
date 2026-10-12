@@ -2774,3 +2774,28 @@ a performance guarantee. No interactive desktop acceptance, universal physical
 ECC correction or full-tree/no-bug claim is made. This is executor-complete
 qualification evidence, not yet a pushed implementation or coordinator
 acceptance. Those remain separate gates before S4 closure.
+
+### Coordinator Actual-Pushed-Diff Acceptance
+
+Implementation `44340d5c16a92c4db77f063791f94e72ca5e8fbe` is pushed to
+origin/master. After the executor delivery, the same-session coordinator
+reviews the immutable diff against parent `476f9fea5`, not only its statistics:
+FDC timing/reset/ready/command changes, HDC grammar/record/ECC and status paths,
+Compaq selection/IRQ/reset/deadline ownership, media failure/lifetime boundaries,
+all changed callbacks/callers, receiver cleanup and the negative reader-regression
+proof, build/manifest/documentation updates and eight artifact paths.
+
+The actual commit has no Shared-six, MyNES, raw firmware/media or owner INI
+change. Public Core extensions match the recorded approvals; no CPU instruction
+or timing downgrade, firmware-address workaround, alternate backend or runtime
+manager is introduced. Positive code growth is accounted for by the complete
+22-row finite batch and receiving/failure proof. Each row is reconciled against
+current original-source/model disposition; the final two complete unit runs,
+all eight integration groups, manifests/gates and exact artifact hashes prove
+its declared acceptance scope. No physical-only claim is inferred from boot.
+
+Coordinator accepts S4 within the explicit model bounds. DeskPro x86 margin,
+unperformed interactive desktop verification, S5 cached-graphics/new-delivery
+qualification and S6 Compaq speed/AUX-PIT/HOLD/source reconciliation remain
+visible transfers, not silently closed facts. Governance closure and the next
+packet follow in P2; T555 remains open for its full original objective.
