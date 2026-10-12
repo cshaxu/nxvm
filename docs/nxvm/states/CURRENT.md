@@ -68,8 +68,21 @@ remains a failed attempt. The approved-budget qualification passes 4/4
 DeskPro rows per width (boot 172.91 seconds x64, 206.06 seconds x86).
 Final complete units pass 591/591 per width, four-PC integrations 32/32 per
 width and MyNES integrations 12/12 per width. All ten receiving EXEs are
-rebuilt. S6 delivery and immutable-diff review remain pending; no closure or
-S7 admission is implied by this verification checkpoint.
+rebuilt and pushed in Shared P1 `a7e69a14b`, NXVM P2 `b2ee99b1c` and MyNES
+P3 `5067d7b7c`. The coordinator now reviews these actual immutable diffs,
+not a planned change: copied layout/default ownership and all producer and
+consumer strides agree; construction input remains 4096 bytes and output
+padding is owned by the existing capture initialization. No new Shared
+function/type/state/helper, alternate renderer or outward dependency is
+introduced. Private capacity spelling preserves 1024/256 values and original
+Debug table style. Each P contains only its named target. All eight manifests
+and whitespace checks pass after push; changed Shared files remain LF.
+The final selected manifest/Types/corpus/DAG/naming/boundary regressions pass
+34/34 per width (63.11/68.31 seconds); actual P deltas and qualification logs
+are recorded in the [S6 evidence](../etc/evidence/t555-s6-copied-glyph-capacity.md).
+S6 is delivered but remains open for owner acceptance; T555 stays open and
+S7 is not admitted. Manual desktop and complete live-font/electrical
+qualification remain unexecuted, not inferred from automated tests.
 
 | Work | Progress |
 | --- | --- |

@@ -119,6 +119,32 @@ S6 remains open for owner acceptance after scoped delivery and pushed-diff audit
 
 ## Final Artifacts
 
+## Actual Pushed-Diff Review
+
+Coordinator review accepts the bounded implementation in Shared `a7e69a14b`,
+NXVM `b2ee99b1c` and MyNES `5067d7b7c`. Each immutable P has exactly one
+target. Actual C/H deltas match the measured +38/-25 production and
++105/-24 tests; NXVM CMake's approved budget delta is +15/-4. Core input
+normalization, padded copied slots, both-bank strides and renderer bounds
+agree. Changed declarations use Lib Types; no new public function/type,
+state machine, alternate path, compatibility alias or outward edge is added.
+The Debug command table and behavior remain intact.
+
+All eight manifests pass after push. The final owner-local selection of
+manifest, Types, corpus, component-DAG, naming and boundary regressions passes
+34/34 per width (63.11/68.31 seconds); this is not another whole-tree dynamic
+qualification or proof that every historical symbol/test name is perfect.
+Changed Shared files are LF and the immutable diff passes whitespace checks.
+The ten assets have correct PE widths and no debug sections; current MyNES
+and restored default PC assets match their build outputs. No owner INI,
+snapshot, media or MyNES source/test change exists in these Ps.
+The final review removes an empty evidence heading only; no production change
+or rebuild follows. S6 remains open awaiting owner acceptance, T555 remains
+open and S7 is not admitted. The potential publication fast-path stack cost
+is retained as an unimplemented audit finding, not a confirmed timeout cause.
+
+## Published Artifact Identities
+
 All ten optimized EXEs are rebuilt in the original persistent Ninja/ccache
 trees. Shared object targets are reused across profile bindings. PE machines
 are 8664 for x64 and 014C for x86; no compiler debug sections remain. The

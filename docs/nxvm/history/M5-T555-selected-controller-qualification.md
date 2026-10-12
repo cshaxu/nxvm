@@ -82,8 +82,6 @@ qualification; owner acceptance is required after its delivery.
 | S7 | Remaining video qualification | V08/V09/V17--V20/V28 residual hardware producers and source/receiving classes are exhausted with direct and actual wiring proof; copied-capacity proof alone does not qualify live hardware. |
 | S8 | Cross-profile closure, formerly planned S6 | Four fixed-App route matrix, Compaq speed/AUX-PIT/HOLD class, exact remaining L1/L2/L4 exclusions, relevant unit/integration proof and documentation closure are complete. |
 
-## Frozen Boundaries
-
 ## S6 Receiving Delivery
 
 Shared P1 `a7e69a14b` is pushed: fixed copied glyph slots are 32 rows,
