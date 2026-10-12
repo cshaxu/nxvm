@@ -43,6 +43,24 @@ The concrete source tree and naming map belongs to the selected product's
   distinct behavior, and planned receiver. Report the actual code-size change
   and retained paths under the execution rule.
 
+## Constant Meaning And Names
+
+- A default or fallback value has `DEFAULT_` in its name. Do not name a default
+  as though it were the actual storage dimension, active value or protocol size.
+- A fixed layout, slot stride or resource dimension uses its direct domain
+  name, for example `KVM_WINDOW_FONT_HEIGHT` or `X86_VIDEO_TEXT_GLYPH_ROWS`.
+  Do not pair an unqualified default with a `MAX_` name for the real slot size.
+  The default font height and the fixed glyph-slot height are distinct facts;
+  an active frame height is a value, not a third compile-time owner.
+- Use `CAPACITY` for buffer capacity, including any terminator or reserved slot.
+  Use `INITIAL_` for an initial allocation that may grow. Neither is a default
+  user value. `MAX_`/`MIN_` remain appropriate only for actual numeric or
+  protocol bounds, not as substitutes for fixed layout dimensions or defaults.
+  Platform/CRT vocabulary re-exported by Lib Types preserves its native meaning.
+- Review definitions and all callers together, including tests and copied
+  contracts. Rename without changing values, array layouts, validation or
+  default behavior; remove the obsolete name rather than adding a synonym.
+
 ## Test Boundaries
 
 - Tests prove an owned behavior or declared boundary. Test setup may exercise
