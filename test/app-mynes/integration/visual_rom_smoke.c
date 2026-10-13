@@ -65,10 +65,10 @@ static void write_fixture(void)
     assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
 }
 
-static void run_frame(core_driver *driver)
+static void run_frame(machine_driver *driver)
 {
     lib_u32 index;
-    for (index = 0u; index < 64u; ++index) assert(core_driver_run(driver));
+    for (index = 0u; index < 64u; ++index) assert(machine_driver_run(driver));
 }
 
 static lib_u32 pixel_rgb(const emulator_machine_frame *frame, lib_u32 pixel)
@@ -78,52 +78,52 @@ static lib_u32 pixel_rgb(const emulator_machine_frame *frame, lib_u32 pixel)
 
 static void prove_window(void)
 {
-    core_driver *driver = LIB_NULL;
+    machine_driver *driver = LIB_NULL;
     emulator_machine_frame frame = { 0 };
     kvm_input_event input = { .type = KVM_EVENT_KEY, .source_identity = 1u };
 
-    assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
-    assert(core_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
+    assert(machine_driver_create(&driver, &(machine_driver_options) { 0 }) == LIB_STATUS_OK);
+    assert(machine_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
     run_frame(driver);
     assert(!driver->machine->trap.trap_valid);
     assert(driver->machine->ppu.palette[1] == 0x21u);
     assert(driver->machine->cartridge->chr[0] == 0xffu);
     assert(driver->machine->ppu.mask == 0x0au);
-    assert(core_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
+    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
     assert(frame.window.valid && frame.window.graphics);
     assert(frame.window.image.width == 256u && frame.window.image.height == 240u);
     assert(pixel_rgb(&frame, 9u) == COLOR_IDLE);
     input.data.key.key = 'K'; input.data.key.pressed = 1u;
-    core_driver_deliver_input(driver, &input);
+    machine_driver_deliver_input(driver, &input);
     run_frame(driver);
-    assert(core_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
+    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
     assert(pixel_rgb(&frame, 9u) == COLOR_A);
-    assert(core_driver_destroy(driver) == LIB_STATUS_OK);
+    assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
 }
 
 static void prove_console(void)
 {
-    core_driver *driver = LIB_NULL;
+    machine_driver *driver = LIB_NULL;
     emulator_machine_frame frame = { 0 };
     kvm_input_event input = { .type = KVM_EVENT_KEY, .source_identity = 2u };
     kvm_text_cell idle;
 
-    assert(core_driver_create(&driver, &(core_driver_options) { .text_output = LIB_TRUE }) ==
+    assert(machine_driver_create(&driver, &(machine_driver_options) { .text_output = LIB_TRUE }) ==
         LIB_STATUS_OK);
-    assert(core_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
+    assert(machine_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
     run_frame(driver);
-    assert(core_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
+    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
     assert(frame.window.valid && !frame.window.graphics);
     assert(frame.window.text.base.text_columns == 80u && frame.window.text.base.text_rows == 25u);
     assert(frame.window.text.base.cells[0].glyph_index == ' ');
     idle = frame.window.text.base.cells[7];
     input.data.key.key = 'K'; input.data.key.pressed = 1u;
-    core_driver_deliver_input(driver, &input);
+    machine_driver_deliver_input(driver, &input);
     run_frame(driver);
-    assert(core_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
+    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
     assert(frame.window.text.base.cells[7].glyph_index != idle.glyph_index ||
         frame.window.text.base.cells[7].foreground != idle.foreground);
-    assert(core_driver_destroy(driver) == LIB_STATUS_OK);
+    assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
 }
 
 int main(void)

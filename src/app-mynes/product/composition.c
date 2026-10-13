@@ -16,7 +16,7 @@
 
 typedef struct app_composition
 {
-    core_driver *driver;
+    machine_driver *driver;
     app_command_context command;
     lib_u8 startup_rom_path[APP_CONFIG_PATH_CAPACITY];
     lib_u8 battery_path[APP_CONFIG_PATH_CAPACITY];
@@ -57,7 +57,7 @@ static lib_status app_composition_save_battery(app_composition *composition)
     lib_status status = LIB_STATUS_OK;
 
     if (composition->battery_path[0] != '\0')
-        status = core_driver_save_battery_ram(composition->driver,
+        status = machine_driver_save_battery_ram(composition->driver,
                                               (const char *)composition->battery_path);
     if (status != LIB_STATUS_OK)
         lib_c_fprintf(lib_c_stderr, "Cannot save battery RAM: %s\n",
@@ -87,7 +87,7 @@ static lib_bool app_composition_set_media(void *opaque, const char *path)
         return LIB_FALSE;
     lib_memory_copy(composition->battery_path, battery_path, sizeof(battery_path));
     if (path != LIB_NULL)
-        (void)core_driver_load_battery_ram(composition->driver,
+        (void)machine_driver_load_battery_ram(composition->driver,
                                            (const char *)composition->battery_path);
     return LIB_TRUE;
 }
@@ -123,7 +123,7 @@ static emulator_session_machine_state app_composition_map_state(void *context,
     }
     if (state == EMULATOR_MACHINE_PAUSED || state == EMULATOR_MACHINE_STOPPED ||
         state == EMULATOR_MACHINE_ERROR)
-        core_driver_request_input_reset(composition->driver);
+        machine_driver_request_input_reset(composition->driver);
     return session_state;
 }
 
@@ -137,7 +137,7 @@ static lib_status app_composition_destroy_machine(void *opaque)
     status = app_composition_save_battery(composition);
     if (status != LIB_STATUS_OK)
         return status;
-    status = core_driver_destroy(composition->driver);
+    status = machine_driver_destroy(composition->driver);
     if (status == LIB_STATUS_OK)
         composition->driver = LIB_NULL;
     return status;
@@ -223,12 +223,12 @@ lib_i32 app_composition_run(const app_startup_config *config)
     composition = lib_allocate_zero(1u, sizeof(*composition));
     if (composition == LIB_NULL)
         return 1;
-    if (core_driver_create(&composition->driver, &(core_driver_options){
+    if (machine_driver_create(&composition->driver, &(machine_driver_options){
                                                      .text_output = config->display ==
                                                                     EMULATOR_SESSION_DISPLAY_CONSOLE,
                                                      .audio_enabled = LIB_TRUE}) != LIB_STATUS_OK)
         goto cleanup;
-    if (core_driver_make_driver(composition->driver, &emulator_driver) != LIB_STATUS_OK)
+    if (machine_driver_make_driver(composition->driver, &emulator_driver) != LIB_STATUS_OK)
         goto cleanup;
     composition->command.cartridge_present = config->rom_path[0] != '\0';
     composition->console_control = config->console_control;

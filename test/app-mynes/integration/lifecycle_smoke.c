@@ -77,7 +77,7 @@ int main(void)
     lib_u8 invalid[16u + 16384u];
     lib_u8 response[64u];
     lib_u8 response_before_rejection[64u];
-    core_driver *driver = 0;
+    machine_driver *driver = 0;
     emulator_machine *machine = 0;
     emulator_machine_driver emulator_driver;
     base_sync_event *reset_completed = 0;
@@ -91,8 +91,8 @@ int main(void)
     write_fixture(FIXTURE_PATH, fixture, sizeof(fixture));
     write_fixture(REPLACEMENT_PATH, replacement, sizeof(replacement));
     write_fixture("mynes-invalid-fixture.nes", invalid, sizeof(invalid));
-    assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
-    assert(core_driver_make_driver(driver, &emulator_driver) == LIB_STATUS_OK);
+    assert(machine_driver_create(&driver, &(machine_driver_options) { 0 }) == LIB_STATUS_OK);
+    assert(machine_driver_make_driver(driver, &emulator_driver) == LIB_STATUS_OK);
     assert(emulator_machine_create(&machine, &emulator_driver) == LIB_STATUS_OK);
     assert(base_sync_event_create(BASE_SYNC_EVENT_AUTO_RESET, &reset_completed) == LIB_STATUS_OK);
     emulator_machine_set_state_sink(machine, note_state, reset_completed);
@@ -114,13 +114,13 @@ int main(void)
     lib_memory_copy(response_before_rejection, response, sizeof(response_before_rejection));
     assert(!emulator_machine_set_removable_media(machine, "mynes-invalid-fixture.nes",
         LIB_STORAGE_MEDIUM_READONLY));
-    assert(core_driver_has_cartridge(driver));
+    assert(machine_driver_has_cartridge(driver));
     assert(emulator_machine_state_get(machine) == EMULATOR_MACHINE_PAUSED);
     observe(machine, response);
     assert(lib_memory_compare(response, response_before_rejection, 52u) == 0);
     assert(emulator_machine_set_removable_media(machine, REPLACEMENT_PATH,
         LIB_STORAGE_MEDIUM_READONLY));
-    assert(core_driver_has_cartridge(driver));
+    assert(machine_driver_has_cartridge(driver));
     observe(machine, response);
     assert(response[18] == 0x10u && response[19] == 0x80u);
     reset_and_wait(machine, reset_completed);
@@ -129,10 +129,10 @@ int main(void)
     assert(emulator_machine_state_get(machine) == EMULATOR_MACHINE_PAUSED);
     base_sync_sleep_milliseconds(5u);
     assert(emulator_machine_set_removable_media(machine, 0, LIB_STORAGE_MEDIUM_READONLY));
-    assert(!core_driver_has_cartridge(driver));
+    assert(!machine_driver_has_cartridge(driver));
     assert(emulator_machine_shutdown(machine) == LIB_STATUS_OK);
     assert(emulator_machine_destroy(machine) == LIB_STATUS_OK);
     base_sync_event_destroy(reset_completed);
-    assert(core_driver_destroy(driver) == LIB_STATUS_OK);
+    assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
     return 0;
 }

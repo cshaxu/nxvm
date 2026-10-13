@@ -32,7 +32,7 @@ static void make_fixture(void)
 
 int main(void)
 {
-    core_driver *driver = LIB_NULL;
+    machine_driver *driver = LIB_NULL;
     lib_u64 begin;
     lib_u64 end;
     lib_u64 begin_cycles;
@@ -41,19 +41,19 @@ int main(void)
 
     make_fixture();
     write_fixture();
-    assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
-    assert(core_driver_set_media(driver, "pacing-fixture.nes",
+    assert(machine_driver_create(&driver, &(machine_driver_options) { 0 }) == LIB_STATUS_OK);
+    assert(machine_driver_set_media(driver, "pacing-fixture.nes",
         LIB_STORAGE_MEDIUM_READONLY));
-    assert(core_driver_reset(driver));
+    assert(machine_driver_reset(driver));
     assert(driver->audio_needs_clear == LIB_FALSE);
-    core_driver_set_heartbeat(driver, LIB_TRUE);
+    machine_driver_set_heartbeat(driver, LIB_TRUE);
     begin_cycles = driver->machine->cycles;
     assert(base_clock_milliseconds(&begin) == LIB_STATUS_OK);
     for (slice = 0u; slice < PACING_SLICES; ++slice) {
         /* A continuous wake stream models active host input/callback traffic.
          * It may shorten response latency, but cannot accelerate the guest. */
-        core_driver_request_wake(driver);
-        assert(core_driver_run(driver));
+        machine_driver_request_wake(driver);
+        assert(machine_driver_run(driver));
     }
     assert(base_clock_milliseconds(&end) == LIB_STATUS_OK);
     guest_milliseconds = (driver->machine->cycles - begin_cycles) * 1000u /
@@ -63,9 +63,9 @@ int main(void)
     assert(end - begin + 5u >= guest_milliseconds);
     /* A physical output can be present yet stopped by the test/RDP host. Core
      * preserves order under that backpressure and remains bounded either way. */
-    assert(driver->audio_staging_count <= CORE_DRIVER_AUDIO_STAGING_CAPACITY);
-    core_driver_set_heartbeat(driver, LIB_FALSE);
+    assert(driver->audio_staging_count <= MACHINE_DRIVER_AUDIO_STAGING_CAPACITY);
+    machine_driver_set_heartbeat(driver, LIB_FALSE);
     assert(driver->audio_staging_count == 0u);
-    assert(core_driver_destroy(driver) == LIB_STATUS_OK);
+    assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
     return 0;
 }

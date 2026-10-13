@@ -1,5 +1,9 @@
 # Supporting Documentation Index
 
+- [T556 S9 Machine owner receiving](evidence/t556-s9-machine-owner-receiving.md):
+  mechanical symbol ownership, current documentation, dual-width 57/57 and
+  rebuilt 0044 artifact hashes; retain with the T556 migration history.
+
 These records support the principal authorities and do not define a competing
 architecture, rule set or current task state.
 

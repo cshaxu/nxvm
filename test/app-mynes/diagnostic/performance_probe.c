@@ -52,7 +52,7 @@ static lib_status measure_round(const lib_u8 *rom, lib_size rom_size,
 {
     core_machine *machine = LIB_NULL;
     emulator_machine_frame *frame = LIB_NULL;
-    core_driver driver = {0};
+    machine_driver driver = {0};
     lib_status status;
     lib_u64 start_cycles = 0u, start_instructions = 0u;
     lib_u64 begin, end, rate;
@@ -116,7 +116,7 @@ static lib_status measure_round(const lib_u8 *rom, lib_size rom_size,
         if (clock_read(&begin, &rate) != LIB_STATUS_OK) {
             status = LIB_STATUS_IO_ERROR; goto done;
         }
-        status = core_driver_copy_frame(&driver, frame);
+        status = machine_driver_copy_frame(&driver, frame);
         if (clock_read(&end, &rate) != LIB_STATUS_OK || rate != *frequency ||
                 end < begin) { status = LIB_STATUS_IO_ERROR; goto done; }
         if (status != LIB_STATUS_OK || !frame->window.valid) {
@@ -139,7 +139,7 @@ static int measure_conversion(lib_bool text)
 {
     core_machine *machine = lib_allocate_zero(1u, sizeof(*machine));
     emulator_machine_frame *frame = lib_allocate_zero(1u, sizeof(*frame));
-    core_driver driver = {0};
+    machine_driver driver = {0};
     if (machine == LIB_NULL || frame == LIB_NULL) {
         lib_release(machine); lib_release(frame); return 1;
     }
@@ -160,7 +160,7 @@ static int measure_conversion(lib_bool text)
             if (clock_read(&begin, &frequency) != LIB_STATUS_OK) goto failure;
             for (lib_u32 number = 0u; number < 240u; ++number) {
                 ++machine->ppu.frame_revision;
-                if (core_driver_copy_frame(&driver, frame) != LIB_STATUS_OK ||
+                if (machine_driver_copy_frame(&driver, frame) != LIB_STATUS_OK ||
                         !frame->window.valid) goto failure;
             }
             if (clock_read(&end, &rate) != LIB_STATUS_OK || rate != frequency ||

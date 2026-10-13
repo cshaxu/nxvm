@@ -94,7 +94,7 @@ static void app_command_write_u32(lib_u8 *bytes, lib_u32 value)
 static void app_command_debug_header(lib_u8 *request, lib_u16 operation,
                                      lib_u32 payload_size)
 {
-    app_command_write_u16(request, CORE_DEBUG_VERSION);
+    app_command_write_u16(request, MACHINE_DEBUG_VERSION);
     app_command_write_u16(request + 2u, operation);
     app_command_write_u32(request + 4u, payload_size);
 }
@@ -128,7 +128,7 @@ static lib_bool app_command_guest_trapped(app_command_context *context,
 
     if (out_trapped == LIB_NULL)
         return LIB_FALSE;
-    app_command_debug_header(request, CORE_DEBUG_OBSERVE, 0u);
+    app_command_debug_header(request, MACHINE_DEBUG_OBSERVE, 0u);
     if (!app_command_debug_execute(context, request, sizeof(request), response,
                                    sizeof(response), &size) ||
         size != 52u)
@@ -382,7 +382,7 @@ static void app_command_regs(app_command_context *context,
     lib_u8 response[64];
     lib_size size = 0u;
 
-    app_command_debug_header(request, CORE_DEBUG_OBSERVE, 0u);
+    app_command_debug_header(request, MACHINE_DEBUG_OBSERVE, 0u);
     if (!app_command_debug_execute(context, request, sizeof(request), response,
                                    sizeof(response), &size) ||
         size != 52u)
@@ -424,7 +424,7 @@ static void app_command_mem(app_command_context *context, const char *arguments,
         app_command_result(out_result, "mem count must be 1..256.\n");
         return;
     }
-    app_command_debug_header(request, CORE_DEBUG_PEEK, 4u);
+    app_command_debug_header(request, MACHINE_DEBUG_PEEK, 4u);
     app_command_write_u16(request + 8u, address);
     app_command_write_u16(request + 10u, count);
     if (!app_command_debug_execute(context, request, sizeof(request), response,
@@ -478,7 +478,7 @@ static void app_command_poke(app_command_context *context, const char *arguments
         app_command_result(out_result, "poke requires at least one byte.\n");
         return;
     }
-    app_command_debug_header(request, CORE_DEBUG_POKE, 4u + count);
+    app_command_debug_header(request, MACHINE_DEBUG_POKE, 4u + count);
     app_command_write_u16(request + 8u, address);
     app_command_write_u16(request + 10u, (lib_u16)count);
     if (!app_command_debug_execute(context, request, 12u + count, response,
@@ -507,7 +507,7 @@ static void app_command_step(app_command_context *context, const char *arguments
         app_command_result(out_result, "step count must be 1..1000.\n");
         return;
     }
-    app_command_debug_header(request, CORE_DEBUG_STEP, 4u);
+    app_command_debug_header(request, MACHINE_DEBUG_STEP, 4u);
     app_command_write_u32(request + 8u, count);
     if (!app_command_guest_trapped(context, &trapped))
     {
@@ -547,7 +547,7 @@ static void app_command_break_set(app_command_context *context, const char *argu
         app_command_result(out_result, "break requires one address.\n");
         return;
     }
-    app_command_debug_header(request, CORE_DEBUG_BREAK_SET, 4u);
+    app_command_debug_header(request, MACHINE_DEBUG_BREAK_SET, 4u);
     app_command_write_u16(request + 8u, address);
     app_command_write_u16(request + 10u, enabled ? 1u : 0u);
     if (!app_command_debug_execute(context, request, sizeof(request), response,
@@ -571,7 +571,7 @@ static void app_command_break_list(app_command_context *context,
     lib_u32 index;
     lib_size written;
 
-    app_command_debug_header(request, CORE_DEBUG_BREAK_LIST, 0u);
+    app_command_debug_header(request, MACHINE_DEBUG_BREAK_LIST, 0u);
     if (!app_command_debug_execute(context, request, sizeof(request), response,
                                    sizeof(response), &size) ||
         size < 16u)
@@ -669,7 +669,7 @@ static void app_command_disasm(app_command_context *context, const char *argumen
         app_command_result(out_result, "disasm range wraps the address space.\n");
         return;
     }
-    app_command_debug_header(request, CORE_DEBUG_PEEK, 4u);
+    app_command_debug_header(request, MACHINE_DEBUG_PEEK, 4u);
     app_command_write_u16(request + 8u, address);
     app_command_write_u16(request + 10u, (lib_u16)(count * 3u));
     if (!app_command_debug_execute(context, request, sizeof(request), response,
@@ -752,7 +752,7 @@ static void app_command_debug_submit(app_command_context *context,
         lib_u8 response[64];
         lib_size response_size = 0u;
 
-        app_command_debug_header(request, CORE_DEBUG_WARM_RESET, 0u);
+        app_command_debug_header(request, MACHINE_DEBUG_WARM_RESET, 0u);
         if (!app_command_debug_execute(context, request, sizeof(request), response,
                                        sizeof(response), &response_size) ||
             response_size != 52u)

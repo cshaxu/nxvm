@@ -5,7 +5,7 @@
 #include "machine/driver.h"
 #include "core/machine.h"
 
-static lib_u32 probe_audio_queued(const core_driver *driver)
+static lib_u32 probe_audio_queued(const machine_driver *driver)
 {
     lib_u32 queued;
     lib_u32 writable;
@@ -19,7 +19,7 @@ static lib_u32 probe_audio_queued(const core_driver *driver)
 static void probe(const char *variable, lib_u8 mapper, lib_bool text_output)
 {
     const char *path = getenv(variable);
-    core_driver *driver = LIB_NULL;
+    machine_driver *driver = LIB_NULL;
     const char *limit_text = getenv("MYNES_OWNER_SLICES");
     lib_u32 limit = 20000u;
     lib_u32 slice;
@@ -31,14 +31,14 @@ static void probe(const char *variable, lib_u8 mapper, lib_bool text_output)
         assert(value != 0u && value <= LIB_UINT32_MAX);
         limit = (lib_u32)value;
     }
-    assert(core_driver_create(&driver, &(core_driver_options) {
+    assert(machine_driver_create(&driver, &(machine_driver_options) {
         .text_output = text_output }) == LIB_STATUS_OK);
-    assert(core_driver_set_media(driver, path, LIB_STORAGE_MEDIUM_READONLY));
+    assert(machine_driver_set_media(driver, path, LIB_STORAGE_MEDIUM_READONLY));
     assert(driver->machine != LIB_NULL && driver->machine->cartridge->mapper == mapper);
-    core_driver_set_heartbeat(driver, LIB_TRUE);
+    machine_driver_set_heartbeat(driver, LIB_TRUE);
     for (slice = 0u; slice < limit && !driver->machine->trap.trap_valid; ++slice)
-        assert(core_driver_run(driver));
-    assert(core_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
+        assert(machine_driver_run(driver));
+    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK);
     assert(frame.window.valid != 0u && frame.window.graphics ==
         (text_output ? 0u : 1u));
     printf("mapper=%u frame=%s slices=%u instructions=%llu frames=%u pcm=%u queued=%u dropped=%llu trap=%d reason=%u pc=%04x address=%04x opcode=%02x\\n", mapper,
@@ -51,9 +51,9 @@ static void probe(const char *variable, lib_u8 mapper, lib_bool text_output)
         driver->machine->pc, driver->machine->trap.trap_address,
         driver->machine->trap.trap_opcode);
     assert(!driver->machine->trap.trap_valid);
-    core_driver_set_heartbeat(driver, LIB_FALSE);
+    machine_driver_set_heartbeat(driver, LIB_FALSE);
     assert(probe_audio_queued(driver) == 0u);
-    assert(core_driver_destroy(driver) == LIB_STATUS_OK);
+    assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
 }
 
 int main(void)

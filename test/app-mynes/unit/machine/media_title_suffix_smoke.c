@@ -41,18 +41,18 @@ static void make_image(void)
 
 int main(void)
 {
-    core_driver *driver = LIB_NULL;
+    machine_driver *driver = LIB_NULL;
     core_machine *accepted;
 
     make_image();
     write_image();
-    assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
-    assert(core_driver_set_media(driver, "title.nes", LIB_STORAGE_MEDIUM_READONLY));
+    assert(machine_driver_create(&driver, &(machine_driver_options) { 0 }) == LIB_STATUS_OK);
+    assert(machine_driver_set_media(driver, "title.nes", LIB_STORAGE_MEDIUM_READONLY));
     accepted = driver->machine;
     assert(accepted != LIB_NULL && accepted->cartridge->mapper == 4u);
     write_truncated_image();
-    assert(!core_driver_set_media(driver, "title.nes", LIB_STORAGE_MEDIUM_READONLY));
+    assert(!machine_driver_set_media(driver, "title.nes", LIB_STORAGE_MEDIUM_READONLY));
     assert(driver->machine == accepted);
-    assert(core_driver_destroy(driver) == LIB_STATUS_OK);
+    assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
     return 0;
 }

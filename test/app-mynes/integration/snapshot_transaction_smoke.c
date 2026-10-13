@@ -73,7 +73,7 @@ static void debug(emulator_machine *machine, const lib_u8 *request,
 
 static lib_u64 cycles(emulator_machine *machine)
 {
-    lib_u8 request[8] = {CORE_DEBUG_VERSION, 0, CORE_DEBUG_OBSERVE};
+    lib_u8 request[8] = {MACHINE_DEBUG_VERSION, 0, MACHINE_DEBUG_OBSERVE};
     lib_u8 response[52];
     lib_u64 value = 0u;
     debug(machine, request, sizeof(request), response, sizeof(response));
@@ -86,7 +86,7 @@ static void run_and_check(emulator_machine *machine, lib_bool pressed)
     lib_u64 before = cycles(machine);
     lib_u32 sequence;
     kvm_input_event event = {0};
-    lib_u8 request[12] = {CORE_DEBUG_VERSION, 0, CORE_DEBUG_PEEK, 0, 4, 0, 0, 0, 0, 0, 1};
+    lib_u8 request[12] = {MACHINE_DEBUG_VERSION, 0, MACHINE_DEBUG_PEEK, 0, 4, 0, 0, 0, 0, 0, 1};
     lib_u8 response[17];
     assert(emulator_machine_resume(machine));
     wait_state(machine, EMULATOR_MACHINE_RUNNING);
@@ -112,13 +112,13 @@ int main(void)
 {
     fixture();
     for (lib_u32 text = 0u; text < 2u; ++text) {
-        core_driver *driver = LIB_NULL;
+        machine_driver *driver = LIB_NULL;
         emulator_machine *machine = LIB_NULL;
         emulator_machine_driver binding;
         snapshot_bytes snapshot = {0};
         lib_u64 saved;
-        assert(core_driver_create(&driver, &(core_driver_options){.text_output = text != 0u}) == LIB_STATUS_OK);
-        assert(core_driver_make_driver(driver, &binding) == LIB_STATUS_OK);
+        assert(machine_driver_create(&driver, &(machine_driver_options){.text_output = text != 0u}) == LIB_STATUS_OK);
+        assert(machine_driver_make_driver(driver, &binding) == LIB_STATUS_OK);
         assert(emulator_machine_create(&machine, &binding) == LIB_STATUS_OK);
         assert(emulator_machine_set_removable_media(machine, "mynes-snapshot.nes", LIB_STORAGE_MEDIUM_READONLY));
         assert(emulator_machine_reset(machine));
@@ -163,7 +163,7 @@ int main(void)
         run_and_check(machine, LIB_FALSE);
         assert(emulator_machine_shutdown(machine) == LIB_STATUS_OK);
         assert(emulator_machine_destroy(machine) == LIB_STATUS_OK);
-        assert(core_driver_destroy(driver) == LIB_STATUS_OK);
+        assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
     }
     return 0;
 }

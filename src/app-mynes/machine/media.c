@@ -27,10 +27,10 @@ static lib_u64 core_battery_read_u64(const lib_u8 *bytes)
 { return (lib_u64)core_battery_read_u32(bytes) |
     ((lib_u64)core_battery_read_u32(bytes + 4u) << 32u); }
 
-lib_bool core_driver_set_media(void *context, const char *path,
+lib_bool machine_driver_set_media(void *context, const char *path,
     lib_storage_medium_mode mode)
 {
-    core_driver *driver = context;
+    machine_driver *driver = context;
     core_machine *candidate = LIB_NULL;
     void *bytes = LIB_NULL;
     lib_size byte_count = 0u;
@@ -61,7 +61,7 @@ lib_bool core_driver_set_media(void *context, const char *path,
     return LIB_TRUE;
 }
 
-lib_status core_driver_save_battery_ram(core_driver *driver, const char *path)
+lib_status machine_driver_save_battery_ram(machine_driver *driver, const char *path)
 {
     lib_u8 bytes[CORE_BATTERY_SAVE_HEADER_BYTES + CORE_MACHINE_BATTERY_BYTE_CAPACITY] = { 0 };
     core_machine_battery battery;
@@ -96,7 +96,7 @@ lib_status core_driver_save_battery_ram(core_driver *driver, const char *path)
     }
 }
 
-lib_status core_driver_load_battery_ram(core_driver *driver, const char *path)
+lib_status machine_driver_load_battery_ram(machine_driver *driver, const char *path)
 {
     void *bytes = LIB_NULL;
     core_machine_battery battery;

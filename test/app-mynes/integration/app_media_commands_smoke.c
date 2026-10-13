@@ -26,15 +26,15 @@ static void write_fixture(void)
 
 int main(void)
 {
-    core_driver *driver = LIB_NULL;
+    machine_driver *driver = LIB_NULL;
     emulator_machine *machine = LIB_NULL;
     emulator_machine_driver emulator_driver;
     app_command_context command;
     emulator_session_command_result result;
 
     write_fixture();
-    assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
-    assert(core_driver_make_driver(driver, &emulator_driver) == LIB_STATUS_OK);
+    assert(machine_driver_create(&driver, &(machine_driver_options) { 0 }) == LIB_STATUS_OK);
+    assert(machine_driver_make_driver(driver, &emulator_driver) == LIB_STATUS_OK);
     assert(emulator_machine_create(&machine, &emulator_driver) == LIB_STATUS_OK);
     app_command_initialize(&command, machine, LIB_FALSE,
         EMULATOR_SESSION_DISPLAY_WINDOW);
@@ -69,22 +69,22 @@ int main(void)
     app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_STOPPED,
         "rom insert mynes-app-media-fixture.nes", &result);
     assert(result.request == EMULATOR_SESSION_REQUEST_RESET && !result.arm_prompt &&
-        core_driver_has_cartridge(driver));
+        machine_driver_has_cartridge(driver));
     app_command_note_runtime(&command, EMULATOR_SESSION_MACHINE_STOPPED,
         EMULATOR_SESSION_MACHINE_RESET_COMPLETED, &result);
     app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_STOPPED,
         "rom insert mynes-missing-media-fixture.nes", &result);
     assert(lib_text_compare(result.text, "Cartridge insertion failed.\r\n") == 0 &&
-        result.request == EMULATOR_SESSION_REQUEST_NONE && core_driver_has_cartridge(driver));
+        result.request == EMULATOR_SESSION_REQUEST_NONE && machine_driver_has_cartridge(driver));
     app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_RUNNING,
         "rom eject", &result);
     assert(lib_text_compare(result.text, "Stop or pause before ejecting the cartridge.\r\n") == 0 &&
-        core_driver_has_cartridge(driver));
+        machine_driver_has_cartridge(driver));
     app_command_submit_line(&command, EMULATOR_SESSION_MACHINE_PAUSED, "rom eject", &result);
     assert(result.request == EMULATOR_SESSION_REQUEST_STOP && !result.arm_prompt &&
-        !core_driver_has_cartridge(driver));
+        !machine_driver_has_cartridge(driver));
     assert(emulator_machine_shutdown(machine) == LIB_STATUS_OK);
     assert(emulator_machine_destroy(machine) == LIB_STATUS_OK);
-    assert(core_driver_destroy(driver) == LIB_STATUS_OK);
+    assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
     return 0;
 }

@@ -13,7 +13,7 @@
 
 typedef struct native_window_fixture
 {
-    core_driver *driver;
+    machine_driver *driver;
     emulator_machine *machine;
     emulator_session *session;
     emulator_ui *ui;
@@ -287,8 +287,8 @@ int main(void)
     COLORREF active;
 
     write_fixture();
-    assert(core_driver_create(&fixture.driver, &(core_driver_options){0}) == LIB_STATUS_OK);
-    assert(core_driver_make_driver(fixture.driver, &driver) == LIB_STATUS_OK);
+    assert(machine_driver_create(&fixture.driver, &(machine_driver_options){0}) == LIB_STATUS_OK);
+    assert(machine_driver_make_driver(fixture.driver, &driver) == LIB_STATUS_OK);
     assert(emulator_machine_create(&fixture.machine, &driver) == LIB_STATUS_OK);
     assert(emulator_machine_set_removable_media(fixture.machine, FIXTURE_PATH,
                                               LIB_STORAGE_MEDIUM_READONLY));
@@ -383,6 +383,6 @@ int main(void)
     base_sync_event_destroy(fixture.runtime_processed);
     assert(emulator_session_destroy(fixture.session) == LIB_STATUS_OK);
     assert(emulator_machine_destroy(fixture.machine) == LIB_STATUS_OK);
-    assert(core_driver_destroy(fixture.driver) == LIB_STATUS_OK);
+    assert(machine_driver_destroy(fixture.driver) == LIB_STATUS_OK);
     return 0;
 }

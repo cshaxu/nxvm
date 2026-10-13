@@ -14,7 +14,7 @@
 
 typedef struct native_console_fixture
 {
-    core_driver *driver;
+    machine_driver *driver;
     emulator_machine *machine;
     emulator_session *session;
     emulator_ui *ui;
@@ -253,9 +253,9 @@ int main(void)
     output = INVALID_HANDLE_VALUE;
     assert(input != INVALID_HANDLE_VALUE);
     write_fixture();
-    assert(core_driver_create(&fixture.driver, &(core_driver_options){
+    assert(machine_driver_create(&fixture.driver, &(machine_driver_options){
                                                    .text_output = LIB_TRUE}) == LIB_STATUS_OK);
-    assert(core_driver_make_driver(fixture.driver, &driver) == LIB_STATUS_OK);
+    assert(machine_driver_make_driver(fixture.driver, &driver) == LIB_STATUS_OK);
     assert(emulator_machine_create(&fixture.machine, &driver) == LIB_STATUS_OK);
     assert(emulator_machine_set_removable_media(fixture.machine, FIXTURE_PATH,
                                               LIB_STORAGE_MEDIUM_READONLY));
@@ -320,7 +320,7 @@ int main(void)
     CloseHandle(fixture.raw_console_ready);
     assert(emulator_session_destroy(fixture.session) == LIB_STATUS_OK);
     assert(emulator_machine_destroy(fixture.machine) == LIB_STATUS_OK);
-    assert(core_driver_destroy(fixture.driver) == LIB_STATUS_OK);
+    assert(machine_driver_destroy(fixture.driver) == LIB_STATUS_OK);
     CloseHandle(input);
     CloseHandle(output);
     assert(FreeConsole());

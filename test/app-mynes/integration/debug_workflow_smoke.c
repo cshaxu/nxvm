@@ -103,7 +103,7 @@ int main(void)
     lib_u8 fixture[16u + 16384u];
     lib_u8 request[128] = { 0 };
     lib_u8 response[1536];
-    core_driver *driver = 0;
+    machine_driver *driver = 0;
     emulator_machine *machine = 0;
     emulator_machine_driver emulator_driver;
     emulator_machine_debug_lease lease;
@@ -111,8 +111,8 @@ int main(void)
 
     make_fixture(fixture);
     write_fixture(fixture, sizeof(fixture));
-    assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
-    assert(core_driver_make_driver(driver, &emulator_driver) == LIB_STATUS_OK);
+    assert(machine_driver_create(&driver, &(machine_driver_options) { 0 }) == LIB_STATUS_OK);
+    assert(machine_driver_make_driver(driver, &emulator_driver) == LIB_STATUS_OK);
     assert(emulator_machine_create(&machine, &emulator_driver) == LIB_STATUS_OK);
     assert(emulator_machine_set_removable_media(machine, FIXTURE_PATH,
         LIB_STORAGE_MEDIUM_READONLY));
@@ -224,6 +224,6 @@ int main(void)
 
     assert(emulator_machine_shutdown(machine) == LIB_STATUS_OK);
     assert(emulator_machine_destroy(machine) == LIB_STATUS_OK);
-    assert(core_driver_destroy(driver) == LIB_STATUS_OK);
+    assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
     return 0;
 }

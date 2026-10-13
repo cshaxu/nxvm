@@ -52,9 +52,9 @@ injects its machine driver into Emulator; this is the same real execution bounda
 used by SoftPC. Runtime calls from the Emulator executor through that driver do not
 give Emulator knowledge of NES internals. Other App modules never call Core lifecycle
 or access its handle. App command/debug
-may include the Core-owned value-only debug protocol and send it through Emulator;
+may include the Machine-owned value-only debug protocol and send it through Emulator;
 this header introduces no Core runtime dependency or mutable hardware access.
-Core's adapter implements the injected contract; it does not call Common lifecycle
+Machine's adapter implements the injected contract; it does not call Emulator lifecycle
 operations or depend on Emulator implementation headers. Deterministic hardware
 modules do not depend on the adapter, Emulator, host APIs, files, clocks or workers.
 Lib contains no NES/application state or policy. No cyclic link dependency is needed.
@@ -84,25 +84,25 @@ path or chooses a user-visible lifecycle transition. App owns `save <file>` /
 `load <file>`, file streams and the destination replacement policy. Atomic
 replacement is required but currently deferred in [TODO](../states/TODO.md);
 the existing writer truncates the destination and cannot roll back a failed save.
-Common provides
+Emulator provides
 the serialized executor boundary and state-byte transport without interpreting
 the bytes. A load first decodes a bounded candidate, validates its cartridge
 reference and only then replaces live Core state; a failed decode or validation
-leaves the live machine untouched. This image is MyNes-specific, not a Common
+leaves the live machine untouched. This image is MyNes-specific, not an Emulator
 or Lib ABI.
 
 Session's desired actions and last completed facts are projections, not a second
-executor state. Common machine alone admits/executes lifecycle requests and reports
+executor state. Emulator machine alone admits/executes lifecycle requests and reports
 completion. App does not maintain another running flag. UI returns copied events
 through its injected sink and never invokes session processing inline.
 
 Core machine wires CPU bus access and copied interrupt facts through narrow
 contracts. CPU tests may inject that same bus contract. Devices never discover
-or mutate peers; the bus never executes the CPU. The Core machine driver is a real
+or mutate peers; the bus never executes the CPU. The Machine driver is a real
 machine boundary, not a forwarding wrapper: it translates NES input, output,
 loading and debug semantics into shared contracts. It owns no additional run flag.
 
-### Lib And Shared Common
+### Lib And Shared Emulator
 
 | Lib component | Responsibility and permitted support |
 | --- | --- |
@@ -116,11 +116,11 @@ loading and debug semantics into shared contracts. It owns no additional run fla
 | kvm-console | Raw logical Console, text-frame cell presentation and input; accepts text frames only; uses types/base/console/kvm-base. |
 
 KVM Window never calls Console or its broker. KVM Console uses logical Console
-output; Common UI requests broker binding. Audio is a separately admitted leaf,
-not hidden inside KVM. Native workers use Lib primitives; Common has no platform
+output; Emulator UI requests broker binding. Audio is a separately admitted leaf,
+not hidden inside KVM. Native workers use Lib primitives; Emulator has no platform
 directories, SDK types, native calls or OS-selected implementations.
 
-Lib/Common and their tests form one transferable neutral corpus. SoftPC is the
+Lib/Emulator and their tests form one transferable neutral corpus. SoftPC is the
 initial source; the target after reviewed changes is identical shared code usable
 by MyNes, SoftPC and NXVM. There are no MyNes-specific branches inside that corpus.
 Each receiving product owns composition, machine semantics and debugger binding.
@@ -136,37 +136,37 @@ supplies ASCII mappings and does not depend on an implicit CP437 conversion.
 Required text-only submission behavior belongs to the adopted shared baseline.
 A new Lib revision needs owner-approved Shared work or a pinned, reviewed import,
 with verification of every affected App. A missing contract returns to that
-Shared owner, rather than creating a product-local fork. Common preserves its
+Shared owner, rather than creating a product-local fork. Emulator preserves its
 existing mechanisms wherever neutral; repairs require an evidenced contract gap.
 
-Common machine owns executor lifecycle, synchronization and publication. Common
-session owns ordering/reconciliation; Common UI owns host-surface composition.
+Emulator machine owns executor lifecycle, synchronization and publication. Emulator
+session owns ordering/reconciliation; Emulator UI owns host-surface composition.
 Debug command language, assembler/disassembler and concrete register/address
 records are product capabilities outside this neutral trio. SoftPC/NXVM can
 reconnect their own x86 debugger through the same paused request boundary that
 MyNes uses for NES debugging. The extracted components are x86-debug and
-x86-xasm32, outside both Common and Lib. x86-xasm32 owns x86 assembly/disassembly;
+x86-xasm32, outside both Emulator and Lib. x86-xasm32 owns x86 assembly/disassembly;
 x86-debug owns command/register/address vocabulary, codecs and output formatting,
-and may use x86-xasm32 and Common's public neutral debug transport. Common never
+and may use x86-xasm32 and Emulator's public neutral debug transport. Emulator never
 includes or links either component by default. The receiving SoftPC/NXVM App
 constructs and binds them; MyNes does not include them in its default product.
 
 The real CPU/memory/port operations belong to the receiving machine adapter and
-run on the existing Common executor. The App wires this path:
-command -> x86-debug -> Common transport -> machine debug adapter -> result ->
+run on the existing Emulator executor. The App wires this path:
+command -> x86-debug -> Emulator transport -> machine debug adapter -> result ->
 x86-debug formatting. Neither x86 component obtains an unmediated mutable machine
 pointer or creates another execution worker. Their product protocol is separate
-from Common; machine adapters may use its value declarations without linking a
+from Emulator; machine adapters may use its value declarations without linking a
 frontend parser. Shared-source reuse does not require unchanged old adapters.
 
 A debug request has a bounded copied payload/result, explicit operation identity,
-legal states and lifetime. Common validates transport/state/lease; the product
+legal states and lifetime. Emulator validates transport/state/lease; the product
 driver validates semantics and access safety on the executor. No arbitrary
 frontend function pointer is executed as a request, and no universal CPU layout
-is imposed. Common defines bounds, copying, ownership, operation identity,
+is imposed. Emulator defines bounds, copying, ownership, operation identity,
 allowed states, cancellation and typed transport errors. Product protocols define
 operation meanings and request/result layouts, including register snapshots;
-Common does not define their fields or interpret their payloads. An opaque content
+Emulator does not define their fields or interpret their payloads. An opaque content
 contract is not an unbounded void pointer or a renamed x86 structure. MyNes's
 exact sizes/signatures are defined in the detailed App/Core contract.
 
@@ -177,17 +177,17 @@ interpretation stay in machine adapters. Inventory any single-floppy assumption
 before preserving a media hook; do not introduce a universal disk framework or
 convert every existing typed API to opaque debug messages.
 
-Common retains mode selection from the published frame kind and existing display
+Emulator retains mode selection from the published frame kind and existing display
 settings. A graphical frame may select the Window path; a text frame may select
 the raw Console path. This shared mechanism remains useful for machines with
 native graphics/text modes and is not replaced by producer-format negotiation.
 MyNes always generates graphics in its PPU, but its Machine adapter publishes pixels
-for Window gameplay or converted text for Console gameplay. Common sees only the
+for Window gameplay or converted text for Console gameplay. Emulator sees only the
 published kind, not the guest's original hardware mode or conversion provenance.
-No NES-specific branch or new format-negotiation service is needed in Common.
+No NES-specific branch or new format-negotiation service is needed in Emulator.
 App settings reach Core output adaptation through the product's serialized adapter
 control path, whose concrete contract is fixed at integration admission. This is
-not direct frontend access to a running Core. Common continues to own publication,
+not direct frontend access to a running Core. Emulator continues to own publication,
 mode transitions, broker handoff and input reset; Lib only presents accepted data.
 
 Compatible source, names and layout are retained. A neutral extension changes
@@ -199,8 +199,8 @@ Actual upstream/downstream repository edits require their own admitted work.
 
 ### Execution, Control And Debug
 
-The product uses one control thread in Common session and one execution worker
-in Common machine, matching SoftPC's architecture. Only the executor calls the
+The product uses one control thread in Emulator session and one execution worker
+in Emulator machine, matching SoftPC's architecture. Only the executor calls the
 driver to mutate guest state after publication. Native readers/KVM workers enqueue
 copied events; they never execute commands, debug access or Core operations.
 Construction/destruction of unpublished or joined objects is serialized separately.
@@ -215,25 +215,25 @@ The machine input queue is fixed-capacity; session control FIFO grows and
 reports allocation failure. MyNes does not claim a hard bound for that unchanged
 shared FIFO. Product work/messages are bounded; shutdown uses the permanent
 stop/join path and does not wait for a product command to execute on the guest.
-Control ordering uses one Common-owned mechanism per queue; independent media/
+Control ordering uses one Emulator-owned mechanism per queue; independent media/
 debug rendezvous must not become competing mutation or completion authorities.
 
 Core executes finite hardware slices and reports consumed work, boundary and
 typed stop/fault reason. The driver services the existing executor callback/wake
 contract between slices so pause, input and shutdown are bounded. Future host
-pacing belongs to Core machine driver integration on the existing executor,
+pacing belongs to Machine integration on the existing executor,
 using Lib clocks; deterministic Core hardware never reads host time. Guest time
 comes only from hardware rules and explicit inputs. An instruction-boundary cycle
 budget names its allowed final-instruction overshoot; cycle totals do not prove
-cycle accuracy. Common delegates heartbeat to its driver and needs no pacing extension.
+cycle accuracy. Emulator delegates heartbeat to its driver and needs no pacing extension.
 M2 finite execution slices provide control responsiveness, not real-time speed;
 real-time pacing is admitted with M4.
 Product heartbeat remains an optional driver capability, not a shared guest clock.
 The detailed App/Core contract fixes slice, wake, debug and failure bounds.
 
 The required semantic states are no cartridge, loaded/paused, running and faulted;
-Common public states remain authoritative; guest stops are copied Core facts
-within PAUSED, while host failure is Common ERROR. Load enters paused.
+Emulator public states remain authoritative; guest stops are copied Core facts
+within PAUSED, while host failure is Emulator ERROR. Load enters paused.
 Pause retains the loaded machine at a safe boundary; resume requires paused.
 Shared stop ends the run; cold start may reset hardware, matching SoftPC semantics.
 If a MyNes command means suspend-and-continue, App dispatches pause, not stop.
@@ -241,7 +241,7 @@ Unload/replacement is distinct from stopping; stop does not implicitly discard R
 Step requires paused and stays paused on success. Reset completes hardware reset
 before reporting paused. A guest trap stays PAUSED and permits reset/reload;
 a host fault enters ERROR, which rejects reset/media. Host recovery requires
-orderly exit and process restart with a fresh Common/Core composition. Invalid
+orderly exit and process restart with a fresh Emulator/Core composition. Invalid
 requests do not change state. Shutdown is permanent stop/join, distinct from stop.
 
 Machine-dependent debug runs through the existing paused executor rendezvous,
@@ -253,12 +253,12 @@ different typed results. Execution faults report completed work, not rollback.
 
 ### ROM Loading And Public Values
 
-App selects the path; the serialized Common machine request invokes the NES
+App selects the path; the serialized Emulator machine request invokes the NES
 adapter at a safe boundary. The adapter uses Lib storage for bounded bytes; Core
 cartridge validates the format and Core machine constructs a candidate owning
 its ROM and mutable hardware. Only a complete candidate is published. Failure
 releases temporary resources and preserves the previous accepted machine/state.
-Replacement requires Common STOPPED or PAUSED, never RUNNING or ERROR. Common does
+Replacement requires Emulator STOPPED or PAUSED, never RUNNING or ERROR. Emulator does
 not parse ROM headers or own mapper policy. Reset failure after mutation reports
 faulted; transactional load does not imply rollback of hardware execution.
 
@@ -272,23 +272,23 @@ success. Copied frames carry content, sequence and generation consistently.
 ### App/Core Production Integration
 
 App composition creates product options and command/debug providers, the Core
-adapter, then Common machine, session and UI with explicit borrowed callback
+adapter, then Emulator machine, session and UI with explicit borrowed callback
 contexts. Session exists before UI can emit events; composition then binds UI
 and machine sinks.
-It runs the single Common session loop. App main selects exit policy only.
-Common never discovers Core, and Core never starts a worker or a monitor reader.
+It runs the single Emulator session loop. App main selects exit policy only.
+Emulator never discovers Core, and Core never starts a worker or a monitor reader.
 
 | Boundary | Required behavior |
 | --- | --- |
 | App config | Own defaults and accepted effective settings; validate candidate values before dispatch. M2 has no automatic persistent configuration. |
 | App command | Parse one copied cooked line and submit through the session provider. Return at most one lifecycle request for session dispatch; never call it once directly and once via the returned action. |
-| App debug | Encode NES requests and render copied replies. Obtain the Common paused lease; invoke its bounded opaque rendezvous. No direct register or bus pointer. |
-| Core machine driver | Implement Common's driver; own ROM I/O transaction, copied configuration, stop/wake signals, input/output and NES debug translation. |
+| App debug | Encode NES requests and render copied replies. Obtain the Emulator paused lease; invoke its bounded opaque rendezvous. No direct register or bus pointer. |
+| Machine driver | Implement Emulator's driver; own ROM I/O transaction, copied configuration, stop/wake signals, input/output and NES debug translation. |
 | Core machine | Own the accepted hardware instance, reset, deterministic slices and guest time. CPU accesses memory through the production bus. |
 | Cartridge | Parse bounded bytes, validate supported format/mapping and own immutable ROM plus mapper/RAM state; no host path handling. |
 
 The adapter run function invokes the executor callback before executing the first
-instruction and between finite slices. This permits Common cold reset to finish
+instruction and between finite slices. This permits Emulator cold reset to finish
 in PAUSED without retiring a guest instruction. A callback may park the run stack
 and service media replacement; therefore no pointer into the old hardware may
 survive across it. Re-read the adapter's accepted instance after each callback.
@@ -297,15 +297,15 @@ guest traps request a debug-stop PAUSED fact and remain observable; host failure
 return failure after preserving any available copied facts. Neither
 App nor adapter keeps a second authoritative lifecycle state.
 
-Loading is serialized on the session control thread through Common's removable
-media operation. Existing Common accepts it only in STOPPED or PAUSED, dispatches
+Loading is serialized on the session control thread through Emulator's removable
+media operation. Existing Emulator accepts it only in STOPPED or PAUSED, dispatches
 it on its worker and returns a boolean. App first verifies those allowed states.
-Core machine driver reads through Lib storage, validates and constructs a complete candidate,
+Machine reads through Lib storage, validates and constructs a complete candidate,
 then swaps its owned hardware. Parse/allocation/I/O failure preserves the previous
 machine. Generic failure must not be fabricated into a detailed parse diagnosis.
 A richer copied diagnostic requires an explicitly designed product protocol.
 
-Startup attachment leaves Common STOPPED until explicit start. After an
+Startup attachment leaves Emulator STOPPED until explicit start. After an
 interactive cartridge insertion, App requests reset through session; it reports
 loaded-and-paused only after RESET_COMPLETED, not after request admission. Reset
 failure after a committed attachment faults the new machine; it does not promise
@@ -314,31 +314,31 @@ STOPPED is a cold start; pause is the user-facing suspend operation. Stop retain
 the cartridge. Null media unloads only at an allowed boundary; subsequent run
 without a cartridge is rejected. M2 exposes no snapshot persistence.
 
-Common ERROR is terminal for start/reset/media. The product offers help/exit in
+Emulator ERROR is terminal for start/reset/media. The product offers help/exit in
 ERROR and requires orderly process restart for host recovery. Successful
 stop/join precedes destruction; no in-session hidden reconstruction is offered.
-Never attempt a hidden state edit or driver call to bypass Common. A failed join
+Never attempt a hidden state edit or driver call to bypass Emulator. A failed join
 retains borrowed dependencies and makes recovery unavailable.
 
-The product debug protocol is pointer-free and bounded by Common's existing
+The product debug protocol is pointer-free and bounded by Emulator's existing
 128-byte request and 1536-byte response capacities. It names version, operation,
 lengths and typed results; byte layouts are specified in the detailed contract.
 Register observations are copied. Peek must be side-effect-free or unsupported;
 step executes through the same CPU/bus path while paused, with a finite bound.
 Expected debug stops and operation errors are separate from terminal host faults.
-Lease and generation checks remain Common-owned. Failed rendezvous outputs are
+Lease and generation checks remain Emulator-owned. Failed rendezvous outputs are
 not usable; an indeterminate wait requires successful shutdown before further use.
 
 M2 produces no PPU frame: copy_frame returns the documented invalid-frame value,
-not fabricated pixels or an ASCII status screen. In M3, PPU images feed Core machine driver
-pixel/text adaptation; Common still selects routing from the published frame kind.
+not fabricated pixels or an ASCII status screen. In M3, PPU images feed Machine driver
+pixel/text adaptation; Emulator still selects routing from the published frame kind.
 Window and Console remain equal acceptance targets without changing shared code.
 
 ## Product And Host Boundary
 
 ### Cooked Management, Debug And Configuration
 
-Common UI owns the monitor endpoint and one native broker. Session owns one pending
+Emulator UI owns the monitor endpoint and one native broker. Session owns one pending
 cooked line and prompt scheduling. Emulator Product parses fixed command lines and
 dispatches selected operations to MyNES; MyNES debug uses that same path. Help can
 run while the guest executes; configuration remains the startup-only `mynes.ini`
@@ -372,15 +372,15 @@ does not change hardware timing, pixel resolution or emulated state. It runs at
 the existing executor/driver boundary with bounded work and copied format options,
 without host Console APIs, native surface ownership or a second execution worker.
 App owns user settings; Core's adapter applies the selected output representation
-at its serialized machine boundary. Common needs no conversion request or format
+at its serialized machine boundary. Emulator needs no conversion request or format
 selection API for NES. Native UI callbacks never call Core conversion directly.
 
-The converted text frame follows the existing Common machine publication and UI
+The converted text frame follows the existing Emulator machine publication and UI
 routing path to kvm-console. Content kind, extent, sequence and run generation
-identify one complete representation of the source image. Common's existing
+identify one complete representation of the source image. Emulator's existing
 optional graphical-mode status text may remain for products that use it; it is
 not the MyNes ASCII gameplay path. Core publishes a genuine text frame for that
-path, so no replacement of Common's graphical-mode policy is required. Failed
+path, so no replacement of Emulator's graphical-mode policy is required. Failed
 conversion or unsupported format returns an explicit failure without publishing
 a partial/stale representation or altering the accepted binding. Surface changes
 must not reuse an incompatible cached representation. The detailed contract fixes
@@ -388,7 +388,7 @@ frame capacities, copied settings, color quantization and conversion limits.
 
 M3 proof covers Core sampling, cell aspect, glyph/color choices, deterministic
 output for fixed pixels/options and bounded conversion, plus text delivery through
-the real production route. Common/Lib tests use supplied text fixtures and verify
+the real production route. Emulator/Lib tests use supplied text fixtures and verify
 routing, bounds and graphic rejection without importing a pixel-to-text converter.
 A status text or discarded graphic is not ASCII gameplay.
 
@@ -419,7 +419,7 @@ Focus loss, source retirement and raw/cooked handoff release held state; queued
 generation checks and Core's bounded resume input drain prevent stale makes
 from reviving a key. Composition's runtime sink signals Core input reset before
 posting pause/stop/error facts; only the executor applies it. This accommodates
-Common's actual paused release suppression without altering its source. Lib owns its
+Emulator's actual paused release suppression without altering its source. Lib owns its
 local key/chord state; session owns accepted-source routing state;
 the driver owns the mapped guest-button state. Reset crosses these boundaries in
 order, including while paused and before resume. Source reset is not permanent
@@ -432,7 +432,7 @@ dropping policy. Audio has a separate bounded stream contract. A frame notificat
 is a hint to copy the current generation's snapshot, not a lifecycle completion.
 
 App requests session shutdown with all callback targets alive. Admission closes;
-Common machine stops/joins its executor while session/UI sinks still exist. UI
+Emulator machine stops/joins its executor while session/UI sinks still exist. UI
 then retires/joins KVM and broker producers and restores native Console state.
 After producer quiescence, dispose queued events, UI, session and App providers;
 destroy the retained Emulator machine, then its Machine adapter/hardware. A worker that

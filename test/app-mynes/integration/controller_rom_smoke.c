@@ -35,29 +35,29 @@ static void write_fixture(void)
 
 int main(void)
 {
-    core_driver *driver = LIB_NULL;
+    machine_driver *driver = LIB_NULL;
     kvm_input_event input = { .type = KVM_EVENT_KEY, .source_identity = 1u };
     lib_u32 index;
 
     write_fixture();
-    assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
-    assert(core_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
+    assert(machine_driver_create(&driver, &(machine_driver_options) { 0 }) == LIB_STATUS_OK);
+    assert(machine_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
     input.data.key.key = 'K'; input.data.key.pressed = 1u;
-    core_driver_deliver_input(driver, &input);
-    for (index = 0u; index < 16u; ++index) assert(core_driver_run(driver));
+    machine_driver_deliver_input(driver, &input);
+    for (index = 0u; index < 16u; ++index) assert(machine_driver_run(driver));
     assert((driver->machine->ram[0] & 1u) == 1u);
     input.data.key.pressed = 0u;
-    core_driver_deliver_input(driver, &input);
-    for (index = 0u; index < 16u; ++index) assert(core_driver_run(driver));
+    machine_driver_deliver_input(driver, &input);
+    for (index = 0u; index < 16u; ++index) assert(machine_driver_run(driver));
     assert((driver->machine->ram[0] & 1u) == 0u);
     input.data.key.key = KVM_KEY_ENTER; input.data.key.pressed = 1u;
-    core_driver_deliver_input(driver, &input);
-    for (index = 0u; index < 16u; ++index) assert(core_driver_run(driver));
+    machine_driver_deliver_input(driver, &input);
+    for (index = 0u; index < 16u; ++index) assert(machine_driver_run(driver));
     assert((driver->machine->ram[3] & 1u) == 1u);
     input.data.key.pressed = 0u;
-    core_driver_deliver_input(driver, &input);
-    for (index = 0u; index < 16u; ++index) assert(core_driver_run(driver));
+    machine_driver_deliver_input(driver, &input);
+    for (index = 0u; index < 16u; ++index) assert(machine_driver_run(driver));
     assert((driver->machine->ram[3] & 1u) == 0u);
-    assert(core_driver_destroy(driver) == LIB_STATUS_OK);
+    assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
     return 0;
 }

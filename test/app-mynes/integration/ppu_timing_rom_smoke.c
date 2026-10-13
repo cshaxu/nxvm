@@ -70,12 +70,12 @@ static void write_fixture(lib_u8 fine_x)
     assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
 }
 
-static void run_fresh_frames(core_driver *driver, lib_u32 count)
+static void run_fresh_frames(machine_driver *driver, lib_u32 count)
 {
     lib_u32 revision = driver->machine->ppu.frame_revision + count;
     lib_u32 limit;
     for (limit = 0u; driver->machine->ppu.frame_revision < revision && limit < 256u; ++limit)
-        assert(core_driver_run(driver));
+        assert(machine_driver_run(driver));
     assert(driver->machine->ppu.frame_revision >= revision);
 }
 
@@ -94,19 +94,19 @@ static lib_u8 expected_bit(lib_u8 fine_x, lib_u32 x)
 
 static void prove_fine_x(lib_u8 fine_x)
 {
-    core_driver *driver = LIB_NULL;
+    machine_driver *driver = LIB_NULL;
     emulator_machine_frame frame = { 0 };
     lib_u32 x;
 
     write_fixture(fine_x);
-    assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
-    assert(core_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
+    assert(machine_driver_create(&driver, &(machine_driver_options) { 0 }) == LIB_STATUS_OK);
+    assert(machine_driver_set_media(driver, FIXTURE_PATH, LIB_STORAGE_MEDIUM_READONLY));
     run_fresh_frames(driver, 3u);
-    assert(core_driver_copy_frame(driver, &frame) == LIB_STATUS_OK && frame.window.graphics);
+    assert(machine_driver_copy_frame(driver, &frame) == LIB_STATUS_OK && frame.window.graphics);
     for (x = 0u; x < 24u; ++x)
         assert(rgb_at(&frame, x, 1u) ==
             (expected_bit(fine_x, x) ? LIGHT_GREEN : BLACK));
-    assert(core_driver_destroy(driver) == LIB_STATUS_OK);
+    assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
 }
 
 int main(void)

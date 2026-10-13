@@ -39,7 +39,7 @@ int main(void)
     core_machine *machine = lib_allocate_zero(1u, sizeof(*machine));
     emulator_machine_frame *actual = lib_allocate_zero(1u, sizeof(*actual));
     emulator_machine_frame *expected = lib_allocate_zero(1u, sizeof(*expected));
-    core_driver driver = { .machine = machine };
+    machine_driver driver = { .machine = machine };
     lib_u32 rgb[512];
     lib_u32 random = 1u;
     lib_test_assert(machine != LIB_NULL && actual != LIB_NULL && expected != LIB_NULL);
@@ -50,7 +50,7 @@ int main(void)
         for (lib_u32 index = 0u; index < CORE_PPU_WIDTH * CORE_PPU_HEIGHT; ++index)
             machine->ppu.completed[index] = (lib_u16)sample;
         ++machine->ppu.frame_revision;
-        lib_test_assert(core_driver_copy_frame(&driver, actual) == LIB_STATUS_OK);
+        lib_test_assert(machine_driver_copy_frame(&driver, actual) == LIB_STATUS_OK);
         rgb[sample] = actual->window.image.palette[0];
     }
     for (lib_u32 scene = 0u; scene < 8u; ++scene) {
@@ -65,14 +65,14 @@ int main(void)
                 scene == 6u ? 0u : (lib_u16)(random >> 16u);
         }
         ++machine->ppu.frame_revision;
-        lib_test_assert(core_driver_copy_frame(&driver, actual) == LIB_STATUS_OK);
+        lib_test_assert(machine_driver_copy_frame(&driver, actual) == LIB_STATUS_OK);
         lib_test_assert(actual->window.valid && actual->window.graphics);
         reference_frame(machine, rgb, expected);
         for (lib_u32 index = 0u; index < 256u; ++index)
             lib_test_assert(actual->window.image.palette[index] == expected->window.image.palette[index]);
         for (lib_u32 index = 0u; index < CORE_PPU_WIDTH * CORE_PPU_HEIGHT; ++index)
             lib_test_assert(actual->window.image.pixels[index] == expected->window.image.pixels[index]);
-        lib_test_assert(core_driver_copy_frame(&driver, actual) == LIB_STATUS_OK);
+        lib_test_assert(machine_driver_copy_frame(&driver, actual) == LIB_STATUS_OK);
         lib_test_assert(!actual->window.valid);
     }
     lib_release(expected); lib_release(actual); lib_release(machine);

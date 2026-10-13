@@ -9,7 +9,7 @@
 static lib_status save_status;
 static lib_u32 save_calls, media_calls;
 
-static lib_status save_battery(core_driver *driver, const char *path)
+static lib_status save_battery(machine_driver *driver, const char *path)
 {
     assert(driver != LIB_NULL && path != LIB_NULL);
     ++save_calls;
@@ -25,11 +25,11 @@ static lib_bool set_media(emulator_machine *machine, const char *path,
 
 /* Substitute only existing boundaries, to observe whether a failed save can
  * reach the destructive media operation. No production test API is added. */
-#define core_driver_save_battery_ram save_battery
+#define machine_driver_save_battery_ram save_battery
 #define emulator_machine_set_removable_media set_media
 #include "product/composition.c"
 #undef emulator_machine_set_removable_media
-#undef core_driver_save_battery_ram
+#undef machine_driver_save_battery_ram
 
 
 int main(void)
@@ -38,9 +38,9 @@ int main(void)
     emulator_machine_driver driver;
     emulator_product *product = LIB_NULL;
     emulator_session_options options = {0};
-    assert(core_driver_create(&composition.driver,
-        &(core_driver_options){0}) == LIB_STATUS_OK);
-    assert(core_driver_make_driver(composition.driver, &driver) == LIB_STATUS_OK);
+    assert(machine_driver_create(&composition.driver,
+        &(machine_driver_options){0}) == LIB_STATUS_OK);
+    assert(machine_driver_make_driver(composition.driver, &driver) == LIB_STATUS_OK);
     composition.command.display = EMULATOR_SESSION_DISPLAY_CONSOLE;
     assert(emulator_product_create(&(emulator_product_machine){
         .machine = &composition,
