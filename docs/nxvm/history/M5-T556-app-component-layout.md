@@ -24,3 +24,13 @@ hardware and exposes only bounded copied/direct operations required by that
 adapter. Pure MMC3 behavior remains Core-owned. Both width-specific MyNES CTest
 runs pass 57/57; the current 0044 x64/x86 artifacts were rebuilt. Manual use is
 not implied by those automated routes.
+
+My5160 S3 is complete. Its former `product/`, `profiles/` and `profiles/rom/`
+source nesting and mirrored unit nesting are replaced by a flat App root with
+role names (`main`, `product_binding`, `machine_plan`, `machine_config`,
+`firmware_map`). The build target is `my5160-machine`. The root firmware
+generator recognizes either an App-root entry or a retained `product/` entry;
+this repaired the only migration regression, where the first flattened build
+generated firmware under `src/product` instead of the My5160 App. The repaired
+x64/x86 installer routes reach the installer, and the current artifact pair is
+rebuilt. Shared-six and Core implementation remain unchanged.

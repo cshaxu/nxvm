@@ -90,6 +90,19 @@ bounded ROM-image normalization. Machine no longer includes Core's private
 cartridge or machine layout. MyNES x64/x86 CTest passes 57/57 on each width,
 including 45 unit and 12 integration routes; the current 0044 pair was rebuilt.
 
+## Accepted S3 Record
+
+My5160 S3 flattens its fixed XT App in the accepted inventory shape: `main`,
+`product_binding`, `machine_plan`, `machine_config`, `firmware_map`, and their
+interfaces now live directly in `src/app-my5160`; its two unit sources now live
+directly in `test/app-my5160/unit`. The target is renamed `my5160-machine`.
+The common profile-build directory derivation now correctly recognizes both an
+App-root entry and a retained `product/` entry, so embedded firmware remains
+owned by the selected App during incremental flattening. No Shared-six or Core
+implementation changed. Core/test-core manifests now record the moved trees.
+My5160 x64/x86 units, manifest/corpus/ownership gates, session-status route and
+actual floppy installer boot each pass; the x64/x86 artifact pair was rebuilt.
+
 ## Completion And Stop Conditions
 
 Every current production/test file has a destination or justified retention;

@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
 
-#include "app-my5160/profiles/xt_5160_268.h"
+#include "app-my5160/machine_config.h"
 #include "core/board-base/floppy_interface.h"
 
 /* This bit represents only the B1 CPU/Core input. It is not a claim that a

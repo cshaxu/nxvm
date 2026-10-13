@@ -265,7 +265,7 @@ add_executable(mydeskpro386-dma-deadline-smoke
     test/app-mydeskpro386/unit/profiles/model40_dma_deadline_smoke.c)
 target_link_libraries(mydeskpro386-dma-deadline-smoke PRIVATE vm-profile-tests)
 add_executable(my5160-dma-deadline-smoke
-    test/app-my5160/unit/profiles/ibm_5160_dma_deadline_smoke.c)
+    test/app-my5160/unit/machine_dma_deadline_smoke.c)
 target_link_libraries(my5160-dma-deadline-smoke PRIVATE vm-profile-tests)
 foreach(target IN ITEMS
     nxvm-default-dma-deadline-smoke
@@ -285,12 +285,12 @@ add_executable(mydeskpro386-plan-smoke
     test/app-mydeskpro386/unit/profiles/model40_plan_smoke.c)
 target_link_libraries(mydeskpro386-plan-smoke PRIVATE vm-profile-tests)
 add_executable(vm-xt-5160-268-profile-smoke
-    test/app-my5160/unit/profiles/profile_smoke.c)
+    test/app-my5160/unit/machine_smoke.c)
 target_sources(vm-xt-5160-268-profile-smoke PRIVATE
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/support/composition_fixture.c
     test/core/board-base/support/controller_fixture.c)
-target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE my5160-profile)
+target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE my5160-machine)
 
 
 
@@ -693,7 +693,7 @@ target_link_libraries(mydeskpro386-d4 PUBLIC core-board-base core-board-at core-
 add_library(vm-profile-tests INTERFACE)
 target_link_libraries(vm-profile-tests INTERFACE
     nxvm-profile
-    my5160-profile
+    my5160-machine
     my5170-profile
     mydeskpro386-profile
     mydeskpro386-d4
@@ -711,7 +711,7 @@ else()
 endif()
 
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
-    add_library(vm-profile-selected ALIAS my5160-profile)
+    add_library(vm-profile-selected ALIAS my5160-machine)
 elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "at")
     add_library(vm-profile-selected ALIAS my5170-profile)
 elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40")

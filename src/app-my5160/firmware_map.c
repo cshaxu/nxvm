@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 
-#include "app-my5160/profiles/xt_5160_268.h"
+#include "app-my5160/machine_config.h"
 #include "core/board-base/rom_validation_interface.h"
 #include "core/board-base/rom_mapping_interface.h"
 

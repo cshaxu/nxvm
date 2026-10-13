@@ -63,7 +63,14 @@ include("${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_mydeskpro386_boundary.cmake")
 include("${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_nxvm_app_boundary.cmake")
 
 get_filename_component(nxvm_product_directory "${NXVM_PRODUCT_ENTRY}" DIRECTORY)
-get_filename_component(nxvm_app_directory "${nxvm_product_directory}" DIRECTORY)
+# An App entry may live in its root after flattening, or in its product
+# subdirectory while that App retains internal components.  The App root is
+# the directory that owns its CMakeLists.txt in either layout.
+if(EXISTS "${nxvm_product_directory}/CMakeLists.txt")
+    set(nxvm_app_directory "${nxvm_product_directory}")
+else()
+    get_filename_component(nxvm_app_directory "${nxvm_product_directory}" DIRECTORY)
+endif()
 get_filename_component(nxvm_generated_product "${nxvm_app_directory}" NAME)
 
 # Only products and external integration link this target; unit fixtures do not.

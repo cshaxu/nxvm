@@ -38,8 +38,8 @@ endforeach()
 file(GLOB_RECURSE profile_sources
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.h"
-    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/*.h")
 list(APPEND profile_sources "${PROJECT_SOURCE_DIR}/src/core/board-base/rom_mapping.c"

@@ -85,8 +85,8 @@ endforeach()
 file(GLOB_RECURSE app_sources
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.h"
-    "${PROJECT_SOURCE_DIR}/src/app-my5160/product/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-my5160/product/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/product/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/product/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/product/*.c"
@@ -104,7 +104,7 @@ endforeach()
 file(GLOB_RECURSE profile_plans
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.[ch]"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*/machine_plan.c"
-    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/machine_plan.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/machine_plan.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/profiles/machine_plan.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/machine_plan.c")
 foreach(source IN LISTS profile_plans)
@@ -117,7 +117,11 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/machine_binding.c" factory
 set(binding_apps app-nxvm app-my5160 app-my5170 app-mydeskpro386)
 set(binding_constructors default xt 5170 model40)
 foreach(app constructor IN ZIP_LISTS binding_apps binding_constructors)
-    file(READ "${PROJECT_SOURCE_DIR}/src/${app}/product/machine_binding.c" binding)
+    if(app STREQUAL "app-my5160")
+        file(READ "${PROJECT_SOURCE_DIR}/src/${app}/product_binding.c" binding)
+    else()
+        file(READ "${PROJECT_SOURCE_DIR}/src/${app}/product/machine_binding.c" binding)
+    endif()
     if(NOT binding MATCHES "\\.prepare = vm_profile_machine_plan_create_${constructor}([ \t\r\n]|$)" OR
             binding MATCHES "config->profile_kind|vm_profile_machine_plan_create\\(")
         message(FATAL_ERROR "${app} does not bind its fixed ${constructor} constructor")
@@ -150,8 +154,8 @@ endforeach()
 file(GLOB_RECURSE app_profile_sources
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.h"
-    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-my5160/profiles/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/profiles/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/profiles/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/*.c"

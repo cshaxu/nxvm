@@ -1,5 +1,5 @@
 #include "core/product/startup_interface.h"
-#include "app-my5160/product/binding_interface.h"
+#include "app-my5160/product_binding_interface.h"
 
 #define APP_PRODUCT_NAME "My5160"
 

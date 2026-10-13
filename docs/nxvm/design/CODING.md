@@ -5,8 +5,8 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 
 ## Current Tree
 
-The product/shared-corpus layout is current. My5160 owns its `product` and
-`profiles` roots; My5170 owns those same roots after accepted S2.
+The product/shared-corpus layout is current. My5160 is flat; My5170 retains
+its `product` and `profiles` roots until its own layout step.
 MyDeskPro386 owns its relocated composition after accepted S3;
 Current records runnable acceptance. Only default remains below `app-nxvm`.
 `firmware` owns
@@ -22,9 +22,8 @@ src/
                         portable x86 tools and shared IBM PC interaction
   core/{chips,x86,board-base,board-xt,board-at,machine,product}/
                            NXVM-only machine stack and family product support
-  app-my5160/           fixed IBM 5160 App
-    product/            thin main and fixed XT binding
-    profiles/           IBM 5160 composition and firmware slots
+  app-my5160/           fixed IBM 5160 App: main, product binding,
+                         machine plan/configuration/construction and firmware map
   app-my5170/           fixed IBM 5170 App
     product/            thin main and fixed AT binding
     profiles/           IBM 5170 values, constraints and preparation
@@ -110,7 +109,7 @@ four-App NXVM-family Product component owns `test/core/product`; individual
 App-only tests live below their matching `test/app-*/` root.
 Shared board and family tests live in `test/core/board-base`,
 `test/core/board-at` and `test/core/board-xt`, with their actual source owners.
-Profile tests follow their real `src/app-*/profiles/` owner. The independent
+Profile tests follow their real source owner. The independent
 My5160, My5170 and MyDeskPro386 test roots preserve their original assertions;
 default remains in `test/app-nxvm`. PC-family composition tests and their
 single mixed-family fixture live in `test/core/machine/composition` and

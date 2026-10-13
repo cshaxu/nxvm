@@ -1,6 +1,6 @@
 #include "core/machine/preparation_interface.h"
-#include "app-my5160/profiles/construction_interface.h"
-#include "app-my5160/profiles/xt_5160_268.h"
+#include "app-my5160/machine_construction_interface.h"
+#include "app-my5160/machine_config.h"
 
 typedef struct vm_profile_xt_machine_plan {
     vm_machine_construction construction;

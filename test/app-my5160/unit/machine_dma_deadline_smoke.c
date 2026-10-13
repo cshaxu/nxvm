@@ -1,4 +1,4 @@
-#include "app-my5160/profiles/xt_5160_268.h"
+#include "app-my5160/machine_config.h"
 #include "../../../core/machine/support/dma_deadline_fixture.h"
 
 static lib_i32 configure(core_machine_config *out_configuration)
