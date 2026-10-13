@@ -2,30 +2,31 @@
 
 ## Current Work
 
-M5 T556 S1 is admitted for five-App component-layout design and migration
-inventory. The owner requests MyNES `{core,machine,product}`, flat My5160 and
-My5170, DeskPro `{chips,machine,product}`, and flat NXVM except `firmware/`.
-The [proposal](../proposals/m5-app-component-layout.md) records the initial
-S1--S7 plan. Production migration has not started.
+M5 T556 S2 is admitted for the MyNES Machine extraction. The owner requests
+MyNES `{core,machine,product}`, flat My5160 and My5170, flat NXVM except
+`firmware/`, then DeskPro `{chips,machine,product}`. S1's
+[inventory](../etc/evidence/t556-s1-app-layout-inventory.md) is the fixed
+migration map; the [proposal](../proposals/m5-app-component-layout.md)
+records S2--S7. S2 is the first production migration.
 
-## Current Task — M5 T556 S1 App Layout Design
+## Current Task — M5 T556 S2 MyNES Machine Extraction
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New: T556 follows closed T555; S1 is the design and inventory batch. |
-| Admission And Approval | Owner's 2026-10-12 request explicitly admits the five-App restructuring. Single-person coordinator/executor. S1 writes NXVM planning documents only; later target-separated batches cover MyNES and necessary Shared root build references. |
-| Objective | Map all five App production files, tests and direct build/caller references to the owner-requested layout, resolving actual ownership boundaries before moves. |
-| Non-goals | No production migration in S1, shared-six modification, behavioral change, snapshot format change, owner media/INI mutation or new runtime layer. |
-| Reference Baseline | T555 closure 8f195943b, clean worktree; current five App sources and tests. |
+| Identifier Mode | Continuation: T556 S2 follows accepted S1 inventory. |
+| Admission And Approval | Owner's 2026-10-12 approval admits the five-App layout task and automatic S admission. S2 has target `MyNES`; NXVM Current remains the T packet owner. |
+| Objective | Establish `src/app-mynes/{core,machine,product}` by moving the Emulator Machine adapter out of Core, with one bounded Core service boundary that preserves behavior. |
+| Non-goals | No shared-six modification, product command redesign, snapshot format change, owner media/INI mutation, new executor/manager, raw Core-layout export or generic getter framework. |
+| Reference Baseline | S1 inventory `t556-s1-app-layout-inventory.md`; pushed S1 P1 `c84ae39d3`; current MyNES source/test/build trees. |
 | Candidate Proposal | [Five-App component layout](../proposals/m5-app-component-layout.md). |
-| Files And ABI Surface | docs/nxvm proposal/history/current/queue; read-only five App source/test/build and MyNES authorities. No ABI change in S1. |
-| Applicable Rules | Product guides; Contributing; shared Execution, Architecture, Coding, Document; NXVM/MyNES architecture and layout; NXVM Roadmap/Queue. |
-| Verification | Read actual headers, private callers, target lists and test routes; check complete file-to-owner inventory, dependencies, names and source/test parity; run NXVM documentation and whitespace gates. |
-| Expected Markers | Each file and boundary has one destination, each existing test has an owner, and MyNES/DeskPro private-access gaps have a concrete design before implementation. |
-| Asset Needs | None in S1. Later batches preserve INIs/media/snapshots and publish affected current-version executable pairs. |
-| Reporting Requirements | Explain feasibility, actual coupling, target structure and ordered S plan; record per-batch file maps and estimated diff before implementation. |
-| Stop Conditions | Required shared-six change, source behavior change, incompatible saved format or an ownership decision outside the approved layout. |
-| Exit Criteria | Complete source/test/caller migration inventory and boundary design recorded; documentation checks pass; reviewed S1 delivery committed/pushed. |
+| Files And ABI Surface | `src/app-mynes/{core,machine,product}`, `test/app-mynes/unit/{core,machine,product}`, MyNES CMake/configuration and MyNES architecture/layout docs. Private Core operations may be replaced only by bounded services required by a present Machine caller. |
+| Applicable Rules | MyNES guide/architecture/layout; Contributing; shared Execution/Architecture/Coding/Document rules; S1 inventory; architecture/coding governance skills. |
+| Verification | Review every moved caller and Core service; run MyNES Core/Machine/Product units on x64/x86, MyNES integration regression, manifests/dependency/whitespace/documentation gates, then rebuild and PE-verify the current MyNES x64/x86 pair. |
+| Expected Markers | Core has no Emulator dependency; Machine contains the sole Emulator adapter; no caller accesses Core private layout; every former `unit/core` driver/media/debug assertion has one correct owner. |
+| Asset Needs | Existing MyNES owner ROM/media/snapshot inputs are read-only. Rebuild the current MyNES pair only after code qualification. |
+| Reporting Requirements | Before modification, report exact moved files, boundary calls and estimated diff. At delivery report source/test counts, retained paths, actual additions/deletions/net, x64/x86 results, pair hashes and unexecuted desktop validation. |
+| Stop Conditions | Required Shared/API change outside existing boundaries, incompatible snapshot/battery behavior, unavoidable raw Core layout dependency, protected-asset need or new runtime layer. |
+| Exit Criteria | Paths match `{core,machine,product}`; bounded services replace adapter private-layout access; required x64/x86 routes pass; manifests/artifacts are current; target-scoped P is pushed and reviewed. |
 | Original Owner Request | Admit an App-layout T: extract MyNES Machine adapter, flatten My5160/My5170, split DeskPro Chips/Machine/Product, retain only NXVM firmware subcomponent; give feedback. |
 | Similar-Issue Sweep | Inspect all five Apps and their test/build/tool references for private-header access, stale owner names, nested ROM directories and duplicate target registration. |
 
