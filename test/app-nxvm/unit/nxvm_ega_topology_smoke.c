@@ -2,10 +2,10 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "../../../core/board-base/composition/bus_fixture.h"
-#include "../../../core/support/video_topology_fixture.h"
-#include "../../../core/board-base/support/video_topology_fixture.h"
-#include "../../support/rom/session_assets.h"
+#include "../../core/board-base/composition/bus_fixture.h"
+#include "../../core/support/video_topology_fixture.h"
+#include "../../core/board-base/support/video_topology_fixture.h"
+#include "../support/rom/session_assets.h"
 #include "core/machine/machine_private.h"
 
 lib_i32 main(void)

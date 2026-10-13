@@ -1,6 +1,6 @@
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include "../../../core/board-base/composition/composition_fixture.h"
+#include "../../core/board-base/composition/composition_fixture.h"
 #include <stdio.h>
 
 #include "core/machine/lifecycle.h"
@@ -9,7 +9,7 @@
 #include "app-nxvm/machine_config_interface.h"
 
 #include "core/x86/debug_interface.h"
-#include "../../support/rom/session_assets.h"
+#include "../support/rom/session_assets.h"
 
 static lib_i32 vm_pcat_composition_reset_state_matches(vm_machine *session)
 {

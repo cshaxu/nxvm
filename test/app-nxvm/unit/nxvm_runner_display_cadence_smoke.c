@@ -7,8 +7,8 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "x86/debug/protocol_interface.h"
-#include "../../../core/machine/support/emulator_machine_fixture.h"
-#include "../../support/rom/session_assets.h"
+#include "../../core/machine/support/emulator_machine_fixture.h"
+#include "../support/rom/session_assets.h"
 
 static void vm_runner_completed_state(void *context,
     emulator_machine_state state, lib_u32 run_generation)

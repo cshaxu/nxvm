@@ -4,11 +4,11 @@
 #include "lib/types/file.h"
 
 #include "core/board-base/vadp_interface.h"
-#include "../../../core/board-base/composition/bus_fixture.h"
+#include "../../core/board-base/composition/bus_fixture.h"
 #include "core/machine/display.h"
 #include "core/machine/lifecycle.h"
-#include "../../../core/machine/support/nxvm_presentation_capture.h"
-#include "../../support/rom/session_assets.h"
+#include "../../core/machine/support/nxvm_presentation_capture.h"
+#include "../support/rom/session_assets.h"
 #include "core/machine/machine_private.h"
 
 static void vm_display_composition_port_write(vm_machine *session, lib_u16 port,

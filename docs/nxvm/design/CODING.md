@@ -118,7 +118,7 @@ single mixed-family fixture live in `test/core/machine/composition` and
 The former helper-only `device` and `byob` roots are retired. Do not create
 empty future-profile directories. Retained
 NXVM composition/configuration tests live directly in `test/app-nxvm/unit/`;
-firmware tests remain in `test/app-nxvm/unit/firmware/`. DeskPro unit tests
+firmware tests remain in `test/app-nxvm/unit/firmware/`. All other NXVM unit tests are direct children of `test/app-nxvm/unit/`. DeskPro unit tests
 mirror `chips` and `machine`. CPU, chip, execution-Core and board-timing tests
 live under `test/core`, preserving all CPU models. The remaining `test/x86` package
 covers only portable Debug/Xasm32. Neutral Core tests build independently of

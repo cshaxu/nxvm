@@ -1,12 +1,12 @@
-#include "../../support/profile.h"
-#include "../../support/rom/session_assets.h"
+#include "../support/profile.h"
+#include "../support/rom/session_assets.h"
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "lib/types/file.h"
 
 #include "core/machine/machine_private.h"
-#include "../../../core/board-base/support/composition_fixture.h"
+#include "../../core/board-base/support/composition_fixture.h"
 #include "app-nxvm/machine_config_interface.h"
 
 static lib_i32 verify_recovery(void);

@@ -42,6 +42,12 @@ qualification issue, not evidence of a path or registration regression; S6
 remains active until it is independently diagnosed and either repaired or
 formally re-scoped. No failing route is counted as accepted.
 
+P3 completes the S7 audit's NXVM-layout correction without changing executable
+inputs: all 28 non-firmware NXVM unit receivers now live directly under
+`test/app-nxvm/unit`, matching its flat source root; only `unit/firmware`
+remains a component directory. Both default x64/x86 full graphs and all 36
+registered NXVM unit receivers pass.
+
 ## Previous Task
 
 M5 T555 is closed. Its finite retained controller/board universe is reconciled
