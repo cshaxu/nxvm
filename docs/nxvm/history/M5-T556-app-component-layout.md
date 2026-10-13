@@ -5,6 +5,11 @@ Owner admitted T556 on 2026-10-12. The
 layout and ordered S plan. S1--S7 are accepted. Owner admitted S8 comprehensive
 quality audit on 2026-10-13, with confirmed repairs assigned to S9; T556 remains open.
 
+S8 audit P1 `a28cac691` is accepted after coordinator inspection of its five
+documentation files and finding-to-receiver mapping. Static evidence is not
+presented as new runtime proof. S9 is admitted for A1--A5; A6 remains a
+separate shared-rule Td receiver. No S9 implementation has been delivered yet.
+
 S7 repair and delivery are pushed as `307cf1bd6` and `2df276f8c`.
 The [S7 evidence](../etc/evidence/t556-s7-deskpro-boot-review.md) preserves
 unattended dual-width installer proof and the distinction between complete-case

@@ -2,29 +2,28 @@
 
 ## Current Work
 
-M5 T556 S7 is accepted by the owner's direction to proceed to S8. S8 audits
-governance, current documentation, code quality, test ownership and delivery
-evidence for the complete five-App layout change. Implementation remains
-unchanged during this audit. Confirmed repairs are assigned to S9; T556 stays open.
+M5 T556 S8 is complete after coordinator review of `a28cac691`.
+S9 is admitted under the owner's request to repair confirmed audit findings.
+T556 stays open; S9 implementation and final qualification are not yet complete.
 
-## Current Task — M5 T556 S8 Comprehensive Quality Audit
+## Current Task — M5 T556 S9 Audit Repairs And Qualification
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: S8 follows owner-accepted S7. |
-| Admission And Approval | Owner's 2026-10-13 request admits comprehensive S8 audit and assigns necessary repairs to S9. |
-| Objective | Reconcile the complete T556 layout, governance, documentation, implementation boundaries and verification evidence against current code. |
-| Non-goals | No production/test/build/asset repair during S8; no Shared-six modification; no claim of exhaustive hardware correctness from static inspection. |
-| Reference Baseline | Clean pushed `2df276f8c`; S7 implementation `307cf1bd6`; accepted S1--S6 migration records. |
+| Identifier Mode | Continuation: S9 follows completed S8 audit and accepted S1--S7. |
+| Admission And Approval | Owner's 2026-10-13 request assigns necessary audit repairs to S9. Targets are NXVM and MyNES, with separate commits; public six and shared rules remain excluded. |
+| Objective | Repair A1--A5 in the S8 audit ledger; retain A6's separate Td receiver; complete the original five-App qualification predicate. |
+| Non-goals | No Shared-six or shared-rule edit, unrelated hardware rewrite, new runtime manager, persisted-format change or owner-input mutation. |
+| Reference Baseline | S8 audit `a28cac691`; accepted S7 implementation `307cf1bd6`. |
 | Candidate Proposal | [Five-App component layout](../proposals/m5-app-component-layout.md). |
-| Files And ABI Surface | Read Core, five Apps, corresponding tests, shared boundaries, build/tools and current documentation; write only NXVM task packet, proposal, history and audit evidence. No ABI change. |
+| Files And ABI Surface | Core test registration/owner gates; DeskPro Chips/Machine and tests; moved MyNES Machine symbols/callers; corresponding product docs/build/version/artifact receivers. Private boundary adjustments only; no Shared API change. Exact repair/estimated diff is in the S8 ledger. |
 | Applicable Rules | Product guides; shared Execution, Architecture, Coding and Document rules; both product architecture/layout authorities; source policy; architecture-governance and coding-governance skills. |
-| Verification | Inventory all declared owners; run documentation, manifest and boundary checks; inspect configured test names/labels; review migrated contracts and S7 changes; distinguish retained dynamic evidence from fresh static checks. |
-| Expected Markers | Complete audit ledger with evidence, severity, owner and repair disposition; no unsupported all-green claim. |
-| Asset Needs | Existing artifacts and owner inputs read-only. |
-| Reporting Requirements | Report confirmed findings separately from hypotheses, S9 files/repair plan, unexecuted verification and preserved T exit conditions. |
-| Stop Conditions | Report any Shared-six or shared-rule repair for its required separate approval/admission; do not implement it within the audit. |
-| Exit Criteria | Audit ledger reconciled, confirmed repairs assigned to bounded S9, applicable governance checks pass, actual documentation diff reviewed and pushed. |
+| Verification | Correct labels/names without reducing cases; reject incomplete D4 attachment with rollback proof; run dual-width full units and every admitted profile/MyNES integration in original Ninja/ccache trees; verify manifests, dependency/doc gates and affected release pairs. |
+| Expected Markers | No absolute-path or mislabeled Core tests; Chips has no Core registration owner; missing alias rejects atomically; documents match current source; complete per-route results and ten qualified artifacts. |
+| Asset Needs | Existing BYOB inputs read-only; update affected executable pairs only, preserving INIs, media, ROM originals and snapshots. |
+| Reporting Requirements | Report per-target actual added/deleted/net lines, retained owners, exact test coverage, artifact identities/hashes, failures and unexecuted desktop checks. |
+| Stop Conditions | Required Shared-six/rule change, incompatible saved data, unexplained behavior change or newly expanded hardware scope. Report rather than patch outside this packet. |
+| Exit Criteria | A1--A5 repaired with evidence; A6 explicitly transferred; required dual-width builds/tests and artifact checks complete; actual changes reviewed, per-target P commits pushed, clean worktree; T closure still requires final acceptance. |
 | Original Owner Request | Admit S8 for comprehensive governance, documentation and code-quality audit; admit S9 for necessary repairs. |
 | Similar-Issue Sweep | Search all five App owners and Core plus current authorities for the same stale ownership, registration, vocabulary and contract defects; retain historical terminology as history. |
 
@@ -38,7 +37,7 @@ remain unchanged. Shared-rule vocabulary retains a separate Td receiver.
 
 | Task | Progress |
 | --- | --- |
-| T556 S8 | Audit delivered; S1--S7 accepted. Confirmed repairs and final whole-task qualification are assigned to S9; T556 remains open. |
+| T556 S9 | Admitted, implementation pending. S8 audit `a28cac691` accepted after actual-change review; S1--S7 accepted. T556 remains open. |
 
 ## Retained S7 Delivery Record — Superseded By S8 Admission
 
