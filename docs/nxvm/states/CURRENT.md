@@ -2,73 +2,19 @@
 
 ## Current Work
 
-M5 T555 remains open: qualify retained controllers and board wiring for four
-fixed PC Apps. S1--S7 are closed; S8 cross-profile controller closure is
-implemented and awaits owner delivery review.
-Accepted runnable delivery is S6 `73d796724`, pushed to origin/master.
-The owner's instruction to admit the next S accepts the delivered S6 batch.
-Its [delivery record](../etc/evidence/t555-s6-copied-glyph-capacity.md) and
-the [video ledger](../etc/evidence/t555-s5-video-source-ledger.md) preserve
-proved boundaries and the complete remaining source/receiver classes.
+M5 T555 is closed. Its finite retained controller/board universe is reconciled
+by the S1--S8 ledgers and their actual-pushed-diff reviews. The final S8
+DeskPro speed-control route is accepted in `f7dd5aa49`; its review and the
+T-level closure record are in the [T555 history](../history/M5-T555-selected-controller-qualification.md).
 
-S6 final full units pass 591/591 per width, four-PC integrations 32/32 per
-width and MyNES integrations 12/12 per width. All ten optimized stripped
-current-version EXEs are rebuilt/deployed and PE-width checked. DeskPro's
-owner-approved boot wait is 300 seconds; final boot takes 172.91/206.06
-seconds. Prior failed attempts remain evidence. Manifests, component-local
-Types/dependencies and documentation/whitespace pass. Owner INIs, disks and
-snapshots are unchanged. Latest read-only comparison confirms both repositories'
-six Shared trees are byte-identical across all 246 files, including manifests.
-Automated desktop-labelled checks pass; no manual desktop, electrical or
-complete-video qualification is claimed.
-
-The owner-approved delivery split remains: S6 qualifies fixed 32-byte copied
-glyph slots with default height 16 and all ten receiving App artifacts; S7
-retains V08 RAM enable, V09 clock/reset consumers, V17 live text/font, V18
-remaining raster/MUX, V19 advanced text geometry, V20 Restore/blanking and V28
-retained VGA cursor bounds. S8 owns cross-profile speed/AUX-PIT/HOLD and final
-controller closure. Capacity alone cannot qualify live hardware production.
-
-S8 adds the selected DeskPro A3/A4/A5 KBC personality and routes its L2
-speed-control model through the existing auxiliary PIT, board HOLD predicate
-and Core scheduler without changing a Shared component. Complete CTest passes
-568/568 on each width, and all eight PC artifacts were rebuilt and PE-width
-verified. The current evidence ledger records source limits, implementation
-ownership, hashes and the unexecuted manual/electrical scope.
-
-## Current Task — M5 T555 S8 Cross-Profile Controller Closure
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: next unused S8 in open T555 after coordinator acceptance of S7 `38c0a818a` and governance record `0977b4f22`; no task-level closure or new T. |
-| Admission And Approval | The standing T555 owner objective and ordered S8 plan admit the remaining cross-profile closure. Single-person sequential coordinator/executor; NXVM target only. Existing standing approval covers Core and NXVM-App repairs; a Shared change, timing downgrade, source invention or protected-file import stops for review. |
-| Objective | Exhaust the retained cross-profile controller and board class: the documented DeskPro 386 KBC A3/A4/A5 speed/read contract, SLOWD-to-auxiliary-PIT-to-refresh/HOLD/DMA route, the four fixed-App route matrix, and every remaining L1/L2/L4 disposition required by T555. |
-| Reference Baseline | Accepted S7 `38c0a818a` and `0977b4f22`; [selected-controller proposal](../proposals/m5-selected-controller-qualification.md); [S3 source ledger](../etc/evidence/t555-s3-rtc-keyboard-source-ledger.md), including its Compaq speed-control transfer. |
-| Candidate Proposal | [Selected controller qualification](../proposals/m5-selected-controller-qualification.md), T555 S8 cross-profile closure. The S3 ledger is the finite source/receiver universe; this packet records its current completion predicate. |
-| Files And ABI Surface | NXVM Core/Model40 only as source proves: existing KBC, D4/board, PIT/DMA/Core receiver paths, MyDeskPro386 profile composition, matching Core/App tests, CMake routes, manifests, evidence and affected PC EXEs. The four App integration harness may receive only neutral cross-profile assertions. No Lib, Emulator, x86/Product shared source/test, MyNES, owner INI/media/snapshot or protected binary changes are admitted. |
-| Non-goals | No new machine, generic KBC firmware emulator, second refresh scheduler, physical oscillator/MCU/waveform model, CPU timing downgrade, BIOS-specific host behavior, video/storage repair, Shared API, sibling edit or guessed A1/A2/A6 semantics. |
-| Applicable Rules | NXVM guide, Contributing, shared Execution/Architecture/Coding/Document, NXVM architecture/coding/source policy, selected-controller proposal and S3 ledger. Re-read cited original manual pages before implementing each command, port, signal or timing fact. |
-| Design Contract | KBC owns command parsing and one output-buffer/IRQ contract; the Model40 board owns selected personality binding and external signal routing; PIT owns its counter state; Core owns guest time, HOLD arbitration and DMA service. A3/A4/A5 must cross those existing owners without a second command queue, speed state mirror, refresh scheduler or direct private Core access. Undefined source members remain explicit dispositions. |
-| Estimated Diff | First reconcile the exact current KBC/D4/PIT/DMA paths and original page facts in an S8 ledger before changing production. A source-proven repair is expected to touch bounded Core/Model40 C/H plus direct and real-receiver tests; its file surface and additions/deletions are recorded before implementation rather than guessed here. |
-| Verification | Prove every admitted command/signal through direct chip, board and real Machine receivers; prove reset, output-buffer/IRQ behavior, SLOWD mode selection, auxiliary PIT trigger, HOLD release and DMA service. Run complete repository Unit suites and four-PC Integration routes once per x64/x86, applicable Core gates/manifests/whitespace/documentation checks, then rebuild and PE-verify eight PC artifacts if production inputs change. |
-| Expected Markers | The S8 ledger maps every source member to direct proof, source-bound non-applicability/deferment or a committed repair; no command succeeds without its defined observable effect. The four profile routes have explicit positive/non-applicable evidence. No timeout, boot, stored register or test-only hook counts as receiver proof. |
-| Asset Needs | Read only existing owner-managed Compaq/IBM manuals and current external integrations under source policy. No new firmware, ROM, guest media or INI mutation is needed. Rebuild only current affected PC executable pairs after verified production changes; MyNES remains exact when its inputs are unchanged. |
-| Reporting Requirements | Report initial finite member inventory, original/manual evidence, current owner/path, source conflict and planned file/diff surface before production edits. At delivery report actual changes, retained owner, direct/board/Machine proof, complete tests, artifact hashes and unexecuted physical/manual qualification. |
-| Similar-Issue Sweep | Search all retained KBC command personalities, Model40 D4/PIT outputs, refresh/HOLD/DMA request routes and all four profile bindings. Every hit is fixed, source-bound non-applicable or explicitly transferred; a successful Model40 boot cannot hide a peer-App or adjacent command defect. |
-| Exit Criteria | Every S8 member has a source-qualified disposition; confirmed gaps are repaired through the one existing owner chain; relevant unit and four-App integrations pass on x64/x86; required manifests/gates/doc checks pass; affected eight artifacts are rebuilt and width-verified; implementation and coordinator P reviews are pushed. T555 remains open only if a remaining item is explicitly transferred through Queue/TODO under the rules. |
-| Stop Conditions | Stop for a Shared requirement, unavailable required original fact, need for a second scheduler/state owner, timing downgrade, reversed dependency, protected/user-file mutation or material scope expansion. Record source uncertainty as an explicit L1/L2/L4 disposition; never fabricate a KBC command, speed bit or electrical duration. |
-| Original Owner Request | Continue the approved T555 controller/board qualification until every audit item is repaired or explicitly disposed, with cross-machine verification and updated artifacts. |
-
-### S8 Delivery Record — Pending Owner Review
-
-The implementation retains one KBC parser/output contract, one Model40 D4
-personality binding, the existing auxiliary PIT counter and the existing Core
-HOLD/DMA scheduler route. A3/A4 do not repurpose output-port bits; A5 is a
-KBC-owned no-OBF/no-IRQ special read. The selected one-shot count and switch
-polarity are documented L2 models, not physical timing claims; A1/A2/A6 remain
-explicitly unimplemented. The direct/receiver matrix, complete dual-width
-CTest results and eight artifact hashes are in
-[`t555-s8-cross-profile-controller-ledger.md`](../etc/evidence/t555-s8-cross-profile-controller-ledger.md).
+S8 keeps KBC command parsing/output delivery, Model40 D4 personality, auxiliary
+PIT state, and Core HOLD/DMA arbitration in their existing owners. It classifies
+the selected pulse count/switch polarity as L2 and leaves A1/A2/A6 explicitly
+unimplemented rather than inventing behavior. Complete CTest passes `568/568`
+per width and all eight current PC artifacts are rebuilt and PE-width verified.
+The [S8 ledger](../etc/evidence/t555-s8-cross-profile-controller-ledger.md)
+retains the exact source limits, route proof and artifact hashes. Manual desktop
+and physical electrical validation were not executed and are not claimed.
 
 ### S7 Closure Record
 

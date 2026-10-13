@@ -6,13 +6,10 @@ The entries below are ordered unnumbered candidates.
 
 The [T554 default-PC text cursor restoration](../history/M5-T554-pc-text-cursor-restoration.md)
 is closed after owner Console/Window acceptance; its archived proposal remains
-with the task history. The first candidate, [selected-controller and board
-qualification](../proposals/m5-selected-controller-qualification.md), is
-admitted as T555; S1's current-path inventory and S2 PIC/PIT/DMA batch are
-complete. S3 RTC/keyboard, S4 storage and bounded S5 video are accepted;
-S6 copied-glyph capacity and S7 remaining video qualification are accepted;
-S8 cross-profile controller closure is implemented and pending owner delivery
-review. `CURRENT.md` owns admission and status.
+with the task history. The [T555 selected-controller and board qualification]
+(../history/M5-T555-selected-controller-qualification.md) is also closed after
+S1--S8 reconcile the retained controller and board universe. `CURRENT.md` owns
+the current status.
 
 The [T547 SoftPC optimization and consolidation proposal](../history/M5-T547-softpc-four-test-optimization-import-proposal.md)
 is closed; its final product/qualification closure is recorded in `CURRENT.md`.
@@ -29,9 +26,8 @@ The [T553 four PC App code-quality audit](../proposals/m5-four-pc-app-code-quali
 is closed after its corrective full-route audit, repair and dual-width
 qualification; its closure record is in `CURRENT.md`.
 
-1. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
-2. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-3. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+1. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+2. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 
 [T544](../history/M5-T544-retained-cpu-qualification.md) is closed as a
 completed CPU audit by owner direction. Its eighteen complete repair/proof

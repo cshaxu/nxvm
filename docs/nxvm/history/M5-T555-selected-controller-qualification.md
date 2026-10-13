@@ -126,3 +126,32 @@ Vendor manuals and ROMs remain in `nxvm-assets`; S1 may only read their
 repository evidence/provenance. Shared Lib/Emulator/x86 code is read-only. No
 asset, firmware, media, INI, test or production change is permitted until the
 owner reviews the audit and admits a later S.
+
+## S8 And T555 Closure
+
+S8's implementation P is `f7dd5aa49`. The coordinator reviewed its immutable
+diff against `0977b4f22`, including the KBC special-response state, all
+extension callers, the Model40 D4/AUX-PIT binding, HOLD-before-retirement
+ordering, direct/controller/profile/Machine receivers, Core manifests,
+documentation, and all eight rebuilt artifacts. The review found no second
+command queue, speed-state mirror, refresh scheduler, Shared change, App-peer
+dependency, or unrecorded source invention.
+
+The finite S8 universe is fully disposed in the
+[cross-profile ledger](../etc/evidence/t555-s8-cross-profile-controller-ledger.md):
+A3/A4/A5 have direct and real-receiver proof; the SLOWD-to-AUX-PIT-to-HOLD/DMA
+route has one owner chain; XT, 5170 and default are explicitly non-applicable;
+and A1/A2/A6 remain explicit source-insufficient non-implementations. The
+selected count and polarity are L2 models, not physical timing claims.
+
+All T555 S1--S8 finite ledger batches are therefore either accepted with their
+direct/receiver evidence or explicitly bounded by source-supported L1/L2/L4
+dispositions. Final S8 CTest passes `568/568` on both x64 and x86; Core source
+and test manifests, Core corpus boundary, artifact-root, whitespace and NXVM
+documentation governance gates pass. The four PC product pairs were rebuilt,
+deployed and PE-width verified. Manual desktop and physical electrical testing
+remain outside this automated qualification and are not claimed.
+
+T555 closes with governance P2. Its archived proposal retains the admitted
+scope; future CPU differential and guest-software qualification remain separate
+Queue candidates.
