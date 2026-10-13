@@ -74,7 +74,8 @@ Keep original Ninja/ccache trees and compile shared dependencies once per width.
 | S5 | NXVM flattening except firmware | Firmware remains cohesive; other source files flat with clear roles; tests/build/docs updated; dual-width qualification and pair updated. |
 | S6 | DeskPro Chips/Machine/Product split | Register logic and board integration have separate owners; no reverse dependency; D4/KBC/PIT/HOLD/ROM tests preserved; dual-width qualification and pair updated. |
 | S7 | DeskPro386 normal-boot qualification | Compare the pre-layout Model 40 boot route with current behavior, repair the proven Core boot-path defect, and prove an unattended x64/x86 boot reaches the installer checkpoint. Do not alter firmware, media, INI inputs or production input policy. |
-| S8 | Whole-task audit and delivery | No retired path/symbol/reference remains in active code; all repository suites pass per width; ten current EXEs verified; target-separated commits pushed and worktree clean. |
+| S8 | Comprehensive quality audit | Inspect governance, current documentation, five Apps/Core code and test/build ownership; reconcile actual proof and report confirmed defects with bounded S9 repairs. No implementation changes in the audit. |
+| S9 | Audit-driven repairs and final qualification | Fix confirmed S8 findings at their owners; synchronize current authorities and verification; run complete repository suites per width, verify ten current EXEs, push target-separated commits and leave a clean worktree. Shared-six and shared-rule changes require their separate admission. |
 
 This is an initial ordered plan. Any necessary refinement must preserve the whole
 five-App scope and linear numeric S identifiers. Each implementation S reports its

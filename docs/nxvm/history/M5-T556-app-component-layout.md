@@ -2,8 +2,16 @@
 
 Owner admitted T556 on 2026-10-12. The
 [proposal](../proposals/m5-app-component-layout.md) owns the requested target
-layout and initial S1--S7 plan. S1 and MyNES S2 are accepted; My5160 S3 is
-active.
+layout and ordered S plan. S1--S7 are accepted. Owner admitted S8 comprehensive
+quality audit on 2026-10-13, with confirmed repairs assigned to S9; T556 remains open.
+
+S7 repair and delivery are pushed as `307cf1bd6` and `2df276f8c`.
+The [S7 evidence](../etc/evidence/t556-s7-deskpro-boot-review.md) preserves
+unattended dual-width installer proof and the distinction between complete-case
+passing evidence and static tests retried after parallel-suite timeouts.
+The [S8 audit](../etc/evidence/t556-s8-quality-audit.md) records confirmed
+governance, documentation, registration and D4 boundary gaps without modifying
+implementation; its S9 receiver preserves final whole-repository qualification.
 
 Initial source inspection confirms two semantic boundaries require attention:
 MyNES driver/media/debug access private hardware state, and DeskPro D4 files mix

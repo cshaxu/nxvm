@@ -1,5 +1,9 @@
 # Supporting Documentation Index
 
+T556 S8: [comprehensive quality audit](evidence/t556-s8-quality-audit.md)
+records current governance, documentation, code/test ownership findings and
+their S9 repair receiver. It does not claim fresh full runtime qualification.
+
 The fixed documentation topology retains this owner-approved area for supporting detail
 that does not fit the principal `rules/` and `design/` authorities. A supporting
 document may explain evidence, implementation detail, research, or a retired

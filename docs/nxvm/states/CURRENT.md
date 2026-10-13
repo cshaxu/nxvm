@@ -2,6 +2,46 @@
 
 ## Current Work
 
+M5 T556 S7 is accepted by the owner's direction to proceed to S8. S8 audits
+governance, current documentation, code quality, test ownership and delivery
+evidence for the complete five-App layout change. Implementation remains
+unchanged during this audit. Confirmed repairs are assigned to S9; T556 stays open.
+
+## Current Task — M5 T556 S8 Comprehensive Quality Audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: S8 follows owner-accepted S7. |
+| Admission And Approval | Owner's 2026-10-13 request admits comprehensive S8 audit and assigns necessary repairs to S9. |
+| Objective | Reconcile the complete T556 layout, governance, documentation, implementation boundaries and verification evidence against current code. |
+| Non-goals | No production/test/build/asset repair during S8; no Shared-six modification; no claim of exhaustive hardware correctness from static inspection. |
+| Reference Baseline | Clean pushed `2df276f8c`; S7 implementation `307cf1bd6`; accepted S1--S6 migration records. |
+| Candidate Proposal | [Five-App component layout](../proposals/m5-app-component-layout.md). |
+| Files And ABI Surface | Read Core, five Apps, corresponding tests, shared boundaries, build/tools and current documentation; write only NXVM task packet, proposal, history and audit evidence. No ABI change. |
+| Applicable Rules | Product guides; shared Execution, Architecture, Coding and Document rules; both product architecture/layout authorities; source policy; architecture-governance and coding-governance skills. |
+| Verification | Inventory all declared owners; run documentation, manifest and boundary checks; inspect configured test names/labels; review migrated contracts and S7 changes; distinguish retained dynamic evidence from fresh static checks. |
+| Expected Markers | Complete audit ledger with evidence, severity, owner and repair disposition; no unsupported all-green claim. |
+| Asset Needs | Existing artifacts and owner inputs read-only. |
+| Reporting Requirements | Report confirmed findings separately from hypotheses, S9 files/repair plan, unexecuted verification and preserved T exit conditions. |
+| Stop Conditions | Report any Shared-six or shared-rule repair for its required separate approval/admission; do not implement it within the audit. |
+| Exit Criteria | Audit ledger reconciled, confirmed repairs assigned to bounded S9, applicable governance checks pass, actual documentation diff reviewed and pushed. |
+| Original Owner Request | Admit S8 for comprehensive governance, documentation and code-quality audit; admit S9 for necessary repairs. |
+| Similar-Issue Sweep | Search all five App owners and Core plus current authorities for the same stale ownership, registration, vocabulary and contract defects; retain historical terminology as history. |
+
+### S8 Audit Delivery
+
+The [audit ledger](../etc/evidence/t556-s8-quality-audit.md) records six
+confirmed classes and their S9 disposition. Both widths pass the 18 selected
+static gates; both documentation checks and the production dependency DAG pass.
+No new full dynamic qualification is claimed. Production, tests and assets
+remain unchanged. Shared-rule vocabulary retains a separate Td receiver.
+
+| Task | Progress |
+| --- | --- |
+| T556 S8 | Audit delivered; S1--S7 accepted. Confirmed repairs and final whole-task qualification are assigned to S9; T556 remains open. |
+
+## Retained S7 Delivery Record — Superseded By S8 Admission
+
 M5 T556 S7 follows the completed five-App layout migration with the owner-approved
 DeskPro386 normal-boot qualification. The owner requests MyNES
 `{core,machine,product}`, flat My5160 and My5170, flat NXVM except `firmware/`,
@@ -10,7 +50,7 @@ then DeskPro `{chips,machine,product}`. S1's
 migration map; the [proposal](../proposals/m5-app-component-layout.md)
 records S2--S8. S2--S6 are accepted; S7 remains open.
 
-## Current Task — M5 T556 S7 DeskPro386 Normal-Boot Qualification
+### Historical S7 Packet
 
 | Field | Required record |
 | --- | --- |
