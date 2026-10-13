@@ -2,6 +2,35 @@
 
 ## Current Work
 
+M5 T556 S1 is admitted for five-App component-layout design and migration
+inventory. The owner requests MyNES `{core,machine,product}`, flat My5160 and
+My5170, DeskPro `{chips,machine,product}`, and flat NXVM except `firmware/`.
+The [proposal](../proposals/m5-app-component-layout.md) records the initial
+S1--S7 plan. Production migration has not started.
+
+## Current Task — M5 T556 S1 App Layout Design
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New: T556 follows closed T555; S1 is the design and inventory batch. |
+| Admission And Approval | Owner's 2026-10-12 request explicitly admits the five-App restructuring. Single-person coordinator/executor. S1 writes NXVM planning documents only; later target-separated batches cover MyNES and necessary Shared root build references. |
+| Objective | Map all five App production files, tests and direct build/caller references to the owner-requested layout, resolving actual ownership boundaries before moves. |
+| Non-goals | No production migration in S1, shared-six modification, behavioral change, snapshot format change, owner media/INI mutation or new runtime layer. |
+| Reference Baseline | T555 closure 8f195943b, clean worktree; current five App sources and tests. |
+| Candidate Proposal | [Five-App component layout](../proposals/m5-app-component-layout.md). |
+| Files And ABI Surface | docs/nxvm proposal/history/current/queue; read-only five App source/test/build and MyNES authorities. No ABI change in S1. |
+| Applicable Rules | Product guides; Contributing; shared Execution, Architecture, Coding, Document; NXVM/MyNES architecture and layout; NXVM Roadmap/Queue. |
+| Verification | Read actual headers, private callers, target lists and test routes; check complete file-to-owner inventory, dependencies, names and source/test parity; run NXVM documentation and whitespace gates. |
+| Expected Markers | Each file and boundary has one destination, each existing test has an owner, and MyNES/DeskPro private-access gaps have a concrete design before implementation. |
+| Asset Needs | None in S1. Later batches preserve INIs/media/snapshots and publish affected current-version executable pairs. |
+| Reporting Requirements | Explain feasibility, actual coupling, target structure and ordered S plan; record per-batch file maps and estimated diff before implementation. |
+| Stop Conditions | Required shared-six change, source behavior change, incompatible saved format or an ownership decision outside the approved layout. |
+| Exit Criteria | Complete source/test/caller migration inventory and boundary design recorded; documentation checks pass; reviewed S1 delivery committed/pushed. |
+| Original Owner Request | Admit an App-layout T: extract MyNES Machine adapter, flatten My5160/My5170, split DeskPro Chips/Machine/Product, retain only NXVM firmware subcomponent; give feedback. |
+| Similar-Issue Sweep | Inspect all five Apps and their test/build/tool references for private-header access, stale owner names, nested ROM directories and duplicate target registration. |
+
+## Previous Task
+
 M5 T555 is closed. Its finite retained controller/board universe is reconciled
 by the S1--S8 ledgers and their actual-pushed-diff reviews. The final S8
 DeskPro speed-control route is accepted in `f7dd5aa49`; its review and the
