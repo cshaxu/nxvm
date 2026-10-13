@@ -87,8 +87,8 @@ file(GLOB_RECURSE app_sources
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
-    "${PROJECT_SOURCE_DIR}/src/app-my5170/product/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-my5170/product/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/product/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/product/*.h")
 foreach(source IN LISTS app_sources)
@@ -105,7 +105,7 @@ file(GLOB_RECURSE profile_plans
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.[ch]"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*/machine_plan.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/machine_plan.c"
-    "${PROJECT_SOURCE_DIR}/src/app-my5170/profiles/machine_plan.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/machine_plan.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/machine_plan.c")
 foreach(source IN LISTS profile_plans)
     file(READ "${source}" plan_text)
@@ -117,7 +117,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/machine_binding.c" factory
 set(binding_apps app-nxvm app-my5160 app-my5170 app-mydeskpro386)
 set(binding_constructors default xt 5170 model40)
 foreach(app constructor IN ZIP_LISTS binding_apps binding_constructors)
-    if(app STREQUAL "app-my5160")
+    if(app STREQUAL "app-my5160" OR app STREQUAL "app-my5170")
         file(READ "${PROJECT_SOURCE_DIR}/src/${app}/product_binding.c" binding)
     else()
         file(READ "${PROJECT_SOURCE_DIR}/src/${app}/product/machine_binding.c" binding)
@@ -156,8 +156,8 @@ file(GLOB_RECURSE app_profile_sources
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
-    "${PROJECT_SOURCE_DIR}/src/app-my5170/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-my5170/profiles/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/*.h")
 foreach(source IN LISTS app_profile_sources)

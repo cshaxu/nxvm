@@ -2,13 +2,13 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "../../../core/board-base/support/composition_fixture.h"
-#include "../../../core/board-base/support/kbc_state_fixture.h"
+#include "../../core/board-base/support/composition_fixture.h"
+#include "../../core/board-base/support/kbc_state_fixture.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "app-my5170/profiles/profile_interface.h"
-#include "../../support/session_assets.h"
+#include "app-my5170/machine_config_interface.h"
+#include "../support/session_assets.h"
 
 static lib_i32 vm_model_339_clock_contract_is_selected(void)
 {

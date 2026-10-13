@@ -2,12 +2,12 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 
-#include "../../../../core/board-base/composition/composition_fixture.h"
-#include "../../../../core/board-base/support/composition_fixture.h"
+#include "../../core/board-base/composition/composition_fixture.h"
+#include "../../core/board-base/support/composition_fixture.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "app-my5170/profiles/profile_interface.h"
-#include "../../../support/session_assets.h"
+#include "app-my5170/machine_config_interface.h"
+#include "../support/session_assets.h"
 
 lib_i32 main(void)
 {

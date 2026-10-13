@@ -1,4 +1,4 @@
-#include "app-my5170/profiles/profile_interface.h"
+#include "app-my5170/machine_config_interface.h"
 
 static lib_i32 vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes);
 static lib_i32 vm_profile_ibm_5170_descriptor_validate(

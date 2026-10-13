@@ -102,7 +102,7 @@ add_executable(vm-pcat-composition-smoke
     test/app-nxvm/unit/machine/nxvm_pcat_composition_smoke.c)
 target_link_libraries(vm-pcat-composition-smoke PRIVATE vm-profile-tests)
 add_executable(vm-ibm-5170-model-339-composition-smoke
-    test/app-my5170/unit/profiles/ibm_5170_composition_smoke.c)
+    test/app-my5170/unit/machine_composition_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-composition-smoke
     test/app-mydeskpro386/unit/profiles/vm_model40_composition_smoke.c)
@@ -184,14 +184,14 @@ target_include_directories(vm-model40-console-ini-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
 target_link_libraries(vm-model40-console-ini-smoke PRIVATE vm-app vm-profile-tests)
 add_executable(my5170-clock-contract-smoke
-    test/app-my5170/unit/profiles/ibm_5170_clock_contract_smoke.c)
+    test/app-my5170/unit/machine_clock_contract_smoke.c)
 target_sources(my5170-clock-contract-smoke PRIVATE
     test/core/board-base/support/composition_fixture.c
     test/core/board-base/support/kbc_state_fixture.c
     test/core/board-at/support/state_fixture.c)
 target_link_libraries(my5170-clock-contract-smoke PRIVATE vm-profile-tests)
 add_executable(vm-ibm-5170-model-339-cga-topology-smoke
-    test/app-my5170/unit/profiles/ibm_5170_video_topology_smoke.c)
+    test/app-my5170/unit/machine_video_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-profile-tests)
 target_sources(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE
     test/core/support/video_topology_fixture.c
@@ -203,7 +203,7 @@ target_sources(vm-default-ega-topology-smoke PRIVATE
     test/core/support/video_topology_fixture.c
     test/core/board-base/support/video_topology_fixture.c)
 add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
-    test/app-my5170/unit/profiles/rom/ibm_5170_model_339_firmware_fdc_topology_smoke.c)
+    test/app-my5170/unit/machine_firmware_fdc_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-profile-tests)
 add_executable(vm-hdc-port-smoke test/app-nxvm/unit/machine/nxvm_hdc_port_smoke.c)
 target_link_libraries(vm-hdc-port-smoke PRIVATE vm-profile-tests)
@@ -224,7 +224,7 @@ target_link_libraries(vm-timer-firmware-smoke PRIVATE integration-session-ini-su
 add_executable(vm-app-default-profile-smoke test/app-nxvm/integration/dos/nxvm_default_profile_smoke.c)
 target_link_libraries(vm-app-default-profile-smoke PRIVATE integration-session-ini-support)
 add_executable(my5170-console-lifecycle-smoke
-    test/app-my5170/integration/product/my5170_console_lifecycle_smoke.c
+    test/app-my5170/integration/my5170_console_lifecycle_smoke.c
     test/core/setup/pc_console_process.c)
 target_include_directories(my5170-console-lifecycle-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
@@ -259,7 +259,7 @@ add_executable(nxvm-default-dma-deadline-smoke
     test/app-nxvm/unit/machine/nxvm_dma_deadline_smoke.c)
 target_link_libraries(nxvm-default-dma-deadline-smoke PRIVATE vm-profile-tests)
 add_executable(my5170-dma-deadline-smoke
-    test/app-my5170/unit/profiles/ibm_5170_dma_deadline_smoke.c)
+    test/app-my5170/unit/machine_dma_deadline_smoke.c)
 target_link_libraries(my5170-dma-deadline-smoke PRIVATE vm-profile-tests)
 add_executable(mydeskpro386-dma-deadline-smoke
     test/app-mydeskpro386/unit/profiles/model40_dma_deadline_smoke.c)
@@ -278,7 +278,7 @@ add_executable(nxvm-default-pc-at-plan-smoke
     test/app-nxvm/unit/profiles/default_pc_at_plan_smoke.c)
 target_link_libraries(nxvm-default-pc-at-plan-smoke PRIVATE vm-profile-tests)
 add_executable(my5170-plan-smoke
-    test/app-my5170/unit/profiles/ibm_5170_plan_smoke.c)
+    test/app-my5170/unit/machine_plan_smoke.c)
 target_link_libraries(my5170-plan-smoke PRIVATE
     vm-profile-tests core-board-base core-x86)
 add_executable(mydeskpro386-plan-smoke
@@ -694,7 +694,7 @@ add_library(vm-profile-tests INTERFACE)
 target_link_libraries(vm-profile-tests INTERFACE
     nxvm-profile
     my5160-machine
-    my5170-profile
+    my5170-machine
     mydeskpro386-profile
     mydeskpro386-d4
     storage
@@ -713,7 +713,7 @@ endif()
 if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
     add_library(vm-profile-selected ALIAS my5160-machine)
 elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "at")
-    add_library(vm-profile-selected ALIAS my5170-profile)
+    add_library(vm-profile-selected ALIAS my5170-machine)
 elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40")
     add_library(vm-profile-selected ALIAS mydeskpro386-profile)
 else()

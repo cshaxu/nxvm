@@ -1,7 +1,7 @@
 #ifndef TEST_APP_MY5170_SESSION_ASSETS_H
 #define TEST_APP_MY5170_SESSION_ASSETS_H
 
-#include "app-my5170/profiles/construction_interface.h"
+#include "app-my5170/machine_construction_interface.h"
 #include "core/board-base/pc_at_rom_interface.h"
 #include "core/machine/machine_interface.h"
 

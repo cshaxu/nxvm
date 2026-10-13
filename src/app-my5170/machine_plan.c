@@ -1,5 +1,5 @@
-#include "app-my5170/profiles/construction_interface.h"
-#include "app-my5170/profiles/profile_interface.h"
+#include "app-my5170/machine_construction_interface.h"
+#include "app-my5170/machine_config_interface.h"
 #include "core/machine/pc_at_preparation_interface.h"
 #include "core/machine/preparation_interface.h"
 

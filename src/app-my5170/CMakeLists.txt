@@ -1,12 +1,12 @@
 # My5170 owns its fixed composition; shared PC mechanisms stay in ibmpc.
-set(MY5170_COMPOSITION_SOURCES
-    src/app-my5170/profiles/pc_at_profile.c
-    src/app-my5170/profiles/machine_plan.c)
-add_library(my5170-profile STATIC ${MY5170_COMPOSITION_SOURCES})
-target_include_directories(my5170-profile PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(my5170-profile PUBLIC core-machine core-board-base core-x86)
+set(MY5170_MACHINE_SOURCES
+    src/app-my5170/machine_config.c
+    src/app-my5170/machine_plan.c)
+add_library(my5170-machine STATIC ${MY5170_MACHINE_SOURCES})
+target_include_directories(my5170-machine PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(my5170-machine PUBLIC core-machine core-board-base core-x86)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(my5170-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(my5170-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 if(NXVM_PRODUCT_PROFILE STREQUAL "ibm-5170-model-339-1200k")
@@ -20,9 +20,9 @@ if(NXVM_PRODUCT_PROFILE STREQUAL "ibm-5170-model-339-1200k")
     nxvm_require_profile_asset("ibm-5170-model-339/firmware/ibm-5170-15nov85-u27-61x9266.rom" 32768 "3b921a451d78efcd91232a01cd6936d6ba12dad4374466655aff8ef3a5dc764e")
     nxvm_require_profile_asset("ibm-5170-model-339/firmware/ibm-5170-15nov85-u47-61x9265.rom" 32768 "aec1759a8245d50be93c9b081ab1ac7de58dd8141f603c7745ae66d2d4c29e4d")
     nxvm_require_profile_asset("ibm-5170-model-339/cmos/ibm-5170-model-339-default.cmos" 64 "b1bd8f855a7dce0018775992aa4c577d6d177b96c84b89e74dfbf4a67da0b582")
-    set(NXVM_PRODUCT_ENTRY "${CMAKE_SOURCE_DIR}/src/app-my5170/product/main.c")
-    set(NXVM_PRODUCT_BINDING src/app-my5170/product/machine_binding.c)
-    set(NXVM_PRODUCT_BINDING_HEADER app-my5170/product/binding_interface.h)
+    set(NXVM_PRODUCT_ENTRY "${CMAKE_SOURCE_DIR}/src/app-my5170/main.c")
+    set(NXVM_PRODUCT_BINDING src/app-my5170/product_binding.c)
+    set(NXVM_PRODUCT_BINDING_HEADER app-my5170/product_binding_interface.h)
     set(NXVM_PRODUCT_ARTIFACT_ROOT "${CMAKE_SOURCE_DIR}/assets/my5170")
     set(NXVM_PRODUCT_ARTIFACT_DIRECTORY "${NXVM_PRODUCT_ARTIFACT_ROOT}")
 endif()

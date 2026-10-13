@@ -1,5 +1,5 @@
-#include "app-my5170/product/binding_interface.h"
-#include "app-my5170/profiles/construction_interface.h"
+#include "app-my5170/product_binding_interface.h"
+#include "app-my5170/machine_construction_interface.h"
 
 const vm_app_machine_binding vm_app_machine = {
     .name = "ibm-5170-model-339",

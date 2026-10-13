@@ -1,5 +1,5 @@
-#include "app-my5170/profiles/profile_interface.h"
-#include "../../../core/machine/support/dma_deadline_fixture.h"
+#include "app-my5170/machine_config_interface.h"
+#include "../../core/machine/support/dma_deadline_fixture.h"
 
 static lib_i32 configure(core_machine_config *out_configuration)
 {

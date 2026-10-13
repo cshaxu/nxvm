@@ -1,4 +1,4 @@
-# corpus-revision: nxvm-m5-t556-s3-my5160-flat
+# corpus-revision: nxvm-m5-t556-s4-my5170-flat
 0005F69966EF2972F5DB68C8F26FD32F71DE64A014EF9F8026C7C92AC011E97C  chips/cpu/cpu_lea_smoke.c
 008793038DE3620DFD7BBEDA28FDA1176300434D68C16D44A131E7097CFC87EE  chips/cpu/support/cpu_task_switch16_fixture.h
 018C93F6BC3084A7F82F6D468470FE3824C20A57E687AB547DA51E87F5EEAB33  board-base/composition/machine_protected_privilege_board_smoke.c

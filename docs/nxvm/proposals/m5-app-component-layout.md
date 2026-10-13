@@ -103,6 +103,17 @@ implementation changed. Core/test-core manifests now record the moved trees.
 My5160 x64/x86 units, manifest/corpus/ownership gates, session-status route and
 actual floppy installer boot each pass; the x64/x86 artifact pair was rebuilt.
 
+## Accepted S4 Record
+
+My5170 S4 flattens its fixed AT App and matching tests: `main`,
+`product_binding`, `machine_config`, `machine_plan` and their interfaces are at
+the App root; unit sources are direct children of `unit/`, and the product
+integration source is direct under `integration/`. The composition library is
+now `my5170-machine`. Both-width full current graphs build, Core manifests and
+corpus pass, and all ten My5170 unit/integration routes pass, including the
+actual floppy installer boot. The x64 artifact is republished; the x86 rebuild
+is deterministic and byte-identical.
+
 ## Completion And Stop Conditions
 
 Every current production/test file has a destination or justified retention;

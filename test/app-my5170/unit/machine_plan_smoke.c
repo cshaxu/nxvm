@@ -1,4 +1,4 @@
-#include "app-my5170/profiles/profile_interface.h"
+#include "app-my5170/machine_config_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "lib/types/types_interface.h"
 

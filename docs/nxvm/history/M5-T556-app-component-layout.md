@@ -34,3 +34,13 @@ this repaired the only migration regression, where the first flattened build
 generated firmware under `src/product` instead of the My5160 App. The repaired
 x64/x86 installer routes reach the installer, and the current artifact pair is
 rebuilt. Shared-six and Core implementation remain unchanged.
+
+My5170 S4 is complete. The fixed AT descriptor/plan, entry and binding now use
+the flat App-root layout; its six matching unit sources and one integration
+source no longer retain obsolete component directories. The library target is
+`my5170-machine`. Current-at x64/x86 complete graphs build successfully; all
+ten My5170 routes pass on both widths, including the external floppy installer
+boot. The x64 artifact changed and was republished; the rebuilt x86 artifact
+is deterministic and unchanged. The prior My5160 P2 commit accidentally
+included S4's already-staged pure renames; this record preserves that factual
+history while the following S4 completion commit owns the remaining updates.

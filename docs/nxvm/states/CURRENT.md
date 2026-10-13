@@ -2,31 +2,31 @@
 
 ## Current Work
 
-M5 T556 S4 is next for My5170 flattening. The owner requests MyNES
+M5 T556 S5 is next for NXVM flattening except firmware. The owner requests MyNES
 `{core,machine,product}`, flat My5160 and My5170, flat NXVM except `firmware/`,
 then DeskPro `{chips,machine,product}`. S1's
 [inventory](../etc/evidence/t556-s1-app-layout-inventory.md) is the fixed
 migration map; the [proposal](../proposals/m5-app-component-layout.md)
-records S2--S7. S2 is accepted; S3 is the next production migration.
+records S2--S7. S2--S4 are accepted; S5 is the next production migration.
 
-## Current Task — M5 T556 S4 My5170 Flattening
+## Current Task — M5 T556 S5 NXVM Flattening
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: T556 S4 follows accepted S1 inventory, S2 MyNES extraction and S3 My5160 flattening. |
-| Admission And Approval | Owner's 2026-10-12 approval admits the five-App layout task and automatic S admission. S4 has target `My5170`; NXVM Current remains the T packet owner. |
-| Objective | Flatten My5170 source and matching unit ownership without changing the fixed AT binding, external firmware contract, or product behavior. |
+| Identifier Mode | Continuation: T556 S5 follows accepted S1 inventory and S2--S4 migrations. |
+| Admission And Approval | Owner's 2026-10-12 approval admits the five-App layout task and automatic S admission. S5 has target `NXVM`; NXVM Current remains the T packet owner. |
+| Objective | Flatten NXVM source and matching tests while retaining `firmware/` as its only subcomponent. |
 | Non-goals | No shared-six or Core modification, machine-model change, firmware/media/INI mutation, new runtime layer or compatibility paths. |
-| Reference Baseline | S1 inventory `t556-s1-app-layout-inventory.md`; accepted S2 P1 `693030c2e`; accepted S3 My5160 flattening P1; current My5170 source/test/build trees. |
+| Reference Baseline | S1 inventory `t556-s1-app-layout-inventory.md`; accepted S2--S4 migrations; current NXVM source/test/build trees. |
 | Candidate Proposal | [Five-App component layout](../proposals/m5-app-component-layout.md). |
-| Files And ABI Surface | `src/app-my5170`, its tests/CMake/artifact pair and directly current layout docs. Only path/name ownership may change; public behavior remains stable. |
+| Files And ABI Surface | `src/app-nxvm`, its tests/CMake/artifact pair and directly current layout docs. Only path/name ownership may change; public behavior remains stable. |
 | Applicable Rules | NXVM guide/architecture/layout; Contributing; shared Execution/Architecture/Coding/Document rules; S1 inventory; architecture/coding governance skills. |
-| Verification | Review every moved caller and registration; run My5170 x64/x86 unit and integration routes, gates/documentation checks, then rebuild and PE-verify its current x64/x86 pair. |
-| Expected Markers | No nested source owner remains in My5170; names reflect main/binding/plan/config/firmware roles; no duplicate target or stale path survives. |
-| Asset Needs | Existing AT external firmware/media/INI inputs are read-only. Rebuild the current My5170 pair only after code qualification. |
+| Verification | Review every moved caller and registration; run NXVM x64/x86 unit and integration routes, gates/documentation checks, then rebuild and PE-verify its current x64/x86 pair. |
+| Expected Markers | No nested source owner remains in NXVM except firmware; names reflect actual roles; no duplicate target or stale path survives. |
+| Asset Needs | Existing default AT external firmware/media/INI inputs are read-only. Rebuild the current NXVM pair only after code qualification. |
 | Reporting Requirements | Before modification, report exact moved files and estimated diff. At delivery report actual additions/deletions/net, x64/x86 results, pair hashes and unexecuted desktop validation. |
 | Stop Conditions | Required Shared/Core implementation change, firmware/media/INI format change, protected-asset need, new runtime layer or unexplained test loss. |
-| Exit Criteria | My5170 source/test/build paths are flat and unambiguous; x64/x86 routes pass; pair is current; target-scoped P is pushed and reviewed. |
+| Exit Criteria | NXVM source/test/build paths are flat except firmware; x64/x86 routes pass; pair is current; target-scoped P is pushed and reviewed. |
 | Original Owner Request | Admit an App-layout T: extract MyNES Machine adapter, flatten My5160/My5170, split DeskPro Chips/Machine/Product, retain only NXVM firmware subcomponent; give feedback. |
 | Similar-Issue Sweep | Inspect the three remaining PC Apps for equivalent stale My5160 paths/names, but do not modify them in S3. |
 
