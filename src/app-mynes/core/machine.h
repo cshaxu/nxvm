@@ -60,12 +60,6 @@ lib_status core_machine_service_interrupt(core_machine *machine,
     lib_bool *out_serviced, lib_u32 *out_cycles);
 lib_status core_machine_service_dma(core_machine *machine,
     lib_bool *out_serviced, lib_u32 *out_cycles);
-lib_status core_machine_debug_step(core_machine *machine, lib_u32 instruction_limit,
-    lib_u32 cycle_limit, core_run_result *out_result);
-lib_status core_machine_breakpoint_set(core_machine *machine, lib_u16 address,
-    lib_bool enabled);
-lib_status core_machine_breakpoint_list(const core_machine *machine,
-    lib_u16 *out_addresses, lib_u32 capacity, lib_u32 *out_count);
 void core_machine_refresh_cartridge_irq(core_machine *machine);
 void core_machine_refresh_apu_irq(core_machine *machine);
 

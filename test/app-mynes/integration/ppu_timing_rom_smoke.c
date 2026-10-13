@@ -1,6 +1,6 @@
 #include <assert.h>
 
-#include "core/driver.h"
+#include "machine/driver.h"
 #include "core/machine.h"
 #include "lib/storage/file_interface.h"
 

@@ -8,7 +8,7 @@ mynes_enable_strict_warnings(mynes-app)
 
 add_library(mynes-app-composition STATIC composition.c)
 target_include_directories(mynes-app-composition PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(mynes-app-composition PUBLIC mynes-app mynes-core-driver emulator-product)
+target_link_libraries(mynes-app-composition PUBLIC mynes-app mynes-machine-driver emulator-product)
 mynes_enable_strict_warnings(mynes-app-composition)
 
 add_executable(mynes-0-0-0044 main.c)

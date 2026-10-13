@@ -1,6 +1,6 @@
 #include <assert.h>
 
-#include "core/driver_interface.h"
+#include "machine/driver_interface.h"
 #include "emulator/machine/machine_interface.h"
 #include "emulator/product/composition_interface.h"
 #include "emulator/session/session_interface.h"

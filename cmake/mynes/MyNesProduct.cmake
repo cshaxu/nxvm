@@ -20,8 +20,10 @@ function(mynes_enable_strict_warnings target)
 endfunction()
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/app-mynes/core" app-mynes-core)
+add_subdirectory("${CMAKE_SOURCE_DIR}/src/app-mynes/machine" app-mynes-machine)
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/app-mynes/product" app-mynes-product)
 add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/unit/core" test-app-mynes-unit-core)
+add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/unit/machine" test-app-mynes-unit-machine)
 add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/unit/product" test-app-mynes-unit-product)
 add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/integration" test-app-mynes-integration)
 add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/diagnostic" test-app-mynes-diagnostic)
@@ -32,6 +34,7 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/diagnostic" test-app-mynes-
 add_custom_target(mynes-unit-test-binaries)
 foreach(mynes_test_directory IN ITEMS
     "${CMAKE_SOURCE_DIR}/test/app-mynes/unit/core"
+    "${CMAKE_SOURCE_DIR}/test/app-mynes/unit/machine"
     "${CMAKE_SOURCE_DIR}/test/app-mynes/unit/product")
     get_property(mynes_test_targets DIRECTORY "${mynes_test_directory}"
         PROPERTY BUILDSYSTEM_TARGETS)
@@ -52,7 +55,7 @@ add_dependencies(mynes-test-binaries
 
 add_custom_target(run-mynes-unit-tests
     COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
-        --output-on-failure --no-tests=error -L "^unit$" -R "^mynes\\.(core|app)\\."
+        --output-on-failure --no-tests=error -L "^unit$" -R "^mynes\\.(core|machine|app)\\."
     DEPENDS mynes-unit-test-binaries
     COMMENT "Executing MyNES unit tests"
     VERBATIM)

@@ -16,12 +16,12 @@ Each NES machine has explicit instance ownership; no global current machine exis
 
 The approved implementation direction combines SoftPC's four-part product
 composition with NXVM's machine-centered Core organization and coding idioms.
-MyNes places these files directly in `src/app-mynes/core` and component tests in
-`test/app-mynes/unit/core`; there is no additional machine directory in either tree.
-Machine owns hardware assembly, bus wiring and time; adjacent device owners
-retain their own state and narrow interfaces. Core machine driver integration remains
-separate from deterministic hardware. The concrete NXVM-style file/header and
-vocabulary mapping is defined in [Source Layout](CODING.md#nxvm-machine-style-reference).
+MyNes separates deterministic hardware in `src/app-mynes/core` from the one
+Emulator-facing adapter in `src/app-mynes/machine`; their component tests live
+under matching `test/app-mynes/unit/{core,machine}` owners. Core owns hardware
+assembly, bus wiring and guest time; Machine owns host-facing driver integration.
+The concrete file/header and vocabulary mapping is defined in
+[Source Layout](CODING.md#nxvm-machine-style-reference).
 
 Cooked Console owns management/debug interaction. KVM Window and ASCII KVM Console
 are equally important supported gameplay backends with the same machine/control
@@ -36,18 +36,18 @@ follow prerequisites, but the planned dual-backend gameplay outcome needs both.
 Arrows below mean source dependency on public contracts:
 
 ```text
-App composition ------> Emulator + Core public integration + Lib
-App command/debug ----> Emulator + Lib + Core public protocol values
+App composition ------> Emulator + Machine public integration + Lib
+App command/debug ----> Emulator + Lib + Machine public protocol values
 Other App ------------> Emulator + Lib
 Emulator session ------> Emulator machine + UI
 Emulator --------------> Lib
-Core machine driver ----> Emulator driver contract + Lib copied values/storage
-Core machine driver ----> Core machine
+Machine adapter --------> Emulator driver contract + Lib copied values/storage
+Machine adapter --------> Core machine
 Core machine/devices -> Lib types and deterministic C-runtime vocabulary
 Lib leaves -----------> Lib types + explicitly declared neutral Lib support
 ```
 
-Emulator never includes Core or App. App composition creates the Core adapter and
+Emulator never includes Core, Machine or App. App composition creates the Machine adapter and
 injects its machine driver into Emulator; this is the same real execution boundary
 used by SoftPC. Runtime calls from the Emulator executor through that driver do not
 give Emulator knowledge of NES internals. Other App modules never call Core lifecycle
@@ -69,7 +69,7 @@ Lib contains no NES/application state or policy. No cyclic link dependency is ne
 | Emulator session | One control FIFO, desired/actual reduction, lifecycle dispatch and prompt scheduling. | Executor state, native input or NES policy. |
 | Emulator UI | Monitor logical Console, broker, both KVM presenters and copied input/presentation bindings. | Command interpretation, NES controller state or machine lifecycle. |
 | Emulator machine | One executor, request/input queues, lifecycle completion, generations, frame publication and paused debug rendezvous. | NES CPU/bus semantics or host presentation choice. |
-| Core machine driver | NES machine construction/load transaction, driver implementation, input/debug adaptation, pixel/text frame production including graphics-to-text conversion, and hardware teardown. | Product control queue, native resources or a second executor. |
+| Machine driver | NES machine construction/load transaction, Emulator driver implementation, input/debug adaptation, pixel/text frame production including graphics-to-text conversion, and hardware teardown. | Product control queue, native resources, deterministic device state or a second executor. |
 | Core machine | Hardware assembly, power/reset sequence, guest master time and device/interrupt scheduling. | Commands, host pacing or host surface selection. |
 | Core CPU | Registers, decode/execute state and CPU-local interrupts. | Address-map policy or host access. |
 | Core bus | Sole address routing and ordered memory/device side effects. | Shadow device state or CPU execution. |
@@ -181,7 +181,7 @@ Common retains mode selection from the published frame kind and existing display
 settings. A graphical frame may select the Window path; a text frame may select
 the raw Console path. This shared mechanism remains useful for machines with
 native graphics/text modes and is not replaced by producer-format negotiation.
-MyNes always generates graphics in its PPU, but its Core adapter publishes pixels
+MyNes always generates graphics in its PPU, but its Machine adapter publishes pixels
 for Window gameplay or converted text for Console gameplay. Common sees only the
 published kind, not the guest's original hardware mode or conversion provenance.
 No NES-specific branch or new format-negotiation service is needed in Common.
@@ -435,7 +435,7 @@ App requests session shutdown with all callback targets alive. Admission closes;
 Common machine stops/joins its executor while session/UI sinks still exist. UI
 then retires/joins KVM and broker producers and restores native Console state.
 After producer quiescence, dispose queued events, UI, session and App providers;
-destroy the retained Common machine, then its Core adapter/hardware. A worker that
+destroy the retained Emulator machine, then its Machine adapter/hardware. A worker that
 cannot join retains its resource/sink dependencies and reports terminal failure.
 Never free borrowed driver context while the executor can still call it.
 

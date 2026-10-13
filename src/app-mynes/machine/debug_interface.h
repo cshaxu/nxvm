@@ -1,5 +1,5 @@
-#ifndef CORE_DEBUG_INTERFACE_H
-#define CORE_DEBUG_INTERFACE_H
+#ifndef MACHINE_DEBUG_INTERFACE_H
+#define MACHINE_DEBUG_INTERFACE_H
 
 #include "lib/types/types_interface.h"
 

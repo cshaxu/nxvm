@@ -9,7 +9,7 @@ does not mean their runtime tests passed. No implementation is admitted here.
 
 | ID / complete domain | Contract evidence | Design disposition |
 | --- | --- | --- |
-| D01 Composition/dependencies/source boundaries | [App/Core Contract](app-core-contract.md#scope-and-assembly), principal Architecture and Source Layout. | Specified; one session/executor, Core driver injection, public value-only debug exception. |
+| D01 Composition/dependencies/source boundaries | [App/Core Contract](app-core-contract.md#scope-and-assembly), principal Architecture and Source Layout. | Specified; one session/executor, Machine driver injection, public value-only debug exception. |
 | D02 Ownership/lifetime/failure/teardown | App/Core Contract public interface and assembly. | Specified; candidate-before-swap, borrowed callback lifetime and failed-join retention. |
 | D03 Commands/config/parser/startup | App/Core Contract commands/defaults. | Specified; grammar, state restrictions, busy handling, outputs, limits and exit policy. |
 | D04 Lifecycle/media/reset/recovery | App/Core Contract driver and cartridge transaction. | Specified against actual Common states; guest traps paused, host ERROR restart, power/soft reset distinct. |
@@ -37,7 +37,7 @@ set of later milestones is intentionally not invented before their admission.
 
 | ID | Future test owner / cases | Success and failure oracle |
 | --- | --- | --- |
-| BUILD | test/app-mynes/unit/product, test/app-mynes/unit/core and root composition | C11 x64/x86 strict warnings; NXVM-style machine file/private-public/owner structure review per Source Layout; public-header isolation; hardware cannot include Common/platform/file/time; only composition links Core machine driver. |
+| BUILD | test/app-mynes/unit/product, test/app-mynes/unit/machine, test/app-mynes/unit/core and root composition | C11 x64/x86 strict warnings; NXVM-style machine file/private-public/owner structure review per Source Layout; public-header isolation; hardware cannot include Emulator/platform/file/time; only composition links Machine driver. |
 | ROM | test/app-mynes/unit/core cartridge | Cross-product PRG 1/2, CHR 0/1, mirroring 0/1 accepted; 0..15 header truncations; every rejected flag/padding byte; bad magic; bank under/overflow; exact size minus/plus one; close/read/allocation failures. Old cartridge/RAM remains byte-identical after rejection. |
 | MAP | test/app-mynes/unit/core bus | Every address class at start/end, all RAM mirrors, 16K/32K PRG vectors and CHR ownership; ROM write no mutation; open-bus latch; unsupported-device read/write including dummy cycles; peek has no cycles/effects and rejects whole invalid range. |
 | CPU-ALL | test/app-mynes/unit/core CPU | Each of 151 matrix rows: legal decoding, length, result/flags, cycles and ordered bus trace. Reject each of 105 unlisted bytes after exactly its opcode fetch; no invented NOP or partial success. |

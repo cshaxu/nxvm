@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "core/bus.h"
-#include "core/driver.h"
+#include "machine/driver.h"
 
 #define IMAGE_BYTES (16u + 131072u + 131072u)
 

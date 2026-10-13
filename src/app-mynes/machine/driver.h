@@ -1,7 +1,7 @@
-#ifndef CORE_DRIVER_H
-#define CORE_DRIVER_H
+#ifndef MACHINE_DRIVER_H
+#define MACHINE_DRIVER_H
 
-#include "core/driver_interface.h"
+#include "machine/driver_interface.h"
 #include "core/machine_interface.h"
 #include "lib/audio/stream_interface.h"
 
@@ -33,6 +33,7 @@ struct core_driver {
     lib_u16 input_source_bindings[CORE_DRIVER_INPUT_SOURCE_CAPACITY];
     lib_bool input_source_active[CORE_DRIVER_INPUT_SOURCE_CAPACITY];
     lib_u32 published_frame_revision;
+    lib_u16 video_samples[CORE_MACHINE_VIDEO_SAMPLE_CAPACITY];
     lib_u64 pacing_origin_ms;
     lib_u64 pacing_origin_cycles;
     lib_bool pacing_ready;

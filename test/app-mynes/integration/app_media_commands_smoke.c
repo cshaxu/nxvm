@@ -3,7 +3,7 @@
 #include "product/command.h"
 #include "emulator/machine/machine_interface.h"
 #include "emulator/session/control_state.h"
-#include "core/driver_interface.h"
+#include "machine/driver_interface.h"
 #include "lib/storage/file_interface.h"
 
 #define FIXTURE_PATH "mynes-app-media-fixture.nes"

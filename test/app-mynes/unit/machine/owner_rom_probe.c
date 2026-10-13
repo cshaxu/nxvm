@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "core/driver.h"
+#include "machine/driver.h"
 #include "core/machine.h"
 
 static lib_u32 probe_audio_queued(const core_driver *driver)

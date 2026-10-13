@@ -1,8 +1,8 @@
 #include <assert.h>
 
-#include "core/driver.h"
+#include "machine/driver.h"
 #include "core/machine.h"
-#include "core/debug_interface.h"
+#include "machine/debug_interface.h"
 #include "emulator/machine/frame_interface.h"
 #include "lib/storage/file_interface.h"
 

@@ -15,8 +15,9 @@ src/
   common/{machine,session,ui}/  shared coordination
   x86/{debug,xasm32}/           optional x86 capabilities, not MyNES runtime
   app-mynes/
-    product/                   main, config, command, debug, keyboard, composition
-    core/                      flat hardware and driver implementation
+    core/                      flat deterministic NES hardware
+    machine/                   Emulator Machine adapter and host-facing integration
+    product/                   main, config, command and composition
   app-nxvm/                    independently owned NXVM product
 test/
   register.cmake               shared test registration input
@@ -24,7 +25,7 @@ test/
   common/                      independently selectable Common suite
   x86/                         independently selectable x86 suite
   app-mynes/
-    unit/{product,core}/
+    unit/{product,machine,core}/
     integration/
     diagnostic/               opt-in probes; never a normal CTest route
   app-nxvm/                    independently owned NXVM tests
@@ -37,8 +38,8 @@ begin as adjacent files and move into these subdirectories when justified.
 Cartridge formats and mappers stay in the machine's cartridge owner;
 device-private registers stay with their device. Common UI groups surface bindings; session groups event/prompt
 dispatch. Generic native input normalization belongs in kvm-base and its leaves.
-Graphics-to-text conversion belongs with Core frame adaptation under core;
-its algorithm tests belong under `test/app-mynes/unit/core`. It derives text cells from the
+Graphics-to-text conversion belongs with Machine frame adaptation;
+its algorithm tests belong under `test/app-mynes/unit/machine`. It derives text cells from the
 completed PPU image and does not duplicate PPU rendering. kvm-console contains
 text-frame presentation/input only; its Lib tests use text fixtures and graphic
 rejection cases. No App-specific terminal renderer is introduced.
@@ -48,13 +49,12 @@ plugin directory is pre-created.
 ### NXVM Machine Style Reference
 
 The owner requires Core to preserve the historical NXVM machine style as closely as the
-NES ownership model permits. The owner's confirmed MyNes layout is flat
-`src/app-mynes/core` and `test/app-mynes/unit/core`: reuse NXVM's
-file/responsibility idioms, not its machine directory
-level. Hardware and driver integration live together under `core`, with
-adjacent responsibility-based C/header pairs, rather than one top-level Core
-directory per chip. `machine_interface.h` is the opaque machine entry;
-`machine.h` holds private assembly state. CPU execution, instruction semantics,
+NES ownership model permits. The confirmed MyNes layout is
+`src/app-mynes/{core,machine,product}`: reuse file/responsibility idioms without
+introducing a directory per chip. Core holds deterministic hardware with adjacent
+responsibility-based C/header pairs; Machine holds the one host-facing adapter.
+`machine_interface.h` is the opaque deterministic-machine entry; `machine.h`
+holds private assembly state. CPU execution, instruction semantics,
 bus, cartridge, clocks and later devices remain cohesive named files. Split a
 large owner only when independent responsibilities justify it; no placeholder
 files are required by the target tree.
@@ -72,19 +72,20 @@ Follow NXVM's organization and ownership idioms while retaining the adopted
 devices/firmware paths, or reproduce PC-specific timing/qualification machinery.
 The inspected references and exact revisions are recorded in the
 [reference register](../etc/hardware-references.md#structural-and-style-references).
-All Core component tests live directly under `test/app-mynes/unit/core`, including driver,
-media and debug tests. No tests belong beneath src.
+Core tests live under `test/app-mynes/unit/core`; driver, media, frame/audio
+adaptation and executor-debug tests live under `test/app-mynes/unit/machine`.
+No tests belong beneath src.
 
 ### Machine File Responsibilities
 
-Machine is an ownership concept and file prefix here, not a subdirectory.
+Machine is a real App component, separate from deterministic Core.
 
 | Files | Sole responsibility / introduction |
 | --- | --- |
-| driver_interface.h, driver.h, driver.c | Opaque core_driver, Common construction/callbacks, signal latches, input, frame adaptation, audio delivery and pacing; M2-M4. |
-| media.c | Existing removable-media callback, bounded Lib file read, candidate construction and commit; M2. |
-| debug_interface.h, debug.c | Pointer-free protocol values and executor-side NES request dispatch; M2. |
-| machine_interface.h, machine.h, machine.c | Opaque deterministic hardware, private assembly, reset and bounded execution; M2. |
+| `machine/{driver_interface,driver}.*` | Opaque Machine adapter, Emulator construction/callbacks, signal latches, input, frame adaptation, audio delivery and pacing. |
+| `machine/media.c` | Removable-media callback, bounded Lib file read, candidate construction and battery file transaction. |
+| `machine/{debug_interface,debug}.c` | Pointer-free protocol values and executor-side NES request dispatch. |
+| `core/{machine_interface,machine}.c` | Opaque deterministic hardware, private assembly, reset and bounded execution. |
 | cpu_interface.h, cpu.h, cpu.c | CPU pins/bus contract, private register/microcycle state and tick progression; M2. |
 | cpu_instructions.h, cpu_instructions.c | Private instruction metadata and semantics used by the one CPU engine; M2. |
 | bus.h, bus.c | CPU address decoding, RAM and data latch; M2. |
@@ -94,9 +95,11 @@ Machine is an ownership concept and file prefix here, not a subdirectory.
 | apu.h, apu.c | Guest audio device; M4. |
 
 The table records responsibilities and their introduction milestones, not pending
-implementation. Input, frame conversion, audio adaptation and pacing currently
-remain cohesive in driver.c; no placeholder split is implied. driver.h is private to the integration files;
-hardware never includes it or Common. Private device headers remain device-owned.
+implementation. Input, frame conversion, audio adaptation and pacing remain
+cohesive in `machine/driver.c`; no placeholder split is implied. Its private
+header is not included by deterministic hardware or Emulator. Core exports
+only copied/directed machine operations required by Machine, never internal
+device layout. Private device headers remain device-owned.
 There is no core/host, separate Core debug directory or extra core_interface.h
 facade. Composition includes driver_interface.h; App debug includes only the
 value-only debug_interface.h. Common owns workers/queues/publication and Lib owns
@@ -167,8 +170,8 @@ App config owns defaults/effective settings; command owns monitor grammar,
 debug owns NES debug policy and keyboard owns mappings/hotkey policy. They use
 one Common session route and public machine/UI operations. They do not implement
 native Console I/O or import SoftPC x86 assembly/debug commands.
-Only App composition includes core/driver_interface.h. App command/debug may
-include core/debug_interface.h for copied protocol values only; requests
+Only App composition includes machine/driver_interface.h. App command/debug may
+include machine/debug_interface.h for copied protocol values only; requests
 still travel through Common, never a direct Core runtime call. Core machine driver contains NES
 driver/input/frame/debug and loading adaptation; hardware remains in the
 machine-centered files above. No separate vm, compat or mvdm directory is needed.
@@ -185,10 +188,10 @@ same contract. Split or merge files by responsibility, independent change and
 readability, never a line-count quota. Do not expose a helper just to test it.
 
 Tests live under the matching repository-root `test/` owner. MyNES repository-only
-tests use `test/app-mynes/unit/{product,core}`; admitted external-ROM scenarios
+tests use `test/app-mynes/unit/{product,machine,core}`; admitted external-ROM scenarios
 use `test/app-mynes/integration`; opt-in probes use `test/app-mynes/diagnostic`
 and are not registered as ordinary CTest cases. Shared suites use `test/{lib,common,x86}`. Core tests are flat under
-`test/app-mynes/unit/core`, without an extra machine directory. There is no test/support:
+`test/app-mynes/unit/{core,machine}`, without an extra device directory. There is no test/support:
 fixture helpers stay beside the tests of their owning component, or within
 integration when specific to integrated scenarios. Existing shared tests remain
 product-neutral. The build gives each component only its declared
@@ -214,7 +217,7 @@ of the four roots may differ by product; root paths are explicit build inputs,
 not edits to shared source or product-name conditionals. Transfer `test/register.cmake` alongside the four roots; each suite remains
 independently buildable and selectable. The optional x86 source/test pair uses
 the same helper. There is no parallel `src/test/` tree or staging code copy.
-Product driver tests belong under `test/app-mynes/unit/core`,
+Product driver tests belong under `test/app-mynes/unit/machine`,
 `test/app-mynes/integration`, or the explicit opt-in diagnostic tree.
 
 The adopted neutral corpus excludes x86 debug/assembler implementations.

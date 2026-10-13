@@ -1,5 +1,5 @@
-#ifndef CORE_DRIVER_INTERFACE_H
-#define CORE_DRIVER_INTERFACE_H
+#ifndef MACHINE_DRIVER_INTERFACE_H
+#define MACHINE_DRIVER_INTERFACE_H
 
 #include "emulator/machine/machine_interface.h"
 

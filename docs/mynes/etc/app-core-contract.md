@@ -21,7 +21,7 @@ graphics/text, input and audio boundaries are fixed in
 later milestone tasks. Save states, rewind, networking, PAL/Dendy and expansion
 peripherals remain outside the approved product scope, not unfinished M2 work.
 
-Construction order is App config/provider storage -> Core adapter -> Emulator
+Construction order is App config/provider storage -> Machine adapter -> Emulator
 machine -> Emulator session -> Emulator UI -> bind UI and machine sinks -> run
 session. Session must exist before UI can deliver events. Sink callbacks map
 Emulator enum values explicitly and enqueue runtime/frame facts only. A failed
@@ -53,11 +53,11 @@ for the call unless the table explicitly states otherwise.
 
 | Proposed interface | Ownership and allowed caller |
 | --- | --- |
-| `lib_status core_driver_create(core_driver **out, const core_driver_options *options)` | Composition, unpublished; copies options and allocates complete NES driver context, initially no cartridge. core_driver is opaque, declared in core/driver_interface.h. |
+| `lib_status core_driver_create(core_driver **out, const core_driver_options *options)` | Composition, unpublished; copies options and allocates complete NES driver context, initially no cartridge. core_driver is opaque, declared in machine/driver_interface.h. |
 | `lib_status core_driver_make_driver(core_driver *instance, common_machine_driver *out)` | Composition before Common creation; fills the adopted driver by value; driver borrows this context until machine shutdown/destroy. No allocation or machine execution. |
 | `lib_status core_driver_destroy(core_driver *instance)` | Composition only after successful worker join and machine destruction; frees accepted hardware and owned adaptation buffers. |
 | `void core_driver_request_input_reset(core_driver *instance)` | Composition's runtime sink on PAUSED/STOPPED/ERROR; signal-only atomic latch, no hardware access. Consumed by executor adaptation before debugging/resumed guest work. |
-| `lib_status core_machine_create(core_machine **out, const lib_u8 *rom, lib_size size, const core_machine_options *options)` | Core machine driver only; validates/copies bytes; caller may immediately release input. Creates deterministic hardware and cartridge, not a worker. |
+| `lib_status core_machine_create(core_machine **out, const lib_u8 *rom, lib_size size, const core_machine_options *options)` | Machine adapter only; validates/copies bytes; caller may immediately release input. Creates deterministic hardware and cartridge, not a worker. |
 | `void core_machine_destroy(core_machine *machine)` | Executor during safe replacement or composition after join; no host callbacks. |
 | `lib_status core_machine_reset(core_machine *machine, core_reset_kind kind)` | Executor; POWER reconstructs volatile initial state, WARM performs reset sequence preserving RAM. Accepted ROM is retained. |
 | `lib_status core_machine_run(core_machine *machine, lib_u32 instruction_limit, lib_u32 cycle_limit, core_run_result *out)` | Executor; finite limits, completes at a CPU instruction/interrupt boundary unless a guest fault interrupts a bus operation. |
@@ -126,7 +126,7 @@ STOPPED or PAUSED. `rom insert <file_path>` passes the path with READ_ONLY;
 `set_removable_media`; no separate cartridge-loading transport is introduced.
 The only accepted storage mode is READ_ONLY. Null path unloads; empty path is
 rejected by App so it cannot accidentally become Common's null-media operation.
-Core machine driver uses `lib_storage_file_read_owned(path, 65552, ...)`, closes the file
+Machine adapter uses `lib_storage_file_read_owned(path, 65552, ...)`, closes the file
 before acceptance, and passes bounded bytes to hardware construction. At most
 old accepted hardware plus one candidate plus one temporary file buffer coexist.
 Parsing/construction failure frees candidate/input and preserves old state.
@@ -263,9 +263,9 @@ their owning capability admission.
 
 ## Build And Test Ownership
 
-Future CMake boundaries: `mynes_core_hardware` (Lib types only), `mynes_core_driver`
-(hardware + Lib + Common public contract includes), `mynes_app` (Common/Lib plus
-composition link to Core). App debug's value header introduces no Core machine driver link.
+Current CMake boundaries: `mynes_core_hardware` (Lib types only), `mynes_machine_driver`
+(hardware + Lib + Emulator public contract includes), `mynes_app` (Emulator/Lib plus
+composition link to Machine). App debug's value header introduces no Machine adapter link.
 Both Core targets compile explicitly selected files from core. They
 enforce dependency visibility within one component directory, not extra runtime
 layers. Driver owns a replaceable core_machine hardware instance so media can
@@ -276,10 +276,11 @@ The first source admission creates the product target and matching x64/x86
 artifact identity under Execution; this document creates none.
 
 Warnings: C11, `-Wall -Wextra -Wpedantic -Werror`, assertions enabled in tests.
-Tests belong in `test/app-mynes/unit/product`, `test/app-mynes/unit/core`, and
-`test/app-mynes/integration`; shared test roots stay identical. Hardware source
-is grouped under `core` following the NXVM reference and tested under
-`test/app-mynes/unit/core`; driver tests live there too
+Tests belong in `test/app-mynes/unit/product`, `test/app-mynes/unit/machine`,
+`test/app-mynes/unit/core`, and `test/app-mynes/integration`; shared test roots
+stay identical. Hardware source is grouped under `core` and tested under
+`test/app-mynes/unit/core`; adapter, media, frame and audio tests live under
+`test/app-mynes/unit/machine`.
 and exercise its separate public contract against real or fake Common callers.
 Source Layout defines this organization without changing component ownership.
 Original inline/constructed fixture bytes use the production

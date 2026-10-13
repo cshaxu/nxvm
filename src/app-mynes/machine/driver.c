@@ -1,6 +1,5 @@
-#include "core/driver.h"
+#include "machine/driver.h"
 
-#include "core/machine.h"
 #include "core/snapshot_interface.h"
 #include "lib/base/clock_interface.h"
 #include "lib/base/sync_interface.h"
@@ -57,9 +56,9 @@ static void core_driver_capture_audio(core_driver *driver)
         if (capacity > CORE_DRIVER_AUDIO_STAGING_CAPACITY - driver->audio_staging_write)
             capacity = (lib_u16)(CORE_DRIVER_AUDIO_STAGING_CAPACITY -
                 driver->audio_staging_write);
-        if (capacity > CORE_APU_SAMPLE_CAPACITY) capacity = CORE_APU_SAMPLE_CAPACITY;
-        captured = core_apu_take_samples(&driver->machine->apu,
-            &driver->audio_staging[driver->audio_staging_write], capacity);
+        if (core_machine_take_audio(driver->machine,
+                &driver->audio_staging[driver->audio_staging_write], capacity,
+                &captured) != LIB_STATUS_OK) return;
         if (captured == 0u) return;
         driver->audio_staging_write = (lib_u16)((driver->audio_staging_write + captured) %
             CORE_DRIVER_AUDIO_STAGING_CAPACITY);
@@ -70,12 +69,17 @@ static void core_driver_capture_audio(core_driver *driver)
 
 static void core_driver_reset_pacing(core_driver *driver)
 {
+    core_observation observation = { 0 };
     driver->pacing_ready = base_clock_milliseconds(&driver->pacing_origin_ms) == LIB_STATUS_OK;
-    driver->pacing_origin_cycles = driver->machine == LIB_NULL ? 0u : driver->machine->cycles;
+    if (driver->machine == LIB_NULL ||
+        core_machine_observe(driver->machine, &observation) != LIB_STATUS_OK)
+        driver->pacing_origin_cycles = 0u;
+    else driver->pacing_origin_cycles = observation.cycles;
 }
 
 static void core_driver_pace(core_driver *driver)
 {
+    core_observation observation;
     lib_u64 now;
     lib_u64 elapsed;
     lib_u64 due;
@@ -85,7 +89,8 @@ static void core_driver_pace(core_driver *driver)
      * within five milliseconds. */
     (void)lib_atomic_i32_exchange_explicit(&driver->wake_requested, 0,
         LIB_MEMORY_ORDER_SEQ_CST);
-    elapsed = (driver->machine->cycles - driver->pacing_origin_cycles) * 1000u /
+    if (core_machine_observe(driver->machine, &observation) != LIB_STATUS_OK) return;
+    elapsed = (observation.cycles - driver->pacing_origin_cycles) * 1000u /
         CORE_DRIVER_CPU_HZ;
     due = driver->pacing_origin_ms + elapsed;
     for (;;) {
@@ -94,7 +99,7 @@ static void core_driver_pace(core_driver *driver)
         if (now >= due) {
             if (now - due > CORE_DRIVER_PACING_LAG_REBASE_MS) {
                 driver->pacing_origin_ms = now;
-                driver->pacing_origin_cycles = driver->machine->cycles;
+                driver->pacing_origin_cycles = observation.cycles;
             }
             return;
         }
@@ -297,8 +302,7 @@ static lib_u8 core_driver_combined_buttons(const core_driver *driver)
 
 static void core_driver_publish_buttons(core_driver *driver)
 {
-    core_controller_set_buttons(&driver->machine->controller,
-        core_driver_combined_buttons(driver));
+    (void)core_machine_set_buttons(driver->machine, core_driver_combined_buttons(driver));
 }
 
 static void core_driver_clear_inputs(core_driver *driver)
@@ -311,7 +315,7 @@ static void core_driver_clear_inputs(core_driver *driver)
         driver->input_source_active[index] = LIB_FALSE;
     }
     if (driver->machine != LIB_NULL) {
-        core_controller_clear_transient_buttons(&driver->machine->controller);
+        (void)core_machine_clear_transient_buttons(driver->machine);
         core_driver_publish_buttons(driver);
     }
 }
@@ -560,8 +564,7 @@ void core_driver_deliver_input(void *context, const kvm_input_event *event)
         button = core_driver_button_for_text(event->data.text.scalar);
         if (button == 0xffu || lib_atomic_i32_load_explicit(&driver->input_reset_requested,
                 LIB_MEMORY_ORDER_SEQ_CST) != 0) return;
-        core_controller_tap_buttons(&driver->machine->controller,
-            (lib_u8)(1u << button));
+        (void)core_machine_tap_buttons(driver->machine, (lib_u8)(1u << button));
         return;
     }
     if (event->type != KVM_EVENT_KEY || event->data.key.key == 0u) return;
@@ -575,7 +578,7 @@ void core_driver_deliver_input(void *context, const kvm_input_event *event)
          * every mapped make until that latch even if an RDP/virtual keyboard
          * delivers its paired break before the guest samples it.  The source
          * binding still owns held input and release semantics. */
-        core_controller_tap_buttons(&driver->machine->controller,
+        (void)core_machine_tap_buttons(driver->machine,
             (lib_u8)(1u << core_driver_button_for_binding(button)));
         driver->input_source_bindings[source] |= (lib_u16)(1u << button);
     } else driver->input_source_bindings[source] &= (lib_u16)~(1u << button);
@@ -586,6 +589,8 @@ void core_driver_deliver_input(void *context, const kvm_input_event *event)
 lib_status core_driver_copy_frame(void *context, emulator_machine_frame *out_frame)
 {
     core_driver *driver = context;
+    core_machine_video video;
+    lib_status status;
     lib_u32 index;
     lib_u32 palette_count;
     lib_u16 sample_palette[512];
@@ -593,8 +598,11 @@ lib_status core_driver_copy_frame(void *context, emulator_machine_frame *out_fra
 
     if (driver == LIB_NULL || out_frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     out_frame->window.valid = LIB_FALSE;
-    if (driver->machine == LIB_NULL || !driver->machine->ppu.frame_ready ||
-        driver->machine->ppu.frame_revision == driver->published_frame_revision)
+    if (driver->machine == LIB_NULL) return LIB_STATUS_OK;
+    status = core_machine_copy_video(driver->machine, driver->video_samples,
+        CORE_MACHINE_VIDEO_SAMPLE_CAPACITY, &video);
+    if (status != LIB_STATUS_OK) return status;
+    if (!video.ready || video.revision == driver->published_frame_revision)
         return LIB_STATUS_OK;
     out_frame->window.graphics = !driver->text_output;
     if (driver->text_output) {
@@ -626,7 +634,7 @@ lib_status core_driver_copy_frame(void *context, emulator_machine_frame *out_fra
             source_x_end = (column - 6u) * 256u / 66u;
             for (source_y = source_y_begin; source_y < source_y_end; ++source_y)
                 for (source_x = source_x_begin; source_x < source_x_end; ++source_x) {
-                    lib_u32 rgb = core_driver_rgb(driver->machine->ppu.completed[
+                    lib_u32 rgb = core_driver_rgb(driver->video_samples[
                         source_y * 256u + source_x]);
                     total_red += rgb >> 16u;
                     total_green += (rgb >> 8u) & 0xffu;
@@ -648,19 +656,19 @@ lib_status core_driver_copy_frame(void *context, emulator_machine_frame *out_fra
             out_frame->characters.secondary[index] = index < 128u ? (lib_u16)index : ' ';
         }
         out_frame->window.valid = LIB_TRUE;
-        driver->published_frame_revision = driver->machine->ppu.frame_revision;
+        driver->published_frame_revision = video.revision;
         return LIB_STATUS_OK;
     }
-    out_frame->window.image.width = CORE_PPU_WIDTH;
-    out_frame->window.image.height = CORE_PPU_HEIGHT;
-    out_frame->window.image.stride = CORE_PPU_WIDTH;
+    out_frame->window.image.width = CORE_MACHINE_VIDEO_WIDTH;
+    out_frame->window.image.height = CORE_MACHINE_VIDEO_HEIGHT;
+    out_frame->window.image.stride = CORE_MACHINE_VIDEO_WIDTH;
     lib_memory_set(out_frame->window.image.palette, 0,
         sizeof(out_frame->window.image.palette));
     palette_count = 0u;
     lib_memory_set(sample_palette, 0xff, sizeof(sample_palette));
     cube = LIB_FALSE;
-    for (index = 0u; index < CORE_PPU_WIDTH * CORE_PPU_HEIGHT; ++index) {
-        lib_u16 sample = driver->machine->ppu.completed[index] & 0x1ffu;
+    for (index = 0u; index < CORE_MACHINE_VIDEO_SAMPLE_CAPACITY; ++index) {
+        lib_u16 sample = driver->video_samples[index] & 0x1ffu;
         lib_u32 rgb;
         lib_u32 candidate;
         if (sample_palette[sample] != 0xffffu) {
@@ -687,15 +695,15 @@ lib_status core_driver_copy_frame(void *context, emulator_machine_frame *out_fra
         out_frame->window.image.palette[index] = (red * 51u << 16u) |
             (green * 51u << 8u) | blue * 51u;
     }
-    if (cube) for (index = 0u; index < CORE_PPU_WIDTH * CORE_PPU_HEIGHT; ++index) {
-        lib_u32 rgb = core_driver_rgb(driver->machine->ppu.completed[index]);
+    if (cube) for (index = 0u; index < CORE_MACHINE_VIDEO_SAMPLE_CAPACITY; ++index) {
+        lib_u32 rgb = core_driver_rgb(driver->video_samples[index]);
         lib_u32 red = ((rgb >> 16u) + 25u) / 51u;
         lib_u32 green = (((rgb >> 8u) & 0xffu) + 25u) / 51u;
         lib_u32 blue = ((rgb & 0xffu) + 25u) / 51u;
         out_frame->window.image.pixels[index] = (lib_u8)(36u * red + 6u * green + blue);
     }
     out_frame->window.valid = LIB_TRUE;
-    driver->published_frame_revision = driver->machine->ppu.frame_revision;
+    driver->published_frame_revision = video.revision;
     return LIB_STATUS_OK;
 }
 

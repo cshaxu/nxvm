@@ -1,8 +1,5 @@
 #include <assert.h>
-#include <stdlib.h>
-
 #include "core/bus.h"
-#include "core/driver.h"
 #include "core/machine.h"
 
 #define MAPPER4_IMAGE_BYTES (16u + 131072u + 131072u)
@@ -60,22 +57,6 @@ static void qualified_edge(core_cartridge *cartridge)
     for (index = 0u; index < 8u; ++index)
         core_cartridge_ppu_a12_tick(cartridge, LIB_FALSE);
     core_cartridge_ppu_a12_tick(cartridge, LIB_TRUE);
-}
-
-static void owner_local_load(void)
-{
-    const char *path = getenv("MYNES_OWNER_MMC3_ROM");
-    core_driver *driver = LIB_NULL;
-
-    if (path == LIB_NULL || path[0] == '\0') return;
-    assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
-    assert(core_driver_set_media(driver, path, LIB_STORAGE_MEDIUM_READONLY));
-    assert(driver->machine != LIB_NULL && driver->machine->cartridge->mapper == 4u);
-    assert(driver->machine->cartridge->prg_bytes >= 32768u &&
-        driver->machine->cartridge->prg_bytes <= 524288u);
-    assert(driver->machine->cartridge->chr_bytes >= 8192u &&
-        driver->machine->cartridge->chr_bytes <= 262144u);
-    assert(core_driver_destroy(driver) == LIB_STATUS_OK);
 }
 
 int main(void)
@@ -213,6 +194,5 @@ int main(void)
     assert(core_cartridge_ppu_read(machine->cartridge, 0x0000u) == 0x5au);
     assert(core_cartridge_ppu_read(machine->cartridge, 0x1fffu) == 0xa5u);
     core_machine_destroy(machine);
-    owner_local_load();
     return 0;
 }

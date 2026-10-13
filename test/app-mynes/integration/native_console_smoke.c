@@ -5,7 +5,7 @@
 #include "emulator/machine/machine_interface.h"
 #include "emulator/session/session_interface.h"
 #include "emulator/ui/ui_interface.h"
-#include "core/driver_interface.h"
+#include "machine/driver_interface.h"
 #include "lib/storage/file_interface.h"
 
 #define FIXTURE_PATH "mynes-native-console-fixture.nes"

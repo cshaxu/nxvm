@@ -28,6 +28,17 @@ lib_status core_machine_create(core_machine **out_machine,
     return LIB_STATUS_OK;
 }
 
+lib_size core_machine_image_maximum_bytes(void)
+{
+    return core_cartridge_maximum_image_bytes();
+}
+
+lib_bool core_machine_image_normalize_size(const lib_u8 *bytes,
+    lib_size *in_out_byte_count)
+{
+    return core_cartridge_normalize_ines_size(bytes, in_out_byte_count);
+}
+
 void core_machine_destroy(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
@@ -350,6 +361,89 @@ lib_status core_machine_trace_copy(const core_machine *machine,
         lib_memory_copy(out_transfers, machine->trace,
             (lib_size)machine->trace_count * sizeof(*out_transfers));
     *out_count = machine->trace_count;
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_take_audio(core_machine *machine, lib_i32 *out_samples,
+    lib_u16 capacity, lib_u16 *out_count)
+{
+    if (machine == LIB_NULL || out_count == LIB_NULL ||
+        (out_samples == LIB_NULL && capacity != 0u)) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_count = core_apu_take_samples(&machine->apu, out_samples, capacity);
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_copy_video(const core_machine *machine, lib_u16 *out_samples,
+    lib_size capacity, core_machine_video *out_video)
+{
+    if (machine == LIB_NULL || out_video == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_video = (core_machine_video) {
+        .revision = machine->ppu.frame_revision, .ready = machine->ppu.frame_ready
+    };
+    if (!out_video->ready) return LIB_STATUS_OK;
+    if (out_samples == LIB_NULL || capacity < CORE_MACHINE_VIDEO_SAMPLE_CAPACITY)
+        return LIB_STATUS_LIMIT_EXCEEDED;
+    lib_memory_copy(out_samples, machine->ppu.completed, sizeof(machine->ppu.completed));
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_set_buttons(core_machine *machine, lib_u8 buttons)
+{
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    core_controller_set_buttons(&machine->controller, buttons);
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_tap_buttons(core_machine *machine, lib_u8 buttons)
+{
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    core_controller_tap_buttons(&machine->controller, buttons);
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_clear_transient_buttons(core_machine *machine)
+{
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    core_controller_clear_transient_buttons(&machine->controller);
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_battery_capture(const core_machine *machine,
+    core_machine_battery *out_battery)
+{
+    lib_size byte_count;
+
+    if (machine == LIB_NULL || out_battery == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_battery = (core_machine_battery) { 0 };
+    if (machine->cartridge == LIB_NULL) return LIB_STATUS_OK;
+    byte_count = core_cartridge_battery_ram_byte_count(machine->cartridge);
+    if (byte_count > CORE_MACHINE_BATTERY_BYTE_CAPACITY) return LIB_STATUS_LIMIT_EXCEEDED;
+    out_battery->mapper = machine->cartridge->mapper;
+    out_battery->identity = core_cartridge_battery_identity(machine->cartridge);
+    out_battery->byte_count = byte_count;
+    out_battery->dirty = machine->cartridge->prg_ram_dirty;
+    return byte_count == 0u ? LIB_STATUS_OK : core_cartridge_export_battery_ram(
+        machine->cartridge, out_battery->bytes, byte_count);
+}
+
+lib_status core_machine_battery_restore(core_machine *machine,
+    const core_machine_battery *battery)
+{
+    if (machine == LIB_NULL || battery == LIB_NULL || machine->cartridge == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (battery->byte_count == 0u ||
+        battery->byte_count != core_cartridge_battery_ram_byte_count(machine->cartridge) ||
+        battery->mapper != machine->cartridge->mapper ||
+        battery->identity != core_cartridge_battery_identity(machine->cartridge))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    return core_cartridge_import_battery_ram(machine->cartridge, battery->bytes,
+        battery->byte_count);
+}
+
+lib_status core_machine_battery_mark_clean(core_machine *machine)
+{
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (machine->cartridge != LIB_NULL) machine->cartridge->prg_ram_dirty = LIB_FALSE;
     return LIB_STATUS_OK;
 }
 

@@ -1,6 +1,6 @@
-#include "core/driver.h"
-#include "core/debug_interface.h"
-#include "core/machine.h"
+#include "machine/driver.h"
+#include "machine/debug_interface.h"
+#include "core/machine_interface.h"
 
 #define CORE_DEBUG_OBSERVATION_BYTES 40u
 

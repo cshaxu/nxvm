@@ -1,6 +1,6 @@
 #include "product/command.h"
 
-#include "core/debug_interface.h"
+#include "machine/debug_interface.h"
 #include "core/opcode_interface.h"
 #include "emulator/product/monitor_interface.h"
 #include "lib/types/file.h"
