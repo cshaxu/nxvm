@@ -152,6 +152,7 @@ int main(void)
                 core_machine_reset(machine) != LIB_STATUS_OK) {
                 failed |= 0x04;
             } else {
+                failed |= fdc->data.ccr != VFDC_CCR_RATE_250;
                 test_fdc_port_write(port, 0x03f2u, 0x1cu);
                 failed |= core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) ? 0x08 : 0;
                 failed |= !test_fdc_advance_due(fdc) ? 0x08 : 0;

@@ -71,3 +71,11 @@ Model-40 declaration, generic-EGA isolation, focused controls, strict-owner
 inventory, serial current gate and debt transfer. This accepts S11 only as
 selected-device functional progress. T386 and every remaining `3C2h`, firmware,
 physical-media, board-timing and L3 receiver remain open.
+
+## T556 S7 Correction
+
+The historical polarity above is incorrect. Miscellaneous Output bit 1 set
+means CPU video-memory access enabled; clear means disabled. T556 S7 corrects
+the implementation and its regressions; the original acceptance record is
+retained here rather than retrospectively rewritten. See the
+[T556 S7 review](t556-s7-deskpro-boot-review.md) for current evidence.

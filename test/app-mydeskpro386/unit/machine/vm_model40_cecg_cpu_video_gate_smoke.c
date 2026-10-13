@@ -43,11 +43,11 @@ lib_i32 main(void)
         test_core_machine_fixture_write_port(session->core_machine,
             0x03c2u, 0x02u);
         failed |= !test_video_memory_route(session->core_machine, 0x000a0000u,
-            CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
+            CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
         test_core_machine_fixture_write_port(session->core_machine,
             0x03c2u, 0x00u);
         failed |= !test_video_memory_route(session->core_machine, 0x000a0000u,
-            CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+            CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
         test_core_machine_fixture_write_port(session->core_machine,
             0x03c2u, 0x02u);
         test_core_machine_fixture_write_port(session->core_machine,

@@ -50,7 +50,7 @@ lib_i32 main(void)
                 (valid ? LIB_STATUS_OK : LIB_STATUS_INVALID_ARGUMENT) ||
             vadp->data.cecg.control_mode != (valid ? mode : previous);
         video_test_write(vadp, X86_VIDEO_REGISTER_AUXILIARY_CONTROL, (lib_u8)mode);
-        failed |= video_test_read(vadp, X86_VIDEO_REGISTER_AUXILIARY_CONTROL) != (mode & 0xfbu);
+        failed |= video_test_read(vadp, X86_VIDEO_REGISTER_AUXILIARY_CONTROL) != mode;
     }
     failed |= x86_video_configure_cecg(vadp, &config) != LIB_STATUS_OK;
     failed |= video_test_read(vadp,
@@ -64,11 +64,11 @@ lib_i32 main(void)
     video_test_write(vadp, X86_VIDEO_REGISTER_AUXILIARY_CONTROL,
         0x7fu);
     failed |= video_test_read(vadp,
-        X86_VIDEO_REGISTER_AUXILIARY_CONTROL) != 0x7bu;
+        X86_VIDEO_REGISTER_AUXILIARY_CONTROL) != 0x7fu;
     video_test_write(vadp, X86_VIDEO_REGISTER_AUXILIARY_CONTROL,
         0xa5u);
     failed |= video_test_read(vadp,
-        X86_VIDEO_REGISTER_AUXILIARY_CONTROL) != 0xa1u;
+        X86_VIDEO_REGISTER_AUXILIARY_CONTROL) != 0xa5u;
     video_test_write(vadp,
         X86_VIDEO_REGISTER_COLOR_LIGHTPEN_RESET, 0u);
     failed |= (video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS) & 0x06u) !=

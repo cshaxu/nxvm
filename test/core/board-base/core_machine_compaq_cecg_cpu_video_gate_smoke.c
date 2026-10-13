@@ -59,9 +59,12 @@ lib_i32 main(void)
     test_video_port_write(generic_machine,
         CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT, 0x02u);
     test_video_port_write(machine,
-        CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x02u);
+        CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x00u);
     failed |= !query_route(machine, CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM) ||
         !query_route(generic_machine, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+    test_video_port_write(machine,
+        CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x02u);
+    failed |= !query_route(machine, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
     x86_video_reset(vadp.chip);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     test_video_port_write(machine, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);

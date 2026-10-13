@@ -33,6 +33,10 @@ typedef struct core_machine_fdc_config {
      * register: a selected board may expose a read-only capability code. */
     lib_u16 diagnostic_port;
     lib_u8 diagnostic_read_value;
+    /* The ordinary controller reset rate remains 250 kb/s.  A board whose
+     * reset wiring selects another CCR value must opt in explicitly. */
+    lib_bool initial_ccr_configured;
+    lib_u8 initial_ccr;
 } core_machine_fdc_config;
 
 /* Flat-media recording is a drive/board contract, not an 8272A identity rule.

@@ -241,6 +241,20 @@ static lib_i32 neutral_memory_aliases(void)
         read != written ||
         core_machine_memory_read(machine, 0x20000u, &read, 1u) != LIB_STATUS_OK ||
         read != written) goto done;
+    /* Runtime decode changes reuse the installed backing and reject unknown
+     * windows without changing the accepted mapping. */
+    if (core_machine_set_memory_alias_decode(machine, 0x30000u, 16u,
+            LIB_TRUE, LIB_TRUE) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_set_memory_alias_decode(machine, 0x20000u, 16u,
+            LIB_TRUE, LIB_FALSE) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x20000u, &(lib_u8){0x96u}, 1u) != LIB_STATUS_OK ||
+        core_machine_memory_read(machine, 0x100u, &read, 1u) != LIB_STATUS_OK ||
+        read != written ||
+        core_machine_set_memory_alias_decode(machine, 0x20000u, 16u,
+            LIB_TRUE, LIB_TRUE) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x20000u, &(lib_u8){0x96u}, 1u) != LIB_STATUS_OK ||
+        core_machine_memory_read(machine, 0x100u, &read, 1u) != LIB_STATUS_OK ||
+        read != 0x96u) goto done;
     failed = 0;
 done:
     core_machine_destroy(machine);

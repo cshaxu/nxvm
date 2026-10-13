@@ -23,6 +23,11 @@ typedef struct core_machine_memory_alias_config {
 lib_status core_machine_install_memory_aliases(core_machine *machine,
     const core_machine_memory_alias_config *aliases, lib_size count,
     lib_bool selected);
+/* Reconfigure one already-installed board alias.  This is for a board-owned
+ * runtime decode register; it neither adds storage nor changes the backing. */
+lib_status core_machine_set_memory_alias_decode(core_machine *machine,
+    lib_u32 physical_start, lib_size bytes, lib_bool selected,
+    lib_bool writable);
 
 typedef void (*core_machine_memory_parity_fault_observer)(void *owner,
     lib_u32 physical);

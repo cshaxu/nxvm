@@ -5,10 +5,29 @@
 #define CORE_MACHINE_D4_CONTROL_WINDOW_BYTES 4096u
 #define CORE_MACHINE_D4_SETUP_BANK_START 0x00100000u
 #define CORE_MACHINE_D4_SETUP_BANK_BYTES 0x00e00000u
+#define CORE_MACHINE_D4_RELOCATED_START 0x000e0000u
+#define CORE_MACHINE_D4_RELOCATED_BYTES 0x00020000u
 
 static core_machine_d4_memory *core_machine_d4_state(void *owner)
 {
     return (core_machine_d4_memory *)owner;
+}
+
+static lib_status core_machine_d4_apply_control(core_machine_d4_memory *memory,
+    lib_u8 control)
+{
+    lib_bool selected;
+    lib_bool writable;
+    lib_status status;
+
+    if (memory == LIB_NULL || memory->core == LIB_NULL) return LIB_STATUS_INVALID_STATE;
+    selected = (control & 0x01u) == 0u ? LIB_TRUE : LIB_FALSE;
+    writable = (control & 0x02u) != 0u ? LIB_TRUE : LIB_FALSE;
+    status = core_machine_set_memory_alias_decode(memory->core,
+        CORE_MACHINE_D4_RELOCATED_START, CORE_MACHINE_D4_RELOCATED_BYTES,
+        selected, writable);
+    if (status == LIB_STATUS_OK) memory->control = control | 0xfcu;
+    return status;
 }
 
 /* In the selected D4 setup, low nibble 1 disconnects every extension-RAM
@@ -63,18 +82,25 @@ static lib_status core_machine_d4_control_read(void *opaque, lib_u32 physical,
 {
     core_machine_d4_memory *memory = core_machine_d4_state(opaque);
     lib_u32 offset;
+    lib_u16 value;
 
     (void)observe_only;
-    if (memory == LIB_NULL || destination == 0u || bytes != 1u ||
+    if (memory == LIB_NULL || destination == 0u || (bytes != 1u && bytes != 2u) ||
         physical < CORE_MACHINE_D4_CONTROL_PHYSICAL) return LIB_STATUS_INTERNAL_ERROR;
     offset = physical - CORE_MACHINE_D4_CONTROL_PHYSICAL;
-    if (offset >= CORE_MACHINE_D4_CONTROL_WINDOW_BYTES) return LIB_STATUS_UNSUPPORTED;
-    if (offset == 0u) *(lib_u8 *)destination = (lib_u8)(
-        memory->diagnostic_low & ~memory->parity_fault_mask);
-    else if (offset == 1u) *(lib_u8 *)destination = memory->diagnostic_high;
-    else if (offset == 2u) *(lib_u8 *)destination = (lib_u8)memory->ram_setup;
-    else if (offset == 3u) *(lib_u8 *)destination = (lib_u8)(memory->ram_setup >> 8u);
-    else *(lib_u8 *)destination = 0xffu;
+    if (offset > CORE_MACHINE_D4_CONTROL_WINDOW_BYTES - bytes) return LIB_STATUS_UNSUPPORTED;
+    if (bytes == 1u) {
+        if (offset == 0u) value = memory->diagnostic_low & ~memory->parity_fault_mask;
+        else if (offset == 1u) value = memory->diagnostic_high;
+        else if (offset == 2u) value = (lib_u8)memory->ram_setup;
+        else if (offset == 3u) value = (lib_u8)(memory->ram_setup >> 8u);
+        else value = 0xffu;
+    } else if (offset == 0u) {
+        value = (lib_u16)(memory->diagnostic_low & ~memory->parity_fault_mask) |
+            (lib_u16)((lib_u16)memory->diagnostic_high << 8u);
+    } else if (offset == 2u) value = memory->ram_setup;
+    else value = 0xffffu;
+    lib_memory_copy((void *)destination, &value, bytes);
     return LIB_STATUS_OK;
 }
 
@@ -83,17 +109,23 @@ static lib_status core_machine_d4_control_write(void *opaque, lib_u32 physical,
 {
     core_machine_d4_memory *memory = core_machine_d4_state(opaque);
     lib_u32 offset;
+    lib_u16 value = 0u;
 
-    if (memory == LIB_NULL || source == 0u || bytes != 1u ||
+    if (memory == LIB_NULL || source == 0u || (bytes != 1u && bytes != 2u) ||
         physical < CORE_MACHINE_D4_CONTROL_PHYSICAL) return LIB_STATUS_INTERNAL_ERROR;
     offset = physical - CORE_MACHINE_D4_CONTROL_PHYSICAL;
-    if (offset >= CORE_MACHINE_D4_CONTROL_WINDOW_BYTES) return LIB_STATUS_UNSUPPORTED;
+    if (offset > CORE_MACHINE_D4_CONTROL_WINDOW_BYTES - bytes) return LIB_STATUS_UNSUPPORTED;
+    lib_memory_copy(&value, (const void *)source, bytes);
     if (offset == 0u) {
-        memory->control = *(const lib_u8 *)source | 0xfcu;
+        lib_status status = core_machine_d4_apply_control(memory,
+            (lib_u8)value);
+
+        if (status != LIB_STATUS_OK) return status;
         memory->parity_fault_mask = 0u;
     } else if (offset == 2u) {
-        memory->ram_setup = (lib_u16)((memory->ram_setup & 0xff00u) |
-            *(const lib_u8 *)source);
+        if (bytes == 1u) memory->ram_setup = (lib_u16)(
+            (memory->ram_setup & 0xff00u) | value);
+        else memory->ram_setup = value;
     }
     return LIB_STATUS_OK;
 }
@@ -103,8 +135,9 @@ static lib_status core_machine_d4_control_query(void *opaque, lib_u32 physical,
 {
     (void)opaque;
     if (physical < CORE_MACHINE_D4_CONTROL_PHYSICAL ||
-        physical - CORE_MACHINE_D4_CONTROL_PHYSICAL >= CORE_MACHINE_D4_CONTROL_WINDOW_BYTES ||
-        bytes != 1u) return LIB_STATUS_UNSUPPORTED;
+        (bytes != 1u && bytes != 2u) ||
+        physical - CORE_MACHINE_D4_CONTROL_PHYSICAL >
+            CORE_MACHINE_D4_CONTROL_WINDOW_BYTES - bytes) return LIB_STATUS_UNSUPPORTED;
     return access == CORE_MACHINE_MEMORY_ACCESS_READ || access == CORE_MACHINE_MEMORY_ACCESS_WRITE ?
         LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
 }
@@ -168,6 +201,7 @@ lib_status core_machine_d4_memory_configure(core_machine *core,
     memory->ram_setup = config->ram_setup;
     memory->iochk_output = output;
     memory->iochk_context = context;
+    memory->core = core;
     memory->configured = LIB_TRUE;
     core_machine_d4_memory_reset(memory);
     return LIB_STATUS_OK;
@@ -177,6 +211,7 @@ void core_machine_d4_memory_reset(core_machine_d4_memory *memory)
 {
     if (memory == LIB_NULL || !memory->configured) return;
     memory->control = 0xffu;
+    (void)core_machine_d4_apply_control(memory, 0xffu);
     memory->parity_fault_mask = 0u;
     memory->ram_setup = memory->reset_ram_setup;
 }

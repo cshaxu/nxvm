@@ -293,6 +293,7 @@ lib_status core_machine_memory_register_mapping(t_ram *ram,
     mapping->backing_start = backing_start;
     mapping->bytes = bytes;
     mapping->selected = selected;
+    mapping->writable = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 
@@ -668,6 +669,15 @@ lib_status core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
         if (status != LIB_STATUS_UNSUPPORTED) return status;
         status = core_machine_memory_offset(ram, physical, byte, &offset);
         if (status != LIB_STATUS_OK) return status;
+    }
+    for (index = 0u; index < ram->connect.mapping_count; ++index) {
+        const core_machine_memory_mapping *mapping = &ram->connect.mappings[index];
+
+        if (mapping->selected && !mapping->writable &&
+            physical >= mapping->physical_start &&
+            (lib_u64)physical - mapping->physical_start + byte <= mapping->bytes) {
+            return LIB_STATUS_OK;
+        }
     }
     lib_memory_copy((void *)(ram->connect.backing + offset),
         (void *)source, byte);

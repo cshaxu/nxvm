@@ -451,7 +451,9 @@ lib_status core_machine_fdc_connect(core_machine_fdc *fdc,
     lib_status status;
     if (fdc == LIB_NULL || drives == LIB_NULL || dma_request == LIB_NULL ||
         dma_request_assert == LIB_NULL || dma_request_deassert == LIB_NULL ||
-        dma_request_owner == LIB_NULL || config == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+        dma_request_owner == LIB_NULL || config == LIB_NULL ||
+        (config->initial_ccr_configured && config->initial_ccr > VFDC_CCR_RATE_MASK))
+        return LIB_STATUS_INVALID_ARGUMENT;
     status = core_machine_pic_irq_source_bind(&fdc->connect.irq_source,
         pic_master, pic_slave, config->irq);
     if (status != LIB_STATUS_OK) return status;
@@ -480,7 +482,8 @@ lib_status core_machine_fdc_initialize(core_machine_fdc *fdc)
     if (fdc->chip != LIB_NULL) return LIB_STATUS_INVALID_STATE;
     lib_memory_set(fdc->drive_cylinder, 0u, sizeof(fdc->drive_cylinder));
     lib_memory_set(&fdc->data, 0u, sizeof(fdc->data));
-    fdc->data.ccr = VFDC_CCR_RATE_250;
+    fdc->data.ccr = fdc->connect.config.initial_ccr_configured ?
+        fdc->connect.config.initial_ccr : VFDC_CCR_RATE_250;
     core_machine_fdc_observe_all_drives(fdc);
     fdc->data.initial_media_baseline_pending = LIB_TRUE;
     core_machine_fdc_update_dir(fdc);

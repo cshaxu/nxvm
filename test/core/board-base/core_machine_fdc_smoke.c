@@ -837,7 +837,8 @@ lib_i32 main(void)
         .direction_port = 0x03f7u, .control_port = 0x03f7u,
         .irq = 6u, .dma_channel = 2u, .ready_mask = 0x0fu,
         .clock_ticks_per_second = 8000000u,
-        .diagnostic_port = 0x03f1u, .diagnostic_read_value = 0x50u
+        .diagnostic_port = 0x03f1u, .diagnostic_read_value = 0x50u,
+        .initial_ccr_configured = LIB_TRUE, .initial_ccr = VFDC_CCR_RATE_500
     };
     const core_machine_fdc_drive_bindings drives = {
         {1u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
@@ -890,6 +891,7 @@ lib_i32 main(void)
                 core_machine_reset(machine) != LIB_STATUS_OK) {
                 failed |= 0x04;
             } else {
+                failed |= fdc->data.ccr != VFDC_CCR_RATE_500;
                 failed |= test_fdc_port_read(port, fdc_config.diagnostic_port) != 0x50u;
                 test_fdc_port_write(port, fdc_config.dor_port, 0x1cu);
                 failed |= core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) ||

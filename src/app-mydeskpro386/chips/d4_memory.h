@@ -7,6 +7,7 @@
 typedef void (*core_machine_d4_iochk_output)(void *context, lib_bool asserted);
 
 typedef struct core_machine_d4_memory {
+    core_machine *core;
     lib_u8 control;
     lib_u8 diagnostic_low;
     lib_u8 diagnostic_high;

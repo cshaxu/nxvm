@@ -25,6 +25,7 @@ typedef struct {
     lib_u32 backing_start;
     lib_uptr bytes;
     lib_u8 selected;
+    lib_bool writable;
 } core_machine_memory_mapping;
 
 typedef struct {

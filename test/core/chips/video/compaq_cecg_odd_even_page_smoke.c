@@ -81,19 +81,19 @@ lib_i32 main(void)
         value != 0x80u || x86_video_capture_snapshot_from(vadp, LIB_NULL,
         &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 5u;
     video_test_write(vadp, X86_VIDEO_REGISTER_EXTERNAL_CONTROL,
-        0x20u);
+        0x22u);
     failed |= !write(vadp, 0x00u) || !read(vadp, &value) ||
         value != 0x00u || x86_video_capture_snapshot_from(vadp, LIB_NULL,
         &snapshot) != LIB_STATUS_OK || snapshot.pixels[0] != 5u || !snapshot.buffer_changed;
     video_test_write(vadp, X86_VIDEO_REGISTER_EXTERNAL_CONTROL,
-        0x00u);
+        0x02u);
     failed |= !read(vadp, &value) || value != 0x80u ||
         x86_video_capture_snapshot_from(vadp, LIB_NULL, &snapshot) != LIB_STATUS_OK ||
         snapshot.pixels[0] != 5u || !snapshot.buffer_changed;
     /* Display start is independent of the CPU page; byte and word output
      * can select the odd plane address without moving CPU memory. */
     video_test_write(vadp, X86_VIDEO_REGISTER_EXTERNAL_CONTROL,
-        0x01u);
+        0x03u);
     failed |= !write_at(vadp, X86_VIDEO_EGA_APERTURE_BASE + 2u, 0x80u);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x17u);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0xe3u);

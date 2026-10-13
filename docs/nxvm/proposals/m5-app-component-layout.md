@@ -73,7 +73,8 @@ Keep original Ninja/ccache trees and compile shared dependencies once per width.
 | S4 | My5170 flattening | Same flat-source and reference proof, with AT-specific behavior retained; dual-width qualification and pair updated. |
 | S5 | NXVM flattening except firmware | Firmware remains cohesive; other source files flat with clear roles; tests/build/docs updated; dual-width qualification and pair updated. |
 | S6 | DeskPro Chips/Machine/Product split | Register logic and board integration have separate owners; no reverse dependency; D4/KBC/PIT/HOLD/ROM tests preserved; dual-width qualification and pair updated. |
-| S7 | Whole-task audit and delivery | No retired path/symbol/reference remains in active code; all repository suites pass per width; ten current EXEs verified; target-separated commits pushed and worktree clean. |
+| S7 | DeskPro386 normal-boot qualification | Compare the pre-layout Model 40 boot route with current behavior, repair the proven Core boot-path defect, and prove an unattended x64/x86 boot reaches the installer checkpoint. Do not alter firmware, media, INI inputs or production input policy. |
+| S8 | Whole-task audit and delivery | No retired path/symbol/reference remains in active code; all repository suites pass per width; ten current EXEs verified; target-separated commits pushed and worktree clean. |
 
 This is an initial ordered plan. Any necessary refinement must preserve the whole
 five-App scope and linear numeric S identifiers. Each implementation S reports its

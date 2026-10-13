@@ -70,6 +70,8 @@ void vm_profile_model40_core_config_initialize(core_machine_config *out_config)
         .auxiliary_pit_present = LIB_TRUE,
         .auxiliary_pit_base_port = 0x0048u,
         .kbc_aux_absent = LIB_TRUE,
+        .kbc_reset_output_port_configured = LIB_TRUE,
+        .kbc_reset_output_port = 0x03u,
         /* 86Box's DeskPro P1 mask is 0xf4. Its Compaq handler resolves the
          * selected colour display to 0xb0 and sets bit 2 without an 80287,
          * so this frozen colour/no-FPU board reads 0xb4. */

@@ -22,7 +22,8 @@ lib_i32 main(void)
     failed |= vm_model40_fixture_create_bytes(even, odd, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
     if (!failed) {
-        failed |= core_machine_bus_write(session->core_machine, 0x0064u, 0xd1u) !=
+        failed |= !test_core_a20_is_enabled(session->core_machine) ||
+            core_machine_bus_write(session->core_machine, 0x0064u, 0xd1u) !=
                 LIB_STATUS_OK ||
             core_machine_bus_write(session->core_machine, 0x0060u, 0x03u) !=
                 LIB_STATUS_OK || !test_core_a20_is_enabled(session->core_machine) ||

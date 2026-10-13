@@ -37,13 +37,17 @@ lib_i32 main(void)
         test_core_machine_fixture_write_port(session->core_machine,
             0x03dcu, 0u);
         failed |= test_core_machine_fixture_read_bus(session->core_machine,
-            0x03c6u) != 0x7bu ||
+            0x03c6u) != 0x7fu ||
             (test_core_machine_fixture_read_bus(session->core_machine,
             0x03dau) & 0x06u) != 0x06u;
         test_core_machine_fixture_write_port(session->core_machine,
+            0x03c6u, 0x5au);
+        failed |= test_core_machine_fixture_read_bus(session->core_machine,
+            0x03c6u) != 0x5au;
+        test_core_machine_fixture_write_port(session->core_machine,
             0x03c6u, 0xa5u);
         failed |= test_core_machine_fixture_read_bus(session->core_machine,
-            0x03c6u) != 0xa1u;
+            0x03c6u) != 0xa5u;
     }
     if (!failed) {
         vm_machine_reset(session);

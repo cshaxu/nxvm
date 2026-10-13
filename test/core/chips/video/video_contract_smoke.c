@@ -42,7 +42,7 @@ static lib_bool sequencer_character_clock_deadline_matches(void)
                 X86_VIDEO_EGA_PERSONALITY_GENERIC :
                 X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) == LIB_STATUS_OK &&
             x86_video_register_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL,
-                kind == 0u ? 3u : 1u) == LIB_STATUS_OK &&
+                3u) == LIB_STATUS_OK &&
             write_crtc(video, 0u, 6u) && write_crtc(video, 1u, 1u) &&
             write_crtc(video, 6u, 7u) && write_crtc(video, 7u, 0u) &&
             write_crtc(video, 0x15u, 3u) && write_crtc(video, 0x17u, 0xe3u);
@@ -169,7 +169,7 @@ static lib_bool programmed_blank_endpoints_match(x86_video_snapshot *snapshot)
             x86_video_configure_ega_personality(video, kind == 0u ?
                 X86_VIDEO_EGA_PERSONALITY_GENERIC : X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) ==
                 LIB_STATUS_OK;
-        video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, kind == 0u ? 3u : 1u);
+        video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 3u);
         for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
             lib_u64 generation;
             lib_u64 phase;
@@ -295,7 +295,7 @@ static lib_bool planar_text_pixels_match(x86_video_snapshot *snapshot)
                 X86_VIDEO_EGA_PERSONALITY_GENERIC :
                 X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) == LIB_STATUS_OK &&
             x86_video_register_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL,
-                kind == 0u ? 3u : 1u) == LIB_STATUS_OK;
+                3u) == LIB_STATUS_OK;
         for (lib_size index = 0u; index < sizeof(registers) / sizeof(registers[0]); ++index)
             valid &= write_crtc(video, registers[index][0], registers[index][1]);
         video_test_write(video, X86_VIDEO_REGISTER_SEQUENCER_INDEX, 2u);
@@ -640,7 +640,7 @@ static lib_bool planar_text_geometry_matches(x86_video_snapshot *snapshot)
             x86_video_configure_ega_personality(video, kind == 0u ?
                 X86_VIDEO_EGA_PERSONALITY_GENERIC :
                 X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) == LIB_STATUS_OK;
-        video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, kind == 0u ? 3u : 1u);
+        video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 3u);
         for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
             const lib_u16 end = cases[index].rows * cases[index].height - 1u;
             const lib_u16 last = (lib_u16)(cases[index].start +
@@ -740,7 +740,7 @@ static lib_bool live_font_snapshot_matches(x86_video_snapshot *snapshot)
             x86_video_configure_ega_personality(video, kind == 0u ?
                 X86_VIDEO_EGA_PERSONALITY_GENERIC :
                 X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) == LIB_STATUS_OK;
-        video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, kind == 0u ? 3u : 1u);
+        video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 3u);
         for (lib_u8 bank = 0u; bank < 4u; ++bank) {
             for (lib_size row = 0u; row < sizeof(rows); ++row)
                 rows[row] = (lib_u8)((bank + 1u) * 32u + row);
@@ -1277,7 +1277,7 @@ lib_i32 main(void)
                 };
                 lib_u8 byte;
 
-                video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, kind == 0u ? 3u : 1u);
+                video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 3u);
                 video_test_write(video, X86_VIDEO_REGISTER_SEQUENCER_INDEX, 4u);
                 video_test_write(video, X86_VIDEO_REGISTER_SEQUENCER_DATA, 6u);
                 for (lib_u8 plane = 0u; plane < 4u; ++plane) {
@@ -1391,7 +1391,7 @@ lib_i32 main(void)
                     const lib_bool sequential = (test_case & 32u) != 0u;
 
                     video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL,
-                        (lib_u8)((kind == 0u ? 3u : 1u) | (high ? 0x20u : 0u)));
+                        (lib_u8)((3u) | (high ? 0x20u : 0u)));
                     video_test_write(video, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 6u);
                     video_test_write(video, X86_VIDEO_REGISTER_GRAPHICS_DATA,
                         (lib_u8)((map << 2u) | (chain ? 2u : 0u)));
@@ -1467,7 +1467,7 @@ lib_i32 main(void)
                 x86_video_configure_ega_personality(video, personality == 0u ?
                     X86_VIDEO_EGA_PERSONALITY_GENERIC :
                     X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != LIB_STATUS_OK;
-            video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, personality == 0u ? 3u : 1u);
+            video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 3u);
             failed |= !write_crtc(video, 0u, 40u) || !write_crtc(video, 1u, 39u) ||
                 !write_crtc(video, 6u, 208u) || !write_crtc(video, 7u, 0x10u) ||
                 !write_crtc(video, 0x12u, 199u) || !write_crtc(video, 0x13u, 20u) ||
@@ -1501,11 +1501,11 @@ lib_i32 main(void)
             write_attribute(video, 18u, 15u);
             failed |= (video_test_read(video, X86_VIDEO_REGISTER_COLOR_STATUS) & 0x30u) != 0x30u;
             if (personality != 0u) {
-                video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 3u);
+                video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 1u);
                 failed |= x86_video_memory_query(video, X86_VIDEO_MEMORY_PLANAR,
                     0xa0008u, 1u, LIB_FALSE) != LIB_STATUS_UNSUPPORTED ||
                     (video_test_read(video, X86_VIDEO_REGISTER_COLOR_STATUS) & 0x30u) != 0x30u;
-                video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 1u);
+                video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 3u);
             }
             x86_video_advance(video, 1u);
             failed |= (video_test_read(video, X86_VIDEO_REGISTER_COLOR_STATUS) & 0x30u) != 0u;
@@ -1578,7 +1578,7 @@ lib_i32 main(void)
                     x86_video_configure_ega_personality(video, kind == 1u ?
                         X86_VIDEO_EGA_PERSONALITY_GENERIC :
                         X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != LIB_STATUS_OK;
-                video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, kind == 1u ? 3u : 1u);
+                video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 3u);
             }
             for (lib_u8 index = 0u; index < 32u; ++index) {
                 const lib_bool readable = kind == 0u ? index >= 14u && index <= 17u :

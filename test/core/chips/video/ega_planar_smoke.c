@@ -60,8 +60,8 @@ static lib_bool ega_planar_ram_gate_matches(void)
     for (lib_u8 kind = 0u; kind < 2u; ++kind) {
         x86_video *video = LIB_NULL;
         x86_video_bus_observation observation;
-        const lib_u8 enabled = kind == 0u ? 3u : 1u;
-        const lib_u8 disabled = kind == 0u ? 1u : 3u;
+        const lib_u8 enabled = 3u;
+        const lib_u8 disabled = 1u;
         lib_u8 value = 0x5au;
         lib_u8 read;
         lib_u64 generation;

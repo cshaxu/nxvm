@@ -45,6 +45,7 @@ lib_i32 main(void)
     vm_machine *session = LIB_NULL;
     core_machine_d4_platform_observation d4;
     lib_u32 port_value = 0u;
+    lib_u8 relocated_window_before = 0u;
     lib_i32 failed = 0;
 
     even[0u] = 0x11u;
@@ -84,9 +85,33 @@ lib_i32 main(void)
         CHECK(write_byte(session->core_machine, 0x00fd5678u, 0xa5u,
             LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00fd5678u, 0xa5u));
+        /* The D4 mapping register conditionally relocates the last 128 KiB
+         * of the high RAM bank into E0000h--FFFFFh.  The low window remains
+         * unselected at reset, then uses the same backing without a copy. */
+        CHECK(core_machine_memory_read(session->core_machine, 0x000e9abcu,
+            &relocated_window_before, sizeof(relocated_window_before)) == LIB_STATUS_OK);
         CHECK(write_byte(session->core_machine, 0x00fe9abcu, 0x5au,
             LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00fe9abcu, 0x5au));
+        CHECK(write_word(session->core_machine,
+            VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, 0xfffeu));
+        CHECK(vm_test_model40_d4_observe(session, &d4) == LIB_STATUS_OK &&
+            d4.memory_control == 0xfeu);
+        CHECK(read_byte(session->core_machine, 0x000e9abcu, 0x5au));
+        CHECK(write_byte(session->core_machine, 0x000e9abcu, 0x6cu,
+            LIB_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x00fe9abcu, 0x6cu));
+        /* Clearing bit 1 keeps the selected decode readable but protects
+         * the backing from writes through its relocated low window. */
+        CHECK(write_word(session->core_machine,
+            VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, 0xfffcu));
+        CHECK(write_byte(session->core_machine, 0x000e9abcu, 0x39u,
+            LIB_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x00fe9abcu, 0x6cu));
+        CHECK(write_word(session->core_machine,
+            VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, 0xffffu));
+        CHECK(read_byte(session->core_machine, 0x000e9abcu,
+            relocated_window_before));
         /* FF0000h is also selected RAM, despite the ordinary F0000h BIOS ROM
          * route underneath it.  The alias must win for this board decode. */
         CHECK(write_byte(session->core_machine, 0x00ff1234u, 0x73u,
@@ -118,6 +143,7 @@ lib_i32 main(void)
             LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine,
             VM_PROFILE_MODEL40_ROM_COMPATIBILITY_ALIAS_START, 0x11u));
+        CHECK(core_machine_set_a20(session->core_machine, LIB_FALSE) == LIB_STATUS_OK);
         CHECK(write_byte(session->core_machine, 0x00000020u, 0xa5u,
             LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00100020u, 0xa5u));

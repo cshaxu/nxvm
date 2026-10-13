@@ -27,6 +27,8 @@ static lib_status vm_profile_model40_materialize_controllers(core_machine_plan *
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     fdc.ready_mask = 0x0fu;
+    fdc.initial_ccr_configured = LIB_TRUE;
+    fdc.initial_ccr = 0u; /* Board reset selects 500 kbit/s. */
     /* FDC deadlines use the Core source axis, not the controller crystal. */
     fdc.clock_ticks_per_second = 16000000u;
     if (vm_at_fdc_materialize(vm_at_port_leaves, VM_AT_PORT_LEAF_COUNT,
@@ -83,12 +85,18 @@ lib_status vm_profile_model40_topology_materialize(
      * remaining 384 KiB of the built-in first MiB to FA0000h--FFFFFFh.
      * Core owns the single RAM backing; the frozen profile declares only the
      * board decode. */
-    topology.memory_alias_count = 1u;
+    topology.memory_alias_count = 2u;
     topology.memory_alias[0] = (core_machine_memory_alias_config) {
         0x00fa0000u, 0x000a0000u, 0x00060000u };
+    /* D4 enables this second alias at runtime when its mapping register
+     * relocates FE0000h--FFFFFFh into E0000h--FFFFFh.  Aliases name backing
+     * offsets, so this is the high range's already-decoded E0000h backing,
+     * not a second physical hop through FE0000h. */
+    topology.memory_alias[1] = (core_machine_memory_alias_config) {
+        0x000e0000u, 0x000e0000u, 0x00020000u };
     /* D4 decodes the installed 1 MiB upgrade through 1FFFFFh; the option
      * board range and the unselected F00000h--F9FFFFh bank decode open bus. */
-    topology.absent_memory_count = 3u;
+    topology.absent_memory_count = 4u;
     topology.absent_memory[0] = (core_machine_absent_memory_config) {
         0x00200000u, 0x00800000u, 0xffu };
     topology.absent_memory[1] = (core_machine_absent_memory_config) {
@@ -98,6 +106,10 @@ lib_status vm_profile_model40_topology_materialize(
      * continues to win as its own selected physical mapping. */
     topology.absent_memory[2] = (core_machine_absent_memory_config) {
         0x000b0000u, 0x00008000u, 0xffu };
+    /* Before D4 selects its 128 KiB relocated decode, the E0000h half is an
+     * unpopulated board window; F0000h remains available to the system ROM. */
+    topology.absent_memory[3] = (core_machine_absent_memory_config) {
+        0x000e0000u, 0x00010000u, 0xffu };
     topology.display = display;
     topology.rtc_cmos = rtc;
     if (vm_at_topology_materialize(vm_at_port_leaves, VM_AT_PORT_LEAF_COUNT,

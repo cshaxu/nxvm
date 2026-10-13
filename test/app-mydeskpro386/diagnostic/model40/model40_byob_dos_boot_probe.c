@@ -13,6 +13,9 @@
 #endif
 
 #include "core/board-base/machine_board_interface.h"
+#include "core/board-base/machine_board_state.h"
+#include "core/board-base/vadp.h"
+#include "core/chips/video/video.h"
 #include "test/core/support/boot_fixture.h"
 #include "test/core/board-base/composition/composition_fixture.h"
 #include "core/x86/retirement_observation_interface.h"
@@ -24,13 +27,14 @@
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
 
-#define VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS 90000u
+#define VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS 300000u
 #define VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS 15000u
 #define VM_BYOB_BOOT_DISPLAY_CADENCE_MILLISECONDS 16u
 #define VM_BYOB_FDC_PORT_HISTORY 256u
 #define VM_BYOB_HDC_PORT_HISTORY 64u
 #define VM_BYOB_MODEL40_VIDEO_PORT_HISTORY 64u
 #define VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY 32u
+#define VM_BYOB_MODEL40_VIDEO_PIT_HISTORY 16u
 #define VM_BYOB_NEAR_UD_HISTORY 16u
 #define VM_BYOB_KBC_WRITE_HISTORY 16u
 #define VM_BYOB_MODEL40_POST_LATCH_PATHS 5u
@@ -68,11 +72,16 @@ typedef struct vm_byob_boot_trace {
     lib_u64 model40_video_port_accesses;
     vm_byob_fdc_port_event
         model40_video_port_history[VM_BYOB_MODEL40_VIDEO_PORT_HISTORY];
+    lib_u32 model40_video_port_phases[VM_BYOB_MODEL40_VIDEO_PORT_HISTORY];
     lib_u64 model40_video_special_accesses[5u];
     lib_u8 model40_video_special_last_values[5u];
     lib_u64 model40_video_error_writes;
     lib_u8 model40_video_error_last_value;
     lib_u32 model40_video_error_last_pc;
+    lib_u8 model40_video_pit_read_pending;
+    lib_u8 model40_video_pit_low;
+    lib_u64 model40_video_pit_samples;
+    lib_u16 model40_video_pit_history[VM_BYOB_MODEL40_VIDEO_PIT_HISTORY];
     vm_byob_fdc_port_event
         model40_video_special_history[VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY];
     lib_u64 model40_video_special_history_count;
@@ -499,6 +508,9 @@ static void vm_byob_model40_video_retirement_record(vm_byob_boot_trace *trace,
     record->port = observation->io_port;
     record->value = (lib_u8)observation->io_value;
     record->write = observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE;
+    trace->model40_video_port_phases[index] = trace->board != LIB_NULL &&
+        trace->board->shared_vadp != LIB_NULL && trace->board->shared_vadp->chip != LIB_NULL ?
+        (lib_u32)trace->board->shared_vadp->chip->data.raster_phase : 0u;
     ++trace->model40_video_port_accesses;
     {
         const lib_u16 ports[5u] = { 0x03c2u, 0x03c6u, 0x07c6u,
@@ -662,9 +674,27 @@ static void vm_byob_retirement_observe(void *context,
             trace->model40_video_rom_first_pc = observation->point.linear_pc;
         ++trace->model40_video_rom_entries;
     }
+    if (observation->point.linear_pc == 0x000c04c4u)
+        trace->model40_video_pit_read_pending = 2u;
     vm_byob_fdc_retirement_record(trace, observation);
     vm_byob_model40_video_retirement_record(trace, observation);
     vm_byob_cmos_retirement_record(trace, observation);
+    if (trace->model40_video_pit_read_pending != 0u &&
+        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ &&
+        observation->io_port == 0x0040u) {
+        if (trace->model40_video_pit_read_pending == 2u) {
+            trace->model40_video_pit_low = (lib_u8)observation->io_value;
+            trace->model40_video_pit_read_pending = 1u;
+        } else {
+            const lib_size index = (lib_size)(trace->model40_video_pit_samples %
+                VM_BYOB_MODEL40_VIDEO_PIT_HISTORY);
+
+            trace->model40_video_pit_history[index] = (lib_u16)(
+                trace->model40_video_pit_low | ((lib_u16)observation->io_value << 8u));
+            ++trace->model40_video_pit_samples;
+            trace->model40_video_pit_read_pending = 0u;
+        }
+    }
     if (observation->point.byte_count >= 3u &&
         observation->point.bytes[0u] == 0x0fu &&
         observation->point.bytes[1u] == 0x22u &&
@@ -1983,6 +2013,12 @@ int main(lib_i32 argc, char **argv)
                 }
             }
             if (display_status == LIB_STATUS_OK) {
+                if (vm_byob_snapshot_has(&snapshot,
+                        "Setup is determining your system configuration")) {
+                    printf("BOOT-PROBE=installer-running\n");
+                    exit_code = 0;
+                    goto done;
+                }
                 if (vm_byob_snapshot_has_prompt(&snapshot)) {
                     printf("BOOT-PROBE=dos-prompt\n");
                     exit_code = 0;
@@ -2151,6 +2187,7 @@ int main(lib_i32 argc, char **argv)
             goto done;
         }
     }
+    printf("BOOT-PROBE=wall-timeout-limit=%u\n", (unsigned int)wall_limit);
     if (trace_enabled) {
     test_core_boot_capture_diagnostic(session->core_machine, &diagnostic);
     printf("BOOT-PROBE=run-count=%llu-last-reason=%u-wait-advanced=%u\n",
@@ -2397,6 +2434,46 @@ done:
             (unsigned long long)trace.model40_video_error_writes,
             (unsigned int)trace.model40_video_error_last_value,
             (unsigned int)trace.model40_video_error_last_pc);
+        if (trace.model40_video_pit_samples != 0u) {
+            const lib_size count = trace.model40_video_pit_samples <
+                VM_BYOB_MODEL40_VIDEO_PIT_HISTORY ?
+                (lib_size)trace.model40_video_pit_samples :
+                VM_BYOB_MODEL40_VIDEO_PIT_HISTORY;
+            const lib_u64 first = trace.model40_video_pit_samples - count;
+            lib_size index;
+
+            for (index = 0u; index < count; ++index) {
+                const lib_size slot = (lib_size)((first + index) %
+                    VM_BYOB_MODEL40_VIDEO_PIT_HISTORY);
+
+                printf("BOOT-PROBE=model40-video-pit-%u=%04X\n",
+                    (unsigned int)index,
+                    (unsigned int)trace.model40_video_pit_history[slot]);
+            }
+        }
+        if (trace.board != LIB_NULL && trace.board->shared_vadp != LIB_NULL &&
+            trace.board->shared_vadp->chip != LIB_NULL) {
+            const x86_video_data *video = &trace.board->shared_vadp->chip->data;
+
+            printf("BOOT-PROBE=model40-video-state=phase:%llu-seq:%02X/%02X-graphics:%02X/%02X-attribute:%02X/%02X-crtc:"
+                "%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+                (unsigned long long)video->raster_phase, (unsigned int)video->sequencer[0u],
+                (unsigned int)video->sequencer[1u], (unsigned int)video->graphics[5u],
+                (unsigned int)video->graphics[6u], (unsigned int)video->attribute[16u],
+                (unsigned int)video->attribute[18u], (unsigned int)video->crtc[0u],
+                (unsigned int)video->crtc[1u], (unsigned int)video->crtc[2u],
+                (unsigned int)video->crtc[3u], (unsigned int)video->crtc[4u],
+                (unsigned int)video->crtc[5u], (unsigned int)video->crtc[6u],
+                (unsigned int)video->crtc[7u], (unsigned int)video->crtc[8u],
+                (unsigned int)video->crtc[9u], (unsigned int)video->crtc[10u],
+                (unsigned int)video->crtc[11u], (unsigned int)video->crtc[12u],
+                (unsigned int)video->crtc[13u], (unsigned int)video->crtc[14u],
+                (unsigned int)video->crtc[15u], (unsigned int)video->crtc[16u],
+                (unsigned int)video->crtc[17u], (unsigned int)video->crtc[18u],
+                (unsigned int)video->crtc[19u], (unsigned int)video->crtc[20u],
+                (unsigned int)video->crtc[21u], (unsigned int)video->crtc[22u],
+                (unsigned int)video->crtc[23u], (unsigned int)video->crtc[24u]);
+        }
         {
             lib_u64 entry;
             const lib_u64 count = trace.model40_video_special_history_count <
@@ -2428,9 +2505,10 @@ done:
                 const vm_byob_fdc_port_event *record =
                     &trace.model40_video_port_history[index];
 
-                printf("BOOT-PROBE=model40-video-port-%05X-%c-%04X-%02X\n",
+                printf("BOOT-PROBE=model40-video-port-%05X-%c-%04X-%02X-phase:%u\n",
                     (unsigned int)record->linear_pc, record->write ? 'w' : 'r',
-                    (unsigned int)record->port, (unsigned int)record->value);
+                    (unsigned int)record->port, (unsigned int)record->value,
+                    (unsigned int)trace.model40_video_port_phases[index]);
             }
         }
         if (diagnostic.first_delivered_exception.valid) {

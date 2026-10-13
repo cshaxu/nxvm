@@ -29,6 +29,28 @@ lib_status core_machine_install_memory_aliases(core_machine *machine,
     return LIB_STATUS_OK;
 }
 
+lib_status core_machine_set_memory_alias_decode(core_machine *machine,
+    lib_u32 physical_start, lib_size bytes, lib_bool selected,
+    lib_bool writable)
+{
+    if (machine == LIB_NULL || bytes == 0u ||
+        (selected != LIB_FALSE && selected != LIB_TRUE) ||
+        (writable != LIB_FALSE && writable != LIB_TRUE)) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    for (lib_size index = 0u;
+        index < machine->executor_memory.connect.mapping_count; ++index) {
+        core_machine_memory_mapping *mapping =
+            &machine->executor_memory.connect.mappings[index];
+
+        if (mapping->physical_start != physical_start || mapping->bytes != bytes) continue;
+        mapping->selected = selected;
+        mapping->writable = writable;
+        return LIB_STATUS_OK;
+    }
+    return LIB_STATUS_INVALID_ARGUMENT;
+}
+
 lib_status core_machine_install_memory_device_routes(core_machine *machine,
     const core_machine_memory_device_route *routes, lib_size count,
     core_machine_memory_write_observer observer,

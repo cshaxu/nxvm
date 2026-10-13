@@ -2,35 +2,48 @@
 
 ## Current Work
 
-M5 T556 S6 is next for the final DeskPro386 `{chips,machine,product}` split. The owner requests MyNES
+M5 T556 S7 follows the completed five-App layout migration with the owner-approved
+DeskPro386 normal-boot qualification. The owner requests MyNES
 `{core,machine,product}`, flat My5160 and My5170, flat NXVM except `firmware/`,
 then DeskPro `{chips,machine,product}`. S1's
 [inventory](../etc/evidence/t556-s1-app-layout-inventory.md) is the fixed
 migration map; the [proposal](../proposals/m5-app-component-layout.md)
-records S2--S7. S2--S5 are accepted; S6 is the final production migration.
+records S2--S8. S2--S6 are accepted; S7 remains open.
 
-## Current Task — M5 T556 S6 DeskPro386 Component Split
+## Current Task — M5 T556 S7 DeskPro386 Normal-Boot Qualification
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: T556 S6 follows accepted S1 inventory and S2--S5 migrations. |
-| Admission And Approval | Owner's 2026-10-12 approval admits the five-App layout task and automatic S admission. S6 has target `MyDeskPro386`; NXVM Current remains the T packet owner. |
-| Objective | Split DeskPro386 source and matching tests into `chips`, `machine` and `product` owners. |
-| Non-goals | No shared-six or Core modification, machine-model change, firmware/media/INI mutation, new runtime layer or compatibility paths. |
-| Reference Baseline | S1 inventory `t556-s1-app-layout-inventory.md`; accepted S2--S5 migrations; current DeskPro386 source/test/build trees. |
+| Identifier Mode | Continuation: T556 S7 follows accepted S1--S6 migrations. |
+| Admission And Approval | Owner's 2026-10-12 direction “还不赶紧去修” admits the DeskPro386 boot qualification after dual-width evidence. S7 has targets `Core` and `MyDeskPro386`; NXVM Current remains the T packet owner. |
+| Objective | Restore and qualify a normal, unattended Model 40 1.2 MiB boot to its installer checkpoint on x64 and x86. |
+| Non-goals | No Shared-six change, firmware/media/INI mutation, production auto-F1 policy, injected guest input, retry workaround or timeout-only acceptance. |
+| Reference Baseline | T556 S6 path split `68902e24e`; direct Model 40 diagnostic evidence reaching MS-DOS 5 Setup after the F1 interaction; existing Core input and DeskPro boot-matrix receiver. |
 | Candidate Proposal | [Five-App component layout](../proposals/m5-app-component-layout.md). |
-| Files And ABI Surface | `src/app-mydeskpro386`, its tests/CMake/artifact pair and directly current layout docs. Only path/name ownership may change; public behavior remains stable. |
-| Applicable Rules | NXVM guide/architecture/layout; Contributing; shared Execution/Architecture/Coding/Document rules; S1 inventory; architecture/coding governance skills. |
-| Verification | Review every moved caller and registration; run DeskPro386 x64/x86 unit and integration routes, gates/documentation checks, then rebuild and PE-verify its current x64/x86 pair. |
-| Expected Markers | Register state is in Chips, Board construction/wiring is in Machine, entry/binding is in Product; no reverse dependency, duplicate target or stale path survives. |
-| Asset Needs | Existing DeskPro386 external firmware/media/INI inputs are read-only. Rebuild the current DeskPro386 pair only after code qualification. |
-| Reporting Requirements | Before modification, report exact moved files and estimated diff. At delivery report actual additions/deletions/net, x64/x86 results, pair hashes and unexecuted desktop validation. |
-| Stop Conditions | Required Shared/Core implementation change, firmware/media/INI format change, protected-asset need, new runtime layer or unexplained test loss. |
-| Exit Criteria | DeskPro386 source/test/build paths match `{chips,machine,product}`; x64/x86 routes pass; pair is current; target-scoped P is pushed and reviewed. |
-| Original Owner Request | Admit an App-layout T: extract MyNES Machine adapter, flatten My5160/My5170, split DeskPro Chips/Machine/Product, retain only NXVM firmware subcomponent; give feedback. |
-| Similar-Issue Sweep | Verify the final split does not create Core, Shared or sibling-App references; do not modify those owners in S6. |
+| Files And ABI Surface | Existing Core FDC reset configuration, memory-alias selection and CECG video owners; DeskPro D4 and fixed board reset configuration; their current tests and Model40 diagnostic. My5160's positional FDC initializer gains explicit zero defaults without changing its behavior. No Shared-six API or production input path changes. |
+| Applicable Rules | NXVM guide/architecture/layout; Contributing; shared Execution/Architecture/Coding/Document rules; source policy; existing firmware, Core and test ownership contracts. |
+| Verification | Compare the unchanged pre-layout boot route with current behavior; isolate the first divergent Core owner, then run the normal Matrix route without guest input on x64/x86 using the measured terminal budget. Rebuild/PE-verify artifacts only if production code changes. |
+| Expected Markers | The normal boot reaches an installer checkpoint without `301`/`303`, injected F1, or terminal timeout. |
+| Asset Needs | Existing DeskPro386 external firmware/media/INI inputs are read-only; no new asset acquisition or mutation. |
+| Reporting Requirements | Before modification, report the exact root cause, owner, paths and estimated diff. At delivery report actual additions/deletions/net, dual-width results, artifacts and unexecuted desktop validation. |
+| Stop Conditions | Required Shared-six change, firmware/media/INI change, protected-asset need, new runtime layer or an unexplained regression outside the Core boot path. |
+| Exit Criteria | Normal-worker and direct diagnostic evidence agree on the first repaired boot-path failure; real Model40 x64/x86 Matrix route reaches the installer marker within a measured justified budget; no production auto-input behavior is introduced; artifacts are rebuilt if production changes; P is pushed and reviewed. |
+| Original Owner Request | After the layout task exposed a dual-width Model40 terminal timeout, owner directed immediate repair rather than closing around it. |
+| Similar-Issue Sweep | Inspect equivalent Core FDC/KBC paths only for the same proven defect; do not modify sibling Apps unless their existing test registrations require a generic script facility. |
 
-### Active S6 Qualification Fact
+### Active S7 Qualification Fact
+
+The 2026-10-13 candidate reaches `installer-running` without injected input:
+x64 145.58 seconds and x86 189.44 seconds. The
+[S7 review](../etc/evidence/t556-s7-deskpro-boot-review.md) records the exact
+checkpoint, external-reference boundaries and remaining delivery gates.
+This supersedes the earlier timeout observations below but is not S closure.
+Temporary App-specific diagnostics have been removed from the generic Core
+integration harness. Both direct diagnostics now also reach the same captured
+installer text without injected input after their old 90-second budget and
+missing checkpoint were aligned with the normal receiver. All eight PC
+artifacts have been rebuilt; final regression and pushed delivery remain
+required before S7 acceptance.
 
 P1 `68902e24e` completes the path/owner migration and publishes the rebuilt
 MyDeskPro386 x64/x86 pair. Both full configured build graphs, 28 DeskPro unit
@@ -38,11 +51,11 @@ receivers per width, Core corpus/manifest and the layout gates pass. The
 existing Model 40 BYOB floppy-boot matrix does not satisfy the final
 integration criterion: its x64 receiver reaches the 300-second terminal
 budget while the FDC remains in a read transfer. This is a machine boot
-qualification issue, not evidence of a path or registration regression; S6
-remains active until it is independently diagnosed and either repaired or
-formally re-scoped. No failing route is counted as accepted.
+qualification issue, not evidence of a path or registration regression. S7
+remains active until it is independently diagnosed and repaired; no failing
+route is counted as accepted.
 
-P3 completes the S7 audit's NXVM-layout correction without changing executable
+S6 P3 completes the NXVM-layout correction without changing executable
 inputs: all 28 non-firmware NXVM unit receivers now live directly under
 `test/app-nxvm/unit`, matching its flat source root; only `unit/firmware`
 remains a component directory. Both default x64/x86 full graphs and all 36
@@ -53,7 +66,15 @@ Ninja/ccache tree and run once on 2026-10-12.  It reaches the same 300-second
 terminal timeout as x64 with `FDC: phase=0, cmd=E6, remaining=9216`; the
 recorded CPU, BDA, boot-sector and display observations are materially the
 same.  The qualification loss is therefore not x64-specific and remains
-outside this layout-only S6's implementation boundary.
+outside the completed layout migration.
+
+Direct comparison of pre-layout `8f195943b` and current `608d887f7` confirms
+that no Core source file changed during T556; the DeskPro production changes
+are path moves, include-path updates and the source-list rewrite only. The
+boot defect predates the layout work. T546 retains dual-width successful boot
+evidence, while T555 S2--S4 changed the relevant PIT/DMA/FDC event path. S7
+therefore compares that bounded controller range and does not treat a file
+move, F1 input, or a larger timeout as a repair.
 
 ## Previous Task
 

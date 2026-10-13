@@ -114,7 +114,7 @@ lib_status vm_profile_xt_5160_268_plan_create(
         vm_profile_floppy_channel_get(VM_PROFILE_FLOPPY_525_360K);
     out_profile->topology.fdc = (core_machine_fdc_config) {0x03f2u, 0x03f4u,
         0x03f5u, 0u, 0u, 6u, 2u, 0x0fu,
-        4772727u, 0u, 0u};
+        4772727u, 0u, 0u, LIB_FALSE, 0u};
     out_profile->topology.hdc_present = LIB_TRUE;
     out_profile->topology.hdc_media_id = VM_PROFILE_XT_5160_268_HDD_MEDIA_ID;
     out_profile->topology.hdc_slave_media_id = CORE_MACHINE_MEDIA_ID_INVALID;

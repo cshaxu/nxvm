@@ -63,6 +63,8 @@ static lib_i32 x86_video_ega_display_kind(const x86_video *adapter,
     x86_video_kind *out_kind);
 static lib_u32 x86_video_ega_display_address(const x86_video *adapter,
     lib_u16 address, lib_u8 row_scan);
+static lib_u32 x86_video_ega_text_display_address(const x86_video *adapter,
+    lib_u16 address, lib_u8 row_scan);
 static lib_u16 x86_video_ega_vertical_displayed(const x86_video *adapter);
 static lib_u16 x86_video_ega_scanout_address(const x86_video *adapter,
     lib_u32 column, lib_u16 y, lib_u8 *out_row_scan);
@@ -1310,7 +1312,9 @@ static void x86_video_write_compaq_control_mode(lib_u8 *io_byte,
 
     (void)port_id;
     if (io_byte == LIB_NULL || adapter == LIB_NULL) return;
-    value = *io_byte & 0xfbu;
+    /* The CECG option ROM probes this register with complementary 5Ah/A5h
+     * values and requires exact readback; no bit is normalized here. */
+    value = *io_byte;
     if (adapter->data.compaq_control_mode != value) {
         adapter->data.compaq_control_mode = value;
         x86_video_mark_dirty(adapter);
@@ -1324,10 +1328,9 @@ static void x86_video_write_compaq_miscellaneous_output(lib_u8 *io_byte,
 
     (void)port_id;
     if (io_byte == LIB_NULL || adapter == LIB_NULL) return;
-    /* Compaq EGA miscellaneous-output bit 1 disables the CPU aperture.  The
-     * clear state leaves the window decoded by the VADP provider. */
+    /* Compaq EGA miscellaneous-output bit 1 enables the CPU aperture. */
     adapter->data.compaq_cpu_video_memory_disabled =
-        (*io_byte & 0x02u) != 0u;
+        (*io_byte & 0x02u) == 0u;
     adapter->data.compaq_color_io_base = (*io_byte & 0x01u) != 0u;
     adapter->data.compaq_clock_switch_select = (*io_byte >> 2u) & 0x03u;
     if (adapter->data.compaq_odd_even_high_page !=
@@ -2329,7 +2332,7 @@ static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const
             for (column = 0u; column < columns; ++column) {
                 const lib_u16 address = (lib_u16)(start +
                     row * adapter->data.crtc[X86_VIDEO_CRTC_OFFSET] * 2u + column);
-                const lib_u32 offset = x86_video_ega_display_address(adapter, address, 0u);
+                const lib_u32 offset = x86_video_ega_text_display_address(adapter, address, 0u);
                 const lib_size cell = ((lib_size)row * columns + column) * 2u;
 
                 cells[cell] = adapter->data.ega_planar_vram[offset];
@@ -2626,6 +2629,19 @@ static lib_u32 x86_video_ega_display_address(const x86_video *adapter,
     return offset;
 }
 
+static lib_u32 x86_video_ega_text_display_address(const x86_video *adapter,
+    lib_u16 address, lib_u8 row_scan)
+{
+    lib_u32 offset = x86_video_ega_display_address(adapter, address, row_scan);
+
+    /* CECG Odd/Even page substitution replaces the text-cell A0 used by
+     * CPU writes, so text scanout selects the same retained cell page. */
+    if (adapter->data.ega_personality == X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR &&
+        !adapter->data.vga_configured && (adapter->data.graphics[6] & 0x02u) != 0u)
+        offset = (offset & ~1u) | adapter->data.compaq_odd_even_high_page;
+    return offset;
+}
+
 static lib_u16 x86_video_ega_scanout_address(const x86_video *adapter,
     lib_u32 column, lib_u16 y, lib_u8 *out_row_scan)
 {
@@ -2665,7 +2681,7 @@ static lib_u8 x86_video_ega_text_pixel(const x86_video *adapter, lib_u16 x, lib_
     lib_u8 row_scan;
     const lib_u16 address = x86_video_ega_scanout_address(adapter,
         position / width, y, &row_scan);
-    const lib_u32 offset = x86_video_ega_display_address(adapter, address, row_scan);
+    const lib_u32 offset = x86_video_ega_text_display_address(adapter, address, row_scan);
     const lib_u8 character = adapter->data.ega_planar_vram[offset];
     const lib_u8 attribute = adapter->data.ega_planar_vram[X86_VIDEO_EGA_PLANE_BYTES + offset];
     const lib_u8 bank = x86_video_ega_font_map(adapter, (attribute & 8u) != 0u);
