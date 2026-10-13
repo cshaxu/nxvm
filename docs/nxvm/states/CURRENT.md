@@ -48,6 +48,13 @@ inputs: all 28 non-firmware NXVM unit receivers now live directly under
 remains a component directory. Both default x64/x86 full graphs and all 36
 registered NXVM unit receivers pass.
 
+The same Model 40 boot receiver was configured in the original persistent x86
+Ninja/ccache tree and run once on 2026-10-12.  It reaches the same 300-second
+terminal timeout as x64 with `FDC: phase=0, cmd=E6, remaining=9216`; the
+recorded CPU, BDA, boot-sector and display observations are materially the
+same.  The qualification loss is therefore not x64-specific and remains
+outside this layout-only S6's implementation boundary.
+
 ## Previous Task
 
 M5 T555 is closed. Its finite retained controller/board universe is reconciled
