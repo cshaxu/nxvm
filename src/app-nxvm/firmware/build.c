@@ -8,6 +8,31 @@
 #define BIOS_BYTES 0x10000u
 #define BIOS_IVT 0xf800u
 #define BIOS_BDA 0xfc00u
+#define BIOS_FONT 0xa000u
+#define BIOS_FONT_BYTES 0x2000u
+
+static lib_status bios_font(lib_u8 *image, const char *path)
+{
+    void *source = LIB_NULL;
+    lib_size bytes = 0u;
+    lib_status status = lib_storage_file_read_owned(path, BIOS_FONT_BYTES,
+        &source, &bytes);
+
+    if (status == LIB_STATUS_OK && bytes != BIOS_FONT_BYTES)
+        status = LIB_STATUS_INVALID_ARGUMENT;
+    if (status == LIB_STATUS_OK) {
+        const lib_u8 *font = source;
+
+        for (lib_size character = 0u; character < 256u; ++character) {
+            lib_memory_copy(image + BIOS_FONT + character * 32u,
+                font + character * 8u, 8u);
+            lib_memory_copy(image + BIOS_FONT + character * 32u + 8u,
+                font + 2048u + character * 8u, 8u);
+        }
+    }
+    lib_release(source);
+    return status;
+}
 
 static void bios_word(lib_u8 *image, lib_size offset, lib_u16 value)
 {
@@ -168,19 +193,21 @@ lib_i32 main(lib_i32 argc, char **argv)
     lib_status status = LIB_STATUS_OK;
     lib_storage_file_writer *writer = LIB_NULL;
 
-    if (argc != 3) {
-        lib_c_fprintf(lib_c_stderr, "Usage: nxvm-firmware-build source-directory output.rom\n");
+    if (argc != 4) {
+        lib_c_fprintf(lib_c_stderr,
+            "Usage: nxvm-firmware-build source-directory output.rom character-generator.rom\n");
         return 1;
     }
     image = lib_allocate_zero(BIOS_BYTES, 1u);
     if (image == LIB_NULL) return 1;
     image[0u] = 0xcfu; /* Default interrupt entry is IRET. */
     bios_tables(image);
+    status = bios_font(image, argv[3u]);
     for (index = 0u; status == LIB_STATUS_OK &&
         index < sizeof(interrupts) / sizeof(interrupts[0u]); ++index) {
         lib_size offset = interrupts[index].fixed_offset != 0u ?
             interrupts[index].fixed_offset : cursor;
-        lib_size limit = offset == 0x4000u ? 0xe000u :
+        lib_size limit = offset == 0x4000u ? BIOS_FONT :
             offset == 0x0c00u ? 0x4000u : 0x0c00u;
 
         bios_word(image, BIOS_IVT + interrupts[index].vector * 4u, (lib_u16)offset);

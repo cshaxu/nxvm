@@ -22,14 +22,21 @@ foreach(required IN ITEMS
     "VM_AT_DEVICE_VADP_ATTRIBUTE"
     "0x03ceu"
     "0x03cfu"
-    "0x03c0u"
-    "0x03c1u")
+    "0x03c0u")
     set(source_text "${profile_source}\n${at_wiring}")
     string(FIND "${source_text}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "profile/composition binding is missing ${required}")
     endif()
 endforeach()
+
+# EGA indexed controls are write-only on this board.  Attribute-data reads
+# remain a chip capability for VGA, but the EGA board intentionally does not
+# register a 03C1 read direction.
+string(FIND "${at_wiring}" "{ VM_AT_DEVICE_VADP_ATTRIBUTE, 0x03c1u" attribute_read_position)
+if(NOT attribute_read_position EQUAL -1)
+    message(FATAL_ERROR "EGA board must not register an attribute-data read route")
+endif()
 
 string(FIND "${profile_source}" "topology.display = (core_machine_display_config)" position)
 if(position EQUAL -1)

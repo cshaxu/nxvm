@@ -86,7 +86,7 @@ foreach(operation IN ITEMS configure_dma get_fdc_dma_request_binding
 endforeach()
 foreach(operation IN ITEMS rtc_cmos_port_read rtc_cmos_port_write
     fdc_dma_request_assert fdc_dma_request_deassert
-    hdc_dma_request_assert hdc_dma_request_deassert dma_refresh_pit_output
+    hdc_dma_request_assert hdc_dma_request_deassert refresh_pit_output
     configure_dma get_fdc_dma_request_binding configure_rtc_cmos configure_fdc configure_hdc)
     string(REGEX MATCH "(static )?(lib_status|void) core_machine_${operation}\\([^;]*\\)[ \t\r\n]*\\{" declaration "${core_board_source}")
     if(declaration STREQUAL "")
@@ -108,7 +108,7 @@ foreach(operation IN ITEMS rtc_cmos_port_read rtc_cmos_port_write
     endif()
 endforeach()
 foreach(required IN ITEMS
-    "core_machine_dma_refresh_pit_output, board);"
+    "core_machine_refresh_pit_output, board);"
     "core_machine_fdc_dma_request_deassert, board,"
     "board->core, &board->fdc_topology.config,"
     "core_machine_hdc_dma_request_assert, core_machine_hdc_dma_request_deassert,\n            board);"
@@ -118,7 +118,7 @@ foreach(required IN ITEMS
         message(FATAL_ERROR "Controller registration has the wrong owner: ${required}")
     endif()
 endforeach()
-string(REGEX MATCHALL "core_machine_dma_refresh_pit_output, board\\)" refresh_bindings
+string(REGEX MATCHALL "core_machine_refresh_pit_output, board\\)" refresh_bindings
     "${core_board_source}")
 list(LENGTH refresh_bindings refresh_binding_count)
 if(NOT refresh_binding_count EQUAL 2)

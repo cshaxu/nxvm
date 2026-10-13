@@ -49,11 +49,73 @@ static void ega_planar_select_mode_d(x86_video *port)
     video_test_write(port, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x14u);
 }
 
+static lib_bool ega_planar_ram_gate_matches(void)
+{
+    const x86_video_ega_sequencer_config sequencer = {
+        0xa0000u, 0x10000u, 3u, 1u, 15u, 6u, LIB_TRUE };
+    const x86_video_ega_controller_config controllers = {
+        .graphics = { [6] = 5u, [8] = 0xffu } };
+    lib_bool valid = LIB_TRUE;
+
+    for (lib_u8 kind = 0u; kind < 2u; ++kind) {
+        x86_video *video = LIB_NULL;
+        x86_video_bus_observation observation;
+        const lib_u8 enabled = kind == 0u ? 3u : 1u;
+        const lib_u8 disabled = kind == 0u ? 1u : 3u;
+        lib_u8 value = 0x5au;
+        lib_u8 read;
+        lib_u64 generation;
+
+        if (x86_video_create(&video) != LIB_STATUS_OK) return LIB_FALSE;
+        valid &= x86_video_configure_ega_sequencer(video, &sequencer) == LIB_STATUS_OK &&
+            x86_video_configure_ega_controllers(video, &controllers) == LIB_STATUS_OK &&
+            x86_video_configure_ega_personality(video, kind == 0u ?
+                X86_VIDEO_EGA_PERSONALITY_GENERIC :
+                X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) == LIB_STATUS_OK;
+        video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, enabled);
+        valid &= x86_video_memory_write(video, X86_VIDEO_MEMORY_PLANAR,
+            0xa0000u, &value, 1u) == LIB_STATUS_OK;
+        video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, disabled);
+        generation = video->data.dirty_generation;
+        read = 0xa5u;
+        valid &= x86_video_observe_bus(video, &observation) == LIB_STATUS_OK &&
+            observation.cpu_memory_disabled &&
+            x86_video_memory_query(video, X86_VIDEO_MEMORY_PLANAR,
+                0xa0000u, 1u, LIB_FALSE) == LIB_STATUS_UNSUPPORTED &&
+            x86_video_memory_query(video, X86_VIDEO_MEMORY_PLANAR,
+                0xa0000u, 1u, LIB_TRUE) == LIB_STATUS_UNSUPPORTED &&
+            x86_video_memory_read(video, X86_VIDEO_MEMORY_PLANAR,
+                0xa0000u, &read, 1u) == LIB_STATUS_UNSUPPORTED && read == 0xa5u;
+        value = 0x96u;
+        valid &= x86_video_memory_write(video, X86_VIDEO_MEMORY_PLANAR,
+            0xa0000u, &value, 1u) == LIB_STATUS_UNSUPPORTED &&
+            video->data.dirty_generation == generation;
+        video_test_write(video, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, enabled);
+        read = 0u;
+        valid &= x86_video_observe_bus(video, &observation) == LIB_STATUS_OK &&
+            !observation.cpu_memory_disabled &&
+            x86_video_memory_read(video, X86_VIDEO_MEMORY_PLANAR,
+                0xa0000u, &read, 1u) == LIB_STATUS_OK && read == 0x5au;
+        /* Attribute blanking changes scanout, not processor RAM access. */
+        (void)video_test_read(video, X86_VIDEO_REGISTER_COLOR_STATUS);
+        video_test_write(video, X86_VIDEO_REGISTER_ATTRIBUTE, 0u);
+        valid &= x86_video_memory_query(video, X86_VIDEO_MEMORY_PLANAR,
+                0xa0000u, 1u, LIB_TRUE) == LIB_STATUS_OK &&
+            x86_video_memory_write(video, X86_VIDEO_MEMORY_PLANAR,
+                0xa0000u, &value, 1u) == LIB_STATUS_OK;
+        read = 0u;
+        valid &= x86_video_memory_read(video, X86_VIDEO_MEMORY_PLANAR,
+                0xa0000u, &read, 1u) == LIB_STATUS_OK && read == 0x96u;
+        x86_video_destroy(video);
+    }
+    return valid;
+}
+
 lib_i32 main(void)
 {
     const x86_video_ega_sequencer_config sequencer = {
         X86_VIDEO_EGA_APERTURE_BASE, X86_VIDEO_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x06u, LIB_TRUE
+        0x03u, 0x01u, 0x0fu, 0x06u, LIB_TRUE
     };
     const x86_video_ega_controller_config controllers = {
         { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
@@ -72,22 +134,29 @@ lib_i32 main(void)
     lib_u8 copied_pixel_zero;
     lib_u8 copied_pixel_two;
     lib_u32 copied_palette_fifteen;
-    lib_i32 failed = 0;
+    lib_i32 failed = !ega_planar_ram_gate_matches();
 
     if (x86_video_create(&vadp) != LIB_STATUS_OK) return 1;
     failed |= x86_video_configure_ega_sequencer(vadp, &sequencer) != LIB_STATUS_OK ||
         x86_video_configure_ega_controllers(vadp, &controllers) != LIB_STATUS_OK;
+    video_test_write(vadp, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 3u);
 
     /* EGA text and planar graphics share the Attribute Controller's
        display-enable state; it is not a renderer-local visibility flag. */
+    video_test_text_geometry(vadp, 80u, 25u, 8u);
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 6u);
-    video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA, 0x04u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA, 0x0eu);
+    video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_INDEX, 4u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_DATA, 3u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_INDEX, 2u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_DATA, 3u);
+    ega_graphics_write(vadp, 5u, 0x10u);
     video_test_write(vadp, X86_VIDEO_REGISTER_MODE, 0x09u);
     value = 'T';
-    failed |= video_test_backing_write(&backing, X86_VIDEO_TEXT_BASE,
+    failed |= x86_video_memory_write(vadp, X86_VIDEO_MEMORY_PLANAR, X86_VIDEO_TEXT_BASE,
         &value, 1u) != LIB_STATUS_OK;
     value = 0x1fu;
-    failed |= video_test_backing_write(&backing,
+    failed |= x86_video_memory_write(vadp, X86_VIDEO_MEMORY_PLANAR,
         X86_VIDEO_TEXT_BASE + 1u, &value, 1u) != LIB_STATUS_OK;
     failed |= x86_video_capture_snapshot_from(vadp, &reader, &snapshot) != LIB_STATUS_OK ||
         snapshot.kind != X86_VIDEO_KIND_TEXT || snapshot.characters[0] != 'T';
@@ -98,6 +167,9 @@ lib_i32 main(void)
         snapshot.attributes[0] != 0u;
     (void)video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS);
     video_test_write(vadp, X86_VIDEO_REGISTER_ATTRIBUTE, 0x20u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_INDEX, 4u);
+    video_test_write(vadp, X86_VIDEO_REGISTER_SEQUENCER_DATA, 6u);
+    ega_graphics_write(vadp, 5u, 0u);
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 6u);
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA, 0x05u);
     ega_planar_select_mode_d(vadp);
@@ -273,6 +345,9 @@ lib_i32 main(void)
 
     /* Reset clears the transient planar store; a guest mode write re-arms it. */
     x86_video_reset(vadp);
+    failed |= x86_video_memory_query(vadp, X86_VIDEO_MEMORY_PLANAR,
+        0xa0000u, 1u, LIB_FALSE) != LIB_STATUS_UNSUPPORTED;
+    video_test_write(vadp, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 3u);
     ega_planar_select_mode_d(vadp);
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_INDEX, 6u);
     video_test_write(vadp, X86_VIDEO_REGISTER_GRAPHICS_DATA, 0x05u);

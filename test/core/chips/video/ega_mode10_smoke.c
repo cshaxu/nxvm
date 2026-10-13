@@ -40,6 +40,7 @@ lib_i32 main(void)
     if (x86_video_create(&vadp) != LIB_STATUS_OK) return 1;
     failed |= x86_video_configure_ega_sequencer(vadp, &sequencer) != LIB_STATUS_OK ||
         x86_video_configure_ega_controllers(vadp, &controllers) != LIB_STATUS_OK;
+    video_test_write(vadp, X86_VIDEO_REGISTER_EXTERNAL_CONTROL, 3u);
 
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x13u);
     video_test_write(vadp, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x28u);
@@ -87,7 +88,7 @@ lib_i32 main(void)
     failed |= snapshot.kind != X86_VIDEO_KIND_EGA_640X350X16 ||
         snapshot.pixel_width != _EGA_MODE10_WIDTH ||
         snapshot.pixel_height != _EGA_MODE10_HEIGHT ||
-        X86_VIDEO_MAX_PIXELS <
+        X86_VIDEO_PIXEL_CAPACITY <
             _EGA_MODE10_WIDTH * _EGA_MODE10_HEIGHT ||
         snapshot.pixels[0] != 15u ||
         snapshot.pixels[(_EGA_MODE10_HEIGHT - 1u) * _EGA_MODE10_WIDTH] != 15u ||

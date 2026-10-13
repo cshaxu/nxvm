@@ -42,7 +42,7 @@ static lib_i32 vm_ega_dos_install_program(lib_u8 *image, DWORD image_size)
     };
 #else
     static const lib_u8 program[] = {
-        0xbau, 0xc2u, 0x03u, 0xb0u, 0x01u, 0xeeu,
+        0xbau, 0xc2u, 0x03u, 0xb0u, 0x03u, 0xeeu,
         0xbau, 0xd4u, 0x03u, 0xb0u, 0x01u, 0xeeu, 0x42u, 0xb0u, 0x27u, 0xeeu,
         0x4au, 0xb0u, 0x07u, 0xeeu, 0x42u, 0x30u, 0xc0u, 0xeeu,
         0x4au, 0xb0u, 0x12u, 0xeeu, 0x42u, 0xb0u, 0xc7u, 0xeeu,
@@ -213,8 +213,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         return 77;
     }
     session = ini_session.session;
-    if (
-        !vm_ega_dos_run_until(session, VM_EGA_DOS_BOOT_BUDGET, 0)) goto done;
+    if (!vm_ega_dos_run_until(session, VM_EGA_DOS_BOOT_BUDGET, 0)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
         if (core_machine_keyboard_receive_native_byte(session->board,
                 command[index]) != LIB_STATUS_OK) goto done;

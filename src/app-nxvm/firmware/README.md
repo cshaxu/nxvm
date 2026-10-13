@@ -6,6 +6,14 @@ ignored build tree. The default product embeds that output; it does not load
 an external default BIOS at runtime. Other products embed their external BYOB
 ROMs through the same immutable-byte packaging route.
 
+The builder requires the already validated character-generator input and
+normalizes its two eight-row halves into 32-byte glyph slots at ROM offset
+A000h. The video-code extent ends before that reserved font area. Mode 03h
+loads those bytes through guest CPU writes to plane 2, then configures the
+B8000 odd/even character/attribute planes and text stride. There is no host
+font initialization or capture-time substitute. Repository-only firmware
+tests build the same assembly with a code-owned pattern instead of BYOB bytes.
+
 ## Recovery Baseline
 
 The owner authorized recovery under the root MIT license in T539 S12.
@@ -32,6 +40,18 @@ IVT/BDA templates reside in ROM and are copied by guest startup instructions.
 The last conventional-memory KiB remains reserved for floppy DMA scratch.
 Vectors, templates, code extents and reset entry are assembled by one builder;
 there is no runtime mirror of those initialization operations in the host.
+
+Text mode 03h initializes its complete 80x25, eight-scanline EGA CRTC raster,
+including totals, blank/retrace endpoints and overflow. IBM EGA Technical
+Reference printed 64/65 supplies the register facts; the guest indexed-byte
+writer owns their port sequence. The live-font, mode-return and ordered
+active/retrace/exit receiver uses actual CPU execution, not a host video
+default. Other graphics timing and physical oscillator qualification are not
+inferred from the text-mode proof. Modes D/E/10 separately initialize their
+complete timing registers through the same guest writer and retain the
+project's extended, byte-addressed plane layout. The actual mode-return
+receiver observes each raster and final text return. Current and the T555 S7
+evidence record the still-unqualified Board oscillator/bandwidth consumers.
 
 The repaired INT 40h uses one SEEK/SIS/READ-ID/data path and one sector-sized
 DMA bounce buffer for reads and writes. CMOS drive type selects the transfer

@@ -7,7 +7,7 @@ typedef struct x86_video x86_video;
 
 /* Copied bus-gating diagnostics for an execution-owner observation point.
  * Sampling has no indexed-register, latch, dirty-generation or frame effect.
- * cpu_memory_disabled is the enhanced-color gate, false in generic mode. */
+ * cpu_memory_disabled is the processor RAM gate, not display blanking. */
 typedef struct x86_video_bus_observation {
     lib_bool cpu_memory_disabled;
     lib_u8 graphics_miscellaneous;
@@ -77,9 +77,12 @@ void x86_video_reset(x86_video *adapter);
 lib_status x86_video_configure_text_glyphs(x86_video *adapter,
     const x86_video_text_glyph_config *config);
 void x86_video_advance(x86_video *adapter, lib_u64 elapsed_ticks);
-/* Same logical reference-clock units as advance; chip mode dividers apply
- * inside the programmed raster. No eligible programmed
- * interrupt edge returns UNSUPPORTED and preserves out_ticks. */
+/* Same logical reference-clock units as advance. Enhanced non-VGA raster
+ * models one reference tick as eight master dots; character width and divide
+ * apply internally, with deadline rounded up and phase remainder retained.
+ * This normalization does not qualify a physical oscillator. The next event
+ * is an eligible IRQ edge or captured text cursor/character blink update. With neither,
+ * returns UNSUPPORTED and preserves out_ticks. */
 lib_status x86_video_ticks_until_event(const x86_video *video, lib_u64 *out_ticks);
 lib_status x86_video_configure_text_timing(x86_video *adapter,
     const x86_video_text_timing *timing);

@@ -97,7 +97,7 @@ xor bx, bx
 mov cx, 0001
 xor dx, dx
 mov dx, 03c2
-mov al, 01
+mov al, 03
 out dx, al
 xor dx, dx
 mov sp, fffe

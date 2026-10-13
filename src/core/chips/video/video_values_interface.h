@@ -19,9 +19,9 @@ typedef struct x86_video_memory_reader {
 #define X86_VIDEO_CGA_HIGH_RES_WIDTH 640u
 #define X86_VIDEO_GRAPHICS_HEIGHT 200u
 #define X86_VIDEO_EGA_HIGH_RES_HEIGHT 350u
-#define X86_VIDEO_MAX_PIXELS \
-    (X86_VIDEO_CGA_HIGH_RES_WIDTH * \
-        X86_VIDEO_EGA_HIGH_RES_HEIGHT)
+#define X86_VIDEO_PIXEL_WIDTH 720u
+#define X86_VIDEO_PIXEL_HEIGHT 512u
+#define X86_VIDEO_PIXEL_CAPACITY (X86_VIDEO_PIXEL_WIDTH * X86_VIDEO_PIXEL_HEIGHT)
 #define X86_VIDEO_PALETTE_ENTRIES 256u
 #define X86_VIDEO_EGA_GRAPHICS_REGISTER_COUNT 9u
 #define X86_VIDEO_EGA_ATTRIBUTE_REGISTER_COUNT 21u
@@ -39,8 +39,8 @@ typedef struct x86_video_text_timing {
     lib_u32 vertical_retrace_ticks;
 } x86_video_text_timing;
 
-/* A construction-time character generator is normalized by the caller;
- * VADP thereafter owns the copied 8x16 glyph state exposed to presenters. */
+/* Construction-time character generator for non-planar display sources.
+ * Planar EGA/CECG character generation consumes its live plane-2 VRAM. */
 typedef struct x86_video_text_glyph_config {
     lib_u8 present;
     lib_u8 bytes[X86_VIDEO_TEXT_GLYPH_DEFAULT_BYTES];
@@ -90,7 +90,9 @@ typedef enum x86_video_kind {
     X86_VIDEO_KIND_EGA_320X200X16,
     X86_VIDEO_KIND_EGA_640X200X16,
     X86_VIDEO_KIND_EGA_640X350X16,
-    X86_VIDEO_KIND_VGA_320X200X256
+    X86_VIDEO_KIND_VGA_320X200X256,
+    /* Pixel-exact alphanumeric scanout; guest mode remains text. */
+    X86_VIDEO_KIND_TEXT_PIXELS
 } x86_video_kind;
 
 typedef struct x86_video_snapshot {
@@ -113,12 +115,14 @@ typedef struct x86_video_snapshot {
     lib_u8 text_glyphs[X86_VIDEO_TEXT_GLYPH_BYTES];
     /* Attribute bit 3 selects the copied secondary glyph bank when enabled. */
     lib_bool text_font_selection;
+    /* 7 suppresses foreground intensity; 15 or zero preserves all four bits. */
+    lib_u8 text_foreground_mask;
     lib_u8 secondary_text_glyphs[X86_VIDEO_TEXT_GLYPH_BYTES];
     lib_u8 characters[X86_VIDEO_MAX_COLUMNS * X86_VIDEO_MAX_ROWS];
     lib_u8 attributes[X86_VIDEO_MAX_COLUMNS * X86_VIDEO_MAX_ROWS];
     lib_u16 pixel_width;
     lib_u16 pixel_height;
-    lib_u8 pixels[X86_VIDEO_MAX_PIXELS];
+    lib_u8 pixels[X86_VIDEO_PIXEL_CAPACITY];
     lib_u32 palette_rgb[X86_VIDEO_PALETTE_ENTRIES];
 } x86_video_snapshot;
 

@@ -48,7 +48,6 @@ typedef struct x86_video_data {
     lib_u8 attribute[X86_VIDEO_ATTRIBUTE_REGISTER_COUNT];
     lib_u8 attribute_data_phase;
     lib_u8 attribute_display_enabled;
-    lib_u8 vga_status_diagnostic_high;
     lib_u8 ega_controller_configured;
     lib_u8 vga_configured;
     lib_u8 vga_dac_mask;
@@ -63,8 +62,8 @@ typedef struct x86_video_data {
     lib_u64 captured_generation;
     x86_video_text_timing text_timing;
     x86_video_text_glyph_config text_glyphs;
-    lib_u32 raster_phase;
-    lib_u8 cga_field_phase;
+    lib_u64 raster_phase;
+    lib_u8 field_phase;
     lib_bool vertical_interrupt_pending;
     lib_u8 crtc_initialized;
     lib_u8 cga_logical_raster_started;

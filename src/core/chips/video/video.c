@@ -7,12 +7,16 @@
 #define X86_VIDEO_DEFAULT_ACTIVE_DISPLAY_TICKS 48u
 #define X86_VIDEO_DEFAULT_HORIZONTAL_BLANK_TICKS 8u
 #define X86_VIDEO_DEFAULT_VERTICAL_RETRACE_TICKS 8u
+#define X86_VIDEO_EGA_REFERENCE_DOTS 8u
+#define X86_VIDEO_EGA_BLANK_PIXEL 16u
 #define X86_VIDEO_CRTC_HORIZONTAL_TOTAL 0x00u
 #define X86_VIDEO_CRTC_HORIZONTAL_DISPLAYED 0x01u
 #define X86_VIDEO_CRTC_HORIZONTAL_SYNC_POSITION 0x02u
 #define X86_VIDEO_CRTC_SYNC_WIDTH 0x03u
 #define X86_VIDEO_CRTC_VERTICAL_TOTAL 0x04u
 #define X86_VIDEO_EGA_CRTC_VERTICAL_TOTAL 0x06u
+#define X86_VIDEO_EGA_CRTC_START_HORIZONTAL_BLANK 0x02u
+#define X86_VIDEO_EGA_CRTC_END_HORIZONTAL_BLANK 0x03u
 #define X86_VIDEO_CRTC_VERTICAL_TOTAL_ADJUST 0x05u
 #define X86_VIDEO_CRTC_VERTICAL_DISPLAYED 0x06u
 #define X86_VIDEO_CRTC_OVERFLOW 0x07u
@@ -57,6 +61,16 @@ _Static_assert(X86_VIDEO_CRTC_CURSOR_TOP <
 static void x86_video_mark_dirty(x86_video *adapter);
 static lib_i32 x86_video_ega_display_kind(const x86_video *adapter,
     x86_video_kind *out_kind);
+static lib_u32 x86_video_ega_display_address(const x86_video *adapter,
+    lib_u16 address, lib_u8 row_scan);
+static lib_u16 x86_video_ega_vertical_displayed(const x86_video *adapter);
+static lib_u16 x86_video_ega_scanout_address(const x86_video *adapter,
+    lib_u32 column, lib_u16 y, lib_u8 *out_row_scan);
+static lib_bool x86_video_ega_blank_at(const x86_video *adapter, lib_u32 x, lib_u32 y);
+static lib_bool x86_video_ega_cursor_bounds(const x86_video *adapter, lib_u8 height,
+    lib_u8 *top, lib_u8 *bottom);
+static lib_status x86_video_capture_text_pixels(x86_video *adapter,
+    x86_video_snapshot *snapshot);
 
 static lib_bool x86_video_memory_range_contains(lib_u32 base, lib_u32 capacity,
     lib_u32 physical, lib_size bytes)
@@ -155,7 +169,7 @@ static lib_u32 x86_video_ega_palette_color(const x86_video *adapter,
 }
 
 static lib_i32 x86_video_ega_output_active(const x86_video *adapter);
-static lib_u8 x86_video_ega_graphics_diagnostic(const x86_video *adapter);
+static lib_u8 x86_video_ega_diagnostic(const x86_video *adapter);
 
 static void x86_video_graphics_palette(const x86_video *adapter,
     lib_u32 palette[4])
@@ -204,9 +218,13 @@ static lib_i32 x86_video_ega_output_active(const x86_video *adapter)
         adapter->data.ega_sequencer_configured &&
         (adapter->data.sequencer[0] & 0x03u) == 0x03u &&
         adapter->data.ega_controller_configured &&
+        (adapter->data.crtc[X86_VIDEO_CRTC_MODE_CONTROL] & 0x10u) == 0u &&
         (adapter->data.graphics[5] & 0x04u) == 0u &&
         adapter->data.attribute_display_enabled &&
         (adapter->data.ega_personality != X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR ||
+         /* CECG Control Mode bit 7 disables the board's normal monitor
+          * blanking logic.  It does not override the common scanout gates. */
+         (adapter->data.compaq_control_mode & 0x80u) != 0u ||
          (adapter->data.compaq_control_mode &
             ((adapter->data.compaq_control_mode & 8u) != 0u ? 0x20u : 0x10u)) == 0u);
 }
@@ -224,19 +242,32 @@ static lib_i32 x86_video_ega_aperture_mapped(const x86_video *adapter)
         adapter->data.ega_controller_configured;
 }
 
+static lib_bool x86_video_ega_cpu_memory_disabled(const x86_video *adapter)
+{
+    if (adapter->data.ega_personality == X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR)
+        return adapter->data.compaq_cpu_video_memory_disabled != 0u;
+    return adapter->data.ega_controller_configured && !adapter->data.vga_configured &&
+        (adapter->data.ega_miscellaneous_output & 0x02u) == 0u;
+}
+
 static lib_i32 x86_video_ega_cpu_aperture_active(const x86_video *adapter)
 {
     return x86_video_ega_aperture_mapped(adapter) &&
         (adapter->data.graphics[5] & 0x04u) == 0u &&
-        (adapter->data.ega_personality !=
-            X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR ||
-         !adapter->data.compaq_cpu_video_memory_disabled);
+        !x86_video_ega_cpu_memory_disabled(adapter);
 }
 
 static lib_i32 x86_video_ega_planar_active(const x86_video *adapter)
 {
     return x86_video_ega_output_active(adapter) &&
         (adapter->data.graphics[6] & 0x01u) != 0u;
+}
+
+static lib_bool x86_video_ega_text_storage_owned(const x86_video *adapter)
+{
+    return adapter->data.ega_controller_configured && !adapter->data.vga_configured &&
+        adapter->data.ega_planar_enabled && adapter->data.ega_planar_vram != LIB_NULL &&
+        (adapter->data.graphics[6] & 1u) == 0u && !x86_video_is_graphics_mode(adapter);
 }
 
 static lib_i32 x86_video_vga_chain4_active(const x86_video *adapter)
@@ -493,6 +524,8 @@ static lib_u16 x86_video_text_columns(const x86_video *adapter)
 {
     lib_u16 columns;
 
+    if (x86_video_ega_text_storage_owned(adapter))
+        return (lib_u16)adapter->data.crtc[X86_VIDEO_CRTC_HORIZONTAL_DISPLAYED] + 1u;
     if (!x86_video_cga_logical_raster_active(adapter)) return adapter->data.columns;
     columns = adapter->data.crtc[X86_VIDEO_CRTC_HORIZONTAL_DISPLAYED];
     return columns > X86_VIDEO_MAX_COLUMNS ? X86_VIDEO_MAX_COLUMNS :
@@ -503,6 +536,9 @@ static lib_u16 x86_video_text_rows(const x86_video *adapter)
 {
     lib_u16 rows;
 
+    if (x86_video_ega_text_storage_owned(adapter))
+        return (lib_u16)(x86_video_ega_vertical_displayed(adapter) /
+            ((lib_u16)adapter->data.crtc[X86_VIDEO_CRTC_MAXIMUM_RASTER_ADDRESS] + 1u));
     if (!x86_video_cga_logical_raster_active(adapter)) return adapter->data.rows;
     rows = adapter->data.crtc[X86_VIDEO_CRTC_VERTICAL_DISPLAYED];
     return rows > X86_VIDEO_CGA_TEXT_MAX_ROWS ? X86_VIDEO_CGA_TEXT_MAX_ROWS : rows;
@@ -542,9 +578,10 @@ static lib_u8 x86_video_crtc_mask(const x86_video *adapter,
         switch (index) {
         case 0x03u: return 0x7fu;
         case 0x07u: return 0x3fu;
+        case X86_VIDEO_CRTC_CURSOR_TOP:
+            return adapter->data.vga_configured ? 0x3fu : 0x1fu;
         case X86_VIDEO_CRT_INTERLACE_SKEW:
         case X86_VIDEO_CRTC_MAXIMUM_RASTER_ADDRESS:
-        case X86_VIDEO_CRTC_CURSOR_TOP:
         case X86_VIDEO_CRTC_UNDERLINE_LOCATION:
         case X86_VIDEO_CRTC_END_VERTICAL_BLANK:
             return 0x1fu;
@@ -599,9 +636,72 @@ static lib_u32 x86_video_ega_horizontal_scale(const x86_video *adapter)
     return (adapter->data.sequencer[1] & 8u) != 0u ? 2u : 1u;
 }
 
+static lib_u32 x86_video_ega_character_dots(const x86_video *adapter)
+{
+    return ((adapter->data.sequencer[1] & 1u) != 0u ? 8u : 9u) *
+        x86_video_ega_horizontal_scale(adapter);
+}
+
+static lib_u32 x86_video_ega_display_skew_pixels(const x86_video *adapter)
+{
+    return ((adapter->data.crtc[X86_VIDEO_EGA_CRTC_END_HORIZONTAL_BLANK] >> 5u) & 3u) *
+        ((adapter->data.sequencer[1] & 1u) != 0u ? 8u : 9u);
+}
+
 static lib_u32 x86_video_ega_vertical_scale(const x86_video *adapter)
 {
     return (adapter->data.crtc[X86_VIDEO_CRTC_MODE_CONTROL] & 4u) != 0u ? 2u : 1u;
+}
+
+static lib_u8 x86_video_ega_underline_scan(const x86_video *adapter)
+{
+    return adapter->data.crtc[X86_VIDEO_CRTC_UNDERLINE_LOCATION] +
+        (adapter->data.ega_personality == X86_VIDEO_EGA_PERSONALITY_GENERIC ? 1u : 0u);
+}
+
+static lib_bool x86_video_ega_text_requires_pixels(const x86_video *adapter)
+{
+    const lib_u32 height = adapter->data.crtc[X86_VIDEO_CRTC_MAXIMUM_RASTER_ADDRESS] + 1u;
+    const lib_u32 displayed = x86_video_ega_vertical_displayed(adapter);
+    const lib_u32 compare = adapter->data.crtc[X86_VIDEO_CRTC_LINE_COMPARE] |
+        ((lib_u32)(adapter->data.crtc[X86_VIDEO_CRTC_OVERFLOW] & 0x10u) << 4u);
+
+    /* A normal 8- or 9-dot text grid remains a text frame: the Console owns
+     * that logical representation.  Escalate only when a programmed feature
+     * changes the grid into a raster the Console cannot represent. */
+    if (adapter->data.attribute[19] != 0u ||
+        adapter->data.crtc[X86_VIDEO_CRT_INTERLACE_SKEW] != 0u ||
+        displayed % height != 0u || compare < displayed - 1u ||
+        x86_video_ega_vertical_scale(adapter) != 1u ||
+        (height > 1u && (adapter->data.crtc[X86_VIDEO_CRTC_MODE_CONTROL] & 3u) != 3u) ||
+        (adapter->data.crtc[X86_VIDEO_CRTC_MODE_CONTROL] & 8u) != 0u ||
+        adapter->data.crtc[X86_VIDEO_CRTC_HORIZONTAL_DISPLAYED] >= X86_VIDEO_MAX_COLUMNS ||
+        displayed / height > X86_VIDEO_MAX_ROWS) return LIB_TRUE;
+    for (lib_u32 column = 0u;
+            column <= adapter->data.crtc[X86_VIDEO_CRTC_HORIZONTAL_DISPLAYED]; ++column)
+        if (x86_video_ega_blank_at(adapter, x86_video_ega_display_skew_pixels(adapter) + column *
+                ((adapter->data.sequencer[1] & 1u) != 0u ? 8u : 9u), 0u)) return LIB_TRUE;
+    for (lib_u32 y = 0u; y < displayed; ++y)
+        if (x86_video_ega_blank_at(adapter, x86_video_ega_display_skew_pixels(adapter), y))
+            return LIB_TRUE;
+    if ((adapter->data.attribute[16] & 8u) != 0u ||
+        x86_video_ega_underline_scan(adapter) < height) {
+        /* Inspect actual cells at capture, not on every deadline query. */
+        for (lib_u16 y = 0u; y < displayed; y += (lib_u16)height) {
+            for (lib_u32 column = 0u;
+                    column <= adapter->data.crtc[X86_VIDEO_CRTC_HORIZONTAL_DISPLAYED]; ++column) {
+                lib_u8 row_scan;
+                const lib_u16 address = x86_video_ega_scanout_address(adapter, column, y, &row_scan);
+                const lib_u32 offset = x86_video_ega_display_address(adapter, address, row_scan);
+                const lib_u8 attribute = adapter->data.ega_planar_vram[X86_VIDEO_EGA_PLANE_BYTES + offset];
+
+                if (((adapter->data.attribute[16] & 8u) != 0u && (attribute & 0x80u) != 0u) ||
+                    (x86_video_ega_underline_scan(adapter) < height && (attribute & 0x77u) == 1u))
+                    return LIB_TRUE;
+            }
+        }
+    }
+    return LIB_FALSE;
 }
 
 static lib_i32 x86_video_ega_display_kind(const x86_video *adapter,
@@ -824,7 +924,7 @@ static lib_bool x86_video_ega_raster_geometry(const x86_video *adapter,
         adapter->data.crtc[X86_VIDEO_EGA_CRTC_VERTICAL_TOTAL] == 0u)
         return LIB_FALSE;
     horizontal = ((lib_u32)adapter->data.crtc[X86_VIDEO_CRTC_HORIZONTAL_TOTAL] + 2u) *
-        x86_video_ega_horizontal_scale(adapter);
+        x86_video_ega_character_dots(adapter);
     /* EGA horizontal n-2 is sourced; vertical terminal count +2 is L2. */
     vertical = ((lib_u32)adapter->data.crtc[X86_VIDEO_EGA_CRTC_VERTICAL_TOTAL] |
         ((lib_u32)(adapter->data.crtc[X86_VIDEO_CRTC_OVERFLOW] & 1u) << 8u)) + 2u;
@@ -837,21 +937,93 @@ static lib_bool x86_video_ega_raster_geometry(const x86_video *adapter,
     return LIB_TRUE;
 }
 
+static lib_u64 x86_video_ega_irq_dots(const x86_video *video,
+    lib_u32 period, lib_u32 blank)
+{
+    const lib_u32 phase = video->data.raster_phase % period;
+
+    if ((video->data.crtc[X86_VIDEO_CRTC_VERTICAL_RETRACE_END] & 0x30u) != 0x10u ||
+        video->data.vertical_interrupt_pending) return 0u;
+    return blank > phase ? blank - phase : period - phase + blank;
+}
+
+static lib_u8 x86_video_ega_cursor_phase_mask(const x86_video *video)
+{
+    return video->data.ega_personality == X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR ?
+        8u : 16u;
+}
+
+static lib_u8 x86_video_ega_text_phase_mask(const x86_video *video)
+{
+    lib_u8 top;
+    lib_u8 bottom;
+    lib_u8 mask = 0u;
+
+    if (!video->data.captured || x86_video_is_graphics_mode(video) ||
+        (video->data.captured_kind != X86_VIDEO_KIND_TEXT &&
+            video->data.captured_kind != X86_VIDEO_KIND_TEXT_PIXELS)) return 0u;
+    if (x86_video_ega_cursor_bounds(video,
+            video->data.crtc[X86_VIDEO_CRTC_MAXIMUM_RASTER_ADDRESS] + 1u, &top, &bottom))
+        mask = x86_video_ega_cursor_phase_mask(video);
+    if (video->data.captured_kind == X86_VIDEO_KIND_TEXT_PIXELS &&
+        (video->data.attribute[16] & 8u) != 0u) mask |= 16u;
+    return mask;
+}
+
 lib_status x86_video_ticks_until_event(const x86_video *video, lib_u64 *out_ticks)
 {
     lib_u32 horizontal;
     lib_u32 period;
     lib_u32 blank;
-    lib_u32 phase;
+    lib_u64 dots;
+    lib_u8 mask;
 
     if (video == LIB_NULL || out_ticks == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if ((video->data.crtc[X86_VIDEO_CRTC_VERTICAL_RETRACE_END] & 0x30u) != 0x10u ||
-        video->data.vertical_interrupt_pending ||
-        !x86_video_ega_raster_geometry(video, &horizontal, &period, &blank))
+    if (!x86_video_ega_raster_geometry(video, &horizontal, &period, &blank))
         return LIB_STATUS_UNSUPPORTED;
-    phase = video->data.raster_phase % period;
-    *out_ticks = blank > phase ? blank - phase : period - phase + blank;
+    dots = x86_video_ega_irq_dots(video, period, blank);
+    mask = x86_video_ega_text_phase_mask(video);
+    if (mask != 0u) {
+        const lib_u8 half_cycle = (mask & 8u) != 0u ? 8u : 16u;
+        const lib_u64 blink = (lib_u64)(half_cycle -
+            (video->data.field_phase & (half_cycle - 1u))) * period -
+            video->data.raster_phase % period;
+
+        if (dots == 0u || blink < dots) dots = blink;
+    }
+    if (dots == 0u) return LIB_STATUS_UNSUPPORTED;
+    *out_ticks = (dots +
+        X86_VIDEO_EGA_REFERENCE_DOTS - 1u) / X86_VIDEO_EGA_REFERENCE_DOTS;
     return LIB_STATUS_OK;
+}
+
+static lib_bool x86_video_blank_interval_contains(lib_u32 position, lib_u32 total,
+    lib_u32 start, lib_u8 end)
+{
+    lib_u32 terminal = (start & ~31u) | (end & 31u);
+
+    /* Equal endpoints use the documented L2 empty-interval model. */
+    if (start >= total || (start & 31u) == (end & 31u)) return LIB_FALSE;
+    if (terminal <= start) terminal += 32u;
+    if (terminal < total) return position >= start && position < terminal;
+    return position >= start || position < (end & 31u);
+}
+
+static lib_bool x86_video_ega_blank_at(const x86_video *adapter, lib_u32 x, lib_u32 y)
+{
+    lib_u32 horizontal;
+    lib_u32 period;
+    lib_u32 blank;
+    const lib_u32 scale = x86_video_ega_vertical_scale(adapter);
+
+    if (!x86_video_ega_raster_geometry(adapter, &horizontal, &period, &blank))
+        return LIB_FALSE;
+    return x86_video_blank_interval_contains(y / scale, period / horizontal / scale,
+            blank / horizontal / scale, adapter->data.crtc[X86_VIDEO_CRTC_END_VERTICAL_BLANK]) ||
+        x86_video_blank_interval_contains(x / ((adapter->data.sequencer[1] & 1u) != 0u ? 8u : 9u),
+            horizontal / x86_video_ega_character_dots(adapter),
+            adapter->data.crtc[X86_VIDEO_EGA_CRTC_START_HORIZONTAL_BLANK],
+            adapter->data.crtc[X86_VIDEO_EGA_CRTC_END_HORIZONTAL_BLANK]);
 }
 
 static lib_u8 x86_video_status(const x86_video *adapter)
@@ -871,6 +1043,8 @@ static lib_u8 x86_video_status(const x86_video *adapter)
 
         if (x86_video_ega_raster_geometry(adapter, &horizontal, &period, &blank)) {
             const lib_u32 phase = adapter->data.raster_phase % period;
+            const lib_u32 display_start = x86_video_ega_display_skew_pixels(adapter) *
+                x86_video_ega_horizontal_scale(adapter);
             const lib_u32 scanline = phase / horizontal / x86_video_ega_vertical_scale(adapter);
             const lib_u32 sync = (lib_u32)adapter->data.crtc[X86_VIDEO_CRTC_VERTICAL_RETRACE_START] |
                 ((lib_u32)(adapter->data.crtc[X86_VIDEO_CRTC_OVERFLOW] & 4u) << 6u);
@@ -880,12 +1054,16 @@ static lib_u8 x86_video_status(const x86_video *adapter)
             if (scanline >= sync && scanline - sync < width)
                 status |= X86_VIDEO_STATUS_VERTICAL_RETRACE;
             if (scanline < x86_video_ega_vertical_displayed(adapter) &&
-                phase < blank && phase % horizontal <
+                !x86_video_ega_blank_at(adapter,
+                    phase % horizontal / x86_video_ega_horizontal_scale(adapter), phase / horizontal) &&
+                phase % horizontal >= display_start && phase % horizontal - display_start <
                 ((lib_u32)adapter->data.crtc[X86_VIDEO_CRTC_HORIZONTAL_DISPLAYED] + 1u) *
-                    x86_video_ega_horizontal_scale(adapter))
+                    x86_video_ega_character_dots(adapter))
                 status |= X86_VIDEO_STATUS_DISPLAY_ENABLE;
             return status;
         }
+        if (adapter->data.ega_controller_configured && !adapter->data.vga_configured)
+            return status;
     }
     if (x86_video_cga_logical_raster_active(adapter)) {
         lib_u32 horizontal_total = (lib_u32)adapter->data.crtc[
@@ -1098,14 +1276,8 @@ static void x86_video_read_status(lib_u8 *io_byte,
         adapter->data.cga_lightpen_latched) {
         *io_byte |= X86_VIDEO_STATUS_LIGHTPEN_TRIGGER;
     }
-    if (adapter->data.vga_configured) {
-        if (!adapter->data.vga_status_diagnostic_high) {
-            *io_byte |= 0x30u;
-        }
-        adapter->data.vga_status_diagnostic_high =
-            !adapter->data.vga_status_diagnostic_high;
-    } else if (adapter->data.ega_controller_configured) {
-        *io_byte |= x86_video_ega_graphics_diagnostic(adapter);
+    if (!adapter->data.vga_configured && adapter->data.ega_controller_configured) {
+        *io_byte |= x86_video_ega_diagnostic(adapter);
     }
     if (adapter->data.ega_personality ==
         X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
@@ -1204,9 +1376,15 @@ static void x86_video_read_ega_input_status_0(lib_u8 *io_byte,
 
     (void)port_id;
     if (io_byte == LIB_NULL || adapter == LIB_NULL) return;
-    *io_byte = adapter->data.vga_configured ?
-        ((x86_video_status(adapter) & X86_VIDEO_STATUS_DISPLAY_ENABLE) != 0u ? 0x80u : 0u) :
-        (adapter->data.vertical_interrupt_pending ? 0x80u : 0u);
+    if (adapter->data.vga_configured) {
+        *io_byte = (x86_video_status(adapter) & X86_VIDEO_STATUS_DISPLAY_ENABLE) != 0u ?
+            0x80u : 0u;
+        return;
+    }
+    /* IBM EGA Input Status 0 bit 7 is the live CRT display/retrace state,
+     * not the separately latched vertical-interrupt request. */
+    *io_byte = (x86_video_status(adapter) & X86_VIDEO_STATUS_VERTICAL_RETRACE) == 0u ?
+        0x80u : 0u;
 }
 
 static void x86_video_write_ega_miscellaneous_output(lib_u8 *io_byte,
@@ -1751,6 +1929,7 @@ lib_status x86_video_configure_vga(x86_video *adapter)
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     adapter->data.vga_configured = LIB_TRUE;
+    adapter->data.raster_phase /= X86_VIDEO_EGA_REFERENCE_DOTS;
     adapter->data.vga_dac_mask = 0xffu;
     /* Capability selection precedes runtime; replay the retained construction
      * values with VGA masks rather than retaining EGA-filtered defaults. */
@@ -1834,7 +2013,8 @@ void x86_video_reset(x86_video *adapter)
     adapter->data.mode_control = 0x05u;
     adapter->data.text_timing = timing;
     adapter->data.text_glyphs = text_glyphs;
-    adapter->data.raster_phase = timing.vertical_retrace_ticks;
+    adapter->data.raster_phase = (lib_u64)timing.vertical_retrace_ticks *
+        (ega_controller_configured && !vga_configured ? X86_VIDEO_EGA_REFERENCE_DOTS : 1u);
     adapter->data.columns = 80u;
     adapter->data.rows = 25u;
     adapter->data.color_enabled = LIB_TRUE;
@@ -1896,18 +2076,18 @@ static void x86_video_advance_raster(x86_video *adapter,
          * Reduce before adding so even LIB_UINT64_MAX ticks remain bounded. */
         const lib_u8 fields = (lib_u8)((elapsed_ticks / period) % 32u +
             (remainder >= period - phase ? 1u : 0u));
-        const lib_u8 previous = adapter->data.cga_field_phase;
+        const lib_u8 previous = adapter->data.field_phase;
         const lib_u8 mode = (lib_u8)((adapter->data.crtc[
             X86_VIDEO_CRTC_CURSOR_TOP] >> 5u) & 3u);
 
-        adapter->data.cga_field_phase = (lib_u8)(
-            (adapter->data.cga_field_phase + fields) & 31u);
+        adapter->data.field_phase = (lib_u8)(
+            (adapter->data.field_phase + fields) & 31u);
         if (!x86_video_is_graphics_mode(adapter) &&
             (adapter->data.mode_control & X86_VIDEO_MODE_VIDEO_ENABLE) != 0u &&
-            ((mode >= 2u && ((previous ^ adapter->data.cga_field_phase) &
+            ((mode >= 2u && ((previous ^ adapter->data.field_phase) &
                 (mode == 2u ? 8u : 16u)) != 0u) ||
             ((adapter->data.mode_control & X86_VIDEO_MODE_BLINK) != 0u &&
-                ((previous ^ adapter->data.cga_field_phase) & 8u) != 0u)))
+                ((previous ^ adapter->data.field_phase) & 8u) != 0u)))
             x86_video_mark_dirty(adapter);
     }
     adapter->data.raster_phase = remainder >= period - phase ?
@@ -1926,14 +2106,25 @@ void x86_video_advance(x86_video *adapter, lib_u64 elapsed_ticks)
         if (adapter->data.ega_controller_configured && !adapter->data.vga_configured &&
             adapter->data.sequencer[0] != 3u) return;
         if (x86_video_ega_raster_geometry(adapter, &horizontal, &period, &blank)) {
-            lib_u64 due;
             const lib_u32 phase = adapter->data.raster_phase % period;
+            const lib_u64 remainder = (elapsed_ticks % period) * X86_VIDEO_EGA_REFERENCE_DOTS;
+            const lib_u64 irq_dots = x86_video_ega_irq_dots(adapter, period, blank);
+            const lib_u8 previous = adapter->data.field_phase;
+            const lib_u64 fields = (elapsed_ticks / period) % 32u *
+                X86_VIDEO_EGA_REFERENCE_DOTS + (phase + remainder) / period;
 
-            if (x86_video_ticks_until_event(adapter, &due) == LIB_STATUS_OK &&
-                elapsed_ticks >= due) adapter->data.vertical_interrupt_pending = LIB_TRUE;
-            adapter->data.raster_phase = (lib_u32)((phase + elapsed_ticks % period) % period);
+            if (irq_dots != 0u && elapsed_ticks >=
+                    (irq_dots + X86_VIDEO_EGA_REFERENCE_DOTS - 1u) / X86_VIDEO_EGA_REFERENCE_DOTS)
+                adapter->data.vertical_interrupt_pending = LIB_TRUE;
+            adapter->data.field_phase = (lib_u8)((previous + fields) & 31u);
+            adapter->data.raster_phase = (phase + remainder) % period;
+            if (((previous ^ adapter->data.field_phase) &
+                    x86_video_ega_text_phase_mask(adapter)) != 0u)
+                x86_video_mark_dirty(adapter);
             return;
         }
+        if (adapter->data.ega_controller_configured && !adapter->data.vga_configured)
+            return;
     }
     if (x86_video_cga_logical_raster_active(adapter)) {
         lib_u32 phase;
@@ -1968,7 +2159,9 @@ lib_status x86_video_configure_text_timing(x86_video *adapter,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     adapter->data.text_timing = *timing;
-    adapter->data.raster_phase = timing->vertical_retrace_ticks;
+    adapter->data.raster_phase = (lib_u64)timing->vertical_retrace_ticks *
+        (adapter->data.ega_controller_configured && !adapter->data.vga_configured ?
+            X86_VIDEO_EGA_REFERENCE_DOTS : 1u);
     return LIB_STATUS_OK;
 }
 
@@ -2016,6 +2209,7 @@ lib_status x86_video_configure_ega_controllers(x86_video *adapter,
     adapter->data.ega_controller = *config;
     x86_video_normalize_ega_controllers(&adapter->data.ega_controller);
     adapter->data.ega_controller_configured = LIB_TRUE;
+    adapter->data.raster_phase *= X86_VIDEO_EGA_REFERENCE_DOTS;
     x86_video_reset_ega_controllers(adapter);
     return LIB_STATUS_OK;
 }
@@ -2034,6 +2228,56 @@ lib_i32 x86_video_ega_aperture_contains(const x86_video *adapter,
         return x86_video_memory_range_contains(aperture_base, aperture_bytes,
             physical, bytes);
     }
+}
+
+static lib_u8 x86_video_ega_font_map(const x86_video *adapter, lib_bool secondary)
+{
+    return (adapter->data.sequencer[4] & 3u) == 3u ?
+        (adapter->data.sequencer[3] >> (secondary ? 2u : 0u)) & 3u : 0u;
+}
+
+static lib_u8 x86_video_ega_text_color_mask(const x86_video *adapter)
+{
+    return adapter->data.ega_personality == X86_VIDEO_EGA_PERSONALITY_GENERIC &&
+        x86_video_ega_font_map(adapter, LIB_FALSE) != x86_video_ega_font_map(adapter, LIB_TRUE) ?
+        7u : 15u;
+}
+
+static lib_bool x86_video_ega_cursor_bounds(const x86_video *adapter, lib_u8 height,
+    lib_u8 *top, lib_u8 *bottom)
+{
+    *top = adapter->data.crtc[X86_VIDEO_CRTC_CURSOR_TOP] & 31u;
+    *bottom = adapter->data.crtc[X86_VIDEO_CRTC_CURSOR_BOTTOM] & 31u;
+    if (adapter->data.ega_personality == X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
+        lib_u8 end = *bottom;
+
+        if (end == 0u && *top != 0u) end = height;
+        if (end > height) end = height;
+        *bottom = end != 0u ? end - 1u : 0u;
+        return *top < end;
+    }
+    ++*top;
+    return *top < height && *top <= *bottom;
+}
+
+static void x86_video_capture_planar_text_glyphs(const x86_video *adapter,
+    x86_video_snapshot *snapshot)
+{
+    const lib_u32 bank_bytes = adapter->data.ega_personality ==
+        X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR ? 0x4000u : 0x2000u;
+    const lib_u8 primary = x86_video_ega_font_map(adapter, LIB_FALSE);
+    const lib_u8 secondary = x86_video_ega_font_map(adapter, LIB_TRUE);
+    const lib_u8 *plane = adapter->data.ega_planar_vram + 2u * X86_VIDEO_EGA_PLANE_BYTES;
+
+    snapshot->text_glyphs_present = LIB_TRUE;
+    snapshot->text_glyph_height = snapshot->text_cell_height;
+    snapshot->text_font_selection = primary != secondary;
+    /* CECG bank spacing is 16 KiB, but bit 13 is zero in glyph addresses.
+     * Both personalities therefore copy the same 256 fixed 32-byte slots. */
+    lib_memory_copy(snapshot->text_glyphs, plane + primary * bank_bytes,
+        sizeof(snapshot->text_glyphs));
+    lib_memory_copy(snapshot->secondary_text_glyphs, plane + secondary * bank_bytes,
+        sizeof(snapshot->secondary_text_glyphs));
 }
 
 static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const x86_video_memory_reader *memory,
@@ -2055,30 +2299,52 @@ static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const
     lib_i32 cursor_changed;
     lib_i32 cursor_visible;
     lib_bool enhanced_text;
+    lib_bool planar_text;
     lib_bool output_active;
     lib_status status;
 
-    if (memory == LIB_NULL || memory->read == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     enhanced_text = adapter->data.ega_controller_configured && !adapter->data.vga_configured;
+    planar_text = x86_video_ega_text_storage_owned(adapter);
+    if (!planar_text && (memory == LIB_NULL || memory->read == LIB_NULL))
+        return LIB_STATUS_INVALID_ARGUMENT;
     output_active = adapter->data.ega_controller_configured ?
         x86_video_ega_output_active(adapter) :
         (adapter->data.mode_control & X86_VIDEO_MODE_VIDEO_ENABLE) != 0u;
     columns = x86_video_text_columns(adapter);
     rows = x86_video_text_rows(adapter);
-    if (columns == 0u || rows == 0u) return LIB_STATUS_UNSUPPORTED;
+    if (columns == 0u || rows == 0u || columns > X86_VIDEO_MAX_COLUMNS ||
+        rows > X86_VIDEO_MAX_ROWS) return LIB_STATUS_UNSUPPORTED;
+    /* Whole-cell snapshots cannot silently round away a partial last row. */
+    if (planar_text && x86_video_ega_vertical_displayed(adapter) %
+        ((lib_u16)adapter->data.crtc[X86_VIDEO_CRTC_MAXIMUM_RASTER_ADDRESS] + 1u) != 0u)
+        return LIB_STATUS_UNSUPPORTED;
     start = x86_video_crtc_word(adapter, X86_VIDEO_CRTC_START_HIGH);
     cursor = x86_video_crtc_word(adapter, X86_VIDEO_CRTC_CURSOR_HIGH);
     visible_bytes = (lib_size)columns * rows * 2u;
     start_byte = (lib_u16)((start % (X86_VIDEO_TEXT_BYTES / 2u)) * 2u);
     first_bytes = X86_VIDEO_TEXT_BYTES - start_byte;
     if (first_bytes > visible_bytes) first_bytes = visible_bytes;
-    status = memory->read(memory->context, X86_VIDEO_TEXT_BASE + start_byte,
-        cells, first_bytes);
-    if (status != LIB_STATUS_OK) return status;
-    if (first_bytes < visible_bytes) {
-        status = memory->read(memory->context, X86_VIDEO_TEXT_BASE,
-            cells + first_bytes, visible_bytes - first_bytes);
+    if (planar_text) {
+        for (row = 0u; row < rows; ++row) {
+            for (column = 0u; column < columns; ++column) {
+                const lib_u16 address = (lib_u16)(start +
+                    row * adapter->data.crtc[X86_VIDEO_CRTC_OFFSET] * 2u + column);
+                const lib_u32 offset = x86_video_ega_display_address(adapter, address, 0u);
+                const lib_size cell = ((lib_size)row * columns + column) * 2u;
+
+                cells[cell] = adapter->data.ega_planar_vram[offset];
+                cells[cell + 1u] = adapter->data.ega_planar_vram[X86_VIDEO_EGA_PLANE_BYTES + offset];
+            }
+        }
+    } else {
+        status = memory->read(memory->context, X86_VIDEO_TEXT_BASE + start_byte,
+            cells, first_bytes);
         if (status != LIB_STATUS_OK) return status;
+        if (first_bytes < visible_bytes) {
+            status = memory->read(memory->context, X86_VIDEO_TEXT_BASE,
+                cells + first_bytes, visible_bytes - first_bytes);
+            if (status != LIB_STATUS_OK) return status;
+        }
     }
     if (!output_active) {
         for (row = 0u; row < visible_bytes; row += 2u) {
@@ -2086,10 +2352,11 @@ static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const
             cells[row + 1u] = 0u;
         }
     }
-    lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
+    lib_memory_set(out_snapshot, 0, lib_offsetof(x86_video_snapshot, pixels));
     out_snapshot->kind = X86_VIDEO_KIND_TEXT;
     out_snapshot->columns = columns;
     out_snapshot->rows = rows;
+    out_snapshot->text_foreground_mask = planar_text ? x86_video_ega_text_color_mask(adapter) : 15u;
     out_snapshot->text_cell_height = (lib_u8)(adapter->data.crtc[
         X86_VIDEO_CRTC_MAXIMUM_RASTER_ADDRESS] + 1u);
     for (column = 0u; column < X86_VIDEO_PALETTE_ENTRIES;
@@ -2097,7 +2364,7 @@ static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const
         if (enhanced_text) {
             out_snapshot->palette_rgb[column] = output_active ?
                 x86_video_ega_palette_color(adapter,
-                    adapter->data.attribute[column & adapter->data.attribute[18] & 0x0fu]) : 0u;
+                    adapter->data.attribute[column & adapter->data.attribute[18] & 15u]) : 0u;
         } else {
             out_snapshot->palette_rgb[column] = x86_video_rgbi_color((lib_u8)column);
         }
@@ -2106,33 +2373,35 @@ static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const
         X86_VIDEO_CRTC_CURSOR_TOP] & 0x1fu;
     out_snapshot->cursor_bottom = adapter->data.crtc[
         X86_VIDEO_CRTC_CURSOR_BOTTOM] & 0x1fu;
-    relative_cursor = (lib_u16)((cursor - start) %
-        (X86_VIDEO_TEXT_BYTES / 2u));
-    cursor_visible = output_active && relative_cursor < columns * rows;
-    if (adapter->data.ega_personality ==
-        X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
-        lib_u8 end = out_snapshot->cursor_bottom;
+    if (planar_text) {
+        relative_cursor = (lib_u16)(columns * rows);
+        for (row = 0u; row < rows; ++row) {
+            const lib_u16 delta = (lib_u16)(cursor - start -
+                row * adapter->data.crtc[X86_VIDEO_CRTC_OFFSET] * 2u);
+            const lib_u8 skew = (adapter->data.crtc[X86_VIDEO_CRTC_CURSOR_BOTTOM] >> 5u) & 3u;
 
-        /* CECG encodes the first scanline after the cursor, with zero
-         * extending a nonzero start to the cell bottom (guide 4-29). */
-        if (end == 0u && out_snapshot->cursor_top != 0u)
-            end = out_snapshot->text_cell_height;
-        if (end > out_snapshot->text_cell_height)
-            end = out_snapshot->text_cell_height;
-        cursor_visible &= out_snapshot->cursor_top < end;
-        out_snapshot->cursor_bottom = end != 0u ? (lib_u8)(end - 1u) : 0u;
+            if (delta < columns && delta + skew < columns) {
+                relative_cursor = (lib_u16)(row * columns + delta + skew);
+                break;
+            }
+        }
+    } else {
+        relative_cursor = (lib_u16)((cursor - start) %
+            (X86_VIDEO_TEXT_BYTES / 2u));
+    }
+    cursor_visible = output_active && relative_cursor < columns * rows;
+    if (adapter->data.ega_personality == X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR ||
+        (adapter->data.ega_controller_configured && !adapter->data.vga_configured)) {
+        cursor_visible &= x86_video_ega_cursor_bounds(adapter, out_snapshot->text_cell_height,
+            &out_snapshot->cursor_top, &out_snapshot->cursor_bottom) &&
+            (adapter->data.field_phase & x86_video_ega_cursor_phase_mask(adapter)) == 0u;
     } else if (!adapter->data.ega_controller_configured) {
         const lib_u8 mode = (lib_u8)((adapter->data.crtc[
             X86_VIDEO_CRTC_CURSOR_TOP] >> 5u) & 3u);
 
         cursor_visible &= out_snapshot->cursor_top <= out_snapshot->cursor_bottom &&
-            mode != 1u && (mode < 2u || (adapter->data.cga_field_phase &
+            mode != 1u && (mode < 2u || (adapter->data.field_phase &
                 (mode == 2u ? 8u : 16u)) == 0u);
-    } else if (!adapter->data.vga_configured) {
-        /* IBM EGA encodes one less than the first cursor scanline (33). */
-        ++out_snapshot->cursor_top;
-        cursor_visible &= out_snapshot->cursor_top < out_snapshot->text_cell_height &&
-            out_snapshot->cursor_top <= out_snapshot->cursor_bottom;
     } else {
         cursor_visible &= (adapter->data.crtc[X86_VIDEO_CRTC_CURSOR_TOP] &
             0x20u) == 0u && out_snapshot->cursor_top <= out_snapshot->cursor_bottom;
@@ -2167,7 +2436,7 @@ static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const
 
                     adapter->data.attributes[index] &= 0x7fu;
                     if ((attribute & 0x80u) != 0u &&
-                        (adapter->data.cga_field_phase & 8u) != 0u)
+                        (adapter->data.field_phase & 8u) != 0u)
                         adapter->data.attributes[index] = (lib_u8)(
                             (attribute & 0x70u) | ((attribute >> 4u) & 7u));
                 }
@@ -2178,12 +2447,16 @@ static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const
         sizeof(out_snapshot->characters));
     lib_memory_copy(out_snapshot->attributes, adapter->data.attributes,
         sizeof(out_snapshot->attributes));
-    out_snapshot->text_glyphs_present = adapter->data.text_glyphs.present;
-    out_snapshot->text_glyph_height = X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS;
-    for (lib_size glyph = 0u; glyph < X86_VIDEO_TEXT_GLYPH_COUNT; ++glyph)
-        lib_memory_copy(out_snapshot->text_glyphs + glyph * X86_VIDEO_TEXT_GLYPH_ROWS,
-            adapter->data.text_glyphs.bytes + glyph * X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS,
-            X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS);
+    if (planar_text) {
+        x86_video_capture_planar_text_glyphs(adapter, out_snapshot);
+    } else {
+        out_snapshot->text_glyphs_present = adapter->data.text_glyphs.present;
+        out_snapshot->text_glyph_height = X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS;
+        for (lib_size glyph = 0u; glyph < X86_VIDEO_TEXT_GLYPH_COUNT; ++glyph)
+            lib_memory_copy(out_snapshot->text_glyphs + glyph * X86_VIDEO_TEXT_GLYPH_ROWS,
+                adapter->data.text_glyphs.bytes + glyph * X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS,
+                X86_VIDEO_TEXT_GLYPH_DEFAULT_ROWS);
+    }
     cursor_changed = !adapter->data.captured ||
         adapter->data.captured_cursor_top != out_snapshot->cursor_top ||
         adapter->data.captured_cursor_bottom != out_snapshot->cursor_bottom ||
@@ -2227,11 +2500,11 @@ void x86_video_observe_snapshot(const x86_video *adapter,
         !x86_video_ega_output_active(adapter)) ||
         x86_video_vga_mode13_active(adapter) ||
         x86_video_ega_planar_display_active(adapter);
-    /* Enhanced text still borrows system backing until live planar text is
-     * qualified. Graphics-shaped CRTC values do not confer its ownership. */
+    /* Live planar text owns every captured byte; the logical CGA compatibility
+     * view still borrows backing. CPU RAM gating does not change scanout ownership. */
     if (adapter->data.ega_controller_configured && !adapter->data.vga_configured &&
         (adapter->data.graphics[6] & 1u) == 0u && !adapter->data.cga_memory_configured)
-        reliable = LIB_FALSE;
+        reliable = x86_video_ega_text_storage_owned(adapter);
     if (!reliable) {
         out_observation->capture_required = LIB_TRUE;
         return;
@@ -2353,8 +2626,8 @@ static lib_u32 x86_video_ega_display_address(const x86_video *adapter,
     return offset;
 }
 
-static lib_u32 x86_video_ega_graphics_offset(const x86_video *adapter,
-    lib_u16 x, lib_u16 y)
+static lib_u16 x86_video_ega_scanout_address(const x86_video *adapter,
+    lib_u32 column, lib_u16 y, lib_u8 *out_row_scan)
 {
     const lib_u32 scanline = y / x86_video_ega_vertical_scale(adapter);
     const lib_u32 compare = adapter->data.crtc[X86_VIDEO_CRTC_LINE_COMPARE] |
@@ -2364,13 +2637,104 @@ static lib_u32 x86_video_ega_graphics_offset(const x86_video *adapter,
         scanline + adapter->data.crtc[X86_VIDEO_CRT_INTERLACE_SKEW];
     const lib_u32 start = scanline > compare ? 0u :
         x86_video_crtc_word(adapter, X86_VIDEO_CRTC_START_HIGH);
-    const lib_u32 column = ((lib_u32)x + adapter->data.attribute[19]) >> 3u;
     const lib_u32 address = start + (raster / height) *
         adapter->data.crtc[X86_VIDEO_CRTC_OFFSET] * 2u +
         (column >> ((adapter->data.crtc[X86_VIDEO_CRTC_MODE_CONTROL] & 8u) != 0u ? 1u : 0u));
 
-    return x86_video_ega_display_address(adapter, (lib_u16)address,
-        (lib_u8)(raster % height));
+    *out_row_scan = (lib_u8)(raster % height);
+    return (lib_u16)address;
+}
+
+static lib_u32 x86_video_ega_graphics_offset(const x86_video *adapter,
+    lib_u16 x, lib_u16 y)
+{
+    lib_u8 row_scan;
+    const lib_u16 address = x86_video_ega_scanout_address(adapter,
+        ((lib_u32)x + adapter->data.attribute[19]) >> 3u, y, &row_scan);
+
+    return x86_video_ega_display_address(adapter, address, row_scan);
+}
+
+static lib_u8 x86_video_ega_text_pixel(const x86_video *adapter, lib_u16 x, lib_u16 y)
+{
+    const lib_u8 width = (adapter->data.sequencer[1] & 1u) != 0u ? 8u : 9u;
+    const lib_u8 pan = width == 9u ?
+        (adapter->data.attribute[19] == 8u ? 0u : adapter->data.attribute[19] + 1u) :
+        adapter->data.attribute[19];
+    const lib_u32 position = (lib_u32)x + pan;
+    lib_u8 row_scan;
+    const lib_u16 address = x86_video_ega_scanout_address(adapter,
+        position / width, y, &row_scan);
+    const lib_u32 offset = x86_video_ega_display_address(adapter, address, row_scan);
+    const lib_u8 character = adapter->data.ega_planar_vram[offset];
+    const lib_u8 attribute = adapter->data.ega_planar_vram[X86_VIDEO_EGA_PLANE_BYTES + offset];
+    const lib_u8 bank = x86_video_ega_font_map(adapter, (attribute & 8u) != 0u);
+    const lib_u32 bank_bytes = adapter->data.ega_personality ==
+        X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR ? 0x4000u : 0x2000u;
+    const lib_u8 bits = adapter->data.ega_planar_vram[2u * X86_VIDEO_EGA_PLANE_BYTES +
+        bank * bank_bytes + (lib_u32)character * X86_VIDEO_TEXT_GLYPH_ROWS + row_scan];
+    const lib_u8 dot = (lib_u8)(position % width);
+    lib_bool foreground = dot < 8u ? (bits & (0x80u >> dot)) != 0u :
+        (adapter->data.attribute[16] & 4u) != 0u && character >= 0xc0u &&
+        character <= 0xdfu && (bits & 1u) != 0u;
+    lib_u8 cursor_top;
+    lib_u8 cursor_end;
+    const lib_u8 skew = (adapter->data.crtc[X86_VIDEO_CRTC_CURSOR_BOTTOM] >> 5u) & 3u;
+    lib_u8 cursor_scan;
+
+    if (!x86_video_ega_output_active(adapter)) return 0u;
+    if (x86_video_ega_blank_at(adapter, x + x86_video_ega_display_skew_pixels(adapter), y))
+        return X86_VIDEO_EGA_BLANK_PIXEL;
+    if ((attribute & 0x77u) == 1u && row_scan == x86_video_ega_underline_scan(adapter))
+        foreground = LIB_TRUE;
+    if ((adapter->data.attribute[16] & 8u) != 0u && (attribute & 0x80u) != 0u &&
+        (adapter->data.field_phase & 16u) != 0u) foreground = LIB_FALSE;
+    if (x86_video_ega_cursor_bounds(adapter,
+            adapter->data.crtc[X86_VIDEO_CRTC_MAXIMUM_RASTER_ADDRESS] + 1u,
+            &cursor_top, &cursor_end) &&
+        (adapter->data.field_phase & x86_video_ega_cursor_phase_mask(adapter)) == 0u &&
+        position / width >= skew &&
+        x86_video_ega_scanout_address(adapter, position / width - skew, y, &cursor_scan) ==
+            x86_video_crtc_word(adapter, X86_VIDEO_CRTC_CURSOR_HIGH) &&
+        row_scan >= cursor_top && row_scan <= cursor_end) foreground = LIB_TRUE;
+    return foreground ? attribute & x86_video_ega_text_color_mask(adapter) :
+        (attribute >> 4u) & ((adapter->data.attribute[16] & 8u) != 0u ? 7u : 15u);
+}
+
+static lib_status x86_video_capture_text_pixels(x86_video *adapter,
+    x86_video_snapshot *snapshot)
+{
+    const lib_u32 width = (adapter->data.crtc[X86_VIDEO_CRTC_HORIZONTAL_DISPLAYED] + 1u) *
+        ((adapter->data.sequencer[1] & 1u) != 0u ? 8u : 9u);
+    const lib_u32 height = x86_video_ega_vertical_displayed(adapter) *
+        x86_video_ega_vertical_scale(adapter);
+    const lib_bool changed = !adapter->data.captured ||
+        adapter->data.captured_kind != X86_VIDEO_KIND_TEXT_PIXELS ||
+        adapter->data.captured_generation != adapter->data.dirty_generation;
+
+    if (width > X86_VIDEO_PIXEL_WIDTH || height > X86_VIDEO_PIXEL_HEIGHT ||
+        adapter->data.crtc[X86_VIDEO_CRT_INTERLACE_SKEW] >
+            adapter->data.crtc[X86_VIDEO_CRTC_MAXIMUM_RASTER_ADDRESS] ||
+        adapter->data.attribute[19] > ((adapter->data.sequencer[1] & 1u) != 0u ? 7u : 8u))
+        return LIB_STATUS_UNSUPPORTED;
+    lib_memory_set(snapshot, 0, lib_offsetof(x86_video_snapshot, pixels));
+    snapshot->kind = X86_VIDEO_KIND_TEXT_PIXELS;
+    snapshot->pixel_width = (lib_u16)width;
+    snapshot->pixel_height = (lib_u16)height;
+    for (lib_u32 index = 0u; index < X86_VIDEO_PALETTE_ENTRIES; ++index)
+        snapshot->palette_rgb[index] = x86_video_ega_output_active(adapter) ?
+            x86_video_ega_palette_color(adapter, adapter->data.attribute[index &
+                adapter->data.attribute[18] & 15u]) : 0u;
+    snapshot->palette_rgb[X86_VIDEO_EGA_BLANK_PIXEL] = 0u;
+    for (lib_u16 y = 0u; y < height; ++y)
+        for (lib_u16 x = 0u; x < width; ++x)
+            snapshot->pixels[(lib_u32)y * width + x] = x86_video_ega_text_pixel(adapter, x, y);
+    snapshot->buffer_changed = changed;
+    snapshot->cursor_changed = LIB_FALSE;
+    adapter->data.captured = LIB_TRUE;
+    adapter->data.captured_kind = X86_VIDEO_KIND_TEXT_PIXELS;
+    adapter->data.captured_generation = adapter->data.dirty_generation;
+    return LIB_STATUS_OK;
 }
 
 static lib_u8 x86_video_ega_plane_pixel(const lib_u8 samples[X86_VIDEO_EGA_PLANES], lib_u8 bit)
@@ -2382,7 +2746,7 @@ static lib_u8 x86_video_ega_plane_pixel(const lib_u8 samples[X86_VIDEO_EGA_PLANE
     return pixel;
 }
 
-static lib_u8 x86_video_ega_graphics_diagnostic(const x86_video *adapter)
+static lib_u8 x86_video_ega_diagnostic(const x86_video *adapter)
 {
     static const lib_u8 mux_bits[2][4][2] = {
         {{0u, 2u}, {1u, 3u}, {4u, 5u}, {0u, 0u}},
@@ -2395,24 +2759,35 @@ static lib_u8 x86_video_ega_graphics_diagnostic(const x86_video *adapter)
     lib_u8 samples[X86_VIDEO_EGA_PLANES], color, bit;
     x86_video_kind kind;
 
-    if (!x86_video_ega_planar_active(adapter) ||
-        (adapter->data.sequencer[1] & 1u) == 0u ||
-        !x86_video_ega_display_kind(adapter, &kind) ||
+    const lib_bool graphics = (adapter->data.graphics[6] & 1u) != 0u;
+
+    if (!x86_video_ega_output_active(adapter) ||
         !x86_video_ega_raster_geometry(adapter, &horizontal, &period, &blank) ||
         (x86_video_status(adapter) & X86_VIDEO_STATUS_DISPLAY_ENABLE) == 0u ||
         adapter->data.crtc[X86_VIDEO_CRT_INTERLACE_SKEW] >
             adapter->data.crtc[X86_VIDEO_CRTC_MAXIMUM_RASTER_ADDRESS] ||
-        adapter->data.attribute[19] > 7u || (personality == 0u && select == 3u)) return 0u;
+        adapter->data.attribute[19] > ((adapter->data.sequencer[1] & 1u) != 0u ? 7u : 8u) ||
+        (personality == 0u && select == 3u)) return 0u;
+    if (graphics && ((adapter->data.sequencer[1] & 1u) == 0u ||
+        !x86_video_ega_display_kind(adapter, &kind))) return 0u;
+    if (!graphics && !x86_video_ega_text_storage_owned(adapter)) return 0u;
     phase = adapter->data.raster_phase % period;
-    x = (phase % horizontal) / x86_video_ega_horizontal_scale(adapter) * 8u;
+    x = (phase % horizontal) / x86_video_ega_horizontal_scale(adapter);
+    if (x < x86_video_ega_display_skew_pixels(adapter)) return 0u;
+    x -= x86_video_ega_display_skew_pixels(adapter);
     y = phase / horizontal;
-    offset = x86_video_ega_graphics_offset(adapter, (lib_u16)x, (lib_u16)y);
-    bit = (lib_u8)(0x80u >> ((x + adapter->data.attribute[19]) & 7u));
-    for (lib_u8 plane = 0u; plane < X86_VIDEO_EGA_PLANES; ++plane)
-        samples[plane] = adapter->data.ega_planar_vram[(lib_size)plane *
-            X86_VIDEO_EGA_PLANE_BYTES + offset];
-    color = adapter->data.attribute[x86_video_ega_plane_pixel(samples, bit) &
-        adapter->data.attribute[18] & 15u];
+    if (graphics) {
+        offset = x86_video_ega_graphics_offset(adapter, (lib_u16)x, (lib_u16)y);
+        bit = (lib_u8)(0x80u >> ((x + adapter->data.attribute[19]) & 7u));
+        for (lib_u8 plane = 0u; plane < X86_VIDEO_EGA_PLANES; ++plane)
+            samples[plane] = adapter->data.ega_planar_vram[(lib_size)plane *
+                X86_VIDEO_EGA_PLANE_BYTES + offset];
+        color = x86_video_ega_plane_pixel(samples, bit);
+    } else {
+        color = x86_video_ega_text_pixel(adapter, (lib_u16)x, (lib_u16)y);
+    }
+    if (color == X86_VIDEO_EGA_BLANK_PIXEL) return 0u;
+    color = adapter->data.attribute[color & adapter->data.attribute[18] & 15u];
     return (lib_u8)(((color >> mux_bits[personality][select][0]) & 1u) << 4u) |
         (lib_u8)(((color >> mux_bits[personality][select][1]) & 1u) << 5u);
 }
@@ -2450,6 +2825,7 @@ static lib_status x86_video_capture_ega_planar_snapshot(x86_video *adapter,
         out_snapshot->palette_rgb[x] = x86_video_ega_palette_color(adapter,
             adapter->data.attribute[enabled_index]);
     }
+    out_snapshot->palette_rgb[X86_VIDEO_EGA_BLANK_PIXEL] = 0u;
     for (y = 0u; y < height; ++y) {
         for (x = 0u; x < width;) {
             const lib_u32 offset = x86_video_ega_graphics_offset(adapter, x, y);
@@ -2462,7 +2838,9 @@ static lib_status x86_video_capture_ega_planar_snapshot(x86_video *adapter,
                 samples[plane] = source[offset];
             }
             while (bit != 0u && x < width) {
-                out_snapshot->pixels[(lib_u32)y * width + x] = x86_video_ega_plane_pixel(samples, bit);
+                out_snapshot->pixels[(lib_u32)y * width + x] = x86_video_ega_blank_at(adapter,
+                    x + x86_video_ega_display_skew_pixels(adapter), y) ?
+                    X86_VIDEO_EGA_BLANK_PIXEL : x86_video_ega_plane_pixel(samples, bit);
                 ++x;
                 bit >>= 1u;
             }
@@ -2552,6 +2930,8 @@ lib_status x86_video_capture_snapshot_from(x86_video *adapter, const x86_video_m
             return x86_video_capture_high_res_graphics_snapshot(adapter, memory, out_snapshot);
         if (x86_video_is_graphics_mode(adapter))
             return x86_video_capture_graphics_snapshot(adapter, memory, out_snapshot);
+        if (x86_video_ega_text_storage_owned(adapter) && x86_video_ega_text_requires_pixels(adapter))
+            return x86_video_capture_text_pixels(adapter, out_snapshot);
         return x86_video_capture_text_snapshot_from(adapter, memory, out_snapshot);
     }
     if (x86_video_vga_mode13_active(adapter)) {
@@ -2593,7 +2973,7 @@ lib_status x86_video_observe_bus(const x86_video *video,
     if (video == LIB_NULL || out_observation == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_observation = (x86_video_bus_observation) {
-        .cpu_memory_disabled = video->data.compaq_cpu_video_memory_disabled != 0u,
+        .cpu_memory_disabled = x86_video_ega_cpu_memory_disabled(video),
         .graphics_miscellaneous = video->data.graphics[6u],
         .sequencer_reset = video->data.sequencer[0u],
         .vertical_interrupt = video->data.vertical_interrupt_pending &&

@@ -42,17 +42,32 @@ lib_i32 main(void)
     source.characters[3439u] = 'G';
     source.attributes[3439u] = 0x18u;
     source.text_font_selection = LIB_TRUE;
+    source.text_foreground_mask = 7u;
     source.secondary_text_glyphs[normalized_last] = 0xa6u;
     if (vm_machine_frame_from_display(&source, 8u, &destination) != LIB_STATUS_OK ||
         destination.window.text.base.text_rows != 43u ||
         destination.window.text.base.cells[3439u].glyph_index != 'G' ||
         destination.window.text.base.cells[3439u].glyph_bank != 1u ||
+        destination.window.text.base.cells[3439u].foreground != 0u ||
         destination.window.text.base.cells[3440u].glyph_index != 0u ||
         destination.window.text.font[normalized_last] != 0x5au ||
         destination.window.text.secondary_font[normalized_last] != 0xa6u) return 1;
     source.text_font_selection = LIB_FALSE;
+    source.text_foreground_mask = 15u;
     if (vm_machine_frame_from_display(&source, 8u, &destination) != LIB_STATUS_OK ||
-        destination.window.text.base.cells[3439u].glyph_bank != 0u) return 1;
+        destination.window.text.base.cells[3439u].glyph_bank != 0u ||
+        destination.window.text.base.cells[3439u].foreground != 8u) return 1;
+    source.attributes[3439u] = 0x98u;
+    source.text_foreground_mask = 7u;
+    if (vm_machine_frame_from_display(&source, 8u, &destination) != LIB_STATUS_OK ||
+        destination.window.text.base.cells[3439u].foreground != 0u ||
+        destination.window.text.base.cells[3439u].background != 9u) return 1;
+    source.text_foreground_mask = 0u;
+    before = destination;
+    source.text_foreground_mask = 8u;
+    if (vm_machine_frame_from_display(&source, 8u, &destination) != LIB_STATUS_INVALID_ARGUMENT ||
+        lib_memory_compare(&before, &destination, sizeof(destination)) != 0) return 1;
+    source.text_foreground_mask = 0u;
 
     {
         static const lib_u8 heights[] = {8u, 14u, 16u, 24u, 32u};
@@ -106,6 +121,29 @@ lib_i32 main(void)
         lib_memory_compare(&before, &destination, sizeof(destination)) != 0) return 1;
     source.pixel_width = 0u;
     if (vm_machine_frame_from_display(&source, 9u, &destination) != LIB_STATUS_INVALID_ARGUMENT ||
+        lib_memory_compare(&before, &destination, sizeof(destination)) != 0) return 1;
+
+    source.kind = X86_VIDEO_KIND_TEXT_PIXELS;
+    source.columns = 0u;
+    source.rows = 0u;
+    source.text_cell_height = 0u;
+    source.pixel_width = 720u;
+    source.pixel_height = 512u;
+    source.pixels[0] = 16u;
+    source.palette_rgb[0] = 0xffffffu;
+    source.palette_rgb[16] = 0u;
+    source.pixels[720u * 512u - 1u] = 3u;
+    if (vm_machine_frame_from_display(&source, 9u, &destination) != LIB_STATUS_OK ||
+        kvm_window_frame_validate(&destination.window) != LIB_STATUS_OK ||
+        !destination.window.graphics || destination.window.image.width != 720u ||
+        destination.window.image.height != 512u || destination.window.image.stride != 720u ||
+        destination.window.image.pixels[0] != 16u || destination.window.image.palette[16] != 0u ||
+        destination.window.image.palette[0] != 0xffffffu ||
+        destination.window.image.pixels[720u * 512u - 1u] != 3u ||
+        destination.window.image.palette[3u] != 0x00ff0000u) return 1;
+    before = destination;
+    source.pixel_height = 513u;
+    if (vm_machine_frame_from_display(&source, 10u, &destination) != LIB_STATUS_UNSUPPORTED ||
         lib_memory_compare(&before, &destination, sizeof(destination)) != 0) return 1;
 
     source = (x86_video_snapshot){0};

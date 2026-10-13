@@ -64,7 +64,7 @@ lib_i32 main(void)
     core_machine_display_config config = {
         .text_timing = {48u, 8u, 8u},
         .ega_present = LIB_TRUE,
-        .ega_sequencer = {0xa0000u, 0x10000u, 3u, 0u, 15u, 2u, LIB_TRUE},
+        .ega_sequencer = {0xa0000u, 0x10000u, 3u, 1u, 15u, 2u, LIB_TRUE},
         .cecg = {0x41u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
             0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE}
     };

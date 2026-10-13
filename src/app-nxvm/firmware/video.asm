@@ -72,6 +72,12 @@ mov byte ds:[0049], 0d
 pop ds
 call near $(label_int_10_ega_graphics_common)
 mov dx, 03c4
+mov al, 01
+out dx, al
+inc dx
+mov al, 0b
+out dx, al
+mov dx, 03c4
 mov al, 02
 out dx, al
 inc dx
@@ -90,6 +96,28 @@ inc dx
 mov al, 05
 out dx, al
 mov dx, 03d4
+mov ax, 3700
+call near $(label_int_10_ega_crtc_write)
+mov ax, 2d02
+call near $(label_int_10_ega_crtc_write)
+mov ax, 3703
+call near $(label_int_10_ega_crtc_write)
+mov ax, 3004
+call near $(label_int_10_ega_crtc_write)
+mov ax, 1405
+call near $(label_int_10_ega_crtc_write)
+mov ax, 0406
+call near $(label_int_10_ega_crtc_write)
+mov ax, e110
+call near $(label_int_10_ega_crtc_write)
+mov ax, 2411
+call near $(label_int_10_ega_crtc_write)
+mov ax, 0014
+call near $(label_int_10_ega_crtc_write)
+mov ax, e015
+call near $(label_int_10_ega_crtc_write)
+mov ax, f016
+call near $(label_int_10_ega_crtc_write)
 mov al, 01
 out dx, al
 inc dx
@@ -99,7 +127,7 @@ dec dx
 mov al, 07
 out dx, al
 inc dx
-mov al, 10
+mov al, 11
 out dx, al
 dec dx
 mov al, 12
@@ -153,6 +181,28 @@ inc dx
 mov al, 05
 out dx, al
 mov dx, 03d4
+mov ax, 7000
+call near $(label_int_10_ega_crtc_write)
+mov ax, 5602
+call near $(label_int_10_ega_crtc_write)
+mov ax, 2d03
+call near $(label_int_10_ega_crtc_write)
+mov ax, 5e04
+call near $(label_int_10_ega_crtc_write)
+mov ax, 0605
+call near $(label_int_10_ega_crtc_write)
+mov ax, 0406
+call near $(label_int_10_ega_crtc_write)
+mov ax, e010
+call near $(label_int_10_ega_crtc_write)
+mov ax, 2311
+call near $(label_int_10_ega_crtc_write)
+mov ax, 0014
+call near $(label_int_10_ega_crtc_write)
+mov ax, df15
+call near $(label_int_10_ega_crtc_write)
+mov ax, ef16
+call near $(label_int_10_ega_crtc_write)
 mov al, 01
 out dx, al
 inc dx
@@ -162,7 +212,7 @@ dec dx
 mov al, 07
 out dx, al
 inc dx
-mov al, 10
+mov al, 11
 out dx, al
 dec dx
 mov al, 12
@@ -197,6 +247,9 @@ mov ds, bx
 mov byte ds:[0049], 10
 pop ds
 call near $(label_int_10_ega_graphics_common)
+mov dx, 03c2
+mov al, a7
+out dx, al
 mov dx, 03c4
 mov al, 02
 out dx, al
@@ -216,6 +269,28 @@ inc dx
 mov al, 05
 out dx, al
 mov dx, 03d4
+mov ax, 5b00
+call near $(label_int_10_ega_crtc_write)
+mov ax, 5302
+call near $(label_int_10_ega_crtc_write)
+mov ax, 1703
+call near $(label_int_10_ega_crtc_write)
+mov ax, 5004
+call near $(label_int_10_ega_crtc_write)
+mov ax, ba05
+call near $(label_int_10_ega_crtc_write)
+mov ax, 6c06
+call near $(label_int_10_ega_crtc_write)
+mov ax, 5e10
+call near $(label_int_10_ega_crtc_write)
+mov ax, 2b11
+call near $(label_int_10_ega_crtc_write)
+mov ax, 0f14
+call near $(label_int_10_ega_crtc_write)
+mov ax, 5f15
+call near $(label_int_10_ega_crtc_write)
+mov ax, 0a16
+call near $(label_int_10_ega_crtc_write)
 mov al, 01
 out dx, al
 inc dx
@@ -225,7 +300,7 @@ dec dx
 mov al, 07
 out dx, al
 inc dx
-mov al, 12
+mov al, 1f
 out dx, al
 dec dx
 mov al, 12
@@ -413,18 +488,118 @@ mov ds, bx
 mov byte ds:[0049], 03
 pop ds
 mov dx, 03c2
-mov al, 01
+mov al, 03
 out dx, al
 mov dx, 03d8
 mov al, 0d
 out dx, al
+; Reset inherited transforms, then load the ROM font through plane 2.
+call near $(label_int_10_ega_graphics_common)
+push cx
+push si
+push di
+push ds
+push es
+mov dx, 03c4
+mov al, 02
+out dx, al
+inc dx
+mov al, 04
+out dx, al
 mov dx, 03ce
+mov al, 05
+out dx, al
+inc dx
+xor al, al
+out dx, al
+dec dx
 mov al, 06
 out dx, al
 inc dx
-mov al, 08
+mov al, 04
+out dx, al
+mov ax, f000
+mov ds, ax
+mov si, a000
+mov ax, a000
+mov es, ax
+xor di, di
+mov cx, 1000
+cld
+rep:
+movsw
+pop es
+pop ds
+pop di
+pop si
+pop cx
+; Text characters/attributes use planes 0/1 at B8000 in odd/even mode.
+mov dx, 03c4
+mov al, 02
+out dx, al
+inc dx
+mov al, 03
+out dx, al
+dec dx
+mov al, 03
+out dx, al
+inc dx
+xor al, al
+out dx, al
+dec dx
+mov al, 04
+out dx, al
+inc dx
+mov al, 03
+out dx, al
+mov dx, 03ce
+mov al, 05
+out dx, al
+inc dx
+mov al, 10
+out dx, al
+dec dx
+mov al, 06
+out dx, al
+inc dx
+mov al, 0e
 out dx, al
 mov dx, 03d4
+; Complete the existing 80x25, eight-scanline text raster (IBM EGA mode 3).
+mov ax, 7000
+call near $(label_int_10_ega_crtc_write)
+mov ax, 5c02
+call near $(label_int_10_ega_crtc_write)
+mov ax, 2f03
+call near $(label_int_10_ega_crtc_write)
+mov ax, 5f04
+call near $(label_int_10_ega_crtc_write)
+mov ax, 0705
+call near $(label_int_10_ega_crtc_write)
+mov ax, 0406
+call near $(label_int_10_ega_crtc_write)
+mov ax, e110
+call near $(label_int_10_ega_crtc_write)
+mov ax, 2411
+call near $(label_int_10_ega_crtc_write)
+mov ax, 0814
+call near $(label_int_10_ega_crtc_write)
+mov ax, e015
+call near $(label_int_10_ega_crtc_write)
+mov ax, f016
+call near $(label_int_10_ega_crtc_write)
+mov al, 01
+out dx, al
+inc dx
+mov al, 4f
+out dx, al
+dec dx
+mov al, 07
+out dx, al
+inc dx
+mov al, 11
+out dx, al
+dec dx
 mov al, 09
 out dx, al
 inc dx
@@ -446,6 +621,25 @@ dec dx
 mov al, 13
 out dx, al
 inc dx
+mov al, 28
+out dx, al
+dec dx
+mov al, 12
+out dx, al
+inc dx
+mov al, c7
+out dx, al
+dec dx
+mov al, 17
+out dx, al
+inc dx
+mov al, a3
+out dx, al
+mov dx, 03da
+in al, dx
+mov dx, 03c0
+mov al, 30
+out dx, al
 xor al, al
 out dx, al
 call near $(label_int_10_ega_palette)
@@ -797,6 +991,13 @@ pop cx
 pop bx
 pop ax
 iret
+$(label_int_10_ega_crtc_write):
+out dx, al
+inc dx
+mov al, ah
+out dx, al
+dec dx
+ret
 $(label_int_10_mode):
 push ds
 push bx

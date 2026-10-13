@@ -3,7 +3,7 @@
 ## Current Work
 
 M5 T555 remains open: qualify retained controllers and board wiring for four
-fixed PC Apps. S1--S6 are closed; S7 remaining video qualification is admitted.
+fixed PC Apps. S1--S7 are closed; S8 has not yet been admitted.
 Accepted runnable delivery is S6 `73d796724`, pushed to origin/master.
 The owner's instruction to admit the next S accepts the delivered S6 batch.
 Its [delivery record](../etc/evidence/t555-s6-copied-glyph-capacity.md) and
@@ -28,7 +28,7 @@ remaining raster/MUX, V19 advanced text geometry, V20 Restore/blanking and V28
 retained VGA cursor bounds. S8 owns cross-profile speed/AUX-PIT/HOLD and final
 controller closure. Capacity alone cannot qualify live hardware production.
 
-## Current Task — M5 T555 S7 Remaining Video Qualification
+## Most Recent Completed Task — M5 T555 S7 Remaining Video Qualification
 
 | Field | Required record |
 | --- | --- |
@@ -37,11 +37,11 @@ controller closure. Capacity alone cannot qualify live hardware production.
 | Objective | Reconcile and repair the complete residual V08/V09/V17/V18/V19/V20/V28 video batch, with original-source facts and real chip-to-board-to-Machine receiving proof. A 32-row transport or successful DOS boot alone does not qualify live hardware. |
 | Reference Baseline | Accepted S6 `73d796724`; S5's complete V01--V28 source/receiver ledger and the approved Core video boundary review. |
 | Candidate Proposal | [Selected controller qualification](../proposals/m5-selected-controller-qualification.md), remaining-video S7; [video ledger](../etc/evidence/t555-s5-video-source-ledger.md), complete transferred residual classes. |
-| Files And ABI Surface | NXVM only: existing src/core/chips/video, relevant core/board-base and core/machine consumers, selected App profile/project-firmware inputs only when source reconciliation proves the need, their matching tests, Core manifests, NXVM evidence and affected PC EXEs. Reuse current 32-row copied snapshots and existing IRQ/deadline/capture-result interfaces. No Shared source/test/build or MyNES change is admitted. |
+| Files And ABI Surface | NXVM only: existing src/core/chips/video, relevant core/board-base and core/machine consumers, selected App profile/project-firmware inputs only when source reconciliation proves the need, their matching tests, Core manifests, NXVM evidence and affected PC EXEs. Reuse current 32-row glyph slots and IRQ/deadline/capture-result interfaces. Approved existing-graphics presentation appends Core TEXT_PIXELS, expands its one pixel capacity to 720x512 and copies a foreground-only intensity mask consumed by the existing Machine conversion. No Shared source/test/build or MyNES change is admitted. |
 | Non-goals | No CPU, storage, keyboard, unrelated lifecycle/monitor change; no S8 speed/AUX-PIT/HOLD work, new card/model, second framebuffer/scheduler/renderer, sibling edit, protected-file import, owner INI/media/snapshot mutation or inferred physical timing grade. The publication stack-cost observation is not this video qualification's implementation scope. |
 | Applicable Rules | NXVM guide, Contributing, shared Execution/Architecture/Coding/Document; NXVM architecture/coding/UI and source policy; selected-controller proposal, S5 video ledger and approved video boundary review. Read the originals for each consumed fact before implementation. |
-| Design Contract | Chip owns VRAM/register/raster/font/reset; board owns decode, source-clock and IRQ wiring; Machine owns copied publication. Live font selection consumes actual plane-2 VRAM with source-specific EGA/CECG bank addresses and fixed 32-byte glyph slots. Preserve CGA and nonselected VGA distinctions, failure atomicity, one deadline owner and existing product UX. |
-| Estimated Diff | Admission changes NXVM status/history/queue only. Before any production edit, reconcile all seven residual classes, name exact files and source tiers, and report per-mechanism expected additions/deletions/net plus interface/state necessity. The residual audit is a prerequisite, not a partial implementation P or a claimed repair. |
+| Design Contract | Chip owns VRAM/register/raster/font/reset; board owns decode, source-clock and IRQ wiring; Machine owns copied publication. Live font selection consumes actual plane-2 VRAM with source-specific EGA/CECG bank addresses and fixed 32-byte glyph slots. Owner rejects Shared raster extension and approves NXVM-only exact text pixels through the existing graphics frame/Window route; ordinary character text remains Console-capable. Reuse the Core pixel member, append its text-pixel kind and qualify 720x512 capacity plus both-width stack lifetimes. Preserve CGA and nonselected VGA distinctions, failure atomicity and one deadline owner. |
+| Estimated Diff | The residual ledger records all seven current classes and bounded design estimates. First implement the source-proven V08 RAM gate in Video C and the existing bus-observation comment, with planar smoke proof: approximately production +10/-5, tests +70. No public API/state is added; existing callers/firmware must explicitly establish valid RAM state. Remaining original/output-contract questions stay explicit; each mechanism reports its exact surface before edits. No local vector or prerequisite is a partial implementation P or complete S7 claim. |
 | Verification | Establish current owner-local regression baseline; prove each changed fact through chip and real board/Machine routes, including reset, failure preservation and both font banks. Reuse original x64/x86 Ninja/ccache trees and component objects. Final complete repository units and selected four-PC integrations pass once per width; preserve DeskPro 300-second startup budget. Update relevant manifests and run Types/corpus/dependency/test-owner/documentation gates. |
 | Expected Markers | Every residual row has direct accepted proof or an explicitly reviewed source-bound disposition; final selected CTest groups have zero failures, Core gates pass and deployed affected PC EXEs have correct PE widths and matching hashes. Timeout, skipped asset and stored-but-unconsumed registers are not qualification success. |
 | Asset Needs | Read existing external original manuals/firmware/media under source policy; no new protected import or mutation. Rebuild/deploy affected optimized stripped 0555 PC x64/x86 pairs after production edits; preserve the exact MyNES pair when its executable inputs are unchanged. |
@@ -51,12 +51,252 @@ controller closure. Capacity alone cannot qualify live hardware production.
 | Stop Conditions | Report any Shared requirement, timing downgrade, unsupported source invention, reversed ownership, second execution/display path, protected/user-file mutation or material scope expansion. Source uncertainty requires an explicit model/disposition, not a silent implementation guess. |
 | Original Owner Request | Admit the next S after delivery/acceptance of S6; continue the approved T555 sequence with residual video qualification and preserve the completed Shared copied-glyph contract. |
 
+### S7 Closure Record
+
+S7 completes the admitted Video residual batch without changing the public six
+components.  Core now applies the documented EGA RAM gate, live generic EGA
+Input Status 0 CRT state, CECG control-mode blanking, and source-qualified
+text/graphics raster decisions; ordinary character grids remain logical text
+for the Console, while nonrepresentable geometry uses the existing Core
+graphics delivery path.  The prior unsourced VGA alternating diagnostic state
+was removed.  The residual reconciliation records the deliberately unmodelled
+physical inputs and unavailable source facts rather than inventing a board,
+clock, raster stage, or restore behavior.
+
+Automated qualification passes 546/546 Unit tests and 22/22 Integration tests
+on both x64 and x86.  Both width-specific specialized gate aggregates pass,
+as do the Core source and test manifests and whitespace audit.  The four
+current PC profile pairs were rebuilt, deployed and PE-width checked.  Manual
+desktop, electrical and physical-hardware qualification remain unexecuted and
+are not inferred from these automated results.  S8 remains the next admitted
+work only when separately authorized.
+
 Td S178 is closed: coordinator actual-pushed-diff review accepts the 18-line
 shared rule in `ccca1540a`; NXVM/MyNES documentation and whitespace checks
 pass. Its default/dimension/capacity rule remains applicable to S7; this
 admission changes no executable input.
 
 ## Retained Progress
+
+The owner has rejected the proposed Shared text-raster extension and approved
+the existing graphics transport for pixel-exact text. The updated
+[presentation boundary](../etc/evidence/t555-s7-text-raster-boundary-review.md)
+supersedes the earlier pending-extension discussion below. Only NXVM Core,
+receivers and evidence may change; public six and MyNES remain read-only.
+Console-configured sessions use existing Window routing for pixel output;
+this changes presentation, not the guest's alphanumeric register mode.
+Complete V18/V19 and all other S7/S8 obligations remain unchanged.
+
+The Core pixel producer now consumes nine-dot/font/row-scan/panning/split
+data from real plane-0/1/2 VRAM and shares its sample with the diagnostic MUX.
+Foreground intensity is a Core-owned copied mask, preserving background and
+CECG's software-palette distinction; cursor shape and font selection each
+have one helper. Cold unprogrammed one-cell clear output remains the existing
+logical reset view, not qualified physical scanout. The actual bound worker
+publishes 720x400 existing graphics output from alphanumeric registers,
+retains both fonts, suppresses no-change updates and preserves reset delivery.
+Final current focused contract/worker tests pass 2/2 per width; the preceding
+19-case chip sweep had 17 passes and two fixture failures corrected with
+explicit eight-dot inputs. Blink/remaining source classes, full receiving,
+complete units/integration and eight affected artifacts still remain.
+Shared six, MyNES and owner files are unchanged; no complete S7 P exists.
+
+Character blinking now uses the existing field/dot phase and the existing
+graphics transport. CECG's 32-field period is sourced; generic EGA uses an
+explicit relative L2 reference model, not a physical-time upgrade. Actual
+blinking attributes choose pixel text at capture; ordinary nonblinking cells
+remain Console-capable. Pixel deadlines cannot assert a vertical IRQ, and
+the real Board source-clock route updates pixels without any IRQ lease.
+Final current video-chip/Board/worker selection passes 21/21 per width
+(1.92/1.45 s). This does not yet prove blink through the bound worker or
+complete remaining video classes, full repository/integration or artifacts.
+No Shared, MyNES, owner input, published EXE or implementation P is changed.
+
+Cursor End's existing horizontal skew is now consumed by logical and pixel
+capture, retaining both personalities' vertical shape conventions. Both-width
+0..3-delay and right-edge regressions pass; final current video/Board/worker
+selection is 21/21 per width (4.27/1.84 s). Original underline register/attribute
+facts are reconciled but not yet implemented. Remaining complete S7 source
+classes, bound-worker blink, full units/integration and affected artifacts
+remain mandatory; no implementation P or closure is claimed.
+
+Underline now resolves at the existing pixel sampler with source-specific
+register offsets and a documented CECG L2 attribute predicate. Actual visible
+attributes select pixel text; out-of-height/non-underline cells remain logical.
+Both-width chip matrices and real bound-worker underline publication pass,
+with final current 21-case video/Board/worker selection 21/21 (0.51/0.67 s).
+Cursor blink, remaining source classes, full repository/integration and affected
+artifacts remain open. Shared six, MyNES and owner inputs remain unchanged;
+no complete implementation P exists.
+
+Cursor blinking now shares the field-phase/deadline owner with character
+blink, retaining a hidden cursor's next wake and keeping IRQ independent.
+Logical/pixel phase, invalid shape, full-cycle, halted Sequencer and reset
+contracts are covered. The wider video/Board/worker selection passes 21/21
+per width (5.07/1.75 s); a subsequent corrected cold-reset contract passes
+1/1 per width. Reset retains its existing logical retrace dot phase, not an
+invented zero phase. Actual worker blink, complete residual source classes,
+full units/integration and current affected EXEs remain required. No Shared,
+MyNES, owner input, published artifact or complete S7 P has changed.
+
+Actual bound-worker blink receiving proof now passes x64/x86 1/1: real Debug
+register/plane writes and executor progress produce logical cursor and pixel
+character visible/hidden/visible cycles, with unchanged paused publication.
+No direct Video advance or observer publish is used. Retained VGA diagnostics
+are rechecked against the original Attribute-output/MUX/256-color contract;
+the read-count flip remains a confirmed unresolved V28 member, not a constant
+zero fix. Complete residual dispositions, final repository/four-App verification
+and affected artifacts still remain before an implementation P or S7 closure.
+
+CRTC output tri-state now feeds the sole output predicate without changing
+CPU VRAM admission. Both chip personalities and real Board memory/port routes
+prove blank pixels/status, continuing storage writes/readback and restored
+capture. Contract passes 1/1 and Board/worker 2/2 per width; manifests are
+refreshed. Normal blank endpoints/wrap, diagnostic priority, Restore and
+other retained residual classes remain explicit, along with final full
+qualification and affected artifacts. Shared six/MyNES/owner files and
+published EXEs are unchanged; no complete S7 P exists.
+
+Programmed blank endpoints now have a negative-first 12-case table per
+personality. It reproduces five missing horizontal/vertical end/wrap results
+per card; the one pure status interval helper repairs them without new phase
+or latch state. Final focused contract passes 1/1 per width. Equal endpoints
+remain an explicit L2 empty-interval model, not a reconstructed IBM priority.
+Pixel-consumer parity and complete residual/final qualification remain open;
+no Shared, MyNES, owner input, artifact or complete S7 P has changed.
+
+Blanking status/pixel parity now uses one interval calculation. Text cuts
+select existing graphics transport; text/planar blank pixels use a private
+black index without altering guest color 0. Both personalities' endpoint
+matrix, planar recovery and Machine palette preservation pass per width.
+Wider 21-case video/Board/worker passes, with subsequent final expanded
+contract and conversion receivers passing separately. DE skew, diagnostic
+priority/Restore, retained VGA, oscillator inputs and final full qualification/
+affected artifacts remain open. Shared six, owner files, MyNES and published
+EXEs remain unchanged; no complete S7 P exists.
+
+Display enable skew now uses one cropped-image/beam translation for status,
+MUX and blank sampling. All four delays per personality preserve ordinary
+text capability and hold blank cuts at the same image column. Final current
+video/Board/worker selection passes 21/21 per width (3.79/1.35 s). Default
+firmware's incomplete full-raster initialization is now an explicit V09
+receiving obligation, not qualified by logical geometry/font tests. Remaining
+source classes and whole-S7 qualification/artifacts stay open; no Shared,
+MyNES, owner files, published artifacts or complete implementation P changed.
+
+Default project firmware now initializes the complete Mode 3 text raster
+through guest CRTC writes. Actual INT 10h return, fonts/characters and ordered
+active/retrace/exit receiving proof pass per width, as do 2/2 separate floppy/
+builder regressions. The two ignored unit-font ROM hashes match. Graphics-mode
+timing, oscillator inputs, remaining source classes and final complete S7
+qualification/eight affected EXEs are still required. No Shared, MyNES, owner
+inputs, published artifact or complete implementation P has changed.
+
+Default firmware graphics D/E/10 now program complete mode-specific timing
+through the same guest writer, and final text return reinitializes its own
+timing. Actual mode-return pictures/registers and ordered active/retrace/exit
+proof pass; final firmware modes/floppy/build regression is 3/3 per width
+(8.28/7.97 s), with identical ignored unit-font ROMs. This does not qualify
+Board oscillator/bandwidth reception, unresolved source classes or complete
+S7/four-App delivery. Shared, MyNES, protected/user files and published EXEs
+remain unchanged; no complete implementation P exists.
+
+The first NXVM-only receiving implementation appends Core TEXT_PIXELS and
+extends its existing pixel capacity to 720x512. Machine reuses its sole
+validated graphics conversion; tests prove full extent/palette, absent logical
+text independence and failed-copy preservation. Final focused Machine/Mode10
+tests pass 2/2 per width and Core manifests are refreshed. Compiler-reported
+publication stack is about 394 KiB per width, not full call-chain qualification.
+The actual register-driven text pixel producer and all complete S7 validation
+remain pending; no Shared, MyNES, owner file, artifact or implementation P
+has changed. Accepted runnable delivery remains S6.
+
+S7 initial reconciliation is recorded in the
+[residual ledger](../etc/evidence/t555-s7-video-residual-reconciliation.md).
+All seven transferred classes have current-path and receiver dispositions.
+Confirmed gaps include generic RAM-enable consumption, plane-2 live fonts,
+text geometry consumers and CECG Restore; existing graphics address controls
+and IRQ routing are retained, not re-reported as missing. Original IBM/CECG
+hashes and relevant rendered pages are rechecked. Initial regression passes
+x64 63/63 and x86 46/46; selections include six default video integrations,
+not complete S7 qualification. The source-proven RAM gate and live plane-2
+font/plane-0/1 text candidate are now implemented in Core; old failure vectors
+are retained and actual chip/Board routes pass 20/20 per width. Existing
+tests now enter real VRAM rather than borrowed text fixtures. Current C/H
+is production +80/-23 and tests +204/-10, plus project firmware +2/-2.
+No new public function/type/state or Shared/MyNES change is introduced.
+Default guest font initialization and valid geometry, Machine/Profile
+receivers, remaining seven-class proof and final artifacts still need work.
+Nine-dot/fine-scroll output-contract questions remain explicit. Published
+EXEs, owner INIs/media/snapshots and sibling repositories are unchanged;
+no S7 implementation P exists. Full T555 scope and S7/S8 exits remain required.
+
+The default BIOS's initially failing live-glyph receiver is now repaired:
+the builder normalizes the existing BYOB font into a reserved ROM extent,
+and guest mode 03h loads plane 2, establishes B8000 odd/even access and text
+stride. Units use only code-owned font bytes, verify exact captured rows,
+deliberate font damage and graphics-to-text return. Builder invalid-font and
+original assembly-failure publication tests remain intact. Final bounded
+firmware selection passes 3/3 per width; earlier budget/mode failures are
+recorded in the residual ledger. No Shared API/state or host font fallback
+is added. Remaining video classes, full products and final artifacts are
+still required; no S7 implementation P or new S is claimed.
+
+Enhanced whole-cell geometry now consumes CRTC columns, vertical endpoint
+and character height; stride-aware cursor matching and capacity/failure
+preservation are covered through actual chip and Board port paths. Final
+changed-owner regression passes 23/23 per width, including the 40x50 Board
+receiver and guest font/mode-return tests. Core manifests verify. Fine-pan,
+nine-dot and partial-cell output still require an explicit Shared contract
+decision; they are not complete V19 proof. No Shared change, published EXE,
+implementation P or T/S closure is claimed.
+
+V28's source-proven VGA cursor-disable input is repaired by a capability-only
+write mask, with 4096 paired EGA/VGA captures preserving selected EGA behavior.
+Final changed-owner regression remains 23/23 per width; Core manifests verify.
+CECG originals now trace Restore to indexed-CRTC compatibility logic, not a
+VRAM clear/reset operation. Its actual translation and blanking priority are
+still under source review; no guessed restore behavior is implemented.
+Remaining source/Shared decisions and whole-S7 qualification remain mandatory.
+
+The [text raster boundary review](../etc/evidence/t555-s7-text-raster-boundary-review.md)
+now specifies the concrete Shared prerequisite: optional resolved Window
+pixels while preserving text identity, logical Console delivery and one
+existing pixel rendering/copy path. It records cursor ownership, active-tail
+copying, estimated layout growth, file/diff surface and full receiving gates.
+This is pending owner approval; public six remain unchanged. No narrower S7
+exit, timing downgrade, fake graphics target or new runtime owner is admitted.
+
+Independent Core/App receiving work continues while that approval is pending.
+The real bound worker now proves 80x50 text, both live font banks, row-49
+cursor, font-only publication, unchanged-frame suppression and reset generation
+through existing paused Debug requests and actual execution. Old unprogrammed
+geometry/RAM/aperture test inputs are reconciled without production fallback.
+Final additional receiving units pass 23/23 per width (11 Core, five default,
+seven Model40), with failed earlier vectors retained in the residual ledger.
+No production, Shared, MyNES or artifact change is added by this segment;
+whole-S7 qualification and owner review of the Shared prerequisite remain open.
+
+V09's same-source character-clock regression now confirms an unconsumed
+eight/nine-dot selector in both generic EGA and CECG: each reports 24 ticks,
+or 48 with divide-by-two, irrespective of width. The test uses relative
+ratios rather than an unapproved absolute eight-dot tick convention, selects
+the actual CRTC decode and halts/restarts the Sequencer correctly. Both
+strict-warning builds succeed; this focused test deliberately remains failed
+until the coherent phase/deadline/status mechanism is repaired. Board
+oscillator selection is a separate unresolved input. The residual ledger
+records the failed attempts and design boundary; Shared, artifacts and all
+owner files remain unchanged. No passing full-suite or S7 closure is claimed.
+
+The subsequent V09 Core candidate now consumes character width coherently
+through one dot-phase owner, raster geometry, ceiling deadline, advance,
+status and diagnostic position. Its nominal eight-dot logical normalization
+is explicit and does not qualify a physical oscillator. Segmented/wrapped,
+halted and maximum-u64 progress are tested, with real Board inverse-clock
+deadlines and slave-PIC edge proof. Final bounded 20+7+2 distinct receivers
+pass per width; Core manifests are refreshed. Shared text-raster approval is
+still pending, and board oscillator/remaining video/final artifact work stays
+open. No full-suite claim, implementation P or S7 closure is made.
 
 S6 owner-approved qualification budget update: Model 40's existing boot
 receiver now receives 300000 milliseconds on both widths. Its CTest envelope

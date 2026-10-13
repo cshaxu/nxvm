@@ -35,6 +35,8 @@ lib_i32 main(void)
     x86_video_snapshot snapshot;
     x86_video_snapshot_observation observation;
     const lib_u8 chain4_bytes[] = { 0x10u, 0x11u, 0x12u, 0x13u };
+    lib_u8 first_status;
+    lib_u8 second_status;
     lib_u64 vga_generation;
     lib_i32 failed = 0;
 
@@ -46,6 +48,11 @@ lib_i32 main(void)
     x86_video_reset(vadp);
     failed |= (video_test_read(vadp,
         X86_VIDEO_REGISTER_EXTERNAL_CONTROL) & 0x7fu) != 0u;
+    first_status = video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS);
+    second_status = video_test_read(vadp, X86_VIDEO_REGISTER_COLOR_STATUS);
+    /* The retained VGA status implementation has no complete Attribute-output
+     * raster producer.  It must not fabricate diagnostic bits from read count. */
+    failed |= (first_status & 0x30u) != (second_status & 0x30u);
 
     ega_write_crtc(vadp, X86_VIDEO_REGISTER_MONO_CRTC_INDEX, 0x0eu, 0x12u);
     failed |= ega_read_crtc(vadp, X86_VIDEO_REGISTER_MONO_CRTC_INDEX, 0x0eu) !=

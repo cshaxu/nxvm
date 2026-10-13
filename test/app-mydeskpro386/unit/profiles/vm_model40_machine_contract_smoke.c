@@ -166,6 +166,16 @@ lib_i32 main(void)
     {
         /* Real selected CECG ports -> snapshot -> the sole Machine frame.
          * Start 12/end 0 means the last two rows of a 14-row cell. */
+        const lib_u8 geometry[][2] = {
+            {1u, 79u}, {7u, 0x12u}, {0x12u, 0x5du},
+            {0x13u, 40u}, {0x17u, 0xe3u}, {0x18u, 0xffu}
+        };
+
+        for (lib_size index = 0u; index < sizeof(geometry) / sizeof(geometry[0]); ++index)
+            if (core_machine_bus_write(session->core_machine, 0x03d4u,
+                    geometry[index][0]) != LIB_STATUS_OK ||
+                core_machine_bus_write(session->core_machine, 0x03d5u,
+                    geometry[index][1]) != LIB_STATUS_OK) goto done;
         if (core_machine_bus_write(session->core_machine, 0x03d4u, 0x09u) != LIB_STATUS_OK ||
             core_machine_bus_write(session->core_machine, 0x03d5u, 13u) != LIB_STATUS_OK ||
             core_machine_bus_write(session->core_machine, 0x03d4u, 0x0au) != LIB_STATUS_OK ||
@@ -179,9 +189,11 @@ lib_i32 main(void)
             vm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
             !session->latest_frame.window.valid || session->latest_frame.window.graphics ||
             !session->latest_frame.window.text.base.cursor_visible ||
-            session->latest_frame.window.text.base.font_height != 16u ||
-            session->latest_frame.window.text.base.cursor_top != 13u ||
-            session->latest_frame.window.text.base.cursor_bottom != 15u) goto done;
+            session->latest_frame.window.text.base.font_height != 14u ||
+            session->latest_frame.window.text.base.text_columns != 80u ||
+            session->latest_frame.window.text.base.text_rows != 25u ||
+            session->latest_frame.window.text.base.cursor_top != 12u ||
+            session->latest_frame.window.text.base.cursor_bottom != 13u) goto done;
     }
     failed = 0;
 done:

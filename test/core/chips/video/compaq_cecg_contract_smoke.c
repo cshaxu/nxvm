@@ -104,7 +104,7 @@ lib_i32 main(void)
         x86_video *cursor_video = LIB_NULL;
         const x86_video_ega_sequencer_config sequencer = {
             X86_VIDEO_EGA_APERTURE_BASE, X86_VIDEO_EGA_APERTURE_BYTES,
-            3u, 0u, 15u, 2u, LIB_TRUE };
+            3u, 1u, 15u, 2u, LIB_TRUE };
         const x86_video_ega_controller_config controllers = {
             .graphics = { [6] = 0x04u, [8] = 0xffu },
             .attribute = { [1] = 1u, [18] = 0x0fu } };
@@ -119,6 +119,15 @@ lib_i32 main(void)
             x86_video_configure_cecg(cursor_video, &normal) != LIB_STATUS_OK;
         video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x09u);
         video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 13u);
+        video_test_text_geometry(cursor_video, 80u, 25u, 14u);
+        video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0u);
+        video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 98u);
+        video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 6u);
+        video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x8eu);
+        video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 7u);
+        video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x1bu);
+        video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x15u);
+        video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 0x5eu);
         for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
             video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0au);
             video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, cases[index].start);
@@ -140,18 +149,27 @@ lib_i32 main(void)
                 {0x41u, LIB_TRUE}, {0x49u, LIB_TRUE},
                 {0x51u, LIB_FALSE}, {0x59u, LIB_TRUE},
                 {0x61u, LIB_TRUE}, {0x69u, LIB_FALSE},
-                {0x71u, LIB_FALSE}, {0x79u, LIB_FALSE}
+                {0x71u, LIB_FALSE}, {0x79u, LIB_FALSE},
+                {0xd1u, LIB_TRUE}, {0xe9u, LIB_TRUE}
             };
             lib_u8 byte;
 
-            backing.bytes[0] = 'A';
-            backing.bytes[1] = 0x1fu;
+            video_test_write(cursor_video, X86_VIDEO_REGISTER_SEQUENCER_INDEX, 4u);
+            video_test_write(cursor_video, X86_VIDEO_REGISTER_SEQUENCER_DATA, 7u);
+            video_test_write(cursor_video, X86_VIDEO_REGISTER_SEQUENCER_INDEX, 2u);
+            video_test_write(cursor_video, X86_VIDEO_REGISTER_SEQUENCER_DATA, 1u);
+            failed |= x86_video_memory_write(cursor_video, X86_VIDEO_MEMORY_PLANAR,
+                0xa0000u, &(lib_u8){'A'}, 1u) != LIB_STATUS_OK;
+            video_test_write(cursor_video, X86_VIDEO_REGISTER_SEQUENCER_DATA, 2u);
+            failed |= x86_video_memory_write(cursor_video, X86_VIDEO_MEMORY_PLANAR,
+                0xa0000u, &(lib_u8){0x1fu}, 1u) != LIB_STATUS_OK;
+            video_test_write(cursor_video, X86_VIDEO_REGISTER_SEQUENCER_DATA, 3u);
             video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0au);
             video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 11u);
             video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_INDEX, 0x0bu);
             video_test_write(cursor_video, X86_VIDEO_REGISTER_COLOR_CRTC_DATA, 13u);
             failed |= x86_video_memory_write(cursor_video, X86_VIDEO_MEMORY_PLANAR,
-                0xa0000u, &(lib_u8){0x5au}, 1u) != LIB_STATUS_OK;
+                0xa0100u, &(lib_u8){0x5au}, 1u) != LIB_STATUS_OK;
             for (lib_size index = 0u; index < sizeof(monitors) / sizeof(monitors[0]); ++index) {
                 video_test_write(cursor_video, X86_VIDEO_REGISTER_AUXILIARY_CONTROL, monitors[index].control);
                 failed |= x86_video_capture_snapshot_from(cursor_video, &reader, &snapshot) != LIB_STATUS_OK ||
@@ -160,7 +178,7 @@ lib_i32 main(void)
                     snapshot.palette_rgb[1] != (monitors[index].active ? 0x0000aau : 0u) ||
                     ((video_test_read(cursor_video, X86_VIDEO_REGISTER_COLOR_STATUS) & 1u) != 0u) !=
                         monitors[index].active ||
-                    x86_video_memory_read(cursor_video, X86_VIDEO_MEMORY_PLANAR, 0xa0000u,
+                    x86_video_memory_read(cursor_video, X86_VIDEO_MEMORY_PLANAR, 0xa0100u,
                         &byte, 1u) != LIB_STATUS_OK || byte != 0x5au;
                 failed |= x86_video_capture_snapshot_from(cursor_video, &reader, &snapshot) != LIB_STATUS_OK ||
                     snapshot.buffer_changed || snapshot.cursor_changed;

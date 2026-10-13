@@ -10,6 +10,9 @@ static lib_status vm_machine_frame_validate_source(const x86_video_snapshot *sou
 {
     switch (source->kind) {
     case X86_VIDEO_KIND_TEXT:
+        if (source->text_foreground_mask != 0u && source->text_foreground_mask != 7u &&
+            source->text_foreground_mask != 15u)
+            return LIB_STATUS_INVALID_ARGUMENT;
         if (source->columns == 0u || source->rows == 0u)
             return LIB_STATUS_INVALID_ARGUMENT;
         if (source->columns > X86_VIDEO_MAX_COLUMNS || source->rows > X86_VIDEO_MAX_ROWS ||
@@ -23,6 +26,7 @@ static lib_status vm_machine_frame_validate_source(const x86_video_snapshot *sou
     case X86_VIDEO_KIND_EGA_640X200X16:
     case X86_VIDEO_KIND_EGA_640X350X16:
     case X86_VIDEO_KIND_VGA_320X200X256:
+    case X86_VIDEO_KIND_TEXT_PIXELS:
         if (source->pixel_width == 0u || source->pixel_height == 0u)
             return LIB_STATUS_INVALID_ARGUMENT;
         if (source->pixel_width > KVM_WINDOW_GRAPHICS_MAX_WIDTH ||
@@ -117,7 +121,8 @@ lib_status vm_machine_frame_from_display(
         destination->window.text.base.cells[cell] = (kvm_text_cell){
             source->characters[cell],
             source->text_font_selection && (attribute & 0x08u) != 0u ? 1u : 0u,
-            attribute & 0x0fu, attribute >> 4u };
+            attribute & (source->text_foreground_mask != 0u ? source->text_foreground_mask : 15u),
+            attribute >> 4u };
     }
     for (cell = 0u; cell < 256u; ++cell) {
         lib_u16 character = cell < 32u ? cp437_controls[cell] :

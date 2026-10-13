@@ -54,6 +54,16 @@ T555 S6: [shared constant naming audit](evidence/t555-s6-shared-constant-naming-
 records the six-tree default/dimension/capacity review, corrected glyph names
 and report-only follow-up proposals. Coding rules remain the naming authority.
 
+T555 S7: [residual video reconciliation](evidence/t555-s7-video-residual-reconciliation.md)
+maps all seven transferred classes to current consumers, original-source
+facts, retained repaired paths, design estimates and remaining source/output
+contract review. Its initial green baseline is not post-repair qualification.
+
+T555 S7: [text raster boundary review](evidence/t555-s7-text-raster-boundary-review.md)
+records the existing eight-dot/full-cell transport limit and the proposed
+neutral optional Window text raster. It is pending owner review, not Shared
+implementation approval, an alternate target policy or video qualification.
+
 T553 S1: [four PC App ownership ledger](evidence/t553-s1-four-pc-app-ownership-ledger.md)
 records the complete four-App inventory, inward dependency proof, ownership
 dispositions and the one App-local receiving repair.

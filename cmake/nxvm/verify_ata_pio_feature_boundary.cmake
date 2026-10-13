@@ -50,7 +50,7 @@ foreach(required IN ITEMS "x86_hdc_resolve_sector"
 endforeach()
 
 foreach(required IN ITEMS "core_machine_pic_irq_source_assert" "core_machine_media_query"
-    "core_machine_media_read_bytes" "core_machine_media_write_bytes" "x86_hdc_create"
+    "core_machine_media_read_record" "core_machine_media_write_record" "x86_hdc_create"
     "x86_hdc_destroy" "x86_hdc_read" "x86_hdc_write")
     string(FIND "${hdc_adapter}" "${required}" position)
     if(position EQUAL -1)

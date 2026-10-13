@@ -39,7 +39,7 @@ if(word_guard EQUAL -1 OR low_guard EQUAL -1)
     message(FATAL_ERROR "CRTC word access is not predicate guarded")
 endif()
 
-string(FIND "${vadp_source}" "x86_video_crtc_index_readable(adapter,\n        adapter->data.crtc_index) ?" read_guard)
+string(FIND "${vadp_source}" "!x86_video_crtc_index_readable(adapter, adapter->data.crtc_index))" read_guard)
 string(FIND "${vadp_source}" "!x86_video_crtc_index_writable(adapter, adapter->data.crtc_index))" write_guard)
 if(read_guard EQUAL -1 OR write_guard EQUAL -1)
     message(FATAL_ERROR "port CRTC access is not predicate guarded")

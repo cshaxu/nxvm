@@ -1,13 +1,12 @@
 #include "core/machine/machine_interface.h"
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "core/board-base/vadp_interface.h"
 #include "../../../core/board-base/composition/bus_fixture.h"
 #include "core/machine/display.h"
 #include "core/machine/lifecycle.h"
-#include "core/machine/machine_interface.h"
 #include "../../../core/machine/support/nxvm_presentation_capture.h"
 #include "../../support/rom/session_assets.h"
 #include "core/machine/machine_private.h"
@@ -26,6 +25,29 @@ static lib_i32 vm_display_composition_capture(vm_machine *session,
         test_nxvm_machine_capture_presentation(session, frame) == LIB_STATUS_OK;
 }
 
+static void vm_display_composition_enable_text(vm_machine *session, lib_u8 rows)
+{
+    const lib_u16 scans = (lib_u16)rows * 8u - 1u;
+    const lib_u8 registers[][2] = {
+        {1u, 79u}, {7u, (lib_u8)(0x10u | (scans / 256u) * 2u)},
+        {9u, 7u}, {0x12u, (lib_u8)scans}, {0x13u, 40u},
+        {0x17u, 0xe3u}, {0x18u, 0xffu}
+    };
+
+    vm_display_composition_port_write(session, 0x03c2u, 3u);
+    vm_display_composition_port_write(session, 0x03d8u, 0x0du);
+    vm_display_composition_port_write(session, 0x03c4u, 4u);
+    vm_display_composition_port_write(session, 0x03c5u, 7u);
+    vm_display_composition_port_write(session, 0x03ceu, 5u);
+    vm_display_composition_port_write(session, 0x03cfu, 0u);
+    vm_display_composition_port_write(session, 0x03ceu, 6u);
+    vm_display_composition_port_write(session, 0x03cfu, 4u);
+    for (lib_size index = 0u; index < sizeof(registers) / sizeof(registers[0]); ++index) {
+        vm_display_composition_port_write(session, 0x03d4u, registers[index][0]);
+        vm_display_composition_port_write(session, 0x03d5u, registers[index][1]);
+    }
+}
+
 static lib_i32 vm_display_composition_enable_planar(vm_machine *session)
 {
     vm_display_composition_port_write(session, 0x03c4u, 4u);
@@ -36,7 +58,7 @@ static lib_i32 vm_display_composition_enable_planar(vm_machine *session)
     vm_display_composition_port_write(session, 0x03cfu, 0x00u);
     vm_display_composition_port_write(session, 0x03ceu, 6u);
     vm_display_composition_port_write(session, 0x03cfu, 0x05u);
-    vm_display_composition_port_write(session, 0x03c2u, 0x01u);
+    vm_display_composition_port_write(session, 0x03c2u, 0x03u);
     (void)test_core_machine_fixture_read_bus(session->core_machine, 0x03dau);
     vm_display_composition_port_write(session, 0x03c0u, 0x30u);
     vm_display_composition_port_write(session, 0x03c0u, 0x01u);
@@ -107,6 +129,7 @@ lib_i32 main(void)
         session == LIB_NULL) {
         return 1;
     }
+    vm_display_composition_enable_text(session, 25u);
     lib_memory_set(&frame, 0, sizeof(frame));
     failed |= !vm_display_composition_capture(session, &frame, X86_VIDEO_KIND_TEXT) ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
@@ -156,7 +179,7 @@ lib_i32 main(void)
         }
     }
 
-    /* Graphics-sized CRTC values do not make borrowed text memory owned. */
+    /* Planar text owns its frame bytes independently of processor RAM gating. */
     vm_display_composition_port_write(session, 0x03d4u, 1u);
     vm_display_composition_port_write(session, 0x03d5u, 79u);
     vm_display_composition_port_write(session, 0x03d4u, 7u);
@@ -165,7 +188,7 @@ lib_i32 main(void)
     vm_display_composition_port_write(session, 0x03d5u, 199u);
     failed |= core_machine_observe_display_snapshot(session->board, LIB_TRUE,
         0u, &observation) != LIB_STATUS_OK ||
-        observation.generation_reliable || !observation.capture_required;
+        !observation.generation_reliable || !observation.capture_required;
 
     /* Retained logical CGA compatibility uses borrowed memory, not EGA VRAM. */
     vm_display_composition_port_write(session, 0x03d8u, 0x0au);
@@ -278,11 +301,15 @@ lib_i32 main(void)
         &timeline) != LIB_STATUS_OK || timeline.now != 0u ||
         timeline.pending_events != 0u ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
-        frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
-        frame.rows != 25u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
+        frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 1u ||
+        frame.rows != 1u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
         frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xaaaaffu ||
         core_machine_capture_display_snapshot(session->board, &snapshot) !=
             LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT;
+    /* Reset discards programmed geometry; a fresh port program restores text. */
+    vm_display_composition_enable_text(session, 25u);
+    failed |= !vm_display_composition_capture(session, &frame, X86_VIDEO_KIND_TEXT) ||
+        frame.columns != 80u || frame.rows != 25u;
 
     failed |= !vm_display_composition_enable_planar(session) ||
         !vm_display_composition_capture(session, &frame,
@@ -292,6 +319,6 @@ lib_i32 main(void)
 
     vm_machine_destroy(session);
     if (failed) return 1;
-    printf("DISPLAY-COMPOSITION:OK\n");
+    lib_c_printf("DISPLAY-COMPOSITION:OK\n");
     return 0;
 }

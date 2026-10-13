@@ -15,15 +15,22 @@ foreach(unit IN ITEMS entry boot video equipment memory system floppy_post
         "${CMAKE_SOURCE_DIR}/src/app-nxvm/firmware/${unit}.asm")
 endforeach()
 set(nxvm_default_firmware_rom "${CMAKE_BINARY_DIR}/generated/default-pc-at.rom")
+set(nxvm_test_firmware_rom "${CMAKE_BINARY_DIR}/generated/default-pc-at-test.rom")
+set(nxvm_test_firmware_font "${CMAKE_BINARY_DIR}/generated/default-pc-at-test-font.rom")
+# Code-owned rows distinguish the two halves of the character generator.
+string(REPEAT "U" 2048 nxvm_test_font_top)
+string(REPEAT "3" 6144 nxvm_test_font_bottom)
+file(CONFIGURE OUTPUT "${nxvm_test_firmware_font}"
+    CONTENT "${nxvm_test_font_top}${nxvm_test_font_bottom}" @ONLY)
 set(nxvm_test_firmware_source "${CMAKE_BINARY_DIR}/generated/firmware-test.c")
 add_custom_command(OUTPUT "${nxvm_test_firmware_source}"
     COMMAND "${CMAKE_COMMAND}"
-        "-DINPUT_BIOS_0=${nxvm_default_firmware_rom}"
+        "-DINPUT_BIOS_0=${nxvm_test_firmware_rom}"
         -DINPUT_BIOS_1=LIB_NULL -DINPUT_VIDEO=LIB_NULL
         -DINPUT_CMOS=LIB_NULL -DINPUT_FONT=LIB_NULL
         "-DOUTPUT=${nxvm_test_firmware_source}"
         -P "${CMAKE_SOURCE_DIR}/src/core/product/embed_firmware.cmake"
-    DEPENDS "${nxvm_default_firmware_rom}" src/core/product/embed_firmware.cmake
+    DEPENDS "${nxvm_test_firmware_rom}" src/core/product/embed_firmware.cmake
     VERBATIM)
 add_executable(nxvm-firmware-floppy-smoke
     test/app-nxvm/unit/firmware/floppy_smoke.c "${nxvm_test_firmware_source}")
@@ -31,14 +38,20 @@ target_link_libraries(nxvm-firmware-floppy-smoke PRIVATE vm-profile-tests)
 add_executable(nxvm-firmware-text-cursor-smoke
     test/app-nxvm/unit/firmware/text_cursor_smoke.c "${nxvm_test_firmware_source}")
 target_link_libraries(nxvm-firmware-text-cursor-smoke PRIVATE vm-profile-tests)
+add_custom_command(OUTPUT "${nxvm_test_firmware_rom}"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_BINARY_DIR}/generated"
+    COMMAND nxvm-firmware-build "${CMAKE_SOURCE_DIR}/src/app-nxvm/firmware"
+        "${nxvm_test_firmware_rom}" "${nxvm_test_firmware_font}"
+    DEPENDS nxvm-firmware-build ${nxvm_default_firmware_sources} "${nxvm_test_firmware_font}"
+    COMMENT "Assembling project-owned default BIOS with unit font" VERBATIM)
+
+include(cmake/nxvm/NxvmProductProfile.cmake)
 add_custom_command(OUTPUT "${nxvm_default_firmware_rom}"
     COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_BINARY_DIR}/generated"
     COMMAND nxvm-firmware-build "${CMAKE_SOURCE_DIR}/src/app-nxvm/firmware"
-        "${nxvm_default_firmware_rom}"
-    DEPENDS nxvm-firmware-build ${nxvm_default_firmware_sources}
-    COMMENT "Assembling project-owned default BIOS" VERBATIM)
-
-include(cmake/nxvm/NxvmProductProfile.cmake)
+        "${nxvm_default_firmware_rom}" "${NXVM_PROFILE_FONT}"
+    DEPENDS nxvm-firmware-build ${nxvm_default_firmware_sources} "${NXVM_PROFILE_FONT}"
+    COMMENT "Assembling project-owned default BIOS with selected BYOB font" VERBATIM)
 
 set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 set(PROJECT_SHARED_CORPUS_TEST_TARGETS
