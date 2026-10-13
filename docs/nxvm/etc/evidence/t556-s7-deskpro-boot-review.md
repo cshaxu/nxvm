@@ -128,7 +128,7 @@ unit targets were rebuilt separately in the existing unified trees for the
 repository regression: 45/45 passed on each width (22.31 seconds x64,
 32.15 seconds x86); no MyNES release target was built.
 
-Documentation governance and `git diff --check` pass. Pending: pushed delivery
-and owner acceptance.
+Documentation governance and `git diff --check` pass. Implementation/artifact
+P1 `307cf1bd6` is pushed to origin/master. Owner acceptance is pending.
 Whole-task integration qualification belongs to S8. Manual desktop and
 physical-hardware verification have not been performed or claimed.

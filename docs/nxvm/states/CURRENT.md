@@ -41,9 +41,12 @@ This supersedes the earlier timeout observations below but is not S closure.
 Temporary App-specific diagnostics have been removed from the generic Core
 integration harness. Both direct diagnostics now also reach the same captured
 installer text without injected input after their old 90-second budget and
-missing checkpoint were aligned with the normal receiver. All eight PC
-artifacts have been rebuilt; final regression and pushed delivery remain
-required before S7 acceptance.
+missing checkpoint were aligned with the normal receiver. P1 `307cf1bd6`
+is pushed with all eight rebuilt PC artifacts. All 546 configured unit cases
+have passed per width, including isolated reruns of the recorded static-test
+timeouts; MyNES's separate 45-unit selection also passes per width without
+changing its release pair. S7 awaits owner acceptance; T556 remains open and
+S8 whole-task audit/integration qualification has not been claimed complete.
 
 P1 `68902e24e` completes the path/owner migration and publishes the rebuilt
 MyDeskPro386 x64/x86 pair. Both full configured build graphs, 28 DeskPro unit
