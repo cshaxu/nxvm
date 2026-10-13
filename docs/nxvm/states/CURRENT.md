@@ -2,33 +2,33 @@
 
 ## Current Work
 
-M5 T556 S2 is admitted for the MyNES Machine extraction. The owner requests
-MyNES `{core,machine,product}`, flat My5160 and My5170, flat NXVM except
-`firmware/`, then DeskPro `{chips,machine,product}`. S1's
+M5 T556 S3 is next for My5160 flattening. The owner requests MyNES
+`{core,machine,product}`, flat My5160 and My5170, flat NXVM except `firmware/`,
+then DeskPro `{chips,machine,product}`. S1's
 [inventory](../etc/evidence/t556-s1-app-layout-inventory.md) is the fixed
 migration map; the [proposal](../proposals/m5-app-component-layout.md)
-records S2--S7. S2 is the first production migration.
+records S2--S7. S2 is accepted; S3 is the next production migration.
 
-## Current Task — M5 T556 S2 MyNES Machine Extraction
+## Current Task — M5 T556 S3 My5160 Flattening
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: T556 S2 follows accepted S1 inventory. |
-| Admission And Approval | Owner's 2026-10-12 approval admits the five-App layout task and automatic S admission. S2 has target `MyNES`; NXVM Current remains the T packet owner. |
-| Objective | Establish `src/app-mynes/{core,machine,product}` by moving the Emulator Machine adapter out of Core, with one bounded Core service boundary that preserves behavior. |
-| Non-goals | No shared-six modification, product command redesign, snapshot format change, owner media/INI mutation, new executor/manager, raw Core-layout export or generic getter framework. |
-| Reference Baseline | S1 inventory `t556-s1-app-layout-inventory.md`; pushed S1 P1 `c84ae39d3`; current MyNES source/test/build trees. |
+| Identifier Mode | Continuation: T556 S3 follows accepted S1 inventory and S2 MyNES extraction. |
+| Admission And Approval | Owner's 2026-10-12 approval admits the five-App layout task and automatic S admission. S3 has target `My5160`; NXVM Current remains the T packet owner. |
+| Objective | Flatten My5160 source and matching unit ownership without changing the fixed XT binding, external firmware contract, or product behavior. |
+| Non-goals | No shared-six or Core modification, machine-model change, firmware/media/INI mutation, new runtime layer or compatibility paths. |
+| Reference Baseline | S1 inventory `t556-s1-app-layout-inventory.md`; pushed S1 P1 `c84ae39d3`; accepted S2 P1 `693030c2e`; current My5160 source/test/build trees. |
 | Candidate Proposal | [Five-App component layout](../proposals/m5-app-component-layout.md). |
-| Files And ABI Surface | `src/app-mynes/{core,machine,product}`, `test/app-mynes/unit/{core,machine,product}`, MyNES CMake/configuration and MyNES architecture/layout docs. Private Core operations may be replaced only by bounded services required by a present Machine caller. |
-| Applicable Rules | MyNES guide/architecture/layout; Contributing; shared Execution/Architecture/Coding/Document rules; S1 inventory; architecture/coding governance skills. |
-| Verification | Review every moved caller and Core service; run MyNES Core/Machine/Product units on x64/x86, MyNES integration regression, manifests/dependency/whitespace/documentation gates, then rebuild and PE-verify the current MyNES x64/x86 pair. |
-| Expected Markers | Core has no Emulator dependency; Machine contains the sole Emulator adapter; no caller accesses Core private layout; every former `unit/core` driver/media/debug assertion has one correct owner. |
-| Asset Needs | Existing MyNES owner ROM/media/snapshot inputs are read-only. Rebuild the current MyNES pair only after code qualification. |
-| Reporting Requirements | Before modification, report exact moved files, boundary calls and estimated diff. At delivery report source/test counts, retained paths, actual additions/deletions/net, x64/x86 results, pair hashes and unexecuted desktop validation. |
-| Stop Conditions | Required Shared/API change outside existing boundaries, incompatible snapshot/battery behavior, unavoidable raw Core layout dependency, protected-asset need or new runtime layer. |
-| Exit Criteria | Paths match `{core,machine,product}`; bounded services replace adapter private-layout access; required x64/x86 routes pass; manifests/artifacts are current; target-scoped P is pushed and reviewed. |
+| Files And ABI Surface | `src/app-my5160`, its tests/CMake/artifact pair and directly current layout docs. Only path/name ownership may change; public behavior remains stable. |
+| Applicable Rules | NXVM guide/architecture/layout; Contributing; shared Execution/Architecture/Coding/Document rules; S1 inventory; architecture/coding governance skills. |
+| Verification | Review every moved caller and registration; run My5160 x64/x86 unit and integration routes, gates/documentation checks, then rebuild and PE-verify its current x64/x86 pair. |
+| Expected Markers | No nested source owner remains in My5160; names reflect main/binding/plan/config/firmware roles; no duplicate target or stale path survives. |
+| Asset Needs | Existing XT external firmware/media/INI inputs are read-only. Rebuild the current My5160 pair only after code qualification. |
+| Reporting Requirements | Before modification, report exact moved files and estimated diff. At delivery report actual additions/deletions/net, x64/x86 results, pair hashes and unexecuted desktop validation. |
+| Stop Conditions | Required Shared/Core implementation change, firmware/media/INI format change, protected-asset need, new runtime layer or unexplained test loss. |
+| Exit Criteria | My5160 source/test/build paths are flat and unambiguous; x64/x86 routes pass; pair is current; target-scoped P is pushed and reviewed. |
 | Original Owner Request | Admit an App-layout T: extract MyNES Machine adapter, flatten My5160/My5170, split DeskPro Chips/Machine/Product, retain only NXVM firmware subcomponent; give feedback. |
-| Similar-Issue Sweep | Inspect all five Apps and their test/build/tool references for private-header access, stale owner names, nested ROM directories and duplicate target registration. |
+| Similar-Issue Sweep | Inspect the three remaining PC Apps for equivalent stale My5160 paths/names, but do not modify them in S3. |
 
 ## Previous Task
 

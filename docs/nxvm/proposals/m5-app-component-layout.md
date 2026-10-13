@@ -79,6 +79,17 @@ This is an initial ordered plan. Any necessary refinement must preserve the whol
 five-App scope and linear numeric S identifiers. Each implementation S reports its
 file map and estimated additions/deletions, then actual diff and verification.
 
+## Accepted S2 Record
+
+MyNES S2 is accepted in `693030c2e`. The adapter/media/debug files and their
+tests now live under `src/app-mynes/machine` and
+`test/app-mynes/unit/machine`; Core retains deterministic MMC3 behavior tests.
+Core exposes only the copied/direct operations actually consumed by Machine for
+audio, completed video samples, input buttons, battery persistence, debug and
+bounded ROM-image normalization. Machine no longer includes Core's private
+cartridge or machine layout. MyNES x64/x86 CTest passes 57/57 on each width,
+including 45 unit and 12 integration routes; the current 0044 pair was rebuilt.
+
 ## Completion And Stop Conditions
 
 Every current production/test file has a destination or justified retention;
