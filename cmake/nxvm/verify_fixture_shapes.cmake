@@ -190,8 +190,7 @@ endif()
 
 file(GLOB project_fixture_shapes_machine_sources
     RELATIVE "${PROJECT_FIXTURE_SHAPES_SOURCE_DIR}"
-    "${PROJECT_FIXTURE_SHAPES_SOURCE_DIR}/test/core/board-base/composition/*.c"
-    "${PROJECT_FIXTURE_SHAPES_SOURCE_DIR}/test/app-nxvm/unit/board/*.c")
+    "${PROJECT_FIXTURE_SHAPES_SOURCE_DIR}/test/core/board-base/composition/*.c")
 list(APPEND project_fixture_shapes_machine_sources
     "test/core/board-base/machine_competition_smoke.c"
     "test/core/board-base/machine_time_smoke.c"
