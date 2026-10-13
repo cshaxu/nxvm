@@ -8,7 +8,7 @@
 #include "core/machine/media/media_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
-#include "app-nxvm/profiles/profile_interface.h"
+#include "app-nxvm/machine_config_interface.h"
 #include "../../support/rom/session_assets.h"
 
 #define HDC_DATA_PORT 0x01f0u

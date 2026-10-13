@@ -5,7 +5,7 @@
  * Start:      01/25/2012
  */
 #include "core/product/startup_interface.h"
-#include "app-nxvm/product/binding_interface.h"
+#include "app-nxvm/product_binding_interface.h"
 
 #define APP_PRODUCT_NAME "Neko's x86 Virtual Machine"
 

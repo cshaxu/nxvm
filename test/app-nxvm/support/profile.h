@@ -1,7 +1,7 @@
 #ifndef TEST_APP_NXVM_PROFILE_H
 #define TEST_APP_NXVM_PROFILE_H
 
-#include "app-nxvm/profiles/construction_interface.h"
+#include "app-nxvm/machine_construction_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "../../core/machine/support/selection.h"

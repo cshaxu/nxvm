@@ -44,3 +44,11 @@ boot. The x64 artifact changed and was republished; the rebuilt x86 artifact
 is deterministic and unchanged. The prior My5160 P2 commit accidentally
 included S4's already-staged pure renames; this record preserves that factual
 history while the following S4 completion commit owns the remaining updates.
+
+NXVM S5 is complete. Its fixed default AT App is flat except for the retained
+project-authored `firmware/` component: direct App-root roles are `main`,
+`product_binding`, `machine_plan` and `machine_config`, with matching direct
+unit receivers and retained firmware test ownership. The x64/x86 full build,
+58 registered NXVM/integration routes per width, and Core/NXVM boundary gates
+pass. No Shared-six or Core source was changed. DeskPro386 is intentionally
+deferred to S6 as the final production migration.

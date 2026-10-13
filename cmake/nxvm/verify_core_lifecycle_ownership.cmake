@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(GLOB_RECURSE product_sources LIST_DIRECTORIES FALSE
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.c")
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c")
 
 set(forbidden_lifecycle_call
     "(core_machine_(cpu_state|cpu_execution|memory|port|pic|pit_bus|dma|kbc|vadp)_(create|initialize|reset|refresh|destroy|finalize)|x86_(pit|fpu)_(create|reset|destroy))[ \t\r\n]*\\(")

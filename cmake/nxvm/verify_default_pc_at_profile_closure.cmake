@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine_config.c"
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_rom.c"
     firmware_source)

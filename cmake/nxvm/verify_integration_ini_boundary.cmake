@@ -49,10 +49,8 @@ foreach(source IN LISTS integration_sources)
     endif()
 endforeach()
 file(GLOB_RECURSE unit_sources
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/product/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/product/*.h"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/profiles/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/*.h"
     "${PROJECT_SOURCE_DIR}/test/core/machine/*.c"
     "${PROJECT_SOURCE_DIR}/test/core/machine/*.h"
     "${PROJECT_SOURCE_DIR}/test/core/board-base/*.c"

@@ -1,4 +1,4 @@
-#include "app-nxvm/profiles/profile_interface.h"
+#include "app-nxvm/machine_config_interface.h"
 #include "lib/types/types_interface.h"
 
 lib_i32 main(void)

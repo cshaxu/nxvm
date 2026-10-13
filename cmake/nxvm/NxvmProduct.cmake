@@ -93,7 +93,7 @@ target_compile_definitions(mydeskpro386-d4-observable PUBLIC
     CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
 add_executable(vm-default-pc-at-profile-smoke
-    test/app-nxvm/unit/profiles/default_pc_at_profile_smoke.c)
+    test/app-nxvm/unit/machine_config_smoke.c)
 target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile-tests)
 add_executable(vm-pcat-topology-smoke
     test/app-nxvm/unit/machine/nxvm_pcat_topology_smoke.c)
@@ -212,11 +212,11 @@ add_executable(vm-hdc-hdd-boot-smoke
     test/core/board-base/support/controller_fixture.c)
 target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-default-pc-at-apply-smoke
-    test/app-nxvm/unit/profiles/nxvm_default_pc_at_apply_smoke.c)
+    test/app-nxvm/unit/machine_apply_smoke.c)
 target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-profile-tests)
 
 add_executable(vm-default-pc-at-rom-materialization-smoke
-    test/app-nxvm/unit/profiles/rom/default_pc_at_rom_materialization_smoke.c)
+    test/app-nxvm/unit/machine_rom_materialization_smoke.c)
 target_link_libraries(vm-default-pc-at-rom-materialization-smoke PRIVATE vm-profile-tests)
 add_executable(vm-timer-firmware-smoke
     test/app-nxvm/integration/dos/nxvm_timer_firmware_smoke.c)
@@ -239,7 +239,7 @@ if(WIN32)
     target_link_libraries(nxvm-deployed-boot-probe PRIVATE gdi32 user32)
 endif()
 add_executable(vm-ini-cmos-seed-smoke
-    test/app-nxvm/integration/product/nxvm_ini_cmos_seed_smoke.c
+    test/app-nxvm/integration/nxvm_ini_cmos_seed_smoke.c
     test/core/board-base/composition/composition_fixture.c)
 target_link_libraries(vm-ini-cmos-seed-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-app-session-smoke test/app-nxvm/unit/machine/nxvm_machine_smoke.c)
@@ -275,7 +275,7 @@ foreach(target IN ITEMS
     target_sources(${target} PRIVATE test/core/board-base/support/composition_fixture.c)
 endforeach()
 add_executable(nxvm-default-pc-at-plan-smoke
-    test/app-nxvm/unit/profiles/default_pc_at_plan_smoke.c)
+    test/app-nxvm/unit/machine_plan_smoke.c)
 target_link_libraries(nxvm-default-pc-at-plan-smoke PRIVATE vm-profile-tests)
 add_executable(my5170-plan-smoke
     test/app-my5170/unit/machine_plan_smoke.c)
@@ -692,7 +692,7 @@ target_link_libraries(mydeskpro386-d4 PUBLIC core-board-base core-board-at core-
 # Explicit multi-profile fixtures never feed a production x86.
 add_library(vm-profile-tests INTERFACE)
 target_link_libraries(vm-profile-tests INTERFACE
-    nxvm-profile
+    nxvm-machine
     my5160-machine
     my5170-machine
     mydeskpro386-profile
@@ -717,7 +717,7 @@ elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "at")
 elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40")
     add_library(vm-profile-selected ALIAS mydeskpro386-profile)
 else()
-    add_library(vm-profile-selected ALIAS nxvm-profile)
+    add_library(vm-profile-selected ALIAS nxvm-machine)
 endif()
 
 add_executable(vm-keyboard-host-ingress-smoke
@@ -1821,14 +1821,14 @@ add_test(NAME unit.nxvm-firmware-embedding
     COMMAND "${CMAKE_COMMAND}"
         "-DWORK=${CMAKE_BINARY_DIR}/test/nxvm-firmware-embedding"
         "-DEMBED_SCRIPT=${CMAKE_SOURCE_DIR}/src/core/product/embed_firmware.cmake"
-        -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/product/firmware_embedding.cmake")
+        -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/firmware/firmware_embedding.cmake")
 set_tests_properties(unit.nxvm-firmware-embedding PROPERTIES LABELS "unit;app-nxvm")
 add_test(NAME unit.nxvm-firmware-build
     COMMAND "${CMAKE_COMMAND}"
         "-DBUILDER=$<TARGET_FILE:nxvm-firmware-build>"
         "-DSOURCE=${CMAKE_SOURCE_DIR}/src/app-nxvm/firmware"
         "-DWORK=${CMAKE_BINARY_DIR}/test/nxvm-firmware-build"
-        -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/product/firmware_build.cmake")
+        -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/firmware/firmware_build.cmake")
 set_tests_properties(unit.nxvm-firmware-build PROPERTIES LABELS "unit;app-nxvm" TIMEOUT 30)
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.

@@ -3,8 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(GLOB_RECURSE vm_sources
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
 foreach(source IN LISTS vm_sources)
     file(READ "${source}" source_text)
     foreach(forbidden "firmware_portal" "qddisk" "int f4" "int f5")

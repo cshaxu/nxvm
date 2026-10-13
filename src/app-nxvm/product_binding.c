@@ -1,5 +1,5 @@
-#include "app-nxvm/product/binding_interface.h"
-#include "app-nxvm/profiles/construction_interface.h"
+#include "app-nxvm/product_binding_interface.h"
+#include "app-nxvm/machine_construction_interface.h"
 
 const vm_app_machine_binding vm_app_machine = {
     .name = "default-pc-at",

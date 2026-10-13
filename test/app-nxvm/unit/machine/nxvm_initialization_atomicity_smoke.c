@@ -7,7 +7,7 @@
 
 #include "core/machine/machine_private.h"
 #include "../../../core/board-base/support/composition_fixture.h"
-#include "app-nxvm/profiles/profile_interface.h"
+#include "app-nxvm/machine_config_interface.h"
 
 static lib_i32 verify_recovery(void);
 

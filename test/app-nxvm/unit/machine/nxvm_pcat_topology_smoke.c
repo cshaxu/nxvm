@@ -8,7 +8,7 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "app-nxvm/profiles/profile_interface.h"
+#include "app-nxvm/machine_config_interface.h"
 
 #include "../../support/rom/session_assets.h"
 

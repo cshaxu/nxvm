@@ -1,5 +1,5 @@
-#include "app-nxvm/profiles/construction_interface.h"
-#include "app-nxvm/profiles/profile_interface.h"
+#include "app-nxvm/machine_construction_interface.h"
+#include "app-nxvm/machine_config_interface.h"
 #include "core/machine/pc_at_preparation_interface.h"
 #include "core/machine/preparation_interface.h"
 

@@ -114,6 +114,24 @@ corpus pass, and all ten My5170 unit/integration routes pass, including the
 actual floppy installer boot. The x64 artifact is republished; the x86 rebuild
 is deterministic and byte-identical.
 
+## Accepted S5 Record
+
+NXVM S5 flattens the fixed default AT App while deliberately retaining its
+project-authored `firmware/` component. The App root now owns `main`,
+`product_binding`, `machine_plan`, `machine_config` and their direct
+interfaces; matching plan/config/apply/ROM-materialization receivers are direct
+children of `test/app-nxvm/unit`, while `unit/firmware` remains the firmware
+test owner. The composition library is now `nxvm-machine`. Product build
+discovery recognizes this root entry shape, and the two NXVM-specific boundary
+verifiers search the flat layout rather than retired component directories.
+
+The full current default graph builds on x64 and x86. The registered NXVM and
+integration selection passes 58/58 per width, including firmware, composition,
+DOS, Windows and media routes; Core manifest/corpus gates and direct NXVM
+layout-boundary checks also pass on both widths. No Shared-six or Core source
+was modified. S6 remains the final production migration: DeskPro386's
+`{chips,machine,product}` split.
+
 ## Completion And Stop Conditions
 
 Every current production/test file has a destination or justified retention;

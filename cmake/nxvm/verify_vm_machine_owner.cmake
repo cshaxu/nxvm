@@ -83,8 +83,8 @@ foreach(forbidden IN ITEMS "set_lifecycle_reporter" "set_display_reporter")
 endforeach()
 
 file(GLOB_RECURSE app_sources
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
@@ -92,7 +92,7 @@ file(GLOB_RECURSE app_sources
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/product/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/product/*.h")
 foreach(source IN LISTS app_sources)
-    file(RELATIVE_PATH relative "${PROJECT_SOURCE_DIR}/src/app-nxvm/product" "${source}")
+    file(RELATIVE_PATH relative "${PROJECT_SOURCE_DIR}/src/app-nxvm" "${source}")
     file(READ "${source}" source_text)
     if(source_text MATCHES "core_machine_(create|destroy|reset|run|request_stop|capture_display_snapshot)")
         message(FATAL_ERROR "direct Core runtime access outside core/machine: ${relative}")
@@ -102,8 +102,8 @@ endforeach()
 # A fixed product has one constructor supplied by its build. Cross-profile
 # fixture selection must not recreate a production plan registry or union.
 file(GLOB_RECURSE profile_plans
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.[ch]"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*/machine_plan.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine_plan.[ch]"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine_plan.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/machine_plan.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/machine_plan.c"
     "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/machine_plan.c")
@@ -113,11 +113,11 @@ foreach(source IN LISTS profile_plans)
         message(FATAL_ERROR "Fixed composition retains model dispatch/storage: ${source}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/machine_binding.c" factory_text)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product_binding.c" factory_text)
 set(binding_apps app-nxvm app-my5160 app-my5170 app-mydeskpro386)
 set(binding_constructors default xt 5170 model40)
 foreach(app constructor IN ZIP_LISTS binding_apps binding_constructors)
-    if(app STREQUAL "app-my5160" OR app STREQUAL "app-my5170")
+    if(app STREQUAL "app-nxvm" OR app STREQUAL "app-my5160" OR app STREQUAL "app-my5170")
         file(READ "${PROJECT_SOURCE_DIR}/src/${app}/product_binding.c" binding)
     else()
         file(READ "${PROJECT_SOURCE_DIR}/src/${app}/product/machine_binding.c" binding)
@@ -152,8 +152,8 @@ foreach(retired IN ITEMS machine_plan.h machine_plan_interface.h selection_inter
     endif()
 endforeach()
 file(GLOB_RECURSE app_profile_sources
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
@@ -169,7 +169,7 @@ foreach(source IN LISTS app_profile_sources)
         message(FATAL_ERROR "Retired shared App plan path remains: ${source}")
     endif()
 endforeach()
-if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/config.c" OR
+if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/config.c" OR
         EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_factory.c" OR
         EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_factory_interface.h" OR
         factory_text MATCHES "vm_machine_create|vm_machine_runtime_config|vm_app_read_(information|speed)")

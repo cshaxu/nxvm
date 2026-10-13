@@ -2,7 +2,7 @@
 #include "core/board-base/machine_board_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/profiles/profile_interface.h"
+#include "app-nxvm/machine_config_interface.h"
 
 lib_i32 main(void)
 {

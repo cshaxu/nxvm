@@ -6,7 +6,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/chips/video/video.c" vadp_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/memory.c" memory_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine_config.c"
     profile_definition)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/wiring.c" at_wiring)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_plan.c" machine_plan_source)

@@ -1,4 +1,4 @@
-#include "app-nxvm/profiles/profile_interface.h"
+#include "app-nxvm/machine_config_interface.h"
 
 static lib_i32 vm_profile_default_descriptor_validate(
     const vm_profile_default_pc_at_descriptor *descriptor);
