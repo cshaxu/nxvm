@@ -56,7 +56,7 @@ lib_i32 test_core_memory_registration_case(lib_u32 mode, void *owner,
     lib_uptr parity_before;
     lib_i32 filler = 0;
     lib_i32 failed = 0;
-    lib_status expected = mode == 2u ? LIB_STATUS_INVALID_ARGUMENT :
+    lib_status expected = mode == 2u || mode == 4u ? LIB_STATUS_INVALID_ARGUMENT :
         LIB_STATUS_NO_MEMORY;
 
     if (core_machine_memory_initialize_for(memory, 2u * 1024u * 1024u,
@@ -72,7 +72,7 @@ lib_i32 test_core_memory_registration_case(lib_u32 mode, void *owner,
     } else if (mode == 2u) {
         failed |= core_machine_memory_enable_parity(memory, 1024u,
             unused_fault, &filler) != LIB_STATUS_OK;
-    } else {
+    } else if (mode == 3u) {
         for (lib_size index = 0u; index <
                 CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY; ++index)
             failed |= core_machine_memory_register_write_observer(memory,

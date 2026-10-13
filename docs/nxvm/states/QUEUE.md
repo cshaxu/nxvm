@@ -16,7 +16,7 @@ S1--S8 reconcile the retained controller and board universe. `CURRENT.md` owns
 the current status.
 
 The [T547 SoftPC optimization and consolidation proposal](../history/M5-T547-softpc-four-test-optimization-import-proposal.md)
-is closed; its final product/qualification closure is recorded in `CURRENT.md`.
+is closed; its final product/qualification closure is retained in that history.
 
 The separately admitted [T545 eight-corpus refresh](../history/M5-T545-softpc-eight-corpus-refresh.md)
 is closed after full receiving verification. [T546 CPU repair](../history/M5-T546-cpu-audit-gap-repair.md)
@@ -26,9 +26,9 @@ quality audit and repair](../history/M5-T552-core-code-quality-audit-repair.md)
 is closed; its CPU timing boundary and Core/App qualification are recorded in
 the closure history.
 
-The [T553 four PC App code-quality audit](../proposals/m5-four-pc-app-code-quality-audit.md)
+The [T553 four PC App code-quality audit](../history/M5-T553-four-pc-app-code-quality-audit.md)
 is closed after its corrective full-route audit, repair and dual-width
-qualification; its closure record is in `CURRENT.md`.
+qualification; retained closure facts are historical, not another active packet.
 
 1. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
 2. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
@@ -37,7 +37,7 @@ qualification; its closure record is in `CURRENT.md`.
 completed CPU audit by owner direction. Its eighteen complete repair/proof
 receivers and linked family findings transfer to admitted T546,
 not to a claim of CPU correctness. Shared repairs follow the owner-approved
-automatic boundary in the [active repair proposal](../proposals/m5-cpu-audit-gap-repair.md);
+automatic boundary in the [retained repair proposal](../proposals/m5-cpu-audit-gap-repair.md);
 other Shared domains and explicit exceptions still require review.
 The [archived audit proposal](../history/M5-T544-retained-cpu-qualification-proposal.md)
 preserves original scope and the ledger preserves historical findings.
@@ -54,8 +54,9 @@ before that split. The shared AT mechanism covers 5170, default and DeskPro;
 model-specific definitions stay local. Current owns task acceptance; the split
 completed with one App per S; its prerequisite includes the accepted
 [AT composition correction](../history/M5-T542-at-composition-residual-proposal.md).
-Its accepted corrective S11 places board-common/XT/AT, Machine and Product
-under the separate ibmpc package consumed by that candidate.
+Its accepted corrective S11 then placed board-common/XT/AT, Machine and Product
+under a separate ibmpc package. That historical layout is not the current
+source map; current architecture places the PC-private mechanisms in Core.
 The later candidates retain their semantic qualification scope against the
 resulting owners; extraction alone does not qualify new hardware or timing.
 

@@ -7,8 +7,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" creation)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.h" core_state)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board_state.h" board_state)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/d4_platform.h" profile_state)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/d4_platform.c" profile)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_platform.h" profile_state)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_platform.c" profile)
 foreach(field "d4_refresh_hold_pending" "d4_refresh_address")
     string(FIND "${core}" "${field}" position)
     if(NOT position LESS 0)
@@ -45,11 +45,11 @@ foreach(required "core_machine_board_refresh_request(" "core_machine_board_refre
         message(FATAL_ERROR "Board refresh completion lacks ${required}")
     endif()
 endforeach()
-foreach(required "core_machine_d4_platform_refresh_request("
+foreach(required "mydeskpro386_d4_platform_refresh_request("
     "platform->d4_refresh_address = (lib_u8)(platform->d4_refresh_address + 1u);"
     "platform->d4_refresh_hold_pending = LIB_FALSE;"
-    ".refresh_request = core_machine_d4_platform_refresh_request"
-    ".refresh_complete = core_machine_d4_platform_refresh_complete")
+    ".refresh_request = mydeskpro386_d4_platform_refresh_request"
+    ".refresh_complete = mydeskpro386_d4_platform_refresh_complete")
     string(FIND "${profile}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Profile refresh completion/binding lacks ${required}")

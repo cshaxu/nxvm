@@ -56,6 +56,9 @@ add_test(NAME core.test-manifest COMMAND "${CMAKE_COMMAND}"
 add_test(NAME core.test-route-partition COMMAND "${CMAKE_COMMAND}"
     "-DTEST_DIRECTORY=${CMAKE_BINARY_DIR}"
     -P "${CMAKE_CURRENT_LIST_DIR}/verify_test_route_partition.cmake")
+add_test(NAME core.test-route-partition-negative COMMAND "${CMAKE_COMMAND}"
+    "-DWORK=${CMAKE_CURRENT_BINARY_DIR}/route-partition-probe"
+    -P "${CMAKE_CURRENT_LIST_DIR}/verify_test_route_partition_negative.cmake")
 add_test(NAME core.app-test-support-boundary COMMAND "${CMAKE_COMMAND}"
     "-DPROJECT_SOURCE_DIR=${CMAKE_CURRENT_LIST_DIR}/../.."
     -P "${CMAKE_CURRENT_LIST_DIR}/verify_app_test_support_boundary.cmake")
@@ -74,6 +77,7 @@ set_tests_properties(
     core.verifier-negative
     core.test-manifest
     core.test-route-partition
+    core.test-route-partition-negative
     core.app-test-support-boundary
     PROPERTIES LABELS "unit;core" TIMEOUT 30)
 if(POWERSHELL_EXECUTABLE)
@@ -84,4 +88,5 @@ add_custom_target(core-product-tests DEPENDS ${SHARED_CORE_TEST_TARGETS})
 set(SHARED_CORE_TEST_TARGETS)
 
 include("${CMAKE_CURRENT_LIST_DIR}/x86_tests.cmake")
+set(SHARED_CORE_TEST_TARGETS)
 include("${CMAKE_CURRENT_LIST_DIR}/board_tests.cmake")

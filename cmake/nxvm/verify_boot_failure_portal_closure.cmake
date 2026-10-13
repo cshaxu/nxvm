@@ -34,16 +34,16 @@ foreach(forbidden "default_pc_at.c" "rom/bios.c" "rom/qdcga.c")
     endif()
 endforeach()
 
-# Profiles map supplied immutable bytes; only the build may open ROM files.
-file(GLOB_RECURSE profile_sources
+# Flat runtime profiles map supplied bytes; firmware/ contains build-time tools.
+file(GLOB profile_sources
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/chips/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/chips/*.h"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-my5170/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h")
 list(APPEND profile_sources "${PROJECT_SOURCE_DIR}/src/core/board-base/rom_mapping.c"
     "${PROJECT_SOURCE_DIR}/src/core/board-base/pc_at_rom.c")
 foreach(path IN LISTS profile_sources)

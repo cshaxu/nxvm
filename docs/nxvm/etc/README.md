@@ -1,5 +1,9 @@
 # Supporting Documentation Index
 
+T556 S9: [quality repair delivery](evidence/t556-s9-quality-repair-delivery.md)
+records the flat DeskPro layout, A1--A5 repairs, exact dual-width qualification,
+actual diff and ten current artifacts; retain through owner acceptance/history.
+
 T556 S8: [comprehensive quality audit](evidence/t556-s8-quality-audit.md)
 records current governance, documentation, code/test ownership findings and
 their S9 repair receiver. It does not claim fresh full runtime qualification.

@@ -8,7 +8,8 @@ quality audit on 2026-10-13, with confirmed repairs assigned to S9; T556 remains
 S8 audit P1 `a28cac691` is accepted after coordinator inspection of its five
 documentation files and finding-to-receiver mapping. Static evidence is not
 presented as new runtime proof. S9 is admitted for A1--A5; A6 remains a
-separate shared-rule Td receiver. No S9 implementation has been delivered yet.
+separate shared-rule Td receiver. S9 implementation and qualification are now
+delivered for owner review; T556 is not closed by the agent.
 
 S7 repair and delivery are pushed as `307cf1bd6` and `2df276f8c`.
 The [S7 evidence](../etc/evidence/t556-s7-deskpro-boot-review.md) preserves
@@ -65,3 +66,21 @@ unit receivers and retained firmware test ownership. The x64/x86 full build,
 58 registered NXVM/integration routes per width, and Core/NXVM boundary gates
 pass. No Shared-six or Core source was changed. DeskPro386 is intentionally
 deferred to S6 as the final production migration.
+
+S6 is accepted with delivery `68902e24e` and the later NXVM test-layout
+correction. Its initial DeskPro directory split retained a boot qualification
+gap, explicitly transferred to S7 rather than counted as passed. Accepted S7
+`307cf1bd6`/`2df276f8c` repairs and proves unattended installer boot on both
+widths. S9 supersedes only the DeskPro directory shape with the owner's flat
+layout and repairs S8 findings; it must retain S7's no-auto-input boot result.
+
+S9 implementation is complete. Core registration now uses Core ownership and
+relative identities; DeskPro source/units are flat, with atomic D4 attachment
+validation; MyNES moved symbols follow Machine ownership. Current authorities
+are reconciled separately from the
+[retained status archive](M5-T556-retained-status.md), whose contents are retained
+with relative-link relocation. The [S9 report](../etc/evidence/t556-s9-quality-repair-delivery.md)
+records both-width full 592-unit passes, every admitted integration profile,
+ten release artifacts and actual-diff review. MyNES receiving commits are
+`7fcd7b1d9` and `c5ca06e85`; NXVM/Shared use distinct target-scoped commits.
+Owner acceptance, not these automatic results alone, closes T556.

@@ -62,7 +62,7 @@ verification and acceptance; the task history retains the cutover sequence.
   fixed-factory adaptation, shared `INFO`/`SPEED`/floppy extensions and NXVM
   identity. It is a private NXVM-family component, not an IBM PC or SoftPC
   dependency.
-- Each `app-*/product` consumes the shared PC identity/version and supplies its
+- Each flat PC App consumes the shared PC identity/version and supplies its
   fixed binding to the sole `x86/product`
   process entry, banner and cleanup body. Its fixed composition binding selects
   one Profile's frozen values/assets and preparation for Product's shared factory.
@@ -76,9 +76,9 @@ verification and acceptance; the task history retains the cutover sequence.
   after Core routes, providers and media cease borrowing it.
 - Each fixed App owns its board's actual composition: device construction,
   wiring, clocks, memory constraints, firmware slots, fixed relative asset names
-  and board-specific behavior. MyDeskPro386 separates D4 register/memory state
-  into `chips` from its fixed board wiring and composition in `machine`; the
-  other current fixed Apps are intentionally flat.
+  and board-specific behavior. All four PC Apps are flat. MyDeskPro386 keeps
+  register/memory state in `d4_memory.*`, electrical wiring in `d4_platform.*`
+  and fixed construction in adjacent responsibility-named files.
   It constructs and destroys the selected machine through neutral device
   contracts; it does not depend on Common or Machine-adapter internals.
 - `core/chips` owns the extracted CPU, FPU, PIC, PIT, DMA, RTC, KBC, PPI,

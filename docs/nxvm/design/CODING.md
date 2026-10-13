@@ -7,8 +7,8 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 
 The product/shared-corpus layout is current. My5160, My5170 and default NXVM
 are flat Apps; only default's `firmware` owns project-authored guest firmware
-source and its build tools. MyDeskPro386 uses its real `chips`, `machine` and
-`product` boundaries. `pc110` remains a future profile only when its separate
+source and its build tools. MyDeskPro386 is also flat, with cohesive D4,
+construction, firmware and product files. `pc110` remains a future profile only when its separate
 evidence task admits real source files.
 
 ```text
@@ -24,10 +24,8 @@ src/
                          machine plan/configuration/construction and firmware map
   app-my5170/           fixed IBM 5170 App: main, product binding,
                          machine plan/configuration/construction and firmware map
-  app-mydeskpro386/     fixed DeskPro 386 App
-    chips/              D4 register and memory-decoder state
-    machine/            D4 wiring, Model 40 plan/composition and ROM map
-    product/            thin main and fixed Model40 binding
+  app-mydeskpro386/     fixed DeskPro 386 App: D4 hardware/wiring, machine
+                         plan/configuration/construction, firmware map and entry
   app-nxvm/             fixed default AT App: main, product binding,
                          machine plan/configuration/construction and firmware map
     firmware/           project-owned BIOS source and offline ROM construction
@@ -52,9 +50,9 @@ contains the NXVM-family INI, Machine adapter and extensions used by the four
 NXVM Apps; it is not an IBM PC Product dependency. Shared process entry/banner
 formatting consumes App-provided identity, request loader and factory. The
 former `app-nxvm/devices` implementation is removed. Shared board mechanisms
-live in the flat `core/board-*` receivers. MyDeskPro386 keeps the isolated D4
-memory decoder in `app-mydeskpro386/chips` and its fixed board wiring and
-Model 40 composition in `app-mydeskpro386/machine`. Current records delivery
+live in the flat `core/board-*` receivers. MyDeskPro386 keeps D4 memory decoding
+in `d4_memory.*`, board signals in `d4_platform.*`, and fixed construction in
+the adjacent `machine_*` files. Current records delivery
 acceptance, not this layout.
 The
 former singular `core/profile` root is retired; do not restore a compatibility
@@ -104,7 +102,7 @@ preparation; it has no second runtime-media projection or factory body.
 
 ## Source Organization
 
-Repository-only shared tests remain `test/{lib,common,x86,ibmpc}`. The
+Repository-only shared tests remain `test/{lib,emulator,x86}`. The
 four-App NXVM-family Product component owns `test/core/product`; individual
 App-only tests live below their matching `test/app-*/` root.
 Shared board and family tests live in `test/core/board-base`,
@@ -119,7 +117,7 @@ The former helper-only `device` and `byob` roots are retired. Do not create
 empty future-profile directories. Retained
 NXVM composition/configuration tests live directly in `test/app-nxvm/unit/`;
 firmware tests remain in `test/app-nxvm/unit/firmware/`. All other NXVM unit tests are direct children of `test/app-nxvm/unit/`. DeskPro unit tests
-mirror `chips` and `machine`. CPU, chip, execution-Core and board-timing tests
+are flat under `test/app-mydeskpro386/unit`. CPU, chip, execution-Core and board-timing tests
 live under `test/core`, preserving all CPU models. The remaining `test/x86` package
 covers only portable Debug/Xasm32. Neutral Core tests build independently of
 NXVM board composition.
@@ -133,7 +131,7 @@ fixtures or removing duplicate machinery must not reduce behavior coverage.
 
 ## Shared PC Family
 
-The four fixed Apps consume the sole ibmpc Machine/Product implementation;
+The four fixed Apps consume the sole Core Machine/Product implementation;
 they do not supply libraries to one another. Portable Debug/Xasm32 tooling
 remains in x86; NXVM PC mechanisms live in Core, and immutable model choices
 and D4 remain in each App.
@@ -142,12 +140,12 @@ PC110 remains future work, not an empty source/test directory.
 Each App has its own source, profile assertions, integration registration and
 flat artifact root. PC-family docs/nxvm, tools/nxvm, version and MTSP stay
 unified. The external integration suite retains one family observer and INI
-fixture under test/app-nxvm/integration. These are test harnesses compiled
+fixture under test/core/setup. These are test harnesses compiled
 against the selected App binding, never production dependencies or
 repository-only unit inputs. Concrete XT/AT/DeskPro cases are registered in
 their own test/app-*/integration trees; default scenarios stay in NXVM's.
 This preserves the original predicates without copying a boot observer or
-moving external-asset scenarios into test/ibmpc's unit corpus.
+moving external-asset scenarios into a shared unit corpus.
 
 [T543](../history/M5-T543-four-pc-apps.md) records the ownership cutover;
 [T542](../history/M5-T542-shared-pc-machine-adapter.md) records the prerequisite

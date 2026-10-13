@@ -7,8 +7,8 @@
 
 #include "core/chips/rtc146818/rtc146818_interface.h"
 #include "core/machine/machine_interface.h"
-#include "app-mydeskpro386/machine/model40_private.h"
-#include "app-mydeskpro386/machine/construction_interface.h"
+#include "app-mydeskpro386/machine_config.h"
+#include "app-mydeskpro386/machine_plan_interface.h"
 
 static inline lib_status vm_model40_fixture_machine_create_from_assets(
     const vm_machine_config *config, const vm_machine_assets *assets,
@@ -21,7 +21,7 @@ static inline lib_status vm_model40_fixture_machine_create_from_assets(
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     *out_session = LIB_NULL;
-    status = vm_profile_machine_plan_create_model40(config, assets, &construction);
+    status = mydeskpro386_machine_plan_create(config, assets, &construction);
     if (status != LIB_STATUS_OK) return status;
     return vm_machine_create(config, &construction, out_session);
 }
@@ -54,8 +54,8 @@ static inline lib_status vm_model40_fixture_create_bytes_with_floppy_format(
     lib_u8 cmos_seed[VM_MACHINE_CMOS_SEED_BYTES];
 
     vm_machine_assets assets = { .bios = {
-        { even_bytes, VM_PROFILE_MODEL40_ROM_CHIP_BYTES },
-        { odd_bytes, VM_PROFILE_MODEL40_ROM_CHIP_BYTES }
+        { even_bytes, MYDESKPRO386_ROM_CHIP_BYTES },
+        { odd_bytes, MYDESKPRO386_ROM_CHIP_BYTES }
     } };
 
     /* Unit fixtures deliberately keep their bytes in process memory. */
@@ -76,8 +76,8 @@ static inline lib_status vm_model40_fixture_create_bytes(
 
 static inline lib_status vm_model40_fixture_create(vm_machine **out_session)
 {
-    lib_u8 even_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
-    lib_u8 odd_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    lib_u8 even_bytes[MYDESKPRO386_ROM_CHIP_BYTES] = {0};
+    lib_u8 odd_bytes[MYDESKPRO386_ROM_CHIP_BYTES];
 
     lib_memory_set(odd_bytes, 1, sizeof(odd_bytes));
     return vm_model40_fixture_create_bytes(even_bytes, odd_bytes, out_session);

@@ -164,9 +164,33 @@ qualification. There is no claim of a full-repository all-green S8 run.
 
 ## S9 Order And Exit
 
+### Owner Amendment After S8 Acceptance
+
+The owner subsequently requires DeskPro to be flat in S9. This supersedes
+A2's proposed separate Chips/Machine directory/interface treatment and its diff
+estimate, not the observed responsibility mixture or A3's failure-contract gap.
+All DeskPro production files belong directly in `src/app-mydeskpro386`, and
+matching units directly in `test/app-mydeskpro386/unit`. Keep coherent file-level
+responsibilities and one state/attachment owner; do not introduce public chip
+operations solely to preserve the superseded subcomponent design. Recalculate
+the exact file map and estimated diff before implementation. Integration,
+diagnostic and genuine support categories remain distinct.
+
+S9 implementation map: move 18 C/H sources to the DeskPro App root and 30
+unit sources/fixtures to its unit root. Keep D4 filenames; rename model40.c
+to machine_config.c, model40.h to firmware_layout.h, model40_private.h to
+machine_config.h, model40_rom.c to firmware_map.c, composition.c and its
+interface to machine_construction.*, construction_interface.h to
+machine_plan_interface.h, observation_interface.h to machine_observation_interface.h,
+and product machine_binding.c/binding_interface.h to product_binding.*.
+The expected mechanical delta is 600--900 replaced lines across callers,
+with 50--90 added and 5--15 removed lines for the D4 contract and regression.
+Actual rename-aware totals will supersede these estimates after qualification.
+
 1. Correct Core test registration and strengthen its existing ownership gate.
-2. Finish DeskPro D4 register/attachment separation and atomic validation,
-   preserving the existing Core dispatcher and direct boot route.
+2. Flatten DeskPro source/units, repair all direct references and preserve D4
+   register/attachment responsibilities and atomic validation within the flat
+   App, retaining the existing Core dispatcher and direct boot route.
 3. Finish bounded moved-owner naming/boolean cleanup, with separate MyNES P.
 4. Reconcile product authorities, packet/history and artifact identities.
 5. Run dual-width complete units and all admitted integrations, rebuild and

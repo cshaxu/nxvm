@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/chips/d4_memory.c" d4)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_memory.c" d4)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/memory_interface.c" core)
 
 file(GLOB_RECURSE generic_machine_sources
@@ -12,13 +12,13 @@ file(GLOB_RECURSE generic_machine_sources
     "${PROJECT_SOURCE_DIR}/src/core/machine/*.h")
 foreach(source_file IN LISTS generic_machine_sources)
     file(READ "${source_file}" source_text)
-    if(source_text MATCHES "model40_board|model40_fdc_terminal_observation|core_machine_d4_platform[ \t]*\\*")
+    if(source_text MATCHES "model40_board|model40_fdc_terminal_observation|mydeskpro386_d4_platform[ \t]*\\*")
         message(FATAL_ERROR "Generic Machine retains Model40-owned state: ${source_file}")
     endif()
 endforeach()
 
 foreach(required "core_machine_install_memory_device_routes(core, routes, 2u"
-    "core_machine_d4_memory_write_observer, &parity, memory"
+    "mydeskpro386_d4_memory_write_observer, &parity, memory"
     "memory->configured = LIB_TRUE"
     "core_machine_memory_register_replacement_device_provider(memory"
     "core_machine_memory_enable_parity(memory"
@@ -44,7 +44,7 @@ endforeach()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/parity.c" parity)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/d4_platform.c" d4_platform)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_platform.c" d4_platform)
 if(d4_platform MATCHES "machine_board_state.h|->board")
     message(FATAL_ERROR "D4 platform retains private emulator-board dependency")
 endif()
@@ -60,7 +60,7 @@ foreach(operation IN ITEMS
     "parity_memory_fault"
     "parity_port_read"
     "parity_port_write"
-    "core_machine_d4_platform_refresh_nmi"
+    "mydeskpro386_d4_platform_refresh_nmi"
     "core_machine_board_configure_xt_ppi_speaker"
     "core_machine_board_set_xt_ppi_speaker"
     "core_machine_board_after_pit_reset"
@@ -68,11 +68,11 @@ foreach(operation IN ITEMS
     "d4_port_read"
     "d4_port_write"
     "core_machine_configure_planar_parity"
-    "core_machine_d4_platform_attach"
+    "mydeskpro386_d4_platform_attach"
     "core_machine_report_planar_parity_fault"
-    "core_machine_d4_platform_clear_iochk"
-    "core_machine_d4_platform_report_iochk"
-    "core_machine_d4_platform_observe"
+    "mydeskpro386_d4_platform_clear_iochk"
+    "mydeskpro386_d4_platform_report_iochk"
+    "mydeskpro386_d4_platform_observe"
     "core_machine_get_speaker_observation"
     "core_machine_configure_absent_memory"
     "core_machine_get_planar_parity_observation")
@@ -91,7 +91,7 @@ foreach(operation IN ITEMS
     if(definition MATCHES "->board")
         message(FATAL_ERROR "Electrical operation retains Core board lookup: ${operation}")
     endif()
-    if(NOT operation MATCHES "^(core_machine_at_parity|parity_|d4_|core_machine_d4_platform_refresh_nmi)" AND
+    if(NOT operation MATCHES "^(core_machine_at_parity|parity_|d4_|mydeskpro386_d4_platform_refresh_nmi)" AND
         definition MATCHES "core_machine[ \\t]+\\*")
         message(FATAL_ERROR "Board electrical operation retains Core receiver: ${operation}")
     endif()

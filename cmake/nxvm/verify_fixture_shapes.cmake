@@ -32,7 +32,7 @@ set(project_fixture_shapes_retained_sources
     "test/core/board-base/core_machine_auxiliary_pit_smoke.c"
     "test/core/board-base/core_machine_compaq_hdc_machine_smoke.c"
     "test/core/board-base/core_machine_compaq_cecg_contract_smoke.c"
-    "test/app-mydeskpro386/unit/machine/core_machine_d4_platform_smoke.c"
+    "test/app-mydeskpro386/unit/mydeskpro386_d4_platform_smoke.c"
     "test/core/board-base/core_machine_cpu_timing_preview_smoke.c"
     "test/core/x86/core_machine_memory_inspection_smoke.c"
     "test/core/board-base/core_machine_display_authority_smoke.c"
@@ -78,7 +78,7 @@ set(project_fixture_shapes_retained_sources
     "test/core/board-base/machine_competition_smoke.c"
     "test/core/x86/machine_configuration_smoke.c"
     "test/core/board-base/machine_cpu_pic_lifecycle_smoke.c"
-    "test/app-mydeskpro386/unit/machine/machine_d4_refresh_hold_smoke.c"
+    "test/app-mydeskpro386/unit/machine_d4_refresh_hold_smoke.c"
     "test/core/x86/machine_entry_plan_smoke.c"
     "test/core/board-base/composition/machine_explicit_time_smoke.c"
     "test/core/x86/machine_immutable_rom_mapping_smoke.c"
@@ -141,7 +141,7 @@ set(project_fixture_shapes_constructor_sources ${project_fixture_shapes_inventor
     "test/core/x86/machine_fpu_interface_smoke.c"
     ${project_fixture_shapes_timing_manifest_sources}
     # Model40 owns the real refresh/preload latch; neutral Core keeps bus internals.
-    "test/app-mydeskpro386/unit/machine/d4_prefetch_locality_smoke.c"
+    "test/app-mydeskpro386/unit/d4_prefetch_locality_smoke.c"
     # S32 retains the ALU divide-vector frame at the public machine boundary.
     "test/core/board-base/composition/core_machine_legacy_alu_smoke.c"
     # These public CPU tests now execute guest table loads with the built-in
@@ -199,8 +199,8 @@ list(APPEND project_fixture_shapes_machine_sources
     "test/core/x86/machine_80286_timing_manifest_runner.c"
     "test/core/x86/machine_80386_timing_manifest_runner.c")
 list(APPEND project_fixture_shapes_machine_sources
-    "test/app-mydeskpro386/unit/machine/core_machine_d4_platform_smoke.c"
-    "test/app-mydeskpro386/unit/machine/machine_d4_refresh_hold_smoke.c")
+    "test/app-mydeskpro386/unit/mydeskpro386_d4_platform_smoke.c"
+    "test/app-mydeskpro386/unit/machine_d4_refresh_hold_smoke.c")
 list(APPEND project_fixture_shapes_machine_sources
     "test/core/board-base/composition/machine_reset_rom_alias_smoke.c"
     "test/core/board-base/composition/port_assembly_fixture.c"
@@ -210,7 +210,7 @@ list(APPEND project_fixture_shapes_machine_sources
     "test/core/x86/machine_fpu_interface_smoke.c"
     "test/core/board-base/composition/machine_instruction_timing_ledger_smoke.c"
     "test/core/x86/machine_prefetch_locality_smoke.c"
-    "test/app-mydeskpro386/unit/machine/d4_prefetch_locality_smoke.c"
+    "test/app-mydeskpro386/unit/d4_prefetch_locality_smoke.c"
     "test/core/x86/machine_80286_instruction_timing_ledger_smoke.c"
     "test/core/x86/machine_task_switch_cross_width_smoke.c"
     "test/core/x86/machine_call_gate_smoke.c"

@@ -102,11 +102,11 @@ binary payloads. Repository templates use portable references, never tracked
 machine-local absolute paths. Embedded ROMs supply immutable bytes through the
 single Core ROM mapping path.
 
-For XT, `src/app-my5160/profiles` owns board C and ROM slot/mapping declarations.
-The IBM AT owner is `src/app-my5170/profiles`; common PC/AT ROM
-mapping lives once in ibmpc/board-common/pc_at_rom. DeskPro declarations now
-belong to `src/app-mydeskpro386/profiles`; default remains in
-`src/app-nxvm/profiles`. Current alone records delivery
+For XT, `src/app-my5160` owns board C and ROM slot/mapping declarations.
+The IBM AT owner is `src/app-my5170`; common PC/AT ROM
+mapping lives once in core/board-base/pc_at_rom. DeskPro declarations
+belong to `src/app-mydeskpro386`; default belongs to
+`src/app-nxvm`. Current alone records delivery
 acceptance; a working source relocation does not certify runnable artifacts.
 PC110 remains a future machine, not an implemented asset set.
 Owner-authorized, project-authored BIOS source

@@ -5,9 +5,10 @@ receivers. The [former debt disposition](../etc/history/retired-machine-plans/RE
 preserves every old entry and its retirement/transfer, not an assertion of repair.
 
 - [ ] **Shared package vocabulary (`TODO(Low)`).** Shared rules still enumerate
-  the historical six corpora. Owner-approved T542 S11 separates src/ibmpc and
-  test/ibmpc, with NXVM as the sole current receiver. Admit a separate Td to
-  reconcile this scope vocabulary; S11 does not modify docs/rules or Lib/Common.
+  historical `lib/common/x86` paths. Current shared roots are the source/test
+  pairs for Lib, Emulator and x86; NXVM-only machine/board mechanisms live in
+  Core. T556 S8 finding A6 requires a separate Td to reconcile shared-rule
+  vocabulary; S9 does not modify docs/rules or the public six.
 
 ## CPU, Time, And Debugging Debt
 

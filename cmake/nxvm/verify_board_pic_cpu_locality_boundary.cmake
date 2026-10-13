@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/cpu_bus.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/d4_platform.c" wiring)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/d4_platform.c" wiring)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" creation)
 foreach(forbidden "machine->shared_pic_master" "machine->shared_pic_slave"
     "machine->board->shared_pic_master" "machine->board->shared_pic_slave"

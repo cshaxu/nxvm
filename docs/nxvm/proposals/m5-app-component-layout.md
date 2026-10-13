@@ -15,7 +15,7 @@ separate Shared commits. Shared six source/test trees are outside this task.
 src/app-mynes/{core,machine,product}
 src/app-my5160/                 flat
 src/app-my5170/                 flat
-src/app-mydeskpro386/{chips,machine,product}
+src/app-mydeskpro386/           flat (S9 owner-approved revision)
 src/app-nxvm/                   flat, except firmware/
 ```
 
@@ -26,9 +26,9 @@ debug protocol dispatch. Product owns configuration, commands and composition.
 Dependency direction is Product -> Machine -> Core; Machine also consumes public
 Emulator/Lib contracts. Core must not depend on Machine or Emulator.
 
-The present `core/driver.c`, `core/media.c` and `core/debug.c` are the principal
+At admission, `core/driver.c`, `core/media.c` and `core/debug.c` were the principal
 Machine candidates. Their direct access to `core/machine.h`, PPU, APU and cartridge
-state requires a real boundary repair. Inventory every access and reuse existing
+state required a real boundary repair, delivered in S2. Inventory every access and reuse existing
 Core operations; add only consumer-required bounded operations or copied values.
 Do not expose mutable Core layout, add a generic getter layer, or move deterministic
 snapshot serialization out of Core merely because Machine transports its bytes.
@@ -40,20 +40,22 @@ with corresponding headers where used. Final names follow actual contents;
 remove generic or redundant names without introducing compatibility headers.
 Default's project-authored firmware and build source stay in `firmware/`.
 
-DeskPro Chips owns model-specific register/state logic, including D4 memory and
-control mechanisms. Machine owns port/memory registration, PIT/KBC/refresh/HOLD
-wiring, construction/reset/teardown, the fixed plan and immutable firmware mapping.
-Product retains the thin process entry and family Product binding. Existing
-`d4_platform.c` and `d4_memory.c` mix these roles and must be divided by behavior,
-not moved wholesale into Chips. Chips must not depend on Machine/board composition;
-Machine integrates Chips with the existing Core public board contracts. Generic
-CPU/PIT/video implementations remain in Core, with no App-local copies.
+The owner's S9 amendment supersedes the S6 DeskPro directory split: put all
+DeskPro production C/H files directly under `src/app-mydeskpro386`, without
+`chips`, `machine` or `product` subdirectories. Use responsibility-based filenames
+for D4 register/decoder logic, Core attachment and wiring, fixed plan/configuration,
+firmware mapping, product binding and entry. Preserve clear ownership within this
+flat App; do not manufacture standalone chip APIs merely to preserve the retired
+directory boundary. Core routes still have one attachment/rollback owner, and D4
+registers one state owner. Generic CPU/PIT/video implementations stay in Core.
 
 ## Test, Build And Naming Contract
 
 Keep unit/integration/diagnostic/support route categories. Within unit tests,
-mirror real source owners: MyNES `{core,machine,product}`, DeskPro
-`{chips,machine,product}`, flat My5160/My5170 and default with `firmware/` retained.
+mirror real source owners: MyNES `{core,machine,product}`, flat DeskPro,
+flat My5160/My5170 and default with `firmware/` retained. DeskPro unit sources
+move directly under `test/app-mydeskpro386/unit`; retain integration, diagnostic
+and genuine support categories, not obsolete component nesting.
 Move assertions according to behavior, including driver tests currently under
 MyNES Core. Preserve independent assertions and fixture ownership.
 
@@ -75,7 +77,7 @@ Keep original Ninja/ccache trees and compile shared dependencies once per width.
 | S6 | DeskPro Chips/Machine/Product split | Register logic and board integration have separate owners; no reverse dependency; D4/KBC/PIT/HOLD/ROM tests preserved; dual-width qualification and pair updated. |
 | S7 | DeskPro386 normal-boot qualification | Compare the pre-layout Model 40 boot route with current behavior, repair the proven Core boot-path defect, and prove an unattended x64/x86 boot reaches the installer checkpoint. Do not alter firmware, media, INI inputs or production input policy. |
 | S8 | Comprehensive quality audit | Inspect governance, current documentation, five Apps/Core code and test/build ownership; reconcile actual proof and report confirmed defects with bounded S9 repairs. No implementation changes in the audit. |
-| S9 | Audit-driven repairs and final qualification | Fix confirmed S8 findings at their owners; synchronize current authorities and verification; run complete repository suites per width, verify ten current EXEs, push target-separated commits and leave a clean worktree. Shared-six and shared-rule changes require their separate admission. |
+| S9 | Audit-driven repairs, DeskPro flattening and final qualification | Flatten DeskPro source and matching units, repair includes/names/build/gates and current docs; fix confirmed S8 findings under this revised ownership; run complete repository suites per width, verify ten current EXEs, push target-separated commits and leave a clean worktree. Shared-six and shared-rule changes require their separate admission. |
 
 This is an initial ordered plan. Any necessary refinement must preserve the whole
 five-App scope and linear numeric S identifiers. Each implementation S reports its
@@ -131,8 +133,17 @@ The full current default graph builds on x64 and x86. The registered NXVM and
 integration selection passes 58/58 per width, including firmware, composition,
 DOS, Windows and media routes; Core manifest/corpus gates and direct NXVM
 layout-boundary checks also pass on both widths. No Shared-six or Core source
-was modified. S6 remains the final production migration: DeskPro386's
-`{chips,machine,product}` split.
+was modified. S6 subsequently delivered DeskPro386's original
+`{chips,machine,product}` split. The S9 owner amendment now replaces that layout
+with the flat App while preserving its accepted behavior.
+
+## S9 Delivery
+
+The [delivery report](../etc/evidence/t556-s9-quality-repair-delivery.md) records
+the owner-amended flat DeskPro layout, A1--A5 repairs, MyNES receiving commits,
+dual-width 592-unit and complete admitted integration results, actual diff and
+ten release artifacts. Public six remain unchanged. A6 retains its standalone
+Td receiver. T556 remains open for owner review.
 
 ## Completion And Stop Conditions
 
@@ -145,4 +156,5 @@ rules, preserving owner inputs. Review actual changes before closing each S/T.
 
 Stop for a required shared-six implementation change, guest behavior change,
 incompatible persisted format, new runtime manager or unexplained loss of tests.
-S1 is design/inventory only; this admission does not claim a completed migration.
+S1 was design/inventory only; the accepted records and S9 delivery evidence,
+not admission alone, establish migration and qualification progress.

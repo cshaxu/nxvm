@@ -1,0 +1,9 @@
+#ifndef MYDESKPRO386_FIRMWARE_LAYOUT_H
+#define MYDESKPRO386_FIRMWARE_LAYOUT_H
+#include "lib/types/types_interface.h"
+
+
+#define MYDESKPRO386_ROM_CHIP_BYTES (16u * 1024u)
+#define MYDESKPRO386_VIDEO_ROM_BYTES (16u * 1024u)
+
+#endif

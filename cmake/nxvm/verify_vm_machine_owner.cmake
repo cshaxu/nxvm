@@ -89,8 +89,8 @@ file(GLOB_RECURSE app_sources
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/*.h"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/product/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/product/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h")
 foreach(source IN LISTS app_sources)
     file(RELATIVE_PATH relative "${PROJECT_SOURCE_DIR}/src/app-nxvm" "${source}")
     file(READ "${source}" source_text)
@@ -106,7 +106,7 @@ file(GLOB_RECURSE profile_plans
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine_plan.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/machine_plan.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/machine_plan.c"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/machine_plan.c")
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine_plan.c")
 foreach(source IN LISTS profile_plans)
     file(READ "${source}" plan_text)
     if(plan_text MATCHES "union[ \t\r\n]*\\{|VM_PROFILE_MACHINE_PLAN_(DEFAULT|IBM|XT|MODEL40)|config->profile_kind")
@@ -115,14 +115,12 @@ foreach(source IN LISTS profile_plans)
 endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product_binding.c" factory_text)
 set(binding_apps app-nxvm app-my5160 app-my5170 app-mydeskpro386)
-set(binding_constructors default xt 5170 model40)
+set(binding_constructors vm_profile_machine_plan_create_default
+    vm_profile_machine_plan_create_xt vm_profile_machine_plan_create_5170
+    mydeskpro386_machine_plan_create)
 foreach(app constructor IN ZIP_LISTS binding_apps binding_constructors)
-    if(app STREQUAL "app-nxvm" OR app STREQUAL "app-my5160" OR app STREQUAL "app-my5170")
-        file(READ "${PROJECT_SOURCE_DIR}/src/${app}/product_binding.c" binding)
-    else()
-        file(READ "${PROJECT_SOURCE_DIR}/src/${app}/product/machine_binding.c" binding)
-    endif()
-    if(NOT binding MATCHES "\\.prepare = vm_profile_machine_plan_create_${constructor}([ \t\r\n]|$)" OR
+    file(READ "${PROJECT_SOURCE_DIR}/src/${app}/product_binding.c" binding)
+    if(NOT binding MATCHES "\\.prepare = ${constructor}([ \t\r\n]|$)" OR
             binding MATCHES "config->profile_kind|vm_profile_machine_plan_create\\(")
         message(FATAL_ERROR "${app} does not bind its fixed ${constructor} constructor")
     endif()
@@ -132,10 +130,8 @@ foreach(app constructor IN ZIP_LISTS binding_apps binding_constructors)
     endif()
 endforeach()
 file(GLOB_RECURSE model40_sources
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/chips/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/chips/*.h"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h")
 foreach(source IN LISTS model40_sources)
     file(READ "${source}" model40_text)
     if(model40_text MATCHES "app-nxvm/profiles/|vm_profile_ibm_5170_(values|plan)_create")
@@ -160,13 +156,11 @@ file(GLOB_RECURSE app_profile_sources
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/*.h"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/chips/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/chips/*.h"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/*.h")
 foreach(source IN LISTS app_profile_sources)
     file(READ "${source}" source_text)
-    if(source_text MATCHES "vm_profile_model40_rom_materialize|image\\[index \\* 2u\\]|even_bytes\\[logical >> 1u\\]")
+    if(source_text MATCHES "mydeskpro386_rom_materialize|image\\[index \\* 2u\\]|even_bytes\\[logical >> 1u\\]")
         message(FATAL_ERROR "App retains duplicate ROM byte interleave: ${source}")
     endif()
     if(source_text MATCHES "vm_profile_machine_plan_(validate|publish|destroy|describe|core_config_get|timing_rules_get|topology_get|firmware_provider_get|firmware_context_get|materialize\\(|hdc_present|external_firmware)|vm_profile_name\\(")

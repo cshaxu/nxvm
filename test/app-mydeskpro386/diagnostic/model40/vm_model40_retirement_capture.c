@@ -565,7 +565,7 @@ static lib_u8 model40_capture_c0a_reached(
 
 static lib_u8 model40_capture_has_fdc_read_data(
     const model40_retirement_capture *capture,
-    const vm_profile_model40_observation *profile)
+    const mydeskpro386_observation *profile)
 {
     const core_machine_fdc_terminal_observation *observation;
 
@@ -1174,7 +1174,7 @@ static lib_i32 model40_capture_synthetic_c0a_smoke(void)
 static lib_i32 model40_capture_synthetic_fdc_read_data_smoke(void)
 {
     model40_retirement_capture capture = { 0 };
-    vm_profile_model40_observation profile = {0};
+    mydeskpro386_observation profile = {0};
 
     capture.checkpoint_reached = LIB_TRUE;
     capture.post_c0_io_seen = LIB_TRUE;
@@ -1420,7 +1420,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             }
         }
         if (fdc_read_data_diagnostic) {
-            const vm_profile_model40_observation profile = vm_test_model40_observation(session);
+            const mydeskpro386_observation profile = vm_test_model40_observation(session);
             if (!capture.fdc_read_data_baseline_valid && model40_capture_c0a_reached(&capture)) {
                 capture.fdc_read_data_baseline_valid = LIB_TRUE;
                 if (profile.fdc_terminal_valid) {

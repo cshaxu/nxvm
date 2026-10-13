@@ -1883,7 +1883,7 @@ int main(lib_i32 argc, char **argv)
                     (unsigned int)fault_cpu.cs.base, (unsigned int)fault_cpu.eip,
                     (unsigned int)fault_cpu.gdtr.base, (unsigned int)fault_cpu.gdtr.limit);
             }
-            core_machine_d4_platform_observation d4 = {0};
+            mydeskpro386_d4_platform_observation d4 = {0};
             (void)model40_profile_d4_observe(session, &d4);
             printf("BOOT-PROBE=d4-control=%02X-ram-setup=%04X\n",
                 (unsigned int)d4.memory_control,
@@ -2643,7 +2643,7 @@ done:
             (unsigned long long)trace.model40_video_clear_entries,
             (unsigned long long)trace.model40_video_delay_entries,
             (unsigned int)trace.model40_video_delay_predecessor);
-        core_machine_d4_platform_observation d4 = {0};
+        mydeskpro386_d4_platform_observation d4 = {0};
         (void)model40_profile_d4_observe(session, &d4);
         printf("BOOT-PROBE=model40-d4-control=%02X-ram-setup=%04X\n",
             (unsigned int)d4.memory_control,
