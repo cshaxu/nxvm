@@ -3,9 +3,9 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 
-#include "../../../core/board-base/composition/composition_fixture.h"
-#include "../../../core/board-base/support/composition_fixture.h"
-#include "../../../core/board-base/support/controller_fixture.h"
+#include "../../core/board-base/composition/composition_fixture.h"
+#include "../../core/board-base/support/composition_fixture.h"
+#include "../../core/board-base/support/controller_fixture.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_private.h"
 #include "app-my5160/machine_config.h"
