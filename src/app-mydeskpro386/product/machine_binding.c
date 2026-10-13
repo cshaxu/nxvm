@@ -1,5 +1,5 @@
 #include "app-mydeskpro386/product/binding_interface.h"
-#include "app-mydeskpro386/profiles/construction_interface.h"
+#include "app-mydeskpro386/machine/construction_interface.h"
 
 const vm_app_machine_binding vm_app_machine = {
     .name = "compaq-deskpro-386-model-40",

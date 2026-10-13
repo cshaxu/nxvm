@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "app-mydeskpro386/profiles/d4_memory.h"
+#include "app-mydeskpro386/chips/d4_memory.h"
 #include "../../../core/board-base/composition/composition_fixture.h"
 #include "../../../core/support/memory_registration_fixture.h"
 

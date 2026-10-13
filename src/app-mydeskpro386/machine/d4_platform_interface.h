@@ -5,7 +5,7 @@
 #include "core/chips/pit825x/pit825x_interface.h"
 #include "core/board-at/kbc_interface.h"
 #include "core/board-base/board_profile_interface.h"
-#include "app-mydeskpro386/profiles/d4_memory_interface.h"
+#include "app-mydeskpro386/chips/d4_memory_interface.h"
 
 typedef struct core_machine_d4_platform core_machine_d4_platform;
 typedef struct core_machine_board_state core_machine_board_state;

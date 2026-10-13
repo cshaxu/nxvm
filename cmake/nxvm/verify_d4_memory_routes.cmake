@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/d4_memory.c" d4)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/chips/d4_memory.c" d4)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/memory_interface.c" core)
 
 file(GLOB_RECURSE generic_machine_sources
@@ -44,7 +44,7 @@ endforeach()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/machine_board.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-at/parity.c" parity)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/d4_platform.c" d4_platform)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/d4_platform.c" d4_platform)
 if(d4_platform MATCHES "machine_board_state.h|->board")
     message(FATAL_ERROR "D4 platform retains private emulator-board dependency")
 endif()

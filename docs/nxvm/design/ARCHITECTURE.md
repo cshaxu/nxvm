@@ -74,9 +74,11 @@ verification and acceptance; the task history retains the cutover sequence.
   App prepares copied construction values and transfers its genuine Profile
   context. The adapter owns publication/rollback and releases the context only
   after Core routes, providers and media cease borrowing it.
-- Each `app-*/profiles` owns its board's actual composition: device construction,
+- Each fixed App owns its board's actual composition: device construction,
   wiring, clocks, memory constraints, firmware slots, fixed relative asset names
-  and board-specific behavior.
+  and board-specific behavior. MyDeskPro386 separates D4 register/memory state
+  into `chips` from its fixed board wiring and composition in `machine`; the
+  other current fixed Apps are intentionally flat.
   It constructs and destroys the selected machine through neutral device
   contracts; it does not depend on Common or Machine-adapter internals.
 - `core/chips` owns the extracted CPU, FPU, PIC, PIT, DMA, RTC, KBC, PPI,

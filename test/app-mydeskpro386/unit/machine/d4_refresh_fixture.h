@@ -1,6 +1,6 @@
 #ifndef TEST_MODEL40_D4_REFRESH_FIXTURE_H
 #define TEST_MODEL40_D4_REFRESH_FIXTURE_H
-#include "app-mydeskpro386/profiles/d4_platform_interface.h"
+#include "app-mydeskpro386/machine/d4_platform_interface.h"
 
 lib_bool test_model40_refresh_hold_matches(const core_machine_d4_platform *platform,
     lib_bool pending, lib_u8 address);

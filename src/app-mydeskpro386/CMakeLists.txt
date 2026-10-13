@@ -1,19 +1,24 @@
-# MyDeskPro386 owns its fixed composition and genuine D4 implementation.
-set(MYDESKPRO386_D4_SOURCES
-    src/app-mydeskpro386/profiles/d4_memory.c
-    src/app-mydeskpro386/profiles/d4_platform.c)
-set(MYDESKPRO386_COMPOSITION_SOURCES
-    src/app-mydeskpro386/profiles/machine_plan.c
-    src/app-mydeskpro386/profiles/model40.c
-    src/app-mydeskpro386/profiles/composition.c
-    src/app-mydeskpro386/profiles/rom/model40_rom.c)
-add_library(mydeskpro386-profile STATIC
-    ${MYDESKPRO386_D4_SOURCES}
-    ${MYDESKPRO386_COMPOSITION_SOURCES})
-target_include_directories(mydeskpro386-profile PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(mydeskpro386-profile PUBLIC core-machine core-board-base core-x86)
+# MyDeskPro386 owns one D4 chip and one fixed board composition.
+set(MYDESKPRO386_CHIP_SOURCES
+    src/app-mydeskpro386/chips/d4_memory.c)
+set(MYDESKPRO386_MACHINE_SOURCES
+    src/app-mydeskpro386/machine/d4_platform.c
+    src/app-mydeskpro386/machine/machine_plan.c
+    src/app-mydeskpro386/machine/model40.c
+    src/app-mydeskpro386/machine/composition.c
+    src/app-mydeskpro386/machine/model40_rom.c)
+add_library(mydeskpro386-chips STATIC ${MYDESKPRO386_CHIP_SOURCES})
+target_include_directories(mydeskpro386-chips PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(mydeskpro386-chips PUBLIC core-x86)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(mydeskpro386-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(mydeskpro386-chips PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+add_library(mydeskpro386-machine STATIC ${MYDESKPRO386_MACHINE_SOURCES})
+target_include_directories(mydeskpro386-machine PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(mydeskpro386-machine PUBLIC mydeskpro386-chips core-machine core-board-base core-x86)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(mydeskpro386-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 if(NXVM_PRODUCT_PROFILE STREQUAL "compaq-deskpro-386-model-40-1200k")

@@ -62,9 +62,10 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     core-x86-tests
     core-board-tests)
 
-add_library(mydeskpro386-d4 STATIC
-    ${MYDESKPRO386_D4_SOURCES}
-)
+set(MYDESKPRO386_D4_TEST_SOURCES
+    src/app-mydeskpro386/chips/d4_memory.c
+    src/app-mydeskpro386/machine/d4_platform.c)
+add_library(mydeskpro386-d4 STATIC ${MYDESKPRO386_D4_TEST_SOURCES})
 # NXVM owns only its concrete Model40 extension; the board is Shared-owned.
 add_library(mydeskpro386-d4-runtime ALIAS mydeskpro386-d4)
 target_include_directories(mydeskpro386-d4 PUBLIC
@@ -82,8 +83,7 @@ endif()
 # tests verifies that trace contract itself, so those tests link the same
 # Core sources in an observable test-only library rather than changing the
 # production library's build definition.
-get_target_property(PROJECT_CORE_MACHINE_SOURCES mydeskpro386-d4 SOURCES)
-add_library(mydeskpro386-d4-observable STATIC ${PROJECT_CORE_MACHINE_SOURCES})
+add_library(mydeskpro386-d4-observable STATIC ${MYDESKPRO386_D4_TEST_SOURCES})
 target_include_directories(mydeskpro386-d4-observable PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -105,65 +105,65 @@ add_executable(vm-ibm-5170-model-339-composition-smoke
     test/app-my5170/unit/machine_composition_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-composition-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_composition_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_composition_smoke.c)
 target_link_libraries(vm-model40-composition-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cmos-seed-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cmos_seed_smoke.c
+    test/app-mydeskpro386/unit/machine/vm_model40_cmos_seed_smoke.c
     test/core/board-base/composition/composition_fixture.c)
 target_link_libraries(vm-model40-cmos-seed-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-machine-contract-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_machine_contract_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_machine_contract_smoke.c)
 target_link_libraries(vm-model40-machine-contract-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cecg-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_cecg_smoke.c)
 target_link_libraries(vm-model40-cecg-smoke PRIVATE vm-profile-tests)
 target_sources(vm-model40-cecg-smoke PRIVATE test/core/support/video_topology_fixture.c)
 add_executable(vm-model40-cecg-feature-environment-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_feature_environment_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_cecg_feature_environment_smoke.c)
 target_link_libraries(vm-model40-cecg-feature-environment-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cecg-cpu-video-gate-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_cpu_video_gate_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_cecg_cpu_video_gate_smoke.c)
 target_link_libraries(vm-model40-cecg-cpu-video-gate-smoke PRIVATE vm-profile-tests)
 target_sources(vm-model40-cecg-cpu-video-gate-smoke PRIVATE test/core/support/video_topology_fixture.c)
 add_executable(vm-model40-cecg-io-base-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_io_base_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_cecg_io_base_smoke.c)
 target_link_libraries(vm-model40-cecg-io-base-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cecg-input-status-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_input_status_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_cecg_input_status_smoke.c)
 target_link_libraries(vm-model40-cecg-input-status-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-cecg-odd-even-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_cecg_odd_even_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_cecg_odd_even_smoke.c)
 target_link_libraries(vm-model40-cecg-odd-even-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-rom-layout-smoke
-    test/app-mydeskpro386/unit/profiles/rom/model40_rom_layout_smoke.c)
+    test/app-mydeskpro386/unit/machine/model40_rom_layout_smoke.c)
 target_link_libraries(vm-model40-rom-layout-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-d4-compatibility-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_d4_compatibility_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_d4_compatibility_smoke.c)
 target_link_libraries(vm-model40-d4-compatibility-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-d4-map-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_d4_map_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_d4_map_smoke.c)
 target_link_libraries(vm-model40-d4-map-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-d4-parity-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_d4_parity_smoke.c
+    test/app-mydeskpro386/unit/machine/vm_model40_d4_parity_smoke.c
     test/core/board-base/composition/composition_fixture.c)
 target_link_libraries(vm-model40-d4-parity-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-fdc-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_fdc_smoke.c
+    test/app-mydeskpro386/unit/machine/vm_model40_fdc_smoke.c
     test/core/board-base/support/controller_fixture.c
     test/core/board-base/support/composition_fixture.c)
 target_link_libraries(vm-model40-fdc-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-d4-a20-reset-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_d4_a20_reset_smoke.c
+    test/app-mydeskpro386/unit/machine/vm_model40_d4_a20_reset_smoke.c
     test/core/board-base/composition/composition_fixture.c)
 target_link_libraries(vm-model40-d4-a20-reset-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-dma-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_dma_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_dma_smoke.c)
 target_link_libraries(vm-model40-dma-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-fdd-smoke
-    test/app-mydeskpro386/unit/profiles/model40_floppy_geometry_smoke.c)
+    test/app-mydeskpro386/unit/machine/model40_floppy_geometry_smoke.c)
 target_link_libraries(vm-model40-fdd-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-byob-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_byob_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_byob_smoke.c)
 target_link_libraries(vm-model40-byob-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-byob-retirement-capture
     test/app-mydeskpro386/diagnostic/model40/vm_model40_retirement_capture.c
@@ -172,10 +172,10 @@ add_executable(vm-model40-byob-retirement-capture
 target_link_libraries(vm-model40-byob-retirement-capture PRIVATE
     integration-session-ini-support)
 add_executable(vm-model40-byob-boot-media-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_byob_boot_media_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_byob_boot_media_smoke.c)
 target_link_libraries(vm-model40-byob-boot-media-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-hdc-smoke
-    test/app-mydeskpro386/unit/profiles/vm_model40_hdc_smoke.c)
+    test/app-mydeskpro386/unit/machine/vm_model40_hdc_smoke.c)
 target_link_libraries(vm-model40-hdc-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-console-ini-smoke
     test/app-mydeskpro386/integration/product/vm_model40_console_ini_smoke.c
@@ -262,7 +262,7 @@ add_executable(my5170-dma-deadline-smoke
     test/app-my5170/unit/machine_dma_deadline_smoke.c)
 target_link_libraries(my5170-dma-deadline-smoke PRIVATE vm-profile-tests)
 add_executable(mydeskpro386-dma-deadline-smoke
-    test/app-mydeskpro386/unit/profiles/model40_dma_deadline_smoke.c)
+    test/app-mydeskpro386/unit/machine/model40_dma_deadline_smoke.c)
 target_link_libraries(mydeskpro386-dma-deadline-smoke PRIVATE vm-profile-tests)
 add_executable(my5160-dma-deadline-smoke
     test/app-my5160/unit/machine_dma_deadline_smoke.c)
@@ -282,7 +282,7 @@ add_executable(my5170-plan-smoke
 target_link_libraries(my5170-plan-smoke PRIVATE
     vm-profile-tests core-board-base core-x86)
 add_executable(mydeskpro386-plan-smoke
-    test/app-mydeskpro386/unit/profiles/model40_plan_smoke.c)
+    test/app-mydeskpro386/unit/machine/model40_plan_smoke.c)
 target_link_libraries(mydeskpro386-plan-smoke PRIVATE vm-profile-tests)
 add_executable(vm-xt-5160-268-profile-smoke
     test/app-my5160/unit/machine_smoke.c)
@@ -304,27 +304,27 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(model40-d4-prefetch-locality-smoke
-    test/app-mydeskpro386/unit/profiles/d4_prefetch_locality_smoke.c)
+    test/app-mydeskpro386/unit/machine/d4_prefetch_locality_smoke.c)
 target_link_libraries(model40-d4-prefetch-locality-smoke PRIVATE
     model40-d4-prefetch-scheduler-test mydeskpro386-d4-observable)
 
 add_executable(core-machine-d4-refresh-hold-smoke
-    test/app-mydeskpro386/unit/profiles/machine_d4_refresh_hold_smoke.c
-    test/app-mydeskpro386/unit/profiles/d4_refresh_fixture.c
+    test/app-mydeskpro386/unit/machine/machine_d4_refresh_hold_smoke.c
+    test/app-mydeskpro386/unit/machine/d4_refresh_fixture.c
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/composition/time_fixture.c
     test/core/board-base/support/composition_fixture.c)
 target_link_libraries(core-machine-d4-refresh-hold-smoke PRIVATE mydeskpro386-d4-observable)
 
 add_executable(model40-d4-refresh-deadline-smoke
-    test/app-mydeskpro386/unit/profiles/d4_refresh_deadline_smoke.c
-    test/app-mydeskpro386/unit/profiles/d4_refresh_fixture.c
+    test/app-mydeskpro386/unit/machine/d4_refresh_deadline_smoke.c
+    test/app-mydeskpro386/unit/machine/d4_refresh_fixture.c
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/composition/time_fixture.c)
 target_link_libraries(model40-d4-refresh-deadline-smoke PRIVATE mydeskpro386-d4)
 
 add_executable(model40-d4-port-assembly-smoke
-    test/app-mydeskpro386/unit/profiles/d4_port_b_assembly_smoke.c
+    test/app-mydeskpro386/unit/machine/d4_port_b_assembly_smoke.c
     test/core/board-base/composition/port_assembly_fixture.c
     test/core/board-base/port_assembly_board_fixture.c
     test/core/board-base/board_construction_fixture.c)
@@ -695,10 +695,9 @@ target_link_libraries(vm-profile-tests INTERFACE
     nxvm-machine
     my5160-machine
     my5170-machine
-    mydeskpro386-profile
+    mydeskpro386-machine
     mydeskpro386-d4
-    storage
-    mydeskpro386-d4)
+    storage)
 # Board callbacks and Core providers form one selected composition. GNU's
 # archive scan must close this set even when App and fixture paths converge.
 if(CMAKE_LINK_GROUP_USING_RESCAN_SUPPORTED OR
@@ -715,7 +714,7 @@ if(NXVM_PRODUCT_MACHINE_KEY STREQUAL "xt")
 elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "at")
     add_library(vm-profile-selected ALIAS my5170-machine)
 elseif(NXVM_PRODUCT_MACHINE_KEY STREQUAL "model40")
-    add_library(vm-profile-selected ALIAS mydeskpro386-profile)
+    add_library(vm-profile-selected ALIAS mydeskpro386-machine)
 else()
     add_library(vm-profile-selected ALIAS nxvm-machine)
 endif()
@@ -770,13 +769,13 @@ target_link_libraries(core-machine-cpu-fault-diagnostic-smoke PRIVATE
 )
 
 add_executable(core-machine-d4-platform-smoke
-    test/app-mydeskpro386/unit/profiles/core_machine_d4_platform_smoke.c
+    test/app-mydeskpro386/unit/machine/core_machine_d4_platform_smoke.c
     test/core/board-base/composition/composition_fixture.c
     test/core/board-base/composition/time_fixture.c
 )
 target_link_libraries(core-machine-d4-platform-smoke PRIVATE mydeskpro386-d4)
 add_executable(core-machine-d4-memory-transaction-smoke
-    test/app-mydeskpro386/unit/profiles/d4_memory_transaction_smoke.c
+    test/app-mydeskpro386/unit/chips/d4_memory_transaction_smoke.c
     test/core/board-base/composition/composition_fixture.c
     test/core/support/memory_registration_fixture.c)
 target_link_libraries(core-machine-d4-memory-transaction-smoke PRIVATE mydeskpro386-d4)

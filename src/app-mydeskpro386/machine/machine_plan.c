@@ -1,8 +1,8 @@
 #include "core/machine/preparation_interface.h"
-#include "app-mydeskpro386/profiles/construction_interface.h"
-#include "app-mydeskpro386/profiles/composition_interface.h"
-#include "app-mydeskpro386/profiles/model40_private.h"
-#include "app-mydeskpro386/profiles/observation_interface.h"
+#include "app-mydeskpro386/machine/construction_interface.h"
+#include "app-mydeskpro386/machine/composition_interface.h"
+#include "app-mydeskpro386/machine/model40_private.h"
+#include "app-mydeskpro386/machine/observation_interface.h"
 
 typedef struct vm_profile_model40_machine_plan {
     vm_machine_construction construction;

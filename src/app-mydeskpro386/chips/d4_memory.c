@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "app-mydeskpro386/profiles/d4_memory.h"
+#include "app-mydeskpro386/chips/d4_memory.h"
 
 #define CORE_MACHINE_D4_CONTROL_PHYSICAL 0x80c00000u
 #define CORE_MACHINE_D4_CONTROL_WINDOW_BYTES 4096u

@@ -1,5 +1,5 @@
 #include "d4_refresh_fixture.h"
-#include "app-mydeskpro386/profiles/d4_platform.h"
+#include "app-mydeskpro386/machine/d4_platform.h"
 
 void test_model40_refresh_set_pending(core_machine_d4_platform *platform)
 {

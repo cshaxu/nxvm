@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_D4_MEMORY_H
 #define CORE_MACHINE_D4_MEMORY_H
 #include "lib/types/types_interface.h"
-#include "app-mydeskpro386/profiles/d4_memory_interface.h"
+#include "app-mydeskpro386/chips/d4_memory_interface.h"
 #include "core/x86/memory_interface.h"
 
 typedef void (*core_machine_d4_iochk_output)(void *context, lib_bool asserted);

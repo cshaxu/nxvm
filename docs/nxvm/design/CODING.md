@@ -5,13 +5,11 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 
 ## Current Tree
 
-The product/shared-corpus layout is current. My5160 is flat; My5170 retains
-its `product` and `profiles` roots until its own layout step.
-MyDeskPro386 owns its relocated composition after accepted S3;
-Current records runnable acceptance. Only default remains below `app-nxvm`.
-`firmware` owns
-project-authored guest firmware source and its build tools. `pc110` remains a
-future Profile only when its separate evidence task admits real source files.
+The product/shared-corpus layout is current. My5160, My5170 and default NXVM
+are flat Apps; only default's `firmware` owns project-authored guest firmware
+source and its build tools. MyDeskPro386 uses its real `chips`, `machine` and
+`product` boundaries. `pc110` remains a future profile only when its separate
+evidence task admits real source files.
 
 ```text
 src/
@@ -24,21 +22,21 @@ src/
                            NXVM-only machine stack and family product support
   app-my5160/           fixed IBM 5160 App: main, product binding,
                          machine plan/configuration/construction and firmware map
-  app-my5170/           fixed IBM 5170 App
-    product/            thin main and fixed AT binding
-    profiles/           IBM 5170 values, constraints and preparation
+  app-my5170/           fixed IBM 5170 App: main, product binding,
+                         machine plan/configuration/construction and firmware map
   app-mydeskpro386/     fixed DeskPro 386 App
+    chips/              D4 register and memory-decoder state
+    machine/            D4 wiring, Model 40 plan/composition and ROM map
     product/            thin main and fixed Model40 binding
-    profiles/           Model40 composition, D4 and firmware slots
-  app-nxvm/             core product implementation
-    product/            thin main and fixed composition binding
+  app-nxvm/             fixed default AT App: main, product binding,
+                         machine plan/configuration/construction and firmware map
     firmware/           project-owned BIOS source and offline ROM construction
-    profiles/           retained default PC/AT composition and firmware slots
 ```
 
-Keep machine-specific profile declarations at the profiles root. Common
-floppy geometry/channel, Option ROM validation and profile-contract validation
-live in flat `core/board-base`, with their independent tests under `test/core`.
+Keep machine-specific declarations beside the fixed App's construction source.
+Common floppy geometry/channel, Option ROM validation and profile-contract
+validation live in flat `core/board-base`, with their independent tests under
+`test/core`.
 The shared execution/debug adapter lives in `core/machine`; App profiles
 prepare copied construction values and transfer their real context lifetime.
 Shared owns candidate publication and rollback, never an App layout or model ID.
@@ -54,8 +52,10 @@ contains the NXVM-family INI, Machine adapter and extensions used by the four
 NXVM Apps; it is not an IBM PC Product dependency. Shared process entry/banner
 formatting consumes App-provided identity, request loader and factory. The
 former `app-nxvm/devices` implementation is removed. Shared board mechanisms
-live in the flat `core/board-*` receivers; genuine D4 state stays in
-`app-mydeskpro386/profiles`. Current records delivery acceptance, not this layout.
+live in the flat `core/board-*` receivers. MyDeskPro386 keeps the isolated D4
+memory decoder in `app-mydeskpro386/chips` and its fixed board wiring and
+Model 40 composition in `app-mydeskpro386/machine`. Current records delivery
+acceptance, not this layout.
 The
 former singular `core/profile` root is retired; do not restore a compatibility
 directory. Preserve existing machine identities and
@@ -117,9 +117,10 @@ single mixed-family fixture live in `test/core/machine/composition` and
 `test/core/board-base/composition`.
 The former helper-only `device` and `byob` roots are retired. Do not create
 empty future-profile directories. Retained
-NXVM composition/firmware tests live in `test/app-nxvm/unit/profiles/` with their
-product owner. CPU, chip, execution-Core and board-timing tests live under
-`test/core`, preserving all CPU models. The remaining `test/x86` package
+NXVM composition/configuration tests live directly in `test/app-nxvm/unit/`;
+firmware tests remain in `test/app-nxvm/unit/firmware/`. DeskPro unit tests
+mirror `chips` and `machine`. CPU, chip, execution-Core and board-timing tests
+live under `test/core`, preserving all CPU models. The remaining `test/x86` package
 covers only portable Debug/Xasm32. Neutral Core tests build independently of
 NXVM board composition.
 `test/app-nxvm/integration/` stays separate;

@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "app-mydeskpro386/profiles/composition_interface.h"
+#include "app-mydeskpro386/machine/composition_interface.h"
 
 #include "core/board-base/vadp_interface.h"
 #include "core/board-base/floppy_interface.h"

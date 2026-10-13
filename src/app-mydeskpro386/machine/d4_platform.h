@@ -1,8 +1,8 @@
 #ifndef CORE_MACHINE_D4_PLATFORM_H
 #define CORE_MACHINE_D4_PLATFORM_H
 
-#include "app-mydeskpro386/profiles/d4_platform_interface.h"
-#include "app-mydeskpro386/profiles/d4_memory.h"
+#include "app-mydeskpro386/machine/d4_platform_interface.h"
+#include "app-mydeskpro386/chips/d4_memory.h"
 
 struct core_machine_d4_platform {
     core_machine *core;

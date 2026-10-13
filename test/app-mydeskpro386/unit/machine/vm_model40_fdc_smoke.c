@@ -1,4 +1,4 @@
-#include "app-mydeskpro386/profiles/observation_interface.h"
+#include "app-mydeskpro386/machine/observation_interface.h"
 #include "../../support/profile.h"
 #include "core/machine/machine_interface.h"
 #include "../../support/model40.h"

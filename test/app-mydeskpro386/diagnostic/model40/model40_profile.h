@@ -2,8 +2,8 @@
 #define TEST_APP_MYDESKPRO386_DIAGNOSTIC_MODEL40_PROFILE_H
 
 #include "core/machine/machine_private.h"
-#include "app-mydeskpro386/profiles/observation_interface.h"
-#include "app-mydeskpro386/profiles/model40_private.h"
+#include "app-mydeskpro386/machine/observation_interface.h"
+#include "app-mydeskpro386/machine/model40_private.h"
 
 static inline lib_bool model40_profile_is_selected(
     const vm_machine_construction *construction)

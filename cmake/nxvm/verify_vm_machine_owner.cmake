@@ -106,7 +106,7 @@ file(GLOB_RECURSE profile_plans
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine_plan.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5160/machine_plan.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/machine_plan.c"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/machine_plan.c")
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/machine_plan.c")
 foreach(source IN LISTS profile_plans)
     file(READ "${source}" plan_text)
     if(plan_text MATCHES "union[ \t\r\n]*\\{|VM_PROFILE_MACHINE_PLAN_(DEFAULT|IBM|XT|MODEL40)|config->profile_kind")
@@ -132,8 +132,10 @@ foreach(app constructor IN ZIP_LISTS binding_apps binding_constructors)
     endif()
 endforeach()
 file(GLOB_RECURSE model40_sources
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/chips/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/chips/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/*.h")
 foreach(source IN LISTS model40_sources)
     file(READ "${source}" model40_text)
     if(model40_text MATCHES "app-nxvm/profiles/|vm_profile_ibm_5170_(values|plan)_create")
@@ -158,8 +160,10 @@ file(GLOB_RECURSE app_profile_sources
     "${PROJECT_SOURCE_DIR}/src/app-my5160/*.h"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-my5170/*.h"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/profiles/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/chips/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/chips/*.h"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-mydeskpro386/machine/*.h")
 foreach(source IN LISTS app_profile_sources)
     file(READ "${source}" source_text)
     if(source_text MATCHES "vm_profile_model40_rom_materialize|image\\[index \\* 2u\\]|even_bytes\\[logical >> 1u\\]")

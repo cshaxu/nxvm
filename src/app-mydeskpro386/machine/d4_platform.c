@@ -1,4 +1,4 @@
-#include "app-mydeskpro386/profiles/d4_platform.h"
+#include "app-mydeskpro386/machine/d4_platform.h"
 #include "core/board-base/machine_board_interface.h"
 
 static lib_status d4_port_read(void *owner, lib_u16 port, lib_u64 tick,

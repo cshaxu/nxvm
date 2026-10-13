@@ -1,4 +1,4 @@
-#include "app-mydeskpro386/profiles/model40_private.h"
+#include "app-mydeskpro386/machine/model40_private.h"
 #include "../../../core/machine/support/dma_deadline_fixture.h"
 
 static lib_i32 configure(core_machine_config *out_configuration)

@@ -1,5 +1,5 @@
 #include "profile.h"
-#include "app-mydeskpro386/profiles/observation_interface.h"
+#include "app-mydeskpro386/machine/observation_interface.h"
 #include "core/machine/machine_interface.h"
 #ifndef NXVM_TEST_MODEL40_H
 #define NXVM_TEST_MODEL40_H

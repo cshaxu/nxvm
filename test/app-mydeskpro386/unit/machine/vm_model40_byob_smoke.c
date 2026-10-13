@@ -1,4 +1,4 @@
-#include "app-mydeskpro386/profiles/observation_interface.h"
+#include "app-mydeskpro386/machine/observation_interface.h"
 #include "../../support/profile.h"
 #include "core/machine/machine_interface.h"
 #include "../../../core/machine/support/media.h"
@@ -10,7 +10,7 @@
 
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_private.h"
-#include "app-mydeskpro386/profiles/model40_private.h"
+#include "app-mydeskpro386/machine/model40_private.h"
 #include "core/machine/machine_interface.h"
 #include "../../support/model40_session_assets.h"
 

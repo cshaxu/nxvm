@@ -4,7 +4,7 @@
 
 #include "core/x86/firmware_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "app-mydeskpro386/profiles/model40.h"
+#include "app-mydeskpro386/machine/model40.h"
 #include "core/board-base/profile_contract_interface.h"
 
 #define VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES (2u * VM_PROFILE_MODEL40_ROM_CHIP_BYTES)

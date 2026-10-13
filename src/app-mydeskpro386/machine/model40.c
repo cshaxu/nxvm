@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 #include "core/board-base/machine_board_interface.h"
-#include "app-mydeskpro386/profiles/model40_private.h"
+#include "app-mydeskpro386/machine/model40_private.h"
 
 #include "core/board-base/at_contract_interface.h"
 

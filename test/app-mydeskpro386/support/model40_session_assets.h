@@ -7,8 +7,8 @@
 
 #include "core/chips/rtc146818/rtc146818_interface.h"
 #include "core/machine/machine_interface.h"
-#include "app-mydeskpro386/profiles/model40_private.h"
-#include "app-mydeskpro386/profiles/construction_interface.h"
+#include "app-mydeskpro386/machine/model40_private.h"
+#include "app-mydeskpro386/machine/construction_interface.h"
 
 static inline lib_status vm_model40_fixture_machine_create_from_assets(
     const vm_machine_config *config, const vm_machine_assets *assets,

@@ -1,4 +1,4 @@
-#include "app-mydeskpro386/profiles/model40_private.h"
+#include "app-mydeskpro386/machine/model40_private.h"
 #include "lib/types/types_interface.h"
 
 lib_i32 main(void)

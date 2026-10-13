@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "app-mydeskpro386/profiles/model40_private.h"
+#include "app-mydeskpro386/machine/model40_private.h"
 
 #include "core/board-base/rom_validation_interface.h"
 #include "core/board-base/rom_mapping_interface.h"

@@ -1,8 +1,8 @@
 #ifndef TEST_MYDESKPRO386_PROFILE_H
 #define TEST_MYDESKPRO386_PROFILE_H
 
-#include "app-mydeskpro386/profiles/construction_interface.h"
-#include "app-mydeskpro386/profiles/model40_private.h"
+#include "app-mydeskpro386/machine/construction_interface.h"
+#include "app-mydeskpro386/machine/model40_private.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "../../core/machine/support/selection.h"
