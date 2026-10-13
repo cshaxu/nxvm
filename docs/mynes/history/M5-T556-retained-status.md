@@ -107,4 +107,4 @@ Artifact evidence: [S10 registration and byte boolean](../etc/evidence/m6-t43-s1
   Six manifests and Types gates pass. All receiving Apps were rebuilt together.
 - Snapshot `MNS1` guest state remains Core-owned; transient driver stop/frame
   publication state is reset only after successful restore. Deferred work remains
-  explicitly listed in [TODO](TODO.md), not implicitly claimed complete.
+  explicitly listed in [TODO](../states/TODO.md), not implicitly claimed complete.
