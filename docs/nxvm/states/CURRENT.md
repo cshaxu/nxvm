@@ -30,6 +30,18 @@ records S2--S7. S2--S5 are accepted; S6 is the final production migration.
 | Original Owner Request | Admit an App-layout T: extract MyNES Machine adapter, flatten My5160/My5170, split DeskPro Chips/Machine/Product, retain only NXVM firmware subcomponent; give feedback. |
 | Similar-Issue Sweep | Verify the final split does not create Core, Shared or sibling-App references; do not modify those owners in S6. |
 
+### Active S6 Qualification Fact
+
+P1 `68902e24e` completes the path/owner migration and publishes the rebuilt
+MyDeskPro386 x64/x86 pair. Both full configured build graphs, 28 DeskPro unit
+receivers per width, Core corpus/manifest and the layout gates pass. The
+existing Model 40 BYOB floppy-boot matrix does not satisfy the final
+integration criterion: its x64 receiver reaches the 300-second terminal
+budget while the FDC remains in a read transfer. This is a machine boot
+qualification issue, not evidence of a path or registration regression; S6
+remains active until it is independently diagnosed and either repaired or
+formally re-scoped. No failing route is counted as accepted.
+
 ## Previous Task
 
 M5 T555 is closed. Its finite retained controller/board universe is reconciled
