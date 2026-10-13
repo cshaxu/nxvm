@@ -61,6 +61,10 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     if (board->refresh_hold_pending &&
         (out_observation->source_ticks == 0u || out_observation->source_ticks > 1u))
         out_observation->source_ticks = 1u;
+    if (board->profile_binding.cpu_hold_asserted != LIB_NULL &&
+        board->profile_binding.cpu_hold_asserted(board->profile_binding.context) &&
+        (out_observation->source_ticks == 0u || out_observation->source_ticks > 1u))
+        out_observation->source_ticks = 1u;
     dma_pending = core_machine_dma_has_pending_request(
         board->shared_dma) ?
         LIB_TRUE : LIB_FALSE;

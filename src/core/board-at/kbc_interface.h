@@ -4,10 +4,14 @@
 
 #include "lib/types/types_interface.h"
 #include "core/x86/port_interface.h"
+#include "core/chips/kbc8042/kbc8042_interface.h"
 
 typedef struct t_kbc t_kbc;
 typedef void (*core_machine_kbc_irq_line)(void *context,
     lib_bool auxiliary, lib_bool asserted);
+typedef x86_kbc8042_command_extension_result (*core_machine_kbc_command_extension)(
+    void *context, lib_u8 command, lib_u8 input_port, lib_u8 command_byte,
+    lib_u8 *out_data);
 
 /* Serialized PC/AT input owner. Construction publishes routes against one
  * stable opaque handle. Composition owns IRQ leases and supplies electrical
@@ -20,6 +24,10 @@ void core_machine_kbc_bind_core_services(t_kbc *controller,
     void (*set_a20)(void *context, lib_bool enabled), void *a20_context,
     void (*request_reset)(void *context), void *reset_context,
     lib_u8 aux_present);
+/* One selected board may bind an otherwise-unhandled KBC command family
+ * during construction.  The KBC retains port and output ownership. */
+lib_status core_machine_kbc_bind_command_extension(t_kbc *controller,
+    core_machine_kbc_command_extension extension, void *context);
 void core_machine_kbc_reset(t_kbc *controller);
 void core_machine_kbc_advance(t_kbc *controller, lib_u64 elapsed_ticks);
 lib_status core_machine_kbc_ticks_until_event(const t_kbc *controller,

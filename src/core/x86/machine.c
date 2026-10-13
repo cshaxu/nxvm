@@ -876,6 +876,22 @@ lib_status core_machine_run(
                 result->elapsed_ticks = machine->elapsed_ticks;
                 continue;
             }
+            if (machine->attachment.cpu_hold_asserted != LIB_NULL &&
+                machine->attachment.cpu_hold_asserted(machine->attachment.context)) {
+                if (result->ticks == LIB_UINT64_MAX || machine->elapsed_ticks == LIB_UINT64_MAX) {
+                    (void)core_machine_report_fault(machine, 0x54494d45u);
+                    result->reason = CORE_MACHINE_STOP_FAULT;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->detail = machine->fault_detail;
+                    return LIB_STATUS_INTERNAL_ERROR;
+                }
+                ++result->ticks;
+                if (core_machine_publish_elapsed_ticks(machine, 1u,
+                        CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT) !=
+                    LIB_STATUS_OK) return LIB_STATUS_INTERNAL_ERROR;
+                result->elapsed_ticks = machine->elapsed_ticks;
+                continue;
+            }
             if (machine->cpu_retirement_wait_pending) {
                 if (machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled &&
                     !machine->cpu_cycle_bus_ready) {

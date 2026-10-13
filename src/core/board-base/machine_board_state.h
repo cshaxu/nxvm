@@ -134,6 +134,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     core_machine_attachment_deadline_observation *out_observation);
 lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address);
 void core_machine_board_refresh_complete(void *owner);
+lib_bool core_machine_board_cpu_hold_asserted(void *owner);
 lib_u64 core_machine_board_dma_ticks(void *owner, lib_u64 source_ticks);
 lib_bool core_machine_board_dma_request(void *owner);
 void core_machine_board_dma_advance(void *owner, lib_u64 dma_ticks);

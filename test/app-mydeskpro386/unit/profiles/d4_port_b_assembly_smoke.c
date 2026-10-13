@@ -4,7 +4,7 @@
 
 static lib_status port_assembly_attach_d4(core_machine_board_state *board)
 {
-    const core_machine_d4_platform_config config = {CORE_MACHINE_PC_AT_PORT_B, 0u};
+    const core_machine_d4_platform_config config = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u, 18u};
     core_machine_d4_platform *platform = LIB_NULL;
     return core_machine_d4_platform_attach(board, &config, &platform);
 }

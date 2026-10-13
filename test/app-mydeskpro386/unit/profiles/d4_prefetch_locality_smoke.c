@@ -55,7 +55,7 @@ static void d4_trace(void *owner, const core_machine_trace_event *event)
 
 lib_i32 main(void)
 {
-    const core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
+    const core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u, 18u};
     core_machine_config config = {0};
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;

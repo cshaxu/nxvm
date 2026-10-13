@@ -18,6 +18,39 @@
 #include "core/machine/display.h"
 #include "../../support/model40_session_assets.h"
 
+static lib_i32 model40_kbc_extension_contract(vm_machine *session)
+{
+    lib_u32 status = 0u;
+    lib_u32 value = 0u;
+
+    if (session == LIB_NULL || session->core_machine == LIB_NULL ||
+        core_machine_bus_write(session->core_machine, 0x0064u, 0xa3u) !=
+            LIB_STATUS_OK ||
+        core_machine_bus_write(session->core_machine, 0x0064u, 0xa4u) !=
+            LIB_STATUS_OK ||
+        core_machine_bus_read(session->core_machine, 0x0064u, &status) !=
+            LIB_STATUS_OK || (status & 0x01u) != 0u ||
+        core_machine_bus_write(session->core_machine, 0x0064u, 0xa5u) !=
+            LIB_STATUS_OK ||
+        core_machine_bus_read(session->core_machine, 0x0064u, &status) !=
+            LIB_STATUS_OK || (status & 0x01u) != 0u ||
+        core_machine_bus_read(session->core_machine, 0x0060u, &value) !=
+            LIB_STATUS_OK || value != 0xb4u ||
+        core_machine_bus_write(session->core_machine, 0x0064u, 0x60u) !=
+            LIB_STATUS_OK ||
+        core_machine_bus_write(session->core_machine, 0x0060u, 0x20u) !=
+            LIB_STATUS_OK ||
+        core_machine_bus_write(session->core_machine, 0x0064u, 0xa5u) !=
+            LIB_STATUS_OK ||
+        core_machine_bus_read(session->core_machine, 0x0060u, &value) !=
+            LIB_STATUS_OK || value != 0xa4u ||
+        core_machine_bus_write(session->core_machine, 0x0064u, 0x60u) !=
+            LIB_STATUS_OK ||
+        core_machine_bus_write(session->core_machine, 0x0060u, 0x43u) !=
+            LIB_STATUS_OK) return 0;
+    return 1;
+}
+
 lib_i32 main(void)
 {
     static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
@@ -67,7 +100,7 @@ lib_i32 main(void)
         test_board_kbc_aux_enabled(session->board) ||
         !test_board_kbc_command_matches(session->board,
             session->core_machine, 0x20u,
-            0x20u, 0u)) goto done;
+            0x20u, 0u) || !model40_kbc_extension_contract(session)) goto done;
     stage = 2;
     {
         core_machine_guest_input_event event = {0};

@@ -38,6 +38,8 @@ typedef struct kbc_data {
     x86_kbc8042_origin fifo_origin[KBC_FIFO_CAPACITY];
     lib_u8 fifo_head;
     lib_u8 fifo_count;
+    lib_u8 special_read_data;
+    lib_bool special_read_pending;
     lib_u8 keyboard_serial[KBC_KEYBOARD_SERIAL_CAPACITY];
     lib_u8 keyboard_serial_head;
     lib_u8 keyboard_serial_count;

@@ -7,6 +7,13 @@ static lib_status d4_port_write(void *owner, lib_u16 port, lib_u32 value);
 static void d4_refresh_output(void *owner, lib_u8 asserted);
 static void d4_failsafe_output(void *owner, lib_u8 asserted);
 
+#define D4_KBC_COMMAND_ENABLE_SPEED 0xa3u
+#define D4_KBC_COMMAND_TOGGLE_SPEED 0xa4u
+#define D4_KBC_COMMAND_SPECIAL_READ 0xa5u
+#define D4_KBC_COMMAND_IRQ1 0x01u
+#define D4_KBC_SPECIAL_KEYBOARD_11_BIT 0x20u
+#define D4_KBC_SPECIAL_OBF_IRQ_ENABLED 0x10u
+
 lib_status core_machine_d4_platform_create(core_machine *core, x86_pit *pit,
     x86_pit *auxiliary_pit, const core_machine_d4_platform_config *config,
     core_machine_d4_speaker_output speaker, void *context,
@@ -22,6 +29,9 @@ lib_status core_machine_d4_platform_create(core_machine *core, x86_pit *pit,
         return LIB_STATUS_INVALID_STATE;
     if (pit == LIB_NULL || auxiliary_pit == LIB_NULL || config == LIB_NULL ||
         config->port != 0x61u || config->failsafe_pit_counter >= 3u ||
+        config->speed_pit_counter >= 3u ||
+        config->failsafe_pit_counter == config->speed_pit_counter ||
+        config->speed_pit_count == 0u || config->speed_pit_count > 0x38u ||
         speaker == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     platform = lib_allocate(sizeof(*platform));
     if (platform == LIB_NULL) return LIB_STATUS_NO_MEMORY;
@@ -116,6 +126,7 @@ core_machine_board_profile_binding core_machine_d4_platform_binding(
         .refresh_nmi = d4_board_refresh_nmi,
         .refresh_request = core_machine_d4_platform_refresh_request,
         .refresh_complete = core_machine_d4_platform_refresh_complete,
+        .cpu_hold_asserted = core_machine_d4_platform_cpu_hold_asserted,
         .next_deadline = d4_board_next_deadline, .finalize = d4_board_finalize,
         .owns_refresh_output = LIB_TRUE, .shutdown_resets = LIB_TRUE
     };
@@ -136,6 +147,14 @@ void core_machine_d4_platform_after_pit_reset(core_machine_d4_platform *platform
     (void)x86_pit_write_register(platform->shared_pit, 3u, 0x74u);
     (void)x86_pit_write_register(platform->shared_pit, 1u, 18u);
     (void)x86_pit_write_register(platform->shared_pit, 1u, 0u);
+    (void)x86_pit_write_register(platform->auxiliary_pit, 3u, 0xb2u);
+    (void)x86_pit_write_register(platform->auxiliary_pit,
+        platform->d4_platform_config.speed_pit_counter,
+        platform->d4_platform_config.speed_pit_count);
+    (void)x86_pit_write_register(platform->auxiliary_pit,
+        platform->d4_platform_config.speed_pit_counter, 0u);
+    x86_pit_set_gate(platform->auxiliary_pit,
+        platform->d4_platform_config.speed_pit_counter, LIB_FALSE);
     platform->speaker(platform->speaker_context, platform->d4_platform_port_b);
     x86_pit_set_output(platform->shared_pit, 1u, d4_refresh_output, platform);
     x86_pit_set_output(platform->auxiliary_pit,
@@ -150,6 +169,8 @@ void core_machine_d4_platform_reset_refresh(core_machine_d4_platform *platform)
     platform->d4_refresh_hold_pending = LIB_FALSE;
     platform->d4_refresh_pulse_active = LIB_FALSE;
     platform->d4_refresh_address = 0u;
+    platform->d4_speed_control_enabled = LIB_FALSE;
+    platform->d4_speed_switch_selected = LIB_FALSE;
 }
 
 static lib_u8 d4_timer_status(
@@ -176,8 +197,59 @@ static void d4_refresh_output(void *opaque, lib_u8 asserted)
         } else if (!platform->d4_refresh_pulse_active) {
             platform->d4_refresh_pulse_active = LIB_TRUE;
             core_machine_cpu_bus_refresh_pulse(platform->core);
+            if (platform->d4_speed_control_enabled &&
+                platform->d4_speed_switch_selected) {
+                x86_pit_set_gate(platform->auxiliary_pit,
+                    platform->d4_platform_config.speed_pit_counter, LIB_FALSE);
+                x86_pit_set_gate(platform->auxiliary_pit,
+                    platform->d4_platform_config.speed_pit_counter, LIB_TRUE);
+            }
             platform->d4_refresh_hold_pending = LIB_TRUE;
         }
+    }
+}
+
+lib_bool core_machine_d4_platform_cpu_hold_asserted(void *owner)
+{
+    const core_machine_d4_platform *platform = owner;
+
+    return platform != LIB_NULL && platform->d4_speed_control_enabled &&
+        platform->d4_speed_switch_selected &&
+        !x86_pit_get_output(platform->auxiliary_pit,
+            platform->d4_platform_config.speed_pit_counter);
+}
+
+x86_kbc8042_command_extension_result core_machine_d4_platform_kbc_command(
+    void *owner, lib_u8 command, lib_u8 input_port, lib_u8 command_byte,
+    lib_u8 *out_data)
+{
+    core_machine_d4_platform *platform = owner;
+
+    if (platform == LIB_NULL || out_data == LIB_NULL)
+        return X86_KBC8042_COMMAND_EXTENSION_UNHANDLED;
+    switch (command) {
+    case D4_KBC_COMMAND_ENABLE_SPEED:
+        platform->d4_speed_control_enabled = LIB_TRUE;
+        /* A3 selects software (COMMON) speed control.  A4 later chooses the
+         * frozen switch-4 input.  This is the selected logical command model,
+         * not a reconstructed 8042 firmware image. */
+        platform->d4_speed_switch_selected = LIB_TRUE;
+        return X86_KBC8042_COMMAND_EXTENSION_HANDLED;
+    case D4_KBC_COMMAND_TOGGLE_SPEED:
+        platform->d4_speed_switch_selected =
+            platform->d4_speed_switch_selected ? LIB_FALSE : LIB_TRUE;
+        if (platform->d4_speed_switch_selected)
+            platform->d4_speed_control_enabled = (input_port & 0x10u) != 0u;
+        return X86_KBC8042_COMMAND_EXTENSION_HANDLED;
+    case D4_KBC_COMMAND_SPECIAL_READ:
+        *out_data = (input_port & ~(D4_KBC_SPECIAL_KEYBOARD_11_BIT |
+            D4_KBC_SPECIAL_OBF_IRQ_ENABLED)) |
+            D4_KBC_SPECIAL_KEYBOARD_11_BIT |
+            ((command_byte & D4_KBC_COMMAND_IRQ1) != 0u ?
+                D4_KBC_SPECIAL_OBF_IRQ_ENABLED : 0u);
+        return X86_KBC8042_COMMAND_EXTENSION_SPECIAL_READ;
+    default:
+        return X86_KBC8042_COMMAND_EXTENSION_UNHANDLED;
     }
 }
 

@@ -1,4 +1,5 @@
 #include "app-mydeskpro386/profiles/d4_platform_interface.h"
+#include "app-mydeskpro386/profiles/d4_platform.h"
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
@@ -18,7 +19,7 @@ static lib_i32 core_machine_port_b_exclusivity(void)
         .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
         .refresh_status_toggle_ticks = 0u
     };
-    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u, 18u};
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_d4_platform *d4_board = LIB_NULL;
@@ -58,10 +59,37 @@ static lib_u16 read_refresh_count(core_machine *machine)
     return (lib_u16)(low | (test_core_read_port_after_run(machine, 0x0041u) << 8u));
 }
 
+static lib_i32 core_machine_d4_speed_command_contract(
+    core_machine_d4_platform *platform)
+{
+    lib_u8 value = 0u;
+
+    return platform == LIB_NULL ||
+        core_machine_d4_platform_kbc_command(platform, 0xa1u, 0xb4u, 0x20u,
+            &value) != X86_KBC8042_COMMAND_EXTENSION_UNHANDLED ||
+        core_machine_d4_platform_kbc_command(platform, 0xa5u, 0xb4u, 0x20u,
+            &value) != X86_KBC8042_COMMAND_EXTENSION_SPECIAL_READ ||
+        value != 0xa4u ||
+        core_machine_d4_platform_kbc_command(platform, 0xa5u, 0xb4u, 0x21u,
+            &value) != X86_KBC8042_COMMAND_EXTENSION_SPECIAL_READ ||
+        value != 0xb4u ||
+        core_machine_d4_platform_kbc_command(platform, 0xa3u, 0xb4u, 0x20u,
+            &value) != X86_KBC8042_COMMAND_EXTENSION_HANDLED ||
+        !platform->d4_speed_control_enabled ||
+        !platform->d4_speed_switch_selected ||
+        core_machine_d4_platform_kbc_command(platform, 0xa4u, 0xb4u, 0x20u,
+            &value) != X86_KBC8042_COMMAND_EXTENSION_HANDLED ||
+        platform->d4_speed_switch_selected ||
+        core_machine_d4_platform_kbc_command(platform, 0xa4u, 0xa4u, 0x20u,
+            &value) != X86_KBC8042_COMMAND_EXTENSION_HANDLED ||
+        platform->d4_speed_control_enabled ||
+        !platform->d4_speed_switch_selected;
+}
+
 lib_i32 main(void)
 {
     core_machine_config config = {0};
-    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u, 18u};
     core_machine_rtc_cmos_config cmos = {0};
     core_machine_d4_platform_observation observation;
     core_machine_speaker_observation speaker;
@@ -95,6 +123,8 @@ lib_i32 main(void)
         observation.failsafe_enabled || observation.iochk_latched ||
         observation.failsafe_latched || observation.nmi_signaled;
     if (!failed) lib_c_printf("D4-PLATFORM-PORT:OK\n");
+    if (!failed) failed |= core_machine_d4_speed_command_contract(d4_board);
+    if (!failed) lib_c_printf("D4-KBC-SPEED-COMMANDS:OK\n");
     if (!failed) failed |= core_machine_bus_write(machine, 0x0043u, 0x74u) !=
             LIB_STATUS_OK || core_machine_bus_write(machine, 0x0041u, 2u) !=
             LIB_STATUS_OK || core_machine_bus_write(machine, 0x0041u, 0u) !=

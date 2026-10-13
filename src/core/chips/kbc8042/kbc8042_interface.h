@@ -10,6 +10,16 @@ typedef enum x86_kbc8042_origin {
     X86_KBC8042_OUTPUT_AUX
 } x86_kbc8042_origin;
 
+/* A selected board may own a documented command outside the portable 8042
+ * command set.  The controller still owns port-64 parsing and every read of
+ * port 60.  SPECIAL_READ is the one documented form that supplies a byte
+ * without raising OBF or an IRQ. */
+typedef enum x86_kbc8042_command_extension_result {
+    X86_KBC8042_COMMAND_EXTENSION_UNHANDLED,
+    X86_KBC8042_COMMAND_EXTENSION_HANDLED,
+    X86_KBC8042_COMMAND_EXTENSION_SPECIAL_READ
+} x86_kbc8042_command_extension_result;
+
 typedef struct x86_kbc8042_keyboard_inputs {
     lib_u8 scan_set;
     lib_bool scanning;
@@ -41,6 +51,8 @@ typedef struct x86_kbc8042_link {
         void *emit_context);
     void (*irq)(void *context, lib_bool auxiliary, lib_bool asserted);
     void (*output_port)(void *context, lib_u8 value);
+    x86_kbc8042_command_extension_result (*command_extension)(void *context,
+        lib_u8 command, lib_u8 input_port, lib_u8 command_byte, lib_u8 *out_data);
     void *context;
 } x86_kbc8042_link;
 

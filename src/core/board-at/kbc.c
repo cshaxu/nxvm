@@ -148,6 +148,18 @@ static void kbc_output_port(void *context, lib_u8 value)
     if ((value & 0x01u) == 0u) kbc_reset_pulse(context);
 }
 
+static x86_kbc8042_command_extension_result kbc_command_extension(void *context,
+    lib_u8 command, lib_u8 input_port, lib_u8 command_byte, lib_u8 *out_data)
+{
+    t_kbc *attachment = context;
+
+    if (attachment == LIB_NULL || attachment->connect.command_extension == LIB_NULL)
+        return X86_KBC8042_COMMAND_EXTENSION_UNHANDLED;
+    return attachment->connect.command_extension(
+        attachment->connect.command_extension_context, command, input_port,
+        command_byte, out_data);
+}
+
 static lib_status kbc_port_read(void *owner, lib_u16 address, lib_u64 tick,
     lib_u32 *out_value)
 {
@@ -189,6 +201,7 @@ lib_status core_machine_kbc_initialize(t_kbc *attachment, core_machine *machine)
         .keyboard_advance = kbc_keyboard_advance,
         .irq = kbc_irq,
         .output_port = kbc_output_port,
+        .command_extension = kbc_command_extension,
         .context = attachment
     };
 
@@ -208,6 +221,18 @@ lib_status core_machine_kbc_initialize(t_kbc *attachment, core_machine *machine)
     status = core_machine_install_port_routes(machine, routes, 2u);
     if (status != LIB_STATUS_OK) core_machine_kbc_finalize(attachment);
     return status;
+}
+
+lib_status core_machine_kbc_bind_command_extension(t_kbc *attachment,
+    core_machine_kbc_command_extension extension, void *context)
+{
+    if (attachment == LIB_NULL || extension == LIB_NULL || context == LIB_NULL ||
+        attachment->connect.command_extension != LIB_NULL) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    attachment->connect.command_extension = extension;
+    attachment->connect.command_extension_context = context;
+    return LIB_STATUS_OK;
 }
 
 void core_machine_kbc_bind_core_services(t_kbc *attachment,

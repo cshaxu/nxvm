@@ -3,6 +3,7 @@
 
 #include "core/x86/machine_interface.h"
 #include "core/chips/pit825x/pit825x_interface.h"
+#include "core/board-at/kbc_interface.h"
 #include "core/board-base/board_profile_interface.h"
 #include "app-mydeskpro386/profiles/d4_memory_interface.h"
 
@@ -11,6 +12,8 @@ typedef struct core_machine_board_state core_machine_board_state;
 typedef struct core_machine_d4_platform_config {
     lib_u16 port;
     lib_u8 failsafe_pit_counter;
+    lib_u8 speed_pit_counter;
+    lib_u8 speed_pit_count;
 } core_machine_d4_platform_config;
 
 typedef struct core_machine_d4_platform_observation {
@@ -48,6 +51,10 @@ void core_machine_d4_platform_reset_refresh(core_machine_d4_platform *platform);
 void core_machine_d4_platform_refresh_nmi(core_machine_d4_platform *platform);
 lib_bool core_machine_d4_platform_refresh_request(void *owner, lib_u8 *address);
 void core_machine_d4_platform_refresh_complete(void *owner);
+lib_bool core_machine_d4_platform_cpu_hold_asserted(void *owner);
+x86_kbc8042_command_extension_result core_machine_d4_platform_kbc_command(
+    void *owner, lib_u8 command, lib_u8 input_port, lib_u8 command_byte,
+    lib_u8 *out_data);
 lib_status core_machine_d4_platform_clear_iochk(core_machine_d4_platform *platform);
 lib_status core_machine_d4_platform_report_iochk(core_machine_d4_platform *platform);
 void core_machine_d4_platform_iochk_output(void *owner, lib_bool asserted);

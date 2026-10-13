@@ -18,6 +18,8 @@ struct core_machine_d4_platform {
     lib_u8 d4_refresh_hold_pending;
     lib_u8 d4_refresh_pulse_active;
     lib_u8 d4_refresh_address;
+    lib_bool d4_speed_control_enabled;
+    lib_bool d4_speed_switch_selected;
     core_machine_d4_speaker_output speaker;
     void *speaker_context;
 };

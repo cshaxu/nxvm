@@ -11,8 +11,26 @@ typedef struct controller_fixture {
     lib_u32 assertions[2];
     lib_u32 releases[2];
     lib_u32 reset_pulses;
+    lib_u32 extension_calls;
     lib_u8 output;
 } controller_fixture;
+
+static x86_kbc8042_command_extension_result command_extension(void *context,
+    lib_u8 command, lib_u8 input_port, lib_u8 command_byte, lib_u8 *out_data)
+{
+    controller_fixture *f = context;
+
+    (void)input_port;
+    (void)command_byte;
+    if (f == LIB_NULL || out_data == LIB_NULL) {
+        return X86_KBC8042_COMMAND_EXTENSION_UNHANDLED;
+    }
+    ++f->extension_calls;
+    if (command == 0xa3u) return X86_KBC8042_COMMAND_EXTENSION_HANDLED;
+    if (command != 0xa5u) return X86_KBC8042_COMMAND_EXTENSION_UNHANDLED;
+    *out_data = 0xb4u;
+    return X86_KBC8042_COMMAND_EXTENSION_SPECIAL_READ;
+}
 
 static x86_kbc8042_keyboard_inputs keyboard_inputs(void *context)
 {
@@ -111,7 +129,10 @@ static void output_port(void *context, lib_u8 byte)
     if ((byte & 1u) == 0u) ++f->reset_pulses;
 }
 
-static lib_status create(controller_fixture *f)
+static lib_status create_with_extension(controller_fixture *f,
+    x86_kbc8042_command_extension_result (*extension)(void *context,
+        lib_u8 command, lib_u8 input_port, lib_u8 command_byte,
+        lib_u8 *out_data))
 {
     const x86_kbc8042_link link = {
         .keyboard_inputs = keyboard_inputs, .keyboard_start = keyboard_start,
@@ -119,12 +140,18 @@ static lib_status create(controller_fixture *f)
         .keyboard_cancel_parameter = keyboard_cancel, .keyboard_write = keyboard_write,
         .aux_write = aux_write, .keyboard_accepted = keyboard_accepted,
         .keyboard_admit = keyboard_admit, .keyboard_advance = keyboard_advance,
-        .irq = irq, .output_port = output_port, .context = f
+        .irq = irq, .output_port = output_port,
+        .command_extension = extension, .context = f
     };
     lib_status status = x86_keyboard_create(&f->keyboard);
     if (status == LIB_STATUS_OK) status = x86_ps2_mouse_create(&f->mouse);
     if (status == LIB_STATUS_OK) status = x86_kbc8042_create(&link, &f->controller);
     return status;
+}
+
+static lib_status create(controller_fixture *f)
+{
+    return create_with_extension(f, command_extension);
 }
 
 static void destroy(controller_fixture *f)
@@ -191,6 +218,52 @@ static lib_bool transport(controller_fixture *f)
     failed |= x86_kbc8042_receive_keyboard_byte(c, 0x1cu) != LIB_STATUS_OK;
     failed |= x86_kbc8042_read_data(c) != 0x9eu;
     return failed;
+}
+
+static lib_bool selected_command_extension(controller_fixture *f)
+{
+    x86_kbc8042 *c = f->controller;
+    lib_u32 calls;
+
+    if (c == LIB_NULL) return LIB_FALSE;
+    x86_kbc8042_reset(c);
+    f->irq[0] = LIB_FALSE;
+    f->irq[1] = LIB_FALSE;
+    calls = f->extension_calls;
+    x86_kbc8042_write_command(c, 0xa3u);
+    if (f->extension_calls != calls + 1u ||
+        (x86_kbc8042_read_status(c) & 0x01u) != 0u || f->irq[0] || f->irq[1]) {
+        return LIB_FALSE;
+    }
+    x86_kbc8042_write_command(c, 0xa5u);
+    if (f->extension_calls != calls + 2u ||
+        (x86_kbc8042_read_status(c) & 0x01u) != 0u || f->irq[0] || f->irq[1] ||
+        x86_kbc8042_read_data(c) != 0xb4u ||
+        (x86_kbc8042_read_status(c) & 0x01u) != 0u) {
+        return LIB_FALSE;
+    }
+    x86_kbc8042_write_command(c, 0xa5u);
+    x86_kbc8042_write_command(c, 0xaau);
+    return x86_kbc8042_read_data(c) == 0xaau &&
+        (x86_kbc8042_read_status(c) & 0x01u) == 0u;
+}
+
+static lib_bool generic_commands_remain_unhandled(void)
+{
+    controller_fixture fixture = {0};
+    lib_bool result;
+
+    if (create_with_extension(&fixture, LIB_NULL) != LIB_STATUS_OK) {
+        destroy(&fixture);
+        return LIB_FALSE;
+    }
+    x86_kbc8042_write_command(fixture.controller, 0xa3u);
+    x86_kbc8042_write_command(fixture.controller, 0xa4u);
+    x86_kbc8042_write_command(fixture.controller, 0xa5u);
+    result = (x86_kbc8042_read_status(fixture.controller) & 0x01u) == 0u &&
+        !fixture.irq[0] && !fixture.irq[1];
+    destroy(&fixture);
+    return result;
 }
 
 static lib_bool parameter_interleaving(controller_fixture *f)
@@ -744,6 +817,8 @@ int main(void)
         return 1;
     }
     failed = transport(&fixture);
+    failed |= selected_command_extension(&fixture);
+    failed |= !generic_commands_remain_unhandled();
     failed |= parameter_interleaving(&fixture);
     failed |= packet_saturation(&fixture);
     failed |= configuration_and_serial(&fixture);

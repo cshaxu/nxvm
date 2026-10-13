@@ -4,6 +4,7 @@
 #include "lib/types/types_interface.h"
 #include "core/x86/machine_interface.h"
 #include "core/chips/pit825x/pit825x_interface.h"
+#include "core/board-at/kbc_interface.h"
 
 /* Existing serialized board reset boundaries, in execution order. */
 typedef enum core_machine_board_reset_phase {
@@ -23,6 +24,10 @@ typedef struct core_machine_board_profile_binding {
     void (*refresh_nmi)(void *context);
     lib_bool (*refresh_request)(void *context, lib_u8 *out_address);
     void (*refresh_complete)(void *context);
+    /* An asserted profile hold withholds CPU retirement while the existing
+     * scheduler continues clock and DMA ownership. */
+    lib_bool (*cpu_hold_asserted)(void *context);
+    core_machine_kbc_command_extension kbc_command_extension;
     lib_bool (*next_deadline)(void *context, lib_u64 now, lib_u64 *out_tick);
     void (*finalize)(void *context);
     lib_bool owns_refresh_output;

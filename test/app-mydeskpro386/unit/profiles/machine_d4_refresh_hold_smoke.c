@@ -142,7 +142,7 @@ lib_i32 main(void)
         refresh_dma_read, LIB_NULL, LIB_NULL
     };
     core_machine_config config = {0};
-    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u, 18u};
     core_machine_trace_provider trace;
     core_machine_dma_request_binding binding = {0};
     refresh_probe probe = {{{0}}, 0u};
@@ -152,6 +152,7 @@ lib_i32 main(void)
     core_machine_d4_platform *d4_board = LIB_NULL;
     lib_u8 byte = 0u;
     lib_u8 refresh_address = 0xffu;
+    lib_u8 special_read = 0u;
     lib_u32 start;
     lib_u32 refresh_request = 0u;
     lib_u32 refresh_acknowledge = 0u;
@@ -188,10 +189,14 @@ lib_i32 main(void)
     if (!failed) refresh_program_dma_channel2(machine);
     if (!failed) test_board_dma_request_assert(board, &binding);
     failed = failed || core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
+    failed = failed || core_machine_d4_platform_kbc_command(d4_board, 0xa3u,
+        0xb4u, 0x43u, &special_read) !=
+        X86_KBC8042_COMMAND_EXTENSION_HANDLED;
     start = probe.count;
     failed = failed || test_core_machine_advance_time(machine, 18u) != LIB_STATUS_OK;
     failed = failed || !test_model40_refresh_hold_matches(d4_board, LIB_TRUE, 0u) ||
-        !test_core_dma_wait_remaining_matches(machine, 0u);
+        !test_core_dma_wait_remaining_matches(machine, 0u) ||
+        !core_machine_d4_platform_cpu_hold_asserted(d4_board);
     failed = failed || !test_core_refresh_request(machine, &refresh_address) || refresh_address != 0u;
     failed = failed || core_machine_capture_time_observation(machine, &observation) !=
         LIB_STATUS_OK || observation.next_deadline_valid ||
@@ -233,7 +238,8 @@ lib_i32 main(void)
         refresh_commit >= refresh_release || refresh_release >= dma_begin ||
         refresh_has_cpu_transaction_between(&probe, refresh_release, dma_begin);
     failed = failed || core_machine_reset(machine) != LIB_STATUS_OK ||
-        !test_model40_refresh_reset_is_clear(d4_board);
+        !test_model40_refresh_reset_is_clear(d4_board) ||
+        core_machine_d4_platform_cpu_hold_asserted(d4_board);
 
     core_machine_destroy(machine);
     failed = failed || !refresh_non_d4_contract();

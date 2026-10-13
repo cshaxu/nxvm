@@ -10,9 +10,9 @@ with the task history. The first candidate, [selected-controller and board
 qualification](../proposals/m5-selected-controller-qualification.md), is
 admitted as T555; S1's current-path inventory and S2 PIC/PIT/DMA batch are
 complete. S3 RTC/keyboard, S4 storage and bounded S5 video are accepted;
-S6 copied-glyph capacity is accepted; S7 remaining video qualification is
-admitted. `CURRENT.md`
-owns admission and status.
+S6 copied-glyph capacity and S7 remaining video qualification are accepted;
+S8 cross-profile controller closure is implemented and pending owner delivery
+review. `CURRENT.md` owns admission and status.
 
 The [T547 SoftPC optimization and consolidation proposal](../history/M5-T547-softpc-four-test-optimization-import-proposal.md)
 is closed; its final product/qualification closure is recorded in `CURRENT.md`.

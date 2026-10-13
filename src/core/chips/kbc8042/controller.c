@@ -145,6 +145,7 @@ static void x86_kbc8042_flush_output(x86_kbc8042 *controller)
     if (controller == LIB_NULL) return;
     controller->data.fifo_head = 0u;
     controller->data.fifo_count = 0u;
+    controller->data.special_read_pending = LIB_FALSE;
     x86_kbc8042_reset_keyboard_stream(controller);
     controller->data.delayed_response_count = 0u;
     controller->data.delayed_response_index = 0u;
@@ -408,6 +409,10 @@ void x86_kbc8042_set_test_inputs(x86_kbc8042 *controller, lib_u8 value)
 
 lib_u8 x86_kbc8042_read_data(x86_kbc8042 *controller)
 {
+    if (controller != LIB_NULL && controller->data.special_read_pending) {
+        controller->data.special_read_pending = LIB_FALSE;
+        return controller->data.special_read_data;
+    }
     return x86_kbc8042_dequeue(controller);
 }
 
@@ -533,6 +538,23 @@ void x86_kbc8042_write_command(x86_kbc8042 *controller, lib_u8 command)
             controller->data.test_inputs, X86_KBC8042_OUTPUT_CONTROLLER);
         break;
     default:
+        if (controller->link.command_extension != LIB_NULL) {
+            lib_u8 extension_data = 0u;
+            const x86_kbc8042_command_extension_result extension =
+                controller->link.command_extension(controller->link.context,
+                    command, controller->data.input_port,
+                    controller->data.command_byte, &extension_data);
+
+            if (extension == X86_KBC8042_COMMAND_EXTENSION_SPECIAL_READ) {
+                /* The selected command places a byte at the data read point
+                 * without asserting OBF or an IRQ.  It remains KBC-owned;
+                 * this is not a second board response queue. */
+                controller->data.special_read_data = extension_data;
+                controller->data.special_read_pending = LIB_TRUE;
+                break;
+            }
+            if (extension == X86_KBC8042_COMMAND_EXTENSION_HANDLED) break;
+        }
         if (command >= 0xf0u && command != 0xffu) {
             controller->data.output_pulse_mask |= (lib_u8)(~command & 0x0fu);
             controller->data.output_pulse_remaining_ticks =

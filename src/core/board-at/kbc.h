@@ -37,6 +37,8 @@ typedef struct t_kbc_connect {
     void *a20_context;
     void (*request_reset)(void *context);
     void *reset_context;
+    core_machine_kbc_command_extension command_extension;
+    void *command_extension_context;
 } t_kbc_connect;
 
 struct t_kbc {

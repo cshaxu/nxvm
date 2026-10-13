@@ -25,6 +25,9 @@ typedef void (*core_machine_attachment_media_provider)(void *owner,
 typedef lib_bool (*core_machine_attachment_refresh_request_provider)(void *owner,
     lib_u8 *out_address);
 typedef void (*core_machine_attachment_refresh_complete_provider)(void *owner);
+/* A board-owned hold may defer CPU retirement while scheduler-owned DMA and
+ * device progression continue.  It is not a second transaction owner. */
+typedef lib_bool (*core_machine_attachment_cpu_hold_asserted_provider)(void *owner);
 typedef lib_u64 (*core_machine_attachment_dma_ticks_provider)(void *owner,
     lib_u64 source_ticks);
 typedef lib_bool (*core_machine_attachment_dma_request_provider)(void *owner);
@@ -63,6 +66,7 @@ typedef struct core_machine_attachment {
     core_machine_attachment_deadline_provider deadline;
     core_machine_attachment_refresh_request_provider refresh_request;
     core_machine_attachment_refresh_complete_provider refresh_complete;
+    core_machine_attachment_cpu_hold_asserted_provider cpu_hold_asserted;
     core_machine_attachment_dma_ticks_provider dma_ticks;
     core_machine_attachment_dma_request_provider dma_request;
     core_machine_attachment_dma_advance_provider dma_advance;

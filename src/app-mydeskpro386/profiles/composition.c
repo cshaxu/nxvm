@@ -111,7 +111,7 @@ static lib_status model40_selected_board_factory(
     const core_machine_board_profile_services *services, void *context,
     core_machine_board_profile_binding *out_binding)
 {
-    const core_machine_d4_platform_config config = {CORE_MACHINE_PC_AT_PORT_B, 0u};
+    const core_machine_d4_platform_config config = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u, 18u};
     const core_machine_d4_memory_config d4_memory = {
         LIB_TRUE, 0x8fu, 0xfdu, 0xfc42u };
     core_machine_d4_platform *platform = LIB_NULL;
@@ -129,6 +129,7 @@ static lib_status model40_selected_board_factory(
         return status;
     }
     *out_binding = core_machine_d4_platform_binding(platform);
+    out_binding->kbc_command_extension = core_machine_d4_platform_kbc_command;
     if (construction_output != LIB_NULL) *construction_output = platform;
     return LIB_STATUS_OK;
 }

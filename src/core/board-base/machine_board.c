@@ -19,9 +19,16 @@ lib_status core_machine_board_bind_profile(core_machine_board_state *board,
         binding->reset == LIB_NULL || binding->refresh_nmi == LIB_NULL ||
         binding->refresh_request == LIB_NULL || binding->refresh_complete == LIB_NULL ||
         binding->next_deadline == LIB_NULL || binding->finalize == LIB_NULL ||
+        (binding->kbc_command_extension != LIB_NULL &&
+         board->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_8042) ||
         (binding->owns_refresh_output != LIB_FALSE && binding->owns_refresh_output != LIB_TRUE) ||
         (binding->shutdown_resets != LIB_FALSE && binding->shutdown_resets != LIB_TRUE))
         return LIB_STATUS_INVALID_ARGUMENT;
+    if (binding->kbc_command_extension != LIB_NULL) {
+        lib_status status = core_machine_kbc_bind_command_extension(board->shared_kbc,
+            binding->kbc_command_extension, binding->context);
+        if (status != LIB_STATUS_OK) return status;
+    }
     board->profile_binding = *binding;
     return LIB_STATUS_OK;
 }
@@ -182,6 +189,7 @@ lib_status core_machine_board_create(core_machine *machine,
         .deadline = core_machine_board_deadline_observe,
         .refresh_request = core_machine_board_refresh_request,
         .refresh_complete = core_machine_board_refresh_complete,
+        .cpu_hold_asserted = core_machine_board_cpu_hold_asserted,
         .dma_ticks = core_machine_board_dma_ticks,
         .dma_request = core_machine_board_dma_request,
         .dma_advance = core_machine_board_dma_advance,
@@ -1115,6 +1123,14 @@ lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address)
     if (!board->refresh_hold_pending) return LIB_FALSE;
     *out_address = board->refresh_row;
     return LIB_TRUE;
+}
+
+lib_bool core_machine_board_cpu_hold_asserted(void *owner)
+{
+    core_machine_board_state *board = owner;
+
+    return board != LIB_NULL && board->profile_binding.cpu_hold_asserted != LIB_NULL &&
+        board->profile_binding.cpu_hold_asserted(board->profile_binding.context);
 }
 
 void core_machine_board_refresh_complete(void *owner)

@@ -64,6 +64,12 @@ records the existing eight-dot/full-cell transport limit and the proposed
 neutral optional Window text raster. It is pending owner review, not Shared
 implementation approval, an alternate target policy or video qualification.
 
+T555 S8: [cross-profile controller ledger](evidence/t555-s8-cross-profile-controller-ledger.md)
+records the selected DeskPro A3/A4/A5 route, its explicit L2 speed model,
+one-owner KBC/PIT/HOLD/DMA chain, full dual-width automated qualification and
+the eight rebuilt artifact identities. It does not claim manual electrical or
+physical timing qualification.
+
 T553 S1: [four PC App ownership ledger](evidence/t553-s1-four-pc-app-ownership-ledger.md)
 records the complete four-App inventory, inward dependency proof, ownership
 dispositions and the one App-local receiving repair.

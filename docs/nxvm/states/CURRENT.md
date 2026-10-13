@@ -3,7 +3,8 @@
 ## Current Work
 
 M5 T555 remains open: qualify retained controllers and board wiring for four
-fixed PC Apps. S1--S7 are closed; S8 has not yet been admitted.
+fixed PC Apps. S1--S7 are closed; S8 cross-profile controller closure is
+implemented and awaits owner delivery review.
 Accepted runnable delivery is S6 `73d796724`, pushed to origin/master.
 The owner's instruction to admit the next S accepts the delivered S6 batch.
 Its [delivery record](../etc/evidence/t555-s6-copied-glyph-capacity.md) and
@@ -28,28 +29,46 @@ remaining raster/MUX, V19 advanced text geometry, V20 Restore/blanking and V28
 retained VGA cursor bounds. S8 owns cross-profile speed/AUX-PIT/HOLD and final
 controller closure. Capacity alone cannot qualify live hardware production.
 
-## Most Recent Completed Task — M5 T555 S7 Remaining Video Qualification
+S8 adds the selected DeskPro A3/A4/A5 KBC personality and routes its L2
+speed-control model through the existing auxiliary PIT, board HOLD predicate
+and Core scheduler without changing a Shared component. Complete CTest passes
+568/568 on each width, and all eight PC artifacts were rebuilt and PE-width
+verified. The current evidence ledger records source limits, implementation
+ownership, hashes and the unexecuted manual/electrical scope.
+
+## Current Task — M5 T555 S8 Cross-Profile Controller Closure
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: next unused S7 in open T555 after accepted and pushed S6 `73d796724`; no task-level closure or new T. |
-| Admission And Approval | Owner instructs admission of the next S after S6 delivery and the successful read-only Shared comparison. This accepts S6 and admits the already planned remaining video batch. Single-person sequential coordinator/executor; NXVM target only. Standing approval covers Core repairs; new Shared changes or timing downgrades require separate review. |
-| Objective | Reconcile and repair the complete residual V08/V09/V17/V18/V19/V20/V28 video batch, with original-source facts and real chip-to-board-to-Machine receiving proof. A 32-row transport or successful DOS boot alone does not qualify live hardware. |
-| Reference Baseline | Accepted S6 `73d796724`; S5's complete V01--V28 source/receiver ledger and the approved Core video boundary review. |
-| Candidate Proposal | [Selected controller qualification](../proposals/m5-selected-controller-qualification.md), remaining-video S7; [video ledger](../etc/evidence/t555-s5-video-source-ledger.md), complete transferred residual classes. |
-| Files And ABI Surface | NXVM only: existing src/core/chips/video, relevant core/board-base and core/machine consumers, selected App profile/project-firmware inputs only when source reconciliation proves the need, their matching tests, Core manifests, NXVM evidence and affected PC EXEs. Reuse current 32-row glyph slots and IRQ/deadline/capture-result interfaces. Approved existing-graphics presentation appends Core TEXT_PIXELS, expands its one pixel capacity to 720x512 and copies a foreground-only intensity mask consumed by the existing Machine conversion. No Shared source/test/build or MyNES change is admitted. |
-| Non-goals | No CPU, storage, keyboard, unrelated lifecycle/monitor change; no S8 speed/AUX-PIT/HOLD work, new card/model, second framebuffer/scheduler/renderer, sibling edit, protected-file import, owner INI/media/snapshot mutation or inferred physical timing grade. The publication stack-cost observation is not this video qualification's implementation scope. |
-| Applicable Rules | NXVM guide, Contributing, shared Execution/Architecture/Coding/Document; NXVM architecture/coding/UI and source policy; selected-controller proposal, S5 video ledger and approved video boundary review. Read the originals for each consumed fact before implementation. |
-| Design Contract | Chip owns VRAM/register/raster/font/reset; board owns decode, source-clock and IRQ wiring; Machine owns copied publication. Live font selection consumes actual plane-2 VRAM with source-specific EGA/CECG bank addresses and fixed 32-byte glyph slots. Owner rejects Shared raster extension and approves NXVM-only exact text pixels through the existing graphics frame/Window route; ordinary character text remains Console-capable. Reuse the Core pixel member, append its text-pixel kind and qualify 720x512 capacity plus both-width stack lifetimes. Preserve CGA and nonselected VGA distinctions, failure atomicity and one deadline owner. |
-| Estimated Diff | The residual ledger records all seven current classes and bounded design estimates. First implement the source-proven V08 RAM gate in Video C and the existing bus-observation comment, with planar smoke proof: approximately production +10/-5, tests +70. No public API/state is added; existing callers/firmware must explicitly establish valid RAM state. Remaining original/output-contract questions stay explicit; each mechanism reports its exact surface before edits. No local vector or prerequisite is a partial implementation P or complete S7 claim. |
-| Verification | Establish current owner-local regression baseline; prove each changed fact through chip and real board/Machine routes, including reset, failure preservation and both font banks. Reuse original x64/x86 Ninja/ccache trees and component objects. Final complete repository units and selected four-PC integrations pass once per width; preserve DeskPro 300-second startup budget. Update relevant manifests and run Types/corpus/dependency/test-owner/documentation gates. |
-| Expected Markers | Every residual row has direct accepted proof or an explicitly reviewed source-bound disposition; final selected CTest groups have zero failures, Core gates pass and deployed affected PC EXEs have correct PE widths and matching hashes. Timeout, skipped asset and stored-but-unconsumed registers are not qualification success. |
-| Asset Needs | Read existing external original manuals/firmware/media under source policy; no new protected import or mutation. Rebuild/deploy affected optimized stripped 0555 PC x64/x86 pairs after production edits; preserve the exact MyNES pair when its executable inputs are unchanged. |
-| Reporting Requirements | First report full residual inventory, source conflicts, design, file surface and estimated diff before production edits. Then report named mechanism progress and final actual C/H additions/deletions/net, retained paths/state, complete proof, artifacts and pushed P. Separate automated native checks from unexecuted manual/electrical qualification. |
-| Similar-Issue Sweep | Sweep selected CGA/EGA/CECG and retained VGA register consumers for RAM/clock/reset gates, live font address/height/bank, raster/status/IRQ, panning/split/stride and Restore/blanking priority. Map every relevant caller and test oracle to the ledger; preserve valid variant differences rather than copying generic EGA rules into CECG/VGA. |
-| Exit Criteria | Exhaust the complete admitted residual batch against sources/current code and real receivers; freeze dual-width final units/integration and current affected PC pairs, updated manifests/evidence, complete scoped implementation P immediately pushed, coordinator actual-diff review and truthful S closure. T555 stays open for S8. No partial vectors or later boot checkpoint may hide an unresolved class. |
-| Stop Conditions | Report any Shared requirement, timing downgrade, unsupported source invention, reversed ownership, second execution/display path, protected/user-file mutation or material scope expansion. Source uncertainty requires an explicit model/disposition, not a silent implementation guess. |
-| Original Owner Request | Admit the next S after delivery/acceptance of S6; continue the approved T555 sequence with residual video qualification and preserve the completed Shared copied-glyph contract. |
+| Identifier Mode | Continuation: next unused S8 in open T555 after coordinator acceptance of S7 `38c0a818a` and governance record `0977b4f22`; no task-level closure or new T. |
+| Admission And Approval | The standing T555 owner objective and ordered S8 plan admit the remaining cross-profile closure. Single-person sequential coordinator/executor; NXVM target only. Existing standing approval covers Core and NXVM-App repairs; a Shared change, timing downgrade, source invention or protected-file import stops for review. |
+| Objective | Exhaust the retained cross-profile controller and board class: the documented DeskPro 386 KBC A3/A4/A5 speed/read contract, SLOWD-to-auxiliary-PIT-to-refresh/HOLD/DMA route, the four fixed-App route matrix, and every remaining L1/L2/L4 disposition required by T555. |
+| Reference Baseline | Accepted S7 `38c0a818a` and `0977b4f22`; [selected-controller proposal](../proposals/m5-selected-controller-qualification.md); [S3 source ledger](../etc/evidence/t555-s3-rtc-keyboard-source-ledger.md), including its Compaq speed-control transfer. |
+| Candidate Proposal | [Selected controller qualification](../proposals/m5-selected-controller-qualification.md), T555 S8 cross-profile closure. The S3 ledger is the finite source/receiver universe; this packet records its current completion predicate. |
+| Files And ABI Surface | NXVM Core/Model40 only as source proves: existing KBC, D4/board, PIT/DMA/Core receiver paths, MyDeskPro386 profile composition, matching Core/App tests, CMake routes, manifests, evidence and affected PC EXEs. The four App integration harness may receive only neutral cross-profile assertions. No Lib, Emulator, x86/Product shared source/test, MyNES, owner INI/media/snapshot or protected binary changes are admitted. |
+| Non-goals | No new machine, generic KBC firmware emulator, second refresh scheduler, physical oscillator/MCU/waveform model, CPU timing downgrade, BIOS-specific host behavior, video/storage repair, Shared API, sibling edit or guessed A1/A2/A6 semantics. |
+| Applicable Rules | NXVM guide, Contributing, shared Execution/Architecture/Coding/Document, NXVM architecture/coding/source policy, selected-controller proposal and S3 ledger. Re-read cited original manual pages before implementing each command, port, signal or timing fact. |
+| Design Contract | KBC owns command parsing and one output-buffer/IRQ contract; the Model40 board owns selected personality binding and external signal routing; PIT owns its counter state; Core owns guest time, HOLD arbitration and DMA service. A3/A4/A5 must cross those existing owners without a second command queue, speed state mirror, refresh scheduler or direct private Core access. Undefined source members remain explicit dispositions. |
+| Estimated Diff | First reconcile the exact current KBC/D4/PIT/DMA paths and original page facts in an S8 ledger before changing production. A source-proven repair is expected to touch bounded Core/Model40 C/H plus direct and real-receiver tests; its file surface and additions/deletions are recorded before implementation rather than guessed here. |
+| Verification | Prove every admitted command/signal through direct chip, board and real Machine receivers; prove reset, output-buffer/IRQ behavior, SLOWD mode selection, auxiliary PIT trigger, HOLD release and DMA service. Run complete repository Unit suites and four-PC Integration routes once per x64/x86, applicable Core gates/manifests/whitespace/documentation checks, then rebuild and PE-verify eight PC artifacts if production inputs change. |
+| Expected Markers | The S8 ledger maps every source member to direct proof, source-bound non-applicability/deferment or a committed repair; no command succeeds without its defined observable effect. The four profile routes have explicit positive/non-applicable evidence. No timeout, boot, stored register or test-only hook counts as receiver proof. |
+| Asset Needs | Read only existing owner-managed Compaq/IBM manuals and current external integrations under source policy. No new firmware, ROM, guest media or INI mutation is needed. Rebuild only current affected PC executable pairs after verified production changes; MyNES remains exact when its inputs are unchanged. |
+| Reporting Requirements | Report initial finite member inventory, original/manual evidence, current owner/path, source conflict and planned file/diff surface before production edits. At delivery report actual changes, retained owner, direct/board/Machine proof, complete tests, artifact hashes and unexecuted physical/manual qualification. |
+| Similar-Issue Sweep | Search all retained KBC command personalities, Model40 D4/PIT outputs, refresh/HOLD/DMA request routes and all four profile bindings. Every hit is fixed, source-bound non-applicable or explicitly transferred; a successful Model40 boot cannot hide a peer-App or adjacent command defect. |
+| Exit Criteria | Every S8 member has a source-qualified disposition; confirmed gaps are repaired through the one existing owner chain; relevant unit and four-App integrations pass on x64/x86; required manifests/gates/doc checks pass; affected eight artifacts are rebuilt and width-verified; implementation and coordinator P reviews are pushed. T555 remains open only if a remaining item is explicitly transferred through Queue/TODO under the rules. |
+| Stop Conditions | Stop for a Shared requirement, unavailable required original fact, need for a second scheduler/state owner, timing downgrade, reversed dependency, protected/user-file mutation or material scope expansion. Record source uncertainty as an explicit L1/L2/L4 disposition; never fabricate a KBC command, speed bit or electrical duration. |
+| Original Owner Request | Continue the approved T555 controller/board qualification until every audit item is repaired or explicitly disposed, with cross-machine verification and updated artifacts. |
+
+### S8 Delivery Record — Pending Owner Review
+
+The implementation retains one KBC parser/output contract, one Model40 D4
+personality binding, the existing auxiliary PIT counter and the existing Core
+HOLD/DMA scheduler route. A3/A4 do not repurpose output-port bits; A5 is a
+KBC-owned no-OBF/no-IRQ special read. The selected one-shot count and switch
+polarity are documented L2 models, not physical timing claims; A1/A2/A6 remain
+explicitly unimplemented. The direct/receiver matrix, complete dual-width
+CTest results and eight artifact hashes are in
+[`t555-s8-cross-profile-controller-ledger.md`](../etc/evidence/t555-s8-cross-profile-controller-ledger.md).
 
 ### S7 Closure Record
 
