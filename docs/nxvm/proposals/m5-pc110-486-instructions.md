@@ -2,9 +2,11 @@
 
 ## Admission And Dependencies
 
-Unnumbered M5 candidate in the [NXVM queue](../states/QUEUE.md), created by the
-owner-requested PC110 task split. Allocate a numeric T only at admission.
-Depends on: T558 hardware/CPU feature freeze.
+Admitted as M5 T559 on 2026-10-13 after owner acceptance of T558's research
+delivery 7ea9084fe. Removed from the candidate queue; Current owns active S1.
+Consumes T558 sources/checklists. S1 must settle the selected CPU feature
+decisions before affected implementation; research closure is not proof of
+every optional feature or permission to guess missing behavior.
 Use the [PC110 programme contract](m5-pc110-evidence-and-implementation.md)
 and its convergence ledger; the task packet freezes the exact batch and source
 baseline before implementation. Research references are not implementation imports.
@@ -34,6 +36,10 @@ batch, or a required Shared-six modification; do not invent an undocumented
 fallback. Continue independent in-scope work where possible.
 
 ## Suggested S Boundaries
+
+S1 is admitted for current-code/form inventory, source-conflict decisions and
+the finite convergence ledger. It publishes the numbered follow-on S plan
+after inspecting actual code; no implementation is hidden in this planning S.
 
 Instruction/feature inventory; cohesive instruction batches; negative/exception and retained-family regression audit.
 

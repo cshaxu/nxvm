@@ -1,5 +1,22 @@
 # M5 T558 PC110 Evidence And Implementation
 
+## Closure
+
+Owner accepted S2 P1 `7ea9084fe` and approved closure on 2026-10-13.
+Actual-change review covered its 15 NXVM documents, original-source identities,
+nine receiver source/checklist/proof maps, source conflicts and ownership
+handoffs. Documentation governance, local links/anchors and diff checks passed;
+the worktree was clean and origin/master matched delivery. No executable input
+changed, so no build or runtime qualification was required or claimed.
+
+Closure accepts the research package, not an implemented or fully measured
+PC110. The exact unresolved decisions in the S2 reconciliation are explicitly
+transferred: CPU identity/feature and XADD source decisions to T559 S1 and the
+system receiver; other hardware and lawful-input choices to their respective
+eight remaining receivers. Those gates remain mandatory before affected code
+or release qualification. T559, selected 486SX instructions, is admitted next
+by the same owner request. Earlier open-status wording below is historical.
+
 Admitted on 2026-10-13 by the owner's selection of former queue entry 3.
 All current candidates belong to M5. T557's accepted naming/cursor scope is
 closed before this admission; its runtime proofs and artifacts remain unchanged.

@@ -2,7 +2,39 @@
 
 ## Current Work
 
-### Active Task — M5 T558 S2 PC110 Implementation Evidence And Contract Freeze
+### Active Task — M5 T559 S1 Selected 486SX Instruction Inventory
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T559 S1 after owner acceptance and closure of T558; consumes the former first queue candidate. |
+| Admission And Approval | Owner approves T558 closure and admission of the next T on 2026-10-13. T559 implements the selected 486SX instruction delta; S1 first freezes the instruction/feature inventory and bounded implementation batches. |
+| Objective | Map the current CPU decoder, profile checks and tests to the original 486 instruction forms; resolve or explicitly gate optional feature choices and publish the finite T559 convergence ledger and subsequent S plan. |
+| Non-goals | No production changes in S1, Shared modifications, PC110 board admission, firmware changes, new executor or claims of full 486 system/timing support. |
+| Reference Baseline | T558 research delivery 7ea9084fe; unchanged production baseline feadb8235; original manuals and reference revisions pinned in T558 S2 evidence. |
+| Candidate Proposal | [Selected 486SX instructions](../proposals/m5-pc110-486-instructions.md), with T558 CPU-1--7 and single-owner handoffs. |
+| Files And ABI Surface | NXVM proposal, evidence, status and history only in S1; later admitted batches may change Core CPU and its actual callers/tests. No ABI change admitted by this planning packet. |
+| Applicable Rules | NXVM guide, Execution coverage/lifecycle, Document, Architecture/Coding, NXVM architecture/layout and source/research policy; architecture-governance skill. |
+| Verification | Inspect actual decoder entries, profile comparisons, existing tests and original instruction/exception sources. Reconcile every new, inherited-affected and variant-optional form to an owner, direct proof and system handoff. Run documentation/link/diff checks. |
+| Expected Markers | Finite form ledger and bounded S batches; no accidental 386 fallback, unconditional CPUID, guessed feature bit or success-only cache instruction. |
+| Asset Needs | Existing external manuals/reference code read-only; no new ROM/media or artifact. Existing ten EXEs remain unchanged in S1. |
+| Reporting Requirements | Report actual implementation gaps, source conflicts, proposed interface surface and sequential S plan before code batches; distinguish research from runtime verification. |
+| Stop Conditions | Required Shared change, incompatible source import, unresolved silicon choice affecting the admitted batch or unbounded instruction scope; report and continue independent inventory. |
+| Exit Criteria | Complete T559 coverage ledger, source/feature decisions or bounded gates, reviewed per-batch implementation/test plan and passing document checks, committed and pushed. |
+| Original Owner Request | Close the accepted PC110 research task and admit the next queued T. |
+| Similar-Issue Sweep | All CPU profile comparisons, opcode tables, test-register/CPUID/cache placeholders, test assumptions and relevant current documents; no global mechanical equality-to-range replacement. |
+
+## Closed Task — M5 T558
+
+Owner accepted S2 delivery 7ea9084fe and approved T closure on 2026-10-13.
+The nine source/checklist receivers and their bounded unresolved decisions are
+accepted as research delivery. This does not assert fully measured hardware:
+CPU feature/source decisions transfer to T559 S1 and the system candidate;
+board, input/power, display, storage, audio and asset decisions remain mandatory
+gates in their named queued receivers. Production and ten EXEs are unchanged.
+The retained [history](../history/M5-T558-pc110-evidence-and-implementation.md)
+records the closure review and accepted limits.
+
+### Accepted Delivery — M5 T558 S2 PC110 Implementation Evidence And Contract Freeze
 
 | Field | Required record |
 | --- | --- |
@@ -24,7 +56,7 @@
 | Similar-Issue Sweep | Verify referenced raw evidence exists; distinguish original versus reconstructed manuals, implemented versus placeholder models, firmware dumps versus runtime shadows, CPU variant claims and actual bytes. |
 
 S1's inventory, queue plan and ownership review are accepted as design delivery,
-not complete hardware freeze. S2 continues the goal. Current ten artifacts remain
+not complete hardware freeze. S2 completed its research goal. Current ten artifacts remain
 unchanged because no executable inputs change.
 
 S2 research delivery: all nine proposals consume the reviewed
@@ -33,7 +65,8 @@ S2 research delivery: all nine proposals consume the reviewed
 Their source/checklist/ownership/proof coverage is reviewed; exact unresolved
 hardware and asset choices retain named admission gates. No implementation,
 firmware preparation, runtime qualification or new artifact is claimed.
-T558 remains open for hardware-freeze disposition and owner review.
+The owner accepted this bounded delivery; remaining hardware decisions transfer
+explicitly to the corresponding receivers rather than being counted as proven.
 
 ### Accepted Delivery — M5 T558 S1 PC110 Research And Gap Inventory
 

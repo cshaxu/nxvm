@@ -65,6 +65,10 @@ The owner splits the work into research/contract-freeze T558 and nine queued
 implementation/qualification packages. The [programme proposal](../proposals/m5-pc110-evidence-and-implementation.md)
 defines dependency and completion boundaries; Queue alone owns their ordering.
 Closing research cannot close the machine's implementation obligation.
+T558 research delivery is owner-accepted; selected 486SX instruction work is
+admitted as T559 with a source/form inventory S1. Unresolved hardware/asset
+decisions retain their named receiver gates; they are not implicitly qualified
+by research closure.
 
 Freeze the PC110 revision and lawful assets. Qualify its 486 variant and each
 chipset/display/storage/input/power component through source, function/timing,

@@ -7,7 +7,10 @@ runtime. Initially admitted as M5 T558 on 2026-10-13. The owner subsequently
 requested a multi-T plan: T558 now owns research and contract freeze; the nine
 implementation/qualification receivers below carry the complete product goal.
 All candidates remain M5. This is an explicit scope split, not a claim that
-research alone completes PC110. T558 remains open until its revised exits pass.
+research alone completes PC110. The owner accepted research delivery 7ea9084fe
+and closed T558 on 2026-10-13 with the S2 decision gates explicitly transferred
+to their named receivers. T559 starts with the CPU inventory/decision batch;
+the remaining proposals stay unnumbered until admission.
 
 ## Current Product Context
 
