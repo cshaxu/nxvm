@@ -8,7 +8,37 @@ retained in [MyNES Current](../../mynes/states/CURRENT.md). Diagnostic delivery
 `3dc750be2` is not a production fix or S10 closure. No MyNES implementation is
 part of T557. Prior S9/S11 packets below are historical delivery evidence.
 
-## Current Task — M5 T557 S1 PC Publication And INI Identity
+## Current Task — M5 T557 S2 Explicit Cursor Ownership
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T557 S2 after delivered S1; owner explicitly admits this additional cursor repair. |
+| Admission And Approval | Owner approves DISABLED/HOST/SOURCE frame mode on 2026-10-13, Shared contract changes, qualification, publication and push; await acceptance. |
+| Objective | Give Window exactly one blink owner; preserve hardware phase independently of cursor enable; Console uses native host blink. |
+| Non-goals | No SoftPC write/import, RDP input repair, new queue/thread, software Console cursor, INI/media/ROM changes. |
+| Reference Baseline | 76ef26592, verified clean before admission. |
+| Candidate Proposal | [Publication and cursor follow-up](../proposals/m5-pc-publication-ini-identity.md). |
+| Files And ABI Surface | Lib KVM frame cursor_visible replaced by cursor_mode enum; Window/Console adapters and Emulator comparison; Core video snapshot/frame; corresponding tests/manifests/docs. MyNES receiver and all ten binaries rebuilt. |
+| Applicable Rules | NXVM guide; shared Execution/Architecture/Coding/Document; NXVM architecture/layout/UI/source policy; architecture-governance and coding-governance skills. |
+| Verification | Original dual-width Ninja/ccache graphs; focused mode/phase/transition/Console and Core tests, complete repository units, PC integrations, manifests/dependency/doc gates and ten artifact identities. |
+| Expected Markers | Disabled hides; Host uses 250ms; Source uses supplied phase only; invalid modes rejected; Console never gates native cursor with source phase. |
+| Asset Needs | Eight PC 0557 and current MyNES pair; preserve owner INIs, snapshots and external inputs. |
+| Reporting Requirements | Actual diff, tests, artifacts, commit identities and unperformed phone/RDP verification; no global correctness claim. |
+| Stop Conditions | Unapproved public contract expansion, extra state machine or unrelated behavior/source changes. |
+| Exit Criteria | Reviewed implementation, full dual-width units, affected regressions and deployed artifacts; target-scoped commits pushed, clean tree, then owner acceptance. |
+| Original Owner Request | Ensure clean tree, admit S for approved cursor contract, implement/build/publish/test/commit/push and wait for acceptance. |
+| Similar-Issue Sweep | All cursor fields in src/test, frame comparison, native draw/damage, freeze/mode transitions, snapshot phase publication and Console approximation. |
+
+### S2 Delivery
+
+Implementation and dual-width qualification are complete: 592/592 repository
+units, 36/36 PC integrations and 12/12 MyNES integrations per width. All ten
+EXEs are rebuilt and deployed. The [S2 evidence](../etc/evidence/t557-s2-cursor-ownership.md)
+records the contract, actual +68/-28 production and +101/-26 test diff,
+artifact hashes and unperformed manual phone/RDP acceptance. S2 is delivered
+for owner verification, not accepted or closed; T557 remains open.
+
+## Delivered Task — M5 T557 S1 PC Publication And INI Identity
 
 | Field | Required record |
 | --- | --- |

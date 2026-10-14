@@ -2300,7 +2300,7 @@ static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const
         X86_VIDEO_MAX_ROWS * 2u];
     lib_i32 buffer_changed = LIB_FALSE;
     lib_i32 cursor_changed;
-    lib_i32 cursor_visible;
+    lib_bool cursor_visible;
     lib_bool enhanced_text;
     lib_bool planar_text;
     lib_bool output_active;
@@ -2392,25 +2392,27 @@ static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const
         relative_cursor = (lib_u16)((cursor - start) %
             (X86_VIDEO_TEXT_BYTES / 2u));
     }
-    cursor_visible = output_active && relative_cursor < columns * rows;
+    out_snapshot->cursor_enabled = output_active && relative_cursor < columns * rows;
+    cursor_visible = LIB_TRUE;
     if (adapter->data.ega_personality == X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR ||
         (adapter->data.ega_controller_configured && !adapter->data.vga_configured)) {
-        cursor_visible &= x86_video_ega_cursor_bounds(adapter, out_snapshot->text_cell_height,
-            &out_snapshot->cursor_top, &out_snapshot->cursor_bottom) &&
-            (adapter->data.field_phase & x86_video_ega_cursor_phase_mask(adapter)) == 0u;
+        out_snapshot->cursor_enabled &= x86_video_ega_cursor_bounds(adapter, out_snapshot->text_cell_height,
+            &out_snapshot->cursor_top, &out_snapshot->cursor_bottom);
+        cursor_visible = (adapter->data.field_phase & x86_video_ega_cursor_phase_mask(adapter)) == 0u;
     } else if (!adapter->data.ega_controller_configured) {
         const lib_u8 mode = (lib_u8)((adapter->data.crtc[
             X86_VIDEO_CRTC_CURSOR_TOP] >> 5u) & 3u);
 
-        cursor_visible &= out_snapshot->cursor_top <= out_snapshot->cursor_bottom &&
-            mode != 1u && (mode < 2u || (adapter->data.field_phase &
-                (mode == 2u ? 8u : 16u)) == 0u);
+        out_snapshot->cursor_enabled &= out_snapshot->cursor_top <= out_snapshot->cursor_bottom &&
+            mode != 1u;
+        cursor_visible = mode < 2u || (adapter->data.field_phase &
+            (mode == 2u ? 8u : 16u)) == 0u;
     } else {
-        cursor_visible &= (adapter->data.crtc[X86_VIDEO_CRTC_CURSOR_TOP] &
+        out_snapshot->cursor_enabled &= (adapter->data.crtc[X86_VIDEO_CRTC_CURSOR_TOP] &
             0x20u) == 0u && out_snapshot->cursor_top <= out_snapshot->cursor_bottom;
     }
-    out_snapshot->cursor_visible = cursor_visible;
-    if (cursor_visible) {
+    out_snapshot->cursor_visible = out_snapshot->cursor_enabled && cursor_visible;
+    if (out_snapshot->cursor_enabled) {
         out_snapshot->cursor_x = (lib_u8)(relative_cursor % columns);
         out_snapshot->cursor_y = (lib_u8)(relative_cursor / columns);
     }
@@ -2466,7 +2468,8 @@ static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const
         adapter->data.captured_cursor_address != cursor ||
         adapter->data.captured_cursor_x != out_snapshot->cursor_x ||
         adapter->data.captured_cursor_y != out_snapshot->cursor_y ||
-        adapter->data.captured_cursor_visible != out_snapshot->cursor_visible;
+        adapter->data.captured_cursor_visible != out_snapshot->cursor_visible ||
+        adapter->data.captured_cursor_enabled != out_snapshot->cursor_enabled;
     if (buffer_changed || cursor_changed) x86_video_mark_dirty(adapter);
     adapter->data.captured_generation = adapter->data.dirty_generation;
     adapter->data.captured_cursor_top = out_snapshot->cursor_top;
@@ -2478,6 +2481,7 @@ static lib_status x86_video_capture_text_snapshot_from(x86_video *adapter, const
     adapter->data.captured_rows = rows;
     adapter->data.captured_text_cell_height = out_snapshot->text_cell_height;
     adapter->data.captured_cursor_visible = out_snapshot->cursor_visible;
+    adapter->data.captured_cursor_enabled = out_snapshot->cursor_enabled;
     adapter->data.captured = LIB_TRUE;
     adapter->data.captured_kind = X86_VIDEO_KIND_TEXT;
     out_snapshot->buffer_changed = buffer_changed;

@@ -1,5 +1,8 @@
 # Supporting Documentation Index
 
+T557 S2: [cursor ownership](evidence/t557-s2-cursor-ownership.md) records the
+approved KVM mode contract, Core adaptation and receiving verification.
+
 T556 S9: [quality repair delivery](evidence/t556-s9-quality-repair-delivery.md)
 records the flat DeskPro layout, A1--A5 repairs, exact dual-width qualification,
 actual diff and ten current artifacts; retain through owner acceptance/history.

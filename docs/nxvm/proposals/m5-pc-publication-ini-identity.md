@@ -9,6 +9,22 @@ MyNES, owner INI bytes, ROMs, media and snapshots are outside this task.
 
 ## Design
 
+### Owner-Approved S2 Scope Extension
+
+After S1 delivery the owner admits explicit cursor ownership. KVM text replaces
+cursor_visible with cursor_mode (DISABLED=0, HOST=1, SOURCE=2); position/shape
+remain unchanged and cursor_phase applies only to SOURCE. Window uses either
+its existing 250ms phase or the source phase, never both. Console approximates
+both enabled modes with its native cursor, ignoring source phase. Core retains
+independent enable and phase; Emulator compares mode and phase. No second queue,
+timer, renderer or compatibility API is introduced. All in-repository consumers
+and ten artifacts are receivers; this narrowly supersedes S1's Shared/MyNES
+exclusion. SoftPC remains read-only and is not modified by this implementation.
+S2 requires full dual-width units, affected integration and manifest/doc checks,
+publication, separate target commits and owner acceptance. Manual RDP is not
+inferred from deterministic tests. Estimated source/test diff is +180--300,
+-60--120 lines before mechanical receiver migration and task records.
+
 Each App build declaration owns its release basename and explicit INI name.
 The generic artifact rule consumes these values and supplies the INI identity
 to that App's entry. The entry passes it explicitly to Core Product startup.

@@ -7,7 +7,7 @@ The entries below are ordered unnumbered candidates.
 [PC publication and INI identity](../proposals/m5-pc-publication-ini-identity.md)
 is admitted as T557 ahead of the remaining candidates. T556's NXVM work is
 closed after accepted S11; its unresolved S10 remains explicitly owned by
-MyNES Current, not counted as fixed. CURRENT owns T557 S1 execution.
+MyNES Current, not counted as fixed. CURRENT owns T557 S2 cursor-contract execution.
 
 The [T554 default-PC text cursor restoration](../history/M5-T554-pc-text-cursor-restoration.md)
 is closed after owner Console/Window acceptance; its archived proposal remains

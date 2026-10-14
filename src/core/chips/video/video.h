@@ -101,7 +101,8 @@ typedef struct x86_video_data {
     lib_u16 captured_columns;
     lib_u16 captured_rows;
     lib_u8 captured_text_cell_height;
-    lib_i32 captured_cursor_visible;
+    lib_bool captured_cursor_visible;
+    lib_bool captured_cursor_enabled;
 } x86_video_data;
 
 struct x86_video {

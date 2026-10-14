@@ -106,7 +106,8 @@ typedef struct x86_video_snapshot {
     /* Text coordinates are column then row, relative to display start. */
     lib_u8 cursor_x;
     lib_u8 cursor_y;
-    lib_i32 cursor_visible;
+    lib_bool cursor_enabled;
+    lib_bool cursor_visible; /* Current hardware phase, including enable. */
     lib_i32 buffer_changed;
     lib_i32 cursor_changed;
     lib_u8 text_glyphs_present;

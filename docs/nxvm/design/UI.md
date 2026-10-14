@@ -44,6 +44,12 @@ assembly/disassembly remain in all machine builds; development trace is separate
 
 ## Host Resources
 
+Text cursor enable/shape and instantaneous hardware visibility are separate
+Core facts. PC text frames use KVM SOURCE mode: Window draws the provided phase
+without host re-blinking. Console uses native host blinking for enabled cursors
+and does not promise precise hardware phase. KVM HOST mode remains available
+to sources that delegate blinking; disabled cursors remain hidden.
+
 Only supplied firmware and media enter the machine. Lib Storage owns
 direct/readonly/overlay access and locking; preserve masters for overlay and
 seed use. No host-drive DOS API, embedded substitute BIOS or automatic

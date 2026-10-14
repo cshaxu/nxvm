@@ -110,7 +110,8 @@ lib_status vm_machine_frame_from_display(
         if (destination->window.text.base.cursor_bottom >= destination->window.text.base.font_height)
             destination->window.text.base.cursor_bottom =
                 (lib_u8)(destination->window.text.base.font_height - 1u);
-        destination->window.text.base.cursor_visible = source->cursor_visible;
+        destination->window.text.base.cursor_mode = source->cursor_enabled ?
+            KVM_CURSOR_SOURCE : KVM_CURSOR_DISABLED;
         destination->window.text.base.cursor_phase = source->cursor_visible;
     }
     for (cell = 0u; cell < X86_VIDEO_MAX_COLUMNS * X86_VIDEO_MAX_ROWS; ++cell) {

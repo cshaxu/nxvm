@@ -549,7 +549,7 @@ static lib_bool planar_text_pixels_match(x86_video_snapshot *snapshot)
             x86_video_advance(video, 1u);
             valid &= !video->data.vertical_interrupt_pending &&
                 x86_video_capture_snapshot_from(video, LIB_NULL, snapshot) == LIB_STATUS_OK &&
-                (dots == 8u ? !snapshot->cursor_visible && snapshot->cursor_changed :
+                (dots == 8u ? snapshot->cursor_enabled && !snapshot->cursor_visible && snapshot->cursor_changed :
                     snapshot->buffer_changed && snapshot->pixels[36u] == 0u) &&
                 x86_video_ticks_until_event(video, &due) == LIB_STATUS_OK &&
                 due == half_cycle * dots / 8u;

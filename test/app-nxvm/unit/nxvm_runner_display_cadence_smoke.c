@@ -112,7 +112,7 @@ static lib_bool vm_runner_blink_cycle(vm_machine *machine,
         return LIB_FALSE;
     if (character ? !frame->window.graphics || frame->window.image.width != 8u ||
             frame->window.image.height != 2u || frame->window.image.pixels[0] != 2u :
-        frame->window.graphics || !frame->window.text.base.cursor_visible)
+        frame->window.graphics || !frame->window.text.base.cursor_phase)
         return LIB_FALSE;
     sequence = frame->sequence;
     /* Only real execution may produce the next named blink transition. */
@@ -128,7 +128,7 @@ static lib_bool vm_runner_blink_cycle(vm_machine *machine,
             frame->window.graphics || frame->window.text.base.text_columns != 1u ||
                 frame->window.text.base.text_rows != 1u) return LIB_FALSE;
         visible = character ? frame->window.image.pixels[0] == 2u :
-            frame->window.text.base.cursor_visible;
+            frame->window.text.base.cursor_phase;
         if (character && !visible && frame->window.image.pixels[0] != 1u) return LIB_FALSE;
         if (!visible || hidden) {
             if ((!hidden || visible) && frame->sequence == sequence) return LIB_FALSE;
@@ -268,7 +268,7 @@ static lib_bool vm_runner_bound_delivery(vm_machine *machine,
         published.window.text.base.cells[3920u].glyph_bank != 1u ||
         published.window.text.font[65u * 32u] != 0x80u ||
         published.window.text.secondary_font[65u * 32u] != 0x40u ||
-        !published.window.text.base.cursor_visible ||
+        !published.window.text.base.cursor_phase ||
         published.window.text.base.cursor_column != 2 || published.window.text.base.cursor_row != 49)
         return LIB_FALSE;
     sequence = published.sequence;

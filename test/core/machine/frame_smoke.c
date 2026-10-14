@@ -9,6 +9,7 @@ lib_i32 main(void)
     const lib_size normalized_last = 255u * X86_VIDEO_TEXT_GLYPH_ROWS + 15u;
 
     source.kind = X86_VIDEO_KIND_TEXT;
+    source.cursor_enabled = LIB_TRUE;
     source.columns = 80u;
     source.rows = 25u;
     source.text_cell_height = 8u;
@@ -163,10 +164,23 @@ lib_i32 main(void)
 
     source.kind = X86_VIDEO_KIND_TEXT;
     source.cursor_visible = LIB_TRUE;
+    source.cursor_enabled = LIB_TRUE;
     source.cursor_top = 8u;
     source.cursor_bottom = 8u;
     if (vm_machine_frame_from_display(&source, 10u, &destination) != LIB_STATUS_OK ||
-        destination.window.text.base.cursor_visible || destination.window.text.base.cursor_phase)
+        destination.window.text.base.cursor_mode || destination.window.text.base.cursor_phase)
         return 1;
+    source.cursor_top = 6u;
+    source.cursor_bottom = 7u;
+    source.cursor_x = 3u;
+    source.cursor_y = 4u;
+    for (lib_u32 phase = 0u; phase < 2u; ++phase) {
+        source.cursor_visible = (lib_bool)phase;
+        if (vm_machine_frame_from_display(&source, 11u + phase, &destination) != LIB_STATUS_OK ||
+            destination.window.text.base.cursor_mode != KVM_CURSOR_SOURCE ||
+            destination.window.text.base.cursor_phase != phase ||
+            destination.window.text.base.cursor_column != 3 ||
+            destination.window.text.base.cursor_row != 4) return 1;
+    }
     return 0;
 }

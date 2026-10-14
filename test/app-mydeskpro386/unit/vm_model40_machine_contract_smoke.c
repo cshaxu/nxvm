@@ -221,7 +221,7 @@ lib_i32 main(void)
             core_machine_bus_write(session->core_machine, 0x03d5u, 0u) != LIB_STATUS_OK ||
             vm_machine_publish_display(session, LIB_TRUE) != LIB_STATUS_OK ||
             !session->latest_frame.window.valid || session->latest_frame.window.graphics ||
-            !session->latest_frame.window.text.base.cursor_visible ||
+            !session->latest_frame.window.text.base.cursor_mode ||
             session->latest_frame.window.text.base.font_height != 14u ||
             session->latest_frame.window.text.base.text_columns != 80u ||
             session->latest_frame.window.text.base.text_rows != 25u ||

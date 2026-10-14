@@ -46,7 +46,8 @@ static inline lib_status test_nxvm_machine_capture_presentation(const vm_machine
     out_frame->cursor_bottom = frame.window.text.base.cursor_bottom;
     out_frame->cursor_x = (lib_u16)frame.window.text.base.cursor_column;
     out_frame->cursor_y = (lib_u16)frame.window.text.base.cursor_row;
-    out_frame->cursor_visible = frame.window.text.base.cursor_visible;
+    out_frame->cursor_visible = frame.window.text.base.cursor_mode != KVM_CURSOR_DISABLED &&
+        frame.window.text.base.cursor_phase;
     out_frame->text_glyphs_present = LIB_TRUE;
     for (cell = 0u; cell < CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS *
             CORE_MACHINE_GUEST_DISPLAY_MAX_ROWS; ++cell) {
