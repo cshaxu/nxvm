@@ -7,7 +7,10 @@ The entries below are ordered unnumbered candidates.
 The owner selected former entry 3, [PC110](../proposals/m5-pc110-evidence-and-implementation.md),
 as M5 T558, starting with S1 research, after T557 closure. All current
 candidates belong to M5 by explicit direction on 2026-10-13. The remaining
-entries keep their relative order; no M6 allocation is implied.
+non-PC110 entries keep their relative order; no M6 allocation is implied.
+The owner's multi-T planning request narrows T558 to source/design freeze and
+puts the nine PC110 implementation receivers first. They are candidates, not
+preallocated T numbers or authorization to skip their prerequisite gates.
 
 The [T554 default-PC text cursor restoration](../history/M5-T554-pc-text-cursor-restoration.md)
 is closed after owner Console/Window acceptance; its archived proposal remains
@@ -31,10 +34,19 @@ The [T553 four PC App code-quality audit](../history/M5-T553-four-pc-app-code-qu
 is closed after its corrective full-route audit, repair and dual-width
 qualification; retained closure facts are historical, not another active packet.
 
-1. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-2. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
-3. [MyArcade: RAIDEN II](../proposals/myarcade-raiden2.md)
-4. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+1. [PC110: 486SX instruction semantics](../proposals/m5-pc110-486-instructions.md)
+2. [PC110: 486SX system, reset and timing](../proposals/m5-pc110-486-system.md)
+3. [PC110: board, chipset and firmware mapping](../proposals/m5-pc110-board.md)
+4. [PC110: keyboard, pointer and power](../proposals/m5-pc110-input-power.md)
+5. [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md)
+6. [PC110: PCMCIA, flash and boot storage](../proposals/m5-pc110-storage.md)
+7. [PC110: audio and remaining peripherals](../proposals/m5-pc110-audio-aux.md)
+8. [PC110: real firmware POST, setup and guest boot](../proposals/m5-pc110-firmware-boot.md)
+9. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md)
+10. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+11. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+12. [MyArcade: RAIDEN II](../proposals/myarcade-raiden2.md)
+13. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
 
 [T544](../history/M5-T544-retained-cpu-qualification.md) is closed as a
 completed CPU audit by owner direction. Its eighteen complete repair/proof

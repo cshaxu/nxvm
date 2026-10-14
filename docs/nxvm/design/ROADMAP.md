@@ -61,6 +61,11 @@ hardware proof.
 
 ### M5: PC110 Hardware And CPU Qualification
 
+The owner splits the work into research/contract-freeze T558 and nine queued
+implementation/qualification packages. The [programme proposal](../proposals/m5-pc110-evidence-and-implementation.md)
+defines dependency and completion boundaries; Queue alone owns their ordering.
+Closing research cannot close the machine's implementation obligation.
+
 Freeze the PC110 revision and lawful assets. Qualify its 486 variant and each
 chipset/display/storage/input/power component through source, function/timing,
 gap and integration ledgers. Reuse matching standard chip mechanisms; do not
