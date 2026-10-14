@@ -23,6 +23,11 @@
 | Original Owner Request | Close the accepted PC110 research task and admit the next queued T. |
 | Similar-Issue Sweep | All CPU profile comparisons, opcode tables, test-register/CPUID/cache placeholders, test assumptions and relevant current documents; no global mechanical equality-to-range replacement. |
 
+S1 executor delivery is the [I1--I11 ledger](../etc/evidence/t559-s1-instruction-inventory.md)
+and [task record](../history/M5-T559-486sx-instruction-semantics.md).
+Documentation/diff checks pass; production, tests and executable inputs remain
+unchanged. Awaiting coordinator actual-change review, not runtime acceptance.
+
 ## Closed Task — M5 T558
 
 Owner accepted S2 delivery 7ea9084fe and approved T closure on 2026-10-13.

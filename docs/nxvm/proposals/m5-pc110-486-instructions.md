@@ -41,9 +41,15 @@ S1 is admitted for current-code/form inventory, source-conflict decisions and
 the finite convergence ledger. It publishes the numbered follow-on S plan
 after inspecting actual code; no implementation is hidden in this planning S.
 
-Instruction/feature inventory; cohesive instruction batches; negative/exception and retained-family regression audit.
+The [S1 convergence ledger](../etc/evidence/t559-s1-instruction-inventory.md)
+freezes I1--I11, their failure/alias/profile dimensions and system handoffs.
+The reviewed sequence is S2 identity/decode/BSWAP, S3 XADD and inherited LOCK,
+S4 CMPXCHG, S5 system-instruction boundaries, S6 CPUID/flags, S7 whole-delta
+qualification. Current admits only one batch at a time. System-dependent
+instructions cannot be implemented as successful no-ops; the ledger states the
+explicit non-runnable disposition until their actual hardware-state owner exists.
 
-These are planning boundaries, not allocated S identifiers. Split an oversized
+These are planned boundaries, not concurrent admissions. Split an oversized
 batch before admission; never use letter-suffixed S numbers or an endless
 first-failing-BIOS-instruction repair sequence.
 

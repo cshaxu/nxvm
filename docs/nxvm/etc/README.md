@@ -1,5 +1,9 @@
 # Supporting Documentation Index
 
+T559 S1: [instruction inventory](evidence/t559-s1-instruction-inventory.md)
+records CPU decode owners, I1--I11, implementation batches and explicit system
+gates; it is planning evidence, not runtime qualification.
+
 T558 S2: [source availability](evidence/t558-s2-source-availability.md)
 records original-manual identities, candidate hashes, historical captures and
 source conflicts that the implementation contract freeze must resolve.
