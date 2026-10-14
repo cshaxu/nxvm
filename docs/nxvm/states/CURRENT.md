@@ -2,6 +2,18 @@
 
 ## Current Work
 
+### Completed Governance — M5 Td S179
+
+The owner requested two separate queue-tail proposals on 2026-10-13:
+[MyArcade / RAIDEN II](../proposals/myarcade-raiden2.md), then
+[MyNeoGeo / Metal Slug 2](../proposals/myneogeo-metal-slug2.md).
+Both follow the existing CPU, retained-guest and PC110 candidates. No numeric
+T, new App implementation or asset acquisition is admitted. Architecture review
+keeps V30/Seibu and 68000/Neo Geo separate, reusing neutral host contracts only;
+source policy, finite acceptance and future ownership admission are recorded.
+Documentation-only change: no code, tests or EXEs need rebuilding. T557 remains
+open after accepted S2, with no active implementation packet.
+
 The owner accepts T556 S11 and requests the new PC publication/INI task.
 T556's NXVM work is closed. The owner subsequently closed S10's diagnostic
 delivery with its unresolved MyNES input repair transferred to

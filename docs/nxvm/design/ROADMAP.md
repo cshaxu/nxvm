@@ -77,3 +77,9 @@ lifecycle and selected guest checkpoints; state excluded capabilities explicitly
 Broaden the selected machines after hardware/corpus prerequisites. The former mantle,
 owned-DOS and NXVDM milestones are withdrawn. New web, Windows 95 or unrelated
 machine products require a separate owner decision.
+
+The owner has queued [MyArcade](../proposals/myarcade-raiden2.md) for RAIDEN II,
+then [MyNeoGeo](../proposals/myneogeo-metal-slug2.md) for Metal Slug 2, after the
+existing candidates. These are independent Seibu and Neo Geo Apps, not PC
+profiles. Implementation and milestone allocation await admission;
+the current PC qualification scope and shared component boundaries are unchanged.

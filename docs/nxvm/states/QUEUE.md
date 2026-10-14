@@ -75,3 +75,12 @@ implemented XT, AT, DeskPro and default machines.
 The former Multi-App repository consolidation candidate was delivered by
 T536/T537 and removed in Td S172; it is not a remaining NXVM implementation
 receiver.
+
+## Subsequent App Candidates
+
+1. [MyArcade: RAIDEN II](../proposals/myarcade-raiden2.md)
+2. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+
+Owner-added queue tail after the existing M5 and PC110 candidates, in the order
+above. Separate Seibu and Neo Geo Apps; no numeric T or implementation
+milestone is allocated before admission.
