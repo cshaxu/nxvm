@@ -2,58 +2,40 @@
 
 ## Current Work
 
-### Active Task — M5 T559 S3 XADD And Inherited LOCK
+### Active Task — M5 T559 S4 CMPXCHG
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T559 S3 after coordinator acceptance of S2 P1 aad734fdf and P2 c93b778aa. |
-| Admission And Approval | Owner-admitted T559 and automatic sequential Core-only execution; coordinator admits ledger I2 and the inherited LOCK portion of I9. No Shared or MyNES changes. |
-| Objective | Implement byte/word/dword XADD through existing CPU metadata and dispatch; repair the ordinary ALU register-source versus FE group-extension LOCK check at its sole owner. Preserve the Core machine production admission gate. |
-| Non-goals | No CMPXCHG implementation (S4), PC110 board admission, cache/TLB/system work, CPUID advertisement, firmware or Shared change, second executor or whole-486 timing claim. |
-| Reference Baseline | S2 c93b778aa and T558 pinned Intel 486 PRM; S1 I2/I9 and documented XADD EM/TS source-conflict disposition. Re-read original instruction/LOCK sources before implementation. |
-| Candidate Proposal | [Selected 486SX instructions](../proposals/m5-pc110-486-instructions.md) and [finite ledger](../etc/evidence/t559-s1-instruction-inventory.md), with single-owner system handoffs. |
-| Files And ABI Surface | CPU instructions/metadata/LOCK handling; CPU-owned XADD and retained LOCK tests, directly affected metadata expectations/registration, Core manifests and NXVM evidence. Expected production +80--180/-10--40 lines and tests +300--500/-0--20 before exact form design. No public function/type/state or Shared ABI. Rebuild affected eight 0559 PC EXEs. |
+| Identifier Mode | Continuation T559 S4 after coordinator acceptance of S3 P1 c1a04cffb. |
+| Admission And Approval | Owner-admitted T559 and automatic Core-only S execution; complete I3 family as one batch. No Shared or MyNES changes. |
+| Objective | Implement CMPXCHG byte/word/dword through existing metadata, ModRM, ALU, memory and dispatch owners; preserve accumulator/destination/source aliases and both comparison outcomes. |
+| Non-goals | No CMPXCHG8B, cache/TLB effects, CPUID advertisement, production 486 admission, firmware, Shared changes or global inherited RMW rewrite. |
+| Reference Baseline | c1a04cffb; pinned Intel 486 PRM and S1 I3/I9 form ledger. Re-read full instruction and failure semantics before code edits. |
+| Candidate Proposal | [Selected 486SX instructions](../proposals/m5-pc110-486-instructions.md) and [finite ledger](../etc/evidence/t559-s1-instruction-inventory.md). |
+| Files And ABI Surface | Existing CPU instructions/metadata/LOCK, CPU-owned CMPXCHG test, directly affected metadata expectations and registration, Core manifests, NXVM evidence and eight 0559 PC EXEs. Estimate production +40--100/-5--20, tests +250--450/-0--20 before exact source review. No public API or new persistent state. |
 | Applicable Rules | NXVM guide; Execution lifecycle/coverage/artifacts; Document; Architecture/Coding and their skills; NXVM architecture/layout and source/research policy. |
-| Verification | First prove the inherited LOCK defect, then XADD byte/word/dword register/memory and high-byte/alias forms; ADD flags and exchanged source; 16/32 addressing; LOCK memory/register legality; EM/TS independence; fetch/segment/page/read/write failure and restart without partial register/flag publication. Reuse original dual-width Ninja/ccache graphs, run focused tests then complete repository-only units, manifests/docs/diff checks and eight artifact checks. |
-| Expected Markers | I2 and scoped I9 directly proven at the CPU owner; 386 retains legal ALU LOCK regardless of source GPR, pre-386 transparent LOCK unchanged, old profiles reject XADD, no production 486 admission. |
-| Asset Needs | Existing original manuals and already admitted BYOB build inputs only. No new ROM/media, INI or MyNES changes. |
-| Reporting Requirements | Confirm source/alias/failure design before edits; report actual production/test diff, whole batch proof, failed first attempts honestly, artifact identities and remaining ledger gates. |
-| Stop Conditions | Shared modification, source conflict invalidating the frozen form contract, new cross-owner interface, or inability to preserve the existing bus failure boundary. Record the exact issue and continue independent in-scope proof. |
-| Exit Criteria | I2 and scoped I9 meet every finite dimension, retained profile/BSWAP regressions and dual-width complete units pass; eight affected EXEs updated, actual-change reviewed and complete delivery pushed. No T closure. |
-| Original Owner Request | Continue the selected 486SX instruction implementation with automatic sequential S admission. |
-| Similar-Issue Sweep | Review all ordinary memory-destination LOCK opcode cases versus FE/FF group extensions, new XADD source/destination alias ordering, existing ModRM/bus transaction behavior and no partial publication on failure; do not globally rewrite unrelated instruction paths. |
+| Verification | Entire byte/word/dword equal/unequal matrix, high-byte/accumulator/source/destination aliases, subtraction flags, 16/32 addressing, memory write cycle and permission on both outcomes, LOCK legality, old-profile rejection, required fetch and segment/page/read/write faults with no partial architectural publication. Focused CPU development, full review, then dual-width complete units and eight artifact/INI checks in original Ninja/ccache graphs. |
+| Expected Markers | I3 has direct proof; S3 XADD and inherited LOCK remain green; source/address values are captured before writes; no false no-op unequal-memory path or production 486 admission. |
+| Asset Needs | Existing admitted manuals and external build inputs read-only; preserve INIs, media, ROM masters, snapshots and MyNES. |
+| Reporting Requirements | Freeze exact semantics and file/diff estimate before implementation; report actual source/test diff, failures, final verification/artifacts and remaining T ledger gates. |
+| Stop Conditions | Required Shared modification, source conflict, new cross-owner interface or inability to preserve bus failure ownership. Continue independent in-scope evidence. |
+| Exit Criteria | Complete I3 matrix and retained regressions verified, full units on both widths, eight affected EXEs deployed/checked, actual changes reviewed and complete P pushed; coordinator acceptance before closure. |
+| Original Owner Request | Implement 486SX instruction semantics under governance; group related forms and avoid per-opcode full-suite cycles. |
+| Similar-Issue Sweep | Compare new compare/exchange alias ordering and write preflight with XADD and existing exception rollback; preserve general memory owner and explicitly report inherited defects rather than silently widening scope. |
 
-S1 is closed as inventory. S2 is accepted and closed after review of the two
-pushed commits, all changed CPU/test/build paths, full units (593/593 on each
-width), eight process/INI integrations, manifests and artifact hashes. Current
-PC artifacts are 0559 from c93b778aa; MyNES is unchanged.
-[S2 evidence](../etc/evidence/t559-s2-decode-bswap.md) records the actual diff
-and the T-level external boot qualification still required. S3 is in progress:
-the inherited LOCK/DX failure was reproduced before the two-line classifier
-repair; XADD now uses the existing ADD/ModRM and exception rollback path.
-Initial dual-width XADD/LOCK focused tests pass, including register aliases,
-memory forms and fetch/read/write failure with retry. Segment/page faults,
-protected/VM86 SIB aliases and final lexeme tests pass x64. The first complete
-x64 suite passed 593/594; its sole new-test failure was an incorrect rejection
-of early-CPU POP CS preview, corrected before both complete suites passed
-594/594. Actual-change review then tightened XADD RMW write-access preflight
-and its page-error/segment-priority regression. Final sequential dual-width
-complete units pass 594/594 on each width against that correction. Inherited
-ALU read-first paths are explicitly transferred to the Core RMW TODO entry,
-not included in this batch's repair claim. Core manifests and documentation gates
-pass; all eight PC EXEs are rebuilt and deployed with successful product/INI
-identity integrations, PE and version checks. Coordinator acceptance of the
-complete implementation commit remains pending. The
-[S3 evidence](../etc/evidence/t559-s3-xadd-lock.md) records the exact boundaries.
-No S3 commit or closure is claimed; neither completed batch admits a runnable
-PC110/486 machine.
+S3 is accepted and closed after review of pushed c1a04cffb. I2 and the
+ordinary-opcode portion of I9 have direct form/failure proof; both complete
+unit suites pass 594/594 and all eight product/INI integrations pass. Eight
+0559 PC artifacts match the [S3 evidence](../etc/evidence/t559-s3-xadd-lock.md).
+Shared-six, MyNES and owner inputs are unchanged. The inherited RMW TODO is
+explicitly outside S3; the whole I9 sweep and external boot remain T gates.
+S4 is admitted; no S4 implementation or qualification is claimed yet.
 
-Owner-approved execution adjustment: implement and review complete related
-instruction batches before the final full-suite run. Use affected CPU targets
-for development, retain the currently running qualification, and avoid repeated
-whole-App builds per opcode. The proposal records the validation order and
-allows simple related groups to be combined at admission with reconciled linear
-S numbering; no form coverage or required closure gate is waived.
+The proposal's owner-approved efficiency order applies: complete batch
+implementation and focused CPU validation, actual-change review, then final
+full dual-width qualification and release. Combine simpler related future
+groups only after their source and proof boundaries are reviewed. T559 is
+open; no runnable PC110/486 admission is claimed.
 
 ## Closed Task — M5 T558
 

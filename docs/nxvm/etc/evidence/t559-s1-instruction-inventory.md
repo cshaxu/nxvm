@@ -189,6 +189,15 @@ with [direct proof and artifacts](t559-s2-decode-bswap.md), implementation
 whole-family sweep obligations in I10. I2 and inherited I9 transfer to S3;
 all other rows retain their named planned receivers.
 
+S3 reconciliation: I2 and ordinary ALU/XCHG LOCK classification in I9 are
+accepted at c1a04cffb with [direct proof and artifacts](t559-s3-xadd-lock.md).
+The table's pending entries above are the admission inventory; this dated
+delivery reconciliation records their disposition. Remaining I9 forms still
+require the whole sweep. I3 is admitted as S4, including write preflight on
+both comparison outcomes; other rows retain their existing source/system
+gates. The discovered inherited RMW read-first class is explicitly retained
+in NXVM TODO, not counted as repaired by XADD.
+
 PRM section 13.1 permits the listed arithmetic/exchange memory-destination
 operations without restricting their source GPR to AX/CX. Current
 `PREFIX_LOCK()` applies FE's `/0..1` check to the preceding ordinary opcodes;

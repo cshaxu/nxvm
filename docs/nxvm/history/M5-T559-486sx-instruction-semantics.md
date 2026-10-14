@@ -64,3 +64,12 @@ records hashes, failed intermediate attempts, final preflight correction and
 the explicit inherited RMW TODO transfer. No new production 486 admission or
 whole-T closure is claimed. The owner-approved batch-efficiency adjustment
 is recorded in the proposal without dropping any qualification requirement.
+
+Coordinator acceptance: reviewed actual c1a04cffb source/test, manifest,
+document and eight-artifact changes against I2/scoped I9. The single CPU
+execution owner, immutable decoded address, write-permission-before-read,
+source-before-destination alias order and existing exception rollback are
+preserved. Complete units, eight real product/INI checks, artifact hashes,
+scope, documentation and whitespace evidence support this bounded delivery.
+The push is confirmed. S3 closes and S4 admits the complete CMPXCHG family;
+the unresolved system, whole-sweep and external-boot gates keep T559 open.
