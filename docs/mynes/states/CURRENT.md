@@ -1,5 +1,13 @@
 # Project Status
 
+T557 S2 is an owner-approved Shared cursor-contract receiver coordinated in
+NXVM Current. MyNES changes only the text adapter's hidden cursor value to
+KVM_CURSOR_DISABLED and rebuilds its existing 0044 pair against that contract.
+This does not repair or close the independent S10 RDP input investigation below.
+Both rebuilt EXEs pass the final 592-unit repository run and all 12 MyNES
+integrations per width; native desktop tests are included, phone-RDP acceptance
+is not. T557 S2 remains delivered pending owner verification.
+
 ## Current Work
 
 MyNES M5 T556 S10 is admitted for the owner's RDP game-input report.

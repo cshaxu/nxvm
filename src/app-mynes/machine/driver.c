@@ -610,7 +610,7 @@ lib_status machine_driver_copy_frame(void *context, emulator_machine_frame *out_
         lib_u32 column;
         out_frame->window.text.base.text_columns = 80u;
         out_frame->window.text.base.text_rows = 25u;
-        out_frame->window.text.base.cursor_visible = 0u;
+        out_frame->window.text.base.cursor_mode = KVM_CURSOR_DISABLED;
         out_frame->window.text.base.font_height = 16u;
         for (row = 0u; row < 25u; ++row) for (column = 0u; column < 80u; ++column) {
             static const lib_u8 glyphs[] = {' ', '.', ':', '-', '=', '+', '*', '#', '%', '@', 0u};
