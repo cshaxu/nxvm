@@ -1,5 +1,8 @@
 # Supporting Documentation Index
 
+T559 S4: [CMPXCHG](evidence/t559-s4-cmpxchg.md) records the admitted
+compare/exchange batch, original write-cycle contract and proof matrix.
+
 T559 S3: [XADD and LOCK](evidence/t559-s3-xadd-lock.md) records the
   instruction and inherited classifier fix, direct failure proof and final
   qualification/artifact evidence.

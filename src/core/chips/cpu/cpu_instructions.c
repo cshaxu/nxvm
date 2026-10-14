@@ -8242,7 +8242,8 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
             metadata.valid = ((modrm >> 3u) & 7u) >= 4u;
         }
-        else if (opcode == 0xc0u || opcode == 0xc1u ||
+        else if (opcode == 0xb0u || opcode == 0xb1u ||
+                 opcode == 0xc0u || opcode == 0xc1u ||
                  (opcode >= 0xc8u && opcode <= 0xcfu))
         {
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80486SX;
@@ -15624,6 +15625,8 @@ static void PREFIX_LOCK(core_machine_cpu_execution_context *context)
             case 0xab: /* BTS */
             case 0xb3: /* BTR */
             case 0xbb: /* BTC */
+            case 0xb0: /* CMPXCHG */
+            case 0xb1:
             case 0xc0: /* XADD */
             case 0xc1:
                 instruction_state.data.flagLock = LIB_TRUE;
@@ -17845,6 +17848,46 @@ _______todo CPUID(core_machine_cpu_execution_context *context)
     instruction_state.data.flagIgnore = LIB_TRUE;
     CPU_TRACE_CALL_END;
 }
+static void CMPXCHG_RM8_R8(core_machine_cpu_execution_context *context)
+{
+    CPU_TRACE_CALL_BEGIN("CMPXCHG_RM8_R8");
+    _adv;
+    CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    if (instruction_state.data.flagMem)
+        CPU_TRACE_CHECK_RETURN(_m_test_access(context,
+            instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, 1, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_a_cmp(context, cpu_state.data.al,
+        instruction_state.data.crm, 8));
+    if (cpu_state.data.al == instruction_state.data.crm)
+        instruction_state.data.crm = instruction_state.data.cr;
+    else
+        cpu_state.data.al = (lib_u8)instruction_state.data.crm;
+    CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    CPU_TRACE_CALL_END;
+}
+static void CMPXCHG_RM32_R32(core_machine_cpu_execution_context *context)
+{
+    lib_u32 accumulator;
+    CPU_TRACE_CALL_BEGIN("CMPXCHG_RM32_R32");
+    _adv;
+    CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+    if (instruction_state.data.flagMem)
+        CPU_TRACE_CHECK_RETURN(_m_test_access(context,
+            instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, _GetOperandSize, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    accumulator = _GetOperandSize == 2 ? cpu_state.data.ax : cpu_state.data.eax;
+    CPU_TRACE_CHECK_RETURN(_a_cmp(context, accumulator,
+        instruction_state.data.crm, _GetOperandSize * 8));
+    if (accumulator == instruction_state.data.crm)
+        instruction_state.data.crm = instruction_state.data.cr;
+    else if (_GetOperandSize == 2)
+        cpu_state.data.ax = (lib_u16)instruction_state.data.crm;
+    else
+        cpu_state.data.eax = (lib_u32)instruction_state.data.crm;
+    CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    CPU_TRACE_CALL_END;
+}
 static void XADD_RM8_R8(core_machine_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("XADD_RM8_R8");
@@ -19268,8 +19311,8 @@ void core_machine_cpu_execution_initialize(
     instruction_state.connect.insTable_0f[0xad] = (core_machine_cpu_instruction_handler)SHRD_RM32_R32_CL;
     instruction_state.connect.insTable_0f[0xae] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0xaf] = (core_machine_cpu_instruction_handler)IMUL_R32_RM32;
-    instruction_state.connect.insTable_0f[0xb0] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0xb1] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
+    instruction_state.connect.insTable_0f[0xb0] = (core_machine_cpu_instruction_handler)CMPXCHG_RM8_R8;
+    instruction_state.connect.insTable_0f[0xb1] = (core_machine_cpu_instruction_handler)CMPXCHG_RM32_R32;
     instruction_state.connect.insTable_0f[0xb2] = (core_machine_cpu_instruction_handler)LSS_R32_M16_32;
     instruction_state.connect.insTable_0f[0xb3] = (core_machine_cpu_instruction_handler)BTR_RM32_R32;
     instruction_state.connect.insTable_0f[0xb4] = (core_machine_cpu_instruction_handler)LFS_R32_M16_32;

@@ -73,3 +73,15 @@ preserved. Complete units, eight real product/INI checks, artifact hashes,
 scope, documentation and whitespace evidence support this bounded delivery.
 The push is confirmed. S3 closes and S4 admits the complete CMPXCHG family;
 the unresolved system, whole-sweep and external-boot gates keep T559 open.
+
+## S4 Executor Delivery
+
+I3 CMPXCHG implements both comparison outcomes across byte/word/dword forms,
+using the existing CPU comparison, write preflight and destination publication
+owners. The unequal memory path still writes the old value; failed reads or
+writes do not publish partial CPU state. [S4 evidence](../etc/evidence/t559-s4-cmpxchg.md)
+records the full form/failure matrix and actual-change review. Production
+changes are +46/-3; test C/CMake changes are +428/-1. Complete units pass
+595/595 on both widths and eight refreshed PC EXEs pass product/INI identity,
+PE-width and 0559 version checks. Public six, MyNES and owner inputs are
+unchanged. This is executor delivery, not whole-T or 486 system qualification.

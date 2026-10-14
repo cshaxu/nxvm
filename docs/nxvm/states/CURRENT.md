@@ -29,7 +29,14 @@ unit suites pass 594/594 and all eight product/INI integrations pass. Eight
 0559 PC artifacts match the [S3 evidence](../etc/evidence/t559-s3-xadd-lock.md).
 Shared-six, MyNES and owner inputs are unchanged. The inherited RMW TODO is
 explicitly outside S3; the whole I9 sweep and external boot remain T gates.
-S4 is admitted; no S4 implementation or qualification is claimed yet.
+S4 is in progress: byte/word/dword CMPXCHG and its complete owner test matrix
+are implemented; focused validation passes both widths and actual-change
+review is complete. Final full repository units pass 595/595 on both widths.
+[S4 evidence](../etc/evidence/t559-s4-cmpxchg.md) records the
+source contract, write-cycle semantics and scope. Eight updated 0559 PC EXEs
+pass real-product INI identity, PE-width and embedded version checks. Complete
+implementation delivery is ready for committed actual-change acceptance;
+S4 and T559 are not yet declared closed.
 
 The proposal's owner-approved efficiency order applies: complete batch
 implementation and focused CPU validation, actual-change review, then final
