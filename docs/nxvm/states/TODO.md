@@ -22,8 +22,8 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
   found ordinary inherited ALU memory handlers such as ADD_RM8_R8 and
   ADD_RM32_R32 read before checking destination write permission. A missing
   page may therefore report read access, and a data read can precede a segment
-  write denial. New XADD checks the existing write-access boundary first;
-  CMPXCHG must do likewise in its admitted receiver. Admit a separate finite
+  write denial. T559 S3 XADD and S4 CMPXCHG check the existing write-access
+  boundary first; that does not repair the inherited handlers. Admit a separate finite
   Core CPU RMW-family audit before claiming inherited fault-order completeness;
   cover all ALU, exchange, bit, shift and unary memory forms, page crossings,
   segment/page precedence and provider side effects. Do not globally change

@@ -16527,7 +16527,7 @@ static void _d_bit_rmimm(core_machine_cpu_execution_context *context, lib_u8 reg
     lib_i32 bitoff32 = 0;
     lib_u32 bitoperand = 0;
     CPU_TRACE_CALL_BEGIN("_d_bit_rmimm");
-    CPU_TRACE_CHECK_RETURN(_kdf_modrm(context, regbyte, rmbyte));
+    CPU_TRACE_CHECK_RETURN(_d_modrm(context, regbyte, rmbyte));
     if (!regbyte)
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     switch (rmbyte)

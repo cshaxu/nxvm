@@ -23,6 +23,20 @@
 | Original Owner Request | Implement 486SX semantics under governance; group related work, avoid repeated per-opcode full suites. |
 | Similar-Issue Sweep | All decode/metadata/preview/LOCK/profile comparisons, flags consumers, FPU and reset/timing eligibility; do not infer a whole-domain result from one boot. |
 
+S7 confirmed repair: the complete inherited LOCK matrix exposes bit operations
+bypassing `_d_modrm` and its locked-register rejection. Route `_d_bit_rmimm`
+through that existing decoder (+1/-1 production line), with no new owner,
+state or API. Expand the existing CPU test matrix, update Core manifests and
+requalify both widths and affected eight artifacts; external results predating
+the production repair are baseline evidence, not final-source qualification.
+
+S7 executor delivery: final units pass 597/597 on x64 and x86; all eight
+profile/width external groups pass after the production correction. Eight
+0559 PC EXEs are deployed and identity/PE/hash checked. The
+[delivery evidence](../etc/evidence/t559-s7-instruction-qualification.md)
+records actual diff, source boundaries and remaining system obligations.
+Coordinator actual-change acceptance is pending; T559 remains open.
+
 S6 is accepted after actual review of e590a0dde. Its candidate CPUID and flags
 scope, source limitations, direct tests, full-unit plus affected-recheck
 evidence and eight artifacts are reconciled. The worktree was clean at S7

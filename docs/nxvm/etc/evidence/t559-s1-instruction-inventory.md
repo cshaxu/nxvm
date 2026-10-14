@@ -222,6 +222,14 @@ encoding is not evidence of VME execution or exact PC110 silicon applicability;
 both remain with the system receiver, alongside AC effects. I9/I10 whole
 sweep and retained external boot qualification now belong to active S7.
 
+S7 executor reconciliation: I9's complete retained LOCK sweep exposed and
+repaired the bit decoder's bypass of the existing locked-register rejection.
+The [S7 evidence](t559-s7-instruction-qualification.md) records all affected
+forms, final 597/597 units per width and eight passing external groups with
+rebuilt artifacts. I10's retained-family proof is reconciled; reset/full
+timing and all other system gates stay with the complete system receiver.
+This does not promote I4--I6 or I11 to implemented 486 semantics.
+
 PRM section 13.1 permits the listed arithmetic/exchange memory-destination
 operations without restricting their source GPR to AX/CX. Current
 `PREFIX_LOCK()` applies FE's `/0..1` check to the preceding ordinary opcodes;

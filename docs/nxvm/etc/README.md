@@ -1,5 +1,9 @@
 # Supporting Documentation Index
 
+T559 S7: [Whole instruction-delta qualification](evidence/t559-s7-instruction-qualification.md)
+records whole-ledger reconciliation, the bit-operation LOCK repair and final
+dual-width unit, external and artifact validation.
+
 T559 S6: [CPUID and flags qualification](evidence/t559-s6-cpuid-flags.md)
 
 T559 S5: [System-instruction boundary review](evidence/t559-s5-system-instruction-boundaries.md)
