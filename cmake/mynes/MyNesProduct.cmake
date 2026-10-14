@@ -46,7 +46,8 @@ get_property(mynes_integration_test_targets DIRECTORY
     "${CMAKE_SOURCE_DIR}/test/app-mynes/integration" PROPERTY BUILDSYSTEM_TARGETS)
 add_dependencies(mynes-integration-test-binaries ${mynes_integration_test_targets})
 
-add_custom_target(mynes-diagnostic-binaries DEPENDS mynes-performance-probe)
+add_custom_target(mynes-diagnostic-binaries DEPENDS
+    mynes-performance-probe mynes-controller-input-probe)
 
 add_custom_target(mynes-test-binaries)
 add_dependencies(mynes-test-binaries
