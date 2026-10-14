@@ -1,5 +1,21 @@
 # Long-Term Review Ledger
 
+## RDP Short-Input Repair
+
+- Priority: P1, transferred from T556 S10 on the owner's 2026-10-13 closure request.
+- Owner: MyNES input adapter/controller sampling. Diagnostic delivery 3dc750be2
+  proves a character pulse gives repeated reads `08,00` where held Enter gives
+  `08,08`; the tested game rejects the inconsistent pulse. No production fix
+  or actual mobile native-event capture has been completed.
+- Risk: software-keyboard pulses can be lost in repeated controller polling;
+  sustained movement also depends on whether the client supplies held keys.
+- Admission: a separately approved MyNES repair must define bounded guest-time
+  pulse expiry, held-key overlap, pause/reset/source cleanup and snapshot
+  compatibility without ROM-specific rules or a second input path. Any needed
+  Shared change requires review first. Qualify both widths and the actual
+  Window/RDP route before claiming the reported user problem fixed.
+- Evidence: [T556 S10 investigation](../etc/evidence/t556-s10-rdp-controller-investigation.md).
+
 ## Governance Debt
 
 | Priority | Debt | Admission path |

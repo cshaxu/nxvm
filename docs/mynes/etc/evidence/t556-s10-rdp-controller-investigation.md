@@ -1,5 +1,16 @@
 # T556 S10 RDP Controller Investigation
 
+## Closure Disposition — 2026-10-13
+
+The owner requested S10 closure. The bounded diagnostic delivery 3dc750be2
+is closed with its production repair explicitly transferred to
+[MyNES TODO](../../states/TODO.md#rdp-short-input-repair). This is not a claim
+that the game-control fault is fixed or that phone RDP has passed. The records
+below retain the original investigation and delivery state as historical facts.
+Closure reviewed the actual diagnostic/build diff and recorded test results;
+only documentation changes now, so no new build or EXE is required. Both
+product documentation gates apply; no successor implementation is admitted.
+
 ## Baseline And Boundaries
 
 Production baseline: `7bfefb2fc`, unchanged by this investigation. The owner
