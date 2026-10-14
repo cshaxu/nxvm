@@ -1,7 +1,12 @@
 # M5 T557 PC Publication And Cursor Follow-up
 
-T557 remains open. Its [proposal](../proposals/m5-pc-publication-ini-identity.md)
-and [Current](../states/CURRENT.md) own approved scope and execution status.
+T557 is closed on 2026-10-13 before the owner's next-task admission.
+Its [archived proposal](M5-T557-pc-publication-and-cursor-proposal.md)
+retains the scope. S1 naming/INI and accepted S2 cursor contracts have their
+dual-width unit/integration, deployment and actual-diff evidence below; no
+in-scope repair remains. Existing manual/RDP limits and independent MyNES
+input debt are not represented as newly verified. No runnable input changed
+after qualification, so this documentation closure does not rebuild EXEs.
 
 S1 delivered product-specific lowercase EXE/INI identities in 418b22cab,
 with Shared preset target updates in 76ef26592. Its

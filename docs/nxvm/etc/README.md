@@ -1,5 +1,8 @@
 # Supporting Documentation Index
 
+T558 S1: [PC110 source and gap ledger](evidence/t558-s1-pc110-source-and-gap-ledger.md)
+records the initial research inventory, evidence limits and implementation gates.
+
 T557 S2: [cursor ownership](evidence/t557-s2-cursor-ownership.md) records the
 approved KVM mode contract, Core adaptation and receiving verification.
 

@@ -19,7 +19,7 @@ the existing four-machine NXVM shell into four top-level products:
 - `src/app-nxvm`: existing default 386 PC/AT hardware, named NXVM rather than
   a separate default-at product after cutover.
 
-PC110 remains a separate [future task](../proposals/m6-pc110-evidence-and-implementation.md),
+PC110 remains a separate [future task](../proposals/m5-pc110-evidence-and-implementation.md),
 not an empty fifth App. T539 chips and T540 shared board integration remain
 accepted dependencies; T542's S11 relocation and corrective
 [composition completion](../history/M5-T542-pc-composition-completion-proposal.md) are accepted.

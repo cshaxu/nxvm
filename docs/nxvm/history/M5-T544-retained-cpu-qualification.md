@@ -83,7 +83,7 @@ The four profile bindings were checked directly, not inferred from EXE names.
 | Original source identity | [T512 source record](../etc/evidence/t512-s1-five-cpu-source-cross-validation.md) | Prior identity/citation index retained; page/form revalidation pending appropriate family S. No fresh manual-reading claim. |
 | Prior state/code gap and tier results | T512 List 2 and [final audit](../etc/evidence/t512-s9-five-cpu-final-tier-owner-audit.md) | Historical accepted results, not current-source whole-family proof. Reconcile after chip/Core ownership changes. |
 | 80188 | No implemented public enum; no selected product | Retained non-eligible; independent evidence/implementation requires separate owner admission, not an 80186 alias. |
-| 486 / PC110 | No implemented public enum or App | Retained non-eligible; queued [PC110 evidence/component receiver](../proposals/m6-pc110-evidence-and-implementation.md) must select and implement the actual variant. |
+| 486 / PC110 | No implemented public enum or App | Retained non-eligible; queued [PC110 evidence/component receiver](../proposals/m5-pc110-evidence-and-implementation.md) must select and implement the actual variant. |
 
 ### Structural Catalog Observation
 

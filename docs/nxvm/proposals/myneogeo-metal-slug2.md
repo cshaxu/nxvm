@@ -2,6 +2,8 @@
 
 ## Goal And Boundary
 
+Milestone: M5, by owner direction on 2026-10-13.
+
 Implement an independent MyNeoGeo App, with running the real Metal Slug 2 ROM
 set as its first required compatibility goal. The owner placed this candidate
 after MyArcade at the NXVM queue tail. It has no implementation T number yet.

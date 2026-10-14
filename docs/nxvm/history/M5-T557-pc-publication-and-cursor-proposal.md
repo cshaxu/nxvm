@@ -1,5 +1,7 @@
 # PC Publication And INI Identity
 
+Archived at T557 closure on 2026-10-13, before owner-selected T558 admission.
+
 ## Objective And Boundary
 
 T557 implements the owner's product-specific lowercase publication contract.

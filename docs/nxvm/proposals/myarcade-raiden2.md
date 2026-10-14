@@ -2,6 +2,8 @@
 
 ## Goal And Admission
 
+Milestone: M5, by owner direction on 2026-10-13.
+
 Create an independent MyArcade App whose primary goal is running a real,
 lawfully supplied RAIDEN II ROM set with playable graphics, input and sound.
 This is an unnumbered NXVM queue-tail candidate after PC110, not an admitted

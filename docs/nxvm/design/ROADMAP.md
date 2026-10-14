@@ -59,20 +59,20 @@ CPUs and selected-board contracts. DOS/protected-mode and Windows 3.1
 checkpoints follow hardware prerequisites; compatibility does not replace
 hardware proof.
 
-## M6: PC110 Hardware And CPU Qualification
+### M5: PC110 Hardware And CPU Qualification
 
 Freeze the PC110 revision and lawful assets. Qualify its 486 variant and each
 chipset/display/storage/input/power component through source, function/timing,
 gap and integration ledgers. Reuse matching standard chip mechanisms; do not
 infer complete PC110 support from AT registers or emulator placeholders.
 
-## M7: PC110 Product Closure
+### M5: PC110 Product Closure
 
-Deliver the later `app-mypc110` executable through the same App/Common runtime,
+Deliver `app-mypc110` through the same App/Emulator runtime,
 asset route and dual host-architecture builds. Prove firmware, storage, display/input,
 lifecycle and selected guest checkpoints; state excluded capabilities explicitly.
 
-## M8 And Later: Evidence-Led Compatibility
+### M5: Queued Compatibility And New Apps
 
 Broaden the selected machines after hardware/corpus prerequisites. The former mantle,
 owned-DOS and NXVDM milestones are withdrawn. New web, Windows 95 or unrelated
@@ -81,5 +81,7 @@ machine products require a separate owner decision.
 The owner has queued [MyArcade](../proposals/myarcade-raiden2.md) for RAIDEN II,
 then [MyNeoGeo](../proposals/myneogeo-metal-slug2.md) for Metal Slug 2, after the
 existing candidates. These are independent Seibu and Neo Geo Apps, not PC
-profiles. Implementation and milestone allocation await admission;
-the current PC qualification scope and shared component boundaries are unchanged.
+profiles. The owner assigns every current queue candidate to M5 on 2026-10-13;
+PC110 is admitted first as T558. The other candidates retain their queue order.
+No current queued work is assigned to M6 or later. Shared component boundaries
+remain unchanged; implementation identifiers still require admission.

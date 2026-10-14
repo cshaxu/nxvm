@@ -4,12 +4,10 @@ The entries below are ordered unnumbered candidates.
 
 ## M5 Candidates
 
-[PC publication and INI identity](../proposals/m5-pc-publication-ini-identity.md)
-is admitted as T557 ahead of the remaining candidates. T556's NXVM work is
-closed after accepted S11; S10's diagnostic is now closed with its unresolved
-repair owned by [MyNES TODO](../../mynes/states/TODO.md#rdp-short-input-repair),
-not counted as fixed. CURRENT retains open T557 after accepted S2;
-no next S is admitted.
+The owner selected former entry 3, [PC110](../proposals/m5-pc110-evidence-and-implementation.md),
+as M5 T558, starting with S1 research, after T557 closure. All current
+candidates belong to M5 by explicit direction on 2026-10-13. The remaining
+entries keep their relative order; no M6 allocation is implied.
 
 The [T554 default-PC text cursor restoration](../history/M5-T554-pc-text-cursor-restoration.md)
 is closed after owner Console/Window acceptance; its archived proposal remains
@@ -35,6 +33,8 @@ qualification; retained closure facts are historical, not another active packet.
 
 1. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
 2. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+3. [MyArcade: RAIDEN II](../proposals/myarcade-raiden2.md)
+4. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
 
 [T544](../history/M5-T544-retained-cpu-qualification.md) is closed as a
 completed CPU audit by owner direction. Its eighteen complete repair/proof
@@ -63,10 +63,6 @@ source map; current architecture places the PC-private mechanisms in Core.
 The later candidates retain their semantic qualification scope against the
 resulting owners; extraction alone does not qualify new hardware or timing.
 
-## M6 Candidates
-
-1. [PC110 evidence and component implementation](../proposals/m6-pc110-evidence-and-implementation.md)
-
 The [retired-plan disposition](../etc/history/retired-machine-plans/README.md)
 maps prior candidates to these receivers or withdrawn product scope. It is
 historical context, not another queue. Its latest scope override retains all
@@ -76,11 +72,5 @@ The former Multi-App repository consolidation candidate was delivered by
 T536/T537 and removed in Td S172; it is not a remaining NXVM implementation
 receiver.
 
-## Subsequent App Candidates
-
-1. [MyArcade: RAIDEN II](../proposals/myarcade-raiden2.md)
-2. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
-
-Owner-added queue tail after the existing M5 and PC110 candidates, in the order
-above. Separate Seibu and Neo Geo Apps; no numeric T or implementation
-milestone is allocated before admission.
+MyArcade and MyNeoGeo remain separate Seibu and Neo Geo candidates in M5;
+their numeric T identifiers are allocated only at admission.

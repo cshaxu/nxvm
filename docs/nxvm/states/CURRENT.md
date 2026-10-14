@@ -2,17 +2,32 @@
 
 ## Current Work
 
-### Completed Governance — M5 Td S179
+### Active Task — M5 T558 S1 PC110 Research And Gap Inventory
 
-The owner requested two separate queue-tail proposals on 2026-10-13:
-[MyArcade / RAIDEN II](../proposals/myarcade-raiden2.md), then
-[MyNeoGeo / Metal Slug 2](../proposals/myneogeo-metal-slug2.md).
-Both follow the existing CPU, retained-guest and PC110 candidates. No numeric
-T, new App implementation or asset acquisition is admitted. Architecture review
-keeps V30/Seibu and 68000/Neo Geo separate, reusing neutral host contracts only;
-source policy, finite acceptance and future ownership admission are recorded.
-Documentation-only change: no code, tests or EXEs need rebuilding. T557 remains
-open after accepted S2, with no active implementation packet.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T558 S1 after T557 closure; next NXVM numeric task. |
+| Admission And Approval | Owner selected queue entry 3 on 2026-10-13 and explicitly assigns all current queued tasks to M5. Research and PC110 implementation admitted; S1 is bounded research/design only. |
+| Objective | Establish a source-tiered PC110 hardware, asset and current-code gap ledger, current ownership map and implementation batch plan. |
+| Non-goals | No production/test code, Shared-six changes, external source/ROM import, BIOS interception, asset edits or claims of a working PC110. |
+| Reference Baseline | NXVM 8f00b1bce; external research revisions and dirty-source distinction recorded in the ledger. |
+| Candidate Proposal | [PC110 evidence and implementation](../proposals/m5-pc110-evidence-and-implementation.md). |
+| Files And ABI Surface | NXVM proposal, status, queue, roadmap, history and research evidence only; no ABI or executable input changes. |
+| Applicable Rules | Guide, Execution lifecycle/coverage rules, Document rules, architecture ownership and source/research policy; architecture-governance skill. External projects remain read-only. |
+| Verification | Inspect current CPU/profile/device interfaces and external source provenance; distinguish original authority from reconstruction; check documentation structure, links, actual diff and clean scope. Design-only work does not manufacture runtime tests. |
+| Expected Markers | Every inventoried domain has source status, current owner, gap, next receiver and proof gate; no M6 allocation among current candidates. |
+| Asset Needs | Inventory external filenames and references only; lawful profile asset set is not yet admitted. Do not copy firmware/media or treat research dumps as release inputs. |
+| Reporting Requirements | State facts versus hypotheses, exact CPU absence, external-reference limitations, proposed batches, unknown revision/assets and unexecuted hardware/runtime validation. |
+| Stop Conditions | Source licensing/import, undocumented hardware behavior requiring an owner choice, Shared change or expanding S1 into implementation. Continue safe research on unresolved sources. |
+| Exit Criteria | Reviewed initial source/gap ledger and bounded next research/implementation gates, current paths and M5 queue reconciled, documentation checks passed and complete documentation P pushed; no PC110 runtime qualification claimed. |
+| Original Owner Request | Admit entry 3: IBM PC110 research and implementation; all currently queued work belongs to M5, not M6; begin research. |
+| Similar-Issue Sweep | CPU enum versus historical 486 claims; stale Common/x86/chips/ibmpc paths in PC110 plan; roadmap/queue milestone allocations; reconstructed/emulator evidence versus original sources. |
+
+The [initial ledger](../etc/evidence/t558-s1-pc110-source-and-gap-ledger.md)
+is the T convergence inventory, not a complete register specification. Original
+manual, board-revision and lawful asset qualification remain research gates.
+Current artifacts remain the verified T557 PC pairs and MyNES 0044 pair;
+S1 changes no executable input and creates no PC110 artifact.
 
 The owner accepts T556 S11 and requests the new PC publication/INI task.
 T556's NXVM work is closed. The owner subsequently closed S10's diagnostic
@@ -22,19 +37,19 @@ delivery with its unresolved MyNES input repair transferred to
 part of T557's original S1; S2's approved receiver exception is recorded below.
 Prior S9/S11 packets below are historical delivery evidence.
 
-## Retained Progress — M5 T557
+## Closed Task — M5 T557
 
 | Task | Status |
 | --- | --- |
-| T557 S2 | Owner accepted and closed S2 on 2026-10-13. T557 remains open; no active S or next-task admission. |
+| T557 | Closed after accepted S2 and task-level evidence review, before owner-selected T558 admission on 2026-10-13. |
 
 Accepted delivery: Shared `5f5f43c8c`, MyNES `08bdaf06d`, NXVM `97d3cf948`.
 Both widths passed 592 repository units, 36 PC integrations and 12 MyNES
 integrations, with all ten EXEs deployed. The [S2 evidence](../etc/evidence/t557-s2-cursor-ownership.md)
 retains the contract, review, hashes and verification limits. This closure only
 updates governance; production and executable inputs are unchanged, so the
-verified binaries remain current without a rebuild. The [proposal](../proposals/m5-pc-publication-ini-identity.md)
-remains active for the open T.
+verified binaries remain current without a rebuild. The [proposal](../history/M5-T557-pc-publication-and-cursor-proposal.md)
+is archived; both original naming scope and cursor extension are covered.
 
 ## Delivered Task — M5 T557 S1 PC Publication And INI Identity
 
@@ -45,7 +60,7 @@ remains active for the open T.
 | Objective | Publish my5160, my5170, mydeskpro386 and nxvm release pairs and load each App's own adjacent lowercase INI through the existing Core parser. |
 | Non-goals | No SoftPC access/import, Shared-six changes, MyNES changes, configuration-content/media/ROM/snapshot mutation, fallback names or machine-key renaming. |
 | Reference Baseline | ed75cf572, clean after separate MyNES diagnostic publication; accepted PC implementation 6b0cb13e8. |
-| Candidate Proposal | [PC publication and INI identity](../proposals/m5-pc-publication-ini-identity.md). |
+| Candidate Proposal | [PC publication and INI identity](../history/M5-T557-pc-publication-and-cursor-proposal.md). |
 | Files And ABI Surface | Four App build/main declarations; Core Product startup signature and version; NXVM build/deployment/gates; affected Core/App tests, current documents and eight assets. Root PC preset target version changes use a separate Shared commit, with no MyNES preset change. |
 | Applicable Rules | NXVM guide and Architecture/Coding/UI/source policy; shared Execution/Architecture/Coding/Document rules; architecture-governance and coding-governance skills. |
 | Verification | Existing x64/x86 Ninja/ccache graphs; affected startup/config/Console tests, all repository units, four-PC integrations and static/manifest/docs gates. Prove explicit INI selection, no wrong-name fallback, INI-relative media paths, lowercase release identities, PE widths and deployment hashes. |
