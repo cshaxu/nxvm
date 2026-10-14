@@ -2,12 +2,32 @@
 
 ## Current Work
 
-No S is active. The owner approved T559 closure and admission of the next
-complete 486SX CPU task. T559 closes at the verified S7 baseline; its system
-instruction obligations remain explicitly incomplete, not waived.
+T560 S1 is active: freeze the complete remaining 486SX CPU implementation
+universe and its single-owner design before grouped implementation. The owner
+explicitly approved closing T559 and completing all CPU gaps in this successor.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New M5 T560 S1, after owner-approved T559 closure fb8021291. |
+| Admission And Approval | Owner request: close T559, admit the next T and complete all 486SX CPU gaps. NXVM scope; automatic sequential S planning retained. Shared-six edits require separate approval. |
+| Objective | Reconcile actual CPU implementation, original sources and all T559 transfers into a finite complete CPU ledger, state-owner design and grouped repair plan. |
+| Non-goals | No production code or artifact changes in S1; no PC110 board implementation, third-party source import, Shared or MyNES changes. |
+| Reference Baseline | fb8021291, T559 I1--I11 ledger and final dual-width qualification, T558 CPU-2--9 source contracts. |
+| Candidate Proposal | [Complete 486SX CPU](../proposals/m5-pc110-486-system.md), with the [convergence ledger](../etc/evidence/t560-s1-cpu-convergence.md). |
+| Files And ABI Surface | NXVM proposal, state, history and indexed evidence only; production/test/API diff zero. Inspect Core CPU, Core integration and tests read-only. |
+| Applicable Rules | NXVM guide; Execution coverage/roles/artifacts; Document; Architecture/Coding and their governance skills; NXVM architecture/layout and source policy. |
+| Verification | Reconcile every inherited and new CPU capability against source and actual execution path; inspect ownership, old-profile compatibility, fault ordering and test evidence; documentation governance and actual-diff review. No runtime replay for unchanged code. |
+| Expected Markers | Complete named coverage rows, source applicability and proof obligations; no transfer-to-future-T substitute for completion. |
+| Asset Needs | Existing pinned original Intel manuals read-only; preserve firmware, media, INI, snapshots and current 0559 EXEs. |
+| Reporting Requirements | Report grouped S plan, real source conflicts, ownership/API decisions and estimated implementation surfaces; distinguish source-confirmed facts from candidates. |
+| Stop Conditions | Report unresolved silicon/source conflicts or required Shared changes; continue independent inventory, do not invent hardware behavior. |
+| Exit Criteria | Complete CPU ledger and implementation order reviewed against owner objective and latest source; governance checks pass; full planning delivery committed/pushed and coordinator-reviewed. |
+| Original Owner Request | Complete all 486SX CPU gaps under governance and code-quality rules; group related instructions and avoid redundant tests. |
+| Similar-Issue Sweep | Inspect all CPU profile comparisons, opcode/preview/timing tables, paging/control/reset/interrupt/debug paths and existing CPU debt; classify every relevant hit, not only transferred opcodes. |
 
 | Task | Progress |
 | --- | --- |
+| T560 S1 | Planning delivery complete, awaiting coordinator actual-diff review: C01--C17 inventory and S2--S10 batch plan. No runtime changes; production 486 admission remains closed. |
 | T559 | Closed by owner approval: instruction-delta qualification, 597/597 units per width, eight final external groups and eight verified 0559 PC EXEs. Remaining CPU system semantics transfer to the approved next task. |
 
 The [delivery evidence](../etc/evidence/t559-s7-instruction-qualification.md)

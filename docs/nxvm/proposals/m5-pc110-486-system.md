@@ -2,9 +2,11 @@
 
 ## Admission And Dependencies
 
-Unnumbered M5 candidate in the [NXVM queue](../states/QUEUE.md), created by the
-owner-requested PC110 task split. Allocate a numeric T only at admission.
-Depends on: Selected 486SX instruction semantics.
+Admitted as M5 T560 by the owner after T559 closure at fb8021291.
+The owner requires completion of all remaining 486SX CPU gaps, not only
+the previously transferred system instruction subset. S1 freezes the complete
+coverage ledger from current code and primary sources before implementation.
+Depends on: accepted T559 selected 486SX instruction semantics baseline.
 Use the [PC110 programme contract](m5-pc110-evidence-and-implementation.md)
 and its convergence ledger; the task packet freezes the exact batch and source
 baseline before implementation. Research references are not implementation imports.
@@ -59,17 +61,41 @@ Stop and report source/model conflicts, missing lawful assets needed by this
 batch, or a required Shared-six modification; do not invent an undocumented
 fallback. Continue independent in-scope work where possible.
 
-## Suggested S Boundaries
+## Grouped Implementation Plan
 
-Reset/control and memory contract; required system/power transitions; timing-source ledger and complete CPU closure.
+The [S1 convergence ledger](../etc/evidence/t560-s1-cpu-convergence.md)
+freezes C01--C17, source applicability limits, form dimensions and planned
+S2--S10 batches with ownership, estimates and exit proof. It is the detailed
+coverage record; CURRENT alone admits each executing batch.
 
-These are planning boundaries, not allocated S identifiers. Split an oversized
-batch before admission; never use letter-suffixed S numbers or an endless
-first-failing-BIOS-instruction repair sequence.
+- S1: complete CPU coverage, source applicability and single-owner design.
+- Next batch: reset/identity/control-register and flags contracts, including
+  exact selected silicon applicability and old-family isolation.
+- Next batch: paging permissions, WP, alignment, fault/restart ordering,
+  TLB state and INVLPG/TR6/TR7 as one coherent translation mechanism.
+- Next batch: cache state and INVD/WBINVD/TR3/TR4/TR5, including actual
+  commands and required external bus effects, not passive registers.
+- Next batch: required VME, SMM/RSM and power/interrupt transitions; split
+  only where the source-defined state owners require separately reviewable work.
+- Next batch: all applicable instruction timing, bus penalties and inherited
+  CPU semantic gaps found by S1; no unallocated cost hidden by boot success.
+- Final batch: complete ledger reconciliation, production Core connection,
+  retained-machine regressions and full dual-width artifact qualification.
+
+Only S1 is allocated. Its evidence refines subsequent numeric S boundaries
+before admission; simple adjacent batches may combine. Development uses focused
+batch tests, followed by required closure qualification once per stable revision.
+Reuse existing Ninja/ccache graphs. Do not split work per opcode or repeat passed
+unchanged tests. No letter-suffixed S or first-failing-BIOS repair sequence.
 
 ## Verification And Exit
 
-Selected profile is qualified for board use; every selected instruction/system/timing row is proven or explicitly owner-disposed, including fault/restart behavior. Do not activate the profile while silently missing required SMM or reset semantics.
+Selected profile is qualified for board use; every applicable instruction,
+system and timing row has direct proof, including fault/restart behavior.
+Unimplemented CPU rows cannot be transferred to another T to declare this T
+complete. A genuine source conflict remains open pending resolution; excluding
+an applicable capability requires a new explicit owner decision, not an executor
+scope reduction. Do not activate the profile while missing required semantics.
 
 Use direct owner tests plus the real production connection, full repository
 unit gates and required external integrations under Execution. Reuse the two
