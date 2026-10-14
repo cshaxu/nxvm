@@ -4,7 +4,7 @@
 
 #include "core/product/request_interface.h"
 
-/* Parse one code-owned document or load one NXVM.ini file.  Paths are resolved
+/* Parse one code-owned document or load one App-selected INI. Paths are resolved
  * only against the INI directory; firmware is intentionally absent. */
 lib_status vm_app_ini_parse(const lib_u8 *directory, const lib_u8 *name,
     lib_u8 *document, vm_session_request *out_request);

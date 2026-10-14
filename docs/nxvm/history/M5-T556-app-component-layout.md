@@ -84,3 +84,13 @@ records both-width full 592-unit passes, every admitted integration profile,
 ten release artifacts and actual-diff review. MyNES receiving commits are
 `7fcd7b1d9` and `c5ca06e85`; NXVM/Shared use distinct target-scoped commits.
 Owner acceptance, not these automatic results alone, closes T556.
+
+## NXVM Closure And MyNES Residual Transfer
+
+The owner accepted S11 delivery `6b0cb13e8` and requested a new PC filename/INI
+task. S11 closes with 592/592 units and 32/32 PC integrations per width and
+eight rebuilt PC EXEs; its evidence retains unqualified phone-client/DPI checks.
+The NXVM scope is closed. S10's MyNES input repair is not complete: its active
+packet remains in MyNES Current. Diagnostic delivery `3dc750be2` and NXVM
+registration `ed75cf572` publish investigation only, not a working input fix.
+That explicit receiving packet preserves the residual independently of T557.

@@ -5,5 +5,5 @@
 
 lib_i32 main(void)
 {
-    return vm_app_run(APP_PRODUCT_NAME, &vm_app_machine);
+    return vm_app_run(APP_PRODUCT_NAME, APP_PRODUCT_INI_NAME, &vm_app_machine);
 }

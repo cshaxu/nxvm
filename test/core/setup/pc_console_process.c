@@ -83,7 +83,7 @@ static lib_i32 pc_console_wait_for_text(HANDLE output, const char *text,
 }
 
 lib_i32 pc_console_process_run(const char *executable,
-    const char *session_directory, const char *profile_file,
+    const char *session_directory,
     const char *const *commands, const char *const *markers,
     lib_size command_count)
 {
@@ -97,7 +97,6 @@ lib_i32 pc_console_process_run(const char *executable,
 
     startup.cb = sizeof(startup);
     if (executable == LIB_NULL || session_directory == LIB_NULL ||
-        profile_file == LIB_NULL || lib_text_compare(profile_file, "NXVM.ini") ||
         (command_count != 0u && (commands == LIB_NULL || markers == LIB_NULL))) return 0;
     startup.dwFlags = STARTF_USESHOWWINDOW;
     startup.wShowWindow = SW_HIDE;

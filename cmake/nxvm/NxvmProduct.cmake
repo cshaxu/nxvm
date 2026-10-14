@@ -180,6 +180,17 @@ target_link_libraries(vm-model40-hdc-smoke PRIVATE vm-profile-tests)
 add_executable(vm-model40-console-ini-smoke
     test/app-mydeskpro386/integration/product/vm_model40_console_ini_smoke.c
     test/core/setup/pc_console_process.c)
+
+add_executable(pc-product-ini-identity-smoke
+    test/core/integration/product_ini_identity_smoke.c
+    test/core/setup/pc_console_process.c)
+target_include_directories(pc-product-ini-identity-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(pc-product-ini-identity-smoke PRIVATE core-product)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(pc-product-ini-identity-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 target_include_directories(vm-model40-console-ini-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
 target_link_libraries(vm-model40-console-ini-smoke PRIVATE vm-app vm-profile-tests)
@@ -1547,6 +1558,7 @@ set(PROJECT_INTEGRATION_HDD_TARGETS vm-hdc-hdd-boot-smoke)
 set(PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS
     vm-profile-floppy-boot-matrix)
 set(PROJECT_INTEGRATION_PRODUCT_TARGETS
+    pc-product-ini-identity-smoke
     vm-model40-console-ini-smoke
     my5170-console-lifecycle-smoke
     vm-ini-cmos-seed-smoke
@@ -1566,7 +1578,7 @@ set(PROJECT_INTEGRATION_TEST_TARGETS
 # fixed Profile.  T closure runs the four configured products; treating a
 # Model 40 fixture as a Default-PC/AT test would create a false second route.
 set(PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS
-    vm-profile-floppy-boot-matrix)
+    vm-profile-floppy-boot-matrix pc-product-ini-identity-smoke)
 if(NXVM_PRODUCT_PROFILE STREQUAL "default-pc-at-80386-1440k-hdd")
     list(APPEND PROJECT_ACTIVE_INTEGRATION_TEST_TARGETS
         ${PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS}
@@ -1733,7 +1745,7 @@ function(project_add_test target route)
 endfunction()
 
 function(project_add_ini_boot_case session_file)
-    set(project_ini_boot_session_path "NXVM.ini")
+    set(project_ini_boot_session_path "${NXVM_PRODUCT_INI_NAME}")
     if(NOT EXISTS "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}/${project_ini_boot_session_path}")
         message(FATAL_ERROR "INI boot session is missing: ${session_file}")
     endif()
@@ -1777,7 +1789,7 @@ function(project_add_ini_integration_test target session_file)
     set(project_ini_boot_test "integration.${target}")
     set(project_ini_boot_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/${project_ini_boot_test}")
 
-    set(project_ini_boot_session_path "NXVM.ini")
+    set(project_ini_boot_session_path "${NXVM_PRODUCT_INI_NAME}")
     if(NOT EXISTS
        "${NXVM_PRODUCT_ARTIFACT_DIRECTORY}/${project_ini_boot_session_path}")
         message(FATAL_ERROR
@@ -1871,7 +1883,7 @@ foreach(target IN LISTS PROJECT_INTEGRATION_FDD_HDD_TARGETS)
         project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
     elseif(target STREQUAL "vm-app-default-profile-smoke")
         project_add_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini
-            NXVM.ini)
+            "${NXVM_PRODUCT_INI_NAME}")
     else()
         message(FATAL_ERROR "INI boot integration mapping is missing: ${target}")
     endif()
@@ -1889,7 +1901,7 @@ endif()
 # regenerated from newer source under their former task/version names.
 function(add_current_vm_artifact target version)
     string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9][0-9][0-9][0-9])$"
-        "nxvm_${NXVM_PRODUCT_MACHINE_KEY}_\\1_\\2_\\3_${PROJECT_ARTIFACT_ARCHITECTURE}.exe"
+        "${NXVM_PRODUCT_ARTIFACT_NAME}_\\1_\\2_\\3_${PROJECT_ARTIFACT_ARCHITECTURE}.exe"
         task_artifact_filename "${version}")
     if(task_artifact_filename STREQUAL version)
         message(FATAL_ERROR "Invalid NXVM current artifact version: ${version}")
@@ -1899,10 +1911,18 @@ function(add_current_vm_artifact target version)
     ibmpc_add_product(${target} "${NXVM_PRODUCT_ENTRY}"
         "${task_artifact_filename}" "${PROJECT_ARTIFACT_ARCHITECTURE}"
         "${directory}" vm-app nxvm-product-firmware)
+    target_compile_definitions(${target} PRIVATE
+        APP_PRODUCT_INI_NAME="${NXVM_PRODUCT_INI_NAME}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0556)
-add_current_vm_artifact(vm-0-5-0556 "0.5.0556")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0557)
+add_current_vm_artifact(vm-0-5-0557 "0.5.0557")
+add_dependencies(pc-product-ini-identity-smoke ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/test/pc-product-ini-identity")
+project_add_test(pc-product-ini-identity-smoke integration "${PROJECT_CURRENT_VM_RUNTIME_PATH}"
+        "${NXVM_PRODUCT_INI_NAME}" "${CMAKE_BINARY_DIR}/test/pc-product-ini-identity")
+set_tests_properties(integration.pc-product-ini-identity-smoke PROPERTIES
+    LABELS "core;integration" TIMEOUT 45 RUN_SERIAL TRUE)
 include("${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_selected_composition.cmake")
 
 function(project_add_console_integration_test target)

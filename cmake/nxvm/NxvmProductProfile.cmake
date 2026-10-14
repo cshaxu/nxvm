@@ -1,5 +1,5 @@
 # One product executable has one immutable board selection.  This file is the
-# only CMake selection table; NXVM.ini deliberately has no profile/firmware key.
+# only CMake selection table; App INIs deliberately have no profile/firmware key.
 set(NXVM_PROFILE_ASSETS_ROOT "${CMAKE_SOURCE_DIR}/../nxvm-assets/profiles-nxvm" CACHE PATH
     "BYOB profile archive containing profile manifests and firmware")
 set(NXVM_PRODUCT_PROFILE "default-pc-at-80386-1440k-hdd" CACHE STRING

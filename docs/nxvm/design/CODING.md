@@ -73,11 +73,11 @@ objects remain ignored under `build/`, not tracked source. The runtime ROM
 contract carries immutable bytes, not external file paths. This is the approved
 target; Current records cutover verification and acceptance status.
 Documentation changes do not move assets. Each versioned local product EXE and its
-adjacent NXVM.ini live only in `assets/<app>/`, without a profile subdirectory; My5160 uses
+adjacent `<app>.ini` live only in `assets/<app>/`, without a profile subdirectory; My5160 uses
 `assets/my5160`; My5170 uses `assets/my5170`; MyDeskPro386 uses
 `assets/mydeskpro386`. The final NXVM cutover uses `assets/nxvm` directly. Relative
 runtime-media paths resolve from that file. It has no firmware/CMOS/font asset
-path keys. NXVM.ini is the sole
+path keys. The App-selected INI is the sole
 product runtime configuration route; repository-only tests do not load it.
 The owner explicitly requires the embedded-ROM EXEs in `assets/<app>/`
 to be committed with their product delivery. Raw vendor ROMs and generated

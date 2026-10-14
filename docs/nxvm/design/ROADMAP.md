@@ -45,7 +45,7 @@ CPU repair/qualification precedes controller and guest qualification.
 
 Retain all implemented XT, AT, DeskPro 386 and default PC/AT variants; inventory
 PC110 prerequisites without making a new Standard-board choice a dependency.
-Converge build selection, NXVM.ini, Devices, Profiles-owned construction and
+Converge build selection, the common INI grammar, Devices, Profiles-owned construction and
 Common adaptation to one profile per EXE. Preserve every CPU family and live
 machine capability; simplify duplicated machinery rather than retiring models.
 

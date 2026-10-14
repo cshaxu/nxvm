@@ -27,7 +27,7 @@ matching manifest, hashes and firmware slots before it builds.
 The four PC Apps deploy directly in `assets/my5160/`, `assets/my5170/`,
 `assets/mydeskpro386/` and `assets/nxvm/`, without profile subdirectories.
 Each pair remains beside its existing
-owner-maintained `NXVM.ini`. These PC Apps share this tool tree and task/version
+owner-maintained `<app>.ini`. These PC Apps share this tool tree and task/version
 sequence; they do not share private App composition sources.
 Deployment never rewrites that INI. Runtime media paths in that INI
 refer to the external `nxvm-assets/media-nxvm` archive; no protected asset is

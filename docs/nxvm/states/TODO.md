@@ -9,6 +9,12 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
   pairs for Lib, Emulator and x86; NXVM-only machine/board mechanisms live in
   Core. T556 S8 finding A6 requires a separate Td to reconcile shared-rule
   vocabulary; S9 does not modify docs/rules or the public six.
+- [ ] **Shared artifact wording (`TODO(Low)`).** Execution's historical fixed-
+  product paragraph still prescribes machine-key filenames, nested directories
+  and a generated INI. T557 explicitly records the owner's overriding contract:
+  product-prefixed lowercase EXEs and owner-maintained product INIs in the
+  existing flat App directories. Reconcile that paragraph in the same separate
+  Shared Td; do not regenerate owner configuration or restore obsolete names.
 
 ## CPU, Time, And Debugging Debt
 

@@ -6,7 +6,7 @@ products; this does not claim PC110 delivery.
 
 ## NXVM
 
-Each executable identifies its build-fixed machine. One NXVM.ini beside the
+Each executable identifies its build-fixed machine. Its product-specific INI beside the
 EXE supplies startup memory, floppy/hard-disk paths and their independent
 readonly/direct/overlay modes, and console/window presentation. Firmware,
 CMOS seed, video ROM and font derive only from the build-fixed Profile and its
@@ -19,7 +19,10 @@ INI does not choose a machine, startup action or boot order. BIOS/CMOS remain
 responsible for boot. CPU tables remain a Core capability, not an unrestricted
 replacement menu. Preserve physical media-slot order, not DOS drive letters.
 
-All machine executables use the same file/schema. Omitted memory uses the
+All machine executables use the same schema, with distinct adjacent filenames:
+`my5160.ini`, `my5170.ini`, `mydeskpro386.ini` and `nxvm.ini`.
+Names are declared by each App, never inferred from display names or versioned
+EXE filenames. No other product's INI replaces a missing file. Omitted memory uses the
 selected board default; explicit unsupported memory/media produces a clear
 error. The parser must support XT sub-MiB memory without rounding it to MiB;
 freeze the single memory-unit syntax during implementation planning. Firmware

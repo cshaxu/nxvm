@@ -81,26 +81,21 @@ if(cmake_text MATCHES "project_add_test\\([^\\n]*integration[^\\n]*(PROJECT_FDD_
     message(FATAL_ERROR
         "integration must be registered through the INI helper, not a media path.")
 endif()
-file(GLOB session_documents
-    "${PROJECT_SOURCE_DIR}/assets/nxvm/NXVM.ini"
-    "${PROJECT_SOURCE_DIR}/assets/my5160/NXVM.ini"
-    "${PROJECT_SOURCE_DIR}/assets/my5170/NXVM.ini"
-    "${PROJECT_SOURCE_DIR}/assets/mydeskpro386/NXVM.ini")
-set(expected_session_documents
-    "${PROJECT_SOURCE_DIR}/assets/my5160/NXVM.ini"
-    "${PROJECT_SOURCE_DIR}/assets/my5170/NXVM.ini"
-    "${PROJECT_SOURCE_DIR}/assets/mydeskpro386/NXVM.ini"
-    "${PROJECT_SOURCE_DIR}/assets/nxvm/NXVM.ini")
-list(LENGTH session_documents session_document_count)
-if(NOT session_document_count EQUAL 4)
-    message(FATAL_ERROR
-        "Exactly one canonical INI is required per supported machine.")
-endif()
-foreach(expected_session_document IN LISTS expected_session_documents)
-    if(NOT EXISTS "${expected_session_document}")
-        message(FATAL_ERROR
-            "Canonical INI is missing: ${expected_session_document}")
+set(session_documents)
+foreach(app IN ITEMS my5160 my5170 mydeskpro386 nxvm)
+    file(READ "${PROJECT_SOURCE_DIR}/src/app-${app}/CMakeLists.txt" app_build)
+    file(READ "${PROJECT_SOURCE_DIR}/src/app-${app}/main.c" app_entry)
+    if(NOT app_build MATCHES "set\\(NXVM_PRODUCT_ARTIFACT_NAME ${app}\\)" OR
+       NOT app_build MATCHES "set\\(NXVM_PRODUCT_INI_NAME ${app}\\.ini\\)" OR
+       NOT app_entry MATCHES "vm_app_run\\(APP_PRODUCT_NAME, APP_PRODUCT_INI_NAME,")
+        message(FATAL_ERROR "App must explicitly provide its publication/INI identity: ${app}")
     endif()
+    file(GLOB app_ini_names RELATIVE "${PROJECT_SOURCE_DIR}/assets/${app}"
+        "${PROJECT_SOURCE_DIR}/assets/${app}/*.ini")
+    if(NOT app_ini_names STREQUAL "${app}.ini")
+        message(FATAL_ERROR "Exactly one lowercase product INI is required: ${app}")
+    endif()
+    list(APPEND session_documents "${PROJECT_SOURCE_DIR}/assets/${app}/${app}.ini")
 endforeach()
 file(GLOB legacy_session_documents "${PROJECT_SOURCE_DIR}/assets/nxvm/*/*.yaml")
 if(NOT legacy_session_documents STREQUAL "")

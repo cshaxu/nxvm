@@ -149,6 +149,11 @@ Td receiver. T556 remains open for owner review.
 
 ## Completion And Stop Conditions
 
+NXVM disposition: the owner accepted S11 delivery and requested T557. The
+NXVM work is closed; S10's unresolved MyNES input repair remains in its own
+active packet. Diagnostic publication does not count that repair as complete.
+The original criteria below and prior evidence remain historical context.
+
 The owner added S10 after S9 delivery and explicitly identified MyNES as the
 affected product. Its full active packet is in
 [MyNES Current](../../mynes/states/CURRENT.md). This bounded input-correction

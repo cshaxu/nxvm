@@ -14,6 +14,23 @@ foreach(project_artifact_root IN LISTS project_artifact_roots)
     endif()
 endforeach()
 
+file(READ "${PROJECT_SOURCE_DIR}/src/core/product/version.h" product_version_header)
+if(NOT product_version_header MATCHES "CORE_PRODUCT_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9][0-9][0-9][0-9])\"")
+    message(FATAL_ERROR "Core Product release version is missing")
+endif()
+set(product_version "${CMAKE_MATCH_1}_${CMAKE_MATCH_2}_${CMAKE_MATCH_3}")
+foreach(app IN ITEMS my5160 my5170 mydeskpro386 nxvm)
+    file(GLOB product_executables RELATIVE "${PROJECT_SOURCE_DIR}/assets/${app}"
+        "${PROJECT_SOURCE_DIR}/assets/${app}/*.exe")
+    set(expected_executables
+        "${app}_${product_version}_x64.exe" "${app}_${product_version}_x86.exe")
+    list(SORT product_executables)
+    list(SORT expected_executables)
+    if(NOT product_executables STREQUAL expected_executables)
+        message(FATAL_ERROR "Expected only the current lowercase release pair: ${app}")
+    endif()
+endforeach()
+
 foreach(retired_artifact_root IN ITEMS "assets/binary-nxvm" "assets/binary-mynes")
     if(EXISTS "${PROJECT_SOURCE_DIR}/${retired_artifact_root}")
         message(FATAL_ERROR "Retired product artifact root remains: ${retired_artifact_root}")

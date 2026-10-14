@@ -15,7 +15,7 @@ static lib_bool text_equal(const lib_u8 *left, const char *right)
 static lib_i32 parse(lib_u8 *text, vm_session_request *request)
 {
     return vm_app_ini_parse((const lib_u8 *)"unit-root",
-        (const lib_u8 *)"NXVM.ini", text, request) == LIB_STATUS_OK;
+        (const lib_u8 *)"product.ini", text, request) == LIB_STATUS_OK;
 }
 
 lib_i32 main(void)
@@ -52,7 +52,7 @@ lib_i32 main(void)
     lib_memory_set(&request, 0xff, sizeof(request));
     if (vm_app_ini_load(LIB_NULL, &request) != LIB_STATUS_INVALID_ARGUMENT ||
         lib_memory_compare(&request, &cleared_request, sizeof(request)) ||
-        vm_app_ini_load((const lib_u8 *)"NXVM.ini", LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
+        vm_app_ini_load((const lib_u8 *)"product.ini", LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
         !parse(valid, &request) || request.memory_bytes != 640u * 1024u ||
         !text_equal(request.display, "window") || !request.console_control ||
         request.floppy_count != 2u || request.fixed_disk_count != 1u ||
@@ -69,17 +69,17 @@ lib_i32 main(void)
         lib_memory_compare(&request, &cleared_request, sizeof(request)) ||
         parse(sparse, &request) || parse(forbidden, &request) || parse(bad_mode, &request))
         return 1;
-    if (vm_app_ini_parse((const lib_u8 *)"\\", (const lib_u8 *)"\\NXVM.ini", root,
+    if (vm_app_ini_parse((const lib_u8 *)"\\", (const lib_u8 *)"\\product.ini", root,
             &request) != LIB_STATUS_OK || !text_equal(request.floppy[0u], "\\boot.img")) return 1;
-    if (vm_app_ini_executable_path("NXVM.ini", executable_ini_path,
+    if (vm_app_ini_executable_path("product.ini", executable_ini_path,
             sizeof(executable_ini_path)) !=
             LIB_STATUS_OK) return 1;
     executable_ini_length = lib_text_length((const char *)executable_ini_path);
-    if (executable_ini_length < sizeof("NXVM.ini") ||
-        !text_equal(executable_ini_path + executable_ini_length - sizeof("NXVM.ini") + 1u,
-            "NXVM.ini")) return 1;
-    if (vm_app_ini_executable_path("NXVM.ini", rejected_path,
-            sizeof("NXVM.ini")) !=
+    if (executable_ini_length < sizeof("product.ini") ||
+        !text_equal(executable_ini_path + executable_ini_length - sizeof("product.ini") + 1u,
+            "product.ini")) return 1;
+    if (vm_app_ini_executable_path("product.ini", rejected_path,
+            sizeof("product.ini")) !=
             LIB_STATUS_INVALID_ARGUMENT || !text_equal(rejected_path, "unchanged")) return 1;
     lib_c_printf("NXVM-INI:OK\n");
     return 0;

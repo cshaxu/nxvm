@@ -4,9 +4,10 @@ The entries below are ordered unnumbered candidates.
 
 ## M5 Candidates
 
-[Five-App component layout](../proposals/m5-app-component-layout.md) is admitted
-as T556 ahead of the remaining candidates below. S1 owns design/inventory;
-CURRENT records execution and the proposal records the initial S sequence.
+[PC publication and INI identity](../proposals/m5-pc-publication-ini-identity.md)
+is admitted as T557 ahead of the remaining candidates. T556's NXVM work is
+closed after accepted S11; its unresolved S10 remains explicitly owned by
+MyNES Current, not counted as fixed. CURRENT owns T557 S1 execution.
 
 The [T554 default-PC text cursor restoration](../history/M5-T554-pc-text-cursor-restoration.md)
 is closed after owner Console/Window acceptance; its archived proposal remains

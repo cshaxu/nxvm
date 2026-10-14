@@ -4,7 +4,7 @@
 
 
 lib_i32 pc_console_process_run(const char *executable,
-    const char *session_directory, const char *profile_file,
+    const char *session_directory,
     const char *const *commands, const char *const *markers,
     lib_size command_count);
 

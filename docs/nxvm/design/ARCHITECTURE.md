@@ -13,7 +13,7 @@ App, Emulator, Lib and x86 tooling. Build configuration selects that executable'
 external BYOB build-input root; the selected Profile determines its fixed firmware
 roles and relative asset names. The approved ROM-packaging target embeds the
 selected ROM bytes at build time for all four machines; Current distinguishes
-its implementation and acceptance status. A shared NXVM.ini configures supported memory,
+its implementation and acceptance status. A common INI grammar configures supported memory,
 media paths/access and presentation, not machine identity, firmware paths, CPU
 population, controller topology, startup actions or firmware boot order. It
   replaced the retired YAML loader at the completed product cutover; no
@@ -58,7 +58,7 @@ verification and acceptance; the task history retains the cutover sequence.
   implementation that supplies Emulator Product capabilities.  It is a SoftPC
   and NXVM shared component, not a `core/product` member and not a dependency
   of MyNES.  The shared PC Machine adapter lives in `core/machine`.
-- `core/product` owns the four NXVM Apps' `NXVM.ini` grammar, path construction,
+- `core/product` owns the four NXVM Apps' common INI grammar, path construction,
   fixed-factory adaptation, shared `INFO`/`SPEED`/floppy extensions and NXVM
   identity. It is a private NXVM-family component, not an IBM PC or SoftPC
   dependency.
@@ -150,7 +150,7 @@ build-selected profile + compiled immutable firmware + App INI options
 ```
 
 Profile owns hardware constraints and firmware asset resolution; Core Product
-owns the one NXVM.ini grammar and executable-relative runtime-media path
+owns the one INI grammar and INI-directory-relative runtime-media path
 resolution before it supplies one copied request to shared Product; Core owns
 generic structural/state invariants. These are distinct checks, not copies of
 one board rule in all three layers. Share constants or construction helpers
@@ -227,8 +227,15 @@ and parser, not a promise that every memory size or disk fits every board.
 Omitted values use selected-profile defaults; explicit unsupported values fail
 clearly rather than selecting another board or silently changing hardware.
 
+App build declarations own lowercase publication and INI identities:
+`my5160`, `my5170`, `mydeskpro386` and `nxvm`. Generic build/deploy code
+uses `<app>_<underscored-version>_<architecture>.exe`; the App entry explicitly
+passes the declared `<app>.ini` to Core startup. Neither executable basenames
+nor display names are parsed to guess configuration, and no legacy fallback
+exists. Display names and internal machine keys are separate unchanged values.
+
 Each selected product deploys once to its App's
-`assets/<app>/` directory, alongside its owner-maintained `NXVM.ini`.
+`assets/<app>/` directory, alongside its owner-maintained `<app>.ini`.
 My5160, My5170, MyDeskPro386 and NXVM use `assets/my5160`,
 `assets/my5170`, `assets/mydeskpro386` and `assets/nxvm` directly;
 there is no profile child directory.

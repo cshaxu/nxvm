@@ -13,7 +13,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     };
 
     if (argc != 3 || !pc_console_process_run(argv[2], argv[1],
-            "NXVM.ini", commands, markers,
+            commands, markers,
             sizeof(commands) / sizeof(commands[0]))) return 1;
     printf("MY5170:CONSOLE-INI-LIFECYCLE:OK\n");
     return 0;

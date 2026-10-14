@@ -2,17 +2,45 @@
 
 ## Current Work
 
-M5 T556 S8 is complete after coordinator review of `a28cac691`.
-S9 is admitted under the owner's request to repair confirmed audit findings.
-The owner additionally requires DeskPro source and matching unit tests to be
-flat; this supersedes S6's three-subdirectory target without reopening S6.
-S9 implementation and final qualification are complete and delivered for owner
-review. T556 stays open pending that acceptance.
-The owner subsequently admitted S10 for MyNES RDP game input. Its active
-implementation packet is [MyNES Current](../../mynes/states/CURRENT.md);
-the S9 packet below is retained delivery evidence, not concurrent execution.
+The owner accepts T556 S11 and requests the new PC publication/INI task.
+T556's NXVM work is closed with S10's unresolved MyNES input repair explicitly
+retained in [MyNES Current](../../mynes/states/CURRENT.md). Diagnostic delivery
+`3dc750be2` is not a production fix or S10 closure. No MyNES implementation is
+part of T557. Prior S9/S11 packets below are historical delivery evidence.
 
-## Current Task — M5 T556 S11 Default Text Raster
+## Current Task — M5 T557 S1 PC Publication And INI Identity
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T557 S1, next numeric NXVM task after accepted T556 S11 and explicit MyNES residual transfer. |
+| Admission And Approval | Owner requests four product-specific lowercase EXE/INI identities, explicit App INI injection and full affected qualification. This naming contract supersedes the old machine-key artifact naming in Execution for these four Apps only. |
+| Objective | Publish my5160, my5170, mydeskpro386 and nxvm release pairs and load each App's own adjacent lowercase INI through the existing Core parser. |
+| Non-goals | No SoftPC access/import, Shared-six changes, MyNES changes, configuration-content/media/ROM/snapshot mutation, fallback names or machine-key renaming. |
+| Reference Baseline | ed75cf572, clean after separate MyNES diagnostic publication; accepted PC implementation 6b0cb13e8. |
+| Candidate Proposal | [PC publication and INI identity](../proposals/m5-pc-publication-ini-identity.md). |
+| Files And ABI Surface | Four App build/main declarations; Core Product startup signature and version; NXVM build/deployment/gates; affected Core/App tests, current documents and eight assets. Root PC preset target version changes use a separate Shared commit, with no MyNES preset change. |
+| Applicable Rules | NXVM guide and Architecture/Coding/UI/source policy; shared Execution/Architecture/Coding/Document rules; architecture-governance and coding-governance skills. |
+| Verification | Existing x64/x86 Ninja/ccache graphs; affected startup/config/Console tests, all repository units, four-PC integrations and static/manifest/docs gates. Prove explicit INI selection, no wrong-name fallback, INI-relative media paths, lowercase release identities, PE widths and deployment hashes. |
+| Expected Markers | Eight version 0.5.0557 release files with product-specific prefixes; four matching lowercase INIs, byte-identical contents; unchanged display names and internal machine keys. |
+| Asset Needs | Read existing external inputs only; create and verify new eight artifacts before removing replaced PC EXEs; preserve MyNES and owner media/configuration bytes. |
+| Reporting Requirements | Per-file scope/diff and naming map, actual dual-width results, release identity proof, missing manual/RDP verification; never infer desktop acceptance from unit tests. |
+| Stop Conditions | Required Shared implementation, format/behavior change beyond naming, unexplained input mutation or conflict with other work. |
+| Exit Criteria | Source/build/runtime/test/docs identities agree, required tests and eight deployments pass, old duplicate releases removed, reviewed target-scoped commits pushed; await owner review. |
+| Original Owner Request | Close current S and admit a new T for four PC product-named EXE/INI publication and explicit runtime configuration loading. |
+| Similar-Issue Sweep | All four App declarations/callers, integration/setup fixtures, release gates/scripts/presets and current normative documents; historical text stays historical. |
+
+### S1 Delivery
+
+Implementation and qualification are complete: 592/592 repository units and
+36/36 four-PC integration executions per width. Eight 0.5.0557 product-named
+EXEs are deployed and the replaced eight filenames removed. Four renamed INIs
+retain their original hashes. Both specialized gate aggregates, manifests,
+registration, INI/publication and documentation checks pass. The
+[delivery evidence](../etc/evidence/t557-s1-publication-ini-identity.md) records
+actual diff, final hashes and limits. Shared-six and MyNES are unchanged.
+S1 is delivered for owner verification; T557 remains open.
+
+## Accepted Task — M5 T556 S11 Default Text Raster
 
 | Field | Required record |
 | --- | --- |
@@ -42,8 +70,8 @@ reuses decoder state. The actual-Core regression fails against admission
 objects and passes with the repair. DeskPro retains its correct 14/350 mode.
 Native remote-session observations no longer show the TIME failure, but the
 diagnostic pause acknowledgement and owner phone-client DPI/interaction are
-not qualified. Deliver this scoped P for owner desktop acceptance; S11 and
-T556 remain open. Preserve the unrelated MyNES S10 pending work. See the
+not qualified by automation. The owner has accepted this scoped delivery;
+S11 is closed. Preserve the separately retained MyNES S10 pending work. See the
 [S11 evidence](../etc/evidence/t556-s11-default-text-raster.md).
 
 ## Delivered Task — M5 T556 S9 Audit Repairs And Qualification
@@ -79,7 +107,7 @@ remain unchanged. Shared-rule vocabulary retains a separate Td receiver.
 | --- | --- |
 | T556 S9 | Delivered for owner review: 592/592 units and 44 profile/MyNES integration executions per width, both specialized gate targets, documentation/dependency/manifest checks and ten release artifacts. T556 remains open. |
 
-## Current Delivery
+## Retained S9 Delivery
 
 The [S9 delivery report](../etc/evidence/t556-s9-quality-repair-delivery.md)
 records exact scope, actual diff, logs, artifact hashes and unperformed manual
@@ -93,4 +121,4 @@ Root preset names use a separate Shared-target commit; the public six are unchan
 
 Prior packets remain in the [retained status archive](../history/M5-T556-retained-status.md).
 They are not concurrent active tasks. The [T556 history](../history/M5-T556-app-component-layout.md)
-records accepted S1--S8 and S9 delivery awaiting owner review.
+records accepted layout work, S11 closure and the explicit MyNES residual.
