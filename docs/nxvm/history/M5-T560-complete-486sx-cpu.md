@@ -54,3 +54,14 @@ This approval does not broaden public-component functionality/API authority
 or authorize unrelated changes. Neither Shared-six nor MyNES source/test or
 MyNES artifacts changed. Executor review and verification are recorded in
 the evidence; coordinator acceptance follows the complete pushed delivery.
+
+Coordinator actual-change review accepts Shared e7c3f4e78 and NXVM ddb260095.
+Review checked the complete CPU/header/test changes, control and descriptor
+caller sweep, build/preset identities, manifest deltas, artifact hashes and
+evidence against the original full-CPU request and bounded S2 packet. The
+source changes retain one execution path and explicit older-family behavior;
+the tests drive actual CPU instructions and valid exception handlers.
+Both 597-case unit suites and all eight integration groups passed. No manual
+RDP or production 486 admission is inferred. S2 closes with no unresolved
+base-batch delivery item; remaining CPU rows stay in T560. No new S has yet
+been admitted by this closure-only governance commit.

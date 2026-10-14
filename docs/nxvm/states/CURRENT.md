@@ -2,32 +2,22 @@
 
 ## Current Work
 
-T560 S2 is active after coordinator acceptance of S1 delivery cab60e0ac.
-Implement the base reset/control/paging/descriptor batch. The complete CPU
-objective and all other open rows remain in the convergence ledger.
+T560 remains open after accepted S2 delivery ddb260095 and Shared preset
+synchronization e7c3f4e78. S2 is closed; there is no active implementation
+packet between batches. The next planned batch is S3, alignment and inherited
+read/modify/write ordering, under the existing automatic sequential admission.
+The [complete CPU proposal](../proposals/m5-pc110-486-system.md) and
+[convergence ledger](../etc/evidence/t560-s1-cpu-convergence.md) retain all
+remaining CPU obligations. Production 486 admission remains closed.
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T560 S2 after accepted S1 cab60e0ac. |
-| Admission And Approval | Owner approved complete 486SX CPU repair and automatic sequential Core S tasks. On 2026-10-14 the owner permanently approved routine task-version synchronization of build targets, presets and release configuration without repeated questions. Targets: NXVM plus Shared only for the three root preset target names; Shared-six functional/API edits still require separate approval. |
-| Objective | Implement source-qualified base reset and control-register rules, supervisor WP and paged descriptor/accessed behavior as one C02--04/C08 batch. |
-| Non-goals | No production 486 admission, cache/TLB/SMM/VME implementation in this batch, new PC110 App, Shared-six/MyNES edits or third-party source import. Remaining hardware effects stay open within T560. |
-| Reference Baseline | cab60e0ac, C02--04/C08 ledger, original Intel PRM and selected SX/developer manuals pinned by T558. |
-| Candidate Proposal | [Complete 486SX CPU](../proposals/m5-pc110-486-system.md), with the [convergence ledger](../etc/evidence/t560-s1-cpu-convergence.md). |
-| Files And ABI Surface | Existing core/chips/cpu state/reset/instructions/interface and direct CPU/Core tests, Core manifests, NXVM evidence/version and eight PC EXEs. Estimate source +180--400/-70--200; tests +350--650/-30--100. Shared CMakePresets.json changes only three NXVM target names 0559 to 0560; MyNES presets stay unchanged. Existing CR bit vocabulary may expand; no Shared API or new framework. |
-| Applicable Rules | NXVM guide; Execution coverage/roles/artifacts; Document; Architecture/Coding and their governance skills; NXVM architecture/layout and source policy. |
-| Verification | Real reset bus accesses and guest MOV/LMSW/CLTS, valid exception delivery, WP mode/permission matrix, nonidentity GDT/IDT paging, Accessed set/clear readonly cases and earlier-family regression; one stable full x64/x86 unit run, applicable integrations, manifests/docs and eight verified 0560 artifacts using original Ninja/ccache graphs. |
-| Expected Markers | Correct base 486 state and fault semantics through existing CPU owners; no profile-wide behavior widening, hidden page-table bypass or successful unimplemented cache command. |
-| Asset Needs | Existing pinned manuals and admitted build inputs; preserve owner firmware/media/INI/snapshots and MyNES. Replace eight PC artifact pairs only after verification under the normal current-version rule. |
-| Reporting Requirements | Before code edits report source constants/exception decisions and refined diff; deliver actual counts, row dispositions, tests/artifact hashes and remaining CPU gates. |
-| Stop Conditions | Required Shared functional/API or non-routine build change, or unresolved source contradiction: report exact boundary and continue independent work; do not invent hardware behavior. Routine approved task-version configuration synchronization does not require another approval. |
-| Exit Criteria | Complete admitted base subcases have source/direct proof, retained-family checks pass, all required units/artifacts/gates pass, actual diff reviewed and complete P pushed. Cache/TLB/SMM/AC/VME/timing remain explicitly open in this T. |
-| Original Owner Request | Complete all 486SX CPU gaps under governance and code-quality rules; group related instructions and avoid redundant tests. |
-| Similar-Issue Sweep | Audit every CR writer, reset path, GDT/LDT/IDT access, descriptor Accessed publication and page permission consumer; preserve distinct task/debug publication semantics, record later TLB/SMM hooks without duplicate owners. |
+The owner permanently approved routine task-version synchronization of build
+targets, presets and release configuration on 2026-10-14. This is not approval
+for unrelated Shared functionality or APIs; the [task history](../history/M5-T560-complete-486sx-cpu.md)
+records the exact boundary. Do not ask again for equivalent version updates.
 
 | Task | Progress |
 | --- | --- |
-| T560 S2 | Base system implementation passes 597/597 units per width; eight 0560 EXEs verified, all four integration groups pass on both widths. Root preset synchronization approved; final delivery review/commit/push in progress. S1 accepted at cab60e0ac with C01--C17 and planned S2--S10. Production 486 admission remains closed. |
+| T560 S2 | Accepted and closed: e7c3f4e78 / ddb260095. Base system tests pass 597/597 per width; all eight integration groups pass and eight 0560 EXEs are published. See the [S2 evidence](../etc/evidence/t560-s2-base-system.md). Complete CPU qualification and planned S3--S10 remain open in T560. |
 | T559 | Closed by owner approval: instruction-delta qualification, 597/597 units per width, eight final external groups and eight verified 0559 PC EXEs. Remaining CPU system semantics transfer to the approved next task. |
 
 The [delivery evidence](../etc/evidence/t559-s7-instruction-qualification.md)
