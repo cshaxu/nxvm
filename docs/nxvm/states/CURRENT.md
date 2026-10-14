@@ -21,13 +21,16 @@
 | Stop Conditions | Source licensing/import, undocumented hardware behavior requiring an owner choice, Shared change or expanding S1 into implementation. Continue safe research on unresolved sources. |
 | Exit Criteria | Reviewed initial source/gap ledger and bounded next research/implementation gates; each implementation receiver has a proposal, dependency, owner, proof and stop condition; M5 queue reconciled, documentation checks passed and complete documentation P pushed. T558 still needs hardware/contract freeze; no PC110 runtime qualification claimed. |
 | Original Owner Request | Admit entry 3: IBM PC110 research and implementation; all currently queued work belongs to M5, not M6; begin research. |
-| Similar-Issue Sweep | CPU enum versus historical 486 claims; stale Common/x86/chips/ibmpc paths in PC110 plan; roadmap/queue milestone allocations; reconstructed/emulator evidence versus original sources. |
+| Similar-Issue Sweep | CPU enum versus historical 486 claims; stale Common/x86/chips/ibmpc paths in PC110 plan; roadmap/queue milestone allocations; reconstructed/emulator evidence versus original sources; owner-requested four-App/Core boundary audit and PC110 ownership receivers. |
 
 The [initial ledger](../etc/evidence/t558-s1-pc110-source-and-gap-ledger.md)
 is the T convergence inventory, not a complete register specification. Original
 manual, board-revision and lawful asset qualification remain research gates.
 Current artifacts remain the verified T557 PC pairs and MyNES 0044 pair;
 S1 changes no executable input and creates no PC110 artifact.
+The [ownership audit](../etc/evidence/t558-s1-core-app-ownership.md) adds actual
+four-App/Core inspection and the proposed PC110 split without admitting code
+changes; current manifest and dependency checks pass, with no dynamic retest.
 
 The owner accepts T556 S11 and requests the new PC publication/INI task.
 T556's NXVM work is closed. The owner subsequently closed S10's diagnostic

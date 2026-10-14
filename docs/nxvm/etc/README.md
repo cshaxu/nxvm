@@ -2,6 +2,8 @@
 
 T558 S1: [PC110 source and gap ledger](evidence/t558-s1-pc110-source-and-gap-ledger.md)
 records the initial research inventory, evidence limits and implementation gates.
+The [Core/App ownership audit](evidence/t558-s1-core-app-ownership.md) maps
+the four current machines, proposed PC110 owners and concrete planning risks.
 
 T557 S2: [cursor ownership](evidence/t557-s2-cursor-ownership.md) records the
 approved KVM mode contract, Core adaptation and receiving verification.

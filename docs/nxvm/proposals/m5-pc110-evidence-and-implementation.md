@@ -76,8 +76,11 @@ It does not implement a machine or claim hardware qualification. Its coverage
 domains transfer to the named T receivers above; their S boundaries are fixed
 at admission from the ledger, with large batches split before implementation.
 
-The App owns PC110-specific registers and wiring until real reusable chip
-semantics justify a Core component. Reuse the existing Core execution timeline,
+The [Core/App ownership audit](../etc/evidence/t558-s1-core-app-ownership.md)
+maps existing four-App boundaries and the PC110 receivers. Independent chip
+mechanisms belong to Core even with one consumer; PC110-specific wiring,
+firmware roles and board glue belong to the App. Freeze uncertain identities
+before selecting a chip boundary. Reuse the existing Core execution timeline,
 Machine driver and PC Product/Emulator route; no second executor, host BIOS/DOS
 interception, fabricated ROM, universal device framework or Shared change is
 implicitly authorized. First freeze a concrete board and firmware inventory;

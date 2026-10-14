@@ -15,6 +15,12 @@ Implement the selected PC Card controller/socket/window/card-detect path, requir
 
 Expected owners: PC110 Ricoh/card/flash wiring and tests; existing Core ATA/FDC/media mechanisms where semantically applicable.
 
+Consume the [ownership audit](../etc/evidence/t558-s1-core-app-ownership.md):
+remove the unconditional first-floppy assumption only through the existing
+Machine media path when the selected PC110 topology requires absence. Audit
+fixed-disk slot limits against real topology, not against a proposed generic
+card manager. Preserve existing four-App media behavior.
+
 ## Non-goals And Stop Conditions
 
 Do not assume every onboard disk uses the same CF path; do not synthesize INT13 or alter guest partitions. Flash programming must never modify the external firmware master.

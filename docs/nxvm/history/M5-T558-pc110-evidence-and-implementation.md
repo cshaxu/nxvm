@@ -19,3 +19,9 @@ its implementation obligations transfer explicitly to nine linked proposals
 in Queue, all M5. No successor receives a numeric T yet and T558 is not closed.
 S1's planning revision also records external-ROM embedding authorization and
 updates evidence provenance without importing third-party source or media.
+
+The owner subsequently requests a Core versus PC110 split and a current-code
+review of all four PC Apps. The [ownership audit](../etc/evidence/t558-s1-core-app-ownership.md)
+records the existing valid boundaries, five bounded risks and their receivers.
+This S1 extension changes planning only; no runtime cleanup or new artifact is
+claimed, and T558 remains open.

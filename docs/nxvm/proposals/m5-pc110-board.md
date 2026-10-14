@@ -15,6 +15,11 @@ Establish the sole PC110 composition and construction lifetime; implement VL82C4
 
 Expected owners: src/app-mypc110 and test/app-mypc110; genuinely reusable Core chip/board mechanisms and NXVM build glue as needed.
 
+Consume the [ownership audit](../etc/evidence/t558-s1-core-app-ownership.md):
+do not force PC110 through the fixed AT ROM layout; audit obsolete AT firmware
+metadata before extending contracts, and correct the stale My5170 build comment.
+Preserve the other four Apps' valid distinct board/firmware paths.
+
 ## Non-goals And Stop Conditions
 
 No firmware-offset dispatch, fake register success, copied ordinary-AT identity or declared bootable placeholder EXE. Later device endpoints must be explicit absent/unqualified dependencies.
