@@ -121,7 +121,7 @@ static void rendering(void)
     lib_bool valid = LIB_FALSE;
     kvm_window_rect changed;
     text.valid = LIB_TRUE; text.text.base.text_columns = 80; text.text.base.text_rows = 25;
-    text.text.base.cursor_visible = LIB_TRUE; text.text.base.cursor_column = 0; text.text.base.cursor_row = 24;
+    text.text.base.cursor_mode = KVM_CURSOR_HOST; text.text.base.cursor_column = 0; text.text.base.cursor_row = 24;
     text.text.base.font_height = 16; text.text.base.cursor_top = 14; text.text.base.cursor_bottom = 15;
     lib_test_assert(kvm_window_cursor_rect(&text, &display, &cursor));
     lib_test_assert(cursor.bottom == 410 && cursor.top == 407);
@@ -294,7 +294,7 @@ static void text_coverage(void)
     frame.text.base.cells[3999] = (kvm_text_cell){0, 0, 1, 1};
     lib_test_assert(kvm_window_render_frame(&frame, guarded + 1, 640, 400, &valid, &changed));
     lib_test_assert(changed.bottom == 400 && guarded[640u * 400u] == 0x123456u);
-    frame.text.base.cursor_visible = LIB_TRUE;
+    frame.text.base.cursor_mode = KVM_CURSOR_HOST;
     frame.text.base.cursor_column = 79;
     frame.text.base.cursor_row = 49;
     frame.text.base.cursor_top = 6;

@@ -29,8 +29,10 @@ modal interaction before the worker's existing destruction/retirement tail.
 This changes only leaf-support implementation, not application APIs.
 
 The Window owns only host presentation mechanics: it draws a content text cursor
-from copied position/shape/enabled frame fields and toggles that drawing every
-250 ms while unfrozen, using one owned native Window timer. No outer-loop blink
+from copied position/shape/mode fields. DISABLED hides it; HOST toggles every
+250 ms while unfrozen, using one owned native Window timer; SOURCE draws exactly
+the supplied cursor_phase. Timer messages never advance or redraw SOURCE mode.
+Returning to HOST starts a fresh bright interval. No outer-loop blink
 timeout remains; native move/size/menu loops dispatch the same timer message.
 Timer startup/transition failures use the existing failure path. Native Window
 timer delivery advances the original 250ms phase grid, including missed periods;

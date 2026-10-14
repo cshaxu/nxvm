@@ -11,7 +11,9 @@
  * are unsupported. Off-surface/hidden cursors do not invalidate a frame.
  * font_height == 0 means 16 scanlines. Inclusive cursor_top/bottom are clipped
  * to that height; a start beyond it is hidden. bottom < top retains the full
- * cell fallback. Console approximates the visible height, not its position. */
+ * cell fallback. DISABLED hides; HOST delegates blinking; SOURCE supplies phase.
+ * Window uses exactly one phase owner. Console approximates shape and uses its
+ * native host blinking for both enabled modes, ignoring source phase. */
 #define KVM_TEXT_COLUMNS 80u
 #define KVM_TEXT_ROWS 50u
 #define KVM_TEXT_FONT_DEFAULT_HEIGHT 16u
@@ -25,6 +27,12 @@ typedef struct kvm_text_cell {
 
 _Static_assert(sizeof(kvm_text_cell) == 4u, "Text cells must have no padding");
 
+typedef enum kvm_cursor_mode {
+    KVM_CURSOR_DISABLED = 0,
+    KVM_CURSOR_HOST = 1,
+    KVM_CURSOR_SOURCE = 2
+} kvm_cursor_mode;
+
 typedef struct kvm_text_frame {
     lib_u16 text_columns;
     lib_u16 text_rows;
@@ -32,8 +40,8 @@ typedef struct kvm_text_frame {
     lib_i32 cursor_row;
     lib_u8 cursor_top;
     lib_u8 cursor_bottom;
-    lib_bool cursor_visible;
-    lib_bool cursor_phase;
+    kvm_cursor_mode cursor_mode;
+    lib_bool cursor_phase; /* SOURCE only; HOST owns its own phase. */
     kvm_text_cell cells[KVM_TEXT_COLUMNS * KVM_TEXT_ROWS];
     lib_u32 text_palette[16u]; /* 0x00RRGGBB */
     lib_u32 font_height;
@@ -42,6 +50,9 @@ typedef struct kvm_text_frame {
 static inline lib_status kvm_text_frame_validate(const kvm_text_frame *frame)
 {
     if (frame == LIB_NULL || frame->text_columns == 0u || frame->text_rows == 0u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (frame->cursor_mode != KVM_CURSOR_DISABLED &&
+        frame->cursor_mode != KVM_CURSOR_HOST && frame->cursor_mode != KVM_CURSOR_SOURCE)
         return LIB_STATUS_INVALID_ARGUMENT;
     if (frame->text_columns > KVM_TEXT_COLUMNS || frame->text_rows > KVM_TEXT_ROWS)
         return LIB_STATUS_UNSUPPORTED;

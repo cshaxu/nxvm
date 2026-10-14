@@ -266,7 +266,7 @@ static void check_surface_damage(void)
     frame.valid=LIB_TRUE;
     frame.text.base.text_columns=1; frame.text.base.text_rows=2;
     frame.text.base.font_height=4;
-    frame.text.base.cursor_visible=LIB_TRUE;
+    frame.text.base.cursor_mode=KVM_CURSOR_HOST;
     frame.text.base.cursor_top=frame.text.base.cursor_bottom=3;
     c.cursor_blink_visible=1;
     before=invalidations;
@@ -288,39 +288,69 @@ static void check_surface_damage(void)
     ticks+=250;
     win32_window_advance_cursor_blink((lib_win32_hwnd)1,&c);
     lib_test_assert(c.cursor_blink_visible && invalidations==before+5);
-    frame.text.base.cursor_visible=LIB_FALSE;
+    /* Source phases redraw an unchanged bitmap and ignore every host tick. */
+    frame.text.base.cursor_mode=KVM_CURSOR_SOURCE;
+    frame.text.base.cursor_phase=LIB_TRUE;
+    lib_test_assert(kvm_window_publish_frame(&window,&frame)==LIB_STATUS_OK);
+    win32_window_consume_frame((lib_win32_hwnd)1,&c);
+    lib_test_assert(win32_window_cursor_visible(&c));
+    lib_u32 source_before=invalidations;
+    c.cursor_blink_visible=LIB_FALSE;
+    lib_win32_dword source_due=c.cursor_blink_due;
+    ticks+=1000;
+    win32_window_advance_cursor_blink((lib_win32_hwnd)1,&c);
+    lib_test_assert(win32_window_cursor_visible(&c) &&
+        c.cursor_blink_due==source_due && invalidations==source_before);
+    frame.text.base.cursor_phase=LIB_FALSE;
+    lib_test_assert(kvm_window_publish_frame(&window,&frame)==LIB_STATUS_OK);
+    win32_window_consume_frame((lib_win32_hwnd)1,&c);
+    lib_test_assert(!win32_window_cursor_visible(&c) && invalidations==source_before+1);
+    frame.text.base.cursor_mode=KVM_CURSOR_HOST;
+    lib_test_assert(kvm_window_publish_frame(&window,&frame)==LIB_STATUS_OK);
+    win32_window_consume_frame((lib_win32_hwnd)1,&c);
+    lib_test_assert(win32_window_cursor_visible(&c) && c.cursor_blink_due==ticks+250);
+    /* HOST ignores the source's false phase and starts a fresh bright interval. */
+    before=invalidations;
+    frame.text.base.cursor_mode=KVM_CURSOR_DISABLED;
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
-    lib_test_assert(invalidations==before+6 && invalidated.top==7);
+    lib_test_assert(invalidations==before+1 && invalidated.top==7);
     /* Font-only and palette-only changes go through the same pixel damage. */
     frame.text.base.cells[0].foreground=1;
     frame.text.base.text_palette[1]=0x123456;
     frame.text.font[0]=0x80;
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
-    lib_test_assert(invalidations==before+7 && invalidated.left==0 && invalidated.top==0 &&
+    lib_test_assert(invalidations==before+2 && invalidated.left==0 && invalidated.top==0 &&
         invalidated.right==1 && invalidated.bottom==1 && surface_bits[0]==0x123456);
     frame.text.base.text_palette[1]=0x654321;
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
-    lib_test_assert(invalidations==before+8 && surface_bits[0]==0x654321);
+    lib_test_assert(invalidations==before+3 && surface_bits[0]==0x654321);
     frame.text.font[0]=0;
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
-    lib_test_assert(invalidations==before+9 && surface_bits[0]==0);
+    lib_test_assert(invalidations==before+4 && surface_bits[0]==0);
     /* Text A is skipped by latest-wins; B's full bitmap contains both edits. */
     frame.text.font[0]=0x80;
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     frame.text.base.cells[KVM_TEXT_COLUMNS].foreground=1;
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
-    lib_test_assert(invalidations==before+10 && invalidated.left==0 && invalidated.top==0 &&
+    lib_test_assert(invalidations==before+5 && invalidated.left==0 && invalidated.top==0 &&
         invalidated.right==1 && invalidated.bottom==5);
     lib_test_assert(surface_bits[0]==0x654321 && surface_bits[32]==0x654321);
     c.surface_valid=LIB_FALSE; /* Recreated surface must invalidate fully, even same lib_win32_rgb. */
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
-    lib_test_assert(invalidations==before+11 && invalidated.right==8 && invalidated.bottom==8);
+    lib_test_assert(invalidations==before+6 && invalidated.right==8 && invalidated.bottom==8);
+    /* A failed HOST timer transition follows the existing terminal path. */
+    frame.text.base.cursor_mode=KVM_CURSOR_HOST;
+    timer_ok=0;
+    lib_test_assert(kvm_window_publish_frame(&window,&frame)==LIB_STATUS_OK);
+    win32_window_consume_frame((lib_win32_hwnd)1,&c);
+    lib_test_assert(window.base.stopping && window.base.failure==LIB_STATUS_IO_ERROR);
+    timer_ok=1;
     lib_test_assert(kvm_component_destroy(&window.base)==0);
 }
 int main(void)
@@ -402,7 +432,7 @@ int main(void)
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     client_ok=1;
     c.frame.valid=LIB_TRUE; c.frame.text.base.text_columns=80; c.frame.text.base.text_rows=25;
-    c.frame.text.base.cursor_visible=LIB_TRUE; c.frame.text.base.font_height=16;
+    c.frame.text.base.cursor_mode=KVM_CURSOR_HOST; c.frame.text.base.font_height=16;
     c.cursor_blink_due=250; c.cursor_blink_visible=1;
     for (ticks=0;ticks<250;++ticks) win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0);
     lib_test_assert(c.cursor_blink_visible);
@@ -431,7 +461,7 @@ int main(void)
     c.frozen=0; c.cursor_blink_due=10; ticks=0xfffffff0u;
     win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0); lib_test_assert(!c.cursor_blink_visible);
     ticks=10; win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0); lib_test_assert(c.cursor_blink_visible);
-    c.frame.text.base.cursor_visible=LIB_FALSE; ticks=1000;
+    c.frame.text.base.cursor_mode=KVM_CURSOR_DISABLED; ticks=1000;
     win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0); lib_test_assert(c.cursor_blink_visible);
     lib_test_assert(kvm_window_unfreeze(&window)==LIB_STATUS_OK);
     lib_test_assert(win32_window_consume_mailboxes((lib_win32_hwnd)1,&c));

@@ -466,12 +466,24 @@ static void check_character_banks(void)
         frame.base.font_height = cases[i].height;
         frame.base.cursor_top = cases[i].top;
         frame.base.cursor_bottom = cases[i].bottom;
-        frame.base.cursor_visible = frame.base.cursor_phase = LIB_TRUE;
+        frame.base.cursor_mode = KVM_CURSOR_SOURCE;
+        frame.base.cursor_phase = LIB_FALSE;
         lib_test_assert(kvm_console_publish_text_frame(&console, &frame) == LIB_STATUS_OK);
         lib_test_assert(captured.font_height == (cases[i].height ? cases[i].height : KVM_TEXT_FONT_DEFAULT_HEIGHT));
         lib_test_assert(captured.cursor_visible == cases[i].visible);
         lib_test_assert(captured.cursor_top == cases[i].top && captured.cursor_bottom == cases[i].out_bottom);
         lib_test_assert(captured.cursor_phase == 1);
+    }
+    frame.base.cursor_top = 0;
+    frame.base.cursor_bottom = 1;
+    for (lib_u32 mode = KVM_CURSOR_DISABLED; mode <= KVM_CURSOR_SOURCE; ++mode) {
+        frame.base.cursor_mode = (kvm_cursor_mode)mode;
+        for (lib_u32 phase = 0; phase < 2; ++phase) {
+            frame.base.cursor_phase = (lib_bool)phase;
+            lib_test_assert(kvm_console_publish_text_frame(&console, &frame) == LIB_STATUS_OK);
+            lib_test_assert(captured.cursor_visible == (mode != KVM_CURSOR_DISABLED));
+            lib_test_assert(captured.cursor_phase == LIB_TRUE);
+        }
     }
     lib_console_release(console.logical_console);
 }

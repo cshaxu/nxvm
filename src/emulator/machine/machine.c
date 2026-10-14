@@ -92,7 +92,7 @@ static lib_bool emulator_machine_text_frame_changed(const emulator_machine_frame
         old_text->cursor_row != new_text->cursor_row ||
         old_text->cursor_top != new_text->cursor_top ||
         old_text->cursor_bottom != new_text->cursor_bottom ||
-        old_text->cursor_visible != new_text->cursor_visible ||
+        old_text->cursor_mode != new_text->cursor_mode ||
         old_text->cursor_phase != new_text->cursor_phase ||
         old_text->font_height != new_text->font_height ||
         lib_memory_compare(old_text->cells, new_text->cells, sizeof(new_text->cells)) != 0 ||

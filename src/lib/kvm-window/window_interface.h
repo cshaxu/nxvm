@@ -13,7 +13,7 @@ typedef struct kvm_window_options {
     /* Copied during creation.  The application owns both initial product
      * identity and later title changes; kvm-window never supplies one. */
     const char *initial_title;
-    /* Frozen forbids capture and cursor blink.  It does not own a capture;
+    /* Frozen forbids capture and host cursor blink. It does not own a capture;
      * an unfrozen Window still waits for a client-area click to acquire one. */
     lib_bool initial_frozen;
 } kvm_window_options;

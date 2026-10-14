@@ -14,7 +14,8 @@
         #type "." #member " must use the boolean value contract")
 ASSERT_BOOLEAN(kvm_window_frame, valid);
 ASSERT_BOOLEAN(kvm_window_frame, graphics);
-ASSERT_BOOLEAN(kvm_text_frame, cursor_visible);
+_Static_assert(KVM_CURSOR_DISABLED == 0 && KVM_CURSOR_HOST == 1 &&
+    KVM_CURSOR_SOURCE == 2, "cursor mode values");
 ASSERT_BOOLEAN(kvm_text_frame, cursor_phase);
 ASSERT_BOOLEAN(lib_console_text_frame, cursor_visible);
 ASSERT_BOOLEAN(lib_console_text_frame, cursor_phase);
@@ -42,10 +43,17 @@ static void check_validation(void)
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_INVALID_ARGUMENT);
     source.text.base.text_columns = source.text.base.text_rows = 1u;
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_OK);
+    for (lib_i32 mode = -1; mode <= 3; ++mode) {
+        source.text.base.cursor_mode = (kvm_cursor_mode)mode;
+        lib_test_assert(kvm_window_frame_validate(&source) ==
+            (mode >= KVM_CURSOR_DISABLED && mode <= KVM_CURSOR_SOURCE ?
+                LIB_STATUS_OK : LIB_STATUS_INVALID_ARGUMENT));
+    }
+    source.text.base.cursor_mode = KVM_CURSOR_DISABLED;
     source.text.base.font_height = KVM_TEXT_FONT_DEFAULT_HEIGHT;
     source.text.base.text_columns = KVM_TEXT_COLUMNS;
     source.text.base.text_rows = KVM_TEXT_ROWS;
-    source.text.base.cursor_visible = LIB_TRUE;
+    source.text.base.cursor_mode = KVM_CURSOR_HOST;
     source.text.base.cursor_column = -1;
     source.text.base.cursor_row = 500;
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_OK);
@@ -113,9 +121,9 @@ static void check_copy(void)
 int main(void)
 {
     lib_u32 generation, old;
-    lib_test_assert(sizeof(kvm_text_frame) == 16084);
-    lib_test_assert(sizeof(kvm_window_text_frame) == 32468);
-    lib_test_assert(sizeof(kvm_console_text_frame) == 17108);
+    lib_test_assert(sizeof(kvm_text_frame) == 16092);
+    lib_test_assert(sizeof(kvm_window_text_frame) == 32476);
+    lib_test_assert(sizeof(kvm_console_text_frame) == 17116);
     lib_test_assert(sizeof(kvm_window_frame) == 984080);
     check_validation();
     lib_memory_set(&source, 0x3c, sizeof(source));
@@ -124,6 +132,8 @@ int main(void)
     source.text.base.text_columns = 80u;
     source.text.base.text_rows = 25u;
     source.text.base.font_height = 0u;
+    source.text.base.cursor_mode = KVM_CURSOR_SOURCE;
+    source.text.base.cursor_phase = LIB_TRUE;
     for (lib_size i = 0; i < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++i)
         source.text.base.cells[i] = (kvm_text_cell){ (lib_u8)i, (lib_u8)(i % 2u),
             (lib_u8)(i % 16u), (lib_u8)((i / 16u) % 16u) };
@@ -161,6 +171,8 @@ int main(void)
     source.graphics = LIB_FALSE;
     source.text.base.text_columns = 80u; source.text.base.text_rows = 25u;
     source.text.base.font_height = 0u;
+    source.text.base.cursor_mode = KVM_CURSOR_DISABLED;
+    source.text.base.cursor_phase = LIB_FALSE;
     for (lib_size i = 0; i < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++i)
         source.text.base.cells[i] = (kvm_text_cell){ (lib_u8)i, 1u, 15u, 2u };
     check_copy(); /* Graphics -> text never exposes the old pixels. */

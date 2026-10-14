@@ -160,8 +160,9 @@ lib_status kvm_console_publish_text_frame(kvm_console *console,
     text_frame.cursor_row = text->cursor_row;
     text_frame.cursor_top = text->cursor_top;
     text_frame.cursor_bottom = text->cursor_bottom;
-    text_frame.cursor_visible = text->cursor_visible;
-    text_frame.cursor_phase = text->cursor_phase;
+    /* Native Console owns blinking; source phase cannot be reproduced exactly. */
+    text_frame.cursor_visible = text->cursor_mode != KVM_CURSOR_DISABLED;
+    text_frame.cursor_phase = LIB_TRUE;
     text_frame.font_height = text->font_height ? text->font_height : KVM_TEXT_FONT_DEFAULT_HEIGHT;
     if (text->cursor_bottom >= text->cursor_top) {
         if (text->cursor_top >= text_frame.font_height)

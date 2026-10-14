@@ -591,6 +591,12 @@ int main(void)
     before.window.text.base.text_rows = 25u;
     after = before;
     lib_test_assert(!emulator_machine_text_frame_changed(&before, &after));
+    after.window.text.base.cursor_mode = KVM_CURSOR_SOURCE;
+    lib_test_assert(emulator_machine_text_frame_changed(&before, &after));
+    before = after;
+    after.window.text.base.cursor_phase = LIB_TRUE;
+    lib_test_assert(emulator_machine_text_frame_changed(&before, &after));
+    before = after;
     after.characters.primary[65] = 0x263au;
     lib_test_assert(emulator_machine_text_frame_changed(&before, &after));
     before = after;

@@ -212,7 +212,7 @@ int main(void)
         lib_test_assert(kvm_window_create(&window, &options) == LIB_STATUS_OK);
         lib_test_assert(lib_win32_wait_for_single_object(waiting, LIB_WIN32_INFINITE) == LIB_WIN32_WAIT_OBJECT_0);
         frame.valid = LIB_TRUE; frame.text.base.text_columns = 80u; frame.text.base.text_rows = 25u;
-        frame.text.base.cursor_visible=LIB_TRUE; frame.text.base.font_height=16; frame.text.base.cursor_top=14; frame.text.base.cursor_bottom=15;
+        frame.text.base.cursor_mode=KVM_CURSOR_HOST; frame.text.base.font_height=16; frame.text.base.cursor_top=14; frame.text.base.cursor_bottom=15;
         lib_test_assert(kvm_window_publish_frame(window, &frame) == LIB_STATUS_OK);
         if(scenario==18) {
             void *retained=window->worker_state;
