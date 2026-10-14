@@ -198,6 +198,13 @@ both comparison outcomes; other rows retain their existing source/system
 gates. The discovered inherited RMW read-first class is explicitly retained
 in NXVM TODO, not counted as repaired by XADD.
 
+S4 reconciliation: I3 is accepted at c4a08c66e with
+[direct proof and artifacts](t559-s4-cmpxchg.md). Both compare outcomes retain
+write permission/writeback, cached-address and alias semantics, and fault
+rollback. I4--I6 now transfer together to active S5; the existing system
+receiver still owns real cache/TLB effects. Remaining I7--I10 and external
+boot qualification are not discharged by these arithmetic-family tests.
+
 PRM section 13.1 permits the listed arithmetic/exchange memory-destination
 operations without restricting their source GPR to AX/CX. Current
 `PREFIX_LOCK()` applies FE's `/0..1` check to the preceding ordinary opcodes;

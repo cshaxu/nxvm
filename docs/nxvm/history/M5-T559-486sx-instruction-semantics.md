@@ -85,3 +85,12 @@ changes are +46/-3; test C/CMake changes are +428/-1. Complete units pass
 595/595 on both widths and eight refreshed PC EXEs pass product/INI identity,
 PE-width and 0559 version checks. Public six, MyNES and owner inputs are
 unchanged. This is executor delivery, not whole-T or 486 system qualification.
+
+Coordinator acceptance: reviewed actual c4a08c66e instruction handlers,
+metadata/LOCK/dispatch changes, complete CPU test, board metadata expectation,
+registration/manifests, evidence and eight artifacts. I3 maps to direct
+equal/unequal, alias, write-cycle, permission and failure/retry assertions;
+the existing instruction/memory/exception owners remain sole authorities.
+Both full unit logs, eight product/INI logs and deployed hashes support this
+bounded qualification; push is confirmed. S4 closes and S5 is admitted for
+the complete I4--I6 system-instruction boundary group. T559 remains open.
