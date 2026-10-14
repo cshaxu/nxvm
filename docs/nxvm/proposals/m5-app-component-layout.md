@@ -150,12 +150,14 @@ Td receiver. T556 remains open for owner review.
 ## Completion And Stop Conditions
 
 NXVM disposition: the owner accepted S11 delivery and requested T557. The
-NXVM work is closed; S10's unresolved MyNES input repair remains in its own
-active packet. Diagnostic publication does not count that repair as complete.
+NXVM work is closed. On 2026-10-13 the owner also closed S10's bounded
+diagnostic delivery, transferring its unresolved repair to
+[MyNES TODO](../../mynes/states/TODO.md#rdp-short-input-repair).
+Diagnostic publication does not count that repair as complete.
 The original criteria below and prior evidence remain historical context.
 
 The owner added S10 after S9 delivery and explicitly identified MyNES as the
-affected product. Its full active packet is in
+affected product. Its closure disposition is in
 [MyNES Current](../../mynes/states/CURRENT.md). This bounded input-correction
 amendment does not authorize PC behavior changes or Shared implementation edits,
 nor does it assert owner acceptance of the earlier S9 delivery.

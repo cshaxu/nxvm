@@ -3,9 +3,10 @@
 ## Current Work
 
 The owner accepts T556 S11 and requests the new PC publication/INI task.
-T556's NXVM work is closed with S10's unresolved MyNES input repair explicitly
-retained in [MyNES Current](../../mynes/states/CURRENT.md). Diagnostic delivery
-`3dc750be2` is not a production fix or S10 closure. No MyNES implementation is
+T556's NXVM work is closed. The owner subsequently closed S10's diagnostic
+delivery with its unresolved MyNES input repair transferred to
+[MyNES TODO](../../mynes/states/TODO.md#rdp-short-input-repair).
+`3dc750be2` is not a production fix. No MyNES implementation is
 part of T557's original S1; S2's approved receiver exception is recorded below.
 Prior S9/S11 packets below are historical delivery evidence.
 

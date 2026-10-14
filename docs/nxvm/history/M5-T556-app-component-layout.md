@@ -94,3 +94,12 @@ The NXVM scope is closed. S10's MyNES input repair is not complete: its active
 packet remains in MyNES Current. Diagnostic delivery `3dc750be2` and NXVM
 registration `ed75cf572` publish investigation only, not a working input fix.
 That explicit receiving packet preserves the residual independently of T557.
+
+### Subsequent S10 Diagnostic Closure
+
+On 2026-10-13 the owner requested S10 closure. The investigation-only delivery
+3dc750be2/ed75cf572 is closed with the unresolved short-input repair transferred
+to [MyNES TODO](../../mynes/states/TODO.md#rdp-short-input-repair), replacing
+the active packet above. No production repair or mobile-RDP success is claimed.
+The diagnostic diff and dual-width evidence were reviewed; this closure changes
+governance only, retains current EXEs, and admits no new implementation task.
