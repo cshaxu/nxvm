@@ -164,3 +164,12 @@ Actual C changes are +1/-1 production and +107/-16 tests (net +91 total).
 Core manifests, documentation governance, scope and whitespace checks pass.
 Executor delivery awaits coordinator actual-change acceptance. The complete
 system receiver remains open; no runnable 486/PC110 claim is made.
+
+Coordinator acceptance of `71b95e31c`: reviewed the committed C changes and
+all matrix encodings, the existing ModRM rejection owner, source authority,
+manifest revisions, scope isolation and all final qualification records.
+The test's ordinary-operation comparison preserves instruction length and is
+supplemented by explicit primary arithmetic results and retained bit tests.
+All eight artifact hashes match deployed files; push is confirmed. S7 closes.
+T559 remains open pending task-level completion audit. Neither this acceptance
+nor the system-proposal transfer declares the persistent 486SX goal complete.

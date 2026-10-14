@@ -2,45 +2,26 @@
 
 ## Current Work
 
-### Active Task — M5 T559 S7 Whole Instruction-Delta Qualification
+No S is active. T559 remains open for its task-level completion audit; S7 is
+accepted and closed after coordinator review of pushed `71b95e31c`.
 
-| Field | Required record |
+| Task | Progress |
 | --- | --- |
-| Identifier Mode | Continuation T559 S7 after coordinator acceptance of S6 P1 e590a0dde. |
-| Admission And Approval | Owner-admitted T559 and automatic sequential Core-only S execution. |
-| Objective | Reconcile every I1--I11 ledger row against actual source and direct proof; complete I9/I10 retained-family sweep and external boot qualification, with explicit system handoffs. |
-| Non-goals | No Shared-six or MyNES implementation changes, production 486 admission, invented cache/TLB/VME success, or PC110 boot claim. |
-| Reference Baseline | e590a0dde; accepted S2--S6 implementation/evidence and original-manual contracts. |
-| Candidate Proposal | [Instruction proposal](../proposals/m5-pc110-486-instructions.md), [finite ledger](../etc/evidence/t559-s1-instruction-inventory.md), [system receiver](../proposals/m5-pc110-486-system.md). |
-| Files And ABI Surface | NXVM qualification evidence/status/history; existing Core/test owners only for confirmed gaps. No planned API or state change. Expected audit documentation +100--220/-0--30; any necessary code/test batch is reported before edits. |
-| Applicable Rules | NXVM guide, Execution, Document, Architecture/Coding and skills, NXVM architecture/layout, source/research policy. |
-| Verification | Map frozen forms to real handler assertions; scan all profile/LOCK/reset/FPU/timing gates; reuse unchanged S6 unit/artifact evidence, execute required retained-machine external integration once per profile/width in existing Ninja graphs. Correct confirmed gaps with affected proof and required qualification. |
-| Expected Markers | Every row has direct proof or the already authorized complete system receiver; no silent omissions or falsely runnable 486. |
-| Asset Needs | Existing admitted external firmware/media, scratch copies through existing setup; preserve master ROM/INI/disks/snapshots and MyNES assets. |
-| Reporting Requirements | Per-row evidence and remaining gates; actual diff, external pass/failure, artifact identity and unexecuted manual checks. |
-| Stop Conditions | Shared changes, required new cross-owner API, unsupported source decision or absent essential asset; record exact gap and continue independent scope. |
-| Exit Criteria | Whole ledger reconciled, retained-family regression and required external boot routes pass, system receiver complete, manifests/docs/scope reviewed, complete P pushed. T closure separately checks original objective and all gates. |
-| Original Owner Request | Implement 486SX semantics under governance; group related work, avoid repeated per-opcode full suites. |
-| Similar-Issue Sweep | All decode/metadata/preview/LOCK/profile comparisons, flags consumers, FPU and reset/timing eligibility; do not infer a whole-domain result from one boot. |
+| T559 S7 | Accepted instruction-delta qualification: single-owner bit LOCK repair, 597/597 units per width, eight final external groups and eight verified 0559 PC EXEs. Whole 486 system semantics remain incomplete. |
 
-S7 confirmed repair: the complete inherited LOCK matrix exposes bit operations
-bypassing `_d_modrm` and its locked-register rejection. Route `_d_bit_rmimm`
-through that existing decoder (+1/-1 production line), with no new owner,
-state or API. Expand the existing CPU test matrix, update Core manifests and
-requalify both widths and affected eight artifacts; external results predating
-the production repair are baseline evidence, not final-source qualification.
+The [delivery evidence](../etc/evidence/t559-s7-instruction-qualification.md)
+and [task history](../history/M5-T559-486sx-instruction-semantics.md) record
+actual-diff review, sources, hashes and verification. Shared-six, MyNES and
+owner inputs are unchanged. No manual RDP qualification is claimed.
+The [instruction proposal](../proposals/m5-pc110-486-instructions.md) and
+[finite ledger](../etc/evidence/t559-s1-instruction-inventory.md) retain the
+bounded T contract; the [system receiver](../proposals/m5-pc110-486-system.md)
+still owns real cache/TLB/test commands, reset/control, AC/VME/SMM and timing.
+Production 486 admission stays closed. The persistent full implementation
+objective is not complete.
 
-S7 executor delivery: final units pass 597/597 on x64 and x86; all eight
-profile/width external groups pass after the production correction. Eight
-0559 PC EXEs are deployed and identity/PE/hash checked. The
-[delivery evidence](../etc/evidence/t559-s7-instruction-qualification.md)
-records actual diff, source boundaries and remaining system obligations.
-Coordinator actual-change acceptance is pending; T559 remains open.
-
-S6 is accepted after actual review of e590a0dde. Its candidate CPUID and flags
-scope, source limitations, direct tests, full-unit plus affected-recheck
-evidence and eight artifacts are reconciled. The worktree was clean at S7
-admission. No ongoing build/test process remains from S6. T559 stays open.
+The accepted snapshots below preserve earlier deliveries only; their old
+active/progress wording does not admit concurrent work or supersede this section.
 
 ### Accepted Delivery — M5 T559 S6 CPUID And Flags
 
