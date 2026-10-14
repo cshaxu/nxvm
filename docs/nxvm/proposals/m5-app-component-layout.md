@@ -78,6 +78,7 @@ Keep original Ninja/ccache trees and compile shared dependencies once per width.
 | S7 | DeskPro386 normal-boot qualification | Compare the pre-layout Model 40 boot route with current behavior, repair the proven Core boot-path defect, and prove an unattended x64/x86 boot reaches the installer checkpoint. Do not alter firmware, media, INI inputs or production input policy. |
 | S8 | Comprehensive quality audit | Inspect governance, current documentation, five Apps/Core code and test/build ownership; reconcile actual proof and report confirmed defects with bounded S9 repairs. No implementation changes in the audit. |
 | S9 | Audit-driven repairs, DeskPro flattening and final qualification | Flatten DeskPro source and matching units, repair includes/names/build/gates and current docs; fix confirmed S8 findings under this revised ownership; run complete repository suites per width, verify ten current EXEs, push target-separated commits and leave a clean worktree. Shared-six and shared-rule changes require their separate admission. |
+| S10 | Owner-added MyNES RDP input investigation and repair | Trace native normalization through Emulator to the NES controller, reproduce the reported lost input and repair its proven owner; preserve one input path and hotkey semantics, qualify both widths and publish affected artifacts. Required Shared changes stop for explicit review. |
 | S11 | Owner-added default text-raster correction and DeskPro verification | Configure default guest BIOS for full 8x16 80x25 text with coherent raster/cursor, verify 640x400 through the native client route; retain DeskPro 14/350 if correct. Owner subsequently admits the exposed Core TIME failure: select retirement timing before asynchronous interrupt entry overwrites decoder state, regress the interrupted boundary, qualify both widths and the affected four-PC release pairs. No Shared or unrelated work changes. |
 
 This is an initial ordered plan. Any necessary refinement must preserve the whole
@@ -147,6 +148,12 @@ ten release artifacts. Public six remain unchanged. A6 retains its standalone
 Td receiver. T556 remains open for owner review.
 
 ## Completion And Stop Conditions
+
+The owner added S10 after S9 delivery and explicitly identified MyNES as the
+affected product. Its full active packet is in
+[MyNES Current](../../mynes/states/CURRENT.md). This bounded input-correction
+amendment does not authorize PC behavior changes or Shared implementation edits,
+nor does it assert owner acceptance of the earlier S9 delivery.
 
 Every current production/test file has a destination or justified retention;
 all five target trees, directional dependencies and relevant names match this

@@ -8,6 +8,9 @@ The owner additionally requires DeskPro source and matching unit tests to be
 flat; this supersedes S6's three-subdirectory target without reopening S6.
 S9 implementation and final qualification are complete and delivered for owner
 review. T556 stays open pending that acceptance.
+The owner subsequently admitted S10 for MyNES RDP game input. Its active
+implementation packet is [MyNES Current](../../mynes/states/CURRENT.md);
+the S9 packet below is retained delivery evidence, not concurrent execution.
 
 ## Current Task — M5 T556 S11 Default Text Raster
 
