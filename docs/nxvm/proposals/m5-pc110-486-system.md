@@ -82,8 +82,8 @@ coverage record; CURRENT alone admits each executing batch.
 - Final batch: complete ledger reconciliation, production Core connection,
   retained-machine regressions and full dual-width artifact qualification.
 
-Only S1 is allocated. Its evidence refines subsequent numeric S boundaries
-before admission; simple adjacent batches may combine. Development uses focused
+S1 is accepted and S2 is admitted in CURRENT. Later numeric S boundaries
+remain plans until admission; simple adjacent batches may combine. Development uses focused
 batch tests, followed by required closure qualification once per stable revision.
 Reuse existing Ninja/ccache graphs. Do not split work per opcode or repeat passed
 unchanged tests. No letter-suffixed S or first-failing-BIOS repair sequence.
