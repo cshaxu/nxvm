@@ -42,6 +42,29 @@ No row is accepted by this initial inventory. Every row needs named sources,
 finite subcases and direct tests before completion. Genuine non-applicability
 needs hardware evidence; lack of implementation is never non-applicability.
 
+### S2 Base Subcase Evidence
+
+The [base-system record](t560-s2-base-system.md) documents the implementation
+and its current qualification. The initial findings above remain the frozen
+starting inventory, not a claim that these repairs are still absent.
+
+- C02: documented base reset registers and high reset-fetch provenance now
+  have direct proof. Cache/TLB and SMM/power reset effects remain with their
+  planned state-owner batches; production admission remains C17.
+- C03: 486 CR0 validation/fixed ET and CR3 PWT/PCD normalization, LMSW/CLTS
+  preservation and implicit task CR3 publication have direct proof. Real
+  cache/TLB effects and exact selected CR4/VME applicability remain open.
+- C04: supervisor WP, the full PDE/PTE permission matrix, VM86 access and
+  split-page validation/publication have direct proof. TLB/cacheability and
+  alignment interactions are not discharged by these tests.
+- C08: supervisor-linear GDT/IDT routing, split GDT/LDT descriptors and
+  clear/already-set Accessed behavior are implemented at the existing owner.
+  The inherited segment/gate/task universe is still subject to C15's full
+  selected-family qualification; retained-family regression is not a substitute.
+
+No complete CPU-row acceptance or board-use qualification is inferred from
+this bounded batch. Final S2 delivery and acceptance remain in CURRENT.
+
 ## Initial Direct Inspection
 
 Read cpu.c reset and debug paths, cpu.h register storage, cpu_instructions.c

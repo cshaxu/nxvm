@@ -226,7 +226,8 @@ static lib_i32 _kma_is_reset_vector_fetch(
     }
     if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
         reset_vector = 0x00fffff0u;
-    } else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+    } else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 ||
+        context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX) {
         reset_vector = 0xfffffff0u;
     } else {
         return 0;
@@ -327,10 +328,11 @@ static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *con
             CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
         translation->pde_accessed = LIB_TRUE;
     }
-    if (vpl == 0x03)
+    if (vpl == 0x03 || (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+        (cpu_state.data.cr0 & VCPU_CR0_WP) != 0u))
     {
-        CPU_TRACE_BLOCK_BEGIN("vpl(3)");
-        if (!_GetPageEntry_US(cpde))
+        CPU_TRACE_BLOCK_BEGIN("PageDirPermission");
+        if (vpl == 0x03 && !_GetPageEntry_US(cpde))
         {
             CPU_TRACE_BLOCK_BEGIN("PageDirEntry_US(0)");
             cpu_state.data.cr2 = linear;
@@ -342,7 +344,7 @@ static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *con
         {
             CPU_TRACE_BLOCK_BEGIN("write,!PageDirEntryWritable");
             cpu_state.data.cr2 = linear;
-            CPU_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
+            CPU_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, vpl == 3)));
             return;
             CPU_TRACE_BLOCK_END;
         }
@@ -358,10 +360,11 @@ static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *con
         return;
         CPU_TRACE_BLOCK_END;
     }
-    if (vpl == 0x03)
+    if (vpl == 0x03 || (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+        (cpu_state.data.cr0 & VCPU_CR0_WP) != 0u))
     {
-        CPU_TRACE_BLOCK_BEGIN("vpl(3)");
-        if (!_GetPageEntry_US(cpte))
+        CPU_TRACE_BLOCK_BEGIN("PageTabPermission");
+        if (vpl == 0x03 && !_GetPageEntry_US(cpte))
         {
             CPU_TRACE_BLOCK_BEGIN("PageTabEntry_US(0)");
             cpu_state.data.cr2 = linear;
@@ -373,7 +376,7 @@ static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *con
         {
             CPU_TRACE_BLOCK_BEGIN("write,!PageTabEntryWritable");
             cpu_state.data.cr2 = linear;
-            CPU_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
+            CPU_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, vpl == 3)));
             return;
             CPU_TRACE_BLOCK_END;
         }
@@ -955,27 +958,34 @@ static void _m_write_rm(core_machine_cpu_execution_context *context, lib_u8 byte
 
 /* segment accessing unit: _s_ */
 /* kernel segment accessing */
-/* GDTR and IDTR base values name physical memory (80386 PRM 5-15/5-16),
- * unlike an LDT or TSS descriptor base.  Keep those two table routes outside
- * the logical-to-linear paging helper. */
-static void _ksa_read_physical_table(core_machine_cpu_execution_context *context,
+/* Intel486 PRM 5.2.5 places GDT/IDT in linear memory. Earlier profiles retain
+ * their existing table-access contract pending their own qualification. */
+static void _ksa_read_table(core_machine_cpu_execution_context *context,
     t_cpu_data_sreg *rtable, lib_u32 offset, lib_uptr rdata, lib_u8 byte)
 {
     const lib_u32 base = rtable->sregtype == SREG_IDTR &&
         context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0u :
         rtable->base;
 
-    CPU_TRACE_CALL_BEGIN("_ksa_read_physical_table");
-    CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, base + offset,
-        rdata, byte, context->memory_access_provenance));
+    CPU_TRACE_CALL_BEGIN("_ksa_read_table");
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+        CPU_TRACE_CHECK_RETURN(_kma_read_linear(context, base + offset,
+            rdata, byte, 0u, 1u));
+    else
+        CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, base + offset,
+            rdata, byte, context->memory_access_provenance));
     CPU_TRACE_CALL_END;
 }
-static void _ksa_write_physical_table(core_machine_cpu_execution_context *context,
+static void _ksa_write_table(core_machine_cpu_execution_context *context,
     t_cpu_data_sreg *rtable, lib_u32 offset, lib_uptr rdata, lib_u8 byte)
 {
-    CPU_TRACE_CALL_BEGIN("_ksa_write_physical_table");
-    CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, rtable->base + offset,
-        rdata, byte, context->memory_access_provenance));
+    CPU_TRACE_CALL_BEGIN("_ksa_write_table");
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+        CPU_TRACE_CHECK_RETURN(_kma_write_linear(context, rtable->base + offset,
+            rdata, byte, 0u, 1u));
+    else
+        CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, rtable->base + offset,
+            rdata, byte, context->memory_access_provenance));
     CPU_TRACE_CALL_END;
 }
 static void _ksa_read_idt(core_machine_cpu_execution_context *context, lib_u8 intid, lib_uptr rdata)
@@ -987,7 +997,7 @@ static void _ksa_read_idt(core_machine_cpu_execution_context *context, lib_u8 in
         if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286 &&
             X86_CPU_MASK_U16(intid * 4 + 3) > X86_CPU_MASK_U16(cpu_state.data.idtr.limit))
             CPU_TRACE_IMPOSSIBLE_RETURN;
-        CPU_TRACE_CHECK_RETURN(_ksa_read_physical_table(context,
+        CPU_TRACE_CHECK_RETURN(_ksa_read_table(context,
             &cpu_state.data.idtr, intid * 4u, rdata, 4u));
         CPU_TRACE_BLOCK_END;
     }
@@ -996,7 +1006,7 @@ static void _ksa_read_idt(core_machine_cpu_execution_context *context, lib_u8 in
         CPU_TRACE_BLOCK_BEGIN("CR0_PE(1)");
         if (X86_CPU_MASK_U16(intid * 8 + 7) > X86_CPU_MASK_U16(cpu_state.data.idtr.limit))
             CPU_TRACE_IMPOSSIBLE_RETURN;
-        CPU_TRACE_CHECK_RETURN(_ksa_read_physical_table(context,
+        CPU_TRACE_CHECK_RETURN(_ksa_read_table(context,
             &cpu_state.data.idtr, intid * 8u, rdata, 8u));
         CPU_TRACE_BLOCK_END;
     }
@@ -1031,7 +1041,7 @@ static void _ksa_read_gdt(core_machine_cpu_execution_context *context, lib_u16 s
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
         CPU_TRACE_BLOCK_END;
     }
-    CPU_TRACE_CHECK_RETURN(_ksa_read_physical_table(context,
+    CPU_TRACE_CHECK_RETURN(_ksa_read_table(context,
         &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8u));
     CPU_TRACE_CALL_END;
 }
@@ -1075,15 +1085,29 @@ static void _ksa_write_gdt(core_machine_cpu_execution_context *context, lib_u16 
         CPU_TRACE_IMPOSSIBLE_RETURN;
     if (X86_CPU_MASK_U16(_GetSelector_Offset(selector) + 7) > X86_CPU_MASK_U16(cpu_state.data.gdtr.limit))
         CPU_TRACE_IMPOSSIBLE_RETURN;
-    CPU_TRACE_CHECK_RETURN(_ksa_write_physical_table(context,
+    CPU_TRACE_CHECK_RETURN(_ksa_write_table(context,
         &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8u));
     CPU_TRACE_CALL_END;
 }
 static void _ksa_write_xdt(core_machine_cpu_execution_context *context, lib_u16 selector, lib_uptr rdata)
 {
+    lib_u64 *descriptor = (lib_u64 *)rdata;
+
     CPU_TRACE_CALL_BEGIN("_ksa_write_xdt");
     if (!_GetCR0_PE)
         CPU_TRACE_IMPOSSIBLE_RETURN;
+    /* User descriptors are written only to set Accessed. System descriptors
+     * use this route for distinct updates, including the TSS busy bit. */
+    if (_IsDescUser(*descriptor))
+    {
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+            _IsDescUserAccessed(*descriptor))
+        {
+            CPU_TRACE_CALL_END;
+            return;
+        }
+        _SetDescUserAccessed(*descriptor);
+    }
     if (_GetSelector_TI(selector))
     {
         CPU_TRACE_BLOCK_BEGIN("Selector_TI");
@@ -1117,9 +1141,9 @@ static void _ksa_test_write_xdt(core_machine_cpu_execution_context *context,
         if (X86_CPU_MASK_U16(_GetSelector_Offset(selector) + 7) >
             X86_CPU_MASK_U16(cpu_state.data.gdtr.limit))
             CPU_TRACE_IMPOSSIBLE_RETURN;
-        /* A GDT write is a physical table cycle, so there is no page walk to
-         * preflight.  The preceding descriptor read already established its
-         * table bound; _ksa_write_gdt performs the sole physical write. */
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+            CPU_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
+                _GetSelector_Offset(selector), 8, 1, 0x00, 1));
     }
     CPU_TRACE_CALL_END;
 }
@@ -1136,8 +1160,9 @@ static void _ksa_prepare_code_sreg(core_machine_cpu_execution_context *context,
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
     if (!_IsDescPresent(descriptor))
         CPU_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
-    _SetDescUserAccessed(descriptor);
-    CPU_TRACE_CHECK_RETURN(_ksa_test_write_xdt(context, selector));
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX ||
+        !_IsDescUserAccessed(descriptor))
+        CPU_TRACE_CHECK_RETURN(_ksa_test_write_xdt(context, selector));
     rsreg->flagValid = LIB_TRUE;
     rsreg->selector = (selector & ~VCPU_SELECTOR_RPL) | cpl;
     rsreg->sregtype = SREG_CODE;
@@ -1146,7 +1171,7 @@ static void _ksa_prepare_code_sreg(core_machine_cpu_execution_context *context,
     rsreg->limit = (lib_u32)(_IsDescSegGranularLarge(descriptor) ?
         ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) :
         _GetDescSeg_Limit(descriptor));
-    rsreg->seg.accessed = (lib_u8)_IsDescUserAccessed(descriptor);
+    rsreg->seg.accessed = LIB_TRUE;
     rsreg->seg.executable = (lib_u8)_IsDescUserExecutable(descriptor);
     rsreg->seg.exec.defsize = (lib_u8)_IsDescCode32(descriptor);
     rsreg->seg.exec.conform = (lib_u8)_IsDescCodeConform(descriptor);
@@ -1168,8 +1193,9 @@ static void _ksa_prepare_stack_sreg(core_machine_cpu_execution_context *context,
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
     if (!_IsDescPresent(descriptor))
         CPU_TRACE_CHECK_RETURN(_SetExcept_SS(selector & 0xfffcu));
-    _SetDescUserAccessed(descriptor);
-    CPU_TRACE_CHECK_RETURN(_ksa_test_write_xdt(context, selector));
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX ||
+        !_IsDescUserAccessed(descriptor))
+        CPU_TRACE_CHECK_RETURN(_ksa_test_write_xdt(context, selector));
     rsreg->flagValid = LIB_TRUE;
     rsreg->selector = selector;
     rsreg->sregtype = SREG_STACK;
@@ -1178,7 +1204,7 @@ static void _ksa_prepare_stack_sreg(core_machine_cpu_execution_context *context,
     rsreg->limit = (lib_u32)(_IsDescSegGranularLarge(descriptor) ?
         ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) :
         _GetDescSeg_Limit(descriptor));
-    rsreg->seg.accessed = (lib_u8)_IsDescUserAccessed(descriptor);
+    rsreg->seg.accessed = LIB_TRUE;
     rsreg->seg.executable = LIB_FALSE;
     rsreg->seg.data.big = (lib_u8)_IsDescDataBig(descriptor);
     rsreg->seg.data.expdown = (lib_u8)_IsDescDataExpDown(descriptor);
@@ -1240,7 +1266,6 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
                 CPU_TRACE_CHECK_RETURN(_SetExcept_NP(selector));
                 CPU_TRACE_BLOCK_END;
             }
-            _SetDescUserAccessed(descriptor);
             CPU_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, X86_CPU_REFERENCE_OF(descriptor)));
             rsreg->flagValid = LIB_TRUE;
             rsreg->base = (lib_u32)_GetDescSeg_Base(descriptor);
@@ -1304,7 +1329,6 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
                     CPU_TRACE_CHECK_RETURN(_SetExcept_NP(selector));
                     CPU_TRACE_BLOCK_END;
                 }
-                _SetDescUserAccessed(descriptor);
                 CPU_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, X86_CPU_REFERENCE_OF(descriptor)));
                 rsreg->flagValid = LIB_TRUE;
                 rsreg->selector = selector;
@@ -1374,7 +1398,6 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
                 CPU_TRACE_CHECK_RETURN(_SetExcept_SS(selector));
                 CPU_TRACE_BLOCK_END;
             }
-            _SetDescUserAccessed(descriptor);
             CPU_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, X86_CPU_REFERENCE_OF(descriptor)));
             rsreg->flagValid = LIB_TRUE;
             rsreg->selector = selector;
@@ -1940,15 +1963,29 @@ static void _s_load_cr0_msw(core_machine_cpu_execution_context *context, lib_u16
     }
     CPU_TRACE_CALL_END;
 }
-static void _s_write_cr0_80386(core_machine_cpu_execution_context *context,
+static void _s_write_cr0(core_machine_cpu_execution_context *context,
     lib_u32 value)
 {
-    const lib_u32 mutable_mask = VCPU_CR0_PE | VCPU_CR0_MP |
+    lib_u32 mutable_mask = VCPU_CR0_PE | VCPU_CR0_MP |
         VCPU_CR0_EM | VCPU_CR0_TS | VCPU_CR0_ET | VCPU_CR0_PG;
-    const lib_u32 retained_mask = ~mutable_mask;
+    const lib_bool is486 = context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX;
 
-    CPU_TRACE_CALL_BEGIN("_s_write_cr0_80386");
-    if ((value & retained_mask) != (cpu_state.data.cr0 & retained_mask))
+    CPU_TRACE_CALL_BEGIN("_s_write_cr0");
+    if (is486)
+    {
+        mutable_mask |= VCPU_CR0_NE | VCPU_CR0_WP | VCPU_CR0_AM |
+            VCPU_CR0_NW | VCPU_CR0_CD;
+        /* Intel486 developer manual Tables 4-2 and 4-3. */
+        if (((value & VCPU_CR0_PG) && !(value & VCPU_CR0_PE)) ||
+            ((value & VCPU_CR0_NW) && !(value & VCPU_CR0_CD)))
+        {
+            CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        }
+        /* ET is fixed at one. Unspecified reserved bits retain no data;
+         * they are not an additional architectural fault condition. */
+        value = (value & mutable_mask) | VCPU_CR0_ET;
+    }
+    else if ((value & ~mutable_mask) != (cpu_state.data.cr0 & ~mutable_mask))
     {
         CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     }
@@ -1966,11 +2003,16 @@ static void _s_write_cr0_80386(core_machine_cpu_execution_context *context,
     cpu_state.data.cr0 = value;
     CPU_TRACE_CALL_END;
 }
-static void _s_write_cr3_80386(core_machine_cpu_execution_context *context,
+static void _s_write_cr3(core_machine_cpu_execution_context *context,
     lib_u32 value)
 {
-    CPU_TRACE_CALL_BEGIN("_s_write_cr3_80386");
-    if (value & ~VCPU_CR3_BASE)
+    CPU_TRACE_CALL_BEGIN("_s_write_cr3");
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+    {
+        /* The directory base is page aligned; PWT and PCD remain controls. */
+        value &= VCPU_CR3_BASE | VCPU_CR3_PWT | VCPU_CR3_PCD;
+    }
+    else if (value & ~VCPU_CR3_BASE)
     {
         CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     }
@@ -4869,7 +4911,10 @@ static void _ser_task_transition_tss_plan(
     CPU_TRACE_CHECK_RETURN(_s_write_xdt(context, newtr.selector,
         X86_CPU_REFERENCE_OF(new_descriptor)));
     if (new_is_32) {
-        cpu_state.data.cr3 = incoming32.cr3;
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+            CPU_TRACE_CHECK_RETURN(_s_write_cr3(context, incoming32.cr3));
+        else
+            cpu_state.data.cr3 = incoming32.cr3;
         cpu_state.data.eip = incoming32.eip;
         cpu_state.data.eflags = _e_eflags_load(context, incoming32.eflags);
         cpu_state.data.eax = incoming32.eax;
@@ -17469,7 +17514,7 @@ static void MOV_CR_R32(core_machine_cpu_execution_context *context)
     CPU_TRACE_CHECK_RETURN(_d_modrm_creg(context));
     if (instruction_state.data.rr == (lib_uptr)&cpu_state.data.cr0)
     {
-        CPU_TRACE_CHECK_RETURN(_s_write_cr0_80386(context,
+        CPU_TRACE_CHECK_RETURN(_s_write_cr0(context,
             instruction_state.data.crm));
     }
     else if (instruction_state.data.rr == (lib_uptr)&cpu_state.data.cr2)
@@ -17478,7 +17523,7 @@ static void MOV_CR_R32(core_machine_cpu_execution_context *context)
     }
     else if (instruction_state.data.rr == (lib_uptr)&cpu_state.data.cr3)
     {
-        CPU_TRACE_CHECK_RETURN(_s_write_cr3_80386(context,
+        CPU_TRACE_CHECK_RETURN(_s_write_cr3(context,
             instruction_state.data.crm));
     }
     else

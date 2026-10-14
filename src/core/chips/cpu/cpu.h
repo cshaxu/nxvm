@@ -457,6 +457,8 @@ typedef struct {
 #define _ClrCR0_TS (X86_CPU_BIT_CLEAR(cpu_state.data.cr0, VCPU_CR0_TS))
 
 #define VCPU_CR3_BASE   0xfffff000
+#define VCPU_CR3_PWT    0x00000008u
+#define VCPU_CR3_PCD    0x00000010u
 #define _GetCR3_Base    (cpu_state.data.cr3 & VCPU_CR3_BASE)
 
 #define _IsPaging (_GetCR0_PE && _GetCR0_PG)

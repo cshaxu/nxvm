@@ -594,8 +594,12 @@ void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
      * without inventing a board-specific stepping value. */
     if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386)
         cpu_state.data.edx = 0x00000300u;
-    else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+    else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX) {
         cpu_state.data.edx = VCPU_486SX_SIGNATURE;
+        /* Intel486 PRM 10.1, Figure 10-2 and Table 10-1. */
+        cpu_state.data.cr0 = VCPU_CR0_CD | VCPU_CR0_NW | VCPU_CR0_ET;
+        cpu_state.data.dr6 = 0xffff0ff0u;
+    }
 
     cpu_state.data.cs.base = core_machine_cpu_reset_code_base(context->cpu_profile);
     cpu_state.data.cs.dpl = 0u;

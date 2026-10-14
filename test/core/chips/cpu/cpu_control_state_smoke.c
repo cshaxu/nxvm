@@ -562,8 +562,475 @@ static lib_i32 control_test_hlt_privilege_storage(void)
         lib_memory_compare(&before, &after, sizeof(before)) == 0;
 }
 
+static lib_bool control_test_486_paged_tables(void)
+{
+    static const lib_u8 load_ds[] = {0x8eu, 0xd8u};
+    static const lib_u8 interrupt[] = {0xccu};
+    static const lib_u8 descriptors[] = {
+        0xffu, 0xffu, 0u, 0u, 0u, 0x9bu, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x90u, 0u, 0x92u, 0u, 0u
+    };
+    static const lib_u8 gate[] = {0u, 1u, 8u, 0u, 0u, 0x8eu, 0u, 0u};
+    cpu_instruction_fixture fixture;
+    t_cpu after;
+    lib_u32 entry = 0x2003u;
+    lib_u32 page;
+
+    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+    control_enter_protected(&fixture, 0u, LIB_FALSE);
+    fixture.cpu.data.cr0 |= VCPU_CR0_PG | VCPU_CR0_WP;
+    fixture.cpu.data.cr3 = 0x1000u;
+    fixture.cpu.data.gdtr.base = 0x4000u;
+    fixture.cpu.data.gdtr.limit = 0x17u;
+    fixture.cpu.data.idtr.base = 0x5000u;
+    fixture.cpu.data.idtr.limit = 0x7ffu;
+    fixture.cpu.data.esp = 0x8000u;
+    fixture.cpu.data.eax = 0x10u;
+    lib_memory_copy(fixture.memory + 0x1000u, &entry, sizeof(entry));
+    for (page = 0u; page < 16u; ++page) {
+        entry = (page << 12u) | 3u;
+        if (page == 4u || page == 5u) entry += 0x2000u;
+        lib_memory_copy(fixture.memory + 0x2000u + page * 4u,
+            &entry, sizeof(entry));
+    }
+    /* The unmapped table addresses remain zero: a physical-table bypass
+     * cannot accidentally find a valid descriptor or interrupt gate. */
+    lib_memory_copy(fixture.memory + 0x6008u, descriptors, sizeof(descriptors));
+    lib_memory_copy(fixture.memory + 0x7018u, gate, sizeof(gate));
+    lib_memory_copy(fixture.memory + 0x7070u, gate, sizeof(gate));
+    if (!control_run(&fixture, load_ds, sizeof(load_ds), &after) ||
+        fixture.delivered_exception.valid || after.data.ds.selector != 0x10u ||
+        after.data.ds.base != 0x9000u || !after.data.ds.seg.accessed ||
+        fixture.memory[0x6015u] != 0x93u || fixture.memory[0x4015u] != 0u)
+        return LIB_FALSE;
+    /* Already-accessed data and handler code descriptors must load from a
+     * readonly GDT even with supervisor write protection enabled. */
+    entry = 0x6001u;
+    lib_memory_copy(fixture.memory + 0x2010u, &entry, sizeof(entry));
+    fixture.cpu.data.eip = 0u;
+    if (!control_run(&fixture, load_ds, sizeof(load_ds), &after) ||
+        fixture.delivered_exception.valid || after.data.ds.base != 0x9000u)
+        return LIB_FALSE;
+    fixture.cpu.data.eip = 0u;
+    if (!control_run(&fixture, interrupt, sizeof(interrupt), &after) ||
+        core_machine_cpu_is_shutdown(&fixture.execution) ||
+        after.data.eip != 0x100u || after.data.cs.selector != 8u)
+        return LIB_FALSE;
+    /* Clearing Accessed now requires a real supervisor write and PF(3).
+     * Keep the PF handler descriptor accessed, so delivery itself succeeds. */
+    fixture.memory[0x6015u] = 0x92u;
+    fixture.cpu.data.eip = 0u;
+    fixture.delivered_exception.valid = LIB_FALSE;
+    if (!control_run(&fixture, load_ds, sizeof(load_ds), &after) ||
+        !fixture.delivered_exception.valid ||
+        fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_PF ||
+        fixture.delivered_exception.exception_code != 3u ||
+        after.data.cr2 != 0x4010u || after.data.eip != 0x100u ||
+        after.data.ds.base != 0x9000u || fixture.memory[0x6015u] != 0x92u)
+        return LIB_FALSE;
+    return LIB_TRUE;
+}
+
+static lib_bool control_test_486_split_descriptor(void)
+{
+    static const lib_u8 code[] = {0x8eu, 0xd8u};
+    static const lib_u8 descriptor[] = {
+        0xffu, 0xffu, 0u, 0x90u, 0u, 0x92u, 0u, 0u
+    };
+    lib_u8 local;
+
+    for (local = 0u; local < 2u; ++local) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        lib_u32 entry = 0x2003u;
+        lib_u32 page;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        control_enter_protected(&fixture, 0u, LIB_FALSE);
+        fixture.cpu.data.cr0 |= VCPU_CR0_PG | VCPU_CR0_WP;
+        fixture.cpu.data.cr3 = 0x1000u;
+        fixture.cpu.data.gdtr.base = 0x4ff4u;
+        fixture.cpu.data.gdtr.limit = 0x0fu;
+        fixture.cpu.data.ldtr.base = 0x4ff4u;
+        fixture.cpu.data.ldtr.limit = 0x0fu;
+        fixture.cpu.data.ldtr.selector = 0x18u;
+        fixture.cpu.data.ldtr.flagValid = LIB_TRUE;
+        fixture.cpu.data.eax = local ? 0x0cu : 8u;
+        lib_memory_copy(fixture.memory + 0x1000u, &entry, sizeof(entry));
+        for (page = 0u; page < 16u; ++page) {
+            entry = (page << 12u) | 3u;
+            if (page == 4u) entry = 0x6003u;
+            if (page == 5u) entry = 0xa003u;
+            lib_memory_copy(fixture.memory + 0x2000u + page * 4u,
+                &entry, sizeof(entry));
+        }
+        lib_memory_copy(fixture.memory + 0x6ffcu, descriptor, 4u);
+        lib_memory_copy(fixture.memory + 0xa000u, descriptor + 4u, 4u);
+        if (!control_run(&fixture, code, sizeof(code), &after) ||
+            fixture.delivered_exception.valid || after.data.ds.base != 0x9000u ||
+            after.data.ds.selector != fixture.cpu.data.ax ||
+            fixture.memory[0xa001u] != 0x93u)
+            return LIB_FALSE;
+        /* Both pages may become readonly once Accessed is already set. */
+        entry = 0x6001u;
+        lib_memory_copy(fixture.memory + 0x2010u, &entry, sizeof(entry));
+        entry = 0xa001u;
+        lib_memory_copy(fixture.memory + 0x2014u, &entry, sizeof(entry));
+        fixture.cpu.data.eip = 0u;
+        if (!control_run(&fixture, code, sizeof(code), &after) ||
+            fixture.delivered_exception.valid || after.data.ds.base != 0x9000u)
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool control_test_486_page_permissions(void)
+{
+    lib_u32 combination;
+
+    /* Every PDE/PTE RW/US combination, WP value, CPL and access direction.
+     * Keep code, exception tables and stack in a separate writable directory. */
+    for (combination = 0u; combination < 256u; ++combination) {
+        const lib_u32 pde_flags = 1u | ((combination & 3u) << 1u);
+        const lib_u32 pte_flags = 1u | (((combination >> 2u) & 3u) << 1u);
+        const lib_bool wp = (combination & 16u) != 0u;
+        const lib_u8 cpl = (lib_u8)((combination >> 5u) & 3u);
+        const lib_bool write = (combination & 128u) != 0u;
+        const lib_bool readonly = (pde_flags & pte_flags & 2u) == 0u;
+        const lib_bool supervisor = (pde_flags & pte_flags & 4u) == 0u;
+        const lib_bool fault = (cpl == 3u && supervisor) ||
+            (write && readonly && (wp || cpl == 3u));
+        const lib_u8 code[] = {write ? 0xa2u : 0xa0u, 0u, 0u};
+        const lib_u8 descriptor[] = {
+            0xffu, 0xffu, 0u, 0u, 0u, (lib_u8)(0x9bu | (cpl << 5u)), 0u, 0u
+        };
+        const lib_u8 gate[] = {
+            0u, 1u, (lib_u8)(8u | cpl), 0u, 0u, 0x8eu, 0u, 0u
+        };
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        lib_u32 entry = 0x2007u;
+        lib_u32 page;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        control_enter_protected(&fixture, cpl, LIB_FALSE);
+        fixture.cpu.data.cr0 |= VCPU_CR0_PG | (wp ? VCPU_CR0_WP : 0u);
+        fixture.cpu.data.cr3 = 0x1000u;
+        fixture.cpu.data.gdtr.base = 0x4000u;
+        fixture.cpu.data.gdtr.limit = 0x0fu;
+        fixture.cpu.data.idtr.base = 0x5000u;
+        fixture.cpu.data.idtr.limit = 0x7ffu;
+        fixture.cpu.data.ds.base = 0x00400000u;
+        fixture.cpu.data.ds.selector = (lib_u16)(0x10u | cpl);
+        fixture.cpu.data.ds.dpl = cpl;
+        fixture.cpu.data.ss.selector = (lib_u16)(0x10u | cpl);
+        fixture.cpu.data.ss.dpl = cpl;
+        fixture.cpu.data.esp = 0x8000u;
+        fixture.cpu.data.eax = 0x5au;
+        lib_memory_copy(fixture.memory + 0x1000u, &entry, sizeof(entry));
+        entry = 0x3000u | pde_flags;
+        lib_memory_copy(fixture.memory + 0x1004u, &entry, sizeof(entry));
+        entry = 0x9000u | pte_flags;
+        lib_memory_copy(fixture.memory + 0x3000u, &entry, sizeof(entry));
+        for (page = 0u; page < 16u; ++page) {
+            entry = (page << 12u) | 7u;
+            lib_memory_copy(fixture.memory + 0x2000u + page * 4u,
+                &entry, sizeof(entry));
+        }
+        lib_memory_copy(fixture.memory + 0x4008u, descriptor, sizeof(descriptor));
+        lib_memory_copy(fixture.memory + 0x5070u, gate, sizeof(gate));
+        fixture.memory[0x9000u] = 0xa5u;
+        if (!control_run(&fixture, code, sizeof(code), &after) ||
+            core_machine_cpu_is_shutdown(&fixture.execution) ||
+            fixture.delivered_exception.valid != fault ||
+            after.data.eip != (fault ? 0x100u : sizeof(code)) ||
+            fixture.memory[0x9000u] != (write && !fault ? 0x5au : 0xa5u) ||
+            after.data.al != (!write && !fault ? 0xa5u : 0x5au))
+            goto failed;
+        if (fault) {
+            const lib_u32 error = 1u | (write ? 2u : 0u) | (cpl == 3u ? 4u : 0u);
+            lib_u32 stacked_error = 0u;
+
+            lib_memory_copy(&stacked_error, fixture.memory + after.data.sp,
+                sizeof(stacked_error));
+            if (fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_PF ||
+                fixture.delivered_exception.exception_code != error ||
+                fixture.delivered_exception.point.eip != 0u ||
+                after.data.cr2 != 0x00400000u || stacked_error != error)
+                goto failed;
+        }
+        continue;
+failed:
+        lib_c_printf("486-page-permissions combination=%u eip=%x al=%x "
+            "fault=%x delivered=%x cr2=%x memory=%x\n", combination,
+            after.data.eip, (lib_u32)after.data.al, fixture.fault.exception_mask,
+            fixture.delivered_exception.exception_mask, after.data.cr2,
+            (lib_u32)fixture.memory[0x9000u]);
+        return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool control_test_486_split_pages(void)
+{
+    static const lib_u8 descriptor[] = {
+        0xffu, 0xffu, 0u, 0u, 0u, 0x9bu, 0u, 0u
+    };
+    static const lib_u8 gate[] = {0u, 1u, 8u, 0u, 0u, 0x8eu, 0u, 0u};
+    lib_u32 combination;
+
+    for (combination = 0u; combination < 6u; ++combination) {
+        const lib_bool write = (combination & 1u) != 0u;
+        const lib_u32 flags = combination < 2u ? 3u : combination < 4u ? 0u : 1u;
+        const lib_bool fault = flags == 0u || (write && flags == 1u);
+        const lib_u8 code[] = {0x66u, write ? 0xa3u : 0xa1u, 0xffu, 0x0fu};
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        lib_u32 entry = 0x2003u;
+        lib_u32 page;
+        lib_u32 first, second;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        control_enter_protected(&fixture, 0u, LIB_FALSE);
+        fixture.cpu.data.cr0 |= VCPU_CR0_PG | VCPU_CR0_WP;
+        fixture.cpu.data.cr3 = 0x1000u;
+        fixture.cpu.data.gdtr.base = 0x4000u;
+        fixture.cpu.data.gdtr.limit = 0x0fu;
+        fixture.cpu.data.idtr.base = 0x5000u;
+        fixture.cpu.data.idtr.limit = 0x7ffu;
+        fixture.cpu.data.ds.selector = 0x10u;
+        fixture.cpu.data.ds.base = 0x00400000u;
+        fixture.cpu.data.esp = 0x8000u;
+        fixture.cpu.data.eax = 0xaabbccddu;
+        lib_memory_copy(fixture.memory + 0x1000u, &entry, sizeof(entry));
+        entry = 0x3003u;
+        lib_memory_copy(fixture.memory + 0x1004u, &entry, sizeof(entry));
+        entry = 0x9003u;
+        lib_memory_copy(fixture.memory + 0x3000u, &entry, sizeof(entry));
+        entry = 0xb000u | flags;
+        lib_memory_copy(fixture.memory + 0x3004u, &entry, sizeof(entry));
+        for (page = 0u; page < 16u; ++page) {
+            entry = (page << 12u) | 3u;
+            lib_memory_copy(fixture.memory + 0x2000u + page * 4u,
+                &entry, sizeof(entry));
+        }
+        lib_memory_copy(fixture.memory + 0x4008u, descriptor, sizeof(descriptor));
+        lib_memory_copy(fixture.memory + 0x5070u, gate, sizeof(gate));
+        fixture.memory[0x9fffu] = 0x11u;
+        fixture.memory[0xb000u] = 0x22u;
+        fixture.memory[0xb001u] = 0x33u;
+        fixture.memory[0xb002u] = 0x44u;
+        if (!control_run(&fixture, code, sizeof(code), &after) ||
+            fixture.delivered_exception.valid != fault ||
+            after.data.eip != (fault ? 0x100u : sizeof(code)) ||
+            after.data.eax != (!write && !fault ? 0x44332211u : 0xaabbccddu) ||
+            fixture.memory[0x9fffu] != (write && !fault ? 0xddu : 0x11u) ||
+            fixture.memory[0xb000u] != (write && !fault ? 0xccu : 0x22u) ||
+            fixture.memory[0xb001u] != (write && !fault ? 0xbbu : 0x33u) ||
+            fixture.memory[0xb002u] != (write && !fault ? 0xaau : 0x44u))
+            return LIB_FALSE;
+        if (fault) {
+            if (fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_PF ||
+                fixture.delivered_exception.exception_code !=
+                    ((flags ? 1u : 0u) | (write ? 2u : 0u)) ||
+                after.data.cr2 != 0x00401000u)
+                return LIB_FALSE;
+        } else {
+            lib_memory_copy(&first, fixture.memory + 0x3000u, sizeof(first));
+            lib_memory_copy(&second, fixture.memory + 0x3004u, sizeof(second));
+            if ((first & 0x60u) != (write ? 0x60u : 0x20u) ||
+                (second & 0x60u) != (write ? 0x60u : 0x20u))
+                return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool control_test_486_vm86_pages(void)
+{
+    static const lib_u8 privileged[][3] = {
+        {0x0fu, 0x20u, 0xc0u}, {0x0fu, 0x22u, 0xc0u},
+        {0x0fu, 0x20u, 0xd0u}, {0x0fu, 0x22u, 0xd0u},
+        {0x0fu, 0x20u, 0xd8u}, {0x0fu, 0x22u, 0xd8u},
+        {0x0fu, 0x06u, 0x90u}, {0x0fu, 0x01u, 0xf0u}
+    };
+    static const lib_u8 descriptors[] = {
+        0xffu, 0xffu, 0u, 0u, 0u, 0x9bu, 0u, 0u,
+        0xffu, 0xffu, 0u, 0u, 0u, 0x93u, 0u, 0u
+    };
+    static const lib_u8 gate[] = {0u, 1u, 8u, 0u, 0u, 0x8eu, 0u, 0u};
+    lib_u32 combination;
+
+    for (combination = 0u; combination < 24u; ++combination) {
+        const lib_bool control = combination >= 16u;
+        const lib_u32 flags = 1u | ((combination & 3u) << 1u);
+        const lib_bool write = (combination & 4u) != 0u;
+        const lib_bool fault = control || !(flags & 4u) || (write && !(flags & 2u));
+        const lib_u8 code[] = {write ? 0xa2u : 0xa0u, 0u, 0x90u};
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        lib_u32 entry = 0x2007u;
+        const lib_u32 esp0 = 0x7000u;
+        const lib_u16 ss0 = 0x10u;
+        lib_u32 page;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        fixture.cpu.data.cr0 |= VCPU_CR0_PE | VCPU_CR0_PG | VCPU_CR0_TS |
+            ((combination & 8u) ? VCPU_CR0_WP : 0u);
+        fixture.cpu.data.eflags |= VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL;
+        fixture.cpu.data.cr3 = 0x1000u;
+        fixture.cpu.data.gdtr.base = 0x4000u;
+        fixture.cpu.data.gdtr.limit = 0x17u;
+        fixture.cpu.data.idtr.base = 0x5000u;
+        fixture.cpu.data.idtr.limit = 0x7ffu;
+        fixture.cpu.data.tr.selector = 0x18u;
+        fixture.cpu.data.tr.base = 0x6000u;
+        fixture.cpu.data.tr.limit = 0x67u;
+        fixture.cpu.data.tr.flagValid = LIB_TRUE;
+        fixture.cpu.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
+        fixture.cpu.data.esp = 0x8000u;
+        fixture.cpu.data.eax = 0x5au;
+        lib_memory_copy(fixture.memory + 0x1000u, &entry, sizeof(entry));
+        for (page = 0u; page < 16u; ++page) {
+            entry = (page << 12u) | 7u;
+            if (page == 9u) entry = 0xa000u | flags;
+            lib_memory_copy(fixture.memory + 0x2000u + page * 4u,
+                &entry, sizeof(entry));
+        }
+        lib_memory_copy(fixture.memory + 0x4008u, descriptors, sizeof(descriptors));
+        lib_memory_copy(fixture.memory + 0x5070u, gate, sizeof(gate));
+        lib_memory_copy(fixture.memory + 0x5068u, gate, sizeof(gate));
+        lib_memory_copy(fixture.memory + 0x6004u, &esp0, sizeof(esp0));
+        lib_memory_copy(fixture.memory + 0x6008u, &ss0, sizeof(ss0));
+        fixture.memory[0xa000u] = 0xa5u;
+        if (!control_run(&fixture, control ? privileged[combination - 16u] : code,
+                sizeof(code), &after) ||
+            core_machine_cpu_is_shutdown(&fixture.execution) ||
+            fixture.delivered_exception.valid != fault ||
+            after.data.eip != (fault ? 0x100u : sizeof(code)) ||
+            fixture.memory[0xa000u] != (write && !fault ? 0x5au : 0xa5u) ||
+            after.data.al != (!write && !fault ? 0xa5u : 0x5au))
+            return LIB_FALSE;
+        if (fault &&
+            (fixture.delivered_exception.exception_mask !=
+                 (control ? VCPUINS_EXCEPT_GP : VCPUINS_EXCEPT_PF) ||
+             fixture.delivered_exception.exception_code != (control ? 0u : write ? 7u : 5u) ||
+             after.data.cr2 != (control ? 0u : 0x9000u) || after.data.ss.selector != ss0 ||
+             after.data.cs.selector != 8u || (after.data.eflags & VCPU_EFLAGS_VM)))
+            return LIB_FALSE;
+        if (after.data.cr0 != (0x60000010u | VCPU_CR0_PE | VCPU_CR0_PG |
+                VCPU_CR0_TS | ((combination & 8u) ? VCPU_CR0_WP : 0u)) ||
+            after.data.cr3 != 0x1000u)
+            return LIB_FALSE;
+        if (!fault && !(after.data.eflags & VCPU_EFLAGS_VM)) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool control_test_486_registers(void)
+{
+    static const lib_u8 write_cr0[] = {0x0fu, 0x22u, 0xc0u};
+    static const lib_u8 write_cr3[] = {0x0fu, 0x22u, 0xd8u};
+    static const lib_u8 read_cr3[] = {0x0fu, 0x20u, 0xd8u};
+    static const lib_u8 lmsw[] = {0x0fu, 0x01u, 0xf0u};
+    static const lib_u8 clts[] = {0x0fu, 0x06u};
+    static const lib_u32 controls[] = {
+        VCPU_CR0_ET,
+        VCPU_CR0_ET | VCPU_CR0_CD,
+        VCPU_CR0_ET | VCPU_CR0_CD | VCPU_CR0_NW,
+        VCPU_CR0_ET | VCPU_CR0_NE | VCPU_CR0_WP | VCPU_CR0_AM |
+            VCPU_CR0_MP | VCPU_CR0_EM | VCPU_CR0_TS,
+        0u, 0x1ffaffc0u
+    };
+    static const lib_u32 invalid[] = {
+        VCPU_CR0_ET | VCPU_CR0_PG,
+        VCPU_CR0_ET | VCPU_CR0_NW
+    };
+    lib_size index;
+
+    for (index = 0u; index < sizeof(controls) / sizeof(controls[0]); ++index) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        fixture.cpu.data.eax = controls[index];
+        if (!control_run(&fixture, write_cr0, sizeof(write_cr0), &after) ||
+            fixture.delivered_exception.valid ||
+            after.data.cr0 != ((controls[index] & 0xe005003fu) | VCPU_CR0_ET))
+            return LIB_FALSE;
+    }
+    for (index = 0u; index < sizeof(invalid) / sizeof(invalid[0]); ++index) {
+        cpu_instruction_fixture fixture;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        fixture.cpu.data.esp = 0x8000u;
+        fixture.cpu.data.eax = invalid[index];
+        if (!cpu_instruction_expect_real_fault(&fixture, write_cr0,
+                sizeof(write_cr0), 13u))
+            return LIB_FALSE;
+    }
+    for (index = 0u; index < 4u; ++index) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        const lib_u32 directory = 0x12000u | ((lib_u32)index << 3u);
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        fixture.cpu.data.eax = directory;
+        if (!control_run(&fixture, write_cr3, sizeof(write_cr3), &after) ||
+            fixture.delivered_exception.valid || after.data.cr3 != directory)
+            return LIB_FALSE;
+        fixture.cpu.data.eip = 0u;
+        fixture.cpu.data.eax = 0u;
+        if (!control_run(&fixture, read_cr3, sizeof(read_cr3), &after) ||
+            after.data.eax != directory)
+            return LIB_FALSE;
+    }
+    {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        const lib_u32 upper = VCPU_CR0_ET | VCPU_CR0_NE | VCPU_CR0_WP |
+            VCPU_CR0_AM | VCPU_CR0_CD | VCPU_CR0_NW;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        fixture.cpu.data.cr0 = upper;
+        fixture.cpu.data.eax = VCPU_CR0_MP | VCPU_CR0_EM | VCPU_CR0_TS;
+        if (!control_run(&fixture, lmsw, sizeof(lmsw), &after) ||
+            after.data.cr0 != (upper | fixture.cpu.data.eax))
+            return LIB_FALSE;
+        fixture.cpu.data.eip = 0u;
+        if (!control_run(&fixture, clts, sizeof(clts), &after) ||
+            after.data.cr0 != (upper | VCPU_CR0_MP | VCPU_CR0_EM))
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
+    if (!control_test_486_split_pages()) {
+        lib_c_printf("control-state stage=486-split-pages\n");
+        return 1;
+    }
+    if (!control_test_486_vm86_pages()) {
+        lib_c_printf("control-state stage=486-vm86-pages\n");
+        return 1;
+    }
+    if (!control_test_486_split_descriptor()) {
+        lib_c_printf("control-state stage=486-split-descriptor\n");
+        return 1;
+    }
+    if (!control_test_486_page_permissions()) {
+        lib_c_printf("control-state stage=486-page-permissions\n");
+        return 1;
+    }
+    if (!control_test_486_paged_tables()) {
+        lib_c_printf("control-state stage=486-paged-tables\n");
+        return 1;
+    }
+    if (!control_test_486_registers()) {
+        lib_c_printf("control-state stage=486-registers\n");
+        return 1;
+    }
     if (!control_test_clts()) {
         lib_c_printf("control-state stage=clts\n");
         return 1;

@@ -162,6 +162,64 @@ static lib_bool flags_iret_transfer(void)
     return LIB_TRUE;
 }
 
+typedef struct reset_fetch_fixture {
+    cpu_instruction_fixture instruction;
+    lib_u32 high_fetches;
+    lib_u32 low_fetches;
+    lib_bool invalid_provenance;
+} reset_fetch_fixture;
+
+static lib_status reset_fetch_read(void *opaque, lib_u32 address,
+    void *destination, lib_u8 bytes,
+    core_machine_cpu_memory_access_provenance provenance,
+    lib_bool observe_only, lib_bool reset_fetch)
+{
+    reset_fetch_fixture *fixture = (reset_fetch_fixture *)opaque;
+    const lib_bool high = address >= 0xfffffff0u;
+
+    if (!observe_only) {
+        if (high) ++fixture->high_fetches;
+        else ++fixture->low_fetches;
+        if (reset_fetch != high ||
+            (provenance != CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH &&
+             provenance != CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH))
+            fixture->invalid_provenance = LIB_TRUE;
+    }
+    return cpu_instruction_read(&fixture->instruction,
+        high ? address & 0xffffu : address, destination, bytes,
+        provenance, observe_only, reset_fetch);
+}
+
+static lib_bool cpuid_reset_fetch(void)
+{
+    static const core_machine_cpu_bus_provider bus = {
+        .read_memory = reset_fetch_read,
+        .interrupt_pending = cpu_instruction_interrupt_pending
+    };
+    static const lib_u8 jump[] = {0xeau, 0u, 1u, 0u, 0u};
+    reset_fetch_fixture fixture;
+
+    lib_memory_set(&fixture, 0, sizeof(fixture));
+    cpu_instruction_prepare_with_bus(&fixture.instruction,
+        CORE_MACHINE_CPU_PROFILE_80486SX, &bus, &fixture);
+    lib_memory_copy(fixture.instruction.memory + 0xfff0u, jump, sizeof(jump));
+    fixture.instruction.memory[0x100u] = 0x90u;
+    core_machine_cpu_state_reset(&fixture.instruction.execution);
+    core_machine_cpu_execution_refresh(&fixture.instruction.execution);
+    if (fixture.instruction.fault.valid ||
+        fixture.instruction.delivered_exception.valid ||
+        fixture.high_fetches == 0u || fixture.invalid_provenance ||
+        fixture.instruction.cpu.data.cs.selector != 0u ||
+        fixture.instruction.cpu.data.cs.base != 0u ||
+        fixture.instruction.cpu.data.eip != 0x100u)
+        return LIB_FALSE;
+    core_machine_cpu_execution_refresh(&fixture.instruction.execution);
+    return !fixture.instruction.fault.valid &&
+        !fixture.instruction.delivered_exception.valid &&
+        fixture.low_fetches != 0u && !fixture.invalid_provenance &&
+        fixture.instruction.cpu.data.eip == 0x101u;
+}
+
 static lib_bool cpuid_reset(void)
 {
     cpu_instruction_fixture fixture;
@@ -169,8 +227,17 @@ static lib_bool cpuid_reset(void)
     cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
     fixture.cpu.data.eflags |= VCPU_EFLAGS_AC | VCPU_EFLAGS_ID;
     fixture.cpu.data.edx = LIB_UINT32_MAX;
+    fixture.cpu.data.cr0 = LIB_UINT32_MAX;
+    fixture.cpu.data.dr6 = 0u;
+    fixture.cpu.data.dr7 = LIB_UINT32_MAX;
     core_machine_cpu_state_reset(&fixture.execution);
-    return fixture.cpu.data.eflags == 2u && fixture.cpu.data.edx == 0x42bu;
+    return fixture.cpu.data.eflags == 2u && fixture.cpu.data.edx == 0x42bu &&
+        fixture.cpu.data.cr0 == 0x60000010u &&
+        fixture.cpu.data.dr6 == 0xffff0ff0u && fixture.cpu.data.dr7 == 0u &&
+        fixture.cpu.data.cs.selector == 0xf000u &&
+        fixture.cpu.data.cs.base == 0xffff0000u &&
+        fixture.cpu.data.cs.limit == 0xffffu && fixture.cpu.data.eip == 0xfff0u &&
+        fixture.cpu.data.idtr.base == 0u && fixture.cpu.data.idtr.limit == 0x3ffu;
 }
 
 static lib_bool flags_pop_privilege(void)
@@ -264,7 +331,8 @@ static lib_bool cpuid_failed_fetch(void)
 
 int main(void)
 {
-    if (!cpuid_reset() || !flags_iret_transfer() || !flags_pop_privilege() ||
+    if (!cpuid_reset() || !cpuid_reset_fetch() ||
+        !flags_iret_transfer() || !flags_pop_privilege() ||
         !cpuid_failed_fetch()) return 1;
     if (!cpuid_forms()) return 1;
     if (!cpuid_rejections()) {

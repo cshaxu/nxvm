@@ -39,8 +39,8 @@ is closed after its corrective full-route audit, repair and dual-width
 qualification; retained closure facts are historical, not another active packet.
 
 T559 is owner-closed at fb8021291. The former first candidate is admitted as
-T560, [complete 486SX CPU](../proposals/m5-pc110-486-system.md), with S1
-inventory/design active. Its applicable CPU gaps must be completed, not moved
+T560, [complete 486SX CPU](../proposals/m5-pc110-486-system.md); CURRENT owns
+its active batch. Its applicable CPU gaps must be completed, not moved
 to a later task as a substitute for implementation.
 
 1. [PC110: board, chipset and firmware mapping](../proposals/m5-pc110-board.md)

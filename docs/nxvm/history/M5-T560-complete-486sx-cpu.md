@@ -35,3 +35,22 @@ The state-owner design includes implicit CR3 writes and descriptor paging,
 and the grouped plan does not substitute transfer for completion. S1 is
 accepted and closed. S2 admits the base reset/control/paging/descriptor batch;
 Shared and MyNES remain outside its change authority.
+
+## S2 Base-System Delivery
+
+The [base-system evidence](../etc/evidence/t560-s2-base-system.md) records
+reset state/fetch, CR0/CR3, WP permissions, linear descriptor tables and
+conditional Accessed publication, with actual guest-instruction regressions.
+Complete repository units pass 597/597 per width; all four PC integration
+groups pass on both widths and eight verified 0560 EXEs replace 0559.
+The convergence ledger distinguishes these base subcases from still-open
+cache/TLB, AC/RMW, VME/SMM, inherited semantics, timing and Core admission.
+
+On 2026-10-14 the owner permanently approved routine task-version updates
+to build targets, presets and release configuration without repeated approval
+requests. S2 therefore includes three root preset target replacements as a
+separate Shared P; the CPU, tests, evidence and artifacts remain an NXVM P.
+This approval does not broaden public-component functionality/API authority
+or authorize unrelated changes. Neither Shared-six nor MyNES source/test or
+MyNES artifacts changed. Executor review and verification are recorded in
+the evidence; coordinator acceptance follows the complete pushed delivery.
