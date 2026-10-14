@@ -8054,7 +8054,7 @@ static lib_u8 core_machine_cpu_instruction_lexeme_scan_with_options(
     *out_lexeme = (core_machine_cpu_instruction_lexeme) { 0u, 0u, LIB_FALSE };
     if (bytes == LIB_NULL || available_bytes == 0u ||
         profile < CORE_MACHINE_CPU_PROFILE_8086 ||
-        profile > CORE_MACHINE_CPU_PROFILE_80386) return LIB_FALSE;
+        profile > CORE_MACHINE_CPU_PROFILE_80486SX) return LIB_FALSE;
     while (index < available_bytes && index < 15u &&
         core_machine_cpu_instruction_lexeme_is_prefix(bytes[index], profile)) {
         if (bytes[index] == 0xf0u) lock_prefix = LIB_TRUE;
@@ -8083,7 +8083,8 @@ static lib_u8 core_machine_cpu_instruction_lexeme_scan_with_options(
     }
     if (opcode == 0x0fu && !core_machine_cpu_profile_has_8086_semantics(profile)) {
         if (profile != CORE_MACHINE_CPU_PROFILE_80286 &&
-            profile != CORE_MACHINE_CPU_PROFILE_80386) return LIB_FALSE;
+            profile != CORE_MACHINE_CPU_PROFILE_80386 &&
+            profile != CORE_MACHINE_CPU_PROFILE_80486SX) return LIB_FALSE;
         if (index >= available_bytes || index >= 15u) return LIB_FALSE;
         opcode = bytes[index++];
         ++components;
@@ -8126,6 +8127,8 @@ static lib_u8 core_machine_cpu_instruction_lexeme_scan_with_options(
     metadata = core_machine_cpu_instruction_metadata_get(extended ?
         CORE_MACHINE_CPU_INSTRUCTION_0F : CORE_MACHINE_CPU_INSTRUCTION_PRIMARY,
         opcode, modrm);
+    if (extended && opcode >= 0xc8u && opcode <= 0xcfu && operand_bytes != 4u)
+        return LIB_FALSE;
     if (!metadata.valid || profile < metadata.minimum_cpu || lock_prefix) {
         return LIB_FALSE;
     }
@@ -8237,6 +8240,11 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
         {
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
             metadata.valid = ((modrm >> 3u) & 7u) >= 4u;
+        }
+        else if (opcode >= 0xc8u && opcode <= 0xcfu)
+        {
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80486SX;
+            metadata.valid = LIB_TRUE;
         }
         break;
     case CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE:
@@ -17831,6 +17839,36 @@ _______todo CPUID(core_machine_cpu_execution_context *context)
     instruction_state.data.flagIgnore = LIB_TRUE;
     CPU_TRACE_CALL_END;
 }
+static void BSWAP_R32(core_machine_cpu_execution_context *context)
+{
+    lib_u8 opcode;
+    lib_u32 *reg;
+    lib_u32 value;
+    CPU_TRACE_CALL_BEGIN("BSWAP_R32");
+    /* Intel defines no 16-bit result. The selected model rejects that form;
+     * this is a deterministic policy, not a hardware #UD claim. */
+    if (_GetOperandSize != 4u)
+        CPU_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+    CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
+        X86_CPU_REFERENCE_OF(opcode), 1));
+    _adv;
+    switch (opcode & 7u)
+    {
+    case 0: reg = &cpu_state.data.eax; break;
+    case 1: reg = &cpu_state.data.ecx; break;
+    case 2: reg = &cpu_state.data.edx; break;
+    case 3: reg = &cpu_state.data.ebx; break;
+    case 4: reg = &cpu_state.data.esp; break;
+    case 5: reg = &cpu_state.data.ebp; break;
+    case 6: reg = &cpu_state.data.esi; break;
+    case 7: reg = &cpu_state.data.edi; break;
+    default: CPU_TRACE_IMPOSSIBLE_RETURN; break;
+    }
+    value = *reg;
+    *reg = (value << 24u) | ((value & 0x0000ff00u) << 8u) |
+        ((value & 0x00ff0000u) >> 8u) | (value >> 24u);
+    CPU_TRACE_CALL_END;
+}
 static void BT_RM32_R32(core_machine_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("BT_RM32_R32");
@@ -19214,14 +19252,14 @@ void core_machine_cpu_execution_initialize(
     instruction_state.connect.insTable_0f[0xc5] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0xc6] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0xc7] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0xc8] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0xc9] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0xca] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0xcb] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0xcc] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0xcd] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0xce] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0xcf] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
+    instruction_state.connect.insTable_0f[0xc8] = (core_machine_cpu_instruction_handler)BSWAP_R32;
+    instruction_state.connect.insTable_0f[0xc9] = (core_machine_cpu_instruction_handler)BSWAP_R32;
+    instruction_state.connect.insTable_0f[0xca] = (core_machine_cpu_instruction_handler)BSWAP_R32;
+    instruction_state.connect.insTable_0f[0xcb] = (core_machine_cpu_instruction_handler)BSWAP_R32;
+    instruction_state.connect.insTable_0f[0xcc] = (core_machine_cpu_instruction_handler)BSWAP_R32;
+    instruction_state.connect.insTable_0f[0xcd] = (core_machine_cpu_instruction_handler)BSWAP_R32;
+    instruction_state.connect.insTable_0f[0xce] = (core_machine_cpu_instruction_handler)BSWAP_R32;
+    instruction_state.connect.insTable_0f[0xcf] = (core_machine_cpu_instruction_handler)BSWAP_R32;
     instruction_state.connect.insTable_0f[0xd0] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0xd1] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0xd2] = (core_machine_cpu_instruction_handler)UndefinedOpcode;

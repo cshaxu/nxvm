@@ -49,7 +49,9 @@ typedef enum core_machine_cpu_profile {
     CORE_MACHINE_CPU_PROFILE_8088,
     CORE_MACHINE_CPU_PROFILE_80186,
     CORE_MACHINE_CPU_PROFILE_80286,
-    CORE_MACHINE_CPU_PROFILE_80386
+    CORE_MACHINE_CPU_PROFILE_80386,
+    /* Instruction qualification only; Core machine admission remains gated. */
+    CORE_MACHINE_CPU_PROFILE_80486SX
 } core_machine_cpu_profile;
 
 /* CPU provenance is independent of the board's physical address decoder. */

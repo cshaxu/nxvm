@@ -1,5 +1,8 @@
 # Supporting Documentation Index
 
+T559 S2: [decode and BSWAP](evidence/t559-s2-decode-bswap.md) records the
+CPU-only implementation, direct proof, retained machine gate and delivery review.
+
 T559 S1: [instruction inventory](evidence/t559-s1-instruction-inventory.md)
 records CPU decode owners, I1--I11, implementation batches and explicit system
 gates; it is planning evidence, not runtime qualification.

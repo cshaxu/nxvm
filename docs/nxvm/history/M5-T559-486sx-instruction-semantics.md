@@ -26,3 +26,20 @@ not declared resolved by guessed behavior. The LOCK finding is static evidence;
 its new dynamic regression belongs to S3. Documentation governance and
 `git diff --check` pass. No runtime tests or builds are claimed for this
 documentation-only S; existing ten executable inputs remain unchanged.
+
+## S2 Executor Delivery
+
+S2 implements I1 and scoped I10: an appended CPU-only 486SX identity and the
+existing-table BSWAP path, with old-profile rejection and machine admission
+still gated. [Evidence](../etc/evidence/t559-s2-decode-bswap.md) records source,
+model-policy limits, failure investigation, actual-change review and artifact
+hashes. Complete repository-only units pass 593/593 on each architecture;
+eight real product/INI identity integrations pass. The external boot suite is
+not claimed here and remains required at T closure.
+
+Production C/H changes are +55/-12 (net +43); test C/CMake changes are
++177/-1 (net +176), excluding manifests, documentation and artifacts. All
+eight PC EXEs are updated to 0559; MyNES and Shared six remain unchanged.
+Only the separately owner-approved three Shared root preset targets change.
+The complete executor delivery is ready for coordinator review, not task
+closure. I2--I9 and the remaining I10 sweep keep their planned S owners.

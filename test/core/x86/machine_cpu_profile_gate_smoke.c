@@ -133,6 +133,12 @@ static lib_i32 run_mov_rm8_imm8_8086(void)
 
 lib_i32 main(void)
 {
+    const core_machine_executor_config unqualified = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80486SX,
+        .fpu_profile = X86_FPU_PROFILE_NONE
+    };
+    core_machine *unqualified_machine = LIB_NULL;
     static const lib_u8 nop[] = { 0x90u };
     static const lib_u8 pusha[] = { 0x60u };
     static const lib_u8 arpl[] = { 0x63u, 0xc0u };
@@ -140,6 +146,11 @@ lib_i32 main(void)
     static const lib_u8 jcc_near[] = { 0x0fu, 0x80u, 0u, 0u };
     static const lib_u8 shift_rm16_imm8[] = { 0xc1u, 0xeau, 0x04u };
     lib_i32 failed = 0;
+
+    failed |= core_machine_neutral_create(&unqualified, &unqualified_machine) !=
+        LIB_STATUS_INVALID_ARGUMENT;
+    failed |= unqualified_machine != LIB_NULL;
+    core_machine_destroy(unqualified_machine);
 
     failed |= run_case(CORE_MACHINE_CPU_PROFILE_8086, nop, sizeof(nop), 0);
     failed |= run_case(CORE_MACHINE_CPU_PROFILE_8088, nop, sizeof(nop), 0);

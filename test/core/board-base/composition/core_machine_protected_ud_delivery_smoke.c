@@ -329,6 +329,8 @@ static lib_i32 ud_primary_metadata_matrix(void)
 }
 static core_machine_cpu_profile ud_0f_expected_minimum(lib_u8 opcode)
 {
+    if (opcode >= 0xc8u && opcode <= 0xcfu)
+        return CORE_MACHINE_CPU_PROFILE_80486SX;
     if (opcode == 0x00u || opcode == 0x01u || opcode == 0x02u ||
         opcode == 0x03u || opcode == 0x06u) return CORE_MACHINE_CPU_PROFILE_80286;
     if ((opcode >= 0x20u && opcode <= 0x24u) || opcode == 0x26u ||

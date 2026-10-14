@@ -506,6 +506,7 @@ static lib_u32 core_machine_board_reset_rom_alias(
     case CORE_MACHINE_CPU_PROFILE_8088:
     case CORE_MACHINE_CPU_PROFILE_80186:
     case CORE_MACHINE_CPU_PROFILE_DEFAULT:
+    case CORE_MACHINE_CPU_PROFILE_80486SX: /* Not admitted by Core machine. */
         return 0u;
     }
     return 0u;

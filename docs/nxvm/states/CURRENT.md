@@ -7,18 +7,18 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation T559 S2 after coordinator acceptance of S1 P1 2afeda156. |
-| Admission And Approval | Owner-admitted T559 and automatic sequential Core-only execution; coordinator admits ledger I1 and identity/decode portion of I10. No Shared changes. |
+| Admission And Approval | Owner-admitted T559 and automatic sequential Core-only execution; coordinator admits ledger I1 and identity/decode portion of I10. Owner additionally approves exactly three NXVM target updates in Shared root CMakePresets.json from vm-0-5-0557 to vm-0-5-0559 for this release. No Shared-six or MyNES configuration changes. |
 | Objective | Add explicit CPU-owner 486SX profile and BSWAP through the existing metadata, length scanner and instruction table; prove old-profile rejection and preserve the Core machine production admission gate. |
-| Non-goals | No PC110 board admission, cache/TLB/system implementation, CPUID feature advertisement, firmware or Shared change, new executor or full 486 timing claim. |
+| Non-goals | No PC110 board admission, cache/TLB/system implementation, CPUID feature advertisement, firmware or Shared-six change, new executor or full 486 timing claim. |
 | Reference Baseline | S1 delivery 2afeda156; T558 pinned Intel sources. PRM BSWAP defines only the 32-bit result; 16-bit behavior must be explicitly classified as deterministic model policy, not documented hardware #UD. |
 | Candidate Proposal | [Selected 486SX instructions](../proposals/m5-pc110-486-instructions.md), with T558 CPU-1--7 and single-owner handoffs. |
-| Files And ABI Surface | Core cpu_interface.h appends a profile enum without changing existing values; cpu.c and cpu_instructions.c plus CPU-owner tests/registration, Core manifests and NXVM evidence. No new function/type or Shared ABI. Existing four PC App pairs require rebuilt 0559 artifacts when executable inputs change. |
+| Files And ABI Surface | Core cpu_interface.h appends a profile enum without changing existing values; cpu.c and cpu_instructions.c, exhaustive board reset-alias switch (explicitly unadmitted), CPU/Core admission and metadata matrix tests/registration, Core manifests and NXVM evidence. Core version.h and NxvmProduct.cmake advance the PC release to 0559; the approved three root preset target updates form a separate Shared P. No new function/type or Shared-six ABI. Existing four PC App pairs require rebuilt 0559 artifacts. |
 | Applicable Rules | NXVM guide, Execution coverage/lifecycle, Document, Architecture/Coding, NXVM architecture/layout and source/research policy; architecture-governance skill. |
 | Verification | Direct eight-register BSWAP execution in 16/32 code with operand/address overrides, flags/other-register preservation, invalid LOCK, truncated fetch and retained-profile #UD; metadata/length agreement and machine-level rejection. Reuse x86/x64 Ninja/ccache graphs; run focused proof then full repository-only units, manifests/docs/diff checks and affected artifact verification. |
 | Expected Markers | I1 directly proven; no production 486 admission, no changed default profile, no accidental new opcode admission or altered existing enum values. |
 | Asset Needs | Existing manuals and BYOB build inputs only; no new ROM/media or INI changes. MyNES executable inputs unchanged. |
 | Reporting Requirements | Report estimated and actual production/test diff, model-policy limits, tests actually executed, artifact hashes and remaining system gates. |
-| Stop Conditions | Required Shared change, incompatible source import, unresolved silicon choice affecting the admitted batch or unbounded instruction scope; report and continue independent inventory. |
+| Stop Conditions | Shared change beyond the three approved preset targets, incompatible source import, unresolved silicon choice affecting the admitted batch or unbounded instruction scope; report and continue independent inventory. |
 | Exit Criteria | I1 and scoped I10 proof, retained regressions, full dual-width units, refreshed affected PC pairs, actual-change review and pushed complete delivery. No task-level closure. |
 | Original Owner Request | Close the accepted PC110 research task and admit the next queued T. |
 | Similar-Issue Sweep | Reconcile all new profile uses and scanner bounds; retain FPU/system/timing gates and Core-machine rejection, preserving historical profiles. No global mechanical equality-to-range replacement. |
@@ -27,6 +27,12 @@ S1 P1 `2afeda156` is accepted after actual-change review of all five documents,
 ledger I1--I11, source/feature gates and bounded S plan. S1 is closed; its checks
 were documentation-only, with unchanged executable inputs. S2 consumes its
 [ledger](../etc/evidence/t559-s1-instruction-inventory.md), not a runnable-486 claim.
+
+S2 executor delivery is complete for coordinator review: dual-width units
+593/593 each, eight product/INI process integrations, Core manifests and
+documentation checks pass. The current eight PC artifacts are 0559; MyNES
+remains unchanged. [S2 evidence](../etc/evidence/t559-s2-decode-bswap.md) records
+actual diffs, hashes and the unexecuted T-level external boot qualification.
 
 ## Closed Task — M5 T558
 

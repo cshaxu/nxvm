@@ -421,6 +421,7 @@ static lib_u32 core_machine_cpu_reset_code_base(
         return 0x00ff0000u;
     case CORE_MACHINE_CPU_PROFILE_DEFAULT:
     case CORE_MACHINE_CPU_PROFILE_80386:
+    case CORE_MACHINE_CPU_PROFILE_80486SX:
         return 0xffff0000u;
     }
     return 0xffff0000u;
@@ -511,6 +512,7 @@ const char *core_machine_cpu_profile_name(core_machine_cpu_profile profile)
     case CORE_MACHINE_CPU_PROFILE_80186: return "80186";
     case CORE_MACHINE_CPU_PROFILE_80286: return "80286";
     case CORE_MACHINE_CPU_PROFILE_80386: return "80386";
+    case CORE_MACHINE_CPU_PROFILE_80486SX: return "80486SX";
     case CORE_MACHINE_CPU_PROFILE_DEFAULT: return "default";
     }
     return "invalid";
