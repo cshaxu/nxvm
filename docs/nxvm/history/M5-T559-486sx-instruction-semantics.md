@@ -139,3 +139,12 @@ deployed and identity/architecture/version checked. Shared-six, MyNES and
 owner inputs are unchanged. Executor delivery awaits coordinator review;
 S7 whole-delta and external-boot qualification remain open, as do the explicit
 system receiver's AC/VME/cache/TLB/reset/timing obligations.
+
+Coordinator acceptance of e590a0dde: reviewed actual production and test
+diffs, the candidate/source distinction, unchanged profile admission gate,
+manifest/doc checks, both unit records including the explicit x64 recheck,
+and all eight artifact identities. The helper is private and sole-owned;
+CPUID admission and handler agree, 16-bit flag preservation and privilege
+masks remain instruction-owned. No claim of implemented VME/#AC or real
+cache/TLB effects accompanies acceptance. S6 closes; S7 is admitted for
+whole-ledger and external-boot qualification before T closure.

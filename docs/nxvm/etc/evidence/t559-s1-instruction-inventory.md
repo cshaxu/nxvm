@@ -215,6 +215,13 @@ remains a named limitation behind the existing production admission gate.
 No successful no-op or invented exception replaces it. Complete units pass
 596/596 per width. I7/I8 and the whole-delta/external-boot gates remain open.
 
+S6 reconciliation: I7/I8 candidate CPUID/ID and affected flags paths are
+accepted at e590a0dde with [source-qualified proof](t559-s6-cpuid-flags.md).
+The existing Core gate still rejects production 486. Later-SX VME feature
+encoding is not evidence of VME execution or exact PC110 silicon applicability;
+both remain with the system receiver, alongside AC effects. I9/I10 whole
+sweep and retained external boot qualification now belong to active S7.
+
 PRM section 13.1 permits the listed arithmetic/exchange memory-destination
 operations without restricting their source GPR to AX/CX. Current
 `PREFIX_LOCK()` applies FE's `/0..1` check to the preceding ordinary opcodes;

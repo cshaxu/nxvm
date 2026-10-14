@@ -2,7 +2,33 @@
 
 ## Current Work
 
-### Active Task — M5 T559 S6 CPUID And Flags
+### Active Task — M5 T559 S7 Whole Instruction-Delta Qualification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T559 S7 after coordinator acceptance of S6 P1 e590a0dde. |
+| Admission And Approval | Owner-admitted T559 and automatic sequential Core-only S execution. |
+| Objective | Reconcile every I1--I11 ledger row against actual source and direct proof; complete I9/I10 retained-family sweep and external boot qualification, with explicit system handoffs. |
+| Non-goals | No Shared-six or MyNES implementation changes, production 486 admission, invented cache/TLB/VME success, or PC110 boot claim. |
+| Reference Baseline | e590a0dde; accepted S2--S6 implementation/evidence and original-manual contracts. |
+| Candidate Proposal | [Instruction proposal](../proposals/m5-pc110-486-instructions.md), [finite ledger](../etc/evidence/t559-s1-instruction-inventory.md), [system receiver](../proposals/m5-pc110-486-system.md). |
+| Files And ABI Surface | NXVM qualification evidence/status/history; existing Core/test owners only for confirmed gaps. No planned API or state change. Expected audit documentation +100--220/-0--30; any necessary code/test batch is reported before edits. |
+| Applicable Rules | NXVM guide, Execution, Document, Architecture/Coding and skills, NXVM architecture/layout, source/research policy. |
+| Verification | Map frozen forms to real handler assertions; scan all profile/LOCK/reset/FPU/timing gates; reuse unchanged S6 unit/artifact evidence, execute required retained-machine external integration once per profile/width in existing Ninja graphs. Correct confirmed gaps with affected proof and required qualification. |
+| Expected Markers | Every row has direct proof or the already authorized complete system receiver; no silent omissions or falsely runnable 486. |
+| Asset Needs | Existing admitted external firmware/media, scratch copies through existing setup; preserve master ROM/INI/disks/snapshots and MyNES assets. |
+| Reporting Requirements | Per-row evidence and remaining gates; actual diff, external pass/failure, artifact identity and unexecuted manual checks. |
+| Stop Conditions | Shared changes, required new cross-owner API, unsupported source decision or absent essential asset; record exact gap and continue independent scope. |
+| Exit Criteria | Whole ledger reconciled, retained-family regression and required external boot routes pass, system receiver complete, manifests/docs/scope reviewed, complete P pushed. T closure separately checks original objective and all gates. |
+| Original Owner Request | Implement 486SX semantics under governance; group related work, avoid repeated per-opcode full suites. |
+| Similar-Issue Sweep | All decode/metadata/preview/LOCK/profile comparisons, flags consumers, FPU and reset/timing eligibility; do not infer a whole-domain result from one boot. |
+
+S6 is accepted after actual review of e590a0dde. Its candidate CPUID and flags
+scope, source limitations, direct tests, full-unit plus affected-recheck
+evidence and eight artifacts are reconciled. The worktree was clean at S7
+admission. No ongoing build/test process remains from S6. T559 stays open.
+
+### Accepted Delivery — M5 T559 S6 CPUID And Flags
 
 | Field | Required record |
 | --- | --- |
