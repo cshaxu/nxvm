@@ -2,12 +2,13 @@
 
 ## Current Work
 
-No S is active. T559 remains open for its task-level completion audit; S7 is
-accepted and closed after coordinator review of pushed `71b95e31c`.
+No S is active. The owner approved T559 closure and admission of the next
+complete 486SX CPU task. T559 closes at the verified S7 baseline; its system
+instruction obligations remain explicitly incomplete, not waived.
 
 | Task | Progress |
 | --- | --- |
-| T559 S7 | Accepted instruction-delta qualification: single-owner bit LOCK repair, 597/597 units per width, eight final external groups and eight verified 0559 PC EXEs. Whole 486 system semantics remain incomplete. |
+| T559 | Closed by owner approval: instruction-delta qualification, 597/597 units per width, eight final external groups and eight verified 0559 PC EXEs. Remaining CPU system semantics transfer to the approved next task. |
 
 The [delivery evidence](../etc/evidence/t559-s7-instruction-qualification.md)
 and [task history](../history/M5-T559-486sx-instruction-semantics.md) record

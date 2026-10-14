@@ -173,3 +173,16 @@ supplemented by explicit primary arithmetic results and retained bit tests.
 All eight artifact hashes match deployed files; push is confirmed. S7 closes.
 T559 remains open pending task-level completion audit. Neither this acceptance
 nor the system-proposal transfer declares the persistent 486SX goal complete.
+
+## Task Closure
+
+The owner explicitly approves closing T559 and admitting the next task to
+complete all remaining 486SX CPU gaps. The task-level review reconciles the
+finite I1--I11 ledger with S7 source, test, artifact and external integration
+evidence. The accepted source has not changed since that qualification; no
+redundant runtime replay is required for this documentation-only closure.
+INVD/WBINVD, INVLPG, actual test-register commands and system/reset/timing
+obligations transfer in full to the system proposal. They are not implemented
+or waived by this closure. Production 486 admission remains closed.
+S7 P3 records this owner-approved task closure; the next numeric T must retain
+the complete CPU objective rather than repeat this bounded transfer closure.
