@@ -331,3 +331,10 @@ edited. MyNES still matches its accepted 0044 hashes. No whole CPU, PC110,
 microcycle-exact TLB, manual RDP or Windows GUI qualification is inferred.
 Complete implementation P push and coordinator actual-change acceptance
 remain required before S4 closes.
+
+Coordinator review accepts pushed c32103a24 after reading its actual code,
+test, manifest, documentation and artifact changes against the packet and
+original complete-CPU request. S4 is closed by the subsequent governance P.
+The earlier pending/progress sections are retained chronology, not current
+status. T560, cache/bus/other CPU work and production admission remain open;
+no applicable CPU obligation is moved outside this task.

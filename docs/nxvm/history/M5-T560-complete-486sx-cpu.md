@@ -124,3 +124,16 @@ Eight verified 0560 PC artifacts are deployed; MyNES and owner inputs remain
 unchanged. Complete P push and coordinator review remain before acceptance.
 Full page-walk bus-cycle/timing, cache, remaining CPU rows and production
 admission stay in T560; this is not full CPU or Windows GUI qualification.
+
+Coordinator actual-change review accepts pushed c32103a24. Review inspected
+the production state/translation/control/handler diffs, the complete new CPU
+test, all extended permission/task/test-register tests and registration,
+manifest membership, eight PE/version/hash identities and task/source records.
+The ordinary/test commands share one private TLB; debug invalidation occurs
+only on committed candidates and preview leaves live state unchanged.
+Current test inputs have proof from both 600-case full runs plus the final
+affected-test recheck; all eight integration/deployment groups pass. The
+explicit internal L2 choices are not relabelled L3, and C04/C16 physical-bus
+work remains mandatory before full CPU admission. Shared-six, MyNES and owner
+inputs are unchanged. S4 is accepted and closed, T560 remains open; no next
+implementation packet is admitted by this closure-only P.
