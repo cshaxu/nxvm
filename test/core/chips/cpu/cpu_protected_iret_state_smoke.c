@@ -199,28 +199,33 @@ static lib_i32 iret_test_user_flags(void)
 static lib_bool iret_test_flags_matrix(void)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile, wide, outer, cpl, old_iopl, new_iopl, bits;
     lib_u32 count = 0u, failures = 0u;
 
-    for (profile = 0u; profile < 2u; ++profile)
-    for (wide = 0u; wide <= profile; ++wide)
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (wide = 0u; wide < (profile ? 2u : 1u); ++wide)
     for (outer = 0u; outer < 2u; ++outer)
     for (cpl = 0u; cpl < (outer ? 3u : 4u); ++cpl)
     for (old_iopl = 0u; old_iopl < 4u; ++old_iopl)
     for (new_iopl = 0u; new_iopl < 4u; ++new_iopl)
-    for (bits = 0u; bits < (profile ? 16u : 4u); ++bits) {
+    for (bits = 0u; bits < (profile == 2u ? 64u : profile ? 16u : 4u); ++bits) {
         iret_machine state;
         const lib_u8 target_cpl = outer ? 3u : cpl;
         const lib_u8 code[] = {0x66u,0xcfu};
         const lib_u8 length = profile && !wide ? 2u : 1u;
         const lib_u32 oldflags = 2u | ((lib_u32)old_iopl << 12u) |
             ((bits & 1u) ? VCPU_EFLAGS_IF : 0u) |
-            ((bits & 4u) ? VCPU_EFLAGS_RF : 0u);
+            ((bits & 4u) ? VCPU_EFLAGS_RF : 0u) |
+            (profile == 2u && !(bits & 16u) ? VCPU_EFLAGS_AC : 0u) |
+            (profile == 2u && !(bits & 32u) ? VCPU_EFLAGS_ID : 0u);
         const lib_u32 newflags = 3u | ((lib_u32)new_iopl << 12u) |
             ((bits & 2u) ? VCPU_EFLAGS_IF : 0u) |
-            ((bits & 8u) ? VCPU_EFLAGS_RF : 0u);
+            ((bits & 8u) ? VCPU_EFLAGS_RF : 0u) |
+            ((bits & 16u) ? VCPU_EFLAGS_AC : 0u) |
+            ((bits & 32u) ? VCPU_EFLAGS_ID : 0u);
         lib_u32 frame32[] = {length,8u | target_cpl,newflags,0x9000u,
             0x10u | target_cpl};
         lib_u16 frame16[] = {length,(lib_u16)(8u | target_cpl),

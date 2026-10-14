@@ -594,6 +594,8 @@ void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
      * without inventing a board-specific stepping value. */
     if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386)
         cpu_state.data.edx = 0x00000300u;
+    else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+        cpu_state.data.edx = VCPU_486SX_SIGNATURE;
 
     cpu_state.data.cs.base = core_machine_cpu_reset_code_base(context->cpu_profile);
     cpu_state.data.cs.dpl = 0u;

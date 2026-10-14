@@ -1,5 +1,7 @@
 # Supporting Documentation Index
 
+T559 S6: [CPUID and flags qualification](evidence/t559-s6-cpuid-flags.md)
+
 T559 S5: [System-instruction boundary review](evidence/t559-s5-system-instruction-boundaries.md)
 records actual cache/TLB gaps, retained test-register regression and explicit
 system transfer; it is not completed 486 system semantics.

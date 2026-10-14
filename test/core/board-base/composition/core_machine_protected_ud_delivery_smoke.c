@@ -329,7 +329,7 @@ static lib_i32 ud_primary_metadata_matrix(void)
 }
 static core_machine_cpu_profile ud_0f_expected_minimum(lib_u8 opcode)
 {
-    if (opcode == 0xb0u || opcode == 0xb1u ||
+    if (opcode == 0xa2u || opcode == 0xb0u || opcode == 0xb1u ||
         opcode == 0xc0u || opcode == 0xc1u ||
         (opcode >= 0xc8u && opcode <= 0xcfu))
         return CORE_MACHINE_CPU_PROFILE_80486SX;

@@ -159,6 +159,15 @@ static lib_u16 _e_real_flags_image_16(
     return X86_CPU_MASK_U16(_e_real_flags_load_16(context, flags) | fixed);
 }
 
+static lib_u32 _e_eflags_reserved_mask(
+    const core_machine_cpu_execution_context *context)
+{
+    /* VIF/VIP execution remains part of the unqualified system contract. */
+    return context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+        VCPU_EFLAGS_RESERVED & ~(VCPU_EFLAGS_AC | VCPU_EFLAGS_ID) :
+        VCPU_EFLAGS_RESERVED;
+}
+
 static lib_u32 _e_eflags_load(
     const core_machine_cpu_execution_context *context, lib_u32 flags)
 {
@@ -166,6 +175,8 @@ static lib_u32 _e_eflags_load(
         context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386) {
         return _e_real_flags_load_16(context, X86_CPU_MASK_U16(flags));
     }
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+        flags &= ~_e_eflags_reserved_mask(context);
     return flags | 0x02u;
 }
 
@@ -3710,7 +3721,7 @@ static void _ser_int_real(core_machine_cpu_execution_context *context, lib_u8 in
         CPU_TRACE_CHECK_RETURN(_s_test_ss_push(context, 12));
         {
             lib_u32 frame_flags =
-                (cpu_state.data.eflags & ~VCPU_EFLAGS_RESERVED) | 0x02u;
+                (cpu_state.data.eflags & ~_e_eflags_reserved_mask(context)) | 0x02u;
             CPU_TRACE_CHECK_RETURN(_kec_push(context,
                 X86_CPU_REFERENCE_OF(frame_flags), 4));
         }
@@ -5246,7 +5257,7 @@ static void _ser_iret_protected_outer(core_machine_cpu_execution_context *contex
     CPU_TRACE_CALL_BEGIN("_ser_iret_protected_outer");
     oldcpl = _GetCPL;
     /* Ordinary protected IRET never restores VM; old CPL controls IOPL/IF. */
-    flags_mask = VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_VM;
+    flags_mask = _e_eflags_reserved_mask(context) | VCPU_EFLAGS_VM;
     if (oldcpl != 0u) {
         flags_mask |= VCPU_EFLAGS_IOPL;
         if (oldcpl > _GetEFLAGS_IOPL) flags_mask |= VCPU_EFLAGS_IF;
@@ -5358,7 +5369,7 @@ static void _ser_iret_protected_same(core_machine_cpu_execution_context *context
     lib_u32 neweip;
     lib_u32 neweflags = 0u;
     lib_u32 selector;
-    lib_u32 mask = VCPU_EFLAGS_RESERVED;
+    lib_u32 mask = _e_eflags_reserved_mask(context);
     lib_u64 code_desc;
     lib_u8 cpl;
     t_cpu_data_sreg newcs_cache;
@@ -5511,8 +5522,8 @@ static void _ser_iret_protected_to_vm86(
     _ser_iret_vm86_sreg(&newfs_cache, newfs, SREG_DATA);
     _ser_iret_vm86_sreg(&newgs_cache, newgs, SREG_DATA);
     cpu_state.data.eflags = _e_eflags_load(context,
-        (newflags & ~VCPU_EFLAGS_RESERVED) |
-        (cpu_state.data.eflags & VCPU_EFLAGS_RESERVED));
+        (newflags & ~_e_eflags_reserved_mask(context)) |
+        (cpu_state.data.eflags & _e_eflags_reserved_mask(context)));
     cpu_state.data.cs = newcs_cache;
     cpu_state.data.ss = newss_cache;
     cpu_state.data.es = newes_cache;
@@ -5530,7 +5541,7 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, lib_u8 byte)
     lib_u16 return_cs;
     lib_u32 neweip = 0u, newesp, neweflags = 0u;
     lib_u32 xs_sel;
-    lib_u32 mask = VCPU_EFLAGS_RESERVED;
+    lib_u32 mask = _e_eflags_reserved_mask(context);
     t_cpu_data_sreg ccs = cpu_state.data.cs;
     CPU_TRACE_CALL_BEGIN("_e_iret");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286)
@@ -8242,7 +8253,7 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
             metadata.valid = ((modrm >> 3u) & 7u) >= 4u;
         }
-        else if (opcode == 0xb0u || opcode == 0xb1u ||
+        else if (opcode == 0xa2u || opcode == 0xb0u || opcode == 0xb1u ||
                  opcode == 0xc0u || opcode == 0xc1u ||
                  (opcode >= 0xc8u && opcode <= 0xcfu))
         {
@@ -12685,7 +12696,7 @@ static void PUSHF(core_machine_cpu_execution_context *context)
             case 4:
                 CPU_TRACE_BLOCK_BEGIN("OperandSize(4)");
                 ceflags = (cpu_state.data.eflags & ~(VCPU_EFLAGS_VM | VCPU_EFLAGS_RF |
-                    VCPU_EFLAGS_RESERVED)) | 0x02u;
+                    _e_eflags_reserved_mask(context))) | 0x02u;
                 CPU_TRACE_CHECK_RETURN(_e_push(context, X86_CPU_REFERENCE_OF(ceflags), 4));
                 CPU_TRACE_BLOCK_END;
                 break;
@@ -12712,7 +12723,7 @@ static void PUSHF(core_machine_cpu_execution_context *context)
 }
 static void POPF(core_machine_cpu_execution_context *context)
 {
-    lib_u32 mask = VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_RF;
+    lib_u32 mask = _e_eflags_reserved_mask(context) | VCPU_EFLAGS_RF;
     lib_u32 ceflags = 0u;
     CPU_TRACE_CALL_BEGIN("POPF");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
@@ -17841,11 +17852,29 @@ static void POP_FS(core_machine_cpu_execution_context *context)
         _GetOperandSize));
     CPU_TRACE_CALL_END;
 }
-_______todo CPUID(core_machine_cpu_execution_context *context)
+static void CPUID(core_machine_cpu_execution_context *context)
 {
+    const lib_u32 leaf = cpu_state.data.eax;
     CPU_TRACE_CALL_BEGIN("CPUID");
-    UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = LIB_TRUE;
+    _adv;
+    /* Intel 272769-004 defines leaves 0/1. Reserved outputs and undefined
+     * higher leaves use deterministic zeros, not a claimed hardware value. */
+    cpu_state.data.eax = 0u;
+    cpu_state.data.ebx = 0u;
+    cpu_state.data.ecx = 0u;
+    cpu_state.data.edx = 0u;
+    if (leaf == 0u)
+    {
+        cpu_state.data.eax = 1u;
+        cpu_state.data.ebx = 0x756e6547u;
+        cpu_state.data.edx = 0x49656e69u;
+        cpu_state.data.ecx = 0x6c65746eu;
+    }
+    else if (leaf == 1u)
+    {
+        cpu_state.data.eax = VCPU_486SX_SIGNATURE;
+        cpu_state.data.edx = 2u;
+    }
     CPU_TRACE_CALL_END;
 }
 static void CMPXCHG_RM8_R8(core_machine_cpu_execution_context *context)

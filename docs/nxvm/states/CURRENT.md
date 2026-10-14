@@ -36,6 +36,25 @@ The proposal's batch-efficiency order applies: complete family implementation,
 focused CPU validation and actual-change review before final whole-suite
 qualification. External guest boot remains a T-level exit requirement.
 
+S6 executor delivery is complete, pending coordinator acceptance. The candidate
+CPUID handler and one profile-aware flags mask have focused x64/x86 proof.
+The new CPU-owned test covers leaf outputs, independent code-size/prefix
+combinations, old-profile rejection (without confusing 8086 POP CS with a
+two-byte CPUID), truncated preview, failed instruction fetch without register
+mutation, reset ID/signature, PUSHF/POPF and real/VM86 IRET AC/ID transfer.
+Existing protected IRET and five task-switch completion paths now include
+486 AC/ID patterns; their updated tests pass on both host widths. Existing
+IRET/POPF/task regressions also passed in the preceding focused batch.
+The [S6 evidence](../etc/evidence/t559-s6-cpuid-flags.md) records source-contract
+reconciliation, direct proof and actual-diff review. All 597 unit cases per
+width now have passing evidence: x64 first passed 594 and then passed its three
+affected rechecks after correcting one old metadata assertion and its manifest;
+x86 passed 597/597 in one complete run. Eight PC EXEs are rebuilt/deployed and
+pass real-product INI identity, PE-width and version checks. Core manifests,
+documentation and whitespace gates pass. Shared-six, MyNES and owner inputs
+remain unchanged. No production 486 admission, VME hardware qualification,
+manual RDP or external firmware boot result is claimed. Whole-T S7 remains.
+
 ## Closed Task — M5 T558
 
 Owner accepted S2 delivery 7ea9084fe and approved T closure on 2026-10-13.

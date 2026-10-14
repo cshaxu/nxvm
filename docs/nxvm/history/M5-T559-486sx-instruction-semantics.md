@@ -121,3 +121,21 @@ asserted as UD or accepted passive storage. Both 596/596 unit logs and unchanged
 production/artifact paths support qualification. Push is confirmed. S5 closes
 under S1's explicit system disposition; S6 admits I7/I8 source-qualified CPUID
 and flags as one batch. T559 remains open.
+
+## S6 Executor Delivery
+
+I7/I8 implement the named later-SX CPUID/ID candidate and one private
+profile-aware flags mask, with no new public interface or persistent state.
+The [S6 evidence](../etc/evidence/t559-s6-cpuid-flags.md) records original
+sources, candidate applicability limits, full-state/fetch/privilege tests and
+the inherited IRET/task paths. Production C/H is +46/-15, net +31; test
+C/CMake is +309/-14, net +295. The old profile metadata assertion was corrected
+without relaxing old CPU opcode rejection.
+
+All 597 unit cases per width have passing evidence. The x64 first run passed
+594 and its three affected rechecks passed after the assertion/manifest fix;
+x86 passed 597/597 in one full run. Eight 0559 PC artifacts are rebuilt,
+deployed and identity/architecture/version checked. Shared-six, MyNES and
+owner inputs are unchanged. Executor delivery awaits coordinator review;
+S7 whole-delta and external-boot qualification remain open, as do the explicit
+system receiver's AC/VME/cache/TLB/reset/timing obligations.

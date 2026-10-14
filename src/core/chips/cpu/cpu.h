@@ -182,12 +182,12 @@ typedef struct {
 #define VCPU_EFLAGS_RF    0x00010000
 #define VCPU_EFLAGS_VM    0x00020000
 #define VCPU_EFLAGS_RESERVED 0xfffc802a
-/*
 #define VCPU_EFLAGS_AC    0x00040000
+#define VCPU_EFLAGS_ID    0x00200000
+#define VCPU_486SX_SIGNATURE 0x0000042bu
+/*
 #define VCPU_EFLAGS_VIF   0x00080000
 #define VCPU_EFLAGS_VIP   0x00100000
-#define VCPU_EFLAGS_ID    0x00200000
-#define VCPU_EFLAGS_RESERVED 0xffc0802a
 */
 #define _GetEFLAGS_CF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_CF))
 #define _GetEFLAGS_PF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_PF))

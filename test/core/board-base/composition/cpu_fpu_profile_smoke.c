@@ -65,7 +65,8 @@ lib_i32 main(void)
     failed |= !metadata.valid || metadata.minimum_cpu != CORE_MACHINE_CPU_PROFILE_8086;
     metadata = core_machine_cpu_instruction_metadata_get(
         CORE_MACHINE_CPU_INSTRUCTION_0F, 0xa2u, 0u);
-    failed |= metadata.valid;
+    failed |= !metadata.valid ||
+        metadata.minimum_cpu != CORE_MACHINE_CPU_PROFILE_80486SX;
 
     if (failed) return 1;
     lib_c_printf("CPU-FPU-PROFILES:OK\n");
