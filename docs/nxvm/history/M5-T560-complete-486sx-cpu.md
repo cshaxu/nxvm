@@ -102,3 +102,25 @@ and timing matrices, and final Core admission retain their planned T560
 owners. C05 whole-row acceptance is reconciled with C13 in that later matrix;
 normal alignment delivery is not substituted for complete CPU qualification.
 This closure-only P admits no next implementation packet.
+
+## S4 Translation Cache Admission
+
+After revalidating clean bbc8b85c6 and S3 closure, the coordinator admits S4
+under the owner's automatic sequential Core authority. The CURRENT packet
+consumes the complete C06 batch: real CPU translation entries, test-register
+commands, INVLPG and all invalidation/preview paths. Source review precedes
+production edits; this admission is not implementation or runtime evidence.
+Shared-six, MyNES and owner inputs remain excluded. Eight S3 0560 PC EXEs
+remain current until a verified S4 replacement is deployed.
+
+S4 implementation and final qualification are delivered. The
+[batch record](../etc/evidence/t560-s4-translation-cache.md) maps real TLB,
+TR6/TR7, INVLPG, reset/control/task/debug publication and preview to original
+sources, explicit L2 internal choices and actual guest-command tests.
+Production changes +237/-9; tests +671/-2. Both whole 600-case unit suites
+and all eight integration groups pass; the final V=0 test-only addition
+passes its affected recheck per width without changing production inputs.
+Eight verified 0560 PC artifacts are deployed; MyNES and owner inputs remain
+unchanged. Complete P push and coordinator review remain before acceptance.
+Full page-walk bus-cycle/timing, cache, remaining CPU rows and production
+admission stay in T560; this is not full CPU or Windows GUI qualification.

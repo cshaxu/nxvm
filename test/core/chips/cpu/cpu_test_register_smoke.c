@@ -201,6 +201,8 @@ static lib_bool test_register_failed_fetch(void)
         .read_memory = test_register_read, .write_memory = cpu_instruction_write,
         .interrupt_pending = cpu_instruction_interrupt_pending};
 
+    for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80386;
+         profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile)
     for (lib_u8 write = 0u; write != 2u; ++write) {
         for (lib_u8 reg = 6u; reg != 8u; ++reg) {
             const lib_u8 code[] = {0x66u, 0x67u, 0x0fu, write ? 0x26u : 0x24u,
@@ -210,7 +212,7 @@ static lib_bool test_register_failed_fetch(void)
                 t_cpu before, after;
 
                 cpu_instruction_prepare_with_bus(&fixture.instruction,
-                    CORE_MACHINE_CPU_PROFILE_80386, &bus, &fixture);
+                    profile, &bus, &fixture);
                 fixture.fail_at = fail_at;
                 fixture.failures = 0u;
                 fixture.instruction.cpu.data.eax = 0x12345678u;

@@ -566,6 +566,7 @@ static lib_bool control_test_486_paged_tables(void)
 {
     static const lib_u8 load_ds[] = {0x8eu, 0xd8u};
     static const lib_u8 interrupt[] = {0xccu};
+    static const lib_u8 invalidate_gdt[] = {0x2eu, 0x0fu, 0x01u, 0x3eu, 0u, 0x40u};
     static const lib_u8 descriptors[] = {
         0xffu, 0xffu, 0u, 0u, 0u, 0x9bu, 0u, 0u,
         0xffu, 0xffu, 0u, 0x90u, 0u, 0x92u, 0u, 0u
@@ -607,6 +608,12 @@ static lib_bool control_test_486_paged_tables(void)
      * readonly GDT even with supervisor write protection enabled. */
     entry = 0x6001u;
     lib_memory_copy(fixture.memory + 0x2010u, &entry, sizeof(entry));
+    fixture.cpu.data.eip = 0u;
+    /* A changed present PTE needs guest invalidation before its new
+     * permissions govern descriptor accesses (Intel486 PRM 5.3.5). */
+    if (!control_run(&fixture, invalidate_gdt, sizeof(invalidate_gdt), &after) ||
+        fixture.delivered_exception.valid)
+        return LIB_FALSE;
     fixture.cpu.data.eip = 0u;
     if (!control_run(&fixture, load_ds, sizeof(load_ds), &after) ||
         fixture.delivered_exception.valid || after.data.ds.base != 0x9000u)
@@ -690,7 +697,7 @@ static lib_bool control_test_486_page_permissions(void)
 
     /* Every PDE/PTE RW/US combination, WP value, CPL and access direction.
      * Keep code, exception tables and stack in a separate writable directory. */
-    for (combination = 0u; combination < 256u; ++combination) {
+    for (combination = 0u; combination < 512u; ++combination) {
         const lib_u32 pde_flags = 1u | ((combination & 3u) << 1u);
         const lib_u32 pte_flags = 1u | (((combination >> 2u) & 3u) << 1u);
         const lib_bool wp = (combination & 16u) != 0u;
@@ -740,6 +747,26 @@ static lib_bool control_test_486_page_permissions(void)
         lib_memory_copy(fixture.memory + 0x4008u, descriptor, sizeof(descriptor));
         lib_memory_copy(fixture.memory + 0x5070u, gate, sizeof(gate));
         fixture.memory[0x9000u] = 0xa5u;
+        if (combination & 256u) {
+            const lib_u8 populate[] = {0xa0u, 0u, 0u};
+            lib_bool cached = LIB_FALSE;
+
+            /* Supervisor reads populate all present attribute combinations.
+             * The real tested access then uses its original CPL and WP. */
+            fixture.cpu.data.cs.dpl = 0u;
+            if (!control_run(&fixture, populate, sizeof(populate), &after) ||
+                fixture.delivered_exception.valid || after.data.al != 0xa5u)
+                goto failed;
+            for (lib_u8 way = 0u; way < X86_CPU_TLB_WAYS; ++way)
+                if (fixture.execution.tlb[0][way].valid &&
+                    fixture.execution.tlb[0][way].linear == 0x00400000u)
+                    cached = LIB_TRUE;
+            if (!cached) goto failed;
+            fixture.cpu.data.cs.dpl = cpl;
+            fixture.cpu.data.eip = 0u;
+            fixture.cpu.data.eax = 0x5au;
+            core_machine_cpu_execution_invalidate_prefetch(&fixture.execution);
+        }
         if (!control_run(&fixture, code, sizeof(code), &after) ||
             core_machine_cpu_is_shutdown(&fixture.execution) ||
             fixture.delivered_exception.valid != fault ||

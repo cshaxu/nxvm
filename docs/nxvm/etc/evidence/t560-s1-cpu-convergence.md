@@ -86,6 +86,19 @@ are recorded in CURRENT and the delivery record, not inferred by this ledger.
 
 ## Initial Direct Inspection
 
+### S4 Translation-State Subcase Evidence
+
+The [S4 record](t560-s4-translation-cache.md) provides direct real-CPU proof
+for C06 ordinary/test TLB state, complete INVLPG effective-address/privilege/
+failure routes, control/task/reset/debug invalidation and non-mutating preview.
+It names the L2 internal replacement and first-dirty-write choices separately
+from documented architectural fields. Remaining C04/C16 second-read/locked
+page-table and full bus-cycle fidelity must be reconciled by the subsequent
+cache/bus and timing batches before complete CPU admission. This obligation
+stays in T560 and is not accepted merely because C06 state tests pass.
+S4's final qualification, pushed delivery and acceptance are owned by CURRENT
+and its batch record. No cache, VME/SMM, whole-opcode or production gate opens.
+
 Read cpu.c reset and debug paths, cpu.h register storage, cpu_instructions.c
 physical bus callbacks and translation prepare/commit, and cpu_timing_model.c
 profile selector/compatibility fallback. The CPU directory is flat; there is

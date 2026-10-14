@@ -284,14 +284,133 @@ static void _kma_write_physical(core_machine_cpu_execution_context *context, lib
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
         physical, byte, LIB_TRUE, provenance);
     CPU_TRACE_CALL_END;
-}typedef struct t_kma_linear_translation {
+}
+
+void core_machine_cpu_execution_invalidate_tlb(
+    core_machine_cpu_execution_context *context)
+{
+    for (lib_u8 set = 0u; set < X86_CPU_TLB_SETS; ++set)
+        for (lib_u8 way = 0u; way < X86_CPU_TLB_WAYS; ++way)
+            context->tlb[set][way].valid = LIB_FALSE;
+}
+
+static lib_u8 _kma_tlb_way(core_machine_cpu_execution_context *context,
+    lib_u32 linear)
+{
+    const lib_u8 set = (linear >> 12u) & (X86_CPU_TLB_SETS - 1u);
+
+    for (lib_u8 way = 0u; way < X86_CPU_TLB_WAYS; ++way) {
+        const cpu_tlb_entry *entry = &context->tlb[set][way];
+        if (entry->valid && entry->linear == (linear & VCPU_CR3_BASE))
+            return way;
+    }
+    return X86_CPU_TLB_WAYS;
+}
+
+/* Three-bit tree replacement, shared by ordinary and test-register access. */
+static lib_u8 _kma_tlb_replacement(lib_u8 lru)
+{
+    return lru & 1u ? (lib_u8)(2u + ((lru >> 2u) & 1u)) :
+        (lib_u8)((lru >> 1u) & 1u);
+}
+
+static void _kma_tlb_touch(core_machine_cpu_execution_context *context,
+    lib_u8 set, lib_u8 way)
+{
+    lib_u8 *lru = &context->tlb_lru[set];
+
+    if (way < 2u)
+        *lru = (lib_u8)((*lru & 4u) | 1u | (way == 0u ? 2u : 0u));
+    else
+        *lru = (lib_u8)((*lru & 2u) | (way == 2u ? 4u : 0u));
+}
+
+static void _kma_tlb_fill(core_machine_cpu_execution_context *context,
+    lib_u32 linear, lib_u32 physical, lib_u32 attributes)
+{
+    const lib_u8 set = (linear >> 12u) & (X86_CPU_TLB_SETS - 1u);
+    lib_u8 way = _kma_tlb_way(context, linear);
+
+    if (way == X86_CPU_TLB_WAYS)
+        way = _kma_tlb_replacement(context->tlb_lru[set]);
+    context->tlb[set][way] = (cpu_tlb_entry) {
+        .linear = linear & VCPU_CR3_BASE,
+        .physical = physical & VCPU_CR3_BASE,
+        .attributes = attributes, .valid = LIB_TRUE};
+    _kma_tlb_touch(context, set, way);
+}
+
+static void _kma_tlb_test(core_machine_cpu_execution_context *context,
+    lib_u32 command)
+{
+    const lib_u8 set = (command >> 12u) & (X86_CPU_TLB_SETS - 1u);
+    const lib_u32 linear = command & VCPU_CR3_BASE;
+    const lib_u32 data = cpu_state.data.tr7;
+    const lib_bool valid = (command & 0x800u) != 0u;
+    lib_u8 way, matches = 0u, found = 0u;
+
+    cpu_state.data.tr6 = command & 0xffffffe1u;
+    if (!(command & 1u))
+    {
+        way = data & 0x10u ? (lib_u8)((data >> 2u) & 3u) :
+            _kma_tlb_replacement(context->tlb_lru[set]);
+        context->tlb[set][way] = (cpu_tlb_entry) {
+            .linear = linear, .physical = data & VCPU_CR3_BASE,
+            .attributes = ((command & 0x400u) ? 0x40u : 0u) |
+                ((command & 0x100u) ? 4u : 0u) |
+                ((command & 0x40u) ? 2u : 0u) |
+                ((data & 0x800u) ? 0x10u : 0u) |
+                ((data & 0x400u) ? 8u : 0u),
+            .valid = valid};
+        _kma_tlb_touch(context, set, way);
+        return;
+    }
+    for (way = 0u; way < X86_CPU_TLB_WAYS; ++way)
+    {
+        const cpu_tlb_entry *entry = &context->tlb[set][way];
+        lib_bool match = entry->linear == linear && entry->valid == valid;
+        const lib_u32 bits[] = {0x40u, 4u, 2u};
+        const lib_u8 shifts[] = {9u, 7u, 5u};
+
+        for (lib_u8 bit = 0u; bit < 3u; ++bit) {
+            const lib_u8 pair = (command >> shifts[bit]) & 3u;
+            if (!(pair & ((entry->attributes & bits[bit]) ? 2u : 1u)))
+                match = LIB_FALSE;
+        }
+        if (match) { found = way; ++matches; }
+    }
+    /* Duplicate tags and invalid-tag initialization are not defined tests. */
+    cpu_state.data.tr7 = (data & ~0x390u) |
+        ((lib_u32)context->tlb_lru[set] << 7u);
+    if (matches == 1u)
+    {
+        const cpu_tlb_entry *entry = &context->tlb[set][found];
+        const lib_u32 attributes = entry->attributes;
+
+        cpu_state.data.tr6 = linear | (valid ? 0x800u : 0u) | 1u |
+            ((attributes & 0x40u) ? 0x400u : 0x200u) |
+            ((attributes & 4u) ? 0x100u : 0x80u) |
+            ((attributes & 2u) ? 0x40u : 0x20u);
+        cpu_state.data.tr7 = entry->physical |
+            ((attributes & 0x10u) ? 0x800u : 0u) |
+            ((attributes & 8u) ? 0x400u : 0u) |
+            ((lib_u32)context->tlb_lru[set] << 7u) |
+            0x10u | ((lib_u32)found << 2u);
+        _kma_tlb_touch(context, set, found);
+    }
+}
+
+typedef struct t_kma_linear_translation {
     lib_u32 physical;
+    lib_u32 linear;
+    lib_u32 attributes;
     lib_u32 ppde;
     lib_u32 ppte;
     lib_u32 cpde;
     lib_u32 cpte;
     lib_u8 paging;
     lib_u8 pde_accessed;
+    lib_bool tlb_hit;
 } t_kma_linear_translation;
 
 /* Validate a linear page translation without publishing page-table side effects. */
@@ -300,6 +419,8 @@ static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *con
     lib_u32 ppde, ppte; /* page table entries */
     lib_u32 cpde, cpte;
     CPU_TRACE_CALL_BEGIN("_kma_prepare_physical_linear");
+    *translation = (t_kma_linear_translation) {0};
+    translation->linear = linear;
     if (_GetLinear_Offset(linear) > X86_CPU_MASK_U32(_GetPageSize - byte))
         CPU_TRACE_IMPOSSIBLE_RETURN;
     if (!_IsPaging)
@@ -308,6 +429,37 @@ static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *con
         translation->paging = LIB_FALSE;
         CPU_TRACE_CALL_END;
         return;
+    }
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+    {
+        const lib_u8 set = (linear >> 12u) & (X86_CPU_TLB_SETS - 1u);
+        const lib_u8 way = _kma_tlb_way(context, linear);
+
+        if (way != X86_CPU_TLB_WAYS)
+        {
+            const cpu_tlb_entry *entry = &context->tlb[set][way];
+            const lib_bool user = vpl == 3u;
+            const lib_bool protected_write = user ||
+                (cpu_state.data.cr0 & VCPU_CR0_WP) != 0u;
+
+            if ((user && !_GetPageEntry_US(entry->attributes)) ||
+                (write && protected_write && !_IsPageEntryWritable(entry->attributes)))
+            {
+                cpu_state.data.cr2 = linear;
+                CPU_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, write, user)));
+            }
+            /* A first write to a clean translation must publish the page-table
+             * Dirty bit through the ordinary walk, not a stored host pointer. */
+            if (!write || (entry->attributes & 0x40u) != 0u)
+            {
+                translation->physical = entry->physical + _GetLinear_Offset(linear);
+                translation->attributes = entry->attributes;
+                translation->paging = LIB_TRUE;
+                translation->tlb_hit = LIB_TRUE;
+                CPU_TRACE_CALL_END;
+                return;
+            }
+        }
     }
     ppde = _GetCR3_Base + _GetLinear_Dir(linear) * 4;
     CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, ppde, X86_CPU_REFERENCE_OF(cpde), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ));
@@ -389,6 +541,7 @@ static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *con
     translation->cpde = cpde;
     translation->cpte = cpte;
     translation->paging = LIB_TRUE;
+    translation->attributes = (cpte & 0x58u) | ((cpde & cpte) & 6u);
     CPU_TRACE_CALL_END;
 }
 
@@ -398,6 +551,13 @@ static void _kma_commit_physical_linear(core_machine_cpu_execution_context *cont
     CPU_TRACE_CALL_BEGIN("_kma_commit_physical_linear");
     if (context->preview_mode || !translation->paging)
     {
+        CPU_TRACE_CALL_END;
+        return;
+    }
+    if (translation->tlb_hit)
+    {
+        _kma_tlb_fill(context, translation->linear, translation->physical,
+            translation->attributes);
         CPU_TRACE_CALL_END;
         return;
     }
@@ -412,6 +572,9 @@ static void _kma_commit_physical_linear(core_machine_cpu_execution_context *cont
         _SetPageEntry_D(translation->cpte);
     CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, translation->ppte,
         X86_CPU_REFERENCE_OF(translation->cpte), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+        _kma_tlb_fill(context, translation->linear, translation->physical,
+            translation->attributes | (write ? 0x40u : 0u));
     CPU_TRACE_CALL_END;
 }
 
@@ -2051,6 +2214,7 @@ static void _s_write_cr0(core_machine_cpu_execution_context *context,
      * invalidates bytes fetched through the former translation context. */
     if ((cpu_state.data.cr0 ^ value) & VCPU_CR0_PG) {
         core_machine_cpu_execution_invalidate_prefetch(context);
+        core_machine_cpu_execution_invalidate_tlb(context);
     }
     cpu_state.data.cr0 = value;
     CPU_TRACE_CALL_END;
@@ -2070,6 +2234,7 @@ static void _s_write_cr3(core_machine_cpu_execution_context *context,
     }
     /* A new directory changes the translation context of queued bytes. */
     core_machine_cpu_execution_invalidate_prefetch(context);
+    core_machine_cpu_execution_invalidate_tlb(context);
     cpu_state.data.cr3 = value;
     CPU_TRACE_CALL_END;
 }
@@ -8110,20 +8275,21 @@ static lib_u8 core_machine_cpu_instruction_lexeme_has_modrm(
 
 static lib_u8 core_machine_cpu_instruction_lexeme_modrm_form_valid(
     lib_u8 opcode, lib_u8 extended, lib_u8 modrm,
-    lib_u8 cpu_80386_cr_mov_ignores_mod)
+    lib_u8 cpu_80386_cr_mov_ignores_mod, core_machine_cpu_profile profile)
 {
     lib_u8 reg = (modrm >> 3u) & 7u;
 
     if (extended) {
         if ((opcode == 0x21u || opcode == 0x23u) && (reg == 4u || reg == 5u)) return LIB_FALSE;
         if ((opcode == 0x24u || opcode == 0x26u) && reg < 6u) return LIB_FALSE;
-        if (opcode == 0x01u && (reg == 5u || reg == 7u)) return LIB_FALSE;
+        if (opcode == 0x01u && (reg == 5u ||
+            (reg == 7u && profile != CORE_MACHINE_CPU_PROFILE_80486SX))) return LIB_FALSE;
         if ((opcode >= 0x20u && opcode <= 0x24u) || opcode == 0x26u) {
             if ((opcode == 0x20u || opcode == 0x22u) &&
                 cpu_80386_cr_mov_ignores_mod) return LIB_TRUE;
             return (modrm >> 6u) == 3u;
         }
-        if ((opcode == 0x01u && reg <= 3u) || opcode == 0xb2u ||
+        if ((opcode == 0x01u && (reg <= 3u || reg == 7u)) || opcode == 0xb2u ||
             opcode == 0xb4u || opcode == 0xb5u)
             return (modrm >> 6u) != 3u;
         return LIB_TRUE;
@@ -8264,7 +8430,7 @@ static lib_u8 core_machine_cpu_instruction_lexeme_scan_with_options(
         }
     }
     if (!core_machine_cpu_instruction_lexeme_modrm_form_valid(opcode, extended, modrm,
-        cpu_80386_cr_mov_ignores_mod))
+        cpu_80386_cr_mov_ignores_mod, profile))
         return LIB_FALSE;
     metadata = core_machine_cpu_instruction_metadata_get(extended ?
         CORE_MACHINE_CPU_INSTRUCTION_0F : CORE_MACHINE_CPU_INSTRUCTION_PRIMARY,
@@ -8354,6 +8520,10 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
         {
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80286;
             metadata.valid = ((modrm >> 3u) & 7u) <= 6u;
+            if (((modrm >> 3u) & 7u) == 7u) {
+                metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80486SX;
+                metadata.valid = (modrm >> 6u) != 3u;
+            }
         }
         else if (opcode == 0x02u || opcode == 0x03u)
         {
@@ -17340,9 +17510,23 @@ static void INS_0F_01(core_machine_cpu_execution_context *context)
         CPU_TRACE_CHECK_RETURN(_s_load_cr0_msw(context, X86_CPU_MASK_U16(instruction_state.data.crm)));
         CPU_TRACE_BLOCK_END;
         break;
-    case 7:
-        CPU_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
-        CPU_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+    case 7: /* INVLPG_M */
+        CPU_TRACE_BLOCK_BEGIN("INVLPG_M");
+        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX ||
+            _GetModRM_MOD(modrm) == 3u)
+            CPU_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        if (_GetCPL)
+            CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        CPU_TRACE_CHECK_RETURN(_d_modrm_ea(context, 0u, 1u));
+        {
+            const lib_u32 linear = instruction_state.data.mrm.rsreg->base +
+                instruction_state.data.mrm.offset;
+            const lib_u8 set = (linear >> 12u) & (X86_CPU_TLB_SETS - 1u);
+
+            for (lib_u8 way = 0u; way < X86_CPU_TLB_WAYS; ++way)
+                if (context->tlb[set][way].linear == (linear & VCPU_CR3_BASE))
+                    context->tlb[set][way].valid = LIB_FALSE;
+        }
         CPU_TRACE_BLOCK_END;
         break;
     default:
@@ -17686,7 +17870,18 @@ static void MOV_TR_R32(core_machine_cpu_execution_context *context)
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm_treg(context));
-    CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(instruction_state.data.crm), 4));
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+    {
+        if (instruction_state.data.rr == (lib_uptr)&cpu_state.data.tr6)
+            _kma_tlb_test(context, X86_CPU_MASK_U32(instruction_state.data.crm));
+        else
+            cpu_state.data.tr7 = X86_CPU_MASK_U32(instruction_state.data.crm) & 0xfffffc1cu;
+    }
+    else
+    {
+        CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr,
+            X86_CPU_REFERENCE_OF(instruction_state.data.crm), 4));
+    }
     CPU_TRACE_CALL_END;
 }
 _______todo WRMSR(core_machine_cpu_execution_context *context)
@@ -19574,6 +19769,8 @@ void core_machine_cpu_execution_initialize(
 void core_machine_cpu_execution_reset(
     core_machine_cpu_execution_context *context)
 {
+    lib_memory_set(context->tlb, 0u, sizeof(context->tlb));
+    lib_memory_set(context->tlb_lru, 0u, sizeof(context->tlb_lru));
     lib_memory_set((void *)(&instruction_state.data), 0u, sizeof(t_cpuins_data));
     context->debug_pause_requested = LIB_FALSE;
     context->debug_trap_pending = LIB_FALSE;

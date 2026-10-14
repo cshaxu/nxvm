@@ -3,9 +3,11 @@
 ## Current Work
 
 T560 remains open after accepted S3 delivery cb52586a9. S3 is closed;
-there is no active implementation packet between batches. The next planned
-batch is S4, actual TLB state and INVLPG/TR6/TR7, under automatic sequential
-Core admission.
+S4 is admitted for actual TLB state and INVLPG/TR6/TR7, under the owner's
+automatic sequential Core authority. Implementation and qualification are
+delivered: whole units pass 600/600 per width, all eight profile integration
+groups pass and eight verified 0560 EXEs are deployed. Complete P push and
+coordinator actual-change acceptance remain required before S4 closes.
 The [complete CPU proposal](../proposals/m5-pc110-486-system.md) and
 [convergence ledger](../etc/evidence/t560-s1-cpu-convergence.md) retain all
 remaining CPU obligations. Production 486 admission remains closed.
@@ -18,6 +20,7 @@ records the exact boundary. Do not ask again for equivalent version updates.
 
 | Task | Progress |
 | --- | --- |
+| T560 S4 | Delivered pending push/review: complete translation/test-command and invalidation matrix, 600/600 full units per width plus final affected-test recheck, eight passing integration groups and eight verified 0560 artifacts. [Evidence](../etc/evidence/t560-s4-translation-cache.md). Model grades and remaining C04/C16 bus/CPU obligations remain explicit; production 486 admission stays closed. |
 | T560 S3 | Accepted and closed: cb52586a9. Full units pass 599/599 per width, all eight final PC integration groups pass and eight verified 0560 EXEs are deployed. [Batch evidence](../etc/evidence/t560-s3-alignment-rmw.md). S4--S10 and C13-linked exception-entry qualification remain in T560; production 486 admission stays closed. |
 | T560 S2 | Accepted and closed: e7c3f4e78 / ddb260095. Base system tests pass 597/597 per width; all eight integration groups pass and eight 0560 EXEs are published. See the [S2 evidence](../etc/evidence/t560-s2-base-system.md). Complete CPU qualification and planned S3--S10 remain open in T560. |
 | T559 | Closed by owner approval: instruction-delta qualification, 597/597 units per width, eight final external groups and eight verified 0559 PC EXEs. Remaining CPU system semantics transfer to the approved next task. |
@@ -32,6 +35,27 @@ bounded T contract; the [system receiver](../proposals/m5-pc110-486-system.md)
 still owns real cache/TLB/test commands, reset/control, AC/VME/SMM and timing.
 Production 486 admission stays closed. The persistent full implementation
 objective is not complete.
+
+## Active Packet - T560 S4 Translation Cache
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T560 S4, next unused S after accepted S3 cb52586a9 and closure bbc8b85c6. One-session coordinator/executor roles. |
+| Admission And Approval | Owner requires completion of all 486SX CPU gaps and automatically approves sequential Core implementation, Core interfaces and accuracy upgrades. Target NXVM only; Shared-six and MyNES changes are excluded. Routine version synchronization retains the existing permanent approval, not additional Shared functionality. |
+| Objective | Complete C06: one CPU-owned real TLB used by ordinary translations and TR6/TR7; source-qualified INVLPG, lookup/write/replacement, control/task/reset/debug invalidation and non-mutating preview. |
+| Non-goals | No cache/TR3--5 implementation, SMM/VME, second interpreter, board-specific translation, Shared API, MyNES change or production 486 admission. Remaining timing and exception-entry obligations stay in their planned T560 batches. |
+| Reference Baseline | bbc8b85c6, clean worktree at admission; pinned Intel 1992 PRM chapters 5/10/26 and 273021-001 developer appendix B, with source identities in T558 evidence. Older-family behavior remains the regression baseline. |
+| Candidate Proposal | [Complete 486SX CPU](../proposals/m5-pc110-486-system.md), C06 in the [convergence ledger](../etc/evidence/t560-s1-cpu-convergence.md), and the [source/owner investigation](../etc/evidence/t560-s4-translation-cache.md). |
+| Files And ABI Surface | Existing Core CPU private state, translation/control/test-register handlers, metadata/preview where required, reset/debug mutation and directly owned tests/registration; Core manifests and task records. Preliminary source +250--500/-50--150 and tests +350--600/-30--80; refine after the complete source review. Real private cache state is expected; no planned public function/type or Shared ABI addition. Eight affected 0560 PC artifacts. |
+| Applicable Rules | NXVM guide, Execution packet/P/coverage/artifact rules, Document, Architecture/Coding and governance skills, NXVM architecture/layout and source/research policy. PDF skill for original manual diagrams. No third-party implementation import. |
+| Verification | All eight sets/four ways, hits/misses/conflicts/replacement, test attributes and commands, paging-enabled tests, stale mappings until invalidation, permission/WP/A-D/split behavior, all INVLPG encodings/modes/prefixes/faults without operand reads, MOV/task/reset/debug invalidation and preview without cache mutation. Focused cohesive batch followed by full repository units per width, affected four-profile integrations, eight artifact identities and manifest/dependency/document checks in original Ninja/ccache graphs. |
+| Expected Markers | Actual guest translations and test commands observe the same CPU-owned entries; invalidation is effective rather than a successful no-op. Retained profiles preserve their proved contract; direct fault/restart and no-mutation checks pass. |
+| Asset Needs | Existing pinned manuals and admitted external build/integration inputs read-only; preserve ROM masters, all INIs/media/snapshots and MyNES artifacts. No new media or firmware acquisition. |
+| Reporting Requirements | Before production edits report source contract, owner/caller sweep and refined source/test estimates. Record actual added/deleted/net lines, real state/helper necessity, direct proof, retained paths, all qualification results and unexecuted desktop/RDP checks. |
+| Stop Conditions | Required Shared change, unresolved source contradiction essential to a numeric or architectural choice, unexplained owner-input mutation or scope expansion. Continue independent admitted work; do not invent successful unsupported commands or silently downgrade accuracy. |
+| Exit Criteria | Complete C06 batch reconciled to source and actual execution; required dual-width units/integrations and eight deployments pass, full actual-change review and complete NXVM P pushed, coordinator acceptance recorded. T560 and production admission remain open. |
+| Original Owner Request | Implement complete 486SX instruction/system semantics under governance and quality rules; group related instructions, reuse persistent build graphs and avoid per-opcode full runs. |
+| Similar-Issue Sweep | Audit every guest/task/debug/reset CR0/CR3 writer, translation prepare/commit and split callers, test-register MOV/readback, INVLPG decode/preview/metadata and instruction-fetch observation. Classify retained 386 differences explicitly; no passive duplicate TLB or replacement mirror. |
 
 The accepted snapshots below preserve earlier deliveries only; their old
 active/progress wording does not admit concurrent work or supersede this section.

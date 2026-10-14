@@ -378,6 +378,16 @@ lib_status core_machine_cpu_debug_patch_registers(core_machine_cpu_execution_con
     candidate_cpu = *context->cpu;
     candidate_context = *context;
     candidate_context.cpu = &candidate_cpu;
+    /* Segment validation uses the complete candidate paging context, even
+     * though segment identifiers precede control registers in the patch enum. */
+    if (patch->mask & CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR0))
+        candidate_cpu.data.cr0 = patch->values[CORE_MACHINE_DEBUG_CR0];
+    if (patch->mask & CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR3))
+        candidate_cpu.data.cr3 = patch->values[CORE_MACHINE_DEBUG_CR3];
+    if (patch->mask & (CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR0) |
+        CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR3))) {
+        core_machine_cpu_execution_invalidate_tlb(&candidate_context);
+    }
     for (register_id = CORE_MACHINE_DEBUG_EAX;
          register_id < CORE_MACHINE_DEBUG_REGISTER_COUNT; ++register_id) {
         if ((patch->mask & CORE_MACHINE_DEBUG_REGISTER_MASK(register_id)) == 0u)
@@ -406,6 +416,11 @@ lib_status core_machine_cpu_debug_patch_registers(core_machine_cpu_execution_con
         }
     }
     *context->cpu = candidate_cpu;
+    if (patch->mask & (CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR0) |
+        CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR3))) {
+        core_machine_cpu_execution_invalidate_tlb(context);
+        core_machine_cpu_execution_invalidate_prefetch(context);
+    }
     return LIB_STATUS_OK;
 }
 
@@ -457,6 +472,8 @@ void core_machine_cpu_execution_context_initialize(
     context->nmi_pending = LIB_FALSE;
     context->debug_trap_cause = 0u;
     context->preview_mode = LIB_FALSE;
+    lib_memory_set(context->tlb, 0u, sizeof(context->tlb));
+    lib_memory_set(context->tlb_lru, 0u, sizeof(context->tlb_lru));
     context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
     context->prefetch_count = 0u;
     context->prefetch_capacity = 15u;

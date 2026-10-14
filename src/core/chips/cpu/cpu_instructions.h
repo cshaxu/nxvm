@@ -151,6 +151,16 @@ struct t_cpuins {
     t_cpuins_connect connect;
 };
 
+#define X86_CPU_TLB_SETS 8u
+#define X86_CPU_TLB_WAYS 4u
+
+typedef struct cpu_tlb_entry {
+    lib_u32 linear;
+    lib_u32 physical;
+    lib_u32 attributes;
+    lib_bool valid;
+} cpu_tlb_entry;
+
 /* One composition-owned executor context names the existing CPU and decoder. */
 struct core_machine_cpu_execution_context {
     t_cpu *cpu;
@@ -202,6 +212,8 @@ struct core_machine_cpu_execution_context {
     /* A temporary CPU-owned lexical fetch may validate bytes without any
      * architectural, transaction, trace, or diagnostic publication. */
     lib_u8 preview_mode;
+    cpu_tlb_entry tlb[X86_CPU_TLB_SETS][X86_CPU_TLB_WAYS];
+    lib_u8 tlb_lru[X86_CPU_TLB_SETS];
     core_machine_cpu_memory_access_provenance memory_access_provenance;
     lib_u32 prefetch_linear;
     lib_u32 prefetch_expected_linear;
@@ -237,6 +249,8 @@ void core_machine_cpu_execution_initialize(
 void core_machine_cpu_execution_reset(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_finalize(
+    core_machine_cpu_execution_context *context);
+void core_machine_cpu_execution_invalidate_tlb(
     core_machine_cpu_execution_context *context);
 
 

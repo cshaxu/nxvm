@@ -708,6 +708,33 @@ static lib_bool task32_test_published_fault_context(void)
     return LIB_TRUE;
 }
 
+static lib_bool task32_seed_translation(cpu_instruction_fixture *fixture)
+{
+    static const lib_u8 code[][3] = {{0x0fu, 0x26u, 0xfau}, {0x0fu, 0x26u, 0xf2u}};
+    static const lib_u32 values[] = {0x30010u, 0x00400d40u};
+    lib_u8 saved[8];
+    const lib_u32 edx = fixture->cpu.data.edx;
+    const lib_u32 eip = fixture->cpu.data.eip;
+    const lib_u32 address = fixture->cpu.data.cs.base + eip;
+
+    lib_memory_copy(saved, fixture->memory + address, sizeof(saved));
+    for (lib_u8 command = 0u; command < 2u; ++command) {
+        fixture->cpu.data.eip = eip;
+        fixture->cpu.data.edx = values[command];
+        lib_memory_copy(fixture->memory + address, code[command], sizeof(code[command]));
+        core_machine_cpu_execution_invalidate_prefetch(&fixture->execution);
+        core_machine_cpu_execution_refresh(&fixture->execution);
+        if (fixture->execution.stop_requested || fixture->fault.valid ||
+            fixture->delivered_exception.valid) return LIB_FALSE;
+    }
+    lib_memory_copy(fixture->memory + address, saved, sizeof(saved));
+    fixture->cpu.data.edx = edx;
+    fixture->cpu.data.eip = eip;
+    core_machine_cpu_execution_invalidate_prefetch(&fixture->execution);
+    return fixture->execution.tlb[0][0].valid &&
+        fixture->execution.tlb[0][0].linear == 0x00400000u;
+}
+
 static lib_bool task32_test_completion_flags(void)
 {
     static const task32_case cases[] = {TASK32_DIRECT, TASK32_NESTED_CALL,
@@ -746,6 +773,8 @@ static lib_bool task32_test_completion_flags(void)
             core_machine_cpu_execution_refresh(&fixture.execution);
         if (fixture.execution.stop_requested || fixture.cpu.data.eip != 48u ||
             fixture.cpu.data.tr.selector != 0x28u) return LIB_FALSE;
+        if (profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+            !task32_seed_translation(&fixture)) return LIB_FALSE;
         fixture.cpu.data.eflags = 2u | ((bits & 1u) ? VCPU_EFLAGS_RF : 0u) |
             ((bits & 2u) ? VCPU_EFLAGS_TF : 0u) |
             (profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
@@ -762,6 +791,10 @@ static lib_bool task32_test_completion_flags(void)
             fixture.cpu.data.cr3 != (cr3 & ~7u) ||
             fixture.cpu.data.eflags != expected || fixture.execution.debug_trap_pending)
             ++failures;
+        if (profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+            for (lib_u8 set = 0u; set < X86_CPU_TLB_SETS; ++set)
+                for (lib_u8 way = 0u; way < X86_CPU_TLB_WAYS; ++way)
+                    if (fixture.execution.tlb[set][way].valid) ++failures;
     }
     lib_c_printf("Task completion flags cases=%u failures=%u\n",
         (unsigned)count, (unsigned)failures);
