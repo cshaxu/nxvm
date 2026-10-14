@@ -2,31 +2,31 @@
 
 ## Current Work
 
-### Active Task — M5 T559 S1 Selected 486SX Instruction Inventory
+### Active Task — M5 T559 S2 Selected 486SX Decode And BSWAP
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T559 S1 after owner acceptance and closure of T558; consumes the former first queue candidate. |
-| Admission And Approval | Owner approves T558 closure and admission of the next T on 2026-10-13. T559 implements the selected 486SX instruction delta; S1 first freezes the instruction/feature inventory and bounded implementation batches. |
-| Objective | Map the current CPU decoder, profile checks and tests to the original 486 instruction forms; resolve or explicitly gate optional feature choices and publish the finite T559 convergence ledger and subsequent S plan. |
-| Non-goals | No production changes in S1, Shared modifications, PC110 board admission, firmware changes, new executor or claims of full 486 system/timing support. |
-| Reference Baseline | T558 research delivery 7ea9084fe; unchanged production baseline feadb8235; original manuals and reference revisions pinned in T558 S2 evidence. |
+| Identifier Mode | Continuation T559 S2 after coordinator acceptance of S1 P1 2afeda156. |
+| Admission And Approval | Owner-admitted T559 and automatic sequential Core-only execution; coordinator admits ledger I1 and identity/decode portion of I10. No Shared changes. |
+| Objective | Add explicit CPU-owner 486SX profile and BSWAP through the existing metadata, length scanner and instruction table; prove old-profile rejection and preserve the Core machine production admission gate. |
+| Non-goals | No PC110 board admission, cache/TLB/system implementation, CPUID feature advertisement, firmware or Shared change, new executor or full 486 timing claim. |
+| Reference Baseline | S1 delivery 2afeda156; T558 pinned Intel sources. PRM BSWAP defines only the 32-bit result; 16-bit behavior must be explicitly classified as deterministic model policy, not documented hardware #UD. |
 | Candidate Proposal | [Selected 486SX instructions](../proposals/m5-pc110-486-instructions.md), with T558 CPU-1--7 and single-owner handoffs. |
-| Files And ABI Surface | NXVM proposal, evidence, status and history only in S1; later admitted batches may change Core CPU and its actual callers/tests. No ABI change admitted by this planning packet. |
+| Files And ABI Surface | Core cpu_interface.h appends a profile enum without changing existing values; cpu.c and cpu_instructions.c plus CPU-owner tests/registration, Core manifests and NXVM evidence. No new function/type or Shared ABI. Existing four PC App pairs require rebuilt 0559 artifacts when executable inputs change. |
 | Applicable Rules | NXVM guide, Execution coverage/lifecycle, Document, Architecture/Coding, NXVM architecture/layout and source/research policy; architecture-governance skill. |
-| Verification | Inspect actual decoder entries, profile comparisons, existing tests and original instruction/exception sources. Reconcile every new, inherited-affected and variant-optional form to an owner, direct proof and system handoff. Run documentation/link/diff checks. |
-| Expected Markers | Finite form ledger and bounded S batches; no accidental 386 fallback, unconditional CPUID, guessed feature bit or success-only cache instruction. |
-| Asset Needs | Existing external manuals/reference code read-only; no new ROM/media or artifact. Existing ten EXEs remain unchanged in S1. |
-| Reporting Requirements | Report actual implementation gaps, source conflicts, proposed interface surface and sequential S plan before code batches; distinguish research from runtime verification. |
+| Verification | Direct eight-register BSWAP execution in 16/32 code with operand/address overrides, flags/other-register preservation, invalid LOCK, truncated fetch and retained-profile #UD; metadata/length agreement and machine-level rejection. Reuse x86/x64 Ninja/ccache graphs; run focused proof then full repository-only units, manifests/docs/diff checks and affected artifact verification. |
+| Expected Markers | I1 directly proven; no production 486 admission, no changed default profile, no accidental new opcode admission or altered existing enum values. |
+| Asset Needs | Existing manuals and BYOB build inputs only; no new ROM/media or INI changes. MyNES executable inputs unchanged. |
+| Reporting Requirements | Report estimated and actual production/test diff, model-policy limits, tests actually executed, artifact hashes and remaining system gates. |
 | Stop Conditions | Required Shared change, incompatible source import, unresolved silicon choice affecting the admitted batch or unbounded instruction scope; report and continue independent inventory. |
-| Exit Criteria | Complete T559 coverage ledger, source/feature decisions or bounded gates, reviewed per-batch implementation/test plan and passing document checks, committed and pushed. |
+| Exit Criteria | I1 and scoped I10 proof, retained regressions, full dual-width units, refreshed affected PC pairs, actual-change review and pushed complete delivery. No task-level closure. |
 | Original Owner Request | Close the accepted PC110 research task and admit the next queued T. |
-| Similar-Issue Sweep | All CPU profile comparisons, opcode tables, test-register/CPUID/cache placeholders, test assumptions and relevant current documents; no global mechanical equality-to-range replacement. |
+| Similar-Issue Sweep | Reconcile all new profile uses and scanner bounds; retain FPU/system/timing gates and Core-machine rejection, preserving historical profiles. No global mechanical equality-to-range replacement. |
 
-S1 executor delivery is the [I1--I11 ledger](../etc/evidence/t559-s1-instruction-inventory.md)
-and [task record](../history/M5-T559-486sx-instruction-semantics.md).
-Documentation/diff checks pass; production, tests and executable inputs remain
-unchanged. Awaiting coordinator actual-change review, not runtime acceptance.
+S1 P1 `2afeda156` is accepted after actual-change review of all five documents,
+ledger I1--I11, source/feature gates and bounded S plan. S1 is closed; its checks
+were documentation-only, with unchanged executable inputs. S2 consumes its
+[ledger](../etc/evidence/t559-s1-instruction-inventory.md), not a runnable-486 claim.
 
 ## Closed Task — M5 T558
 

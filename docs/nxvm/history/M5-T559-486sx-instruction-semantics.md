@@ -13,6 +13,12 @@ decisions. No S1
 implementation, source import, runnable 486 admission or executable refresh
 has occurred. S1 remains open pending coordinator review of this delivery.
 
+Coordinator acceptance: S1 P1 `2afeda156` was reviewed against its actual five
+document changes, source references, I1--I11 dispositions, bounded gates and
+task scope. Documentation governance and whitespace checks pass. S1 closes as
+planning delivery; S2 identity/decode/BSWAP is admitted next. The prior open
+wording above records executor delivery, not the current status.
+
 Executor review: source checks cover actual metadata, dispatch, length and
 LOCK parsing, test-register moves, flags consumers, profile bounds and existing
 regression scope. Source conflicts and optional silicon eligibility are gated,
