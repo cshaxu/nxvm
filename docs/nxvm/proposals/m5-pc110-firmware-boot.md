@@ -11,7 +11,25 @@ baseline before implementation. Research references are not implementation impor
 
 ## Objective And Scope
 
-Connect the one existing staged composition to the ordinary Core Machine/Product route. Execute lawful unmodified ROM from reset through a frozen POST, Easy-Setup and DOS boot corpus. Fix hardware causes using complete affected-case ledgers, not repeated first-terminal patches.
+Consume [S2 boot rows BOOT-1--4](../etc/evidence/t558-s2-receiver-checklists.md#board-and-qualification-receivers).
+Their guest images/configurations must be identified before the corresponding
+integration is admitted. Reference POST support, extracted Setup and modified
+EMM386 media are explicitly excluded as qualification substitutes.
+The [candidate BIOS panel check](../etc/evidence/t558-s2-source-availability.md#candidate-bios-panel-identity-independent-byte-check)
+also excludes the current TFT-table candidate from stock-DSTN qualification.
+The owner now requires both stock DSTN and upgraded TFT compiled variants.
+Evaluate an unchanged original dump or the confirmed author-supplied
+[offline panel restoration route](../etc/evidence/t558-s2-source-availability.md#bidirectional-panel-patch-source-confirmed).
+The latter requires explicit preparation admission, exact-site/integrity and
+round-trip verification, and derived-image provenance; it is not an original
+dump claim. Qualify both firmware/panel pairings independently. Each build
+embeds its selected BIOS and other ROMs. No runtime firmware loader is admitted.
+The board receiver owns the earlier input-preparation and embedding batch;
+this task consumes its frozen hashes and checks them before guest execution.
+Discovering an invalid pairing returns that prerequisite to its owner rather
+than adding a boot-time patch or a second firmware-loading path.
+
+Connect the one existing staged composition to the ordinary Core Machine/Product route. Execute the admitted firmware from reset through a frozen POST, Easy-Setup and DOS boot corpus; any approved panel-only restoration is fixed offline, never a host boot workaround. Fix hardware causes using complete affected-case ledgers, not repeated first-terminal patches.
 
 Expected owners: PC110 composition and tests; corrections at the actual Core/App mechanism owner.
 

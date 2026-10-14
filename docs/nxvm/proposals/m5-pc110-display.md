@@ -11,6 +11,19 @@ baseline before implementation. Research references are not implementation impor
 
 ## Objective And Scope
 
+Consume [S2 display contracts VID-1--4](../etc/evidence/t558-s2-receiver-checklists.md#inspected-display-and-input-contracts)
+and their source limitations. C&T register authority is Revision 2.0, not the
+introductory sheet in the combined PDF. Reference font-window code does not
+prove enable/reset semantics or original board VRAM population.
+The [candidate panel identity check](../etc/evidence/t558-s2-source-availability.md#candidate-bios-panel-identity-independent-byte-check)
+matches all 18 documented TFT-conversion values. Do not use that candidate
+as proof of stock DSTN initialization. The owner now requires both original
+DSTN and TFT-upgraded compiled variants. Freeze each panel/firmware pairing
+and qualify both using the same controller implementation. The confirmed
+[offline panel-restoration candidate](../etc/evidence/t558-s2-source-availability.md#bidirectional-panel-patch-source-confirmed)
+belongs to explicitly admitted firmware preparation, not an automatic display
+fix. Do not mutate the research master or add a host-side display workaround.
+
 Implement standard/extended video register behavior, VRAM/banking, panel scanout and font-ROM bank/window behavior. Reuse existing copied frame publication to the host; qualify text, graphics, palette, cursor and generation/reset semantics.
 
 Expected owners: PC110 display/font wiring; reusable F65535 mechanism in Core only with a reviewed chip boundary; test/core and test/app-mypc110.

@@ -11,6 +11,17 @@ baseline before implementation. Research references are not implementation impor
 
 ## Objective And Scope
 
+Consume [S2 CPU contracts CPU-1--7](../etc/evidence/t558-s2-receiver-checklists.md#inspected-cpu-delta-and-timing-contracts).
+PRM section 21.3 includes test registers and descriptor-access behavior as well
+as six new instruction families; those cannot be omitted from the form ledger.
+Audit existing profile comparisons and negative legality paths before exposing
+the new profile. Follow the
+[single-owner handoff](../etc/evidence/t558-s2-receiver-checklists.md#one-implementation-owner-per-cross-task-contract):
+CPU-4--6 effects belong to the system receiver; CPU-2 decode/privilege and
+CPU-7 CPUID/ID belong here, while actual cache/TLB effects and SMM/RSM state
+belong there. Record those outstanding effects rather than implementing
+success-only stand-ins. The profile remains unavailable for board admission.
+
 Implement the selected 486SX instruction and exception delta over the retained 386 core. Freeze opcode forms, operand/address widths, flags, privilege and fault precedence; CPUID eligibility follows the selected stepping, not a generic 486 label.
 
 Expected owners: core/chips/cpu and test/core/chips/cpu; existing Core interfaces/callers only where necessary.

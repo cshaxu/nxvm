@@ -11,6 +11,26 @@ baseline before implementation. Research references are not implementation impor
 
 ## Objective And Scope
 
+Consume [S2 board rows BRD-1--3](../etc/evidence/t558-s2-receiver-checklists.md#board-and-qualification-receivers)
+and the associated source conflicts. A running configuration dump is not a
+reset-value table; exact power/reset/decode ownership must be qualified.
+Establish SIO-1--3's single configuration/decode owner here; storage and
+auxiliary tasks attach their endpoints to it under the
+[cross-task handoff](../etc/evidence/t558-s2-receiver-checklists.md#one-implementation-owner-per-cross-task-contract).
+Do not let later endpoints create a second SMSC configuration bank.
+Consume the programme's two fixed PC110 variants: share the board construction
+and device mechanisms, with explicit DSTN/TFT panel and firmware bindings.
+The four executable identities are build declarations, not runtime INI model
+selection. External BIOS and other ROM inputs are embedded; missing variant
+inputs fail their build without fallback to the other model.
+
+The initial asset-binding batch owns preparation admission and provenance for
+both firmware pairings, including evaluation of the documented offline DSTN
+restoration candidate. Resolve input/site/integrity checks before embedding;
+do not wait for the later boot receiver to supply a prerequisite of this task.
+Display and boot receivers qualify the prepared inputs through guest behavior;
+neither reselects firmware or silently changes the external master.
+
 Establish the sole PC110 composition and construction lifetime; implement VL82C420 memory/config/decode/shadow and Bowman/Pluto routing responsibilities, standard PIC/PIT/DMA/RTC wiring, reset and external-ROM build embedding. Create one staged composition/test harness for later devices, not a second machine.
 
 Expected owners: src/app-mypc110 and test/app-mypc110; genuinely reusable Core chip/board mechanisms and NXVM build glue as needed.

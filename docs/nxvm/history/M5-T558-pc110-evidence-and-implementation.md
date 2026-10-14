@@ -25,3 +25,20 @@ review of all four PC Apps. The [ownership audit](../etc/evidence/t558-s1-core-a
 records the existing valid boundaries, five bounded risks and their receivers.
 This S1 extension changes planning only; no runtime cleanup or new artifact is
 claimed, and T558 remains open.
+
+## S2 Evidence And Contract Freeze
+
+The owner directs continued audit/design to make every queued implementation
+evidence-backed and checklist-driven. S1 is accepted at feadb8235; S2 is the
+next active design batch, not permission to implement chips or publish PC110.
+The source-availability audit begins by checking referenced raw files and
+candidate firmware bytes, rather than accepting repository summaries as proof.
+
+S2's reviewed source record and receiver checklists now cover all nine queued
+tasks, with original-manual identities, historical-object provenance, source
+conflicts, Core/App ownership, direct/composed tests and bounded admission
+decisions. The owner-selected DSTN/TFT variants share one implementation;
+the author's reverse patch is confirmed but no firmware was modified.
+Source/checklist research delivery does not close T558's hardware-freeze gate
+or admit implementation. Required unresolved decisions remain in the receiver
+reconciliation, including private register/reset facts and asset qualification.

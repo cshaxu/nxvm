@@ -1,5 +1,12 @@
 # Supporting Documentation Index
 
+T558 S2: [source availability](evidence/t558-s2-source-availability.md)
+records original-manual identities, candidate hashes, historical captures and
+source conflicts that the implementation contract freeze must resolve.
+Its [receiver checklists](evidence/t558-s2-receiver-checklists.md) retain all nine
+implementation domains, their reviewed source-to-proof map and explicit
+unresolved admission decisions; research completion is not hardware qualification.
+
 T558 S1: [PC110 source and gap ledger](evidence/t558-s1-pc110-source-and-gap-ledger.md)
 records the initial research inventory, evidence limits and implementation gates.
 The [Core/App ownership audit](evidence/t558-s1-core-app-ownership.md) maps

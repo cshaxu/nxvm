@@ -11,6 +11,15 @@ baseline before implementation. Research references are not implementation impor
 
 ## Objective And Scope
 
+Consume [S2 CPU contracts CPU-4--9](../etc/evidence/t558-s2-receiver-checklists.md#inspected-cpu-delta-and-timing-contracts).
+PRM 26.2.2.3 timing assumptions and Appendix E penalties are mandatory ledger
+inputs. Distinguish nominal instruction cost from external bus wait and fault
+cost; family identity alone does not qualify all embedded-486 features.
+Also own CPU-2's cache/TLB effects and CPU-3's hardware-state effects under
+the [single-owner handoff](../etc/evidence/t558-s2-receiver-checklists.md#one-implementation-owner-per-cross-task-contract).
+Reuse the instruction receiver's decode/exception path; reconcile advertised
+features with implemented system behavior before admitting the CPU to a board.
+
 Complete reset identity/vector, control/flags/paging/alignment and required SL/SMM/power-entry behavior for the selected silicon. Qualify cache-visible instructions and guest timing at explicitly evidenced L2/L3 levels.
 
 Expected owners: core/chips/cpu, core/x86 and corresponding test/core owners.

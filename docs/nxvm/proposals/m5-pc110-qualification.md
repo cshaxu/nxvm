@@ -11,6 +11,16 @@ baseline before implementation. Research references are not implementation impor
 
 ## Objective And Scope
 
+Consume [S2 qualification rows QUAL-1--3](../etc/evidence/t558-s2-receiver-checklists.md#board-and-qualification-receivers)
+and all preceding feature proofs. Product integration is the existing
+Core/Product and Emulator route, not a parallel PC110 execution framework.
+Qualify original DSTN and upgraded TFT independently in both host widths.
+Publish exactly `mypc110_x86.exe`, `mypc110_x64.exe`,
+`mypc110_tft_x86.exe` and `mypc110_tft_x64.exe` under `assets/mypc110`.
+The owner-selected filenames omit version text; verify internal version,
+PE width and compiled firmware/panel identity for each artifact. Both models
+use the adjacent `mypc110.ini` runtime options, not runtime model/BIOS loading.
+
 Complete lifecycle/debug/config/Console-Window integration and a frozen guest corpus: DOS shell/storage/input, Easy-Setup, Personaware and selected Windows checkpoints only where lawful media and explicit admission establish them. Audit all feature, source, quality and release ledgers.
 
 Expected owners: PC110 App/build/tests/assets/docs; actual Core regression owners when defects are demonstrated.

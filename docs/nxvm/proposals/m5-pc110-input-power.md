@@ -11,6 +11,11 @@ baseline before implementation. Research references are not implementation impor
 
 ## Objective And Scope
 
+Consume [S2 input/power contracts IN-1--2 and PM-1--2](../etc/evidence/t558-s2-receiver-checklists.md#inspected-display-and-input-contracts).
+Keyboard and power firmware mapping are separate decisions. Do not apply the
+keyboard's corroborated top alignment to the unresolved power image or retain
+the reference emulators' contradicted EC/ED power assignment.
+
 Model required keyboard-controller commands, make/break, pointing/inking protocols, power MCU/status LCD, cold/warm reset, suspend/wake and their IRQ/clock relationships. Decide firmware MCU execution versus an evidenced behavioral model before coding each controller.
 
 Expected owners: PC110-owned keyboard, pointer, inking, MCU/power/status modules and tests; Core chip contracts only for proven reuse.

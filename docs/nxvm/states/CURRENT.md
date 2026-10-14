@@ -2,7 +2,40 @@
 
 ## Current Work
 
-### Active Task — M5 T558 S1 PC110 Research And Gap Inventory
+### Active Task — M5 T558 S2 PC110 Implementation Evidence And Contract Freeze
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T558 S2, after accepted S1 research/planning delivery feadb8235. |
+| Admission And Approval | Owner directs continued PC110 audit/design so every later implementation task has evidence, a checklist and original manuals or reference code. Owner subsequently selects original DSTN and upgraded TFT as two compiled variants, with mypc110_x86.exe, mypc110_x64.exe, mypc110_tft_x86.exe and mypc110_tft_x64.exe; this supersedes the briefly proposed INI model/BIOS selection. All ROMs remain external build inputs embedded in EXEs. This admits design/research, not production implementation or source import. |
+| Objective | Establish per-receiver implementation evidence, finite capability/checkpoint inventories, hardware/firmware baseline and explicit unresolved decisions; audit completion against all nine planned receivers. |
+| Non-goals | No production/test/Shared changes, EXE refresh, external ROM acquisition/import, BIOS bypass, guessed hardware qualification or silently excluded device. |
+| Reference Baseline | NXVM feadb8235; three external pinned references in S1 ledger, revalidated unchanged at S2 admission. |
+| Candidate Proposal | [PC110 programme](../proposals/m5-pc110-evidence-and-implementation.md), its nine linked receivers and S1 ownership audit. |
+| Files And ABI Surface | NXVM planning, evidence, status and history only; no ABI. |
+| Applicable Rules | Guide, Execution coverage/closure rules, Document rules, architecture ownership and source/research policy; architecture-governance skill. |
+| Verification | Inspect source bytes and reference code, original manual identity and relevant sections; reconcile every receiver to sources, current implementation, finite checklist and proof criteria; run documentation/link/diff checks. |
+| Expected Markers | No receiver relies solely on a repository name or boot screenshot; unavailable raw evidence and conflicts are explicitly classified; every unresolved decision has an owner and admission condition. |
+| Asset Needs | Read existing external candidates and record roles/size/hash; no copies into source or release admission inferred from availability. |
+| Reporting Requirements | Report concrete evidence changes, exact unresolved facts, completeness per receiver and unexecuted hardware/runtime verification. |
+| Stop Conditions | Incompatible source derivation, unapproved acquisition, production/Shared changes or essential hardware decision lacking defensible evidence; continue independent research. |
+| Exit Criteria | All nine receivers have reviewed evidence/checklists/proof gates; exact baseline choices are justified or explicitly blocked with bounded resolution, without claiming unknown behavior implemented. T closure separately reviews the programme's hardware/contract freeze requirements. |
+| Original Owner Request | Execute PC110 audit/design so each later implementation task has evidence, a checklist and original manuals or reference code. |
+| Similar-Issue Sweep | Verify referenced raw evidence exists; distinguish original versus reconstructed manuals, implemented versus placeholder models, firmware dumps versus runtime shadows, CPU variant claims and actual bytes. |
+
+S1's inventory, queue plan and ownership review are accepted as design delivery,
+not complete hardware freeze. S2 continues the goal. Current ten artifacts remain
+unchanged because no executable inputs change.
+
+S2 research delivery: all nine proposals consume the reviewed
+[source record](../etc/evidence/t558-s2-source-availability.md) and
+[receiver reconciliation](../etc/evidence/t558-s2-receiver-checklists.md#final-research-reconciliation).
+Their source/checklist/ownership/proof coverage is reviewed; exact unresolved
+hardware and asset choices retain named admission gates. No implementation,
+firmware preparation, runtime qualification or new artifact is claimed.
+T558 remains open for hardware-freeze disposition and owner review.
+
+### Accepted Delivery — M5 T558 S1 PC110 Research And Gap Inventory
 
 | Field | Required record |
 | --- | --- |

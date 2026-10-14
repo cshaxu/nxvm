@@ -11,6 +11,20 @@ baseline before implementation. Research references are not implementation impor
 
 ## Objective And Scope
 
+Consume the [S2 receiver checklist](../etc/evidence/t558-s2-receiver-checklists.md#inspected-storage-and-super-io-contracts)
+rows SIO-1--3, PCIC-1--4, ATA-1--2 and FL-1--4. It distinguishes inspected original
+contracts from unresolved PC110 wiring; both controller proof and actual
+production connection are required.
+SIO configuration is supplied by the board receiver; this task owns storage
+endpoints and their routing tests, not another configuration/unlock state.
+The [flash evidence review](../etc/evidence/t558-s2-source-availability.md#flash-evidence-availability-and-limits)
+separates chip command semantics, physical bank contents, CPU decode and
+board write-enable/VPP. Intel 290448-005 covers the fitted x8 part and rejects
+the reference study's low-VPP explanation for missing read-ID. Referenced dump
+artifacts found in Git history are research inputs, while actual board gate
+behavior still needs qualification; no magic floppy-boot enable or host
+pre-decompression is admitted.
+
 Implement the selected PC Card controller/socket/window/card-detect path, required ATA/CF and internal-storage topology, firmware flash read/ID/protection and admitted command behavior. Keep storage modes through the existing Lib contract.
 
 Expected owners: PC110 Ricoh/card/flash wiring and tests; existing Core ATA/FDC/media mechanisms where semantically applicable.

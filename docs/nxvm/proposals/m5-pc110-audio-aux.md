@@ -11,6 +11,19 @@ baseline before implementation. Research references are not implementation impor
 
 ## Objective And Scope
 
+Consume the [S2 receiver checklist](../etc/evidence/t558-s2-receiver-checklists.md#inspected-storage-and-super-io-contracts)
+SIO rows when composing serial/parallel/infrared functions. Chip configuration
+and reset ownership must be shared with storage, not implemented a second time.
+The board task supplies that one configuration owner; storage and this task
+attach only their respective functional endpoints. Inking belongs to the
+input/power receiver; this task reconciles its coverage rather than duplicating
+the protocol. Follow the
+[single-owner handoff](../etc/evidence/t558-s2-receiver-checklists.md#one-implementation-owner-per-cross-task-contract).
+Also consume [AUD-1--4 and AUX-1--2](../etc/evidence/t558-s2-receiver-checklists.md#audio-and-auxiliary-finite-receivers).
+The supplied PC110 emulator has no usable ESS PCM implementation; its stub
+cannot discharge the audio source gate. Yamaha's scanned original supports
+register/timer work, with synthesis fidelity separately evidenced.
+
 Implement selected ES488/OPL2/PC-speaker behavior and remaining required onboard/docking functions. Qualify DMA/IRQ, programmed audio output and reset/teardown without depending on host audibility. Reconcile every optional peripheral from the T558 inventory.
 
 Expected owners: PC110 audio, serial/parallel/IR/modem/dock owners and tests; Core chips only for genuinely independent mechanisms.
