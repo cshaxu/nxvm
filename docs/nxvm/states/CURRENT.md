@@ -28,8 +28,32 @@ pushed commits, all changed CPU/test/build paths, full units (593/593 on each
 width), eight process/INI integrations, manifests and artifact hashes. Current
 PC artifacts are 0559 from c93b778aa; MyNES is unchanged.
 [S2 evidence](../etc/evidence/t559-s2-decode-bswap.md) records the actual diff
-and the T-level external boot qualification still required. S3 begins next;
-neither completed batch admits a runnable PC110/486 machine.
+and the T-level external boot qualification still required. S3 is in progress:
+the inherited LOCK/DX failure was reproduced before the two-line classifier
+repair; XADD now uses the existing ADD/ModRM and exception rollback path.
+Initial dual-width XADD/LOCK focused tests pass, including register aliases,
+memory forms and fetch/read/write failure with retry. Segment/page faults,
+protected/VM86 SIB aliases and final lexeme tests pass x64. The first complete
+x64 suite passed 593/594; its sole new-test failure was an incorrect rejection
+of early-CPU POP CS preview, corrected before both complete suites passed
+594/594. Actual-change review then tightened XADD RMW write-access preflight
+and its page-error/segment-priority regression. Final sequential dual-width
+complete units pass 594/594 on each width against that correction. Inherited
+ALU read-first paths are explicitly transferred to the Core RMW TODO entry,
+not included in this batch's repair claim. Core manifests and documentation gates
+pass; all eight PC EXEs are rebuilt and deployed with successful product/INI
+identity integrations, PE and version checks. Coordinator acceptance of the
+complete implementation commit remains pending. The
+[S3 evidence](../etc/evidence/t559-s3-xadd-lock.md) records the exact boundaries.
+No S3 commit or closure is claimed; neither completed batch admits a runnable
+PC110/486 machine.
+
+Owner-approved execution adjustment: implement and review complete related
+instruction batches before the final full-suite run. Use affected CPU targets
+for development, retain the currently running qualification, and avoid repeated
+whole-App builds per opcode. The proposal records the validation order and
+allows simple related groups to be combined at admission with reconciled linear
+S numbering; no form coverage or required closure gate is waived.
 
 ## Closed Task — M5 T558
 

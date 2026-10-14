@@ -7949,7 +7949,8 @@ static lib_u8 core_machine_cpu_instruction_lexeme_has_modrm(
             (opcode >= 0x90u && opcode <= 0x9fu) || opcode == 0xa3u ||
             (opcode >= 0xa4u && opcode <= 0xa5u) || opcode == 0xabu ||
             (opcode >= 0xacu && opcode <= 0xadu) || opcode == 0xafu ||
-            (opcode >= 0xb0u && opcode <= 0xbfu);
+            (opcode >= 0xb0u && opcode <= 0xbfu) ||
+            opcode == 0xc0u || opcode == 0xc1u;
     }
     return (opcode <= 0x03u) || (opcode >= 0x08u && opcode <= 0x0bu) ||
         (opcode >= 0x10u && opcode <= 0x13u) ||
@@ -8241,7 +8242,8 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
             metadata.valid = ((modrm >> 3u) & 7u) >= 4u;
         }
-        else if (opcode >= 0xc8u && opcode <= 0xcfu)
+        else if (opcode == 0xc0u || opcode == 0xc1u ||
+                 (opcode >= 0xc8u && opcode <= 0xcfu))
         {
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80486SX;
             metadata.valid = LIB_TRUE;
@@ -15587,6 +15589,8 @@ static void PREFIX_LOCK(core_machine_cpu_execution_context *context)
         case 0x31: /* XOR */
         case 0x86:
         case 0x87: /* XCHG */
+            instruction_state.data.flagLock = LIB_TRUE;
+            break;
         case 0xfe:
             CPU_TRACE_BLOCK_BEGIN("opcode(0xfe)");
             CPU_TRACE_CHECK_RETURN(_s_read_cs(context, ceip,
@@ -15620,6 +15624,8 @@ static void PREFIX_LOCK(core_machine_cpu_execution_context *context)
             case 0xab: /* BTS */
             case 0xb3: /* BTR */
             case 0xbb: /* BTC */
+            case 0xc0: /* XADD */
+            case 0xc1:
                 instruction_state.data.flagLock = LIB_TRUE;
                 break;
             case 0xba:
@@ -17839,6 +17845,40 @@ _______todo CPUID(core_machine_cpu_execution_context *context)
     instruction_state.data.flagIgnore = LIB_TRUE;
     CPU_TRACE_CALL_END;
 }
+static void XADD_RM8_R8(core_machine_cpu_execution_context *context)
+{
+    CPU_TRACE_CALL_BEGIN("XADD_RM8_R8");
+    _adv;
+    CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    if (instruction_state.data.flagMem)
+        CPU_TRACE_CHECK_RETURN(_m_test_access(context,
+            instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, 1, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm,
+        instruction_state.data.cr, 8));
+    CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr,
+        X86_CPU_REFERENCE_OF(instruction_state.data.crm), 1));
+    instruction_state.data.crm = instruction_state.data.result;
+    CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    CPU_TRACE_CALL_END;
+}
+static void XADD_RM32_R32(core_machine_cpu_execution_context *context)
+{
+    CPU_TRACE_CALL_BEGIN("XADD_RM32_R32");
+    _adv;
+    CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+    if (instruction_state.data.flagMem)
+        CPU_TRACE_CHECK_RETURN(_m_test_access(context,
+            instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, _GetOperandSize, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm,
+        instruction_state.data.cr, _GetOperandSize * 8));
+    CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr,
+        X86_CPU_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
+    instruction_state.data.crm = instruction_state.data.result;
+    CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    CPU_TRACE_CALL_END;
+}
 static void BSWAP_R32(core_machine_cpu_execution_context *context)
 {
     lib_u8 opcode;
@@ -19244,8 +19284,8 @@ void core_machine_cpu_execution_initialize(
     instruction_state.connect.insTable_0f[0xbd] = (core_machine_cpu_instruction_handler)BSR_R32_RM32;
     instruction_state.connect.insTable_0f[0xbe] = (core_machine_cpu_instruction_handler)MOVSX_R32_RM8;
     instruction_state.connect.insTable_0f[0xbf] = (core_machine_cpu_instruction_handler)MOVSX_R32_RM16;
-    instruction_state.connect.insTable_0f[0xc0] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0xc1] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
+    instruction_state.connect.insTable_0f[0xc0] = (core_machine_cpu_instruction_handler)XADD_RM8_R8;
+    instruction_state.connect.insTable_0f[0xc1] = (core_machine_cpu_instruction_handler)XADD_RM32_R32;
     instruction_state.connect.insTable_0f[0xc2] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0xc3] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0xc4] = (core_machine_cpu_instruction_handler)UndefinedOpcode;

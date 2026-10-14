@@ -132,21 +132,38 @@ static lib_i32 legacy_lock_test_legacy_ud(void)
 
 static lib_i32 legacy_lock_test_80386_regression(void)
 {
-    static const lib_u8 legal[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x01u };
+    lib_u8 legal[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x01u };
+    static const lib_u8 opcodes[] = {0x00u, 0x08u, 0x10u, 0x18u,
+        0x20u, 0x28u, 0x30u, 0x86u};
+    static const lib_u16 results[] = {3u, 3u, 3u, 0xffffu, 0u, 0xffffu, 3u, 2u};
     static const lib_u8 invalid[] = { 0xf0u, 0x01u, 0xc0u };
     cpu_instruction_fixture state;
     t_cpu after;
-    lib_u16 image = 1u;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-    state.cpu.data.eax = 2u;
-    if (cpu_instruction_write(&state, 0x100u, &image, sizeof(image),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
-        !legacy_lock_run(&state, legal, sizeof(legal), 1u, &after) ||
-        after.data.eip != sizeof(legal) ||
-        cpu_instruction_read(&state, 0x100u, &image, sizeof(image),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
-            LIB_STATUS_OK || image != 3u) return 0;
+    for (lib_u8 operation = 0u; operation != sizeof(opcodes); ++operation) {
+        for (lib_u8 word = 0u; word != 2u; ++word) {
+            for (lib_u8 reg = 0u; reg != 8u; ++reg) {
+                lib_u16 image = 1u;
+                const lib_u8 width = word ? 2u : 1u;
+
+                cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+                state.cpu.data.eax = state.cpu.data.ecx = state.cpu.data.edx =
+                    state.cpu.data.ebx = state.cpu.data.esp = state.cpu.data.ebp =
+                    state.cpu.data.esi = state.cpu.data.edi = word ? 2u : 0x0202u;
+                state.cpu.data.eflags = 2u;
+                legal[1] = (lib_u8)(opcodes[operation] + word);
+                legal[2] = (lib_u8)(0x06u | (reg << 3u));
+                if (cpu_instruction_write(&state, 0x100u, &image, width,
+                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                    !legacy_lock_run(&state, legal, sizeof(legal), 1u, &after) ||
+                    after.data.eip != sizeof(legal) ||
+                    cpu_instruction_read(&state, 0x100u, &image, width,
+                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                        LIB_STATUS_OK ||
+                    image != (results[operation] & (word ? 0xffffu : 0xffu))) return 0;
+            }
+        }
+    }
 
     cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
     return cpu_instruction_expect_real_fault(&state, invalid, sizeof(invalid),

@@ -51,3 +51,16 @@ delta is present. The S2 actual-change audit maps I1 and identity/decode I10
 to the direct CPU test, production machine rejection and retained full units.
 Both pushes are confirmed. S2 closes; S3 is admitted for I2 and inherited I9
 under the owner's automatic Core-only sequence. T559 remains open.
+
+## S3 Executor Delivery
+
+I2 XADD and the ordinary-opcode portion of I9 now have direct form, alias,
+flag, LOCK and failure-path proof. Production changes are +44/-4; test
+C/CMake changes are +426/-12, excluding manifests/documents/artifacts.
+The final complete units pass 594/594 on each width. Eight refreshed 0559
+PC EXEs pass product/INI identity, PE-width and version checks; Shared-six,
+MyNES and owner inputs remain unchanged. [S3 evidence](../etc/evidence/t559-s3-xadd-lock.md)
+records hashes, failed intermediate attempts, final preflight correction and
+the explicit inherited RMW TODO transfer. No new production 486 admission or
+whole-T closure is claimed. The owner-approved batch-efficiency adjustment
+is recorded in the proposal without dropping any qualification requirement.

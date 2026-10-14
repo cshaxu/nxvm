@@ -53,6 +53,35 @@ These are planned boundaries, not concurrent admissions. Split an oversized
 batch before admission; never use letter-suffixed S numbers or an endless
 first-failing-BIOS-instruction repair sequence.
 
+### Owner-Approved Batch Efficiency
+
+Implement a complete related instruction family before validation, including
+its operand/address widths, aliases, privilege/LOCK rules and failure paths.
+Do not turn each opcode, width or test case into its own build/full-suite cycle.
+At admission, combine simple related groups into one S when source review
+confirms the same ownership and manageable proof matrix; the suggested table
+does not require one S per instruction. Reconcile the ledger and subsequent
+linear S numbers before admitting a combined batch. Do not merge unresolved
+cache/TLB effects into a success-only implementation to obtain a larger batch.
+
+Use this order for each implementation batch:
+
+1. Freeze the complete form/failure matrix and implement source and tests.
+2. Build only affected CPU test targets; run the focused instruction/profile
+   regression set. Repair failures locally without rebuilding every App.
+3. Review the entire actual diff and same-owner paths before qualification.
+4. Once source and tests are stable, run one sequential x64/x86 complete unit
+   qualification and the required artifact/integration checks. Reuse the
+   original Ninja graphs and persistent ccache; shared targets are built once
+   per architecture/configuration and reused across the four PC products.
+
+Do not overlap builds with running qualification or restart a live job merely
+to obtain fresh output. Reuse valid results for unchanged inputs. If final
+review or qualification requires a code correction, rerun its affected proof
+and the closure gates required by Execution; record the reason rather than
+counting an earlier green run as qualification of changed code. Full external
+boot coverage remains a T exit gate, not a per-opcode development loop.
+
 ## Verification And Exit
 
 All frozen forms have direct unit proof and truthful feature gating; former CPU families retain behavior. Remaining reset/system/timing obligations are named in the next CPU proposal, not declared complete.

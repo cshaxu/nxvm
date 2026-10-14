@@ -1,5 +1,9 @@
 # Supporting Documentation Index
 
+T559 S3: [XADD and LOCK](evidence/t559-s3-xadd-lock.md) records the
+instruction and inherited classifier fix, direct failure proof and pending
+qualification gates.
+
 T559 S2: [decode and BSWAP](evidence/t559-s2-decode-bswap.md) records the
 CPU-only implementation, direct proof, retained machine gate and delivery review.
 
