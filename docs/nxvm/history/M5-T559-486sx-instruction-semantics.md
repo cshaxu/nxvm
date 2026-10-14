@@ -43,3 +43,11 @@ eight PC EXEs are updated to 0559; MyNES and Shared six remain unchanged.
 Only the separately owner-approved three Shared root preset targets change.
 The complete executor delivery is ready for coordinator review, not task
 closure. I2--I9 and the remaining I10 sweep keep their planned S owners.
+
+Coordinator acceptance: Shared P1 `aad734fdf` contains exactly the three
+approved preset targets; NXVM P2 `c93b778aa` contains the reviewed CPU,
+test/build/documentation and eight artifact changes. No Shared-six or MyNES
+delta is present. The S2 actual-change audit maps I1 and identity/decode I10
+to the direct CPU test, production machine rejection and retained full units.
+Both pushes are confirmed. S2 closes; S3 is admitted for I2 and inherited I9
+under the owner's automatic Core-only sequence. T559 remains open.

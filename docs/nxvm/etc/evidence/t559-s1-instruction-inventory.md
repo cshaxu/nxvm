@@ -183,6 +183,12 @@ does not close the subsequent system task or claim a runnable PC110.
 
 ## LOCK Finding And Planning Review
 
+S2 reconciliation: I1 and the identity/decode portion of I10 are accepted
+with [direct proof and artifacts](t559-s2-decode-bswap.md), implementation
+`c93b778aa`. This does not discharge the remaining reset/system/timing or
+whole-family sweep obligations in I10. I2 and inherited I9 transfer to S3;
+all other rows retain their named planned receivers.
+
 PRM section 13.1 permits the listed arithmetic/exchange memory-destination
 operations without restricting their source GPR to AX/CX. Current
 `PREFIX_LOCK()` applies FE's `/0..1` check to the preceding ordinary opcodes;

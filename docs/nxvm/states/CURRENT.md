@@ -2,37 +2,34 @@
 
 ## Current Work
 
-### Active Task — M5 T559 S2 Selected 486SX Decode And BSWAP
+### Active Task — M5 T559 S3 XADD And Inherited LOCK
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T559 S2 after coordinator acceptance of S1 P1 2afeda156. |
-| Admission And Approval | Owner-admitted T559 and automatic sequential Core-only execution; coordinator admits ledger I1 and identity/decode portion of I10. Owner additionally approves exactly three NXVM target updates in Shared root CMakePresets.json from vm-0-5-0557 to vm-0-5-0559 for this release. No Shared-six or MyNES configuration changes. |
-| Objective | Add explicit CPU-owner 486SX profile and BSWAP through the existing metadata, length scanner and instruction table; prove old-profile rejection and preserve the Core machine production admission gate. |
-| Non-goals | No PC110 board admission, cache/TLB/system implementation, CPUID feature advertisement, firmware or Shared-six change, new executor or full 486 timing claim. |
-| Reference Baseline | S1 delivery 2afeda156; T558 pinned Intel sources. PRM BSWAP defines only the 32-bit result; 16-bit behavior must be explicitly classified as deterministic model policy, not documented hardware #UD. |
-| Candidate Proposal | [Selected 486SX instructions](../proposals/m5-pc110-486-instructions.md), with T558 CPU-1--7 and single-owner handoffs. |
-| Files And ABI Surface | Core cpu_interface.h appends a profile enum without changing existing values; cpu.c and cpu_instructions.c, exhaustive board reset-alias switch (explicitly unadmitted), CPU/Core admission and metadata matrix tests/registration, Core manifests and NXVM evidence. Core version.h and NxvmProduct.cmake advance the PC release to 0559; the approved three root preset target updates form a separate Shared P. No new function/type or Shared-six ABI. Existing four PC App pairs require rebuilt 0559 artifacts. |
-| Applicable Rules | NXVM guide, Execution coverage/lifecycle, Document, Architecture/Coding, NXVM architecture/layout and source/research policy; architecture-governance skill. |
-| Verification | Direct eight-register BSWAP execution in 16/32 code with operand/address overrides, flags/other-register preservation, invalid LOCK, truncated fetch and retained-profile #UD; metadata/length agreement and machine-level rejection. Reuse x86/x64 Ninja/ccache graphs; run focused proof then full repository-only units, manifests/docs/diff checks and affected artifact verification. |
-| Expected Markers | I1 directly proven; no production 486 admission, no changed default profile, no accidental new opcode admission or altered existing enum values. |
-| Asset Needs | Existing manuals and BYOB build inputs only; no new ROM/media or INI changes. MyNES executable inputs unchanged. |
-| Reporting Requirements | Report estimated and actual production/test diff, model-policy limits, tests actually executed, artifact hashes and remaining system gates. |
-| Stop Conditions | Shared change beyond the three approved preset targets, incompatible source import, unresolved silicon choice affecting the admitted batch or unbounded instruction scope; report and continue independent inventory. |
-| Exit Criteria | I1 and scoped I10 proof, retained regressions, full dual-width units, refreshed affected PC pairs, actual-change review and pushed complete delivery. No task-level closure. |
-| Original Owner Request | Close the accepted PC110 research task and admit the next queued T. |
-| Similar-Issue Sweep | Reconcile all new profile uses and scanner bounds; retain FPU/system/timing gates and Core-machine rejection, preserving historical profiles. No global mechanical equality-to-range replacement. |
+| Identifier Mode | Continuation T559 S3 after coordinator acceptance of S2 P1 aad734fdf and P2 c93b778aa. |
+| Admission And Approval | Owner-admitted T559 and automatic sequential Core-only execution; coordinator admits ledger I2 and the inherited LOCK portion of I9. No Shared or MyNES changes. |
+| Objective | Implement byte/word/dword XADD through existing CPU metadata and dispatch; repair the ordinary ALU register-source versus FE group-extension LOCK check at its sole owner. Preserve the Core machine production admission gate. |
+| Non-goals | No CMPXCHG implementation (S4), PC110 board admission, cache/TLB/system work, CPUID advertisement, firmware or Shared change, second executor or whole-486 timing claim. |
+| Reference Baseline | S2 c93b778aa and T558 pinned Intel 486 PRM; S1 I2/I9 and documented XADD EM/TS source-conflict disposition. Re-read original instruction/LOCK sources before implementation. |
+| Candidate Proposal | [Selected 486SX instructions](../proposals/m5-pc110-486-instructions.md) and [finite ledger](../etc/evidence/t559-s1-instruction-inventory.md), with single-owner system handoffs. |
+| Files And ABI Surface | CPU instructions/metadata/LOCK handling; CPU-owned XADD and retained LOCK tests, directly affected metadata expectations/registration, Core manifests and NXVM evidence. Expected production +80--180/-10--40 lines and tests +300--500/-0--20 before exact form design. No public function/type/state or Shared ABI. Rebuild affected eight 0559 PC EXEs. |
+| Applicable Rules | NXVM guide; Execution lifecycle/coverage/artifacts; Document; Architecture/Coding and their skills; NXVM architecture/layout and source/research policy. |
+| Verification | First prove the inherited LOCK defect, then XADD byte/word/dword register/memory and high-byte/alias forms; ADD flags and exchanged source; 16/32 addressing; LOCK memory/register legality; EM/TS independence; fetch/segment/page/read/write failure and restart without partial register/flag publication. Reuse original dual-width Ninja/ccache graphs, run focused tests then complete repository-only units, manifests/docs/diff checks and eight artifact checks. |
+| Expected Markers | I2 and scoped I9 directly proven at the CPU owner; 386 retains legal ALU LOCK regardless of source GPR, pre-386 transparent LOCK unchanged, old profiles reject XADD, no production 486 admission. |
+| Asset Needs | Existing original manuals and already admitted BYOB build inputs only. No new ROM/media, INI or MyNES changes. |
+| Reporting Requirements | Confirm source/alias/failure design before edits; report actual production/test diff, whole batch proof, failed first attempts honestly, artifact identities and remaining ledger gates. |
+| Stop Conditions | Shared modification, source conflict invalidating the frozen form contract, new cross-owner interface, or inability to preserve the existing bus failure boundary. Record the exact issue and continue independent in-scope proof. |
+| Exit Criteria | I2 and scoped I9 meet every finite dimension, retained profile/BSWAP regressions and dual-width complete units pass; eight affected EXEs updated, actual-change reviewed and complete delivery pushed. No T closure. |
+| Original Owner Request | Continue the selected 486SX instruction implementation with automatic sequential S admission. |
+| Similar-Issue Sweep | Review all ordinary memory-destination LOCK opcode cases versus FE/FF group extensions, new XADD source/destination alias ordering, existing ModRM/bus transaction behavior and no partial publication on failure; do not globally rewrite unrelated instruction paths. |
 
-S1 P1 `2afeda156` is accepted after actual-change review of all five documents,
-ledger I1--I11, source/feature gates and bounded S plan. S1 is closed; its checks
-were documentation-only, with unchanged executable inputs. S2 consumes its
-[ledger](../etc/evidence/t559-s1-instruction-inventory.md), not a runnable-486 claim.
-
-S2 executor delivery is complete for coordinator review: dual-width units
-593/593 each, eight product/INI process integrations, Core manifests and
-documentation checks pass. The current eight PC artifacts are 0559; MyNES
-remains unchanged. [S2 evidence](../etc/evidence/t559-s2-decode-bswap.md) records
-actual diffs, hashes and the unexecuted T-level external boot qualification.
+S1 is closed as inventory. S2 is accepted and closed after review of the two
+pushed commits, all changed CPU/test/build paths, full units (593/593 on each
+width), eight process/INI integrations, manifests and artifact hashes. Current
+PC artifacts are 0559 from c93b778aa; MyNES is unchanged.
+[S2 evidence](../etc/evidence/t559-s2-decode-bswap.md) records the actual diff
+and the T-level external boot qualification still required. S3 begins next;
+neither completed batch admits a runnable PC110/486 machine.
 
 ## Closed Task — M5 T558
 
