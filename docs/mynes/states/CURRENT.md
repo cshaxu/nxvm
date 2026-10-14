@@ -6,7 +6,8 @@ KVM_CURSOR_DISABLED and rebuilds its existing 0044 pair against that contract.
 This does not repair or close the independent S10 RDP input investigation below.
 Both rebuilt EXEs pass the final 592-unit repository run and all 12 MyNES
 integrations per width; native desktop tests are included, phone-RDP acceptance
-is not. T557 S2 remains delivered pending owner verification.
+is not. The owner accepted and closed T557 S2 on 2026-10-13; this does not
+close or alter the independent MyNES S10 packet below.
 
 ## Current Work
 
