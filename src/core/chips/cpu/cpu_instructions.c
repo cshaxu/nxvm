@@ -108,6 +108,7 @@ static void core_machine_cpu_execution_raise_exception(
 #define _SetExcept_NM(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_NM, (n))
 #define _SetExcept_DF(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_DF, (n))
 #define _SetExcept_MF(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_MF, (n))
+#define _SetExcept_AC(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_AC, (n))
 #define _SetExcept_FPU_UNSUPPORTED(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_FPU_UNSUPPORTED, (n))
 #define _SetExcept_CE(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_CE, (n))
 
@@ -716,6 +717,21 @@ static lib_u8 _kma_real_legacy_segment_wrap(
         offset <= 0x0000ffffu && byte != 0u &&
         (lib_u32)(byte - 1u) > 0x0000ffffu - offset;
 }
+/* Intel486 PRM 9.4/9.9.16: segment checks precede #AC, which precedes
+ * operand paging. Implicit supervisor references and fetches are exempt. */
+static void _kma_check_alignment(core_machine_cpu_execution_context *context,
+    lib_u32 linear, lib_u8 byte, lib_u8 vpl, lib_u8 force)
+{
+    CPU_TRACE_CALL_BEGIN("_kma_check_alignment");
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+        _GetCR0_PE && !force && vpl == 3u &&
+        (cpu_state.data.eflags & VCPU_EFLAGS_AC) != 0u &&
+        (cpu_state.data.cr0 & VCPU_CR0_AM) != 0u &&
+        (byte == 2u || byte == 4u || byte == 8u) &&
+        (linear & (byte - 1u)) != 0u)
+        CPU_TRACE_CHECK_RETURN(_SetExcept_AC(0));
+    CPU_TRACE_CALL_END;
+}
 /* read content from logical */
 static void _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u32 offset, lib_uptr rdata, lib_u8 byte, lib_u8 vpl, lib_u8 force)
 {
@@ -733,6 +749,7 @@ static void _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu
         return;
     }
     CPU_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, 0, vpl, force));
+    CPU_TRACE_CHECK_RETURN(_kma_check_alignment(context, linear, byte, vpl, force));
     CPU_TRACE_CHECK_RETURN(_kma_read_linear(context, linear, rdata, byte, vpl, force));
     if (!force && instruction_state.data.msize <
         CORE_MACHINE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY)
@@ -782,6 +799,7 @@ static void _kma_write_logical(core_machine_cpu_execution_context *context, t_cp
         return;
     }
     CPU_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, 1, vpl, force));
+    CPU_TRACE_CHECK_RETURN(_kma_check_alignment(context, linear, byte, vpl, force));
     CPU_TRACE_CHECK_RETURN(_kma_write_linear(context, linear, rdata, byte, vpl, force));
     if (!force && instruction_state.data.msize <
         CORE_MACHINE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY)
@@ -882,6 +900,7 @@ static void _kma_test_access(core_machine_cpu_execution_context *context, t_cpu_
         return;
     }
     CPU_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, write, vpl, force));
+    CPU_TRACE_CHECK_RETURN(_kma_check_alignment(context, linear, byte, vpl, force));
     CPU_TRACE_CHECK_RETURN(_kma_test_linear(context, linear, byte, write, vpl, force));
     CPU_TRACE_CALL_END;
 }
@@ -924,6 +943,18 @@ static void _m_read_rm(core_machine_cpu_execution_context *context, lib_u8 byte)
         CPU_TRACE_CHECK_RETURN(_kma_read_ref(context, instruction_state.data.rrm, X86_CPU_REFERENCE_OF(instruction_state.data.crm), byte));
     CPU_TRACE_CALL_END;
 }
+/* A modifying operand must pass write checks before its first data read.
+ * Register forms retain the ordinary register read and need no memory probe. */
+static void _m_read_rmw(core_machine_cpu_execution_context *context, lib_u8 byte)
+{
+    CPU_TRACE_CALL_BEGIN("_m_read_rmw");
+    if (instruction_state.data.flagMem)
+        CPU_TRACE_CHECK_RETURN(_m_test_access(context,
+            instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset,
+            byte, LIB_TRUE));
+    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, byte));
+    CPU_TRACE_CALL_END;
+}
 /* Validate the whole logical operand before either scalar transfer. Keep the
  * original bus phases and the sole early-family segment-wrap policy. */
 static void _m_read_pair(core_machine_cpu_execution_context *context,
@@ -936,6 +967,16 @@ static void _m_read_pair(core_machine_cpu_execution_context *context,
     CPU_TRACE_CHECK_RETURN(_m_test_logical(context,
         instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset,
         first + second, 0));
+    CPU_TRACE_CHECK_RETURN(_kma_check_alignment(context,
+        instruction_state.data.mrm.rsreg->base + instruction_state.data.mrm.offset,
+        first, _GetCPL, 0u));
+    CPU_TRACE_CHECK_RETURN(_kma_check_alignment(context,
+        instruction_state.data.mrm.rsreg->base + instruction_state.data.mrm.offset + first,
+        second, _GetCPL, 0u));
+    if (!wraps)
+        CPU_TRACE_CHECK_RETURN(_kma_test_linear(context,
+            instruction_state.data.mrm.rsreg->base + instruction_state.data.mrm.offset,
+            first + second, 0u, _GetCPL, 0u));
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, first));
     low = instruction_state.data.crm;
     instruction_state.data.mrm.offset += first;
@@ -953,6 +994,17 @@ static void _m_write_rm(core_machine_cpu_execution_context *context, lib_u8 byte
         CPU_TRACE_CHECK_RETURN(_m_write_logical(context, instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, X86_CPU_REFERENCE_OF(instruction_state.data.crm), byte));
     else
         CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rrm, X86_CPU_REFERENCE_OF(instruction_state.data.crm), byte));
+    CPU_TRACE_CALL_END;
+}
+
+/* A masked-zero 486 shift checks its destination but performs no write. */
+static void _m_write_shift(core_machine_cpu_execution_context *context,
+    lib_u8 byte, lib_u8 count)
+{
+    CPU_TRACE_CALL_BEGIN("_m_write_shift");
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX ||
+        (count & 31u) != 0u)
+        CPU_TRACE_CHECK_RETURN(_m_write_rm(context, byte));
     CPU_TRACE_CALL_END;
 }
 
@@ -3073,6 +3125,14 @@ static void _m_write_table_pseudo_descriptor(
     image[4] = X86_CPU_MASK_U8(base >> 16u);
     image[5] = context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
         0xffu : X86_CPU_MASK_U8(base >> 24u);
+    CPU_TRACE_CHECK_RETURN(_m_test_logical(context,
+        instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset,
+        6, LIB_TRUE));
+    /* PRM 9.9.16: the dword base follows the word limit; an address
+     * 2 modulo 4 aligns both fields of the stored pseudo-descriptor. */
+    CPU_TRACE_CHECK_RETURN(_kma_check_alignment(context,
+        instruction_state.data.mrm.rsreg->base +
+            instruction_state.data.mrm.offset + 2u, 4u, _GetCPL, 0u));
     CPU_TRACE_CHECK_RETURN(_m_test_access(context,
         instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset,
         6, LIB_TRUE));
@@ -5251,7 +5311,7 @@ _______todo _e_intr_n(core_machine_cpu_execution_context *context,
 static lib_u8 _e_exception_has_error_code(lib_u8 exid)
 {
     return exid == 0x08u || exid == 0x0au || exid == 0x0bu ||
-        exid == 0x0cu || exid == 0x0du || exid == 0x0eu;
+        exid == 0x0cu || exid == 0x0du || exid == 0x0eu || exid == 0x11u;
 }
 
 _______todo _e_except_n(core_machine_cpu_execution_context *context, lib_u8 exid, lib_u8 byte)
@@ -7716,6 +7776,29 @@ static void _p_outs(core_machine_cpu_execution_context *context, lib_u8 byte)
     }
     CPU_TRACE_CALL_END;
 }
+/* Validate both operands of one string iteration before reading either.
+ * 486 ordering is segment, alignment, then paging across both operands. */
+static void _m_test_string(core_machine_cpu_execution_context *context,
+    lib_u32 source, lib_u32 destination, lib_u8 byte, lib_bool write)
+{
+    lib_u32 source_linear, destination_linear;
+    CPU_TRACE_CALL_BEGIN("_m_test_string");
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX) {
+        CPU_TRACE_CHECK_RETURN(source_linear = _kma_linear_logical(context,
+            instruction_state.data.roverds, source, byte, LIB_FALSE, _GetCPL, 0u));
+        CPU_TRACE_CHECK_RETURN(destination_linear = _kma_linear_logical(context,
+            &cpu_state.data.es, destination, byte, write, _GetCPL, 0u));
+        CPU_TRACE_CHECK_RETURN(_kma_check_alignment(context,
+            source_linear, byte, _GetCPL, 0u));
+        CPU_TRACE_CHECK_RETURN(_kma_check_alignment(context,
+            destination_linear, byte, _GetCPL, 0u));
+        CPU_TRACE_CHECK_RETURN(_kma_test_linear(context,
+            source_linear, byte, LIB_FALSE, _GetCPL, 0u));
+        CPU_TRACE_CHECK_RETURN(_kma_test_linear(context,
+            destination_linear, byte, write, _GetCPL, 0u));
+    }
+    CPU_TRACE_CALL_END;
+}
 static void _m_movs(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
     lib_u32 data = 0;
@@ -7735,6 +7818,7 @@ static void _m_movs(core_machine_cpu_execution_context *context, lib_u8 byte)
         CPU_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
+    CPU_TRACE_CHECK_RETURN(_m_test_string(context, cesi, cedi, byte, LIB_TRUE));
     switch (byte)
     {
     case 1:
@@ -7880,6 +7964,7 @@ static void _a_cmps(core_machine_cpu_execution_context *context, lib_u8 bit)
         CPU_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
+    CPU_TRACE_CHECK_RETURN(_m_test_string(context, cesi, cedi, bit / 8u, LIB_FALSE));
     switch (bit)
     {
     case 8:
@@ -8499,7 +8584,7 @@ static void ADD_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -8512,7 +8597,7 @@ static void ADD_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -8521,7 +8606,7 @@ static void ADD_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -8661,7 +8746,7 @@ static void OR_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -8674,7 +8759,7 @@ static void OR_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -8683,7 +8768,7 @@ static void OR_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -8855,7 +8940,7 @@ static void ADC_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -8868,7 +8953,7 @@ static void ADC_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -8877,7 +8962,7 @@ static void ADC_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -9017,7 +9102,7 @@ static void SBB_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -9030,7 +9115,7 @@ static void SBB_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -9039,7 +9124,7 @@ static void SBB_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -9179,7 +9264,7 @@ static void AND_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -9192,7 +9277,7 @@ static void AND_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -9201,7 +9286,7 @@ static void AND_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -9357,7 +9442,7 @@ static void SUB_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -9370,7 +9455,7 @@ static void SUB_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -9379,7 +9464,7 @@ static void SUB_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -9535,7 +9620,7 @@ static void XOR_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -9548,7 +9633,7 @@ static void XOR_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -9557,7 +9642,7 @@ static void XOR_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
         CPU_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -11033,7 +11118,7 @@ static void ARPL_RM16_R16(core_machine_cpu_execution_context *context)
         {
             _adv;
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-            CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
             instruction_state.data.cr = X86_CPU_MASK_U16(instruction_state.data.cr);
             if (_GetSelector_RPL(instruction_state.data.crm) < _GetSelector_RPL(instruction_state.data.cr))
             {
@@ -11641,7 +11726,10 @@ static void INS_80(core_machine_cpu_execution_context *context)
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    if (instruction_state.data.cr != 7u)
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    else
+        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     switch (instruction_state.data.cr)
     {
     case 0: /* ADD_RM8_I8 */
@@ -11713,7 +11801,10 @@ static void INS_81(core_machine_cpu_execution_context *context)
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        if (instruction_state.data.cr != 7u)
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        else
+            CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (instruction_state.data.cr)
         {
         case 0: /* ADD_RM32_I32 */
@@ -11781,7 +11872,10 @@ static void INS_81(core_machine_cpu_execution_context *context)
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        if (instruction_state.data.cr != 7u)
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        else
+            CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         switch (instruction_state.data.cr)
         {
         case 0: /* ADD_RM16_I16 */
@@ -11855,7 +11949,10 @@ static void INS_83(core_machine_cpu_execution_context *context)
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        if (instruction_state.data.cr != 7u)
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        else
+            CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         bit = (_GetOperandSize * 8 + 8) >> 1;
         switch (instruction_state.data.cr)
         {
@@ -11923,7 +12020,10 @@ static void INS_83(core_machine_cpu_execution_context *context)
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        if (instruction_state.data.cr != 7u)
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        else
+            CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         bit = 12;
         switch (instruction_state.data.cr)
         {
@@ -12035,7 +12135,7 @@ static void XCHG_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
     CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(instruction_state.data.crm), 1));
     instruction_state.data.crm = instruction_state.data.cr;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -12048,7 +12148,7 @@ static void XCHG_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
         instruction_state.data.crm = instruction_state.data.cr;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -12057,7 +12157,7 @@ static void XCHG_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
         CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(instruction_state.data.crm), 2));
         instruction_state.data.crm = instruction_state.data.cr;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -14121,8 +14221,8 @@ static void INS_C0(core_machine_cpu_execution_context *context)
             _adv;
         }
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
         switch (instruction_state.data.cr)
         {
         case 0: /* ROL_RM8_I8 */
@@ -14170,7 +14270,7 @@ static void INS_C0(core_machine_cpu_execution_context *context)
             break;
         }
         instruction_state.data.crm = instruction_state.data.result;
-        CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        CPU_TRACE_CHECK_RETURN(_m_write_shift(context, 1, (lib_u8)instruction_state.data.cimm));
     }
     else
         UndefinedOpcode(context);
@@ -14190,8 +14290,8 @@ static void INS_C1(core_machine_cpu_execution_context *context)
             _adv;
         }
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
         switch (instruction_state.data.cr)
         {
         case 0: /* ROL_RM32_I8 */
@@ -14239,7 +14339,7 @@ static void INS_C1(core_machine_cpu_execution_context *context)
             break;
         }
         instruction_state.data.crm = instruction_state.data.result;
-        CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_write_shift(context, _GetOperandSize, (lib_u8)instruction_state.data.cimm));
     }
     else
         UndefinedOpcode(context);
@@ -14817,7 +14917,7 @@ static void INS_D0(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
     switch (instruction_state.data.cr)
     {
     case 0: /* ROL_RM8 */
@@ -14875,7 +14975,7 @@ static void INS_D1(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
         switch (instruction_state.data.cr)
         {
         case 0: /* ROL_RM32 */
@@ -14929,7 +15029,7 @@ static void INS_D1(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
         switch (instruction_state.data.cr)
         {
         case 0: /* ROL_RM16 */
@@ -14993,7 +15093,7 @@ static void INS_D2(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
     switch (instruction_state.data.cr)
     {
     case 0: /* ROL_RM8_CL */
@@ -15041,7 +15141,7 @@ static void INS_D2(core_machine_cpu_execution_context *context)
         break;
     }
     instruction_state.data.crm = instruction_state.data.result;
-    CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_write_shift(context, 1, cpu_state.data.cl));
     CPU_TRACE_CALL_END;
 }
 static void INS_D3(core_machine_cpu_execution_context *context)
@@ -15051,7 +15151,7 @@ static void INS_D3(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
         switch (instruction_state.data.cr)
         {
         case 0: /* ROL_RM32_CL */
@@ -15099,13 +15199,13 @@ static void INS_D3(core_machine_cpu_execution_context *context)
             break;
         }
         instruction_state.data.crm = instruction_state.data.result;
-        CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_write_shift(context, _GetOperandSize, cpu_state.data.cl));
     }
     else
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
         switch (instruction_state.data.cr)
         {
         case 0: /* ROL_RM16_CL */
@@ -15153,7 +15253,7 @@ static void INS_D3(core_machine_cpu_execution_context *context)
             break;
         }
         instruction_state.data.crm = instruction_state.data.result;
-        CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_write_shift(context, 2, cpu_state.data.cl));
     }
     CPU_TRACE_CALL_END;
 }
@@ -15818,7 +15918,10 @@ static void INS_F6(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    if (instruction_state.data.cr == 2u || instruction_state.data.cr == 3u)
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    else
+        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     switch (instruction_state.data.cr)
     {
     case 0: /* TEST_RM8_I8 */
@@ -15880,7 +15983,10 @@ static void INS_F7(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        if (instruction_state.data.cr == 2u || instruction_state.data.cr == 3u)
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        else
+            CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (instruction_state.data.cr)
         {
         case 0: /* TEST_RM32_I32 */
@@ -15937,7 +16043,10 @@ static void INS_F7(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        if (instruction_state.data.cr == 2u || instruction_state.data.cr == 3u)
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        else
+            CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         switch (instruction_state.data.cr)
         {
         case 0: /* TEST_RM16_I16 */
@@ -16145,7 +16254,10 @@ static void INS_FE(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    if (instruction_state.data.cr < 2u)
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    else
+        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     switch (instruction_state.data.cr)
     {
     case 0: /* INC_RM8 */
@@ -16213,7 +16325,7 @@ static void INS_FF(core_machine_cpu_execution_context *context)
         case 0: /* INC_RM32 */
             CPU_TRACE_BLOCK_BEGIN("INC_RM32");
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
-            CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
             CPU_TRACE_CHECK_RETURN(_a_inc(context, instruction_state.data.crm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
             CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -16222,7 +16334,7 @@ static void INS_FF(core_machine_cpu_execution_context *context)
         case 1: /* DEC_RM32 */
             CPU_TRACE_BLOCK_BEGIN("DEC_RM32");
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
-            CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
             CPU_TRACE_CHECK_RETURN(_a_dec(context, instruction_state.data.crm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
             CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -16312,7 +16424,7 @@ static void INS_FF(core_machine_cpu_execution_context *context)
         case 0: /* INC_RM16 */
             CPU_TRACE_BLOCK_BEGIN("INC_RM16");
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
-            CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
             CPU_TRACE_CHECK_RETURN(_a_inc(context, instruction_state.data.crm, 16));
             instruction_state.data.crm = instruction_state.data.result;
             CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -16321,7 +16433,7 @@ static void INS_FF(core_machine_cpu_execution_context *context)
         case 1: /* DEC_RM16 */
             CPU_TRACE_BLOCK_BEGIN("DEC_RM16");
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
-            CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
             CPU_TRACE_CHECK_RETURN(_a_dec(context, instruction_state.data.crm, 16));
             instruction_state.data.crm = instruction_state.data.result;
             CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -17927,10 +18039,7 @@ static void CMPXCHG_RM8_R8(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("CMPXCHG_RM8_R8");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    if (instruction_state.data.flagMem)
-        CPU_TRACE_CHECK_RETURN(_m_test_access(context,
-            instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_cmp(context, cpu_state.data.al,
         instruction_state.data.crm, 8));
     if (cpu_state.data.al == instruction_state.data.crm)
@@ -17946,10 +18055,7 @@ static void CMPXCHG_RM32_R32(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("CMPXCHG_RM32_R32");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    if (instruction_state.data.flagMem)
-        CPU_TRACE_CHECK_RETURN(_m_test_access(context,
-            instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, _GetOperandSize, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
     accumulator = _GetOperandSize == 2 ? cpu_state.data.ax : cpu_state.data.eax;
     CPU_TRACE_CHECK_RETURN(_a_cmp(context, accumulator,
         instruction_state.data.crm, _GetOperandSize * 8));
@@ -17967,10 +18073,7 @@ static void XADD_RM8_R8(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("XADD_RM8_R8");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    if (instruction_state.data.flagMem)
-        CPU_TRACE_CHECK_RETURN(_m_test_access(context,
-            instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
     CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm,
         instruction_state.data.cr, 8));
     CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr,
@@ -17984,10 +18087,7 @@ static void XADD_RM32_R32(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("XADD_RM32_R32");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    if (instruction_state.data.flagMem)
-        CPU_TRACE_CHECK_RETURN(_m_test_access(context,
-            instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, _GetOperandSize, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm,
         instruction_state.data.cr, _GetOperandSize * 8));
     CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr,
@@ -18040,8 +18140,8 @@ static void SHLD_RM32_R32_I8(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("SHLD_RM32_R32_I8");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_a_shld(context, instruction_state.data.crm, instruction_state.data.cr, X86_CPU_MASK_U8(instruction_state.data.cimm), _GetOperandSize * 8));
     if (X86_CPU_MASK_U8(instruction_state.data.cimm) & 0x1f)
     {
@@ -18055,7 +18155,7 @@ static void SHLD_RM32_R32_CL(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("SHLD_RM32_R32_CL");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_a_shld(context, instruction_state.data.crm, instruction_state.data.cr, cpu_state.data.cl, _GetOperandSize * 8));
     if (cpu_state.data.cl & 0x1f)
     {
@@ -18093,7 +18193,7 @@ static void BTS_RM32_R32(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("BTS_RM32_R32");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_a_bts(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -18104,8 +18204,8 @@ static void SHRD_RM32_R32_I8(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("SHRD_RM32_R32_I8");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_a_shrd(context, instruction_state.data.crm, instruction_state.data.cr, X86_CPU_MASK_U8(instruction_state.data.cimm), _GetOperandSize * 8));
     if (X86_CPU_MASK_U8(instruction_state.data.cimm) & 0x1f)
     {
@@ -18119,7 +18219,7 @@ static void SHRD_RM32_R32_CL(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("SHRD_RM32_R32_CL");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_a_shrd(context, instruction_state.data.crm, instruction_state.data.cr, cpu_state.data.cl, _GetOperandSize * 8));
     if (cpu_state.data.cl & 0x1f)
     {
@@ -18168,7 +18268,7 @@ static void BTR_RM32_R32(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("BTR_RM32_R32");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_a_btr(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -18258,7 +18358,10 @@ static void INS_0F_BA(core_machine_cpu_execution_context *context)
     else
         write = 1;
     CPU_TRACE_CHECK_RETURN(_d_bit_rmimm(context, 0, _GetOperandSize, write));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    if (write)
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+    else
+        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     switch (instruction_state.data.cr)
     {
     case 0:
@@ -18319,7 +18422,7 @@ static void BTC_RM32_R32(core_machine_cpu_execution_context *context)
     _new_code_path_;
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_a_btc(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -18663,11 +18766,11 @@ static lib_u8 _e_exception_vector(core_machine_cpu_execution_context *context,
         VCPUINS_EXCEPT_BR | VCPUINS_EXCEPT_UD | VCPUINS_EXCEPT_NM |
         VCPUINS_EXCEPT_DF | VCPUINS_EXCEPT_09 | VCPUINS_EXCEPT_TS |
         VCPUINS_EXCEPT_NP | VCPUINS_EXCEPT_SS | VCPUINS_EXCEPT_GP |
-        VCPUINS_EXCEPT_PF | VCPUINS_EXCEPT_MF;
+        VCPUINS_EXCEPT_PF | VCPUINS_EXCEPT_MF | VCPUINS_EXCEPT_AC;
     lib_u8 vector;
 
     if ((exception & supported) == 0u) return 0xffu;
-    for (vector = 0u; vector <= 16u; ++vector) {
+    for (vector = 0u; vector <= 17u; ++vector) {
         if (exception != (UINT32_C(1) << vector)) continue;
         /* Earlier chips have no protected-mode delivery or vectors 8-16,
          * except the 8087 WAIT-error interface, which reports #MF through
@@ -18682,6 +18785,8 @@ static lib_u8 _e_exception_vector(core_machine_cpu_execution_context *context,
             return 0xffu;
         if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386 &&
             vector == 14u) return 0xffu;
+        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX &&
+            vector == 17u) return 0xffu;
         if (!X86_CPU_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_PE) &&
             (vector == 9u || vector == 10u || vector == 11u || vector == 14u))
             return 0xffu;

@@ -4,6 +4,8 @@ T560 S1: [Complete 486SX CPU convergence inventory](evidence/t560-s1-cpu-converg
 
 T560 S2: [Base system implementation evidence](evidence/t560-s2-base-system.md)
 
+T560 S3: [Alignment and RMW investigation](evidence/t560-s3-alignment-rmw.md)
+
 T559 S7: [Whole instruction-delta qualification](evidence/t559-s7-instruction-qualification.md)
 records whole-ledger reconciliation, the bit-operation LOCK repair and final
 dual-width unit, external and artifact validation.

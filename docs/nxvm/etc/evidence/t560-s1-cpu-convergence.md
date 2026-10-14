@@ -65,6 +65,25 @@ starting inventory, not a claim that these repairs are still absent.
 No complete CPU-row acceptance or board-use qualification is inferred from
 this bounded batch. Final S2 delivery and acceptance remain in CURRENT.
 
+### S3 Access And Publication Subcase Evidence
+
+The [alignment/RMW record](t560-s3-alignment-rmw.md) reconciles the complete
+ordinary operand/RMW batch against original manuals and actual CPU execution.
+C05 scalar/stack/string/paired accesses, mode/CPL/AC/AM conditions, implicit
+supervisor table exemptions and normal fault delivery have direct proof.
+C09 inherited ALU, exchange, unary, bit and shift destination preflight and
+publication have direct proof, including cross-page and provider failures.
+Zero-count writeback and immediate-fetch precedence are included. The prior
+unplanned RMW debt has moved into this implementation/evidence owner.
+
+This does not accept all of C13: same-privilege interrupt/exception-entry
+stack alignment and nested fault classification remain part of the already
+planned S6 exception-state matrix. C05's whole-row qualification must be
+reconciled with that matrix before final CPU admission. Cache/TLB/test
+commands, SL/VME/SMM applicability, full opcode and timing qualification
+remain open in their planned T560 owners. S3 qualification and acceptance
+are recorded in CURRENT and the delivery record, not inferred by this ledger.
+
 ## Initial Direct Inspection
 
 Read cpu.c reset and debug paths, cpu.h register storage, cpu_instructions.c

@@ -208,6 +208,7 @@ typedef struct core_machine_cpu_instruction_observation {
 #define VCPUINS_EXCEPT_PF  0x00004000 /* 14 - fault: page fault */
 #define VCPUINS_EXCEPT_15  0x00008000 /* 15 - n/a:   reserved */
 #define VCPUINS_EXCEPT_MF  0x00010000 /* 16 - fault: x87 fpu floating point error */
+#define VCPUINS_EXCEPT_AC  0x00020000 /* 17 - fault: alignment check */
 
 #define VCPUINS_EXCEPT_FPU_UNSUPPORTED 0x40000000 /* internal FPU model stop */
 

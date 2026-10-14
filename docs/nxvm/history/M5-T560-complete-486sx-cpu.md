@@ -65,3 +65,24 @@ Both 597-case unit suites and all eight integration groups passed. No manual
 RDP or production 486 admission is inferred. S2 closes with no unresolved
 base-batch delivery item; remaining CPU rows stay in T560. No new S has yet
 been admitted by this closure-only governance commit.
+
+## S3 Alignment And Read/Modify/Write
+
+S3 is automatically admitted after accepted S2, under the owner's sequential
+Core authority. The [batch evidence](../etc/evidence/t560-s3-alignment-rmw.md)
+records C05/C09 source reconciliation, the finite instruction-family caller
+sweep, actual guest exception/provider regressions and production decisions.
+Alignment uses the existing logical-access owner and exception path; modifying
+operands use one write-preflight/read entry. Composite/string accesses check
+their full operands before data effects, and masked-zero scalar shifts avoid
+unnecessary writes. Read-only commands and old-family scope remain explicit.
+
+Whole repository units pass 599/599 per width, with Core manifests and docs
+gates passing. Production adds 184 and removes 78 lines; tests add 677 lines.
+All eight final PC deployment/integration groups pass and eight verified
+0560 binaries are deployed. The Windows integration race is corrected by
+reading/checking paused BDA before stop can clear memory; production lifecycle
+is unchanged. The additional test adds 5/removes 4 lines. INI and MyNES
+artifact hashes are unchanged. Commit/push and coordinator acceptance remain
+required before S3 closes.
+No complete 486 admission, cache/TLB or remaining T560 row is claimed here.

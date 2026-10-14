@@ -196,10 +196,12 @@ lib_i32 main(lib_i32 argc, char **argv)
             VM_WINDOWS31_CHECKPOINT_DIRECTORY_TIMEOUT_MILLISECONDS) == LIB_NULL) goto fail;
     if (integration_ini_session_pause(&ini_session, VM_WINDOWS31_CHECKPOINT_COMMAND_TIMEOUT_MILLISECONDS) != LIB_STATUS_OK)
         goto fail;
-    if (emulator_machine_shutdown(ini_session.emulator_machine) != LIB_STATUS_OK) goto fail;
     stage = "bda-hdd-count";
     if (core_machine_debug_read_memory(session->core_machine, 0x0474u, hdd_bda,
-            sizeof(hdd_bda)) == LIB_STATUS_OK) hdd_count = hdd_bda[1];
+            sizeof(hdd_bda)) != LIB_STATUS_OK) goto fail;
+    hdd_count = hdd_bda[1];
+    /* Stop can cold-reset Core and clear BDA; observe the paused guest first. */
+    if (emulator_machine_shutdown(ini_session.emulator_machine) != LIB_STATUS_OK) goto fail;
     vm_machine_stop(session);
     vm_windows31_checkpoint_report_frame(session);
     if (c_present && hdd_count != 0u) {
@@ -212,8 +214,7 @@ lib_i32 main(lib_i32 argc, char **argv)
 fail:
     if (emulator_machine_state_get(ini_session.emulator_machine) == EMULATOR_MACHINE_RUNNING)
         (void)integration_ini_session_pause(&ini_session, VM_WINDOWS31_CHECKPOINT_COMMAND_TIMEOUT_MILLISECONDS);
-    if (emulator_machine_shutdown(ini_session.emulator_machine) == LIB_STATUS_OK)
-        vm_windows31_checkpoint_report(session, stage);
+    vm_windows31_checkpoint_report(session, stage);
     if (session != LIB_NULL) vm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     return 1;

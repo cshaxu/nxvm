@@ -1005,8 +1005,112 @@ static lib_bool control_test_486_registers(void)
     return LIB_TRUE;
 }
 
+static lib_bool control_test_486_alignment(void)
+{
+    lib_u32 combination;
+
+    for (combination = 0u; combination < 2048u; ++combination) {
+        const lib_u8 offset = (lib_u8)(combination & 3u);
+        const lib_u8 cpl = (lib_u8)((combination >> 2u) & 3u);
+        const lib_bool ac = (combination & 16u) != 0u;
+        const lib_bool am = (combination & 32u) != 0u;
+        const lib_bool dword = (combination & 64u) != 0u;
+        const lib_bool write = (combination & 128u) != 0u;
+        const lib_bool older = (combination & 256u) != 0u;
+        const lib_bool alignment = !older && ac && am && cpl == 3u &&
+            (offset & (dword ? 3u : 1u)) != 0u;
+        const lib_bool missing_page = (combination & 512u) != 0u;
+        const lib_bool segment = (combination & 1024u) != 0u;
+        const lib_u32 exception = segment ? VCPUINS_EXCEPT_GP :
+            alignment ? VCPUINS_EXCEPT_AC : missing_page ? VCPUINS_EXCEPT_PF : 0u;
+        const lib_bool fault = exception != 0u;
+        const lib_u32 error = exception == VCPUINS_EXCEPT_PF ?
+            (write ? 2u : 0u) | (cpl == 3u ? 4u : 0u) : 0u;
+        const lib_u8 descriptor[] = {
+            0xffu, 0xffu, 0u, 0u, 0u, (lib_u8)(0x9bu | (cpl << 5u)), 0u, 0u
+        };
+        const lib_u8 gate[] = {
+            0u, 1u, (lib_u8)(8u | cpl), 0u, 0u, 0x8eu, 0u, 0u
+        };
+        lib_u8 code[] = {0x66u, write ? 0xa3u : 0xa1u, offset, 0x90u};
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        lib_u32 stacked_error = 1u;
+        lib_u32 value = 0u;
+
+        cpu_instruction_prepare(&fixture, older ? CORE_MACHINE_CPU_PROFILE_80386 :
+            CORE_MACHINE_CPU_PROFILE_80486SX);
+        control_enter_protected(&fixture, cpl, LIB_FALSE);
+        if (am) fixture.cpu.data.cr0 |= VCPU_CR0_AM;
+        if (ac) fixture.cpu.data.eflags |= VCPU_EFLAGS_AC;
+        fixture.cpu.data.gdtr.base = 0x4000u;
+        fixture.cpu.data.gdtr.limit = 0x0fu;
+        fixture.cpu.data.idtr.base = 0x5000u;
+        fixture.cpu.data.idtr.limit = 0x7ffu;
+        fixture.cpu.data.ds.selector = (lib_u16)(0x10u | cpl);
+        fixture.cpu.data.ds.dpl = cpl;
+        if (segment) fixture.cpu.data.ds.limit = 0x8fffu;
+        fixture.cpu.data.ss.selector = (lib_u16)(0x10u | cpl);
+        fixture.cpu.data.ss.dpl = cpl;
+        fixture.cpu.data.esp = 0x8000u;
+        fixture.cpu.data.eax = 0xaabbccddu;
+        fixture.cpu.data.cr2 = 0x12345678u;
+        lib_memory_copy(fixture.memory + 0x4008u, descriptor, sizeof(descriptor));
+        lib_memory_copy(fixture.memory + 0x5088u, gate, sizeof(gate));
+        lib_memory_copy(fixture.memory + 0x5068u, gate, sizeof(gate));
+        lib_memory_copy(fixture.memory + 0x5070u, gate, sizeof(gate));
+        if (missing_page) {
+            lib_u32 entry = 0x2007u;
+            lib_u32 page;
+
+            fixture.cpu.data.cr0 |= VCPU_CR0_PG;
+            fixture.cpu.data.cr3 = 0x1000u;
+            lib_memory_copy(fixture.memory + 0x1000u, &entry, sizeof(entry));
+            for (page = 0u; page < 16u; ++page) {
+                entry = (page << 12u) | (page == 9u ? 0u : 7u);
+                lib_memory_copy(fixture.memory + 0x2000u + page * 4u,
+                    &entry, sizeof(entry));
+            }
+        }
+        lib_memory_set(fixture.memory + 0x9000u, 0x55, 8u);
+        if (!control_run(&fixture, code + (dword ? 0u : 1u),
+                dword ? 4u : 3u, &after) ||
+            core_machine_cpu_is_shutdown(&fixture.execution) ||
+            fixture.delivered_exception.valid != fault ||
+            after.data.eip != (fault ? 0x100u : dword ? 4u : 3u) ||
+            after.data.cr2 != (exception == VCPUINS_EXCEPT_PF ?
+                0x9000u + offset : 0x12345678u))
+            goto failed;
+        lib_memory_copy(&value, fixture.memory + 0x9000u + offset,
+            dword ? 4u : 2u);
+        if (value != (write && !fault ? dword ? 0xaabbccddu : 0xccddu :
+                dword ? 0x55555555u : 0x5555u) ||
+            after.data.eax != (!write && !fault ?
+                dword ? 0x55555555u : 0xaabb5555u : 0xaabbccddu))
+            goto failed;
+        if (fault) {
+            lib_memory_copy(&stacked_error, fixture.memory + after.data.sp, 4u);
+            if (fixture.delivered_exception.exception_mask != exception ||
+                fixture.delivered_exception.exception_code != error ||
+                fixture.delivered_exception.point.eip != 0u || stacked_error != error)
+                goto failed;
+        }
+        continue;
+failed:
+        lib_c_printf("486-alignment combination=%u eip=%x delivered=%x fault=%x\n",
+            combination, after.data.eip, fixture.delivered_exception.exception_mask,
+            fixture.fault.exception_mask);
+        return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
+    if (!control_test_486_alignment()) {
+        lib_c_printf("control-state stage=486-alignment\n");
+        return 1;
+    }
     if (!control_test_486_split_pages()) {
         lib_c_printf("control-state stage=486-split-pages\n");
         return 1;

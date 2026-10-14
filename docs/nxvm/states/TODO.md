@@ -18,17 +18,6 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
 
 ## CPU, Time, And Debugging Debt
 
-- [ ] **Inherited read-modify-write access ordering (`TODO(High)`).** T559 S3
-  found ordinary inherited ALU memory handlers such as ADD_RM8_R8 and
-  ADD_RM32_R32 read before checking destination write permission. A missing
-  page may therefore report read access, and a data read can precede a segment
-  write denial. T559 S3 XADD and S4 CMPXCHG check the existing write-access
-  boundary first; that does not repair the inherited handlers. Admit a separate finite
-  Core CPU RMW-family audit before claiming inherited fault-order completeness;
-  cover all ALU, exchange, bit, shift and unary memory forms, page crossings,
-  segment/page precedence and provider side effects. Do not globally change
-  the general read helper or add a second memory owner.
-
 - [ ] **Internal descriptor vocabulary (`TODO(Low)`).** Preserve data layout
   and debugger behavior; admit only a caller-inventoried source cleanup, not a
   broad CPU rewrite.

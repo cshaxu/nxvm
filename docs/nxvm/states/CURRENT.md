@@ -3,9 +3,8 @@
 ## Current Work
 
 T560 remains open after accepted S2 delivery ddb260095 and Shared preset
-synchronization e7c3f4e78. S2 is closed; there is no active implementation
-packet between batches. The next planned batch is S3, alignment and inherited
-read/modify/write ordering, under the existing automatic sequential admission.
+synchronization e7c3f4e78. S2 is closed. S3 is admitted for alignment and
+inherited read/modify/write ordering under automatic sequential admission.
 The [complete CPU proposal](../proposals/m5-pc110-486-system.md) and
 [convergence ledger](../etc/evidence/t560-s1-cpu-convergence.md) retain all
 remaining CPU obligations. Production 486 admission remains closed.
@@ -15,8 +14,30 @@ targets, presets and release configuration on 2026-10-14. This is not approval
 for unrelated Shared functionality or APIs; the [task history](../history/M5-T560-complete-486sx-cpu.md)
 records the exact boundary. Do not ask again for equivalent version updates.
 
+## Active S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T560 S3, single-session coordinator/executor. |
+| Admission And Approval | Owner approved completion of all 486SX CPU gaps and automatic sequential Core batches; admitted 2026-10-14 after accepted S2 at 1703eb3e1. Routine release-version synchronization is permanently approved; unrelated Shared changes are not. |
+| Objective | Consume convergence C05 and C09: implement source-qualified 486 alignment faults and repair the complete inherited memory RMW validation/publication mechanism, with fault priority and restart proof. |
+| Non-goals | No Shared-six or MyNES changes, external source import, new execution loop, cache/TLB implementation, production 486 admission, or per-opcode task fragmentation. Other CPU obligations remain in T560. |
+| Reference Baseline | Clean 1703eb3e1; accepted S2 CPU source and tests; pinned Intel 486 PRM chapters 5, 6 and 9, particularly sections 9.4 and 9.9.16. Confirm all applicable implicit-access exceptions before implementation. |
+| Candidate Proposal | [Complete CPU proposal](../proposals/m5-pc110-486-system.md), [convergence ledger](../etc/evidence/t560-s1-cpu-convergence.md), C05/C09 and planned S3. |
+| Files And ABI Surface | Core CPU logical-access helpers and memory-form handlers in src/core/chips/cpu, existing exception mask/delivery extended for vector 17; corresponding test/core/chips/cpu tests and registration; Core manifests, NXVM evidence and affected eight PC artifacts. Qualification also corrects the default App Windows checkpoint's post-shutdown BDA read: read/check while paused before cleanup, about +7/-6 test lines, no production lifecycle change. Private helpers and existing exception state, no Shared API change. Initial estimate source +200--450/-100--300, tests +400--700/-30--100; see [S3 investigation](../etc/evidence/t560-s3-alignment-rmw.md). |
+| Applicable Rules | Product guide, CONTRIBUTING, shared Execution/Architecture/Coding/Document, NXVM Architecture/Coding/Roadmap, source policy; architecture-governance then coding-governance skills. Preserve one memory owner, inward dependencies, lib Types and original CPU table style. |
+| Verification | Inventory all explicit/implicit accesses and ALU/exchange/bit/shift/unary RMW forms; test AM/AC/CPL/profile matrix, alignment sizes, descriptor/fetch exclusions, segment/alignment/page priority, cross-page write preflight, provider effects and unchanged architectural state on faults. Focused dual-width tests during development, full repository unit suites once stable, affected PC integrations and eight released EXEs using existing Ninja/ccache graphs. |
+| Expected Markers | Valid guest exception delivery with vector/error/restart assertions, no operand read before required write validation, no partial architectural publication, dual-width CTest zero failures, matching manifest and PE/artifact identities. Exact test names follow existing owner registration. |
+| Asset Needs | Existing pinned external manuals, unchanged external ROM/media and owner INI; no new protected assets. |
+| Reporting Requirements | Report source findings and refined file/diff scope before production edits; record finite caller/form inventory, actual added/deleted/net source/test lines, retained owner, tests and unexecuted desktop/RDP coverage. |
+| Stop Conditions | Report source/model conflict or required Shared change before implementing that boundary; continue independent in-scope investigation. Do not invent a guest fault or successful no-op for an unresolved capability. |
+| Exit Criteria | Entire admitted C05/C09 batch has direct semantic and failure-order evidence, similar paths reconciled, dual-width qualification and affected artifacts complete, manifests/docs pass, actual diff reviewed, complete P committed/pushed and coordinator accepted. T560 remains open. |
+| Original Owner Request | Complete all 486SX CPU gaps under governance and quality rules; group coherent implementation and testing to avoid repeated full suites; automatically admit sequential Core S tasks. |
+| Similar-Issue Sweep | Ordinary reads/writes, RMW destination forms, stack/string, far pointers/pseudo-descriptors, implicit supervisor tables, fetch/debug accesses; inspect flag/register/memory commit points and legacy-family isolation. No blanket read-as-write workaround. |
+
 | Task | Progress |
 | --- | --- |
+| T560 S3 | Complete delivery awaiting pushed-P coordinator review: 599/599 units per width, all eight final PC integration groups passed, eight verified 0560 EXEs deployed. Windows checkpoint observes BDA while paused before cleanup. [Batch evidence](../etc/evidence/t560-s3-alignment-rmw.md); T560 and remaining CPU obligations stay open. |
 | T560 S2 | Accepted and closed: e7c3f4e78 / ddb260095. Base system tests pass 597/597 per width; all eight integration groups pass and eight 0560 EXEs are published. See the [S2 evidence](../etc/evidence/t560-s2-base-system.md). Complete CPU qualification and planned S3--S10 remain open in T560. |
 | T559 | Closed by owner approval: instruction-delta qualification, 597/597 units per width, eight final external groups and eight verified 0559 PC EXEs. Remaining CPU system semantics transfer to the approved next task. |
 
