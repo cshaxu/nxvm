@@ -1,5 +1,10 @@
 # T557 S2 Cursor Ownership
 
+Owner acceptance: 2026-10-13, explicit request to close S2. Accepted commits
+are Shared 5f5f43c8c, MyNES 08bdaf06d and NXVM 97d3cf948. S2 is closed; T557
+remains open. Acceptance does not retroactively claim an automated phone-RDP
+measurement. Governance-only closure requires no binary rebuild.
+
 ## Admission And Mechanism
 
 The owner approves the three-mode contract on 2026-10-13. Admission baseline
