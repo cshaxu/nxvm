@@ -20,6 +20,34 @@ the [single-owner handoff](../etc/evidence/t558-s2-receiver-checklists.md#one-im
 Reuse the instruction receiver's decode/exception path; reconcile advertised
 features with implemented system behavior before admitting the CPU to a board.
 
+### T559 S5 Cache/TLB Receiver
+
+The [S5 inspection](../etc/evidence/t559-s5-system-instruction-boundaries.md)
+confirms that no current cache/TLB operation can discharge I4--I6. This receiver
+owns their complete implementation, including any still-unimplemented decode,
+effective-address and privilege work needed to connect those operations:
+
+- INVD: internal invalidation and external flush indication; WBINVD: internal
+  invalidation, external writeback and subsequent flush in that order.
+- INVLPG: memory-only encoding, 16/32-bit effective addresses and segment
+  semantics, invalidation without reading target data, and the no-entry case.
+- TR3/TR4/TR5: cache fill/read buffers, tags/valid/replacement information and
+  actual cache commands, including the documented TR5 read restriction.
+- TR6/TR7: TLB lookup/write commands and results, paging-enabled testing,
+  replacement behavior and interaction with translation/CR3 invalidation.
+- Both MOV directions and all register indices, real/CPL0 versus CPL1--3 and
+  VM86, operand/address prefixes, LOCK, fetch failures, unchanged flags and
+  fault/restart state. Do not treat the old passive TR6/TR7 copies as 486 proof.
+
+Retained 386 behavior has direct tests. Legal 486 cache/test operations remain
+unqualified; their current UD/passive behavior is an implementation limitation,
+not a permitted hardware contract. Reconcile each form against the original
+manual before changing metadata, preview or execution, and remove the limitation
+at the one real state owner rather than layering another dispatch path.
+The existing Core admission gate must remain closed until this whole matrix
+and the other system obligations are qualified. No new dummy state, successful
+no-op, guest exception or internal-error fallback is authorized by this transfer.
+
 Complete reset identity/vector, control/flags/paging/alignment and required SL/SMM/power-entry behavior for the selected silicon. Qualify cache-visible instructions and guest timing at explicitly evidenced L2/L3 levels.
 
 Expected owners: core/chips/cpu, core/x86 and corresponding test/core owners.

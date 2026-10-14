@@ -94,3 +94,21 @@ the existing instruction/memory/exception owners remain sole authorities.
 Both full unit logs, eight product/INI logs and deployed hashes support this
 bounded qualification; push is confirmed. S4 closes and S5 is admitted for
 the complete I4--I6 system-instruction boundary group. T559 remains open.
+
+## S5 Executor Delivery
+
+Whole I4--I6 inspection confirms no real cache/TLB owner to connect. The
+system receiver now explicitly owns the complete forms and effects; S5 does
+not introduce successful no-ops, new fallback errors or false guest UD for
+legal operations. Existing passive 486 TR6/TR7 behavior remains an identified
+limitation behind the unchanged production admission gate. This follows the
+S1 ledger's unavailable-state disposition, not a claim that these semantics
+are implemented.
+
+The [S5 evidence](../etc/evidence/t559-s5-system-instruction-boundaries.md)
+records original-manual pages, actual ownership, direct retained transfer,
+illegal-form, CPL/VM86 and failed-fetch proofs, and review. Production is
+unchanged; test C/CMake is +242/-0/net+242. Complete repository units pass
+596/596 on both widths. S4's eight EXEs remain current without executable-input
+changes. Shared-six, MyNES, INI/media/ROM inputs are unchanged. Executor delivery
+awaits coordinator acceptance; I7/I8 and T-level qualification remain open.

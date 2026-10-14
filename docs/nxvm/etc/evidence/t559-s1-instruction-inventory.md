@@ -205,6 +205,16 @@ rollback. I4--I6 now transfer together to active S5; the existing system
 receiver still owns real cache/TLB effects. Remaining I7--I10 and external
 boot qualification are not discharged by these arithmetic-family tests.
 
+S5 executor reconciliation: I4--I6 have the explicit unavailable-state-owner
+disposition permitted by this ledger, with their full encoding, privilege,
+address and effect matrix accepted by the system proposal. The
+[S5 review](t559-s5-system-instruction-boundaries.md) proves retained 386
+transfers, illegal forms, existing privilege rejection and fetch rollback;
+it does not qualify 486 cache/TLB effects. The old passive TR6/TR7 inheritance
+remains a named limitation behind the existing production admission gate.
+No successful no-op or invented exception replaces it. Complete units pass
+596/596 per width. I7/I8 and the whole-delta/external-boot gates remain open.
+
 PRM section 13.1 permits the listed arithmetic/exchange memory-destination
 operations without restricting their source GPR to AX/CX. Current
 `PREFIX_LOCK()` applies FE's `/0..1` check to the preceding ordinary opcodes;

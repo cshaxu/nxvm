@@ -1,5 +1,9 @@
 # Supporting Documentation Index
 
+T559 S5: [System-instruction boundary review](evidence/t559-s5-system-instruction-boundaries.md)
+records actual cache/TLB gaps, retained test-register regression and explicit
+system transfer; it is not completed 486 system semantics.
+
 T559 S4: [CMPXCHG](evidence/t559-s4-cmpxchg.md) records the admitted
 compare/exchange batch, original write-cycle contract and proof matrix.
 

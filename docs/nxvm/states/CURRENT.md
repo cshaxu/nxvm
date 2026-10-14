@@ -8,18 +8,18 @@
 | --- | --- |
 | Identifier Mode | Continuation T559 S5 after coordinator acceptance of S4 P1 c4a08c66e. |
 | Admission And Approval | Owner-admitted T559 and automatic sequential Core-only implementation; group complete I4--I6 together. No Shared or MyNES changes. |
-| Objective | Reconcile INVD/WBINVD, INVLPG and 486 test-register forms with current CPU/cache/TLB owners, implement only truthful existing-owner instruction boundaries and transfer absent hardware effects explicitly to the admitted programme's system receiver. |
+| Objective | Reconcile INVD/WBINVD, INVLPG and 486 test-register forms with current CPU/cache/TLB owners, prove the retained existing-owner boundaries and transfer the complete unavailable instruction/effect contracts to the programme's system receiver, as permitted by the S1 ledger. |
 | Non-goals | No success-only cache/TLB operations, invented passive TR3--7 registers, production 486 admission, PC110 board or Shared changes. CPUID/flags remain the next planned batch pending source review. |
 | Reference Baseline | c4a08c66e; pinned Intel 486 PRM instruction entries and sections 10.6/10.7, S1 I4--I6 and existing system handoff. Original manual review precedes edits. |
 | Candidate Proposal | [Selected 486SX instructions](../proposals/m5-pc110-486-instructions.md), [finite ledger](../etc/evidence/t559-s1-instruction-inventory.md), and [system receiver](../proposals/m5-pc110-486-system.md). |
-| Files And ABI Surface | Existing CPU metadata/dispatch/test-register owner, directly affected CPU tests and registration, Core manifests and NXVM evidence; no public API or new persistent state. Preliminary estimate production +20--100/-0--40, tests +150--350/-0--20; refine after full existing-state audit. Rebuild eight PC EXEs if executable inputs change. |
+| Files And ABI Surface | Audit found no real cache/TLB operation to connect without crossing this S's no-new-state boundary. Production remains unchanged; add one CPU test and registration, test/Core manifest, NXVM evidence and explicit system receiver. Estimated tests +240--280/-0, production +0/-0; no public API/state. Existing eight S4 EXEs remain current because executable inputs are unchanged. |
 | Applicable Rules | NXVM guide; Execution lifecycle/coverage/artifacts; Document; Architecture/Coding and their skills; NXVM architecture/layout and source/research policy. |
 | Verification | Enumerate every I4--I6 encoding, privilege/VM86/LOCK/operand/address/fetch dimension and current actual operation; direct CPU proof of implemented boundaries and retained 386 TR behavior, explicit unavailable-effect evidence, full dual-width repository units and applicable artifact/INI checks. No legal-form stub retirement is acceptance. |
-| Expected Markers | Every I4--I6 form has truthful implementation or named non-runnable system disposition; no accidental 486 inheritance of passive 386 test-register semantics or premature machine admission. |
+| Expected Markers | Every I4--I6 form has a truthful named non-runnable system disposition; passive 386 TR semantics are explicitly identified as an unqualified 486 limitation, never accepted as hardware proof. No premature machine admission or invented replacement exception. |
 | Asset Needs | Existing original manuals and admitted external build inputs only; preserve owner INI/media/ROM/snapshot and MyNES. |
 | Reporting Requirements | Report exact existing cache/TLB ownership and chosen per-form disposition before implementation; source/test estimates then actual diff, whole-batch proof, artifacts and system transfer. |
 | Stop Conditions | Required Shared or new cross-owner interface, unresolved source conflict, or hardware semantics lacking an existing owner. Record system prerequisite and continue independent in-scope proof, never manufacture successful execution. |
-| Exit Criteria | Complete I4--I6 reconciliation, direct implemented-boundary/retained-family proof, full dual-width units, applicable eight EXEs deployed and checked, reviewed complete P pushed; remaining real hardware effects explicitly accepted by system proposal rather than claimed done. |
+| Exit Criteria | Complete I4--I6 reconciliation and system receiver's full-form acceptance, direct retained-family/illegal-form/privilege/fetch proof, full dual-width units, artifact freshness by unchanged executable inputs, reviewed complete P pushed. Missing 486 instruction/effect semantics remain mandatory system work, not claimed implemented or removed from the programme. |
 | Original Owner Request | Implement 486SX instruction semantics under governance; implement related groups together and avoid per-opcode full validation. |
 | Similar-Issue Sweep | Audit all cache/TLB and MOV-TR dispatch, profile/privilege/form gates and inherited test-register storage, including false-success paths and invalid register forms. No global CPU rewrite. |
 
@@ -28,8 +28,14 @@ I3 has complete comparison, alias, write-cycle and failure proof; full units
 pass 595/595 on both widths. Eight 0559 PC EXEs pass product/INI identity,
 PE-width and version checks, with hashes in [S4 evidence](../etc/evidence/t559-s4-cmpxchg.md).
 Shared-six, MyNES and owner inputs are unchanged. S5 is admitted for the
-combined system-instruction boundary group; its source review and implementation
-are pending. Production 486 admission remains closed and T559 remains open.
+combined system-instruction boundary group. Its
+[review](../etc/evidence/t559-s5-system-instruction-boundaries.md) confirms no
+existing cache/TLB operation owner. The complete I4--I6 unavailable-effect and
+instruction contracts transfer explicitly to the system receiver; retained TR
+transfer/form/privilege/fetch proofs pass and full units pass 596/596 per width.
+Legal 486 TR6/TR7 still inherit passive copies; inventing guest UD is not a fix.
+Production and S4 artifacts are unchanged. S5 executor delivery awaits pushed
+P/coordinator acceptance; production 486 admission and T559 remain open gates.
 
 The proposal's batch-efficiency order applies: complete family implementation,
 focused CPU validation and actual-change review before final whole-suite
