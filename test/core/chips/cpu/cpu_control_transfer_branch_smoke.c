@@ -81,14 +81,14 @@ static lib_i32 control_transfer_test_zero_displacement_timing(void)
 
         cpu_instruction_prepare(&state, profiles[index]);
         state.cpu.data.eflags |= VCPU_EFLAGS_ZF;
-        if (!control_transfer_run(&state, nonzero, sizeof(nonzero), &after) ||
-            !core_machine_cpu_timing_select(&state.execution, &nonzero_timing) ||
-            nonzero_timing.source_timing_unallocated) return 0;
+        if (!control_transfer_run(&state, nonzero, sizeof(nonzero), &after)) return 0;
+        nonzero_timing = core_machine_cpu_capture_timing(&state.execution);
+        if (nonzero_timing.source_timing_unallocated || !nonzero_timing.ticks) return 0;
         cpu_instruction_prepare(&state, profiles[index]);
         state.cpu.data.eflags |= VCPU_EFLAGS_ZF;
-        if (!control_transfer_run(&state, zero, sizeof(zero), &after) ||
-            !core_machine_cpu_timing_select(&state.execution, &zero_timing) ||
-            zero_timing.source_timing_unallocated ||
+        if (!control_transfer_run(&state, zero, sizeof(zero), &after)) return 0;
+        zero_timing = core_machine_cpu_capture_timing(&state.execution);
+        if (zero_timing.source_timing_unallocated ||
             zero_timing.ticks != nonzero_timing.ticks) return 0;
     }
     return 1;

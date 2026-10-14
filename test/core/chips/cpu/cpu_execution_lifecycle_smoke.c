@@ -24,17 +24,17 @@ static lib_i32 cpu_timing_case(core_machine_cpu_profile profile)
     first.cpu.data.si = second.cpu.data.si = 0x400u;
     first.cpu.data.di = second.cpu.data.di = 0x500u;
     core_machine_cpu_execution_refresh(&first.execution);
-    if (!core_machine_cpu_timing_select(&first.execution, &first_result) ||
-        first_result.source_timing_unallocated || first_result.ticks == 0u ||
+    first_result = core_machine_cpu_capture_timing(&first.execution);
+    if (first_result.source_timing_unallocated || first_result.ticks == 0u ||
         first_result.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_FIRST)
         return 1;
     core_machine_cpu_execution_refresh(&second.execution);
-    if (!core_machine_cpu_timing_select(&second.execution, &second_result) ||
-        second_result.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_FIRST ||
+    second_result = core_machine_cpu_capture_timing(&second.execution);
+    if (second_result.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_FIRST ||
         first_result.ticks != second_result.ticks) return 1;
     core_machine_cpu_execution_refresh(&first.execution);
-    if (!core_machine_cpu_timing_select(&first.execution, &first_result) ||
-        first_result.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION ||
+    first_result = core_machine_cpu_capture_timing(&first.execution);
+    if (first_result.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION ||
         first.cpu.data.cx != 0u || second.cpu.data.cx != 1u) return 1;
     second_result = core_machine_cpu_capture_timing(&second.execution);
     if (second_result.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_FIRST ||
@@ -43,6 +43,44 @@ static lib_i32 cpu_timing_case(core_machine_cpu_profile profile)
     core_machine_cpu_state_reset(&second.execution);
     return second.execution.source_repeat_active ||
         second_result.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_FIRST;
+}
+
+static lib_i32 cpu_interrupt_timing_case(core_machine_cpu_profile profile)
+{
+    for (lib_u8 kind = 0u; kind < 3u; ++kind) {
+        cpu_bus_fixture state;
+        core_machine_cpu_timing_result before, after;
+        const lib_u8 vector = kind == 0u ? 0x30u : kind == 1u ? 2u : 1u;
+
+        cpu_bus_prepare(&state, profile);
+        lib_memory_set(state.memory + 0x100u, 0x90, 14u);
+        /* The final byte of this prefetch is only a segment prefix. Interrupt
+         * entry must not replace the completed NOP's timing with that byte. */
+        state.memory[0x10eu] = 0x2eu;
+        state.memory[0x10fu] = 0x90u;
+        state.memory[vector * 4u + 1u] = 2u;
+        state.cpu.data.eflags |= VCPU_EFLAGS_IF;
+        for (lib_u8 index = 0u; index < 13u; ++index)
+            core_machine_cpu_execution_refresh(&state.execution);
+        before = core_machine_cpu_capture_timing(&state.execution);
+        if (kind == 0u) state.interrupt = LIB_TRUE;
+        else if (kind == 1u) (void)core_machine_cpu_request_nmi(&state.execution);
+        else state.cpu.data.eflags |= VCPU_EFLAGS_TF;
+        core_machine_cpu_execution_refresh(&state.execution);
+        after = core_machine_cpu_capture_timing(&state.execution);
+        if (state.fault.valid || state.execution.stop_requested ||
+            state.cpu.data.eip != 0x200u || !before.ticks ||
+            after.ticks != before.ticks || after.form_id != before.form_id ||
+            after.retirement_origin != before.retirement_origin ||
+            after.source_timing_unallocated ||
+            core_machine_cpu_execution_consume_instruction_fault_delivery(
+                &state.execution)) {
+            lib_c_printf("CPU-INTERRUPT-TIMING:profile=%u:kind=%u:failed\n",
+                profile, kind);
+            return 1;
+        }
+    }
+    return 0;
 }
 
 static lib_i32 cpu_execution_context_reset_case(
@@ -190,6 +228,7 @@ lib_i32 main(void)
         result |= cpu_execution_context_reset_case(&context, &cpu,
             &reset_cases[index]);
         result |= cpu_timing_case(reset_cases[index].profile);
+        result |= cpu_interrupt_timing_case(reset_cases[index].profile);
         result |= cpu_instance_case(&reset_cases[index]);
     }
     core_machine_cpu_execution_finalize(&context);

@@ -9,7 +9,41 @@ flat; this supersedes S6's three-subdirectory target without reopening S6.
 S9 implementation and final qualification are complete and delivered for owner
 review. T556 stays open pending that acceptance.
 
-## Current Task — M5 T556 S9 Audit Repairs And Qualification
+## Current Task — M5 T556 S11 Default Text Raster
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: next unused S11 after the MyNES S10 admission; do not execute or modify that product's pending work. |
+| Admission And Approval | Owner requests default NXVM 80x25 full 8x16 text, DeskPro verification only unless a defect is proven, dual-width qualification and deployment. |
+| Objective | Repair the default guest BIOS text-mode register/font geometry so boot and graphics-to-mode03 return produce 640x400, with correct cursor and raster timing; establish whether DeskPro 640x350 is correct. |
+| Non-goals | No Shared change, forced Window height, host BIOS interception, external ROM or INI/media mutation; preserve MyNES and other pending changes. |
+| Reference Baseline | Current master 7bfefb2fc, plus preserved S10 documentation/diagnostic work; review b2ee99b1c and b25e2ca8d and subsequent firmware changes. |
+| Candidate Proposal | [T556 proposal](../proposals/m5-app-component-layout.md), owner-added S11. |
+| Files And ABI Surface | Default firmware/video tests and native size diagnostic; owner-added Core CPU retirement selection and existing capture boundary, timing tests/gates and Core manifests. Timing selector becomes CPU-private; no Shared API change. Docs and affected four-PC dual EXEs. |
+| Applicable Rules | NXVM guide, architecture, coding, UI and source policy; shared Execution/Architecture/Coding/Document rules; architecture-governance and coding-governance skills. |
+| Verification | Real guest execution at boot and return from graphics; complete font halves, cursor, vertical active/retrace/exit; snapshot-to-Window 640x400; actual client dimensions. Both existing Ninja/ccache graphs, full repository units, all four PC profile integrations including default DOS/Windows and required static/manifest/doc gates. Actual RDP DPI proof is separately reported, never inferred from a synthetic frame. |
+| Expected Markers | Default 80x25, glyph height 16 and 640x400; coherent CRTC overflow/total/display/blank/retrace and cursor registers. DeskPro retains 14/350 if sources and selected board agree. |
+| Asset Needs | Existing external manuals and build inputs read-only; refresh affected four-PC 0556 x64/x86 pairs and validate PE identity after the Core repair. Preserve MyNES, adjacent owner inputs and unrelated EXEs. |
+| Reporting Requirements | Record sources and timing grade, before/after reproduction, actual diff, dual-width results and release hashes; distinguish native client, outer frame and untested RDP scaling. |
+| Stop Conditions | Required Shared/API change, unsupported EGA register semantics, unproven DeskPro defect, or overlap with unrelated work. Report before extending scope. |
+| Exit Criteria | Correct default guest BIOS and regression proof, required qualification/deployment complete, actual-diff review and scoped commits pushed; await owner desktop acceptance, T remains open. |
+| Original Owner Request | Investigate/fix default Window text geometry from guest BIOS and verify rather than normalize DeskPro 640x350. |
+| Similar-Issue Sweep | Check all default text-mode initialization/restore paths, glyph upload, BDA geometry, cursor and raster counters; inspect selected DeskPro BIOS/board without changing external ROM. |
+
+S11 implementation and final automatic qualification are complete: 592/592
+units and 32/32 four-PC profile integration executions per width. All eight
+PC EXEs are rebuilt and deployed; MyNES and public six remain unchanged.
+The default BIOS now presents all 16 font rows. Its exposed Core TIME fault
+is repaired by selecting completed-instruction timing before interrupt entry
+reuses decoder state. The actual-Core regression fails against admission
+objects and passes with the repair. DeskPro retains its correct 14/350 mode.
+Native remote-session observations no longer show the TIME failure, but the
+diagnostic pause acknowledgement and owner phone-client DPI/interaction are
+not qualified. Deliver this scoped P for owner desktop acceptance; S11 and
+T556 remain open. Preserve the unrelated MyNES S10 pending work. See the
+[S11 evidence](../etc/evidence/t556-s11-default-text-raster.md).
+
+## Delivered Task — M5 T556 S9 Audit Repairs And Qualification
 
 | Field | Required record |
 | --- | --- |

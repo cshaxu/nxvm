@@ -177,9 +177,8 @@ struct core_machine_cpu_execution_context {
     /* Resident chip state is independent of the consumable board signal. */
     enum { CPU_SHUTDOWN_NONE, CPU_SHUTDOWN_WAITING,
         CPU_SHUTDOWN_RESET_ONLY } shutdown_state;
-    /* Private execution-round outcome.  A successfully delivered synchronous
-     * exception preserves its architectural delivery but must not be mistaken
-     * for retirement of the faulting instruction by the machine clock owner. */
+    /* Delivery without retirement: a synchronous fault or interrupt waking an
+     * already halted CPU preserves entry but publishes no instruction tick. */
     lib_u8 instruction_in_progress;
     lib_u8 instruction_fault_delivered;
     /* A 286 automatic ESC wait restores the unretired ESC and sleeps until

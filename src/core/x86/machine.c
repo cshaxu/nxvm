@@ -1071,11 +1071,11 @@ lib_status core_machine_run(
                 }
             }
             {
-                core_machine_cpu_timing_result timing_result;
+                const core_machine_cpu_timing_result timing_result =
+                    core_machine_cpu_capture_timing(machine->executor_cpu_execution);
                 lib_u64 instruction_ticks;
 
-                if (!core_machine_cpu_timing_select(
-                        machine->executor_cpu_execution, &timing_result) ||
+                if (timing_result.ticks == 0u ||
                     machine->external_cycle_round_overflow) {
                     (void)core_machine_report_fault(machine, 0x54494d45u);
                     result->reason = CORE_MACHINE_STOP_FAULT;

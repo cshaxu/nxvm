@@ -1131,9 +1131,9 @@ static lib_i32 segment_test_vm86_pop_fs_gs_timing(void)
         if (cpu_instruction_write(&state, 0x0200u, &selectors[index],
                 sizeof(selectors[index]), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
                 LIB_STATUS_OK || cpu_instruction_run(&state, code, sizeof(code),
-                &after) != LIB_STATUS_OK ||
-            !core_machine_cpu_timing_select(&state.execution, &timing) ||
-            timing.source_timing_unallocated || timing.ticks != 7u ||
+                &after) != LIB_STATUS_OK) return 1;
+        timing = core_machine_cpu_capture_timing(&state.execution);
+        if (timing.source_timing_unallocated || timing.ticks != 7u ||
             (opcodes[index] == 0xa1u ? after.data.fs.selector :
                 after.data.gs.selector) != selectors[index]) return 1;
     }

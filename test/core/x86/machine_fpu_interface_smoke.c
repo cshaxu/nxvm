@@ -504,14 +504,23 @@ static lib_i32 fpu_interface_wait_interrupt(void)
     if (!failed) {
         input.interrupt_pending = LIB_TRUE;
         result = (core_machine_run_result){0};
+        /* Waking WAIT only enters the vector. It must not count the handler's
+         * first instruction until that instruction is actually executed. */
         failed |= core_machine_run(machine, (core_machine_run_budget){2u, 0u},
-            &result) != LIB_STATUS_OK || result.reason !=
-                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || result.executed != 2u;
+            &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            result.executed != 0u || result.ticks != 0u;
         after = fpu_interface_capture(machine);
-        failed |= input.interrupt_pending || after.eip != vector_offset + 1u ||
+        failed |= input.interrupt_pending || after.eip != vector_offset ||
             core_machine_memory_read(machine, after.ss.base + (lib_u16)after.esp,
                 (void *)CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) !=
                 LIB_STATUS_OK || frame_ip != sizeof(wait);
+        if (!failed) {
+            failed |= core_machine_run(machine, (core_machine_run_budget){1u, 0u},
+                &result) != LIB_STATUS_OK || result.reason !=
+                    CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || result.executed != 1u;
+            after = fpu_interface_capture(machine);
+            failed |= after.eip != vector_offset + 1u;
+        }
     }
     core_machine_destroy(machine);
     return !failed;

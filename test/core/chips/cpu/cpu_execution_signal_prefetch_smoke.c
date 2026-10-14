@@ -36,7 +36,10 @@ static lib_i32 cpu_signal_case(core_machine_cpu_profile profile)
     core_machine_cpu_capture_state(&fixture.execution, &state);
     if (state.halted || state.eip != 0x200u || fixture.execution.nmi_pending ||
         fixture.cpu.data.sp != 0x6fau || fixture.acknowledgements != 0u ||
-        fixture.instructions.data.except != 0u) return 1;
+        fixture.instructions.data.except != 0u ||
+        core_machine_cpu_capture_timing(&fixture.execution).ticks != 0u ||
+        !core_machine_cpu_execution_consume_instruction_fault_delivery(
+            &fixture.execution)) return 1;
     fixture.cpu.data.eip = 0x345u;
     return state.eip != 0x200u;
 }

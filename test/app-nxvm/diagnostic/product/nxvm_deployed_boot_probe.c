@@ -14,12 +14,12 @@ static BOOL CALLBACK boot_find_window(HWND window, LPARAM opaque)
 {
     boot_window *found = (boot_window *)opaque;
     DWORD process = 0;
-    char title[128];
+    char class_name[128];
 
     GetWindowThreadProcessId(window, &process);
-    GetWindowTextA(window, title, sizeof(title));
+    GetClassNameA(window, class_name, sizeof(class_name));
     if (process == found->process &&
-        lib_text_compare_n(title, "NXVM (", 6) == 0) {
+        lib_text_compare(class_name, "LibKvmWindow") == 0) {
         found->window = window;
         return FALSE;
     }
@@ -146,7 +146,7 @@ static lib_bool boot_monitor_prompt(HANDLE output)
             origin, &count)) return LIB_FALSE;
     while (count != 0u && line[count - 1u] == ' ') --count;
     line[count] = '\0';
-    return lib_text_compare(line, "Console>") == 0;
+    return lib_text_compare(line, ">") == 0;
 }
 
 static lib_bool boot_wait_paused(HANDLE input, HANDLE *output, FILE *log)
@@ -174,9 +174,9 @@ static lib_bool boot_wait_paused(HANDLE input, HANDLE *output, FILE *log)
                 previous_info_count = info_count;
                 queried = LIB_TRUE;
             } else if (info_count > previous_info_count) {
-                char *query = strstr(text, "Console> info"), *next, *state;
+                char *query = strstr(text, "> info"), *next, *state;
                 if (query != LIB_NULL) {
-                    while ((next = strstr(query + 1, "Console> info")) != LIB_NULL) query = next;
+                    while ((next = strstr(query + 1, "> info")) != LIB_NULL) query = next;
                     state = strstr(query, "Running:");
                     if (state != LIB_NULL) {
                         state += sizeof("Running:") - 1u;
@@ -288,7 +288,7 @@ lib_i32 main(lib_i32 argc, char **argv)
                 lib_memory_copy(previous, text, sizeof(previous));
                 fflush(log);
             }
-            if (!information_requested && strstr(text, "Console>")) {
+            if (!information_requested && strstr(text, "> ")) {
                 information_requested = boot_send_text(input, "info\r", 0u);
             } else if (!started && information_requested && strstr(text, "Machine:")) {
                 started = boot_send_text(input, "start\r", (DWORD)return_release_ms);
@@ -336,8 +336,14 @@ lib_i32 main(lib_i32 argc, char **argv)
     window.window = NULL;
     EnumWindows(boot_find_window, (LPARAM)&window);
     if (window.window) {
+        RECT client, outer;
         char printed[MAX_PATH];
         int length = snprintf(printed, sizeof(printed), "%s.print.bmp", argv[5]);
+        if (GetClientRect(window.window, &client) && GetWindowRect(window.window, &outer))
+            fprintf(log, "WINDOW_GEOMETRY client=%ldx%ld outer=%ldx%ld remote=%d\n",
+                client.right - client.left, client.bottom - client.top,
+                outer.right - outer.left, outer.bottom - outer.top,
+                GetSystemMetrics(SM_REMOTESESSION));
         fprintf(log, "WINDOW_CAPTURE=%d\n",
             boot_capture_window(window.window, argv[5], LIB_FALSE));
         if (length > 0 && (lib_size)length < sizeof(printed))

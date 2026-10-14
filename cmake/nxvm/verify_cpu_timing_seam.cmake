@@ -4,13 +4,15 @@ endif()
 
 set(machine "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c")
 set(timing "${PROJECT_SOURCE_DIR}/src/core/chips/cpu/cpu_timing.c")
-foreach(path IN ITEMS "${machine}" "${timing}")
+set(execution "${PROJECT_SOURCE_DIR}/src/core/chips/cpu/cpu_instructions.c")
+foreach(path IN ITEMS "${machine}" "${timing}" "${execution}")
     if(NOT EXISTS "${path}")
         message(FATAL_ERROR "CPU timing seam input is missing: ${path}")
     endif()
 endforeach()
 file(READ "${machine}" machine_text)
 file(READ "${timing}" timing_text)
+file(READ "${execution}" execution_text)
 
 function(cpu_timing_seam_require_count text pattern expected description)
     string(REGEX MATCHALL "${pattern}" matches "${text}")
@@ -20,8 +22,17 @@ function(cpu_timing_seam_require_count text pattern expected description)
     endif()
 endfunction()
 
-cpu_timing_seam_require_count("${machine_text}" "core_machine_cpu_timing_select\\(" 1
-    "machine.c must have one CPU timing call")
+cpu_timing_seam_require_count("${machine_text}" "core_machine_cpu_timing_select\\(" 0
+    "machine.c must not reselect timing after interrupt entry")
+cpu_timing_seam_require_count("${execution_text}" "core_machine_cpu_timing_select\\(" 1
+    "CPU execution must select retirement timing once")
+string(FIND "${execution_text}" "void core_machine_cpu_execution_refresh(" refresh_start)
+string(SUBSTRING "${execution_text}" ${refresh_start} -1 refresh_text)
+string(FIND "${refresh_text}" "core_machine_cpu_timing_select(context," timing_position)
+string(FIND "${refresh_text}" "ExecInt(context)" interrupt_position)
+if(timing_position LESS 0 OR interrupt_position LESS timing_position)
+    message(FATAL_ERROR "CPU timing must be selected before asynchronous interrupt entry")
+endif()
 cpu_timing_seam_require_count("${machine_text}" "core_machine_retirement_observation_publish\\(" 1
     "machine.c must have one raw retirement publication")
 cpu_timing_seam_require_count("${timing_text}" "lib_i32 core_machine_cpu_timing_select\\(" 1

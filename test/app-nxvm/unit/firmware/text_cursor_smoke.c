@@ -4,9 +4,43 @@
 #include "core/board-base/machine_board_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
+#include "core/machine/frame_interface.h"
 #include "core/x86/debug_interface.h"
 
 extern const vm_machine_assets vm_app_firmware;
+
+static lib_bool default_firmware_text_geometry(const x86_video_snapshot *snapshot)
+{
+    emulator_machine_frame *frame = lib_allocate(sizeof(*frame));
+    lib_bool passed;
+
+    if (frame == LIB_NULL) return LIB_FALSE;
+    passed = snapshot->kind == X86_VIDEO_KIND_TEXT && snapshot->columns == 80u &&
+        snapshot->rows == 25u && snapshot->text_cell_height == 16u &&
+        snapshot->text_glyph_height == 16u && snapshot->cursor_top == 14u &&
+        snapshot->cursor_bottom == 15u && snapshot->text_glyphs_present &&
+        vm_machine_frame_from_display(snapshot, 1u, frame) == LIB_STATUS_OK &&
+        !frame->window.graphics && frame->window.text.base.font_height == 16u &&
+        frame->window.text.base.text_columns * 8u == 640u &&
+        frame->window.text.base.text_rows * frame->window.text.base.font_height == 400u;
+    for (lib_size row = 0u; passed && row < X86_VIDEO_TEXT_GLYPH_ROWS; ++row) {
+        const lib_u8 expected = row < 8u ? 0x55u : row < 16u ? 0x33u : 0u;
+
+        passed = snapshot->text_glyphs[(lib_size)'A' * X86_VIDEO_TEXT_GLYPH_ROWS + row] ==
+            expected && frame->window.text.font[(lib_size)'A' * KVM_WINDOW_FONT_HEIGHT + row] ==
+            expected;
+    }
+    lib_release(frame);
+    return passed;
+}
+
+static lib_bool default_firmware_text_bda(core_machine *core)
+{
+    lib_u8 bda[3];
+
+    return core_machine_memory_read(core, 0x484u, bda, sizeof(bda)) == LIB_STATUS_OK &&
+        bda[0] == 24u && bda[1] == 16u && bda[2] == 0u;
+}
 
 static lib_bool default_firmware_initializes_text_cursor(vm_machine *machine)
 {
@@ -25,16 +59,10 @@ static lib_bool default_firmware_initializes_text_cursor(vm_machine *machine)
         if (captured == LIB_STATUS_UNSUPPORTED) continue;
         if (captured != LIB_STATUS_OK) return LIB_FALSE;
         if (snapshot.kind == X86_VIDEO_KIND_TEXT &&
-            snapshot.text_cell_height == 8u && snapshot.cursor_visible &&
-            snapshot.cursor_top == 7u && snapshot.cursor_bottom == 7u) {
-            if (!snapshot.text_glyphs_present) return LIB_FALSE;
-            for (lib_size row = 0u; row < X86_VIDEO_TEXT_GLYPH_ROWS; ++row) {
-                const lib_u8 expected = row < 8u ? 0x55u : row < 16u ? 0x33u : 0u;
-
-                if (snapshot.text_glyphs[(lib_size)'A' * X86_VIDEO_TEXT_GLYPH_ROWS + row] !=
-                    expected) return LIB_FALSE;
-            }
-            return LIB_TRUE;
+            snapshot.text_cell_height == 16u && snapshot.cursor_visible &&
+            snapshot.cursor_top == 14u && snapshot.cursor_bottom == 15u) {
+            return default_firmware_text_geometry(&snapshot) &&
+                default_firmware_text_bda(machine->core_machine);
         }
     }
     return LIB_FALSE;
@@ -147,10 +175,14 @@ static lib_bool default_firmware_initializes_video_modes(vm_machine *machine)
             if (core_machine_memory_write(core, 0xb8000u, first, sizeof(first)) != LIB_STATUS_OK ||
                 core_machine_memory_write(core, 0xb8000u + 160u, second, sizeof(second)) !=
                     LIB_STATUS_OK ||
+                core_machine_memory_write(core, 0xb8000u + 24u * 160u, first, sizeof(first)) !=
+                    LIB_STATUS_OK || !default_firmware_text_bda(core) ||
                 core_machine_capture_display_snapshot(machine->board, &snapshot) != LIB_STATUS_OK ||
                 snapshot.kind != X86_VIDEO_KIND_TEXT || snapshot.columns != 80u ||
-                snapshot.rows != 25u || snapshot.characters[0] != 'A' ||
+                snapshot.rows != 25u || !default_firmware_text_geometry(&snapshot) ||
+                snapshot.characters[0] != 'A' ||
                 snapshot.characters[1] != 'B' || snapshot.characters[80] != 'C' ||
+                snapshot.characters[24u * 80u] != 'A' ||
                 snapshot.attributes[0] != 0x1fu || snapshot.attributes[1] != 0x2eu ||
                 snapshot.attributes[80] != 0x3du || !snapshot.text_glyphs_present ||
                 snapshot.text_glyphs[(lib_size)'A' * X86_VIDEO_TEXT_GLYPH_ROWS] != 0x55u ||

@@ -41,10 +41,17 @@ The last conventional-memory KiB remains reserved for floppy DMA scratch.
 Vectors, templates, code extents and reset entry are assembled by one builder;
 there is no runtime mirror of those initialization operations in the host.
 
-Text mode 03h initializes its complete 80x25, eight-scanline EGA CRTC raster,
-including totals, blank/retrace endpoints and overflow. IBM EGA Technical
-Reference printed 64/65 supplies the register facts; the guest indexed-byte
-writer owns their port sequence. The live-font, mode-return and ordered
+Text mode 03h initializes 80x25 cells with the complete 16-row font, producing
+640x400 pixels. This default-machine custom mode uses the generic EGA register
+model, not a claim of an IBM EGA monitor's standard 400-line timing. Vertical
+display ends at 399; blanking starts at 424 and ends at 440; retrace spans
+425 through 427; the modeled total is 462. These are the former 200-line mode's
+vertical endpoints plus 200, preserving its porches. Overflow bits and the
+14..15 cursor match the new geometry. Underline remains outside the cell.
+IBM EGA Technical Reference printed 64/65 supplies the register facts; the
+existing terminal-count and oscillator model remains L2, not hardware-exact
+timing. The guest indexed-byte writer owns the port sequence and restores BDA
+text geometry on every mode03 call. The live-font, mode-return and ordered
 active/retrace/exit receiver uses actual CPU execution, not a host video
 default. Other graphics timing and physical oscillator qualification are not
 inferred from the text-mode proof. Modes D/E/10 separately initialize their

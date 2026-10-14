@@ -2,6 +2,7 @@
 #include "core/chips/cpu/cpu_instructions.h"
 #include "core/chips/cpu/cpu.h"
 #include "core/chips/cpu/cpu_trace.h"
+#include "core/chips/cpu/cpu_timing.h"
 
 #define cpu_state (*context->cpu)
 #define instruction_state (*context->instructions)
@@ -19296,6 +19297,9 @@ void core_machine_cpu_execution_reset(
 void core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context)
 {
+    lib_bool executed = LIB_FALSE;
+
+    context->timing_result = (core_machine_cpu_timing_result) {0};
     context->instruction_fault_delivered = LIB_FALSE;
     context->instruction_wait_stall = LIB_FALSE;
     if (core_machine_cpu_is_shutdown(context)) {
@@ -19328,15 +19332,24 @@ void core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_poll_wait(context);
     if (!cpu_state.data.flagHalt)
     {
+        executed = LIB_TRUE;
         context->debug_segment_shadow_before =
             context->interrupt_shadow == CPU_INTERRUPT_SHADOW_SEGMENT;
         context->interrupt_shadow = CPU_INTERRUPT_SHADOW_NONE;
         context->instruction_in_progress = LIB_TRUE;
         ExecIns(context);
         context->instruction_in_progress = LIB_FALSE;
+        /* Interrupt entry reuses the decoder record. Select the completed
+         * instruction's timing while both its operands and result are intact. */
+        if (!context->instruction_fault_delivered &&
+            !context->instruction_wait_stall && !context->stop_requested &&
+            !core_machine_cpu_timing_select(context, &context->timing_result))
+            context->timing_result = (core_machine_cpu_timing_result) {0};
     }
     if (context->debug_pause_requested) return;
     ExecInt(context);
+    if (!executed && !cpu_state.data.flagHalt)
+        context->instruction_fault_delivered = LIB_TRUE;
 }
 
 lib_u8 core_machine_cpu_execution_consume_instruction_fault_delivery(

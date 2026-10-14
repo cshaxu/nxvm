@@ -224,8 +224,8 @@ static lib_i32 transfer_unmapped_target(void)
                         code32, form, state.cpu.data.eip, state.cpu.data.cr2);
                     return 1;
                 }
-                core_machine_cpu_timing_result timing;
-                if (!core_machine_cpu_timing_select(&state.execution, &timing)) return 1;
+                const core_machine_cpu_timing_result timing =
+                    core_machine_cpu_capture_timing(&state.execution);
                 lib_memory_copy(&target_pte, state.memory + 0x8008u, sizeof(target_pte));
                 if (timing.source_timing_unallocated || timing.ticks <= 1u ||
                     (!fixed_timing && !mapped && timing.retirement_origin !=
@@ -331,12 +331,12 @@ static lib_i32 transfer_inner_gate(void)
                 }
                 lib_memory_copy(state.memory + 0x9ff0u, code, bytes);
                 core_machine_cpu_execution_refresh(&state.execution);
+                timing = core_machine_cpu_capture_timing(&state.execution);
                 lib_memory_copy(&target_pte, state.memory + 0x8008u, sizeof(target_pte));
                 if (state.execution.stop_requested || state.fault.valid ||
                     state.delivered_exception.valid || state.cpu.data.eip != 0x2000u ||
                     state.cpu.data.cs.selector != 8u || state.cpu.data.cs.dpl != 0u ||
                     state.cpu.data.ss.selector != 16u || state.cpu.data.cr2 || target_pte ||
-                    !core_machine_cpu_timing_select(&state.execution, &timing) ||
                     timing.source_timing_unallocated || timing.ticks <= 1u ||
                     (interrupt && timing.ticks != 99u)) {
                     lib_c_printf("TRANSFER-INNER:code32=%u:gate32=%u:int=%u:eip=%x:cr2=%x:failed\n",
@@ -512,8 +512,8 @@ static lib_i32 transfer_next_term_limit(void)
             lib_memory_copy(state.memory, jump, sizeof(jump));
             lib_memory_copy(state.memory + 0x20u, next, sizeof(next));
             core_machine_cpu_execution_refresh(&state.execution);
-            if (!core_machine_cpu_timing_select(&state.execution, &timing) ||
-                state.cpu.data.eip != 0x20u || state.cpu.data.cr2 ||
+            timing = core_machine_cpu_capture_timing(&state.execution);
+            if (state.cpu.data.eip != 0x20u || state.cpu.data.cr2 ||
                 state.fault.valid || state.delivered_exception.valid ||
                 state.execution.stop_requested || timing.source_timing_unallocated ||
                 (!complete && timing.retirement_origin !=

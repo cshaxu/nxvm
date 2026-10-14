@@ -486,6 +486,10 @@ push ds
 mov bx, 0040
 mov ds, bx
 mov byte ds:[0049], 03
+mov word ds:[004a], 0050
+mov word ds:[0060], 0d0f
+mov byte ds:[0084], 18
+mov word ds:[0085], 0010
 pop ds
 mov dx, 03c2
 mov al, 03
@@ -565,7 +569,9 @@ inc dx
 mov al, 0e
 out dx, al
 mov dx, 03d4
-; Complete the existing 80x25, eight-scanline text raster (IBM EGA mode 3).
+; Default-machine 80x25 with the full 16-row ROM font.
+; Shift the old 200-line vertical endpoints by 200; retain its porches.
+; This is a custom L2 raster, not an IBM EGA monitor timing table.
 mov ax, 7000
 call near $(label_int_10_ega_crtc_write)
 mov ax, 5c02
@@ -576,17 +582,17 @@ mov ax, 5f04
 call near $(label_int_10_ega_crtc_write)
 mov ax, 0705
 call near $(label_int_10_ega_crtc_write)
-mov ax, 0406
+mov ax, cc06
 call near $(label_int_10_ega_crtc_write)
-mov ax, e110
+mov ax, a910
 call near $(label_int_10_ega_crtc_write)
-mov ax, 2411
+mov ax, 2c11
 call near $(label_int_10_ega_crtc_write)
-mov ax, 0814
+mov ax, 1014
 call near $(label_int_10_ega_crtc_write)
-mov ax, e015
+mov ax, a815
 call near $(label_int_10_ega_crtc_write)
-mov ax, f016
+mov ax, 1816
 call near $(label_int_10_ega_crtc_write)
 mov al, 01
 out dx, al
@@ -597,25 +603,25 @@ dec dx
 mov al, 07
 out dx, al
 inc dx
-mov al, 11
+mov al, 1f
 out dx, al
 dec dx
 mov al, 09
 out dx, al
 inc dx
-mov al, 07
+mov al, 0f
 out dx, al
 dec dx
 mov al, 0a
 out dx, al
 inc dx
-mov al, 06
+mov al, 0d
 out dx, al
 dec dx
 mov al, 0b
 out dx, al
 inc dx
-mov al, 07
+mov al, 0f
 out dx, al
 dec dx
 mov al, 13
@@ -627,7 +633,7 @@ dec dx
 mov al, 12
 out dx, al
 inc dx
-mov al, c7
+mov al, 8f
 out dx, al
 dec dx
 mov al, 17

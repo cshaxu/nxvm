@@ -563,9 +563,8 @@ lib_u8 core_machine_cpu_execution_preview_lexeme(
 #define CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE (1u << 9)
 #define CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND (1u << 10)
 
-/* B0's only successful-retirement CPU timing selection entry. */
-lib_i32 core_machine_cpu_timing_select(core_machine_cpu_execution_context *context,
-    core_machine_cpu_timing_result *out_result);
+/* Timing is selected before asynchronous interrupt entry overwrites decode
+ * state. Zero ticks means this refresh has no classified retirement. */
 core_machine_cpu_timing_result core_machine_cpu_capture_timing(
     const core_machine_cpu_execution_context *context);
 /* Shared checked accumulation for timing selection and the retained run loop. */

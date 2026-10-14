@@ -420,6 +420,39 @@ static lib_i32 timing_test_next_fetch_publication(void)
     return failed;
 }
 
+static lib_i32 timing_test_interrupt_retirement(void)
+{
+    const core_machine_executor_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .ticks_per_instruction = 1u
+    };
+    lib_u8 program[16];
+    const lib_u8 vector[] = {0u, 2u, 0u, 0u};
+    core_machine *machine = LIB_NULL;
+    core_machine_run_result result = {0};
+
+    lib_memory_set(program, 0x90, sizeof(program));
+    program[14] = 0x2eu;
+    lib_i32 failed = core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+        timing_map_reset(machine) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, TIMING_RESET_LINEAR, program,
+            sizeof(program)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 8u, vector, sizeof(vector)) != LIB_STATUS_OK ||
+        core_machine_run(machine, (core_machine_run_budget){13u, 0u},
+            &result) != LIB_STATUS_OK || result.executed != 13u ||
+        !core_machine_signal_nmi(machine);
+    if (!failed) {
+        failed = core_machine_run(machine, (core_machine_run_budget){1u, 0u},
+            &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            result.executed != 1u || result.ticks != 3u || result.elapsed_ticks != 42u ||
+            result.linear_pc != 0x200u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     static const lib_u8 nop[] = { 0x90u };
@@ -449,6 +482,7 @@ lib_i32 main(void)
     if (timing_test_invalid_qualification()) return 8;
     if (timing_test_physical_contract()) return 9;
     if (timing_test_next_fetch_publication()) return 10;
+    if (timing_test_interrupt_retirement()) return 11;
     lib_c_printf("INSTRUCTION-TIMING:OK\n");
     return 0;
 }

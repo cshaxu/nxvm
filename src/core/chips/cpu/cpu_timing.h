@@ -9,9 +9,13 @@
 extern "C" {
 #endif
 
+/* CPU execution selects once before asynchronous interrupt entry. */
+lib_i32 core_machine_cpu_timing_select(core_machine_cpu_execution_context *context,
+    core_machine_cpu_timing_result *out_result);
+
 /* Legacy rule evaluators remain private to Core. They calculate a candidate
  * only; origin assignment and result publication belong exclusively to the
- * selector above. */
+ * CPU timing selector. */
 lib_i32 core_machine_string_io_source_instruction_cost(core_machine_cpu_execution_context *context,
     lib_u64 *out_ticks);
 lib_i32 core_machine_80386_dynamic_multiply_cost(core_machine_cpu_execution_context *context,

@@ -706,11 +706,11 @@ static lib_bool rotate_test_carry_ring_boundaries(void)
             return LIB_FALSE;
         }
         if (!memory && profile != 1u && profile != 4u) {
-            core_machine_cpu_timing_result timing;
+            const core_machine_cpu_timing_result timing =
+                core_machine_cpu_capture_timing(&state.execution);
             const lib_u64 expected_ticks = profile == 0u ?
                 8u + 4u * count : 5u + count;
-            if (!core_machine_cpu_timing_select(&state.execution, &timing) ||
-                    timing.source_timing_unallocated || timing.ticks != expected_ticks)
+            if (timing.source_timing_unallocated || timing.ticks != expected_ticks)
                 return LIB_FALSE;
         }
     }
