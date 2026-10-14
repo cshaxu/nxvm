@@ -282,3 +282,11 @@ No obsolete RMW preflight duplicates remain in XADD/CMPXCHG. Necessary
 private helpers and existing non-RMW branches have the explicit reasons
 above. The delivery is ready for one complete NXVM P and coordinator review;
 it does not qualify the remaining T560 CPU rows or open production 486 use.
+
+Coordinator actual-diff review accepts the pushed cb52586a9 delivery. Every
+ordinary access/RMW batch requirement maps to the direct tests, whole suites,
+final integration logs and deployed artifact checks above. Source/test
+increase, the four private decisions and all retained branches are justified.
+S3 closes after this review; the convergence ledger retains C13-linked entry
+and nesting qualification and every remaining T560 row. No complete CPU,
+manual desktop/RDP or stronger Windows predicate is claimed.

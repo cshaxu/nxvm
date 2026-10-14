@@ -86,3 +86,19 @@ is unchanged. The additional test adds 5/removes 4 lines. INI and MyNES
 artifact hashes are unchanged. Commit/push and coordinator acceptance remain
 required before S3 closes.
 No complete 486 admission, cache/TLB or remaining T560 row is claimed here.
+
+Coordinator actual-change review accepts cb52586a9. Review re-read the pushed
+Core helper/handler changes, new and extended tests, Core AC vocabulary,
+manifest membership, Windows paused-observation correction, task records
+and all eight artifact identities. The direct instruction matrix and final
+599/599 unit suites per width plus eight integration groups meet the ordinary
+access/RMW batch's exit. Four private helpers perform necessary decisions;
+there is no additional state, interpreter, recovery loop or Shared change.
+INI/MyNES hashes remain unchanged. S3 is accepted and closed.
+
+The original all-486 objective is still open: C06/C07 real TLB/cache, selected
+SL/VME/SMM applicability, C13 exception-entry/nesting, inherited whole-opcode
+and timing matrices, and final Core admission retain their planned T560
+owners. C05 whole-row acceptance is reconciled with C13 in that later matrix;
+normal alignment delivery is not substituted for complete CPU qualification.
+This closure-only P admits no next implementation packet.
