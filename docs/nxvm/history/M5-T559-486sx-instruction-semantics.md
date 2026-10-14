@@ -112,3 +112,12 @@ unchanged; test C/CMake is +242/-0/net+242. Complete repository units pass
 596/596 on both widths. S4's eight EXEs remain current without executable-input
 changes. Shared-six, MyNES, INI/media/ROM inputs are unchanged. Executor delivery
 awaits coordinator acceptance; I7/I8 and T-level qualification remain open.
+
+Coordinator acceptance of 8e6159de4: inspected all 241 test lines, registration,
+manifest delta, task evidence and the explicit receiver/packet reconciliation.
+The test's actual GP frame and VM86 stack switch, complete CPU-state comparison
+and failed-fetch checks support its limited claims; legal 486 effects are not
+asserted as UD or accepted passive storage. Both 596/596 unit logs and unchanged
+production/artifact paths support qualification. Push is confirmed. S5 closes
+under S1's explicit system disposition; S6 admits I7/I8 source-qualified CPUID
+and flags as one batch. T559 remains open.

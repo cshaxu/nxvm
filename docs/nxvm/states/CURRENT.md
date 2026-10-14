@@ -2,40 +2,35 @@
 
 ## Current Work
 
-### Active Task — M5 T559 S5 System-Instruction Boundaries
+### Active Task — M5 T559 S6 CPUID And Flags
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T559 S5 after coordinator acceptance of S4 P1 c4a08c66e. |
-| Admission And Approval | Owner-admitted T559 and automatic sequential Core-only implementation; group complete I4--I6 together. No Shared or MyNES changes. |
-| Objective | Reconcile INVD/WBINVD, INVLPG and 486 test-register forms with current CPU/cache/TLB owners, prove the retained existing-owner boundaries and transfer the complete unavailable instruction/effect contracts to the programme's system receiver, as permitted by the S1 ledger. |
-| Non-goals | No success-only cache/TLB operations, invented passive TR3--7 registers, production 486 admission, PC110 board or Shared changes. CPUID/flags remain the next planned batch pending source review. |
-| Reference Baseline | c4a08c66e; pinned Intel 486 PRM instruction entries and sections 10.6/10.7, S1 I4--I6 and existing system handoff. Original manual review precedes edits. |
+| Identifier Mode | Continuation T559 S6 after coordinator acceptance of S5 P1 8e6159de4. |
+| Admission And Approval | Owner-admitted T559 and automatic sequential Core-only implementation; group I7/I8 together. No Shared or MyNES changes. |
+| Objective | Freeze source-qualified selected SX CPUID/ID behavior and implement it with the existing flags owner; reconcile PUSHF/POPF, IRET and task-load masks without duplicated profile state. |
+| Non-goals | No production 486 admission, invented zero-feature silicon, unproved VME advertisement, SMM/cache/TLB hardware, PC110 board, Shared or MyNES changes. Real AC/VIF/VIP hardware effects remain mandatory system gates. |
+| Reference Baseline | 8e6159de4; S1 I7/I8, pinned selected-SX data sheets and original Intel manuals. Audit exact stepping applicability and current flags paths before implementation. |
 | Candidate Proposal | [Selected 486SX instructions](../proposals/m5-pc110-486-instructions.md), [finite ledger](../etc/evidence/t559-s1-instruction-inventory.md), and [system receiver](../proposals/m5-pc110-486-system.md). |
-| Files And ABI Surface | Audit found no real cache/TLB operation to connect without crossing this S's no-new-state boundary. Production remains unchanged; add one CPU test and registration, test/Core manifest, NXVM evidence and explicit system receiver. Estimated tests +240--280/-0, production +0/-0; no public API/state. Existing eight S4 EXEs remain current because executable inputs are unchanged. |
+| Files And ABI Surface | Core CPU existing instructions, flags definitions and profile reset only where source-qualified, directly affected CPU tests/registration, Core manifests and NXVM evidence. Preliminary production +60--160/-10--60 and tests +200--400/-0--30; refine after source/form audit. No planned public API or persistent-state addition. Rebuild eight PC EXEs if executable inputs change. |
 | Applicable Rules | NXVM guide; Execution lifecycle/coverage/artifacts; Document; Architecture/Coding and their skills; NXVM architecture/layout and source/research policy. |
-| Verification | Enumerate every I4--I6 encoding, privilege/VM86/LOCK/operand/address/fetch dimension and current actual operation; direct CPU proof of implemented boundaries and retained 386 TR behavior, explicit unavailable-effect evidence, full dual-width repository units and applicable artifact/INI checks. No legal-form stub retirement is acceptance. |
-| Expected Markers | Every I4--I6 form has a truthful named non-runnable system disposition; passive 386 TR semantics are explicitly identified as an unqualified 486 limitation, never accepted as hardware proof. No premature machine admission or invented replacement exception. |
+| Verification | Full I7 leaf/GPR/flags/privilege/LOCK/fetch/old-profile matrix; I8 PUSHF/POPF, real/protected/VM86 IRET and task-load masks, 16-bit upper-half preservation and privilege rules. Focused whole batch, actual-change review, then full x64/x86 repository units and affected artifact/INI identity checks. |
+| Expected Markers | CPUID feature and ID behavior match the named candidate source contract; one flags-mask owner, retained earlier-family semantics and no production admission before system qualification. |
 | Asset Needs | Existing original manuals and admitted external build inputs only; preserve owner INI/media/ROM/snapshot and MyNES. |
-| Reporting Requirements | Report exact existing cache/TLB ownership and chosen per-form disposition before implementation; source/test estimates then actual diff, whole-batch proof, artifacts and system transfer. |
-| Stop Conditions | Required Shared or new cross-owner interface, unresolved source conflict, or hardware semantics lacking an existing owner. Record system prerequisite and continue independent in-scope proof, never manufacture successful execution. |
-| Exit Criteria | Complete I4--I6 reconciliation and system receiver's full-form acceptance, direct retained-family/illegal-form/privilege/fetch proof, full dual-width units, artifact freshness by unchanged executable inputs, reviewed complete P pushed. Missing 486 instruction/effect semantics remain mandatory system work, not claimed implemented or removed from the programme. |
+| Reporting Requirements | Before edits report source/stepping contract, existing flags owners, complete form matrix and refined diff. Delivery records actual diff, direct proof, system gates, artifacts and whole-batch qualification. |
+| Stop Conditions | Required Shared/new cross-owner API, unresolved source contradiction or absent evidence needed to choose feature values. Record exact prerequisite and continue independent scoped work; do not guess silicon capability. |
+| Exit Criteria | I7/I8 applicable instruction contracts have direct proof and retained-family regression, system-only effects remain explicit, full dual-width units and applicable eight artifacts pass, actual diff reviewed and complete P pushed. No full CPU/PC110 qualification claim. |
 | Original Owner Request | Implement 486SX instruction semantics under governance; implement related groups together and avoid per-opcode full validation. |
-| Similar-Issue Sweep | Audit all cache/TLB and MOV-TR dispatch, profile/privilege/form gates and inherited test-register storage, including false-success paths and invalid register forms. No global CPU rewrite. |
+| Similar-Issue Sweep | Audit every reserved/writable flags-mask consumer, CPUID dispatch/metadata/preview and profile-specific identity path; classify reset/control/VME effects at their real owner. No global enum widening or CPU rewrite. |
 
-S4 is accepted and closed after actual-change review of pushed c4a08c66e.
-I3 has complete comparison, alias, write-cycle and failure proof; full units
-pass 595/595 on both widths. Eight 0559 PC EXEs pass product/INI identity,
-PE-width and version checks, with hashes in [S4 evidence](../etc/evidence/t559-s4-cmpxchg.md).
-Shared-six, MyNES and owner inputs are unchanged. S5 is admitted for the
-combined system-instruction boundary group. Its
-[review](../etc/evidence/t559-s5-system-instruction-boundaries.md) confirms no
-existing cache/TLB operation owner. The complete I4--I6 unavailable-effect and
-instruction contracts transfer explicitly to the system receiver; retained TR
-transfer/form/privilege/fetch proofs pass and full units pass 596/596 per width.
-Legal 486 TR6/TR7 still inherit passive copies; inventing guest UD is not a fix.
-Production and S4 artifacts are unchanged. S5 executor delivery awaits pushed
-P/coordinator acceptance; production 486 admission and T559 remain open gates.
+S5 is accepted and closed after actual review of pushed 8e6159de4. Its
+[evidence](../etc/evidence/t559-s5-system-instruction-boundaries.md) records
+retained TR transfer/form/privilege/fetch proof and 596/596 units per width.
+Complete I4--I6 unavailable instruction/effect contracts remain with the system
+receiver, including the existing passive 486 TR6/TR7 limitation. No production
+source changed; eight S4 0559 EXEs remain current. Shared-six, MyNES and owner
+inputs are unchanged. S6 is admitted for the complete CPUID/flags batch; source
+review precedes edits. T559 and production 486 qualification remain open.
 
 The proposal's batch-efficiency order applies: complete family implementation,
 focused CPU validation and actual-change review before final whole-suite
