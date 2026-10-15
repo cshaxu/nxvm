@@ -1,0 +1,53 @@
+#include "support/cpu_task_switch16_fixture.h"
+#include "lib/types/file.h"
+
+static lib_bool cpu_task32_expect_decode(x86_core_cpu_profile profile,
+    cpu_task16_case test_case, lib_u16 expected_saved_ip)
+{
+    cpu_instruction_fixture fixture;
+    t_cpu after = {0};
+    lib_u16 saved_ip = 0u;
+
+    cpu_task16_prepare(&fixture, profile, test_case);
+    cpu_task16_refresh(&fixture, 8u);
+    after = fixture.cpu;
+    lib_memory_copy(&saved_ip, fixture.memory + CPU_TASK16_A_BASE + 0x0eu,
+        sizeof(saved_ip));
+    if (!fixture.fault.valid && !fixture.delivered_exception.valid &&
+        after.data.flagHalt && after.data.tr.selector == 0x30u &&
+        after.data.eax == 0xffff2222u && saved_ip == expected_saved_ip)
+        return LIB_TRUE;
+    lib_c_fprintf(lib_c_stderr, "task32 decode case=%u halt=%u tr=%04x eax=%08x saved=%04x fault=%u delivered=%u\n",
+        (unsigned)test_case, (unsigned)after.data.flagHalt,
+        after.data.tr.selector, (unsigned)after.data.eax,
+        saved_ip, (unsigned)fixture.fault.valid,
+        (unsigned)fixture.delivered_exception.valid);
+    return LIB_FALSE;
+}
+
+int main(void)
+{
+    const struct {
+        cpu_task16_case test_case;
+        lib_u16 expected_saved_ip;
+    } cases[] = {
+        {CPU_TASK16_OPERAND32, 0x000bu},
+        {CPU_TASK16_INDIRECT_OPERAND32, 0x0008u},
+        {CPU_TASK16_INDIRECT_ADDRESS32, 0x000au},
+        {CPU_TASK16_INDIRECT_OPERAND_ADDRESS32, 0x000bu}
+    };
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_80386, X86_CORE_CPU_PROFILE_80486SX
+    };
+    lib_size index;
+
+    for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+        for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
+            if (!cpu_task32_expect_decode(profiles[profile], cases[index].test_case,
+                    cases[index].expected_saved_ip)) {
+                lib_c_fprintf(lib_c_stderr, "%s", "TASK32-DECODE:FAIL\n");
+                return 1;
+            }
+    lib_c_printf("%s\n", "TASK32-DECODE:OK");
+    return 0;
+}

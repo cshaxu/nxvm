@@ -1,0 +1,26 @@
+if(NOT DEFINED CORPUS_ROOT OR NOT DEFINED PROBE_ROOT)
+    message(FATAL_ERROR "CORPUS_ROOT and PROBE_ROOT required")
+endif()
+file(MAKE_DIRECTORY "${PROBE_ROOT}/cpu")
+file(WRITE "${PROBE_ROOT}/CMakeLists.txt" "")
+function(expect_rejected source marker)
+    file(WRITE "${PROBE_ROOT}/cpu/probe.c" "${source}")
+    execute_process(COMMAND "${CMAKE_COMMAND}" "-DCORPUS_ROOT=${PROBE_ROOT}"
+        -P "${CORPUS_ROOT}/verify_corpus.cmake" RESULT_VARIABLE result
+        OUTPUT_VARIABLE output ERROR_VARIABLE error)
+    if(result EQUAL 0 OR NOT "${output}${error}" MATCHES "${marker}")
+        message(FATAL_ERROR "Expected ${marker}: ${output}${error}")
+    endif()
+endfunction()
+expect_rejected("#include \"outer/probe_interface.h\"\n" "Forbidden x86-core include")
+expect_rejected("void *p = malloc(1);\n" "Raw CRT/platform")
+file(WRITE "${PROBE_ROOT}/CMakeLists.txt" "target_link_libraries(x86-core-cpu PRIVATE app-probe)\n")
+expect_rejected("" "Forbidden x86-core build dependency")
+file(WRITE "${PROBE_ROOT}/MANIFEST.sha256" "# sha256-manifest-v1\n")
+execute_process(COMMAND "${CMAKE_COMMAND}" "-DCORPUS_ROOT=${PROBE_ROOT}"
+    -P "${CORPUS_ROOT}/verify_manifest.cmake" RESULT_VARIABLE result
+    OUTPUT_VARIABLE output ERROR_VARIABLE error)
+if(result EQUAL 0 OR NOT "${output}${error}" MATCHES "manifest missing path")
+    message(FATAL_ERROR "Unlisted source not rejected: ${output}${error}")
+endif()
+message(STATUS "x86-core verifier negatives: OK")

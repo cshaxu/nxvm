@@ -1,0 +1,925 @@
+#include "support/cpu_stack_probe_fixture.h"
+#include "lib/types/file.h"
+
+/* REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
+static void gpr_push_pop_seed(cpu_instruction_fixture *state)
+{
+    t_cpu *cpu = &state->cpu;
+
+    cpu->data.eax = 0xa1a23344u;
+    cpu->data.ecx = 0xb1b25566u;
+    cpu->data.edx = 0xc1c27788u;
+    cpu->data.ebx = 0xd1d299aau;
+    cpu->data.esp = 0x12348000u;
+    cpu->data.ebp = 0xe1e2bbcdu;
+    cpu->data.esi = 0xf1f2ddefu;
+    cpu->data.edi = 0x1122a5a5u;
+    cpu->data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF |
+        VCPU_EFLAGS_IF;
+}
+
+static lib_i32 gpr_push_pop_sregs_same(const t_cpu *before, const t_cpu *after)
+{
+    return lib_memory_compare(&before->data.es, &after->data.es,
+        sizeof(before->data.es)) == 0 && lib_memory_compare(&before->data.cs,
+        &after->data.cs, sizeof(before->data.cs)) == 0 && lib_memory_compare(
+        &before->data.ss, &after->data.ss, sizeof(before->data.ss)) == 0 &&
+        lib_memory_compare(&before->data.ds, &after->data.ds,
+        sizeof(before->data.ds)) == 0 && lib_memory_compare(&before->data.fs,
+        &after->data.fs, sizeof(before->data.fs)) == 0 && lib_memory_compare(
+        &before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
+}
+
+static lib_i32 gpr_push_pop_cpu_same(const t_cpu *before, const t_cpu *after)
+{
+    return before->data.eax == after->data.eax &&
+        before->data.ecx == after->data.ecx &&
+        before->data.edx == after->data.edx &&
+        before->data.ebx == after->data.ebx &&
+        before->data.esp == after->data.esp &&
+        before->data.ebp == after->data.ebp &&
+        before->data.esi == after->data.esi &&
+        before->data.edi == after->data.edi &&
+        before->data.eip == after->data.eip &&
+        before->data.eflags == after->data.eflags &&
+        gpr_push_pop_sregs_same(before, after);
+}
+
+static lib_u32 gpr_push_pop_register(const t_cpu *cpu, lib_u8 index)
+{
+    switch (index)
+    {
+    case 0:
+        return cpu->data.eax;
+    case 1:
+        return cpu->data.ecx;
+    case 2:
+        return cpu->data.edx;
+    case 3:
+        return cpu->data.ebx;
+    case 4:
+        return cpu->data.esp;
+    case 5:
+        return cpu->data.ebp;
+    case 6:
+        return cpu->data.esi;
+    case 7:
+        return cpu->data.edi;
+    default:
+        return 0u;
+    }
+}
+
+static lib_i32 gpr_push_pop_test_push_registers(void)
+{
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_8086, X86_CORE_CPU_PROFILE_8088,
+        X86_CORE_CPU_PROFILE_80186,
+        X86_CORE_CPU_PROFILE_80286, X86_CORE_CPU_PROFILE_80386,
+        X86_CORE_CPU_PROFILE_80486SX
+    };
+    lib_u8 profile;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
+         ++profile)
+    {
+        lib_u8 index;
+
+        for (index = 0u; index != 8u; ++index)
+        {
+            const lib_u8 code[] = {(lib_u8)(0x50u + index)};
+            cpu_instruction_fixture state;
+            t_cpu before;
+            t_cpu after;
+            lib_u32 image = 0u;
+            lib_u32 expected;
+            lib_i32 failed = 0;
+            cpu_instruction_prepare(&state, profiles[profile]);
+
+            if (!failed)
+            {
+                gpr_push_pop_seed(&state);
+                before = state.cpu;
+                failed |= cpu_instruction_run(&state, code, sizeof(code), &after) != LIB_STATUS_OK ||
+                    state.fault.valid;
+                expected = gpr_push_pop_register(&before, index) & 0xffffu;
+                if (index == 4u && profiles[profile] < X86_CORE_CPU_PROFILE_80286)
+                    expected = 0x7ffeu;
+                failed |= cpu_instruction_read(&state, 0x7ffeu, &image, 2u,
+                    X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
+                    image != expected || after.data.eip != 1u ||
+                    after.data.eflags != before.data.eflags ||
+                    after.data.eax != before.data.eax ||
+                    after.data.ecx != before.data.ecx ||
+                    after.data.edx != before.data.edx ||
+                    after.data.ebx != before.data.ebx ||
+                    after.data.ebp != before.data.ebp ||
+                    after.data.esi != before.data.esi ||
+                    after.data.edi != before.data.edi || !gpr_push_pop_sregs_same(
+                    &before, &after) || after.data.esp !=
+                    ((before.data.esp & 0xffff0000u) | 0x7ffeu);
+            }
+            if (failed)
+                return 0;
+        }
+    }
+    return 1;
+}
+
+static lib_i32 gpr_push_pop_test_pop_esp_address(x86_core_cpu_profile profile)
+{
+    static const lib_u8 code[] = {0x67u, 0x8fu, 0x44u, 0x24u, 0x04u};
+    cpu_instruction_fixture state;
+    t_cpu after;
+    lib_u16 stack_value = 0xfaceu;
+    lib_u16 old_target = 0xbeefu;
+    lib_u16 observed = 0u;
+    lib_i32 failed = 0;
+    cpu_instruction_prepare(&state, profile);
+
+    if (!failed)
+    {
+        gpr_push_pop_seed(&state);
+        state.cpu.data.esp = 0x00008000u;
+        failed |= cpu_instruction_write(&state, 0x8000u, &stack_value, sizeof(stack_value),
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
+            cpu_instruction_write(&state, 0x8006u, &old_target, sizeof(old_target),
+                X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
+
+                cpu_instruction_run(&state, code, sizeof(code), &after) != LIB_STATUS_OK ||
+                state.fault.valid ||
+            after.data.eip != sizeof(code) || after.data.esp != 0x00008002u ||
+            cpu_instruction_read(&state, 0x8006u, &observed, sizeof(observed),
+                X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
+            LIB_STATUS_OK || observed != stack_value;
+    }
+    return !failed;
+}
+
+static lib_i32 gpr_push_pop_test_pop_registers(void)
+{
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_8086, X86_CORE_CPU_PROFILE_8088,
+        X86_CORE_CPU_PROFILE_80186,
+        X86_CORE_CPU_PROFILE_80286, X86_CORE_CPU_PROFILE_80386,
+        X86_CORE_CPU_PROFILE_80486SX
+    };
+    lib_u8 profile;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
+         ++profile)
+    {
+        lib_u8 index;
+
+        for (index = 0u; index != 8u; ++index)
+        {
+            const lib_u8 code[] = {(lib_u8)(0x58u + index)};
+            cpu_instruction_fixture state;
+            t_cpu before;
+            t_cpu after;
+            lib_u16 value = (lib_u16)(0x4100u + index);
+            lib_u32 expected;
+            lib_i32 failed = 0;
+            cpu_instruction_prepare(&state, profiles[profile]);
+
+            if (!failed)
+            {
+                gpr_push_pop_seed(&state);
+                failed |= cpu_instruction_write(&state, 0x8000u, &value, sizeof(value),
+                    X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
+                before = state.cpu;
+                failed |= cpu_instruction_run(&state, code, sizeof(code), &after) != LIB_STATUS_OK ||
+                    state.fault.valid || after.data.eip != 1u ||
+                    after.data.eflags != before.data.eflags ||
+                    !gpr_push_pop_sregs_same(&before, &after);
+                expected = (gpr_push_pop_register(&before, index) & 0xffff0000u) |
+                    value;
+                if (index == 4u)
+                    expected = (before.data.esp & 0xffff0000u) | value;
+                failed |= gpr_push_pop_register(&after, index) != expected ||
+                    after.data.eax != (index == 0u ? expected : before.data.eax) ||
+                    after.data.ecx != (index == 1u ? expected : before.data.ecx) ||
+                    after.data.edx != (index == 2u ? expected : before.data.edx) ||
+                    after.data.ebx != (index == 3u ? expected : before.data.ebx) ||
+                    after.data.ebp != (index == 5u ? expected : before.data.ebp) ||
+                    after.data.esi != (index == 6u ? expected : before.data.esi) ||
+                    after.data.edi != (index == 7u ? expected : before.data.edi) ||
+                    after.data.esp != (index == 4u ? expected :
+                    ((before.data.esp & 0xffff0000u) | 0x8002u));
+            }
+            if (failed)
+                return 0;
+        }
+    }
+    return 1;
+}
+
+static lib_i32 gpr_push_pop_test_rm_forms(void)
+{
+    static const lib_u8 push_reg[] = {0xffu, 0xf0u};
+    static const lib_u8 pop_reg[] = {0x8fu, 0xc1u};
+    static const lib_u8 push_ds[] = {0xffu, 0x36u, 0x20u, 0x00u};
+    static const lib_u8 push_ss[] = {0xffu, 0x76u, 0x00u};
+    static const lib_u8 pop_ds[] = {0x8fu, 0x06u, 0x20u, 0x00u};
+    static const lib_u8 pop_ss[] = {0x8fu, 0x46u, 0x00u};
+    static const lib_u8 push_67[] = {0x67u, 0xffu, 0x35u, 0x20u, 0x00u,
+        0x00u, 0x00u};
+    static const lib_u8 pop_67[] = {0x67u, 0x8fu, 0x05u, 0x20u, 0x00u,
+        0x00u, 0x00u};
+    const lib_u8 *codes[] = {push_reg, pop_reg, push_ds, push_ss, pop_ds,
+        pop_ss, push_67, pop_67};
+    const lib_u8 bytes[] = {2u, 2u, 4u, 3u, 4u, 3u, 7u, 7u};
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_8086, X86_CORE_CPU_PROFILE_8088,
+        X86_CORE_CPU_PROFILE_80186,
+        X86_CORE_CPU_PROFILE_80286, X86_CORE_CPU_PROFILE_80386,
+        X86_CORE_CPU_PROFILE_80486SX
+    };
+    lib_u8 profile;
+    lib_u8 form;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
+    {
+        if (form >= 6u && profiles[profile] < X86_CORE_CPU_PROFILE_80386) continue;
+        cpu_instruction_fixture state;
+        t_cpu before;
+        t_cpu after;
+        lib_u32 source = 0xface7788u;
+        lib_u32 image = 0xface7788u;
+        lib_u32 observed = 0u;
+        lib_u32 address = 0x20u;
+        lib_i32 push = form == 0u || form == 2u || form == 3u || form == 6u;
+        lib_i32 failed = 0;
+        cpu_instruction_prepare(&state, profiles[profile]);
+
+        if (!failed)
+        {
+            gpr_push_pop_seed(&state);
+            state.cpu.data.bp = 0x20u;
+            if (form == 3u || form == 5u)
+                address = 0x20u;
+            if (form == 6u || form == 7u)
+                state.cpu.data.esp = 0x00008000u;
+            if (push && form != 0u)
+                failed |= cpu_instruction_write(&state, address, &source, 2u,
+                    X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
+            if (!push)
+                failed |= cpu_instruction_write(&state, 0x8000u, &image, 2u,
+                    X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
+            before = state.cpu;
+            failed |= cpu_instruction_run(&state, codes[form], bytes[form], &after) != LIB_STATUS_OK ||
+                state.fault.valid || after.data.eip != bytes[form] ||
+                after.data.eflags != before.data.eflags ||
+                !gpr_push_pop_sregs_same(&before, &after);
+            if (push)
+            {
+                failed |= after.data.esp != ((before.data.esp & 0xffff0000u) |
+                    ((before.data.sp - 2u) & 0xffffu));
+                failed |= cpu_instruction_read(&state, 0x7ffeu, &observed, 2u,
+                    X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
+                    observed != (form == 0u ? (before.data.eax & 0xffffu) :
+                    (source & 0xffffu));
+            }
+            else
+            {
+                failed |= after.data.esp != ((before.data.esp & 0xffff0000u) |
+                    0x8002u);
+                if (form != 1u)
+                    failed |= cpu_instruction_read(&state, address, &observed, 2u,
+                        X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
+                        observed != (image & 0xffffu);
+            }
+            failed |= after.data.eax != before.data.eax || after.data.edx !=
+                before.data.edx || after.data.ebx != before.data.ebx ||
+                after.data.ebp != before.data.ebp || after.data.esi !=
+                before.data.esi || after.data.edi != before.data.edi ||
+                after.data.ecx != (form == 1u ? ((before.data.ecx & 0xffff0000u) |
+                (image & 0xffffu)) : before.data.ecx);
+        }
+        if (failed)
+            return 0;
+    }
+    return 1;
+}
+
+static lib_i32 gpr_push_pop_expect_ud(x86_core_cpu_profile profile,
+    const lib_u8 *code, lib_u8 bytes)
+{
+    cpu_instruction_fixture state;
+    t_cpu before;
+    lib_u32 source = 0xface7788u;
+    lib_u32 image = 0u;
+    lib_i32 failed = 0;
+    cpu_instruction_prepare(&state, profile);
+
+    if (!failed)
+    {
+        gpr_push_pop_seed(&state);
+        failed |= cpu_instruction_write(&state, 0x20u, &source, sizeof(source),
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
+
+            cpu_instruction_write(&state, 0x7ffcu, &source, sizeof(source),
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
+        before = state.cpu;
+        failed |= !cpu_instruction_expect_real_fault(&state, code, bytes, 6u) ||
+                cpu_instruction_read(&state, 0x20u, &image, sizeof(image),
+                X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
+                image != source ||
+            cpu_instruction_read(&state, 0x7ffcu, &image, sizeof(image),
+                X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
+            image != (profile < X86_CORE_CPU_PROFILE_80186 ? source :
+                (lib_u32)(lib_u16)(before.data.flags | 2u |
+                    (profile < X86_CORE_CPU_PROFILE_80286 ? 0xf000u : 0u)) << 16u);
+    }
+    return !failed;
+}
+
+static lib_i32 gpr_push_pop_test_rejections(void)
+{
+    static const lib_u8 attrs[][3] = {{0x66u, 0x50u}, {0x67u, 0x50u},
+        {0x66u, 0x67u, 0x50u}};
+    static const lib_u8 locks[][4] = {{0xf0u, 0x50u}, {0xf0u, 0x58u},
+        {0xf0u, 0xffu, 0xf0u}, {0xf0u, 0xffu, 0x36u, 0x20u},
+        {0xf0u, 0x8fu, 0xc1u}, {0xf0u, 0x8fu, 0x06u, 0x20u}};
+    static const x86_core_cpu_profile legacy[] = {
+        X86_CORE_CPU_PROFILE_8086, X86_CORE_CPU_PROFILE_80186,
+        X86_CORE_CPU_PROFILE_80286
+    };
+    lib_u8 profile;
+    lib_u8 form;
+
+    for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]); ++profile)
+    {
+        for (form = 0u; form != 3u; ++form)
+        {
+            lib_u8 bytes = form == 2u ? 3u : 2u;
+
+            if (!gpr_push_pop_expect_ud(legacy[profile], attrs[form], bytes))
+                return 0;
+        }
+    }
+    for (form = 0u; form != sizeof(locks) / sizeof(locks[0]); ++form)
+    {
+        lib_u8 bytes = form == 0u || form == 1u ? 2u :
+            (form == 3u || form == 5u ? 4u : 3u);
+
+        if (!gpr_push_pop_expect_ud(X86_CORE_CPU_PROFILE_80386, locks[form],
+            bytes))
+            return 0;
+    }
+    for (form = 1u; form != 8u; ++form)
+    {
+        lib_u8 code[] = {0x8fu, (lib_u8)(0xc0u | (form << 3))};
+
+        if (!gpr_push_pop_expect_ud(X86_CORE_CPU_PROFILE_80386, code,
+            sizeof(code)))
+            return 0;
+    }
+    return 1;
+}
+
+static lib_i32 gpr_push_pop_test_attributes(x86_core_cpu_profile profile)
+{
+    static const lib_u8 push32[] = {0x66u, 0x50u};
+    static const lib_u8 pop32[] = {0x66u, 0x59u};
+    static const lib_u8 push67[] = {0x67u, 0xffu, 0x35u, 0x20u, 0x00u,
+        0x00u, 0x00u};
+    static const lib_u8 pop66_67[] = {0x66u, 0x67u, 0x8fu, 0x05u, 0x20u,
+        0x00u, 0x00u, 0x00u};
+    const lib_u8 *codes[] = {push32, pop32, push67, pop66_67};
+    const lib_u8 bytes[] = {2u, 2u, 7u, 8u};
+    lib_u8 form;
+
+    for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
+    {
+        cpu_instruction_fixture state;
+        t_cpu before;
+        t_cpu after;
+        lib_u32 value = 0xface7788u;
+        lib_u32 observed = 0u;
+        lib_i32 failed = 0;
+        cpu_instruction_prepare(&state, profile);
+
+        if (!failed)
+        {
+            gpr_push_pop_seed(&state);
+            if (form == 2u)
+                failed |= cpu_instruction_write(&state, 0x20u, &value, sizeof(value),
+                    X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
+            if (form == 1u || form == 3u)
+                failed |= cpu_instruction_write(&state, 0x8000u, &value, sizeof(value),
+                    X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
+            before = state.cpu;
+            failed |= cpu_instruction_run(&state, codes[form], bytes[form], &after) != LIB_STATUS_OK ||
+                state.fault.valid || after.data.eip != bytes[form] ||
+                after.data.eflags != before.data.eflags ||
+                !gpr_push_pop_sregs_same(&before, &after);
+            if (form == 0u || form == 2u)
+            {
+                lib_u32 expected = form == 0u ? before.data.eax : value;
+                lib_u8 width = form == 0u ? 4u : 2u;
+                lib_u32 stack = 0x8000u - width;
+
+                failed |= after.data.esp != ((before.data.esp & 0xffff0000u) |
+                    stack) ||
+                    cpu_instruction_read(&state, stack, &observed, width,
+                        X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
+                    LIB_STATUS_OK || observed != (width == 2u ?
+                    (expected & 0xffffu) : expected);
+            }
+            else if (form == 1u)
+                failed |= after.data.eax != before.data.eax ||
+                    after.data.ecx != value || after.data.esp != 0x12348004u;
+            else
+            {
+                failed |= after.data.esp != 0x12348004u ||
+                    cpu_instruction_read(&state, 0x20u, &observed, sizeof(observed),
+                        X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
+                    LIB_STATUS_OK || observed != value;
+            }
+        }
+        if (failed)
+            return 0;
+    }
+    return 1;
+}
+
+static lib_i32 gpr_push_pop_boot_protected(cpu_instruction_fixture *state)
+{
+    static const lib_u8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
+    static const lib_u8 gdt[] = {
+        0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x20u, 0u, 0x9au, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x30u, 0u, 0x92u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x40u, 0u, 0x92u, 0u, 0u
+    };
+    static const lib_u8 bootstrap[] = {
+        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u, 0xb8u, 0x01u, 0x00u,
+        0x0fu, 0x01u, 0xf0u, 0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u,
+        0x8eu, 0xc0u, 0xb8u, 0x18u, 0x00u, 0x8eu, 0xd0u, 0xbcu,
+        0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
+    };
+
+    lib_u8 instruction;
+
+    if (cpu_instruction_write(state, 0x0100u, pointer, sizeof(pointer),
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
+        cpu_instruction_write(state, 0x0300u, gdt, sizeof(gdt),
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
+        cpu_instruction_write(state, 0u, bootstrap, sizeof(bootstrap),
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
+        return 0;
+    for (instruction = 0u; instruction != 10u; ++instruction)
+    {
+        x86_core_cpu_execution_refresh(&state->execution);
+        if (state->execution.stop_requested || state->fault.valid) return 0;
+    }
+    return state->cpu.data.cs.selector == 8u && state->cpu.data.eip == 0u;
+}
+
+static lib_i32 gpr_push_pop_protected_fault(x86_core_cpu_profile profile,
+    const lib_u8 *code, lib_u8 bytes,
+    lib_u8 limit_segment, lib_u32 limit, lib_i32 expdown)
+{
+    cpu_instruction_fixture state;
+    t_cpu before;
+    t_cpu after;
+    lib_u32 sentinel = 0xdeadbeefu;
+    lib_u32 observed = 0u;
+    lib_i32 failed = 0;
+    cpu_instruction_prepare(&state, profile);
+
+    if (!failed)
+        failed |= !gpr_push_pop_boot_protected(&state);
+    if (!failed)
+    {
+        gpr_push_pop_seed(&state);
+        state.cpu.data.esp = 0x12348000u;
+        if (limit_segment == 0u)
+        {
+            state.cpu.data.ss.limit = limit;
+            state.cpu.data.ss.seg.data.expdown = expdown;
+        }
+        else
+            state.cpu.data.ds.limit = limit;
+        failed |= cpu_instruction_write(&state, 0x3010u, &sentinel, sizeof(sentinel),
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
+
+            cpu_instruction_write(&state, 0x4010u, &sentinel, sizeof(sentinel),
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
+            cpu_instruction_write(&state, 0x2000u, code, bytes,
+                X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
+        before = state.cpu;
+        state.cpu.data.eip = 0u;
+        x86_core_cpu_execution_refresh(&state.execution);
+        failed |= !x86_core_cpu_is_shutdown(&state.execution) || state.execution.stop_requested;
+        after = state.cpu;
+        failed |= state.fault.valid || !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
+            after.data.eip != 0u || after.data.eax != before.data.eax ||
+            after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
+            after.data.ebx != before.data.ebx || after.data.esp != before.data.esp ||
+            after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
+            after.data.edi != before.data.edi || after.data.eflags !=
+            before.data.eflags || !gpr_push_pop_sregs_same(&before, &after) ||
+            cpu_instruction_read(&state, 0x3010u, &observed, sizeof(observed),
+                X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
+                observed != sentinel ||
+            cpu_instruction_read(&state, 0x4010u, &observed, sizeof(observed),
+                X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
+            LIB_STATUS_OK || observed != sentinel;
+    }
+    return !failed;
+}
+
+static lib_i32 gpr_push_pop_test_protected_faults(x86_core_cpu_profile profile)
+{
+    static const lib_u8 push[] = {0x50u};
+    static const lib_u8 pop[] = {0x59u};
+    static const lib_u8 push_source[] = {0xffu, 0x36u, 0x10u, 0x00u};
+    static const lib_u8 pop_dest[] = {0x8fu, 0x06u, 0x10u, 0x00u};
+
+    if (!gpr_push_pop_protected_fault(profile, push, sizeof(push), 0u, 0xffffu,
+        LIB_TRUE))
+    {
+        lib_c_printf("protected push\n");
+        return 0;
+    }
+    if (!gpr_push_pop_protected_fault(profile, pop, sizeof(pop), 0u, 0x7fffu,
+        LIB_FALSE))
+    {
+        lib_c_printf("protected pop\n");
+        return 0;
+    }
+    if (!gpr_push_pop_protected_fault(profile, push_source, sizeof(push_source), 1u,
+        0x0fu, LIB_FALSE))
+    {
+        lib_c_printf("protected push-source\n");
+        return 0;
+    }
+    if (!gpr_push_pop_protected_fault(profile, pop_dest, sizeof(pop_dest), 1u, 0x0fu,
+        LIB_FALSE))
+    {
+        lib_c_printf("protected pop-dest\n");
+        return 0;
+    }
+    return 1;
+}
+
+static lib_bool gpr_push_pop_test_early_wrap(void)
+{
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_8086, X86_CORE_CPU_PROFILE_8088,
+        X86_CORE_CPU_PROFILE_80186
+    };
+    static const lib_u16 stacks[] = {0u, 1u, 2u, 3u, 0xfff0u, 0xffffu};
+    const lib_u8 code[] = {0x50u};
+    lib_u8 profile, index;
+    lib_bool passed = LIB_TRUE;
+    for (profile = 0u; profile < 3u; ++profile)
+    for (index = 0u; index < sizeof(stacks) / sizeof(stacks[0]); ++index) {
+        cpu_instruction_fixture state;
+        t_cpu after;
+        const lib_u16 expected = (lib_u16)(stacks[index] - 2u);
+        cpu_instruction_prepare(&state, profiles[profile]);
+        gpr_push_pop_seed(&state);
+        state.cpu.data.sp = stacks[index];
+        if (cpu_instruction_run(&state, code, sizeof(code), &after) != LIB_STATUS_OK ||
+            state.fault.valid || after.data.sp != expected || after.data.eip != 1u ||
+            state.memory[expected] != 0x44u ||
+            state.memory[(lib_u16)(expected + 1u)] != 0x33u) {
+            lib_c_printf("early PUSH profile=%u sp=%u fault=%x result=%x\n",
+                (unsigned)profile, (unsigned)stacks[index],
+                (unsigned)state.fault.exception_mask, (unsigned)after.data.sp);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool gpr_push_pop_test_push_shutdown(x86_core_cpu_profile profile)
+{
+    static const lib_u8 forms[][4] = {
+        {0x50u}, {0x68u, 0x34u, 0x12u}, {0xffu, 0x36u, 0u, 0x40u},
+        {0x06u}, {0x0fu, 0xa0u}
+    };
+    static const lib_u8 lengths[] = {1u, 3u, 4u, 1u, 2u};
+    lib_u8 form, vm;
+    lib_bool passed = LIB_TRUE;
+    for (form = 0u; form < sizeof(lengths); ++form)
+    for (vm = 0u; vm < 2u; ++vm) {
+        cpu_instruction_fixture state;
+        t_cpu after;
+        cpu_instruction_prepare(&state, profile);
+        gpr_push_pop_seed(&state);
+        state.cpu.data.esp = 1u;
+        if (vm) {
+            state.cpu.data.cr0 |= VCPU_CR0_PE;
+            state.cpu.data.eflags |= VCPU_EFLAGS_VM;
+        }
+        cpu_instruction_run(&state, forms[form], lengths[form], &after);
+        if (!state.execution.shutdown_requested || !x86_core_cpu_is_shutdown(&state.execution) ||
+            state.execution.stop_requested ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
+            after.data.esp != 1u || after.data.eax != 0xa1a23344u) {
+            lib_c_printf("PUSH shutdown form=%u vm=%u requested=%u mask=%x\n",
+                (unsigned)form, (unsigned)vm, (unsigned)state.execution.shutdown_requested,
+                (unsigned)state.delivered_exception.exception_mask);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool gpr_push_pop_test_push_shutdown_receiver(x86_core_cpu_profile profile)
+{
+    static const lib_u8 forms[][2] = {
+        {0x50u}, {0x51u}, {0x52u}, {0x53u}, {0x54u}, {0x55u}, {0x56u}, {0x57u},
+        {0x68u}, {0x6au}, {0xffu}, {0x06u}, {0x0eu}, {0x16u}, {0x1eu},
+        {0x0fu, 0xa0u}, {0x0fu, 0xa8u}, {0x9cu}, {0x58u}
+    };
+    lib_u8 form, operand32;
+    lib_bool passed = LIB_TRUE;
+
+    for (form = 0u; form < sizeof(forms) / sizeof(forms[0]); ++form)
+    for (operand32 = 0u; operand32 < 2u; ++operand32) {
+        cpu_instruction_fixture state;
+        lib_u8 code[7] = {0u};
+        lib_u8 bytes = 0u;
+        lib_u8 gate[] = {0u, 1u, 8u, 0u, 0u, 0x8eu, 0u, 0u};
+        lib_u32 esp0 = 0x8000u;
+        lib_u16 ss0 = 0x18u;
+        const lib_bool receiver_control = form == sizeof(forms) / sizeof(forms[0]) - 1u;
+        t_cpu before;
+
+        cpu_instruction_prepare(&state, profile);
+        if (!gpr_push_pop_boot_protected(&state)) return LIB_FALSE;
+        gpr_push_pop_seed(&state);
+        state.cpu.data.esp = receiver_control ? 0xffffu : 1u;
+        state.cpu.data.eflags |= 2u | VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL;
+        state.cpu.data.cs.selector = state.cpu.data.ss.selector =
+            state.cpu.data.ds.selector = 0u;
+        state.cpu.data.cs.base = state.cpu.data.ss.base = state.cpu.data.ds.base = 0u;
+        state.cpu.data.cs.dpl = state.cpu.data.ss.dpl = state.cpu.data.ds.dpl = 3u;
+        state.cpu.data.cs.seg.exec.defsize = LIB_FALSE;
+        state.cpu.data.ss.seg.data.big = LIB_FALSE;
+        state.cpu.data.eip = 0x5000u;
+        state.cpu.data.idtr.flagValid = LIB_TRUE;
+        state.cpu.data.idtr.sregtype = SREG_IDTR;
+        state.cpu.data.idtr.base = 0x1000u;
+        state.cpu.data.idtr.limit = 0x100u;
+        state.cpu.data.tr.flagValid = LIB_TRUE;
+        state.cpu.data.tr.sregtype = SREG_TR;
+        state.cpu.data.tr.selector = 0x20u;
+        state.cpu.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
+        state.cpu.data.tr.base = 0x600u;
+        state.cpu.data.tr.limit = 0x67u;
+        lib_memory_copy(state.memory + 0x604u, &esp0, sizeof(esp0));
+        lib_memory_copy(state.memory + 0x608u, &ss0, sizeof(ss0));
+        lib_memory_copy(state.memory + 0x1000u + 12u * 8u, gate, sizeof(gate));
+        state.memory[0x2100u] = 0x90u;
+        lib_memory_set(state.memory + 0xc000u - 40u, 0xa5, 40u);
+        if (operand32) code[bytes++] = 0x66u;
+        code[bytes++] = forms[form][0];
+        if (forms[form][0] == 0x0fu) code[bytes++] = forms[form][1];
+        if (forms[form][0] == 0x68u) {
+            code[bytes++] = 0x7fu; code[bytes++] = 0u;
+            if (operand32) { code[bytes++] = 0u; code[bytes++] = 0u; }
+        }
+        if (forms[form][0] == 0x6au) code[bytes++] = 0x7fu;
+        if (forms[form][0] == 0xffu) {
+            code[bytes++] = 0x36u; code[bytes++] = 0u; code[bytes++] = 0x40u;
+        }
+        lib_memory_copy(state.memory + 0x5000u, code, bytes);
+        before = state.cpu;
+        x86_core_cpu_execution_refresh(&state.execution);
+        if (state.fault.valid || state.execution.stop_requested ||
+            (receiver_control ?
+                (state.execution.shutdown_requested ||
+                 state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SS ||
+                 state.cpu.data.cs.selector != 8u || state.cpu.data.eip != 0x100u) :
+                (!state.execution.shutdown_requested ||
+                 state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
+                 !gpr_push_pop_cpu_same(&before, &state.cpu)))) {
+            lib_c_printf("PUSH receiver profile=%u form=%u wide=%u mask=%x cs=%x eip=%x\n",
+                (unsigned)profile, (unsigned)form, (unsigned)operand32,
+                (unsigned)state.delivered_exception.exception_mask,
+                (unsigned)state.cpu.data.cs.selector, (unsigned)state.cpu.data.eip);
+            passed = LIB_FALSE;
+        }
+        if (!receiver_control) {
+            lib_u8 byte;
+            for (byte = 0u; byte < 40u; ++byte)
+                if (state.memory[0xc000u - 40u + byte] != 0xa5u) passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool gpr_push_pop_test_alias_failure_matrix(x86_core_cpu_profile profile)
+{
+    static const x86_core_cpu_bus_provider bus = {
+        .read_memory = cpu_stack_probe_read,
+        .write_memory = cpu_stack_probe_write,
+        .interrupt_pending = cpu_instruction_interrupt_pending
+    };
+    lib_u8 mode, operand32, stack32, form, failure;
+    lib_bool passed = LIB_TRUE;
+    for (mode = 0u; mode < 3u; ++mode)
+    for (operand32 = 0u; operand32 < 2u; ++operand32)
+    for (stack32 = 0u; stack32 < (mode == 2u ? 1u : 2u); ++stack32)
+    for (form = 0u; form < 3u; ++form)
+    for (failure = 0u; failure < (form == 2u ? 3u : 2u); ++failure) {
+        cpu_stack_probe_fixture fixture;
+        cpu_instruction_fixture *state = &fixture.instruction;
+        const lib_u8 width = operand32 ? 4u : 2u;
+        const lib_u32 source = 0xcdef1234u, sentinel = 0xdeadc0deu;
+        const lib_u32 initial_sp = mode == 2u ? 0x4000u : 0x14000u;
+        const lib_u32 stack_address = stack32 ? initial_sp : 0x4000u;
+        const lib_u32 target = initial_sp + width + 4u;
+        lib_u8 code[7] = {0};
+        lib_u8 bytes = 0u;
+        t_cpu before, after;
+        lib_u32 observed = 0u;
+
+        if (operand32) code[bytes++] = 0x66u;
+        if (form == 2u) code[bytes++] = 0x67u;
+        code[bytes++] = form == 0u ? 0x5cu : 0x8fu;
+        if (form == 1u) code[bytes++] = 0xc4u;
+        if (form == 2u) { code[bytes++] = 0x44u; code[bytes++] = 0x24u; code[bytes++] = 4u; }
+        lib_memory_set(&fixture, 0, sizeof(fixture));
+        cpu_instruction_prepare_with_bus(state, profile, &bus, &fixture);
+        gpr_push_pop_seed(state);
+        state->cpu.data.esp = initial_sp;
+        state->cpu.data.ss.limit = state->cpu.data.ds.limit =
+            mode == 2u ? 0xffffu : 0x3ffffu;
+        state->cpu.data.ss.seg.data.big = stack32;
+        if (mode) {
+            state->cpu.data.cr0 |= VCPU_CR0_PE;
+            if (mode == 1u) {
+                state->cpu.data.cs.selector = 8u;
+                state->cpu.data.ds.selector = 0x10u;
+                state->cpu.data.ss.selector = 0x18u;
+            }
+            if (mode == 2u) state->cpu.data.eflags |= VCPU_EFLAGS_VM;
+        }
+        cpu_instruction_write(state, stack_address, &source, width,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u);
+        cpu_instruction_write(state, target, &sentinel, width,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u);
+        fixture.frame_base = 0x4000u; fixture.frame_size = 0x12000u;
+        fixture.reject_at = failure;
+        before = state->cpu;
+        if (cpu_instruction_run(state, code, bytes, &after) !=
+                (failure ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) ||
+            fixture.frame_accesses != (failure ? failure : form == 2u ? 2u : 1u) ||
+            (failure && (!state->fault.valid ||
+                state->fault.exception_mask != VCPUINS_EXCEPT_CE ||
+                !gpr_push_pop_cpu_same(&before, &after))) ||
+            (!failure && (after.data.esp != (form == 2u ? initial_sp + width :
+                operand32 ? source : (initial_sp & 0xffff0000u) | (source & 0xffffu)) ||
+                after.data.eip != bytes || after.data.eflags != before.data.eflags ||
+                after.data.eax != before.data.eax))) {
+            lib_c_printf("POP alias mode=%u operand32=%u stack32=%u form=%u failure=%u count=%u\n",
+                (unsigned)mode, (unsigned)operand32, (unsigned)stack32,
+                (unsigned)form, (unsigned)failure, (unsigned)fixture.frame_accesses);
+            passed = LIB_FALSE;
+        }
+        cpu_instruction_read(state, target, &observed, width,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u);
+        if (observed != ((form == 2u && !failure ? source : sentinel) &
+                (operand32 ? 0xffffffffu : 0xffffu))) passed = LIB_FALSE;
+    }
+    return passed;
+}
+
+static lib_bool gpr_push_pop_test_early_frame_callers(void)
+{
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_8086, X86_CORE_CPU_PROFILE_8088,
+        X86_CORE_CPU_PROFILE_80186
+    };
+    static const lib_u8 codes[][5] = {
+        {0xe8u, 0xfdu, 1u}, {0x9au, 0u, 2u, 0u, 0u}, {0xcdu, 0x30u}
+    };
+    static const lib_u8 lengths[] = {3u, 5u, 2u};
+    static const lib_u8 frames[] = {2u, 4u, 6u};
+    static const lib_u16 stacks[] = {0u, 1u, 0xfffeu};
+    const lib_u8 vector[] = {0u, 2u, 0u, 0u};
+    lib_u8 profile, form, stack;
+    lib_bool passed = LIB_TRUE;
+    for (profile = 0u; profile < 3u; ++profile)
+    for (form = 0u; form < 3u; ++form)
+    for (stack = 0u; stack < 3u; ++stack) {
+        cpu_instruction_fixture state;
+        t_cpu after;
+        const lib_u16 final_sp = (lib_u16)(stacks[stack] - frames[form]);
+        cpu_instruction_prepare(&state, profiles[profile]);
+        gpr_push_pop_seed(&state);
+        state.cpu.data.sp = stacks[stack];
+        cpu_instruction_write(&state, 0x30u * 4u, vector, sizeof(vector),
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u);
+        state.memory[0x200u] = 0x90u;
+        if (cpu_instruction_run(&state, codes[form], lengths[form], &after) !=
+                LIB_STATUS_OK || state.fault.valid || after.data.sp != final_sp ||
+            after.data.eip != 0x200u || after.data.cs.selector != 0u ||
+            state.memory[final_sp] != lengths[form] ||
+            state.memory[(lib_u16)(final_sp + 1u)] != 0u) {
+            lib_c_printf("early frame profile=%u form=%u sp=%u final=%x eip=%x fault=%x\n",
+                (unsigned)profile, (unsigned)form, (unsigned)stacks[stack],
+                (unsigned)after.data.sp, (unsigned)after.data.eip,
+                (unsigned)state.fault.exception_mask);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool gpr_push_pop_test_real_stack_range(void)
+{
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_80286, X86_CORE_CPU_PROFILE_80386,
+        X86_CORE_CPU_PROFILE_80486SX
+    };
+    const lib_u8 vector[] = {0u, 2u, 0u, 0u};
+    lib_u8 profile, leave;
+    lib_bool passed = LIB_TRUE;
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (leave = 0u; leave < 2u; ++leave) {
+        const lib_u8 code[] = {leave ? 0xc9u : 0x58u};
+        cpu_instruction_fixture state;
+        t_cpu after;
+        cpu_instruction_prepare(&state, profiles[profile]);
+        gpr_push_pop_seed(&state);
+        if (leave) state.cpu.data.bp = 0xffffu;
+        else state.cpu.data.sp = 0xffffu;
+        cpu_instruction_write(&state, (profiles[profile] >= X86_CORE_CPU_PROFILE_80386 ?
+                12u : 13u) * 4u, vector, sizeof(vector),
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u);
+        cpu_instruction_run(&state, code, sizeof(code), &after);
+        if (state.delivered_exception.exception_mask != (profiles[profile] >= X86_CORE_CPU_PROFILE_80386 ?
+                VCPUINS_EXCEPT_SS : VCPUINS_EXCEPT_GP) ||
+            after.data.eip != 0x200u || state.execution.shutdown_requested) {
+            lib_c_printf("real stack profile=%u leave=%u delivered=%x eip=%x\n",
+                (unsigned)profile, (unsigned)leave,
+                (unsigned)state.delivered_exception.exception_mask,
+                (unsigned)after.data.eip);
+            passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+lib_i32 main(void)
+{
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_80386, X86_CORE_CPU_PROFILE_80486SX
+    };
+    lib_u8 profile;
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile) {
+        if (!gpr_push_pop_test_push_shutdown_receiver(profiles[profile]) ||
+            !gpr_push_pop_test_alias_failure_matrix(profiles[profile]) ||
+            !gpr_push_pop_test_push_shutdown(profiles[profile]) ||
+            !gpr_push_pop_test_protected_faults(profiles[profile])) return 1;
+    }
+    if (!gpr_push_pop_test_real_stack_range()) return 1;
+    if (!gpr_push_pop_test_early_frame_callers()) return 1;
+    if (!gpr_push_pop_test_early_wrap()) return 1;
+    if (!gpr_push_pop_test_push_registers())
+    {
+        lib_c_printf("GPR-PUSH-POP stage=push-registers\n");
+        return 1;
+    }
+    if (!gpr_push_pop_test_pop_esp_address(X86_CORE_CPU_PROFILE_80386) ||
+        !gpr_push_pop_test_pop_esp_address(X86_CORE_CPU_PROFILE_80486SX))
+    {
+        lib_c_printf("GPR-PUSH-POP stage=pop-esp-address\n");
+        return 1;
+    }
+    if (!gpr_push_pop_test_pop_registers())
+    {
+        lib_c_printf("GPR-PUSH-POP stage=pop-registers\n");
+        return 1;
+    }
+    if (!gpr_push_pop_test_rm_forms())
+    {
+        lib_c_printf("GPR-PUSH-POP stage=rm\n");
+        return 1;
+    }
+    if (!gpr_push_pop_test_rejections())
+    {
+        lib_c_printf("GPR-PUSH-POP stage=rejections\n");
+        return 1;
+    }
+    if (!gpr_push_pop_test_attributes(X86_CORE_CPU_PROFILE_80386) ||
+        !gpr_push_pop_test_attributes(X86_CORE_CPU_PROFILE_80486SX))
+    {
+        lib_c_printf("GPR-PUSH-POP stage=attributes\n");
+        return 1;
+    }
+    lib_c_printf("GPR-PUSH-POP:OK\n");
+    lib_c_printf("GPR-PUSH-POP-PROFILES:OK\n");
+    lib_c_printf("GROUP5-PUSH-RM-PROFILES:OK\n");
+    return 0;
+}
