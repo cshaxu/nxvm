@@ -11,7 +11,7 @@ queued with its complete original ledger and requires later admission.
 | Coverage unit | Owner and completion predicate | Initial disposition |
 | --- | --- | --- |
 | I0 exact ten-tree prerequisite | Lib/Emulator/X86 Debug/X86 IBM PC/X86 NXVM src/test match pinned SoftPC commit; manifests, root registration and migrated product receivers verified. | S1 accepted after pushed P1/P2 actual-change review; 264 exact files and full receiving proof below. |
-| I1 complete disposition | Every current Core source/test/target and public contract has one destination, dependency and verification owner; all PC assumptions and SoftPC split prerequisites classified. | S2 delivery review: complete 679-path inventory and explicit mixed-contract receiving decisions; no implementation qualification implied. |
+| I1 complete disposition | Every current Core source/test/target and public contract has one destination, dependency and verification owner; all PC assumptions and SoftPC split prerequisites classified. | S2 accepted after actual-change review of pushed `82e3257cc`: complete 679-path inventory and explicit mixed-contract receiving decisions; no implementation qualification implied. |
 | I2 CPU/FPU extraction | One independent shared CPU/FPU implementation and corresponding tests, correct interfaces, all old consumers migrated and superseded paths removed. | Future batch; original CPU functionality/grades retained. |
 | I3 neutral execution core | CPU composition, memory/port routes, guest time, transactions and debug independent of PC policy, with real ROM-free non-PC board proof. | Future batch; one executor/timeline. |
 | I4 NXVM consolidation | Chips, board-base/XT/AT, driver and family Product in X86 NXVM; all four Apps use the same package, no duplicates or old-path aliases. | Future batch; real PC product/runtime receivers mapped before moving. |
@@ -105,3 +105,11 @@ ten current EXEs, owner INI, external ROM/media and MyNES inputs are preserved.
 Inventory equality and documentation governance are its applicable checks;
 S1 remains the runnable dual-width baseline. I2--I5 and T560 C16/C17/final
 qualification stay open in their original owners. T561 is not closed.
+
+Coordinator acceptance reviews the original request, complete S2 packet and
+actual P1 `82e3257cc`, not merely its report. Fourteen NXVM documentation files
+change (+25,912/-9, mostly machine-readable evidence); source, tests, build
+inputs and assets have no diff against `8db742b6d`. The reproduced inventories,
+Core source/test manifests, corpus boundary and documentation gate pass. The
+packet's design-only exception is explicit; no dynamic qualification is claimed.
+I1 is accepted as planning completeness, while I2--I5 remain future work.
