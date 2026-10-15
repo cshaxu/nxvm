@@ -295,6 +295,63 @@ static void core_machine_cpu_bus_complete_memory_lock(void *opaque, lib_bool com
     else core_machine_transaction_cancel(&machine->transaction);
 }
 
+static void core_machine_cpu_bus_system_management_active(void *opaque,
+    lib_bool active)
+{
+    core_machine *machine = opaque;
+
+    if (machine->attachment.system_management_active != LIB_NULL)
+        machine->attachment.system_management_active(machine->attachment.context, active);
+}
+
+static lib_status core_machine_cpu_bus_special_cycle(void *opaque,
+    core_machine_cpu_special_cycle cycle, lib_bool *acknowledged)
+{
+    core_machine *machine = opaque;
+    lib_bool ready = LIB_TRUE;
+    lib_status status;
+
+    if (machine == LIB_NULL || acknowledged == LIB_NULL ||
+        cycle < CORE_MACHINE_CPU_SPECIAL_HALT || cycle > CORE_MACHINE_CPU_SPECIAL_STOP_GRANT)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    *acknowledged = LIB_FALSE;
+    if (machine->transaction.owner == CORE_MACHINE_TRANSACTION_OWNER_NONE) {
+        if (machine->transaction.hold_owner != CORE_MACHINE_TRANSACTION_OWNER_NONE)
+            return LIB_STATUS_OK;
+        status = core_machine_transaction_begin(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_CPU, CORE_MACHINE_TRANSACTION_CPU_SPECIAL_CYCLE,
+            cycle == CORE_MACHINE_CPU_SPECIAL_STOP_GRANT ? 0x10u : 0u,
+            (lib_u32)cycle, cycle == CORE_MACHINE_CPU_SPECIAL_SHUTDOWN ? 0x0eu : 0x0bu);
+        if (status != LIB_STATUS_OK) return status;
+    } else if (machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_CPU ||
+        machine->transaction.kind != CORE_MACHINE_TRANSACTION_CPU_SPECIAL_CYCLE ||
+        machine->transaction.value != (lib_u32)cycle) return LIB_STATUS_INVALID_STATE;
+    if (machine->attachment.special_cycle != LIB_NULL) {
+        status = machine->attachment.special_cycle(machine->attachment.context, cycle, &ready);
+        if (status != LIB_STATUS_OK) return status;
+    }
+    if (!ready || (machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled &&
+        !machine->cpu_cycle_bus_ready)) return LIB_STATUS_OK;
+    if (machine->attachment.complete_special_cycle != LIB_NULL)
+        machine->attachment.complete_special_cycle(machine->attachment.context, cycle, LIB_TRUE);
+    core_machine_transaction_commit(&machine->transaction);
+    *acknowledged = LIB_TRUE;
+    return LIB_STATUS_OK;
+}
+
+static void core_machine_cpu_bus_cancel_special_cycle(void *opaque,
+    core_machine_cpu_special_cycle cycle)
+{
+    core_machine *machine = opaque;
+
+    if (machine == LIB_NULL || machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_CPU ||
+        machine->transaction.kind != CORE_MACHINE_TRANSACTION_CPU_SPECIAL_CYCLE ||
+        machine->transaction.value != (lib_u32)cycle) return;
+    if (machine->attachment.complete_special_cycle != LIB_NULL)
+        machine->attachment.complete_special_cycle(machine->attachment.context, cycle, LIB_FALSE);
+    core_machine_transaction_cancel(&machine->transaction);
+}
+
 const core_machine_cpu_bus_provider core_machine_cpu_bus = {
     .read_memory = core_machine_cpu_bus_read_memory,
     .write_memory = core_machine_cpu_bus_write_memory,
@@ -308,7 +365,10 @@ const core_machine_cpu_bus_provider core_machine_cpu_bus = {
     .query_cache_memory = core_machine_cpu_bus_query_cache_memory,
     .cache_operation = core_machine_cpu_bus_cache_operation,
     .begin_memory_lock = core_machine_cpu_bus_begin_memory_lock,
-    .complete_memory_lock = core_machine_cpu_bus_complete_memory_lock
+    .complete_memory_lock = core_machine_cpu_bus_complete_memory_lock,
+    .system_management_active = core_machine_cpu_bus_system_management_active,
+    .special_cycle = core_machine_cpu_bus_special_cycle,
+    .cancel_special_cycle = core_machine_cpu_bus_cancel_special_cycle
 };
 
 /* Board bus arbitration, wait windows and trace publication are not CPU state. */

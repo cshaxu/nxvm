@@ -97,6 +97,16 @@ typedef struct core_machine_attachment {
      * accesses do not invoke this; failure cancels before data publication. */
     lib_status (*memory_cache_control)(void *owner, lib_u32 address,
         lib_u8 bytes, lib_bool write, lib_u8 cache_control);
+    /* Physical CPU output only. Board logic owns any SMRAM decode/A20/cache
+     * policy; this callback must not run or destroy the Core recursively. */
+    void (*system_management_active)(void *owner, lib_bool active);
+    /* Optional external special-cycle controller, supplied as a pair. Poll
+     * reports local RDY without publishing effects; complete publishes once
+     * (commit=true) or releases on cancellation. Core owns the held bus cycle. */
+    lib_status (*special_cycle)(void *owner, core_machine_cpu_special_cycle cycle,
+        lib_bool *ready);
+    void (*complete_special_cycle)(void *owner, core_machine_cpu_special_cycle cycle,
+        lib_bool commit);
     void *context;
 } core_machine_attachment;
 

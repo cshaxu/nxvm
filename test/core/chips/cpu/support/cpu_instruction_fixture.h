@@ -53,10 +53,29 @@ static lib_bool cpu_instruction_interrupt_pending(void *opaque)
     return LIB_FALSE;
 }
 
+/* This isolated instruction bus has no external wait controller. */
+static inline lib_status cpu_instruction_special_cycle(void *opaque,
+    core_machine_cpu_special_cycle cycle, lib_bool *acknowledged)
+{
+    (void)opaque;
+    (void)cycle;
+    *acknowledged = LIB_TRUE;
+    return LIB_STATUS_OK;
+}
+
+static inline void cpu_instruction_cancel_special_cycle(void *opaque,
+    core_machine_cpu_special_cycle cycle)
+{
+    (void)opaque;
+    (void)cycle;
+}
+
 static const core_machine_cpu_bus_provider cpu_instruction_bus = {
     .read_memory = cpu_instruction_read,
     .write_memory = cpu_instruction_write,
-    .interrupt_pending = cpu_instruction_interrupt_pending
+    .interrupt_pending = cpu_instruction_interrupt_pending,
+    .special_cycle = cpu_instruction_special_cycle,
+    .cancel_special_cycle = cpu_instruction_cancel_special_cycle
 };
 
 static void cpu_instruction_fault(void *opaque,

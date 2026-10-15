@@ -169,6 +169,100 @@ static lib_i32 cpu_instance_case(const cpu_lifecycle_reset_case *test_case)
     return failed;
 }
 
+static lib_i32 cpu_soft_reset_case(void)
+{
+    const core_machine_cpu_execution_context empty = {0};
+    cpu_bus_fixture fixture;
+    core_machine_cpu_execution_context *context = &fixture.execution;
+    t_cpu before;
+
+    cpu_bus_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+    context->smbase = 0x00180000u;
+    fixture.cpu.data.eax = 0x12345678u;
+    fixture.cpu.data.cr0 = VCPU_CR0_PE | VCPU_CR0_PG | VCPU_CR0_WP;
+    fixture.cpu.data.cr2 = 0x87654321u;
+    fixture.cpu.data.cr3 = 0x00123000u;
+    fixture.cpu.data.cr4 = VCPU_CR4_VME;
+    fixture.cpu.data.flagHalt = LIB_TRUE;
+    before = fixture.cpu;
+    if (core_machine_cpu_execution_request_soft_reset(LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_cpu_state_soft_reset(LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_cpu_execution_consume_reset_request(LIB_NULL) != CORE_MACHINE_CPU_RESET_NONE ||
+        core_machine_cpu_execution_request_soft_reset(context) != LIB_STATUS_OK ||
+        core_machine_cpu_execution_request_soft_reset(context) != LIB_STATUS_OK ||
+        context->smbase != 0x00180000u || lib_memory_compare(&before, &fixture.cpu, sizeof(before)) ||
+        core_machine_cpu_execution_consume_reset_request(context) != CORE_MACHINE_CPU_RESET_SOFT ||
+        core_machine_cpu_execution_consume_reset_request(context) != CORE_MACHINE_CPU_RESET_NONE)
+        return 1;
+
+    lib_memory_set(context->cache, 0x5au, sizeof(context->cache));
+    lib_memory_set(context->cache_lru, 0x5au, sizeof(context->cache_lru));
+    lib_memory_set(context->cache_fill, 0x5au, sizeof(context->cache_fill));
+    lib_memory_set(context->cache_read, 0x5au, sizeof(context->cache_read));
+    lib_memory_set(context->tlb, 0x5au, sizeof(context->tlb));
+    lib_memory_set(context->tlb_lru, 0x5au, sizeof(context->tlb_lru));
+    context->prefetch_valid = context->prefetch_expected_valid = LIB_TRUE;
+    context->prefetch_reservation_valid = LIB_TRUE;
+    context->source_repeat_active = LIB_TRUE;
+    context->debug_trap_pending = context->debug_tf_before = LIB_TRUE;
+    context->debug_rf_before = LIB_TRUE;
+    context->debug_trap_cause = 0x00004000u;
+    context->interrupt_shadow = CPU_INTERRUPT_SHADOW_SEGMENT;
+    context->nmi_in_service = context->nmi_pending = LIB_TRUE;
+    context->nmi_masked = LIB_TRUE;
+    context->wait_state = CPU_WAIT_STATE_TEST;
+    context->wait_poll_remaining_ticks = 5u;
+    core_machine_cpu_execution_request_shutdown(context);
+    if (core_machine_cpu_state_soft_reset(context) != LIB_STATUS_OK ||
+        context->smbase != 0x00180000u || fixture.cpu.data.eax != 0u ||
+        fixture.cpu.data.edx != VCPU_486SX_SIGNATURE || fixture.cpu.data.eip != 0xfff0u ||
+        fixture.cpu.data.cs.base != 0xffff0000u || fixture.cpu.data.cs.selector != 0xf000u ||
+        fixture.cpu.data.cs.limit != 0xffffu || fixture.cpu.data.idtr.limit != 0x3ffu ||
+        fixture.cpu.data.cr0 != (VCPU_CR0_CD | VCPU_CR0_NW | VCPU_CR0_ET) ||
+        fixture.cpu.data.cr2 != 0u || fixture.cpu.data.cr3 != 0u || fixture.cpu.data.cr4 != 0u ||
+        fixture.cpu.data.eflags != 2u || fixture.cpu.data.dr6 != 0xffff0ff0u ||
+        fixture.cpu.data.flagHalt || core_machine_cpu_is_shutdown(context) ||
+        context->prefetch_valid || context->prefetch_expected_valid ||
+        context->prefetch_reservation_valid || context->source_repeat_active ||
+        context->debug_trap_pending || context->debug_tf_before || context->debug_rf_before ||
+        context->debug_trap_cause || context->interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
+        context->nmi_in_service || context->nmi_pending || context->nmi_masked ||
+        context->wait_state != CPU_WAIT_STATE_NONE || context->wait_poll_remaining_ticks ||
+        lib_memory_compare(context->cache, empty.cache, sizeof(empty.cache)) ||
+        lib_memory_compare(context->cache_lru, empty.cache_lru, sizeof(empty.cache_lru)) ||
+        lib_memory_compare(context->cache_fill, empty.cache_fill, sizeof(empty.cache_fill)) ||
+        lib_memory_compare(context->cache_read, empty.cache_read, sizeof(empty.cache_read)) ||
+        lib_memory_compare(context->tlb, empty.tlb, sizeof(empty.tlb)) ||
+        lib_memory_compare(context->tlb_lru, empty.tlb_lru, sizeof(empty.tlb_lru)))
+        return 1;
+
+    if (core_machine_cpu_execution_request_soft_reset(context) != LIB_STATUS_OK) return 1;
+    core_machine_cpu_execution_request_reset(context);
+    if (core_machine_cpu_execution_request_soft_reset(context) != LIB_STATUS_OK ||
+        core_machine_cpu_execution_consume_reset_request(context) != CORE_MACHINE_CPU_RESET_HARD)
+        return 1;
+    core_machine_cpu_state_reset(context);
+    if (context->smbase != X86_CPU_DEFAULT_SMBASE) return 1;
+    core_machine_cpu_execution_request_reset(context);
+    if (core_machine_cpu_execution_request_soft_reset(context) != LIB_STATUS_OK ||
+        core_machine_cpu_execution_consume_reset_request(context) != CORE_MACHINE_CPU_RESET_HARD)
+        return 1;
+
+    for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_8086;
+         profile < CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
+        context->cpu_profile = profile;
+        context->smbase = 0x00200000u;
+        fixture.cpu.data.eax = 0x89abcdefu;
+        before = fixture.cpu;
+        if (core_machine_cpu_execution_request_soft_reset(context) != LIB_STATUS_UNSUPPORTED ||
+            core_machine_cpu_state_soft_reset(context) != LIB_STATUS_UNSUPPORTED ||
+            core_machine_cpu_execution_consume_reset_request(context) != CORE_MACHINE_CPU_RESET_NONE ||
+            context->smbase != 0x00200000u ||
+            lib_memory_compare(&before, &fixture.cpu, sizeof(before))) return 1;
+    }
+    return 0;
+}
+
 static lib_i32 cpu_context_isolation_case(void)
 {
     t_cpu first_cpu = {0};
@@ -218,7 +312,7 @@ lib_i32 main(void)
     t_cpu cpu = {0};
     t_cpuins instructions = {0};
     core_machine_cpu_execution_context context = {0};
-    lib_i32 result = cpu_context_isolation_case();
+    lib_i32 result = cpu_context_isolation_case() | cpu_soft_reset_case();
 
     core_machine_cpu_execution_context_initialize(
         &context, &cpu, &instructions, LIB_NULL, LIB_NULL);

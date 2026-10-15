@@ -79,6 +79,13 @@ typedef enum core_machine_cpu_cache_operation {
     CORE_MACHINE_CPU_CACHE_FLUSH
 } core_machine_cpu_cache_operation;
 
+typedef enum core_machine_cpu_special_cycle {
+    CORE_MACHINE_CPU_SPECIAL_NONE = 0,
+    CORE_MACHINE_CPU_SPECIAL_HALT,
+    CORE_MACHINE_CPU_SPECIAL_SHUTDOWN,
+    CORE_MACHINE_CPU_SPECIAL_STOP_GRANT
+} core_machine_cpu_special_cycle;
+
 enum {
     CORE_MACHINE_CPU_MEMORY_CACHE_PWT = 0x08u,
     CORE_MACHINE_CPU_MEMORY_CACHE_PCD = 0x10u
@@ -128,6 +135,18 @@ typedef struct core_machine_cpu_bus_provider {
      * Both callbacks may be absent only for a sole-owner isolated bus. */
     lib_status (*begin_memory_lock)(void *context);
     void (*complete_memory_lock)(void *context, lib_bool commit);
+    /* Non-failing physical SMIACT level. Assert before the first state save,
+     * deassert after the last restore (or processor reset). It is not an
+     * automatic cache/A20 policy or permission to reenter CPU execution. */
+    void (*system_management_active)(void *context, lib_bool active);
+    /* One held physical request, sampled again only while unacknowledged.
+     * acknowledged=false is normal RDY wait, not failure. An acknowledged
+     * call releases the request; cancellation is null-admission-safe and
+     * releases any outstanding request on reset/fault/destruction. Required
+     * for selected-SX HALT/shutdown/Stop Grant, never used for observation. */
+    lib_status (*special_cycle)(void *context, core_machine_cpu_special_cycle cycle,
+        lib_bool *acknowledged);
+    void (*cancel_special_cycle)(void *context, core_machine_cpu_special_cycle cycle);
 } core_machine_cpu_bus_provider;
 
 static inline lib_i32 core_machine_cpu_profile_has_8086_semantics(
@@ -469,6 +488,9 @@ typedef enum core_machine_cpu_watchpoint {
 lib_status core_machine_cpu_create(const core_machine_cpu_bus_provider *bus,
     void *bus_context, core_machine_cpu_execution_context **out_context);
 void core_machine_cpu_destroy(core_machine_cpu_execution_context *context);
+/* Quiesce physical outputs before their borrowed board context is destroyed.
+ * Idempotent; CPU destruction also performs it for isolated chip owners. */
+void core_machine_cpu_execution_finalize(core_machine_cpu_execution_context *context);
 
 void core_machine_cpu_execution_request_stop(
     core_machine_cpu_execution_context *context);
@@ -480,7 +502,17 @@ lib_u8 core_machine_cpu_execution_consume_debug_pause_request(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_request_reset(
     core_machine_cpu_execution_context *context);
-lib_u8 core_machine_cpu_execution_consume_reset_request(
+typedef enum core_machine_cpu_reset_kind {
+    CORE_MACHINE_CPU_RESET_NONE = 0,
+    CORE_MACHINE_CPU_RESET_HARD,
+    CORE_MACHINE_CPU_RESET_SOFT
+} core_machine_cpu_reset_kind;
+
+/* Serialized qualified reset requests, not raw pin pulse sampling. HARD has
+ * priority over SOFT. Only the selected SL-enhanced SX accepts SRESET. */
+lib_status core_machine_cpu_execution_request_soft_reset(
+    core_machine_cpu_execution_context *context);
+core_machine_cpu_reset_kind core_machine_cpu_execution_consume_reset_request(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_request_shutdown(
     core_machine_cpu_execution_context *context);
@@ -493,6 +525,8 @@ lib_u8 core_machine_cpu_execution_consume_shutdown_request(
 void core_machine_cpu_state_initialize(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context);
+/* Same reset owner and effects as RESET, except SRESET retains SMBASE. */
+lib_status core_machine_cpu_state_soft_reset(core_machine_cpu_execution_context *context);
 void core_machine_cpu_capture_state(const core_machine_cpu_execution_context *context,
     core_machine_cpu_state *out_state);
 lib_u32 core_machine_cpu_linear_pc(const core_machine_cpu_execution_context *context);
@@ -520,6 +554,26 @@ void core_machine_cpu_set_nmi_mask(core_machine_cpu_execution_context *context,
     lib_bool masked);
 lib_bool core_machine_cpu_nmi_is_masked(const core_machine_cpu_execution_context *context);
 lib_bool core_machine_cpu_request_nmi(core_machine_cpu_execution_context *context);
+/* Serialized, qualified SMI level; inactive-to-active latches one request.
+ * The board owns pulse/synchronizer timing. Only the selected SX accepts it;
+ * a bus without the SMIACT output cannot admit the signal. */
+lib_status core_machine_cpu_set_smi(core_machine_cpu_execution_context *context,
+    lib_bool asserted);
+/* Qualified logical levels on the serialized execution owner. Board logic
+ * owns pin pulse/synchronizer timing. CLK=true means restarted and PLL stable;
+ * clock changes require Stop Grant and STPCLK release requires a stable CLK.
+ * NMI/SMI may change while CLK is stopped; other pins must remain stable.
+ * No instruction or physical output is issued by these setters. */
+lib_status core_machine_cpu_set_stop_clock(core_machine_cpu_execution_context *context,
+    lib_bool asserted);
+lib_status core_machine_cpu_set_clock_running(core_machine_cpu_execution_context *context,
+    lib_bool running);
+lib_status core_machine_cpu_set_flush(core_machine_cpu_execution_context *context,
+    lib_bool asserted);
+lib_status core_machine_cpu_set_nmi(core_machine_cpu_execution_context *context,
+    lib_bool asserted);
+/* A physical system wait, not product pause, HALT or a retired instruction. */
+lib_bool core_machine_cpu_is_system_waiting(const core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_context_bind_profiles(
     core_machine_cpu_execution_context *context,
     core_machine_cpu_profile cpu_profile,
@@ -582,8 +636,9 @@ void core_machine_cpu_execution_advance_prefetch_reservation(
 void core_machine_cpu_execution_invalidate_prefetch(
     core_machine_cpu_execution_context *context);
 
-/* Owning executor thread only. Physical external-write snoop ignores A20M,
- * respects NW and changes only matching cache valid bits, not tags/data. */
+/* Owning executor thread, CLK running only. Physical external-write snoop
+ * ignores A20M, respects NW and changes only matching cache valid bits, not
+ * tags/data. Board logic must not issue EADS while CLK is stopped. */
 void core_machine_cpu_signal_cache_write(core_machine_cpu_execution_context *context,
     lib_u32 physical, lib_size bytes);
 

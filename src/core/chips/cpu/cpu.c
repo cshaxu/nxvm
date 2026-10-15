@@ -97,6 +97,7 @@ lib_status core_machine_cpu_create(const core_machine_cpu_bus_provider *bus,
 
 void core_machine_cpu_destroy(core_machine_cpu_execution_context *context)
 {
+    core_machine_cpu_execution_finalize(context);
     /* Execution is the first member of the sole CPU allocation. */
     lib_release((core_machine_cpu_instance *)context);
 }
@@ -174,6 +175,8 @@ void core_machine_cpu_set_nmi_mask(core_machine_cpu_execution_context *context,
     lib_bool masked)
 {
     context->nmi_masked = masked;
+    if (!masked && context->nmi_asserted && !context->stop_granted && context->clock_running)
+        context->nmi_pending = LIB_TRUE;
 }
 
 lib_bool core_machine_cpu_nmi_is_masked(const core_machine_cpu_execution_context *context)
@@ -183,9 +186,73 @@ lib_bool core_machine_cpu_nmi_is_masked(const core_machine_cpu_execution_context
 
 lib_bool core_machine_cpu_request_nmi(core_machine_cpu_execution_context *context)
 {
-    if (context->nmi_masked) return LIB_FALSE;
+    if (context->nmi_masked || context->stop_granted || !context->clock_running)
+        return LIB_FALSE;
     context->nmi_pending = LIB_TRUE;
     return LIB_TRUE;
+}
+
+lib_status core_machine_cpu_set_smi(core_machine_cpu_execution_context *context,
+    lib_bool asserted)
+{
+    if (context == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX ||
+        context->bus == LIB_NULL || context->bus->system_management_active == LIB_NULL)
+        return LIB_STATUS_UNSUPPORTED;
+    if (asserted && !context->smi_asserted && !context->stop_granted && context->clock_running)
+        context->smi_pending = LIB_TRUE;
+    context->smi_asserted = asserted;
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_cpu_set_stop_clock(core_machine_cpu_execution_context *context,
+    lib_bool asserted)
+{
+    if (context == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX || context->bus == LIB_NULL ||
+        context->bus->special_cycle == LIB_NULL || context->bus->cancel_special_cycle == LIB_NULL)
+        return LIB_STATUS_UNSUPPORTED;
+    if (!asserted && !context->clock_running) return LIB_STATUS_INVALID_STATE;
+    context->stop_clock_asserted = asserted;
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_cpu_set_clock_running(core_machine_cpu_execution_context *context,
+    lib_bool running)
+{
+    if (context == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX) return LIB_STATUS_UNSUPPORTED;
+    if (running != context->clock_running && !context->stop_granted) return LIB_STATUS_INVALID_STATE;
+    context->clock_running = running;
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_cpu_set_flush(core_machine_cpu_execution_context *context,
+    lib_bool asserted)
+{
+    if (context == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX) return LIB_STATUS_UNSUPPORTED;
+    if (!context->clock_running) return LIB_STATUS_INVALID_STATE;
+    if (asserted && !context->flush_asserted) context->flush_pending = LIB_TRUE;
+    context->flush_asserted = asserted;
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_cpu_set_nmi(core_machine_cpu_execution_context *context,
+    lib_bool asserted)
+{
+    if (context == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX) return LIB_STATUS_UNSUPPORTED;
+    if (asserted && !context->nmi_asserted && !context->stop_granted && context->clock_running &&
+        !context->nmi_masked) context->nmi_pending = LIB_TRUE;
+    context->nmi_asserted = asserted;
+    return LIB_STATUS_OK;
+}
+
+lib_bool core_machine_cpu_is_system_waiting(const core_machine_cpu_execution_context *context)
+{
+    return context != LIB_NULL && (context->special_cycle != CORE_MACHINE_CPU_SPECIAL_NONE ||
+        context->stop_granted);
 }
 
 static void core_machine_debug_copy_segment(
@@ -469,7 +536,16 @@ void core_machine_cpu_execution_context_initialize(
     context->external_cycle_context = LIB_NULL;
     context->stop_requested = LIB_FALSE;
     context->debug_pause_requested = LIB_FALSE;
-    context->reset_requested = LIB_FALSE;
+    context->reset_requested = CORE_MACHINE_CPU_RESET_NONE;
+    context->smbase = X86_CPU_DEFAULT_SMBASE;
+    context->smm_active = context->smi_asserted = context->smi_pending = LIB_FALSE;
+    context->special_cycle = CORE_MACHINE_CPU_SPECIAL_NONE;
+    context->stop_clock_asserted = context->stop_granted = LIB_FALSE;
+    context->clock_running = LIB_TRUE;
+    context->flush_asserted = context->flush_pending = context->nmi_asserted = LIB_FALSE;
+    context->io_restart_valid = LIB_FALSE;
+    context->io_restart_eip = context->io_restart_esi = 0u;
+    context->io_restart_ecx = context->io_restart_edi = 0u;
     context->debug_trap_pending = LIB_FALSE;
     context->debug_tf_before = LIB_FALSE;
     context->debug_rf_before = LIB_FALSE;
@@ -565,7 +641,8 @@ void core_machine_cpu_state_initialize(
     if (context != LIB_NULL) {
         context->stop_requested = LIB_FALSE;
         context->debug_pause_requested = LIB_FALSE;
-        context->reset_requested = LIB_FALSE;
+        context->reset_requested = CORE_MACHINE_CPU_RESET_NONE;
+        context->smbase = X86_CPU_DEFAULT_SMBASE;
         context->shutdown_requested = LIB_FALSE;
         context->debug_trap_pending = LIB_FALSE;
         context->shutdown_state = CPU_SHUTDOWN_NONE;
@@ -589,11 +666,14 @@ void core_machine_cpu_state_initialize(
     }
     core_machine_cpu_execution_initialize(context);
 }
-void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
+static void core_machine_cpu_state_apply_reset(
+    core_machine_cpu_execution_context *context, lib_bool preserve_smbase)
+{
     if (context == LIB_NULL || context->cpu == LIB_NULL ||
         context->instructions == LIB_NULL) return;
     const lib_bool early = core_machine_cpu_profile_has_8086_semantics(
         context->cpu_profile) || context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186;
+    const lib_u32 smbase = context->smbase;
     context->source_repeat_active = LIB_FALSE;
     context->source_repeat_cs = 0u;
     context->source_repeat_eip = 0u;
@@ -605,7 +685,7 @@ void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
     if (context != LIB_NULL) {
         context->stop_requested = LIB_FALSE;
         context->debug_pause_requested = LIB_FALSE;
-        context->reset_requested = LIB_FALSE;
+        context->reset_requested = CORE_MACHINE_CPU_RESET_NONE;
         context->shutdown_requested = LIB_FALSE;
         context->prefetch_count = 0u;
         context->prefetch_capacity = context->cpu_profile ==
@@ -695,7 +775,22 @@ void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
     cpu_state.data.gdtr.flagValid = LIB_TRUE;
 
     core_machine_cpu_execution_reset(context);
+    context->smbase = preserve_smbase ? smbase : X86_CPU_DEFAULT_SMBASE;
+}
 
+void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
+{
+    core_machine_cpu_state_apply_reset(context, LIB_FALSE);
+}
+
+lib_status core_machine_cpu_state_soft_reset(core_machine_cpu_execution_context *context)
+{
+    if (context == LIB_NULL || context->cpu == LIB_NULL || context->instructions == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX)
+        return LIB_STATUS_UNSUPPORTED;
+    core_machine_cpu_state_apply_reset(context, LIB_TRUE);
+    return LIB_STATUS_OK;
 }
 
 void core_machine_cpu_execution_reserve_prefetch(
@@ -790,19 +885,36 @@ lib_u8 core_machine_cpu_execution_consume_debug_pause_request(
 void core_machine_cpu_execution_request_reset(
     core_machine_cpu_execution_context *context)
 {
-    if (context != LIB_NULL) context->reset_requested = LIB_TRUE;
+    if (context != LIB_NULL) context->reset_requested = CORE_MACHINE_CPU_RESET_HARD;
 }
-lib_u8 core_machine_cpu_execution_consume_reset_request(
+
+lib_status core_machine_cpu_execution_request_soft_reset(
     core_machine_cpu_execution_context *context)
 {
-    lib_u8 requested = context != LIB_NULL && context->reset_requested;
-    if (context != LIB_NULL) context->reset_requested = LIB_FALSE;
+    if (context == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX)
+        return LIB_STATUS_UNSUPPORTED;
+    if (context->reset_requested == CORE_MACHINE_CPU_RESET_NONE)
+        context->reset_requested = CORE_MACHINE_CPU_RESET_SOFT;
+    return LIB_STATUS_OK;
+}
+
+core_machine_cpu_reset_kind core_machine_cpu_execution_consume_reset_request(
+    core_machine_cpu_execution_context *context)
+{
+    const core_machine_cpu_reset_kind requested = context != LIB_NULL ?
+        context->reset_requested : CORE_MACHINE_CPU_RESET_NONE;
+
+    if (context != LIB_NULL) context->reset_requested = CORE_MACHINE_CPU_RESET_NONE;
     return requested;
 }
 void core_machine_cpu_execution_request_shutdown(
     core_machine_cpu_execution_context *context)
 {
     if (context != LIB_NULL) {
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+            !context->shutdown_requested && context->special_cycle == CORE_MACHINE_CPU_SPECIAL_NONE)
+            context->special_cycle = CORE_MACHINE_CPU_SPECIAL_SHUTDOWN;
         context->shutdown_requested = LIB_TRUE;
         if (context->shutdown_state == CPU_SHUTDOWN_NONE)
             context->shutdown_state = CPU_SHUTDOWN_WAITING;

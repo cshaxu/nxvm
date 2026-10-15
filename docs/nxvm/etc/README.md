@@ -8,6 +8,10 @@ T560 S3: [Alignment and RMW investigation](evidence/t560-s3-alignment-rmw.md)
 
 T560 S4: [Translation-cache investigation](evidence/t560-s4-translation-cache.md)
 
+T560 S7: [SMM and system-signal investigation](evidence/t560-s7-smm-system.md)
+records the original state map, finite event matrix, actual owners and source
+limits before implementation; it is not runtime qualification.
+
 T559 S7: [Whole instruction-delta qualification](evidence/t559-s7-instruction-qualification.md)
 records whole-ledger reconciliation, the bit-operation LOCK repair and final
 dual-width unit, external and artifact validation.

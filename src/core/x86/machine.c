@@ -49,7 +49,8 @@ static void core_machine_begin_retirement_wait(core_machine *machine,
 static lib_bool core_machine_finish_shutdown(core_machine *machine,
     core_machine_run_result *result)
 {
-    if (machine->attachment.shutdown_reset != LIB_NULL &&
+    if (!core_machine_cpu_is_system_waiting(machine->executor_cpu_execution) &&
+        machine->attachment.shutdown_reset != LIB_NULL &&
         machine->attachment.shutdown_reset(machine->attachment.context)) {
         return LIB_FALSE;
     }
@@ -153,7 +154,9 @@ lib_status core_machine_bind_attachment(core_machine *machine,
 {
     if (machine == LIB_NULL || attachment == LIB_NULL ||
             attachment->context == LIB_NULL ||
-            attachment->finalize_devices == LIB_NULL) {
+            attachment->finalize_devices == LIB_NULL ||
+            ((attachment->special_cycle == LIB_NULL) !=
+             (attachment->complete_special_cycle == LIB_NULL))) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (!core_machine_configuration_is_open(machine) ||
@@ -662,10 +665,17 @@ static lib_status core_machine_cold_reset(core_machine *machine)
 
 /* An 8042 reset pulse resets the processor only.  Preserve RAM, board state
  * and scheduled device work; discard only incomplete CPU execution state. */
-static void core_machine_processor_reset(core_machine *machine)
+static lib_status core_machine_processor_reset(core_machine *machine,
+    core_machine_cpu_reset_kind kind)
 {
-    if (machine == LIB_NULL) return;
-    core_machine_cpu_state_reset(machine->executor_cpu_execution);
+    lib_status status;
+
+    if (kind == CORE_MACHINE_CPU_RESET_SOFT) {
+        status = core_machine_cpu_state_soft_reset(machine->executor_cpu_execution);
+        if (status != LIB_STATUS_OK) return status;
+    } else {
+        core_machine_cpu_state_reset(machine->executor_cpu_execution);
+    }
     machine->cpu_retirement_wait_pending = LIB_FALSE;
     machine->cpu_retirement_wait_ticks = 0u;
     machine->cpu_retirement_completion_ticks = 0u;
@@ -677,6 +687,7 @@ static void core_machine_processor_reset(core_machine *machine)
     machine->external_cycle_round_overflow = LIB_FALSE;
     machine->external_cycle_overlap_valid = LIB_FALSE;
     machine->retirement_eligibility_key_valid = LIB_FALSE;
+    return LIB_STATUS_OK;
 }
 
 lib_status core_machine_reconfigure_memory(core_machine *machine,
@@ -820,7 +831,9 @@ lib_status core_machine_run(
                 core_machine_cpu_execution_consume_shutdown_request(
                     machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
-                core_machine_processor_reset(machine);
+                const lib_status status = core_machine_processor_reset(machine,
+                    CORE_MACHINE_CPU_RESET_HARD);
+                if (status != LIB_STATUS_OK) return status;
                 machine->lifecycle = CORE_MACHINE_STOPPED;
                 result->reason = CORE_MACHINE_STOP_RESET_REQUESTED;
                 result->linear_pc = core_machine_linear_pc(machine);
@@ -847,14 +860,19 @@ lib_status core_machine_run(
                     0u, (lib_u32)result->reason);
                 return LIB_STATUS_OK;
             }
-            if (core_machine_cpu_execution_consume_reset_request(
-                    machine->executor_cpu_execution)) {
-                machine->lifecycle = CORE_MACHINE_PAUSED;
-                core_machine_processor_reset(machine);
-                machine->lifecycle = CORE_MACHINE_STOPPED;
-                result->reason = CORE_MACHINE_STOP_RESET_REQUESTED;
-                result->linear_pc = core_machine_linear_pc(machine);
-                return LIB_STATUS_OK;
+            {
+                const core_machine_cpu_reset_kind reset =
+                    core_machine_cpu_execution_consume_reset_request(machine->executor_cpu_execution);
+
+                if (reset != CORE_MACHINE_CPU_RESET_NONE) {
+                    const lib_status status = core_machine_processor_reset(machine, reset);
+
+                    if (status != LIB_STATUS_OK) return status;
+                    machine->lifecycle = CORE_MACHINE_STOPPED;
+                    result->reason = CORE_MACHINE_STOP_RESET_REQUESTED;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    return LIB_STATUS_OK;
+                }
             }
             if (machine->transaction_contract.refresh_cycle_source_ticks != 0u)
                 core_machine_refresh_hold_advance(machine, 0u);
@@ -1050,9 +1068,8 @@ lib_status core_machine_run(
                 }
                 if (core_machine_cpu_execution_consume_wait_stall(
                         machine->executor_cpu_execution)) {
-                    /* An automatic 80286 ESC wait has restored its unretired
-                     * instruction. The existing FPU deadline owns elapsed
-                     * guest time; no synthetic retirement occurs here. */
+                    /* Unretired WAIT or system-bus/power work leaves time
+                     * with the existing device/board deadline owner. */
                     machine->lifecycle = CORE_MACHINE_PAUSED;
                     result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                     result->linear_pc = core_machine_linear_pc(machine);
@@ -1067,7 +1084,8 @@ lib_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return core_machine_complete_run_boundary(machine, result);
                 }
-                if (machine->transaction_contract.cpu_prefetch_reservation_enabled) {
+                if (machine->transaction_contract.cpu_prefetch_reservation_enabled &&
+                    !core_machine_cpu_is_system_waiting(machine->executor_cpu_execution)) {
                     core_machine_cpu_execution_reserve_prefetch(
                         machine->executor_cpu_execution);
                 }
@@ -1139,7 +1157,8 @@ lib_status core_machine_run(
                 return core_machine_complete_run_boundary(machine, result);
             }
             core_machine_cpu_execution_poll_wait(machine->executor_cpu_execution);
-            if (core_machine_cpu_is_halted(machine->executor_cpu_execution)) {
+            if (core_machine_cpu_is_halted(machine->executor_cpu_execution) ||
+                core_machine_cpu_is_system_waiting(machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                 result->linear_pc = core_machine_linear_pc(machine);
@@ -1251,6 +1270,42 @@ void core_machine_signal_processor_reset(core_machine *machine)
         core_machine_cpu_execution_request_reset(machine->executor_cpu_execution);
 }
 
+lib_status core_machine_signal_soft_processor_reset(core_machine *machine)
+{
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return core_machine_cpu_execution_request_soft_reset(machine->executor_cpu_execution);
+}
+
+lib_status core_machine_set_smi(core_machine *machine, lib_bool asserted)
+{
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return core_machine_cpu_set_smi(machine->executor_cpu_execution, asserted);
+}
+
+lib_status core_machine_set_stop_clock(core_machine *machine, lib_bool asserted)
+{
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return core_machine_cpu_set_stop_clock(machine->executor_cpu_execution, asserted);
+}
+
+lib_status core_machine_set_clock_running(core_machine *machine, lib_bool running)
+{
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return core_machine_cpu_set_clock_running(machine->executor_cpu_execution, running);
+}
+
+lib_status core_machine_set_flush(core_machine *machine, lib_bool asserted)
+{
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return core_machine_cpu_set_flush(machine->executor_cpu_execution, asserted);
+}
+
+lib_status core_machine_set_nmi(core_machine *machine, lib_bool asserted)
+{
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return core_machine_cpu_set_nmi(machine->executor_cpu_execution, asserted);
+}
+
 lib_status core_machine_set_nmi_mask(core_machine *machine, lib_i32 masked)
 {
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
@@ -1301,6 +1356,7 @@ void core_machine_destroy(core_machine *machine)
         machine->firmware_context.machine = LIB_NULL;
         machine->firmware_provider = LIB_NULL;
         machine->firmware_provider_context = LIB_NULL;
+        core_machine_cpu_execution_finalize(machine->executor_cpu_execution);
         if (machine->attachment.finalize_devices != LIB_NULL) {
             machine->attachment.finalize_devices(machine->attachment.context);
         }

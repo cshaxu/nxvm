@@ -120,6 +120,22 @@ static void cpu_bus_extension(void *opaque, lib_u8 opcode, lib_u8 modrm)
     fixture->failed = LIB_TRUE;
 }
 
+static inline lib_status cpu_bus_special_cycle(void *opaque,
+    core_machine_cpu_special_cycle cycle, lib_bool *acknowledged)
+{
+    (void)opaque;
+    (void)cycle;
+    *acknowledged = LIB_TRUE;
+    return LIB_STATUS_OK;
+}
+
+static inline void cpu_bus_cancel_special_cycle(void *opaque,
+    core_machine_cpu_special_cycle cycle)
+{
+    (void)opaque;
+    (void)cycle;
+}
+
 static const core_machine_cpu_bus_provider cpu_bus_provider = {
     .read_memory = cpu_bus_read,
     .write_memory = cpu_bus_write,
@@ -127,7 +143,9 @@ static const core_machine_cpu_bus_provider cpu_bus_provider = {
     .complete_port = cpu_bus_complete,
     .interrupt_pending = cpu_bus_pending,
     .acknowledge_interrupt = cpu_bus_acknowledge,
-    .extension_command = cpu_bus_extension
+    .extension_command = cpu_bus_extension,
+    .special_cycle = cpu_bus_special_cycle,
+    .cancel_special_cycle = cpu_bus_cancel_special_cycle
 };
 
 static void cpu_bus_fault(void *opaque,

@@ -192,11 +192,27 @@ struct core_machine_cpu_execution_context {
     void *external_cycle_context;
     lib_u8 stop_requested;
     lib_u8 debug_pause_requested;
-    lib_u8 reset_requested;
+    core_machine_cpu_reset_kind reset_requested;
+    lib_u32 smbase;
+    lib_bool smm_active;
+    lib_bool smi_asserted;
+    lib_bool smi_pending;
+    core_machine_cpu_special_cycle special_cycle;
+    lib_bool stop_clock_asserted;
+    lib_bool stop_granted;
+    lib_bool clock_running;
+    lib_bool flush_asserted;
+    lib_bool flush_pending;
+    lib_bool nmi_asserted;
+    lib_bool io_restart_valid;
+    lib_u32 io_restart_eip;
+    lib_u32 io_restart_esi;
+    lib_u32 io_restart_ecx;
+    lib_u32 io_restart_edi;
     lib_u8 shutdown_requested;
     /* Resident chip state is independent of the consumable board signal. */
     enum { CPU_SHUTDOWN_NONE, CPU_SHUTDOWN_WAITING,
-        CPU_SHUTDOWN_RESET_ONLY } shutdown_state;
+        CPU_SHUTDOWN_RESET_ONLY, CPU_SHUTDOWN_SMM } shutdown_state;
     /* Delivery without retirement: a synchronous fault or interrupt waking an
      * already halted CPU preserves entry but publishes no instruction tick. */
     lib_u8 instruction_in_progress;
@@ -261,8 +277,6 @@ lib_u8 core_machine_cpu_execution_write_linear(
 void core_machine_cpu_execution_initialize(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_reset(
-    core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_invalidate_tlb(
     core_machine_cpu_execution_context *context);

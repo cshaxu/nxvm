@@ -330,7 +330,7 @@ static lib_i32 ud_primary_metadata_matrix(void)
 static core_machine_cpu_profile ud_0f_expected_minimum(lib_u8 opcode)
 {
     if (opcode == 0x08u || opcode == 0x09u ||
-        opcode == 0xa2u || opcode == 0xb0u || opcode == 0xb1u ||
+        opcode == 0xa2u || opcode == 0xaau || opcode == 0xb0u || opcode == 0xb1u ||
         opcode == 0xc0u || opcode == 0xc1u ||
         (opcode >= 0xc8u && opcode <= 0xcfu))
         return CORE_MACHINE_CPU_PROFILE_80486SX;
@@ -360,7 +360,12 @@ static lib_i32 ud_0f_metadata_matrix(void)
         core_machine_cpu_profile expected = ud_0f_expected_minimum(opcode);
 
         if ((expected == (core_machine_cpu_profile)0xffu) != (!metadata.valid) ||
-            (metadata.valid && metadata.minimum_cpu != expected)) return 0;
+            (metadata.valid && metadata.minimum_cpu != expected)) {
+            lib_c_fprintf(lib_c_stderr, "0F metadata: opcode=%02x expected=%u valid=%u actual=%u\n",
+                (lib_u32)opcode, (lib_u32)expected, (lib_u32)metadata.valid,
+                (lib_u32)metadata.minimum_cpu);
+            return 0;
+        }
     }
     if (core_machine_cpu_instruction_metadata_get(
             CORE_MACHINE_CPU_INSTRUCTION_0F, 0xbau, 0xc0u).valid ||
@@ -402,13 +407,14 @@ lib_i32 main(void)
     static const lib_u8 invalid_lock[] = { 0xf0u, 0x90u };
     static const lib_u8 unsupported_invd[] = { 0x0fu, 0x08u };
     static const lib_u8 unsupported_wbinvd[] = { 0x0fu, 0x09u };
+    static const lib_u8 unsupported_rsm[] = { 0x0fu, 0xaau };
     const lib_u8 *forms[] = {
         invalid_primary, reserved_0f, reserved_0f25, invalid_operand, invalid_lock,
-        unsupported_invd, unsupported_wbinvd
+        unsupported_invd, unsupported_wbinvd, unsupported_rsm
     };
     const lib_size sizes[] = {
         sizeof(invalid_primary), sizeof(reserved_0f), sizeof(reserved_0f25), sizeof(invalid_operand),
-        sizeof(invalid_lock), sizeof(unsupported_invd), sizeof(unsupported_wbinvd)
+        sizeof(invalid_lock), sizeof(unsupported_invd), sizeof(unsupported_wbinvd), sizeof(unsupported_rsm)
     };
     lib_size index;
 

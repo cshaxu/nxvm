@@ -8,11 +8,43 @@ feature/VME/debug/exception/SX-FPU batch, source/model grades, carried C05
 entry priorities, tests, ownership repairs and eight artifacts. Final full
 repository units pass 602/602 per width in the original Ninja/ccache graphs;
 both complete specialized aggregates and all eight profile/width integration
-groups pass. Eight verified 0560 PC EXEs are current and deployed.
+groups pass. Eight verified 0560 PC EXEs were deployed for S6; the active S7
+worktree qualifications and artifact limits are recorded below.
 The [S6 evidence](../etc/evidence/t560-s6-feature-exceptions.md)
 records direct proof, actual code counts, initial failures and final hashes.
 Public-six, MyNES and owner INI/media/ROM/snapshot inputs are unchanged.
-No implementation packet is active between accepted S6 and the next admission.
+S7 is now admitted for source-qualified SMM/RSM and system/power transitions
+under the owner's automatic sequential Core authority. Full source-map and
+event-boundary review precede implementation. S6 remains the verified runtime
+baseline until the complete S7 delivery passes review.
+The [S7 investigation](../etc/evidence/t560-s7-smm-system.md) now records
+the original public save image, twenty event classes and actual CPU/Core
+owners. The independent selected-SX SRESET portion now shares the existing
+CPU/Core reset owner and passes its two focused tests on each width. The x64
+specialized aggregate passes and has rebuilt the default x64 worktree EXE;
+that is an intermediate S7 artifact, not the complete accepted eight-EXE release.
+The source-qualified SMM functional model now executes real physical save,
+guest handler and RSM, with explicit L2 reserved encoding/DR7/relocation limits.
+Both widths pass 98/98 CPU-owned tests and the actual Core SMM connection;
+subsequent NMI/cache/LOCK/suspend-image extensions also pass on both widths.
+The two Core DMA/HOLD paths now include the selected SX, with ordinary/waited
+grants, RDY and LOCK exclusion tested beside retained 286/386 behavior. Seven
+related arbitration tests pass per width. Handler-enabled INTR and actual Core
+early/late SMM save/restore failure injection also pass on both widths, including
+retained committed writes, unchanged register snapshots and output teardown.
+The selected-SX power/system path now holds one physical HALT/shutdown/Stop
+Grant cycle until RDY, uses the existing Core transaction and cancels it on
+reset/fault/destruction. Qualified CLK and held-versus-pulsed interrupt inputs,
+HALT return, deferred/held FLUSH, snoop and LOCK/HOLD ordering have direct proof.
+The complete CPU-owner plus Core system group passes 100/100 on each width.
+Exact pin synchronizer/PLL durations stay with S9 and board qualification, not
+fabricated instruction ticks. Stable S7 whole-repository units now pass
+604/604 on each width. Final expanded-form closure runs pass 604/604 again
+(45.70 s / 49.56 s), followed by the separately recorded fixture-only 2/2
+rechecks. Both complete specialized aggregates and all eight integration/
+release groups pass. Eight verified 0560 PC EXEs are deployed; unchanged
+MyNES remains at 0044. Complete implementation push and one-session
+coordinator actual-change acceptance remain; S7 is not yet accepted/closed.
 S7 SMM/power, S8 full inherited semantics, S9 timing and S10 final Core
 admission remain mandatory. Exact fitted silicon is not inferred from the
 selected source/model contract, and production 486 construction stays closed.
@@ -48,6 +80,7 @@ records the exact boundary. Do not ask again for equivalent version updates.
 
 | Task | Progress |
 | --- | --- |
+| T560 S7 | Executor complete: source/model-reviewed SRESET, physical SMM/RSM and power/special-cycle/FLUSH paths; final whole units 604/604 per width plus fixture rechecks, both complete specialized aggregates, eight passing integration groups and eight verified deployed 0560 PC EXEs. Complete-P push and coordinator actual-change acceptance remain. Exact pin/PLL timing stays S9; no production SX admission or T closure. |
 | T560 S6 | Accepted and closed: 926bfe185. Selected feature/VME/debug/exception/SX-FPU and carried C05 entry proof at documented grades; no new public API or persistent field. Final 602/602 units per width, both complete specialized aggregates, eight passing integration groups and eight verified deployed 0560 PC EXEs. S7--S10 and production admission remain open. [Evidence](../etc/evidence/t560-s6-feature-exceptions.md). |
 | T560 S5 | Accepted and closed: 33cb2efe1. Actual cache/TR/operations/snoop/page-control, second-read/locked A/D and implicit/explicit LOCK proof; 601/601 full units per width, eight passing integration groups and eight verified deployed 0560 PC EXEs. [Evidence](../etc/evidence/t560-s5-cache-bus.md). Remaining CPU obligations stay in T560. |
 | T560 S4 | Accepted and closed: c32103a24. Translation/test-command and invalidation proof, 600/600 full units per width plus final affected-test recheck, eight passing integration groups and eight verified 0560 artifacts. [Evidence](../etc/evidence/t560-s4-translation-cache.md). Internal L2 grades and remaining C04/C16 bus/CPU obligations remain explicit; production 486 admission stays closed. |
@@ -66,6 +99,27 @@ still owns real cache/TLB/test commands, reset/control, AC/VME/SMM and timing.
 Production 486 admission stays closed. The persistent full implementation
 objective is not complete.
 
+
+## Active Packet - T560 S7 SMM And System Signals
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T560 S7 after accepted S6 926bfe185 and governance closure 3de2f4596; next unused numeric S, one-session coordinator/executor roles. |
+| Admission And Approval | Owner requires all remaining 486SX semantics and permanently authorizes sequential Core/chips/x86 implementation, required Core interfaces and accuracy upgrades. Target NXVM only; public-six, MyNES and owner inputs excluded. No accuracy downgrade or guessed source contract is authorized. |
+| Objective | Complete convergence C11 SMM entry/save/SMBASE/RSM/exit and C12 selected system/power/interrupt/reset transitions, with actual CPU/Core signal and physical-memory connection. Establish the original save-map and finite event matrix before implementation. |
+| Non-goals | No new PC110 board/App, production 486 admission, second executor/timeline, host emulation, generic signal framework, mirrored board CPU state, unrelated x87 work or Shared change. C15 inherited semantics and C16 full timing remain S8/S9; required SMM event ordering is not deferred as a successful no-op. |
+| Reference Baseline | Clean 3de2f4596 after S6 acceptance. Original Intel 273021-001 chapter 8 and system/reset chapters, 272769-004 SL-enhanced SX sections and existing pinned 1992 PRM; original identities in T558/S1. Candidate applicability does not prove fitted PC110 package/stepping. |
+| Candidate Proposal | [Complete CPU proposal](../proposals/m5-pc110-486-system.md), C11/C12 and planned S7 in the [convergence ledger](../etc/evidence/t560-s1-cpu-convergence.md), and the [source identities](../etc/evidence/t558-s2-source-availability.md). |
+| Files And ABI Surface | Existing core/chips/cpu state/instruction/interface owners; core/x86 signal, routing, execution/reset, transaction and scheduler owners; corresponding Core tests/registration/manifests, NXVM evidence and eight affected 0560 PC EXEs. Final source +811/-90 and tests +1934/-12, excluding manifests/docs/artifacts. Growth beyond the test estimate is the explicit final form/paging/debug/lifecycle proof, not unrelated work. Reset-cause/special-cycle enums and bounded CPU/Core/attachment signal/output contracts are recorded and have consumers; no Shared API, raw mutable layout or App pointer. |
+| Applicable Rules | NXVM guide/Task Reading Set; Execution lifecycle, complete coverage/P/artifacts; Architecture/Coding/Document; NXVM architecture/layout/source policy; architecture-governance and coding-governance skills. PDF skill for complete original save-map and signal figures. Retain original handler style and all older CPU profiles. |
+| Verification | Read complete original pages/figures and hash-pin sources; inventory every save/restore field and defined event from running/HLT/shutdown/VM86/SMM, including nested SMI, NMI/INTR masking, REP/LOCK boundaries, reset distinctions and stop-clock wake. Direct CPU and actual Core tests must prove physical save/restore/routing, edited save state, relocation, failures and retained accepted effects, no preview side effects and no second state owner. Run ownership/static gates before whole qualification; final full x64/x86 units, eight affected integration/release groups and artifact/INI identity checks in the original Ninja/ccache graphs. |
+| Expected Markers | Real guest SMM handler and RSM round trip with source-qualified state map; architectural state CPU-owned, routing/timeline Core-owned, profile wiring external; required signals neither ignored nor turned into internal-error stubs; retained-family regressions and exact model/source limits explicit. |
+| Asset Needs | Existing lawful original manuals and build inputs read-only; render/extract research only under ignored build paths. Preserve raw ROMs, INIs, media, snapshots, MyNES and external reference worktrees. Rebuild eight 0560 PC EXEs if executable inputs change, not a PC110 artifact. |
+| Reporting Requirements | Before code report complete source/event inventory, owner/consumer contracts, affected files and refined diff; then cohort proof and final actual +/-/net counts, necessary state/API/helper justification, all terminal gate/artifact results and unexecuted manual/RDP scope. Complete assignment before any implementation P; no partial commit/release. |
+| Stop Conditions | Essential source contradiction, required Shared change, undeclared consumer or owner-input mutation. Report exact evidence and continue independent scoped work; do not guess save fields, invent fault recovery, change host settings or silently remove an applicable CPU feature. |
+| Exit Criteria | Entire C11/C12 batch has source-qualified implementation and actual CPU/Core finite-matrix proof, final dual-width units/gates/eight applicable releases pass, all source/model limits reconciled, complete P pushed and coordinator actual-change accepted. S8--S10, T560 and production admission remain open. |
+| Original Owner Request | Implement complete 486SX semantics under governance/code-quality standards, auto-admit sequential Core work, group related instructions and reuse original cached builds rather than per-instruction full runs. |
+| Similar-Issue Sweep | All interrupt/shutdown/HLT/reset/REP/LOCK boundaries, SMM-sensitive memory/cache/TLB/A20 paths, RSM decode/preview/metadata, CPU reset/debug writers and actual Core bus/scheduler callers. Record every relevant hit/disposition and preserve excluded earlier-family or board-specific behavior explicitly. |
 
 ### Accepted Delivery — M5 T559 S6 CPUID And Flags
 

@@ -45,6 +45,7 @@ extern "C" {
 #endif
 
 #define CORE_MACHINE_DEVICE_CPU CORE_MACHINE_CPU_DEVICE_NAME
+#define X86_CPU_DEFAULT_SMBASE 0x00030000u
 
 typedef enum {
     SREG_DATA,

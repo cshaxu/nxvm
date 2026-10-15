@@ -48,7 +48,9 @@ static const core_machine_cpu_bus_provider decode_provider = {
     .complete_port = cpu_bus_complete,
     .interrupt_pending = cpu_bus_pending,
     .acknowledge_interrupt = cpu_bus_acknowledge,
-    .extension_command = cpu_bus_extension
+    .extension_command = cpu_bus_extension,
+    .special_cycle = cpu_bus_special_cycle,
+    .cancel_special_cycle = cpu_bus_cancel_special_cycle
 };
 
 static void decode_prepare(decode_fixture *fixture,
@@ -296,7 +298,9 @@ static const core_machine_cpu_bus_provider decode_paging_provider = {
     .complete_port = cpu_bus_complete,
     .interrupt_pending = cpu_bus_pending,
     .acknowledge_interrupt = cpu_bus_acknowledge,
-    .extension_command = cpu_bus_extension
+    .extension_command = cpu_bus_extension,
+    .special_cycle = cpu_bus_special_cycle,
+    .cancel_special_cycle = cpu_bus_cancel_special_cycle
 };
 
 static lib_i32 decode_page_boundary(void)

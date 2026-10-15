@@ -127,7 +127,8 @@ static void core_machine_dma_grant_advance(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
     if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
-        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
+        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 ||
+        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX) &&
         machine->attachment.dma_request != LIB_NULL &&
         machine->attachment.dma_request(machine->attachment.context) &&
         core_machine_transaction_hold_request(&machine->transaction,
@@ -227,7 +228,8 @@ static void core_machine_arbitration_advance(core_machine *machine,
             }
         }
     } else if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
-        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
+        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 ||
+        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX) &&
         dma_ticks != 0u &&
         machine->attachment.dma_request != LIB_NULL &&
         machine->attachment.dma_request(machine->attachment.context) &&

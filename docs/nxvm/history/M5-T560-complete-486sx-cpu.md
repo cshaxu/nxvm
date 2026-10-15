@@ -483,3 +483,90 @@ governance P2 with no executable-input change. T560 stays open and S7--S10,
 including SMM/power, whole inherited semantics, timing and final construction
 admission, retain all their obligations. No complete 486SX or PC110 runtime
 claim is made by this bounded acceptance.
+
+## S7 Admission
+
+S7 continues after accepted S6 926bfe185 / closure 3de2f4596 under the owner's
+automatic sequential Core authority. It consumes complete C11/C12 SMM/RSM,
+system/reset/power/event contracts, starting with original chapter/figure and
+actual-code review. Preliminary source/test estimates retain S1's S7 range
+until the finite save-map and signal matrix refine it. No new production,
+test, interface or release is claimed at admission; Shared-six, MyNES, owner
+inputs and production 486 admission remain excluded. Complete P qualification
+and coordinator review remain mandatory before this S can close.
+
+The [S7 investigation](../etc/evidence/t560-s7-smm-system.md) pins the selected
+originals, visually confirms the public map/entry/invalid-RSM pages, and maps
+twenty event classes to the actual CPU/Core owners. It distinguishes ordinary
+SX reset from write-back DX4 reset, board-owned A20/cache/SMRAM selection and
+the special invalid-RSM shutdown wake rule. Modern P6 and mixed AMD/Pentium
+reference layouts are not accepted as measured SX state images. Reserved
+encoding, DR7 and relocated-selector details still require explicit review;
+no production/test/API/artifact change or runtime pass is claimed by this
+research checkpoint. No applicable S7 obligation is removed or transferred.
+
+S7 implements the independent, primary-source selected-SX SRESET contract at
+the existing reset owner: typed HARD/SOFT pending cause, one CPU SMBASE value,
+retained SMBASE only for SOFT and otherwise the same register/cache/TLB reset.
+The actual Core reset branch preserves RAM/time/scheduled events. Two existing
+owner tests pass on x64 and x86; the x64 specialized aggregate exits 0 and
+rebuilds the selected default x64 worktree artifact. Initial test compilation
+and verifier-command mistakes are recorded in the S7 evidence, not hidden as
+passing first attempts. Reset-only source +94/-22 and tests +165/-2 remain
+uncommitted implementation progress. Complete C11/C12, dual-width whole suites,
+all eight final PC artifacts/integrations and complete P review are still open;
+no partial S7 closure or production 486 admission is claimed.
+
+S7 now implements the source/model-reviewed physical SMI/save/handler/RSM
+path, not a host checkpoint or later-P6 layout substitution. New CPU-owned
+proof covers mode round trips, guest image edits/excluded registers, relocation,
+nested SMI, all 128 save/restore failure positions, HALT/I/O restart, invalid
+RSM wake, preview, debug/NMI/INTR priority, NMI IRET unblocking, LOCK ordering
+and suspend-image restore after RESET destroys live state. Reserved encoding
+and ambiguous original entry fields retain explicit L2 limits. Existing CPU
+finalization is exposed for necessary output quiescence before board teardown;
+the actual Core test proves this order and its real handler/memory path.
+Both widths pass 98/98 CPU-owned cases plus the Core SMM connection; later
+test-only NMI/cache/LOCK/image additions also pass on both. Current source is
++503/-75 and tests +950/-2, excluding manifests/docs/artifacts. This remains
+uncommitted S7 progress; stop-clock/special cycles/FLUSH/HOLD, remaining Core
+failure/event proof, whole qualification and all eight final EXEs are still
+required before a complete P. Shared-six/MyNES/owner inputs remain untouched.
+
+The subsequent S7 checkpoint connects both existing Core DMA/HOLD predicates
+to SX without adding a bus owner or interface. A completed-fixture reversal
+proves the missing SX grant is rejected; seven arbitration/LOCK/scheduler
+regressions pass on each width. Real handler STI/INTR/IRET/RSM and actual Core
+early/late save/restore fault injection also pass on both widths, retaining
+accepted RAM writes, unchanged register snapshots and teardown ordering.
+Cumulative code is source +507/-77 and tests +1238/-2, excluding manifests,
+docs and artifacts. The S7 evidence records initial fixture/command mistakes
+and final terminal logs. Stop-clock/special cycles/deferred FLUSH and final
+whole qualification remain open; no partial S7 P or production admission.
+
+S7 subsequently implements selected-SX HALT/shutdown/Stop Grant physical
+requests, qualified stop/CLK/FLUSH/NMI inputs and held-versus-pulsed wake.
+Core holds the existing CPU transaction until actual RDY and cancels once on
+RESET/SRESET, failure or teardown. Deferred FLUSH and sustained-FLUSH execution
+blocking follow the selected original source, without DX4 flush-ack cycles or
+an external-cache operation loop. New direct Core proof covers fifteen cycle/
+completion combinations, existing HOLD ownership and live peripheral time.
+Both widths pass the entire 100-case CPU-owner/Core-system cohort after two
+custom test buses gain explicit zero-wait special-cycle backends. The S7
+evidence records the FLUSH source review and initial test failures. Source is
++811/-90 and tests +1795/-8, excluding manifests/docs/artifacts. Final whole
+qualification, eight releases and actual-change review remain open; no P or
+production 486 admission yet.
+
+S7 executor delivery is now complete. Final RSM prefix/LOCK/fetch/preview,
+paged interrupted-state and handler-enabled TF proof are added without a
+production rewrite. Final whole repository units pass 604/604 per width
+(45.70 s / 49.56 s), with subsequent fixture-only output cleanup rebuilt and
+rechecked separately (CPU case and manifest 2/2 per width). Both complete
+specialized aggregates pass. All eight profile/width integration groups pass
+once against frozen production, and eight stripped 0560 PC EXEs pass PE and
+real-product INI/identity checks. Both original cached graphs return to default.
+Source +811/-90 and tests +1934/-12 are final code counts; detailed source/model
+limits, failure history, direct exit matrix and deployment hashes are in the
+S7 evidence. Complete implementation push and coordinator actual-change review
+follow; no premature S7 acceptance, production SX admission or T closure.

@@ -814,7 +814,9 @@ static lib_bool vme_int_provider_failures(void)
 {
     const core_machine_cpu_bus_provider bus = {
         .read_memory = vme_failure_read, .write_memory = vme_failure_write,
-        .interrupt_pending = cpu_instruction_interrupt_pending
+        .interrupt_pending = cpu_instruction_interrupt_pending,
+        .special_cycle = cpu_instruction_special_cycle,
+        .cancel_special_cycle = cpu_instruction_cancel_special_cycle
     };
     const struct {
         lib_u32 address;
@@ -888,7 +890,9 @@ static lib_bool vme_int_map_guards(void)
     };
     const core_machine_cpu_bus_provider bus = {
         .read_memory = vme_failure_read, .write_memory = vme_failure_write,
-        .interrupt_pending = cpu_instruction_interrupt_pending
+        .interrupt_pending = cpu_instruction_interrupt_pending,
+        .special_cycle = cpu_instruction_special_cycle,
+        .cancel_special_cycle = cpu_instruction_cancel_special_cycle
     };
     const lib_u8 untouched[6] = {0xa5u,0xa5u,0xa5u,0xa5u,0xa5u,0xa5u};
 

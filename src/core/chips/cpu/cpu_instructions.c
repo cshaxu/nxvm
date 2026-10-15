@@ -475,6 +475,20 @@ static void _kma_cache_invalidate(core_machine_cpu_execution_context *context)
     }
 }
 
+static lib_bool _system_flush_pending(core_machine_cpu_execution_context *context)
+{
+    if ((!context->flush_pending && !context->flush_asserted) ||
+        context->stop_granted || !context->clock_running) return LIB_FALSE;
+    if (cpu_state.data.flagHalt && !context->smi_pending &&
+        (context->nmi_masked || context->nmi_in_service || !context->nmi_pending) &&
+        (!X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_IF) ||
+         !context->bus->interrupt_pending(context->bus_context))) return LIB_FALSE;
+    _kma_cache_invalidate(context);
+    core_machine_cpu_execution_invalidate_prefetch(context);
+    context->flush_pending = LIB_FALSE;
+    return LIB_TRUE;
+}
+
 static void _kma_cache_touch(core_machine_cpu_execution_context *context,
     lib_u8 set, lib_u8 way)
 {
@@ -1787,12 +1801,14 @@ static void _ksa_prepare_stack_sreg(core_machine_cpu_execution_context *context,
 /* Clearing PE deliberately retains protected caches.  A later real-address
  * segment reload, including the far transfer which reloads CS, replaces the
  * selected cache with real-address attributes. */
-static void _ksa_load_real_sreg(t_cpu_data_sreg *rsreg,
+static void _ksa_load_real_sreg(core_machine_cpu_execution_context *context,
+    t_cpu_data_sreg *rsreg,
     lib_u16 selector, lib_u8 vm86)
 {
     rsreg->flagValid = LIB_TRUE;
     rsreg->selector = selector;
     rsreg->base = (lib_u32)selector << 4u;
+    if (context->smm_active && !_GetCR0_PE) return;
     rsreg->limit = 0x0000ffffu;
     rsreg->dpl = vm86 ? 3u : 0u;
     rsreg->seg.accessed = LIB_TRUE;
@@ -1855,7 +1871,7 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
         else
         {
             CPU_TRACE_BLOCK_BEGIN("!Protected");
-            _ksa_load_real_sreg(rsreg, selector,
+            _ksa_load_real_sreg(context, rsreg, selector,
                 _GetCR0_PE && _GetEFLAGS_VM);
             CPU_TRACE_BLOCK_END;
         }
@@ -1928,7 +1944,7 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
         else
         {
             CPU_TRACE_BLOCK_BEGIN("!Protected");
-            _ksa_load_real_sreg(rsreg, selector,
+            _ksa_load_real_sreg(context, rsreg, selector,
                 _GetCR0_PE && _GetEFLAGS_VM);
             CPU_TRACE_BLOCK_END;
         }
@@ -1986,7 +2002,7 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
         else
         {
             CPU_TRACE_BLOCK_BEGIN("!Protected");
-            _ksa_load_real_sreg(rsreg, selector,
+            _ksa_load_real_sreg(context, rsreg, selector,
                 _GetCR0_PE && _GetEFLAGS_VM);
             CPU_TRACE_BLOCK_END;
         }
@@ -2683,6 +2699,16 @@ static void _kpa_test_mode(core_machine_cpu_execution_context *context, lib_u16 
     }
     CPU_TRACE_CALL_END;
 }
+static void _smm_record_io(core_machine_cpu_execution_context *context)
+{
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX) return;
+    context->io_restart_valid = LIB_TRUE;
+    context->io_restart_eip = instruction_state.data.oldcpu.data.eip;
+    context->io_restart_esi = instruction_state.data.oldcpu.data.esi;
+    context->io_restart_ecx = instruction_state.data.oldcpu.data.ecx;
+    context->io_restart_edi = instruction_state.data.oldcpu.data.edi;
+}
+
 /* regular portid accessing */
 static void _p_input(core_machine_cpu_execution_context *context, lib_u16 portid, lib_uptr rdata, lib_u8 byte)
 {
@@ -2727,6 +2753,7 @@ static void _p_input(core_machine_cpu_execution_context *context, lib_u16 portid
         break;
     }
     instruction_state.data.flagIgnore = LIB_TRUE;
+    _smm_record_io(context);
     context->bus->complete_port(context->bus_context, portid, byte, LIB_FALSE);
     CPU_TRACE_CALL_END;
 }
@@ -2770,6 +2797,7 @@ static void _p_output(core_machine_cpu_execution_context *context, lib_u16 porti
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
     instruction_state.data.flagIgnore = LIB_TRUE;
+    _smm_record_io(context);
     context->bus->complete_port(context->bus_context, portid, byte, LIB_TRUE);
     CPU_TRACE_CALL_END;
 }
@@ -8986,7 +9014,7 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
             metadata.valid = ((modrm >> 3u) & 7u) >= 4u;
         }
         else if (opcode == 0x08u || opcode == 0x09u ||
-                 opcode == 0xa2u || opcode == 0xb0u || opcode == 0xb1u ||
+                 opcode == 0xa2u || opcode == 0xaau || opcode == 0xb0u || opcode == 0xb1u ||
                  opcode == 0xc0u || opcode == 0xc1u ||
                  (opcode >= 0xc8u && opcode <= 0xcfu))
         {
@@ -16513,6 +16541,8 @@ static void HLT(core_machine_cpu_execution_context *context)
     }
     _adv;
     cpu_state.data.flagHalt = LIB_TRUE;
+    if (!instruction_state.data.except && context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+        context->special_cycle = CORE_MACHINE_CPU_SPECIAL_HALT;
     CPU_TRACE_CALL_END;
 }
 static void CMC(core_machine_cpu_execution_context *context)
@@ -18898,11 +18928,293 @@ static void POP_GS(core_machine_cpu_execution_context *context)
         _GetOperandSize));
     CPU_TRACE_CALL_END;
 }
-_______todo RSM(core_machine_cpu_execution_context *context)
+#define X86_CPU_SMM_IMAGE_BYTES 512u
+#define X86_CPU_SMM_IMAGE_OFFSET 0x7e00u
+
+/* Instruction fetch and asynchronous entry share bookkeeping, not prefetch.
+ * An interrupt must not depend on fetching the interrupted next instruction. */
+static void ExecBoundary(core_machine_cpu_execution_context *context)
 {
+    instruction_state.data.flagIgnore = LIB_FALSE;
+    instruction_state.data.msize = 0u;
+    instruction_state.data.watch_hit = LIB_FALSE;
+    instruction_state.data.reccs = cpu_state.data.cs.selector;
+    instruction_state.data.receip = cpu_state.data.eip;
+    instruction_state.data.linear = cpu_state.data.cs.base + cpu_state.data.eip;
+    instruction_state.data.oldcpu = cpu_state;
+    instruction_state.data.except = 0u;
+    instruction_state.data.excode = 0u;
+    instruction_state.data.oplen = 0u;
+    lib_memory_set(instruction_state.data.opcodes, 0u, sizeof(instruction_state.data.opcodes));
+    instruction_state.data.flagLock = LIB_FALSE;
+    instruction_state.data.roverds = &cpu_state.data.ds;
+    instruction_state.data.roverss = &cpu_state.data.ss;
+    instruction_state.data.prefix_rep = PREFIX_REP_NONE;
+    instruction_state.data.prefix_oprsize = LIB_FALSE;
+    instruction_state.data.prefix_addrsize = LIB_FALSE;
+    instruction_state.data.flagMem = LIB_FALSE;
+    instruction_state.data.source_lsl_granularity_valid = LIB_FALSE;
+    instruction_state.data.source_lsl_page_granular = LIB_FALSE;
+    instruction_state.data.flagInsLoop = LIB_FALSE;
+    instruction_state.data.bit = 0u;
+    instruction_state.data.opr1 = 0u;
+    instruction_state.data.opr2 = 0u;
+    instruction_state.data.result = 0u;
+    instruction_state.data.udf = 0u;
+    instruction_state.data.mrm.rsreg = LIB_NULL;
+    instruction_state.data.mrm.offset = 0u;
+    context->debug_tf_before = _GetEFLAGS_TF;
+    context->debug_rf_before = _GetEFLAGS_RF;
+    context->instruction_task_switched = LIB_FALSE;
+}
+
+/* Public 486 slots and explicitly modeled reserved slots share one physical
+ * image. Hidden attributes use the S7 L2 encoding, never native C layout. */
+static void _smm_put(lib_u8 *image, lib_u16 offset, lib_u32 value)
+{
+    for (lib_u8 byte = 0u; byte < 4u; ++byte)
+        image[offset - X86_CPU_SMM_IMAGE_OFFSET + byte] = (lib_u8)(value >> (byte * 8u));
+}
+
+static lib_u32 _smm_get(const lib_u8 *image, lib_u16 offset)
+{
+    lib_u32 value = 0u;
+
+    for (lib_u8 byte = 0u; byte < 4u; ++byte)
+        value |= (lib_u32)image[offset - X86_CPU_SMM_IMAGE_OFFSET + byte] << (byte * 8u);
+    return value;
+}
+
+static void _smm_save_segment(lib_u8 *image, lib_u16 offset,
+    const t_cpu_data_sreg *segment)
+{
+    lib_u32 attributes = (segment->flagValid ? 0x80u : 0u) |
+        ((lib_u32)segment->dpl << 5u);
+
+    if (segment->sregtype <= SREG_CODE) {
+        attributes |= 0x10u | (segment->seg.accessed ? 1u : 0u) |
+            (segment->seg.executable ? 8u : 0u);
+        if (segment->seg.executable) {
+            attributes |= (segment->seg.exec.readable ? 2u : 0u) |
+                (segment->seg.exec.conform ? 4u : 0u) |
+                (segment->seg.exec.defsize ? 0x4000u : 0u);
+        } else {
+            attributes |= (segment->seg.data.writable ? 2u : 0u) |
+                (segment->seg.data.expdown ? 4u : 0u) |
+                (segment->seg.data.big ? 0x4000u : 0u);
+        }
+    } else attributes |= segment->sys.type & 15u;
+    _smm_put(image, offset, attributes);
+    _smm_put(image, offset - 4u, segment->base);
+    _smm_put(image, offset - 8u, segment->limit);
+}
+
+static void _smm_restore_segment(const lib_u8 *image, lib_u16 offset,
+    t_cpu_data_sreg *segment)
+{
+    const lib_u32 attributes = _smm_get(image, offset);
+
+    segment->flagValid = (attributes & 0x80u) != 0u;
+    segment->dpl = (attributes >> 5u) & 3u;
+    segment->base = _smm_get(image, offset - 4u);
+    segment->limit = _smm_get(image, offset - 8u);
+    if (segment->sregtype <= SREG_CODE) {
+        segment->seg.accessed = (attributes & 1u) != 0u;
+        segment->seg.executable = (attributes & 8u) != 0u;
+        if (segment->seg.executable) {
+            segment->seg.exec.readable = (attributes & 2u) != 0u;
+            segment->seg.exec.conform = (attributes & 4u) != 0u;
+            segment->seg.exec.defsize = (attributes & 0x4000u) != 0u;
+        } else {
+            segment->seg.data.writable = (attributes & 2u) != 0u;
+            segment->seg.data.expdown = (attributes & 4u) != 0u;
+            segment->seg.data.big = (attributes & 0x4000u) != 0u;
+        }
+    } else segment->sys.type = attributes & 15u;
+}
+
+static void _smm_build_image(core_machine_cpu_execution_context *context,
+    lib_u8 *image)
+{
+    const lib_u32 registers[] = {cpu_state.data.eax, cpu_state.data.ecx,
+        cpu_state.data.edx, cpu_state.data.ebx, cpu_state.data.esp,
+        cpu_state.data.ebp, cpu_state.data.esi, cpu_state.data.edi};
+    const t_cpu_data_sreg *selectors[] = {&cpu_state.data.es, &cpu_state.data.cs,
+        &cpu_state.data.ss, &cpu_state.data.ds, &cpu_state.data.fs, &cpu_state.data.gs,
+        &cpu_state.data.ldtr, &cpu_state.data.tr};
+    const t_cpu_data_sreg *descriptors[] = {&cpu_state.data.tr, &cpu_state.data.idtr,
+        &cpu_state.data.gdtr, &cpu_state.data.ldtr, &cpu_state.data.gs, &cpu_state.data.fs,
+        &cpu_state.data.ds, &cpu_state.data.ss, &cpu_state.data.cs, &cpu_state.data.es};
+
+    lib_memory_set(image, 0u, X86_CPU_SMM_IMAGE_BYTES);
+    for (lib_u8 index = 0u; index < 8u; ++index) {
+        _smm_put(image, 0x7fd0u + index * 4u, registers[index]);
+        _smm_put(image, 0x7fa8u + index * 4u, selectors[index]->selector);
+    }
+    for (lib_u8 index = 0u; index < 10u; ++index)
+        _smm_save_segment(image, 0x7fa4u - index * 12u, descriptors[index]);
+    _smm_put(image, 0x7ffcu, cpu_state.data.cr0);
+    _smm_put(image, 0x7ff8u, cpu_state.data.cr3);
+    _smm_put(image, 0x7ff4u, cpu_state.data.eflags);
+    _smm_put(image, 0x7ff0u, cpu_state.data.eip);
+    _smm_put(image, 0x7fccu, cpu_state.data.dr6);
+    _smm_put(image, 0x7fc8u, cpu_state.data.dr7);
+    _smm_put(image, 0x7f28u, cpu_state.data.cr4);
+    _smm_put(image, 0x7f00u, cpu_state.data.flagHalt ? 0x00010000u : 0u);
+    _smm_put(image, 0x7efcu, 0x00030000u);
+    _smm_put(image, 0x7ef8u, context->smbase);
+    _smm_put(image, 0x7ef4u, cpu_state.data.cr2);
+    _smm_put(image, 0x7ef0u, cpu_state.data.cr1);
+    _smm_put(image, 0x7eecu, (lib_u32)context->interrupt_shadow |
+        (context->debug_trap_pending ? 0x100u : 0u));
+    _smm_put(image, 0x7ee8u, context->debug_trap_cause);
+    if (context->io_restart_valid) {
+        _smm_put(image, 0x7f10u, context->io_restart_eip);
+        _smm_put(image, 0x7f0cu, context->io_restart_esi);
+        _smm_put(image, 0x7f08u, context->io_restart_ecx);
+        _smm_put(image, 0x7f04u, context->io_restart_edi);
+    }
+}
+
+static void _smm_initialize_segment(t_cpu_data_sreg *segment,
+    lib_u16 selector, lib_u32 base)
+{
+    segment->flagValid = LIB_TRUE;
+    segment->selector = selector;
+    segment->base = base;
+    segment->limit = LIB_UINT32_MAX;
+    segment->dpl = 0u;
+    segment->seg.accessed = LIB_TRUE;
+    segment->seg.executable = segment->sregtype == SREG_CODE;
+    if (segment->seg.executable) {
+        segment->seg.exec.defsize = LIB_FALSE;
+        segment->seg.exec.conform = LIB_FALSE;
+        segment->seg.exec.readable = LIB_TRUE;
+    } else {
+        segment->seg.data.big = LIB_FALSE;
+        segment->seg.data.expdown = LIB_FALSE;
+        segment->seg.data.writable = LIB_TRUE;
+    }
+}
+
+static lib_bool _smm_enter(core_machine_cpu_execution_context *context)
+{
+    lib_u8 image[X86_CPU_SMM_IMAGE_BYTES];
+    t_cpu_data_sreg *segments[] = {&cpu_state.data.es, &cpu_state.data.ss,
+        &cpu_state.data.ds, &cpu_state.data.fs, &cpu_state.data.gs};
+    const lib_u32 physical = context->smbase + 0xfe00u;
+
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX ||
+        !context->smi_pending || context->smm_active || core_machine_cpu_is_system_waiting(context) ||
+        context->stop_requested || context->debug_pause_requested ||
+        (context->shutdown_state != CPU_SHUTDOWN_NONE &&
+         context->shutdown_state != CPU_SHUTDOWN_SMM) ||
+        context->reset_requested != CORE_MACHINE_CPU_RESET_NONE ||
+        instruction_state.data.memory_lock_active) return LIB_FALSE;
+    _smm_build_image(context, image);
+    /* No ExecInit/prefetch: SMI must work even when the next guest instruction
+     * cannot be fetched. The existing finalizer owns any provider failure. */
+    ExecBoundary(context);
+    context->smi_pending = LIB_FALSE;
+    context->smm_active = LIB_TRUE;
+    context->bus->system_management_active(context->bus_context, LIB_TRUE);
+    for (lib_u16 remaining = X86_CPU_SMM_IMAGE_BYTES; remaining != 0u; remaining -= 4u) {
+        _kma_write_physical(context, physical + remaining - 4u,
+            (lib_uptr)(image + remaining - 4u), 4u,
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u);
+        if (instruction_state.data.except) return LIB_TRUE;
+    }
+    cpu_state.data.eflags = 2u;
+    cpu_state.data.cr0 &= ~(VCPU_CR0_PE | VCPU_CR0_EM | VCPU_CR0_TS | VCPU_CR0_PG);
+    cpu_state.data.dr6 = 0u;
+    cpu_state.data.dr7 &= 0x00003000u;
+    cpu_state.data.eip = 0x8000u;
+    cpu_state.data.flagHalt = LIB_FALSE;
+    _smm_initialize_segment(&cpu_state.data.cs, 0x3000u, context->smbase);
+    for (lib_u8 index = 0u; index < 5u; ++index)
+        _smm_initialize_segment(segments[index], 0u, 0u);
+    context->debug_trap_pending = LIB_FALSE;
+    context->debug_trap_cause = 0u;
+    context->interrupt_shadow = CPU_INTERRUPT_SHADOW_NONE;
+    context->nmi_in_service = LIB_TRUE;
+    context->wait_state = CPU_WAIT_STATE_NONE;
+    context->wait_poll_remaining_ticks = 0u;
+    context->shutdown_state = CPU_SHUTDOWN_NONE;
+    context->shutdown_requested = LIB_FALSE;
+    context->source_repeat_active = LIB_FALSE;
+    core_machine_cpu_execution_invalidate_prefetch(context);
+    core_machine_cpu_execution_invalidate_tlb(context);
+    return LIB_TRUE;
+}
+
+static void RSM(core_machine_cpu_execution_context *context)
+{
+    lib_u8 image[X86_CPU_SMM_IMAGE_BYTES];
+    t_cpu candidate = cpu_state;
+    lib_u32 *registers[] = {&candidate.data.eax, &candidate.data.ecx,
+        &candidate.data.edx, &candidate.data.ebx, &candidate.data.esp,
+        &candidate.data.ebp, &candidate.data.esi, &candidate.data.edi};
+    t_cpu_data_sreg *selectors[] = {&candidate.data.es, &candidate.data.cs,
+        &candidate.data.ss, &candidate.data.ds, &candidate.data.fs, &candidate.data.gs,
+        &candidate.data.ldtr, &candidate.data.tr};
+    t_cpu_data_sreg *descriptors[] = {&candidate.data.tr, &candidate.data.idtr,
+        &candidate.data.gdtr, &candidate.data.ldtr, &candidate.data.gs, &candidate.data.fs,
+        &candidate.data.ds, &candidate.data.ss, &candidate.data.cs, &candidate.data.es};
+    const lib_u32 physical = context->smbase + 0xfe00u;
+    lib_u32 smbase, restart, pending;
+
     CPU_TRACE_CALL_BEGIN("RSM");
-    UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = LIB_TRUE;
+    if (!context->smm_active) CPU_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+    _adv;
+    for (lib_u16 remaining = X86_CPU_SMM_IMAGE_BYTES; remaining != 0u; remaining -= 4u) {
+        CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, physical + remaining - 4u,
+            (lib_uptr)(image + remaining - 4u), 4u,
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u));
+    }
+    smbase = _smm_get(image, 0x7ef8u);
+    candidate.data.cr0 = _smm_get(image, 0x7ffcu);
+    candidate.data.cr4 = _smm_get(image, 0x7f28u);
+    context->smm_active = LIB_FALSE;
+    context->bus->system_management_active(context->bus_context, LIB_FALSE);
+    context->nmi_in_service = LIB_FALSE;
+    if ((smbase & 0x7fffu) || (candidate.data.cr4 & ~VCPU_CR4_VME) ||
+        ((candidate.data.cr0 & (VCPU_CR0_PG | VCPU_CR0_PE)) == VCPU_CR0_PG) ||
+        ((candidate.data.cr0 & (VCPU_CR0_NW | VCPU_CR0_CD)) == VCPU_CR0_NW)) {
+        context->shutdown_state = CPU_SHUTDOWN_SMM;
+        CPU_TRACE_CHECK_RETURN(core_machine_cpu_execution_raise_exception(context,
+            VCPUINS_EXCEPT_SHUTDOWN, 0u));
+    }
+    for (lib_u8 index = 0u; index < 8u; ++index) {
+        *registers[index] = _smm_get(image, 0x7fd0u + index * 4u);
+        selectors[index]->selector = (lib_u16)_smm_get(image, 0x7fa8u + index * 4u);
+    }
+    for (lib_u8 index = 0u; index < 10u; ++index)
+        _smm_restore_segment(image, 0x7fa4u - index * 12u, descriptors[index]);
+    candidate.data.cr1 = _smm_get(image, 0x7ef0u);
+    candidate.data.cr2 = _smm_get(image, 0x7ef4u);
+    candidate.data.cr3 = _smm_get(image, 0x7ff8u);
+    candidate.data.dr6 = _smm_get(image, 0x7fccu);
+    candidate.data.dr7 = _smm_get(image, 0x7fc8u);
+    candidate.data.eip = _smm_get(image, 0x7ff0u);
+    candidate.data.eflags = _e_eflags_load(context, _smm_get(image, 0x7ff4u));
+    candidate.data.flagHalt = LIB_FALSE;
+    restart = _smm_get(image, 0x7f00u);
+    if ((restart & 0xffffu) == 0x00ffu) {
+        candidate.data.eip = _smm_get(image, 0x7f10u);
+        candidate.data.esi = _smm_get(image, 0x7f0cu);
+        candidate.data.ecx = _smm_get(image, 0x7f08u);
+        candidate.data.edi = _smm_get(image, 0x7f04u);
+    }
+    if (restart & 0x00010000u) --candidate.data.eip;
+    cpu_state = candidate;
+    context->smbase = smbase;
+    pending = _smm_get(image, 0x7eecu);
+    context->interrupt_shadow = (cpu_interrupt_shadow)(pending & 3u);
+    context->debug_trap_pending = (pending & 0x100u) != 0u;
+    context->debug_trap_cause = _smm_get(image, 0x7ee8u);
+    context->source_repeat_active = LIB_FALSE;
+    core_machine_cpu_execution_invalidate_prefetch(context);
+    core_machine_cpu_execution_invalidate_tlb(context);
     CPU_TRACE_CALL_END;
 }
 static void BTS_RM32_R32(core_machine_cpu_execution_context *context)
@@ -19202,15 +19514,7 @@ static void ExecFinal(core_machine_cpu_execution_context *context);
 
 static void ExecInit(core_machine_cpu_execution_context *context)
 {
-    instruction_state.data.flagIgnore = LIB_FALSE;
-    instruction_state.data.msize = 0;
-    instruction_state.data.watch_hit = LIB_FALSE;
-    instruction_state.data.reccs = cpu_state.data.cs.selector;
-    instruction_state.data.receip = cpu_state.data.eip;
-    instruction_state.data.linear = cpu_state.data.cs.base + cpu_state.data.eip;
-    instruction_state.data.oldcpu = cpu_state;
-    instruction_state.data.except = 0u;
-    instruction_state.data.excode = 0u;
+    ExecBoundary(context);
     if (context->prefetch_expected_valid && instruction_state.data.linear !=
         context->prefetch_expected_linear) core_machine_cpu_execution_invalidate_prefetch(context);
     if (!context->prefetch_valid || instruction_state.data.linear <
@@ -19238,8 +19542,6 @@ static void ExecInit(core_machine_cpu_execution_context *context)
             context->prefetch_valid = LIB_TRUE;
         }
     }
-    instruction_state.data.oplen = 0u;
-    lib_memory_set(instruction_state.data.opcodes, 0, sizeof(instruction_state.data.opcodes));
     if (context->prefetch_valid && instruction_state.data.linear >=
         context->prefetch_linear && instruction_state.data.linear -
         context->prefetch_linear < context->prefetch_count) {
@@ -19250,26 +19552,6 @@ static void ExecInit(core_machine_cpu_execution_context *context)
         instruction_state.data.oplen = available;
     }
 
-    instruction_state.data.flagLock = LIB_FALSE;
-    instruction_state.data.roverds = &cpu_state.data.ds;
-    instruction_state.data.roverss = &cpu_state.data.ss;
-    instruction_state.data.prefix_rep = PREFIX_REP_NONE;
-    instruction_state.data.prefix_oprsize = LIB_FALSE;
-    instruction_state.data.prefix_addrsize = LIB_FALSE;
-    instruction_state.data.flagMem = LIB_FALSE;
-    instruction_state.data.source_lsl_granularity_valid = LIB_FALSE;
-    instruction_state.data.source_lsl_page_granular = LIB_FALSE;
-    instruction_state.data.flagInsLoop = LIB_FALSE;
-    instruction_state.data.bit = 0;
-    instruction_state.data.opr1 = 0;
-    instruction_state.data.opr2 = 0;
-    instruction_state.data.result = 0;
-    instruction_state.data.udf = 0u;
-    instruction_state.data.mrm.rsreg = LIB_NULL;
-    instruction_state.data.mrm.offset = 0u;
-    context->debug_tf_before = _GetEFLAGS_TF;
-    context->debug_rf_before = _GetEFLAGS_RF;
-    context->instruction_task_switched = LIB_FALSE;
     if (context->diagnostic_provider != LIB_NULL &&
         context->diagnostic_provider->record_instruction != LIB_NULL)
     {
@@ -19632,7 +19914,9 @@ static void ExecIns(core_machine_cpu_execution_context *context)
     lib_u8 opcode = 0;
     lib_u32 debug_cause;
     lib_u32 debug_matches;
+    const lib_bool smm_before = context->smm_active;
 
+    context->io_restart_valid = LIB_FALSE;
     ExecInit(context);
     if (instruction_state.data.except) {
         ExecFinal(context);
@@ -19664,7 +19948,8 @@ static void ExecIns(core_machine_cpu_execution_context *context)
         CPU_TRACE_CHECK_BREAK(ExecCpuInstruction(instruction_state.connect.insTable[opcode]));
         CPU_TRACE_CALL_END;
     } while (_kdf_check_prefix(context, opcode));
-    _debug_complete_instruction(context, opcode);
+    if (instruction_state.data.except) context->io_restart_valid = LIB_FALSE;
+    if (!smm_before || context->smm_active) _debug_complete_instruction(context, opcode);
     if (instruction_state.data.flagWE && instruction_state.data.weLinear == instruction_state.data.linear)
     {
         _debug_record_watchpoint(context, CORE_MACHINE_CPU_WATCH_EXECUTE,
@@ -19695,7 +19980,12 @@ static void ExecInt(core_machine_cpu_execution_context *context)
     const lib_bool debug_first =
         context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286;
 
-    if (context->stop_requested) return;
+    if (context->stop_requested || core_machine_cpu_is_system_waiting(context)) return;
+    if (_system_flush_pending(context) && context->flush_asserted) return;
+    if (_smm_enter(context)) {
+        if (instruction_state.data.except) ExecFinal(context);
+        return;
+    }
     if (cpu_state.data.flagHalt) {
         const lib_bool nmi_ready =
             context->interrupt_shadow != CPU_INTERRUPT_SHADOW_SEGMENT &&
@@ -20306,9 +20596,82 @@ void core_machine_cpu_execution_initialize(
     instruction_state.connect.insTable_0f[0xfe] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0xff] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
 }
+static void _system_poll_cycle(core_machine_cpu_execution_context *context)
+{
+    const core_machine_cpu_special_cycle cycle = context->special_cycle;
+    lib_bool acknowledged = LIB_FALSE;
+    const lib_bool provided = context->bus->special_cycle != LIB_NULL &&
+        context->bus->cancel_special_cycle != LIB_NULL;
+    const lib_status status = provided ?
+        context->bus->special_cycle(context->bus_context, cycle, &acknowledged) : LIB_STATUS_UNSUPPORTED;
+
+    if (status != LIB_STATUS_OK) {
+        if (provided)
+            context->bus->cancel_special_cycle(context->bus_context, cycle);
+        context->special_cycle = CORE_MACHINE_CPU_SPECIAL_NONE;
+        _SetExcept_CE((lib_u32)status);
+        ExecFinal(context);
+    } else if (acknowledged) {
+        context->special_cycle = CORE_MACHINE_CPU_SPECIAL_NONE;
+        if (cycle == CORE_MACHINE_CPU_SPECIAL_STOP_GRANT) context->stop_granted = LIB_TRUE;
+    }
+}
+
+static lib_bool _system_boundary(core_machine_cpu_execution_context *context)
+{
+    lib_bool released = LIB_FALSE;
+
+    if (context->special_cycle != CORE_MACHINE_CPU_SPECIAL_NONE) {
+        ExecBoundary(context);
+        _system_poll_cycle(context);
+        return LIB_TRUE;
+    }
+    if (context->stop_granted) {
+        if (!context->clock_running || context->stop_clock_asserted) return LIB_TRUE;
+        context->stop_granted = LIB_FALSE;
+        released = LIB_TRUE;
+        if (context->smi_asserted) context->smi_pending = LIB_TRUE;
+        if (context->nmi_asserted && !context->nmi_masked) context->nmi_pending = LIB_TRUE;
+        if (cpu_state.data.flagHalt) {
+            ExecBoundary(context);
+            context->special_cycle = CORE_MACHINE_CPU_SPECIAL_HALT;
+            _system_poll_cycle(context);
+            return LIB_TRUE;
+        }
+    }
+    if (_system_flush_pending(context) && context->flush_asserted) return LIB_TRUE;
+    if (released || (context->stop_clock_asserted && !core_machine_cpu_is_shutdown(context) &&
+        !context->stop_requested && !context->debug_pause_requested &&
+        context->reset_requested == CORE_MACHINE_CPU_RESET_NONE &&
+        !instruction_state.data.memory_lock_active)) {
+        ExecBoundary(context);
+        ExecInt(context);
+        if (context->stop_requested || context->instruction_fault_delivered ||
+            cpu_state.data.eip != instruction_state.data.oldcpu.data.eip ||
+            cpu_state.data.cs.base != instruction_state.data.oldcpu.data.cs.base ||
+            cpu_state.data.esp != instruction_state.data.oldcpu.data.esp) {
+            context->instruction_fault_delivered = LIB_TRUE;
+            return LIB_TRUE;
+        }
+        if (!context->stop_clock_asserted) return LIB_FALSE;
+        context->special_cycle = CORE_MACHINE_CPU_SPECIAL_STOP_GRANT;
+        _system_poll_cycle(context);
+        return LIB_TRUE;
+    }
+    return LIB_FALSE;
+}
+
 void core_machine_cpu_execution_reset(
     core_machine_cpu_execution_context *context)
 {
+    core_machine_cpu_execution_finalize(context);
+    context->smi_asserted = context->smi_pending = LIB_FALSE;
+    context->stop_clock_asserted = context->stop_granted = LIB_FALSE;
+    context->clock_running = LIB_TRUE;
+    context->flush_asserted = context->flush_pending = context->nmi_asserted = LIB_FALSE;
+    context->io_restart_valid = LIB_FALSE;
+    context->io_restart_eip = context->io_restart_esi = 0u;
+    context->io_restart_ecx = context->io_restart_edi = 0u;
     lib_memory_set(context->tlb, 0u, sizeof(context->tlb));
     lib_memory_set(context->tlb_lru, 0u, sizeof(context->tlb_lru));
     lib_memory_set(context->cache, 0u, sizeof(context->cache));
@@ -20343,18 +20706,41 @@ void core_machine_cpu_execution_refresh(
     context->timing_result = (core_machine_cpu_timing_result) {0};
     context->instruction_fault_delivered = LIB_FALSE;
     context->instruction_wait_stall = LIB_FALSE;
+    if (_system_boundary(context)) {
+        if (!context->instruction_fault_delivered) context->instruction_wait_stall = LIB_TRUE;
+        return;
+    }
+    if (_smm_enter(context)) {
+        if (instruction_state.data.except) ExecFinal(context);
+        context->instruction_fault_delivered = LIB_TRUE;
+        return;
+    }
     if (core_machine_cpu_is_shutdown(context)) {
-        /* Shutdown admits NMI, not instructions, INTR or pending debug traps. */
-        if (context->shutdown_state == CPU_SHUTDOWN_RESET_ONLY ||
-            context->nmi_masked || context->nmi_in_service || !context->nmi_pending)
-            return;
-        context->nmi_pending = LIB_FALSE;
-        ExecInit(context);
-        _e_intr_n(context, 0x02u, 2u, LIB_TRUE);
+        const lib_bool nmi = !context->nmi_masked &&
+            !context->nmi_in_service && context->nmi_pending;
+        const lib_bool intr = context->shutdown_state == CPU_SHUTDOWN_SMM &&
+            context->bus->interrupt_pending(context->bus_context);
+        lib_u8 vector = 0x02u;
+
+        /* Only invalid-RSM shutdown additionally admits INTR/SMI; ordinary
+         * shutdown and the 286 RESET-only state retain their existing rule. */
+        if (context->shutdown_state == CPU_SHUTDOWN_RESET_ONLY || (!nmi && !intr)) return;
+        ExecBoundary(context);
+        if (nmi) context->nmi_pending = LIB_FALSE;
+        else {
+            const lib_status status = context->bus->acknowledge_interrupt(context->bus_context, &vector);
+
+            if (status != LIB_STATUS_OK) {
+                _SetExcept_CE((lib_u32)status);
+                ExecFinal(context);
+                return;
+            }
+        }
+        _e_intr_n(context, vector, 2u, LIB_TRUE);
         if (!instruction_state.data.except) {
             context->shutdown_state = CPU_SHUTDOWN_NONE;
             context->shutdown_requested = LIB_FALSE;
-            context->nmi_in_service = LIB_TRUE;
+            context->nmi_in_service = nmi;
             cpu_state.data.flagHalt = LIB_FALSE;
             /* Entry alone is not a retired instruction; Core starts the NMI
              * handler in the next execution round through this existing outcome. */
@@ -20387,6 +20773,10 @@ void core_machine_cpu_execution_refresh(
             !core_machine_cpu_timing_select(context, &context->timing_result))
             context->timing_result = (core_machine_cpu_timing_result) {0};
     }
+    if (context->special_cycle != CORE_MACHINE_CPU_SPECIAL_NONE) {
+        _system_poll_cycle(context);
+        if (context->special_cycle != CORE_MACHINE_CPU_SPECIAL_NONE || context->stop_requested) return;
+    }
     if (context->debug_pause_requested) return;
     ExecInt(context);
     if (!executed && !cpu_state.data.flagHalt)
@@ -20407,5 +20797,14 @@ lib_u8 core_machine_cpu_execution_consume_instruction_fault_delivery(
 void core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context)
 {
-    (void)context;
+    if (context == LIB_NULL) return;
+    if (context->special_cycle != CORE_MACHINE_CPU_SPECIAL_NONE) {
+        if (context->bus->cancel_special_cycle != LIB_NULL)
+            context->bus->cancel_special_cycle(context->bus_context, context->special_cycle);
+        context->special_cycle = CORE_MACHINE_CPU_SPECIAL_NONE;
+    }
+    if (context->smm_active) {
+        context->smm_active = LIB_FALSE;
+        context->bus->system_management_active(context->bus_context, LIB_FALSE);
+    }
 }

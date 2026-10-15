@@ -337,6 +337,17 @@ lib_status core_machine_get_nmi_mask(const core_machine *machine,
  * CPU owns the pending state; the normal run boundary consumes processor reset. */
 lib_bool core_machine_signal_nmi(core_machine *machine);
 void core_machine_signal_processor_reset(core_machine *machine);
+/* Selected SX SRESET retains CPU SMBASE; RAM, board state and scheduled work
+ * remain intact as for processor-only RESET. Consumed at the same run boundary. */
+lib_status core_machine_signal_soft_processor_reset(core_machine *machine);
+/* Board-owned qualified SMI level; no instruction executes in this call. */
+lib_status core_machine_set_smi(core_machine *machine, lib_bool asserted);
+/* Qualified CPU power/system inputs. The board owns CLK/PLL timing; these
+ * calls only change inputs and do not run the CPU or advance Core time. */
+lib_status core_machine_set_stop_clock(core_machine *machine, lib_bool asserted);
+lib_status core_machine_set_clock_running(core_machine *machine, lib_bool running);
+lib_status core_machine_set_flush(core_machine *machine, lib_bool asserted);
+lib_status core_machine_set_nmi(core_machine *machine, lib_bool asserted);
 
 lib_status core_machine_report_fault(
     core_machine *machine,
