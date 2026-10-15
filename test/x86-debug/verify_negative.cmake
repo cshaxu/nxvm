@@ -1,0 +1,18 @@
+if(NOT DEFINED CORPUS_ROOT OR NOT DEFINED PROBE_ROOT)
+    message(FATAL_ERROR "CORPUS_ROOT and PROBE_ROOT are required")
+endif()
+function(expect_rejected suffix appended)
+    set(probe "${PROBE_ROOT}/${suffix}")
+    file(REMOVE_RECURSE "${probe}")
+    file(COPY "${CORPUS_ROOT}/" DESTINATION "${probe}")
+    file(APPEND "${probe}/CMakeLists.txt" "\n${appended}\n")
+    execute_process(COMMAND "${CMAKE_COMMAND}" "-DCORPUS_ROOT=${probe}"
+        -P "${probe}/verify_corpus.cmake" RESULT_VARIABLE result
+        OUTPUT_QUIET ERROR_VARIABLE error)
+    if(result EQUAL 0 OR NOT error MATCHES "Forbidden x86-debug edge")
+        message(FATAL_ERROR "x86-debug dependency gate accepted ${suffix}: ${error}")
+    endif()
+endfunction()
+expect_rejected("product" "target_link_libraries(x86-debug-xasm32 PRIVATE x86-debug-product)")
+expect_rejected("emulator" "target_link_libraries(x86-debug-xasm32 PRIVATE emulator-machine)")
+message(STATUS "x86-debug dependency negative coverage: OK")

@@ -18,6 +18,7 @@ function(shared_register_test corpus source)
     set_tests_properties(${label}.${source} PROPERTIES LABELS "unit;${corpus}"
         TIMEOUT 30 WORKING_DIRECTORY "${work_directory}")
     string(TOUPPER "${corpus}" upper)
+    string(REPLACE "-" "_" upper "${upper}")
     set(list_name "SHARED_${upper}_TEST_TARGETS")
     list(APPEND ${list_name} ${target})
     set(${list_name} "${${list_name}}" PARENT_SCOPE)
