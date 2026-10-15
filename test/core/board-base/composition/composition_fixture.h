@@ -2,7 +2,7 @@
 #define TEST_CORE_COMPOSITION_FIXTURE_H
 #include "core/x86/machine_interface.h"
 #include "core/x86/firmware_interface.h"
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 
 typedef struct test_core_preview_publication {
     lib_u64 committed;
@@ -12,7 +12,7 @@ typedef struct test_core_preview_publication {
 
 test_core_preview_publication test_core_capture_preview_publication(const core_machine *machine);
 lib_bool test_core_preview_lexeme(core_machine *machine,
-    core_machine_cpu_instruction_lexeme *lexeme);
+    x86_core_cpu_instruction_lexeme *lexeme);
 lib_bool test_core_fpu_command_handoff(const core_machine *machine,
     lib_u8 opcode, lib_u8 modrm, lib_u64 *remaining_ticks);
 

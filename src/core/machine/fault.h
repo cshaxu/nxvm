@@ -10,7 +10,7 @@ typedef struct vm_machine vm_machine;
 typedef struct vm_machine_fault_outcome {
     lib_bool valid;
     core_machine_run_result run;
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic;
 } vm_machine_fault_outcome;
 
 void vm_machine_fault_clear(vm_machine *session);

@@ -21,7 +21,7 @@ typedef struct idt_pic_board {
 } idt_pic_board;
 
 static lib_status idt_pic_read(void *opaque, lib_u32 address, void *destination,
-    lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
+    lib_u8 bytes, x86_core_cpu_memory_access_provenance provenance,
     lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     idt_pic_board *const board = opaque;
@@ -31,7 +31,7 @@ static lib_status idt_pic_read(void *opaque, lib_u32 address, void *destination,
 
 static lib_status idt_pic_write(void *opaque, lib_u32 address,
     const void *source, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
+    x86_core_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     idt_pic_board *const board = opaque;
     return cpu_instruction_write(&board->cpu, address, source, bytes, provenance, cache_control);
@@ -53,7 +53,7 @@ static lib_status idt_pic_acknowledge(void *opaque, lib_u8 *out_vector)
     return LIB_STATUS_OK;
 }
 
-static const core_machine_cpu_bus_provider idt_pic_bus = {
+static const x86_core_cpu_bus_provider idt_pic_bus = {
     .read_memory = idt_pic_read,
     .write_memory = idt_pic_write,
     .interrupt_pending = idt_pic_interrupt_pending,
@@ -84,7 +84,7 @@ static lib_bool idt_pic_prepare(idt_pic_board *board)
     if (board->machine == LIB_NULL) return LIB_FALSE;
     if (core_machine_pic_initialize(&board->master, &board->slave, board->machine,
             CORE_MACHINE_PIC_TOPOLOGY_SINGLE) != LIB_STATUS_OK) return LIB_FALSE;
-    cpu_instruction_prepare_with_bus(&board->cpu, CORE_MACHINE_CPU_PROFILE_80386,
+    cpu_instruction_prepare_with_bus(&board->cpu, X86_CORE_CPU_PROFILE_80386,
         &idt_pic_bus, board);
     idt[0x30u * 8u] = PIC_IDT_HANDLER_OFFSET & 0xffu;
     idt[0x30u * 8u + 1u] = PIC_IDT_HANDLER_OFFSET >> 8u;
@@ -148,13 +148,13 @@ int main(void)
     if (!failed) {
         core_machine_pic_irq_source_assert(source);
         core_machine_pic_irq_source_deassert(source);
-        core_machine_cpu_execution_refresh(&board.cpu.execution);
-        core_machine_cpu_execution_refresh(&board.cpu.execution);
+        x86_core_cpu_execution_refresh(&board.cpu.execution);
+        x86_core_cpu_execution_refresh(&board.cpu.execution);
         after = board.cpu.cpu;
         failed = board.cpu.execution.stop_requested || board.cpu.fault.valid ||
             after.data.cs.selector != 0x0008u || after.data.cs.dpl != 0u ||
             after.data.ss.selector != 0x0010u || after.data.esp != 0x00008fecu ||
-            CORE_MACHINE_BIT_IS_SET(after.data.eflags, CORE_MACHINE_DEBUG_EFLAGS_IF) ||
+            CORE_MACHINE_BIT_IS_SET(after.data.eflags, X86_CORE_CPU_DEBUG_EFLAGS_IF) ||
             !CORE_MACHINE_BIT_IS_SET(test_pic_read(board.master, 0x0bu), 1u) ||
             CORE_MACHINE_BIT_IS_SET(test_pic_read(board.master, 0x0au), 1u);
     }

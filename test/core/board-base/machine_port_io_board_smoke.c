@@ -40,7 +40,7 @@ static lib_status port_io_board_write(void *opaque, lib_u16 port,
 }
 
 static lib_i32 port_io_board_prepare(core_machine **out_machine,
-    port_io_board_probe *probe, core_machine_cpu_profile profile,
+    port_io_board_probe *probe, x86_core_cpu_profile profile,
     core_machine_board_state **out_board)
 {
     const core_machine_config config = {
@@ -51,21 +51,21 @@ static lib_i32 port_io_board_prepare(core_machine **out_machine,
     const core_machine_port_provider provider = {
         port_io_board_read, port_io_board_write
     };
-    const core_machine_debug_register_patch patch = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    const x86_core_cpu_debug_register_patch patch = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_ESP] = 0x8000u,
-            [CORE_MACHINE_DEBUG_EAX] = 0xa1a1b2b2u,
-            [CORE_MACHINE_DEBUG_EDX] = 0x00e0u,
-            [CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_IF
+            [X86_CORE_CPU_DEBUG_ESP] = 0x8000u,
+            [X86_CORE_CPU_DEBUG_EAX] = 0xa1a1b2b2u,
+            [X86_CORE_CPU_DEBUG_EDX] = 0x00e0u,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF
         }
     };
     core_machine *machine = LIB_NULL;
@@ -89,7 +89,7 @@ static lib_i32 port_io_board_prepare(core_machine **out_machine,
 }
 
 static lib_i32 port_io_board_provider_failure(
-    core_machine_cpu_profile profile, lib_bool input)
+    x86_core_cpu_profile profile, lib_bool input)
 {
     static const lib_u8 in_code[] = {0xe4u,0x5au};
     static const lib_u8 out_code[] = {0xe7u,0x5au};
@@ -97,8 +97,8 @@ static lib_i32 port_io_board_provider_failure(
     port_io_board_probe probe = {0};
     core_machine *machine = LIB_NULL;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_i32 failed = !port_io_board_prepare(&machine, &probe, profile, LIB_NULL);
 
     probe.fail = LIB_TRUE;
@@ -111,7 +111,7 @@ static lib_i32 port_io_board_provider_failure(
             core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
                 LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
     if (!failed)
         failed = !diagnostic.first_fault.valid ||
             !(diagnostic.first_fault.exception_mask & VCPUINS_EXCEPT_CE) ||
@@ -133,10 +133,10 @@ static lib_i32 port_io_board_irq(lib_bool input)
     core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source *irq = LIB_NULL;
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u16 offset = 0x100u, segment = 0u, frame_ip = 0xffffu;
     lib_i32 failed = !port_io_board_prepare(&machine, &probe,
-        CORE_MACHINE_CPU_PROFILE_80386, &board);
+        X86_CORE_CPU_PROFILE_80386, &board);
 
     probe.input = 0x11223344u;
     if (!failed)
@@ -158,7 +158,7 @@ static lib_i32 port_io_board_irq(lib_bool input)
             &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             core_machine_debug_read_memory(machine,
                 after.ss.base + (lib_u16)after.esp, &frame_ip,
                 sizeof(frame_ip)) != LIB_STATUS_OK;
@@ -179,7 +179,7 @@ static lib_i32 port_io_board_irq(lib_bool input)
     return !failed;
 }
 
-static lib_i32 port_io_board_time(core_machine_cpu_profile profile)
+static lib_i32 port_io_board_time(x86_core_cpu_profile profile)
 {
     const lib_u8 code[] = {0x90u, 0xe4u, 0x5au};
     port_io_board_probe probe = {0};
@@ -204,17 +204,17 @@ static lib_i32 port_io_board_time(core_machine_cpu_profile profile)
 
 lib_i32 main(void)
 {
-    if (!port_io_board_provider_failure(CORE_MACHINE_CPU_PROFILE_8086,
+    if (!port_io_board_provider_failure(X86_CORE_CPU_PROFILE_8086,
             LIB_TRUE) ||
-        !port_io_board_provider_failure(CORE_MACHINE_CPU_PROFILE_8086,
+        !port_io_board_provider_failure(X86_CORE_CPU_PROFILE_8086,
             LIB_FALSE) ||
-        !port_io_board_provider_failure(CORE_MACHINE_CPU_PROFILE_80386,
+        !port_io_board_provider_failure(X86_CORE_CPU_PROFILE_80386,
             LIB_TRUE) ||
-        !port_io_board_provider_failure(CORE_MACHINE_CPU_PROFILE_80386,
+        !port_io_board_provider_failure(X86_CORE_CPU_PROFILE_80386,
             LIB_FALSE) ||
         !port_io_board_irq(LIB_TRUE) || !port_io_board_irq(LIB_FALSE) ||
-        !port_io_board_time(CORE_MACHINE_CPU_PROFILE_8086) ||
-        !port_io_board_time(CORE_MACHINE_CPU_PROFILE_80386)) {
+        !port_io_board_time(X86_CORE_CPU_PROFILE_8086) ||
+        !port_io_board_time(X86_CORE_CPU_PROFILE_80386)) {
         lib_c_printf("Scalar port I/O board delivery failed\n");
         return 1;
     }

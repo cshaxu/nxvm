@@ -4,8 +4,8 @@
 #include "cpu_board_limit_fixture.h"
 
 static lib_i32 pushf_board_gprs_same(
-    const core_machine_debug_cpu_snapshot *before,
-    const core_machine_debug_cpu_snapshot *after)
+    const x86_core_cpu_debug_cpu_snapshot *before,
+    const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return before->eax == after->eax && before->ecx == after->ecx &&
         before->edx == after->edx && before->ebx == after->ebx &&
@@ -14,8 +14,8 @@ static lib_i32 pushf_board_gprs_same(
 }
 
 static lib_i32 pushf_board_segments_same(
-    const core_machine_debug_cpu_snapshot *before,
-    const core_machine_debug_cpu_snapshot *after)
+    const x86_core_cpu_debug_cpu_snapshot *before,
+    const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return lib_memory_compare(&before->cs, &after->cs,
             sizeof(before->cs)) == 0 &&
@@ -34,10 +34,10 @@ static lib_i32 pushf_board_segments_same(
 static lib_i32 pushf_board_irq(void)
 {
     for (lib_u8 form = 0u; form != 2u; ++form) {
-        const lib_u16 image = CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF;
+        const lib_u16 image = X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_IF;
         const test_cpu_board_irq_case entry = {
             .code = {form == 0u ? 0x9cu : 0x9du, 0x90u},
-            .flags = CORE_MACHINE_DEBUG_EFLAGS_IF | 0x02u,
+            .flags = X86_CORE_CPU_DEBUG_EFLAGS_IF | 0x02u,
             .stack_image = image,
             .write_stack_image = form != 0u,
             .budget = 3u
@@ -57,7 +57,7 @@ static lib_i32 pushf_board_irq(void)
                     ~0xfffc802au) | 0x02u)) return 0;
         } else if (result.after.esp != 0x7ffcu ||
             (result.after.eflags & 0xffffu) !=
-                ((image & ~(0xfffc802au | CORE_MACHINE_DEBUG_EFLAGS_IF)) |
+                ((image & ~(0xfffc802au | X86_CORE_CPU_DEBUG_EFLAGS_IF)) |
                     0x02u)) return 0;
     }
     return 1;
@@ -70,12 +70,12 @@ static lib_i32 pushf_board_stack_limit_fault(void)
         0xb8u,0x18u,0x00u,0x8eu,0xd0u,0x66u,0x9du
     };
     const lib_u8 limit_high = 0x7fu;
-    const lib_u32 image = CORE_MACHINE_DEBUG_EFLAGS_ZF | CORE_MACHINE_DEBUG_EFLAGS_IF;
+    const lib_u32 image = X86_CORE_CPU_DEBUG_EFLAGS_ZF | X86_CORE_CPU_DEBUG_EFLAGS_IF;
     core_machine *machine = LIB_NULL;
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
-    core_machine_debug_register_patch patch = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP)
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_register_patch patch = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP)
     };
     core_machine_run_result result = {0};
     lib_status fault_status = LIB_STATUS_OK;
@@ -83,7 +83,7 @@ static lib_i32 pushf_board_stack_limit_fault(void)
         sizeof(code), LIB_TRUE, LIB_FALSE);
 
     if (!failed) {
-        patch.values[CORE_MACHINE_DEBUG_ESP] = 0x7ffcu;
+        patch.values[X86_CORE_CPU_DEBUG_ESP] = 0x7ffcu;
         failed = core_machine_memory_write(machine, 0x0319u,
                 &limit_high, sizeof(limit_high)) != LIB_STATUS_OK ||
             core_machine_debug_patch_registers(machine, &patch) !=
@@ -93,11 +93,11 @@ static lib_i32 pushf_board_stack_limit_fault(void)
             core_machine_run(machine, (core_machine_run_budget){2u,0u},
                 &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET;
-        patch.values[CORE_MACHINE_DEBUG_ESP] = 0x8000u;
+        patch.values[X86_CORE_CPU_DEBUG_ESP] = 0x8000u;
         if (!failed) failed = core_machine_debug_patch_registers(machine,
                 &patch) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) !=
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &before) !=
                 LIB_STATUS_OK || before.eip != 5u;
         if (!failed) fault_status = core_machine_run(machine,
             (core_machine_run_budget){1u,0u}, &result);
@@ -105,7 +105,7 @@ static lib_i32 pushf_board_stack_limit_fault(void)
             failed = !test_core_machine_fixture_shutdown_wait(fault_status,
                     &result) ||
                 core_machine_debug_capture_cpu_snapshot(machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) !=
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &after) !=
                     LIB_STATUS_OK;
         }
         if (!failed) failed = after.eip != before.eip || after.esp != before.esp ||

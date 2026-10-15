@@ -1,11 +1,11 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 
-static lib_i32 valid_cpu_profile(core_machine_cpu_profile profile)
+static lib_i32 valid_cpu_profile(x86_core_cpu_profile profile)
 {
-    return profile >= CORE_MACHINE_CPU_PROFILE_8086 &&
-        profile <= CORE_MACHINE_CPU_PROFILE_80486SX;
+    return profile >= X86_CORE_CPU_PROFILE_8086 &&
+        profile <= X86_CORE_CPU_PROFILE_80486SX;
 }
 
 static lib_i32 valid_fpu_profile(x86_fpu_profile profile)
@@ -14,11 +14,11 @@ static lib_i32 valid_fpu_profile(x86_fpu_profile profile)
         profile <= X86_FPU_PROFILE_80387;
 }
 
-static lib_i32 verify_metadata(core_machine_cpu_instruction_space space,
+static lib_i32 verify_metadata(x86_core_cpu_instruction_space space,
     lib_u8 opcode, lib_u8 modrm)
 {
-    core_machine_cpu_instruction_metadata metadata =
-        core_machine_cpu_instruction_metadata_get(space, opcode, modrm);
+    x86_core_cpu_instruction_metadata metadata =
+        x86_core_cpu_instruction_metadata_get(space, opcode, modrm);
 
     return !valid_cpu_profile(metadata.minimum_cpu) ||
         !valid_fpu_profile(metadata.minimum_fpu);
@@ -31,28 +31,28 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
-        failed |= verify_metadata(CORE_MACHINE_CPU_INSTRUCTION_PRIMARY,
+        failed |= verify_metadata(X86_CORE_CPU_INSTRUCTION_PRIMARY,
             (lib_u8)opcode, 0u);
         for (modrm = 0u; modrm <= 0xffu; ++modrm) {
-            failed |= verify_metadata(CORE_MACHINE_CPU_INSTRUCTION_0F,
+            failed |= verify_metadata(X86_CORE_CPU_INSTRUCTION_0F,
                 (lib_u8)opcode, (lib_u8)modrm);
         }
     }
     for (opcode = 0xd8u; opcode <= 0xdfu; ++opcode) {
         for (modrm = 0u; modrm <= 0xffu; ++modrm) {
-            core_machine_cpu_instruction_metadata metadata =
-                core_machine_cpu_instruction_metadata_get(
-                    CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE,
+            x86_core_cpu_instruction_metadata metadata =
+                x86_core_cpu_instruction_metadata_get(
+                    X86_CORE_CPU_INSTRUCTION_FPU_ESCAPE,
                     (lib_u8)opcode, (lib_u8)modrm);
             failed |= !metadata.valid ||
-                metadata.minimum_cpu != CORE_MACHINE_CPU_PROFILE_8086 ||
+                metadata.minimum_cpu != X86_CORE_CPU_PROFILE_8086 ||
                 metadata.minimum_fpu != X86_FPU_PROFILE_8087;
         }
     }
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
-        core_machine_cpu_instruction_metadata metadata =
-            core_machine_cpu_instruction_metadata_get(
-                CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE, (lib_u8)opcode, 0u);
+        x86_core_cpu_instruction_metadata metadata =
+            x86_core_cpu_instruction_metadata_get(
+                X86_CORE_CPU_INSTRUCTION_FPU_ESCAPE, (lib_u8)opcode, 0u);
         if (opcode < 0xd8u || opcode > 0xdfu) failed |= metadata.valid;
     }
     if (failed) return 1;

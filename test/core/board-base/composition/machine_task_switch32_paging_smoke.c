@@ -35,7 +35,7 @@ static lib_i32 prepare(core_machine **out_machine,
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const core_machine_entry_plan plan = {
@@ -154,8 +154,8 @@ static lib_i32 run_case(lib_bool fault_case, lib_bool pending_irq, lib_bool nest
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
-    core_machine_debug_cpu_snapshot cpu = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_debug_cpu_snapshot cpu = {0};
     lib_i32 failed = 1;
 
     if (!prepare(&machine, &board) || !install(machine, fault_case, pending_irq, nested) ||
@@ -163,7 +163,7 @@ static lib_i32 run_case(lib_bool fault_case, lib_bool pending_irq, lib_bool nest
         LIB_STATUS_OK) || !run_until_waiting_for_interrupt(machine, &result) ||
         core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
         core_machine_debug_capture_cpu_snapshot(machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK) goto done;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK) goto done;
     if (fault_case) failed = diagnostic.first_fault.valid ||
         !diagnostic.last_delivered_exception.valid ||
         diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_PF ||

@@ -59,7 +59,7 @@ static lib_i32 timing_prepare(core_machine **out_machine,
     timing_port_state *port_state)
 {
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80286,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u }
     };
@@ -161,13 +161,13 @@ static lib_i32 timing_test_fault(void)
      * unavailable; no private CPU cache is borrowed. */
     static const lib_u8 prepare_idtr[] = { 0x0fu, 0x01u, 0x1eu, 0x00u, 0x01u };
     static const lib_u8 idtr[] = { 0x17u, 0u, 0u, 0u, 0u, 0u };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
     lib_u64 prepared_ticks = 0u;
-    core_machine_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
     timing_port_state port_state = { 0u, 0u };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
@@ -184,7 +184,7 @@ static lib_i32 timing_test_fault(void)
         if (failed) goto done;
         prepared_ticks = result.elapsed_ticks;
         failed |= core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EIP, 0u) != LIB_STATUS_OK ||
+            X86_CORE_CPU_DEBUG_EIP, 0u) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0u, fault, sizeof(fault)) != LIB_STATUS_OK ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -243,7 +243,7 @@ static lib_i32 timing_capture_qualification(const lib_u8 *program,
     lib_size program_bytes, core_machine_retirement_eligibility_key *out_key)
 {
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u }
     };
@@ -309,7 +309,7 @@ static lib_i32 timing_test_physical_contract(void)
         entries, sizeof(entries) / sizeof(entries[0])
     };
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u },
         .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
@@ -370,7 +370,7 @@ static lib_i32 timing_test_physical_contract(void)
 static lib_i32 timing_test_next_fetch_publication(void)
 {
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u
     };
     const lib_u8 jump[] = {0xebu,0x0du};
@@ -381,7 +381,7 @@ static lib_i32 timing_test_next_fetch_publication(void)
     };
     const core_machine_run_budget budget = {1u,0u};
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
     core_machine *machine = LIB_NULL;
     lib_i32 failed = core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         timing_map_reset(machine) != LIB_STATUS_OK ||
@@ -395,7 +395,7 @@ static lib_i32 timing_test_next_fetch_publication(void)
         failed = core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != 8u || result.elapsed_ticks != 8u || probe.count != 1u ||
-            probe.key.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL ||
+            probe.key.timing_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL ||
             probe.key.next_lexeme_components != CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || diagnostic.last_delivered_exception.valid;
@@ -423,7 +423,7 @@ static lib_i32 timing_test_next_fetch_publication(void)
 static lib_i32 timing_test_interrupt_retirement(void)
 {
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u
     };
     lib_u8 program[16];

@@ -55,15 +55,15 @@ static lib_i32 secondary_privileged_timing_enter_protected(core_machine *machine
         0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xd0u,
         0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = {[CORE_MACHINE_DEBUG_EIP] = 0x0200u}
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x0200u}
     };
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
 
     if (core_machine_memory_write(machine, 0x0300u, gdt, sizeof(gdt)) != LIB_STATUS_OK ||
         core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
@@ -71,7 +71,7 @@ static lib_i32 secondary_privileged_timing_enter_protected(core_machine *machine
         core_machine_memory_write(machine, 0x0200u, setup, sizeof(setup)) != LIB_STATUS_OK ||
         core_machine_run(machine, (core_machine_run_budget){7u, 0u}, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 7u ||
-        core_machine_debug_capture_cpu_snapshot(machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT,
+        core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
             &snapshot) != LIB_STATUS_OK ||
         (snapshot.cr0 & VCPU_CR0_PE) == 0u || snapshot.cs.selector != 8u ||
         snapshot.cs.base != 0u || snapshot.cs.limit != 0xffffu || snapshot.cs.dpl != 0u ||
@@ -94,7 +94,7 @@ static lib_i32 secondary_privileged_timing_enter_protected(core_machine *machine
 static lib_i32 secondary_privileged_timing_prepare(core_machine **out_machine, secondary_privileged_timing_state *state)
 {
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_memory_alias_config aliases[] = {
         {SECONDARY_PRIVILEGED_TIMING_RESET_LINEAR, SECONDARY_PRIVILEGED_TIMING_RESET_PHYSICAL, 16u},
@@ -135,7 +135,7 @@ static lib_i32 secondary_privileged_timing_run(core_machine *machine, secondary_
             LIB_STATUS_OK) return 0;
     if (!secondary_privileged_timing_enter_protected(machine, &setup_ticks) ||
         state->advanced_ticks != setup_ticks ||
-        core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EAX,
+        core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EAX,
             row->eax) != LIB_STATUS_OK) return 0;
     status = core_machine_run(machine, budget, &result);
     return status == LIB_STATUS_OK &&

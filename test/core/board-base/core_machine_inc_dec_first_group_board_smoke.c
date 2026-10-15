@@ -9,30 +9,30 @@ static lib_i32 inc_dec_first_group_protected_faults(void)
 {
     static const test_cpu_board_fault_case cases[] = {
         {{0xffu,0x06u,0x10u,0u},4u,LIB_TRUE, LIB_TRUE, 0x7fffu,0u,0u,
-            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_ZF},
+            X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_ZF},
         {{0xffu,0x06u,0x10u,0u},4u,LIB_FALSE,LIB_FALSE,0x7fffu,0u,0u,
-            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_ZF},
+            X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_ZF},
         {{0xf7u,0x16u,0x10u,0u},4u,LIB_TRUE, LIB_TRUE, 0x55aau,0u,0u,
-            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_ZF},
+            X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_ZF},
         {{0xf7u,0x16u,0x10u,0u},4u,LIB_FALSE,LIB_FALSE,0x55aau,0u,0u,
-            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_ZF},
+            X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_ZF},
         {{0xf7u,0x1eu,0x10u,0u},4u,LIB_TRUE, LIB_TRUE, 0x7fffu,0u,0u,
-            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_ZF},
+            X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_ZF},
         {{0xf7u,0x1eu,0x10u,0u},4u,LIB_FALSE,LIB_FALSE,0x7fffu,0u,0u,
-            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_ZF},
+            X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_ZF},
         {{0xf7u,0x06u,0x10u,0u,0xffu,0xffu},6u,LIB_TRUE,LIB_TRUE,
             0xffffu,0u,0u,
-            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_OF | CORE_MACHINE_DEBUG_EFLAGS_AF},
+            X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_OF | X86_CORE_CPU_DEBUG_EFLAGS_AF},
         {{0xf7u,0x26u,0x10u,0u},4u,LIB_TRUE,LIB_TRUE,2u,
             0xaabb8000u,0x11223344u,
-            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_OF | CORE_MACHINE_DEBUG_EFLAGS_ZF},
+            X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_OF | X86_CORE_CPU_DEBUG_EFLAGS_ZF},
         {{0xf7u,0x2eu,0x10u,0u},4u,LIB_TRUE,LIB_TRUE,2u,
             0xaabb8000u,0x11223344u,
-            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_OF | CORE_MACHINE_DEBUG_EFLAGS_ZF},
+            X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_OF | X86_CORE_CPU_DEBUG_EFLAGS_ZF},
         {{0xf7u,0x36u,0x10u,0u},4u,LIB_TRUE,LIB_TRUE,2u,
-            5u,0xaabbccddu,CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_OF},
+            5u,0xaabbccddu,X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_OF},
         {{0xf7u,0x3eu,0x10u,0u},4u,LIB_TRUE,LIB_TRUE,2u,
-            5u,0xaabbccddu,CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_OF}
+            5u,0xaabbccddu,X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_OF}
     };
 
     return test_cpu_board_faults(cases,
@@ -64,7 +64,7 @@ static lib_i32 inc_dec_first_group_divide_delivery(void)
                 (signed_divide ? (bytes == 2u ? 0x0000ffffu :
                 0xffffffffu) : 1u)) : 0xaabbccddu,
             .ecx = fault_case ? (signed_divide ? mask : 1u) : 0u,
-            .flags = CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_OF
+            .flags = X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_OF
         };
         if (!test_cpu_board_de_delivery(&entry)) {
             lib_c_fprintf(lib_c_stderr, "INC/DEC divide delivery case %u/%u failed\n",

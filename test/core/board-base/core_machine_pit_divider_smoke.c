@@ -43,7 +43,7 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     config.ticks_per_instruction = 1u;
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80286;
     config.clock_plan.pit.numerator = 1u;
     config.clock_plan.pit.denominator = 4u;
     failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;

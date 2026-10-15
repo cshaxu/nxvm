@@ -6,7 +6,7 @@
 #include "core/x86/device_support_interface.h"
 #include "core/board-base/machine_board_interface.h"
 static lib_i32 arpl_board_prepare(core_machine **out_machine,
-    core_machine_cpu_profile profile, const lib_u8 *code, lib_size bytes,
+    x86_core_cpu_profile profile, const lib_u8 *code, lib_size bytes,
     lib_u16 ds_limit,
     core_machine_board_state **out_board)
 {
@@ -45,14 +45,14 @@ static lib_i32 arpl_board_prepare(core_machine **out_machine,
         0xb8u,0x30u,0x00u,0x8eu,0xe8u,
         0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
-    const lib_bool is386 = profile == CORE_MACHINE_CPU_PROFILE_80386;
+    const lib_bool is386 = profile == X86_CORE_CPU_PROFILE_80386;
     const lib_u8 *bootstrap = is386 ? bootstrap386 : bootstrap286;
     const lib_size bootstrap_bytes = is386 ? sizeof(bootstrap386) :
         sizeof(bootstrap286);
@@ -104,10 +104,10 @@ static lib_i32 arpl_board_memory_prefix(void)
     };
     core_machine *machine = LIB_NULL;
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u16 value = 1u;
     lib_i32 failed = !arpl_board_prepare(&machine,
-        CORE_MACHINE_CPU_PROFILE_80286, code, sizeof(code), 0xffffu, LIB_NULL);
+        X86_CORE_CPU_PROFILE_80286, code, sizeof(code), 0xffffu, LIB_NULL);
 
     if (!failed)
         failed = core_machine_memory_write(machine, 0x5400u, &value,
@@ -116,11 +116,11 @@ static lib_i32 arpl_board_memory_prefix(void)
                 &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             core_machine_debug_read_memory(machine, 0x5400u, &value,
                 sizeof(value)) != LIB_STATUS_OK;
     if (!failed)
-        failed = value != 3u || !(after.eflags & CORE_MACHINE_DEBUG_EFLAGS_ZF);
+        failed = value != 3u || !(after.eflags & X86_CORE_CPU_DEBUG_EFLAGS_ZF);
     core_machine_destroy(machine);
     return !failed;
 }
@@ -133,12 +133,12 @@ static lib_i32 arpl_board_limit(void)
     const lib_u16 adjacent = 0x7e7eu;
     core_machine *machine = LIB_NULL;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
-    core_machine_debug_cpu_snapshot before = {0}, after = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0}, after = {0};
     lib_u16 observed = 0u, observed_adjacent = 0u;
     lib_u16 frame[4] = {0};
     lib_i32 failed = !arpl_board_prepare(&machine,
-        CORE_MACHINE_CPU_PROFILE_80386, code, sizeof(code), 0x000fu, LIB_NULL);
+        X86_CORE_CPU_PROFILE_80386, code, sizeof(code), 0x000fu, LIB_NULL);
 
     if (!failed)
         failed = core_machine_memory_write(machine, 0x4400u, &image,
@@ -146,14 +146,14 @@ static lib_i32 arpl_board_limit(void)
             core_machine_memory_write(machine, 0x4410u, &adjacent,
                 sizeof(adjacent)) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
             test_core_machine_fixture_run_after_delivery(machine,
                 (core_machine_run_budget){64u,0u},
                 &result) != LIB_STATUS_OK ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
                 LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             core_machine_debug_read_memory(machine, 0x4400u, &observed,
                 sizeof(observed)) != LIB_STATUS_OK ||
             core_machine_debug_read_memory(machine, 0x4410u,
@@ -196,32 +196,32 @@ static lib_i32 arpl_board_irq(void)
         core_machine_board_state *board = LIB_NULL;
         core_machine_pic_irq_source *source = LIB_NULL;
         core_machine_run_result result = {0};
-        core_machine_debug_cpu_snapshot before = {0}, after = {0};
-        core_machine_cpu_diagnostic diagnostic = {0};
-        core_machine_debug_register_patch patch = {0};
+        x86_core_cpu_debug_cpu_snapshot before = {0}, after = {0};
+        x86_core_cpu_diagnostic diagnostic = {0};
+        x86_core_cpu_debug_register_patch patch = {0};
         lib_u8 gate[8] = {0};
         lib_u32 frame[3] = {0};
         lib_i32 failed = !arpl_board_prepare(&machine,
-            CORE_MACHINE_CPU_PROFILE_80386, code, sizeof(code), 0xffffu, &board);
+            X86_CORE_CPU_PROFILE_80386, code, sizeof(code), 0xffffu, &board);
 
         gate[1u] = 0x01u;
         gate[2u] = 0x08u;
         gate[5u] = 0x8eu;
-        patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS);
-        patch.values[CORE_MACHINE_DEBUG_EAX] = 0xa1a10000u |
+        patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS);
+        patch.values[X86_CORE_CPU_DEBUG_EAX] = 0xa1a10000u |
             (change ? 1u : 3u);
-        patch.values[CORE_MACHINE_DEBUG_ECX] = 0xb2b20000u |
+        patch.values[X86_CORE_CPU_DEBUG_ECX] = 0xb2b20000u |
             (change ? 3u : 1u);
-        patch.values[CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_IF;
+        patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF;
         if (!failed)
             failed = core_machine_memory_write(machine, 0x0500u, gate,
                 sizeof(gate)) != LIB_STATUS_OK ||
                 core_machine_debug_patch_registers(machine, &patch) !=
                     LIB_STATUS_OK ||
                 core_machine_debug_capture_cpu_snapshot(machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         if (!failed) {
             test_pic_program_vector(board->shared_pic_master, 0x20u);
             test_pic_bind_source(&source,
@@ -234,7 +234,7 @@ static lib_i32 arpl_board_irq(void)
                 core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
                     LIB_STATUS_OK ||
                 core_machine_debug_capture_cpu_snapshot(machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 core_machine_debug_read_memory(machine,
                     after.ss.base + (lib_u16)after.esp, frame,
                     sizeof(frame)) != LIB_STATUS_OK;
@@ -247,9 +247,9 @@ static lib_i32 arpl_board_irq(void)
                 after.ecx != before.ecx || after.edx != before.edx ||
                 after.ebx != before.ebx || after.ebp != before.ebp ||
                 after.esi != before.esi || after.edi != before.edi ||
-                !!(after.eflags & CORE_MACHINE_DEBUG_EFLAGS_ZF) != change ||
-                (after.eflags & ~(CORE_MACHINE_DEBUG_EFLAGS_ZF | CORE_MACHINE_DEBUG_EFLAGS_IF)) !=
-                    (before.eflags & ~(CORE_MACHINE_DEBUG_EFLAGS_ZF | CORE_MACHINE_DEBUG_EFLAGS_IF)) ||
+                !!(after.eflags & X86_CORE_CPU_DEBUG_EFLAGS_ZF) != change ||
+                (after.eflags & ~(X86_CORE_CPU_DEBUG_EFLAGS_ZF | X86_CORE_CPU_DEBUG_EFLAGS_IF)) !=
+                    (before.eflags & ~(X86_CORE_CPU_DEBUG_EFLAGS_ZF | X86_CORE_CPU_DEBUG_EFLAGS_IF)) ||
                 lib_memory_compare(&before.es, &after.es,
                     sizeof(before.es)) != 0 ||
                 lib_memory_compare(&before.cs, &after.cs,
@@ -267,9 +267,9 @@ static lib_i32 arpl_board_irq(void)
                 (test_pic_read(board->shared_pic_master, 0x0au) &
                     VPIC_IRR_IRQ(0u)) ||
                 frame[0u] != 3u ||
-                !!(frame[2u] & CORE_MACHINE_DEBUG_EFLAGS_ZF) != change ||
-                (frame[2u] & ~CORE_MACHINE_DEBUG_EFLAGS_ZF) !=
-                    (before.eflags & ~CORE_MACHINE_DEBUG_EFLAGS_ZF);
+                !!(frame[2u] & X86_CORE_CPU_DEBUG_EFLAGS_ZF) != change ||
+                (frame[2u] & ~X86_CORE_CPU_DEBUG_EFLAGS_ZF) !=
+                    (before.eflags & ~X86_CORE_CPU_DEBUG_EFLAGS_ZF);
         core_machine_destroy(machine);
         if (failed) return 0;
     }

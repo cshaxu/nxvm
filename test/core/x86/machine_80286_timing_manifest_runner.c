@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/x86/retirement_observation_interface.h"
 #include "../board-base/core_machine_board_fixture.h"
@@ -29,7 +29,7 @@
 static lib_i32 timing_80286_manifest_load_table(core_machine *machine,
     lib_bool idt, lib_u32 base, lib_u16 limit)
 {
-    core_machine_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot before;
     lib_u32 code;
     const lib_u8 pointer[] = {(lib_u8)limit, (lib_u8)(limit >> 8u),
         (lib_u8)base, (lib_u8)(base >> 8u), (lib_u8)(base >> 16u), 0u};
@@ -39,12 +39,12 @@ static lib_i32 timing_80286_manifest_load_table(core_machine *machine,
     core_machine_run_result run = {0};
 
     if (core_machine_debug_capture_cpu_snapshot(machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK) return 0;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK) return 0;
     code = before.cs.base + before.eip;
     if (core_machine_memory_read(machine, code, saved, sizeof(saved)) != LIB_STATUS_OK ||
-        core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
-            before.eflags & ~(CORE_MACHINE_DEBUG_EFLAGS_TF |
-                CORE_MACHINE_DEBUG_EFLAGS_IF)) != LIB_STATUS_OK ||
+        core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
+            before.eflags & ~(X86_CORE_CPU_DEBUG_EFLAGS_TF |
+                X86_CORE_CPU_DEBUG_EFLAGS_IF)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, before.ds.base + 0x1700u,
             pointer, sizeof(pointer)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, code, instruction,
@@ -53,37 +53,37 @@ static lib_i32 timing_80286_manifest_load_table(core_machine *machine,
             &run) != LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u ||
         core_machine_memory_write(machine, code, saved, sizeof(saved)) != LIB_STATUS_OK ||
-        core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EIP,
+        core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EIP,
             before.eip) != LIB_STATUS_OK ||
-        core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
+        core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
             before.eflags) != LIB_STATUS_OK) return 0;
     return 1;
 }
 
 static lib_i32 timing_80286_manifest_prepare_gate(test_protected_16_machine *state)
 {
-    const core_machine_debug_register_patch seed = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    const x86_core_cpu_debug_register_patch seed = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_EAX] = 0xaabbccddu,
-            [CORE_MACHINE_DEBUG_ECX] = 0x11223344u,
-            [CORE_MACHINE_DEBUG_EDX] = 0x55667788u,
-            [CORE_MACHINE_DEBUG_EBX] = 0x99aabbccu,
-            [CORE_MACHINE_DEBUG_EBP] = 0x1234u,
-            [CORE_MACHINE_DEBUG_ESI] = 0x5678u,
-            [CORE_MACHINE_DEBUG_EDI] = 0x9abcu,
-            [CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_CF |
-                CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF
+            [X86_CORE_CPU_DEBUG_EAX] = 0xaabbccddu,
+            [X86_CORE_CPU_DEBUG_ECX] = 0x11223344u,
+            [X86_CORE_CPU_DEBUG_EDX] = 0x55667788u,
+            [X86_CORE_CPU_DEBUG_EBX] = 0x99aabbccu,
+            [X86_CORE_CPU_DEBUG_EBP] = 0x1234u,
+            [X86_CORE_CPU_DEBUG_ESI] = 0x5678u,
+            [X86_CORE_CPU_DEBUG_EDI] = 0x9abcu,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_CF |
+                X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_TF
         }
     };
-    return test_protected_16_prepare(state, CORE_MACHINE_CPU_PROFILE_80286) &&
+    return test_protected_16_prepare(state, X86_CORE_CPU_PROFILE_80286) &&
         test_protected_16_install_gate(state, TIMING_80286_MANIFEST_VECTOR,
             TIMING_80286_MANIFEST_HANDLER, 8u, 6u, 0u, LIB_TRUE) &&
         core_machine_debug_patch_registers(state->machine, &seed) == LIB_STATUS_OK;
@@ -116,7 +116,7 @@ typedef struct timing_80286_manifest_recipe {
     lib_u8 program[16];
     lib_size bytes;
     lib_u64 ticks;
-    core_machine_retirement_timing_origin origin;
+    x86_core_cpu_retirement_timing_origin origin;
 } timing_80286_manifest_recipe;
 
 typedef struct timing_80286_manifest_control_recipe {
@@ -304,15 +304,15 @@ static lib_u16 timing_80286_manifest_control_cx(const char *key_id)
     return 2u;
 }
 
-static core_machine_retirement_timing_origin
+static x86_core_cpu_retirement_timing_origin
 timing_80286_manifest_control_origin(lib_u8 opcode)
 {
     if (opcode >= 0x70u && opcode <= 0x7fu) {
-        return CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+        return X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY;
     }
     return (opcode == 0xceu || (opcode >= 0xe0u && opcode <= 0xe3u)) ?
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK :
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK;
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK :
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK;
 }
 
 static lib_i32 timing_80286_manifest_is_i286(
@@ -526,16 +526,16 @@ static lib_i32 timing_80286_manifest_s3_results_complete(void)
             observation->timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED) return 0;
         if (timing_80286_manifest_key_has_token(record->key_id, "-LOCK")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_LOCK;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_LOCK;
         }
         if (timing_80286_manifest_key_has_token(record->key_id, "-SEGMENT")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
         }
         if (timing_80286_manifest_key_has_token(record->key_id, "-EA-BID")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
         }
         if (timing_80286_manifest_key_has_token(record->key_id, "-ODD-WORD")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
         }
         if ((observation->formula_inputs & required_inputs) != required_inputs) {
             return 0;
@@ -664,20 +664,20 @@ static lib_i32 timing_80286_manifest_s5_results_complete(void)
             &timing_80286_manifest_records[index];
         const core_machine_retirement_observation *observation =
             &timing_80286_manifest_results[index];
-        core_machine_retirement_timing_origin origin;
+        x86_core_cpu_retirement_timing_origin origin;
         lib_u32 required_inputs = 0u;
 
         if (!timing_80286_manifest_is_s5(record)) continue;
         origin = timing_80286_manifest_key_has_prefix(record->key_id,
-            "I286-JCC-") ? CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY :
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK;
+            "I286-JCC-") ? X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK;
         if (!timing_80286_manifest_observed[index] ||
             observation->timing_origin != origin ||
             observation->timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED) return 0;
         if (timing_80286_manifest_key_has_token(record->key_id,
                 "-NEXT-BYTE")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_CONTROL;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_CONTROL;
         }
         if ((observation->formula_inputs & required_inputs) != required_inputs) {
             return 0;
@@ -730,18 +730,18 @@ static lib_i32 timing_80286_manifest_s6_results_complete(void)
         if (!timing_80286_manifest_is_s6(record)) continue;
         if (!timing_80286_manifest_observed[index] ||
             observation->timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             observation->timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED) return 0;
         if (timing_80286_manifest_key_has_token(record->key_id,
                 "-NEXT-BYTE")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_CONTROL;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_CONTROL;
         }
         if (timing_80286_manifest_key_has_token(record->key_id, "-EA-BID")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
         }
         if (timing_80286_manifest_key_has_token(record->key_id, "-SEGMENT")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
         }
         if ((observation->formula_inputs & required_inputs) != required_inputs) {
             return 0;
@@ -761,26 +761,26 @@ static lib_i32 timing_80286_manifest_s7_results_complete(void)
             &timing_80286_manifest_records[index];
         const core_machine_retirement_observation *observation =
             &timing_80286_manifest_results[index];
-        core_machine_retirement_timing_origin origin;
+        x86_core_cpu_retirement_timing_origin origin;
         lib_u32 required_inputs = 0u;
 
         if (!timing_80286_manifest_is_s7(record)) continue;
         origin = timing_80286_manifest_key_has_prefix(record->key_id,
             "I286-STACK-POP-SEG-") ?
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK :
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK :
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY;
         if (!timing_80286_manifest_observed[index] ||
             observation->timing_origin != origin ||
             observation->timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED) return 0;
         if (timing_80286_manifest_key_has_token(record->key_id, "-EA-BID")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
         }
         if (timing_80286_manifest_key_has_token(record->key_id, "-SEGMENT")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
         }
         if (timing_80286_manifest_key_has_token(record->key_id, "-ODD-WORD")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
         }
         if ((observation->formula_inputs & required_inputs) != required_inputs) {
             return 0;
@@ -834,17 +834,17 @@ static lib_i32 timing_80286_manifest_s4_results_complete(void)
         if (!timing_80286_manifest_is_s4(record)) continue;
         if (!timing_80286_manifest_observed[index] ||
             observation->timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
             observation->timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED) return 0;
         if (timing_80286_manifest_key_has_prefix(record->key_id, "I286-REP-")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_REPEAT |
-                CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_REPEAT |
+                X86_CORE_CPU_TIMING_INPUT_REPEAT_PHASE;
         }
         if (timing_80286_manifest_key_has_token(record->key_id, "-ODD-WORD") &&
             !timing_80286_manifest_key_has_token(record->key_id,
                 "-REP-PHASE-ZERO")) {
-            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
+            required_inputs |= X86_CORE_CPU_TIMING_INPUT_ODD_WORD;
         }
         if ((observation->formula_inputs & required_inputs) != required_inputs) {
             return 0;
@@ -920,15 +920,15 @@ static lib_status timing_80286_manifest_copy_ds_to_es(core_machine *machine)
 {
     lib_u32 selector;
     const lib_status status = core_machine_debug_read_register(machine,
-        CORE_MACHINE_DEBUG_DS, &selector);
+        X86_CORE_CPU_DEBUG_DS, &selector);
 
     return status != LIB_STATUS_OK ? status :
-        core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_ES,
+        core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_ES,
             selector);
 }
 
 static lib_status timing_80286_manifest_write_word(core_machine *machine,
-    core_machine_debug_register register_id, lib_u16 value)
+    x86_core_cpu_debug_register register_id, lib_u16 value)
 {
     lib_u32 previous;
     const lib_status status = core_machine_debug_read_register(machine,
@@ -944,7 +944,7 @@ static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
     const char *key_id, const lib_u8 *program, lib_size bytes)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80286,
         .ticks_per_instruction = 29u,
         .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
     };
@@ -977,7 +977,7 @@ static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
         const lib_u16 handler[] = { 0xfff5u, 0xf000u };
         const lib_u8 handler_code[] = { 0x00u, 0xc0u };
 
-        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR +
+        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 3u * 4u, handler,
             sizeof(handler));
@@ -991,13 +991,13 @@ static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
     if (status == LIB_STATUS_OK) {
         const lib_u16 operand = 1u;
 
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EAX, 1u);
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_ECX, 2u);
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EDX, 0u);
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EBP, 0x0800u);
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_ESI, 0x0800u);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EAX, 1u);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_ECX, 2u);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EDX, 0u);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EBP, 0x0800u);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_ESI, 0x0800u);
         if (timing_80286_manifest_is_dx_port(key_id)) {
-            if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EDX, 0x00e0u);
+            if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EDX, 0x00e0u);
         }
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x1000u, &operand,
             sizeof(operand));
@@ -1014,20 +1014,20 @@ static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
             sizeof(bounds));
     }
     if (status == LIB_STATUS_OK && timing_80286_manifest_uses_stack(key_id)) {
-        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR +
+        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES);
     }
     if (status == LIB_STATUS_OK &&
         timing_80286_manifest_is_ret_near_next_byte(key_id)) {
         const lib_u16 return_ip = 0xfff5u;
 
-        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR);
+        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
             TIMING_80286_MANIFEST_STACK_LINEAR, &return_ip, sizeof(return_ip));
     }
     if (status == LIB_STATUS_OK && lib_text_compare(key_id,
             "I286-STACK-LEAVE") == 0) {
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EBP, TIMING_80286_MANIFEST_STACK_LINEAR);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EBP, TIMING_80286_MANIFEST_STACK_LINEAR);
     }
     if (status == LIB_STATUS_OK && timing_80286_manifest_uses_far_target(key_id)) {
         static const lib_u8 one_byte_target[] = { 0x90u };
@@ -1042,14 +1042,14 @@ static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
             target_bytes);
     }
     if (status == LIB_STATUS_OK && timing_80286_manifest_flags_active) {
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EFLAGS, timing_80286_manifest_eflags);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EFLAGS, timing_80286_manifest_eflags);
     }
     if (status == LIB_STATUS_OK && (lib_text_compare(key_id, "I286-XLAT") == 0 ||
             lib_text_compare(key_id, "I286-XLAT-SEGMENT") == 0)) {
         static const lib_u8 value[] = { 0x5au };
 
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EBX, 0x1000u);
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EAX, 1u);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EBX, 0x1000u);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EAX, 1u);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x1001u, value, sizeof(value));
     }
     if (status == LIB_STATUS_OK) status =
@@ -1087,7 +1087,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
     static const lib_u8 table_pointer[] = { 0x37u, 0u, 0u, 0x03u,
         0u, 0u };
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80286,
         .ticks_per_instruction = 29u,
         .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
     };
@@ -1112,13 +1112,13 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
     if (status == LIB_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
     if (status == LIB_STATUS_OK) status = core_machine_reset(machine);
     if (status == LIB_STATUS_OK) {
-        const core_machine_debug_register_patch entry = {
-            .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-            .values = {[CORE_MACHINE_DEBUG_EIP] = 0x0200u}
+        const x86_core_cpu_debug_register_patch entry = {
+            .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+            .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x0200u}
         };
         status = core_machine_debug_patch_registers(machine, &entry);
     }
@@ -1202,7 +1202,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
             "I286-STACK-POP-SEG-PM") == 0) {
         const lib_u16 selector = 0x0010u;
 
-        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, 0x1000u);
+        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1000u);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x4000u, &selector,
             sizeof(selector));
     }
@@ -1211,7 +1211,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
         const lib_u16 return_frame[] = { 0x0010u, 0x0008u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
 
-        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, 0x1000u);
+        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1000u);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x4000u, return_frame,
             sizeof(return_frame));
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
@@ -1222,7 +1222,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
         const lib_u16 return_frame[] = { 0x0010u, 0x0008u, 0x0002u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
 
-        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, 0x1000u);
+        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1000u);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x4000u, return_frame,
             sizeof(return_frame));
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
@@ -1232,7 +1232,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
             "I286-CALL-FAR-DIRECT-PM-NEXT-BYTE-2") == 0) {
         const lib_u8 target[] = { 0x00u, 0xc0u };
 
-        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, 0x1000u);
+        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1000u);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x2010u, target,
             sizeof(target));
     }
@@ -1252,17 +1252,17 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
         const lib_u16 pointer[] = { 0x0010u, 0x0008u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
 
-        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, 0x1000u);
+        if (status == LIB_STATUS_OK) status = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1000u);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x4000u, pointer,
             sizeof(pointer));
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
             0x2010u, target, sizeof(target));
     }
     if (status == LIB_STATUS_OK) {
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EAX, operand);
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EBP, 0x0800u);
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_ESI, 0x0800u);
-        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EIP, 0u);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EAX, operand);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EBP, 0x0800u);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_ESI, 0x0800u);
+        if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EIP, 0u);
     }
     if (status == LIB_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &provider);
@@ -1312,7 +1312,7 @@ static lib_i32 timing_80286_manifest_run(
 
 static lib_i32 timing_80286_manifest_run_repeat_step(core_machine *machine,
     timing_80286_manifest_capture *capture, const char *key_id,
-    core_machine_retirement_repeat_phase expected_phase,
+    x86_core_cpu_retirement_repeat_phase expected_phase,
     lib_u64 expected_ticks, lib_u32 required_inputs)
 {
     const core_machine_run_budget budget = { 1u, 0u };
@@ -1327,15 +1327,15 @@ static lib_i32 timing_80286_manifest_run_repeat_step(core_machine *machine,
         run.ticks != expected_ticks || capture->count != 1u ||
         capture->observation.source_ticks != expected_ticks ||
         capture->observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
         capture->observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         capture->observation.repeat_phase != expected_phase ||
         (capture->observation.formula_inputs &
-            (CORE_MACHINE_CPU_TIMING_INPUT_REPEAT |
-             CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE | required_inputs)) !=
-            (CORE_MACHINE_CPU_TIMING_INPUT_REPEAT |
-             CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE | required_inputs);
+            (X86_CORE_CPU_TIMING_INPUT_REPEAT |
+             X86_CORE_CPU_TIMING_INPUT_REPEAT_PHASE | required_inputs)) !=
+            (X86_CORE_CPU_TIMING_INPUT_REPEAT |
+             X86_CORE_CPU_TIMING_INPUT_REPEAT_PHASE | required_inputs);
 }
 
 static lib_i32 timing_80286_manifest_run_repeat_recipe(
@@ -1350,7 +1350,7 @@ static lib_i32 timing_80286_manifest_run_repeat_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine *machine = LIB_NULL;
     lib_u32 required_inputs = odd_word ?
-        CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD : 0u;
+        X86_CORE_CPU_TIMING_INPUT_ODD_WORD : 0u;
     lib_u64 odd_ticks = odd_word ? 2u : 0u;
     lib_i32 source_odd;
     lib_i32 failed;
@@ -1372,12 +1372,12 @@ static lib_i32 timing_80286_manifest_run_repeat_recipe(
         program, sizeof(program));
     if (!failed) {
         failed = timing_80286_manifest_copy_ds_to_es(machine) != LIB_STATUS_OK;
-        if (!failed) failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESI, source_odd ? 0x1001u : 0x1000u) != LIB_STATUS_OK;
-        if (!failed) failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_EDI, source_odd ? 0x1100u :
+        if (!failed) failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESI, source_odd ? 0x1001u : 0x1000u) != LIB_STATUS_OK;
+        if (!failed) failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_EDI, source_odd ? 0x1100u :
             odd_word ? 0x1101u : 0x1100u) != LIB_STATUS_OK;
-        if (!failed) failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_EAX, 1u) != LIB_STATUS_OK;
-        if (!failed) failed = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EDX, 0x00e0u) != LIB_STATUS_OK;
-        if (!failed) failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ECX, 2u) != LIB_STATUS_OK;
+        if (!failed) failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_EAX, 1u) != LIB_STATUS_OK;
+        if (!failed) failed = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EDX, 0x00e0u) != LIB_STATUS_OK;
+        if (!failed) failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 2u) != LIB_STATUS_OK;
         destination = recipe->prefix == 0xf3u ? source : 0u;
         if (!failed) failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
             &source, sizeof(source)) != LIB_STATUS_OK ||
@@ -1387,7 +1387,7 @@ static lib_i32 timing_80286_manifest_run_repeat_recipe(
     }
     if (!failed) {
         failed = timing_80286_manifest_run_repeat_step(machine, &capture,
-            first_key, CORE_MACHINE_RETIREMENT_REPEAT_FIRST,
+            first_key, X86_CORE_CPU_RETIREMENT_REPEAT_FIRST,
             recipe->first_ticks + odd_ticks, required_inputs);
         if (failed) lib_c_printf("I286-REP-DETAIL:%s:expected=%llu:observed=%llu:phase=%u:inputs=%u\n",
             first_key, recipe->first_ticks + odd_ticks,
@@ -1396,7 +1396,7 @@ static lib_i32 timing_80286_manifest_run_repeat_recipe(
             capture.observation.formula_inputs);
         if (!failed) {
             failed = timing_80286_manifest_run_repeat_step(machine, &capture,
-                continuation_key, CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION,
+                continuation_key, X86_CORE_CPU_RETIREMENT_REPEAT_CONTINUATION,
                 recipe->continuation_ticks + odd_ticks, required_inputs);
             if (failed) lib_c_printf("I286-REP-DETAIL:%s:expected=%llu:observed=%llu:phase=%u:inputs=%u\n",
                 continuation_key, recipe->continuation_ticks + odd_ticks,
@@ -1410,10 +1410,10 @@ static lib_i32 timing_80286_manifest_run_repeat_recipe(
     if (!failed) failed = !timing_80286_manifest_prepare(&machine, &capture,
         zero_key, program, sizeof(program));
     if (!failed) {
-        failed = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EDX, 0x00e0u) != LIB_STATUS_OK;
-        if (!failed) failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ECX, 0u) != LIB_STATUS_OK;
+        failed = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EDX, 0x00e0u) != LIB_STATUS_OK;
+        if (!failed) failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 0u) != LIB_STATUS_OK;
         if (!failed) failed = timing_80286_manifest_run_repeat_step(machine, &capture, zero_key,
-            CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT, recipe->zero_ticks,
+            X86_CORE_CPU_RETIREMENT_REPEAT_ZERO_COUNT, recipe->zero_ticks,
             0u);
     }
     core_machine_destroy(machine);
@@ -1445,11 +1445,11 @@ static lib_i32 timing_80286_manifest_run_string_recipe(
             recipe->program, recipe->bytes);
     if (!failed) {
         failed = timing_80286_manifest_copy_ds_to_es(machine) != LIB_STATUS_OK;
-        if (!failed) failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESI, source_odd ? 0x1001u : 0x1000u) != LIB_STATUS_OK;
-        if (!failed) failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_EDI, source_odd ? 0x1100u :
+        if (!failed) failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESI, source_odd ? 0x1001u : 0x1000u) != LIB_STATUS_OK;
+        if (!failed) failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_EDI, source_odd ? 0x1100u :
             odd_word ? 0x1101u : 0x1100u) != LIB_STATUS_OK;
-        if (!failed) failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_EAX, value) != LIB_STATUS_OK;
-        if (!failed) failed = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EDX, 0x00e0u) != LIB_STATUS_OK;
+        if (!failed) failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_EAX, value) != LIB_STATUS_OK;
+        if (!failed) failed = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EDX, 0x00e0u) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
             &value, sizeof(value)) != LIB_STATUS_OK || core_machine_memory_write(
             machine, source_odd ? 0x1100u : odd_word ? 0x1101u : 0x1100u,
@@ -1461,11 +1461,11 @@ static lib_i32 timing_80286_manifest_run_string_recipe(
             run.ticks != expected_ticks || capture.count != 1u ||
             capture.observation.source_ticks != expected_ticks ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             (odd_word && (capture.observation.formula_inputs &
-                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD) == 0u);
+                X86_CORE_CPU_TIMING_INPUT_ODD_WORD) == 0u);
     }
     if (failed) lib_c_printf("I286-STRING-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u\n",
         key_id, expected_ticks, run.ticks,
@@ -1492,7 +1492,7 @@ static lib_i32 timing_80286_manifest_run_hlt_recipe(void)
             run.executed != 1u || run.ticks != 2u || capture.count != 1u ||
             capture.observation.source_ticks != 2u ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -1547,12 +1547,12 @@ static lib_i32 timing_80286_manifest_run_repeat_base_recipe(
             program, sizeof(program));
     if (!failed) {
         failed = timing_80286_manifest_copy_ds_to_es(machine) != LIB_STATUS_OK;
-        if (!failed) failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESI, source_odd ? 0x1001u : 0x1000u) != LIB_STATUS_OK;
-        if (!failed) failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_EDI, source_odd ? 0x1100u :
+        if (!failed) failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESI, source_odd ? 0x1001u : 0x1000u) != LIB_STATUS_OK;
+        if (!failed) failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_EDI, source_odd ? 0x1100u :
             odd_word ? 0x1101u : 0x1100u) != LIB_STATUS_OK;
-        if (!failed) failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_EAX, value) != LIB_STATUS_OK;
-        if (!failed) failed = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EDX, 0x00e0u) != LIB_STATUS_OK;
-        if (!failed) failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ECX, 1u) != LIB_STATUS_OK;
+        if (!failed) failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_EAX, value) != LIB_STATUS_OK;
+        if (!failed) failed = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EDX, 0x00e0u) != LIB_STATUS_OK;
+        if (!failed) failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 1u) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
             &value, sizeof(value)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, source_odd ? 0x1100u :
@@ -1567,11 +1567,11 @@ static lib_i32 timing_80286_manifest_run_repeat_base_recipe(
             capture.observation.source_ticks != recipe->first_ticks +
                 (odd_word ? 2u : 0u) ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             (odd_word && (capture.observation.formula_inputs &
-                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD) == 0u);
+                X86_CORE_CPU_TIMING_INPUT_ODD_WORD) == 0u);
     }
     if (failed) lib_c_printf("I286-REP-ODD-DETAIL:%s:expected=%llu:run=%llu:source=%llu:inputs=%u\n",
             key_id, recipe->first_ticks + (odd_word ? 2u : 0u), run.ticks,
@@ -1594,7 +1594,7 @@ static lib_i32 timing_80286_manifest_run_jmp_next_byte_recipe(
     };
     timing_80286_manifest_recipe recipe = {
         LIB_NULL, { 0xebu, 0u, 0u, 0u, 0u, 0u, 0u, 0u }, 0u, 0u,
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK
     };
     char key_id[96];
     lib_size index;
@@ -1625,7 +1625,7 @@ static lib_i32 timing_80286_manifest_run_call_next_byte_recipe(
     };
     timing_80286_manifest_recipe recipe = {
         LIB_NULL, { 0xe8u, 0u, 0u, 0u, 0u, 0u, 0u, 0u }, 0u, 0u,
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK
     };
     char key_id[96];
     lib_size index;
@@ -1677,7 +1677,7 @@ static lib_i32 timing_80286_manifest_run_ret_next_byte_recipe(
             run.ticks != 11u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 11u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -1720,7 +1720,7 @@ static lib_i32 timing_80286_manifest_run_far_jmp_next_byte_recipe(
             run.ticks != 11u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 11u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -1756,7 +1756,7 @@ static lib_i32 timing_80286_manifest_run_ret_imm_next_byte_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR) != LIB_STATUS_OK;
+        failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_memory_write(machine, TIMING_80286_MANIFEST_STACK_LINEAR,
             &return_ip, sizeof(return_ip)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x000ffff5u, target[next_bytes],
@@ -1768,7 +1768,7 @@ static lib_i32 timing_80286_manifest_run_ret_imm_next_byte_recipe(
             run.ticks != 11u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 11u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -1815,7 +1815,7 @@ static lib_i32 timing_80286_manifest_run_interrupt_next_byte_recipe(
             run.ticks != 23u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 23u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -1852,7 +1852,7 @@ static lib_i32 timing_80286_manifest_run_into_next_byte_recipe(lib_i32 taken,
             program[1u + index] = target[next_bytes][index];
         }
     }
-    timing_80286_manifest_eflags = taken ? CORE_MACHINE_DEBUG_EFLAGS_OF : 0u;
+    timing_80286_manifest_eflags = taken ? X86_CORE_CPU_DEBUG_EFLAGS_OF : 0u;
     timing_80286_manifest_flags_active = 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
@@ -1866,10 +1866,10 @@ static lib_i32 timing_80286_manifest_run_into_next_byte_recipe(lib_i32 taken,
             capture.observation.source_ticks !=
                 (taken ? 24u : 3u) + next_bytes ||
             core_machine_debug_read_register(machine,
-                CORE_MACHINE_DEBUG_EIP, &eip) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_EIP, &eip) != LIB_STATUS_OK ||
             eip != (taken ? 0xfff5u : 0xfff1u) ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -1922,7 +1922,7 @@ static lib_i32 timing_80286_manifest_run_indirect_jmp_next_byte_recipe(
             run.ticks != 11u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 11u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -1958,7 +1958,7 @@ static lib_i32 timing_80286_manifest_run_indirect_call_next_byte_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR +
+        failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_memory_write(machine, 0x1000u, &target_ip,
             sizeof(target_ip)) != LIB_STATUS_OK || core_machine_memory_write(machine,
@@ -1970,7 +1970,7 @@ static lib_i32 timing_80286_manifest_run_indirect_call_next_byte_recipe(
             run.ticks != 11u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 11u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -2006,7 +2006,7 @@ static lib_i32 timing_80286_manifest_run_far_call_next_byte_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR +
+        failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_memory_write(machine, 0x000ffff5u,
             target[next_bytes], next_bytes) != LIB_STATUS_OK;
@@ -2017,7 +2017,7 @@ static lib_i32 timing_80286_manifest_run_far_call_next_byte_recipe(
             run.ticks != 13u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 13u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -2054,7 +2054,7 @@ static lib_i32 timing_80286_manifest_run_far_indirect_call_next_byte_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR +
+        failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_memory_write(machine, 0x1000u, far_pointer,
             sizeof(far_pointer)) != LIB_STATUS_OK || core_machine_memory_write(machine,
@@ -2066,7 +2066,7 @@ static lib_i32 timing_80286_manifest_run_far_indirect_call_next_byte_recipe(
             run.ticks != 16u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 16u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -2103,7 +2103,7 @@ static lib_i32 timing_80286_manifest_run_far_ret_next_byte_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR) != LIB_STATUS_OK;
+        failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_memory_write(machine,
             TIMING_80286_MANIFEST_STACK_LINEAR, return_frame,
             sizeof(return_frame)) != LIB_STATUS_OK || core_machine_memory_write(machine,
@@ -2115,7 +2115,7 @@ static lib_i32 timing_80286_manifest_run_far_ret_next_byte_recipe(
             run.ticks != 15u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 15u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -2152,7 +2152,7 @@ static lib_i32 timing_80286_manifest_run_iret_next_byte_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR) != LIB_STATUS_OK;
+        failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, TIMING_80286_MANIFEST_STACK_LINEAR) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_memory_write(machine,
             TIMING_80286_MANIFEST_STACK_LINEAR, return_frame,
             sizeof(return_frame)) != LIB_STATUS_OK || core_machine_memory_write(machine,
@@ -2164,7 +2164,7 @@ static lib_i32 timing_80286_manifest_run_iret_next_byte_recipe(
             run.ticks != 17u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 17u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -2201,7 +2201,7 @@ static lib_i32 timing_80286_manifest_run_protected_far_memory_call_next_byte_rec
         !timing_80286_manifest_prepare_protected_system(&machine, &capture,
             key_id, program, sizeof(program));
     if (!failed) {
-        failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, 0x1000u) != LIB_STATUS_OK;
+        failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1000u) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_memory_write(machine, 0x4000u, pointer,
             sizeof(pointer)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x2010u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
@@ -2212,7 +2212,7 @@ static lib_i32 timing_80286_manifest_run_protected_far_memory_call_next_byte_rec
             run.ticks != 29u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 29u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -2248,7 +2248,7 @@ static lib_i32 timing_80286_manifest_run_protected_far_call_next_byte_recipe(
         !timing_80286_manifest_prepare_protected_system(&machine, &capture,
             key_id, program, sizeof(program));
     if (!failed) {
-        failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, 0x1000u) != LIB_STATUS_OK;
+        failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1000u) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_memory_write(machine, 0x2010u,
             target[next_bytes], next_bytes) != LIB_STATUS_OK;
     }
@@ -2258,7 +2258,7 @@ static lib_i32 timing_80286_manifest_run_protected_far_call_next_byte_recipe(
             run.ticks != 26u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 26u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -2305,7 +2305,7 @@ static lib_i32 timing_80286_manifest_run_protected_far_memory_jmp_next_byte_reci
             run.ticks != 26u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 26u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -2342,7 +2342,7 @@ static lib_i32 timing_80286_manifest_run_protected_far_ret_next_byte_recipe(
         !timing_80286_manifest_prepare_protected_system(&machine, &capture,
             key_id, program, sizeof(program));
     if (!failed) {
-        failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, 0x1000u) != LIB_STATUS_OK;
+        failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1000u) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_memory_write(machine, 0x4000u, return_frame,
             sizeof(return_frame)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x2010u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
@@ -2353,7 +2353,7 @@ static lib_i32 timing_80286_manifest_run_protected_far_ret_next_byte_recipe(
             run.ticks != 25u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 25u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -2390,7 +2390,7 @@ static lib_i32 timing_80286_manifest_run_protected_iret_next_byte_recipe(
         !timing_80286_manifest_prepare_protected_system(&machine, &capture,
             key_id, program, sizeof(program));
     if (!failed) {
-        failed = timing_80286_manifest_write_word(machine, CORE_MACHINE_DEBUG_ESP, 0x1000u) != LIB_STATUS_OK;
+        failed = timing_80286_manifest_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1000u) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_memory_write(machine, 0x4000u, return_frame,
             sizeof(return_frame)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x2010u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
@@ -2401,7 +2401,7 @@ static lib_i32 timing_80286_manifest_run_protected_iret_next_byte_recipe(
             run.ticks != 31u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 31u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -2450,9 +2450,9 @@ static lib_i32 timing_80286_manifest_run_protected_outer_ret_recipe(
         if (!failed) failed = !timing_80286_manifest_load_table(state.machine,
             LIB_FALSE, TEST_PROTECTED_16_GDT_BASE, 39u);
         if (!failed) failed = core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_ESP, 0x12348000u) != LIB_STATUS_OK ||
+            X86_CORE_CPU_DEBUG_ESP, 0x12348000u) != LIB_STATUS_OK ||
             core_machine_debug_write_register(state.machine,
-                CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
+                X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_set_retirement_observation_provider(
             state.machine, &capture_provider) != LIB_STATUS_OK;
     }
@@ -2462,7 +2462,7 @@ static lib_i32 timing_80286_manifest_run_protected_outer_ret_recipe(
             run.ticks != 55u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 55u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -2483,7 +2483,7 @@ static lib_i32 timing_80286_manifest_run_protected_outer_iret_recipe(
     };
     static const lib_u8 iret[] = { 0xcfu };
     static const lib_u16 frame[] = {
-        0x0010u,0x001bu,CORE_MACHINE_DEBUG_EFLAGS_CF,0x4000u,0x0023u
+        0x0010u,0x001bu,X86_CORE_CPU_DEBUG_EFLAGS_CF,0x4000u,0x0023u
     };
     const core_machine_run_budget budget = { 1u, 0u };
     timing_80286_manifest_capture capture = { { 0 }, 0u };
@@ -2513,9 +2513,9 @@ static lib_i32 timing_80286_manifest_run_protected_outer_iret_recipe(
         if (!failed) failed = !timing_80286_manifest_load_table(state.machine,
             LIB_FALSE, TEST_PROTECTED_16_GDT_BASE, 39u);
         if (!failed) failed = core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_ESP, 0x12348000u) != LIB_STATUS_OK ||
+            X86_CORE_CPU_DEBUG_ESP, 0x12348000u) != LIB_STATUS_OK ||
             core_machine_debug_write_register(state.machine,
-                CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
+                X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_set_retirement_observation_provider(
             state.machine, &provider) != LIB_STATUS_OK;
     }
@@ -2525,7 +2525,7 @@ static lib_i32 timing_80286_manifest_run_protected_outer_iret_recipe(
             run.ticks != 55u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 55u + next_bytes ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -2549,7 +2549,7 @@ static lib_i32 timing_80286_manifest_run_task_transfer_recipe(
         timing_80286_manifest_capture_retirement, &capture
     };
     core_machine_run_result run = { 0 };
-    core_machine_debug_cpu_snapshot snapshot = { 0 };
+    x86_core_cpu_debug_cpu_snapshot snapshot = { 0 };
     task_switch_fixture fixture = { 0 };
     lib_i32 failed;
     lib_u32 steps;
@@ -2560,7 +2560,7 @@ static lib_i32 timing_80286_manifest_run_task_transfer_recipe(
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0])) {
         return 1;
     }
-    failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80286) ||
+    failed = !task_switch_prepare(&fixture, X86_CORE_CPU_PROFILE_80286) ||
         !task_switch_install(&fixture, task_case);
     if (!failed && task_case == TASK_SWITCH_CASE_IDT_TASK_GATE) {
         failed = !write_bytes(fixture.machine, IDT_BASE + 3u * 8u,
@@ -2571,13 +2571,13 @@ static lib_i32 timing_80286_manifest_run_task_transfer_recipe(
     if (!failed) failed = core_machine_memory_write(fixture.machine,
         KERNEL_BASE + 0x100u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
     if (!failed) failed = core_machine_debug_capture_cpu_snapshot(fixture.machine,
-        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
+        X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
     for (steps = 0u; !failed && steps < 32u &&
             (snapshot.cs.selector != 0x0008u || snapshot.eip != 3u); ++steps) {
         failed = core_machine_run(fixture.machine, step, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             core_machine_debug_capture_cpu_snapshot(fixture.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
     }
     if (!failed && (snapshot.cs.selector != 0x0008u ||
             snapshot.eip != 3u)) failed = 1;
@@ -2589,12 +2589,12 @@ static lib_i32 timing_80286_manifest_run_task_transfer_recipe(
         LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u || run.ticks != base_ticks + next_bytes ||
         core_machine_debug_capture_cpu_snapshot(fixture.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.tr.selector != 0x0030u;
     if (!failed && key_id != LIB_NULL) failed = capture.count != 1u ||
         capture.observation.source_ticks != run.ticks ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     if (failed) {
@@ -2627,7 +2627,7 @@ static lib_i32 timing_80286_manifest_run_call_gate_recipe(const char *key_id,
         timing_80286_manifest_capture_retirement, &capture
     };
     core_machine_run_result run = { 0 };
-    core_machine_debug_cpu_snapshot snapshot = { 0 };
+    x86_core_cpu_debug_cpu_snapshot snapshot = { 0 };
     call_gate_machine state = { 0 };
     lib_u32 steps;
     lib_i32 failed;
@@ -2640,13 +2640,13 @@ static lib_i32 timing_80286_manifest_run_call_gate_recipe(const char *key_id,
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
         !call_gate_prepare(&state) || !call_gate_install(&state);
     if (!failed) failed = core_machine_debug_capture_cpu_snapshot(state.machine,
-        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
+        X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
     for (steps = 0u; !failed && steps < 48u &&
             (snapshot.cs.selector != 0x001bu || snapshot.eip != 0u); ++steps) {
         failed = core_machine_run(state.machine, step, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
     }
     if (!failed && (snapshot.cs.selector != 0x001bu ||
             snapshot.eip != 0u)) failed = 1;
@@ -2663,11 +2663,11 @@ static lib_i32 timing_80286_manifest_run_call_gate_recipe(const char *key_id,
         run.executed != 1u || run.ticks != base_ticks + next_bytes ||
         capture.count != 1u || capture.observation.source_ticks != run.ticks ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector !=
             (same_privilege ? 0x001bu : 0x0008u) ||
         snapshot.eip != 0x0100u;
@@ -2690,7 +2690,7 @@ static lib_i32 timing_80286_manifest_run_protected_int_same_recipe(
         timing_80286_manifest_capture_retirement, &capture
     };
     core_machine_run_result run = { 0 };
-    core_machine_debug_cpu_snapshot snapshot = { 0 };
+    x86_core_cpu_debug_cpu_snapshot snapshot = { 0 };
     test_protected_16_machine state = { 0 };
     lib_i32 failed;
 
@@ -2708,11 +2708,11 @@ static lib_i32 timing_80286_manifest_run_protected_int_same_recipe(
         run.executed != 1u || run.ticks != 40u + next_bytes ||
         capture.count != 1u || capture.observation.source_ticks != run.ticks ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != TIMING_80286_MANIFEST_HANDLER;
     core_machine_destroy(state.machine);
@@ -2735,7 +2735,7 @@ static lib_i32 timing_80286_manifest_run_protected_int_more_recipe(
         timing_80286_manifest_capture_retirement, &capture
     };
     core_machine_run_result run = { 0 };
-    core_machine_debug_cpu_snapshot snapshot = { 0 };
+    x86_core_cpu_debug_cpu_snapshot snapshot = { 0 };
     call_gate_machine state = { 0 };
     lib_u32 steps;
     lib_i32 failed;
@@ -2751,13 +2751,13 @@ static lib_i32 timing_80286_manifest_run_protected_int_more_recipe(
     if (!failed) failed = !timing_80286_manifest_load_table(
         state.machine, LIB_TRUE, 0x0400u, 0x0307u);
     if (!failed) failed = core_machine_debug_capture_cpu_snapshot(state.machine,
-        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
+        X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
     for (steps = 0u; !failed && steps < 48u &&
             (snapshot.cs.selector != 0x001bu || snapshot.eip != 0u); ++steps) {
         failed = core_machine_run(state.machine, step, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
     }
     if (!failed && (snapshot.cs.selector != 0x001bu ||
             snapshot.eip != 0u)) failed = 1;
@@ -2774,11 +2774,11 @@ static lib_i32 timing_80286_manifest_run_protected_int_more_recipe(
         run.executed != 1u || run.ticks != 78u + next_bytes ||
         capture.count != 1u || capture.observation.source_ticks != run.ticks ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != 0x0100u;
     core_machine_destroy(state.machine);
@@ -2800,7 +2800,7 @@ static lib_i32 timing_80286_manifest_run_task_iret_recipe(const char *key_id,
         timing_80286_manifest_capture_retirement, &capture
     };
     core_machine_run_result run = { 0 };
-    core_machine_debug_cpu_snapshot snapshot = { 0 };
+    x86_core_cpu_debug_cpu_snapshot snapshot = { 0 };
     task_switch_fixture fixture = { 0 };
     lib_u32 steps;
     lib_i32 failed;
@@ -2808,16 +2808,16 @@ static lib_i32 timing_80286_manifest_run_task_iret_recipe(const char *key_id,
     if (key_id == LIB_NULL || next_bytes == 0u ||
         next_bytes >= sizeof(target) / sizeof(target[0])) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
-        !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80286) ||
+        !task_switch_prepare(&fixture, X86_CORE_CPU_PROFILE_80286) ||
         !task_switch_install(&fixture, TASK_SWITCH_CASE_NESTED_RETURN);
     if (!failed) failed = core_machine_debug_capture_cpu_snapshot(fixture.machine,
-        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
+        X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
     for (steps = 0u; !failed && steps < 32u &&
             (snapshot.tr.selector != 0x0030u || snapshot.eip != 0x0100u); ++steps) {
         failed = core_machine_run(fixture.machine, step, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             core_machine_debug_capture_cpu_snapshot(fixture.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK;
     }
     if (!failed && (snapshot.tr.selector != 0x0030u ||
             snapshot.eip != 0x0100u)) failed = 1;
@@ -2831,11 +2831,11 @@ static lib_i32 timing_80286_manifest_run_task_iret_recipe(const char *key_id,
         run.executed != 1u || run.ticks != 169u + next_bytes ||
         capture.count != 1u || capture.observation.source_ticks != run.ticks ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(fixture.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.tr.selector != 0x0028u ||
         snapshot.eip != 8u;
     if (failed) {
@@ -2910,14 +2910,14 @@ static lib_i32 timing_80286_manifest_run_control(
         !timing_80286_manifest_prepare(&machine, &capture, recipe->key_id,
             program, sizeof(program));
     if (!failed) {
-        failed = core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_ECX, timing_80286_manifest_control_cx(
+        failed = core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_ECX, timing_80286_manifest_control_cx(
             recipe->key_id)) != LIB_STATUS_OK;
         if (!failed) failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != recipe->ticks || capture.count != 1u ||
             capture.observation.source_ticks != recipe->ticks ||
             core_machine_debug_read_register(machine,
-                CORE_MACHINE_DEBUG_EIP, &eip) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_EIP, &eip) != LIB_STATUS_OK ||
             eip !=
                 (recipe->opcode == 0xceu ? 0xfff5u :
                 timing_80286_manifest_key_has_token(recipe->key_id, "-TAKEN") ?
@@ -2943,664 +2943,664 @@ lib_i32 main(void)
 {
     static const timing_80286_manifest_recipe recipes[] = {
         { "I286-ADJ-AAA", { 0x37u }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ADJ-AAS", { 0x3fu }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ADJ-DAA", { 0x27u }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ADJ-DAS", { 0x2fu }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ADJ-AAD", { 0xd5u, 0x0au }, 2u, 14u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ADJ-AAM", { 0xd4u, 0x0au }, 2u, 16u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ADJ-CBW", { 0x98u }, 1u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ADJ-CWD", { 0x99u }, 1u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADD-RR", { 0x02u, 0xc1u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADD-RM", { 0x02u, 0x06u, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADD-MR", { 0x00u, 0x0eu, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADD-AI", { 0x04u, 1u }, 2u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADD-RMI", { 0x80u, 0xc0u, 1u }, 3u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-OR-RR", { 0x0au, 0xc1u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-OR-RM", { 0x0au, 0x06u, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-OR-MR", { 0x08u, 0x0eu, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-OR-AI", { 0x0cu, 1u }, 2u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-OR-RMI", { 0x80u, 0xc8u, 1u }, 3u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADC-RR", { 0x12u, 0xc1u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADC-RM", { 0x12u, 0x06u, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADC-MR", { 0x10u, 0x0eu, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADC-AI", { 0x14u, 1u }, 2u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADC-RMI", { 0x80u, 0xd0u, 1u }, 3u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SBB-RR", { 0x1au, 0xc1u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SBB-RM", { 0x1au, 0x06u, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SBB-MR", { 0x18u, 0x0eu, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SBB-AI", { 0x1cu, 1u }, 2u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SBB-RMI", { 0x80u, 0xd8u, 1u }, 3u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-AND-RR", { 0x22u, 0xc1u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-AND-RM", { 0x22u, 0x06u, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-AND-MR", { 0x20u, 0x0eu, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-AND-AI", { 0x24u, 1u }, 2u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-AND-RMI", { 0x80u, 0xe0u, 1u }, 3u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SUB-RR", { 0x2au, 0xc1u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SUB-RM", { 0x2au, 0x06u, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SUB-MR", { 0x28u, 0x0eu, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SUB-AI", { 0x2cu, 1u }, 2u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SUB-RMI", { 0x80u, 0xe8u, 1u }, 3u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-XOR-RR", { 0x32u, 0xc1u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-XOR-RM", { 0x32u, 0x06u, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-XOR-MR", { 0x30u, 0x0eu, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-XOR-AI", { 0x34u, 1u }, 2u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-XOR-RMI", { 0x80u, 0xf0u, 1u }, 3u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-CMP-RR", { 0x3au, 0xc1u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-CMP-RM", { 0x3au, 0x06u, 0u, 0x10u }, 4u, 6u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-CMP-MR", { 0x38u, 0x0eu, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-CMP-AI", { 0x3cu, 1u }, 2u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-CMP-RMI", { 0x80u, 0xf8u, 1u }, 3u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-TEST-RR", { 0x84u, 0xc1u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-TEST-RM", { 0x84u, 0x06u, 0u, 0x10u }, 4u, 6u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-TEST-AI", { 0xa8u, 1u }, 2u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-TEST-RMI", { 0xf6u, 0xc0u, 1u }, 3u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-INC-R", { 0x40u }, 1u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-INC-M", { 0xfeu, 0x06u, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-DEC-R", { 0x48u }, 1u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-DEC-M", { 0xfeu, 0x0eu, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-NEG-R", { 0xf6u, 0xd8u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-NEG-M", { 0xf6u, 0x1eu, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-NOT-R", { 0xf6u, 0xd0u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-NOT-M", { 0xf6u, 0x16u, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-XCHG-AXR", { 0x91u }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-XCHG-RR", { 0x86u, 0xc1u }, 2u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-XCHG-MR", { 0x86u, 0x0eu, 0u, 0x10u }, 4u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MUL-R8", { 0xf6u, 0xe0u }, 2u, 13u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MUL-R16", { 0xf7u, 0xe0u }, 2u, 21u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MUL-M8", { 0xf6u, 0x26u, 0u, 0x10u }, 4u, 16u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MUL-M16", { 0xf7u, 0x26u, 0u, 0x10u }, 4u, 24u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MUL-M16-ODD-WORD", { 0xf7u, 0x26u, 1u, 0x10u }, 4u, 26u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-R8", { 0xf6u, 0xe8u }, 2u, 13u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-R16", { 0xf7u, 0xe8u }, 2u, 21u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-M8", { 0xf6u, 0x2eu, 0u, 0x10u }, 4u, 16u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-M16", { 0xf7u, 0x2eu, 0u, 0x10u }, 4u, 24u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-M16-ODD-WORD", { 0xf7u, 0x2eu, 1u, 0x10u }, 4u, 26u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-DIV-R8", { 0xf6u, 0xf0u }, 2u, 14u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-DIV-R16", { 0xf7u, 0xf0u }, 2u, 22u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-DIV-M8", { 0xf6u, 0x36u, 0u, 0x10u }, 4u, 17u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-DIV-M16", { 0xf7u, 0x36u, 0u, 0x10u }, 4u, 25u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-DIV-M16-ODD-WORD", { 0xf7u, 0x36u, 1u, 0x10u }, 4u, 27u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IDIV-R8", { 0xf6u, 0xf8u }, 2u, 17u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IDIV-R16", { 0xf7u, 0xf8u }, 2u, 25u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IDIV-M8", { 0xf6u, 0x3eu, 0u, 0x10u }, 4u, 20u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IDIV-M16", { 0xf7u, 0x3eu, 0u, 0x10u }, 4u, 28u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IDIV-M16-ODD-WORD", { 0xf7u, 0x3eu, 1u, 0x10u }, 4u, 30u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-IMM-IMM8-R", { 0x6bu, 0xc0u, 1u }, 3u, 21u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-IMM-IMM8-M", { 0x6bu, 0x06u, 0u, 0x10u, 1u }, 5u, 24u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-IMM-IMM16-R", { 0x69u, 0xc0u, 1u, 0u }, 4u, 21u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-IMM-IMM16-M", { 0x69u, 0x06u, 0u, 0x10u, 1u, 0u }, 6u, 24u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ROL-RM1", { 0xd0u, 0xc0u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ROR-RM1", { 0xd0u, 0xc8u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-RCL-RM1", { 0xd0u, 0xd0u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-RCR-RM1", { 0xd0u, 0xd8u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-SHL-RM1", { 0xd0u, 0xe0u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-SHR-RM1", { 0xd0u, 0xe8u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-SAR-RM1", { 0xd0u, 0xf8u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ROL-RMCL", { 0xd2u, 0xc0u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ROR-RMCL", { 0xd2u, 0xc8u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-RCL-RMCL", { 0xd2u, 0xd0u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-RCR-RMCL", { 0xd2u, 0xd8u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-SHL-RMCL", { 0xd2u, 0xe0u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-SHR-RMCL", { 0xd2u, 0xe8u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-SAR-RMCL", { 0xd2u, 0xf8u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ROL-RMIMM8", { 0xc0u, 0xc0u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ROR-RMIMM8", { 0xc0u, 0xc8u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-RCL-RMIMM8", { 0xc0u, 0xd0u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-RCR-RMIMM8", { 0xc0u, 0xd8u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-SHL-RMIMM8", { 0xc0u, 0xe0u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-SHR-RMIMM8", { 0xc0u, 0xe8u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-SAR-RMIMM8", { 0xc0u, 0xf8u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ROL-RM1", { 0xd0u, 0xc0u }, 2u, 2u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ROR-RM1", { 0xd0u, 0xc8u }, 2u, 2u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-RCL-RM1", { 0xd0u, 0xd0u }, 2u, 2u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-RCR-RM1", { 0xd0u, 0xd8u }, 2u, 2u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SHL-RM1", { 0xd0u, 0xe0u }, 2u, 2u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SHR-RM1", { 0xd0u, 0xe8u }, 2u, 2u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SAR-RM1", { 0xd0u, 0xf8u }, 2u, 2u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ROL-RMCL", { 0xd2u, 0xc0u }, 2u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ROR-RMCL", { 0xd2u, 0xc8u }, 2u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-RCL-RMCL", { 0xd2u, 0xd0u }, 2u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-RCR-RMCL", { 0xd2u, 0xd8u }, 2u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SHL-RMCL", { 0xd2u, 0xe0u }, 2u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SHR-RMCL", { 0xd2u, 0xe8u }, 2u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SAR-RMCL", { 0xd2u, 0xf8u }, 2u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ROL-RMIMM8", { 0xc0u, 0xc0u, 2u }, 3u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ROR-RMIMM8", { 0xc0u, 0xc8u, 2u }, 3u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-RCL-RMIMM8", { 0xc0u, 0xd0u, 2u }, 3u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-RCR-RMIMM8", { 0xc0u, 0xd8u, 2u }, 3u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SHL-RMIMM8", { 0xc0u, 0xe0u, 2u }, 3u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SHR-RMIMM8", { 0xc0u, 0xe8u, 2u }, 3u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SAR-RMIMM8", { 0xc0u, 0xf8u, 2u }, 3u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-RR", { 0x8au, 0xc1u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-RM", { 0x8au, 0x06u, 0u, 0x10u }, 4u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-MR", { 0x88u, 0x0eu, 0u, 0x10u }, 4u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-RI", { 0xb0u, 1u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-MI", { 0xc6u, 0x06u, 0u, 0x10u, 1u }, 5u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-MOFFS-R", { 0xa0u, 0u, 0x10u }, 3u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-MOFFS-W", { 0xa2u, 0u, 0x10u }, 3u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-SREG-STORE", { 0x8cu, 0x06u, 0u, 0x10u }, 4u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-SREG-STORE-ODD-WORD", { 0x8cu, 0x06u, 1u, 0x10u }, 4u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-SREG-LOAD-REAL", { 0x8eu, 0x1eu, 0u, 0x10u }, 4u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-SREG-LOAD-REAL-ODD-WORD", { 0x8eu, 0x1eu, 1u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LEA-M-REAL", { 0x8du, 0x06u, 0u, 0x10u }, 4u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LDS-M-REAL", { 0xc5u, 0x06u, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LDS-M-REAL-ODD-WORD", { 0xc5u, 0x06u, 1u, 0x10u }, 4u, 11u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LES-M-REAL", { 0xc4u, 0x06u, 0u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LES-M-REAL-ODD-WORD", { 0xc4u, 0x06u, 1u, 0x10u }, 4u, 11u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-NOP", { 0x90u }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-CLC", { 0xf8u }, 1u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-CMC", { 0xf5u }, 1u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-STC", { 0xf9u }, 1u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-CLD", { 0xfcu }, 1u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-STD", { 0xfdu }, 1u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-CLI", { 0xfau }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-STI", { 0xfbu }, 1u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LAHF", { 0x9fu }, 1u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SAHF", { 0x9eu }, 1u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-XLAT", { 0xd7u }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-WAIT", { 0x9bu }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ESC", { 0xdbu, 0xe3u }, 2u, 1u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SGDT-M", { 0x0fu, 0x01u, 0x06u, 0u, 0x10u }, 5u, 11u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SIDT-M", { 0x0fu, 0x01u, 0x0eu, 0u, 0x10u }, 5u, 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LGDT-M", { 0x0fu, 0x01u, 0x16u, 0u, 0x10u }, 5u, 11u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LIDT-M", { 0x0fu, 0x01u, 0x1eu, 0u, 0x10u }, 5u, 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-CLTS", { 0x0fu, 0x06u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IN-IMM-B", { 0xe4u, 0xe0u }, 2u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
-        { "I286-IN-IMM-W", { 0xe5u, 0xe0u }, 2u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
-        { "I286-IN-DX-B", { 0xecu }, 1u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
-        { "I286-IN-DX-W", { 0xedu }, 1u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
-        { "I286-OUT-IMM-B", { 0xe6u, 0xe0u }, 2u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
-        { "I286-OUT-IMM-W", { 0xe7u, 0xe0u }, 2u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
-        { "I286-OUT-DX-B", { 0xeeu }, 1u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
-        { "I286-OUT-DX-W", { 0xefu }, 1u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IN-IMM-B", { 0xe4u, 0xe0u }, 2u, 5u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-IN-IMM-W", { 0xe5u, 0xe0u }, 2u, 5u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-IN-DX-B", { 0xecu }, 1u, 5u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-IN-DX-W", { 0xedu }, 1u, 5u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-OUT-IMM-B", { 0xe6u, 0xe0u }, 2u, 3u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-OUT-IMM-W", { 0xe7u, 0xe0u }, 2u, 3u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-OUT-DX-B", { 0xeeu }, 1u, 3u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-OUT-DX-W", { 0xefu }, 1u, 3u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-INT3-REAL-NEXT-BYTE-2", { 0xccu }, 1u, 25u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-INT-IMM-REAL-NEXT-BYTE-2", { 0xcdu, 0x60u }, 2u, 25u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-CALL-NEAR-DIRECT-NEXT-BYTE-1", { 0xe8u, 0x01u, 0x00u, 0x90u,
-            0x90u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            0x90u }, 5u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-JMP-NEAR-NEXT-BYTE-1", { 0xebu, 0x01u, 0x90u, 0x90u }, 4u, 8u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-JMP-FAR-REAL-NEXT-BYTE-2", { 0xeau, 0xf5u, 0xffu, 0x00u, 0xf0u },
-            5u, 13u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            5u, 13u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-RET-NEAR-NEXT-BYTE-1", { 0xc3u }, 1u, 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-PUSH-R", { 0x50u }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-PUSH-SEG", { 0x06u }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-PUSH-IMM", { 0x68u, 0x01u, 0x00u }, 3u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-PUSH-M", { 0xffu, 0x36u, 0u, 0x10u }, 4u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-PUSH-M-ODD-WORD", { 0xffu, 0x36u, 1u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-PUSHA", { 0x60u }, 1u, 17u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-PUSHF", { 0x9cu }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-POP-R", { 0x58u }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-POP-M", { 0x8fu, 0x06u, 0u, 0x10u }, 4u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-POP-M-ODD-WORD", { 0x8fu, 0x06u, 1u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-POP-SEG-REAL", { 0x1fu }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-POPA", { 0x61u }, 1u, 19u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-POPF", { 0x9du }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-LEAVE", { 0xc9u }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-ENTER-L0", { 0xc8u, 0x00u, 0x00u, 0x00u }, 4u, 11u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-ENTER-L1", { 0xc8u, 0x00u, 0x00u, 0x01u }, 4u, 15u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-ENTER-LN", { 0xc8u, 0x00u, 0x00u, 0x02u }, 4u, 20u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-BOUND", { 0x62u, 0x06u, 0x00u, 0x10u }, 4u, 13u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
     };
     static const timing_80286_manifest_control_recipe control_recipes[] = {
-        { "I286-JCC-JO-TAKEN", 0x70u, CORE_MACHINE_DEBUG_EFLAGS_OF, 7u },
+        { "I286-JCC-JO-TAKEN", 0x70u, X86_CORE_CPU_DEBUG_EFLAGS_OF, 7u },
         { "I286-JCC-JO-NOT", 0x70u, 0u, 3u },
         { "I286-JCC-JNO-TAKEN", 0x71u, 0u, 7u },
-        { "I286-JCC-JNO-NOT", 0x71u, CORE_MACHINE_DEBUG_EFLAGS_OF, 3u },
-        { "I286-JCC-JB-TAKEN", 0x72u, CORE_MACHINE_DEBUG_EFLAGS_CF, 7u },
+        { "I286-JCC-JNO-NOT", 0x71u, X86_CORE_CPU_DEBUG_EFLAGS_OF, 3u },
+        { "I286-JCC-JB-TAKEN", 0x72u, X86_CORE_CPU_DEBUG_EFLAGS_CF, 7u },
         { "I286-JCC-JB-NOT", 0x72u, 0u, 3u },
         { "I286-JCC-JAE-TAKEN", 0x73u, 0u, 7u },
-        { "I286-JCC-JAE-NOT", 0x73u, CORE_MACHINE_DEBUG_EFLAGS_CF, 3u },
-        { "I286-JCC-JE-TAKEN", 0x74u, CORE_MACHINE_DEBUG_EFLAGS_ZF, 7u },
+        { "I286-JCC-JAE-NOT", 0x73u, X86_CORE_CPU_DEBUG_EFLAGS_CF, 3u },
+        { "I286-JCC-JE-TAKEN", 0x74u, X86_CORE_CPU_DEBUG_EFLAGS_ZF, 7u },
         { "I286-JCC-JE-NOT", 0x74u, 0u, 3u },
         { "I286-JCC-JNE-TAKEN", 0x75u, 0u, 7u },
-        { "I286-JCC-JNE-NOT", 0x75u, CORE_MACHINE_DEBUG_EFLAGS_ZF, 3u },
-        { "I286-JCC-JBE-TAKEN", 0x76u, CORE_MACHINE_DEBUG_EFLAGS_CF, 7u },
+        { "I286-JCC-JNE-NOT", 0x75u, X86_CORE_CPU_DEBUG_EFLAGS_ZF, 3u },
+        { "I286-JCC-JBE-TAKEN", 0x76u, X86_CORE_CPU_DEBUG_EFLAGS_CF, 7u },
         { "I286-JCC-JBE-NOT", 0x76u, 0u, 3u },
         { "I286-JCC-JA-TAKEN", 0x77u, 0u, 7u },
-        { "I286-JCC-JA-NOT", 0x77u, CORE_MACHINE_DEBUG_EFLAGS_CF, 3u },
-        { "I286-JCC-JS-TAKEN", 0x78u, CORE_MACHINE_DEBUG_EFLAGS_SF, 7u },
+        { "I286-JCC-JA-NOT", 0x77u, X86_CORE_CPU_DEBUG_EFLAGS_CF, 3u },
+        { "I286-JCC-JS-TAKEN", 0x78u, X86_CORE_CPU_DEBUG_EFLAGS_SF, 7u },
         { "I286-JCC-JS-NOT", 0x78u, 0u, 3u },
         { "I286-JCC-JNS-TAKEN", 0x79u, 0u, 7u },
-        { "I286-JCC-JNS-NOT", 0x79u, CORE_MACHINE_DEBUG_EFLAGS_SF, 3u },
-        { "I286-JCC-JP-TAKEN", 0x7au, CORE_MACHINE_DEBUG_EFLAGS_PF, 7u },
+        { "I286-JCC-JNS-NOT", 0x79u, X86_CORE_CPU_DEBUG_EFLAGS_SF, 3u },
+        { "I286-JCC-JP-TAKEN", 0x7au, X86_CORE_CPU_DEBUG_EFLAGS_PF, 7u },
         { "I286-JCC-JP-NOT", 0x7au, 0u, 3u },
         { "I286-JCC-JNP-TAKEN", 0x7bu, 0u, 7u },
-        { "I286-JCC-JNP-NOT", 0x7bu, CORE_MACHINE_DEBUG_EFLAGS_PF, 3u },
-        { "I286-JCC-JL-TAKEN", 0x7cu, CORE_MACHINE_DEBUG_EFLAGS_SF, 7u },
+        { "I286-JCC-JNP-NOT", 0x7bu, X86_CORE_CPU_DEBUG_EFLAGS_PF, 3u },
+        { "I286-JCC-JL-TAKEN", 0x7cu, X86_CORE_CPU_DEBUG_EFLAGS_SF, 7u },
         { "I286-JCC-JL-NOT", 0x7cu, 0u, 3u },
         { "I286-JCC-JGE-TAKEN", 0x7du, 0u, 7u },
-        { "I286-JCC-JGE-NOT", 0x7du, CORE_MACHINE_DEBUG_EFLAGS_SF, 3u },
-        { "I286-JCC-JLE-TAKEN", 0x7eu, CORE_MACHINE_DEBUG_EFLAGS_ZF, 7u },
+        { "I286-JCC-JGE-NOT", 0x7du, X86_CORE_CPU_DEBUG_EFLAGS_SF, 3u },
+        { "I286-JCC-JLE-TAKEN", 0x7eu, X86_CORE_CPU_DEBUG_EFLAGS_ZF, 7u },
         { "I286-JCC-JLE-NOT", 0x7eu, 0u, 3u },
         { "I286-JCC-JG-TAKEN", 0x7fu, 0u, 7u },
-        { "I286-JCC-JG-NOT", 0x7fu, CORE_MACHINE_DEBUG_EFLAGS_ZF, 3u },
+        { "I286-JCC-JG-NOT", 0x7fu, X86_CORE_CPU_DEBUG_EFLAGS_ZF, 3u },
         { "I286-JCXZ-TAKEN", 0xe3u, 0u, 8u },
         { "I286-JCXZ-NOT", 0xe3u, 0u, 4u },
         { "I286-LOOP-TAKEN", 0xe2u, 0u, 8u },
         { "I286-LOOP-NOT", 0xe2u, 0u, 4u },
-        { "I286-LOOPE-TAKEN", 0xe1u, CORE_MACHINE_DEBUG_EFLAGS_ZF, 8u },
+        { "I286-LOOPE-TAKEN", 0xe1u, X86_CORE_CPU_DEBUG_EFLAGS_ZF, 8u },
         { "I286-LOOPE-NOT", 0xe1u, 0u, 4u },
         { "I286-LOOPNE-TAKEN", 0xe0u, 0u, 8u },
-        { "I286-LOOPNE-NOT", 0xe0u, CORE_MACHINE_DEBUG_EFLAGS_ZF, 4u },
-        { "I286-INTO-TAKEN-NEXT-BYTE-2", 0xceu, CORE_MACHINE_DEBUG_EFLAGS_OF, 26u }
+        { "I286-LOOPNE-NOT", 0xe0u, X86_CORE_CPU_DEBUG_EFLAGS_ZF, 4u },
+        { "I286-INTO-TAKEN-NEXT-BYTE-2", 0xceu, X86_CORE_CPU_DEBUG_EFLAGS_OF, 26u }
     };
     static const timing_80286_manifest_recipe protected_system_recipes[] = {
         { "I286-MOV-SREG-LOAD-PM", { 0x8eu, 0x1eu, 0u, 0x10u }, 4u, 19u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-SREG-LOAD-PM-ODD-WORD", { 0x8eu, 0x1eu, 1u, 0x10u }, 4u, 21u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LEA-M-PM", { 0x8du, 0x06u, 0u, 0x10u }, 4u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LDS-M-PM", { 0xc5u, 0x06u, 0u, 0x10u }, 4u, 21u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LDS-M-PM-ODD-WORD", { 0xc5u, 0x06u, 1u, 0x10u }, 4u, 25u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LES-M-PM", { 0xc4u, 0x06u, 0u, 0x10u }, 4u, 21u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LES-M-PM-ODD-WORD", { 0xc4u, 0x06u, 1u, 0x10u }, 4u, 25u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-STACK-POP-SEG-PM", { 0x1fu }, 1u, 20u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-SYSTEM-VERR-R", { 0x0fu, 0x00u, 0xe0u }, 3u, 14u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-VERW-R", { 0x0fu, 0x00u, 0xe8u }, 3u, 14u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LAR-R", { 0x0fu, 0x02u, 0xc8u }, 3u, 14u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LSL-R", { 0x0fu, 0x03u, 0xc8u }, 3u, 14u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LLDT-R", { 0x0fu, 0x00u, 0xd0u }, 3u, 17u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LTR-R", { 0x0fu, 0x00u, 0xd8u }, 3u, 17u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LMSW-R", { 0x0fu, 0x01u, 0xf0u }, 3u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SLDT-R", { 0x0fu, 0x00u, 0xc0u }, 3u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SMSW-R", { 0x0fu, 0x01u, 0xe0u }, 3u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-STR-R", { 0x0fu, 0x00u, 0xc8u }, 3u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-VERR-M", { 0x0fu, 0x00u, 0x26u, 0u, 0x10u }, 5u, 16u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-VERW-M", { 0x0fu, 0x00u, 0x2eu, 0u, 0x10u }, 5u, 16u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LAR-M", { 0x0fu, 0x02u, 0x0eu, 0u, 0x10u }, 5u, 16u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LSL-M", { 0x0fu, 0x03u, 0x0eu, 0u, 0x10u }, 5u, 16u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LLDT-M", { 0x0fu, 0x00u, 0x16u, 0u, 0x10u }, 5u, 19u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LTR-M", { 0x0fu, 0x00u, 0x1eu, 0u, 0x10u }, 5u, 19u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LMSW-M", { 0x0fu, 0x01u, 0x36u, 0u, 0x10u }, 5u, 6u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SLDT-M", { 0x0fu, 0x00u, 0x06u, 0u, 0x10u }, 5u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SMSW-M", { 0x0fu, 0x01u, 0x26u, 0u, 0x10u }, 5u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-STR-M", { 0x0fu, 0x00u, 0x0eu, 0u, 0x10u }, 5u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-VERR-M-EA-BID", { 0x0fu, 0x00u, 0xa2u, 0u, 0u }, 5u, 17u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-VERW-M-EA-BID", { 0x0fu, 0x00u, 0xaau, 0u, 0u }, 5u, 17u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LAR-M-EA-BID", { 0x0fu, 0x02u, 0x8au, 0u, 0u }, 5u, 17u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LSL-M-EA-BID", { 0x0fu, 0x03u, 0x8au, 0u, 0u }, 5u, 17u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LLDT-M-EA-BID", { 0x0fu, 0x00u, 0x92u, 0u, 0u }, 5u, 20u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LTR-M-EA-BID", { 0x0fu, 0x00u, 0x9au, 0u, 0u }, 5u, 20u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SGDT-M-EA-BID", { 0x0fu, 0x01u, 0x82u, 0u, 0u }, 5u, 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SIDT-M-EA-BID", { 0x0fu, 0x01u, 0x8au, 0u, 0u }, 5u, 13u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LGDT-M-EA-BID", { 0x0fu, 0x01u, 0x92u, 0u, 0u }, 5u, 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LIDT-M-EA-BID", { 0x0fu, 0x01u, 0x9au, 0u, 0u }, 5u, 13u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LMSW-M-EA-BID", { 0x0fu, 0x01u, 0xb2u, 0u, 0u }, 5u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SLDT-M-EA-BID", { 0x0fu, 0x00u, 0x82u, 0u, 0u }, 5u, 4u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SMSW-M-EA-BID", { 0x0fu, 0x01u, 0xa2u, 0u, 0u }, 5u, 4u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-STR-M-EA-BID", { 0x0fu, 0x00u, 0x8au, 0u, 0u }, 5u, 4u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-VERR-M-SEGMENT", { 0x26u, 0x0fu, 0x00u, 0x26u, 0u, 0x10u }, 6u, 16u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-VERW-M-SEGMENT", { 0x26u, 0x0fu, 0x00u, 0x2eu, 0u, 0x10u }, 6u, 16u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LAR-M-SEGMENT", { 0x26u, 0x0fu, 0x02u, 0x0eu, 0u, 0x10u }, 6u, 16u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LSL-M-SEGMENT", { 0x26u, 0x0fu, 0x03u, 0x0eu, 0u, 0x10u }, 6u, 16u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LLDT-M-SEGMENT", { 0x26u, 0x0fu, 0x00u, 0x16u, 0u, 0x10u }, 6u, 19u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LTR-M-SEGMENT", { 0x26u, 0x0fu, 0x00u, 0x1eu, 0u, 0x10u }, 6u, 19u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LMSW-M-SEGMENT", { 0x26u, 0x0fu, 0x01u, 0x36u, 0u, 0x10u }, 6u, 6u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SLDT-M-SEGMENT", { 0x26u, 0x0fu, 0x00u, 0x06u, 0u, 0x10u }, 6u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SMSW-M-SEGMENT", { 0x26u, 0x0fu, 0x01u, 0x26u, 0u, 0x10u }, 6u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-STR-M-SEGMENT", { 0x26u, 0x0fu, 0x00u, 0x0eu, 0u, 0x10u }, 6u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SGDT-M-SEGMENT", { 0x26u, 0x0fu, 0x01u, 0x06u, 0u, 0x10u }, 6u, 11u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-SIDT-M-SEGMENT", { 0x26u, 0x0fu, 0x01u, 0x0eu, 0u, 0x10u }, 6u, 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LGDT-M-SEGMENT", { 0x26u, 0x0fu, 0x01u, 0x16u, 0u, 0x10u }, 6u, 11u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LIDT-M-SEGMENT", { 0x26u, 0x0fu, 0x01u, 0x1eu, 0u, 0x10u }, 6u, 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-SREG-LOAD-PM-SEGMENT", { 0x26u, 0x8eu, 0x1eu, 0u, 0x10u }, 5u, 19u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LDS-M-PM-SEGMENT", { 0x26u, 0xc5u, 0x06u, 0u, 0x10u }, 5u, 21u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LES-M-PM-SEGMENT", { 0x26u, 0xc4u, 0x06u, 0u, 0x10u }, 5u, 21u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-SREG-LOAD-PM-EA-BID", { 0x8eu, 0x9au, 0u, 0u }, 4u, 20u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LDS-M-PM-EA-BID", { 0xc5u, 0x82u, 0u, 0u }, 4u, 22u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LES-M-PM-EA-BID", { 0xc4u, 0x82u, 0u, 0u }, 4u, 22u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-SREG-LOAD-PM-EA-BID-ODD-WORD",
             { 0x8eu, 0x9au, 1u, 0u }, 4u, 22u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LDS-M-PM-EA-BID-ODD-WORD",
             { 0xc5u, 0x82u, 1u, 0u }, 4u, 26u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LES-M-PM-EA-BID-ODD-WORD",
             { 0xc4u, 0x82u, 1u, 0u }, 4u, 26u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ARPL", { 0x63u, 0xc8u }, 2u, 10u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
     static const timing_80286_manifest_recipe segment_recipes[] = {
-        { "I286-ALU-ADD-RM-SEGMENT", { 0x26u, 0x02u, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-ADD-MR-SEGMENT", { 0x26u, 0x00u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-ADD-RMI-SEGMENT", { 0x26u, 0x80u, 0x06u, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-OR-RM-SEGMENT", { 0x26u, 0x0au, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-OR-MR-SEGMENT", { 0x26u, 0x08u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-OR-RMI-SEGMENT", { 0x26u, 0x80u, 0x0eu, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-ADC-RM-SEGMENT", { 0x26u, 0x12u, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-ADC-MR-SEGMENT", { 0x26u, 0x10u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-ADC-RMI-SEGMENT", { 0x26u, 0x80u, 0x16u, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-SBB-RM-SEGMENT", { 0x26u, 0x1au, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-SBB-MR-SEGMENT", { 0x26u, 0x18u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-SBB-RMI-SEGMENT", { 0x26u, 0x80u, 0x1eu, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-AND-RM-SEGMENT", { 0x26u, 0x22u, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-AND-MR-SEGMENT", { 0x26u, 0x20u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-AND-RMI-SEGMENT", { 0x26u, 0x80u, 0x26u, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-SUB-RM-SEGMENT", { 0x26u, 0x2au, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-SUB-MR-SEGMENT", { 0x26u, 0x28u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-SUB-RMI-SEGMENT", { 0x26u, 0x80u, 0x2eu, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-XOR-RM-SEGMENT", { 0x26u, 0x32u, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-XOR-MR-SEGMENT", { 0x26u, 0x30u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-XOR-RMI-SEGMENT", { 0x26u, 0x80u, 0x36u, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-CMP-RM-SEGMENT", { 0x26u, 0x3au, 0x06u, 0u, 0x10u }, 5u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-CMP-MR-SEGMENT", { 0x26u, 0x38u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-CMP-RMI-SEGMENT", { 0x26u, 0x80u, 0x3eu, 0u, 0x10u, 1u }, 6u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-TEST-RM-SEGMENT", { 0x26u, 0x84u, 0x06u, 0u, 0x10u }, 5u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-TEST-RMI-SEGMENT", { 0x26u, 0xf6u, 0x06u, 0u, 0x10u, 1u }, 6u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-INC-M-SEGMENT", { 0x26u, 0xfeu, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-DEC-M-SEGMENT", { 0x26u, 0xfeu, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-NEG-M-SEGMENT", { 0x26u, 0xf6u, 0x1eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-NOT-M-SEGMENT", { 0x26u, 0xf6u, 0x16u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-XCHG-MR-SEGMENT", { 0x26u, 0x86u, 0x0eu, 0u, 0x10u }, 5u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MUL-M8-SEGMENT", { 0x26u, 0xf6u, 0x26u, 0u, 0x10u }, 5u, 16u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MUL-M16-SEGMENT", { 0x26u, 0xf7u, 0x26u, 0u, 0x10u }, 5u, 24u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IMUL-M8-SEGMENT", { 0x26u, 0xf6u, 0x2eu, 0u, 0x10u }, 5u, 16u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IMUL-M16-SEGMENT", { 0x26u, 0xf7u, 0x2eu, 0u, 0x10u }, 5u, 24u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-DIV-M8-SEGMENT", { 0x26u, 0xf6u, 0x36u, 0u, 0x10u }, 5u, 17u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-DIV-M16-SEGMENT", { 0x26u, 0xf7u, 0x36u, 0u, 0x10u }, 5u, 25u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IDIV-M8-SEGMENT", { 0x26u, 0xf6u, 0x3eu, 0u, 0x10u }, 5u, 20u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IDIV-M16-SEGMENT", { 0x26u, 0xf7u, 0x3eu, 0u, 0x10u }, 5u, 28u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IMUL-IMM-IMM8-M-SEGMENT", { 0x26u, 0x6bu, 0x06u, 0u, 0x10u, 1u }, 6u, 24u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IMUL-IMM-IMM16-M-SEGMENT", { 0x26u, 0x69u, 0x06u, 0u, 0x10u, 1u, 0u }, 7u, 24u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MOV-RM-SEGMENT", { 0x26u, 0x8au, 0x06u, 0u, 0x10u }, 5u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MOV-MR-SEGMENT", { 0x26u, 0x88u, 0x0eu, 0u, 0x10u }, 5u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MOV-MI-SEGMENT", { 0x26u, 0xc6u, 0x06u, 0u, 0x10u, 1u }, 6u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MOV-MOFFS-R-SEGMENT", { 0x26u, 0xa0u, 0u, 0x10u }, 4u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MOV-MOFFS-W-SEGMENT", { 0x26u, 0xa2u, 0u, 0x10u }, 4u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-XLAT-SEGMENT", { 0x26u, 0xd7u }, 2u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MOV-SREG-STORE-SEGMENT", { 0x26u, 0x8cu, 0x06u, 0u, 0x10u }, 5u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MOV-SREG-LOAD-REAL-SEGMENT", { 0x26u, 0x8eu, 0x1eu, 0u, 0x10u }, 5u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-LDS-M-REAL-SEGMENT", { 0x26u, 0xc5u, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-LES-M-REAL-SEGMENT", { 0x26u, 0xc4u, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-STACK-PUSH-M-SEGMENT", { 0x26u, 0xffu, 0x36u, 0u, 0x10u }, 5u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I286-STACK-POP-M-SEGMENT", { 0x26u, 0x8fu, 0x06u, 0u, 0x10u }, 5u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I286-CALL-NEAR-RM-SEGMENT", { 0x26u, 0xffu, 0x16u, 0u, 0x10u }, 5u, 13u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I286-JMP-RM-SEGMENT", { 0x26u, 0xffu, 0x26u, 0u, 0x10u }, 5u, 13u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I286-STACK-PUSH-M-EA-BID", { 0xffu, 0xb2u, 0u, 0u }, 4u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I286-STACK-POP-M-EA-BID", { 0x8fu, 0x82u, 0u, 0u }, 4u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I286-CALL-NEAR-RM-EA-BID", { 0xffu, 0x92u, 0u, 0u }, 4u, 14u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I286-JMP-RM-EA-BID", { 0xffu, 0xa2u, 0u, 0u }, 4u, 14u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
+        { "I286-ALU-ADD-RM-SEGMENT", { 0x26u, 0x02u, 0x06u, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-MR-SEGMENT", { 0x26u, 0x00u, 0x0eu, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-RMI-SEGMENT", { 0x26u, 0x80u, 0x06u, 0u, 0x10u, 1u }, 6u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-RM-SEGMENT", { 0x26u, 0x0au, 0x06u, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-MR-SEGMENT", { 0x26u, 0x08u, 0x0eu, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-RMI-SEGMENT", { 0x26u, 0x80u, 0x0eu, 0u, 0x10u, 1u }, 6u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-RM-SEGMENT", { 0x26u, 0x12u, 0x06u, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-MR-SEGMENT", { 0x26u, 0x10u, 0x0eu, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-RMI-SEGMENT", { 0x26u, 0x80u, 0x16u, 0u, 0x10u, 1u }, 6u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-RM-SEGMENT", { 0x26u, 0x1au, 0x06u, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-MR-SEGMENT", { 0x26u, 0x18u, 0x0eu, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-RMI-SEGMENT", { 0x26u, 0x80u, 0x1eu, 0u, 0x10u, 1u }, 6u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-RM-SEGMENT", { 0x26u, 0x22u, 0x06u, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-MR-SEGMENT", { 0x26u, 0x20u, 0x0eu, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-RMI-SEGMENT", { 0x26u, 0x80u, 0x26u, 0u, 0x10u, 1u }, 6u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-RM-SEGMENT", { 0x26u, 0x2au, 0x06u, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-MR-SEGMENT", { 0x26u, 0x28u, 0x0eu, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-RMI-SEGMENT", { 0x26u, 0x80u, 0x2eu, 0u, 0x10u, 1u }, 6u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-RM-SEGMENT", { 0x26u, 0x32u, 0x06u, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-MR-SEGMENT", { 0x26u, 0x30u, 0x0eu, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-RMI-SEGMENT", { 0x26u, 0x80u, 0x36u, 0u, 0x10u, 1u }, 6u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-RM-SEGMENT", { 0x26u, 0x3au, 0x06u, 0u, 0x10u }, 5u, 6u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-MR-SEGMENT", { 0x26u, 0x38u, 0x0eu, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-RMI-SEGMENT", { 0x26u, 0x80u, 0x3eu, 0u, 0x10u, 1u }, 6u, 6u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-TEST-RM-SEGMENT", { 0x26u, 0x84u, 0x06u, 0u, 0x10u }, 5u, 6u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-TEST-RMI-SEGMENT", { 0x26u, 0xf6u, 0x06u, 0u, 0x10u, 1u }, 6u, 6u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-INC-M-SEGMENT", { 0x26u, 0xfeu, 0x06u, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DEC-M-SEGMENT", { 0x26u, 0xfeu, 0x0eu, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-NEG-M-SEGMENT", { 0x26u, 0xf6u, 0x1eu, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-NOT-M-SEGMENT", { 0x26u, 0xf6u, 0x16u, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-XCHG-MR-SEGMENT", { 0x26u, 0x86u, 0x0eu, 0u, 0x10u }, 5u, 5u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MUL-M8-SEGMENT", { 0x26u, 0xf6u, 0x26u, 0u, 0x10u }, 5u, 16u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MUL-M16-SEGMENT", { 0x26u, 0xf7u, 0x26u, 0u, 0x10u }, 5u, 24u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-M8-SEGMENT", { 0x26u, 0xf6u, 0x2eu, 0u, 0x10u }, 5u, 16u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-M16-SEGMENT", { 0x26u, 0xf7u, 0x2eu, 0u, 0x10u }, 5u, 24u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DIV-M8-SEGMENT", { 0x26u, 0xf6u, 0x36u, 0u, 0x10u }, 5u, 17u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DIV-M16-SEGMENT", { 0x26u, 0xf7u, 0x36u, 0u, 0x10u }, 5u, 25u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IDIV-M8-SEGMENT", { 0x26u, 0xf6u, 0x3eu, 0u, 0x10u }, 5u, 20u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IDIV-M16-SEGMENT", { 0x26u, 0xf7u, 0x3eu, 0u, 0x10u }, 5u, 28u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-IMM-IMM8-M-SEGMENT", { 0x26u, 0x6bu, 0x06u, 0u, 0x10u, 1u }, 6u, 24u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-IMM-IMM16-M-SEGMENT", { 0x26u, 0x69u, 0x06u, 0u, 0x10u, 1u, 0u }, 7u, 24u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-RM-SEGMENT", { 0x26u, 0x8au, 0x06u, 0u, 0x10u }, 5u, 5u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MR-SEGMENT", { 0x26u, 0x88u, 0x0eu, 0u, 0x10u }, 5u, 3u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MI-SEGMENT", { 0x26u, 0xc6u, 0x06u, 0u, 0x10u, 1u }, 6u, 3u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MOFFS-R-SEGMENT", { 0x26u, 0xa0u, 0u, 0x10u }, 4u, 5u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MOFFS-W-SEGMENT", { 0x26u, 0xa2u, 0u, 0x10u }, 4u, 3u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-XLAT-SEGMENT", { 0x26u, 0xd7u }, 2u, 5u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-SREG-STORE-SEGMENT", { 0x26u, 0x8cu, 0x06u, 0u, 0x10u }, 5u, 3u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-SREG-LOAD-REAL-SEGMENT", { 0x26u, 0x8eu, 0x1eu, 0u, 0x10u }, 5u, 5u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LDS-M-REAL-SEGMENT", { 0x26u, 0xc5u, 0x06u, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LES-M-REAL-SEGMENT", { 0x26u, 0xc4u, 0x06u, 0u, 0x10u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-STACK-PUSH-M-SEGMENT", { 0x26u, 0xffu, 0x36u, 0u, 0x10u }, 5u, 5u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-POP-M-SEGMENT", { 0x26u, 0x8fu, 0x06u, 0u, 0x10u }, 5u, 5u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-CALL-NEAR-RM-SEGMENT", { 0x26u, 0xffu, 0x16u, 0u, 0x10u }, 5u, 13u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-JMP-RM-SEGMENT", { 0x26u, 0xffu, 0x26u, 0u, 0x10u }, 5u, 13u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-PUSH-M-EA-BID", { 0xffu, 0xb2u, 0u, 0u }, 4u, 6u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-POP-M-EA-BID", { 0x8fu, 0x82u, 0u, 0u }, 4u, 6u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-CALL-NEAR-RM-EA-BID", { 0xffu, 0x92u, 0u, 0u }, 4u, 14u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-JMP-RM-EA-BID", { 0xffu, 0xa2u, 0u, 0u }, 4u, 14u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
     };
     static const timing_80286_manifest_recipe ea_recipes[] = {
-        { "I286-ALU-ADD-RM-EA-BID", { 0x02u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-ADD-MR-EA-BID", { 0x00u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-ADD-RMI-EA-BID", { 0x80u, 0x82u, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-OR-RM-EA-BID", { 0x0au, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-OR-MR-EA-BID", { 0x08u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-OR-RMI-EA-BID", { 0x80u, 0x8au, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-ADC-RM-EA-BID", { 0x12u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-ADC-MR-EA-BID", { 0x10u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-ADC-RMI-EA-BID", { 0x80u, 0x92u, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-SBB-RM-EA-BID", { 0x1au, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-SBB-MR-EA-BID", { 0x18u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-SBB-RMI-EA-BID", { 0x80u, 0x9au, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-AND-RM-EA-BID", { 0x22u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-AND-MR-EA-BID", { 0x20u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-AND-RMI-EA-BID", { 0x80u, 0xa2u, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-SUB-RM-EA-BID", { 0x2au, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-SUB-MR-EA-BID", { 0x28u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-SUB-RMI-EA-BID", { 0x80u, 0xaau, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-XOR-RM-EA-BID", { 0x32u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-XOR-MR-EA-BID", { 0x30u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-ALU-XOR-RMI-EA-BID", { 0x80u, 0xb2u, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-CMP-RM-EA-BID", { 0x3au, 0x82u, 0u, 0u }, 4u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-CMP-MR-EA-BID", { 0x38u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-CMP-RMI-EA-BID", { 0x80u, 0xbau, 0u, 0u, 1u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-TEST-RM-EA-BID", { 0x84u, 0x82u, 0u, 0u }, 4u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-TEST-RMI-EA-BID", { 0xf6u, 0x82u, 0u, 0u, 1u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-INC-M-EA-BID", { 0xfeu, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-DEC-M-EA-BID", { 0xfeu, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-NEG-M-EA-BID", { 0xf6u, 0x9au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-NOT-M-EA-BID", { 0xf6u, 0x92u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-XCHG-MR-EA-BID", { 0x86u, 0x8au, 0u, 0u }, 4u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MUL-M8-EA-BID", { 0xf6u, 0xa2u, 0u, 0u }, 4u, 17u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MUL-M16-EA-BID", { 0xf7u, 0xa2u, 0u, 0u }, 4u, 25u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IMUL-M8-EA-BID", { 0xf6u, 0xaau, 0u, 0u }, 4u, 17u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IMUL-M16-EA-BID", { 0xf7u, 0xaau, 0u, 0u }, 4u, 25u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-DIV-M8-EA-BID", { 0xf6u, 0xb2u, 0u, 0u }, 4u, 18u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-DIV-M16-EA-BID", { 0xf7u, 0xb2u, 0u, 0u }, 4u, 26u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IDIV-M8-EA-BID", { 0xf6u, 0xbau, 0u, 0u }, 4u, 21u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IDIV-M16-EA-BID", { 0xf7u, 0xbau, 0u, 0u }, 4u, 29u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IMUL-IMM-IMM8-M-EA-BID", { 0x6bu, 0x82u, 0u, 0u, 1u }, 5u, 25u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IMUL-IMM-IMM16-M-EA-BID", { 0x69u, 0x82u, 0u, 0u, 1u, 0u }, 6u, 25u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MOV-RM-EA-BID", { 0x8au, 0x82u, 0u, 0u }, 4u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MOV-MR-EA-BID", { 0x88u, 0x8au, 0u, 0u }, 4u, 4u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MOV-MI-EA-BID", { 0xc6u, 0x82u, 0u, 0u, 1u }, 5u, 4u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MOV-SREG-STORE-EA-BID", { 0x8cu, 0x82u, 0u, 0u }, 4u, 4u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-MOV-SREG-LOAD-REAL-EA-BID", { 0x8eu, 0x9au, 0u, 0u }, 4u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-LDS-M-REAL-EA-BID", { 0xc5u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-LES-M-REAL-EA-BID", { 0xc4u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+        { "I286-ALU-ADD-RM-EA-BID", { 0x02u, 0x82u, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-MR-EA-BID", { 0x00u, 0x8au, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-RMI-EA-BID", { 0x80u, 0x82u, 0u, 0u, 1u }, 5u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-RM-EA-BID", { 0x0au, 0x82u, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-MR-EA-BID", { 0x08u, 0x8au, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-RMI-EA-BID", { 0x80u, 0x8au, 0u, 0u, 1u }, 5u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-RM-EA-BID", { 0x12u, 0x82u, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-MR-EA-BID", { 0x10u, 0x8au, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-RMI-EA-BID", { 0x80u, 0x92u, 0u, 0u, 1u }, 5u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-RM-EA-BID", { 0x1au, 0x82u, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-MR-EA-BID", { 0x18u, 0x8au, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-RMI-EA-BID", { 0x80u, 0x9au, 0u, 0u, 1u }, 5u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-RM-EA-BID", { 0x22u, 0x82u, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-MR-EA-BID", { 0x20u, 0x8au, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-RMI-EA-BID", { 0x80u, 0xa2u, 0u, 0u, 1u }, 5u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-RM-EA-BID", { 0x2au, 0x82u, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-MR-EA-BID", { 0x28u, 0x8au, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-RMI-EA-BID", { 0x80u, 0xaau, 0u, 0u, 1u }, 5u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-RM-EA-BID", { 0x32u, 0x82u, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-MR-EA-BID", { 0x30u, 0x8au, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-RMI-EA-BID", { 0x80u, 0xb2u, 0u, 0u, 1u }, 5u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-RM-EA-BID", { 0x3au, 0x82u, 0u, 0u }, 4u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-MR-EA-BID", { 0x38u, 0x8au, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-RMI-EA-BID", { 0x80u, 0xbau, 0u, 0u, 1u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-TEST-RM-EA-BID", { 0x84u, 0x82u, 0u, 0u }, 4u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-TEST-RMI-EA-BID", { 0xf6u, 0x82u, 0u, 0u, 1u }, 5u, 7u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-INC-M-EA-BID", { 0xfeu, 0x82u, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DEC-M-EA-BID", { 0xfeu, 0x8au, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-NEG-M-EA-BID", { 0xf6u, 0x9au, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-NOT-M-EA-BID", { 0xf6u, 0x92u, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-XCHG-MR-EA-BID", { 0x86u, 0x8au, 0u, 0u }, 4u, 6u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MUL-M8-EA-BID", { 0xf6u, 0xa2u, 0u, 0u }, 4u, 17u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MUL-M16-EA-BID", { 0xf7u, 0xa2u, 0u, 0u }, 4u, 25u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-M8-EA-BID", { 0xf6u, 0xaau, 0u, 0u }, 4u, 17u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-M16-EA-BID", { 0xf7u, 0xaau, 0u, 0u }, 4u, 25u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DIV-M8-EA-BID", { 0xf6u, 0xb2u, 0u, 0u }, 4u, 18u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DIV-M16-EA-BID", { 0xf7u, 0xb2u, 0u, 0u }, 4u, 26u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IDIV-M8-EA-BID", { 0xf6u, 0xbau, 0u, 0u }, 4u, 21u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IDIV-M16-EA-BID", { 0xf7u, 0xbau, 0u, 0u }, 4u, 29u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-IMM-IMM8-M-EA-BID", { 0x6bu, 0x82u, 0u, 0u, 1u }, 5u, 25u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-IMM-IMM16-M-EA-BID", { 0x69u, 0x82u, 0u, 0u, 1u, 0u }, 6u, 25u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-RM-EA-BID", { 0x8au, 0x82u, 0u, 0u }, 4u, 6u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MR-EA-BID", { 0x88u, 0x8au, 0u, 0u }, 4u, 4u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MI-EA-BID", { 0xc6u, 0x82u, 0u, 0u, 1u }, 5u, 4u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-SREG-STORE-EA-BID", { 0x8cu, 0x82u, 0u, 0u }, 4u, 4u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-SREG-LOAD-REAL-EA-BID", { 0x8eu, 0x9au, 0u, 0u }, 4u, 6u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LDS-M-REAL-EA-BID", { 0xc5u, 0x82u, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LES-M-REAL-EA-BID", { 0xc4u, 0x82u, 0u, 0u }, 4u, 8u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
     static const timing_80286_manifest_recipe odd_word_recipes[] = {
         { "I286-IMUL-IMM-IMM16-M-ODD-WORD",
             { 0x69u, 0x06u, 1u, 0x10u, 1u, 0u }, 6u, 26u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-RM-ODD-WORD", { 0x8bu, 0x06u, 1u, 0x10u }, 4u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-MR-ODD-WORD", { 0x89u, 0x0eu, 1u, 0x10u }, 4u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-MI-ODD-WORD", { 0xc7u, 0x06u, 1u, 0x10u, 1u, 0u }, 6u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-MOFFS-R-ODD-WORD", { 0xa1u, 1u, 0x10u }, 3u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-MOFFS-W-ODD-WORD", { 0xa3u, 1u, 0x10u }, 3u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
     static const timing_80286_manifest_recipe ea_odd_word_recipes[] = {
         { "I286-MUL-M16-EA-BID-ODD-WORD", { 0xf7u, 0xa2u, 1u, 0u }, 4u, 27u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-M16-EA-BID-ODD-WORD", { 0xf7u, 0xaau, 1u, 0u }, 4u, 27u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-DIV-M16-EA-BID-ODD-WORD", { 0xf7u, 0xb2u, 1u, 0u }, 4u, 28u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IDIV-M16-EA-BID-ODD-WORD", { 0xf7u, 0xbau, 1u, 0u }, 4u, 31u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-RM-EA-BID-ODD-WORD", { 0x8bu, 0x82u, 1u, 0u }, 4u, 8u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-MR-EA-BID-ODD-WORD", { 0x89u, 0x8au, 1u, 0u }, 4u, 6u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-MI-EA-BID-ODD-WORD",
             { 0xc7u, 0x82u, 1u, 0u, 1u, 0u }, 6u, 6u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-SREG-STORE-EA-BID-ODD-WORD",
             { 0x8cu, 0x82u, 1u, 0u }, 4u, 6u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-SREG-LOAD-REAL-EA-BID-ODD-WORD",
             { 0x8eu, 0x9au, 1u, 0u }, 4u, 8u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LDS-M-REAL-EA-BID-ODD-WORD",
             { 0xc5u, 0x82u, 1u, 0u }, 4u, 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LES-M-REAL-EA-BID-ODD-WORD",
             { 0xc4u, 0x82u, 1u, 0u }, 4u, 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-STACK-PUSH-M-EA-BID-ODD-WORD",
             { 0xffu, 0xb2u, 1u, 0u }, 4u, 8u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-POP-M-EA-BID-ODD-WORD", { 0x8fu, 0x82u, 1u, 0u }, 4u, 8u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
     };
     static const timing_80286_manifest_repeat_recipe repeat_recipes[] = {
         { "I286-REP-MOVS-B", 0xf3u, 0xa4u, 9u, 4u, 5u },
@@ -3624,73 +3624,73 @@ lib_i32 main(void)
     };
     static const timing_80286_manifest_recipe string_recipes[] = {
         { "I286-STRING-MOVS-B", { 0xa4u }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-MOVS-W", { 0xa5u }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-CMPS-B", { 0xa6u }, 1u, 8u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-CMPS-W", { 0xa7u }, 1u, 8u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-STOS-B", { 0xaau }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-STOS-W", { 0xabu }, 1u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-LODS-B", { 0xacu }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-LODS-W", { 0xadu }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-SCAS-B", { 0xaeu }, 1u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-SCAS-W", { 0xafu }, 1u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-INS-B", { 0x6cu }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-INS-W", { 0x6du }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-OUTS-B", { 0x6eu }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-STRING-OUTS-W", { 0x6fu }, 1u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO }
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO }
     };
     static const timing_80286_manifest_recipe lock_recipes[] = {
         { "I286-ALU-ADD-MR-LOCK", { 0xf0u, 0x00u, 0x0eu, 0u, 0x10u }, 5u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-OR-MR-LOCK", { 0xf0u, 0x08u, 0x0eu, 0u, 0x10u }, 5u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-OR-RMI-LOCK", { 0xf0u, 0x80u, 0x0eu, 0u, 0x10u, 1u }, 6u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADC-MR-LOCK", { 0xf0u, 0x10u, 0x0eu, 0u, 0x10u }, 5u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADC-RMI-LOCK", { 0xf0u, 0x80u, 0x16u, 0u, 0x10u, 1u }, 6u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SBB-MR-LOCK", { 0xf0u, 0x18u, 0x0eu, 0u, 0x10u }, 5u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SBB-RMI-LOCK", { 0xf0u, 0x80u, 0x1eu, 0u, 0x10u, 1u }, 6u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-AND-MR-LOCK", { 0xf0u, 0x20u, 0x0eu, 0u, 0x10u }, 5u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-AND-RMI-LOCK", { 0xf0u, 0x80u, 0x26u, 0u, 0x10u, 1u }, 6u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SUB-MR-LOCK", { 0xf0u, 0x28u, 0x0eu, 0u, 0x10u }, 5u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-SUB-RMI-LOCK", { 0xf0u, 0x80u, 0x2eu, 0u, 0x10u, 1u }, 6u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-XOR-MR-LOCK", { 0xf0u, 0x30u, 0x0eu, 0u, 0x10u }, 5u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-XOR-RMI-LOCK", { 0xf0u, 0x80u, 0x36u, 0u, 0x10u, 1u }, 6u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ALU-ADD-RMI-LOCK", { 0xf0u, 0x80u, 0x06u, 0u, 0x10u, 1u }, 6u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-INC-M-LOCK", { 0xf0u, 0xfeu, 0x06u, 0u, 0x10u }, 5u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-DEC-M-LOCK", { 0xf0u, 0xfeu, 0x0eu, 0u, 0x10u }, 5u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-NEG-M-LOCK", { 0xf0u, 0xf6u, 0x1eu, 0u, 0x10u }, 5u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-NOT-M-LOCK", { 0xf0u, 0xf6u, 0x16u, 0u, 0x10u }, 5u, 7u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-XCHG-MR-LOCK", { 0xf0u, 0x86u, 0x0eu, 0u, 0x10u }, 5u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
     lib_size index;
 

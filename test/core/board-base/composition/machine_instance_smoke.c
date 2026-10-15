@@ -43,7 +43,7 @@ lib_i32 main(void)
 {
     core_machine *first = LIB_NULL;
     core_machine *second = LIB_NULL;
-    core_machine_cpu_state cpu;
+    x86_core_cpu_state cpu;
     core_machine_port_provider ops = { port_read, port_write };
     port_fixture first_port = { 0u, 0u };
     port_fixture second_port = { 0u, 0u };

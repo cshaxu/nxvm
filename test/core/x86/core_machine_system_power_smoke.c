@@ -2,11 +2,11 @@
 #include "core/x86/machine.h"
 #include "core/x86/attachment_interface.h"
 #include "core/x86/debug_interface.h"
-#include "core/chips/cpu/cpu_instructions.h"
+#include "x86-core/cpu/cpu_instructions.h"
 
 typedef struct power_probe {
     core_machine *machine;
-    core_machine_cpu_special_cycle cycle;
+    x86_core_cpu_special_cycle cycle;
     lib_u32 polls;
     lib_u32 commits;
     lib_u32 cancels;
@@ -17,7 +17,7 @@ typedef struct power_probe {
     lib_bool finalized;
 } power_probe;
 
-static lib_status power_cycle(void *opaque, core_machine_cpu_special_cycle cycle,
+static lib_status power_cycle(void *opaque, x86_core_cpu_special_cycle cycle,
     lib_bool *ready)
 {
     power_probe *probe = opaque;
@@ -27,15 +27,15 @@ static lib_status power_cycle(void *opaque, core_machine_cpu_special_cycle cycle
         transaction->owner != CORE_MACHINE_TRANSACTION_OWNER_CPU ||
         transaction->kind != CORE_MACHINE_TRANSACTION_CPU_SPECIAL_CYCLE ||
         transaction->value != (lib_u32)cycle ||
-        transaction->address != (cycle == CORE_MACHINE_CPU_SPECIAL_STOP_GRANT ? 0x10u : 0u) ||
-        transaction->detail != (cycle == CORE_MACHINE_CPU_SPECIAL_SHUTDOWN ? 0x0eu : 0x0bu))
+        transaction->address != (cycle == X86_CORE_CPU_SPECIAL_STOP_GRANT ? 0x10u : 0u) ||
+        transaction->detail != (cycle == X86_CORE_CPU_SPECIAL_SHUTDOWN ? 0x0eu : 0x0bu))
         probe->bad_order = LIB_TRUE;
     ++probe->polls;
     *ready = probe->ready;
     return probe->fail ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
 }
 
-static void power_complete(void *opaque, core_machine_cpu_special_cycle cycle, lib_bool commit)
+static void power_complete(void *opaque, x86_core_cpu_special_cycle cycle, lib_bool commit)
 {
     power_probe *probe = opaque;
 
@@ -62,28 +62,28 @@ static void power_finalize(void *opaque)
     probe->finalized = LIB_TRUE;
 }
 
-static lib_bool power_run(core_machine_cpu_special_cycle cycle, lib_u8 finish)
+static lib_bool power_run(x86_core_cpu_special_cycle cycle, lib_u8 finish)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .transaction_contract = {.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE}
     };
-    const core_machine_instruction_timing timing = {.base_ticks = 1u};
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = {[CORE_MACHINE_DEBUG_EIP] = 0x100u}
+    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x100u}
     };
-    const lib_u8 code[] = {cycle == CORE_MACHINE_CPU_SPECIAL_HALT ? 0xf4u : 0x90u, 0x90u};
+    const lib_u8 code[] = {cycle == X86_CORE_CPU_SPECIAL_HALT ? 0xf4u : 0x90u, 0x90u};
     power_probe probe = {.cycle = cycle};
     const core_machine_attachment attachment = {.context = &probe,
         .special_cycle = power_cycle, .complete_special_cycle = power_complete,
         .peripheral = power_ticks, .finalize_devices = power_finalize};
     core_machine *machine = LIB_NULL;
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot before = {0}, after = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0}, after = {0};
     lib_u64 ticks = 0u;
     lib_bool failed = core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
 
@@ -101,17 +101,17 @@ static lib_bool power_run(core_machine_cpu_special_cycle cycle, lib_u8 finish)
     if (!failed) {
         /* The public constructor remains closed to 486; this is internal
          * qualification of the real CPU/Core connection. */
-        machine->cpu_profile = CORE_MACHINE_CPU_PROFILE_80486SX;
-        core_machine_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
-            CORE_MACHINE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+        machine->cpu_profile = X86_CORE_CPU_PROFILE_80486SX;
+        x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
+            X86_CORE_CPU_PROFILE_80486SX, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
         failed = core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x100u, code, sizeof(code)) != LIB_STATUS_OK;
-        if (cycle == CORE_MACHINE_CPU_SPECIAL_STOP_GRANT)
+        if (cycle == X86_CORE_CPU_SPECIAL_STOP_GRANT)
             failed = failed || core_machine_set_stop_clock(machine, LIB_TRUE) != LIB_STATUS_OK;
-        else if (cycle == CORE_MACHINE_CPU_SPECIAL_SHUTDOWN)
-            core_machine_cpu_execution_request_shutdown(machine->executor_cpu_execution);
+        else if (cycle == X86_CORE_CPU_SPECIAL_SHUTDOWN)
+            x86_core_cpu_execution_request_shutdown(machine->executor_cpu_execution);
     }
-    if (!failed && cycle == CORE_MACHINE_CPU_SPECIAL_STOP_GRANT) {
+    if (!failed && cycle == X86_CORE_CPU_SPECIAL_STOP_GRANT) {
         failed = core_machine_transaction_hold_request(&machine->transaction,
                 CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != LIB_STATUS_OK ||
             core_machine_transaction_hold_acknowledge(&machine->transaction,
@@ -125,11 +125,11 @@ static lib_bool power_run(core_machine_cpu_special_cycle cycle, lib_u8 finish)
     if (!failed) {
         failed = core_machine_run(machine, (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            result.executed != (cycle == CORE_MACHINE_CPU_SPECIAL_HALT ? 1u : 0u) ||
-            !core_machine_cpu_is_system_waiting(machine->executor_cpu_execution) ||
+            result.executed != (cycle == X86_CORE_CPU_SPECIAL_HALT ? 1u : 0u) ||
+            !x86_core_cpu_is_system_waiting(machine->executor_cpu_execution) ||
             machine->executor_cpu_execution->stop_granted || probe.polls != 1u || probe.commits ||
             probe.cancels || probe.bad_order ||
-            core_machine_debug_capture_cpu_snapshot(machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT,
+            core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
                 &before) != LIB_STATUS_OK;
         ticks = machine->elapsed_ticks;
     }
@@ -147,9 +147,9 @@ static lib_bool power_run(core_machine_cpu_special_cycle cycle, lib_u8 finish)
             core_machine_run(machine, (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
             result.executed || result.ticks || probe.commits != 1u || probe.cancels ||
             machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
-            core_machine_debug_capture_cpu_snapshot(machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT,
+            core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
                 &after) != LIB_STATUS_OK || lib_memory_compare(&before, &after, sizeof(before));
-        if (!failed && cycle == CORE_MACHINE_CPU_SPECIAL_STOP_GRANT) {
+        if (!failed && cycle == X86_CORE_CPU_SPECIAL_STOP_GRANT) {
             failed = core_machine_set_clock_running(machine, LIB_FALSE) != LIB_STATUS_OK ||
                 core_machine_set_stop_clock(machine, LIB_FALSE) != LIB_STATUS_INVALID_STATE ||
                 core_machine_set_nmi(machine, LIB_TRUE) != LIB_STATUS_OK ||
@@ -168,7 +168,7 @@ static lib_bool power_run(core_machine_cpu_special_cycle cycle, lib_u8 finish)
         failed = failed || core_machine_run(machine, (core_machine_run_budget){1u,0u}, &result) !=
                 LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_RESET_REQUESTED ||
             result.executed || probe.commits || probe.cancels != 1u ||
-            core_machine_cpu_is_system_waiting(machine->executor_cpu_execution) ||
+            x86_core_cpu_is_system_waiting(machine->executor_cpu_execution) ||
             machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE;
     } else if (!failed && finish == 4u) {
         probe.fail = LIB_TRUE;
@@ -189,8 +189,8 @@ static lib_bool power_run(core_machine_cpu_special_cycle cycle, lib_u8 finish)
 
 lib_i32 main(void)
 {
-    for (core_machine_cpu_special_cycle cycle = CORE_MACHINE_CPU_SPECIAL_HALT;
-        cycle <= CORE_MACHINE_CPU_SPECIAL_STOP_GRANT; ++cycle)
+    for (x86_core_cpu_special_cycle cycle = X86_CORE_CPU_SPECIAL_HALT;
+        cycle <= X86_CORE_CPU_SPECIAL_STOP_GRANT; ++cycle)
     for (lib_u8 finish = 0u; finish < 5u; ++finish)
         if (!power_run(cycle, finish)) return 1;
     lib_c_printf("CORE-SYSTEM-POWER:OK\n");

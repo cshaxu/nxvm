@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #include "core/x86/debug_interface.h"
 #include "debug_fixture.h"
 
@@ -20,7 +20,7 @@ static lib_i32 call_gate_prepare(call_gate_machine *state)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80286,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
 
@@ -30,12 +30,12 @@ static lib_i32 call_gate_prepare(call_gate_machine *state)
     if (core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
         core_machine_reset(state->machine) != LIB_STATUS_OK ||
         core_machine_debug_patch_registers(state->machine,
-            &(core_machine_debug_register_patch){
-                .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+            &(x86_core_cpu_debug_register_patch){
+                .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
             }) != LIB_STATUS_OK) {
         core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
@@ -112,7 +112,7 @@ int main(void)
 {
     call_gate_machine state;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
     lib_u16 markers[2] = {0u, 0u};
     const core_machine_run_budget budget = { 1024u, 0u };
     lib_i32 failed = !call_gate_prepare(&state);
@@ -129,9 +129,9 @@ int main(void)
             diagnostic.last_delivered_exception.valid ||
             diagnostic.delivered_exception_count != 0u;
         if (failed) {
-            core_machine_debug_cpu_snapshot snapshot = {0};
+            x86_core_cpu_debug_cpu_snapshot snapshot = {0};
             (void)core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot);
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot);
             lib_c_fprintf(lib_c_stderr,
                 "call-gate result=%u markers=%04x/%04x fault=%d mask=%08x code=%08x pc=%04x:%08x cs=%04x sp=%04x\n",
                 (unsigned)result.reason, markers[0], markers[1],

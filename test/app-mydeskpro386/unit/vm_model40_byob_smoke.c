@@ -104,7 +104,7 @@ lib_i32 main(void)
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         plan.l1_compatibility_policy !=
             CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
-        plan.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+        plan.cpu_profile != X86_CORE_CPU_PROFILE_80386 ||
         plan.fpu_profile != X86_FPU_PROFILE_NONE || !plan.cpu_80386_cr_mov_ignores_mod)
         goto done;
     const mydeskpro386_external_rom *rom =

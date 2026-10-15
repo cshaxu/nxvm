@@ -10,7 +10,7 @@ static inline lib_status test_core_machine_fixture_register_reset_mapping(
 {
     lib_status status;
     lib_size mapped_bytes;
-    core_machine_cpu_profile profile;
+    x86_core_cpu_profile profile;
     core_machine_memory_alias_config alias;
 
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -25,9 +25,9 @@ static inline lib_status test_core_machine_fixture_register_reset_mapping(
     /* The corpus names every reset fixture through the 80386 alias.  Each
      * earlier CPU fetches the same bytes through its narrower physical bus. */
     if (status == LIB_STATUS_OK &&
-        profile <= CORE_MACHINE_CPU_PROFILE_80286 &&
+        profile <= X86_CORE_CPU_PROFILE_80286 &&
         linear == 0xfffffff0u) {
-        alias.physical_start = profile <= CORE_MACHINE_CPU_PROFILE_80186 ?
+        alias.physical_start = profile <= X86_CORE_CPU_PROFILE_80186 ?
             0x000ffff0u : 0x00fffff0u;
         status = core_machine_install_memory_aliases(machine, &alias, 1u, LIB_FALSE);
     }

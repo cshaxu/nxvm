@@ -455,7 +455,7 @@ foreach(cpu_pic_case IN ITEMS idt-privilege outer-iret protected-far protected-d
     set(cpu_pic_target "machine-${cpu_pic_case}-pic-board-smoke")
     add_executable(${cpu_pic_target}
         "${CORE_TEST_ROOT}/board-base/chips/cpu/machine_${cpu_pic_file}_pic_board_smoke.c" ${CORE_TEST_ROOT}/board-base/composition/composition_fixture.c)
-    target_link_libraries(${cpu_pic_target} PRIVATE core-chip-cpu core-board-base core-x86)
+    target_link_libraries(${cpu_pic_target} PRIVATE x86-core-cpu core-board-base core-x86)
     add_test(NAME "unit.${cpu_pic_target}" COMMAND ${cpu_pic_target})
     set_tests_properties("unit.${cpu_pic_target}" PROPERTIES LABELS "unit;core" TIMEOUT 30)
     list(APPEND CORE_BOARD_TEST_TARGETS ${cpu_pic_target})

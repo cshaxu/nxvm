@@ -19,12 +19,12 @@ static lib_i32 vm_fault_outcome_prepare(vm_machine *session)
        unavailable before the invalid opcode, without private CPU mutation. */
     const lib_u8 program[] = { 0x0fu, 0x01u, 0x1eu, 0x00u, 0x01u, 0xd6u };
     const lib_u8 idtr[] = { 0x17u, 0u, 0u, 0u, 0u, 0u };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
 
     if (session == LIB_NULL || session->core_machine == LIB_NULL) return 0;
@@ -41,7 +41,7 @@ lib_i32 main(void)
     vm_machine_fault_outcome outcome;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result run;
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic;
     core_machine_lifecycle lifecycle;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||

@@ -7,7 +7,7 @@ static lib_i32 vm_profile_ibm_5170_descriptor_validate(
 static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor = {
     "ibm-5170-model-339",
     1u,
-    CORE_MACHINE_CPU_PROFILE_80286,
+    X86_CORE_CPU_PROFILE_80286,
     X86_FPU_PROFILE_NONE,
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
@@ -182,7 +182,7 @@ lib_status vm_profile_ibm_5170_plan_create(
 static lib_i32 vm_profile_ibm_5170_descriptor_validate(
     const vm_profile_default_pc_at_descriptor *descriptor)
 {
-    if (descriptor->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 ||
+    if (descriptor->cpu_profile != X86_CORE_CPU_PROFILE_80286 ||
         !descriptor->kbc_aux_absent) return 0;
     return descriptor->time_axis.kind == CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL &&
         descriptor->time_axis.ticks_per_second == 8000000u &&

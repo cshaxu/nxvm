@@ -9,12 +9,12 @@
 
 static lib_i32 port_probe_prepare_real_mode(core_machine *machine)
 {
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
 
     return core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK;
@@ -64,7 +64,7 @@ static lib_i32 core_machine_port_probe_prepare(core_machine **out_machine,
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
@@ -100,7 +100,7 @@ static lib_i32 core_machine_port_probe_fdc_read_is_independent(void)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
@@ -156,7 +156,7 @@ static lib_i32 core_machine_port_probe_fdc_write_conflict_is_retained(void)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
@@ -243,7 +243,7 @@ lib_i32 main(void)
                 sizeof(failing_program)) != LIB_STATUS_OK ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR;
         if (!failed) {
-            core_machine_cpu_diagnostic diagnostic;
+            x86_core_cpu_diagnostic diagnostic;
 
             failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
                     LIB_STATUS_OK || !diagnostic.first_fault.valid ||

@@ -30,7 +30,7 @@
 static lib_i32 timing_80386_manifest_load_table(core_machine *machine,
     lib_bool idt, lib_u32 base, lib_u16 limit)
 {
-    core_machine_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot before;
     lib_u32 code;
     const lib_u8 pointer[] = {(lib_u8)limit, (lib_u8)(limit >> 8u),
         (lib_u8)base, (lib_u8)(base >> 8u), (lib_u8)(base >> 16u),
@@ -41,12 +41,12 @@ static lib_i32 timing_80386_manifest_load_table(core_machine *machine,
     core_machine_run_result run = {0};
 
     if (core_machine_debug_capture_cpu_snapshot(machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK) return 0;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK) return 0;
     code = before.cs.base + before.eip;
     if (core_machine_memory_read(machine, code, saved, sizeof(saved)) != LIB_STATUS_OK ||
-        core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
-            before.eflags & ~(CORE_MACHINE_DEBUG_EFLAGS_TF |
-                CORE_MACHINE_DEBUG_EFLAGS_IF)) != LIB_STATUS_OK ||
+        core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
+            before.eflags & ~(X86_CORE_CPU_DEBUG_EFLAGS_TF |
+                X86_CORE_CPU_DEBUG_EFLAGS_IF)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, before.cs.base + 0x1700u,
             pointer, sizeof(pointer)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, code, instruction,
@@ -55,37 +55,37 @@ static lib_i32 timing_80386_manifest_load_table(core_machine *machine,
             &run) != LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u ||
         core_machine_memory_write(machine, code, saved, sizeof(saved)) != LIB_STATUS_OK ||
-        core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EIP,
+        core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EIP,
             before.eip) != LIB_STATUS_OK ||
-        core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
+        core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
             before.eflags) != LIB_STATUS_OK) return 0;
     return 1;
 }
 
 static lib_i32 timing_80386_manifest_prepare_gate(test_protected_16_machine *state,
-    core_machine_cpu_profile profile,
+    x86_core_cpu_profile profile,
     lib_u8 gate_type, lib_u8 gate_dpl, lib_bool present)
 {
     const lib_u8 halt = 0xf4u;
-    const core_machine_debug_register_patch seed = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    const x86_core_cpu_debug_register_patch seed = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_EAX] = 0xaabbccddu,
-            [CORE_MACHINE_DEBUG_ECX] = 0x11223344u,
-            [CORE_MACHINE_DEBUG_EDX] = 0x55667788u,
-            [CORE_MACHINE_DEBUG_EBX] = 0x99aabbccu,
-            [CORE_MACHINE_DEBUG_EBP] = 0x1234u,
-            [CORE_MACHINE_DEBUG_ESI] = 0x5678u,
-            [CORE_MACHINE_DEBUG_EDI] = 0x9abcu,
-            [CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_CF |
-                CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF
+            [X86_CORE_CPU_DEBUG_EAX] = 0xaabbccddu,
+            [X86_CORE_CPU_DEBUG_ECX] = 0x11223344u,
+            [X86_CORE_CPU_DEBUG_EDX] = 0x55667788u,
+            [X86_CORE_CPU_DEBUG_EBX] = 0x99aabbccu,
+            [X86_CORE_CPU_DEBUG_EBP] = 0x1234u,
+            [X86_CORE_CPU_DEBUG_ESI] = 0x5678u,
+            [X86_CORE_CPU_DEBUG_EDI] = 0x9abcu,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_CF |
+                X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_TF
         }
     };
 
@@ -624,9 +624,9 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
         static const lib_u8 xlat_value[] = { 0x5au };
 
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EBX, 0x1000u);
+            X86_CORE_CPU_DEBUG_EBX, 0x1000u);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EAX, 1u);
+            X86_CORE_CPU_DEBUG_EAX, 1u);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x1001u, xlat_value,
             sizeof(xlat_value));
     }
@@ -641,7 +641,7 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
             multiplier = 0x8000u;
         }
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ECX, multiplier);
+            X86_CORE_CPU_DEBUG_ECX, multiplier);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x1000u, &multiplier,
             sizeof(multiplier));
     }
@@ -652,11 +652,11 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
         static const lib_u32 divisor = 2u;
 
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EAX, 4u);
+            X86_CORE_CPU_DEBUG_EAX, 4u);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EDX, 0u);
+            X86_CORE_CPU_DEBUG_EDX, 0u);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ECX, divisor);
+            X86_CORE_CPU_DEBUG_ECX, divisor);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x1000u, &divisor,
             sizeof(divisor));
     }
@@ -665,14 +665,14 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
         static const lib_u32 scanned_value = 2u;
 
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ECX, scanned_value);
+            X86_CORE_CPU_DEBUG_ECX, scanned_value);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x1000u, &scanned_value,
             sizeof(scanned_value));
     }
     if (status == LIB_STATUS_OK && key_id[5] == 'S' && key_id[6] == 'H' &&
         key_id[7] == 'L' && (key_id[8] == 'D' || key_id[8] == 'R')) {
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ECX, 1u);
+            X86_CORE_CPU_DEBUG_ECX, 1u);
     }
     if (status == LIB_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
             "I386-IN-") || timing_80386_manifest_key_has_prefix(key_id,
@@ -682,7 +682,7 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
             "I386-REP-INS") || timing_80386_manifest_key_has_prefix(key_id,
             "I386-REP-OUTS"))) {
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EDX, 0x00e0u);
+            X86_CORE_CPU_DEBUG_EDX, 0x00e0u);
     }
     if (status == LIB_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
             "I386-STRING-") || timing_80386_manifest_key_has_prefix(key_id,
@@ -690,19 +690,19 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
         static const lib_u32 string_input = 0x11223344u;
 
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ESI, 0x1000u);
+            X86_CORE_CPU_DEBUG_ESI, 0x1000u);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EDI, 0x1100u);
+            X86_CORE_CPU_DEBUG_EDI, 0x1100u);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ECX, timing_80386_manifest_key_has_prefix(
+            X86_CORE_CPU_DEBUG_ECX, timing_80386_manifest_key_has_prefix(
             key_id, "I386-REP-") ? 1u : 0u);
         if (timing_80386_manifest_key_has_suffix(key_id, "-REP-PHASE-ZERO")) {
             if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_ECX, 0u);
+                X86_CORE_CPU_DEBUG_ECX, 0u);
         } else if (timing_80386_manifest_key_has_suffix(key_id,
                 "-REP-PHASE-CONTINUE")) {
             if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_ECX, 2u);
+                X86_CORE_CPU_DEBUG_ECX, 2u);
         }
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x1000u, &string_input,
             sizeof(string_input));
@@ -714,7 +714,7 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
         }
         if (timing_80386_manifest_key_has_prefix(key_id, "I386-REP-SCAS-REPE")) {
             if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_EAX, string_input);
+                X86_CORE_CPU_DEBUG_EAX, string_input);
         }
     }
     return status;
@@ -779,7 +779,7 @@ static lib_i32 timing_80386_manifest_verify_esc_handoff(void)
 {
     static const lib_u8 fadd[] = { 0xd8u, 0xc0u };
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_80387
     };
     core_machine_run_result run = { 0 };
@@ -813,7 +813,7 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
     const lib_u8 *program, lib_size program_bytes)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .ticks_per_instruction = 29u,
         .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
     };
@@ -862,9 +862,9 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
         static const lib_u8 xlat_value[] = { 0x5au };
 
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EBX, 0x1000u);
+            X86_CORE_CPU_DEBUG_EBX, 0x1000u);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EAX, 1u);
+            X86_CORE_CPU_DEBUG_EAX, 1u);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x1001u, xlat_value,
             sizeof(xlat_value));
     }
@@ -881,7 +881,7 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
         }
 
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ECX, multiplier);
+            X86_CORE_CPU_DEBUG_ECX, multiplier);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x1000u, &multiplier,
             sizeof(multiplier));
     }
@@ -892,11 +892,11 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
         static const lib_u32 divisor = 2u;
 
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EAX, 4u);
+            X86_CORE_CPU_DEBUG_EAX, 4u);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EDX, 0u);
+            X86_CORE_CPU_DEBUG_EDX, 0u);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ECX, divisor);
+            X86_CORE_CPU_DEBUG_ECX, divisor);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x1000u, &divisor,
             sizeof(divisor));
     }
@@ -905,14 +905,14 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
         static const lib_u32 scanned_value = 2u;
 
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ECX, scanned_value);
+            X86_CORE_CPU_DEBUG_ECX, scanned_value);
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x1000u, &scanned_value,
             sizeof(scanned_value));
     }
     if (status == LIB_STATUS_OK && key_id[5] == 'S' && key_id[6] == 'H' &&
         key_id[7] == 'L' && (key_id[8] == 'D' || key_id[8] == 'R')) {
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ECX, 1u);
+            X86_CORE_CPU_DEBUG_ECX, 1u);
     }
     if (status == LIB_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
             "I386-IN-") || timing_80386_manifest_key_has_prefix(key_id,
@@ -922,7 +922,7 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
             "I386-REP-INS") || timing_80386_manifest_key_has_prefix(key_id,
             "I386-REP-OUTS"))) {
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EDX, 0x00e0u);
+            X86_CORE_CPU_DEBUG_EDX, 0x00e0u);
     }
     if (status == LIB_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
             "I386-STRING-") || timing_80386_manifest_key_has_prefix(key_id,
@@ -930,15 +930,15 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
         static const lib_u32 string_input = 0x11223344u;
 
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ESI, 0x1000u);
+            X86_CORE_CPU_DEBUG_ESI, 0x1000u);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EDI, 0x1100u);
+            X86_CORE_CPU_DEBUG_EDI, 0x1100u);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ECX, timing_80386_manifest_key_has_prefix(
+            X86_CORE_CPU_DEBUG_ECX, timing_80386_manifest_key_has_prefix(
             key_id, "I386-REP-") ? 1u : 0u);
         if (timing_80386_manifest_key_has_suffix(key_id, "-REP-PHASE-ZERO")) {
             if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_ECX, 0u);
+                X86_CORE_CPU_DEBUG_ECX, 0u);
         }
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine, 0x1000u, &string_input,
             sizeof(string_input));
@@ -950,7 +950,7 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
         }
         if (timing_80386_manifest_key_has_prefix(key_id, "I386-REP-SCAS-REPE")) {
             if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_EAX, string_input);
+                X86_CORE_CPU_DEBUG_EAX, string_input);
         }
     }
     if (status == LIB_STATUS_OK && timing_80386_manifest_key_has_prefix(key_id,
@@ -959,55 +959,55 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
         lib_i32 taken = timing_80386_manifest_key_has_suffix(key_id, "-TAKEN");
 
         if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JO-")) {
-            flags = taken ? CORE_MACHINE_DEBUG_EFLAGS_OF : 0u;
+            flags = taken ? X86_CORE_CPU_DEBUG_EFLAGS_OF : 0u;
         } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JNO-")) {
-            flags = taken ? 0u : CORE_MACHINE_DEBUG_EFLAGS_OF;
+            flags = taken ? 0u : X86_CORE_CPU_DEBUG_EFLAGS_OF;
         } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JB-") ||
             timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JAE-") ||
             timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JBE-") ||
             timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JA-")) {
             flags = (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JB-") ||
                 timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JBE-")) == taken ?
-                CORE_MACHINE_DEBUG_EFLAGS_CF : 0u;
+                X86_CORE_CPU_DEBUG_EFLAGS_CF : 0u;
         } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JE-") ||
             timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JNE-") ||
             timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JLE-") ||
             timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JG-")) {
             flags = (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JE-") ||
                 timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JLE-")) == taken ?
-                CORE_MACHINE_DEBUG_EFLAGS_ZF : 0u;
+                X86_CORE_CPU_DEBUG_EFLAGS_ZF : 0u;
         } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JS-") ||
             timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JNS-") ||
             timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JL-")) {
             flags = (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JS-") ||
                 timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JL-")) == taken ?
-                CORE_MACHINE_DEBUG_EFLAGS_SF : 0u;
+                X86_CORE_CPU_DEBUG_EFLAGS_SF : 0u;
         } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JP-") ||
             timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JNP-")) {
             flags = (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JP-")) == taken ?
-                CORE_MACHINE_DEBUG_EFLAGS_PF : 0u;
+                X86_CORE_CPU_DEBUG_EFLAGS_PF : 0u;
         }
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EFLAGS, flags);
+            X86_CORE_CPU_DEBUG_EFLAGS, flags);
         if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JCXZ-")) {
             if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_ECX, taken ? 0u : 1u);
+                X86_CORE_CPU_DEBUG_ECX, taken ? 0u : 1u);
         } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JECXZ-")) {
             if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_ECX, taken ? 0u : 1u);
+                X86_CORE_CPU_DEBUG_ECX, taken ? 0u : 1u);
         } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-LOOP")) {
             if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_ECX, taken ? 2u : 1u);
+                X86_CORE_CPU_DEBUG_ECX, taken ? 2u : 1u);
         }
         if (status == LIB_STATUS_OK && taken &&
             timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-LOOPE-")) {
             status = core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_ZF);
+                X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_ZF);
         }
     }
     if (status == LIB_STATUS_OK && lib_text_compare(key_id, "I386-INTO-REAL") == 0) {
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_OF);
+            X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_OF);
     }
     if (status == LIB_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &active_provider);
@@ -1018,13 +1018,13 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
         capture.observation.timing_disposition ==
             CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
         capture.observation.source_timing_form_id ==
-            CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+            X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
         capture.observation.timing_origin ==
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
         (timing_80386_manifest_key_has_suffix(key_id, "-REP-PHASE-FIRST") &&
-         capture.observation.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_FIRST) ||
+         capture.observation.repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_FIRST) ||
         (timing_80386_manifest_key_has_suffix(key_id, "-REP-PHASE-ZERO") &&
-         capture.observation.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT)) {
+         capture.observation.repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_ZERO_COUNT)) {
         lib_c_printf("I386-RECIPE-DETAIL:%s:status=%d:reason=%d:executed=%llu:capture=%u:disposition=%d:form=%u:origin=%d\n",
             key_id, status, run.reason, run.executed, capture.count,
             capture.observation.timing_disposition,
@@ -1060,25 +1060,25 @@ static lib_i32 timing_80386_manifest_run_s7_protected_recipe(
     record = timing_80386_manifest_find(key_id);
     if (record == LIB_NULL || !timing_80386_manifest_is_i386(record) ||
         program == LIB_NULL || program_bytes == 0u) return 1;
-    if (!timing_80386_manifest_prepare_gate(&state, CORE_MACHINE_CPU_PROFILE_80386,
+    if (!timing_80386_manifest_prepare_gate(&state, X86_CORE_CPU_PROFILE_80386,
             6u, 0u, LIB_TRUE)) return 1;
     status = core_machine_debug_write_register(state.machine,
-        CORE_MACHINE_DEBUG_DS, 0x0010u);
+        X86_CORE_CPU_DEBUG_DS, 0x0010u);
     if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-        CORE_MACHINE_DEBUG_ES, 0x0010u);
+        X86_CORE_CPU_DEBUG_ES, 0x0010u);
     /* The inherited gate smoke enables TF to test interrupt delivery.  S7
      * measures the instruction itself, so suppress the unrelated #DB path. */
     if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-        CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF);
+        X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF);
     if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-        CORE_MACHINE_DEBUG_EAX, 1u);
+        X86_CORE_CPU_DEBUG_EAX, 1u);
     if (status == LIB_STATUS_OK &&
         timing_80386_manifest_key_has_prefix(key_id, "I386-MOV-CR3-R32")) {
         status = core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_EAX, 0x00001000u);
+            X86_CORE_CPU_DEBUG_EAX, 0x00001000u);
     }
     if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-        CORE_MACHINE_DEBUG_ECX, 0x0010u);
+        X86_CORE_CPU_DEBUG_ECX, 0x0010u);
     if (status != LIB_STATUS_OK) goto cleanup;
     if (timing_80386_manifest_key_has_prefix(key_id, "I386-SYSTEM-LLDT")) {
         static const lib_u8 ldt_descriptor[] = {
@@ -1089,7 +1089,7 @@ static lib_i32 timing_80386_manifest_run_s7_protected_recipe(
             goto cleanup;
         }
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_ECX, 0x0018u);
+            X86_CORE_CPU_DEBUG_ECX, 0x0018u);
         if (status != LIB_STATUS_OK || !test_protected_16_write(&state, S3_GDT_BASE + 0x18u, ldt_descriptor,
                 sizeof(ldt_descriptor))) {
             goto cleanup;
@@ -1104,7 +1104,7 @@ static lib_i32 timing_80386_manifest_run_s7_protected_recipe(
             goto cleanup;
         }
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_ECX, 0x0020u);
+            X86_CORE_CPU_DEBUG_ECX, 0x0020u);
         if (status != LIB_STATUS_OK || !test_protected_16_write(&state, S3_GDT_BASE + 0x20u, tss_descriptor,
                 sizeof(tss_descriptor))) {
             goto cleanup;
@@ -1121,7 +1121,7 @@ static lib_i32 timing_80386_manifest_run_s7_protected_recipe(
             goto cleanup;
         }
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_ECX, 0x0020u);
+            X86_CORE_CPU_DEBUG_ECX, 0x0020u);
         if (status != LIB_STATUS_OK || !test_protected_16_write(&state, S3_GDT_BASE + 0x20u, tss_descriptor,
                 sizeof(tss_descriptor)) || !test_protected_16_write(&state, S3_CODE_BASE,
                 ltr, sizeof(ltr)) || core_machine_run(state.machine,
@@ -1131,7 +1131,7 @@ static lib_i32 timing_80386_manifest_run_s7_protected_recipe(
             goto cleanup;
         }
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_EIP, 0u);
+            X86_CORE_CPU_DEBUG_EIP, 0u);
     }
     if (status != LIB_STATUS_OK || !test_protected_16_write(&state, S3_CODE_BASE, program, program_bytes)) {
         goto cleanup;
@@ -1259,18 +1259,18 @@ static lib_i32 timing_80386_manifest_run_s7_lsl_granularity_recipes(void)
         lib_status status = LIB_STATUS_OK;
         lib_i32 failed = 1;
 
-        if (!timing_80386_manifest_prepare_gate(&state, CORE_MACHINE_CPU_PROFILE_80386,
+        if (!timing_80386_manifest_prepare_gate(&state, X86_CORE_CPU_PROFILE_80386,
                 6u, 0u, LIB_TRUE)) return 1;
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_DS, 0x0010u);
+            X86_CORE_CPU_DEBUG_DS, 0x0010u);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_ES, 0x0010u);
+            X86_CORE_CPU_DEBUG_ES, 0x0010u);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF);
+            X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_EAX, selectors[index]);
+            X86_CORE_CPU_DEBUG_EAX, selectors[index]);
         if (status == LIB_STATUS_OK) status = core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_ECX, 0u);
+            X86_CORE_CPU_DEBUG_ECX, 0u);
         if (status != LIB_STATUS_OK || !timing_80386_manifest_load_table(state.machine, LIB_FALSE, S3_GDT_BASE, 0x0027u)) {
             goto cleanup;
         }
@@ -1664,7 +1664,7 @@ static lib_i32 timing_80386_manifest_run_s4_base_recipes(void)
 static lib_i32 timing_80386_manifest_run_s4_repeat_continuation(
     const char *key_id, const lib_u8 *program, lib_size program_bytes)
 {
-    const core_machine_config config = { .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386 };
+    const core_machine_config config = { .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
     const core_machine_retirement_observation_provider provider = {
         timing_80386_manifest_capture_retirement, LIB_NULL
     };
@@ -1700,7 +1700,7 @@ static lib_i32 timing_80386_manifest_run_s4_repeat_continuation(
         const lib_u16 handler[] = { 0xfff5u, 0xf000u };
 
         status = core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_ESP, 0x00001000u);
+            X86_CORE_CPU_DEBUG_ESP, 0x00001000u);
         if (status == LIB_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id, "I386-RET-") ||
             lib_text_compare(key_id, "I386-IRET-REAL") == 0)) {
             status = core_machine_memory_write(machine, 0x1000u, return_frame,
@@ -1732,7 +1732,7 @@ static lib_i32 timing_80386_manifest_run_s4_repeat_continuation(
     if (status == LIB_STATUS_OK) status = core_machine_run(machine, budget, &run);
     if (status != LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u || capture.count != 1u ||
-        capture.observation.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_FIRST) {
+        capture.observation.repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_FIRST) {
         lib_c_printf("I386-REPEAT-FIRST-DETAIL:%s:status=%d:executed=%llu:phase=%d\n",
             key_id, status, run.executed, capture.observation.repeat_phase);
         core_machine_destroy(machine);
@@ -1744,11 +1744,11 @@ static lib_i32 timing_80386_manifest_run_s4_repeat_continuation(
     if (status != LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u || capture.count != 1u ||
         capture.observation.repeat_phase !=
-            CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION ||
+            X86_CORE_CPU_RETIREMENT_REPEAT_CONTINUATION ||
         capture.observation.timing_disposition ==
             CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
         capture.observation.source_timing_form_id ==
-            CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED) {
+            X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED) {
         lib_c_printf("I386-REPEAT-CONTINUE-DETAIL:%s:status=%d:executed=%llu:phase=%d\n",
             key_id, status, run.executed, capture.observation.repeat_phase);
         core_machine_destroy(machine);
@@ -1940,7 +1940,7 @@ static lib_i32 timing_80386_manifest_run_s6_direct_recipe(const char *key_id,
     core_machine_run_result run = { 0 };
     lib_status run_status = LIB_STATUS_OK;
     test_protected_16_machine state = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u8 gate[8u] = { 0x10u,0u,0x08u,0u,0u,0u,0u,0u };
     lib_i32 call_gate = timing_80386_manifest_key_has_prefix(key_id,
         "I386-CALL-GATE-") || timing_80386_manifest_key_has_prefix(key_id,
@@ -1950,17 +1950,17 @@ static lib_i32 timing_80386_manifest_run_s6_direct_recipe(const char *key_id,
 
     failed = key_id == LIB_NULL || program == LIB_NULL || program_bytes == 0u ||
         timing_80386_manifest_find(key_id) == LIB_NULL ||
-        !timing_80386_manifest_prepare_gate(&state, CORE_MACHINE_CPU_PROFILE_80386,
+        !timing_80386_manifest_prepare_gate(&state, X86_CORE_CPU_PROFILE_80386,
             6u, 0u, LIB_TRUE);
     if (!failed) {
         lib_u32 selector;
 
         failed = core_machine_debug_write_register(state.machine,
-                CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF) != LIB_STATUS_OK ||
             core_machine_debug_read_register(state.machine,
-                CORE_MACHINE_DEBUG_SS, &selector) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_SS, &selector) != LIB_STATUS_OK ||
             core_machine_debug_write_register(state.machine,
-                CORE_MACHINE_DEBUG_DS, selector) != LIB_STATUS_OK;
+                X86_CORE_CPU_DEBUG_DS, selector) != LIB_STATUS_OK;
     }
     if (!failed && call_gate) {
         gate[5] = (lib_u8)(0x80u | (gate32 ?
@@ -1978,11 +1978,11 @@ static lib_i32 timing_80386_manifest_run_s6_direct_recipe(const char *key_id,
         run.executed != 1u || run.ticks != expected_ticks || capture.count != 1u ||
         capture.observation.source_ticks != expected_ticks ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != 0x0010u;
     if (failed) lib_c_printf("I386-PROTECTED-DIRECT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
@@ -2006,7 +2006,7 @@ static lib_i32 timing_80386_manifest_run_s6_memory_recipe(const char *key_id,
     core_machine_run_result run = { 0 };
     lib_status run_status = LIB_STATUS_OK;
     test_protected_16_machine state = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u8 gate[8u] = { 0x10u,0u,0x08u,0u,0u,0u,0u,0u };
     lib_i32 call_gate = timing_80386_manifest_key_has_prefix(key_id,
         "I386-CALL-GATE-") || timing_80386_manifest_key_has_prefix(key_id,
@@ -2017,17 +2017,17 @@ static lib_i32 timing_80386_manifest_run_s6_memory_recipe(const char *key_id,
     failed = key_id == LIB_NULL || program == LIB_NULL || program_bytes == 0u ||
         pointer == LIB_NULL || pointer_bytes == 0u ||
         timing_80386_manifest_find(key_id) == LIB_NULL ||
-        !timing_80386_manifest_prepare_gate(&state, CORE_MACHINE_CPU_PROFILE_80386,
+        !timing_80386_manifest_prepare_gate(&state, X86_CORE_CPU_PROFILE_80386,
             6u, 0u, LIB_TRUE);
     if (!failed) {
         lib_u32 selector;
 
         failed = core_machine_debug_write_register(state.machine,
-                CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF) != LIB_STATUS_OK ||
             core_machine_debug_read_register(state.machine,
-                CORE_MACHINE_DEBUG_SS, &selector) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_SS, &selector) != LIB_STATUS_OK ||
             core_machine_debug_write_register(state.machine,
-                CORE_MACHINE_DEBUG_DS, selector) != LIB_STATUS_OK;
+                X86_CORE_CPU_DEBUG_DS, selector) != LIB_STATUS_OK;
     }
     if (!failed && call_gate) {
         gate[5] = (lib_u8)(0x80u | (gate32 ?
@@ -2046,11 +2046,11 @@ static lib_i32 timing_80386_manifest_run_s6_memory_recipe(const char *key_id,
         run.executed != 1u || run.ticks != expected_ticks || capture.count != 1u ||
         capture.observation.source_ticks != expected_ticks ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != 0x0010u;
     if (failed) lib_c_printf("I386-PROTECTED-MEMORY-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
@@ -2073,16 +2073,16 @@ static lib_i32 timing_80386_manifest_run_s6_return_recipe(const char *key_id,
     };
     core_machine_run_result run = { 0 };
     test_protected_16_machine state = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed;
 
     failed = key_id == LIB_NULL || program == LIB_NULL || program_bytes == 0u ||
         frame == LIB_NULL || frame_bytes == 0u ||
         timing_80386_manifest_find(key_id) == LIB_NULL ||
-        !timing_80386_manifest_prepare_gate(&state, CORE_MACHINE_CPU_PROFILE_80386,
+        !timing_80386_manifest_prepare_gate(&state, X86_CORE_CPU_PROFILE_80386,
             6u, 0u, LIB_TRUE);
     if (!failed) failed = core_machine_debug_write_register(state.machine,
-        CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
+        X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
     if (!failed) failed = !test_protected_16_write(&state, S3_CODE_BASE, program,
         program_bytes) || !test_protected_16_write(&state, S3_STACK_TOP, frame, frame_bytes) ||
         !test_protected_16_write(&state, S3_CODE_BASE + 0x10u, target, sizeof(target)) ||
@@ -2093,11 +2093,11 @@ static lib_i32 timing_80386_manifest_run_s6_return_recipe(const char *key_id,
         run.executed != 1u || run.ticks != expected_ticks || capture.count != 1u ||
         capture.observation.source_ticks != expected_ticks ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != 0x0010u;
     if (failed) lib_c_printf("I386-PROTECTED-RETURN-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
@@ -2119,16 +2119,16 @@ static lib_i32 timing_80386_manifest_run_s6_interrupt_recipe(const char *key_id,
     };
     core_machine_run_result run = { 0 };
     test_protected_16_machine state = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed;
 
     failed = key_id == LIB_NULL || program == LIB_NULL || program_bytes == 0u ||
         timing_80386_manifest_find(key_id) == LIB_NULL ||
-        !timing_80386_manifest_prepare_gate(&state, CORE_MACHINE_CPU_PROFILE_80386,
+        !timing_80386_manifest_prepare_gate(&state, X86_CORE_CPU_PROFILE_80386,
             6u, 0u, LIB_TRUE);
     if (!failed) failed = core_machine_debug_write_register(state.machine,
-        CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF |
-        (vector == 4u ? CORE_MACHINE_DEBUG_EFLAGS_OF : 0u)) != LIB_STATUS_OK;
+        X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF |
+        (vector == 4u ? X86_CORE_CPU_DEBUG_EFLAGS_OF : 0u)) != LIB_STATUS_OK;
     if (!failed && vector != S3_VECTOR) failed = !test_protected_16_install_gate(&state, vector, S3_HANDLER,
         0x0008u, 6u, 0u, LIB_TRUE);
     if (!failed) failed = !test_protected_16_write(&state, S3_CODE_BASE, program,
@@ -2140,11 +2140,11 @@ static lib_i32 timing_80386_manifest_run_s6_interrupt_recipe(const char *key_id,
         run.executed != 1u || run.ticks != 59u || capture.count != 1u ||
         capture.observation.source_ticks != 59u ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != S3_HANDLER;
     if (failed) lib_c_printf("I386-PROTECTED-INTERRUPT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
@@ -2158,30 +2158,30 @@ static lib_i32 timing_80386_manifest_run_s6_interrupt_recipe(const char *key_id,
 /* LTR owns the busy transition; IRET owns CPL and stack-cache publication. */
 static lib_i32 timing_80386_manifest_enter_user(test_protected_16_machine *state)
 {
-    core_machine_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot before;
     const lib_u8 bootstrap[] = {0xb8u,0x28u,0u,0x0fu,0x00u,0xd8u,0xcfu};
     const lib_u16 frame[] = {0u,0x001bu,2u,S3_STACK_TOP,0x0023u};
     core_machine_run_result run = {0};
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot after;
 
     if (core_machine_debug_capture_cpu_snapshot(state->machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
         !test_protected_16_write(state, S3_CODE_BASE, bootstrap, sizeof(bootstrap)) ||
         !test_protected_16_write(state, S3_STACK_TOP - sizeof(frame), frame, sizeof(frame)) ||
-        core_machine_debug_write_register(state->machine, CORE_MACHINE_DEBUG_EFLAGS,
-            before.eflags & ~(CORE_MACHINE_DEBUG_EFLAGS_TF |
-                CORE_MACHINE_DEBUG_EFLAGS_IF)) != LIB_STATUS_OK ||
-        core_machine_debug_write_register(state->machine, CORE_MACHINE_DEBUG_ESP,
+        core_machine_debug_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS,
+            before.eflags & ~(X86_CORE_CPU_DEBUG_EFLAGS_TF |
+                X86_CORE_CPU_DEBUG_EFLAGS_IF)) != LIB_STATUS_OK ||
+        core_machine_debug_write_register(state->machine, X86_CORE_CPU_DEBUG_ESP,
             S3_STACK_TOP - sizeof(frame)) != LIB_STATUS_OK ||
         core_machine_run(state->machine, (core_machine_run_budget){3u,0u}, &run) !=
             LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 3u ||
-        core_machine_debug_write_register(state->machine, CORE_MACHINE_DEBUG_EAX,
+        core_machine_debug_write_register(state->machine, X86_CORE_CPU_DEBUG_EAX,
             before.eax) != LIB_STATUS_OK ||
-        core_machine_debug_write_register(state->machine, CORE_MACHINE_DEBUG_EFLAGS,
+        core_machine_debug_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS,
             before.eflags) != LIB_STATUS_OK) return 0;
     if (core_machine_debug_capture_cpu_snapshot(state->machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK) return 0;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK) return 0;
     return after.cs.selector == 0x001bu && after.cs.dpl == 3u &&
         after.ss.selector == 0x0023u && after.ss.dpl == 3u &&
         after.eip == 0u && after.esp == S3_STACK_TOP &&
@@ -2198,7 +2198,7 @@ static lib_i32 timing_80386_manifest_prepare_outer_call_gate(test_protected_16_m
     lib_u8 tss_descriptor[8u] = { 0u };
     lib_u8 gate[8u] = { 0u };
 
-    if (!timing_80386_manifest_prepare_gate(state, CORE_MACHINE_CPU_PROFILE_80386,
+    if (!timing_80386_manifest_prepare_gate(state, X86_CORE_CPU_PROFILE_80386,
             6u, 0u, LIB_TRUE) ||
         !test_protected_16_write(state, S3_GDT_BASE + 32u, user_data,
             sizeof(user_data))) return 0;
@@ -2221,7 +2221,7 @@ static lib_i32 timing_80386_manifest_prepare_outer_call_gate(test_protected_16_m
             sizeof(tss_descriptor)) || !test_protected_16_write(state, S3_GDT_BASE + 48u,
                 gate, sizeof(gate))) return 0;
     return timing_80386_manifest_enter_user(state) &&
-        core_machine_debug_write_register(state->machine, CORE_MACHINE_DEBUG_DS,
+        core_machine_debug_write_register(state->machine, X86_CORE_CPU_DEBUG_DS,
             0x0023u) == LIB_STATUS_OK;
 }
 
@@ -2239,7 +2239,7 @@ static lib_i32 timing_80386_manifest_run_s6_outer_call_gate_recipe(
     core_machine_run_result run = { 0 };
     lib_status run_status = LIB_STATUS_OK;
     test_protected_16_machine state = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed;
 
     failed = key_id == LIB_NULL || program == LIB_NULL || program_bytes == 0u ||
@@ -2247,7 +2247,7 @@ static lib_i32 timing_80386_manifest_run_s6_outer_call_gate_recipe(
         !timing_80386_manifest_prepare_outer_call_gate(&state, parameters,
             timing_80386_manifest_key_has_suffix(key_id, "-SIZE32"));
     if (!failed) failed = core_machine_debug_write_register(state.machine,
-        CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
+        X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
     if (!failed) failed = !test_protected_16_write(&state, S3_CODE_BASE, program,
         program_bytes) || (parameters != 0u && !test_protected_16_write(&state,
             S3_STACK_TOP, arguments, parameters * sizeof(arguments[0]))) ||
@@ -2261,11 +2261,11 @@ static lib_i32 timing_80386_manifest_run_s6_outer_call_gate_recipe(
         run.executed != 1u || run.ticks != expected_ticks || capture.count != 1u ||
         capture.observation.source_ticks != expected_ticks ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != 0x0100u ||
         snapshot.ss.selector != 0x0010u;
@@ -2292,7 +2292,7 @@ static lib_i32 timing_80386_manifest_run_s6_outer_call_gate_memory_recipe(
     };
     core_machine_run_result run = { 0 };
     test_protected_16_machine state = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed;
 
     failed = key_id == LIB_NULL || program == LIB_NULL || program_bytes == 0u ||
@@ -2301,7 +2301,7 @@ static lib_i32 timing_80386_manifest_run_s6_outer_call_gate_memory_recipe(
         !timing_80386_manifest_prepare_outer_call_gate(&state, parameters,
             timing_80386_manifest_key_has_suffix(key_id, "-SIZE32"));
     if (!failed) failed = core_machine_debug_write_register(state.machine,
-        CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
+        X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
     if (!failed) failed = !test_protected_16_write(&state, S3_CODE_BASE, program,
         program_bytes) || !test_protected_16_write(&state, 0x4000u, pointer, pointer_bytes) ||
         (parameters != 0u && !test_protected_16_write(&state, S3_STACK_TOP, arguments,
@@ -2314,11 +2314,11 @@ static lib_i32 timing_80386_manifest_run_s6_outer_call_gate_memory_recipe(
         run.executed != 1u || run.ticks != expected_ticks || capture.count != 1u ||
         capture.observation.source_ticks != expected_ticks ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != 0x0100u ||
         snapshot.ss.selector != 0x0010u;
@@ -2339,7 +2339,7 @@ static lib_i32 timing_80386_manifest_prepare_inner_interrupt(test_protected_16_m
     lib_u8 descriptor[8u] = { 7u,0u,0u,5u,0u,
         0x80u | 1u,0u,0u };
 
-    if (!timing_80386_manifest_prepare_gate(state, CORE_MACHINE_CPU_PROFILE_80386,
+    if (!timing_80386_manifest_prepare_gate(state, X86_CORE_CPU_PROFILE_80386,
             6u, 0u, LIB_TRUE) ||
         !test_protected_16_write(state, S3_GDT_BASE + 32u, user_data, sizeof(user_data)) ||
         !test_protected_16_install_gate(state, vector, S3_HANDLER, 0x0008u,
@@ -2365,14 +2365,14 @@ static lib_i32 timing_80386_manifest_run_s6_inner_interrupt_recipe(
     };
     core_machine_run_result run = { 0 };
     test_protected_16_machine state = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed = key_id == LIB_NULL || program == LIB_NULL || program_bytes == 0u ||
         timing_80386_manifest_find(key_id) == LIB_NULL ||
         !timing_80386_manifest_prepare_inner_interrupt(&state, vector);
 
     if (!failed) failed = core_machine_debug_write_register(state.machine,
-        CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF |
-        (vector == 4u ? CORE_MACHINE_DEBUG_EFLAGS_OF : 0u)) != LIB_STATUS_OK;
+        X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF |
+        (vector == 4u ? X86_CORE_CPU_DEBUG_EFLAGS_OF : 0u)) != LIB_STATUS_OK;
     if (!failed) failed = !test_protected_16_write(&state, S3_CODE_BASE, program,
         program_bytes) || !test_protected_16_write(&state, S3_CODE_BASE + S3_HANDLER,
             target, sizeof(target)) || core_machine_set_retirement_observation_provider(
@@ -2381,10 +2381,10 @@ static lib_i32 timing_80386_manifest_run_s6_inner_interrupt_recipe(
         LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u || run.ticks != 99u || capture.count != 1u ||
         capture.observation.source_ticks != 99u ||
-        capture.observation.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+        capture.observation.timing_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition != CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != S3_HANDLER;
     if (failed) lib_c_printf("I386-PROTECTED-INNER-INTERRUPT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
@@ -2409,7 +2409,7 @@ static lib_i32 timing_80386_manifest_run_s6_task_recipe(const char *key_id,
     core_machine_run_result bootstrap = { 0 };
     core_machine_run_result run = { 0 };
     task_switch_fixture fixture = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     static const lib_u8 jmp_far = 0xeau;
     static const lib_u8 task_gate_selector[] = { 0x38u,0u };
     static const lib_u8 call_far_memory = 0x1eu;
@@ -2420,7 +2420,7 @@ static lib_i32 timing_80386_manifest_run_s6_task_recipe(const char *key_id,
         0x66u,0xeau,0u,0u,0u,0u,0x38u,0u
     };
     lib_i32 failed = key_id == LIB_NULL || timing_80386_manifest_find(key_id) ==
-        LIB_NULL || !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386) ||
+        LIB_NULL || !task_switch_prepare(&fixture, X86_CORE_CPU_PROFILE_80386) ||
         !task_switch_install(&fixture, test_case);
 
     if (!failed && task_gate_jump) failed = !write_bytes(fixture.machine,
@@ -2449,11 +2449,11 @@ static lib_i32 timing_80386_manifest_run_s6_task_recipe(const char *key_id,
         run.ticks != expected_ticks || capture.count != 1u ||
         capture.observation.source_ticks != expected_ticks ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(fixture.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.tr.selector != 0x0030u;
     if (failed) lib_c_printf("I386-TASK-DETAIL:%s:bootstrap=%llu/%llu:run=%llu:source=%llu:count=%u:tr=%04x\n",
         key_id != LIB_NULL ? key_id : "(null)", bootstrap.ticks, bootstrap.executed, run.ticks,
@@ -2476,13 +2476,13 @@ static lib_i32 timing_80386_manifest_run_s6_iret_task_recipe(const char *key_id)
     core_machine_run_result enter_task = { 0 };
     core_machine_run_result run = { 0 };
     task_switch_fixture fixture = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     const lib_u8 *iret = key_id != LIB_NULL &&
         timing_80386_manifest_key_has_suffix(key_id, "-SIZE32") ? iret32 : iret16;
     lib_size iret_bytes = iret == iret32 ? sizeof(iret32) : sizeof(iret16);
     lib_i32 failed = key_id == LIB_NULL || timing_80386_manifest_find(key_id) ==
         LIB_NULL ||
-        !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386) ||
+        !task_switch_prepare(&fixture, X86_CORE_CPU_PROFILE_80386) ||
         !task_switch_install(&fixture, TASK_SWITCH_CASE_NESTED_RETURN);
 
     if (!failed) failed = core_machine_run(fixture.machine, bootstrap_budget,
@@ -2491,10 +2491,10 @@ static lib_i32 timing_80386_manifest_run_s6_iret_task_recipe(const char *key_id)
     if (!failed) failed = core_machine_run(fixture.machine, one_instruction,
         &enter_task) != LIB_STATUS_OK || enter_task.reason != CORE_MACHINE_STOP_BUDGET ||
         enter_task.executed != 1u || core_machine_debug_capture_cpu_snapshot(fixture.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.tr.selector !=
             0x0030u || !CORE_MACHINE_BIT_IS_SET(snapshot.eflags,
-                CORE_MACHINE_DEBUG_EFLAGS_NT);
+                X86_CORE_CPU_DEBUG_EFLAGS_NT);
     if (!failed) failed = !write_bytes(fixture.machine, KERNEL_BASE + 0x100u,
         iret, iret_bytes) || core_machine_set_retirement_observation_provider(
             fixture.machine, &provider) != LIB_STATUS_OK;
@@ -2502,10 +2502,10 @@ static lib_i32 timing_80386_manifest_run_s6_iret_task_recipe(const char *key_id)
         LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
         run.ticks != 275u || capture.count != 1u ||
         capture.observation.source_ticks != 275u ||
-        capture.observation.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+        capture.observation.timing_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition != CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(fixture.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.tr.selector != 0x0028u;
     if (failed) lib_c_printf("I386-IRET-TASK-DETAIL:%s:bootstrap=%llu:enter=%llu:run=%llu:source=%llu:count=%u:tr=%04x\n",
         key_id != LIB_NULL ? key_id : "(null)", bootstrap.executed, enter_task.ticks, run.ticks, capture.observation.source_ticks,
@@ -2530,10 +2530,10 @@ static lib_i32 timing_80386_manifest_run_s6_task_interrupt_recipe(
     core_machine_run_result bootstrap = { 0 };
     core_machine_run_result run = { 0 };
     task_switch_fixture fixture = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed = key_id == LIB_NULL || program == LIB_NULL || program_bytes == 0u ||
         timing_80386_manifest_find(key_id) == LIB_NULL ||
-        !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386) ||
+        !task_switch_prepare(&fixture, X86_CORE_CPU_PROFILE_80386) ||
         !task_switch_install(&fixture, TASK_SWITCH_CASE_IDT_TASK_GATE);
 
     if (!failed) failed = !write_bytes(fixture.machine, IDT_BASE +
@@ -2550,9 +2550,9 @@ static lib_i32 timing_80386_manifest_run_s6_task_interrupt_recipe(
         lib_u32 flags;
 
         failed = core_machine_debug_read_register(fixture.machine,
-                CORE_MACHINE_DEBUG_EFLAGS, &flags) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_EFLAGS, &flags) != LIB_STATUS_OK ||
             core_machine_debug_write_register(fixture.machine,
-                CORE_MACHINE_DEBUG_EFLAGS, flags | CORE_MACHINE_DEBUG_EFLAGS_OF) != LIB_STATUS_OK;
+                X86_CORE_CPU_DEBUG_EFLAGS, flags | X86_CORE_CPU_DEBUG_EFLAGS_OF) != LIB_STATUS_OK;
     }
     if (!failed) failed = core_machine_set_retirement_observation_provider(
         fixture.machine, &provider) != LIB_STATUS_OK || core_machine_run(
@@ -2561,11 +2561,11 @@ static lib_i32 timing_80386_manifest_run_s6_task_interrupt_recipe(
         run.ticks != 309u || capture.count != 1u ||
         capture.observation.source_ticks != 309u ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(fixture.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.tr.selector != 0x0030u;
     if (failed) lib_c_printf("I386-TASK-INTERRUPT-DETAIL:%s:bootstrap=%llu/%llu:run=%llu:source=%llu:count=%u:tr=%04x\n",
         key_id != LIB_NULL ? key_id : "(null)", bootstrap.ticks, bootstrap.executed, run.ticks,
@@ -2588,10 +2588,10 @@ static lib_i32 timing_80386_manifest_run_s6_vm86_interrupt_recipe(const char *ke
     };
     core_machine_run_result run = { 0 };
     test_protected_16_machine state = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed = key_id == LIB_NULL || code == LIB_NULL || code_bytes == 0u ||
         timing_80386_manifest_find(key_id) == LIB_NULL ||
-        !timing_80386_manifest_prepare_gate(&state, CORE_MACHINE_CPU_PROFILE_80386,
+        !timing_80386_manifest_prepare_gate(&state, X86_CORE_CPU_PROFILE_80386,
             14u, 3u, LIB_TRUE) ||
         !test_protected_16_install_gate(&state, vector, S3_HANDLER, 0x0008u, 14u,
             3u, LIB_TRUE);
@@ -2603,33 +2603,33 @@ static lib_i32 timing_80386_manifest_run_s6_vm86_interrupt_recipe(const char *ke
         !test_protected_16_write(&state, S3_GDT_BASE + 40u, tss_descriptor,
             sizeof(tss_descriptor));
     if (!failed) {
-        core_machine_debug_cpu_snapshot before;
+        x86_core_cpu_debug_cpu_snapshot before;
         const lib_u8 ltr[] = {0xb8u,0x28u,0u,0x0fu,0x00u,0xd8u};
         core_machine_run_result preparation = {0};
 
         failed = core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
             !timing_80386_manifest_load_table(state.machine, LIB_FALSE, S3_GDT_BASE, 47u) ||
-            core_machine_debug_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS,
-                CORE_MACHINE_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
+            core_machine_debug_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS,
+                X86_CORE_CPU_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
         if (!failed) failed = !test_protected_16_write(&state, S3_CODE_BASE, ltr, sizeof(ltr)) ||
             core_machine_run(state.machine, (core_machine_run_budget){2u,0u},
                 &preparation) != LIB_STATUS_OK ||
             preparation.reason != CORE_MACHINE_STOP_BUDGET || preparation.executed != 2u;
         if (!failed) {
             failed = core_machine_debug_write_register(state.machine,
-                    CORE_MACHINE_DEBUG_EAX, before.eax) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_DEBUG_EAX, before.eax) != LIB_STATUS_OK ||
                 core_machine_debug_write_register(state.machine,
-                    CORE_MACHINE_DEBUG_EIP, 0u) != LIB_STATUS_OK;
+                    X86_CORE_CPU_DEBUG_EIP, 0u) != LIB_STATUS_OK;
         }
     }
     if (!failed) {
-        failed = core_machine_debug_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS,
-                CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_VM |
-                    0x3000u | (vector == 4u ? CORE_MACHINE_DEBUG_EFLAGS_OF : 0u)) != LIB_STATUS_OK ||
-            core_machine_debug_write_register(state.machine, CORE_MACHINE_DEBUG_CS,
+        failed = core_machine_debug_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS,
+                X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_VM |
+                    0x3000u | (vector == 4u ? X86_CORE_CPU_DEBUG_EFLAGS_OF : 0u)) != LIB_STATUS_OK ||
+            core_machine_debug_write_register(state.machine, X86_CORE_CPU_DEBUG_CS,
                 0x0200u) != LIB_STATUS_OK ||
-            core_machine_debug_write_register(state.machine, CORE_MACHINE_DEBUG_SS,
+            core_machine_debug_write_register(state.machine, X86_CORE_CPU_DEBUG_SS,
                 0u) != LIB_STATUS_OK;
     }
     if (!failed) failed = !test_protected_16_write(&state, S3_CODE_BASE, code, code_bytes) ||
@@ -2640,10 +2640,10 @@ static lib_i32 timing_80386_manifest_run_s6_vm86_interrupt_recipe(const char *ke
         LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
         run.ticks != 119u || capture.count != 1u ||
         capture.observation.source_ticks != 119u ||
-        capture.observation.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+        capture.observation.timing_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition != CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x0008u ||
         snapshot.eip != S3_HANDLER;
     if (failed) lib_c_printf("I386-VM86-INTERRUPT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
@@ -2659,7 +2659,7 @@ static lib_i32 timing_80386_manifest_run_s6_iret_vm86_recipe(const char *key_id)
     static const lib_u8 iret[] = { 0x66u,0xcfu };
     static const lib_u8 target[] = { 0x90u };
     static const lib_u32 frame[] = {
-        0x10u,0x0200u,CORE_MACHINE_DEBUG_EFLAGS_VM | 0x3000u,0x8000u,0u,0u,0u,0u,0u
+        0x10u,0x0200u,X86_CORE_CPU_DEBUG_EFLAGS_VM | 0x3000u,0x8000u,0u,0u,0u,0u,0u
     };
     const core_machine_run_budget budget = { 1u, 0u };
     timing_80386_manifest_capture capture = { { 0 }, 0u };
@@ -2668,14 +2668,14 @@ static lib_i32 timing_80386_manifest_run_s6_iret_vm86_recipe(const char *key_id)
     };
     core_machine_run_result run = { 0 };
     test_protected_16_machine state = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed = key_id == LIB_NULL || timing_80386_manifest_find(key_id) ==
         LIB_NULL ||
-        !timing_80386_manifest_prepare_gate(&state, CORE_MACHINE_CPU_PROFILE_80386,
+        !timing_80386_manifest_prepare_gate(&state, X86_CORE_CPU_PROFILE_80386,
             6u, 0u, LIB_TRUE);
 
     if (!failed) failed = core_machine_debug_write_register(state.machine,
-        CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
+        X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF) != LIB_STATUS_OK;
     if (!failed) failed = !test_protected_16_write(&state, S3_CODE_BASE, iret, sizeof(iret)) ||
         !test_protected_16_write(&state, S3_STACK_TOP, frame, sizeof(frame)) ||
         !test_protected_16_write(&state, S3_CODE_BASE + 0x10u, target, sizeof(target)) ||
@@ -2685,11 +2685,11 @@ static lib_i32 timing_80386_manifest_run_s6_iret_vm86_recipe(const char *key_id)
         LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
         run.ticks != 60u || capture.count != 1u ||
         capture.observation.source_ticks != 60u ||
-        capture.observation.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+        capture.observation.timing_origin != X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition != CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
-        (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_VM) == 0u ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+        (snapshot.eflags & X86_CORE_CPU_DEBUG_EFLAGS_VM) == 0u ||
         snapshot.cs.selector != 0x0200u ||
         snapshot.cs.base != S3_CODE_BASE ||
         snapshot.eip != 0x10u;
@@ -2716,17 +2716,17 @@ static lib_i32 timing_80386_manifest_run_s6_outer_return_recipe(const char *key_
     };
     core_machine_run_result run = { 0 };
     test_protected_16_machine state = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed;
 
     failed = key_id == LIB_NULL || program == LIB_NULL || program_bytes == 0u ||
         frame == LIB_NULL || frame_bytes == 0u ||
         timing_80386_manifest_find(key_id) == LIB_NULL ||
-        !timing_80386_manifest_prepare_gate(&state, CORE_MACHINE_CPU_PROFILE_80386,
+        !timing_80386_manifest_prepare_gate(&state, X86_CORE_CPU_PROFILE_80386,
             6u, 0u, LIB_TRUE);
     if (!failed) {
-        failed = core_machine_debug_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS,
-                CORE_MACHINE_DEBUG_EFLAGS_CF) != LIB_STATUS_OK ||
+        failed = core_machine_debug_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS,
+                X86_CORE_CPU_DEBUG_EFLAGS_CF) != LIB_STATUS_OK ||
             !timing_80386_manifest_load_table(state.machine, LIB_FALSE, S3_GDT_BASE, 39u);
     }
     if (!failed) failed = !test_protected_16_write(&state, S3_GDT_BASE + 32u, user_data,
@@ -2741,11 +2741,11 @@ static lib_i32 timing_80386_manifest_run_s6_outer_return_recipe(const char *key_
         run.executed != 1u || run.ticks != expected_ticks || capture.count != 1u ||
         capture.observation.source_ticks != expected_ticks ||
         capture.observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
         snapshot.cs.selector != 0x001bu ||
         snapshot.ss.selector != 0x0023u ||
         snapshot.eip != 0x0010u;
@@ -2775,20 +2775,20 @@ static lib_i32 timing_80386_manifest_run_s6_direct_recipes(void)
     static const lib_u8 jmp_memory16[] = { 0xffu,0x2eu,0u,0x40u };
     static const lib_u8 jmp_memory32[] = { 0x66u,0xffu,0x2eu,0u,0x40u };
     static const lib_u16 ret_frame[] = { 0x0010u,0x0008u };
-    static const lib_u16 iret_frame[] = { 0x0010u,0x0008u,CORE_MACHINE_DEBUG_EFLAGS_CF };
+    static const lib_u16 iret_frame[] = { 0x0010u,0x0008u,X86_CORE_CPU_DEBUG_EFLAGS_CF };
     static const lib_u32 ret_frame32[] = { 0x00000010u,0x00000008u };
     static const lib_u32 iret_frame32[] = {
-        0x00000010u,0x00000008u,CORE_MACHINE_DEBUG_EFLAGS_CF
+        0x00000010u,0x00000008u,X86_CORE_CPU_DEBUG_EFLAGS_CF
     };
     static const lib_u16 ret_outer_frame[] = { 0x0010u,0x001bu,0x4000u,0x0023u };
     static const lib_u16 iret_outer_frame[] = {
-        0x0010u,0x001bu,CORE_MACHINE_DEBUG_EFLAGS_CF,0x4000u,0x0023u
+        0x0010u,0x001bu,X86_CORE_CPU_DEBUG_EFLAGS_CF,0x4000u,0x0023u
     };
     static const lib_u32 ret_outer_frame32[] = {
         0x00000010u,0x0000001bu,0x00004000u,0x00000023u
     };
     static const lib_u32 iret_outer_frame32[] = {
-        0x00000010u,0x0000001bu,CORE_MACHINE_DEBUG_EFLAGS_CF,0x00004000u,0x00000023u
+        0x00000010u,0x0000001bu,X86_CORE_CPU_DEBUG_EFLAGS_CF,0x00004000u,0x00000023u
     };
 
     return timing_80386_manifest_run_s6_direct_recipe("I386-CALL-FAR-PM-DIRECT",

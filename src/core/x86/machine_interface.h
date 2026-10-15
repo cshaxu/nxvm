@@ -1,8 +1,8 @@
 #ifndef CORE_MACHINE_INTERFACE_H
 #define CORE_MACHINE_INTERFACE_H
 
-#include "core/chips/cpu/cpu_interface.h"
-#include "core/chips/fpu/fpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
+#include "x86-core/fpu/fpu_interface.h"
 #include "core/x86/execution_provider_interface.h"
 #include "core/x86/firmware_interface.h"
 #include "core/x86/lifecycle_interface.h"
@@ -82,7 +82,7 @@ typedef struct core_machine_external_cycle_timing {
 #define CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY 7u
 
 typedef struct core_machine_external_access_wait_window {
-    core_machine_cpu_external_cycle_space space;
+    x86_core_cpu_external_cycle_space space;
     lib_u32 first_address;
     lib_u32 last_address;
     lib_u32 wait_ticks;
@@ -193,8 +193,8 @@ typedef struct core_machine_run_result {
 typedef struct core_machine_observation {
     core_machine_lifecycle lifecycle;
     lib_u64 elapsed_ticks;
-    core_machine_cpu_state cpu;
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_state cpu;
+    x86_core_cpu_diagnostic diagnostic;
 } core_machine_observation;
 
 /* A copied classification of the next Core-owned time-progress opportunity.
@@ -256,12 +256,12 @@ lib_i32 core_machine_mutable_operation_is_allowed(const core_machine *machine);
  * Core never retains a second configuration or any board selection. */
 typedef struct core_machine_executor_config {
     lib_size memory_bytes;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     x86_fpu_profile fpu_profile;
     lib_u8 cpu_80386_cr_mov_ignores_mod;
     core_machine_a20_wrap_policy a20_wrap_policy;
     lib_u32 ticks_per_instruction;
-    core_machine_instruction_timing instruction_timing;
+    x86_core_cpu_instruction_timing instruction_timing;
     core_machine_transaction_contract transaction_contract;
     core_machine_clock_ratio provider_clock;
     core_machine_time_axis time_axis;
@@ -287,10 +287,10 @@ lib_status core_machine_get_lifecycle(
 
 lib_status core_machine_get_cpu_state(
     const core_machine *machine,
-    core_machine_cpu_state *out_state);
+    x86_core_cpu_state *out_state);
 
 lib_status core_machine_get_cpu_profile(
-    const core_machine *machine, core_machine_cpu_profile *out_profile);
+    const core_machine *machine, x86_core_cpu_profile *out_profile);
 lib_status core_machine_get_fpu_profile(
     const core_machine *machine, x86_fpu_profile *out_profile);
 lib_status core_machine_get_fpu_state(
@@ -314,7 +314,7 @@ lib_status core_machine_get_timeline_observation(const core_machine *machine,
 
 lib_status core_machine_get_cpu_diagnostic(
     const core_machine *machine,
-    core_machine_cpu_diagnostic *out_diagnostic);
+    x86_core_cpu_diagnostic *out_diagnostic);
 
 lib_status core_machine_run(
     core_machine *machine,

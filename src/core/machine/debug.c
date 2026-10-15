@@ -15,7 +15,7 @@ void vm_machine_debug_reset(t_debug *debug)
 }
 
 void vm_machine_debug_refresh(t_debug *debug,
-    const core_machine_debug_instruction_observation *observation)
+    const x86_core_cpu_debug_instruction_observation *observation)
 {
     if (debug == LIB_NULL || observation == LIB_NULL) return;
     debug->observation = *observation;

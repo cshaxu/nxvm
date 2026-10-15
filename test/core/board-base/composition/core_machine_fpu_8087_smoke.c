@@ -3,7 +3,7 @@
 #include "core/x86/device_support_interface.h"
 
 #include "core/x86/debug_interface.h"
-#include "core/chips/fpu/fpu_interface.h"
+#include "x86-core/fpu/fpu_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/x86/machine.h"
 
@@ -20,18 +20,18 @@ typedef struct fpu_test_machine {
 static lib_status fpu_test_set_entry(core_machine *machine)
 {
 
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
     return core_machine_debug_patch_registers(machine, &entry);
 }
 
 static lib_i32 fpu_test_prepare(fpu_test_machine *state,
-    core_machine_cpu_profile cpu_profile, x86_fpu_profile fpu_profile)
+    x86_core_cpu_profile cpu_profile, x86_fpu_profile fpu_profile)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -60,7 +60,7 @@ static lib_i32 fpu_test_write(fpu_test_machine *state, lib_u32 physical,
 }
 
 static lib_i32 fpu_test_run(fpu_test_machine *state, lib_u64 instructions,
-    lib_status expected_status, core_machine_cpu_diagnostic *out_diagnostic)
+    lib_status expected_status, x86_core_cpu_diagnostic *out_diagnostic)
 {
     core_machine_run_budget budget = { instructions, 0u };
     core_machine_run_result result = {0};
@@ -89,7 +89,7 @@ static lib_i32 test_arithmetic_and_fninit(void)
     fpu_test_machine state;
     x86_fpu_state fpu_state;
     lib_u32 observed = 0u;
-    lib_i32 failed = !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_8086,
+    lib_i32 failed = !fpu_test_prepare(&state, X86_CORE_CPU_PROFILE_8086,
         X86_FPU_PROFILE_8087);
 
     if (!failed) {
@@ -116,7 +116,7 @@ static lib_i32 test_stack_fault_and_reset(void)
     const lib_u32 one = 0x3f800000u;
     fpu_test_machine state;
     x86_fpu_state fpu_state;
-    lib_i32 failed = !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_8086,
+    lib_i32 failed = !fpu_test_prepare(&state, X86_CORE_CPU_PROFILE_8086,
         X86_FPU_PROFILE_8087);
 
     if (!failed) {
@@ -155,10 +155,10 @@ static lib_i32 test_unmasked_fwait(void)
     const lib_u16 handler_segment = 0u;
     lib_u16 frame[3] = { 0u, 0u, 0u };
     fpu_test_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot cpu;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot cpu;
     x86_fpu_state fpu_state;
-    lib_i32 failed = !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_8086,
+    lib_i32 failed = !fpu_test_prepare(&state, X86_CORE_CPU_PROFILE_8086,
         X86_FPU_PROFILE_8087);
 
     if (!failed) {
@@ -168,7 +168,7 @@ static lib_i32 test_unmasked_fwait(void)
         failed |= !fpu_test_write(&state, FPU_TEST_CONTROL, &unmask_zero_divide,
             sizeof(unmask_zero_divide));
         failed |= core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_ESP, 0x00008000u) != LIB_STATUS_OK;
+            X86_CORE_CPU_DEBUG_ESP, 0x00008000u) != LIB_STATUS_OK;
         failed |= !fpu_test_write(&state, 0x0040u, &handler_offset,
             sizeof(handler_offset)) || !fpu_test_write(&state, 0x0042u,
             &handler_segment, sizeof(handler_segment)) || !fpu_test_write(
@@ -179,7 +179,7 @@ static lib_i32 test_unmasked_fwait(void)
                 diagnostic.last_delivered_exception.exception_mask,
                 VCPUINS_EXCEPT_MF) ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
             cpu.eip != handler_offset || cpu.esp != 0x00007ffau ||
             core_machine_debug_read_linear(state.machine, 0x00007ffau,
                 frame, sizeof(frame)) != LIB_STATUS_OK ||
@@ -197,9 +197,9 @@ static lib_i32 test_profile_gates(void)
     static const lib_u8 fninit[] = { 0xdbu, 0xe3u };
     static const lib_u8 unsupported_m32[] = { 0xd9u, 0x06u, 0x00u, 0x01u };
     const lib_u32 nan = 0x7fc00000u;
-    const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_8086, X86_CORE_CPU_PROFILE_80186,
+        X86_CORE_CPU_PROFILE_80286, X86_CORE_CPU_PROFILE_80386
     };
     x86_fpu_operation_metadata metadata;
     lib_i32 failed = 0;
@@ -220,7 +220,7 @@ static lib_i32 test_profile_gates(void)
     }
     {
         fpu_test_machine state;
-        failed |= !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
+        failed |= !fpu_test_prepare(&state, X86_CORE_CPU_PROFILE_80386,
             X86_FPU_PROFILE_80287);
         if (state.machine != LIB_NULL) {
             failed |= !fpu_test_write(&state, 0u, fninit, sizeof(fninit));
@@ -232,7 +232,7 @@ static lib_i32 test_profile_gates(void)
     }
     {
         fpu_test_machine state;
-        failed |= !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_8086,
+        failed |= !fpu_test_prepare(&state, X86_CORE_CPU_PROFILE_8086,
             X86_FPU_PROFILE_8087);
         if (state.machine != LIB_NULL) {
             failed |= !fpu_test_write(&state, 0u, unsupported_m32,

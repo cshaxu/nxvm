@@ -19,12 +19,12 @@ vm_pc_at_firmware_services[13u] = {
 };
 
 lib_i32 vm_profile_default_pc_at_cpu_profile_is_valid(
-    core_machine_cpu_profile profile)
+    x86_core_cpu_profile profile)
 {
-    return profile == CORE_MACHINE_CPU_PROFILE_8086 ||
-        profile == CORE_MACHINE_CPU_PROFILE_80186 ||
-        profile == CORE_MACHINE_CPU_PROFILE_80286 ||
-        profile == CORE_MACHINE_CPU_PROFILE_80386;
+    return profile == X86_CORE_CPU_PROFILE_8086 ||
+        profile == X86_CORE_CPU_PROFILE_80186 ||
+        profile == X86_CORE_CPU_PROFILE_80286 ||
+        profile == X86_CORE_CPU_PROFILE_80386;
 }
 
 lib_i32 vm_profile_default_pc_at_fpu_profile_is_valid(
@@ -48,13 +48,13 @@ static lib_i32 vm_profile_default_pc_at_fdc_bounce_is_valid(
 
 lib_i32 vm_profile_default_pc_at_cpu_contract_select(
     const vm_profile_default_pc_at_descriptor *descriptor,
-    core_machine_cpu_profile requested_cpu,
+    x86_core_cpu_profile requested_cpu,
     x86_fpu_profile requested_fpu,
     vm_profile_default_pc_at_cpu_contract *out_contract)
 {
     if (descriptor == LIB_NULL || out_contract == LIB_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(descriptor)) return 0;
-    if (requested_cpu == CORE_MACHINE_CPU_PROFILE_DEFAULT) {
+    if (requested_cpu == X86_CORE_CPU_PROFILE_DEFAULT) {
         requested_cpu = descriptor->cpu_profile;
     }
     if (!vm_profile_default_pc_at_cpu_profile_is_valid(requested_cpu) ||
@@ -201,7 +201,7 @@ lib_status vm_profile_default_pc_at_topology_materialize(
 
 lib_status vm_profile_default_pc_at_values_create(
     const vm_profile_default_pc_at_descriptor *descriptor,
-    core_machine_cpu_profile cpu_profile, x86_fpu_profile fpu_profile,
+    x86_core_cpu_profile cpu_profile, x86_fpu_profile fpu_profile,
     vm_profile_contract_values *out_values)
 {
     vm_profile_default_pc_at_cpu_contract contract;

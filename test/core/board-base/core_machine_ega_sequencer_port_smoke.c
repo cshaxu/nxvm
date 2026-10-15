@@ -111,7 +111,7 @@ lib_i32 main(void)
         static const lib_u8 program[] = { 0xbau, 0xc5u, 0x03u, 0xecu,
             0xa2u, 0x00u, 0x05u, 0xf4u };
         core_machine_run_result result;
-        core_machine_cpu_state cpu;
+        x86_core_cpu_state cpu;
 
         value = 0xa5u;
         failed |= core_machine_memory_write(machine, 0x000ffff0u, program,

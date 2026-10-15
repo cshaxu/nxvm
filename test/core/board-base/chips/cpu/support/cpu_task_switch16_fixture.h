@@ -258,7 +258,7 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
 }
 
 static inline void cpu_task16_prepare(cpu_instruction_fixture *fixture,
-    core_machine_cpu_profile profile, cpu_task16_case test_case)
+    x86_core_cpu_profile profile, cpu_task16_case test_case)
 {
     cpu_instruction_prepare(fixture, profile);
     cpu_task16_configure(fixture, test_case);
@@ -270,7 +270,7 @@ static inline void cpu_task16_refresh(cpu_instruction_fixture *fixture,
     lib_u8 index;
 
     for (index = 0u; index < count; ++index)
-        core_machine_cpu_execution_refresh(&fixture->execution);
+        x86_core_cpu_execution_refresh(&fixture->execution);
 }
 
 #endif

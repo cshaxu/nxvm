@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_RETIREMENT_OBSERVATION_INTERFACE_H
 #define CORE_MACHINE_RETIREMENT_OBSERVATION_INTERFACE_H
 
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #include "lib/types/types_interface.h"
 
 #ifdef __cplusplus
@@ -40,8 +40,8 @@ typedef enum core_machine_retirement_io_direction {
 /* A semantic retirement identity; it deliberately contains no instruction
  * addresses, literal operands, firmware identity, or elapsed-time result. */
 typedef struct core_machine_retirement_eligibility_key {
-    core_machine_cpu_profile cpu_profile;
-    core_machine_retirement_timing_origin timing_origin;
+    x86_core_cpu_profile cpu_profile;
+    x86_core_cpu_retirement_timing_origin timing_origin;
     lib_u32 source_timing_form_id;
     lib_u8 opcode;
     lib_u8 escape_opcode;
@@ -49,7 +49,7 @@ typedef struct core_machine_retirement_eligibility_key {
     lib_u8 modrm_extension;
     core_machine_retirement_control_outcome control_outcome;
     lib_u8 next_lexeme_components;
-    core_machine_retirement_repeat_phase repeat_phase;
+    x86_core_cpu_retirement_repeat_phase repeat_phase;
     lib_u8 cpl;
     lib_u8 protected_mode;
     lib_u8 virtual_8086_mode;
@@ -70,10 +70,10 @@ typedef struct core_machine_retirement_observation {
     lib_u64 timeline_ticks;
     lib_u64 source_ticks;
     core_machine_retirement_eligibility_key eligibility_key;
-    core_machine_cpu_execution_point point;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_execution_point point;
+    x86_core_cpu_profile cpu_profile;
     core_machine_retirement_timing_disposition timing_disposition;
-    core_machine_retirement_timing_origin timing_origin;
+    x86_core_cpu_retirement_timing_origin timing_origin;
     lib_u32 source_timing_form_id;
     lib_u32 timing_key_id;
     lib_u32 formula_inputs;
@@ -81,7 +81,7 @@ typedef struct core_machine_retirement_observation {
     lib_u8 modrm_extension;
     core_machine_retirement_control_outcome control_outcome;
     lib_u8 next_lexeme_components;
-    core_machine_retirement_repeat_phase repeat_phase;
+    x86_core_cpu_retirement_repeat_phase repeat_phase;
     core_machine_retirement_io_direction io_direction;
     lib_u16 io_port;
     lib_u8 io_bytes;
@@ -94,8 +94,8 @@ typedef struct core_machine_retirement_observation {
     lib_u8 lock_prefix;
     lib_u8 repeat_prefix;
     /* Copies made only for an installed callback; no private CPU pointers. */
-    core_machine_debug_cpu_snapshot instruction_entry_cpu;
-    core_machine_debug_cpu_snapshot current_cpu;
+    x86_core_cpu_debug_cpu_snapshot instruction_entry_cpu;
+    x86_core_cpu_debug_cpu_snapshot current_cpu;
 } core_machine_retirement_observation;
 
 typedef void (*core_machine_retirement_observation_callback)(

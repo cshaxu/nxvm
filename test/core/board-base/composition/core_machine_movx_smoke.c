@@ -55,7 +55,7 @@ static lib_status movx_query(void *owner, lib_u32 physical,
         LIB_STATUS_UNSUPPORTED;
 }
 
-static lib_i32 movx_prepare(core_machine_cpu_profile profile,
+static lib_i32 movx_prepare(x86_core_cpu_profile profile,
     movx_provider *provider, movx_machine *state)
 {
     const core_machine_config config = {
@@ -70,12 +70,12 @@ static lib_i32 movx_prepare(core_machine_cpu_profile profile,
             .callbacks = {movx_read, movx_write, movx_query}}
     };
 
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
 
     if (state == LIB_NULL) return 0;
@@ -95,8 +95,8 @@ static lib_i32 movx_prepare(core_machine_cpu_profile profile,
 }
 
 static lib_i32 movx_run(movx_machine *state, const lib_u8 *code,
-    lib_size code_size, core_machine_debug_cpu_snapshot *out_cpu,
-    core_machine_cpu_diagnostic *out_diagnostic)
+    lib_size code_size, x86_core_cpu_debug_cpu_snapshot *out_cpu,
+    x86_core_cpu_diagnostic *out_diagnostic)
 {
     const core_machine_run_budget budget = {1u, 0u};
     core_machine_run_result result;
@@ -113,7 +113,7 @@ static lib_i32 movx_run(movx_machine *state, const lib_u8 *code,
         core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
             LIB_STATUS_OK) return 0;
     return core_machine_debug_capture_cpu_snapshot(state->machine,
-        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, out_cpu) == LIB_STATUS_OK;
+        X86_CORE_CPU_SNAPSHOT_CURRENT, out_cpu) == LIB_STATUS_OK;
 }
 
 static lib_i32 movx_prepare_protected_limit(movx_machine *state)
@@ -135,7 +135,7 @@ static lib_i32 movx_prepare_protected_limit(movx_machine *state)
     const core_machine_run_budget budget = {10u, 0u};
     core_machine_run_result result;
 
-    return movx_prepare(CORE_MACHINE_CPU_PROFILE_80386, LIB_NULL, state) &&
+    return movx_prepare(X86_CORE_CPU_PROFILE_80386, LIB_NULL, state) &&
         core_machine_memory_write(state->machine, 0x0100u, gdt_pointer,
             sizeof(gdt_pointer)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x0300u, gdt, sizeof(gdt)) ==
@@ -149,16 +149,16 @@ static lib_i32 movx_test_read_boundaries(void)
 {
     static const lib_u8 code[] = {0x0fu,0xb6u,0x0eu,0x00u,0x50u};
     const lib_u32 flags = 0x41u; /* CF | ZF */
-    const core_machine_debug_register_patch registers = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    const x86_core_cpu_debug_register_patch registers = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_ECX] = 0xaabbccddu,
-            [CORE_MACHINE_DEBUG_EFLAGS] = 0x41u
+            [X86_CORE_CPU_DEBUG_ECX] = 0xaabbccddu,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = 0x41u
         }
     };
-    core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
+    x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_80186, X86_CORE_CPU_PROFILE_80286
     };
     lib_u8 opcode;
     lib_u8 profile_index;
@@ -173,8 +173,8 @@ static lib_i32 movx_test_read_boundaries(void)
                     opcode == 0xbbu || opcode == 0xbcu || opcode == 0xbdu) continue;
                 movx_provider provider = {0u, {0x80u,0x01u}, LIB_STATUS_OK};
                 movx_machine state;
-                core_machine_debug_cpu_snapshot after;
-                core_machine_cpu_diagnostic diagnostic;
+                x86_core_cpu_debug_cpu_snapshot after;
+                x86_core_cpu_diagnostic diagnostic;
                 lib_i32 failed = !movx_prepare(profiles[profile_index], &provider,
                     &state);
                 lib_u8 form_code[sizeof(code)];
@@ -202,7 +202,7 @@ static lib_i32 movx_test_read_boundaries(void)
         static const lib_u8 limit_code[] = {0x0fu,0xbfu,0x0eu,0x10u,0x00u};
         const core_machine_run_budget budget = {1u, 0u};
         movx_machine state;
-        core_machine_debug_cpu_snapshot after;
+        x86_core_cpu_debug_cpu_snapshot after;
         core_machine_run_result result;
         lib_i32 failed = !movx_prepare_protected_limit(&state);
 
@@ -214,7 +214,7 @@ static lib_i32 movx_test_read_boundaries(void)
                 !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
                     budget, &result), &result) ||
                 core_machine_debug_capture_cpu_snapshot(state.machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 after.ecx != 0xaabbccddu || after.eflags != flags ||
                 after.eip != 0u;
         }

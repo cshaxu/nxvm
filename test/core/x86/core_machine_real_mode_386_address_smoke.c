@@ -16,7 +16,7 @@ static lib_i32 real_mode_386_prepare(core_machine **out_machine)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
@@ -56,9 +56,9 @@ lib_i32 main(void)
     };
     static const lib_u8 source[] = {0x41u, 0x42u, 0x43u, 0x44u};
     lib_u8 destination[sizeof(source)] = {0};
-    core_machine_cpu_state state;
-    core_machine_debug_cpu_snapshot snapshot;
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_state state;
+    x86_core_cpu_debug_cpu_snapshot snapshot;
+    x86_core_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     const core_machine_run_budget budget = {256u, 0u};
     core_machine *machine = LIB_NULL;
@@ -75,7 +75,7 @@ lib_i32 main(void)
             sizeof(destination)) != LIB_STATUS_OK ||
             core_machine_debug_read_cpu(machine, &state) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid ||
             lib_memory_compare(destination, source, sizeof(source)) != 0 ||

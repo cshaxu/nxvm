@@ -43,7 +43,7 @@ static inline void cpu_protected_set_data(t_cpu_data_sreg *segment,
 }
 
 static inline void cpu_protected_prepare_far(cpu_instruction_fixture *fixture,
-    core_machine_cpu_profile profile)
+    x86_core_cpu_profile profile)
 {
     static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
@@ -74,7 +74,7 @@ static inline void cpu_protected_prepare_far(cpu_instruction_fixture *fixture,
 }
 
 static inline void cpu_protected_prepare_data(cpu_instruction_fixture *fixture,
-    core_machine_cpu_profile profile)
+    x86_core_cpu_profile profile)
 {
     static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
@@ -106,7 +106,7 @@ static inline lib_bool cpu_protected_step(cpu_instruction_fixture *fixture,
 {
     fixture->cpu.data.eip = 0u;
     lib_memory_copy(fixture->memory + fixture->cpu.data.cs.base, code, bytes);
-    core_machine_cpu_execution_refresh(&fixture->execution);
+    x86_core_cpu_execution_refresh(&fixture->execution);
     *after = fixture->cpu;
     return !fixture->execution.stop_requested && !fixture->fault.valid;
 }

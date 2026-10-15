@@ -20,7 +20,7 @@ typedef struct real_ud_machine {
 typedef struct real_ud_case {
     const lib_u8 *program;
     lib_size bytes;
-    core_machine_cpu_profile profile;
+    x86_core_cpu_profile profile;
 } real_ud_case;
 
 static lib_i32 real_ud_prepare(real_ud_machine *state,
@@ -29,7 +29,7 @@ static lib_i32 real_ud_prepare(real_ud_machine *state,
     static const lib_u8 handler[] = { 0x40u, 0xf4u };
     core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const lib_u16 handler_offset = REAL_UD_HANDLER_OFFSET;
@@ -37,24 +37,24 @@ static lib_i32 real_ud_prepare(real_ud_machine *state,
     static const lib_u8 load_idtr[] = { 0x0fu, 0x01u, 0x1eu, 0x00u, 0x04u };
     const lib_u8 idtr[] = { (lib_u8)idtr_limit, (lib_u8)(idtr_limit >> 8u),
         0u, 0u, 0u, 0u };
-    const core_machine_debug_register_patch setup = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = { [CORE_MACHINE_DEBUG_EIP] = 0x0300u }
+    const x86_core_cpu_debug_register_patch setup = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = { [X86_CORE_CPU_DEBUG_EIP] = 0x0300u }
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
-        .values = { [CORE_MACHINE_DEBUG_EIP] = REAL_UD_CODE_OFFSET,
-            [CORE_MACHINE_DEBUG_ESP] = REAL_UD_STACK_OFFSET,
-            [CORE_MACHINE_DEBUG_EAX] = 0x12340000u,
-            [CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_CF |
-                CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF }
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
+        .values = { [X86_CORE_CPU_DEBUG_EIP] = REAL_UD_CODE_OFFSET,
+            [X86_CORE_CPU_DEBUG_ESP] = REAL_UD_STACK_OFFSET,
+            [X86_CORE_CPU_DEBUG_EAX] = 0x12340000u,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_CF |
+                X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_TF }
     };
     core_machine_run_result result;
 
@@ -95,20 +95,20 @@ static lib_i32 real_ud_test_delivery_case(const real_ud_case *test_case)
 {
     real_ud_machine state;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic;
     lib_u16 frame[3] = { 0u, 0u, 0u };
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_i32 failed = !real_ud_prepare(&state, test_case,
         REAL_UD_VECTOR * 4u + 3u);
 
     if (!failed) {
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
             core_machine_run(state.machine,
                 (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             diagnostic.first_fault.valid ||
@@ -119,7 +119,7 @@ static lib_i32 real_ud_test_delivery_case(const real_ud_case *test_case)
             ((before.esp & 0xffff0000u) |
                 (lib_u16)(before.esp - 6u)) ||
             after.eflags != (before.eflags &
-                ~(CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF)) ||
+                ~(X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_TF)) ||
             core_machine_debug_read_linear(state.machine,
                 after.ss.base + (lib_u16)after.esp,
                 frame, sizeof(frame)) != LIB_STATUS_OK || frame[0] !=
@@ -131,7 +131,7 @@ static lib_i32 real_ud_test_delivery_case(const real_ud_case *test_case)
         failed |= core_machine_run(state.machine,
                 (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             after.eip != REAL_UD_HANDLER_OFFSET + 2u ||
@@ -149,11 +149,11 @@ static lib_i32 real_ud_test_delivery(void)
     static const lib_u8 profile[] = { 0x66u, 0x90u };
     static const lib_u8 lock[] = { 0xf0u, 0x90u };
     static const real_ud_case cases[] = {
-        { primary, sizeof(primary), CORE_MACHINE_CPU_PROFILE_80386 },
-        { escape, sizeof(escape), CORE_MACHINE_CPU_PROFILE_80386 },
-        { operand, sizeof(operand), CORE_MACHINE_CPU_PROFILE_80386 },
-        { profile, sizeof(profile), CORE_MACHINE_CPU_PROFILE_80286 },
-        { lock, sizeof(lock), CORE_MACHINE_CPU_PROFILE_80386 }
+        { primary, sizeof(primary), X86_CORE_CPU_PROFILE_80386 },
+        { escape, sizeof(escape), X86_CORE_CPU_PROFILE_80386 },
+        { operand, sizeof(operand), X86_CORE_CPU_PROFILE_80386 },
+        { profile, sizeof(profile), X86_CORE_CPU_PROFILE_80286 },
+        { lock, sizeof(lock), X86_CORE_CPU_PROFILE_80386 }
     };
     lib_size index;
 
@@ -166,25 +166,25 @@ static lib_i32 real_ud_test_delivery_failure(void)
 {
     static const lib_u8 program[] = { 0xf1u };
     const real_ud_case test_case = {
-        program, sizeof(program), CORE_MACHINE_CPU_PROFILE_80386
+        program, sizeof(program), X86_CORE_CPU_PROFILE_80386
     };
     real_ud_machine state;
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_i32 failed = !real_ud_prepare(&state, &test_case,
         REAL_UD_VECTOR * 4u - 1u);
 
     if (!failed) {
         failed |= core_machine_debug_write_register(state.machine,
-            CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF |
-            CORE_MACHINE_DEBUG_EFLAGS_IF) != LIB_STATUS_OK ||
+            X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF |
+            X86_CORE_CPU_DEBUG_EFLAGS_IF) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
             !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
                 (core_machine_run_budget){ 1u, 0u }, &result), &result) ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             after.eip !=
             before.eip || after.esp != before.esp ||
             after.eax != before.eax || after.eflags !=

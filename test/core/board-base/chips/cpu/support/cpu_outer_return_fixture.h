@@ -91,7 +91,7 @@ static inline void cpu_outer_return_configure(cpu_instruction_fixture *fixture)
 }
 
 static inline void cpu_outer_return_prepare(cpu_instruction_fixture *fixture,
-    core_machine_cpu_profile profile)
+    x86_core_cpu_profile profile)
 {
     cpu_instruction_prepare(fixture, profile);
     cpu_outer_return_configure(fixture);
@@ -102,7 +102,7 @@ static inline lib_bool cpu_outer_return_step(cpu_instruction_fixture *fixture,
 {
     fixture->cpu.data.eip = 0u;
     lib_memory_copy(fixture->memory + fixture->cpu.data.cs.base, code, bytes);
-    core_machine_cpu_execution_refresh(&fixture->execution);
+    x86_core_cpu_execution_refresh(&fixture->execution);
     *after = fixture->cpu;
     return !fixture->execution.stop_requested && !fixture->fault.valid;
 }

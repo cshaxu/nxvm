@@ -11,18 +11,18 @@ typedef struct xchg_machine {
     core_machine_board_state *board;
 } xchg_machine;
 
-static lib_i32 xchg_prepare(core_machine_cpu_profile profile, xchg_machine *state)
+static lib_i32 xchg_prepare(x86_core_cpu_profile profile, xchg_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile, .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
     lib_memory_set(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine, &state->board) == LIB_STATUS_OK &&
@@ -33,14 +33,14 @@ static lib_i32 xchg_prepare(core_machine_cpu_profile profile, xchg_machine *stat
 
 static lib_status xchg_seed(xchg_machine *state, lib_u32 flags)
 {
-    const core_machine_debug_register_patch registers = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    const x86_core_cpu_debug_register_patch registers = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_EAX] = 0xaabb3344u,
-            [CORE_MACHINE_DEBUG_ECX] = 0x55667788u,
-            [CORE_MACHINE_DEBUG_EFLAGS] = flags
+            [X86_CORE_CPU_DEBUG_EAX] = 0xaabb3344u,
+            [X86_CORE_CPU_DEBUG_ECX] = 0x55667788u,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = flags
         }
     };
     return core_machine_debug_patch_registers(state->machine, &registers);
@@ -63,7 +63,7 @@ static lib_i32 xchg_prepare_protected(xchg_machine *state, lib_u16 limit, lib_bo
     gdt[16] = (lib_u8)limit;
     gdt[17] = (lib_u8)(limit >> 8);
     gdt[21] = writable ? 0x92u : 0x90u;
-    return xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
+    return xchg_prepare(X86_CORE_CPU_PROFILE_80386, state) &&
         core_machine_memory_write(state->machine,0x0100u,pointer,sizeof(pointer))==LIB_STATUS_OK &&
         core_machine_memory_write(state->machine,0x0300u,gdt,sizeof(gdt))==LIB_STATUS_OK &&
         core_machine_memory_write(state->machine,0u,bootstrap,sizeof(bootstrap))==LIB_STATUS_OK &&
@@ -76,8 +76,8 @@ static lib_i32 xchg_test_write_fault_atomicity(void)
     static const lib_u8 code[] = { 0x87u,0x06u,0x00u,0x10u };
     xchg_machine state;
     core_machine_run_result result;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_u16 memory_before = 0x7788u;
     lib_u16 memory_after = 0u;
     lib_i32 failed = !xchg_prepare_protected(&state, 0xffffu, LIB_FALSE);
@@ -89,11 +89,11 @@ static lib_i32 xchg_test_write_fault_atomicity(void)
             sizeof(memory_before)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine,0x2000u,code,sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
             state.machine, (core_machine_run_budget){1u,0u}, &result), &result);
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         failed |= core_machine_memory_inspect(state.machine,0x1000u,
             (void *)&memory_after,sizeof(memory_after)) != LIB_STATUS_OK;
         if (!failed) failed |= after.eax != before.eax || after.eflags != before.eflags ||
@@ -112,8 +112,8 @@ static lib_i32 xchg_test_read_fault_atomicity(void)
     {
         xchg_machine state;
         core_machine_run_result result;
-        core_machine_debug_cpu_snapshot before;
-        core_machine_debug_cpu_snapshot after;
+        x86_core_cpu_debug_cpu_snapshot before;
+        x86_core_cpu_debug_cpu_snapshot after;
         lib_u32 memory_before = 0x11223344u;
         lib_u32 memory_after = 0u;
         lib_i32 failed = !xchg_prepare_protected(&state, 0x1001u, LIB_TRUE);
@@ -123,11 +123,11 @@ static lib_i32 xchg_test_read_fault_atomicity(void)
             failed |= core_machine_memory_write(state.machine,0x1002u,&memory_before,4u)!=LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine,0x2000u,codes[form],form?5u:4u)!=LIB_STATUS_OK;
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
             failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
                 state.machine, (core_machine_run_budget){1u,0u}, &result), &result);
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             if (!failed) failed |= core_machine_memory_inspect(state.machine,0x1002u,
                 (void *)&memory_after,4u)!=LIB_STATUS_OK || after.eax!=before.eax ||
                 after.eip!=before.eip || after.eflags!=before.eflags || memory_after!=memory_before;
@@ -146,12 +146,12 @@ static lib_i32 xchg_test_irq_no_shadow(void)
     xchg_machine state;
     core_machine_pic_irq_source *source = LIB_NULL;
     core_machine_run_result result;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_u16 offset = 0x0100u;
     lib_u16 segment = 0u;
     lib_u16 frame = 0u;
     lib_u16 memory = 0x7788u;
-    lib_i32 failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
+    lib_i32 failed = !xchg_prepare(X86_CORE_CPU_PROFILE_80386,&state);
     if (!failed)
     {
         failed |= core_machine_memory_write(state.machine,0x1000u,&memory,2u)!=LIB_STATUS_OK ||
@@ -168,7 +168,7 @@ static lib_i32 xchg_test_irq_no_shadow(void)
         failed |= core_machine_run(state.machine,(core_machine_run_budget){2u,0u},&result)!=LIB_STATUS_OK ||
             result.reason!=CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed) failed |= core_machine_memory_inspect(state.machine, after.ss.base + (lib_u16)after.esp, &frame, 2u)!=LIB_STATUS_OK || after.eip!=0x101u || frame!=4u ||
             !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu),VPIC_ISR_IRQ(0u));
     }
@@ -183,7 +183,7 @@ static lib_i32 xchg_test_accumulator_irq(void)
     xchg_machine state;
     core_machine_pic_irq_source *source = LIB_NULL;
     core_machine_run_result result;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_u16 offset = 0x0100u;
     lib_u16 segment = 0u;
     lib_u16 frame = 0u;
@@ -193,7 +193,7 @@ static lib_i32 xchg_test_accumulator_irq(void)
     lib_memory_set(&source, 0, sizeof(source));
     lib_memory_set(&result, 0, sizeof(result));
     lib_memory_set(&after, 0, sizeof(after));
-    failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    failed = !xchg_prepare(X86_CORE_CPU_PROFILE_80386, &state);
 
     if (!failed)
     {
@@ -216,7 +216,7 @@ static lib_i32 xchg_test_accumulator_irq(void)
             (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed) failed |= core_machine_memory_inspect(state.machine, after.ss.base + (lib_u16)after.esp, &frame, 2u) != LIB_STATUS_OK ||
             after.eip != 0x101u ||
             frame != 1u ||

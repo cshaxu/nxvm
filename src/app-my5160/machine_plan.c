@@ -21,7 +21,7 @@ static lib_status vm_profile_machine_plan_xt(vm_profile_xt_machine_plan *plan,
     if (config->bios_count == 0u || config->bios_count > 2u ||
         (assets->cmos_seed.data != LIB_NULL || assets->cmos_seed.bytes != 0u) || config->memory_bytes != 0u || config->create_fdd ||
         config->create_hdd_cylinders != 0u ||
-        config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
+        config->cpu_profile != X86_CORE_CPU_PROFILE_DEFAULT ||
         config->fpu_profile != X86_FPU_PROFILE_NONE ||
         vm_machine_floppy_select(config, VM_PROFILE_FLOPPY_525_360K,
             1u << VM_PROFILE_FLOPPY_525_360K,

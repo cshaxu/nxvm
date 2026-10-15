@@ -11,18 +11,18 @@ typedef struct pusha_popa_machine {
     core_machine_board_state *board;
 } pusha_popa_machine;
 
-static lib_i32 pusha_popa_prepare(core_machine_cpu_profile profile, pusha_popa_machine *state)
+static lib_i32 pusha_popa_prepare(x86_core_cpu_profile profile, pusha_popa_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile, .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
     lib_memory_set(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine, &state->board) == LIB_STATUS_OK &&
@@ -33,22 +33,22 @@ static lib_i32 pusha_popa_prepare(core_machine_cpu_profile profile, pusha_popa_m
 
 static lib_status pusha_popa_seed(pusha_popa_machine *state, lib_u32 esp, lib_u32 eax)
 {
-    const core_machine_debug_register_patch registers = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    const x86_core_cpu_debug_register_patch registers = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_EAX] = eax, [CORE_MACHINE_DEBUG_ECX] = 0xb1b25566u,
-            [CORE_MACHINE_DEBUG_EDX] = 0xc1c27788u, [CORE_MACHINE_DEBUG_EBX] = 0xd1d299aau,
-            [CORE_MACHINE_DEBUG_ESP] = esp, [CORE_MACHINE_DEBUG_EBP] = 0xe1e2bbcdu,
-            [CORE_MACHINE_DEBUG_ESI] = 0xf1f2ddefu, [CORE_MACHINE_DEBUG_EDI] = 0x1122a5a5u,
-            [CORE_MACHINE_DEBUG_EFLAGS] = 0x245u
+            [X86_CORE_CPU_DEBUG_EAX] = eax, [X86_CORE_CPU_DEBUG_ECX] = 0xb1b25566u,
+            [X86_CORE_CPU_DEBUG_EDX] = 0xc1c27788u, [X86_CORE_CPU_DEBUG_EBX] = 0xd1d299aau,
+            [X86_CORE_CPU_DEBUG_ESP] = esp, [X86_CORE_CPU_DEBUG_EBP] = 0xe1e2bbcdu,
+            [X86_CORE_CPU_DEBUG_ESI] = 0xf1f2ddefu, [X86_CORE_CPU_DEBUG_EDI] = 0x1122a5a5u,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = 0x245u
         }
     };
     return core_machine_debug_patch_registers(state->machine, &registers);
@@ -80,13 +80,13 @@ static lib_i32 pusha_popa_boot_protected(pusha_popa_machine *state, lib_u8 limit
         &result) == LIB_STATUS_OK && result.reason ==
         CORE_MACHINE_STOP_BUDGET && result.executed == 10u;
 
-    const core_machine_debug_register reg = limit_segment == 0u ?
-        CORE_MACHINE_DEBUG_SS : CORE_MACHINE_DEBUG_DS;
-    const core_machine_debug_register_patch segment = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(reg),
+    const x86_core_cpu_debug_register reg = limit_segment == 0u ?
+        X86_CORE_CPU_DEBUG_SS : X86_CORE_CPU_DEBUG_DS;
+    const x86_core_cpu_debug_register_patch segment = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(reg),
         .values = {
-            [CORE_MACHINE_DEBUG_SS] = 0x18u,
-            [CORE_MACHINE_DEBUG_DS] = 0x10u
+            [X86_CORE_CPU_DEBUG_SS] = 0x18u,
+            [X86_CORE_CPU_DEBUG_DS] = 0x10u
         }
     };
     lib_u8 descriptor = limit_segment == 0u ? 24u : 16u;
@@ -102,7 +102,7 @@ static lib_i32 pusha_popa_boot_protected(pusha_popa_machine *state, lib_u8 limit
         core_machine_debug_patch_registers(state->machine, &segment) == LIB_STATUS_OK;
 }
 
-static lib_i32 pusha_popa_sregs_same(const core_machine_debug_cpu_snapshot *before, const core_machine_debug_cpu_snapshot *after)
+static lib_i32 pusha_popa_sregs_same(const x86_core_cpu_debug_cpu_snapshot *before, const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return lib_memory_compare(&before->es, &after->es,
         sizeof(before->es)) == 0 && lib_memory_compare(&before->cs,
@@ -123,7 +123,7 @@ static lib_i32 pusha_popa_read_image(pusha_popa_machine *state, lib_u32 address,
 }
 
 static lib_i32 pusha_popa_expect_push_image(pusha_popa_machine *state,
-    const core_machine_debug_cpu_snapshot *before, lib_u32 stack, lib_u8 width)
+    const x86_core_cpu_debug_cpu_snapshot *before, lib_u32 stack, lib_u8 width)
 {
     const lib_u32 expected[] = {
         before->edi, before->esi, before->ebp,
@@ -147,12 +147,12 @@ static lib_i32 pusha_popa_test_protected_pusha_limit(void)
 {
     static const lib_u8 code[] = {0x60u};
     pusha_popa_machine state;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     core_machine_run_result result;
     lib_u16 expected[] = {0xa001u, 0xa002u, 0xa003u, 0xa004u, 0xa005u};
     lib_u8 slot;
-    lib_i32 failed = !pusha_popa_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !pusha_popa_prepare(X86_CORE_CPU_PROFILE_80386, &state);
 
     if (!failed)
         failed |= !pusha_popa_boot_protected(&state, 0u, 0x18u, LIB_TRUE);
@@ -163,11 +163,11 @@ static lib_i32 pusha_popa_test_protected_pusha_limit(void)
             sizeof(expected)) != LIB_STATUS_OK || core_machine_memory_write(
             state.machine, 0x2000u, code, sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
             state.machine, (core_machine_run_budget){1u, 0u}, &result), &result);
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
             failed |= after.eip != 0u || after.eax != before.eax ||
             after.ecx != before.ecx || after.edx != before.edx ||
@@ -193,11 +193,11 @@ static lib_i32 pusha_popa_test_protected_popa_limit(void)
     static const lib_u16 image[] = {0x1111u, 0x2222u, 0x3333u, 0x4444u,
         0x5555u, 0x6666u, 0x7777u, 0x8888u};
     pusha_popa_machine state;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     core_machine_run_result result;
     lib_u8 slot;
-    lib_i32 failed = !pusha_popa_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !pusha_popa_prepare(X86_CORE_CPU_PROFILE_80386, &state);
 
     if (!failed)
         failed |= !pusha_popa_boot_protected(&state, 0u, 0x1fu, LIB_FALSE);
@@ -208,11 +208,11 @@ static lib_i32 pusha_popa_test_protected_popa_limit(void)
             sizeof(image)) != LIB_STATUS_OK || core_machine_memory_write(
             state.machine, 0x2000u, code, sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         failed |= !test_core_machine_fixture_shutdown_wait(core_machine_run(
             state.machine, (core_machine_run_budget){1u, 0u}, &result), &result);
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
             failed |= after.eip != 0u || after.eax != before.eax ||
             after.ecx != before.ecx || after.edx != before.edx ||
@@ -244,14 +244,14 @@ static lib_i32 pusha_popa_test_irq_no_shadow(void)
         pusha_popa_machine state;
         core_machine_pic_irq_source *source = LIB_NULL;
         core_machine_run_result result;
-        core_machine_debug_cpu_snapshot before;
-        core_machine_debug_cpu_snapshot after;
+        x86_core_cpu_debug_cpu_snapshot before;
+        x86_core_cpu_debug_cpu_snapshot after;
         lib_u16 offset = 0x100u;
         lib_u16 segment = 0u;
         lib_u16 frame_ip = 0u;
         lib_u16 image[] = {0x1111u, 0x2222u, 0x3333u, 0x4444u,
             0x5555u, 0x6666u, 0x7777u, 0x8888u};
-        lib_i32 failed = !pusha_popa_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !pusha_popa_prepare(X86_CORE_CPU_PROFILE_80386,
             &state);
 
         if (!failed)
@@ -277,12 +277,12 @@ static lib_i32 pusha_popa_test_irq_no_shadow(void)
             core_machine_pic_irq_source_assert(source);
             core_machine_pic_irq_source_deassert(source);
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
             failed |= core_machine_run(state.machine,
                 (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             if (!failed)
                 failed |= core_machine_memory_inspect(state.machine,
                 after.ss.base + (lib_u16)after.esp,

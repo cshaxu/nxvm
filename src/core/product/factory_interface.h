@@ -12,7 +12,7 @@
  * success; failure releases any partial Profile and leaves no candidate. */
 typedef struct vm_app_machine_binding {
     const char *name;
-    core_machine_cpu_profile cpu;
+    x86_core_cpu_profile cpu;
     x86_fpu_profile fpu;
     vm_machine_floppy_format floppy_format;
     lib_size bios_count;

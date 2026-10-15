@@ -92,7 +92,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     const core_machine_run_budget budget = {1u, 0u};
     integration_ini_session ini_session = {0};
     core_machine_run_result result = {0};
-    core_machine_cpu_state cpu = {0};
+    x86_core_cpu_state cpu = {0};
     vm_machine *session = LIB_NULL;
     lib_u8 host_mbr[512] = {0};
     lib_u8 host_vbr[512] = {0};

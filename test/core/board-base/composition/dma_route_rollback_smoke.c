@@ -15,7 +15,7 @@ lib_i32 main(void)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const core_machine_port_provider provider = {LIB_NULL, conflicting_write};
     core_machine_port_test_allocation allocation = {3u, 0u};

@@ -9,7 +9,7 @@ static vm_profile_contract_values vm_profile_contract_values_create(void)
 
     values.core.id = 7u;
     values.core.configuration.memory_bytes = 1024u;
-    values.core.configuration.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
+    values.core.configuration.cpu_profile = X86_CORE_CPU_PROFILE_8086;
     values.enabled_devices = 1u;
     values.port_leaves[0] = (vm_profile_contract_port_leaf) {
         1u, 0x20u, LIB_TRUE, LIB_TRUE};

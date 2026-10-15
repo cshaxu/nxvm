@@ -36,7 +36,7 @@ set(paths src/core/machine/machine.c src/core/x86/machine.c
     test/core/board-base/composition/core_machine_operand_address_smoke.c
     test/core/board-base/core_machine_prefix_attributes_smoke.c)
 foreach(name IN LISTS cpu_files)
-    list(APPEND paths "src/core/chips/cpu/${name}")
+    list(APPEND paths "src/x86-core/cpu/${name}")
 endforeach()
 foreach(path IN LISTS paths)
     get_filename_component(directory "${WORK}/${path}" DIRECTORY)
@@ -73,7 +73,7 @@ math(EXPR cpu_negative_last "${cpu_negative_file_count} - 1")
 foreach(index RANGE 0 ${cpu_negative_last})
     list(GET cpu_negative_files ${index} name)
     list(GET cpu_negative_tokens ${index} token)
-    set(path "${WORK}/src/core/chips/cpu/${name}")
+    set(path "${WORK}/src/x86-core/cpu/${name}")
     file(READ "${path}" original)
     if(token MATCHES "^#include")
         set(expected "CPU imports outside its neutral boundary")
@@ -98,8 +98,8 @@ file(READ "${path}" original)
 foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0\;"
         "machine->executor_cpu_instructions.data.except = 0\;"
         "machine->executor_cpu_execution.cpu = 0\;"
-        "#include \"core/chips/cpu/cpu.h\""
-        "#include \"core/chips/cpu/cpu_instructions.h\"")
+        "#include \"x86-core/cpu/cpu.h\""
+        "#include \"x86-core/cpu/cpu_instructions.h\"")
     if(injection MATCHES "^#include")
         set(expected "Board imports private CPU layout")
     else()
@@ -121,8 +121,8 @@ set(board_test_negative_files core_machine_lea_smoke.c
     core_machine_bit_test_smoke.c)
 set(board_test_negative_tokens "machine->executor_cpu.data.eax = 0\;"
     "#include \"support/machine_cpu_fixture.h\""
-    "#include \"core/chips/cpu/cpu.h\""
-    "#include \"core/chips/cpu/cpu_instructions.h\"")
+    "#include \"x86-core/cpu/cpu.h\""
+    "#include \"x86-core/cpu/cpu_instructions.h\"")
 set(board_test_negative_index 0)
 foreach(name IN LISTS board_test_negative_files)
     list(GET board_test_negative_tokens ${board_test_negative_index} injection)

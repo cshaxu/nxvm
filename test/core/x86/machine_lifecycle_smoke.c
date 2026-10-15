@@ -29,7 +29,7 @@ lib_i32 main(void)
     core_machine *machine = LIB_NULL;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result run_result;
-    core_machine_cpu_state cpu;
+    x86_core_cpu_state cpu;
     core_machine_observation observation;
     lib_u8 halt = 0xf4u;
     lib_i32 result = 0;

@@ -44,7 +44,7 @@ static lib_i32 scheduler_kbc_deadline_routing(void)
     static const lib_u8 native_bytes[] = {0x1cu, 0x32u};
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80286,
         .time_axis = {CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u}
     };
     core_machine *machine = LIB_NULL;

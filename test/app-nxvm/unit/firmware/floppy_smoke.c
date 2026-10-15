@@ -123,7 +123,7 @@ static lib_bool run_to(core_machine *machine, lib_u32 pc, lib_u32 limit)
         }
         if (result.linear_pc == pc) return LIB_TRUE;
     }
-    core_machine_cpu_state state;
+    x86_core_cpu_state state;
     if (core_machine_get_cpu_state(machine, &state) == LIB_STATUS_OK)
         lib_c_fprintf(lib_c_stderr, "Guest budget: %04x:%x, wanted=%x\n", state.cs, state.eip, pc);
     return LIB_FALSE;

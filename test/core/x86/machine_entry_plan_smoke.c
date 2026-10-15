@@ -7,7 +7,7 @@ static lib_i32 prepare_machine(core_machine **out_machine)
     static const lib_u8 rom[] = { 0xf4u };
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
@@ -50,7 +50,7 @@ lib_i32 main(void)
 {
     static const lib_u8 halt[] = { 0xf4u };
     core_machine *machine = LIB_NULL;
-    core_machine_cpu_state state;
+    x86_core_cpu_state state;
     core_machine_run_result result;
     const core_machine_run_budget budget = { 8u, 0u };
     core_machine_entry_plan_preload invalid_preloads[2] = {

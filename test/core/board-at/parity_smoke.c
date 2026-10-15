@@ -21,7 +21,7 @@ static lib_i32 check_parity(lib_bool memory_present,
 {
     const core_machine_executor_config executor = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const core_machine_planar_parity_config config = {
         .port = 0x61u, .memory_bytes = memory_present ? 0x10000u : 0u,

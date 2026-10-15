@@ -30,7 +30,7 @@ static lib_i32 corpus_prepare_machine(core_machine **out_machine,
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
@@ -54,12 +54,12 @@ static lib_i32 corpus_prepare_machine(core_machine **out_machine,
 }
 
 static lib_i32 corpus_run_to_ud(core_machine *machine, const lib_u8 *program,
-    lib_size program_bytes, core_machine_cpu_fault_snapshot *out_fault)
+    lib_size program_bytes, x86_core_cpu_fault_snapshot *out_fault)
 {
     static const lib_u8 reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
     const core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic;
     if (machine == LIB_NULL || program == LIB_NULL || out_fault == LIB_NULL ||
         core_machine_memory_write(machine, CORPUS_RESET_LINEAR, reset_jump,
         sizeof(reset_jump)) != LIB_STATUS_OK || core_machine_memory_write(
@@ -95,7 +95,7 @@ static lib_i32 corpus_test_segment_override(void)
 {
     static const lib_u8 program[] = { 0x2eu, 0xa0u, 0x00u, 0x01u, 0x66u };
     static const lib_u8 source = 0xa5u;
-    core_machine_cpu_fault_snapshot fault;
+    x86_core_cpu_fault_snapshot fault;
     core_machine *machine = LIB_NULL;
     lib_i32 failed = corpus_prepare_machine(&machine, LIB_NULL, LIB_NULL);
 
@@ -176,7 +176,7 @@ static lib_i32 corpus_test_int_iret(void)
     };
     static const lib_u8 ivt_entry[] = { 0x00u, 0x02u, 0x00u, 0x00u };
     static const lib_u8 handler[] = { 0xb8u, 0x34u, 0x12u, 0xcfu };
-    core_machine_cpu_fault_snapshot fault;
+    x86_core_cpu_fault_snapshot fault;
     core_machine *machine = LIB_NULL;
     lib_i32 failed = corpus_prepare_machine(&machine, LIB_NULL, LIB_NULL);
 
@@ -188,7 +188,7 @@ static lib_i32 corpus_test_int_iret(void)
             corpus_run_to_ud(machine, program, sizeof(program), &fault) ||
             (fault.eax & 0xffffu) != 0x1234u ||
             (fault.esp & 0xffffu) != 0x1000u ||
-            !CORE_MACHINE_BIT_IS_SET(fault.eflags, CORE_MACHINE_DEBUG_EFLAGS_CF);
+            !CORE_MACHINE_BIT_IS_SET(fault.eflags, X86_CORE_CPU_DEBUG_EFLAGS_CF);
     }
     core_machine_destroy(machine);
     return failed;
@@ -244,7 +244,7 @@ static lib_i32 corpus_test_port_transactions(void)
         corpus_port_write
     };
     corpus_port_state port_state = { { { 0, 0u, 0u } }, 0u };
-    core_machine_cpu_fault_snapshot fault;
+    x86_core_cpu_fault_snapshot fault;
     core_machine *machine = LIB_NULL;
     lib_i32 failed = corpus_prepare_machine(&machine, &provider, &port_state);
 

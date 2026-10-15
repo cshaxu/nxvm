@@ -60,7 +60,7 @@ lib_status vm_machine_get_information(const vm_machine *machine,
     vm_machine_information *information)
 {
     (void)machine;
-    *information = (vm_machine_information){.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+    *information = (vm_machine_information){.cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .memory_bytes = 1024u, .floppy_image_bytes = 360u, .floppy_media_inserted = LIB_TRUE,
         .fixed_disk_present = LIB_TRUE, .fixed_disk_cylinders = 40u,
         .fixed_disk_image_bytes = 4096u, .fixed_disk_media_connected = LIB_TRUE,
@@ -68,7 +68,7 @@ lib_status vm_machine_get_information(const vm_machine *machine,
     return LIB_STATUS_OK;
 }
 
-const char *core_machine_cpu_profile_name(core_machine_cpu_profile profile)
+const char *x86_core_cpu_profile_name(x86_core_cpu_profile profile)
 { (void)profile; return "80386"; }
 
 lib_status vm_machine_get_speed(const vm_machine *machine, vm_machine_speed *out_speed)
@@ -78,7 +78,7 @@ lib_status vm_machine_set_speed(vm_machine *machine, vm_machine_speed value)
 
 lib_i32 main(void)
 {
-    const vm_app_machine_binding binding = {.name = "fixture", .cpu = CORE_MACHINE_CPU_PROFILE_80386,
+    const vm_app_machine_binding binding = {.name = "fixture", .cpu = X86_CORE_CPU_PROFILE_80386,
         .floppy_format = VM_MACHINE_FLOPPY_FORMAT_1200K, .bios_count = 2u, .prepare = prepare};
     vm_session_request request = {.display = "console", .floppy = {"disk"},
         .floppy_count = 1u, .floppy_mode = {LIB_STORAGE_MEDIUM_READONLY},

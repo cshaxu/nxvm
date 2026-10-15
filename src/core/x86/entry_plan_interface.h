@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_ENTRY_PLAN_INTERFACE_H
 #define CORE_MACHINE_ENTRY_PLAN_INTERFACE_H
 #include "lib/types/types_interface.h"
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 
 
 #include "core/x86/memory_interface.h"
@@ -23,7 +23,7 @@ typedef struct core_machine_entry_plan_preload {
 
 
 typedef struct core_machine_entry_plan {
-    core_machine_entry_plan_state state;
+    x86_core_cpu_entry_plan_state state;
     lib_u32 entry_physical;
     core_machine_memory_route entry_route;
     const core_machine_entry_plan_preload *preloads;

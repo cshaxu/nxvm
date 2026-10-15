@@ -13,7 +13,7 @@ typedef struct legacy_timing_normalization_state {
 } legacy_timing_normalization_state;
 
 typedef struct legacy_timing_normalization_case {
-    core_machine_cpu_profile profile;
+    x86_core_cpu_profile profile;
     const lib_u8 *program;
     lib_size program_bytes;
     lib_u64 ticks;
@@ -38,7 +38,7 @@ static const core_machine_execution_provider legacy_timing_normalization_provide
     legacy_timing_normalization_reset, legacy_timing_normalization_advance
 };
 
-static lib_i32 legacy_timing_normalization_prepare(core_machine_cpu_profile profile,
+static lib_i32 legacy_timing_normalization_prepare(x86_core_cpu_profile profile,
     core_machine **out_machine, legacy_timing_normalization_state *state)
 {
     const core_machine_config config = { .cpu_profile = profile };
@@ -74,9 +74,9 @@ static lib_i32 legacy_timing_normalization_run_case(const legacy_timing_normaliz
             test_case->program, test_case->program_bytes) != LIB_STATUS_OK;
 
     if (!failed) {
-        test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_EAX, 2u);
-        test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ECX, 2u);
-        test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_EDX, 0u);
+        test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EAX, 2u);
+        test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 2u);
+        test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EDX, 0u);
         failed |= test_case->memory && core_machine_memory_write(machine,
             LEGACY_TIMING_NORMALIZATION_OPERAND_LINEAR, &operand, sizeof(operand)) != LIB_STATUS_OK;
         failed |= test_case->memory && core_machine_memory_write(machine,
@@ -120,21 +120,21 @@ static lib_i32 legacy_timing_normalization_test_8086(void)
         0xf7u, 0x2eu, 0x00u, 0x10u
     };
     static const legacy_timing_normalization_case cases[] = {
-        { CORE_MACHINE_CPU_PROFILE_8086, mul_byte_register,
+        { X86_CORE_CPU_PROFILE_8086, mul_byte_register,
             sizeof(mul_byte_register), 71u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_8086, mul_word_register,
+        { X86_CORE_CPU_PROFILE_8086, mul_word_register,
             sizeof(mul_word_register), 119u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_8086, mul_byte_memory,
+        { X86_CORE_CPU_PROFILE_8086, mul_byte_memory,
             sizeof(mul_byte_memory), 83u, LIB_TRUE },
-        { CORE_MACHINE_CPU_PROFILE_8086, mul_word_memory,
+        { X86_CORE_CPU_PROFILE_8086, mul_word_memory,
             sizeof(mul_word_memory), 131u, LIB_TRUE },
-        { CORE_MACHINE_CPU_PROFILE_8086, imul_byte_register,
+        { X86_CORE_CPU_PROFILE_8086, imul_byte_register,
             sizeof(imul_byte_register), 91u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_8086, imul_word_register,
+        { X86_CORE_CPU_PROFILE_8086, imul_word_register,
             sizeof(imul_word_register), 139u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_8086, imul_byte_memory,
+        { X86_CORE_CPU_PROFILE_8086, imul_byte_memory,
             sizeof(imul_byte_memory), 103u, LIB_TRUE },
-        { CORE_MACHINE_CPU_PROFILE_8086, imul_word_memory,
+        { X86_CORE_CPU_PROFILE_8086, imul_word_memory,
             sizeof(imul_word_memory), 151u, LIB_TRUE }
     };
     lib_size index;
@@ -183,39 +183,39 @@ static lib_i32 legacy_timing_normalization_test_80186(void)
         0x26u, 0x69u, 0x0eu, 0x00u, 0x10u, 0x02u, 0x00u
     };
     static const legacy_timing_normalization_case cases[] = {
-        { CORE_MACHINE_CPU_PROFILE_80186, mul_byte_register,
+        { X86_CORE_CPU_PROFILE_80186, mul_byte_register,
             sizeof(mul_byte_register), 27u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_80186, mul_word_register,
+        { X86_CORE_CPU_PROFILE_80186, mul_word_register,
             sizeof(mul_word_register), 36u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_80186, mul_byte_memory,
+        { X86_CORE_CPU_PROFILE_80186, mul_byte_memory,
             sizeof(mul_byte_memory), 33u, LIB_TRUE },
-        { CORE_MACHINE_CPU_PROFILE_80186, mul_word_memory,
+        { X86_CORE_CPU_PROFILE_80186, mul_word_memory,
             sizeof(mul_word_memory), 42u, LIB_TRUE },
-        { CORE_MACHINE_CPU_PROFILE_80186, imul_byte_register,
+        { X86_CORE_CPU_PROFILE_80186, imul_byte_register,
             sizeof(imul_byte_register), 27u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_80186, imul_word_register,
+        { X86_CORE_CPU_PROFILE_80186, imul_word_register,
             sizeof(imul_word_register), 36u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_80186, div_byte_register,
+        { X86_CORE_CPU_PROFILE_80186, div_byte_register,
             sizeof(div_byte_register), 29u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_80186, div_word_register,
+        { X86_CORE_CPU_PROFILE_80186, div_word_register,
             sizeof(div_word_register), 38u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_80186, idiv_byte_register,
+        { X86_CORE_CPU_PROFILE_80186, idiv_byte_register,
             sizeof(idiv_byte_register), 48u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_80186, idiv_word_register,
+        { X86_CORE_CPU_PROFILE_80186, idiv_word_register,
             sizeof(idiv_word_register), 57u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_80186, imul_immediate8_register,
+        { X86_CORE_CPU_PROFILE_80186, imul_immediate8_register,
             sizeof(imul_immediate8_register), 24u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_80186, imul_immediate8_memory,
+        { X86_CORE_CPU_PROFILE_80186, imul_immediate8_memory,
             sizeof(imul_immediate8_memory), 24u, LIB_TRUE },
-        { CORE_MACHINE_CPU_PROFILE_80186, imul_immediate16_register,
+        { X86_CORE_CPU_PROFILE_80186, imul_immediate16_register,
             sizeof(imul_immediate16_register), 31u, LIB_FALSE },
-        { CORE_MACHINE_CPU_PROFILE_80186, imul_immediate16_memory,
+        { X86_CORE_CPU_PROFILE_80186, imul_immediate16_memory,
             sizeof(imul_immediate16_memory), 31u, LIB_TRUE },
-        { CORE_MACHINE_CPU_PROFILE_80186, imul_immediate8_memory_odd,
+        { X86_CORE_CPU_PROFILE_80186, imul_immediate8_memory_odd,
             sizeof(imul_immediate8_memory_odd), 28u, LIB_TRUE },
-        { CORE_MACHINE_CPU_PROFILE_80186, imul_immediate8_memory_segment,
+        { X86_CORE_CPU_PROFILE_80186, imul_immediate8_memory_segment,
             sizeof(imul_immediate8_memory_segment), 26u, LIB_TRUE },
-        { CORE_MACHINE_CPU_PROFILE_80186, imul_immediate16_memory_segment,
+        { X86_CORE_CPU_PROFILE_80186, imul_immediate16_memory_segment,
             sizeof(imul_immediate16_memory_segment), 33u, LIB_TRUE }
     };
     lib_size index;
@@ -235,7 +235,7 @@ static lib_i32 legacy_timing_normalization_test_fault_nonpublication(void)
     core_machine_run_result result;
     legacy_timing_normalization_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !legacy_timing_normalization_prepare(CORE_MACHINE_CPU_PROFILE_80186,
+    lib_i32 failed = !legacy_timing_normalization_prepare(X86_CORE_CPU_PROFILE_80186,
         &machine, &state) || core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, LEGACY_TIMING_NORMALIZATION_RESET_LINEAR,
             divide_by_zero, sizeof(divide_by_zero)) != LIB_STATUS_OK ||
@@ -244,9 +244,9 @@ static lib_i32 legacy_timing_normalization_test_fault_nonpublication(void)
             handler, sizeof(handler)) != LIB_STATUS_OK;
 
     if (!failed) {
-        test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_EAX, 2u);
-        test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_EDX, 0u);
-        test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ECX, 0u);
+        test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EAX, 2u);
+        test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EDX, 0u);
+        test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 0u);
         {
             lib_status status = core_machine_run(machine, budget, &result);
 
@@ -254,13 +254,13 @@ static lib_i32 legacy_timing_normalization_test_fault_nonpublication(void)
                 result.reason != CORE_MACHINE_STOP_BUDGET ||
                 result.executed != 0u || result.ticks != 0u ||
                 result.elapsed_ticks != 0u || state.advanced_ticks != 0u ||
-                test_core_machine_fixture_read_register(machine, CORE_MACHINE_DEBUG_EIP) != 0x0100u;
+                test_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_EIP) != 0x0100u;
             status = core_machine_run(machine, budget, &result);
             failed |= status != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 result.executed != 1u || result.ticks != 2u ||
                 result.elapsed_ticks != 2u || state.advanced_ticks != 2u ||
-                test_core_machine_fixture_read_register(machine, CORE_MACHINE_DEBUG_EIP) != 0x0101u;
+                test_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_EIP) != 0x0101u;
         }
     }
     core_machine_destroy(machine);

@@ -74,7 +74,7 @@ static lib_bool vm_profile_contract_wiring_is_valid(const vm_profile_contract_va
 {
     return values->enabled_devices != 0u &&
         values->core.configuration.memory_bytes != 0u &&
-        values->core.configuration.cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT &&
+        values->core.configuration.cpu_profile != X86_CORE_CPU_PROFILE_DEFAULT &&
         vm_profile_contract_port_leaves_are_valid(values->port_leaves,
             values->port_leaf_count, values->enabled_devices) &&
         vm_profile_contract_windows_are_valid(values->memory_windows,

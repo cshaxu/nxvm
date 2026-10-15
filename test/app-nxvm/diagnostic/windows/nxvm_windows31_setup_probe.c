@@ -167,8 +167,8 @@ static void vm_windows31_setup_print_frame(const vm_machine *session)
 static void vm_windows31_setup_report_fault(integration_ini_session *ini_session, const char *stage)
 {
     vm_machine *session = ini_session->session;
-    core_machine_cpu_diagnostic diagnostic = {0};
-    core_machine_debug_cpu_snapshot cpu;
+    x86_core_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_debug_cpu_snapshot cpu;
     lib_size index;
     lib_bool was_running;
 
@@ -184,7 +184,7 @@ static void vm_windows31_setup_report_fault(integration_ini_session *ini_session
         test_board_hdc_observe(session->board).command_count,
         test_board_hdc_observe(session->board).last_command);
     if (diagnostic.first_fault.valid) {
-        const core_machine_cpu_fault_snapshot *fault = &diagnostic.first_fault;
+        const x86_core_cpu_fault_snapshot *fault = &diagnostic.first_fault;
 
         printf("NXVM:WINDOWS31:FAULT mask=%08X code=%08X "
             "cs=%04X ip=%08X linear=%08X opcode=", fault->exception_mask,
@@ -198,7 +198,7 @@ static void vm_windows31_setup_report_fault(integration_ini_session *ini_session
             fault->eax, fault->ebx, fault->ecx, fault->edx, fault->esp,
             fault->ebp, fault->esi, fault->edi, fault->eflags);
         for (index = 0u; index < diagnostic.recent_count; ++index) {
-            const core_machine_cpu_execution_point *point =
+            const x86_core_cpu_execution_point *point =
                 &diagnostic.recent[index];
 
             printf("NXVM:WINDOWS31:RECENT cs=%04X ip=%08X "
@@ -208,7 +208,7 @@ static void vm_windows31_setup_report_fault(integration_ini_session *ini_session
         }
     }
     if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) ==
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) ==
             LIB_STATUS_OK) {
         printf("NXVM:WINDOWS31:CPU cr0=%08X cr2=%08X cr3=%08X "
             "gdtr=%08X/%04X idtr=%08X/%04X cs=%04X:%08X/%08X ds=%04X:%08X/%08X "

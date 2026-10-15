@@ -71,16 +71,16 @@ static lib_status pic_phase_create(const core_machine_executor_config *config,
 static void pic_phase_reset(void *opaque)
 {
     pic_phase_state *state = (pic_phase_state *)opaque;
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
 
     if (state != LIB_NULL) {
-        state->reset_status = core_machine_cpu_debug_patch_registers(
+        state->reset_status = x86_core_cpu_debug_patch_registers(
             state->machine->executor_cpu_execution, &entry);
     }
 }
@@ -194,7 +194,7 @@ lib_i32 main(void)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     static const lib_u8 program[] = { 0x90u };
@@ -203,13 +203,13 @@ lib_i32 main(void)
     pic_phase_state state;
     core_machine_pic_irq_source *irq = LIB_NULL;
     core_machine_run_result result;
-    core_machine_cpu_state cpu;
-    const core_machine_debug_register_patch interrupt_entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    x86_core_cpu_state cpu;
+    const x86_core_cpu_debug_register_patch interrupt_entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_ESP] = 0x00008000u,
-            [CORE_MACHINE_DEBUG_EFLAGS] = 0x00000200u
+            [X86_CORE_CPU_DEBUG_ESP] = 0x00008000u,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = 0x00000200u
         }
     };
     const core_machine_trace_provider trace = { pic_phase_trace, &state };

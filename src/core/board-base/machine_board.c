@@ -174,7 +174,7 @@ lib_status core_machine_board_create(core_machine *machine,
     lib_status status;
     lib_u8 dma_controller_count;
     lib_size installed_bytes;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
 
     *out_board = LIB_NULL;
     board = (core_machine_board_state *)lib_allocate_zero(1u,
@@ -252,10 +252,10 @@ lib_status core_machine_board_create(core_machine *machine,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (installed_bytes >= 0x00100000u &&
-        (cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
-         cpu_profile == CORE_MACHINE_CPU_PROFILE_80386)) {
+        (cpu_profile == X86_CORE_CPU_PROFILE_80286 ||
+         cpu_profile == X86_CORE_CPU_PROFILE_80386)) {
         const core_machine_memory_alias_config alias = {
-            cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0x00ff0000u : 0xffff0000u,
+            cpu_profile == X86_CORE_CPU_PROFILE_80286 ? 0x00ff0000u : 0xffff0000u,
             0x000f0000u, 0x00010000u
         };
         lib_status status = core_machine_install_memory_aliases(machine,
@@ -495,18 +495,18 @@ lib_status core_machine_mouse_receive_relative(core_machine_board_state *board,
 }
 
 static lib_u32 core_machine_board_reset_rom_alias(
-    core_machine_cpu_profile profile)
+    x86_core_cpu_profile profile)
 {
     switch (profile) {
-    case CORE_MACHINE_CPU_PROFILE_80286:
+    case X86_CORE_CPU_PROFILE_80286:
         return 0x00ff0000u;
-    case CORE_MACHINE_CPU_PROFILE_80386:
+    case X86_CORE_CPU_PROFILE_80386:
         return 0xffff0000u;
-    case CORE_MACHINE_CPU_PROFILE_8086:
-    case CORE_MACHINE_CPU_PROFILE_8088:
-    case CORE_MACHINE_CPU_PROFILE_80186:
-    case CORE_MACHINE_CPU_PROFILE_DEFAULT:
-    case CORE_MACHINE_CPU_PROFILE_80486SX: /* Not admitted by Core machine. */
+    case X86_CORE_CPU_PROFILE_8086:
+    case X86_CORE_CPU_PROFILE_8088:
+    case X86_CORE_CPU_PROFILE_80186:
+    case X86_CORE_CPU_PROFILE_DEFAULT:
+    case X86_CORE_CPU_PROFILE_80486SX: /* Not admitted by Core machine. */
         return 0u;
     }
     return 0u;
@@ -516,7 +516,7 @@ static lib_status core_machine_board_register_reset_rom_alias(void *owner)
 {
     core_machine_board_state *board = owner;
     core_machine *machine = board->core;
-    core_machine_cpu_profile profile;
+    x86_core_cpu_profile profile;
     lib_u32 reset_alias;
     lib_status status = core_machine_get_cpu_profile(machine, &profile);
 

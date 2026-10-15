@@ -15,7 +15,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     const core_machine_run_budget budget = {1u, 0u};
     integration_ini_session ini_session;
     core_machine_run_result result;
-    core_machine_cpu_state cpu_state = {0};
+    x86_core_cpu_state cpu_state = {0};
     vm_machine *session = LIB_NULL;
     lib_u16 int13[2] = {0};
     lib_u32 int13_linear = 0u;
@@ -50,9 +50,9 @@ lib_i32 main(lib_i32 argc, char **argv)
             lib_u32 eax, edx;
 
             if (core_machine_debug_read_register(session->core_machine,
-                    CORE_MACHINE_DEBUG_EAX, &eax) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK ||
                 core_machine_debug_read_register(session->core_machine,
-                    CORE_MACHINE_DEBUG_EDX, &edx) != LIB_STATUS_OK) break;
+                    X86_CORE_CPU_DEBUG_EDX, &edx) != LIB_STATUS_OK) break;
             active_ah = (lib_u8)(eax >> 8u);
             active_dl = (lib_u8)edx;
             active = active_dl >= 0x80u;
@@ -80,13 +80,13 @@ lib_i32 main(lib_i32 argc, char **argv)
             lib_u32 eax, ecx, edx, eflags;
 
             if (core_machine_debug_read_register(session->core_machine,
-                    CORE_MACHINE_DEBUG_EAX, &eax) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK ||
                 core_machine_debug_read_register(session->core_machine,
-                    CORE_MACHINE_DEBUG_ECX, &ecx) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_DEBUG_ECX, &ecx) != LIB_STATUS_OK ||
                 core_machine_debug_read_register(session->core_machine,
-                    CORE_MACHINE_DEBUG_EDX, &edx) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_DEBUG_EDX, &edx) != LIB_STATUS_OK ||
                 core_machine_debug_read_register(session->core_machine,
-                    CORE_MACHINE_DEBUG_EFLAGS, &eflags) != LIB_STATUS_OK) break;
+                    X86_CORE_CPU_DEBUG_EFLAGS, &eflags) != LIB_STATUS_OK) break;
             ++hdd_returns;
             printf("NXVM:INT13 ah=%02X dl=%02X cf=%u ax=%04X "
                 "cx=%04X dx=%04X\n", active_ah, active_dl,

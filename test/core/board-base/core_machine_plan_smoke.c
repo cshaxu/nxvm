@@ -322,7 +322,7 @@ static lib_i32 plan_selects_single_controller_xt_board(void)
 {
     core_machine_config configuration = {
         .memory_bytes = 256u * 1024u,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8088,
         .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_SINGLE,
         .dma_controller_count = 1u
     };

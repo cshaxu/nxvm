@@ -48,7 +48,7 @@ static lib_i32 vm_xt_5160_268_contract_is_fixed(void)
         vm_profile_xt_5160_268_plan_create(&profile, LIB_FALSE) != LIB_STATUS_OK ||
         profile.values.core.configuration.memory_bytes != 256u * 1024u ||
         profile.values.core.configuration.cpu_profile !=
-            CORE_MACHINE_CPU_PROFILE_8088 ||
+            X86_CORE_CPU_PROFILE_8088 ||
         profile.values.core.configuration.l1_compatibility_policy !=
             CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
         profile.topology.absent_memory_count != 3u ||
@@ -231,7 +231,7 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
         session == LIB_NULL) goto done;
     vm_machine_destroy(session);
     session = LIB_NULL;
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_8086;
     failed = vm_xt_test_create(
         &config, &assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;

@@ -1,6 +1,6 @@
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #include "core/board-base/dma_bus_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "core/x86/memory.h"
@@ -163,7 +163,7 @@ static lib_i32 transaction_has_pair(const transaction_probe *probe,
 }
 
 static lib_i32 transaction_has_provenance_pair(const transaction_probe *probe,
-    core_machine_cpu_memory_access_provenance provenance)
+    x86_core_cpu_memory_access_provenance provenance)
 {
     lib_u32 index;
 
@@ -198,7 +198,7 @@ static lib_i32 transaction_has_port_write_value(const transaction_probe *probe,
 
 static lib_i32 transaction_find_external_cycle(const transaction_probe *probe,
     core_machine_trace_event_type type,
-    core_machine_cpu_memory_access_provenance provenance,
+    x86_core_cpu_memory_access_provenance provenance,
     lib_u32 *out_index)
 {
     lib_u32 index;
@@ -215,7 +215,7 @@ static lib_i32 transaction_find_external_cycle(const transaction_probe *probe,
 }
 static lib_u32 transaction_count_external_cycles(
     const transaction_probe *probe, core_machine_trace_event_type type,
-    core_machine_cpu_memory_access_provenance provenance)
+    x86_core_cpu_memory_access_provenance provenance)
 {
     lib_u32 index;
     lib_u32 count = 0u;
@@ -302,25 +302,25 @@ lib_i32 main(void)
     failed |= !transaction_has_port_write_value(&probe, 0x00e0u, 0x5au);
     failed |= !transaction_find_external_cycle(&probe,
         CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH, &external_begin);
+        X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH, &external_begin);
     failed |= !transaction_find_external_cycle(&probe,
         CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH, &external_commit);
+        X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH, &external_commit);
     failed |= external_begin >= external_commit;
     /* Reset CS ends at FFFF. The branch starts a second window, clamped at
      * that limit; it must not publish a wrapped tail outside the segment. */
     failed |= transaction_count_external_cycles(&probe,
         CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 2u;
+        X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 2u;
     failed |= transaction_count_external_cycles(&probe,
         CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 2u;
+        X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 2u;
     failed |= !transaction_has_provenance_pair(&probe,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
+        X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
     failed |= transaction_has_provenance_pair(&probe,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH);
+        X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH);
     failed |= !transaction_has_provenance_pair(&probe,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        X86_CORE_CPU_MEMORY_ACCESS_DATA);
 
     probe.count = 0u;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
@@ -332,7 +332,7 @@ lib_i32 main(void)
     failed |= probe.port_value != 0x6cu;
     failed |= transaction_count_external_cycles(&probe,
         CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 1u;
+        X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 1u;
     core_machine_transaction_initialize(&transaction);
     core_machine_transaction_bind_trace(&transaction, transaction_state_trace,
         &state_probe);

@@ -34,14 +34,14 @@ typedef struct {
 
 typedef struct {
     t_debug_execution_plan plan;
-    core_machine_debug_instruction_observation observation;
+    x86_core_cpu_debug_instruction_observation observation;
     lib_bool observation_valid;
 } t_debug;
 
 void vm_machine_debug_initialize(t_debug *debug);
 void vm_machine_debug_reset(t_debug *debug);
 void vm_machine_debug_refresh(t_debug *debug,
-    const core_machine_debug_instruction_observation *observation);
+    const x86_core_cpu_debug_instruction_observation *observation);
 void vm_machine_debug_finalize(t_debug *debug);
 lib_status vm_machine_debug_set_execution_plan(t_debug *debug,
     const x86_debug_request *request);

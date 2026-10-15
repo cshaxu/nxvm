@@ -14,17 +14,17 @@ static lib_i32 prepare_machine(x86_fpu_profile fpu_profile,
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = fpu_profile
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR0),
-        .values = {[CORE_MACHINE_DEBUG_CR0] = cr0}
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0),
+        .values = {[X86_CORE_CPU_DEBUG_CR0] = cr0}
     };
     if (state == LIB_NULL) return 1;
     lib_memory_set(state, 0, sizeof(*state));
@@ -46,8 +46,8 @@ static lib_i32 run_case(const lib_u8 *program, lib_size program_size,
     fpu_escape_machine state;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_cpu_state cpu;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_state cpu;
     lib_i32 failed = prepare_machine(fpu_profile, cr0, &state);
 
     if (!failed) {
@@ -84,9 +84,9 @@ static lib_i32 run_nm_delivery_case(const lib_u8 *program,
     fpu_escape_machine state;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u16 frame[3] = { 0u, 0u, 0u };
     lib_u32 original_eax = 0u;
     lib_i32 failed = prepare_machine(X86_FPU_PROFILE_NONE, cr0, &state);
@@ -102,14 +102,14 @@ static lib_i32 run_nm_delivery_case(const lib_u8 *program,
     }
     if (!failed) {
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         original_eax = before.eax;
         failed |= core_machine_run(state.machine, budget, &result) !=
             LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
             LIB_STATUS_OK;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed) failed |= diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.last_delivered_exception.exception_mask,
@@ -131,7 +131,7 @@ static lib_i32 run_nm_delivery_case(const lib_u8 *program,
             LIB_STATUS_OK || result.reason !=
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         failed |= after.eip != handler_offset + sizeof(handler) ||
             after.eax != original_eax + 1u;
     }

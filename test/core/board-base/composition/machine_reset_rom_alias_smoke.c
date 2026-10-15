@@ -34,7 +34,7 @@ static const core_machine_firmware_provider reset_rom_provider = {
     reset_rom_configure, reset_rom_reset, LIB_NULL
 };
 
-static lib_i32 reset_rom_run(core_machine_cpu_profile profile)
+static lib_i32 reset_rom_run(x86_core_cpu_profile profile)
 {
     const core_machine_config config = {
         .memory_bytes = 0x00100000u,
@@ -59,7 +59,7 @@ static lib_i32 reset_rom_run(core_machine_cpu_profile profile)
         &reset_rom_provider, LIB_NULL) != LIB_STATUS_OK;
     failed |= !failed && core_machine_memory_read_reset_physical(
         &machine->executor_memory,
-        profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0x00fffff0u : 0xfffffff0u,
+        profile == X86_CORE_CPU_PROFILE_80286 ? 0x00fffff0u : 0xfffffff0u,
         (lib_uptr)&reset_byte, 1u) != LIB_STATUS_OK;
     failed |= !failed && reset_byte != 0xeau;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
@@ -81,7 +81,7 @@ static lib_i32 absent_fallback_run(void)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_absent_memory_config absent = {
         0x000a0000u, 2u, 0xffu
@@ -136,7 +136,7 @@ static lib_i32 reset_rom_policy(lib_u32 mode)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_firmware_provider provider = {
         policy_configure, reset_rom_reset, LIB_NULL
@@ -173,8 +173,8 @@ lib_i32 main(void)
     for (lib_u32 mode = 0u; mode < 4u; ++mode) {
         if (reset_rom_policy(mode)) return 1;
     }
-    if (reset_rom_run(CORE_MACHINE_CPU_PROFILE_80286) ||
-        reset_rom_run(CORE_MACHINE_CPU_PROFILE_80386) ||
+    if (reset_rom_run(X86_CORE_CPU_PROFILE_80286) ||
+        reset_rom_run(X86_CORE_CPU_PROFILE_80386) ||
         absent_fallback_run()) return 1;
     lib_c_printf("%s\n", "RESET-ROM-ALIAS:OK");
     return 0;

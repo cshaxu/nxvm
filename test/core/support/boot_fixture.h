@@ -6,7 +6,7 @@
 typedef struct test_core_boot_observation {
     lib_size memory_bytes;
     lib_bool a20;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     lib_u64 elapsed_ticks;
     lib_size rom_mapping_count;
     lib_u8 transaction_owner;
@@ -25,9 +25,9 @@ test_core_boot_observation test_core_boot_capture(const core_machine *machine);
 test_core_boot_rom_mapping test_core_boot_rom_at(const core_machine *machine,
     lib_size index);
 void test_core_boot_capture_write_cpu(const core_machine *machine,
-    core_machine_cpu_state *cpu);
+    x86_core_cpu_state *cpu);
 void test_core_boot_capture_diagnostic(const core_machine *machine,
-    core_machine_cpu_diagnostic *diagnostic);
+    x86_core_cpu_diagnostic *diagnostic);
 lib_status test_core_boot_read_reset(core_machine *machine, lib_u32 address,
     lib_uptr destination, lib_uptr bytes);
 lib_status test_core_boot_query(const core_machine *machine, lib_u32 address,

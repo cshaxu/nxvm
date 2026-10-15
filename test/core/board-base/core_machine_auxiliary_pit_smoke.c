@@ -44,7 +44,7 @@ lib_i32 main(void)
     lib_u32 value;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80286;
     config.clock_plan.auxiliary_pit = (core_machine_clock_ratio) {1u, 4u, 0u};
     config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;

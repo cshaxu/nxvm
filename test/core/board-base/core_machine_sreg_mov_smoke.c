@@ -9,19 +9,19 @@ typedef struct sreg_mov_machine { core_machine *machine;
     core_machine_board_state *board; } sreg_mov_machine;
 
 static lib_i32 sreg_mov_prepare(sreg_mov_machine *state,
-    core_machine_cpu_profile profile)
+    x86_core_cpu_profile profile)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
 
     lib_memory_set(state, 0, sizeof(*state));
@@ -32,23 +32,23 @@ static lib_i32 sreg_mov_prepare(sreg_mov_machine *state,
 }
 
 static lib_i32 sreg_mov_patch(sreg_mov_machine *state,
-    core_machine_debug_register register_id, lib_u32 value)
+    x86_core_cpu_debug_register register_id, lib_u32 value)
 {
-    core_machine_debug_register_patch patch = {0};
-    patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(register_id);
+    x86_core_cpu_debug_register_patch patch = {0};
+    patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(register_id);
     patch.values[register_id] = value;
     return core_machine_debug_patch_registers(state->machine, &patch) == LIB_STATUS_OK;
 }
 
 static lib_i32 sreg_mov_capture(sreg_mov_machine *state,
-    core_machine_debug_cpu_snapshot *snapshot)
+    x86_core_cpu_debug_cpu_snapshot *snapshot)
 {
     return core_machine_debug_capture_cpu_snapshot(state->machine,
-        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, snapshot) == LIB_STATUS_OK;
+        X86_CORE_CPU_SNAPSHOT_CURRENT, snapshot) == LIB_STATUS_OK;
 }
 
-static const core_machine_debug_segment_snapshot *sreg_mov_sreg(
-    const core_machine_debug_cpu_snapshot *cpu, lib_u8 index)
+static const x86_core_cpu_debug_segment_snapshot *sreg_mov_sreg(
+    const x86_core_cpu_debug_cpu_snapshot *cpu, lib_u8 index)
 {
     switch (index) {
     case 0u: return &cpu->es;
@@ -95,12 +95,12 @@ static lib_i32 sreg_mov_boot_protected(sreg_mov_machine *state)
 static lib_i32 sreg_mov_expect_fault(sreg_mov_machine *state,
     const lib_u8 *code, lib_size size)
 {
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     core_machine_run_result result;
 
     if (!sreg_mov_capture(state, &before) ||
-        !sreg_mov_patch(state, CORE_MACHINE_DEBUG_EIP, 0u) ||
+        !sreg_mov_patch(state, X86_CORE_CPU_DEBUG_EIP, 0u) ||
         core_machine_memory_write(state->machine, 0x2000u, code, size) !=
             LIB_STATUS_OK ||
         !test_core_machine_fixture_shutdown_wait(core_machine_run(state->machine,
@@ -127,21 +127,21 @@ static lib_i32 sreg_mov_test_protected_faults(void)
         sreg_mov_machine state;
         lib_u16 image = 0xbe5au;
         core_machine_run_result result;
-        lib_i32 passed = sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) &&
+        lib_i32 passed = sreg_mov_prepare(&state, X86_CORE_CPU_PROFILE_80386) &&
             sreg_mov_boot_protected(&state);
         if (passed && form < 4u) {
             const lib_u8 code[] = {0x8eu, form == 0u ? 0xd0u : 0xd8u};
-            passed = sreg_mov_patch(&state, CORE_MACHINE_DEBUG_EAX,
+            passed = sreg_mov_patch(&state, X86_CORE_CPU_DEBUG_EAX,
                 0xaabb0000u | selectors[form]) &&
                 core_machine_memory_write(state.machine, 0x3010u, &image,
                     sizeof(image)) == LIB_STATUS_OK &&
                 sreg_mov_expect_fault(&state, code, sizeof(code));
         } else if (passed) {
             const lib_u8 *code = form == 4u ? load_limit : store_limit;
-            const core_machine_debug_register_patch registers = {
-                .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-                .values = {[CORE_MACHINE_DEBUG_EAX] = 0xaabb0038u}
+            const x86_core_cpu_debug_register_patch registers = {
+                .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+                .values = {[X86_CORE_CPU_DEBUG_EAX] = 0xaabb0038u}
             };
             passed = core_machine_debug_patch_registers(state.machine,
                 &registers) == LIB_STATUS_OK &&
@@ -174,14 +174,14 @@ static lib_i32 sreg_mov_test_irq_shadow(void)
         sreg_mov_machine state;
         core_machine_pic_irq_source *source = LIB_NULL;
         core_machine_run_result result;
-        core_machine_debug_cpu_snapshot after = {0};
+        x86_core_cpu_debug_cpu_snapshot after = {0};
         lib_u16 offset = 0x0100u;
         lib_u16 segment = 0u;
         lib_u16 frame_ip = 0u;
         lib_u8 code[] = {0x8eu, modrms[form], 0x90u};
         lib_u16 expected_ip = form == 0u ? 3u : 2u;
         lib_u8 target = form == 0u ? 2u : form == 1u ? 3u : 4u;
-        lib_i32 failed = !sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !sreg_mov_prepare(&state, X86_CORE_CPU_PROFILE_80386);
 
         if (!failed) {
             failed |= core_machine_memory_write(state.machine,
@@ -194,36 +194,36 @@ static lib_i32 sreg_mov_test_irq_shadow(void)
                     sizeof(hlt)) != LIB_STATUS_OK;
         }
         if (!failed) {
-            const core_machine_debug_register_patch registers = {
-                .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBP) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDI) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_FS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_GS),
+            const x86_core_cpu_debug_register_patch registers = {
+                .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBX) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBP) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDI) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_FS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_GS),
                 .values = {
-                    [CORE_MACHINE_DEBUG_EAX] = 0xaabb2000u,
-                    [CORE_MACHINE_DEBUG_ECX] = 0x11225566u,
-                    [CORE_MACHINE_DEBUG_EDX] = 0x778899aau,
-                    [CORE_MACHINE_DEBUG_EBX] = 0xbbccddeeu,
-                    [CORE_MACHINE_DEBUG_ESP] = 0x8000u,
-                    [CORE_MACHINE_DEBUG_EBP] = 0x120u,
-                    [CORE_MACHINE_DEBUG_ESI] = 0x10u,
-                    [CORE_MACHINE_DEBUG_EDI] = 0x20u,
-                    [CORE_MACHINE_DEBUG_EFLAGS] = 0x241u,
-                    [CORE_MACHINE_DEBUG_ES] = 0x1111u,
-                    [CORE_MACHINE_DEBUG_SS] = 0x2222u,
-                    [CORE_MACHINE_DEBUG_DS] = 0x3333u,
-                    [CORE_MACHINE_DEBUG_FS] = 0x4444u,
-                    [CORE_MACHINE_DEBUG_GS] = 0x5555u
+                    [X86_CORE_CPU_DEBUG_EAX] = 0xaabb2000u,
+                    [X86_CORE_CPU_DEBUG_ECX] = 0x11225566u,
+                    [X86_CORE_CPU_DEBUG_EDX] = 0x778899aau,
+                    [X86_CORE_CPU_DEBUG_EBX] = 0xbbccddeeu,
+                    [X86_CORE_CPU_DEBUG_ESP] = 0x8000u,
+                    [X86_CORE_CPU_DEBUG_EBP] = 0x120u,
+                    [X86_CORE_CPU_DEBUG_ESI] = 0x10u,
+                    [X86_CORE_CPU_DEBUG_EDI] = 0x20u,
+                    [X86_CORE_CPU_DEBUG_EFLAGS] = 0x241u,
+                    [X86_CORE_CPU_DEBUG_ES] = 0x1111u,
+                    [X86_CORE_CPU_DEBUG_SS] = 0x2222u,
+                    [X86_CORE_CPU_DEBUG_DS] = 0x3333u,
+                    [X86_CORE_CPU_DEBUG_FS] = 0x4444u,
+                    [X86_CORE_CPU_DEBUG_GS] = 0x5555u
                 }
             };
             failed |= core_machine_debug_patch_registers(state.machine,

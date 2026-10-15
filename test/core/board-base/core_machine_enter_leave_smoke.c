@@ -12,18 +12,18 @@ typedef struct enter_leave_machine
     core_machine_board_state *board;
 } enter_leave_machine;
 
-static lib_i32 enter_leave_prepare(core_machine_cpu_profile profile, enter_leave_machine *state)
+static lib_i32 enter_leave_prepare(x86_core_cpu_profile profile, enter_leave_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile, .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
     lib_memory_set(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine, &state->board) == LIB_STATUS_OK &&
@@ -34,23 +34,23 @@ static lib_i32 enter_leave_prepare(core_machine_cpu_profile profile, enter_leave
 
 static lib_status enter_leave_seed(enter_leave_machine *state, lib_u32 esp, lib_u32 ebp)
 {
-    const core_machine_debug_register_patch registers = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    const x86_core_cpu_debug_register_patch registers = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_EAX] = 0xa1a23344u, [CORE_MACHINE_DEBUG_ECX] = 0xb1b25566u,
-            [CORE_MACHINE_DEBUG_EDX] = 0xc1c27788u, [CORE_MACHINE_DEBUG_EBX] = 0xd1d299aau,
-            [CORE_MACHINE_DEBUG_ESP] = esp, [CORE_MACHINE_DEBUG_EBP] = ebp,
-            [CORE_MACHINE_DEBUG_ESI] = 0xf1f2ddefu, [CORE_MACHINE_DEBUG_EDI] = 0x1122a5a5u,
-            [CORE_MACHINE_DEBUG_EFLAGS] = 0x245u
+            [X86_CORE_CPU_DEBUG_EAX] = 0xa1a23344u, [X86_CORE_CPU_DEBUG_ECX] = 0xb1b25566u,
+            [X86_CORE_CPU_DEBUG_EDX] = 0xc1c27788u, [X86_CORE_CPU_DEBUG_EBX] = 0xd1d299aau,
+            [X86_CORE_CPU_DEBUG_ESP] = esp, [X86_CORE_CPU_DEBUG_EBP] = ebp,
+            [X86_CORE_CPU_DEBUG_ESI] = 0xf1f2ddefu, [X86_CORE_CPU_DEBUG_EDI] = 0x1122a5a5u,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = 0x245u
         }
     };
     return core_machine_debug_patch_registers(state->machine, &registers);
@@ -82,10 +82,10 @@ static lib_i32 enter_leave_boot_protected(enter_leave_machine *state, lib_u16 li
         &result) == LIB_STATUS_OK && result.reason ==
         CORE_MACHINE_STOP_BUDGET && result.executed == 10u;
 
-    const core_machine_debug_register_patch segment = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS),
+    const x86_core_cpu_debug_register_patch segment = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS),
         .values = {
-            [CORE_MACHINE_DEBUG_SS] = 0x18u
+            [X86_CORE_CPU_DEBUG_SS] = 0x18u
         }
     };
 
@@ -100,7 +100,7 @@ static lib_i32 enter_leave_boot_protected(enter_leave_machine *state, lib_u16 li
         core_machine_debug_patch_registers(state->machine, &segment) == LIB_STATUS_OK;
 }
 
-static lib_i32 enter_leave_sregs_same(const core_machine_debug_cpu_snapshot *before, const core_machine_debug_cpu_snapshot *after)
+static lib_i32 enter_leave_sregs_same(const x86_core_cpu_debug_cpu_snapshot *before, const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return lib_memory_compare(&before->es, &after->es,
         sizeof(before->es)) == 0 && lib_memory_compare(&before->cs,
@@ -112,7 +112,7 @@ static lib_i32 enter_leave_sregs_same(const core_machine_debug_cpu_snapshot *bef
         &before->gs, &after->gs, sizeof(before->gs)) == 0;
 }
 
-static lib_i32 enter_leave_cpu_same(const core_machine_debug_cpu_snapshot *before, const core_machine_debug_cpu_snapshot *after)
+static lib_i32 enter_leave_cpu_same(const x86_core_cpu_debug_cpu_snapshot *before, const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return before->eax == after->eax &&
         before->ecx == after->ecx &&
@@ -149,15 +149,15 @@ static lib_i32 enter_leave_test_protected_faults(void)
     static const lib_u8 enter[] = {0xc8u, 0x00u, 0x00u, 0x03u};
     static const lib_u8 leave[] = {0xc9u};
     enter_leave_machine state;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     core_machine_run_result result;
     lib_status status;
     lib_u16 stack_image[] = {0xaaaau, 0xbbbbu, 0xccccu, 0xddddu,
         0xeeeeu};
     lib_u16 observed_frame[5];
     lib_u32 value;
-    lib_i32 failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !enter_leave_prepare(X86_CORE_CPU_PROFILE_80386,
         &state);
 
     if (!failed)
@@ -175,12 +175,12 @@ static lib_i32 enter_leave_test_protected_faults(void)
             LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x2000u,
             enter, sizeof(enter)) != LIB_STATUS_OK;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         status = core_machine_run(state.machine,
             (core_machine_run_budget){1u, 0u}, &result);
         failed |= !test_core_machine_fixture_shutdown_wait(status, &result);
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
             failed |= !enter_leave_cpu_same(&before, &after) ||
             core_machine_memory_inspect(state.machine, 0x4018u, observed_frame,
@@ -191,7 +191,7 @@ static lib_i32 enter_leave_test_protected_faults(void)
 
     if (failed)
         return 0;
-    failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    failed = !enter_leave_prepare(X86_CORE_CPU_PROFILE_80386, &state);
     if (!failed)
         failed |= !enter_leave_boot_protected(&state, 0x1fu, LIB_FALSE);
     if (!failed)
@@ -201,12 +201,12 @@ static lib_i32 enter_leave_test_protected_faults(void)
             sizeof(lib_u16)) != LIB_STATUS_OK || core_machine_memory_write(
             state.machine, 0x2000u, leave, sizeof(leave)) != LIB_STATUS_OK;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         status = core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
             &result);
         failed |= !test_core_machine_fixture_shutdown_wait(status, &result);
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
             failed |= !enter_leave_cpu_same(&before, &after) || !enter_leave_read(&state,
             0x4020u, 2u, &value) || value != stack_image[0];
@@ -230,13 +230,13 @@ static lib_i32 enter_leave_test_irq_no_shadow(void)
         enter_leave_machine state;
         core_machine_pic_irq_source *source = LIB_NULL;
         core_machine_run_result result;
-        core_machine_debug_cpu_snapshot before;
-        core_machine_debug_cpu_snapshot after;
+        x86_core_cpu_debug_cpu_snapshot before;
+        x86_core_cpu_debug_cpu_snapshot after;
         lib_u16 offset = 0x100u;
         lib_u16 segment = 0u;
         lib_u16 frame_ip = 0u;
         lib_u16 old_bp = 0x4567u;
-        lib_i32 failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !enter_leave_prepare(X86_CORE_CPU_PROFILE_80386,
             &state);
 
         if (!failed)
@@ -265,12 +265,12 @@ static lib_i32 enter_leave_test_irq_no_shadow(void)
             core_machine_pic_irq_source_assert(source);
             core_machine_pic_irq_source_deassert(source);
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
             failed |= core_machine_run(state.machine,
                 (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             if (!failed)
                 failed |= core_machine_memory_inspect(state.machine,
                 after.ss.base + (lib_u16)after.esp,

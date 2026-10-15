@@ -30,7 +30,7 @@ typedef struct test_board_composition_observation {
 
 typedef struct test_board_plan_observation {
     lib_size memory_bytes;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     x86_fpu_profile fpu_profile;
     core_machine_retirement_time_contract retirement_time_contract;
     core_machine_l1_compatibility_policy l1_compatibility_policy;

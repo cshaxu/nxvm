@@ -11,9 +11,9 @@ test_core_preview_publication test_core_capture_preview_publication(const core_m
 }
 
 lib_bool test_core_preview_lexeme(core_machine *machine,
-    core_machine_cpu_instruction_lexeme *lexeme)
+    x86_core_cpu_instruction_lexeme *lexeme)
 {
-    return core_machine_cpu_execution_preview_lexeme(
+    return x86_core_cpu_execution_preview_lexeme(
         machine->executor_cpu_execution, lexeme);
 }
 
@@ -164,12 +164,12 @@ lib_u64 test_core_elapsed_ticks(const core_machine *machine)
 
 lib_bool test_core_cpu_is_halted(const core_machine *machine)
 {
-    return core_machine_cpu_is_halted(machine->executor_cpu_execution);
+    return x86_core_cpu_is_halted(machine->executor_cpu_execution);
 }
 
 void test_core_request_cpu_shutdown(core_machine *machine)
 {
-    core_machine_cpu_execution_request_shutdown(machine->executor_cpu_execution);
+    x86_core_cpu_execution_request_shutdown(machine->executor_cpu_execution);
 }
 
 lib_bool test_core_has_parity_storage(const core_machine *machine)

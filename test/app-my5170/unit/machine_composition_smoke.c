@@ -55,7 +55,7 @@ static lib_i32 vm_model_339_selected_contract(void)
         .bios_count = 2u
     };
     test_board_composition_observation board;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     core_machine_planar_parity_observation parity;
     core_machine_speaker_observation speaker;
     core_machine_memory_route memory_route;
@@ -94,7 +94,7 @@ static lib_i32 vm_model_339_selected_contract(void)
         session->board, &speaker) != LIB_STATUS_OK || !speaker.configured ||
         speaker.timer_gate || !speaker.data_enabled || speaker.output != speaker.timer_output) ? 0x0004 : 0;
     failed |= (core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
-        LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) ? 0x0008 : 0;
+        LIB_STATUS_OK || cpu_profile != X86_CORE_CPU_PROFILE_80286) ? 0x0008 : 0;
     failed |= (test_board_kbc_aux_enabled(session->board) ||
         !test_board_kbc_command_matches(session->board,
             session->core_machine, 0x20u,
@@ -169,15 +169,15 @@ static lib_i32 vm_model_339_floppy_contract(void)
  * permitted on this profile's physical Core axis. */
 static lib_status vm_model_339_prepare_refresh(core_machine *machine)
 {
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP),
-        .values = { [CORE_MACHINE_DEBUG_EIP] = 0x0500u,
-            [CORE_MACHINE_DEBUG_ESP] = 0xfffeu }
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP),
+        .values = { [X86_CORE_CPU_DEBUG_EIP] = 0x0500u,
+            [X86_CORE_CPU_DEBUG_ESP] = 0xfffeu }
     };
     return core_machine_debug_patch_registers(machine, &entry);
 }
@@ -224,7 +224,7 @@ static lib_i32 vm_model_339_refresh_post_loop_is_calibrated(void)
         .bios_count = 2u
     };
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot cpu = {0};
+    x86_core_cpu_debug_cpu_snapshot cpu = {0};
     vm_machine *session = LIB_NULL;
     lib_i32 failed = 0;
 
@@ -239,7 +239,7 @@ static lib_i32 vm_model_339_refresh_post_loop_is_calibrated(void)
         (core_machine_run_budget) {200000u, 0u}, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         core_machine_debug_capture_cpu_snapshot(session->core_machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
         (cpu.ecx & 0xffffu) < 0xf600u;
     if (failed) lib_c_printf("MODEL339-REFRESH:CX=%04X:EIP=%04X:reason=%u\n",
         (unsigned int)(cpu.ecx & 0xffffu), (unsigned int)cpu.eip, result.reason);
@@ -260,10 +260,10 @@ static lib_i32 vm_model_339_dma_page_word_io_is_converted(void)
         .bios_count = 2u
     };
     core_machine_run_result result = {0};
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = { [CORE_MACHINE_DEBUG_EIP] = 0x0500u }
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = { [X86_CORE_CPU_DEBUG_EIP] = 0x0500u }
     };
     lib_u32 eax = 0u;
     vm_machine *session = LIB_NULL;
@@ -279,7 +279,7 @@ static lib_i32 vm_model_339_dma_page_word_io_is_converted(void)
         LIB_STATUS_OK || core_machine_run(session->core_machine, (core_machine_run_budget) {64u, 0u},
         &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         core_machine_debug_read_register(session->core_machine,
-            CORE_MACHINE_DEBUG_EAX, &eax) != LIB_STATUS_OK || (eax & 0xffffu) != 0x55aau;
+            X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK || (eax & 0xffffu) != 0x55aau;
     vm_machine_destroy(session);
     return failed;
 }

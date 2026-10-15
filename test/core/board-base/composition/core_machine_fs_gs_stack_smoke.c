@@ -5,18 +5,18 @@
 #include "core/x86/device_support_interface.h"
 typedef struct fs_gs_machine { core_machine *machine; } fs_gs_machine;
 
-static lib_i32 fs_gs_prepare(core_machine_cpu_profile profile, fs_gs_machine *state)
+static lib_i32 fs_gs_prepare(x86_core_cpu_profile profile, fs_gs_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile, .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
     lib_memory_set(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine, LIB_NULL) == LIB_STATUS_OK &&
@@ -38,23 +38,23 @@ static lib_i32 fs_gs_prepare_protected(fs_gs_machine *state)
         0xd0u,0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
     core_machine_run_result result;
-    lib_i32 ready = fs_gs_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
+    lib_i32 ready = fs_gs_prepare(X86_CORE_CPU_PROFILE_80386, state) &&
         core_machine_memory_write(state->machine, 0x0100u, pointer, sizeof(pointer)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x0300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, bootstrap, sizeof(bootstrap)) == LIB_STATUS_OK &&
         core_machine_run(state->machine, (core_machine_run_budget){ 10u,0u }, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 10u;
     const lib_u8 limit[] = {0xffu, 0x7fu};
-    const core_machine_debug_register_patch registers = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_FS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_GS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    const x86_core_cpu_debug_register_patch registers = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_FS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_GS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_SS] = 0x18u,
-            [CORE_MACHINE_DEBUG_FS] = 0x10u,
-            [CORE_MACHINE_DEBUG_GS] = 0x18u,
-            [CORE_MACHINE_DEBUG_EFLAGS] = 0x41u
+            [X86_CORE_CPU_DEBUG_SS] = 0x18u,
+            [X86_CORE_CPU_DEBUG_FS] = 0x10u,
+            [X86_CORE_CPU_DEBUG_GS] = 0x18u,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = 0x41u
         }
     };
 
@@ -72,19 +72,19 @@ static lib_i32 fs_gs_test_pop_stack_fault(void)
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         fs_gs_machine state;
         core_machine_run_result result;
-        core_machine_debug_cpu_snapshot before;
-        core_machine_debug_cpu_snapshot after;
+        x86_core_cpu_debug_cpu_snapshot before;
+        x86_core_cpu_debug_cpu_snapshot after;
         lib_i32 failed = !fs_gs_prepare_protected(&state);
         if (!failed) {
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x2000u,
                     (lib_u8[]){0x0fu,opcodes[opcode]}, 2u) != LIB_STATUS_OK ||
                 !test_core_machine_fixture_shutdown_wait(core_machine_run(
                     state.machine, (core_machine_run_budget){1u,0u}, &result),
                     &result) ||
                 core_machine_debug_capture_cpu_snapshot(state.machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 after.eip != 0u || after.esp != 0x8000u ||
                 after.eflags != before.eflags ||
                 (opcode == 0u ? after.fs.selector : after.gs.selector) !=

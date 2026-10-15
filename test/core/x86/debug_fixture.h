@@ -6,7 +6,7 @@
 #include "core/x86/debug_interface.h"
 
 static inline lib_u32 test_core_machine_fixture_read_register(
-    const core_machine *machine, core_machine_debug_register register_id)
+    const core_machine *machine, x86_core_cpu_debug_register register_id)
 {
     lib_u32 value;
     if (core_machine_debug_read_register(machine, register_id, &value) != LIB_STATUS_OK)
@@ -15,7 +15,7 @@ static inline lib_u32 test_core_machine_fixture_read_register(
 }
 
 static inline void test_core_machine_fixture_write_register(
-    core_machine *machine, core_machine_debug_register register_id, lib_u32 value)
+    core_machine *machine, x86_core_cpu_debug_register register_id, lib_u32 value)
 {
     if (core_machine_debug_write_register(machine, register_id, value) != LIB_STATUS_OK)
         lib_test_assert(LIB_FALSE);
@@ -23,7 +23,7 @@ static inline void test_core_machine_fixture_write_register(
 
 /* Historical word seeds change the low half, not the whole 32-bit register. */
 static inline void test_core_machine_fixture_write_word(
-    core_machine *machine, core_machine_debug_register register_id, lib_u16 value)
+    core_machine *machine, x86_core_cpu_debug_register register_id, lib_u16 value)
 {
     const lib_u32 previous = test_core_machine_fixture_read_register(machine, register_id);
     test_core_machine_fixture_write_register(machine, register_id,
@@ -37,7 +37,7 @@ static inline lib_status test_core_machine_fixture_run_after_delivery(
     core_machine_run_result *out_result)
 {
     lib_status status = core_machine_run(machine, budget, out_result);
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic;
     lib_u8 delivered = LIB_FALSE;
 
     if (status == LIB_STATUS_OK && out_result != LIB_NULL &&

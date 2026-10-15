@@ -17,7 +17,7 @@ typedef struct protected_pic_board_fixture {
 
 static inline lib_status protected_pic_board_read(void *opaque, lib_u32 address,
     void *destination, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance, lib_bool observe_only,
+    x86_core_cpu_memory_access_provenance provenance, lib_bool observe_only,
     lib_bool reset_fetch, lib_u8 cache_control)
 {
     protected_pic_board_fixture *board = opaque;
@@ -27,7 +27,7 @@ static inline lib_status protected_pic_board_read(void *opaque, lib_u32 address,
 
 static inline lib_status protected_pic_board_write(void *opaque, lib_u32 address,
     const void *source, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
+    x86_core_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     protected_pic_board_fixture *board = opaque;
     return cpu_instruction_write(&board->cpu, address, source, bytes, provenance, cache_control);
@@ -50,7 +50,7 @@ static inline lib_status protected_pic_board_acknowledge(void *opaque,
     return LIB_STATUS_OK;
 }
 
-static const core_machine_cpu_bus_provider protected_pic_board_bus = {
+static const x86_core_cpu_bus_provider protected_pic_board_bus = {
     .read_memory = protected_pic_board_read,
     .write_memory = protected_pic_board_write,
     .interrupt_pending = protected_pic_board_pending,
@@ -61,7 +61,7 @@ static inline lib_bool protected_pic_board_prepare(protected_pic_board_fixture *
     lib_bool data_layout)
 {
     static const lib_u8 gate[] = {0,1,8,0,0,0x86u,0,0};
-    static const core_machine_instruction_timing timing = {.base_ticks = 1u};
+    static const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const lib_u8 handler[] = {0xf4u};
 
     lib_memory_set(board, 0, sizeof(*board));
@@ -69,24 +69,24 @@ static inline lib_bool protected_pic_board_prepare(protected_pic_board_fixture *
     if (board->machine == LIB_NULL) return LIB_FALSE;
     if (core_machine_pic_initialize(&board->master, &board->slave, board->machine,
         CORE_MACHINE_PIC_TOPOLOGY_SINGLE) != LIB_STATUS_OK) return LIB_FALSE;
-    cpu_instruction_prepare_with_bus(&board->cpu, CORE_MACHINE_CPU_PROFILE_80386,
+    cpu_instruction_prepare_with_bus(&board->cpu, X86_CORE_CPU_PROFILE_80386,
         &protected_pic_board_bus, board);
     if (data_layout) cpu_protected_prepare_data(&board->cpu,
-        CORE_MACHINE_CPU_PROFILE_80386);
-    else cpu_protected_prepare_far(&board->cpu, CORE_MACHINE_CPU_PROFILE_80386);
+        X86_CORE_CPU_PROFILE_80386);
+    else cpu_protected_prepare_far(&board->cpu, X86_CORE_CPU_PROFILE_80386);
     /* prepare_* replaces the bus, so rebind the board's IRQ-bearing bus. */
-    core_machine_cpu_execution_context_initialize(&board->cpu.execution,
+    x86_core_cpu_execution_context_initialize(&board->cpu.execution,
         &board->cpu.cpu, &board->cpu.instructions, &protected_pic_board_bus, board);
-    core_machine_cpu_execution_context_bind_profiles(&board->cpu.execution,
-        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, LIB_FALSE,
+    x86_core_cpu_execution_context_bind_profiles(&board->cpu.execution,
+        X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, LIB_FALSE,
         &timing);
-    core_machine_cpu_execution_context_bind_diagnostic_provider(&board->cpu.execution,
+    x86_core_cpu_execution_context_bind_diagnostic_provider(&board->cpu.execution,
         &cpu_instruction_diagnostics, &board->cpu);
     board->cpu.cpu.data.idtr.flagValid = LIB_TRUE;
     board->cpu.cpu.data.idtr.sregtype = SREG_IDTR;
     board->cpu.cpu.data.idtr.base = 0x0600u;
     board->cpu.cpu.data.idtr.limit = 0x0107u;
-    board->cpu.cpu.data.eflags |= CORE_MACHINE_DEBUG_EFLAGS_IF;
+    board->cpu.cpu.data.eflags |= X86_CORE_CPU_DEBUG_EFLAGS_IF;
     lib_memory_copy(board->cpu.memory + 0x0700u, gate, sizeof(gate));
     lib_memory_copy(board->cpu.memory + CPU_PROTECTED_CODE_BASE + 0x100u,
         handler, sizeof(handler));

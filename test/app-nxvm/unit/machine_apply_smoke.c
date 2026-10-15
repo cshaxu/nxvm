@@ -77,19 +77,19 @@ static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
         0x3au, 0xc4u, 0x74u, 0xf8u, 0xf4u
     };
     vm_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80186
+        .cpu_profile = X86_CORE_CPU_PROFILE_80186
     };
     vm_machine *session = LIB_NULL;
     core_machine_run_result result = {0};
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP),
-        .values = { [CORE_MACHINE_DEBUG_EIP] = 0x0500u,
-            [CORE_MACHINE_DEBUG_ESP] = 0xfffeu }
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP),
+        .values = { [X86_CORE_CPU_DEBUG_EIP] = 0x0500u,
+            [X86_CORE_CPU_DEBUG_ESP] = 0xfffeu }
     };
     lib_u32 port_b;
     lib_u32 tick;

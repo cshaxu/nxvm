@@ -68,7 +68,7 @@ static const core_machine_execution_provider timing_8086_execution_provider = {
 };
 
 static lib_bool timing_8086_patch_register(core_machine *machine,
-    core_machine_debug_register register_id, lib_u32 mask, lib_u32 value)
+    x86_core_cpu_debug_register register_id, lib_u32 mask, lib_u32 value)
 {
     lib_u32 previous;
     return core_machine_debug_read_register(machine, register_id, &previous) ==
@@ -78,7 +78,7 @@ static lib_bool timing_8086_patch_register(core_machine *machine,
 }
 
 static lib_bool timing_8086_register_matches(const core_machine *machine,
-    core_machine_debug_register register_id, lib_u32 mask, lib_u32 expected)
+    x86_core_cpu_debug_register register_id, lib_u32 mask, lib_u32 expected)
 {
     lib_u32 value;
     return core_machine_debug_read_register(machine, register_id, &value) ==
@@ -89,7 +89,7 @@ static lib_i32 timing_8086_prepare(core_machine **out_machine,
     timing_8086_state *state)
 {
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_8087,
         .ticks_per_instruction = 29u,
         .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
@@ -228,11 +228,11 @@ static lib_i32 timing_8086_test_memory(void)
         failed |= !timing_8086_load(machine, read_direct, sizeof(read_direct)) ||
             core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
                 LIB_STATUS_OK || !timing_8086_execute(machine, 1u, 14u, &state) ||
-            !timing_8086_register_matches(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, value);
+            !timing_8086_register_matches(machine, X86_CORE_CPU_DEBUG_ECX, 0xffffu, value);
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, write_direct, sizeof(write_direct)) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, value) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_ECX, 0xffffu, value) ||
             !timing_8086_execute(machine, 1u, 15u, &state);
     }
     if (!failed) {
@@ -248,8 +248,8 @@ static lib_i32 timing_8086_test_memory(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, read_indexed, sizeof(read_indexed)) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBP, 0xffffu, 0u) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EDI, 0xffffu, 0u) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBP, 0xffffu, 0u) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EDI, 0xffffu, 0u) ||
             core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
                 LIB_STATUS_OK || !timing_8086_execute(machine, 1u, 20u, &state);
     }
@@ -261,14 +261,14 @@ static lib_i32 timing_8086_test_memory(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, moffs_write_odd,
-            sizeof(moffs_write_odd)) || !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, value) ||
+            sizeof(moffs_write_odd)) || !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, value) ||
             !timing_8086_execute(machine, 1u, 14u, &state);
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, lock_add_memory,
             sizeof(lock_add_memory)) ||
             core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
-                LIB_STATUS_OK || !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 1u) ||
+                LIB_STATUS_OK || !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 1u) ||
             !timing_8086_execute(machine, 1u, 24u, &state);
     }
     if (!failed) {
@@ -403,7 +403,7 @@ static lib_i32 timing_8086_test_segment_and_pointer_transfers(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, sreg_from_register,
-            sizeof(sreg_from_register)) || !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, segment) || !timing_8086_execute(machine, 1u, 2u, &state);
+            sizeof(sreg_from_register)) || !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, segment) || !timing_8086_execute(machine, 1u, 2u, &state);
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, sreg_from_memory,
@@ -446,12 +446,12 @@ static lib_i32 timing_8086_test_wait_ticks(void)
             result.elapsed_ticks != 3u || state.advanced_ticks != 3u;
     }
     for (attempts = 0u; !failed && attempts != 8u &&
-            core_machine_cpu_is_halted(machine->executor_cpu_execution); ++attempts) {
+            x86_core_cpu_is_halted(machine->executor_cpu_execution); ++attempts) {
         advanced = LIB_FALSE;
         failed |= core_machine_advance_to_next_deadline(machine, &advanced) !=
             LIB_STATUS_OK || !advanced;
     }
-    failed |= core_machine_cpu_is_halted(machine->executor_cpu_execution) ||
+    failed |= x86_core_cpu_is_halted(machine->executor_cpu_execution) ||
         x86_fpu_ticks_until_completion(machine->fpu, &(lib_u64){0}) !=
             LIB_STATUS_INVALID_STATE;
     core_machine_destroy(machine);
@@ -500,65 +500,65 @@ static lib_i32 timing_8086_test_group3_operand_model(void)
     } while (0)
 
     TIMING_8086_GROUP3_REGISTER_CASE(mul_r8, 71u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 2u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 3u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 2u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 3u)));
     TIMING_8086_GROUP3_REGISTER_CASE(mul_r8, 70u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 0u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 3u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 0u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 3u)));
     TIMING_8086_GROUP3_REGISTER_CASE(mul_r8, 77u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 0xffu) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 3u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 0xffu) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 3u)));
     TIMING_8086_GROUP3_REGISTER_CASE(mul_r16, 119u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 2u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 3u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 2u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 3u)));
     TIMING_8086_GROUP3_REGISTER_CASE(imul_r8, 91u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 2u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 3u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 2u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 3u)));
     TIMING_8086_GROUP3_REGISTER_CASE(imul_r8, 98u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 0x80u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 1u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 0x80u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 1u)));
     TIMING_8086_GROUP3_REGISTER_CASE(imul_r16, 139u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 2u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 3u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 2u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 3u)));
     TIMING_8086_GROUP3_REGISTER_CASE(div_r8, 81u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 6u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 3u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 6u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 3u)));
     TIMING_8086_GROUP3_REGISTER_CASE(div_r8, 80u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 0u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 1u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 0u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 1u)));
     TIMING_8086_GROUP3_REGISTER_CASE(div_r8, 88u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 0xffu) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 1u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 0xffu) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 1u)));
     TIMING_8086_GROUP3_REGISTER_CASE(div_r16, 145u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EDX, 0xffffu, 0u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 6u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 3u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EDX, 0xffffu, 0u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 6u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 3u)));
     TIMING_8086_GROUP3_REGISTER_CASE(idiv_r8, 111u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 6u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 3u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 6u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 3u)));
     TIMING_8086_GROUP3_REGISTER_CASE(idiv_r16, 175u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EDX, 0xffffu, 0u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 6u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBX, 0xffffu, 3u)));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EDX, 0xffffu, 0u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 6u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBX, 0xffffu, 3u)));
     TIMING_8086_GROUP3_MEMORY_CASE(mul_m8, 83u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 2u)), &operand8, sizeof(operand8));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 2u)), &operand8, sizeof(operand8));
     TIMING_8086_GROUP3_MEMORY_CASE(mul_m16, 131u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 2u)), &operand16, sizeof(operand16));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 2u)), &operand16, sizeof(operand16));
     TIMING_8086_GROUP3_MEMORY_CASE(imul_m8, 103u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 2u)), &operand8, sizeof(operand8));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 2u)), &operand8, sizeof(operand8));
     TIMING_8086_GROUP3_MEMORY_CASE(imul_m16, 151u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 2u)), &operand16, sizeof(operand16));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 2u)), &operand16, sizeof(operand16));
     TIMING_8086_GROUP3_MEMORY_CASE(div_m8, 93u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 6u)), &operand8, sizeof(operand8));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 6u)), &operand8, sizeof(operand8));
     TIMING_8086_GROUP3_MEMORY_CASE(div_m16, 157u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EDX, 0xffffu, 0u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 6u)),
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EDX, 0xffffu, 0u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 6u)),
         &operand16, sizeof(operand16));
     TIMING_8086_GROUP3_MEMORY_CASE(idiv_m8, 123u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 6u)), &operand8, sizeof(operand8));
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 6u)), &operand8, sizeof(operand8));
     TIMING_8086_GROUP3_MEMORY_CASE(idiv_m16, 187u,
-        (timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EDX, 0xffffu, 0u) &&
-            timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, 6u)),
+        (timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EDX, 0xffffu, 0u) &&
+            timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, 6u)),
         &operand16, sizeof(operand16));
 
 #undef TIMING_8086_GROUP3_MEMORY_CASE
@@ -600,7 +600,7 @@ static lib_i32 timing_8086_test_group2_forms(void)
         }
         if (!failed) {
             failed |= !timing_8086_load(machine, register_cl,
-                sizeof(register_cl)) || !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, 2u) ||
+                sizeof(register_cl)) || !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_ECX, 0xffffu, 2u) ||
                 !timing_8086_execute(machine, 1u, 16u, &state);
         }
         if (!failed) {
@@ -611,7 +611,7 @@ static lib_i32 timing_8086_test_group2_forms(void)
         if (!failed) {
             failed |= !timing_8086_load(machine, memory_cl, sizeof(memory_cl)) ||
                 core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
-                    LIB_STATUS_OK || !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, 2u) ||
+                    LIB_STATUS_OK || !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_ECX, 0xffffu, 2u) ||
                 !timing_8086_execute(machine, 1u, 34u, &state);
         }
         core_machine_destroy(machine);
@@ -641,14 +641,14 @@ static lib_i32 timing_8086_test_control_repeat_and_ports(void)
 
     if (!failed) {
         failed |= !timing_8086_load(machine, taken, sizeof(taken)) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
-                0u, CORE_MACHINE_DEBUG_EFLAGS_ZF) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
+                0u, X86_CORE_CPU_DEBUG_EFLAGS_ZF) ||
             !timing_8086_execute(machine, 1u, 16u, &state);
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, not_taken, sizeof(not_taken)) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
-                0u, CORE_MACHINE_DEBUG_EFLAGS_ZF) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
+                0u, X86_CORE_CPU_DEBUG_EFLAGS_ZF) ||
             !timing_8086_execute(machine, 1u, 4u, &state);
     }
     if (!failed) {
@@ -662,25 +662,25 @@ static lib_i32 timing_8086_test_control_repeat_and_ports(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, movsw, sizeof(movsw)) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_ESI, 0xffffu, 0x1001u) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EDI, 0xffffu, 0x1101u) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_ESI, 0xffffu, 0x1001u) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EDI, 0xffffu, 0x1101u) ||
             !timing_8086_execute(machine, 1u, 26u, &state);
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, rep_movsb, sizeof(rep_movsb)) ||
             core_machine_memory_write(machine, 0x1000u, source, sizeof(source)) !=
-                LIB_STATUS_OK || !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, 3u) ||
-                !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_ESI, 0xffffu, 0x1000u) ||
-                !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EDI, 0xffffu, 0x1100u) ||
+                LIB_STATUS_OK || !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_ECX, 0xffffu, 3u) ||
+                !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_ESI, 0xffffu, 0x1000u) ||
+                !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EDI, 0xffffu, 0x1100u) ||
             !timing_8086_execute(machine, 3u, 60u, &state);
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, segment_rep_movsb,
             sizeof(segment_rep_movsb)) || core_machine_memory_write(machine,
                 0x1000u, source, sizeof(source)) != LIB_STATUS_OK ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, 3u) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_ESI, 0xffffu, 0x1000u) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EDI, 0xffffu, 0x1100u) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_ECX, 0xffffu, 3u) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_ESI, 0xffffu, 0x1000u) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EDI, 0xffffu, 0x1100u) ||
             !timing_8086_execute(machine, 3u, 66u, &state);
     }
     if (!failed) {
@@ -689,7 +689,7 @@ static lib_i32 timing_8086_test_control_repeat_and_ports(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, in_dx, sizeof(in_dx)) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EDX, 0xffffu, 0x00e0u) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EDX, 0xffffu, 0x00e0u) ||
             !timing_8086_execute(machine, 1u, 8u, &state) || state.reads != 2u;
     }
     if (!failed) {
@@ -699,7 +699,7 @@ static lib_i32 timing_8086_test_control_repeat_and_ports(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, out_dx, sizeof(out_dx)) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EDX, 0xffffu, 0x00e0u) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EDX, 0xffffu, 0x00e0u) ||
             !timing_8086_execute(machine, 1u, 8u, &state) || state.writes != 2u;
     }
     core_machine_destroy(machine);
@@ -749,9 +749,9 @@ static lib_i32 timing_8086_test_fallback_fault_budget_and_overflow(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, maximum, sizeof(maximum)) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EBP, 0xffffu, 1u) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_EDI, 0xffffu, 0u) ||
-            !timing_8086_patch_register(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, 0x5aa5u) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EBP, 0xffffu, 1u) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_EDI, 0xffffu, 0u) ||
+            !timing_8086_patch_register(machine, X86_CORE_CPU_DEBUG_ECX, 0xffffu, 0x5aa5u) ||
             core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
             result.ticks != 0u || !timing_8086_execute(machine, 1u, 27u, &state);

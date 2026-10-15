@@ -3,7 +3,7 @@
 
 static lib_status core_machine_cpu_bus_read_memory(void *opaque,
     lib_u32 address, void *destination, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance,
+    x86_core_cpu_memory_access_provenance provenance,
     lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     core_machine *machine = (core_machine *)opaque;
@@ -13,7 +13,7 @@ static lib_status core_machine_cpu_bus_read_memory(void *opaque,
         machine->transaction.kind == CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK;
 
     if (machine == LIB_NULL ||
-        (cache_control & ~(CORE_MACHINE_CPU_MEMORY_CACHE_PWT | CORE_MACHINE_CPU_MEMORY_CACHE_PCD)))
+        (cache_control & ~(X86_CORE_CPU_MEMORY_CACHE_PWT | X86_CORE_CPU_MEMORY_CACHE_PCD)))
         return LIB_STATUS_INVALID_ARGUMENT;
     if (observe_only) {
         return core_machine_memory_inspect_physical(&machine->executor_memory,
@@ -51,7 +51,7 @@ static lib_status core_machine_cpu_bus_read_memory(void *opaque,
 
 static lib_status core_machine_cpu_bus_write_memory(void *opaque,
     lib_u32 address, const void *source, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
+    x86_core_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     core_machine *machine = (core_machine *)opaque;
     lib_status status;
@@ -60,7 +60,7 @@ static lib_status core_machine_cpu_bus_write_memory(void *opaque,
         machine->transaction.kind == CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK;
 
     if (machine == LIB_NULL ||
-        (cache_control & ~(CORE_MACHINE_CPU_MEMORY_CACHE_PWT | CORE_MACHINE_CPU_MEMORY_CACHE_PCD)))
+        (cache_control & ~(X86_CORE_CPU_MEMORY_CACHE_PWT | X86_CORE_CPU_MEMORY_CACHE_PCD)))
         return LIB_STATUS_INVALID_ARGUMENT;
     if (!locked) {
         status = core_machine_transaction_begin(&machine->transaction,
@@ -107,17 +107,17 @@ void core_machine_cpu_bus_snoop_write(void *opaque, lib_u32 physical,
         (lib_u64)physical + bytes <= (lib_u64)machine->transaction.address +
             machine->transaction.value)
         return;
-    core_machine_cpu_signal_cache_write(machine->executor_cpu_execution,
+    x86_core_cpu_signal_cache_write(machine->executor_cpu_execution,
         physical, bytes);
 }
 
 static void core_machine_cpu_bus_port_phase(core_machine *machine,
-    core_machine_cpu_external_cycle_phase phase, lib_u16 port, lib_u8 bytes,
+    x86_core_cpu_external_cycle_phase phase, lib_u16 port, lib_u8 bytes,
     lib_bool write)
 {
     core_machine_cpu_external_cycle_trace(machine, phase,
-        CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, port, bytes, write,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, port, bytes, write,
+        X86_CORE_CPU_MEMORY_ACCESS_DATA);
 }
 
 static lib_status core_machine_cpu_bus_transfer_port(void *opaque,
@@ -137,7 +137,7 @@ static lib_status core_machine_cpu_bus_transfer_port(void *opaque,
         }
     }
     core_machine_cpu_bus_port_phase(machine,
-        CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, port, bytes, write);
+        X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, port, bytes, write);
     status = core_machine_transaction_begin(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_CPU,
         write ? CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE :
@@ -145,7 +145,7 @@ static lib_status core_machine_cpu_bus_transfer_port(void *opaque,
         port, write ? *value : bytes, write ? bytes : 0u);
     if (status != LIB_STATUS_OK) {
         core_machine_cpu_bus_port_phase(machine,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL, port, bytes, write);
+            X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL, port, bytes, write);
         return status;
     }
     status = write ? core_machine_port_execute_write_width(ports, port, bytes) :
@@ -153,7 +153,7 @@ static lib_status core_machine_cpu_bus_transfer_port(void *opaque,
     if (status != LIB_STATUS_OK) {
         core_machine_transaction_cancel(&machine->transaction);
         core_machine_cpu_bus_port_phase(machine,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL, port, bytes, write);
+            X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL, port, bytes, write);
         return status;
     }
     if (!write) {
@@ -171,7 +171,7 @@ static void core_machine_cpu_bus_complete_port(void *opaque,
 
     core_machine_transaction_commit(&machine->transaction);
     core_machine_cpu_bus_port_phase(machine,
-        CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, port, bytes, write);
+        X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, port, bytes, write);
 }
 
 static lib_bool core_machine_cpu_bus_interrupt_pending(void *opaque)
@@ -237,31 +237,31 @@ static void core_machine_cpu_bus_extension_command(void *opaque,
 }
 
 static lib_status core_machine_cpu_bus_query_cache_memory(void *opaque,
-    lib_u32 address, core_machine_cpu_cache_query query,
-    core_machine_cpu_cache_memory *out_memory)
+    lib_u32 address, x86_core_cpu_cache_query query,
+    x86_core_cpu_cache_memory *out_memory)
 {
     core_machine *machine = opaque;
 
     if (machine == LIB_NULL || out_memory == LIB_NULL ||
-        (query != CORE_MACHINE_CPU_CACHE_LOOKUP &&
-         query != CORE_MACHINE_CPU_CACHE_RESET_LOOKUP &&
-         query != CORE_MACHINE_CPU_CACHE_FILL_PROBE))
+        (query != X86_CORE_CPU_CACHE_LOOKUP &&
+         query != X86_CORE_CPU_CACHE_RESET_LOOKUP &&
+         query != X86_CORE_CPU_CACHE_FILL_PROBE))
         return LIB_STATUS_INVALID_ARGUMENT;
     return core_machine_memory_query_cpu_cache(&machine->executor_memory,
-        address, query == CORE_MACHINE_CPU_CACHE_RESET_LOOKUP,
-        query == CORE_MACHINE_CPU_CACHE_FILL_PROBE,
+        address, query == X86_CORE_CPU_CACHE_RESET_LOOKUP,
+        query == X86_CORE_CPU_CACHE_FILL_PROBE,
         &out_memory->address, &out_memory->fill_enabled);
 }
 
 static lib_status core_machine_cpu_bus_cache_operation(void *opaque,
-    core_machine_cpu_cache_operation operation)
+    x86_core_cpu_cache_operation operation)
 {
     core_machine *machine = opaque;
     lib_status status;
 
     if (machine == LIB_NULL ||
-        (operation != CORE_MACHINE_CPU_CACHE_WRITEBACK &&
-         operation != CORE_MACHINE_CPU_CACHE_FLUSH))
+        (operation != X86_CORE_CPU_CACHE_WRITEBACK &&
+         operation != X86_CORE_CPU_CACHE_FLUSH))
         return LIB_STATUS_INVALID_ARGUMENT;
     status = core_machine_transaction_begin(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_CPU, CORE_MACHINE_TRANSACTION_CPU_CACHE_OPERATION,
@@ -305,14 +305,14 @@ static void core_machine_cpu_bus_system_management_active(void *opaque,
 }
 
 static lib_status core_machine_cpu_bus_special_cycle(void *opaque,
-    core_machine_cpu_special_cycle cycle, lib_bool *acknowledged)
+    x86_core_cpu_special_cycle cycle, lib_bool *acknowledged)
 {
     core_machine *machine = opaque;
     lib_bool ready = LIB_TRUE;
     lib_status status;
 
     if (machine == LIB_NULL || acknowledged == LIB_NULL ||
-        cycle < CORE_MACHINE_CPU_SPECIAL_HALT || cycle > CORE_MACHINE_CPU_SPECIAL_STOP_GRANT)
+        cycle < X86_CORE_CPU_SPECIAL_HALT || cycle > X86_CORE_CPU_SPECIAL_STOP_GRANT)
         return LIB_STATUS_INVALID_ARGUMENT;
     *acknowledged = LIB_FALSE;
     if (machine->transaction.owner == CORE_MACHINE_TRANSACTION_OWNER_NONE) {
@@ -320,8 +320,8 @@ static lib_status core_machine_cpu_bus_special_cycle(void *opaque,
             return LIB_STATUS_OK;
         status = core_machine_transaction_begin(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_CPU, CORE_MACHINE_TRANSACTION_CPU_SPECIAL_CYCLE,
-            cycle == CORE_MACHINE_CPU_SPECIAL_STOP_GRANT ? 0x10u : 0u,
-            (lib_u32)cycle, cycle == CORE_MACHINE_CPU_SPECIAL_SHUTDOWN ? 0x0eu : 0x0bu);
+            cycle == X86_CORE_CPU_SPECIAL_STOP_GRANT ? 0x10u : 0u,
+            (lib_u32)cycle, cycle == X86_CORE_CPU_SPECIAL_SHUTDOWN ? 0x0eu : 0x0bu);
         if (status != LIB_STATUS_OK) return status;
     } else if (machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_CPU ||
         machine->transaction.kind != CORE_MACHINE_TRANSACTION_CPU_SPECIAL_CYCLE ||
@@ -340,7 +340,7 @@ static lib_status core_machine_cpu_bus_special_cycle(void *opaque,
 }
 
 static void core_machine_cpu_bus_cancel_special_cycle(void *opaque,
-    core_machine_cpu_special_cycle cycle)
+    x86_core_cpu_special_cycle cycle)
 {
     core_machine *machine = opaque;
 
@@ -352,7 +352,7 @@ static void core_machine_cpu_bus_cancel_special_cycle(void *opaque,
     core_machine_transaction_cancel(&machine->transaction);
 }
 
-const core_machine_cpu_bus_provider core_machine_cpu_bus = {
+const x86_core_cpu_bus_provider core_machine_cpu_bus = {
     .read_memory = core_machine_cpu_bus_read_memory,
     .write_memory = core_machine_cpu_bus_write_memory,
     .transfer_port = core_machine_cpu_bus_transfer_port,
@@ -416,19 +416,19 @@ void core_machine_transaction_trace(void *opaque,
 }
 
 static lib_i32 core_machine_external_cycle_access_is_chargeable(lib_u8 write,
-    core_machine_cpu_memory_access_provenance provenance)
+    x86_core_cpu_memory_access_provenance provenance)
 {
-    return (!write && (provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH ||
-        provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_DATA ||
-        provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ)) ||
-        (write && (provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_DATA ||
-        provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
+    return (!write && (provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH ||
+        provenance == X86_CORE_CPU_MEMORY_ACCESS_DATA ||
+        provenance == X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ)) ||
+        (write && (provenance == X86_CORE_CPU_MEMORY_ACCESS_DATA ||
+        provenance == X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
 }
 
 static lib_i32 core_machine_external_cycle_pending_matches(const core_machine *machine,
-    core_machine_cpu_external_cycle_space space, lib_u32 address,
+    x86_core_cpu_external_cycle_space space, lib_u32 address,
     lib_u8 bytes, lib_u8 write,
-    core_machine_cpu_memory_access_provenance provenance)
+    x86_core_cpu_memory_access_provenance provenance)
 {
     return machine != LIB_NULL && machine->external_cycle_pending_valid &&
         machine->external_cycle_pending_space == space &&
@@ -439,7 +439,7 @@ static lib_i32 core_machine_external_cycle_pending_matches(const core_machine *m
 }
 
 static lib_u32 core_machine_external_access_wait_ticks(
-    const core_machine *machine, core_machine_cpu_external_cycle_space space,
+    const core_machine *machine, x86_core_cpu_external_cycle_space space,
     lib_u32 address)
 {
     lib_size index;
@@ -466,10 +466,10 @@ void core_machine_external_cycle_invalidate(core_machine *machine)
 }
 
 void core_machine_cpu_external_cycle_trace(void *opaque,
-    core_machine_cpu_external_cycle_phase phase,
-    core_machine_cpu_external_cycle_space space, lib_u32 address,
+    x86_core_cpu_external_cycle_phase phase,
+    x86_core_cpu_external_cycle_space space, lib_u32 address,
     lib_u8 bytes, lib_u8 write,
-    core_machine_cpu_memory_access_provenance provenance)
+    x86_core_cpu_memory_access_provenance provenance)
 {
     core_machine *machine = (core_machine *)opaque;
     core_machine_trace_event_type type;
@@ -477,14 +477,14 @@ void core_machine_cpu_external_cycle_trace(void *opaque,
     lib_u8 page_timing_enabled;
 
     if (machine == LIB_NULL) return;
-    page_timing_enabled = space == CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
+    page_timing_enabled = space == X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
         machine->transaction_contract.external_cycle_timing.page_bytes != 0u &&
         ((machine->transaction_contract.external_cycle_timing.first_eligible_address == 0u &&
           machine->transaction_contract.external_cycle_timing.last_eligible_address == 0u) ||
          (address >= machine->transaction_contract.external_cycle_timing.first_eligible_address &&
           address <= machine->transaction_contract.external_cycle_timing.last_eligible_address));
     switch (phase) {
-    case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN:
+    case X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN:
         if (machine->external_cycle_pending_valid) {
             core_machine_external_cycle_invalidate(machine);
         } else if (page_timing_enabled && machine->external_cycle_overlap_valid &&
@@ -499,16 +499,16 @@ void core_machine_cpu_external_cycle_trace(void *opaque,
         machine->external_cycle_pending_provenance = provenance;
         type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN;
         break;
-    case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_OVERLAP_DECLARE:
+    case X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_OVERLAP_DECLARE:
         if (page_timing_enabled && machine->transaction_contract.external_cycle_timing.overlap_policy ==
                 CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL &&
             machine->external_cycle_pending_valid &&
             machine->external_cycle_pending_space ==
-                CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
+                X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
             !machine->external_cycle_pending_write && !write &&
             machine->external_cycle_pending_provenance ==
-                CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH &&
-            provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH &&
+                X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH &&
+            provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH &&
             machine->external_cycle_pending_physical <= LIB_UINT32_MAX -
                 machine->external_cycle_pending_bytes &&
             address == machine->external_cycle_pending_physical +
@@ -518,7 +518,7 @@ void core_machine_cpu_external_cycle_trace(void *opaque,
         }
         type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_OVERLAP_DECLARE;
         break;
-    case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT:
+    case X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT:
         pending_matches = core_machine_external_cycle_pending_matches(machine,
             space, address, bytes, write, provenance);
         if (pending_matches && page_timing_enabled &&
@@ -555,7 +555,7 @@ void core_machine_cpu_external_cycle_trace(void *opaque,
         }
         type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT;
         break;
-    case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL:
+    case X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL:
         if (core_machine_external_cycle_pending_matches(machine, space, address,
                 bytes, write, provenance)) {
             core_machine_external_cycle_invalidate(machine);

@@ -41,7 +41,7 @@ static lib_status vm_machine_control_reset_machine(vm_machine *machine)
 static void vm_machine_control_refresh_machine_debug(
     vm_machine *machine)
 {
-    core_machine_debug_instruction_observation observation;
+    x86_core_cpu_debug_instruction_observation observation;
 
     if (machine == LIB_NULL || core_machine_debug_capture_instruction_observation(
             machine->core_machine, &observation) != LIB_STATUS_OK) return;

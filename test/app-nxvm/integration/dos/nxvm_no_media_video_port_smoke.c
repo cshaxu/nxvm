@@ -86,7 +86,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         if (opcode[0] == 0xcdu && opcode[1] == 0x10u) {
             ++int10_count;
             if (core_machine_debug_read_register(session->core_machine,
-                    CORE_MACHINE_DEBUG_EAX, &eax) != LIB_STATUS_OK) {
+                    X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK) {
                 goto fail;
             }
             functions[(eax >> 8u) & 0xffu] = 1u;

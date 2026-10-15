@@ -12,7 +12,7 @@
 #define _SOURCE 0x0001fffdu
 #define _DESTINATION 0x0002fffdu
 
-static lib_i32 _prepare(core_machine_cpu_profile profile, core_machine **out_machine)
+static lib_i32 _prepare(x86_core_cpu_profile profile, core_machine **out_machine)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -72,10 +72,10 @@ int main(void)
     static const lib_u8 segment_destination[] = {0x5au};
     const core_machine_run_budget budget = {256u, 0u};
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot snapshot;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot snapshot;
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine);
+    lib_i32 failed = !_prepare(X86_CORE_CPU_PROFILE_80386, &machine);
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
@@ -88,16 +88,16 @@ int main(void)
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
             snapshot.ecx != 1u ||
             snapshot.esi != 0xffffu ||
             snapshot.edi != 0xffffu ||
-            (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_ZF) != 0u;
+            (snapshot.eflags & X86_CORE_CPU_DEBUG_EFLAGS_ZF) != 0u;
     }
     core_machine_destroy(machine);
     machine = LIB_NULL;
     if (!failed) {
-        failed |= !_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine) ||
+        failed |= !_prepare(X86_CORE_CPU_PROFILE_80386, &machine) ||
             core_machine_memory_write(machine, 0u, scas_program,
                 sizeof(scas_program)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, _SOURCE, scas_bytes,
@@ -107,15 +107,15 @@ int main(void)
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
             snapshot.ecx != 1u ||
             snapshot.edi != 0xffffu ||
-            (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_ZF) == 0u;
+            (snapshot.eflags & X86_CORE_CPU_DEBUG_EFLAGS_ZF) == 0u;
     }
     core_machine_destroy(machine);
     machine = LIB_NULL;
     if (!failed) {
-        failed |= !_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine) ||
+        failed |= !_prepare(X86_CORE_CPU_PROFILE_80386, &machine) ||
             core_machine_memory_write(machine, 0u, segment_program,
                 sizeof(segment_program)) != LIB_STATUS_OK ||
             /* 80386 real mode still limits every segment offset to FFFFh.
@@ -132,11 +132,11 @@ int main(void)
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
             snapshot.ecx != 0u ||
             snapshot.esi != 0x00001001u ||
             snapshot.edi != 0xfffeu ||
-            (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_ZF) == 0u;
+            (snapshot.eflags & X86_CORE_CPU_DEBUG_EFLAGS_ZF) == 0u;
     }
     core_machine_destroy(machine);
     if (failed) return 1;

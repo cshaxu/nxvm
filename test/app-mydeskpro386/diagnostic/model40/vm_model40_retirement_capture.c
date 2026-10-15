@@ -34,12 +34,12 @@ typedef struct model40_retirement_capture_form {
     lib_u8 escape_opcode;
     lib_u8 group_extension;
     lib_u32 source_timing_form_id;
-    core_machine_retirement_timing_origin timing_origin;
+    x86_core_cpu_retirement_timing_origin timing_origin;
     core_machine_retirement_modrm_form modrm_form;
     lib_u8 modrm_extension;
     core_machine_retirement_control_outcome control_outcome;
     lib_u8 next_lexeme_components;
-    core_machine_retirement_repeat_phase repeat_phase;
+    x86_core_cpu_retirement_repeat_phase repeat_phase;
     lib_u64 ticks;
     lib_u8 cpl;
     lib_u8 protected_mode;
@@ -97,7 +97,7 @@ typedef struct model40_retirement_capture {
     lib_u8 fdc_port_seen;
     lib_u8 fdc_read_data_baseline_valid;
     lib_u64 fdc_terminal_sequence_at_c0a;
-    lib_u8 terminal_bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES];
+    lib_u8 terminal_bytes[X86_CORE_CPU_DIAGNOSTIC_BYTES];
     lib_u8 terminal_byte_count;
     lib_u8 checkpoint_reached;
     lib_u8 c1_checkpoint_reached;
@@ -482,7 +482,7 @@ static lib_i32 model40_capture_form_matches(
     const model40_retirement_capture_form *form, const char *name,
     const char *operand, lib_u8 opcode, lib_u8 escape_opcode,
     lib_u8 group_extension, lib_u32 source_timing_form_id,
-    core_machine_retirement_timing_origin timing_origin,
+    x86_core_cpu_retirement_timing_origin timing_origin,
     const core_machine_retirement_observation *observation)
 {
     return form != LIB_NULL && observation != LIB_NULL &&
@@ -1045,10 +1045,10 @@ static lib_i32 model40_capture_synthetic_c0_smoke(void)
     model40_retirement_capture capture = { 0 };
     core_machine_retirement_observation observation = { 0 };
 
-    observation.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    observation.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     observation.timing_disposition = CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     observation.timing_origin =
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK;
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK;
     observation.point.byte_count = 2u;
     observation.point.bytes[0] = 0x66u;
     observation.point.bytes[1] = 0xb8u;
@@ -1056,7 +1056,7 @@ static lib_i32 model40_capture_synthetic_c0_smoke(void)
     model40_capture_observe(&capture, &observation);
     observation.protected_mode = LIB_TRUE;
     observation.timing_origin =
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_SECONDARY;
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_SECONDARY;
     observation.point.bytes[0] = 0x0fu;
     observation.point.bytes[1] = 0x20u;
     observation.point.byte_count = 2u;
@@ -1068,12 +1068,12 @@ static lib_i32 model40_capture_synthetic_c0_smoke(void)
     observation.modrm_extension = CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE;
     observation.protected_mode = LIB_FALSE;
     observation.timing_origin =
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK;
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK;
     observation.point.bytes[0] = 0xeau;
     observation.point.byte_count = 1u;
     model40_capture_observe(&capture, &observation);
     observation.timing_origin =
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY;
     observation.point.bytes[0] = 0xe6u;
     observation.point.bytes[1] = 0x84u;
     observation.point.byte_count = 2u;
@@ -1106,13 +1106,13 @@ static lib_i32 model40_capture_synthetic_key_mapping_smoke(void)
     model40_retirement_capture capture = { 0 };
     core_machine_retirement_observation observation = { 0 };
 
-    observation.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    observation.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     observation.timing_disposition = CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     observation.point.byte_count = 1u;
     observation.point.bytes[0] = 0x90u;
-    observation.eligibility_key.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    observation.eligibility_key.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     observation.eligibility_key.timing_origin =
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY;
     observation.eligibility_key.source_timing_form_id = 1u;
     observation.eligibility_key.opcode = 0x90u;
     observation.eligibility_key.escape_opcode = 0xffu;
@@ -1137,7 +1137,7 @@ static lib_i32 model40_capture_synthetic_c0a_smoke(void)
     core_machine_retirement_observation observation = { 0 };
 
     capture.c0a_diagnostic = LIB_TRUE;
-    observation.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    observation.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     observation.timing_disposition = CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     observation.point.byte_count = 2u;
     observation.point.bytes[0] = 0x90u;
@@ -1209,7 +1209,7 @@ static lib_i32 model40_capture_synthetic_c1_transfer_smoke(void)
     core_machine_retirement_observation observation = { 0 };
 
     capture.c1_transfer_diagnostic = LIB_TRUE;
-    observation.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    observation.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     observation.timing_disposition = CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     observation.point.byte_count = 2u;
     observation.point.bytes[0] = 0x90u;
@@ -1240,9 +1240,9 @@ lib_i32 main(lib_i32 argc, char **argv)
     const core_machine_run_budget budget = { MODEL40_CAPTURE_RUN_INSTRUCTIONS, 0u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result = { 0 };
-    core_machine_cpu_diagnostic diagnostic = { 0 };
-    core_machine_debug_cpu_snapshot current_cpu;
-    core_machine_debug_cpu_snapshot entry_cpu;
+    x86_core_cpu_diagnostic diagnostic = { 0 };
+    x86_core_cpu_debug_cpu_snapshot current_cpu;
+    x86_core_cpu_debug_cpu_snapshot entry_cpu;
     model40_retirement_capture capture = { 0 };
     integration_ini_session ini_session = {0};
     vm_machine *session;
@@ -1297,7 +1297,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         capture.reset_vector2_read = core_machine_memory_read(session->core_machine,
             8u, capture.reset_vector2, sizeof(capture.reset_vector2)) == LIB_STATUS_OK;
         status = core_machine_debug_set_watchpoint(session->core_machine,
-            CORE_MACHINE_DEBUG_WATCH_WRITE, 0x0000001au);
+            X86_CORE_CPU_DEBUG_WATCH_WRITE, 0x0000001au);
     }
     for (index = 0u; status == LIB_STATUS_OK && index < MODEL40_CAPTURE_RUN_LIMIT &&
         (!capture.checkpoint_reached || (c1_diagnostic && !capture.c1_checkpoint_reached) ||
@@ -1319,10 +1319,10 @@ lib_i32 main(lib_i32 argc, char **argv)
             if (status != LIB_STATUS_OK || !advanced) break;
         }
         status = core_machine_debug_capture_cpu_snapshot(session->core_machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu);
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &current_cpu);
         if (status == LIB_STATUS_OK) {
             status = core_machine_debug_capture_cpu_snapshot(session->core_machine,
-                CORE_MACHINE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &entry_cpu);
+                X86_CORE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &entry_cpu);
         }
         if (status != LIB_STATUS_OK) break;
         if (capture.last_software_interrupt_valid &&
@@ -1348,7 +1348,7 @@ lib_i32 main(lib_i32 argc, char **argv)
                 sizeof(capture.interrupt_service_frame)) == LIB_STATUS_OK;
         }
         {
-            core_machine_cpu_state cpu = {0};
+            x86_core_cpu_state cpu = {0};
 
             if (core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK &&
                 cpu.cs_base + cpu.eip == 0x000f1bd0u) {
@@ -1489,8 +1489,8 @@ lib_i32 main(lib_i32 argc, char **argv)
         (unsigned)capture.c1_checkpoint_reached, (unsigned)status,
         (unsigned)result.reason, (unsigned)result.detail, (unsigned)result.linear_pc);
     if (fdc_read_data_diagnostic) {
-        core_machine_cpu_state cpu = {0};
-        lib_u8 bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES] = {0};
+        x86_core_cpu_state cpu = {0};
+        lib_u8 bytes[X86_CORE_CPU_DIAGNOSTIC_BYTES] = {0};
         lib_u32 linear_pc = 0u;
 
         printf("MODEL40:FDC-PREDECESSOR:c0a=%u baseline=%u port=%u read-data=%u "
@@ -1537,7 +1537,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             (unsigned)diagnostic.last_delivered_exception.point.linear_pc);
     }
     {
-        lib_u8 bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES] = {0};
+        lib_u8 bytes[X86_CORE_CPU_DIAGNOSTIC_BYTES] = {0};
 
         if (core_machine_memory_read(session->core_machine, result.linear_pc,
                 bytes, sizeof(bytes)) == LIB_STATUS_OK) {
@@ -1548,7 +1548,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         }
     }
     {
-        core_machine_cpu_state cpu = {0};
+        x86_core_cpu_state cpu = {0};
 
         if (core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK) {
             printf("MODEL40:FINAL-CPU:cs=%04X-base=%08X-eip=%08X-flags=%08X-halted=%u\n",
@@ -1558,7 +1558,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         }
     }
     if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu) == LIB_STATUS_OK) {
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &current_cpu) == LIB_STATUS_OK) {
         printf("MODEL40:FINAL-INTERNAL-CPU:es=%04X-base=%08X-ds=%04X-base=%08X-ss=%04X-base=%08X-ebx=%08X-eax=%08X-cr0=%08X\n",
             (unsigned)current_cpu.es.selector,
             (unsigned)current_cpu.es.base,

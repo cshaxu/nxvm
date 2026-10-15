@@ -39,7 +39,7 @@ static const core_machine_execution_provider control_stack_timing_timing_provide
     control_stack_timing_timing_advance
 };
 
-static lib_i32 control_stack_timing_prepare(core_machine_cpu_profile profile,
+static lib_i32 control_stack_timing_prepare(x86_core_cpu_profile profile,
     core_machine **out_machine, control_stack_timing_timing_state *state)
 {
     const core_machine_config config = { .cpu_profile = profile };
@@ -69,18 +69,18 @@ static lib_i32 control_stack_timing_run(core_machine *machine,
 {
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine_cpu_profile profile;
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = { [CORE_MACHINE_DEBUG_CS] = 0xf000u,
-            [CORE_MACHINE_DEBUG_EIP] = 0xfff0u }
+    x86_core_cpu_profile profile;
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = { [X86_CORE_CPU_DEBUG_CS] = 0xf000u,
+            [X86_CORE_CPU_DEBUG_EIP] = 0xfff0u }
     };
 
     return machine != LIB_NULL && program != LIB_NULL && state != LIB_NULL &&
         core_machine_reset(machine) == LIB_STATUS_OK &&
         core_machine_get_cpu_profile(machine, &profile) == LIB_STATUS_OK &&
-        (profile >= CORE_MACHINE_CPU_PROFILE_80286 ||
+        (profile >= X86_CORE_CPU_PROFILE_80286 ||
             core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK) &&
         (setup == LIB_NULL || setup(machine, opaque)) &&
         core_machine_memory_write(machine, CONTROL_STACK_TIMING_RESET_LINEAR, program,
@@ -92,7 +92,7 @@ static lib_i32 control_stack_timing_run(core_machine *machine,
 }
 
 static lib_i32 control_stack_timing_write_word(core_machine *machine,
-    core_machine_debug_register register_id, lib_u16 value)
+    x86_core_cpu_debug_register register_id, lib_u16 value)
 {
     lib_u32 previous;
 
@@ -102,7 +102,7 @@ static lib_i32 control_stack_timing_write_word(core_machine *machine,
 }
 
 static lib_i32 control_stack_timing_word_matches(core_machine *machine,
-    core_machine_debug_register register_id, lib_u16 expected)
+    x86_core_cpu_debug_register register_id, lib_u16 expected)
 {
     lib_u32 value;
 
@@ -116,7 +116,7 @@ static lib_i32 control_stack_timing_seed_pop(core_machine *machine, void *opaque
 
     (void)opaque;
     if (machine == LIB_NULL) return 0;
-    if (!control_stack_timing_write_word(machine, CORE_MACHINE_DEBUG_ESP, 0x1000u)) return 0;
+    if (!control_stack_timing_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1000u)) return 0;
     return core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) ==
         LIB_STATUS_OK;
 }
@@ -125,7 +125,7 @@ static lib_i32 control_stack_timing_seed_loop_not_taken(core_machine *machine, v
 {
     (void)opaque;
     if (machine == LIB_NULL) return 0;
-    if (!control_stack_timing_write_word(machine, CORE_MACHINE_DEBUG_ECX, 1u)) return 0;
+    if (!control_stack_timing_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 1u)) return 0;
     return 1;
 }
 
@@ -136,8 +136,8 @@ static lib_i32 control_stack_timing_seed_transfer(core_machine *machine, void *o
 
     (void)opaque;
     if (machine == LIB_NULL) return 0;
-    if (!control_stack_timing_write_word(machine, CORE_MACHINE_DEBUG_EAX, target)) return 0;
-    if (!control_stack_timing_write_word(machine, CORE_MACHINE_DEBUG_ESP, 0x1020u)) return 0;
+    if (!control_stack_timing_write_word(machine, X86_CORE_CPU_DEBUG_EAX, target)) return 0;
+    if (!control_stack_timing_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1020u)) return 0;
     return core_machine_memory_write(machine, 0x1000u, &target,
         sizeof(target)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, 0x000ffff5u, &nop, sizeof(nop)) ==
@@ -159,10 +159,10 @@ static lib_i32 control_stack_timing_seed_interrupt(core_machine *machine, void *
     if (setup->set_overflow) {
         lib_u32 flags;
 
-        if (core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
+        if (core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
                 &flags) != LIB_STATUS_OK ||
-            core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
-                flags | CORE_MACHINE_DEBUG_EFLAGS_OF) != LIB_STATUS_OK) return 0;
+            core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
+                flags | X86_CORE_CPU_DEBUG_EFLAGS_OF) != LIB_STATUS_OK) return 0;
     }
     return
         core_machine_memory_write(machine, vector, &offset,
@@ -180,14 +180,14 @@ static lib_i32 control_stack_timing_seed_iret(core_machine *machine, void *opaqu
 
     (void)opaque;
     if (machine == LIB_NULL) return 0;
-    if (!control_stack_timing_write_word(machine, CORE_MACHINE_DEBUG_ESP, 0x1020u)) return 0;
+    if (!control_stack_timing_write_word(machine, X86_CORE_CPU_DEBUG_ESP, 0x1020u)) return 0;
     return core_machine_memory_write(machine, 0x1020u, frame,
         sizeof(frame)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, 0x000ffff5u, &nop,
             sizeof(nop)) == LIB_STATUS_OK;
 }
 
-static lib_i32 control_stack_timing_test_profile_rows(core_machine_cpu_profile profile,
+static lib_i32 control_stack_timing_test_profile_rows(x86_core_cpu_profile profile,
     lib_u64 call_ticks, lib_u64 jmp_ticks,
     lib_u64 push_ticks, lib_u64 pop_ticks,
     lib_u64 loop_ticks, lib_u64 jcxz_ticks,
@@ -211,11 +211,11 @@ static lib_i32 control_stack_timing_test_profile_rows(core_machine_cpu_profile p
     if (!failed) {
         failed |= !control_stack_timing_run(machine, call_near, sizeof(call_near),
             call_ticks, &state, LIB_NULL, LIB_NULL) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff5u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, jmp_near, sizeof(jmp_near), jmp_ticks,
-            &state, LIB_NULL, LIB_NULL) || !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff3u);
+            &state, LIB_NULL, LIB_NULL) || !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff3u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, push_register, sizeof(push_register),
@@ -224,12 +224,12 @@ static lib_i32 control_stack_timing_test_profile_rows(core_machine_cpu_profile p
     if (!failed) {
         failed |= !control_stack_timing_run(machine, pop_register, sizeof(pop_register),
             pop_ticks, &state, control_stack_timing_seed_pop, LIB_NULL) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EAX, 0x1234u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EAX, 0x1234u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, loop_not_taken, sizeof(loop_not_taken),
             loop_ticks, &state, control_stack_timing_seed_loop_not_taken, LIB_NULL) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_ECX, 0u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_ECX, 0u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, jcxz_not_taken,
@@ -259,10 +259,10 @@ static lib_i32 control_stack_timing_test_80186_stack_rows(void)
         0xc8u, 0x00u, 0x00u, 0x00u
     };
     static const lib_u8 leave[] = { 0xc9u };
-    static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_80186,
+        X86_CORE_CPU_PROFILE_80286,
+        X86_CORE_CPU_PROFILE_80386
     };
     static const lib_u64 pusha_ticks[] = { 36u, 17u, 18u };
     static const lib_u64 popa_ticks[] = { 51u, 19u, 24u };
@@ -291,7 +291,7 @@ static lib_i32 control_stack_timing_test_80186_stack_rows(void)
     return 0;
 }
 
-static lib_i32 control_stack_timing_test_transfer_shapes(core_machine_cpu_profile profile,
+static lib_i32 control_stack_timing_test_transfer_shapes(x86_core_cpu_profile profile,
     lib_u64 call_register_ticks, lib_u64 call_memory_ticks,
     lib_u64 jmp_register_ticks, lib_u64 jmp_memory_ticks,
     lib_u64 ret_ticks, lib_u64 push_memory_ticks,
@@ -319,27 +319,27 @@ static lib_i32 control_stack_timing_test_transfer_shapes(core_machine_cpu_profil
     if (!failed) {
         failed |= !control_stack_timing_run(machine, call_register, sizeof(call_register),
             call_register_ticks, &state, control_stack_timing_seed_transfer, LIB_NULL) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff5u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, call_memory, sizeof(call_memory),
             call_memory_ticks, &state, control_stack_timing_seed_transfer, LIB_NULL) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff5u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, jmp_register, sizeof(jmp_register),
             jmp_register_ticks, &state, control_stack_timing_seed_transfer, LIB_NULL) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff5u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, jmp_memory, sizeof(jmp_memory),
             jmp_memory_ticks, &state, control_stack_timing_seed_transfer, LIB_NULL) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff5u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, ret_near, sizeof(ret_near), ret_ticks,
             &state, control_stack_timing_seed_transfer, LIB_NULL) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff5u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, push_memory, sizeof(push_memory),
@@ -348,13 +348,13 @@ static lib_i32 control_stack_timing_test_transfer_shapes(core_machine_cpu_profil
     if (!failed) {
         failed |= !control_stack_timing_run(machine, pop_memory, sizeof(pop_memory),
             pop_memory_ticks, &state, control_stack_timing_seed_transfer, LIB_NULL) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff4u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff4u);
     }
     core_machine_destroy(machine);
     return failed;
 }
 
-static lib_i32 control_stack_timing_test_far_direct(core_machine_cpu_profile profile,
+static lib_i32 control_stack_timing_test_far_direct(x86_core_cpu_profile profile,
     lib_u64 call_ticks, lib_u64 jmp_ticks)
 {
     static const lib_u8 call_far[] = {
@@ -370,20 +370,20 @@ static lib_i32 control_stack_timing_test_far_direct(core_machine_cpu_profile pro
     if (!failed) {
         failed |= !control_stack_timing_run(machine, call_far, sizeof(call_far), call_ticks,
             &state, control_stack_timing_seed_transfer, LIB_NULL) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_CS, 0xf000u) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff5u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_CS, 0xf000u) ||
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, jmp_far, sizeof(jmp_far), jmp_ticks,
             &state, control_stack_timing_seed_transfer, LIB_NULL) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_CS, 0xf000u) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff5u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_CS, 0xf000u) ||
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
     core_machine_destroy(machine);
     return failed;
 }
 
-static lib_i32 control_stack_timing_test_real_interrupt_rows(core_machine_cpu_profile profile,
+static lib_i32 control_stack_timing_test_real_interrupt_rows(x86_core_cpu_profile profile,
     lib_u64 int_ticks, lib_u64 into_clear_ticks,
     lib_u64 int3_ticks, lib_u64 into_taken_ticks,
     lib_u64 iret_ticks)
@@ -403,14 +403,14 @@ static lib_i32 control_stack_timing_test_real_interrupt_rows(core_machine_cpu_pr
     if (!failed) {
         failed |= !control_stack_timing_run(machine, int_immediate, sizeof(int_immediate),
             int_ticks, &state, control_stack_timing_seed_interrupt, (void *)&int_setup) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_CS, 0xf000u) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff5u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_CS, 0xf000u) ||
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, int3, sizeof(int3), int3_ticks, &state,
             control_stack_timing_seed_interrupt, (void *)&int3_setup) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_CS, 0xf000u) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff5u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_CS, 0xf000u) ||
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, into_clear, sizeof(into_clear),
@@ -420,14 +420,14 @@ static lib_i32 control_stack_timing_test_real_interrupt_rows(core_machine_cpu_pr
         failed |= !control_stack_timing_run(machine, into_taken, sizeof(into_taken),
             into_taken_ticks, &state, control_stack_timing_seed_interrupt,
             (void *)&into_setup) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_CS, 0xf000u) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff5u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_CS, 0xf000u) ||
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
     if (!failed) {
         failed |= !control_stack_timing_run(machine, iret, sizeof(iret), iret_ticks,
             &state, control_stack_timing_seed_iret, LIB_NULL) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_CS, 0xf000u) ||
-            !control_stack_timing_word_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xfff5u);
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_CS, 0xf000u) ||
+            !control_stack_timing_word_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xfff5u);
     }
     core_machine_destroy(machine);
     return failed;
@@ -438,42 +438,42 @@ lib_i32 main(lib_i32 argc, char **argv)
     (void)argc;
     (void)argv;
 
-    if (control_stack_timing_test_profile_rows(CORE_MACHINE_CPU_PROFILE_8086,
+    if (control_stack_timing_test_profile_rows(X86_CORE_CPU_PROFILE_8086,
             19u, 15u, 11u, 8u, 5u, 6u, 2u)) return 1;
-    if (control_stack_timing_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80186,
+    if (control_stack_timing_test_profile_rows(X86_CORE_CPU_PROFILE_80186,
             15u, 14u, 10u, 10u, 5u, 5u, 2u)) return 2;
-    if (control_stack_timing_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80286,
+    if (control_stack_timing_test_profile_rows(X86_CORE_CPU_PROFILE_80286,
             8u, 8u, 3u, 5u, 4u, 4u, 2u)) return 3;
-    if (control_stack_timing_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80386,
+    if (control_stack_timing_test_profile_rows(X86_CORE_CPU_PROFILE_80386,
             8u, 8u, 2u, 4u, 12u, 6u, 5u)) return 4;
     if (control_stack_timing_test_80186_stack_rows()) return 5;
-    if (control_stack_timing_test_transfer_shapes(CORE_MACHINE_CPU_PROFILE_8086,
+    if (control_stack_timing_test_transfer_shapes(X86_CORE_CPU_PROFILE_8086,
             16u, 27u, 11u, 24u, 8u, 22u, 23u)) return 6;
-    if (control_stack_timing_test_transfer_shapes(CORE_MACHINE_CPU_PROFILE_80186,
+    if (control_stack_timing_test_transfer_shapes(X86_CORE_CPU_PROFILE_80186,
             13u, 19u, 11u, 17u, 16u, 16u, 20u)) return 7;
-    if (control_stack_timing_test_transfer_shapes(CORE_MACHINE_CPU_PROFILE_80286,
+    if (control_stack_timing_test_transfer_shapes(X86_CORE_CPU_PROFILE_80286,
             8u, 12u, 8u, 12u, 12u, 5u, 5u)) return 8;
-    if (control_stack_timing_test_transfer_shapes(CORE_MACHINE_CPU_PROFILE_80386,
+    if (control_stack_timing_test_transfer_shapes(X86_CORE_CPU_PROFILE_80386,
             8u, 11u, 8u, 11u, 11u, 5u, 5u)) return 9;
-    if (control_stack_timing_test_far_direct(CORE_MACHINE_CPU_PROFILE_8086, 28u, 15u)) {
+    if (control_stack_timing_test_far_direct(X86_CORE_CPU_PROFILE_8086, 28u, 15u)) {
         return 10;
     }
-    if (control_stack_timing_test_far_direct(CORE_MACHINE_CPU_PROFILE_80186, 23u, 14u)) {
+    if (control_stack_timing_test_far_direct(X86_CORE_CPU_PROFILE_80186, 23u, 14u)) {
         return 11;
     }
-    if (control_stack_timing_test_far_direct(CORE_MACHINE_CPU_PROFILE_80286, 14u, 12u)) {
+    if (control_stack_timing_test_far_direct(X86_CORE_CPU_PROFILE_80286, 14u, 12u)) {
         return 12;
     }
-    if (control_stack_timing_test_far_direct(CORE_MACHINE_CPU_PROFILE_80386, 18u, 13u)) {
+    if (control_stack_timing_test_far_direct(X86_CORE_CPU_PROFILE_80386, 18u, 13u)) {
         return 13;
     }
-    if (control_stack_timing_test_real_interrupt_rows(CORE_MACHINE_CPU_PROFILE_8086,
+    if (control_stack_timing_test_real_interrupt_rows(X86_CORE_CPU_PROFILE_8086,
             51u, 4u, 52u, 53u, 24u)) return 14;
-    if (control_stack_timing_test_real_interrupt_rows(CORE_MACHINE_CPU_PROFILE_80186,
+    if (control_stack_timing_test_real_interrupt_rows(X86_CORE_CPU_PROFILE_80186,
             47u, 4u, 45u, 48u, 28u)) return 15;
-    if (control_stack_timing_test_real_interrupt_rows(CORE_MACHINE_CPU_PROFILE_80286,
+    if (control_stack_timing_test_real_interrupt_rows(X86_CORE_CPU_PROFILE_80286,
             24u, 5u, 24u, 25u, 18u)) return 16;
-    if (control_stack_timing_test_real_interrupt_rows(CORE_MACHINE_CPU_PROFILE_80386,
+    if (control_stack_timing_test_real_interrupt_rows(X86_CORE_CPU_PROFILE_80386,
             37u, 3u, 33u, 35u, 22u)) return 17;
     lib_c_printf("CONTROL-STACK-TIMING:OK\n");
     return 0;

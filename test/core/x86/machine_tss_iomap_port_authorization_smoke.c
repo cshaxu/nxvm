@@ -2,7 +2,7 @@
 #include "lib/types/file.h"
 #include "core/x86/device_support_interface.h"
 
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #include "core/x86/debug_interface.h"
 #include "debug_fixture.h"
 #include "core/x86/memory_interface.h"
@@ -72,7 +72,7 @@ static lib_i32 write_bytes(core_machine *machine, lib_u32 address,
         LIB_STATUS_OK;
 }
 
-static lib_i32 iomap_prepare(iomap_machine *state, core_machine_cpu_profile profile)
+static lib_i32 iomap_prepare(iomap_machine *state, x86_core_cpu_profile profile)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -88,12 +88,12 @@ static lib_i32 iomap_prepare(iomap_machine *state, core_machine_cpu_profile prof
         core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
         core_machine_reset(state->machine) != LIB_STATUS_OK ||
         core_machine_debug_patch_registers(state->machine,
-            &(core_machine_debug_register_patch){
-                .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+            &(x86_core_cpu_debug_register_patch){
+                .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
             }) != LIB_STATUS_OK) {
         core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
@@ -102,7 +102,7 @@ static lib_i32 iomap_prepare(iomap_machine *state, core_machine_cpu_profile prof
     return 1;
 }
 
-static lib_i32 iomap_install(iomap_machine *state, core_machine_cpu_profile profile,
+static lib_i32 iomap_install(iomap_machine *state, x86_core_cpu_profile profile,
     iomap_case test_case)
 {
     static const lib_u8 gdt_pointer[] = { 0x2fu,0,0,3,0,0 };
@@ -186,7 +186,7 @@ static lib_i32 iomap_install(iomap_machine *state, core_machine_cpu_profile prof
     default:
         break;
     }
-    if (profile == CORE_MACHINE_CPU_PROFILE_80286) {
+    if (profile == X86_CORE_CPU_PROFILE_80286) {
         lib_u16 sp0 = 0x9000u;
 
         gdt[45] = 0x81u;
@@ -219,11 +219,11 @@ static lib_i32 iomap_install(iomap_machine *state, core_machine_cpu_profile prof
         write_bytes(state->machine, USER_CODE_BASE, user_code, user_code_bytes);
 }
 
-static lib_i32 iomap_run_case(core_machine_cpu_profile profile, iomap_case test_case)
+static lib_i32 iomap_run_case(x86_core_cpu_profile profile, iomap_case test_case)
 {
     iomap_machine state;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
     lib_u16 marker[3] = {0u, 0u, 0u};
     const core_machine_run_budget budget = { 1024u, 0u };
     lib_i32 failed = !iomap_prepare(&state, profile);
@@ -271,16 +271,16 @@ int main(void)
 {
     lib_i32 failed = 0;
 
-    failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80386, IOMAP_CASE_ALLOW);
-    failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80386, IOMAP_CASE_DENY_IN);
-    failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80386, IOMAP_CASE_DENY_OUT);
-    failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80386,
+    failed |= iomap_run_case(X86_CORE_CPU_PROFILE_80386, IOMAP_CASE_ALLOW);
+    failed |= iomap_run_case(X86_CORE_CPU_PROFILE_80386, IOMAP_CASE_DENY_IN);
+    failed |= iomap_run_case(X86_CORE_CPU_PROFILE_80386, IOMAP_CASE_DENY_OUT);
+    failed |= iomap_run_case(X86_CORE_CPU_PROFILE_80386,
         IOMAP_CASE_TRUNCATED_WORD);
-    failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80386,
+    failed |= iomap_run_case(X86_CORE_CPU_PROFILE_80386,
         IOMAP_CASE_IOPL_BYPASS);
-    failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80286,
+    failed |= iomap_run_case(X86_CORE_CPU_PROFILE_80286,
         IOMAP_CASE_IOPL_BYPASS);
-    failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80286,
+    failed |= iomap_run_case(X86_CORE_CPU_PROFILE_80286,
         IOMAP_CASE_DENY_IN);
     if (failed) return 1;
     lib_c_printf("TSS-IOMAP:CORPUS:OK\n");

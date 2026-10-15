@@ -27,19 +27,19 @@ static lib_bool sessions_are_isolated(core_machine *first, core_machine *second,
         if (core_machine_debug_write_real(machines[index], 0u, 0u,
                 &values[index], 1u) != LIB_STATUS_OK ||
             core_machine_debug_write_register(machines[index],
-                CORE_MACHINE_DEBUG_EAX, values[index] * 0x01010101u) !=
+                X86_CORE_CPU_DEBUG_EAX, values[index] * 0x01010101u) !=
                     LIB_STATUS_OK) return LIB_FALSE;
     }
-    if (core_machine_debug_set_watchpoint(first, CORE_MACHINE_DEBUG_WATCH_READ,
+    if (core_machine_debug_set_watchpoint(first, X86_CORE_CPU_DEBUG_WATCH_READ,
             0x1234u) != LIB_STATUS_OK) return LIB_FALSE;
     for (index = 0u; index < 2u; ++index) {
         if (core_machine_debug_read_real(machines[index], 0u, 0u,
                 &observed, 1u) != LIB_STATUS_OK || observed != values[index] ||
             core_machine_debug_read_register(machines[index],
-                CORE_MACHINE_DEBUG_EAX, &eax) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_EAX, &eax) != LIB_STATUS_OK ||
             eax != values[index] * 0x01010101u ||
             core_machine_debug_get_watchpoint(machines[index],
-                CORE_MACHINE_DEBUG_WATCH_READ, &enabled, &address) !=
+                X86_CORE_CPU_DEBUG_WATCH_READ, &enabled, &address) !=
                     LIB_STATUS_OK || enabled != (index == 0u) ||
             (enabled && address != 0x1234u)) return LIB_FALSE;
     }

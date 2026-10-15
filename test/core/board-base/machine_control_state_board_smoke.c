@@ -4,7 +4,7 @@
 #include "core/board-base/machine_board_state.h"
 #include "core_machine_board_fixture.h"
 #include "../support/exception_fixture.h"
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #include "core/x86/device_support_interface.h"
 #include "core/board-base/machine_board_interface.h"
 /* REAL_UD_TERMINAL_IVT_REJECT: vector 6 is deliberately unreadable. */
@@ -14,7 +14,7 @@ typedef struct control_board_reset_context {
     core_machine_board_state *board;
 } control_board_reset_context;
 
-static lib_i32 control_board_create(core_machine_cpu_profile profile,
+static lib_i32 control_board_create(x86_core_cpu_profile profile,
     lib_bool cpu_80386_cr_mov_ignores_mod, control_board_reset_context *context,
     core_machine **out_machine)
 {
@@ -24,12 +24,12 @@ static lib_i32 control_board_create(core_machine_cpu_profile profile,
         .cpu_80386_cr_mov_ignores_mod = cpu_80386_cr_mov_ignores_mod
     };
 
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
 
     *out_machine = LIB_NULL;
@@ -44,13 +44,13 @@ static lib_i32 control_board_create(core_machine_cpu_profile profile,
         ((*out_machine = context->machine) != LIB_NULL);
 }
 
-static lib_i32 control_board_fault(core_machine_cpu_profile profile,
+static lib_i32 control_board_fault(x86_core_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes, lib_u32 exception)
 {
     core_machine *machine = LIB_NULL;
     control_board_reset_context context;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
     lib_i32 failed = !control_board_create(profile, LIB_FALSE, &context,
         &machine);
 
@@ -64,8 +64,8 @@ static lib_i32 control_board_fault(core_machine_cpu_profile profile,
         failed = !diagnostic.first_fault.valid ||
             diagnostic.first_fault.exception_mask !=
                 (exception == VCPUINS_EXCEPT_UD &&
-                    profile >= CORE_MACHINE_CPU_PROFILE_80186 ? VCPUINS_EXCEPT_CE : exception) ||
-            (exception == VCPUINS_EXCEPT_UD && profile >= CORE_MACHINE_CPU_PROFILE_80186 &&
+                    profile >= X86_CORE_CPU_PROFILE_80186 ? VCPUINS_EXCEPT_CE : exception) ||
+            (exception == VCPUINS_EXCEPT_UD && profile >= X86_CORE_CPU_PROFILE_80186 &&
                 diagnostic.first_fault.exception_code != 6u * 4u);
     core_machine_destroy(machine);
     return !failed;
@@ -86,9 +86,9 @@ static lib_i32 control_board_profile_and_lock(void)
         {0x66u,0x67u,0x0fu,0x01u,0xf0u}
     };
     static const lib_u8 msw_attribute_bytes[] = {4u,4u,5u,4u,4u,5u};
-    static const core_machine_cpu_profile legacy[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286
+    static const x86_core_cpu_profile legacy[] = {
+        X86_CORE_CPU_PROFILE_8086, X86_CORE_CPU_PROFILE_80186,
+        X86_CORE_CPU_PROFILE_80286
     };
     static const lib_u8 lock_clts[] = {0xf0u,0x0fu,0x06u};
     static const lib_u8 lock_msw[][6] = {
@@ -105,7 +105,7 @@ static lib_i32 control_board_profile_and_lock(void)
 
     lib_size profile, form;
 
-    if (!control_board_fault(CORE_MACHINE_CPU_PROFILE_80186, clts,
+    if (!control_board_fault(X86_CORE_CPU_PROFILE_80186, clts,
             sizeof(clts), VCPUINS_EXCEPT_UD)) {
         lib_c_printf("control board legacy\n");
         return 0;
@@ -118,13 +118,13 @@ static lib_i32 control_board_profile_and_lock(void)
         for (form = 0u; form != 6u; ++form)
             if (!control_board_fault(legacy[profile], msw_attributes[form],
                     msw_attribute_bytes[form], VCPUINS_EXCEPT_UD)) return 0;
-    if (!control_board_fault(CORE_MACHINE_CPU_PROFILE_80386, lock_clts,
+    if (!control_board_fault(X86_CORE_CPU_PROFILE_80386, lock_clts,
             sizeof(lock_clts), VCPUINS_EXCEPT_UD)) {
         lib_c_printf("control board lock-clts\n");
         return 0;
     }
     for (form = 0u; form != 8u; ++form)
-        if (!control_board_fault(CORE_MACHINE_CPU_PROFILE_80386,
+        if (!control_board_fault(X86_CORE_CPU_PROFILE_80386,
                 lock_msw[form], lock_msw_bytes[form], VCPUINS_EXCEPT_UD))
             return 0;
     return 1;
@@ -143,16 +143,16 @@ static lib_i32 control_board_irq(void)
     lib_size operation;
 
     for (operation = 0u; operation != 3u; ++operation) {
-        const core_machine_debug_register_patch patch = {
-            .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR0),
+        const x86_core_cpu_debug_register_patch patch = {
+            .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0),
             .values = {
-                [CORE_MACHINE_DEBUG_EAX] = 0xdead000cu,
-                [CORE_MACHINE_DEBUG_ESP] = 0x8000u,
-                [CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_IF,
-                [CORE_MACHINE_DEBUG_CR0] = operation == 1u ? 0x00a50000u :
+                [X86_CORE_CPU_DEBUG_EAX] = 0xdead000cu,
+                [X86_CORE_CPU_DEBUG_ESP] = 0x8000u,
+                [X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF,
+                [X86_CORE_CPU_DEBUG_CR0] = operation == 1u ? 0x00a50000u :
                     VCPU_CR0_TS
             }
         };
@@ -160,9 +160,9 @@ static lib_i32 control_board_irq(void)
         control_board_reset_context context;
         core_machine_pic_irq_source *source = LIB_NULL;
         core_machine_run_result result = {0};
-        core_machine_debug_cpu_snapshot after = {0};
+        x86_core_cpu_debug_cpu_snapshot after = {0};
         lib_u16 frame_ip = 0u;
-        lib_i32 failed = !control_board_create(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !control_board_create(X86_CORE_CPU_PROFILE_80386,
             LIB_FALSE, &context, &machine);
 
         if (!failed)
@@ -180,13 +180,13 @@ static lib_i32 control_board_irq(void)
             core_machine_pic_irq_source_deassert(source);
             failed = core_machine_run(machine, (core_machine_run_budget){2u,0u},
                 &result) != LIB_STATUS_OK || core_machine_debug_capture_cpu_snapshot(
-                machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 core_machine_debug_read_memory(machine, after.ss.base +
                 (lib_u16)after.esp, &frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK;
         }
         if (!failed)
             failed = result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-                after.eip != 0x0101u || (after.eflags & CORE_MACHINE_DEBUG_EFLAGS_IF) != 0u ||
+                after.eip != 0x0101u || (after.eflags & X86_CORE_CPU_DEBUG_EFLAGS_IF) != 0u ||
                 (test_pic_read(context.board->shared_pic_master, 0x0bu) &
                 VPIC_ISR_IRQ(0u)) == 0u || (operation == 0u &&
                 (after.cr0 & VCPU_CR0_TS) != 0u) || (operation == 1u &&
@@ -202,20 +202,20 @@ static lib_i32 control_board_early_80386_mov_cr(void)
 {
     static const lib_u8 read[] = {0x66u,0x0fu,0x20u,0x80u,0xf4u};
     static const lib_u8 write[] = {0x66u,0x0fu,0x22u,0x80u,0xf4u};
-    const core_machine_debug_register_patch initial = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR0),
+    const x86_core_cpu_debug_register_patch initial = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0),
         .values = {
-            [CORE_MACHINE_DEBUG_EAX] = 0xdeadbeefu,
-            [CORE_MACHINE_DEBUG_CR0] = 0x0000000cu
+            [X86_CORE_CPU_DEBUG_EAX] = 0xdeadbeefu,
+            [X86_CORE_CPU_DEBUG_CR0] = 0x0000000cu
         }
     };
-    const core_machine_debug_register_patch write_initial = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX),
-        .values = {[CORE_MACHINE_DEBUG_EAX] = 0u}
+    const x86_core_cpu_debug_register_patch write_initial = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX),
+        .values = {[X86_CORE_CPU_DEBUG_EAX] = 0u}
     };
     const lib_u8 *codes[] = {read, write};
-    const core_machine_debug_register_patch *patches[] = {&initial,
+    const x86_core_cpu_debug_register_patch *patches[] = {&initial,
         &write_initial};
     lib_size index;
 
@@ -223,8 +223,8 @@ static lib_i32 control_board_early_80386_mov_cr(void)
         core_machine *machine = LIB_NULL;
         control_board_reset_context context;
         core_machine_run_result result = {0};
-        core_machine_debug_cpu_snapshot after = {0};
-        lib_i32 failed = !control_board_create(CORE_MACHINE_CPU_PROFILE_80386,
+        x86_core_cpu_debug_cpu_snapshot after = {0};
+        lib_i32 failed = !control_board_create(X86_CORE_CPU_PROFILE_80386,
             LIB_TRUE, &context, &machine);
 
         if (!failed)
@@ -233,7 +233,7 @@ static lib_i32 control_board_early_80386_mov_cr(void)
                     patches[index]) != LIB_STATUS_OK || core_machine_run(machine,
                     (core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
                 core_machine_debug_capture_cpu_snapshot(machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
             failed = result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 (index == 0u && after.eax != 0x0000000cu) ||

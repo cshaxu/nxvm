@@ -68,7 +68,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     };
     vm_machine *session = LIB_NULL;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic;
     lib_status run_status;
     lib_u32 executed = 0u;
     lib_i32 loaded = 0;

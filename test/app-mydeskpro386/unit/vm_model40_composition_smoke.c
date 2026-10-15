@@ -61,7 +61,7 @@ lib_i32 main(void)
     vm_machine_config invalid_config = {0};
     vm_machine_assets missing_assets = {0};
     vm_machine *session = LIB_NULL;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     lib_size memory_bytes;
     mydeskpro386_d4_platform_observation d4;
     core_machine_speaker_observation speaker;
@@ -96,12 +96,12 @@ lib_i32 main(void)
         transaction.external_cycle_timing.first_eligible_address != 0u ||
         transaction.external_cycle_timing.last_eligible_address != 0x0009ffffu ||
         transaction.external_access_wait_windows[0].space !=
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT ||
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT ||
         transaction.external_access_wait_windows[0].first_address != 0x03b4u ||
         transaction.external_access_wait_windows[2].last_address != 0x03dcu ||
         transaction.external_access_wait_windows[5].first_address != 0x0fc6u ||
         transaction.external_access_wait_windows[5].wait_ticks != 1u ||
-        transaction.external_access_wait_windows[6].space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY ||
+        transaction.external_access_wait_windows[6].space != X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY ||
         transaction.external_access_wait_windows[6].first_address != 0x000a0000u ||
         transaction.external_access_wait_windows[6].last_address != 0x000affffu ||
         transaction.cpu_cycle_bus_ready_gate_enabled != LIB_TRUE ||
@@ -117,7 +117,7 @@ lib_i32 main(void)
         composition.rtc_clock.numerator != 256u ||
         composition.rtc_clock.denominator != 125000u ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
-            LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+            LIB_STATUS_OK || cpu_profile != X86_CORE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
             LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
         test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x80u ||
@@ -145,7 +145,7 @@ lib_i32 main(void)
         speaker.output != speaker.timer_output || core_machine_bus_write(session->core_machine, 0x0061u,
             0x0fu) != LIB_STATUS_OK ||
         plan.memory_bytes != 2u * 1024u * 1024u ||
-        plan.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+        plan.cpu_profile != X86_CORE_CPU_PROFILE_80386 ||
         test_board_kbc_aux_enabled(session->board) ||
         !test_board_kbc_command_matches(session->board,
             session->core_machine, 0x20u,

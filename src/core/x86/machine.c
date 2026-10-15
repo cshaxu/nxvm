@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 
 #include "core/x86/machine.h"
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 
 #define CORE_MACHINE_L1_COMPATIBILITY_MAXIMUM_STEPS 16u
 
@@ -11,7 +11,7 @@ _Static_assert(CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG + 1u ==
 
 lib_u32 core_machine_linear_pc(const core_machine *machine)
 {
-    return core_machine_cpu_linear_pc(machine->executor_cpu_execution);
+    return x86_core_cpu_linear_pc(machine->executor_cpu_execution);
 }
 
 static lib_i32 core_machine_retirement_qualification_contains(
@@ -28,7 +28,7 @@ static lib_i32 core_machine_publish_successful_retirement(core_machine *machine)
         machine->cpu_retirement_source_ticks);
     return machine->retirement_time_contract != CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ||
         (machine->time_axis.kind == CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL &&
-         !core_machine_cpu_capture_timing(machine->executor_cpu_execution).
+         !x86_core_cpu_capture_timing(machine->executor_cpu_execution).
              source_timing_unallocated &&
          core_machine_retirement_qualification_contains(machine));
 }
@@ -49,7 +49,7 @@ static void core_machine_begin_retirement_wait(core_machine *machine,
 static lib_bool core_machine_finish_shutdown(core_machine *machine,
     core_machine_run_result *result)
 {
-    if (!core_machine_cpu_is_system_waiting(machine->executor_cpu_execution) &&
+    if (!x86_core_cpu_is_system_waiting(machine->executor_cpu_execution) &&
         machine->attachment.shutdown_reset != LIB_NULL &&
         machine->attachment.shutdown_reset(machine->attachment.context)) {
         return LIB_FALSE;
@@ -62,11 +62,11 @@ static lib_bool core_machine_finish_shutdown(core_machine *machine,
     return LIB_TRUE;
 }
 
-static core_machine_cpu_profile core_machine_resolve_cpu_profile(
-    core_machine_cpu_profile profile)
+static x86_core_cpu_profile core_machine_resolve_cpu_profile(
+    x86_core_cpu_profile profile)
 {
-    return profile == CORE_MACHINE_CPU_PROFILE_DEFAULT ?
-        CORE_MACHINE_CPU_PROFILE_80386 : profile;
+    return profile == X86_CORE_CPU_PROFILE_DEFAULT ?
+        X86_CORE_CPU_PROFILE_80386 : profile;
 }
 
 static lib_u32 core_machine_resolve_ticks_per_instruction(lib_u32 ticks)
@@ -75,8 +75,8 @@ static lib_u32 core_machine_resolve_ticks_per_instruction(lib_u32 ticks)
 }
 
 static void core_machine_resolve_instruction_timing(
-    core_machine_instruction_timing *out_timing,
-    const core_machine_instruction_timing *timing, lib_u32 legacy_base)
+    x86_core_cpu_instruction_timing *out_timing,
+    const x86_core_cpu_instruction_timing *timing, lib_u32 legacy_base)
 {
     *out_timing = *timing;
     if (out_timing->base_ticks == 0u) {
@@ -118,10 +118,10 @@ static lib_i32 core_machine_retirement_qualification_contains(
     }
     return 0;
 }
-static lib_i32 core_machine_valid_cpu_profile(core_machine_cpu_profile profile)
+static lib_i32 core_machine_valid_cpu_profile(x86_core_cpu_profile profile)
 {
-    return profile >= CORE_MACHINE_CPU_PROFILE_8086 &&
-        profile <= CORE_MACHINE_CPU_PROFILE_80386;
+    return profile >= X86_CORE_CPU_PROFILE_8086 &&
+        profile <= X86_CORE_CPU_PROFILE_80386;
 }
 
 static lib_i32 core_machine_valid_fpu_profile(x86_fpu_profile profile)
@@ -194,7 +194,7 @@ lib_status core_machine_freeze_execution_providers(core_machine *machine)
 
 lib_status core_machine_get_cpu_state(
     const core_machine *machine,
-    core_machine_cpu_state *out_state)
+    x86_core_cpu_state *out_state)
 {
     if (machine == LIB_NULL || out_state == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -204,12 +204,12 @@ lib_status core_machine_get_cpu_state(
         machine->lifecycle == CORE_MACHINE_RUNNING) {
         return LIB_STATUS_INVALID_STATE;
     }
-    core_machine_cpu_capture_state(machine->executor_cpu_execution, out_state);
+    x86_core_cpu_capture_state(machine->executor_cpu_execution, out_state);
     return LIB_STATUS_OK;
 }
 
 lib_status core_machine_get_cpu_profile(
-    const core_machine *machine, core_machine_cpu_profile *out_profile)
+    const core_machine *machine, x86_core_cpu_profile *out_profile)
 {
     if (machine == LIB_NULL || out_profile == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -284,7 +284,7 @@ lib_status core_machine_get_timeline_observation(const core_machine *machine,
 }
 
 lib_status core_machine_get_cpu_diagnostic(
-    const core_machine *machine, core_machine_cpu_diagnostic *out_diagnostic)
+    const core_machine *machine, x86_core_cpu_diagnostic *out_diagnostic)
 {
     if (machine == LIB_NULL || out_diagnostic == LIB_NULL ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
@@ -353,10 +353,10 @@ lib_i32 core_machine_external_access_wait_windows_are_valid(
             ++index) {
         const core_machine_external_access_wait_window *window = &windows[index];
         if (window->wait_ticks == 0u) continue;
-        if ((window->space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
-                window->space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT) ||
+        if ((window->space != X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
+                window->space != X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT) ||
             window->first_address > window->last_address ||
-            (window->space == CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT &&
+            (window->space == X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT &&
                 window->last_address > 0xffffu)) return 0;
     }
     return 1;
@@ -412,7 +412,7 @@ lib_status core_machine_neutral_create_with_test_allocation(
     core_machine **out_machine)
 {
     core_machine *machine;
-    core_machine_instruction_timing instruction_timing;
+    x86_core_cpu_instruction_timing instruction_timing;
     lib_size memory_bytes;
 
     if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -452,7 +452,7 @@ lib_status core_machine_neutral_create_with_test_allocation(
     machine->cpu_80386_cr_mov_ignores_mod =
         config->cpu_80386_cr_mov_ignores_mod;
     if (machine->cpu_80386_cr_mov_ignores_mod &&
-        machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) {
+        machine->cpu_profile != X86_CORE_CPU_PROFILE_80386) {
         lib_release(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
@@ -462,7 +462,7 @@ lib_status core_machine_neutral_create_with_test_allocation(
     }
     core_machine_resolve_instruction_timing(&instruction_timing,
         &config->instruction_timing, config->ticks_per_instruction);
-    machine->maximum_instruction_ticks = core_machine_cpu_timing_maximum_ticks(
+    machine->maximum_instruction_ticks = x86_core_cpu_timing_maximum_ticks(
         machine->cpu_profile, &instruction_timing);
     if (core_machine_clock_domain_initialize(&machine->provider_clock,
             &config->provider_clock) != LIB_STATUS_OK) {
@@ -485,7 +485,7 @@ lib_status core_machine_neutral_create_with_test_allocation(
     core_machine_retirement_observation_initialize(machine);
 
     {
-        lib_status status = core_machine_cpu_create(&core_machine_cpu_bus,
+        lib_status status = x86_core_cpu_create(&core_machine_cpu_bus,
             machine, &machine->executor_cpu_execution);
 
         if (status != LIB_STATUS_OK) {
@@ -494,22 +494,22 @@ lib_status core_machine_neutral_create_with_test_allocation(
             return status;
         }
     }
-    core_machine_cpu_execution_context_bind_profiles(
+    x86_core_cpu_execution_context_bind_profiles(
         machine->executor_cpu_execution, machine->cpu_profile,
         x86_fpu_get_profile(machine->fpu), machine->cpu_80386_cr_mov_ignores_mod,
         &instruction_timing);
-    core_machine_cpu_execution_context_bind_fpu(
+    x86_core_cpu_execution_context_bind_fpu(
         machine->executor_cpu_execution, machine->fpu);
-    core_machine_cpu_execution_context_bind_external_cycle_provider(
+    x86_core_cpu_execution_context_bind_external_cycle_provider(
         machine->executor_cpu_execution, core_machine_cpu_external_cycle_trace,
         machine);
-    core_machine_cpu_execution_context_bind_diagnostic_provider(
+    x86_core_cpu_execution_context_bind_diagnostic_provider(
         machine->executor_cpu_execution,
         machine->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ?
             &core_machine_cpu_diagnostic_provider :
             &core_machine_cpu_fault_diagnostic_provider,
         machine);
-    core_machine_cpu_state_initialize(machine->executor_cpu_execution);
+    x86_core_cpu_state_initialize(machine->executor_cpu_execution);
     core_machine_port_initialize(&machine->executor_port);
     core_machine_port_set_test_allocation(&machine->executor_port,
         port_test_allocation);
@@ -603,7 +603,7 @@ lib_status core_machine_get_timing_declaration(const core_machine *machine,
 static lib_status core_machine_cold_reset(core_machine *machine)
 {
     lib_status status;
-    core_machine_cpu_state_reset(machine->executor_cpu_execution);
+    x86_core_cpu_state_reset(machine->executor_cpu_execution);
     x86_fpu_reset(machine->fpu);
     core_machine_port_reset(&machine->executor_port);
     core_machine_memory_reset(&machine->executor_memory);
@@ -626,12 +626,12 @@ static lib_status core_machine_cold_reset(core_machine *machine)
     machine->cpu_retirement_wait_retires = LIB_FALSE;
     machine->external_cycle_page_valid = LIB_FALSE;
     machine->external_cycle_pending_valid = LIB_FALSE;
-    machine->external_cycle_pending_space = CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY;
+    machine->external_cycle_pending_space = X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY;
     machine->external_cycle_pending_physical = 0u;
     machine->external_cycle_pending_bytes = 0u;
     machine->external_cycle_pending_write = LIB_FALSE;
     machine->external_cycle_pending_provenance =
-        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
+        X86_CORE_CPU_MEMORY_ACCESS_DATA;
     machine->external_cycle_overlap_valid = LIB_FALSE;
     machine->external_cycle_overlap_next_physical = 0u;
     machine->external_cycle_round_overflow = LIB_FALSE;
@@ -666,15 +666,15 @@ static lib_status core_machine_cold_reset(core_machine *machine)
 /* An 8042 reset pulse resets the processor only.  Preserve RAM, board state
  * and scheduled device work; discard only incomplete CPU execution state. */
 static lib_status core_machine_processor_reset(core_machine *machine,
-    core_machine_cpu_reset_kind kind)
+    x86_core_cpu_reset_kind kind)
 {
     lib_status status;
 
-    if (kind == CORE_MACHINE_CPU_RESET_SOFT) {
-        status = core_machine_cpu_state_soft_reset(machine->executor_cpu_execution);
+    if (kind == X86_CORE_CPU_RESET_SOFT) {
+        status = x86_core_cpu_state_soft_reset(machine->executor_cpu_execution);
         if (status != LIB_STATUS_OK) return status;
     } else {
-        core_machine_cpu_state_reset(machine->executor_cpu_execution);
+        x86_core_cpu_state_reset(machine->executor_cpu_execution);
     }
     machine->cpu_retirement_wait_pending = LIB_FALSE;
     machine->cpu_retirement_wait_ticks = 0u;
@@ -828,18 +828,18 @@ lib_status core_machine_run(
             /* Only an explicit board binding converts shutdown to CPU reset. */
             if (machine->attachment.shutdown_reset != LIB_NULL &&
                 machine->attachment.shutdown_reset(machine->attachment.context) &&
-                core_machine_cpu_execution_consume_shutdown_request(
+                x86_core_cpu_execution_consume_shutdown_request(
                     machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 const lib_status status = core_machine_processor_reset(machine,
-                    CORE_MACHINE_CPU_RESET_HARD);
+                    X86_CORE_CPU_RESET_HARD);
                 if (status != LIB_STATUS_OK) return status;
                 machine->lifecycle = CORE_MACHINE_STOPPED;
                 result->reason = CORE_MACHINE_STOP_RESET_REQUESTED;
                 result->linear_pc = core_machine_linear_pc(machine);
                 return LIB_STATUS_OK;
             }
-            if (core_machine_cpu_execution_consume_debug_pause_request(
+            if (x86_core_cpu_execution_consume_debug_pause_request(
                     machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_PAUSED;
@@ -847,7 +847,7 @@ lib_status core_machine_run(
                 return core_machine_complete_run_boundary(machine, result);
             }
             if (lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_ACQUIRE) ||
-                core_machine_cpu_execution_consume_stop_request(
+                x86_core_cpu_execution_consume_stop_request(
                     machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 {
@@ -861,10 +861,10 @@ lib_status core_machine_run(
                 return LIB_STATUS_OK;
             }
             {
-                const core_machine_cpu_reset_kind reset =
-                    core_machine_cpu_execution_consume_reset_request(machine->executor_cpu_execution);
+                const x86_core_cpu_reset_kind reset =
+                    x86_core_cpu_execution_consume_reset_request(machine->executor_cpu_execution);
 
-                if (reset != CORE_MACHINE_CPU_RESET_NONE) {
+                if (reset != X86_CORE_CPU_RESET_NONE) {
                     const lib_status status = core_machine_processor_reset(machine, reset);
 
                     if (status != LIB_STATUS_OK) return status;
@@ -946,7 +946,7 @@ lib_status core_machine_run(
                         LIB_STATUS_OK) return LIB_STATUS_INTERNAL_ERROR;
                     result->elapsed_ticks = machine->elapsed_ticks;
                     if (machine->cpu_retirement_wait_retires &&
-                        core_machine_cpu_is_halted(machine->executor_cpu_execution)) {
+                        x86_core_cpu_is_halted(machine->executor_cpu_execution)) {
                         machine->lifecycle = CORE_MACHINE_PAUSED;
                         result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                         result->linear_pc = core_machine_linear_pc(machine);
@@ -984,7 +984,7 @@ lib_status core_machine_run(
                     machine->cpu_retirement_wait_pending = LIB_FALSE;
                     machine->cpu_retirement_completion_ticks = 0u;
                     machine->cpu_retirement_source_ticks = 0u;
-                    if (core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
+                    if (x86_core_cpu_is_shutdown(machine->executor_cpu_execution)) {
                         if (core_machine_finish_shutdown(machine, result))
                             return core_machine_complete_run_boundary(machine, result);
                         continue;
@@ -1025,14 +1025,14 @@ lib_status core_machine_run(
                 return core_machine_complete_run_boundary(machine, result);
             }
             {
-                lib_bool was_halted = core_machine_cpu_is_halted(
+                lib_bool was_halted = x86_core_cpu_is_halted(
                     machine->executor_cpu_execution);
 
                 machine->external_cycle_round_ticks = 0u;
                 /* A completed instruction round cannot inherit an undeclared
                  * external-cycle overlap into the next CPU refresh. */
                 core_machine_external_cycle_invalidate(machine);
-                core_machine_cpu_execution_refresh(machine->executor_cpu_execution);
+                x86_core_cpu_execution_refresh(machine->executor_cpu_execution);
                 if (machine->lifecycle == CORE_MACHINE_FAULTED) {
                     result->reason = CORE_MACHINE_STOP_FAULT;
                     result->linear_pc = core_machine_linear_pc(machine);
@@ -1040,9 +1040,9 @@ lib_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return LIB_STATUS_INTERNAL_ERROR;
                 }
-                if (core_machine_cpu_execution_consume_instruction_fault_delivery(
+                if (x86_core_cpu_execution_consume_instruction_fault_delivery(
                         machine->executor_cpu_execution)) {
-                    const lib_u64 event_ticks = core_machine_cpu_capture_timing(
+                    const lib_u64 event_ticks = x86_core_cpu_capture_timing(
                         machine->executor_cpu_execution).event_ticks;
 
                     /* Committed entry did not retire the interrupted/faulting
@@ -1061,7 +1061,7 @@ lib_status core_machine_run(
                             machine->external_cycle_round_ticks, event_ticks, 0u, LIB_FALSE);
                         continue;
                     }
-                    if (!core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
+                    if (!x86_core_cpu_is_shutdown(machine->executor_cpu_execution)) {
                         machine->lifecycle = CORE_MACHINE_PAUSED;
                         result->reason = CORE_MACHINE_STOP_BUDGET;
                         result->linear_pc = core_machine_linear_pc(machine);
@@ -1069,12 +1069,12 @@ lib_status core_machine_run(
                         return LIB_STATUS_OK;
                     }
                 }
-                if (core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
+                if (x86_core_cpu_is_shutdown(machine->executor_cpu_execution)) {
                     if (core_machine_finish_shutdown(machine, result))
                         return core_machine_complete_run_boundary(machine, result);
                     continue;
                 }
-                if (core_machine_cpu_execution_consume_wait_stall(
+                if (x86_core_cpu_execution_consume_wait_stall(
                         machine->executor_cpu_execution)) {
                     /* Unretired WAIT or system-bus/power work leaves time
                      * with the existing device/board deadline owner. */
@@ -1084,7 +1084,7 @@ lib_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return core_machine_complete_run_boundary(machine, result);
                 }
-                if (was_halted && core_machine_cpu_is_halted(
+                if (was_halted && x86_core_cpu_is_halted(
                         machine->executor_cpu_execution)) {
                     machine->lifecycle = CORE_MACHINE_PAUSED;
                     result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
@@ -1093,14 +1093,14 @@ lib_status core_machine_run(
                     return core_machine_complete_run_boundary(machine, result);
                 }
                 if (machine->transaction_contract.cpu_prefetch_reservation_enabled &&
-                    !core_machine_cpu_is_system_waiting(machine->executor_cpu_execution)) {
-                    core_machine_cpu_execution_reserve_prefetch(
+                    !x86_core_cpu_is_system_waiting(machine->executor_cpu_execution)) {
+                    x86_core_cpu_execution_reserve_prefetch(
                         machine->executor_cpu_execution);
                 }
             }
             {
-                const core_machine_cpu_timing_result timing_result =
-                    core_machine_cpu_capture_timing(machine->executor_cpu_execution);
+                const x86_core_cpu_timing_result timing_result =
+                    x86_core_cpu_capture_timing(machine->executor_cpu_execution);
                 lib_u64 instruction_ticks;
 
                 if (timing_result.ticks == 0u ||
@@ -1113,8 +1113,8 @@ lib_status core_machine_run(
                     return LIB_STATUS_INTERNAL_ERROR;
                 }
                 instruction_ticks = timing_result.ticks;
-                if (!core_machine_timing_add_ticks(&instruction_ticks, timing_result.event_ticks) ||
-                    !core_machine_timing_add_ticks(&instruction_ticks,
+                if (!x86_core_cpu_timing_add_ticks(&instruction_ticks, timing_result.event_ticks) ||
+                    !x86_core_cpu_timing_add_ticks(&instruction_ticks,
                         machine->external_cycle_round_ticks) ||
                     LIB_UINT64_MAX - result->ticks < instruction_ticks ||
                     LIB_UINT64_MAX - machine->elapsed_ticks < instruction_ticks) {
@@ -1158,16 +1158,16 @@ lib_status core_machine_run(
                 machine->cpu_retirement_source_ticks = 0u;
                 result->elapsed_ticks = machine->elapsed_ticks;
             }
-            if (core_machine_cpu_execution_consume_debug_pause_request(
+            if (x86_core_cpu_execution_consume_debug_pause_request(
                     machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_PAUSED;
                 result->linear_pc = core_machine_linear_pc(machine);
                 return core_machine_complete_run_boundary(machine, result);
             }
-            core_machine_cpu_execution_poll_wait(machine->executor_cpu_execution);
-            if (core_machine_cpu_is_halted(machine->executor_cpu_execution) ||
-                core_machine_cpu_is_system_waiting(machine->executor_cpu_execution)) {
+            x86_core_cpu_execution_poll_wait(machine->executor_cpu_execution);
+            if (x86_core_cpu_is_halted(machine->executor_cpu_execution) ||
+                x86_core_cpu_is_system_waiting(machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                 result->linear_pc = core_machine_linear_pc(machine);
@@ -1270,49 +1270,49 @@ lib_status core_machine_request_stop(core_machine *machine)
 lib_bool core_machine_signal_nmi(core_machine *machine)
 {
     return machine != LIB_NULL &&
-        core_machine_cpu_request_nmi(machine->executor_cpu_execution);
+        x86_core_cpu_request_nmi(machine->executor_cpu_execution);
 }
 
 void core_machine_signal_processor_reset(core_machine *machine)
 {
     if (machine != LIB_NULL)
-        core_machine_cpu_execution_request_reset(machine->executor_cpu_execution);
+        x86_core_cpu_execution_request_reset(machine->executor_cpu_execution);
 }
 
 lib_status core_machine_signal_soft_processor_reset(core_machine *machine)
 {
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    return core_machine_cpu_execution_request_soft_reset(machine->executor_cpu_execution);
+    return x86_core_cpu_execution_request_soft_reset(machine->executor_cpu_execution);
 }
 
 lib_status core_machine_set_smi(core_machine *machine, lib_bool asserted)
 {
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    return core_machine_cpu_set_smi(machine->executor_cpu_execution, asserted);
+    return x86_core_cpu_set_smi(machine->executor_cpu_execution, asserted);
 }
 
 lib_status core_machine_set_stop_clock(core_machine *machine, lib_bool asserted)
 {
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    return core_machine_cpu_set_stop_clock(machine->executor_cpu_execution, asserted);
+    return x86_core_cpu_set_stop_clock(machine->executor_cpu_execution, asserted);
 }
 
 lib_status core_machine_set_clock_running(core_machine *machine, lib_bool running)
 {
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    return core_machine_cpu_set_clock_running(machine->executor_cpu_execution, running);
+    return x86_core_cpu_set_clock_running(machine->executor_cpu_execution, running);
 }
 
 lib_status core_machine_set_flush(core_machine *machine, lib_bool asserted)
 {
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    return core_machine_cpu_set_flush(machine->executor_cpu_execution, asserted);
+    return x86_core_cpu_set_flush(machine->executor_cpu_execution, asserted);
 }
 
 lib_status core_machine_set_nmi(core_machine *machine, lib_bool asserted)
 {
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    return core_machine_cpu_set_nmi(machine->executor_cpu_execution, asserted);
+    return x86_core_cpu_set_nmi(machine->executor_cpu_execution, asserted);
 }
 
 lib_status core_machine_set_nmi_mask(core_machine *machine, lib_i32 masked)
@@ -1320,7 +1320,7 @@ lib_status core_machine_set_nmi_mask(core_machine *machine, lib_i32 masked)
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    core_machine_cpu_set_nmi_mask(machine->executor_cpu_execution,
+    x86_core_cpu_set_nmi_mask(machine->executor_cpu_execution,
         masked ? LIB_TRUE : LIB_FALSE);
     if (!masked && machine->attachment.refresh_nmi != LIB_NULL) {
         machine->attachment.refresh_nmi(machine->attachment.context);
@@ -1334,7 +1334,7 @@ lib_status core_machine_get_nmi_mask(const core_machine *machine,
     if (machine == LIB_NULL || out_masked == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    *out_masked = core_machine_cpu_nmi_is_masked(machine->executor_cpu_execution);
+    *out_masked = x86_core_cpu_nmi_is_masked(machine->executor_cpu_execution);
     return LIB_STATUS_OK;
 }
 
@@ -1365,13 +1365,13 @@ void core_machine_destroy(core_machine *machine)
         machine->firmware_context.machine = LIB_NULL;
         machine->firmware_provider = LIB_NULL;
         machine->firmware_provider_context = LIB_NULL;
-        core_machine_cpu_execution_finalize(machine->executor_cpu_execution);
+        x86_core_cpu_execution_finalize(machine->executor_cpu_execution);
         if (machine->attachment.finalize_devices != LIB_NULL) {
             machine->attachment.finalize_devices(machine->attachment.context);
         }
         machine->executor_memory.connect.cpu_snoop = LIB_NULL;
         machine->executor_memory.connect.cpu_snoop_context = LIB_NULL;
-        core_machine_cpu_destroy(machine->executor_cpu_execution);
+        x86_core_cpu_destroy(machine->executor_cpu_execution);
         x86_fpu_destroy(machine->fpu);
         core_machine_port_finalize(&machine->executor_port);
         core_machine_rollback_immutable_rom_mappings(machine, 0u);

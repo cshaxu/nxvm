@@ -21,7 +21,7 @@ foreach(required "attachment.dma_ticks(machine->attachment.context, source_ticks
     "attachment.dma_advance(machine->attachment.context, dma_ticks)"
     "core_machine_transaction_hold_request(" "core_machine_transaction_hold_acknowledge("
     "core_machine_transaction_hold_release("
-    "core_machine_cpu_execution_advance_prefetch_reservation(")
+    "x86_core_cpu_execution_advance_prefetch_reservation(")
     string(FIND "${core}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Core DMA arbitration lacks ${required}")

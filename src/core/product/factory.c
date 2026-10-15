@@ -133,7 +133,7 @@ static lib_status vm_app_read_information(const void *context, const void *machi
     if (status != LIB_STATUS_OK) return status;
     *out_info = (x86_nxvm_product_information){
         .machine_name = binding->name,
-        .cpu_name = core_machine_cpu_profile_name(info.cpu_profile),
+        .cpu_name = x86_core_cpu_profile_name(info.cpu_profile),
         .memory_bytes = info.memory_bytes,
         .floppy_image_bytes = info.floppy_image_bytes,
         .floppy_media_inserted = info.floppy_media_inserted ? LIB_TRUE : LIB_FALSE,

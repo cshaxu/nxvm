@@ -208,7 +208,7 @@ lib_status core_machine_memory_write(
             &machine->executor_memory, physical, (lib_uptr)data, size);
 
         if (status == LIB_STATUS_OK) {
-            core_machine_cpu_execution_invalidate_prefetch(
+            x86_core_cpu_execution_invalidate_prefetch(
                 machine->executor_cpu_execution);
         }
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_MEMORY_WRITE,

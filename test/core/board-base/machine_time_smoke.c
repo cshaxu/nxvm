@@ -31,7 +31,7 @@ lib_i32 main(void)
     lib_i32 failed = 1;
 
     config.ticks_per_instruction = 3u;
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80286;
     config.time_axis = (core_machine_time_axis) {
         CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u };
     {

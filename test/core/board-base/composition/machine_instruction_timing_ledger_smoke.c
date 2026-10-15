@@ -88,7 +88,7 @@ static lib_i32 timing_ledger_prepare(core_machine **out_machine,
     timing_ledger_state *state)
 {
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     core_machine *machine = LIB_NULL;
 
@@ -111,7 +111,7 @@ static lib_i32 timing_ledger_prepare(core_machine **out_machine,
 }
 
 static lib_i32 timing_ledger_patch_register(core_machine *machine,
-    core_machine_debug_register register_id, lib_u32 mask, lib_u32 value)
+    x86_core_cpu_debug_register register_id, lib_u32 mask, lib_u32 value)
 {
     lib_u32 previous;
 
@@ -121,7 +121,7 @@ static lib_i32 timing_ledger_patch_register(core_machine *machine,
 }
 
 static lib_i32 timing_ledger_register_matches(core_machine *machine,
-    core_machine_debug_register register_id, lib_u32 mask, lib_u32 expected)
+    x86_core_cpu_debug_register register_id, lib_u32 mask, lib_u32 expected)
 {
     lib_u32 value;
 
@@ -131,13 +131,13 @@ static lib_i32 timing_ledger_register_matches(core_machine *machine,
 
 static lib_i32 timing_ledger_real_entry(core_machine *machine)
 {
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = {[CORE_MACHINE_DEBUG_EIP] = 0x0200u}
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x0200u}
     };
     return core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK;
 }
@@ -245,7 +245,7 @@ static lib_i32 timing_ledger_physical_case(const lib_u8 *program,
         &entry, 1u
     };
     core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
     };
@@ -307,7 +307,7 @@ static lib_i32 timing_ledger_physical_protected_mov_sreg_memory(void)
     static const lib_u8 program[] = { 0x8eu, 0x1eu, 0x00u, 0x10u };
     static const lib_u8 selector[] = { 0x30u, 0x00u };
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
@@ -354,7 +354,7 @@ static lib_i32 timing_ledger_physical_far_jmp_memory(lib_i32 protected_mode)
     static const lib_u8 pointer[] = { 0xfeu, 0xffu, 0x00u, 0xf0u };
     static const lib_u8 target[] = { 0x90u };
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
     };
@@ -376,7 +376,7 @@ static lib_i32 timing_ledger_physical_far_jmp_memory(lib_i32 protected_mode)
             target, sizeof(target)) != LIB_STATUS_OK;
 
     if (!failed && protected_mode) {
-        failed = !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_CR0, 0u, 1u);
+        failed = !timing_ledger_patch_register(machine, X86_CORE_CPU_DEBUG_CR0, 0u, 1u);
     }
     if (!failed) {
         failed |= core_machine_run(machine, budget, &result) !=
@@ -413,7 +413,7 @@ static lib_i32 timing_ledger_physical_protected_far_jmp_memory(void)
     static const lib_u8 target[] = { 0x90u };
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_run_budget setup_budget = { 10u, 0u };
     const core_machine_run_budget budget = { 1u, 0u };
@@ -526,22 +526,22 @@ static lib_i32 timing_ledger_test_memory(void)
         failed |= !timing_ledger_load(machine, mov_read, sizeof(mov_read)) ||
             core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
                 LIB_STATUS_OK || !timing_ledger_execute(machine, 1u, 4u, &state) ||
-            !timing_ledger_register_matches(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, value);
+            !timing_ledger_register_matches(machine, X86_CORE_CPU_DEBUG_ECX, 0xffffu, value);
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, mov_write, sizeof(mov_write)) ||
-            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, value) ||
+            !timing_ledger_patch_register(machine, X86_CORE_CPU_DEBUG_ECX, 0xffffu, value) ||
             !timing_ledger_execute(machine, 1u, 2u, &state);
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, moffs_read, sizeof(moffs_read)) ||
             core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
                 LIB_STATUS_OK || !timing_ledger_execute(machine, 1u, 4u, &state) ||
-            !timing_ledger_register_matches(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, value);
+            !timing_ledger_register_matches(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, value);
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, moffs_write, sizeof(moffs_write)) ||
-            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, value) ||
+            !timing_ledger_patch_register(machine, X86_CORE_CPU_DEBUG_EAX, 0xffffu, value) ||
             !timing_ledger_execute(machine, 1u, 2u, &state);
     }
     core_machine_destroy(machine);
@@ -569,12 +569,12 @@ static lib_i32 timing_ledger_test_ports(void)
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, in_dx, sizeof(in_dx)) ||
-            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_EDX, 0xffffu, 0x00e0u) ||
+            !timing_ledger_patch_register(machine, X86_CORE_CPU_DEBUG_EDX, 0xffffu, 0x00e0u) ||
             !timing_ledger_execute(machine, 1u, 13u, &state) || state.reads != 2u;
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, out_dx, sizeof(out_dx)) ||
-            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_EDX, 0xffffu, 0x00e0u) ||
+            !timing_ledger_patch_register(machine, X86_CORE_CPU_DEBUG_EDX, 0xffffu, 0x00e0u) ||
             !timing_ledger_execute(machine, 1u, 11u, &state) || state.writes != 2u;
     }
     core_machine_destroy(machine);
@@ -593,23 +593,23 @@ static lib_i32 timing_ledger_test_jcc_and_repeat(void)
 
     if (!failed) {
         failed |= !timing_ledger_load(machine, taken, sizeof(taken)) ||
-            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
-                0u, CORE_MACHINE_DEBUG_EFLAGS_ZF) ||
+            !timing_ledger_patch_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
+                0u, X86_CORE_CPU_DEBUG_EFLAGS_ZF) ||
             !timing_ledger_execute(machine, 1u, 8u, &state);
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, not_taken, sizeof(not_taken)) ||
-            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
-                0u, CORE_MACHINE_DEBUG_EFLAGS_ZF) ||
+            !timing_ledger_patch_register(machine, X86_CORE_CPU_DEBUG_EFLAGS,
+                0u, X86_CORE_CPU_DEBUG_EFLAGS_ZF) ||
             !timing_ledger_execute(machine, 1u, 3u, &state);
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, rep_movsb, sizeof(rep_movsb)) ||
             core_machine_memory_write(machine, 0x1000u, source, sizeof(source)) !=
                 LIB_STATUS_OK ||
-            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, 3u) ||
-            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_ESI, 0xffffu, 0x1000u) ||
-            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_EDI, 0xffffu, 0x1100u) ||
+            !timing_ledger_patch_register(machine, X86_CORE_CPU_DEBUG_ECX, 0xffffu, 3u) ||
+            !timing_ledger_patch_register(machine, X86_CORE_CPU_DEBUG_ESI, 0xffffu, 0x1000u) ||
+            !timing_ledger_patch_register(machine, X86_CORE_CPU_DEBUG_EDI, 0xffffu, 0x1100u) ||
             !timing_ledger_execute(machine, 3u, 17u, &state);
     }
     core_machine_destroy(machine);
@@ -657,7 +657,7 @@ static lib_i32 timing_ledger_test_budget_overflow_and_reset(void)
         failed |= core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u ||
-            !timing_ledger_register_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xffffffffu, 0xfff0u) || state.advanced_ticks != 0u;
+            !timing_ledger_register_matches(machine, X86_CORE_CPU_DEBUG_EIP, 0xffffffffu, 0xfff0u) || state.advanced_ticks != 0u;
     }
     if (!failed) {
         failed |= core_machine_run(machine, sufficient, &result) != LIB_STATUS_OK ||
@@ -688,7 +688,7 @@ static lib_i32 timing_ledger_test_compatibility_is_not_source_truth(void)
 {
     static const lib_u8 prefixed_nop[] = { 0x26u, 0x90u };
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .ticks_per_instruction = 10u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u }
     };

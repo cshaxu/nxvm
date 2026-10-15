@@ -28,7 +28,7 @@ typedef struct vm_machine_config {
     vm_machine_floppy_format floppy_format;
     lib_i32 create_fdd;
     lib_u16 create_hdd_cylinders;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     x86_fpu_profile fpu_profile;
 } vm_machine_config;
 

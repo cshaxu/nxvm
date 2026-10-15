@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 #include "core/x86/device_support_interface.h"
 
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #include "core/x86/debug_interface.h"
 #include "core/board-base/machine_board_interface.h"
 
@@ -30,19 +30,19 @@ typedef enum privilege_negative_case {
 } privilege_negative_case;
 
 static lib_i32 privilege_prepare(privilege_machine *state,
-    core_machine_cpu_profile profile)
+    x86_core_cpu_profile profile)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
         .values = {0}
     };
 
@@ -74,7 +74,7 @@ static lib_i32 write_bytes(core_machine *machine, lib_u32 address,
 static lib_status privilege_run(core_machine *machine,
     core_machine_run_budget budget, core_machine_run_result *out_result)
 {
-    core_machine_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
     lib_status status = core_machine_run(machine, budget, out_result);
 
     if (status == LIB_STATUS_OK && out_result != LIB_NULL &&
@@ -201,12 +201,12 @@ static lib_i32 privilege_install(privilege_machine *state, lib_i32 fault_deliver
                 sizeof(user_fault_code) : user_program_size);
 }
 
-static lib_i32 privilege_test_delivery(core_machine_cpu_profile profile,
+static lib_i32 privilege_test_delivery(x86_core_cpu_profile profile,
     privilege_negative_case negative_case, lib_u32 exception_mask, lib_u16 expected_code)
 {
     privilege_machine state = {0};
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
     lib_u16 marker = 0u;
     const core_machine_run_budget budget = { 1024u, 0u };
     lib_i32 failed = 1;
@@ -241,16 +241,16 @@ static lib_i32 privilege_test_stack_atomicity(void)
     privilege_machine state = {0};
     core_machine_run_result result = {0};
     lib_status run_status = LIB_STATUS_INVALID_STATE;
-    core_machine_debug_cpu_snapshot cpu = {0};
+    x86_core_cpu_debug_cpu_snapshot cpu = {0};
     const core_machine_run_budget budget = { 1024u, 0u };
     lib_i32 failed = 1;
 
-    if (!privilege_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286) ||
+    if (!privilege_prepare(&state, X86_CORE_CPU_PROFILE_80286) ||
         !privilege_install(&state, 0, PRIVILEGE_NEGATIVE_STACK_ATOMICITY)) goto done;
     run_status = privilege_run(state.machine, budget, &result);
     if (!test_core_machine_fixture_shutdown_wait(run_status, &result) ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
         cpu.cs.selector != 0x001bu || cpu.cs.dpl != 3u ||
         cpu.ss.selector != 0x0023u || cpu.esp != 0x0000a000u) goto done;
     failed = 0;
@@ -269,13 +269,13 @@ int main(void)
 {
     privilege_machine state = {0};
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
-    core_machine_debug_cpu_snapshot cpu = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_debug_cpu_snapshot cpu = {0};
     lib_u16 markers[2] = {0u, 0u};
     const core_machine_run_budget budget = { 1024u, 0u };
     lib_i32 failed = 1;
 
-    if (!privilege_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286) ||
+    if (!privilege_prepare(&state, X86_CORE_CPU_PROFILE_80286) ||
         !privilege_install(&state, 0, PRIVILEGE_NEGATIVE_NONE) ||
         privilege_run(state.machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -285,7 +285,7 @@ int main(void)
         diagnostic.first_fault.valid || diagnostic.last_delivered_exception.valid ||
         diagnostic.delivered_exception_count != 0u ||
         core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK) goto done;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK) goto done;
     failed = 0;
 done:
     if (failed) {
@@ -297,15 +297,15 @@ done:
     }
     core_machine_destroy(state.machine);
     if (failed ||
-        privilege_test_delivery(CORE_MACHINE_CPU_PROFILE_80286,
+        privilege_test_delivery(X86_CORE_CPU_PROFILE_80286,
             PRIVILEGE_NEGATIVE_NONE, VCPUINS_EXCEPT_GP, 0x0192u) ||
-        privilege_test_delivery(CORE_MACHINE_CPU_PROFILE_80386,
+        privilege_test_delivery(X86_CORE_CPU_PROFILE_80386,
             PRIVILEGE_NEGATIVE_NONE, VCPUINS_EXCEPT_GP, 0x0192u) ||
-        privilege_test_delivery(CORE_MACHINE_CPU_PROFILE_80286,
+        privilege_test_delivery(X86_CORE_CPU_PROFILE_80286,
             PRIVILEGE_NEGATIVE_GATE_NOT_PRESENT, VCPUINS_EXCEPT_NP, 0x0182u) ||
-        privilege_test_delivery(CORE_MACHINE_CPU_PROFILE_80286,
+        privilege_test_delivery(X86_CORE_CPU_PROFILE_80286,
             PRIVILEGE_NEGATIVE_GP_GATE_NOT_PRESENT, VCPUINS_EXCEPT_NP, 0x006au) ||
-        privilege_test_delivery(CORE_MACHINE_CPU_PROFILE_80286,
+        privilege_test_delivery(X86_CORE_CPU_PROFILE_80286,
             PRIVILEGE_NEGATIVE_CODE_NOT_PRESENT, VCPUINS_EXCEPT_NP, 0x0030u) ||
         privilege_test_stack_atomicity()) return 1;
     lib_c_printf("PROTECTED-PRIVILEGE:OK\n");

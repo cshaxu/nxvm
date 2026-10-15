@@ -17,7 +17,7 @@ static lib_i32 machine_explicit_time_prepare(core_machine **out_machine,
     core_machine_board_state **out_board)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80286,
         .ticks_per_instruction = 1u
     };
     const core_machine_rtc_cmos_config rtc = {
@@ -39,7 +39,7 @@ static lib_i32 machine_explicit_time_prepare(core_machine **out_machine,
 static lib_i32 machine_explicit_time_rejects_unstarted_lifecycle(void)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286
+        .cpu_profile = X86_CORE_CPU_PROFILE_80286
     };
     core_machine *machine = LIB_NULL;
     lib_u64 elapsed = 1u;

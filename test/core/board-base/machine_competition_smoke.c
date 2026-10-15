@@ -110,7 +110,7 @@ static lib_i32 competition_dma_wait_contract(void)
     lib_u8 value = 0u;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     config.transaction_contract.dma_cycle_wait_quanta = 1u;
     config.transaction_contract.dma_cycle_bus_ready_gate_enabled = LIB_TRUE;
     failed = failed || core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
@@ -166,7 +166,7 @@ static lib_i32 competition_at_refresh_contract(void)
     lib_u8 value = 0u;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     config.transaction_contract.refresh_cycle_source_ticks = 8u;
     failed = core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
         core_machine_configure_planar_parity(board, &port_b) != LIB_STATUS_OK ||
@@ -251,7 +251,7 @@ lib_i32 main(void)
     lib_u32 reset_hold_release = 0u;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     trace.callback = competition_trace;
     trace.context = &probe;
     failed = failed || core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;

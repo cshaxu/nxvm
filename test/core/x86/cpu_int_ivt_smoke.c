@@ -4,7 +4,7 @@
 #include "core/x86/machine_interface.h"
 #include "../support/memory_alias_fixture.h"
 
-static lib_i32 run_case(core_machine_cpu_profile profile)
+static lib_i32 run_case(x86_core_cpu_profile profile)
 {
     static const lib_u8 program[] = { 0xcdu, 0xf0u };
     static const lib_u8 ivt_entry[] = { 0x00u, 0x01u, 0x00u, 0x00u };
@@ -45,8 +45,8 @@ lib_i32 main(void)
 {
     lib_i32 failed = 0;
 
-    failed |= run_case(CORE_MACHINE_CPU_PROFILE_8086);
-    failed |= run_case(CORE_MACHINE_CPU_PROFILE_80386);
+    failed |= run_case(X86_CORE_CPU_PROFILE_8086);
+    failed |= run_case(X86_CORE_CPU_PROFILE_80386);
     if (failed) return 1;
     lib_c_printf("CPU-INT-IVT:OK\n");
     return 0;

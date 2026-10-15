@@ -6,7 +6,7 @@
 lib_status core_machine_apply_entry_plan(core_machine *machine,
     const core_machine_entry_plan *plan)
 {
-    core_machine_cpu_prepared_entry *candidate = LIB_NULL;
+    x86_core_cpu_prepared_entry *candidate = LIB_NULL;
     core_machine_memory_route route;
     lib_size index;
     lib_u32 expected_physical;
@@ -25,7 +25,7 @@ lib_status core_machine_apply_entry_plan(core_machine *machine,
     expected_physical = ((lib_u32)plan->state.cs << 4) + plan->state.ip;
     if (plan->entry_physical != expected_physical)
         return LIB_STATUS_INVALID_ARGUMENT;
-    status = core_machine_cpu_prepare_entry(machine->executor_cpu_execution,
+    status = x86_core_cpu_prepare_entry(machine->executor_cpu_execution,
         &plan->state, &candidate);
     if (status != LIB_STATUS_OK) return status;
     if (core_machine_memory_query(machine,
@@ -54,7 +54,7 @@ lib_status core_machine_apply_entry_plan(core_machine *machine,
             }
         }
     }
-    core_machine_cpu_finish_entry(candidate, LIB_TRUE);
+    x86_core_cpu_finish_entry(candidate, LIB_TRUE);
     for (index = 0u; index < plan->preload_count; ++index) {
         const core_machine_entry_plan_preload *preload = &plan->preloads[index];
 
@@ -66,6 +66,6 @@ lib_status core_machine_apply_entry_plan(core_machine *machine,
     return LIB_STATUS_OK;
 
 invalid_plan:
-    core_machine_cpu_finish_entry(candidate, LIB_FALSE);
+    x86_core_cpu_finish_entry(candidate, LIB_FALSE);
     return LIB_STATUS_INVALID_ARGUMENT;
 }

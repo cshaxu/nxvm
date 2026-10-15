@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(legacy_profile_source "${PROJECT_SOURCE_DIR}/src/core/chips/cpu/cpu_instructions.c")
+set(legacy_profile_source "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_instructions.c")
 if(NOT EXISTS "${legacy_profile_source}")
     message(FATAL_ERROR "source is missing: ${legacy_profile_source}")
 endif()
@@ -16,7 +16,7 @@ endfunction()
 
 # The metadata starts at the 8086 baseline and names every primary 80186
 # extension explicitly.  Later-only primary bytes remain out of this package.
-legacy_profile_require("CORE_MACHINE_CPU_PROFILE_8086, X86_FPU_PROFILE_NONE, 1"
+legacy_profile_require("X86_CORE_CPU_PROFILE_8086, X86_FPU_PROFILE_NONE, 1"
     "the primary baseline must remain 8086")
 foreach(legacy_profile_opcode IN ITEMS
     "opcode >= 0x60u && opcode <= 0x62u"
@@ -35,7 +35,7 @@ foreach(legacy_profile_opcode IN ITEMS
     string(REPLACE ")" "\\)" legacy_profile_pattern "${legacy_profile_pattern}")
     legacy_profile_require("${legacy_profile_pattern}" "missing 80186 primary form ${legacy_profile_opcode}")
 endforeach()
-legacy_profile_require("metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80186"
+legacy_profile_require("metadata.minimum_cpu = X86_CORE_CPU_PROFILE_80186"
     "80186 extension metadata must retain its profile gate")
 legacy_profile_require("opcode == 0x63u"
     "ARPL must remain separately 80286")
@@ -46,9 +46,9 @@ legacy_profile_require("opcode == 0x82u || opcode == 0xd6u"
 
 # The historical LOCK branch is independently owned. This metadata verifier
 # must not reintroduce the 80386 whitelist to the 8086/80186 route.
-legacy_profile_require("context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386"
+legacy_profile_require("context->cpu_profile >= X86_CORE_CPU_PROFILE_80386"
     "80386 LOCK whitelist branch is missing")
-legacy_profile_require("context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286"
+legacy_profile_require("context->cpu_profile == X86_CORE_CPU_PROFILE_80286"
     "legacy LOCK branch must retain the distinct 80286 privilege condition")
 legacy_profile_require("Before the 80386, LOCK is a bus prefix"
     "legacy LOCK policy rationale is missing")

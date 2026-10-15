@@ -43,7 +43,7 @@ static lib_i32 rational_clock_prepare(core_machine **out_machine,
     core_machine_executor_config config = { 0 };
 
     config.ticks_per_instruction = 1u;
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80286;
     config.provider_clock.numerator = 3u;
     config.provider_clock.denominator = 2u;
     config.provider_clock.reset_phase = 1u;

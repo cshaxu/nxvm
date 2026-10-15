@@ -55,21 +55,21 @@ static lib_i32 oas_write(oas_machine *state, lib_u32 address,
 }
 
 static lib_i32 oas_patch(oas_machine *state,
-    core_machine_debug_register register_id, lib_u32 value)
+    x86_core_cpu_debug_register register_id, lib_u32 value)
 {
-    core_machine_debug_register_patch patch = {0};
+    x86_core_cpu_debug_register_patch patch = {0};
 
-    patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(register_id);
+    patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(register_id);
     patch.values[register_id] = value;
     return core_machine_debug_patch_registers(state->machine, &patch) ==
         LIB_STATUS_OK;
 }
 
 static lib_i32 oas_capture(oas_machine *state,
-    core_machine_debug_cpu_snapshot *out_cpu)
+    x86_core_cpu_debug_cpu_snapshot *out_cpu)
 {
     return core_machine_debug_capture_cpu_snapshot(state->machine,
-        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, out_cpu) == LIB_STATUS_OK;
+        X86_CORE_CPU_SNAPSHOT_CURRENT, out_cpu) == LIB_STATUS_OK;
 }
 
 static lib_i32 oas_prepare(oas_machine *state, oas_port_state *port,
@@ -77,15 +77,15 @@ static lib_i32 oas_prepare(oas_machine *state, oas_port_state *port,
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
     const lib_u8 gdt_pointer[] = { 0x1fu,0,0,0x03u,0,0 };
     lib_u8 gdt[] = {
@@ -134,7 +134,7 @@ static lib_i32 oas_prepare(oas_machine *state, oas_port_state *port,
 }
 
 static lib_i32 oas_run_halt(oas_machine *state, const lib_u8 *code,
-    lib_size code_size, core_machine_debug_cpu_snapshot *out_cpu)
+    lib_size code_size, x86_core_cpu_debug_cpu_snapshot *out_cpu)
 {
     core_machine_run_result result = {0};
 
@@ -146,7 +146,7 @@ static lib_i32 oas_run_halt(oas_machine *state, const lib_u8 *code,
 }
 
 static lib_i32 oas_run_gp(oas_machine *state, const lib_u8 *code,
-    lib_size code_size, core_machine_debug_cpu_snapshot *out_cpu)
+    lib_size code_size, x86_core_cpu_debug_cpu_snapshot *out_cpu)
 {
     core_machine_run_result result = {0};
     lib_status status;
@@ -177,12 +177,12 @@ static lib_i32 oas_test_fault_delivery(void)
     lib_u8 form;
 
     for (form = 0u; form != 2u; ++form) {
-        core_machine_debug_cpu_snapshot after = {0};
+        x86_core_cpu_debug_cpu_snapshot after = {0};
         lib_i32 failed = !oas_prepare(&state, LIB_NULL, LIB_TRUE,
             form == 1u);
 
         if (!failed) {
-            failed |= !oas_patch(&state, CORE_MACHINE_DEBUG_EAX,
+            failed |= !oas_patch(&state, X86_CORE_CPU_DEBUG_EAX,
                 form == 0u ? 0xaabbccddu : 0x11223344u) ||
                 !oas_run_gp(&state, codes[form], sizeof(invalid_data),
                     &after) ||
@@ -208,7 +208,7 @@ static lib_i32 oas_test_io_strings(void)
     lib_u8 destination[2] = {0};
     oas_port_state port = {0};
     oas_machine state;
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_i32 failed = !oas_prepare(&state, &port, LIB_FALSE, LIB_FALSE);
 
     if (!failed) {

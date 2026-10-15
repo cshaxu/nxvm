@@ -58,14 +58,14 @@ lib_i32 main(void)
     saved_core_machine = machine->core_machine;
     machine->core_machine = LIB_NULL;
     if (core_machine_debug_read_register(machine->core_machine,
-            CORE_MACHINE_DEBUG_EAX, &register_id) != LIB_STATUS_INVALID_ARGUMENT) {
+            X86_CORE_CPU_DEBUG_EAX, &register_id) != LIB_STATUS_INVALID_ARGUMENT) {
         machine->core_machine = saved_core_machine;
         goto failed;
     }
     response_size = sizeof(result);
     if (vm_machine_debug_execute(machine, &(x86_debug_request) {
             .operation = X86_DEBUG_READ_REGISTER,
-            .register_id = CORE_MACHINE_DEBUG_EAX
+            .register_id = X86_CORE_CPU_DEBUG_EAX
         }, sizeof(x86_debug_request), &result, sizeof(result), &response_size) !=
             LIB_STATUS_INVALID_ARGUMENT || response_size != 0u) {
         machine->core_machine = saved_core_machine;
@@ -74,8 +74,8 @@ lib_i32 main(void)
     machine->core_machine = saved_core_machine;
     if (emulator_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK)
         goto failed;
-    for (register_id = CORE_MACHINE_DEBUG_EAX;
-         register_id < CORE_MACHINE_DEBUG_REGISTER_COUNT; ++register_id) {
+    for (register_id = X86_CORE_CPU_DEBUG_EAX;
+         register_id < X86_CORE_CPU_DEBUG_REGISTER_COUNT; ++register_id) {
         x86_debug_request read = {
             .operation = X86_DEBUG_READ_REGISTER,
             .register_id = register_id
@@ -107,14 +107,14 @@ lib_i32 main(void)
             .watch_kind = X86_DEBUG_WATCH_READ,
             .address = 0x600u
         }, &result) || core_machine_debug_get_watchpoint(machine->core_machine,
-            CORE_MACHINE_DEBUG_WATCH_READ, &watch_enabled, &watch_address) !=
+            X86_CORE_CPU_DEBUG_WATCH_READ, &watch_enabled, &watch_address) !=
             LIB_STATUS_OK || !watch_enabled || watch_address != 0x600u)
         goto failed;
     if (!vm_debug_execute(machine, &lease, &(x86_debug_request){
             .operation = X86_DEBUG_CLEAR_WATCH,
             .watch_kind = X86_DEBUG_WATCH_READ
         }, &result) || core_machine_debug_get_watchpoint(machine->core_machine,
-            CORE_MACHINE_DEBUG_WATCH_READ, &watch_enabled, &watch_address) !=
+            X86_CORE_CPU_DEBUG_WATCH_READ, &watch_enabled, &watch_address) !=
             LIB_STATUS_OK || watch_enabled)
         goto failed;
     if (!vm_debug_execute(machine, &lease, &(x86_debug_request){
@@ -167,14 +167,14 @@ lib_i32 main(void)
     machine->debug.observation_valid = LIB_TRUE;
     machine->debug.observation.memory_access_count = 1u;
     machine->debug.observation.memory_accesses[0] =
-        (core_machine_debug_memory_access) {
+        (x86_core_cpu_debug_memory_access) {
             .write = LIB_TRUE,
             .linear = 0x4567u,
             .bytes = 1u,
             .data = 0x5au
         };
     machine->debug.observation.watch_hit = LIB_TRUE;
-    machine->debug.observation.watch_kind = CORE_MACHINE_DEBUG_WATCH_WRITE;
+    machine->debug.observation.watch_kind = X86_CORE_CPU_DEBUG_WATCH_WRITE;
     machine->debug.observation.watch_address = 0x4567u;
     vm_machine_debug_complete_watchpoint(&machine->debug);
     if (!vm_debug_execute(machine, &lease, &(x86_debug_request){
@@ -189,7 +189,7 @@ lib_i32 main(void)
     if (emulator_machine_debug_execute_with_lease(machine->executor, &lease,
             &(x86_debug_request){
                 .operation = X86_DEBUG_READ_REGISTER,
-                .register_id = CORE_MACHINE_DEBUG_EIP
+                .register_id = X86_CORE_CPU_DEBUG_EIP
             }, sizeof(x86_debug_request), &result, sizeof(result),
             &(lib_size){0u}) != LIB_STATUS_INVALID_STATE) goto failed;
     vm_test_emulator_machine_unbind(machine);

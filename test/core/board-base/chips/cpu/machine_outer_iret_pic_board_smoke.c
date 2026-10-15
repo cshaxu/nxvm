@@ -13,7 +13,7 @@ typedef struct outer_iret_pic_board {
 
 static lib_status outer_iret_pic_read(void *opaque, lib_u32 address,
     void *destination, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance, lib_bool observe_only,
+    x86_core_cpu_memory_access_provenance provenance, lib_bool observe_only,
     lib_bool reset_fetch, lib_u8 cache_control)
 {
     outer_iret_pic_board *const board = opaque;
@@ -24,7 +24,7 @@ static lib_status outer_iret_pic_read(void *opaque, lib_u32 address,
 
 static lib_status outer_iret_pic_write(void *opaque, lib_u32 address,
     const void *source, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
+    x86_core_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     outer_iret_pic_board *const board = opaque;
 
@@ -49,7 +49,7 @@ static lib_status outer_iret_pic_acknowledge(void *opaque, lib_u8 *out_vector)
     return LIB_STATUS_OK;
 }
 
-static const core_machine_cpu_bus_provider outer_iret_pic_bus = {
+static const x86_core_cpu_bus_provider outer_iret_pic_bus = {
     .read_memory = outer_iret_pic_read,
     .write_memory = outer_iret_pic_write,
     .interrupt_pending = outer_iret_pic_pending,
@@ -61,7 +61,7 @@ static lib_bool outer_iret_pic_prepare(outer_iret_pic_board *board)
     static const lib_u8 outer_iret[] = {0xcfu};
     static const lib_u8 user_nop[] = {0x90u};
     static const lib_u32 outer_frame[] = {
-        0x00000010u,0x0000001bu,CORE_MACHINE_DEBUG_EFLAGS_IF | 0x02u,0x00001000u,0x00000023u
+        0x00000010u,0x0000001bu,X86_CORE_CPU_DEBUG_EFLAGS_IF | 0x02u,0x00001000u,0x00000023u
     };
     const lib_u8 vector = 0x20u;
     lib_u8 *const memory = board->cpu.memory;
@@ -72,7 +72,7 @@ static lib_bool outer_iret_pic_prepare(outer_iret_pic_board *board)
     if (board->machine == LIB_NULL) return LIB_FALSE;
     if (core_machine_pic_initialize(&board->master, &board->slave, board->machine,
             CORE_MACHINE_PIC_TOPOLOGY_SINGLE) != LIB_STATUS_OK) return LIB_FALSE;
-    cpu_instruction_prepare_with_bus(&board->cpu, CORE_MACHINE_CPU_PROFILE_80386,
+    cpu_instruction_prepare_with_bus(&board->cpu, X86_CORE_CPU_PROFILE_80386,
         &outer_iret_pic_bus, board);
     cpu_outer_return_configure(&board->cpu);
     board->cpu.cpu.data.cs.seg.exec.defsize = LIB_TRUE;
@@ -101,10 +101,10 @@ int main(void)
     if (!failed) {
         core_machine_pic_irq_source_assert(source);
         core_machine_pic_irq_source_deassert(source);
-        core_machine_cpu_execution_refresh(&board.cpu.execution);
-        core_machine_cpu_execution_refresh(&board.cpu.execution);
-        core_machine_cpu_execution_refresh(&board.cpu.execution);
-        core_machine_cpu_execution_refresh(&board.cpu.execution);
+        x86_core_cpu_execution_refresh(&board.cpu.execution);
+        x86_core_cpu_execution_refresh(&board.cpu.execution);
+        x86_core_cpu_execution_refresh(&board.cpu.execution);
+        x86_core_cpu_execution_refresh(&board.cpu.execution);
         after = board.cpu.cpu;
         failed = board.cpu.fault.valid || after.data.cs.selector != 0x0008u ||
             after.data.ss.selector != 0x0010u || after.data.eip != 0x101u ||

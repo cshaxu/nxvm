@@ -11,7 +11,7 @@ typedef struct task16_pic_board {
 } task16_pic_board;
 
 static lib_status task16_pic_read(void *opaque, lib_u32 address, void *to,
-    lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
+    lib_u8 bytes, x86_core_cpu_memory_access_provenance provenance,
     lib_bool observe, lib_bool reset_fetch, lib_u8 cache_control)
 {
     task16_pic_board *const board = opaque;
@@ -21,7 +21,7 @@ static lib_status task16_pic_read(void *opaque, lib_u32 address, void *to,
 
 static lib_status task16_pic_write(void *opaque, lib_u32 address,
     const void *from, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
+    x86_core_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     task16_pic_board *const board = opaque;
     return cpu_instruction_write(&board->cpu, address, from, bytes, provenance, cache_control);
@@ -43,7 +43,7 @@ static lib_status task16_pic_acknowledge(void *opaque, lib_u8 *vector)
     return LIB_STATUS_OK;
 }
 
-static const core_machine_cpu_bus_provider task16_pic_bus = {
+static const x86_core_cpu_bus_provider task16_pic_bus = {
     .read_memory = task16_pic_read, .write_memory = task16_pic_write,
     .interrupt_pending = task16_pic_pending, .acknowledge_interrupt = task16_pic_acknowledge
 };
@@ -58,7 +58,7 @@ int main(void)
     lib_bool failed = core_machine_pic_initialize(&board.master, &board.slave,
         board.machine, CORE_MACHINE_PIC_TOPOLOGY_SINGLE) != LIB_STATUS_OK;
     if (!failed) {
-        cpu_instruction_prepare_with_bus(&board.cpu, CORE_MACHINE_CPU_PROFILE_80386,
+        cpu_instruction_prepare_with_bus(&board.cpu, X86_CORE_CPU_PROFILE_80386,
             &task16_pic_bus, &board);
         cpu_task16_configure(&board.cpu, CPU_TASK16_DIRECT);
         board.cpu.memory[CPU_TASK16_B_BASE + 16u] = 0x02u;

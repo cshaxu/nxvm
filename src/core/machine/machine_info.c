@@ -12,7 +12,7 @@
 lib_status vm_machine_get_information(const vm_machine *session,
     vm_machine_information *out_information)
 {
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     const vm_machine_fault_outcome *fault;
     lib_size memory_bytes = 0u;
     lib_status status;

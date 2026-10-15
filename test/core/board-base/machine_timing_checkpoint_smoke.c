@@ -46,7 +46,7 @@ lib_i32 main(void)
     lib_u8 second[CHECKPOINTS];
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80286;
     lib_memory_set(program, 0x90, sizeof(program));
     failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,

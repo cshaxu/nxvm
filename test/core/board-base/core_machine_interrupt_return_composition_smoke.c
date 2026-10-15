@@ -16,26 +16,26 @@
 static void interrupt_return_composition_seed(cli_sti_machine *state,
     lib_u32 flags)
 {
-    const core_machine_debug_register_patch patch = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    const x86_core_cpu_debug_register_patch patch = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_EAX] = 0xaabbccddu,
-            [CORE_MACHINE_DEBUG_ECX] = 0x11223344u,
-            [CORE_MACHINE_DEBUG_EDX] = 0x55667788u,
-            [CORE_MACHINE_DEBUG_EBX] = 0x99aabbccu,
-            [CORE_MACHINE_DEBUG_ESP] = 0x00008000u,
-            [CORE_MACHINE_DEBUG_EBP] = 0x00000120u,
-            [CORE_MACHINE_DEBUG_ESI] = 0x00000010u,
-            [CORE_MACHINE_DEBUG_EDI] = 0x00000020u,
-            [CORE_MACHINE_DEBUG_EFLAGS] = flags
+            [X86_CORE_CPU_DEBUG_EAX] = 0xaabbccddu,
+            [X86_CORE_CPU_DEBUG_ECX] = 0x11223344u,
+            [X86_CORE_CPU_DEBUG_EDX] = 0x55667788u,
+            [X86_CORE_CPU_DEBUG_EBX] = 0x99aabbccu,
+            [X86_CORE_CPU_DEBUG_ESP] = 0x00008000u,
+            [X86_CORE_CPU_DEBUG_EBP] = 0x00000120u,
+            [X86_CORE_CPU_DEBUG_ESI] = 0x00000010u,
+            [X86_CORE_CPU_DEBUG_EDI] = 0x00000020u,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = flags
         }
     };
     if (core_machine_debug_patch_registers(state->machine, &patch) != LIB_STATUS_OK)
@@ -47,17 +47,17 @@ static lib_i32 interrupt_return_composition_real_irq_after_iret(void)
     const lib_u16 int_offset = 0x0100u;
     const lib_u16 irq_offset = 0x0120u;
     const lib_u16 segment = 0u;
-    const lib_u32 flags = CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF;
+    const lib_u32 flags = X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_IF;
     static const lib_u8 program[] = { 0xcdu, 0x31u, 0x90u };
     static const lib_u8 iret[] = { 0xcfu };
     static const lib_u8 hlt[] = { 0xf4u };
     cli_sti_machine state;
     core_machine_pic_irq_source *irq = LIB_NULL;
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_u16 frame[3u] = { 0u, 0u, 0u };
-    lib_i32 failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state, LIB_FALSE) ||
+    lib_i32 failed = !cli_sti_prepare(X86_CORE_CPU_PROFILE_80386, &state, LIB_FALSE) ||
         !cli_sti_real_entry(state.machine, 0u);
 
     lib_memory_set(&irq, 0, sizeof(irq));
@@ -92,8 +92,8 @@ static lib_i32 interrupt_return_composition_real_irq_after_iret(void)
         if (!failed) failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             diagnostic.first_fault.valid || after.eip != irq_offset + 1u ||
             after.esp != 0x00007ffau ||
-            CORE_MACHINE_BIT_IS_SET(after.eflags, CORE_MACHINE_DEBUG_EFLAGS_IF) ||
-            CORE_MACHINE_BIT_IS_SET(after.eflags, CORE_MACHINE_DEBUG_EFLAGS_TF) ||
+            CORE_MACHINE_BIT_IS_SET(after.eflags, X86_CORE_CPU_DEBUG_EFLAGS_IF) ||
+            CORE_MACHINE_BIT_IS_SET(after.eflags, X86_CORE_CPU_DEBUG_EFLAGS_TF) ||
             !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
                 test_pic_read(state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||

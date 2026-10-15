@@ -2,7 +2,7 @@
 #include "lib/types/file.h"
 #include "core/x86/device_support_interface.h"
 
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #include "core/x86/debug_interface.h"
 #include "core/x86/memory_interface.h"
 #include "debug_fixture.h"
@@ -49,7 +49,7 @@ static lib_i32 write_bytes(core_machine *machine, lib_u32 address,
 }
 
 static lib_i32 task_switch_prepare(task_switch_fixture *fixture,
-    core_machine_cpu_profile profile)
+    x86_core_cpu_profile profile)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -64,12 +64,12 @@ static lib_i32 task_switch_prepare(task_switch_fixture *fixture,
         core_machine_freeze_execution_providers(fixture->machine) != LIB_STATUS_OK ||
         core_machine_reset(fixture->machine) != LIB_STATUS_OK ||
         core_machine_debug_patch_registers(fixture->machine,
-            &(core_machine_debug_register_patch){
-                .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+            &(x86_core_cpu_debug_register_patch){
+                .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
             }) != LIB_STATUS_OK) {
         core_machine_destroy(fixture->machine);
         fixture->machine = LIB_NULL;
@@ -349,9 +349,9 @@ static lib_i32 task_switch_expect_cross_width_16_to_32(lib_u8 nested,
     static const lib_u8 iret[] = { 0xcfu, 0xf4u };
     lib_u16 saved_ldtr = 0xffffu;
     lib_u8 busy[2] = {0u, 0u};
-    core_machine_debug_cpu_snapshot cpu = {0};
+    x86_core_cpu_debug_cpu_snapshot cpu = {0};
     const core_machine_run_budget budget = {128u, 0u};
-    lib_i32 failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !task_switch_prepare(&fixture, X86_CORE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed |= !task_switch_install(&fixture, nested ?
@@ -368,7 +368,7 @@ static lib_i32 task_switch_expect_cross_width_16_to_32(lib_u8 nested,
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         if (failed) goto done;
         failed |= core_machine_debug_capture_cpu_snapshot(fixture.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
         if (failed) goto done;
         failed |= cpu.tr.selector != (task_return ? 0x28u : 0x30u) ||
             cpu.tr.type != (task_return ? 0x03u : 0x0bu) || cpu.eax !=
@@ -394,7 +394,7 @@ static lib_i32 task_switch_expect_cross_width_16_to_32(lib_u8 nested,
             busy[0] != (task_return ? 0x83u : nested ? 0x83u : 0x81u) ||
             busy[1] != (task_return ? 0x89u : 0x8bu) ||
             (!task_return && nested && !CORE_MACHINE_BIT_IS_SET(cpu.eflags,
-                CORE_MACHINE_DEBUG_EFLAGS_NT));
+                X86_CORE_CPU_DEBUG_EFLAGS_NT));
     }
 done:
     core_machine_destroy(fixture.machine);
@@ -463,9 +463,9 @@ static lib_i32 task_switch_expect_cross_width_32_to_16(lib_u8 nested,
         0xeau,0u,0u,0x30u,0u, 0xf4u
     };
     lib_u8 busy[2] = {0u, 0u};
-    core_machine_debug_cpu_snapshot cpu = {0};
+    x86_core_cpu_debug_cpu_snapshot cpu = {0};
     const core_machine_run_budget budget = {128u, 0u};
-    lib_i32 failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !task_switch_prepare(&fixture, X86_CORE_CPU_PROFILE_80386);
 
     if (nested) source[48] = 0x9au;
     if (task_gate) source[51] = 0x38u;
@@ -489,7 +489,7 @@ static lib_i32 task_switch_expect_cross_width_32_to_16(lib_u8 nested,
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         if (failed) goto done;
         failed |= core_machine_debug_capture_cpu_snapshot(fixture.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
         if (failed) goto done;
         failed |= cpu.tr.selector != (task_return ? 0x28u : 0x30u) ||
             cpu.eax != (task_return ? 0x11111111u : 0xffff2222u) ||

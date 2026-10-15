@@ -60,8 +60,8 @@ lib_bool test_kbc_core_construction(t_kbc *kbc)
 
 
 lib_status test_kbc_core_reset_entry(core_machine *machine,
-    const core_machine_debug_register_patch *entry)
+    const x86_core_cpu_debug_register_patch *entry)
 {
-    return core_machine_cpu_debug_patch_registers(machine->executor_cpu_execution,
+    return x86_core_cpu_debug_patch_registers(machine->executor_cpu_execution,
         entry);
 }

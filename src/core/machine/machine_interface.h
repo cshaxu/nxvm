@@ -23,7 +23,7 @@ typedef struct vm_machine_reset_vector {
 /* Copied monitor facts.  The product formats these facts; core/machine never
  * writes monitor text or exposes its Core, media or control objects. */
 typedef struct vm_machine_information {
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     lib_size memory_bytes;
     lib_size floppy_image_bytes;
     lib_bool floppy_media_inserted;

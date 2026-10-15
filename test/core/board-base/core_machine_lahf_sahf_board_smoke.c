@@ -3,12 +3,12 @@
 #include "cpu_board_flags_protected_fixture.h"
 #include "cpu_board_irq_fixture.h"
 
-#define LAHF_SAHF_MASK (CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_PF | CORE_MACHINE_DEBUG_EFLAGS_AF | \
-    CORE_MACHINE_DEBUG_EFLAGS_ZF | CORE_MACHINE_DEBUG_EFLAGS_SF)
+#define LAHF_SAHF_MASK (X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_PF | X86_CORE_CPU_DEBUG_EFLAGS_AF | \
+    X86_CORE_CPU_DEBUG_EFLAGS_ZF | X86_CORE_CPU_DEBUG_EFLAGS_SF)
 
 static lib_i32 lahf_sahf_nonparticipants_same(
-    const core_machine_debug_cpu_snapshot *before,
-    const core_machine_debug_cpu_snapshot *after, lib_bool irq)
+    const x86_core_cpu_debug_cpu_snapshot *before,
+    const x86_core_cpu_debug_cpu_snapshot *after, lib_bool irq)
 {
     return before->ecx == after->ecx && before->edx == after->edx &&
         before->ebx == after->ebx &&
@@ -20,8 +20,8 @@ static lib_i32 lahf_sahf_nonparticipants_same(
 static lib_i32 lahf_sahf_test_protected(void)
 {
     static const lib_u8 opcodes[] = {0x9fu,0x9eu};
-    const lib_u32 flags = CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_DF |
-        CORE_MACHINE_DEBUG_EFLAGS_OF | 0x00003000u | LAHF_SAHF_MASK;
+    const lib_u32 flags = X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_DF |
+        X86_CORE_CPU_DEBUG_EFLAGS_OF | 0x00003000u | LAHF_SAHF_MASK;
 
     for (lib_size opcode = 0u; opcode < sizeof(opcodes); ++opcode) {
         test_cpu_board_flags_protected_result result = {0};
@@ -62,7 +62,7 @@ static lib_i32 lahf_sahf_test_irq(void)
         const test_cpu_board_irq_case entry = {
             .code = {opcodes[opcode],0x90u},
             .eax = sahf ? 0xaabbffddU : 0xaabbccddU,
-            .flags = CORE_MACHINE_DEBUG_EFLAGS_IF, .budget = 2u
+            .flags = X86_CORE_CPU_DEBUG_EFLAGS_IF, .budget = 2u
         };
         test_cpu_board_irq_result result = {0};
 

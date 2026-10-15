@@ -55,7 +55,7 @@ static lib_i32 timeline_machine_contract(void)
     const lib_u8 nop = 0x90u;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80286;
 #if CORE_MACHINE_RUNTIME_TRACE_ENABLED
     trace.context = &trace_probe;
 #endif

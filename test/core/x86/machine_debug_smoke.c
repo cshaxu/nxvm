@@ -29,8 +29,8 @@ static lib_i32 debug_observation_contract(core_machine *machine)
         core_machine_debug_write_real(machine, 0x10u, 1u, bytes + 1u, 1u) != LIB_STATUS_OK ||
         core_machine_debug_read_linear(machine, 0x100u, actual, 2u) != LIB_STATUS_OK ||
         lib_memory_compare(actual, bytes, sizeof(bytes)) != 0) return 1;
-    for (lib_u32 kind = CORE_MACHINE_DEBUG_WATCH_READ; kind <= CORE_MACHINE_DEBUG_WATCH_EXECUTE; ++kind) {
-        const core_machine_debug_watch_kind watch = (core_machine_debug_watch_kind)kind;
+    for (lib_u32 kind = X86_CORE_CPU_DEBUG_WATCH_READ; kind <= X86_CORE_CPU_DEBUG_WATCH_EXECUTE; ++kind) {
+        const x86_core_cpu_debug_watch_kind watch = (x86_core_cpu_debug_watch_kind)kind;
         if (core_machine_debug_set_watchpoint(machine, watch, 0x12340000u + kind) != LIB_STATUS_OK ||
             core_machine_debug_get_watchpoint(machine, watch, &enabled, &address) != LIB_STATUS_OK ||
             !enabled || address != 0x12340000u + kind ||
@@ -40,11 +40,11 @@ static lib_i32 debug_observation_contract(core_machine *machine)
     }
     address = 0xfeedu;
     enabled = LIB_TRUE;
-    if (core_machine_debug_get_watchpoint(machine, (core_machine_debug_watch_kind)3,
+    if (core_machine_debug_get_watchpoint(machine, (x86_core_cpu_debug_watch_kind)3,
             &enabled, &address) != LIB_STATUS_INVALID_ARGUMENT || !enabled || address != 0xfeedu ||
-        core_machine_debug_get_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_READ,
+        core_machine_debug_get_watchpoint(machine, X86_CORE_CPU_DEBUG_WATCH_READ,
             LIB_NULL, &address) != LIB_STATUS_INVALID_ARGUMENT ||
-        core_machine_debug_get_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_READ,
+        core_machine_debug_get_watchpoint(machine, X86_CORE_CPU_DEBUG_WATCH_READ,
             &enabled, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT) return 1;
     return 0;
 }
@@ -52,9 +52,9 @@ static lib_i32 debug_observation_contract(core_machine *machine)
 lib_i32 main(void)
 {
     core_machine *machine = LIB_NULL;
-    core_machine_cpu_state cpu;
-    core_machine_debug_instruction_observation observation;
-    core_machine_debug_register_patch patch = {0};
+    x86_core_cpu_state cpu;
+    x86_core_cpu_debug_instruction_observation observation;
+    x86_core_cpu_debug_register_patch patch = {0};
     core_machine_run_result result;
     core_machine_run_budget budget = { 2u, 0u };
     lib_u32 value;
@@ -84,9 +84,9 @@ lib_i32 main(void)
             &observation) != LIB_STATUS_OK || observation.cs != 0xf000u ||
         observation.cs_base != 0xffff0000u || observation.eip != 0xfff0u ||
         observation.instruction_byte_count >
-            CORE_MACHINE_DEBUG_INSTRUCTION_BYTES ||
+            X86_CORE_CPU_DEBUG_INSTRUCTION_BYTES ||
         observation.memory_access_count >
-            CORE_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY ||
+            X86_CORE_CPU_DEBUG_MEMORY_ACCESS_CAPACITY ||
         core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET ||
         core_machine_debug_continue(machine, budget, &result) != LIB_STATUS_OK ||
@@ -117,23 +117,23 @@ lib_i32 main(void)
         return 1;
     }
 
-    patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-        CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX);
-    patch.values[CORE_MACHINE_DEBUG_EAX] = 0x12345678u;
-    patch.values[CORE_MACHINE_DEBUG_EBX] = 0x87654321u;
+    patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBX);
+    patch.values[X86_CORE_CPU_DEBUG_EAX] = 0x12345678u;
+    patch.values[X86_CORE_CPU_DEBUG_EBX] = 0x87654321u;
     if (core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK ||
-        core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX,
+        core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EAX,
             &value) != LIB_STATUS_OK || value != 0x12345678u ||
-        core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EBX,
+        core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EBX,
             &value) != LIB_STATUS_OK || value != 0x87654321u) {
         core_machine_destroy(machine);
         return 1;
     }
     patch.mask |= 0x80000000u;
-    patch.values[CORE_MACHINE_DEBUG_EAX] = 0u;
+    patch.values[X86_CORE_CPU_DEBUG_EAX] = 0u;
     if (core_machine_debug_patch_registers(machine, &patch) !=
             LIB_STATUS_INVALID_ARGUMENT ||
-        core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX,
+        core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EAX,
             &value) != LIB_STATUS_OK || value != 0x12345678u) {
         core_machine_destroy(machine);
         return 1;
@@ -141,16 +141,16 @@ lib_i32 main(void)
 
     if (core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0xffff0u, &nop, 1u) != LIB_STATUS_OK ||
-        core_machine_debug_set_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_EXECUTE,
+        core_machine_debug_set_watchpoint(machine, X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
             0xfffffff0u) != LIB_STATUS_OK ||
         core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_PAUSED ||
         core_machine_debug_capture_instruction_observation(machine,
         &observation) != LIB_STATUS_OK || !observation.watch_hit ||
-        observation.watch_kind != CORE_MACHINE_DEBUG_WATCH_EXECUTE ||
+        observation.watch_kind != X86_CORE_CPU_DEBUG_WATCH_EXECUTE ||
         observation.watch_address != 0xfffffff0u ||
         core_machine_debug_clear_watchpoint(machine,
-            CORE_MACHINE_DEBUG_WATCH_EXECUTE) != LIB_STATUS_OK) {
+            X86_CORE_CPU_DEBUG_WATCH_EXECUTE) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
@@ -158,32 +158,32 @@ lib_i32 main(void)
         core_machine_memory_write(machine, 0u, &byte, 1u) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0xffff0u, read_moffs,
             sizeof(read_moffs)) != LIB_STATUS_OK ||
-        core_machine_debug_set_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_READ,
+        core_machine_debug_set_watchpoint(machine, X86_CORE_CPU_DEBUG_WATCH_READ,
             0u) != LIB_STATUS_OK ||
         core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_PAUSED ||
         core_machine_debug_capture_instruction_observation(machine,
             &observation) != LIB_STATUS_OK || !observation.watch_hit ||
-        observation.watch_kind != CORE_MACHINE_DEBUG_WATCH_READ ||
+        observation.watch_kind != X86_CORE_CPU_DEBUG_WATCH_READ ||
         observation.watch_address != 0u ||
         core_machine_debug_clear_watchpoint(machine,
-            CORE_MACHINE_DEBUG_WATCH_READ) != LIB_STATUS_OK) {
+            X86_CORE_CPU_DEBUG_WATCH_READ) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
     if (core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0xffff0u, write_moffs,
             sizeof(write_moffs)) != LIB_STATUS_OK ||
-        core_machine_debug_set_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_WRITE,
+        core_machine_debug_set_watchpoint(machine, X86_CORE_CPU_DEBUG_WATCH_WRITE,
             0u) != LIB_STATUS_OK ||
         core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_PAUSED ||
         core_machine_debug_capture_instruction_observation(machine,
             &observation) != LIB_STATUS_OK || !observation.watch_hit ||
-        observation.watch_kind != CORE_MACHINE_DEBUG_WATCH_WRITE ||
+        observation.watch_kind != X86_CORE_CPU_DEBUG_WATCH_WRITE ||
         observation.watch_address != 0u ||
         core_machine_debug_clear_watchpoint(machine,
-            CORE_MACHINE_DEBUG_WATCH_WRITE) != LIB_STATUS_OK) {
+            X86_CORE_CPU_DEBUG_WATCH_WRITE) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }

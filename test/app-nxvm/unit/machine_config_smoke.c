@@ -25,7 +25,7 @@ lib_i32 main(void)
         profile->rom.bytes != 16u ||
         profile->rom.reset_segment != 0xf000u ||
         profile->rom.reset_offset != 0xfff0u ||
-        profile->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+        profile->cpu_profile != X86_CORE_CPU_PROFILE_80386 ||
         profile->fpu_profile != X86_FPU_PROFILE_NONE ||
         profile->clock_plan.dma.numerator != 1u ||
         profile->clock_plan.dma.denominator != 1u ||
@@ -63,7 +63,7 @@ lib_i32 main(void)
         !vm_profile_default_pc_at_descriptor_is_valid(profile)) return 1;
 
     if (!vm_profile_default_pc_at_cpu_contract_select(profile,
-            CORE_MACHINE_CPU_PROFILE_DEFAULT, X86_FPU_PROFILE_NONE,
+            X86_CORE_CPU_PROFILE_DEFAULT, X86_FPU_PROFILE_NONE,
             &contract) || contract.cpu_profile != profile->cpu_profile ||
         contract.fpu_profile != profile->fpu_profile ||
         contract.ticks_per_instruction != profile->ticks_per_instruction ||
@@ -77,13 +77,13 @@ lib_i32 main(void)
             &profile->controller_timing_rules,
             sizeof(contract.controller_timing_rules)) != 0 ||
         !vm_profile_default_pc_at_cpu_contract_select(profile,
-            CORE_MACHINE_CPU_PROFILE_8086, X86_FPU_PROFILE_8087,
-            &contract) || contract.cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 ||
+            X86_CORE_CPU_PROFILE_8086, X86_FPU_PROFILE_8087,
+            &contract) || contract.cpu_profile != X86_CORE_CPU_PROFILE_8086 ||
         contract.fpu_profile != X86_FPU_PROFILE_8087 ||
         vm_profile_default_pc_at_cpu_contract_select(profile,
-            (core_machine_cpu_profile)0xffu, X86_FPU_PROFILE_NONE,
+            (x86_core_cpu_profile)0xffu, X86_FPU_PROFILE_NONE,
             &contract) || vm_profile_default_pc_at_cpu_contract_select(profile,
-            CORE_MACHINE_CPU_PROFILE_80386, (x86_fpu_profile)0xffu,
+            X86_CORE_CPU_PROFILE_80386, (x86_fpu_profile)0xffu,
             &contract)) return 1;
 
     cmos_index = vm_at_port_leaf_find(profile->port_leaves, profile->port_leaf_count,

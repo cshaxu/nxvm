@@ -11,10 +11,10 @@ static lib_u32 prefetch_grants;
 static lib_status d4_advance(core_machine *machine, lib_u64 ticks)
 {
     const lib_u8 instruction[] = {0xdbu, 0xe3u};
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = {[CORE_MACHINE_DEBUG_EIP] = 0x0200u}
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x0200u}
     };
     for (lib_u64 tick = 0u; tick < ticks; ++tick) {
         core_machine_run_result result;
@@ -28,10 +28,10 @@ static lib_status d4_advance(core_machine *machine, lib_u64 ticks)
 }
 
 /* Only the outgoing scheduler call is redirected; CPU reservations remain real. */
-void test_cpu_prefetch_grant(core_machine_cpu_execution_context *cpu)
+void test_cpu_prefetch_grant(x86_core_cpu_execution_context *cpu)
 {
     ++prefetch_grants;
-    core_machine_cpu_execution_advance_prefetch_reservation(cpu);
+    x86_core_cpu_execution_advance_prefetch_reservation(cpu);
 }
 
 typedef struct d4_refresh_trace {
@@ -65,7 +65,7 @@ lib_i32 main(void)
     lib_u8 address = 0xffu;
     lib_i32 failed;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE;
     config.transaction_contract.cpu_prefetch_reservation_enabled = LIB_TRUE;
     config.auxiliary_pit_present = LIB_TRUE;

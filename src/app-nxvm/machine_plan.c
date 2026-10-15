@@ -13,7 +13,7 @@ static lib_status vm_profile_prepare_default(const vm_machine_config *config,
             (1u << VM_PROFILE_FLOPPY_35_1440K) | (1u << VM_PROFILE_FLOPPY_35_720K) |
             (1u << VM_PROFILE_FLOPPY_525_1200K) | (1u << VM_PROFILE_FLOPPY_525_360K),
             &construction->media_kind) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
-    if (config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
+    if (config->cpu_profile != X86_CORE_CPU_PROFILE_DEFAULT ||
         config->fpu_profile != X86_FPU_PROFILE_NONE) {
         request.requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU;
         request.cpu_profile = config->cpu_profile;

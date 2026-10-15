@@ -9,18 +9,18 @@
 typedef struct legacy_sreg_stack_machine { core_machine *machine;
     core_machine_board_state *board; } legacy_sreg_stack_machine;
 
-static lib_i32 legacy_sreg_stack_prepare(core_machine_cpu_profile profile, legacy_sreg_stack_machine *state)
+static lib_i32 legacy_sreg_stack_prepare(x86_core_cpu_profile profile, legacy_sreg_stack_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile, .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
     lib_memory_set(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine, &state->board) == LIB_STATUS_OK &&
@@ -55,9 +55,9 @@ static lib_i32 legacy_sreg_stack_limit(legacy_sreg_stack_machine *state,
 {
     const lib_u8 encoded_limit[] = {(lib_u8)limit, (lib_u8)(limit >> 8)};
     const lib_u8 access = expdown ? 0x96u : 0x92u;
-    const core_machine_debug_register_patch segment = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS),
-        .values = { [CORE_MACHINE_DEBUG_SS] = 0x18u }
+    const x86_core_cpu_debug_register_patch segment = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS),
+        .values = { [X86_CORE_CPU_DEBUG_SS] = 0x18u }
     };
     return core_machine_memory_write(state->machine, 0x318u, encoded_limit,
         sizeof(encoded_limit)) == LIB_STATUS_OK &&
@@ -65,8 +65,8 @@ static lib_i32 legacy_sreg_stack_limit(legacy_sreg_stack_machine *state,
         core_machine_debug_patch_registers(state->machine, &segment) == LIB_STATUS_OK;
 }
 
-static lib_i32 legacy_sreg_stack_gprs_same_except_esp(const core_machine_debug_cpu_snapshot *before,
-    const core_machine_debug_cpu_snapshot *after)
+static lib_i32 legacy_sreg_stack_gprs_same_except_esp(const x86_core_cpu_debug_cpu_snapshot *before,
+    const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return before->eax == after->eax &&
         before->ecx == after->ecx &&
@@ -77,7 +77,7 @@ static lib_i32 legacy_sreg_stack_gprs_same_except_esp(const core_machine_debug_c
         before->edi == after->edi;
 }
 
-static lib_i32 legacy_sreg_stack_sregs_same(const core_machine_debug_cpu_snapshot *before, const core_machine_debug_cpu_snapshot *after)
+static lib_i32 legacy_sreg_stack_sregs_same(const x86_core_cpu_debug_cpu_snapshot *before, const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return lib_memory_compare(&before->es, &after->es,
         sizeof(before->es)) == 0 &&
@@ -93,7 +93,7 @@ static lib_i32 legacy_sreg_stack_sregs_same(const core_machine_debug_cpu_snapsho
         sizeof(before->gs)) == 0;
 }
 
-static const core_machine_debug_segment_snapshot *legacy_sreg_stack_target(const core_machine_debug_cpu_snapshot *cpu,
+static const x86_core_cpu_debug_segment_snapshot *legacy_sreg_stack_target(const x86_core_cpu_debug_cpu_snapshot *cpu,
     lib_u8 target)
 {
     if (target == 0u)
@@ -103,8 +103,8 @@ static const core_machine_debug_segment_snapshot *legacy_sreg_stack_target(const
     return &cpu->ds;
 }
 
-static lib_i32 legacy_sreg_stack_non_target_sregs_same(const core_machine_debug_cpu_snapshot *before,
-    const core_machine_debug_cpu_snapshot *after, lib_u8 target)
+static lib_i32 legacy_sreg_stack_non_target_sregs_same(const x86_core_cpu_debug_cpu_snapshot *before,
+    const x86_core_cpu_debug_cpu_snapshot *after, lib_u8 target)
 {
     return (target == 0u || lib_memory_compare(&before->es, &after->es,
         sizeof(before->es)) == 0) &&
@@ -120,7 +120,7 @@ static lib_i32 legacy_sreg_stack_non_target_sregs_same(const core_machine_debug_
         sizeof(before->gs)) == 0;
 }
 
-static lib_i32 legacy_sreg_stack_real_cache(const core_machine_debug_segment_snapshot *sreg, lib_u16 selector)
+static lib_i32 legacy_sreg_stack_real_cache(const x86_core_cpu_debug_segment_snapshot *sreg, lib_u16 selector)
 {
     return sreg->selector == selector &&
         sreg->base == (lib_u32)selector << 4u && sreg->limit == 0xffffu &&
@@ -131,16 +131,16 @@ static lib_i32 legacy_sreg_stack_real_cache(const core_machine_debug_segment_sna
 static lib_i32 legacy_sreg_stack_test_protected_ss_null(void)
 {
     legacy_sreg_stack_machine state; core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic; core_machine_debug_cpu_snapshot before,after;
-    lib_u16 selector=0u; lib_i32 failed=!legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
+    x86_core_cpu_diagnostic diagnostic; x86_core_cpu_debug_cpu_snapshot before,after;
+    lib_u16 selector=0u; lib_i32 failed=!legacy_sreg_stack_prepare(X86_CORE_CPU_PROFILE_80386,&state);
     if(!failed) failed|=!legacy_sreg_stack_boot_protected(&state);
     if(!failed) {
         failed|=core_machine_memory_write(state.machine,0xc000u,&selector,2u)!=LIB_STATUS_OK ||
             core_machine_memory_write(state.machine,0x2000u,(lib_u8[]){0x17u},1u)!=LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(state.machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
             !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
                 (core_machine_run_budget){1u,0u},&result), &result) ||
-            core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(state.machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=LIB_STATUS_OK ||
             diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
             !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
@@ -159,17 +159,17 @@ static lib_i32 legacy_sreg_stack_test_protected_rejects(void)
     lib_u8 target,kind;
     for(target=0u;target!=3u;++target) for(kind=0u;kind!=3u;++kind) {
         legacy_sreg_stack_machine state; core_machine_run_result result;
-        core_machine_cpu_diagnostic diagnostic; core_machine_debug_cpu_snapshot before,after;
+        x86_core_cpu_diagnostic diagnostic; x86_core_cpu_debug_cpu_snapshot before,after;
         lib_u16 selector=selectors[kind], observed=0u;
-        lib_i32 failed=!legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
+        lib_i32 failed=!legacy_sreg_stack_prepare(X86_CORE_CPU_PROFILE_80386,&state);
         if(!failed) failed|=!legacy_sreg_stack_boot_protected(&state);
         if(!failed) {
             failed|=core_machine_memory_write(state.machine,0xc000u,&selector,2u)!=LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine,0x2000u,&opcodes[target],1u)!=LIB_STATUS_OK ||
-                core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(state.machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
                 !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
                     (core_machine_run_budget){1u,0u},&result), &result) ||
-                core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(state.machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=LIB_STATUS_OK ||
                 diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
                 !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
@@ -190,19 +190,19 @@ static lib_i32 legacy_sreg_stack_test_protected_stack_limits(void)
     lib_u8 form;
     for(form=0u;form!=2u;++form) {
         legacy_sreg_stack_machine state; core_machine_run_result result;
-        core_machine_cpu_diagnostic diagnostic; core_machine_debug_cpu_snapshot before,after;
+        x86_core_cpu_diagnostic diagnostic; x86_core_cpu_debug_cpu_snapshot before,after;
         lib_u16 image=0xbe5au; lib_u32 candidate=form==0u?0xbffeu:0xc000u;
-        lib_i32 failed=!legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
+        lib_i32 failed=!legacy_sreg_stack_prepare(X86_CORE_CPU_PROFILE_80386,&state);
         if(!failed) failed|=!legacy_sreg_stack_boot_protected(&state);
         if(!failed) {
             failed |= !legacy_sreg_stack_limit(&state,
                 form == 0u ? 0xffffu : 0x7fffu, form == 0u) ||
                 core_machine_memory_write(state.machine,candidate,&image,2u)!=LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine,0x2000u,&opcodes[form],1u)!=LIB_STATUS_OK ||
-                core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(state.machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
                 !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
                     (core_machine_run_budget){1u,0u},&result), &result) ||
-                core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(state.machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=LIB_STATUS_OK ||
                 diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
                 !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
@@ -225,15 +225,15 @@ static lib_i32 legacy_sreg_stack_test_irq(void)
     lib_u8 form;
     for(form=0u;form!=4u;++form) {
         legacy_sreg_stack_machine state; core_machine_pic_irq_source *source = LIB_NULL;
-        core_machine_run_result result; core_machine_debug_cpu_snapshot before,after;
+        core_machine_run_result result; x86_core_cpu_debug_cpu_snapshot before,after;
         lib_u16 off=0x100u,seg=0u,ip=0u,sel=0u,image=0u;
-        lib_i32 failed=!legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
+        lib_i32 failed=!legacy_sreg_stack_prepare(X86_CORE_CPU_PROFILE_80386,&state);
         if(!failed) {
-            const core_machine_debug_register_patch registers = {
-                .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
-                .values = { [CORE_MACHINE_DEBUG_ESP] = 0x8000u,
-                    [CORE_MACHINE_DEBUG_EFLAGS] = 0x202u }
+            const x86_core_cpu_debug_register_patch registers = {
+                .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
+                .values = { [X86_CORE_CPU_DEBUG_ESP] = 0x8000u,
+                    [X86_CORE_CPU_DEBUG_EFLAGS] = 0x202u }
             };
             failed |= core_machine_debug_patch_registers(state.machine, &registers) != LIB_STATUS_OK;
             if(!failed && form!=3u) failed|=core_machine_memory_write(state.machine,0x8000u,&sel,2u)!=LIB_STATUS_OK;
@@ -244,7 +244,7 @@ static lib_i32 legacy_sreg_stack_test_irq(void)
         }
         if(!failed) {
             lib_memory_set(&source,0,sizeof(source));
-            failed |= core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+            failed |= core_machine_debug_capture_cpu_snapshot(state.machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         }
         if(!failed) {
             test_pic_program_vector(state.board->shared_pic_master, 0x20u);
@@ -252,7 +252,7 @@ static lib_i32 legacy_sreg_stack_test_irq(void)
             core_machine_pic_irq_source_assert(source);core_machine_pic_irq_source_deassert(source);
             failed|=core_machine_run(state.machine,(core_machine_run_budget){3u,0u},&result)!=LIB_STATUS_OK ||
                 result.reason!=CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-                core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(state.machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 core_machine_memory_read(state.machine,after.ss.base+(lib_u16)after.esp,(void *)CORE_MACHINE_REFERENCE_OF(ip),2u)!=LIB_STATUS_OK ||
                 after.eip!=0x101u || ip!=frame[form] || !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu),VPIC_ISR_IRQ(0u)) ||
                 CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au),VPIC_IRR_IRQ(0u)) ||

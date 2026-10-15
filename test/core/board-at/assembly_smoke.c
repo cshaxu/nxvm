@@ -15,19 +15,19 @@ static void descriptor_contracts(void)
     lib_memory_copy(leaves, vm_at_port_leaves, sizeof(leaves));
     lib_memory_copy(routes, vm_at_routes_without_aux, sizeof(routes));
     vm_profile_default_pc_at_descriptor descriptor = {
-        .identity = "unit-at", .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .identity = "unit-at", .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE, .ticks_per_instruction = 7u,
         .default_memory_bytes = 2u * 1024u * 1024u, .fdc_bounce_segment = 0x600u,
         .kbc_aux_absent = LIB_TRUE, .port_leaves = leaves, .port_leaf_count = VM_AT_PORT_LEAF_COUNT,
         .routes = routes, .route_count = 4u, .firmware_services = services,
         .firmware_service_count = 1u, .validate = descriptor_validate
     };
-    const struct { core_machine_cpu_profile cpu; x86_fpu_profile fpu; } requests[] = {
-        {CORE_MACHINE_CPU_PROFILE_DEFAULT, X86_FPU_PROFILE_NONE},
-        {CORE_MACHINE_CPU_PROFILE_8086, X86_FPU_PROFILE_8087},
-        {CORE_MACHINE_CPU_PROFILE_80186, X86_FPU_PROFILE_NONE},
-        {CORE_MACHINE_CPU_PROFILE_80286, X86_FPU_PROFILE_80287},
-        {CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_80387}
+    const struct { x86_core_cpu_profile cpu; x86_fpu_profile fpu; } requests[] = {
+        {X86_CORE_CPU_PROFILE_DEFAULT, X86_FPU_PROFILE_NONE},
+        {X86_CORE_CPU_PROFILE_8086, X86_FPU_PROFILE_8087},
+        {X86_CORE_CPU_PROFILE_80186, X86_FPU_PROFILE_NONE},
+        {X86_CORE_CPU_PROFILE_80286, X86_FPU_PROFILE_80287},
+        {X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_80387}
     };
     vm_profile_default_pc_at_cpu_contract contract = {0}, before;
     core_machine_config core;
@@ -36,7 +36,7 @@ static void descriptor_contracts(void)
     for (lib_size i = 0u; i < sizeof(requests) / sizeof(requests[0]); ++i) {
         lib_test_assert(vm_profile_default_pc_at_cpu_contract_select(&descriptor,
             requests[i].cpu, requests[i].fpu, &contract));
-        lib_test_assert(contract.cpu_profile == (requests[i].cpu == CORE_MACHINE_CPU_PROFILE_DEFAULT ?
+        lib_test_assert(contract.cpu_profile == (requests[i].cpu == X86_CORE_CPU_PROFILE_DEFAULT ?
             descriptor.cpu_profile : requests[i].cpu) && contract.fpu_profile == requests[i].fpu &&
             contract.ticks_per_instruction == 7u);
         lib_test_assert(vm_profile_default_pc_at_core_config_materialize(&descriptor, &contract, &core, &timing));
@@ -46,19 +46,19 @@ static void descriptor_contracts(void)
     }
     lib_memory_copy(&before, &contract, sizeof(before));
     lib_test_assert(!vm_profile_default_pc_at_cpu_contract_select(&descriptor,
-        CORE_MACHINE_CPU_PROFILE_8088, X86_FPU_PROFILE_NONE, &contract));
+        X86_CORE_CPU_PROFILE_8088, X86_FPU_PROFILE_NONE, &contract));
     lib_test_assert(lib_memory_compare(&contract, &before, sizeof(before)) == 0);
     lib_test_assert(!vm_profile_default_pc_at_cpu_contract_select(&descriptor,
-        CORE_MACHINE_CPU_PROFILE_80386, (x86_fpu_profile)99u, &contract));
+        X86_CORE_CPU_PROFILE_80386, (x86_fpu_profile)99u, &contract));
     lib_test_assert(lib_memory_compare(&contract, &before, sizeof(before)) == 0);
     reject_descriptor = LIB_TRUE;
     lib_test_assert(!vm_profile_default_pc_at_cpu_contract_select(&descriptor,
-        CORE_MACHINE_CPU_PROFILE_DEFAULT, X86_FPU_PROFILE_NONE, &contract));
+        X86_CORE_CPU_PROFILE_DEFAULT, X86_FPU_PROFILE_NONE, &contract));
     lib_test_assert(lib_memory_compare(&contract, &before, sizeof(before)) == 0);
     reject_descriptor = LIB_FALSE;
     vm_profile_default_pc_at_plan_snapshot snapshot = {0};
     lib_test_assert(vm_profile_default_pc_at_values_create(&descriptor,
-        CORE_MACHINE_CPU_PROFILE_DEFAULT, X86_FPU_PROFILE_NONE, &snapshot.values) == LIB_STATUS_OK);
+        X86_CORE_CPU_PROFILE_DEFAULT, X86_FPU_PROFILE_NONE, &snapshot.values) == LIB_STATUS_OK);
     lib_test_assert(vm_profile_default_pc_at_snapshot_copy(&snapshot, &descriptor, "copied-at", 4u) == LIB_STATUS_OK);
     lib_test_assert(snapshot.descriptor.port_leaves == snapshot.port_leaves &&
         snapshot.descriptor.routes == snapshot.routes && snapshot.descriptor.firmware_services == snapshot.firmware_services);

@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 set(machine "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c")
-set(machine_model "${PROJECT_SOURCE_DIR}/src/core/chips/cpu/cpu_timing_model.c")
+set(machine_model "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_timing_model.c")
 set(s2 "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t388-s2-successful-sentinel-matrix.md")
 set(s4 "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t388-s4-residual-form-context-ledger.md")
 set(authority "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t360-s1-four-profile-source-authority-consumer-inventory.md")
@@ -23,17 +23,20 @@ function(physical_timing_require text token)
         message(FATAL_ERROR "Residual ledger drift: ${token}")
     endif()
 endfunction()
-foreach(token IN ITEMS
-    "core_machine_source_timing_lookup"
-    "core_machine_legacy_source_instruction_cost"
-    "core_machine_string_io_source_instruction_cost"
-    "core_machine_80286_source_instruction_cost"
-    "core_machine_80386_source_instruction_cost"
-    "core_machine_cpu_execution_preview_lexeme"
-    "CORE_MACHINE_SOURCE_UNALLOCATED_TICKS")
+foreach(symbol_pair IN ITEMS
+    "x86_core_cpu_source_timing_lookup|core_machine_source_timing_lookup"
+    "x86_core_cpu_legacy_source_instruction_cost|core_machine_legacy_source_instruction_cost"
+    "x86_core_cpu_string_io_source_instruction_cost|core_machine_string_io_source_instruction_cost"
+    "x86_core_cpu_80286_source_instruction_cost|core_machine_80286_source_instruction_cost"
+    "x86_core_cpu_80386_source_instruction_cost|core_machine_80386_source_instruction_cost"
+    "x86_core_cpu_execution_preview_lexeme|core_machine_cpu_execution_preview_lexeme"
+    "X86_CORE_CPU_SOURCE_UNALLOCATED_TICKS|CORE_MACHINE_SOURCE_UNALLOCATED_TICKS")
+    string(REPLACE "|" ";" symbol_names "${symbol_pair}")
+    list(GET symbol_names 0 token)
+    list(GET symbol_names 1 historical_token)
     physical_timing_require("${machine_text}" "${token}")
-    physical_timing_require("${s2_text}" "${token}")
-    physical_timing_require("${s4_text}" "${token}")
+    physical_timing_require("${s2_text}" "${historical_token}")
+    physical_timing_require("${s4_text}" "${historical_token}")
 endforeach()
 foreach(token IN ITEMS "Tables 2-20/2-21" "Table 1-16" "Appendix B" "section 17.2.2.3")
     physical_timing_require("${authority_text}" "${token}")

@@ -66,35 +66,35 @@ set(project_cpu_fixture_lifecycle_public_limit_sources
     "test/core/board-base/core_machine_rotate_smoke.c"
     "test/core/board-base/core_machine_setcc_smoke.c")
 set(project_cpu_fixture_lifecycle_cpu_instruction_fixture_sources
-    "chips/cpu/cpu_debug_state_smoke.c"
-    "chips/cpu/cpu_control_state_smoke.c"
-    "chips/cpu/cpu_control_transfer_branch_smoke.c"
-    "chips/cpu/cpu_control_transfer_near_smoke.c"
-    "chips/cpu/cpu_control_transfer_far_smoke.c"
-    "chips/cpu/cpu_outer_return_smoke.c"
-    "chips/cpu/cpu_idt_privilege_entry_smoke.c"
-    "chips/cpu/cpu_protected_far_smoke.c"
-    "chips/cpu/cpu_protected_data_access_smoke.c"
-    "chips/cpu/cpu_descriptor_system_smoke.c"
-    "chips/cpu/cpu_descriptor_table_register_smoke.c"
-    "chips/cpu/cpu_lar_lsl_smoke.c"
-    "chips/cpu/cpu_lgdt_lidt_smoke.c"
-    "chips/cpu/cpu_sgdt_sidt_smoke.c"
-    "chips/cpu/cpu_verr_verw_smoke.c")
+    "cpu/cpu_debug_state_smoke.c"
+    "cpu/cpu_control_state_smoke.c"
+    "cpu/cpu_control_transfer_branch_smoke.c"
+    "cpu/cpu_control_transfer_near_smoke.c"
+    "cpu/cpu_control_transfer_far_smoke.c"
+    "cpu/cpu_outer_return_smoke.c"
+    "cpu/cpu_idt_privilege_entry_smoke.c"
+    "cpu/cpu_protected_far_smoke.c"
+    "cpu/cpu_protected_data_access_smoke.c"
+    "cpu/cpu_descriptor_system_smoke.c"
+    "cpu/cpu_descriptor_table_register_smoke.c"
+    "cpu/cpu_lar_lsl_smoke.c"
+    "cpu/cpu_lgdt_lidt_smoke.c"
+    "cpu/cpu_sgdt_sidt_smoke.c"
+    "cpu/cpu_verr_verw_smoke.c")
 set(project_cpu_fixture_lifecycle_task_switch16_cpu_fixture_sources
-    "chips/cpu/cpu_task_switch16_smoke.c"
-    "chips/cpu/cpu_task_switch32_decode_smoke.c"
+    "cpu/cpu_task_switch16_smoke.c"
+    "cpu/cpu_task_switch32_decode_smoke.c"
     )
 set(project_cpu_fixture_lifecycle_task_switch32_cpu_fixture_sources
-    "chips/cpu/cpu_task_switch32_state_smoke.c")
+    "cpu/cpu_task_switch32_state_smoke.c")
 set(project_cpu_fixture_lifecycle_protected_cpu_fixture_sources
-    "chips/cpu/cpu_protected_far_smoke.c"
-    "chips/cpu/cpu_protected_data_access_smoke.c")
+    "cpu/cpu_protected_far_smoke.c"
+    "cpu/cpu_protected_data_access_smoke.c")
 set(project_cpu_fixture_lifecycle_outer_return_cpu_fixture_sources
-    "chips/cpu/cpu_outer_return_smoke.c")
+    "cpu/cpu_outer_return_smoke.c")
 set(project_cpu_fixture_lifecycle_descriptor_query_fixture_sources
-    "chips/cpu/cpu_lar_lsl_smoke.c"
-    "chips/cpu/cpu_verr_verw_smoke.c")
+    "cpu/cpu_lar_lsl_smoke.c"
+    "cpu/cpu_verr_verw_smoke.c")
 
 file(READ "${PROJECT_CPU_FIXTURE_LIFECYCLE_SOURCE_DIR}/test/core/board-base/cpu_board_limit_fixture.h"
     project_cpu_fixture_lifecycle_limit_helper)
@@ -106,8 +106,8 @@ foreach(operation core_machine_create core_machine_freeze_execution_providers
 endforeach()
 
 function(project_cpu_fixture_lifecycle_source_path source out)
-    if(source MATCHES "^(devices|chips)/")
-        set(path "${PROJECT_CPU_FIXTURE_LIFECYCLE_SOURCE_DIR}/test/core/${source}")
+    if(source MATCHES "^cpu/")
+        set(path "${PROJECT_CPU_FIXTURE_LIFECYCLE_SOURCE_DIR}/test/x86-core/${source}")
     else()
         set(path "${PROJECT_CPU_FIXTURE_LIFECYCLE_SOURCE_DIR}/${source}")
     endif()
@@ -121,7 +121,7 @@ function(project_cpu_fixture_lifecycle_require_shared_lifecycle source)
     endif()
     file(READ "${path}" content)
     set(project_cpu_fixture_lifecycle_cpu_source "${source}")
-    string(REGEX REPLACE "^test/core/" ""
+    string(REGEX REPLACE "^test/x86-core/" ""
         project_cpu_fixture_lifecycle_cpu_source
         "${project_cpu_fixture_lifecycle_cpu_source}")
     if(source IN_LIST project_cpu_fixture_lifecycle_neutral_core_sources)
@@ -163,7 +163,7 @@ function(project_cpu_fixture_lifecycle_require_shared_lifecycle source)
         return()
     endif()
     if(project_cpu_fixture_lifecycle_cpu_source STREQUAL
-            "chips/cpu/cpu_eflags_local_smoke.c")
+            "cpu/cpu_eflags_local_smoke.c")
         if(NOT content MATCHES "support/cpu_bus_fixture[.]h" OR
             NOT content MATCHES "cpu_bus_prepare" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")

@@ -58,7 +58,7 @@ add_executable(machine-8088-timing-manifest-runner
     ${CORE_TEST_ROOT}/x86/machine_8086_timing_manifest_runner.c)
 target_link_libraries(machine-8088-timing-manifest-runner PRIVATE core-x86)
 target_compile_definitions(machine-8088-timing-manifest-runner PRIVATE
-    PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE=CORE_MACHINE_CPU_PROFILE_8088
+    PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE=X86_CORE_CPU_PROFILE_8088
     PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME="8088"
     PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX="I88-"
     PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8088-timing-results.json"
@@ -91,24 +91,13 @@ target_compile_definitions(machine-80386-timing-manifest-runner PRIVATE
 add_dependencies(machine-80386-timing-manifest-runner cpu-timing-manifest-catalog)
 target_include_directories(machine-80386-timing-manifest-runner PRIVATE "${CMAKE_BINARY_DIR}/generated")
 
-foreach(profile IN ITEMS 80186 80286 80386)
-    set(target "core-machine-${profile}-decoder-inventory-runner")
-    add_executable(${target}
-        "${CORE_TEST_ROOT}/chips/cpu/core_machine_${profile}_decoder_inventory_runner.c")
-    target_link_libraries(${target} PRIVATE core-chip-cpu)
-    target_compile_definitions(${target} PRIVATE
-        PROJECT_TEST_${profile}_DECODER_PATH="${CMAKE_BINARY_DIR}/generated/test-results/${profile}-decoder-inventory.json")
-endforeach()
 
 foreach(target IN ITEMS
     machine-8086-timing-manifest-runner
     machine-8088-timing-manifest-runner
     machine-80186-timing-manifest-runner
     machine-80286-timing-manifest-runner
-    machine-80386-timing-manifest-runner
-    core-machine-80186-decoder-inventory-runner
-    core-machine-80286-decoder-inventory-runner
-    core-machine-80386-decoder-inventory-runner)
+    machine-80386-timing-manifest-runner)
     if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
@@ -127,15 +116,6 @@ foreach(target IN ITEMS
         WORKING_DIRECTORY "${CORE_TEST_REPOSITORY_ROOT}")
 endforeach()
 
-foreach(target IN ITEMS
-    core-machine-80186-decoder-inventory-runner
-    core-machine-80286-decoder-inventory-runner
-    core-machine-80386-decoder-inventory-runner)
-    add_test(NAME "unit.${target}" COMMAND ${target})
-    set_tests_properties("unit.${target}" PROPERTIES
-        LABELS "unit;core" TIMEOUT 30
-        WORKING_DIRECTORY "${CORE_TEST_REPOSITORY_ROOT}")
-endforeach()
 
 if(POWERSHELL_EXECUTABLE)
     add_test(NAME unit.core-machine-8086-timing-results
@@ -169,7 +149,7 @@ add_library(core-machine-prefetch-scheduler-test OBJECT
     "${CORE_ROOT}/x86/machine_scheduler.c")
 target_link_libraries(core-machine-prefetch-scheduler-test PRIVATE core-x86)
 target_compile_definitions(core-machine-prefetch-scheduler-test PRIVATE
-    core_machine_cpu_execution_advance_prefetch_reservation=test_cpu_prefetch_grant)
+    x86_core_cpu_execution_advance_prefetch_reservation=test_cpu_prefetch_grant)
 add_executable(core-machine-prefetch-locality-smoke ${CORE_TEST_ROOT}/x86/machine_prefetch_locality_smoke.c)
 target_link_libraries(core-machine-prefetch-locality-smoke PRIVATE
     core-machine-prefetch-scheduler-test core-x86)
@@ -262,7 +242,6 @@ shared_register_test(core chips/fdc8272/fdc_allocation core-chip-fdc8272)
 shared_register_test(core chips/hdc/hdc_contract core-chip-hdc)
 shared_register_test(core chips/hdc/hdc_taskfile core-chip-hdc)
 shared_register_test(core chips/hdc/hdc_allocation core-chip-hdc)
-shared_register_test(core chips/fpu/fpu_contract core-chip-fpu)
 shared_register_test(core chips/video/video_contract core-chip-video)
 shared_register_test(core chips/video/video_inspection core-chip-video)
 shared_register_test(core chips/video/video_allocation core-chip-video)
@@ -287,138 +266,7 @@ shared_register_test(core chips/keyboard/keyboard_contract core-chip-keyboard)
 shared_register_test(core chips/kbc8042/controller_contract "core-chip-kbc8042;core-chip-keyboard;core-chip-ps2mouse")
 shared_register_test(core chips/ppi8255/ppi_contract core-chip-ppi8255)
 shared_register_test(core chips/xtkeyboard/xt_keyboard_contract core-chip-xtkeyboard)
-shared_register_test(core chips/cpu/cpu_contract core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_inc_dec_first_group core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_inc_dec_second_group core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_inc_dec_final_group core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_legacy_alu core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_rotate core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_direct_flags core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_lahf_sahf core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_pushf_popf core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_xchg core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_gpr_mov core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_bswap core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_xadd core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_cmpxchg core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_test_register core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_tlb core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_cache core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_cpuid_flags core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_486_nominal_timing core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_486_repeat_timing core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_gpr_push_pop core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_push_immediate core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_pusha_popa core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_enter_leave core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_fs_gs_stack core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_legacy_sreg_stack core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_les_lds core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_les_lds_profile_matrix core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_lss_lfs_lgs core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_sreg_mov core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_segment_selector core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_moffs core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_movs core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_lods core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_stos core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_scas core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_cmps core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_port_io core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_port_strings core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_arpl core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_bound core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_lar_lsl core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_verr_verw core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_descriptor_system core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_descriptor_table_register core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_lgdt_lidt core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_sgdt_sidt core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_control_state core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_rmw_access core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_integer_multiply_divide core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_alignment_access core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_debug_state core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_execution_bus core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_execution_lifecycle core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_smm core-chip-cpu)
 shared_register_test(core x86/core_machine_system_power core-x86)
-shared_register_test(core chips/cpu/cpu_execution_signal_prefetch core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_execution_paging core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_execution_fault_event core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_decode_admission core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_address_span core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_transfer_boundary core-chip-cpu)
-add_test(NAME core.chips/cpu/address-span-boundary COMMAND "${CMAKE_COMMAND}"
-    "-DX86_ROOT=${CORE_ROOT}" -P "${CMAKE_CURRENT_LIST_DIR}/verify_address_span.cmake")
-set_tests_properties(core.chips/cpu/address-span-boundary PROPERTIES LABELS "unit;core" TIMEOUT 30)
-add_test(NAME core.chips/cpu/decode-admission-boundary COMMAND "${CMAKE_COMMAND}"
-    "-DX86_ROOT=${CORE_ROOT}" -P "${CMAKE_CURRENT_LIST_DIR}/verify_decode_admission.cmake")
-set_tests_properties(core.chips/cpu/decode-admission-boundary PROPERTIES LABELS "unit;core" TIMEOUT 30)
-add_test(NAME core.chips/cpu/host-arithmetic-boundary COMMAND "${CMAKE_COMMAND}"
-    "-DX86_ROOT=${CORE_ROOT}" -P "${CMAKE_CURRENT_LIST_DIR}/verify_host_arithmetic.cmake")
-set_tests_properties(core.chips/cpu/host-arithmetic-boundary PROPERTIES LABELS "unit;core" TIMEOUT 30)
-add_test(NAME core.chips/cpu/host-arithmetic-verifier-negative COMMAND "${CMAKE_COMMAND}"
-    "-DPROBE_ROOT=${CMAKE_CURRENT_BINARY_DIR}/host-arithmetic-negative"
-    -P "${CMAKE_CURRENT_LIST_DIR}/verify_host_arithmetic_negative.cmake")
-set_tests_properties(core.chips/cpu/host-arithmetic-verifier-negative PROPERTIES LABELS "unit;core" TIMEOUT 30)
-add_test(NAME core.chips/cpu/stack-frame-boundary COMMAND "${CMAKE_COMMAND}"
-    "-DX86_ROOT=${CORE_ROOT}" -P "${CMAKE_CURRENT_LIST_DIR}/verify_stack_frame.cmake")
-set_tests_properties(core.chips/cpu/stack-frame-boundary PROPERTIES LABELS "unit;core" TIMEOUT 30)
-add_test(NAME core.chips/cpu/stack-frame-verifier-negative COMMAND "${CMAKE_COMMAND}"
-    "-DPROBE_ROOT=${CMAKE_CURRENT_BINARY_DIR}/stack-frame-negative"
-    -P "${CMAKE_CURRENT_LIST_DIR}/verify_stack_frame_negative.cmake")
-set_tests_properties(core.chips/cpu/stack-frame-verifier-negative PROPERTIES LABELS "unit;core" TIMEOUT 30)
-shared_register_test(core chips/cpu/cpu_outer_return core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_protected_far core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_protected_data_access core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_task_switch16 core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_task_switch32_decode core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_task_switch32_state core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_setcc core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_movx core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_lea core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_bit_test core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_sign_extend core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_double_shift core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_bit_scan core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_imul2 core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_operand_address core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_prefix_attributes core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_legacy_lock core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_imul_immediate core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_control_transfer_branch core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_control_transfer_near core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_control_transfer_far core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_idt_privilege_entry core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_software_int_state core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_fpu_interface_state core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_vme core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_vm86_delivery_state core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_vm86_iret_state core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_protected_iret_state core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_iret_state core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_task_switch_cross_width_state core-chip-cpu)
-shared_register_test(core chips/cpu/cpu_eflags_local core-chip-cpu)
-
-add_executable(core-machine-cpu-context-smoke ${CORE_TEST_ROOT}/chips/cpu/cpu_execution_context_smoke.c)
-target_link_libraries(core-machine-cpu-context-smoke PRIVATE core-chip-cpu)
-add_test(NAME unit.core-machine-cpu-context-smoke COMMAND core-machine-cpu-context-smoke)
-set_tests_properties(unit.core-machine-cpu-context-smoke PROPERTIES LABELS "unit;core" TIMEOUT 30)
-list(APPEND CORE_X86_TEST_TARGETS core-machine-cpu-context-smoke)
-
-foreach(profile IN ITEMS 80186 80286 80386)
-    set(target "core-decoder-${profile}")
-    add_executable(${target}
-        "${CORE_TEST_ROOT}/chips/cpu/core_machine_${profile}_decoder_inventory_runner.c")
-    target_link_libraries(${target} PRIVATE core-chip-cpu)
-    target_compile_definitions(${target} PRIVATE
-        PROJECT_TEST_${profile}_DECODER_PATH="${CMAKE_CURRENT_BINARY_DIR}/decoder-${profile}.json")
-    add_test(NAME "core.chips/cpu/decoder-${profile}" COMMAND ${target})
-    set_tests_properties("core.chips/cpu/decoder-${profile}" PROPERTIES LABELS "unit;core" TIMEOUT 30)
-    list(APPEND CORE_X86_TEST_TARGETS ${target})
-endforeach()
-
 shared_register_test(core x86/timeline core-x86)
 add_executable(machine-fpu-interface-smoke ${CORE_TEST_ROOT}/x86/machine_fpu_interface_smoke.c)
 target_link_libraries(machine-fpu-interface-smoke PRIVATE core-x86)

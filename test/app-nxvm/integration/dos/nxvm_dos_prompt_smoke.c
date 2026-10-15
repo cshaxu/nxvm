@@ -28,8 +28,8 @@ static lib_i32 has_dos_prompt(const vm_machine *session);
 
 static void dump_first_fault(core_machine *machine)
 {
-    core_machine_cpu_diagnostic diagnostic;
-    const core_machine_cpu_fault_snapshot *fault;
+    x86_core_cpu_diagnostic diagnostic;
+    const x86_core_cpu_fault_snapshot *fault;
     lib_size index;
 
     if (core_machine_get_cpu_diagnostic(machine, &diagnostic) !=

@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 set(project_real_exception_cpu_source
-    "${PROJECT_SOURCE_DIR}/src/core/chips/cpu/cpu_instructions.c")
+    "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_instructions.c")
 if(NOT EXISTS "${project_real_exception_cpu_source}")
     message(FATAL_ERROR "CPU instruction source is required.")
 endif()
@@ -22,7 +22,7 @@ if(NOT project_real_exception_retired_helper EQUAL -1)
         "The superseded parallel real-delivery helper remains.")
 endif()
 
-string(FIND "${project_real_exception_cpu_text}" "static void ExecFinal(core_machine_cpu_execution_context *context)
+string(FIND "${project_real_exception_cpu_text}" "static void ExecFinal(x86_core_cpu_execution_context *context)
 {"
     project_real_exception_final_start)
 string(FIND "${project_real_exception_cpu_text}" "static void ExecIns("

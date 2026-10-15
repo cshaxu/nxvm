@@ -119,7 +119,7 @@ static lib_i32 refresh_non_d4_contract(void)
     lib_u32 index = 0u;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     trace.callback = refresh_trace;
     trace.context = &probe;
     failed = failed || core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
@@ -163,7 +163,7 @@ lib_i32 main(void)
     core_machine_time_observation observation;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     config.transaction_contract.dma_cycle_wait_quanta = 1u;
     config.transaction_contract.dma_cycle_bus_ready_gate_enabled = LIB_TRUE;
     config.auxiliary_pit_present = LIB_TRUE;

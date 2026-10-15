@@ -63,7 +63,7 @@ static lib_i32 vm_kbc_aux_run_until_count(vm_machine *session, lib_u16 expected)
 lib_i32 main(void)
 {
     const vm_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const core_machine_entry_plan_preload preloads[] = {

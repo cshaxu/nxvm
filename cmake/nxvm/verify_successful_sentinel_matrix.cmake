@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 set(machine "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c")
-set(machine_model "${PROJECT_SOURCE_DIR}/src/core/chips/cpu/cpu_timing_model.c")
-set(timing "${PROJECT_SOURCE_DIR}/src/core/chips/cpu/cpu_timing.c")
+set(machine_model "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_timing_model.c")
+set(timing "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_timing.c")
 set(evidence "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t388-s2-successful-sentinel-matrix.md")
 foreach(path IN ITEMS "${machine}" "${timing}" "${evidence}")
     if(NOT EXISTS "${path}")
@@ -22,21 +22,21 @@ function(physical_timing_require text token)
     endif()
 endfunction()
 foreach(token IN ITEMS
-    "CORE_MACHINE_SOURCE_UNALLOCATED_TICKS"
-    "core_machine_cpu_timing_select"
+    "X86_CORE_CPU_SOURCE_UNALLOCATED_TICKS"
+    "x86_core_cpu_timing_select"
     "core_machine_publish_elapsed_ticks"
-    "core_machine_source_timing_lookup"
-    "core_machine_instruction_prefix_count(data)"
-    "core_machine_string_io_source_instruction_cost"
-    "core_machine_80286_source_instruction_cost"
+    "x86_core_cpu_source_timing_lookup"
+    "x86_core_cpu_instruction_prefix_count(data)"
+    "x86_core_cpu_string_io_source_instruction_cost"
+    "x86_core_cpu_80286_source_instruction_cost"
     "case 0x0fu:"
     "case 0x62u:"
     "case 0x63u:"
     "case 0x8cu:"
     "case 0x8eu:"
     "case 0xc4u: case 0xc5u:"
-    "core_machine_80386_source_instruction_cost"
-    "core_machine_cpu_execution_preview_lexeme")
+    "x86_core_cpu_80386_source_instruction_cost"
+    "x86_core_cpu_execution_preview_lexeme")
     physical_timing_require("${machine_text}${timing_text}" "${token}")
 endforeach()
 physical_timing_require("${evidence_text}" "core_machine_instruction_cost")

@@ -13,11 +13,11 @@
 
 typedef struct vm86_iret_state { core_machine *machine; } vm86_iret_state;
 
-static core_machine_debug_cpu_snapshot vm86_iret_capture(const core_machine *machine)
+static x86_core_cpu_debug_cpu_snapshot vm86_iret_capture(const core_machine *machine)
 {
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     if (core_machine_debug_capture_cpu_snapshot(machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK)
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK)
         lib_test_assert(LIB_FALSE);
     return snapshot;
 }
@@ -35,11 +35,11 @@ static lib_i32 vm86_iret_prepare(vm86_iret_state *state,
 {
     const core_machine_executor_config config = {
         .memory_bytes = 0x100000u,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const lib_u32 frame[9u] = {
-        0x00000010u, 0xa5a50200u, CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF,
+        0x00000010u, 0xa5a50200u, X86_CORE_CPU_DEBUG_EFLAGS_VM | X86_CORE_CPU_DEBUG_EFLAGS_IF,
         0x00001234u, 0xb6b60300u, 0xc7c70500u, 0xd8d80400u,
         0xe9e90600u, 0xfafa0700u
     };
@@ -54,11 +54,11 @@ static lib_i32 vm86_iret_prepare(vm86_iret_state *state,
         0xb8u,0x10u,0, 0x8eu,0xd8u,0x8eu,0xc0u,0x8eu,0xd0u,
         0xbcu,0,0x80u, 0xeau,0,4,8,0
     };
-    const core_machine_debug_register_patch real_entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = {[CORE_MACHINE_DEBUG_EIP] = 0x700u}
+    const x86_core_cpu_debug_register_patch real_entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x700u}
     };
     core_machine_run_result result;
 
@@ -79,17 +79,17 @@ static lib_i32 vm86_iret_prepare(vm86_iret_state *state,
             (const lib_u8[]){0x90u,0xf4u}, 2u) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, VM86_IRET_STACK, frame, sizeof(frame)) != LIB_STATUS_OK)
         return 0;
-    test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_EIP, 0u);
-    test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_EFLAGS,
-        CORE_MACHINE_DEBUG_EFLAGS_IF);
-    const core_machine_debug_cpu_snapshot snapshot = vm86_iret_capture(state->machine);
+    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EIP, 0u);
+    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS,
+        X86_CORE_CPU_DEBUG_EFLAGS_IF);
+    const x86_core_cpu_debug_cpu_snapshot snapshot = vm86_iret_capture(state->machine);
     return snapshot.cs.selector == 8u && snapshot.cs.base == VM86_IRET_CODE &&
         snapshot.cs.defsize && snapshot.ss.selector == 0x10u &&
         snapshot.ss.limit == stack_limit && snapshot.ss.big &&
         snapshot.esp == VM86_IRET_STACK;
 }
 
-static lib_i32 vm86_iret_cache(const core_machine_debug_segment_snapshot *sreg,
+static lib_i32 vm86_iret_cache(const x86_core_cpu_debug_segment_snapshot *sreg,
     lib_u16 selector, lib_bool code)
 {
     return sreg->selector == selector && sreg->base == (lib_u32)selector << 4u &&
@@ -101,8 +101,8 @@ static lib_i32 vm86_iret_success(const lib_u8 *instruction,
     lib_u8 bytes)
 {
     vm86_iret_state state; core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_i32 failed = !vm86_iret_prepare(
         &state, instruction, bytes, 0x0000ffffu);
 
@@ -114,7 +114,7 @@ static lib_i32 vm86_iret_success(const lib_u8 *instruction,
             diagnostic.first_fault.valid;
         after = vm86_iret_capture(state.machine);
         failed |= after.eflags !=
-                (CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF | 0x02u) ||
+                (X86_CORE_CPU_DEBUG_EFLAGS_VM | X86_CORE_CPU_DEBUG_EFLAGS_IF | 0x02u) ||
             after.eip != 0x0011u ||
             after.esp != 0x00001234u ||
             !vm86_iret_cache(&after.cs, 0x0200u, LIB_TRUE) ||
@@ -130,7 +130,7 @@ static lib_i32 vm86_iret_success(const lib_u8 *instruction,
 
 static lib_i32 vm86_iret_stack_atomic(void)
 {
-    vm86_iret_state state; core_machine_run_result result; core_machine_debug_cpu_snapshot before, after;
+    vm86_iret_state state; core_machine_run_result result; x86_core_cpu_debug_cpu_snapshot before, after;
     lib_i32 failed = !vm86_iret_prepare(&state, (const lib_u8[]){ 0xcfu },
         1u, VM86_IRET_STACK + 31u);
 
@@ -149,8 +149,8 @@ static lib_i32 vm86_iret_paging_success(void)
 {
     vm86_iret_state state;
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_i32 failed = !vm86_iret_prepare(&state, (const lib_u8[]){ 0xcfu },
         1u, 0x0000ffffu);
 
@@ -163,8 +163,8 @@ static lib_i32 vm86_iret_paging_success(void)
                 0x2000u | VM86_IRET_PAGE_FLAGS) ||
             !vm86_iret_write_u32(state.machine, VM86_IRET_PAGE_TABLE + 8u * 4u,
                 0x8000u | VM86_IRET_PAGE_FLAGS);
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_CR3, VM86_IRET_PAGE_DIRECTORY);
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_CR0,
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR3, VM86_IRET_PAGE_DIRECTORY);
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0,
             vm86_iret_capture(state.machine).cr0 | 0x80000000u);
         failed |= core_machine_run(state.machine,
                 (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
@@ -176,7 +176,7 @@ static lib_i32 vm86_iret_paging_success(void)
             after.eip != 0x0011u ||
             after.esp != 0x00001234u ||
             !CORE_MACHINE_BIT_IS_SET(after.eflags,
-                CORE_MACHINE_DEBUG_EFLAGS_VM) || !vm86_iret_cache(
+                X86_CORE_CPU_DEBUG_EFLAGS_VM) || !vm86_iret_cache(
                 &after.cs, 0x0200u, LIB_TRUE) ||
             !vm86_iret_cache(&after.ss, 0x0300u,
                 LIB_FALSE);

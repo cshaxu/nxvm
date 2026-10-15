@@ -17,8 +17,8 @@ typedef struct test_cpu_board_irq_case {
 } test_cpu_board_irq_case;
 
 typedef struct test_cpu_board_irq_result {
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_u16 frame_ip;
     lib_u8 isr;
     lib_u8 irr;
@@ -31,13 +31,13 @@ static lib_i32 test_cpu_board_irq_run(const test_cpu_board_irq_case *entry,
     static const lib_u8 hlt = 0xf4u;
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source *irq = LIB_NULL;
-    core_machine_debug_register_patch patch = {0};
+    x86_core_cpu_debug_register_patch patch = {0};
     core_machine_run_result result = {0};
     lib_u16 offset = 0x100u;
     lib_u16 segment = 0u;
@@ -46,27 +46,27 @@ static lib_i32 test_cpu_board_irq_run(const test_cpu_board_irq_case *entry,
 
     if (!failed) {
         lib_memory_set(out, 0, sizeof(*out));
-        patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDI);
-        patch.values[CORE_MACHINE_DEBUG_ESP] = 0x8000u;
-        patch.values[CORE_MACHINE_DEBUG_EFLAGS] = entry->flags;
-        patch.values[CORE_MACHINE_DEBUG_EAX] = entry->eax;
-        patch.values[CORE_MACHINE_DEBUG_ECX] = 0x11223344u;
-        patch.values[CORE_MACHINE_DEBUG_EDX] = 0x55667788u;
-        patch.values[CORE_MACHINE_DEBUG_EBX] = 0x99aabbccU;
-        patch.values[CORE_MACHINE_DEBUG_EBP] = 0x120u;
-        patch.values[CORE_MACHINE_DEBUG_ESI] = 0x10u;
-        patch.values[CORE_MACHINE_DEBUG_EDI] = 0x20u;
+        patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDI);
+        patch.values[X86_CORE_CPU_DEBUG_ESP] = 0x8000u;
+        patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = entry->flags;
+        patch.values[X86_CORE_CPU_DEBUG_EAX] = entry->eax;
+        patch.values[X86_CORE_CPU_DEBUG_ECX] = 0x11223344u;
+        patch.values[X86_CORE_CPU_DEBUG_EDX] = 0x55667788u;
+        patch.values[X86_CORE_CPU_DEBUG_EBX] = 0x99aabbccU;
+        patch.values[X86_CORE_CPU_DEBUG_EBP] = 0x120u;
+        patch.values[X86_CORE_CPU_DEBUG_ESI] = 0x10u;
+        patch.values[X86_CORE_CPU_DEBUG_EDI] = 0x20u;
         failed = core_machine_freeze_execution_providers(machine) !=
                 LIB_STATUS_OK || core_machine_reset(machine) !=
                 LIB_STATUS_OK ||
@@ -85,7 +85,7 @@ static lib_i32 test_cpu_board_irq_run(const test_cpu_board_irq_case *entry,
                     &entry->stack_image, sizeof(entry->stack_image)) !=
                     LIB_STATUS_OK) ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &out->before) !=
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &out->before) !=
                 LIB_STATUS_OK;
     }
     if (!failed) {
@@ -100,7 +100,7 @@ static lib_i32 test_cpu_board_irq_run(const test_cpu_board_irq_case *entry,
                 LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &out->after) !=
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &out->after) !=
                 LIB_STATUS_OK ||
             core_machine_debug_read_memory(machine,
                 out->after.ss.base + (lib_u16)out->after.esp,

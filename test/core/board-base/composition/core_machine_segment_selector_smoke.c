@@ -16,7 +16,7 @@ typedef struct segment_machine {
 
 
 static lib_i32 segment_prepare(segment_machine *state,
-    core_machine_cpu_profile profile)
+    x86_core_cpu_profile profile)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -30,12 +30,12 @@ static lib_i32 segment_prepare(segment_machine *state,
     if (core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
         core_machine_reset(state->machine) != LIB_STATUS_OK ||
         core_machine_debug_patch_registers(state->machine,
-            &(core_machine_debug_register_patch){
-                .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-                    CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+            &(x86_core_cpu_debug_register_patch){
+                .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+                    X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
             }) != LIB_STATUS_OK) {
         core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
@@ -54,24 +54,24 @@ static lib_i32 segment_write(segment_machine *state, lib_u32 address,
 
 
 static lib_i32 segment_capture(segment_machine *state,
-    core_machine_debug_cpu_snapshot *snapshot)
+    x86_core_cpu_debug_cpu_snapshot *snapshot)
 {
     return core_machine_debug_capture_cpu_snapshot(state->machine,
-        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, snapshot) == LIB_STATUS_OK;
+        X86_CORE_CPU_SNAPSHOT_CURRENT, snapshot) == LIB_STATUS_OK;
 }
 
 static lib_i32 segment_patch(segment_machine *state,
-    core_machine_debug_register register_id, lib_u32 value)
+    x86_core_cpu_debug_register register_id, lib_u32 value)
 {
-    core_machine_debug_register_patch patch = {0};
-    patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(register_id);
+    x86_core_cpu_debug_register_patch patch = {0};
+    patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(register_id);
     patch.values[register_id] = value;
     return core_machine_debug_patch_registers(state->machine, &patch) == LIB_STATUS_OK;
 }
 
 static lib_i32 segment_run_exception(segment_machine *state, const lib_u8 *code,
     lib_size code_size, lib_u32 address,
-    core_machine_debug_cpu_snapshot *out_cpu)
+    x86_core_cpu_debug_cpu_snapshot *out_cpu)
 {
     const core_machine_run_budget budget = { 16u, 0u };
     core_machine_run_result result;
@@ -79,7 +79,7 @@ static lib_i32 segment_run_exception(segment_machine *state, const lib_u8 *code,
     if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
         out_cpu == LIB_NULL || !segment_write(state, address, code, code_size))
         return 0;
-    if (!segment_patch(state, CORE_MACHINE_DEBUG_EIP,
+    if (!segment_patch(state, X86_CORE_CPU_DEBUG_EIP,
             address == 0u ? 0u : address - SEG_CODE_ADDRESS)) return 0;
     if (!test_core_machine_fixture_shutdown_wait(
             core_machine_run(state->machine, budget, &result), &result)) return 0;
@@ -178,7 +178,7 @@ static lib_i32 segment_boot_protected_286(segment_machine *state)
         result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 10u;
 }
 
-static const core_machine_debug_segment_snapshot *segment_sreg(const core_machine_debug_cpu_snapshot *cpu, lib_u8 target)
+static const x86_core_cpu_debug_segment_snapshot *segment_sreg(const x86_core_cpu_debug_cpu_snapshot *cpu, lib_u8 target)
 {
     if (cpu == LIB_NULL) return LIB_NULL;
     switch (target) {
@@ -220,16 +220,16 @@ static lib_i32 segment_test_80286_protected_cache_rejections(void)
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
         segment_machine state;
         core_machine_run_result result = {0};
-        core_machine_cpu_diagnostic diagnostic;
-        core_machine_debug_cpu_snapshot before = {0};
-        core_machine_debug_cpu_snapshot after = {0};
-        lib_i32 failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286) ||
+        x86_core_cpu_diagnostic diagnostic;
+        x86_core_cpu_debug_cpu_snapshot before = {0};
+        x86_core_cpu_debug_cpu_snapshot after = {0};
+        lib_i32 failed = !segment_prepare(&state, X86_CORE_CPU_PROFILE_80286) ||
             !segment_boot_protected_286(&state);
 
         if (!failed) {
             failed |= !segment_capture(&state, &before) ||
                 !segment_write(&state, SEG_CODE_ADDRESS, codes[form], sizes[form]) ||
-                !segment_patch(&state, CORE_MACHINE_DEBUG_EIP, 0u) ||
+                !segment_patch(&state, X86_CORE_CPU_DEBUG_EIP, 0u) ||
                 core_machine_run(state.machine,
                 (core_machine_run_budget){ form == 2u ? 16u : 2u, 0u },
                 &result) != LIB_STATUS_OK ||
@@ -244,9 +244,9 @@ static lib_i32 segment_test_80286_protected_cache_rejections(void)
                     lib_memory_compare(&after.ss, &before.ss,
                     sizeof(after.ss)) != 0;
             } else if (!failed) {
-                const core_machine_debug_segment_snapshot *target = form == 3u ? &after.ss :
+                const x86_core_cpu_debug_segment_snapshot *target = form == 3u ? &after.ss :
                     &after.ds;
-                const core_machine_debug_segment_snapshot *before_target = form == 3u ?
+                const x86_core_cpu_debug_segment_snapshot *before_target = form == 3u ?
                     &before.ss : &before.ds;
 
                 failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
@@ -288,10 +288,10 @@ static lib_i32 segment_test_lxs_fault_atomicity(void)
         lib_u8 code[8u] = {0};
         lib_u8 code_size = 0u;
         segment_machine state;
-        core_machine_debug_cpu_snapshot before = {0};
-        core_machine_debug_cpu_snapshot after = {0};
+        x86_core_cpu_debug_cpu_snapshot before = {0};
+        x86_core_cpu_debug_cpu_snapshot after = {0};
 
-        if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
+        if (!segment_prepare(&state, X86_CORE_CPU_PROFILE_80386) ||
             !segment_boot_protected(&state)) {
             core_machine_destroy(state.machine);
             return 1;
@@ -350,15 +350,15 @@ static lib_i32 segment_test_protected_sreg_failures(void)
     for (index = 0u; index < sizeof(failures) / sizeof(failures[0]); ++index) {
         lib_u8 code[] = { 0xb8u,0,0,0,0,0x8eu,failures[index].mov_modrm };
         segment_machine state;
-        core_machine_debug_cpu_snapshot before = {0};
-        core_machine_debug_cpu_snapshot after = {0};
-        const core_machine_debug_segment_snapshot *before_sreg;
-        const core_machine_debug_segment_snapshot *after_sreg;
+        x86_core_cpu_debug_cpu_snapshot before = {0};
+        x86_core_cpu_debug_cpu_snapshot after = {0};
+        const x86_core_cpu_debug_segment_snapshot *before_sreg;
+        const x86_core_cpu_debug_segment_snapshot *after_sreg;
         lib_i32 case_failed;
 
         code[1u] = (lib_u8)failures[index].selector;
         code[2u] = (lib_u8)(failures[index].selector >> 8u);
-        if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
+        if (!segment_prepare(&state, X86_CORE_CPU_PROFILE_80386) ||
             !segment_boot_protected(&state)) {
             core_machine_destroy(state.machine);
             return 1;
@@ -384,15 +384,15 @@ static lib_i32 segment_test_protected_sreg_failures(void)
         lib_size code_size = index == 0u ? sizeof(pop_fs) : sizeof(pop_ss);
         lib_u8 target = index == 0u ? 3u : 2u;
         segment_machine state;
-        core_machine_debug_cpu_snapshot before = {0};
-        core_machine_debug_cpu_snapshot after = {0};
-        const core_machine_debug_segment_snapshot *before_sreg;
-        const core_machine_debug_segment_snapshot *after_sreg;
+        x86_core_cpu_debug_cpu_snapshot before = {0};
+        x86_core_cpu_debug_cpu_snapshot after = {0};
+        const x86_core_cpu_debug_segment_snapshot *before_sreg;
+        const x86_core_cpu_debug_segment_snapshot *after_sreg;
         lib_i32 case_failed;
 
-        if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
+        if (!segment_prepare(&state, X86_CORE_CPU_PROFILE_80386) ||
             !segment_boot_protected(&state) ||
-            !segment_patch(&state, CORE_MACHINE_DEBUG_ESP, 0x8000u)) {
+            !segment_patch(&state, X86_CORE_CPU_DEBUG_ESP, 0x8000u)) {
             core_machine_destroy(state.machine);
             return 1;
         }
@@ -424,17 +424,17 @@ static lib_i32 segment_test_pop_fault_atomicity(void)
     const core_machine_run_budget budget = { 8u, 0u };
     core_machine_run_result result = {0};
     segment_machine state;
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
-    lib_i32 failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
+    lib_i32 failed = !segment_prepare(&state, X86_CORE_CPU_PROFILE_80386);
 
     if (!failed) failed |= !segment_boot_protected(&state);
     if (!failed) {
-        failed |= !segment_patch(&state, CORE_MACHINE_DEBUG_ESP, 0x8000u) ||
+        failed |= !segment_patch(&state, X86_CORE_CPU_DEBUG_ESP, 0x8000u) ||
             !segment_capture(&state, &before) ||
             !segment_write(&state, SEG_DATA_ADDRESS + 0x8000u, selector,
             sizeof(selector)) || !segment_write(&state, SEG_CODE_ADDRESS, pop_fs,
-            sizeof(pop_fs)) || !segment_patch(&state, CORE_MACHINE_DEBUG_EIP, 0u) ||
+            sizeof(pop_fs)) || !segment_patch(&state, X86_CORE_CPU_DEBUG_EIP, 0u) ||
             !test_core_machine_fixture_shutdown_wait(core_machine_run(state.machine,
                 budget, &result), &result) ||
             !segment_capture(&state, &after) || after.esp != before.esp ||

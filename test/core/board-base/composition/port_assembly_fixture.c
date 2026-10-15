@@ -152,7 +152,7 @@ lib_i32 port_assembly_read_time(void)
 lib_i32 port_assembly_port_b_time(void)
 {
     const core_machine_config config = {.memory_bytes = 512u * 1024u,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086};
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086};
     const core_machine_planar_parity_config parity = {
         .port = CORE_MACHINE_PC_AT_PORT_B, .memory_bytes = 512u * 1024u,
         .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
@@ -161,9 +161,9 @@ lib_i32 port_assembly_port_b_time(void)
     const lib_u64 ticks[] = {0u, 63u, 64u, 65u, 127u, 128u, 129u,
         0x100000040ull};
     const lib_u8 code[] = {0x90u, 0xe4u, 0x61u};
-    const core_machine_debug_register_patch patch = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+    const x86_core_cpu_debug_register_patch patch = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
         .values = {0}
     };
     core_machine *machine = LIB_NULL;
@@ -192,7 +192,7 @@ lib_i32 port_assembly_port_b_time(void)
         core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK ||
         time.elapsed_ticks == 0u ||
         core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
-        core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX, &eax) !=
+        core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EAX, &eax) !=
             LIB_STATUS_OK ||
         (eax & 0x10u) != (((time.elapsed_ticks / 64u) & 1u) ? 0x10u : 0u);
     core_machine_destroy(machine);

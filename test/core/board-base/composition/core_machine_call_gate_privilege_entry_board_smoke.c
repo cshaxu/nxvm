@@ -1,6 +1,6 @@
 #include "lib/types/file.h"
 #include "support/protected_16_bootstrap_fixture.h"
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #define S48_GATE_SELECTOR 0x0033u
 #define S48_TARGET 0x0320u
 #define S48_GP_HANDLER 0x0360u
@@ -36,8 +36,8 @@ static lib_i32 s48_write_call(test_protected_16_machine *state)
         0x0100u, call, sizeof(call));
 }
 
-static lib_i32 s48_snapshot_equal(const core_machine_debug_cpu_snapshot *before,
-    const core_machine_debug_cpu_snapshot *after)
+static lib_i32 s48_snapshot_equal(const x86_core_cpu_debug_cpu_snapshot *before,
+    const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return before->cs.selector == after->cs.selector &&
         before->ss.selector == after->ss.selector && before->eip == after->eip &&
@@ -49,7 +49,7 @@ static lib_i32 s48_outer_parameter_copy(lib_u8 parameter_count)
     static const lib_u32 parameters[] = {0x11223344u,0x55667788u};
     test_protected_16_machine state;
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u32 frame[6u] = {0};
     lib_i32 failed = !s48_prepare_user32(&state);
 
@@ -92,9 +92,9 @@ static lib_i32 s48_gate_rejection(lib_u8 gate_access, lib_u8 target_access)
 {
     test_protected_16_machine state;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_i32 failed = !s48_prepare_user32(&state);
 
     if (!failed) {

@@ -45,7 +45,7 @@ static const core_machine_execution_provider secondary_integer_timing_execution 
 static lib_i32 secondary_integer_timing_prepare(core_machine **out_machine, secondary_integer_timing_state *state)
 {
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_memory_alias_config aliases[] = {
         { SECONDARY_INTEGER_TIMING_RESET_LINEAR, SECONDARY_INTEGER_TIMING_RESET_PHYSICAL, 16u },
@@ -75,12 +75,12 @@ static lib_i32 secondary_integer_timing_run(core_machine *machine, secondary_int
 {
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_FS)
+    x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_FS)
     };
 
     if (machine == LIB_NULL || state == LIB_NULL || row == LIB_NULL ||
@@ -91,12 +91,12 @@ static lib_i32 secondary_integer_timing_run(core_machine *machine, secondary_int
             sizeof(row->memory)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x00002000u, &row->memory,
             sizeof(row->memory)) != LIB_STATUS_OK) return 0;
-    entry.values[CORE_MACHINE_DEBUG_EFLAGS] = row->eflags;
-    entry.values[CORE_MACHINE_DEBUG_EAX] = row->eax;
-    entry.values[CORE_MACHINE_DEBUG_ECX] = row->ecx;
-    entry.values[CORE_MACHINE_DEBUG_ESI] = row->esi;
+    entry.values[X86_CORE_CPU_DEBUG_EFLAGS] = row->eflags;
+    entry.values[X86_CORE_CPU_DEBUG_EAX] = row->eax;
+    entry.values[X86_CORE_CPU_DEBUG_ECX] = row->ecx;
+    entry.values[X86_CORE_CPU_DEBUG_ESI] = row->esi;
     /* A real-mode selector supplies the same 1000h base through the owner. */
-    entry.values[CORE_MACHINE_DEBUG_FS] = SECONDARY_INTEGER_TIMING_DATA >> 4u;
+    entry.values[X86_CORE_CPU_DEBUG_FS] = SECONDARY_INTEGER_TIMING_DATA >> 4u;
     if (core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK)
         return 0;
     return core_machine_run(machine, budget, &result) == LIB_STATUS_OK &&
@@ -140,8 +140,8 @@ static lib_i32 secondary_integer_timing_test_secondary_rows(void)
         0x0fu, 0xafu, 0x0eu, 0u, 0x10u
     };
     static const secondary_integer_timing_row rows[] = {
-        { near_not_taken, sizeof(near_not_taken), 3u, CORE_MACHINE_DEBUG_EFLAGS_ZF, 0u, 0u, 0u, 0u },
-        { near_taken, sizeof(near_taken), 9u, CORE_MACHINE_DEBUG_EFLAGS_ZF, 0u, 0u, 0u, 0u },
+        { near_not_taken, sizeof(near_not_taken), 3u, X86_CORE_CPU_DEBUG_EFLAGS_ZF, 0u, 0u, 0u, 0u },
+        { near_taken, sizeof(near_taken), 9u, X86_CORE_CPU_DEBUG_EFLAGS_ZF, 0u, 0u, 0u, 0u },
         { bt_register, sizeof(bt_register), 3u, 0u, 1u, 0u, 0u, 0u },
         { bt_memory, sizeof(bt_memory), 12u, 0u, 0u, 0u, 0u, 1u },
         { bts_register, sizeof(bts_register), 6u, 0u, 1u, 0u, 0u, 0u },
@@ -191,7 +191,7 @@ static lib_i32 secondary_integer_timing_test_attributes_and_preflight(void)
     const core_machine_run_budget insufficient = { 1u, 105u };
     const core_machine_run_budget sufficient = { 1u, 106u };
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
     secondary_integer_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
     lib_size index;

@@ -12,7 +12,7 @@ queued with its complete original ledger and requires later admission.
 | --- | --- | --- |
 | I0 exact ten-tree prerequisite | Lib/Emulator/X86 Debug/X86 IBM PC/X86 NXVM src/test match pinned SoftPC commit; manifests, root registration and migrated product receivers verified. | S1 accepted after pushed P1/P2 actual-change review; 264 exact files and full receiving proof below. |
 | I1 complete disposition | Every current Core source/test/target and public contract has one destination, dependency and verification owner; all PC assumptions and SoftPC split prerequisites classified. | S2 accepted after actual-change review of pushed `82e3257cc`: complete 679-path inventory and explicit mixed-contract receiving decisions; no implementation qualification implied. |
-| I2 CPU/FPU extraction | One independent shared CPU/FPU implementation and corresponding tests, correct interfaces, all old consumers migrated and superseded paths removed. | Future batch; original CPU functionality/grades retained. |
+| I2 CPU/FPU extraction | One independent shared CPU/FPU implementation and corresponding tests, correct interfaces, all old consumers migrated and superseded paths removed. | S3 implemented and qualified; coordinated cutover awaits actual-change acceptance. Original CPU functionality/grades retained. |
 | I3 neutral execution core | CPU composition, memory/port routes, guest time, transactions and debug independent of PC policy, with real ROM-free non-PC board proof. | Future batch; one executor/timeline. |
 | I4 NXVM consolidation | Chips, board-base/XT/AT, driver and family Product in X86 NXVM; all four Apps use the same package, no duplicates or old-path aliases. | Future batch; real PC product/runtime receivers mapped before moving. |
 | I5 final qualification | Full dual-width units/gates, all required PC integrations and affected artifacts, independent package builds, exact ownership and documentation, no dependency on retired roots. | T exit; not implied by staged S1 tests. |
@@ -113,3 +113,28 @@ inputs and assets have no diff against `8db742b6d`. The reproduced inventories,
 Core source/test manifests, corpus boundary and documentation gate pass. The
 packet's design-only exception is explicit; no dynamic qualification is claimed.
 I1 is accepted as planning completeness, while I2--I5 remain future work.
+
+## S3 CPU/FPU Delivery
+
+[S3 actual-change record](../etc/evidence/t561-s3/review.md), with hashed file
+and symbol ledgers, accounts for 12 implementation/header files, 106 matching
+test files and six moved CPU-specific checkers. Nine CPU and three FPU source
+files exactly preserve the original algorithm/table/layout after the declared
+canonical-name and include-path changes. Two test-only Core utility includes
+are replaced by their equivalent address/bit expressions. The new independent
+package has 112 owner tests and mirrored source/test subcomponent directories.
+
+Original graphs pass complete repository units 627/627 per width, all
+specialized gates, 48 receiving profile integrations per width and the restored
+default identity. Eight current optimized/stripped 0561 PC EXEs pass PE,
+identity, version, SHA-256 and real published CLI/INI checks. Imported ten trees,
+Lib/Emulator, MyNES and owner INI/firmware/media/snapshots are unchanged.
+Manual RDP/physical/full Windows GUI or new CPU qualification is not claimed.
+
+Shared publication is `8bb5bcaa5`. The immediately following NXVM receiver
+delivery retires the old CPU/FPU implementation and tests; the temporary
+additive publication is not a compatibility production path. Coordinator
+acceptance must review both commits before discharging I2. The execution and
+board white-box CPU-header consumers are explicitly recorded as S5/S6
+receiving work; final I5 acceptance rejects unresolved private-header borrowing.
+I3--I5 and T560 C16/C17/final qualification remain open. T561 stays open.

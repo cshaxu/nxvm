@@ -3,9 +3,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 set(machine "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c")
 set(board_advance "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c")
-set(machine_model "${PROJECT_SOURCE_DIR}/src/core/chips/cpu/cpu_timing_model.c")
+set(machine_model "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_timing_model.c")
 set(machine_scheduler "${PROJECT_SOURCE_DIR}/src/core/x86/machine_scheduler.c")
-set(timing "${PROJECT_SOURCE_DIR}/src/core/chips/cpu/cpu_timing.c")
+set(timing "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_timing.c")
 set(session "${PROJECT_SOURCE_DIR}/src/core/machine/waiting.c")
 set(evidence "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t388-s1-physical-timebase-inventory.md")
 foreach(path IN ITEMS "${machine}" "${board_advance}" "${machine_model}" "${machine_scheduler}" "${timing}" "${session}" "${evidence}")
@@ -28,12 +28,12 @@ function(physical_timing_require text token)
     endif()
 endfunction()
 foreach(token IN ITEMS
-    "core_machine_cpu_timing_select" "core_machine_publish_elapsed_ticks"
-    "core_machine_advance_time" "CORE_MACHINE_SOURCE_UNALLOCATED_TICKS"
-    "core_machine_8086_source_instruction_cost"
-    "core_machine_80186_source_instruction_cost"
-    "core_machine_80286_source_instruction_cost"
-    "core_machine_80386_source_instruction_cost"
+    "x86_core_cpu_timing_select" "core_machine_publish_elapsed_ticks"
+    "core_machine_advance_time" "X86_CORE_CPU_SOURCE_UNALLOCATED_TICKS"
+    "x86_core_cpu_8086_source_instruction_cost"
+    "x86_core_cpu_80186_source_instruction_cost"
+    "x86_core_cpu_80286_source_instruction_cost"
+    "x86_core_cpu_80386_source_instruction_cost"
     "core_machine_clock_domain_advance" "dma_clock" "pit_clock" "rtc_clock"
     "kbc_clock" "vadp_clock" "provider_clock")
     physical_timing_require("${machine_text}${timing_text}" "${token}")

@@ -13,10 +13,10 @@ static lib_bool fdc_result_is_local(core_machine *machine, core_machine *other)
 {
     lib_u32 value;
     const core_machine_run_budget budget = { 1u, 0u };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = { [CORE_MACHINE_DEBUG_EIP] = 0x1000u }
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = { [X86_CORE_CPU_DEBUG_EIP] = 0x1000u }
     };
     const lib_u8 loop[] = { 0x90u, 0xebu, 0xfdu };
     core_machine_run_result result;

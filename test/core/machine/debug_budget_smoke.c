@@ -44,7 +44,7 @@ static lib_bool breakpoints(void)
     t_debug debug;
     vm_machine_debug_stop_reason reason;
     lib_u64 executed;
-    core_machine_debug_instruction_observation observation = {
+    x86_core_cpu_debug_instruction_observation observation = {
         .cs_base = 0x1000u, .eip = 0x20u
     };
 
@@ -78,7 +78,7 @@ lib_i32 main(void)
     vm_machine_debug_stop_reason reason;
     lib_u64 executed;
     x86_debug_request request = {.execution_kind = X86_DEBUG_EXECUTION_TRACE};
-    core_machine_debug_instruction_observation observation = {.watch_hit = LIB_TRUE};
+    x86_core_cpu_debug_instruction_observation observation = {.watch_hit = LIB_TRUE};
 
     if (!trace_budgets() || !breakpoints()) return 1;
     vm_machine_debug_initialize(&debug);

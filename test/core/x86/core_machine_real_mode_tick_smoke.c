@@ -10,7 +10,7 @@
 static lib_i32 core_machine_real_mode_tick_case(
     const char *name,
     const lib_u8 *program, lib_size program_bytes,
-    core_machine_cpu_profile profile, lib_status expected_status,
+    x86_core_cpu_profile profile, lib_status expected_status,
     core_machine_stop_reason expected_reason, lib_u64 expected_executed,
     lib_u64 expected_ticks)
 {
@@ -21,7 +21,7 @@ static lib_i32 core_machine_real_mode_tick_case(
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result = {0};
     core_machine_observation observation = {0};
-    core_machine_cpu_profile actual_profile = CORE_MACHINE_CPU_PROFILE_8086;
+    x86_core_cpu_profile actual_profile = X86_CORE_CPU_PROFILE_8086;
     core_machine *machine = LIB_NULL;
     lib_status status;
     lib_u64 setup_ticks = 0u;
@@ -43,7 +43,7 @@ static lib_i32 core_machine_real_mode_tick_case(
             sizeof(idt_pointer)) != LIB_STATUS_OK ||
             core_machine_run(machine, (core_machine_run_budget){1u, 0u},
             &setup) != LIB_STATUS_OK || setup.reason != CORE_MACHINE_STOP_BUDGET ||
-            core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EIP,
+            core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EIP,
             0xfff0u) != LIB_STATUS_OK ||
             core_machine_capture_observation(machine, &observation) != LIB_STATUS_OK;
         if (failed) {
@@ -86,24 +86,24 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     failed |= core_machine_real_mode_tick_case("mov", mov_ax, sizeof(mov_ax),
-        CORE_MACHINE_CPU_PROFILE_80286, LIB_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
+        X86_CORE_CPU_PROFILE_80286, LIB_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
         1u, 2u);
     failed |= core_machine_real_mode_tick_case("out", out_80, sizeof(out_80),
-        CORE_MACHINE_CPU_PROFILE_80286, LIB_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
+        X86_CORE_CPU_PROFILE_80286, LIB_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
         1u, 3u);
     failed |= core_machine_real_mode_tick_case("int", int_20, sizeof(int_20),
-        CORE_MACHINE_CPU_PROFILE_80286, LIB_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
+        X86_CORE_CPU_PROFILE_80286, LIB_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
         1u, 25u);
     failed |= core_machine_real_mode_tick_case("segment-prefix", prefixed_nop,
         sizeof(prefixed_nop),
-        CORE_MACHINE_CPU_PROFILE_80286, LIB_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
+        X86_CORE_CPU_PROFILE_80286, LIB_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
         1u, 3u);
     failed |= core_machine_real_mode_tick_case("hlt", halt, sizeof(halt),
-        CORE_MACHINE_CPU_PROFILE_80286, LIB_STATUS_OK,
+        X86_CORE_CPU_PROFILE_80286, LIB_STATUS_OK,
         CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, 1u, 2u);
     failed |= core_machine_real_mode_tick_case("operand-size-prefix",
         operand_size_prefix,
-        sizeof(operand_size_prefix), CORE_MACHINE_CPU_PROFILE_80286,
+        sizeof(operand_size_prefix), X86_CORE_CPU_PROFILE_80286,
         LIB_STATUS_OK, CORE_MACHINE_STOP_BUDGET, 0u, 0u);
     if (failed) return 1;
     lib_c_printf("REAL-MODE-TICKS:OK\n");

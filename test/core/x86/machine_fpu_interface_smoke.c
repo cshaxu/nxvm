@@ -56,7 +56,7 @@ static void fpu_interface_test_finalize(void *opaque)
     (void)opaque;
 }
 
-static lib_i32 fpu_interface_prepare(core_machine_cpu_profile profile,
+static lib_i32 fpu_interface_prepare(x86_core_cpu_profile profile,
     x86_fpu_profile fpu_profile, fpu_interface_machine *state)
 {
     const core_machine_executor_config config = {
@@ -71,12 +71,12 @@ static lib_i32 fpu_interface_prepare(core_machine_cpu_profile profile,
         return 0;
     }
     lib_memory_set(state, 0, sizeof(*state));
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
         .values = {0}
     };
     /* REAL_UD_TERMINAL_IVT_REJECT: producer failures cannot deliver vector 6. */
@@ -92,17 +92,17 @@ static lib_i32 fpu_interface_prepare(core_machine_cpu_profile profile,
         core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
 }
 
-static core_machine_debug_cpu_snapshot fpu_interface_capture(core_machine *machine)
+static x86_core_cpu_debug_cpu_snapshot fpu_interface_capture(core_machine *machine)
 {
-    core_machine_debug_cpu_snapshot snapshot = {0};
-    if (core_machine_debug_capture_cpu_snapshot(machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT,
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
+    if (core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
             &snapshot) != LIB_STATUS_OK) lib_test_assert(LIB_FALSE);
     return snapshot;
 }
 
 static lib_i32 fpu_interface_run(fpu_interface_machine *state,
-    const lib_u8 *code, lib_size size, core_machine_debug_cpu_snapshot *after,
-    core_machine_cpu_diagnostic *diagnostic, lib_status *status)
+    const lib_u8 *code, lib_size size, x86_core_cpu_debug_cpu_snapshot *after,
+    x86_core_cpu_diagnostic *diagnostic, lib_status *status)
 {
     core_machine_run_result result;
 
@@ -118,24 +118,24 @@ static lib_i32 fpu_interface_run(fpu_interface_machine *state,
         LIB_STATUS_OK;
 }
 
-static lib_i32 fpu_interface_same(const core_machine_debug_cpu_snapshot *before, const core_machine_debug_cpu_snapshot *after)
+static lib_i32 fpu_interface_same(const x86_core_cpu_debug_cpu_snapshot *before, const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return lib_memory_compare(before, after, sizeof(*before)) == 0;
 }
 
 static lib_i32 fpu_interface_success(const lib_u8 *code, lib_size size,
-    core_machine_cpu_profile profile, x86_fpu_profile fpu_profile,
+    x86_core_cpu_profile profile, x86_fpu_profile fpu_profile,
     lib_u32 cr0)
 {
     fpu_interface_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_status status;
     lib_i32 failed = !fpu_interface_prepare(profile, fpu_profile, &state);
 
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_CR0, cr0);
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0, cr0);
         before = fpu_interface_capture(state.machine);
         failed |= !fpu_interface_run(&state, code, size, &after,
             &diagnostic, &status) || status != LIB_STATUS_OK ||
@@ -174,15 +174,15 @@ static lib_i32 fpu_interface_mf(void)
     const lib_u16 handler_segment = 0u;
     lib_u16 frame[3] = { 0u, 0u, 0u };
     fpu_interface_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_status status;
-    lib_i32 failed = !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !fpu_interface_prepare(X86_CORE_CPU_PROFILE_80386,
         X86_FPU_PROFILE_80387, &state);
 
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_ESP, 0x00008000u);
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_ESP, 0x00008000u);
         failed |= core_machine_memory_write(state.machine, 0x0040u,
             &handler_offset, sizeof(handler_offset)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x0042u, &handler_segment,
@@ -219,12 +219,12 @@ static lib_i32 fpu_interface_mf(void)
 }
 
 static lib_i32 fpu_interface_reject(const lib_u8 *code, lib_size size,
-    core_machine_cpu_profile profile)
+    x86_core_cpu_profile profile)
 {
     fpu_interface_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_status status;
     lib_i32 failed = !fpu_interface_prepare(profile,
         X86_FPU_PROFILE_NONE, &state);
@@ -234,9 +234,9 @@ static lib_i32 fpu_interface_reject(const lib_u8 *code, lib_size size,
         failed |= !fpu_interface_run(&state, code, size, &after,
             &diagnostic, &status) || status != LIB_STATUS_INTERNAL_ERROR ||
             !diagnostic.first_fault.valid || diagnostic.first_fault.exception_mask !=
-                (profile < CORE_MACHINE_CPU_PROFILE_80186 ?
+                (profile < X86_CORE_CPU_PROFILE_80186 ?
                     VCPUINS_EXCEPT_UD : VCPUINS_EXCEPT_CE) ||
-            (profile >= CORE_MACHINE_CPU_PROFILE_80186 &&
+            (profile >= X86_CORE_CPU_PROFILE_80186 &&
                 diagnostic.first_fault.exception_code != 6u * 4u) ||
             !fpu_interface_same(&before, &after);
     }
@@ -244,7 +244,7 @@ static lib_i32 fpu_interface_reject(const lib_u8 *code, lib_size size,
     return !failed;
 }
 
-static lib_i32 fpu_interface_handoff(core_machine_cpu_profile cpu,
+static lib_i32 fpu_interface_handoff(x86_core_cpu_profile cpu,
     x86_fpu_profile profile)
 {
     static const lib_u8 fadd_wait[] = { 0xd8u, 0xc0u, 0x9bu };
@@ -252,9 +252,9 @@ static lib_i32 fpu_interface_handoff(core_machine_cpu_profile cpu,
     lib_u8 advanced = LIB_FALSE;
     lib_u8 attempts;
     fpu_interface_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_status status;
     lib_i32 failed = !fpu_interface_prepare(cpu, profile, &state);
 
@@ -296,7 +296,7 @@ static lib_i32 fpu_interface_handoff(core_machine_cpu_profile cpu,
     return !failed;
 }
 
-static lib_i32 fpu_interface_deadline(core_machine_cpu_profile cpu,
+static lib_i32 fpu_interface_deadline(x86_core_cpu_profile cpu,
     x86_fpu_profile profile)
 {
     static const lib_u8 fadd[] = { 0xd8u, 0xc0u };
@@ -328,12 +328,12 @@ static lib_i32 fpu_interface_80286_esc_restart(void)
 {
     static const lib_u8 escapes[] = { 0xd8u, 0xc0u, 0xd8u, 0xc0u };
     fpu_interface_machine state;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot after;
     core_machine_time_observation observation = {0};
     core_machine_run_result result = {0};
     lib_u8 advanced;
     lib_u8 attempts;
-    lib_i32 failed = !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80286,
+    lib_i32 failed = !fpu_interface_prepare(X86_CORE_CPU_PROFILE_80286,
         X86_FPU_PROFILE_80287, &state);
 
     if (!failed) {
@@ -387,7 +387,7 @@ static lib_i32 fpu_interface_80286_esc_restart(void)
 }
 
 static lib_i32 fpu_interface_external_test_input_profile(
-    core_machine_cpu_profile profile, lib_u64 wait_ticks)
+    x86_core_cpu_profile profile, lib_u64 wait_ticks)
 {
     static const lib_u8 code[] = { 0x9bu, 0x90u };
     const core_machine_executor_config config = {
@@ -402,12 +402,12 @@ static lib_i32 fpu_interface_external_test_input_profile(
         .finalize_devices = fpu_interface_test_finalize,
         .context = &input
     };
-    core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+    x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
         .values = {0}
     };
     core_machine_time_observation observation = {0};
@@ -444,9 +444,9 @@ static lib_i32 fpu_interface_external_test_input_profile(
 static lib_i32 fpu_interface_external_test_input(void)
 {
     return fpu_interface_external_test_input_profile(
-        CORE_MACHINE_CPU_PROFILE_8086, 3u) &&
+        X86_CORE_CPU_PROFILE_8086, 3u) &&
         fpu_interface_external_test_input_profile(
-            CORE_MACHINE_CPU_PROFILE_80186, 6u);
+            X86_CORE_CPU_PROFILE_80186, 6u);
 }
 
 static lib_i32 fpu_interface_wait_interrupt(void)
@@ -454,7 +454,7 @@ static lib_i32 fpu_interface_wait_interrupt(void)
     static const lib_u8 wait[] = {0x9bu};
     static const lib_u8 hlt = 0xf4u;
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     fpu_interface_test_input input = {
@@ -467,24 +467,24 @@ static lib_i32 fpu_interface_wait_interrupt(void)
         .finalize_devices = fpu_interface_test_finalize,
         .context = &input
     };
-    core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {0}
     };
     const lib_u16 vector_offset = 0x0100u;
     const lib_u16 vector_segment = 0u;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot after;
     core_machine_run_result result = {0};
     core_machine *machine = LIB_NULL;
     lib_u16 frame_ip = 0u;
     lib_i32 failed;
 
-    entry.values[CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_IF;
+    entry.values[X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF;
     failed = core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
@@ -531,7 +531,7 @@ static lib_i32 fpu_interface_80186_escape_trap(void)
     static const lib_u8 escape[] = {0xd8u, 0xc0u};
     static const lib_u8 hlt = 0xf4u;
     const core_machine_executor_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80186,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80186,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     fpu_interface_test_input input = {
@@ -542,18 +542,18 @@ static lib_i32 fpu_interface_80186_escape_trap(void)
         .finalize_devices = fpu_interface_test_finalize,
         .context = &input
     };
-    core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+    x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
         .values = {0}
     };
     const lib_u16 vector_offset = 0x0100u;
     const lib_u16 vector_segment = 0u;
-    core_machine_debug_cpu_snapshot after;
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
     core_machine_run_result result = {0};
     core_machine *machine = LIB_NULL;
     lib_u16 frame_ip = 0u;
@@ -591,11 +591,11 @@ static lib_i32 fpu_interface_incompatible(void)
 {
     static const lib_u8 fninit[] = { 0xdbu, 0xe3u };
     fpu_interface_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_status status;
-    lib_i32 failed = !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !fpu_interface_prepare(X86_CORE_CPU_PROFILE_80386,
         X86_FPU_PROFILE_8087, &state);
 
     if (!failed) {
@@ -617,11 +617,11 @@ static lib_i32 fpu_interface_nm_delivery(const lib_u8 *code,
     const lib_u16 offset = 0x0100u;
     const lib_u16 segment = 0u;
     fpu_interface_machine state;
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_u16 frame_ip = 0u;
-    lib_i32 failed = !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !fpu_interface_prepare(X86_CORE_CPU_PROFILE_80386,
         X86_FPU_PROFILE_NONE, &state);
 
     if (!failed) {
@@ -635,7 +635,7 @@ static lib_i32 fpu_interface_nm_delivery(const lib_u8 *code,
             sizeof(hlt)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_CR0, cr0);
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0, cr0);
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
@@ -664,23 +664,23 @@ static lib_i32 fpu_interface_vm86(void)
 {
     static const lib_u8 esc[] = { 0xd8u, 0xc0u };
     fpu_interface_machine state;
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_status status;
-    lib_i32 failed = !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !fpu_interface_prepare(X86_CORE_CPU_PROFILE_80386,
         X86_FPU_PROFILE_NONE, &state);
 
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_CR0, VCPU_CR0_PE);
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS,
-            CORE_MACHINE_DEBUG_EFLAGS_VM | 0x00003000u |
-            CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_CF);
-        const core_machine_debug_register_patch segments = {
-            .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS),
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0, VCPU_CR0_PE);
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS,
+            X86_CORE_CPU_DEBUG_EFLAGS_VM | 0x00003000u |
+            X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_CF);
+        const x86_core_cpu_debug_register_patch segments = {
+            .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS),
             .values = {0}
         };
         failed |= core_machine_debug_patch_registers(state.machine, &segments) != LIB_STATUS_OK;
@@ -728,11 +728,11 @@ static lib_i32 fpu_interface_protected_nm(void)
     lib_u8 idt[0x100u] = { 0u };
     fpu_interface_machine state;
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_u16 frame_ip = 0u;
-    lib_i32 failed = !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !fpu_interface_prepare(X86_CORE_CPU_PROFILE_80386,
         X86_FPU_PROFILE_NONE, &state);
 
     idt[7u * 8u + 1u] = 0x01u;
@@ -751,15 +751,15 @@ static lib_i32 fpu_interface_protected_nm(void)
             &hlt, sizeof(hlt)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EIP, 0x0200u);
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EIP, 0x0200u);
         lib_status boot_status = core_machine_run(state.machine,
             (core_machine_run_budget){9u,0u}, &result);
         failed |= boot_status != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 9u;
     }
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_CR0,
-            test_core_machine_fixture_read_register(state.machine, CORE_MACHINE_DEBUG_CR0) | VCPU_CR0_EM);
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_CR0,
+            test_core_machine_fixture_read_register(state.machine, X86_CORE_CPU_DEBUG_CR0) | VCPU_CR0_EM);
         before = fpu_interface_capture(state.machine);
         failed |= core_machine_memory_write(state.machine, FPU_CODE_BASE, esc,
             sizeof(esc)) != LIB_STATUS_OK || core_machine_run(state.machine,
@@ -820,12 +820,12 @@ lib_i32 main(void)
         { 0xf0u, 0x66u, 0x67u, 0xdbu, 0xe3u }
     };
     static const lib_u8 lock_sizes[] = { 2u, 3u, 3u, 4u, 3u, 4u, 4u, 5u };
-    core_machine_cpu_profile profile;
+    x86_core_cpu_profile profile;
     lib_u8 index;
     lib_i32 failed = 0;
 
-    for (profile = CORE_MACHINE_CPU_PROFILE_8086;
-        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+    for (profile = X86_CORE_CPU_PROFILE_8086;
+        profile <= X86_CORE_CPU_PROFILE_80386; ++profile) {
         failed |= !fpu_interface_success(wait, sizeof(wait), profile,
             X86_FPU_PROFILE_NONE, 0u);
         failed |= !fpu_interface_success(fninit, sizeof(fninit), profile,
@@ -838,26 +838,26 @@ lib_i32 main(void)
         }
     }
     failed |= !fpu_interface_success(fninit, sizeof(fninit),
-        CORE_MACHINE_CPU_PROFILE_8086, X86_FPU_PROFILE_8087, 0u);
-    failed |= !fpu_interface_handoff(CORE_MACHINE_CPU_PROFILE_8086,
+        X86_CORE_CPU_PROFILE_8086, X86_FPU_PROFILE_8087, 0u);
+    failed |= !fpu_interface_handoff(X86_CORE_CPU_PROFILE_8086,
         X86_FPU_PROFILE_8087);
-    failed |= !fpu_interface_handoff(CORE_MACHINE_CPU_PROFILE_80186,
+    failed |= !fpu_interface_handoff(X86_CORE_CPU_PROFILE_80186,
         X86_FPU_PROFILE_8087);
-    failed |= !fpu_interface_handoff(CORE_MACHINE_CPU_PROFILE_80286,
+    failed |= !fpu_interface_handoff(X86_CORE_CPU_PROFILE_80286,
         X86_FPU_PROFILE_80287);
-    failed |= !fpu_interface_handoff(CORE_MACHINE_CPU_PROFILE_80386,
+    failed |= !fpu_interface_handoff(X86_CORE_CPU_PROFILE_80386,
         X86_FPU_PROFILE_80287);
-    failed |= !fpu_interface_handoff(CORE_MACHINE_CPU_PROFILE_80386,
+    failed |= !fpu_interface_handoff(X86_CORE_CPU_PROFILE_80386,
         X86_FPU_PROFILE_80387);
-    failed |= !fpu_interface_deadline(CORE_MACHINE_CPU_PROFILE_8086,
+    failed |= !fpu_interface_deadline(X86_CORE_CPU_PROFILE_8086,
         X86_FPU_PROFILE_8087);
-    failed |= !fpu_interface_deadline(CORE_MACHINE_CPU_PROFILE_80186,
+    failed |= !fpu_interface_deadline(X86_CORE_CPU_PROFILE_80186,
         X86_FPU_PROFILE_8087);
-    failed |= !fpu_interface_deadline(CORE_MACHINE_CPU_PROFILE_80286,
+    failed |= !fpu_interface_deadline(X86_CORE_CPU_PROFILE_80286,
         X86_FPU_PROFILE_80287);
-    failed |= !fpu_interface_deadline(CORE_MACHINE_CPU_PROFILE_80386,
+    failed |= !fpu_interface_deadline(X86_CORE_CPU_PROFILE_80386,
         X86_FPU_PROFILE_80287);
-    failed |= !fpu_interface_deadline(CORE_MACHINE_CPU_PROFILE_80386,
+    failed |= !fpu_interface_deadline(X86_CORE_CPU_PROFILE_80386,
         X86_FPU_PROFILE_80387);
     if (!fpu_interface_80286_esc_restart()) {
         lib_c_fprintf(lib_c_stderr, "FPU wait stage=80286-esc-restart\n");
@@ -877,20 +877,20 @@ lib_i32 main(void)
     }
     failed |= !fpu_interface_incompatible();
     failed |= !fpu_interface_success(attr_wait, sizeof(attr_wait),
-        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
+        X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
     failed |= !fpu_interface_success(attr_wait_66, sizeof(attr_wait_66),
-        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
+        X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
     failed |= !fpu_interface_success(attr_wait_67, sizeof(attr_wait_67),
-        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
+        X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
     failed |= !fpu_interface_success(attr_esc, sizeof(attr_esc),
-        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
+        X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
     failed |= !fpu_interface_success(attr_esc_66, sizeof(attr_esc_66),
-        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
+        X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
     failed |= !fpu_interface_success(attr_esc_67, sizeof(attr_esc_67),
-        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
+        X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
     failed |= !fpu_interface_mf();
-    for (profile = CORE_MACHINE_CPU_PROFILE_8086;
-        profile <= CORE_MACHINE_CPU_PROFILE_80286; ++profile) {
+    for (profile = X86_CORE_CPU_PROFILE_8086;
+        profile <= X86_CORE_CPU_PROFILE_80286; ++profile) {
         for (index = 0u; index != sizeof(legacy_attributes) /
             sizeof(legacy_attributes[0]); ++index) {
             failed |= !fpu_interface_reject(legacy_attributes[index],
@@ -900,7 +900,7 @@ lib_i32 main(void)
     for (index = 0u; index != sizeof(lock_forms) / sizeof(lock_forms[0]);
         ++index) {
         failed |= !fpu_interface_reject(lock_forms[index], lock_sizes[index],
-            CORE_MACHINE_CPU_PROFILE_80386);
+            X86_CORE_CPU_PROFILE_80386);
     }
     if (!fpu_interface_nm_delivery(wait, sizeof(wait),
         VCPU_CR0_TS | VCPU_CR0_MP) || !fpu_interface_nm_delivery(fninit,

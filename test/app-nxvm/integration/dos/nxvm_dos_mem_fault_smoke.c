@@ -8,7 +8,7 @@
 #include <windows.h>
 #undef exception_code
 
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #include "core/x86/machine_interface.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
@@ -49,9 +49,9 @@ static lib_i32 vm_dos_mem_fault_has_prompt(const vm_machine *session)
     return 0;
 }
 
-static void vm_dos_mem_fault_print(const core_machine_cpu_diagnostic *diagnostic)
+static void vm_dos_mem_fault_print(const x86_core_cpu_diagnostic *diagnostic)
 {
-    const core_machine_cpu_fault_snapshot *fault = &diagnostic->first_fault;
+    const x86_core_cpu_fault_snapshot *fault = &diagnostic->first_fault;
     lib_size index;
 
     printf("NXVM:FAULT CS:IP=%04X:%08X L%08X EX=%08X CODE=%08X BYTES=",
@@ -73,7 +73,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     DWORD result;
     const lib_u8 scan_codes[] = { 0x32u, 0x12u, 0x32u, 0x1cu };
     const lib_u8 virtual_keys[] = { 'M', 'E', 'M', VK_RETURN };
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic;
     const char *stage = "argument validation";
     lib_size index;
 

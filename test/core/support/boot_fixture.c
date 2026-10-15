@@ -25,9 +25,9 @@ test_core_boot_rom_mapping test_core_boot_rom_at(const core_machine *machine,
 }
 
 void test_core_boot_capture_write_cpu(const core_machine *machine,
-    core_machine_cpu_state *cpu)
+    x86_core_cpu_state *cpu)
 {
-    core_machine_cpu_capture_state(machine->executor_cpu_execution, cpu);
+    x86_core_cpu_capture_state(machine->executor_cpu_execution, cpu);
 }
 
 lib_status test_core_boot_read_reset(core_machine *machine, lib_u32 address,
@@ -38,7 +38,7 @@ lib_status test_core_boot_read_reset(core_machine *machine, lib_u32 address,
 }
 
 void test_core_boot_capture_diagnostic(const core_machine *machine,
-    core_machine_cpu_diagnostic *diagnostic)
+    x86_core_cpu_diagnostic *diagnostic)
 {
     core_machine_cpu_diagnostic_capture(machine, diagnostic);
 }

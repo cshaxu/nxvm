@@ -88,7 +88,7 @@ static void vm_windows31_checkpoint_submit_colon(const vm_machine *session)
 static void vm_windows31_checkpoint_report(const vm_machine *session, const char *stage)
 {
     core_machine_guest_display_frame frame;
-    core_machine_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
     lib_size row;
     lib_size column;
 

@@ -2,7 +2,7 @@
 #define CORE_MACHINE_ATTACHMENT_INTERFACE_H
 
 #include "lib/types/types_interface.h"
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 
 typedef struct core_machine core_machine;
 
@@ -92,7 +92,7 @@ typedef struct core_machine_attachment {
     /* Optional external cache. A failure leaves any already-completed board
      * effect visible; Core cancels this cycle, without inventing rollback. */
     lib_status (*cache_operation)(void *owner,
-        core_machine_cpu_cache_operation operation);
+        x86_core_cpu_cache_operation operation);
     /* Drive the cache-control pins of this admitted memory cycle. Observation
      * accesses do not invoke this; failure cancels before data publication. */
     lib_status (*memory_cache_control)(void *owner, lib_u32 address,
@@ -103,9 +103,9 @@ typedef struct core_machine_attachment {
     /* Optional external special-cycle controller, supplied as a pair. Poll
      * reports local RDY without publishing effects; complete publishes once
      * (commit=true) or releases on cancellation. Core owns the held bus cycle. */
-    lib_status (*special_cycle)(void *owner, core_machine_cpu_special_cycle cycle,
+    lib_status (*special_cycle)(void *owner, x86_core_cpu_special_cycle cycle,
         lib_bool *ready);
-    void (*complete_special_cycle)(void *owner, core_machine_cpu_special_cycle cycle,
+    void (*complete_special_cycle)(void *owner, x86_core_cpu_special_cycle cycle,
         lib_bool commit);
     void *context;
 } core_machine_attachment;

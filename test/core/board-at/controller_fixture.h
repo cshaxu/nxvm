@@ -11,6 +11,6 @@ lib_bool test_kbc_bat_ready(const t_kbc *kbc);
 void test_kbc_initialize_pic(core_machine *machine);
 lib_bool test_kbc_core_construction(t_kbc *kbc);
 lib_status test_kbc_core_reset_entry(core_machine *machine,
-    const core_machine_debug_register_patch *entry);
+    const x86_core_cpu_debug_register_patch *entry);
 lib_i32 test_kbc_board_cpu_reset_irq1(void);
 #endif

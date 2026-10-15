@@ -47,7 +47,7 @@ static lib_i32 neutral_time_publication(void)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const core_machine_execution_provider provider = {neutral_time_reset, neutral_time_advance};
     core_machine *machine = LIB_NULL;
@@ -101,7 +101,7 @@ static lib_i32 neutral_port_routes(void)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     neutral_probe first = {.port_value = 0x0fu}, second = {.port_value = 0xf0u};
     const core_machine_port_route initial = {
@@ -176,7 +176,7 @@ static lib_status bank_write(void *owner, lib_u16 port, lib_u32 value)
 static lib_i32 neutral_port_bank(void)
 {
     const core_machine_executor_config config = {.memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086};
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086};
     bank_probe probe = {.values = {0x12u, 0x34u}};
     const core_machine_port_route route = {.address = 0x2000u, .read = bank_read,
         .write = bank_write, .owner = &probe, .byte_lane_end = 0x2002u};
@@ -206,7 +206,7 @@ static lib_i32 neutral_memory_aliases(void)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const core_machine_memory_alias_config aliases[2] = {
         {0x20000u, 0x100u, 16u}, {0x30000u, 0x100u, 0u}
@@ -265,7 +265,7 @@ static lib_i32 neutral_ready_levels(void)
 {
     core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const lib_i32 levels[] = {0, 1, -3};
     core_machine *machine = LIB_NULL;
@@ -312,7 +312,7 @@ static lib_i32 neutral_timing_declarations(void)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     core_machine_timing_declaration declarations[CORE_MACHINE_TIMING_CAPABILITY_COUNT];
     core_machine_timing_declaration observed;
@@ -430,7 +430,7 @@ static lib_i32 neutral_firmware_alias_contract(void)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const core_machine_firmware_provider firmware = {neutral_firmware_configure, neutral_firmware_reset, LIB_NULL};
     const core_machine_port_provider ports = {neutral_port_read, neutral_port_write};
@@ -466,7 +466,7 @@ static lib_i32 neutral_rom_windows(void)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const lib_u8 image[4] = {0x11u, 0x22u, 0x33u, 0x44u};
     core_machine *machine = LIB_NULL;
@@ -522,7 +522,7 @@ static lib_i32 neutral_construction_rejects_invalid_input(void)
     core_machine sentinel = {0};
     core_machine *machine = &sentinel;
     const core_machine_executor_config invalid[] = {
-        {.cpu_profile = (core_machine_cpu_profile)-1},
+        {.cpu_profile = (x86_core_cpu_profile)-1},
         {.provider_clock = {1u, 0u}},
         {.time_axis = {CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 0u}}
     };
@@ -544,7 +544,7 @@ lib_i32 main(void)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .ticks_per_instruction = 1u
     };
     const lib_u8 code[16] = {0xb8u, 0x34u, 0x12u, 0x90u, 0xf4u};
@@ -588,12 +588,12 @@ lib_i32 main(void)
         byte != code[0]) goto done;
     if (core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
         result.executed != 1u ||
-        core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX,
+        core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EAX,
             &value) != LIB_STATUS_OK || value != 0x1234u ||
-        core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EAX,
+        core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EAX,
             0x4321u) != LIB_STATUS_OK ||
         core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
-        core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX,
+        core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EAX,
             &value) != LIB_STATUS_OK || value != 0x4321u ||
         core_machine_debug_continue(machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||

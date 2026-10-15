@@ -41,33 +41,33 @@ static lib_i32 port_strings_board_prepare(core_machine **out_machine,
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const core_machine_port_provider provider = {
         port_strings_board_read, port_strings_board_write
     };
-    const core_machine_debug_register_patch patch = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    const x86_core_cpu_debug_register_patch patch = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_DS] = 0x2000u,
-            [CORE_MACHINE_DEBUG_ES] = 0x3000u,
-            [CORE_MACHINE_DEBUG_ESP] = 0x8000u,
-            [CORE_MACHINE_DEBUG_EDX] = 0x778800e0u,
-            [CORE_MACHINE_DEBUG_ESI] = 0x10u,
-            [CORE_MACHINE_DEBUG_EDI] = 0x20u,
-            [CORE_MACHINE_DEBUG_ECX] = 0x11220003u,
-            [CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_IF
+            [X86_CORE_CPU_DEBUG_DS] = 0x2000u,
+            [X86_CORE_CPU_DEBUG_ES] = 0x3000u,
+            [X86_CORE_CPU_DEBUG_ESP] = 0x8000u,
+            [X86_CORE_CPU_DEBUG_EDX] = 0x778800e0u,
+            [X86_CORE_CPU_DEBUG_ESI] = 0x10u,
+            [X86_CORE_CPU_DEBUG_EDI] = 0x20u,
+            [X86_CORE_CPU_DEBUG_ECX] = 0x11220003u,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF
         }
     };
     core_machine *machine = LIB_NULL;
@@ -104,7 +104,7 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
     core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source *irq = LIB_NULL;
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u16 offset = 0x100u, segment = 0u, frame_ip = 0xffffu;
     lib_u8 observed = 0u;
     lib_i32 failed = !port_strings_board_prepare(&machine, &probe, &board);
@@ -131,7 +131,7 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
             LIB_STATUS_OK || result.reason !=
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             core_machine_debug_read_memory(machine,
                 after.ss.base + (lib_u16)after.esp, &frame_ip,
                 sizeof(frame_ip)) != LIB_STATUS_OK ||
@@ -182,21 +182,21 @@ static lib_i32 port_strings_board_protected(lib_bool input, lib_bool repeat)
     const lib_u8 destination[] = {0xa5u,0xb6u};
     port_strings_board_probe probe = {0};
     core_machine *machine = LIB_NULL;
-    core_machine_debug_register_patch entry = {0};
-    core_machine_debug_register_patch patch = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_register_patch entry = {0};
+    x86_core_cpu_debug_register_patch patch = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     core_machine_run_result result = {0};
     lib_i32 failed = !port_strings_board_prepare(&machine, &probe, LIB_NULL);
 
     gdt[input ? 24u : 16u] = repeat ? 0x10u : 0x0fu;
     gdt[input ? 25u : 17u] = 0u;
     if (!failed) {
-        entry.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP);
+        entry.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP);
         failed = core_machine_debug_patch_registers(machine, &entry) !=
             LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x100u, pointer,
@@ -212,16 +212,16 @@ static lib_i32 port_strings_board_protected(lib_bool input, lib_bool repeat)
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 11u;
     }
     if (!failed) {
-        patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS);
-        patch.values[CORE_MACHINE_DEBUG_ECX] = 0x11220003u;
-        patch.values[CORE_MACHINE_DEBUG_EDX] = 0x00e0u;
-        patch.values[CORE_MACHINE_DEBUG_ESI] = 0x10u;
-        patch.values[CORE_MACHINE_DEBUG_EDI] = 0x10u;
-        patch.values[CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_IF;
+        patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS);
+        patch.values[X86_CORE_CPU_DEBUG_ECX] = 0x11220003u;
+        patch.values[X86_CORE_CPU_DEBUG_EDX] = 0x00e0u;
+        patch.values[X86_CORE_CPU_DEBUG_ESI] = 0x10u;
+        patch.values[X86_CORE_CPU_DEBUG_EDI] = 0x10u;
+        patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF;
         probe.input = source[0];
         failed = core_machine_debug_patch_registers(machine, &patch) !=
             LIB_STATUS_OK ||
@@ -236,7 +236,7 @@ static lib_i32 port_strings_board_protected(lib_bool input, lib_bool repeat)
             &result), &result) ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
     }
     if (!failed)
         failed = diagnostic.first_fault.valid ||
@@ -247,7 +247,7 @@ static lib_i32 port_strings_board_protected(lib_bool input, lib_bool repeat)
             after.ecx != (repeat ? 0x11220002u : 0x11220003u) ||
             after.esi != (repeat && !input ? 0x11u : 0x10u) ||
             after.edi != (repeat && input ? 0x11u : 0x10u) ||
-            after.eflags != CORE_MACHINE_DEBUG_EFLAGS_IF ||
+            after.eflags != X86_CORE_CPU_DEBUG_EFLAGS_IF ||
             probe.reads != (repeat && input ? 1u : 0u) ||
             probe.writes != (repeat && !input ? 1u : 0u) ||
             (repeat && !input && probe.last_write != source[0]);

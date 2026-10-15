@@ -9,7 +9,7 @@
 #include "machine_cli_sti_interrupt_smoke.c"
 #undef main
 
-static lib_i32 iret_sregs_same(const core_machine_debug_cpu_snapshot *before, const core_machine_debug_cpu_snapshot *after)
+static lib_i32 iret_sregs_same(const x86_core_cpu_debug_cpu_snapshot *before, const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return lib_memory_compare(&before->cs, &after->cs,
             sizeof(before->cs)) == 0 &&
@@ -27,26 +27,26 @@ static lib_i32 iret_sregs_same(const core_machine_debug_cpu_snapshot *before, co
 
 static void iret_seed(cli_sti_machine *state, lib_u32 flags)
 {
-    const core_machine_debug_register_patch seed = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDI) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    const x86_core_cpu_debug_register_patch seed = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDI) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_EAX] = 0xaabbccddu,
-            [CORE_MACHINE_DEBUG_ECX] = 0x11223344u,
-            [CORE_MACHINE_DEBUG_EDX] = 0x55667788u,
-            [CORE_MACHINE_DEBUG_EBX] = 0x99aabbccu,
-            [CORE_MACHINE_DEBUG_ESP] = 0x18000u,
-            [CORE_MACHINE_DEBUG_EBP] = 0x120u,
-            [CORE_MACHINE_DEBUG_ESI] = 0x10u,
-            [CORE_MACHINE_DEBUG_EDI] = 0x20u,
-            [CORE_MACHINE_DEBUG_EFLAGS] = flags
+            [X86_CORE_CPU_DEBUG_EAX] = 0xaabbccddu,
+            [X86_CORE_CPU_DEBUG_ECX] = 0x11223344u,
+            [X86_CORE_CPU_DEBUG_EDX] = 0x55667788u,
+            [X86_CORE_CPU_DEBUG_EBX] = 0x99aabbccu,
+            [X86_CORE_CPU_DEBUG_ESP] = 0x18000u,
+            [X86_CORE_CPU_DEBUG_EBP] = 0x120u,
+            [X86_CORE_CPU_DEBUG_ESI] = 0x10u,
+            [X86_CORE_CPU_DEBUG_EDI] = 0x20u,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = flags
         }
     };
     if (core_machine_debug_patch_registers(state->machine, &seed) != LIB_STATUS_OK)
@@ -54,20 +54,20 @@ static void iret_seed(cli_sti_machine *state, lib_u32 flags)
 }
 
 static lib_u32 iret_real_flags_load(
-    core_machine_cpu_profile profile, lib_u32 flags)
+    x86_core_cpu_profile profile, lib_u32 flags)
 {
-    const lib_u16 known_mask = profile < CORE_MACHINE_CPU_PROFILE_80286 ?
+    const lib_u16 known_mask = profile < X86_CORE_CPU_PROFILE_80286 ?
         0x0fd5u : 0x7fd5u;
 
     return (flags & known_mask) | 0x02u;
 }
 
-static lib_i32 iret_real_case(core_machine_cpu_profile profile,
+static lib_i32 iret_real_case(x86_core_cpu_profile profile,
     const lib_u8 *prefix, lib_u8 prefix_bytes, lib_u8 wrap_stack)
 {
     static const lib_u8 hlt = 0xf4u;
-    const lib_u32 flags = CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_PF |
-        CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_DF | 0x3000u | CORE_MACHINE_DEBUG_EFLAGS_NT |
+    const lib_u32 flags = X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_PF |
+        X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_DF | 0x3000u | X86_CORE_CPU_DEBUG_EFLAGS_NT |
         0x8002u;
     const lib_u32 expected_flags = iret_real_flags_load(profile, flags);
     const lib_i32 wide = prefix_bytes != 0u && prefix[0] == 0x66u;
@@ -75,9 +75,9 @@ static lib_i32 iret_real_case(core_machine_cpu_profile profile,
     const lib_u32 code_offset = wrap_stack ? 0x0100u : 0u;
     cli_sti_machine state;
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_u8 code[3] = { 0u, 0u, 0u };
     lib_u16 frame16[] = { return_ip, 0x0000u, (lib_u16)flags };
     lib_u32 frame32[] = { return_ip, 0x00000000u, flags };
@@ -116,7 +116,7 @@ static lib_i32 iret_real_case(core_machine_cpu_profile profile,
     }
     if (!failed) {
         iret_seed(&state, flags);
-        if (wrap_stack) test_core_machine_fixture_write_word(state.machine, CORE_MACHINE_DEBUG_ESP, 0xfffeu);
+        if (wrap_stack) test_core_machine_fixture_write_word(state.machine, X86_CORE_CPU_DEBUG_ESP, 0xfffeu);
         before = cli_sti_capture(state.machine);
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK;
@@ -126,7 +126,7 @@ static lib_i32 iret_real_case(core_machine_cpu_profile profile,
         if (!failed) failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         if (!failed) failed |= diagnostic.first_fault.valid;
         failed |= after.eip != return_ip + 1u;
-        core_machine_cpu_state cpu_state;
+        x86_core_cpu_state cpu_state;
         failed |= core_machine_get_cpu_state(state.machine, &cpu_state) != LIB_STATUS_OK ||
             !cpu_state.halted;
         failed |= wrap_stack ? (lib_u16)after.esp != 0x0004u :
@@ -155,12 +155,12 @@ static lib_i32 iret_real_case(core_machine_cpu_profile profile,
 
 static lib_i32 iret_test_real(void)
 {
-    static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086,
-        CORE_MACHINE_CPU_PROFILE_8088,
-        CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_8086,
+        X86_CORE_CPU_PROFILE_8088,
+        X86_CORE_CPU_PROFILE_80186,
+        X86_CORE_CPU_PROFILE_80286,
+        X86_CORE_CPU_PROFILE_80386
     };
     static const lib_u8 prefixes[][2] = {
         { 0x66u, 0u },
@@ -184,7 +184,7 @@ static lib_i32 iret_test_real(void)
         ++profile) {
         lib_u8 bytes = profile == 2u ? 2u : 1u;
 
-        if (!iret_real_case(CORE_MACHINE_CPU_PROFILE_80386,
+        if (!iret_real_case(X86_CORE_CPU_PROFILE_80386,
                 prefixes[profile], bytes, LIB_FALSE))
             return 0;
     }
@@ -204,11 +204,11 @@ static lib_i32 iret_test_pic(void)
         cli_sti_machine state;
         core_machine_pic_irq_source *source = LIB_NULL;
         core_machine_run_result result;
-        core_machine_debug_cpu_snapshot after;
+        x86_core_cpu_debug_cpu_snapshot after;
         lib_u16 frame[] = { 0x0001u, 0x0000u,
-            (lib_u16)(restore_if ? CORE_MACHINE_DEBUG_EFLAGS_IF : 0u) };
+            (lib_u16)(restore_if ? X86_CORE_CPU_DEBUG_EFLAGS_IF : 0u) };
         lib_u16 frame_ip = 0u;
-        lib_i32 failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !cli_sti_prepare(X86_CORE_CPU_PROFILE_80386,
             &state, LIB_FALSE);
 
         if (!failed) {
@@ -226,7 +226,7 @@ static lib_i32 iret_test_pic(void)
                 sizeof(hlt)) != LIB_STATUS_OK;
         }
         if (!failed) {
-            iret_seed(&state, CORE_MACHINE_DEBUG_EFLAGS_CF);
+            iret_seed(&state, X86_CORE_CPU_DEBUG_EFLAGS_CF);
             lib_memory_set(&source, 0, sizeof(source));
             test_pic_program_vector(state.board->shared_pic_master, (lib_u8)vector);
             test_pic_bind_source(&source,
@@ -240,7 +240,7 @@ static lib_i32 iret_test_pic(void)
             if (restore_if) {
                 if (!failed) failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                 failed |= after.eip != offset + 1u;
-                core_machine_cpu_state cpu_state;
+                x86_core_cpu_state cpu_state;
                 failed |= core_machine_get_cpu_state(state.machine, &cpu_state) != LIB_STATUS_OK ||
                     !cpu_state.halted;
                 failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu),

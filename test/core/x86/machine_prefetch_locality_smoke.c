@@ -6,7 +6,7 @@
 #include "core/x86/transaction.h"
 #include "core/x86/attachment_interface.h"
 
-static core_machine_cpu_execution_context *prefetch_observed_cpu;
+static x86_core_cpu_execution_context *prefetch_observed_cpu;
 static lib_u32 prefetch_grants;
 
 static lib_status prefetch_reset_mapping(core_machine *machine)
@@ -33,20 +33,20 @@ static void prefetch_finalize(void *owner)
 
 
 /* The test-built scheduler calls this spy; all CPU behavior remains real. */
-void test_cpu_prefetch_grant(core_machine_cpu_execution_context *cpu)
+void test_cpu_prefetch_grant(x86_core_cpu_execution_context *cpu)
 {
     if (cpu == prefetch_observed_cpu) ++prefetch_grants;
-    core_machine_cpu_execution_advance_prefetch_reservation(cpu);
+    x86_core_cpu_execution_advance_prefetch_reservation(cpu);
 }
 
 static void external_cycle_begin_and_commit(
-    core_machine_cpu_external_cycle_provider provider, void *context,
+    x86_core_cpu_external_cycle_provider provider, void *context,
     lib_u32 physical, lib_u8 bytes, lib_u8 write,
-    core_machine_cpu_memory_access_provenance provenance)
+    x86_core_cpu_memory_access_provenance provenance)
 {
-    provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical,
+    provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical,
         bytes, write, provenance);
-    provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical,
+    provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical,
         bytes, write, provenance);
 }
 
@@ -61,7 +61,7 @@ static lib_i32 run_halt(const core_machine_external_cycle_timing *timing,
     core_machine_run_result result;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = *timing;
     failed |= core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
     failed |= prefetch_reset_mapping(machine) != LIB_STATUS_OK;
@@ -86,10 +86,10 @@ static lib_i32 run_halt_with_port_wait(lib_u64 *out_ticks)
     core_machine_run_result result;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     config.transaction_contract.external_access_wait_windows[0] =
         (core_machine_external_access_wait_window) {
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x00e0u, 0x00e0u, 1u};
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x00e0u, 0x00e0u, 1u};
     failed |= core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
     failed |= prefetch_reset_mapping(machine) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
@@ -114,7 +114,7 @@ static lib_i32 run_write(const core_machine_external_cycle_timing *timing,
     lib_u8 value = 0u;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = *timing;
     failed |= core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
     failed |= prefetch_reset_mapping(machine) != LIB_STATUS_OK;
@@ -141,7 +141,7 @@ static lib_i32 run_read(const core_machine_external_cycle_timing *timing,
     core_machine_run_result result;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = *timing;
     failed |= core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
     failed |= prefetch_reset_mapping(machine) != LIB_STATUS_OK;
@@ -163,7 +163,7 @@ static lib_i32 external_cycle_observer_contract(void)
         2u, 1u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL, 0u, 0u};
     core_machine_executor_config config = {0};
     core_machine *machine = LIB_NULL;
-    core_machine_cpu_external_cycle_provider provider;
+    x86_core_cpu_external_cycle_provider provider;
     void *context;
     lib_i32 failed = 0;
 
@@ -175,35 +175,35 @@ static lib_i32 external_cycle_observer_contract(void)
     context = machine;
     failed |= provider == LIB_NULL;
     if (!failed) {
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0u, 1u,
-            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_OVERLAP_DECLARE,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 1u, 1u, LIB_FALSE,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0u, 1u,
-            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0u, 1u,
+            LIB_FALSE, X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_OVERLAP_DECLARE,
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 1u, 1u, LIB_FALSE,
+            X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0u, 1u,
+            LIB_FALSE, X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
         external_cycle_begin_and_commit(provider, context, 1u, 1u, LIB_FALSE,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
+            X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
         failed |= !machine->external_cycle_page_valid ||
             machine->external_cycle_round_ticks != 3u;
         machine->external_cycle_round_ticks = 0u;
         machine->external_cycle_page_valid = LIB_FALSE;
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x800u, 4u,
-            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x800u, 4u,
-            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x800u, 4u,
+            LIB_FALSE, X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL, X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x800u, 4u,
+            LIB_FALSE, X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
         failed |= machine->external_cycle_page_valid ||
             machine->external_cycle_pending_valid ||
             machine->external_cycle_round_ticks != 0u;
         external_cycle_begin_and_commit(provider, context, 0x800u, 4u, LIB_FALSE,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+            X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
         external_cycle_begin_and_commit(provider, context, 0x804u, 4u, LIB_TRUE,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE);
+            X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE);
         failed |= !machine->external_cycle_page_valid ||
             machine->external_cycle_round_ticks != 4u;
         machine->external_cycle_round_ticks = 0u;
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x808u, 4u,
-            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x808u, 4u,
+            LIB_FALSE, X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
         failed |= core_machine_transaction_hold_request(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != LIB_STATUS_OK;
         failed |= core_machine_transaction_hold_acknowledge(&machine->transaction,
@@ -213,7 +213,7 @@ static lib_i32 external_cycle_observer_contract(void)
         core_machine_transaction_hold_release(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA);
         external_cycle_begin_and_commit(provider, context, 0x808u, 4u, LIB_FALSE,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+            X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
         failed |= !machine->external_cycle_page_valid ||
             machine->external_cycle_round_ticks != 2u;
         failed |= core_machine_reset(machine) != LIB_STATUS_OK;
@@ -239,14 +239,14 @@ static lib_i32 refresh_external_cycle_contract(void)
 
     if (!failed) {
         external_cycle_begin_and_commit(core_machine_cpu_external_cycle_trace, machine,
-            0x800u, 4u, LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+            0x800u, 4u, LIB_FALSE, X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
         failed |= !machine->external_cycle_page_valid ||
             machine->external_cycle_round_ticks != 2u;
         machine->external_cycle_round_ticks = 0u;
         core_machine_cpu_bus_refresh_pulse(machine);
         failed |= machine->external_cycle_page_valid || machine->external_cycle_pending_valid;
         external_cycle_begin_and_commit(core_machine_cpu_external_cycle_trace, machine,
-            0x804u, 4u, LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+            0x804u, 4u, LIB_FALSE, X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
         failed |= !machine->external_cycle_page_valid ||
             machine->external_cycle_round_ticks != 2u;
         failed |= core_machine_reset(machine) != LIB_STATUS_OK;
@@ -268,7 +268,7 @@ static lib_i32 retirement_wait_contract(void)
     core_machine_run_result result;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = timing;
     config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE;
     failed |= core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
@@ -312,7 +312,7 @@ static lib_i32 retirement_wait_contract(void)
     return !failed;
 }
 
-static lib_i32 faulted_external_wait_contract(core_machine_cpu_profile profile)
+static lib_i32 faulted_external_wait_contract(x86_core_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x67u, 0xa4u, 0xf4u};
     static const lib_u8 source = 0x5au;
@@ -321,30 +321,30 @@ static lib_i32 faulted_external_wait_contract(core_machine_cpu_profile profile)
     core_machine_run_result result;
     lib_status status;
     lib_i32 failed = 0;
-    const core_machine_instruction_timing instruction_timing = {.base_ticks = 1u};
-    const lib_bool sx = profile == CORE_MACHINE_CPU_PROFILE_80486SX;
+    const x86_core_cpu_instruction_timing instruction_timing = {.base_ticks = 1u};
+    const lib_bool sx = profile == X86_CORE_CPU_PROFILE_80486SX;
     /* SX preflights both MOVS operands before its data read; its preceding
      * committed fetch, rather than an absent data cycle, supplies the wait. */
     const lib_u32 wait_address = sx ? 0xfffffff0u : 0x100u;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     config.transaction_contract.external_access_wait_windows[0] =
         (core_machine_external_access_wait_window) {
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, wait_address, wait_address, 1u};
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, wait_address, wait_address, 1u};
     failed |= core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
     failed |= prefetch_reset_mapping(machine) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     /* Internal CPU/Executor timing proof; production SX admission stays closed. */
-    core_machine_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
+    x86_core_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
         profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &instruction_timing);
     failed |= core_machine_memory_write(machine, 0x000ffff0u, code, sizeof(code)) !=
         LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0x100u, &source, 1u) != LIB_STATUS_OK;
     machine->maximum_instruction_ticks = 1u;
-    failed |= core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_ESI, 0x100u) !=
+    failed |= core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_ESI, 0x100u) !=
         LIB_STATUS_OK;
-    failed |= core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EDI, 0x00010000u) !=
+    failed |= core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_EDI, 0x00010000u) !=
         LIB_STATUS_OK;
     status = core_machine_run(machine, (core_machine_run_budget){0u, 1u},
         &result);
@@ -378,13 +378,13 @@ static lib_i32 cecg_aperture_wait_contract(void)
 {
     core_machine_executor_config config = {0};
     core_machine *machine = LIB_NULL;
-    core_machine_cpu_external_cycle_provider provider;
+    x86_core_cpu_external_cycle_provider provider;
     void *context;
     lib_i32 failed = 0;
 
     config.transaction_contract.external_access_wait_windows[0] =
         (core_machine_external_access_wait_window) {
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0000u,
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0000u,
             0x000affffu, 1u};
     failed |= core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
@@ -393,14 +393,14 @@ static lib_i32 cecg_aperture_wait_contract(void)
     context = machine;
     if (!failed) {
         external_cycle_begin_and_commit(provider, context, 0x000a0000u, 1u,
-            LIB_TRUE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            LIB_TRUE, X86_CORE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 1u;
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0001u, 1u,
-            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0001u, 1u,
-            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0001u, 1u,
+            LIB_FALSE, X86_CORE_CPU_MEMORY_ACCESS_DATA);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0001u, 1u,
+            LIB_FALSE, X86_CORE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 1u;
         failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
             machine->external_cycle_round_ticks != 0u;
@@ -412,7 +412,7 @@ static lib_i32 d4_cecg_memory_class_contract(void)
 {
     core_machine_executor_config config = {0};
     core_machine *machine = LIB_NULL;
-    core_machine_cpu_external_cycle_provider provider;
+    x86_core_cpu_external_cycle_provider provider;
     void *context;
     lib_i32 failed = 0;
 
@@ -426,11 +426,11 @@ static lib_i32 d4_cecg_memory_class_contract(void)
     context = machine;
     if (!failed) {
         external_cycle_begin_and_commit(provider, context, 0x0009ff00u, 1u,
-            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            LIB_FALSE, X86_CORE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 2u;
         machine->external_cycle_round_ticks = 0u;
         external_cycle_begin_and_commit(provider, context, 0x000a0000u, 1u,
-            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            LIB_FALSE, X86_CORE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 0u;
     }
     core_machine_destroy(machine);
@@ -440,13 +440,13 @@ static lib_i32 cecg_port_wait_contract(void)
 {
     core_machine_executor_config config = {0};
     core_machine *machine = LIB_NULL;
-    core_machine_cpu_external_cycle_provider provider;
+    x86_core_cpu_external_cycle_provider provider;
     void *context;
     lib_i32 failed = 0;
 
     config.transaction_contract.external_access_wait_windows[0] =
         (core_machine_external_access_wait_window) {
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 0x03cfu, 1u};
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 0x03cfu, 1u};
     failed |= core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
@@ -454,27 +454,27 @@ static lib_i32 cecg_port_wait_contract(void)
     context = machine;
     failed |= provider == LIB_NULL;
     if (!failed) {
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 1u, LIB_TRUE,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 1u, LIB_TRUE,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 1u, LIB_TRUE,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 1u, LIB_TRUE,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 1u ||
             machine->external_cycle_pending_valid;
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03d0u, 1u, LIB_FALSE,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03d0u, 1u, LIB_FALSE,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03d0u, 1u, LIB_FALSE,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03d0u, 1u, LIB_FALSE,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 1u;
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c1u, 1u, LIB_FALSE,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
-        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c1u, 1u, LIB_FALSE,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c1u, 1u, LIB_FALSE,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA);
+        provider(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
+            X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c1u, 1u, LIB_FALSE,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 1u ||
             machine->external_cycle_pending_valid;
         failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
@@ -499,7 +499,7 @@ static lib_i32 prefetch_grant_contract(void)
     };
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = timing;
     config.transaction_contract.cpu_prefetch_reservation_enabled = LIB_TRUE;
     failed |= core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
@@ -566,8 +566,8 @@ lib_i32 main(void)
     failed |= !external_cycle_observer_contract();
     failed |= !refresh_external_cycle_contract();
     failed |= !retirement_wait_contract();
-    failed |= !faulted_external_wait_contract(CORE_MACHINE_CPU_PROFILE_80386);
-    failed |= !faulted_external_wait_contract(CORE_MACHINE_CPU_PROFILE_80486SX);
+    failed |= !faulted_external_wait_contract(X86_CORE_CPU_PROFILE_80386);
+    failed |= !faulted_external_wait_contract(X86_CORE_CPU_PROFILE_80486SX);
     failed |= !prefetch_grant_contract();
     failed |= !cecg_port_wait_contract();
     failed |= !d4_cecg_memory_class_contract();

@@ -2,7 +2,7 @@
 #define TEST_PROTECTED_16_BOOTSTRAP_FIXTURE_H
 
 #include "lib/types/types_interface.h"
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #include "core/x86/debug_interface.h"
 #include "core/board-base/machine_board_interface.h"
 
@@ -52,11 +52,11 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_read(const test_protec
 }
 
 static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_snapshot(const test_protected_16_machine *state,
-    core_machine_debug_cpu_snapshot *out_snapshot)
+    x86_core_cpu_debug_cpu_snapshot *out_snapshot)
 {
     return state != LIB_NULL && state->machine != LIB_NULL && out_snapshot != LIB_NULL &&
         core_machine_debug_capture_cpu_snapshot(state->machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, out_snapshot) == LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, out_snapshot) == LIB_STATUS_OK;
 }
 
 static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_install_gate(test_protected_16_machine *state,
@@ -76,7 +76,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_install_gate(test_prot
 
 /* Enter protected ring 0 through guest instructions only. */
 static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_parity(
-    test_protected_16_machine *state, core_machine_cpu_profile profile,
+    test_protected_16_machine *state, x86_core_cpu_profile profile,
     lib_i32 planar_parity, lib_i32 default32)
 {
     static const lib_u8 reset_jump[] = {0xeau,0u,0u,0u,0u};
@@ -111,7 +111,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_pa
         .refresh_status_toggle_ticks = 0u
     };
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u8 gdt[sizeof(source_gdt)];
 
     if (state == LIB_NULL) return 0;
@@ -123,7 +123,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_pa
         gdt[30u] = 0x40u;
         gdt[38u] = 0x40u;
     }
-    if (profile == CORE_MACHINE_CPU_PROFILE_80286) {
+    if (profile == X86_CORE_CPU_PROFILE_80286) {
         gdt[40u] = 0x2bu;
         gdt[45u] = 0x81u;
     }
@@ -161,12 +161,12 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_pa
 
 #define test_protected_32_prepare(state) \
     test_protected_16_prepare_with_planar_parity((state), \
-        CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, LIB_TRUE)
+        X86_CORE_CPU_PROFILE_80386, LIB_FALSE, LIB_TRUE)
 
 /* The old fixtures wrote CPL 3 and TR caches directly.  This setup reaches
  * the same architectural state through LTR and IRET before exposing user code. */
 static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_enter_user_with_tss(
-    test_protected_16_machine *state, core_machine_cpu_profile profile,
+    test_protected_16_machine *state, x86_core_cpu_profile profile,
     lib_i32 tss32)
 {
     static const lib_u8 tss16[] = {
@@ -185,12 +185,12 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_enter_user_with_tss(
     };
     static const lib_u8 user_loop[] = {0xebu,0xfeu};
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u8 tss_descriptor[] = {
         0x2bu,0u,0u,0x05u,0u,0x81u,0u,0u
     };
 
-    if (profile == CORE_MACHINE_CPU_PROFILE_80286) tss32 = LIB_FALSE;
+    if (profile == X86_CORE_CPU_PROFILE_80286) tss32 = LIB_FALSE;
     if (tss32) {
         tss_descriptor[0] = 0x67u;
         tss_descriptor[5] = 0x89u;
@@ -233,7 +233,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_32_enter_user(
         0x67u,0u,0u,0x05u,0u,0x89u,0u,0u
     };
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
 
     return state != LIB_NULL && state->machine != LIB_NULL &&
         test_protected_16_write(state, TEST_PROTECTED_16_GDT_BASE + 40u,
@@ -255,7 +255,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_32_enter_user(
 
 #define test_protected_16_enter_user(state, profile) \
     test_protected_16_enter_user_with_tss((state), (profile), \
-        (profile) == CORE_MACHINE_CPU_PROFILE_80386)
+        (profile) == X86_CORE_CPU_PROFILE_80386)
 
 static void TEST_PROTECTED_16_UNUSED test_protected_16_destroy(test_protected_16_machine *state)
 {

@@ -200,8 +200,8 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
     const boot_trace_probe *trace_probe)
 {
     core_machine_guest_display_frame frame;
-    core_machine_cpu_state cpu;
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_state cpu;
+    x86_core_cpu_diagnostic diagnostic;
     core_machine_observation observation;
     core_machine_time_observation time_observation;
     char line[81];
@@ -354,11 +354,11 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
 #endif
         }
         {
-            const core_machine_debug_register registers[] = {
-                CORE_MACHINE_DEBUG_EAX, CORE_MACHINE_DEBUG_EBX,
-                CORE_MACHINE_DEBUG_ECX, CORE_MACHINE_DEBUG_EDX,
-                CORE_MACHINE_DEBUG_ESI, CORE_MACHINE_DEBUG_EDI,
-                CORE_MACHINE_DEBUG_EBP
+            const x86_core_cpu_debug_register registers[] = {
+                X86_CORE_CPU_DEBUG_EAX, X86_CORE_CPU_DEBUG_EBX,
+                X86_CORE_CPU_DEBUG_ECX, X86_CORE_CPU_DEBUG_EDX,
+                X86_CORE_CPU_DEBUG_ESI, X86_CORE_CPU_DEBUG_EDI,
+                X86_CORE_CPU_DEBUG_EBP
             };
             lib_u32 values[7];
             lib_size captured;
@@ -388,7 +388,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
         }
         if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
                 LIB_STATUS_OK && diagnostic.recent_count != 0u) {
-            const core_machine_cpu_execution_point *point =
+            const x86_core_cpu_execution_point *point =
                 &diagnostic.recent[diagnostic.recent_count - 1u];
             printf("NXVM:INI-BOOT:%s:RECENT:CS=%04X:EIP=%08X:bytes=%02X/%02X/%02X\n",
                 name, point->cs, point->eip, point->bytes[0u], point->bytes[1u],

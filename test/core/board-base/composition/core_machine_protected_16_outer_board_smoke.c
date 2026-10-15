@@ -1,16 +1,16 @@
 #include "lib/types/file.h"
 #include "support/protected_16_bootstrap_fixture.h"
 #include "core/board-base/machine_board_interface.h"
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #define S47_HANDLER 0x0320u
 
 static lib_i32 s47_patch_eflags(test_protected_16_machine *state,
     lib_u32 eflags)
 {
-    core_machine_debug_register_patch patch = {0};
+    x86_core_cpu_debug_register_patch patch = {0};
 
-    patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS);
-    patch.values[CORE_MACHINE_DEBUG_EFLAGS] = eflags;
+    patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS);
+    patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = eflags;
     return core_machine_debug_patch_registers(state->machine, &patch) ==
         LIB_STATUS_OK;
 }
@@ -25,13 +25,13 @@ static lib_i32 s47_install_handler(test_protected_16_machine *state,
         TEST_PROTECTED_16_CODE_BASE + S47_HANDLER, hlt, sizeof(hlt));
 }
 
-static lib_i32 s47_outer_nmi(core_machine_cpu_profile profile,
+static lib_i32 s47_outer_nmi(x86_core_cpu_profile profile,
     lib_i32 tss32, lib_u8 type)
 {
     static const lib_u8 nop[] = {0x90u};
     test_protected_16_machine state;
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     core_machine_planar_parity_observation parity = {0};
     lib_u16 frame[5u] = {0};
     lib_i32 failed = !test_protected_16_prepare_with_planar_parity(&state,
@@ -42,7 +42,7 @@ static lib_i32 s47_outer_nmi(core_machine_cpu_profile profile,
         failed = !s47_install_handler(&state, 0x02u, type) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE +
                 0x0100u, nop, sizeof(nop)) || !s47_patch_eflags(&state,
-                CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF) ||
+                X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_IF) ||
             core_machine_report_planar_parity_fault(state.board) !=
                 LIB_STATUS_OK || core_machine_get_planar_parity_observation(
                 state.board, &parity) != LIB_STATUS_OK || !parity.nmi_signaled ||
@@ -54,13 +54,13 @@ static lib_i32 s47_outer_nmi(core_machine_cpu_profile profile,
             snapshot.ss.selector != 0x0010u || snapshot.ss.dpl != 0u ||
             snapshot.eip != S47_HANDLER + 1u || snapshot.esp !=
                 TEST_PROTECTED_16_STACK_TOP - sizeof(frame) ||
-            (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_CF) == 0u ||
-            ((snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_IF) != 0u) !=
+            (snapshot.eflags & X86_CORE_CPU_DEBUG_EFLAGS_CF) == 0u ||
+            ((snapshot.eflags & X86_CORE_CPU_DEBUG_EFLAGS_IF) != 0u) !=
                 (type == TEST_PROTECTED_TRAP_GATE_16) ||
             !test_protected_16_read(&state, TEST_PROTECTED_16_STACK_TOP -
                 sizeof(frame), frame, sizeof(frame)) || frame[0] != 0x0101u ||
-            frame[1] != 0x001bu || frame[2] != (CORE_MACHINE_DEBUG_EFLAGS_CF |
-                CORE_MACHINE_DEBUG_EFLAGS_IF) || frame[3] != 0x7000u || frame[4] != 0x0023u;
+            frame[1] != 0x001bu || frame[2] != (X86_CORE_CPU_DEBUG_EFLAGS_CF |
+                X86_CORE_CPU_DEBUG_EFLAGS_IF) || frame[3] != 0x7000u || frame[4] != 0x0023u;
     }
     test_protected_16_destroy(&state);
     return !failed;
@@ -68,8 +68,8 @@ static lib_i32 s47_outer_nmi(core_machine_cpu_profile profile,
 
 int main(void)
 {
-    static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_80286, X86_CORE_CPU_PROFILE_80386
     };
     static const lib_u8 types[] = {
         TEST_PROTECTED_INTERRUPT_GATE_16, TEST_PROTECTED_TRAP_GATE_16
@@ -81,7 +81,7 @@ int main(void)
         for (type = 0u; type < sizeof(types) / sizeof(types[0]); ++type) {
             if (!s47_outer_nmi(profiles[profile], LIB_FALSE, types[type]))
                 return 1;
-            if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386 &&
+            if (profiles[profile] == X86_CORE_CPU_PROFILE_80386 &&
                 !s47_outer_nmi(profiles[profile], LIB_TRUE, types[type]))
                 return 2;
         }

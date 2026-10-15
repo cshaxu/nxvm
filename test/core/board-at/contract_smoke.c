@@ -8,7 +8,7 @@ static void effective_values(void)
     const lib_u32 video_planes = (1u << VM_AT_DEVICE_VADP_ATTRIBUTE) |
         (1u << VM_AT_DEVICE_VADP_SEQUENCER) | (1u << VM_AT_DEVICE_VADP_GRAPHICS);
     const struct {
-        core_machine_cpu_profile cpu;
+        x86_core_cpu_profile cpu;
         lib_size memory;
         lib_u32 enabled;
         const vm_at_route *routes;
@@ -16,10 +16,10 @@ static void effective_values(void)
         lib_size port_count;
         lib_bool cga;
     } cases[] = {
-        {CORE_MACHINE_CPU_PROFILE_80386, 1024u * 1024u, all, vm_at_routes_with_aux, 5u, 78u, LIB_FALSE},
-        {CORE_MACHINE_CPU_PROFILE_80286, 512u * 1024u, all & ~video_planes,
+        {X86_CORE_CPU_PROFILE_80386, 1024u * 1024u, all, vm_at_routes_with_aux, 5u, 78u, LIB_FALSE},
+        {X86_CORE_CPU_PROFILE_80286, 512u * 1024u, all & ~video_planes,
             vm_at_routes_without_aux, 4u, 73u, LIB_TRUE},
-        {CORE_MACHINE_CPU_PROFILE_80386, 2u * 1024u * 1024u, all & ~video_planes,
+        {X86_CORE_CPU_PROFILE_80386, 2u * 1024u * 1024u, all & ~video_planes,
             vm_at_routes_without_aux, 4u, 73u, LIB_TRUE}
     };
 
@@ -53,7 +53,7 @@ static void effective_values(void)
 static void invalid_inputs(void)
 {
     const vm_profile_contract_core_input core = {.id = 1u, .configuration = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386, .memory_bytes = 1024u * 1024u}};
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386, .memory_bytes = 1024u * 1024u}};
     const lib_u32 enabled = (1u << (VM_AT_DEVICE_BOARD + 1u)) - 1u;
     vm_at_port_leaf leaves[VM_AT_PORT_LEAF_COUNT];
     vm_at_route routes[5u];
@@ -69,7 +69,7 @@ static void invalid_inputs(void)
         if (variant == 3u) routes[0].source = (vm_at_route_source)99;
         if (variant == 4u) routes[1].irq = routes[0].irq;
         if (variant == 5u) input.configuration.memory_bytes = 0u;
-        if (variant == 6u) input.configuration.cpu_profile = CORE_MACHINE_CPU_PROFILE_DEFAULT;
+        if (variant == 6u) input.configuration.cpu_profile = X86_CORE_CPU_PROFILE_DEFAULT;
         values.enabled_devices = 99u;
         lib_test_assert(vm_at_contract_materialize(&input, leaves,
             variant == 7u ? VM_PROFILE_CONTRACT_PORT_LEAF_CAPACITY + 1u : VM_AT_PORT_LEAF_COUNT,

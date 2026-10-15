@@ -5,7 +5,7 @@
 #include "lib/types/types_interface.h"
 #include "core/x86/device_support_interface.h"
 
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #include "core/board-base/machine_board_interface.h"
 #include "composition/debug_fixture.h"
 #include "core_machine_board_fixture.h"
@@ -43,10 +43,10 @@ typedef enum interrupt_entry_delivery_failure {
     INTERRUPT_ENTRY_DELIVERY_STACK_LIMIT
 } interrupt_entry_delivery_failure;
 
-static core_machine_debug_cpu_snapshot ie_capture(const core_machine *machine)
+static x86_core_cpu_debug_cpu_snapshot ie_capture(const core_machine *machine)
 {
-    core_machine_debug_cpu_snapshot snapshot = {0};
-    if (core_machine_debug_capture_cpu_snapshot(machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT,
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
+    if (core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
             &snapshot) != LIB_STATUS_OK) lib_test_assert(LIB_FALSE);
     return snapshot;
 }
@@ -88,7 +88,7 @@ static lib_i32 ie_prepare(interrupt_entry_machine *state,
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     lib_u8 gdt[] = {
@@ -107,18 +107,18 @@ static lib_i32 ie_prepare(interrupt_entry_machine *state,
         0xbcu,0,0x80u, 0xeau,0,0,8,0
     };
     lib_u8 pointers[] = {0x1fu,0,0,3,0,0, 0x87u,1,0,4,0,0};
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
-        .values = {[CORE_MACHINE_DEBUG_EIP] = 0x0600u, [CORE_MACHINE_DEBUG_EFLAGS] = 2u}
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x0600u, [X86_CORE_CPU_DEBUG_EFLAGS] = 2u}
     };
     core_machine_run_result result;
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
@@ -177,16 +177,16 @@ static lib_i32 ie_prepare(interrupt_entry_machine *state,
         const lib_u8 access = negative == INTERRUPT_ENTRY_NEGATIVE_CODE_TYPE ? 0x92u : 0x1au;
         if (!ie_write(state, IE_GDT_BASE + 13u, &access, sizeof(access))) return 0;
     }
-    test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_EFLAGS, 0x302u);
+    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS, 0x302u);
     /* Load the limited stack with an in-range pointer. The original negative
      * seeds an out-of-range stopped ESP for interrupt-frame rollback. */
     if (negative == INTERRUPT_ENTRY_NEGATIVE_STACK_LIMIT)
-        test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_ESP, IE_STACK_BASE);
+        test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_ESP, IE_STACK_BASE);
     return negative != INTERRUPT_ENTRY_NEGATIVE_GATE_DPL || ie_prepare_user_code(state);
 }
 
 static lib_i32 ie_run(interrupt_entry_machine *state, lib_i32 expect_shutdown,
-    core_machine_debug_cpu_snapshot *out_cpu, core_machine_cpu_diagnostic *out_diagnostic)
+    x86_core_cpu_debug_cpu_snapshot *out_cpu, x86_core_cpu_diagnostic *out_diagnostic)
 {
     const core_machine_run_budget budget = {32u, 0u};
     core_machine_run_result result;
@@ -202,7 +202,7 @@ static lib_i32 ie_run(interrupt_entry_machine *state, lib_i32 expect_shutdown,
 }
 
 static lib_i32 ie_run_external(interrupt_entry_machine *state, lib_i32 expect_shutdown,
-    core_machine_debug_cpu_snapshot *out_cpu, core_machine_cpu_diagnostic *out_diagnostic)
+    x86_core_cpu_debug_cpu_snapshot *out_cpu, x86_core_cpu_diagnostic *out_diagnostic)
 {
     const core_machine_run_budget budget = {32u, 0u};
     core_machine_run_result result;
@@ -218,7 +218,7 @@ static lib_i32 ie_run_external(interrupt_entry_machine *state, lib_i32 expect_sh
 }
 
 static lib_i32 ie_run_budget(interrupt_entry_machine *state, lib_i32 expect_shutdown,
-    core_machine_debug_cpu_snapshot *out_cpu, core_machine_cpu_diagnostic *out_diagnostic)
+    x86_core_cpu_debug_cpu_snapshot *out_cpu, x86_core_cpu_diagnostic *out_diagnostic)
 {
     return ie_run_external(state, expect_shutdown, out_cpu, out_diagnostic);
 }
@@ -226,8 +226,8 @@ static lib_i32 ie_run_budget(interrupt_entry_machine *state, lib_i32 expect_shut
 static lib_i32 ie_test_success(lib_u8 gate_type, lib_i32 expect_if)
 {
     interrupt_entry_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u32 frame[3] = {0u, 0u, 0u};
     lib_u8 code_access = 0u;
     lib_i32 failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE, gate_type);
@@ -237,8 +237,8 @@ static lib_i32 ie_test_success(lib_u8 gate_type, lib_i32 expect_if)
             diagnostic.first_fault.valid || after.cs.selector != 0x0008u ||
             after.eip != IE_HANDLER_OFFSET + 1u ||
             after.esp != IE_STACK_BASE - 12u ||
-            CORE_MACHINE_BIT_IS_SET(after.eflags, CORE_MACHINE_DEBUG_EFLAGS_TF) ||
-            (CORE_MACHINE_BIT_IS_SET(after.eflags, CORE_MACHINE_DEBUG_EFLAGS_IF) != expect_if) ||
+            CORE_MACHINE_BIT_IS_SET(after.eflags, X86_CORE_CPU_DEBUG_EFLAGS_TF) ||
+            (CORE_MACHINE_BIT_IS_SET(after.eflags, X86_CORE_CPU_DEBUG_EFLAGS_IF) != expect_if) ||
             !ie_read(&state, IE_STACK_BASE - 12u, frame, sizeof(frame)) ||
             frame[0] != 2u || frame[1] != 0x0008u || frame[2] != 0x00000302u ||
             !ie_read(&state, IE_GDT_BASE + 13u, &code_access,
@@ -251,8 +251,8 @@ static lib_i32 ie_test_success(lib_u8 gate_type, lib_i32 expect_if)
 static lib_i32 ie_test_prefix_keeps_gate_width(void)
 {
     interrupt_entry_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u32 frame[3] = {0u, 0u, 0u};
     static const lib_u8 code[] = {0x66u,0xcdu,IE_VECTOR};
     lib_i32 failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
@@ -272,9 +272,9 @@ static lib_i32 ie_test_prefix_keeps_gate_width(void)
 static lib_i32 ie_test_failure(interrupt_entry_negative negative)
 {
     interrupt_entry_machine state;
-    core_machine_cpu_diagnostic diagnostic = {0};
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u8 access_before = 0u;
     lib_u8 access_after = 0u;
     lib_i32 failed = !ie_prepare(&state, negative, IE_INTGATE_32);
@@ -305,7 +305,7 @@ static lib_i32 ie_prepare_user_code(interrupt_entry_machine *state)
     const lib_u32 frame[] = {0u,0x0bu,2u,IE_STACK_BASE,0x13u};
     const lib_u32 flags = ie_capture(state->machine).eflags;
     core_machine_run_result result;
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
 
     if (!ie_write(state, IE_GDT_BASE + 13u, &code_access, sizeof(code_access)) ||
         !ie_write(state, IE_GDT_BASE + 21u, &stack_access, sizeof(stack_access)) ||
@@ -313,14 +313,14 @@ static lib_i32 ie_prepare_user_code(interrupt_entry_machine *state)
         !ie_write(state, IE_CODE_BASE + 0x0600u, transfer, sizeof(transfer)) ||
         !ie_write(state, IE_STACK_BASE, frame, sizeof(frame)))
         return 0;
-    test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_EFLAGS, 2u);
-    test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_EIP, 0x0600u);
+    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS, 2u);
+    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EIP, 0x0600u);
     if (core_machine_run(state->machine, (core_machine_run_budget){1u,0u},
             &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET) return 0;
     after = ie_capture(state->machine);
     if (after.cs.selector != 0x0bu || after.cs.dpl != 3u || after.ss.selector != 0x13u ||
         after.ss.dpl != 3u || after.esp != IE_STACK_BASE || after.eip != 0u) return 0;
-    test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_EFLAGS, flags);
+    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS, flags);
     return 1;
 }
 
@@ -331,13 +331,13 @@ static lib_i32 ie_set_stack_limit(interrupt_entry_machine *state, lib_u32 limit)
     const lib_u32 flags = ie_capture(state->machine).eflags;
     const lib_u32 esp = ie_capture(state->machine).esp;
     core_machine_run_result result;
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
 
     if (!ie_write(state, IE_GDT_BASE + 16u, descriptor, sizeof(descriptor)) ||
         !ie_write(state, IE_CODE_BASE + 0x0600u, reload, sizeof(reload))) return 0;
-    test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_EFLAGS, 2u);
-    test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_ESP, 0u);
-    test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_EIP, 0x0600u);
+    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS, 2u);
+    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_ESP, 0u);
+    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EIP, 0x0600u);
     const lib_status reload_status = core_machine_run(state->machine,
         (core_machine_run_budget){2u,0u}, &result);
     if (reload_status != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET)
@@ -345,9 +345,9 @@ static lib_i32 ie_set_stack_limit(interrupt_entry_machine *state, lib_u32 limit)
     after = ie_capture(state->machine);
     if (after.ss.limit != limit || after.ss.selector != 0x13u || after.ss.dpl != 3u)
         return 0;
-    test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_EIP, 0u);
-    test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_EFLAGS, flags);
-    test_core_machine_fixture_write_register(state->machine, CORE_MACHINE_DEBUG_ESP, esp);
+    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EIP, 0u);
+    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_EFLAGS, flags);
+    test_core_machine_fixture_write_register(state->machine, X86_CORE_CPU_DEBUG_ESP, esp);
     return 1;
 }
 
@@ -363,24 +363,24 @@ static lib_i32 ie_test_software_frontends(void)
 
     for (index = 0u; index < sizeof(programs) / sizeof(programs[0]); ++index) {
         interrupt_entry_machine state;
-        core_machine_cpu_diagnostic diagnostic;
-        core_machine_debug_cpu_snapshot after = {0};
+        x86_core_cpu_diagnostic diagnostic;
+        x86_core_cpu_debug_cpu_snapshot after = {0};
         lib_u32 frame[3] = {0u, 0u, 0u};
         lib_u32 flags = 0x00000302u;
         lib_i32 failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
             IE_TRAPGATE_32);
 
         if (!failed) {
-            if (vectors[index] == 0x04u) flags |= CORE_MACHINE_DEBUG_EFLAGS_OF;
-            test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS, flags);
+            if (vectors[index] == 0x04u) flags |= X86_CORE_CPU_DEBUG_EFLAGS_OF;
+            test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS, flags);
             failed |= !ie_install_gate(&state, vectors[index], 0x0008u,
                     (lib_u8)(0xe0u | IE_TRAPGATE_32)) ||
                 !ie_write(&state, IE_CODE_BASE, programs[index],
                     index == 0u ? sizeof(int3) : sizeof(into)) ||
                 !ie_run(&state, 0, &after, &diagnostic) ||
                 diagnostic.first_fault.valid || after.esp != IE_STACK_BASE - 12u ||
-                CORE_MACHINE_BIT_IS_SET(after.eflags, CORE_MACHINE_DEBUG_EFLAGS_TF) ||
-                !CORE_MACHINE_BIT_IS_SET(after.eflags, CORE_MACHINE_DEBUG_EFLAGS_IF) ||
+                CORE_MACHINE_BIT_IS_SET(after.eflags, X86_CORE_CPU_DEBUG_EFLAGS_TF) ||
+                !CORE_MACHINE_BIT_IS_SET(after.eflags, X86_CORE_CPU_DEBUG_EFLAGS_IF) ||
                 !ie_read(&state, IE_STACK_BASE - 12u, frame, sizeof(frame)) ||
                 frame[0] != returns[index] || frame[1] != 0x0008u ||
                 frame[2] != flags;
@@ -390,13 +390,13 @@ static lib_i32 ie_test_software_frontends(void)
     }
     {
         interrupt_entry_machine state;
-        core_machine_cpu_diagnostic diagnostic;
-        core_machine_debug_cpu_snapshot after = {0};
+        x86_core_cpu_diagnostic diagnostic;
+        x86_core_cpu_debug_cpu_snapshot after = {0};
         lib_i32 failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
             IE_INTGATE_32);
 
         if (!failed) {
-            test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS, 0x00000202u);
+            test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS, 0x00000202u);
             failed |= !ie_install_gate(&state, 0x04u, 0x0008u,
                     (lib_u8)(0xe0u | IE_INTGATE_32)) ||
                 !ie_write(&state, IE_CODE_BASE, into_clear, sizeof(into_clear)) ||
@@ -413,10 +413,10 @@ static lib_i32 ie_test_software_frontends(void)
 static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
 {
     interrupt_entry_machine state;
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic;
     core_machine_pic_irq_source *source = LIB_NULL;
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     static const lib_u8 code[] = {0x90u};
     static const lib_u8 handler[] = {0xebu,0xfeu};
     lib_u8 vector = nmi ? 0x02u : IE_VECTOR;
@@ -424,7 +424,7 @@ static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
         IE_INTGATE_32);
 
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS, 0x00000202u);
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS, 0x00000202u);
         failed |= !ie_prepare_user_code(&state) ||
             !ie_install_gate(&state, vector, 0x000bu,
                 reject ? 0x80u : (lib_u8)(0x80u | IE_INTGATE_32)) ||
@@ -453,7 +453,7 @@ static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
             /* CPU-local tests retain the private pending-bit assertions.
              * A second quantum proves that successful delivery is not replayed. */
             if (!failed && nmi) {
-                core_machine_debug_cpu_snapshot again;
+                x86_core_cpu_debug_cpu_snapshot again;
                 failed |= !ie_run_external(&state, 0, &again, &diagnostic) ||
                     again.esp != after.esp;
             }
@@ -469,7 +469,7 @@ static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
     return !failed;
 }
 
-static lib_i32 ie_delivered_is(const core_machine_cpu_diagnostic *diagnostic,
+static lib_i32 ie_delivered_is(const x86_core_cpu_diagnostic *diagnostic,
     lib_u32 mask, lib_u32 code)
 {
     return !diagnostic->first_fault.valid &&
@@ -479,7 +479,7 @@ static lib_i32 ie_delivered_is(const core_machine_cpu_diagnostic *diagnostic,
         diagnostic->last_delivered_exception.exception_code == code;
 }
 
-static lib_i32 ie_delivery_state_equal(const core_machine_debug_cpu_snapshot *before, const core_machine_debug_cpu_snapshot *after)
+static lib_i32 ie_delivery_state_equal(const x86_core_cpu_debug_cpu_snapshot *before, const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return before->eip == after->eip &&
         before->esp == after->esp &&
@@ -494,8 +494,8 @@ static lib_i32 ie_test_fault_delivery(lib_u32 mask, lib_u8 vector,
     lib_u32 code, lib_i32 user_source)
 {
     interrupt_entry_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u32 frame[4] = {0u, 0u, 0u, 0u};
     lib_u8 access_before = 0u;
     lib_u8 access_after = 0u;
@@ -515,7 +515,7 @@ static lib_i32 ie_test_fault_delivery(lib_u32 mask, lib_u8 vector,
 
     if (!failed) {
         if (user_source) failed |= !ie_prepare_user_code(&state);
-        if (!user_source) test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS, 0x00000202u);
+        if (!user_source) test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS, 0x00000202u);
         if (mask == VCPUINS_EXCEPT_SS || mask == VCPUINS_EXCEPT_NP) {
             /* GDT already covers selector 18h. */
             failed |= !ie_write(&state, IE_GDT_BASE + 24u, ss_descriptor,
@@ -548,15 +548,15 @@ static lib_i32 ie_test_fault_delivery(lib_u32 mask, lib_u8 vector,
 static lib_i32 ie_test_software_gate_dpl_fault_delivery(void)
 {
     interrupt_entry_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u32 frame[4] = {0u,0u,0u,0u};
     static const lib_u8 code[] = {0xcdu,IE_VECTOR};
     lib_i32 failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
         IE_INTGATE_32);
 
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS, 0x00000202u);
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS, 0x00000202u);
         failed |= !ie_install_gate(&state, IE_VECTOR, 0x0008u, 0x80u) ||
             !ie_install_gate(&state, 0x0du, 0x0008u,
                 (lib_u8)(0x80u | IE_INTGATE_32)) ||
@@ -579,9 +579,9 @@ static lib_i32 ie_test_fault_delivery_failure(
     interrupt_entry_delivery_failure failure)
 {
     interrupt_entry_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u8 access_before = 0u;
     lib_u8 access_after = 0u;
     lib_u32 stack_before[4] = {0u,0u,0u,0u};

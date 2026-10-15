@@ -43,7 +43,7 @@ static const core_machine_execution_provider arithmetic_data_timing_timing_provi
     arithmetic_data_timing_timing_advance
 };
 
-static lib_i32 arithmetic_data_timing_prepare(core_machine_cpu_profile profile,
+static lib_i32 arithmetic_data_timing_prepare(x86_core_cpu_profile profile,
     core_machine **out_machine, arithmetic_data_timing_timing_state *state)
 {
     const core_machine_config config = { .cpu_profile = profile };
@@ -102,7 +102,7 @@ static lib_i32 arithmetic_data_timing_run(core_machine *machine,
 }
 
 static lib_i32 arithmetic_data_timing_write_word(core_machine *machine,
-    core_machine_debug_register register_id, lib_u16 value)
+    x86_core_cpu_debug_register register_id, lib_u16 value)
 {
     lib_u32 previous;
 
@@ -116,15 +116,15 @@ static lib_i32 arithmetic_data_timing_seed_words(core_machine *machine, void *op
     const arithmetic_data_timing_word_seed *seed = (const arithmetic_data_timing_word_seed *)opaque;
 
     if (machine == LIB_NULL || seed == LIB_NULL) return 0;
-    return arithmetic_data_timing_write_word(machine, CORE_MACHINE_DEBUG_EAX, seed->ax) &&
-        arithmetic_data_timing_write_word(machine, CORE_MACHINE_DEBUG_ECX, seed->cx) &&
-        arithmetic_data_timing_write_word(machine, CORE_MACHINE_DEBUG_EDX, seed->dx) &&
+    return arithmetic_data_timing_write_word(machine, X86_CORE_CPU_DEBUG_EAX, seed->ax) &&
+        arithmetic_data_timing_write_word(machine, X86_CORE_CPU_DEBUG_ECX, seed->cx) &&
+        arithmetic_data_timing_write_word(machine, X86_CORE_CPU_DEBUG_EDX, seed->dx) &&
         (!seed->write_memory || core_machine_memory_write(machine,
         seed->memory_address, &seed->memory, sizeof(seed->memory)) ==
         LIB_STATUS_OK);
 }
 
-static lib_i32 arithmetic_data_timing_test_profile_rows(core_machine_cpu_profile profile,
+static lib_i32 arithmetic_data_timing_test_profile_rows(x86_core_cpu_profile profile,
     lib_u64 add_register_ticks, lib_u64 add_memory_ticks,
     lib_u64 sub_read_ticks, lib_u64 mov_immediate_ticks,
     lib_u64 lea_ticks, lib_u64 adjust_ticks,
@@ -148,11 +148,11 @@ static lib_i32 arithmetic_data_timing_test_profile_rows(core_machine_cpu_profile
     if (!failed) {
         failed |= !arithmetic_data_timing_run(machine, add_register, sizeof(add_register),
             add_register_ticks, &state) ||
-            core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX,
+            core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EAX,
                 &value) != LIB_STATUS_OK || (lib_u16)value != 0u;
     }
     if (!failed) {
-        failed |= !arithmetic_data_timing_write_word(machine, CORE_MACHINE_DEBUG_ECX, 1u) ||
+        failed |= !arithmetic_data_timing_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 1u) ||
             core_machine_memory_write(machine, 0x1000u, &memory_value,
             sizeof(memory_value)) != LIB_STATUS_OK || !arithmetic_data_timing_run(machine,
             add_memory, sizeof(add_memory), add_memory_ticks, &state);
@@ -167,8 +167,8 @@ static lib_i32 arithmetic_data_timing_test_profile_rows(core_machine_cpu_profile
             mov_immediate_ticks, &state);
     }
     if (!failed) {
-        failed |= !arithmetic_data_timing_write_word(machine, CORE_MACHINE_DEBUG_EBP, 0x1000u) ||
-            !arithmetic_data_timing_write_word(machine, CORE_MACHINE_DEBUG_ESI, 1u) ||
+        failed |= !arithmetic_data_timing_write_word(machine, X86_CORE_CPU_DEBUG_EBP, 0x1000u) ||
+            !arithmetic_data_timing_write_word(machine, X86_CORE_CPU_DEBUG_ESI, 1u) ||
             !arithmetic_data_timing_run(machine, lea, sizeof(lea), lea_ticks, &state);
     }
     if (!failed) {
@@ -188,13 +188,13 @@ static lib_i32 arithmetic_data_timing_test_setcc(void)
     lib_u32 value;
     arithmetic_data_timing_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !arithmetic_data_timing_prepare(X86_CORE_CPU_PROFILE_80386,
         &machine, &state);
 
     if (!failed) {
         failed |= !arithmetic_data_timing_run(machine, set_register, sizeof(set_register), 4u,
             &state) || core_machine_debug_read_register(machine,
-                CORE_MACHINE_DEBUG_EAX, &value) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_EAX, &value) != LIB_STATUS_OK ||
             (lib_u8)value != 1u;
     }
     if (!failed) {
@@ -213,10 +213,10 @@ static lib_i32 arithmetic_data_timing_test_legacy_odd_word_transfers(void)
     static const lib_u8 sub_read[] = {
         0x2bu, 0x06u, 0x01u, 0x10u
     };
-    static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086,
-        CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_8086,
+        X86_CORE_CPU_PROFILE_80186,
+        X86_CORE_CPU_PROFILE_80286
     };
     static const lib_u64 add_ticks[] = { 30u, 18u, 11u };
     static const lib_u64 read_ticks[] = { 19u, 14u, 9u };
@@ -256,7 +256,7 @@ static lib_i32 arithmetic_data_timing_test_dynamic_multiply(void)
     };
     arithmetic_data_timing_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !arithmetic_data_timing_prepare(X86_CORE_CPU_PROFILE_80386,
         &machine, &state);
 
     if (!failed) {
@@ -297,7 +297,7 @@ static lib_i32 arithmetic_data_timing_test_group3_rows(void)
     arithmetic_data_timing_timing_state state = { 0u };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_8086,
+    lib_i32 failed = !arithmetic_data_timing_prepare(X86_CORE_CPU_PROFILE_8086,
         &machine, &state);
 
     if (!failed) {
@@ -311,7 +311,7 @@ static lib_i32 arithmetic_data_timing_test_group3_rows(void)
     machine = LIB_NULL;
     if (failed) return 1;
     state.advanced_ticks = 0u;
-    failed |= !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_80186, &machine,
+    failed |= !arithmetic_data_timing_prepare(X86_CORE_CPU_PROFILE_80186, &machine,
         &state);
     if (!failed) {
         failed |= !arithmetic_data_timing_run_with_setup(machine, not_register,
@@ -324,7 +324,7 @@ static lib_i32 arithmetic_data_timing_test_group3_rows(void)
     machine = LIB_NULL;
     if (failed) return 1;
     state.advanced_ticks = 0u;
-    failed |= !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_80286, &machine,
+    failed |= !arithmetic_data_timing_prepare(X86_CORE_CPU_PROFILE_80286, &machine,
         &state);
     if (!failed) {
         failed |= !arithmetic_data_timing_run_with_setup(machine, not_register,
@@ -345,7 +345,7 @@ static lib_i32 arithmetic_data_timing_test_group3_rows(void)
     machine = LIB_NULL;
     if (failed) return 1;
     state.advanced_ticks = 0u;
-    failed |= !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
+    failed |= !arithmetic_data_timing_prepare(X86_CORE_CPU_PROFILE_80386, &machine,
         &state);
     if (!failed) {
         failed |= !arithmetic_data_timing_run_with_setup(machine, not_register,
@@ -411,7 +411,7 @@ static lib_i32 arithmetic_data_timing_test_80386_width_prefixes(void)
     };
     arithmetic_data_timing_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !arithmetic_data_timing_prepare(X86_CORE_CPU_PROFILE_80386,
         &machine, &state);
 
     if (!failed) {
@@ -443,7 +443,7 @@ static lib_i32 arithmetic_data_timing_test_legacy_segment_override(void)
     };
     arithmetic_data_timing_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !arithmetic_data_timing_prepare(CORE_MACHINE_CPU_PROFILE_8086,
+    lib_i32 failed = !arithmetic_data_timing_prepare(X86_CORE_CPU_PROFILE_8086,
         &machine, &state);
 
     if (!failed) {
@@ -455,13 +455,13 @@ static lib_i32 arithmetic_data_timing_test_legacy_segment_override(void)
 
 lib_i32 main(void)
 {
-    if (arithmetic_data_timing_test_profile_rows(CORE_MACHINE_CPU_PROFILE_8086,
+    if (arithmetic_data_timing_test_profile_rows(X86_CORE_CPU_PROFILE_8086,
             3u, 22u, 15u, 16u, 13u, 4u, 5u)) return 1;
-    if (arithmetic_data_timing_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80186,
+    if (arithmetic_data_timing_test_profile_rows(X86_CORE_CPU_PROFILE_80186,
             3u, 10u, 10u, 13u, 6u, 8u, 4u)) return 2;
-    if (arithmetic_data_timing_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80286,
+    if (arithmetic_data_timing_test_profile_rows(X86_CORE_CPU_PROFILE_80286,
             2u, 7u, 7u, 3u, 4u, 3u, 2u)) return 3;
-    if (arithmetic_data_timing_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80386,
+    if (arithmetic_data_timing_test_profile_rows(X86_CORE_CPU_PROFILE_80386,
             2u, 7u, 7u, 2u, 2u, 4u, 3u)) return 4;
     if (arithmetic_data_timing_test_setcc()) return 5;
     if (arithmetic_data_timing_test_legacy_odd_word_transfers()) return 6;

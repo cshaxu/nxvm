@@ -40,7 +40,7 @@ static const core_machine_port_provider legacy_lock_port_provider = {
     legacy_lock_port_read, legacy_lock_port_write
 };
 
-static lib_i32 legacy_lock_prepare(core_machine_cpu_profile profile,
+static lib_i32 legacy_lock_prepare(x86_core_cpu_profile profile,
     legacy_lock_machine *state)
 {
     const core_machine_config config = {
@@ -48,11 +48,11 @@ static lib_i32 legacy_lock_prepare(core_machine_cpu_profile profile,
         .cpu_profile = profile,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
 
     lib_memory_set(state, 0, sizeof(*state));
@@ -66,22 +66,22 @@ static lib_i32 legacy_lock_prepare(core_machine_cpu_profile profile,
 
 static lib_i32 legacy_lock_test_port_output(void)
 {
-    static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286
+    static const x86_core_cpu_profile profiles[] = {
+        X86_CORE_CPU_PROFILE_8086, X86_CORE_CPU_PROFILE_80186,
+        X86_CORE_CPU_PROFILE_80286
     };
     static const lib_u8 code[] = { 0xf0u, 0xe6u, 0x5au };
 
     for (lib_size profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
         legacy_lock_machine state = {0};
-        core_machine_cpu_diagnostic diagnostic = {0};
+        x86_core_cpu_diagnostic diagnostic = {0};
         core_machine_run_result result = {0};
-        core_machine_debug_cpu_snapshot before = {0};
-        core_machine_debug_cpu_snapshot after = {0};
-        const core_machine_debug_register_patch eax = {
-            .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX),
-            .values = { [CORE_MACHINE_DEBUG_EAX] = 0xaabbcc44u }
+        x86_core_cpu_debug_cpu_snapshot before = {0};
+        x86_core_cpu_debug_cpu_snapshot after = {0};
+        const x86_core_cpu_debug_register_patch eax = {
+            .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX),
+            .values = { [X86_CORE_CPU_DEBUG_EAX] = 0xaabbcc44u }
         };
         lib_i32 failed = !legacy_lock_prepare(profiles[profile], &state);
 
@@ -89,7 +89,7 @@ static lib_i32 legacy_lock_test_port_output(void)
             failed = core_machine_debug_patch_registers(state.machine, &eax) !=
                 LIB_STATUS_OK ||
                 core_machine_debug_capture_cpu_snapshot(state.machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0u, code,
                     sizeof(code)) != LIB_STATUS_OK ||
                 core_machine_run(state.machine,
@@ -97,7 +97,7 @@ static lib_i32 legacy_lock_test_port_output(void)
                 core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                     LIB_STATUS_OK ||
                 core_machine_debug_capture_cpu_snapshot(state.machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_BUDGET ||
                 diagnostic.first_fault.valid ||
                 after.eip != sizeof(code) || after.eax != before.eax ||
@@ -138,9 +138,9 @@ static lib_i32 legacy_lock_prepare_80286_protected(
     };
     lib_u8 gate[8] = {0u};
     core_machine_run_result result = {0};
-    core_machine_debug_register_patch entry = {0};
+    x86_core_cpu_debug_register_patch entry = {0};
 
-    if (!legacy_lock_prepare(CORE_MACHINE_CPU_PROFILE_80286, state))
+    if (!legacy_lock_prepare(X86_CORE_CPU_PROFILE_80286, state))
         return 0;
     gdt[13u] = cpl ? 0xfau : 0x9au;
     gdt[21u] = cpl ? 0xf2u : 0x92u;
@@ -164,20 +164,20 @@ static lib_i32 legacy_lock_prepare_80286_protected(
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 4u)
         return 0;
 
-    entry.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-        CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-        CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-        CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-        CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-        CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-        CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS);
-    entry.values[CORE_MACHINE_DEBUG_CS] = cpl ? 0x0bu : 0x08u;
-    entry.values[CORE_MACHINE_DEBUG_SS] = cpl ? 0x13u : 0x10u;
-    entry.values[CORE_MACHINE_DEBUG_DS] = cpl ? 0x13u : 0x10u;
-    entry.values[CORE_MACHINE_DEBUG_EIP] = 0u;
-    entry.values[CORE_MACHINE_DEBUG_EAX] = 0xaabb0080u;
-    entry.values[CORE_MACHINE_DEBUG_ESP] = 0x8000u;
-    entry.values[CORE_MACHINE_DEBUG_EFLAGS] = eflags;
+    entry.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+        X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS);
+    entry.values[X86_CORE_CPU_DEBUG_CS] = cpl ? 0x0bu : 0x08u;
+    entry.values[X86_CORE_CPU_DEBUG_SS] = cpl ? 0x13u : 0x10u;
+    entry.values[X86_CORE_CPU_DEBUG_DS] = cpl ? 0x13u : 0x10u;
+    entry.values[X86_CORE_CPU_DEBUG_EIP] = 0u;
+    entry.values[X86_CORE_CPU_DEBUG_EAX] = 0xaabb0080u;
+    entry.values[X86_CORE_CPU_DEBUG_ESP] = 0x8000u;
+    entry.values[X86_CORE_CPU_DEBUG_EFLAGS] = eflags;
     return core_machine_debug_patch_registers(state->machine, &entry) ==
         LIB_STATUS_OK;
 }
@@ -188,14 +188,14 @@ static lib_i32 legacy_lock_test_80286_iopl(void)
 
     for (lib_u8 form = 0u; form != 3u; ++form) {
         legacy_lock_machine state = {0};
-        core_machine_cpu_diagnostic diagnostic = {0};
+        x86_core_cpu_diagnostic diagnostic = {0};
         core_machine_run_result result = {0};
-        core_machine_debug_cpu_snapshot after = {0};
+        x86_core_cpu_debug_cpu_snapshot after = {0};
         lib_u16 frame[4] = {0u};
         const lib_u8 cpl = form == 0u ? 0u : 3u;
         const lib_u32 flags = form == 0u ? 0u :
             (form == 1u ? LEGACY_LOCK_IOPL : 0u) |
-            CORE_MACHINE_DEBUG_EFLAGS_CF;
+            X86_CORE_CPU_DEBUG_EFLAGS_CF;
         lib_i32 failed = !legacy_lock_prepare_80286_protected(&state,
             cpl, flags);
 
@@ -207,7 +207,7 @@ static lib_i32 legacy_lock_test_80286_iopl(void)
                 core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                     LIB_STATUS_OK ||
                 core_machine_debug_capture_cpu_snapshot(state.machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_BUDGET ||
                 diagnostic.first_fault.valid ||
                 after.eax != (form == 2u ? 0xaabb0080u : 0xaabbff80u) ||
@@ -224,7 +224,7 @@ static lib_i32 legacy_lock_test_80286_iopl(void)
                         sizeof(frame)) != LIB_STATUS_OK ||
                     frame[0] != 0u || frame[1] != 0u ||
                     frame[2] != 0x000bu ||
-                    frame[3] != CORE_MACHINE_DEBUG_EFLAGS_CF));
+                    frame[3] != X86_CORE_CPU_DEBUG_EFLAGS_CF));
         core_machine_destroy(state.machine);
         if (failed) return 0;
     }

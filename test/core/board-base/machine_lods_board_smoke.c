@@ -9,7 +9,7 @@ static lib_i32 lods_irq_case(lib_bool repeated, lib_u8 width)
     static const lib_u8 hlt = 0xf4u;
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const lib_u8 code[] = {repeated ? 0xf3u : width == 1u ? 0xacu : 0xadu,
@@ -19,8 +19,8 @@ static lib_i32 lods_irq_case(lib_bool repeated, lib_u8 width)
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source *irq = LIB_NULL;
-    core_machine_debug_register_patch patch = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_register_patch patch = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     core_machine_run_result result = {0};
     lib_u16 offset = 0x100u, segment = 0u, frame_ip = 0xffffu;
     lib_u8 source_after[sizeof(source)] = {0};
@@ -29,21 +29,21 @@ static lib_i32 lods_irq_case(lib_bool repeated, lib_u8 width)
     lib_i32 failed = core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
 
     if (!failed) {
-        patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI);
-        patch.values[CORE_MACHINE_DEBUG_DS] = 0x1000u;
-        patch.values[CORE_MACHINE_DEBUG_ESP] = 0x8000u;
-        patch.values[CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_IF;
-        patch.values[CORE_MACHINE_DEBUG_EAX] = 0xaabb3344u;
-        patch.values[CORE_MACHINE_DEBUG_ECX] = repeated ? 0x11220003u : 0x11225566u;
-        patch.values[CORE_MACHINE_DEBUG_ESI] = 0x10u;
+        patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI);
+        patch.values[X86_CORE_CPU_DEBUG_DS] = 0x1000u;
+        patch.values[X86_CORE_CPU_DEBUG_ESP] = 0x8000u;
+        patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_IF;
+        patch.values[X86_CORE_CPU_DEBUG_EAX] = 0xaabb3344u;
+        patch.values[X86_CORE_CPU_DEBUG_ECX] = repeated ? 0x11220003u : 0x11225566u;
+        patch.values[X86_CORE_CPU_DEBUG_ESI] = 0x10u;
         failed = core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK ||
             core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK ||
@@ -68,7 +68,7 @@ static lib_i32 lods_irq_case(lib_bool repeated, lib_u8 width)
                 &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             core_machine_debug_read_memory(machine,
                 after.ss.base + (lib_u16)after.esp, &frame_ip,
                 sizeof(frame_ip)) != LIB_STATUS_OK ||
@@ -96,9 +96,9 @@ static lib_i32 lods_protected_case(lib_u8 form)
         {0xacu, 0u}, {0x66u, 0xadu}, {0xf3u, 0xacu}
     };
     core_machine *machine = LIB_NULL;
-    core_machine_debug_register_patch patch = {0};
-    core_machine_debug_cpu_snapshot after = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_debug_register_patch patch = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
     core_machine_run_result result = {0};
     lib_u32 source = form == 2u ? 0x00006251u : 0x11223344u;
     lib_u8 width = form == 1u ? 4u : 1u;
@@ -107,12 +107,12 @@ static lib_i32 lods_protected_case(lib_u8 form)
         codes[form], bytes, LIB_TRUE, form == 2u ? 0x10u : 0x0fu);
 
     if (!failed) {
-        patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI);
-        patch.values[CORE_MACHINE_DEBUG_EAX] = 0xaabb3344u;
-        patch.values[CORE_MACHINE_DEBUG_ECX] = form == 2u ? 3u : 0u;
-        patch.values[CORE_MACHINE_DEBUG_ESI] = 0x10u;
+        patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESI);
+        patch.values[X86_CORE_CPU_DEBUG_EAX] = 0xaabb3344u;
+        patch.values[X86_CORE_CPU_DEBUG_ECX] = form == 2u ? 3u : 0u;
+        patch.values[X86_CORE_CPU_DEBUG_ESI] = 0x10u;
         failed = core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x3010u, &source, width) !=
                 LIB_STATUS_OK;
@@ -125,7 +125,7 @@ static lib_i32 lods_protected_case(lib_u8 form)
             result.detail != VCPUINS_EXCEPT_SHUTDOWN ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         if (!failed)
             failed = diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
                 !(diagnostic.last_delivered_exception.exception_mask & VCPUINS_EXCEPT_SHUTDOWN) ||

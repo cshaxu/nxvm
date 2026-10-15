@@ -7,11 +7,11 @@
 static inline lib_i32 test_cpu_pic_binding_after_reset(core_machine *machine)
 {
     const lib_u8 program[] = { 0xb0u, 0x0au, 0xe6u, 0x20u, 0xe4u, 0x20u, 0xf4u };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
-    core_machine_cpu_state state;
+    x86_core_cpu_state state;
     core_machine_run_result result;
     lib_u32 eax;
 
@@ -23,7 +23,7 @@ static inline lib_i32 test_cpu_pic_binding_after_reset(core_machine *machine)
         core_machine_memory_write(machine, 0u, program, sizeof(program)) != LIB_STATUS_OK ||
         core_machine_run(machine, (core_machine_run_budget){8u, 0u}, &result) !=
             LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX, &eax) !=
+        core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EAX, &eax) !=
             LIB_STATUS_OK || (eax & 0xffu) != 0u;
 }
 

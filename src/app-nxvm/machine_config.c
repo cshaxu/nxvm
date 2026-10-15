@@ -6,7 +6,7 @@ static lib_i32 vm_profile_default_descriptor_validate(
 static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     "default-pc-at",
     1u,
-    CORE_MACHINE_CPU_PROFILE_80386,
+    X86_CORE_CPU_PROFILE_80386,
     X86_FPU_PROFILE_NONE,
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
@@ -87,7 +87,7 @@ vm_profile_default_pc_at_descriptor_get(void)
 
 static lib_status vm_profile_default_at_request_select(
     const vm_profile_default_at_request *request,
-    core_machine_cpu_profile *out_cpu, x86_fpu_profile *out_fpu,
+    x86_core_cpu_profile *out_cpu, x86_fpu_profile *out_fpu,
     lib_size *out_memory)
 {
     const vm_profile_default_pc_at_descriptor *descriptor =
@@ -123,7 +123,7 @@ static lib_status vm_profile_default_at_values_create(
     const vm_profile_default_at_request *request,
     vm_profile_contract_values *out_values)
 {
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     x86_fpu_profile fpu_profile;
     lib_size memory_bytes;
     vm_profile_contract_values values = {0};

@@ -19,7 +19,7 @@ foreach(forbidden "machine->pit_clock" "machine->auxiliary_pit_clock"
 endforeach()
 foreach(required "attachment.pit_ticks(machine->attachment.context,"
     "attachment.pit_pic(machine->attachment.context, pit_ticks)"
-    "core_machine_cpu_execution_advance_prefetch_reservation(")
+    "x86_core_cpu_execution_advance_prefetch_reservation(")
     string(FIND "${core}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Core PIT/PIC phase lacks ${required}")

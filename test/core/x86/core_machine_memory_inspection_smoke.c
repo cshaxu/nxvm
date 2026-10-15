@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
 #include "core/x86/machine.h"
 #include "core/x86/debug_interface.h"
-#include "core/chips/cpu/cpu.h"
-#include "core/chips/cpu/cpu_instructions.h"
+#include "x86-core/cpu/cpu.h"
+#include "x86-core/cpu/cpu_instructions.h"
 
 typedef struct inspection_probe {
     lib_u32 reads;
@@ -16,7 +16,7 @@ typedef struct inspection_probe {
     lib_u8 last_control;
     lib_u8 cache_count;
     lib_bool cache_fail;
-    core_machine_cpu_cache_operation cache_operations[2];
+    x86_core_cpu_cache_operation cache_operations[2];
     lib_bool page_mode;
     lib_bool replace_page_entry;
     lib_bool page_lock_seen;
@@ -92,7 +92,7 @@ static void probe_parity(void *opaque, lib_u32 address)
 }
 
 static lib_status probe_cache_operation(void *opaque,
-    core_machine_cpu_cache_operation operation)
+    x86_core_cpu_cache_operation operation)
 {
     inspection_probe *probe = opaque;
     if (probe->cache_count >= 2u) return LIB_STATUS_LIMIT_EXCEEDED;
@@ -130,12 +130,12 @@ static lib_status probe_memory_control(void *opaque, lib_u32 address,
  * production machine-admission gate or substituting the real memory bus. */
 static lib_bool inspection_cache_execution(void)
 {
-    const core_machine_executor_config config = {.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386};
-    const core_machine_instruction_timing timing = {.base_ticks = 1u};
+    const core_machine_executor_config config = {.cpu_profile = X86_CORE_CPU_PROFILE_80386};
+    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const lib_u8 read[] = {0xa1u, 0u, 0x30u};
     const lib_u8 write[] = {0xa3u, 0u, 0x30u};
     core_machine *machine = LIB_NULL;
-    core_machine_cpu_execution_context *cpu;
+    x86_core_cpu_execution_context *cpu;
     lib_u16 value = 0x1234u;
     lib_bool failed = LIB_FALSE;
     inspection_probe device = {0};
@@ -161,16 +161,16 @@ static lib_bool inspection_cache_execution(void)
         return LIB_FALSE;
     }
     cpu = machine->executor_cpu_execution;
-    core_machine_cpu_execution_context_bind_profiles(cpu, CORE_MACHINE_CPU_PROFILE_80486SX,
+    x86_core_cpu_execution_context_bind_profiles(cpu, X86_CORE_CPU_PROFILE_80486SX,
         X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
-    core_machine_cpu_state_reset(cpu);
-    core_machine_cpu_execution_load_segment(cpu, &cpu->cpu->data.cs, 0u);
-    core_machine_cpu_execution_load_segment(cpu, &cpu->cpu->data.ds, 0u);
+    x86_core_cpu_state_reset(cpu);
+    x86_core_cpu_execution_load_segment(cpu, &cpu->cpu->data.cs, 0u);
+    x86_core_cpu_execution_load_segment(cpu, &cpu->cpu->data.ds, 0u);
     cpu->cpu->data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
     failed |= core_machine_memory_write(machine, 0u, read, sizeof(read)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x3000u, &value, sizeof(value)) != LIB_STATUS_OK;
     cpu->cpu->data.eip = 0u;
-    core_machine_cpu_execution_refresh(cpu);
+    x86_core_cpu_execution_refresh(cpu);
     failed |= cpu->cpu->data.ax != value;
     /* Same-owner integration fixture seeds one real line to isolate provider
      * publication, not to duplicate or test CPU cache algorithms. */
@@ -185,15 +185,15 @@ static lib_bool inspection_cache_execution(void)
     value = 0x4321u;
     failed |= core_machine_memory_write(machine, 0x8000u, &value, sizeof(value)) != LIB_STATUS_OK;
     cpu->cpu->data.eip = 0u;
-    core_machine_cpu_execution_invalidate_prefetch(cpu);
-    core_machine_cpu_execution_refresh(cpu);
+    x86_core_cpu_execution_invalidate_prefetch(cpu);
+    x86_core_cpu_execution_refresh(cpu);
     failed |= cpu->cpu->data.ax != value;
     value = 0x5678u;
     failed |= core_machine_dma_memory_cycle(machine, 0x3000u, 2u, 2u,
         CORE_MACHINE_MEMORY_ACCESS_WRITE, &value, LIB_NULL, LIB_NULL, LIB_NULL) != LIB_STATUS_OK;
     cpu->cpu->data.eip = 0u;
-    core_machine_cpu_execution_invalidate_prefetch(cpu);
-    core_machine_cpu_execution_refresh(cpu);
+    x86_core_cpu_execution_invalidate_prefetch(cpu);
+    x86_core_cpu_execution_refresh(cpu);
     failed |= cpu->cpu->data.ax != value;
     {
         const lib_u8 write_alias[] = {0xa3u, 0u, 0x80u};
@@ -201,17 +201,17 @@ static lib_bool inspection_cache_execution(void)
             sizeof(write_alias)) != LIB_STATUS_OK;
         cpu->cpu->data.eip = 0u;
         cpu->cpu->data.ax = 0x1357u;
-        core_machine_cpu_execution_refresh(cpu);
+        x86_core_cpu_execution_refresh(cpu);
         failed |= core_machine_memory_write(machine, 0u, read, sizeof(read)) != LIB_STATUS_OK;
         cpu->cpu->data.eip = 0u;
         cpu->cpu->data.ax = 0u;
-        core_machine_cpu_execution_refresh(cpu);
+        x86_core_cpu_execution_refresh(cpu);
         failed |= cpu->cpu->data.ax != 0x1357u;
     }
     failed |= core_machine_memory_write(machine, 0u, write, sizeof(write)) != LIB_STATUS_OK;
     cpu->cpu->data.ax = 0xabcdu;
     cpu->cpu->data.eip = 0u;
-    core_machine_cpu_execution_refresh(cpu);
+    x86_core_cpu_execution_refresh(cpu);
     failed |= core_machine_memory_read(machine, 0x3000u, &value, sizeof(value)) != LIB_STATUS_OK ||
         value != 0xabcdu;
     lib_bool resident = LIB_FALSE;
@@ -224,7 +224,7 @@ static lib_bool inspection_cache_execution(void)
     failed |= core_machine_memory_write(machine, 0x3000u, &value, sizeof(value)) != LIB_STATUS_OK;
     cpu->cpu->data.ax = 0x1357u;
     cpu->cpu->data.eip = 0u;
-    core_machine_cpu_execution_refresh(cpu);
+    x86_core_cpu_execution_refresh(cpu);
     failed |= cpu->cpu->data.ax != 0xabcdu || cpu->stop_requested;
     /* Actual selected CPU, production bus and provider: the second PTE read
      * redirects a paged operand while the Core transaction remains held. */
@@ -233,9 +233,9 @@ static lib_bool inspection_cache_execution(void)
         const lib_u16 old_value = 0x1234u, new_value = 0x5678u;
         const lib_u64 cancelled = machine->transaction.cancelled_count;
 
-        core_machine_cpu_state_reset(cpu);
-        core_machine_cpu_execution_load_segment(cpu, &cpu->cpu->data.cs, 0u);
-        core_machine_cpu_execution_load_segment(cpu, &cpu->cpu->data.ds, 0u);
+        x86_core_cpu_state_reset(cpu);
+        x86_core_cpu_execution_load_segment(cpu, &cpu->cpu->data.cs, 0u);
+        x86_core_cpu_execution_load_segment(cpu, &cpu->cpu->data.ds, 0u);
         cpu->cpu->data.cr0 = VCPU_CR0_PE | VCPU_CR0_PG;
         cpu->cpu->data.cr3 = 0x4000u;
         cpu->cpu->data.ds.selector = 0x10u;
@@ -250,7 +250,7 @@ static lib_bool inspection_cache_execution(void)
             core_machine_memory_write(machine, 0x9000u, &old_value, sizeof(old_value)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0xa000u, &new_value, sizeof(new_value)) != LIB_STATUS_OK;
         cpu->cpu->data.eip = 0u;
-        core_machine_cpu_execution_refresh(cpu);
+        x86_core_cpu_execution_refresh(cpu);
         failed |= cpu->cpu->data.ax != new_value || cpu->cpu->data.eip != sizeof(read) ||
             cpu->stop_requested || !device.page_lock_seen || device.page_protocol_error ||
             device.page_reads[3] != 2u || device.page_writes[3] != 1u ||
@@ -260,15 +260,15 @@ static lib_bool inspection_cache_execution(void)
         value = 0x6789u;
         failed |= core_machine_memory_write(machine, 0xa000u, &value, sizeof(value)) != LIB_STATUS_OK;
         cpu->cpu->data.eip = 0u;
-        core_machine_cpu_execution_invalidate_prefetch(cpu);
-        core_machine_cpu_execution_refresh(cpu);
+        x86_core_cpu_execution_invalidate_prefetch(cpu);
+        x86_core_cpu_execution_refresh(cpu);
         failed |= cpu->cpu->data.ax != value || device.page_reads[3] != 2u ||
             device.page_writes[3] != 1u;
         failed |= core_machine_memory_write(machine, 0u, write, sizeof(write)) != LIB_STATUS_OK;
         cpu->cpu->data.eip = 0u;
         cpu->cpu->data.ax = 0xbeefu;
-        core_machine_cpu_execution_invalidate_prefetch(cpu);
-        core_machine_cpu_execution_refresh(cpu);
+        x86_core_cpu_execution_invalidate_prefetch(cpu);
+        x86_core_cpu_execution_refresh(cpu);
         failed |= core_machine_memory_read(machine, 0xa000u, &value, sizeof(value)) != LIB_STATUS_OK ||
             value != 0xbeefu || device.page_reads[3] != 4u ||
             device.page_writes[3] != 2u || device.pages[3] != 0xa063u ||
@@ -292,11 +292,11 @@ static lib_bool inspection_cache_execution(void)
         cpu->cache[0][3] = (cpu_cache_line){.tag = 0x11000u, .valid = LIB_TRUE,
             .data = {0x23u, 0u, 0u, 0x9003u}};
         if (cache_ram) cpu->cpu->data.cr0 |= VCPU_CR0_CD | VCPU_CR0_NW;
-        core_machine_cpu_execution_invalidate_tlb(cpu);
-        core_machine_cpu_execution_invalidate_prefetch(cpu);
+        x86_core_cpu_execution_invalidate_tlb(cpu);
+        x86_core_cpu_execution_invalidate_prefetch(cpu);
         cpu->cpu->data.eip = 0u;
         cpu->cpu->data.ax = 0u;
-        core_machine_cpu_execution_refresh(cpu);
+        x86_core_cpu_execution_refresh(cpu);
         failed |= cpu->cpu->data.ax != 0xbeefu || cpu->stop_requested ||
             cpu->cpu->data.eip != sizeof(read) ||
             !cpu->cache[0][3].valid || cpu->cache[0][3].tag != 0x11000u ||
@@ -309,9 +309,9 @@ static lib_bool inspection_cache_execution(void)
         const lib_u8 exchange[] = {0x87u, 0x06u, 0u, 0x80u};
         const lib_u16 original = 0x1111u;
 
-        core_machine_cpu_state_reset(cpu);
-        core_machine_cpu_execution_load_segment(cpu, &cpu->cpu->data.cs, 0u);
-        core_machine_cpu_execution_load_segment(cpu, &cpu->cpu->data.ds, 0u);
+        x86_core_cpu_state_reset(cpu);
+        x86_core_cpu_execution_load_segment(cpu, &cpu->cpu->data.cs, 0u);
+        x86_core_cpu_execution_load_segment(cpu, &cpu->cpu->data.ds, 0u);
         if (!cache_ram) cpu->cpu->data.cr0 &= ~(VCPU_CR0_CD | VCPU_CR0_NW);
         failed |= core_machine_memory_write(machine, 0u, exchange, sizeof(exchange)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x3000u, &original, sizeof(original)) != LIB_STATUS_OK;
@@ -324,7 +324,7 @@ static lib_bool inspection_cache_execution(void)
         device.request_dma_locked = LIB_TRUE;
         device.denied_dma_cycles = 0u;
         device.dma_lock_error = LIB_FALSE;
-        core_machine_cpu_execution_refresh(cpu);
+        x86_core_cpu_execution_refresh(cpu);
         failed |= cpu->cpu->data.ax != original || cpu->cpu->data.eip != sizeof(exchange) ||
             cpu->stop_requested || cpu->instructions->data.memory_lock_active ||
             cpu->instructions->data.flagLock ||
@@ -341,9 +341,9 @@ static lib_bool inspection_cache_execution(void)
 
 lib_i32 main(void)
 {
-    const core_machine_executor_config config = {.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386};
+    const core_machine_executor_config config = {.cpu_profile = X86_CORE_CPU_PROFILE_80386};
     core_machine *machine = LIB_NULL;
-    core_machine_cpu_instruction_lexeme lexeme;
+    x86_core_cpu_instruction_lexeme lexeme;
     inspection_probe probe = {0};
     lib_u8 bytes[4] = {0};
     lib_u8 expected[4] = {0x11u, 0x90u, 0x90u, 0x22u};
@@ -354,7 +354,7 @@ lib_i32 main(void)
     memory = &machine->executor_memory;
     /* With no external cache, Core still completes the special transaction. */
     failed |= core_machine_cpu_bus.cache_operation(machine,
-        CORE_MACHINE_CPU_CACHE_FLUSH) != LIB_STATUS_OK ||
+        X86_CORE_CPU_CACHE_FLUSH) != LIB_STATUS_OK ||
         machine->transaction.committed_count != 1u;
     {
         const core_machine_attachment attachment = {.context = &probe,
@@ -384,18 +384,18 @@ lib_i32 main(void)
         const lib_u64 cancelled = machine->transaction.cancelled_count;
         probe.control_status = LIB_STATUS_IO_ERROR;
         failed |= core_machine_cpu_bus.write_memory(machine, 0x3010u, &value, 1u,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0x18u) != LIB_STATUS_IO_ERROR ||
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0x18u) != LIB_STATUS_IO_ERROR ||
             probe.last_control != 0x18u || probe.control_count != 1u ||
             machine->transaction.cancelled_count != cancelled + 1u;
         probe.control_status = LIB_STATUS_OK;
         failed |= core_machine_cpu_bus.read_memory(machine, 0x3010u, &observed, 1u,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0x10u) != LIB_STATUS_OK ||
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0x10u) != LIB_STATUS_OK ||
             observed != 0u || probe.last_control != 0x10u || probe.control_count != 2u;
         failed |= core_machine_cpu_bus.read_memory(machine, 0x3010u, &observed, 1u,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_TRUE, LIB_FALSE, 0x18u) != LIB_STATUS_OK ||
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_TRUE, LIB_FALSE, 0x18u) != LIB_STATUS_OK ||
             probe.control_count != 2u;
         failed |= core_machine_cpu_bus.write_memory(machine, 0x3010u, &value, 1u,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 1u) != LIB_STATUS_INVALID_ARGUMENT ||
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 1u) != LIB_STATUS_INVALID_ARGUMENT ||
             probe.control_count != 2u ||
             machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE;
     }
@@ -405,61 +405,61 @@ lib_i32 main(void)
         const lib_u64 cancelled = machine->transaction.cancelled_count;
         probe.cache_fail = LIB_TRUE;
         failed |= core_machine_cpu_bus.cache_operation(machine,
-            CORE_MACHINE_CPU_CACHE_WRITEBACK) != LIB_STATUS_IO_ERROR ||
+            X86_CORE_CPU_CACHE_WRITEBACK) != LIB_STATUS_IO_ERROR ||
             machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
             machine->transaction.cancelled_count != cancelled + 1u ||
             machine->transaction.committed_count != committed;
         probe.cache_fail = LIB_FALSE;
         failed |= core_machine_cpu_bus.cache_operation(machine,
-            CORE_MACHINE_CPU_CACHE_FLUSH) != LIB_STATUS_OK ||
+            X86_CORE_CPU_CACHE_FLUSH) != LIB_STATUS_OK ||
             machine->transaction.committed_count != committed + 1u ||
             probe.cache_count != 2u ||
-            probe.cache_operations[0] != CORE_MACHINE_CPU_CACHE_WRITEBACK ||
-            probe.cache_operations[1] != CORE_MACHINE_CPU_CACHE_FLUSH;
+            probe.cache_operations[0] != X86_CORE_CPU_CACHE_WRITEBACK ||
+            probe.cache_operations[1] != X86_CORE_CPU_CACHE_FLUSH;
         failed |= core_machine_cpu_bus.cache_operation(machine,
-            (core_machine_cpu_cache_operation)2) != LIB_STATUS_INVALID_ARGUMENT ||
+            (x86_core_cpu_cache_operation)2) != LIB_STATUS_INVALID_ARGUMENT ||
             probe.cache_count != 2u;
     }
 
     /* Use the production CPU bus query: a narrow provider inside the line
      * disables fills even when the requested first byte is ordinary RAM. */
     {
-        core_machine_cpu_cache_memory cache;
+        x86_core_cpu_cache_memory cache;
         const lib_u32 queries = probe.queries;
 
         failed |= core_machine_cpu_bus.query_cache_memory(machine, 0x103010u,
-            CORE_MACHINE_CPU_CACHE_LOOKUP, &cache) != LIB_STATUS_OK ||
+            X86_CORE_CPU_CACHE_LOOKUP, &cache) != LIB_STATUS_OK ||
             cache.address != 0x3010u || cache.fill_enabled || probe.queries != queries;
         failed |= core_machine_cpu_bus.query_cache_memory(machine, 0xfffffff0u,
-            CORE_MACHINE_CPU_CACHE_RESET_LOOKUP, &cache) != LIB_STATUS_OK ||
+            X86_CORE_CPU_CACHE_RESET_LOOKUP, &cache) != LIB_STATUS_OK ||
             cache.address != 0xfffffff0u || cache.fill_enabled || probe.queries != queries;
         failed |= core_machine_cpu_bus.query_cache_memory(machine, 0x1000u,
-            (core_machine_cpu_cache_query)3, &cache) != LIB_STATUS_INVALID_ARGUMENT ||
+            (x86_core_cpu_cache_query)3, &cache) != LIB_STATUS_INVALID_ARGUMENT ||
             probe.queries != queries;
 
         failed |= core_machine_cpu_bus.query_cache_memory(machine, 0x1000u,
-            CORE_MACHINE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.address != 0x1000u ||
+            X86_CORE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.address != 0x1000u ||
             cache.fill_enabled;
         failed |= core_machine_cpu_bus.query_cache_memory(machine, 0x3010u,
-            CORE_MACHINE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.address != 0x3010u ||
+            X86_CORE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.address != 0x3010u ||
             !cache.fill_enabled;
         failed |= core_machine_cpu_bus.query_cache_memory(machine, 0x103010u,
-            CORE_MACHINE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.address != 0x3010u ||
+            X86_CORE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.address != 0x3010u ||
             !cache.fill_enabled;
         failed |= core_machine_cpu_bus.query_cache_memory(machine, 0xfffffff0u,
-            CORE_MACHINE_CPU_CACHE_RESET_LOOKUP, &cache) != LIB_STATUS_OK || cache.address != 0xfffffff0u ||
+            X86_CORE_CPU_CACHE_RESET_LOOKUP, &cache) != LIB_STATUS_OK || cache.address != 0xfffffff0u ||
             cache.fill_enabled || probe.reads != 0u || probe.parity != 0u;
         failed |= core_machine_cpu_bus.query_cache_memory(machine, 0x8000u,
-            CORE_MACHINE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.fill_enabled;
+            X86_CORE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.fill_enabled;
         probe.query_status = LIB_STATUS_IO_ERROR;
         failed |= core_machine_cpu_bus.query_cache_memory(machine, 0x1000u,
-            CORE_MACHINE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.fill_enabled;
+            X86_CORE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.fill_enabled;
         failed |= core_machine_memory_read_physical(memory, 0x1001u,
             (lib_uptr)bytes, 1u) != LIB_STATUS_IO_ERROR || probe.reads != 0u;
         probe.query_status = LIB_STATUS_OK;
         failed |= core_machine_signal_a20(machine, LIB_TRUE) != LIB_STATUS_OK;
         failed |= core_machine_cpu_bus.query_cache_memory(machine, 0x103010u,
-            CORE_MACHINE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.address != 0x103010u;
+            X86_CORE_CPU_CACHE_FILL_PROBE, &cache) != LIB_STATUS_OK || cache.address != 0x103010u;
         failed |= core_machine_signal_a20(machine, LIB_FALSE) != LIB_STATUS_OK;
     }
 
@@ -472,16 +472,16 @@ lib_i32 main(void)
 
         failed |= core_machine_cpu_bus.begin_memory_lock(machine) != LIB_STATUS_OK;
         failed |= core_machine_cpu_bus.read_memory(machine, 0x3010u, &entry, 4u,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
+            X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_CPU ||
             machine->transaction.committed_count != committed;
         failed |= core_machine_transaction_begin(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA, CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE,
             0x3010u, 4u, 0u) == LIB_STATUS_OK;
         failed |= core_machine_cpu_bus.read_memory(machine, 0x3010u, &entry, 4u,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK;
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK;
         failed |= core_machine_cpu_bus.write_memory(machine, 0x3010u, &updated, 4u,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE, 0u) != LIB_STATUS_OK ||
+            X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE, 0u) != LIB_STATUS_OK ||
             machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_CPU ||
             machine->transaction.committed_count != committed;
         core_machine_cpu_bus.complete_memory_lock(machine, LIB_TRUE);
@@ -497,10 +497,10 @@ lib_i32 main(void)
             probe.control_status = LIB_STATUS_IO_ERROR;
             if (write)
                 failed |= core_machine_cpu_bus.write_memory(machine, 0x3010u, &updated, 4u,
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE, 0u) != LIB_STATUS_IO_ERROR;
+                    X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE, 0u) != LIB_STATUS_IO_ERROR;
             else
                 failed |= core_machine_cpu_bus.read_memory(machine, 0x3010u, &entry, 4u,
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_IO_ERROR;
+                    X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_IO_ERROR;
             failed |= machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_CPU ||
                 machine->transaction.cancelled_count != before_cancel;
             core_machine_cpu_bus.complete_memory_lock(machine, LIB_FALSE);
@@ -512,7 +512,7 @@ lib_i32 main(void)
             core_machine_cpu_bus.begin_memory_lock(machine) != LIB_STATUS_OK ||
             core_machine_cpu_bus.begin_memory_lock(machine) != LIB_STATUS_INVALID_ARGUMENT;
         failed |= core_machine_cpu_bus.read_memory(machine, 0x3011u, &entry, 1u,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 1u) != LIB_STATUS_INVALID_ARGUMENT ||
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 1u) != LIB_STATUS_INVALID_ARGUMENT ||
             machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_CPU;
         core_machine_cpu_bus.complete_memory_lock(machine, LIB_FALSE);
         failed |= machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE;
@@ -533,7 +533,7 @@ lib_i32 main(void)
     probe.reads = probe.parity = 0u;
 
     /* Reset preview selects high ROM without A20 wrap or callback side effects. */
-    failed |= !core_machine_cpu_execution_preview_lexeme(
+    failed |= !x86_core_cpu_execution_preview_lexeme(
         machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
         lexeme.byte_count != 1u || probe.reads != 0u || probe.parity != 0u;
     failed |= core_machine_memory_read_reset_physical(memory, 0xfffffff0u,
@@ -542,7 +542,7 @@ lib_i32 main(void)
     probe.status = LIB_STATUS_IO_ERROR;
     failed |= core_machine_memory_inspect_physical(memory, 0x1001u,
         (lib_uptr)bytes, 1u, LIB_FALSE) != LIB_STATUS_IO_ERROR || probe.reads != 0u;
-    failed |= core_machine_cpu_execution_preview_lexeme(
+    failed |= x86_core_cpu_execution_preview_lexeme(
         machine->executor_cpu_execution, &lexeme) || lexeme.available ||
         probe.reads != 0u;
     probe.status = LIB_STATUS_OK;
@@ -556,14 +556,14 @@ lib_i32 main(void)
         const lib_u32 directory = 0x4003u, page = 0x5003u;
         lib_u32 copied = 0u;
         const lib_u8 nop = 0x90u;
-        const core_machine_debug_register_patch setup = {
-            .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR3),
-            .values = { [CORE_MACHINE_DEBUG_CR3] = 0x3000u }
+        const x86_core_cpu_debug_register_patch setup = {
+            .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR3),
+            .values = { [X86_CORE_CPU_DEBUG_CR3] = 0x3000u }
         };
         lib_u32 cr0;
 
@@ -574,12 +574,12 @@ lib_i32 main(void)
         failed |= core_machine_memory_write_physical(memory, 0x5000u,
             (lib_uptr)&nop, sizeof(nop)) != LIB_STATUS_OK;
         failed |= core_machine_debug_patch_registers(machine, &setup) != LIB_STATUS_OK ||
-            core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_CR0,
+            core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_CR0,
                 &cr0) != LIB_STATUS_OK ||
-            core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_CR0,
+            core_machine_debug_write_register(machine, X86_CORE_CPU_DEBUG_CR0,
                 cr0 | VCPU_CR0_PG | VCPU_CR0_PE) != LIB_STATUS_OK;
-        core_machine_cpu_execution_invalidate_prefetch(machine->executor_cpu_execution);
-        failed |= !core_machine_cpu_execution_preview_lexeme(
+        x86_core_cpu_execution_invalidate_prefetch(machine->executor_cpu_execution);
+        failed |= !x86_core_cpu_execution_preview_lexeme(
             machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
             lexeme.byte_count != 1u;
         failed |= core_machine_memory_inspect_physical(memory, 0x3000u,

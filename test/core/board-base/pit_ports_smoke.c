@@ -5,7 +5,7 @@ static lib_i32 check_ports(x86_pit_personality personality, lib_u16 base)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     core_machine *machine = LIB_NULL;
     x86_pit *pit = LIB_NULL;

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.23)
 if(NOT DEFINED CORE_ROOT)
     set(CORE_ROOT "${CMAKE_CURRENT_LIST_DIR}")
 endif()
-set(core_allowed_corpora core lib emulator x86-debug x86-ibmpc x86-nxvm)
+set(core_allowed_corpora core lib emulator x86-debug x86-ibmpc x86-nxvm x86-core)
 
 # Core owns the NXVM-only machine stack.  Validate source includes rather
 # than target names, so the boundary remains visible to standalone consumers.

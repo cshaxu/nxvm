@@ -12,9 +12,9 @@ static lib_i32 vm86_lgdt_lidt_case(lib_u8 reg)
 {
     vm86_delivery_state state;
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_diagnostic diagnostic;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_u32 frame[10u] = { 0u };
     lib_u8 source[6u] = { 0x5au, 0x5au, 0x5au, 0x5au, 0x5au, 0x5au };
     lib_u8 observed[6u] = { 0u };
@@ -53,7 +53,7 @@ static lib_i32 vm86_lgdt_lidt_case(lib_u8 reg)
                 VM86_STACK_TOP - 40u, (void *)frame,
                 sizeof(frame)) != LIB_STATUS_OK || frame[0] != 0u ||
             frame[1] != 0u || frame[2] != 0x0200u ||
-            frame[3] != (CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF |
+            frame[3] != (X86_CORE_CPU_DEBUG_EFLAGS_VM | X86_CORE_CPU_DEBUG_EFLAGS_IF |
                 0x00010000u) ||
             frame[4] != 0x1234u || frame[5] != 0x0300u ||
             frame[6] != 0x0500u || frame[7] != 0x0400u ||

@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 set(project_task_transition_cpu_source
-    "${PROJECT_SOURCE_DIR}/src/core/chips/cpu/cpu_instructions.c")
+    "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_instructions.c")
 if(NOT EXISTS "${project_task_transition_cpu_source}")
     message(FATAL_ERROR "CPU instruction source is required.")
 endif()

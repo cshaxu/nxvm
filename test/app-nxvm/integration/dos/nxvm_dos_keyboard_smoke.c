@@ -142,7 +142,7 @@ static lib_i32 vm_dos_keyboard_verify_text_frame(vm_machine *session)
 }
 
 static void vm_dos_keyboard_report_failure(const vm_machine *session,
-    const core_machine_cpu_state *state)
+    const x86_core_cpu_state *state)
 {
     core_machine_guest_display_frame frame;
     lib_u16 head = 0u;
@@ -208,7 +208,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         Sleep(10u);
     }
     if (elapsed == prompt_timeout) {
-        core_machine_cpu_state state;
+        x86_core_cpu_state state;
 
         if (integration_ini_session_pause(&ini_session, 500u) == LIB_STATUS_OK &&
             core_machine_debug_read_cpu(session->core_machine, &state) ==
@@ -233,7 +233,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             Sleep(10u);
         }
         if (elapsed == prompt_timeout) {
-            core_machine_cpu_state state;
+            x86_core_cpu_state state;
 
             if (integration_ini_session_pause(&ini_session, 500u) == LIB_STATUS_OK &&
                 core_machine_debug_read_cpu(session->core_machine, &state) ==
@@ -260,7 +260,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     }
     if (elapsed == edit_timeout) {
         vm_machine_fault_outcome outcome;
-        core_machine_cpu_state state;
+        x86_core_cpu_state state;
 
         if (integration_ini_session_pause(&ini_session, 500u) == LIB_STATUS_OK &&
             core_machine_debug_read_cpu(session->core_machine, &state) ==

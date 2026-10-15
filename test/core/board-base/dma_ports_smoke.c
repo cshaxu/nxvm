@@ -5,7 +5,7 @@ static lib_i32 check_bus(lib_u8 controllers)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const core_machine_dma_channel_provider provider = {0};
     core_machine *machine = LIB_NULL;

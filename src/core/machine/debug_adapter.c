@@ -22,19 +22,19 @@ static lib_status vm_machine_debug_status_from_type(lib_status status)
 
 static lib_status vm_machine_debug_map_watch(
     x86_debug_watch_kind source,
-    core_machine_debug_watch_kind *out_target)
+    x86_core_cpu_debug_watch_kind *out_target)
 {
     if (out_target == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     switch (source) {
-    case X86_DEBUG_WATCH_READ: *out_target = CORE_MACHINE_DEBUG_WATCH_READ; return LIB_STATUS_OK;
-    case X86_DEBUG_WATCH_WRITE: *out_target = CORE_MACHINE_DEBUG_WATCH_WRITE; return LIB_STATUS_OK;
-    case X86_DEBUG_WATCH_EXECUTE: *out_target = CORE_MACHINE_DEBUG_WATCH_EXECUTE; return LIB_STATUS_OK;
+    case X86_DEBUG_WATCH_READ: *out_target = X86_CORE_CPU_DEBUG_WATCH_READ; return LIB_STATUS_OK;
+    case X86_DEBUG_WATCH_WRITE: *out_target = X86_CORE_CPU_DEBUG_WATCH_WRITE; return LIB_STATUS_OK;
+    case X86_DEBUG_WATCH_EXECUTE: *out_target = X86_CORE_CPU_DEBUG_WATCH_EXECUTE; return LIB_STATUS_OK;
     default: return LIB_STATUS_INVALID_ARGUMENT;
     }
 }
 
 static void vm_machine_debug_copy_observation(x86_debug_observation *out_observation,
-    const core_machine_debug_instruction_observation *source)
+    const x86_core_cpu_debug_instruction_observation *source)
 {
     lib_u8 index;
 
@@ -57,7 +57,7 @@ static void vm_machine_debug_copy_observation(x86_debug_observation *out_observa
 
 static void vm_machine_debug_copy_segment(
     x86_debug_segment_snapshot *out_segment,
-    const core_machine_debug_segment_snapshot *source)
+    const x86_core_cpu_debug_segment_snapshot *source)
 {
     if (out_segment == LIB_NULL || source == LIB_NULL) return;
     *out_segment = (x86_debug_segment_snapshot) {
@@ -74,13 +74,13 @@ static void vm_machine_debug_copy_segment(
 static lib_status vm_machine_debug_capture_cpu(vm_machine *machine,
     x86_debug_cpu_snapshot *out_snapshot)
 {
-    core_machine_debug_cpu_snapshot state;
+    x86_core_cpu_debug_cpu_snapshot state;
     lib_status status;
 
     if (machine == LIB_NULL || out_snapshot == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     status = core_machine_debug_capture_cpu_snapshot(machine->core_machine,
-        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &state);
+        X86_CORE_CPU_SNAPSHOT_CURRENT, &state);
     if (status != LIB_STATUS_OK) return vm_machine_debug_status_from_type(status);
     lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
     vm_machine_debug_copy_segment(&out_snapshot->es, &state.es);
@@ -102,8 +102,8 @@ static lib_status vm_machine_debug_capture_cpu(vm_machine *machine,
 static lib_status vm_machine_debug_execute_request(vm_machine *machine,
     const x86_debug_request *request, x86_debug_response *out_result)
 {
-    core_machine_debug_register register_id;
-    core_machine_debug_watch_kind watch_kind;
+    x86_core_cpu_debug_register register_id;
+    x86_core_cpu_debug_watch_kind watch_kind;
     lib_u32 value = 0u;
     lib_status status;
 
@@ -111,8 +111,8 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
         request->bytes > X86_DEBUG_BYTES) return LIB_STATUS_INVALID_ARGUMENT;
     lib_memory_set(out_result, 0, sizeof(*out_result));
     if (request->operation == X86_DEBUG_READ_REGISTER || request->operation == X86_DEBUG_WRITE_REGISTER) {
-        if (request->register_id >= CORE_MACHINE_DEBUG_REGISTER_COUNT) return LIB_STATUS_INVALID_ARGUMENT;
-        register_id = (core_machine_debug_register)request->register_id;
+        if (request->register_id >= X86_CORE_CPU_DEBUG_REGISTER_COUNT) return LIB_STATUS_INVALID_ARGUMENT;
+        register_id = (x86_core_cpu_debug_register)request->register_id;
         if (request->operation == X86_DEBUG_READ_REGISTER) {
             status = core_machine_debug_read_register(machine->core_machine,
                 register_id, &out_result->value);

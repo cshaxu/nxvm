@@ -10,7 +10,7 @@ lib_i32 main(void)
         .memory_bytes = 1024u * 1024u,
         .floppy_format = VM_MACHINE_FLOPPY_FORMAT_1200K,
         .floppy_mode = {LIB_STORAGE_MEDIUM_READONLY, LIB_STORAGE_MEDIUM_OVERLAY},
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const vm_machine_assets copied_assets = assets;
@@ -22,6 +22,6 @@ lib_i32 main(void)
         copied_config.floppy_format != VM_MACHINE_FLOPPY_FORMAT_1200K ||
         copied_config.floppy_mode[0] != LIB_STORAGE_MEDIUM_READONLY ||
         copied_config.floppy_mode[1] != LIB_STORAGE_MEDIUM_OVERLAY ||
-        copied_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+        copied_config.cpu_profile != X86_CORE_CPU_PROFILE_80386 ||
         copied_config.fpu_profile != X86_FPU_PROFILE_NONE;
 }

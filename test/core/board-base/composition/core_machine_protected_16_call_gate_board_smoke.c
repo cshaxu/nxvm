@@ -1,6 +1,6 @@
 #include "lib/types/file.h"
 #include "support/protected_16_bootstrap_fixture.h"
-#include "core/chips/cpu/cpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
 #define S47_GATE_SELECTOR 0x0033u
 #define S47_TARGET 0x0320u
 #define S47_GP_HANDLER 0x0340u
@@ -44,13 +44,13 @@ static lib_i32 s47_write_call(test_protected_16_machine *state,
         0x0100u, call, sizeof(call));
 }
 
-static lib_i32 s47_outer_success(core_machine_cpu_profile profile,
+static lib_i32 s47_outer_success(x86_core_cpu_profile profile,
     lib_i32 tss32)
 {
     static const lib_u16 parameters[] = {0x1234u,0xabcdu};
     test_protected_16_machine state;
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u16 frame[6u] = {0};
     lib_i32 failed = !test_protected_16_prepare(&state, profile) ||
         !test_protected_16_enter_user_with_tss(&state, profile, tss32);
@@ -83,10 +83,10 @@ static lib_i32 s47_same_cpl(void)
         (lib_u8)(S47_TARGET >> 8u),0x30u,0u};
     test_protected_16_machine state;
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_u16 frame[2u] = {0};
     lib_i32 failed = !test_protected_16_prepare(&state,
-        CORE_MACHINE_CPU_PROFILE_80386);
+        X86_CORE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed = !s47_install_call_gate(&state, 0u, 2u) ||
@@ -110,11 +110,11 @@ static lib_i32 s47_dpl_rejection(void)
 {
     test_protected_16_machine state;
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
-    core_machine_debug_cpu_snapshot snapshot = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
     lib_i32 failed = !test_protected_16_prepare(&state,
-        CORE_MACHINE_CPU_PROFILE_80386) || !test_protected_16_enter_user(&state,
-        CORE_MACHINE_CPU_PROFILE_80386);
+        X86_CORE_CPU_PROFILE_80386) || !test_protected_16_enter_user(&state,
+        X86_CORE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed = !s47_install_call_gate(&state, 0u, 2u) ||
@@ -142,9 +142,9 @@ static lib_i32 s47_dpl_rejection(void)
 
 int main(void)
 {
-    if (!s47_outer_success(CORE_MACHINE_CPU_PROFILE_80286, LIB_FALSE)) return 1;
-    if (!s47_outer_success(CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE)) return 2;
-    if (!s47_outer_success(CORE_MACHINE_CPU_PROFILE_80386, LIB_TRUE)) return 3;
+    if (!s47_outer_success(X86_CORE_CPU_PROFILE_80286, LIB_FALSE)) return 1;
+    if (!s47_outer_success(X86_CORE_CPU_PROFILE_80386, LIB_FALSE)) return 2;
+    if (!s47_outer_success(X86_CORE_CPU_PROFILE_80386, LIB_TRUE)) return 3;
     if (!s47_same_cpl()) return 4;
     if (!s47_dpl_rejection()) return 5;
     lib_c_printf("PROTECTED-16-CALL-GATE:OK\n");

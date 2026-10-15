@@ -178,6 +178,22 @@ behavior stay with NXVM. App tests may use real lower layers but assert their
 own composition, not duplicate entire instruction or device suites. Record
 moved/deleted tests by behavior; deduplication must not silently lose coverage.
 
+The owner's S3 clarification requires the complete new source/test component
+hierarchies to mirror one another. CPU-specific C/CMake checks belong under
+test/x86-core/cpu, FPU cases under fpu, and execution cases under machine.
+NXVM chip/board/machine/product cases likewise follow their production leaf.
+Only package-level registration, manifests and package boundary checks remain
+at package roots; fixture support stays inside its actual component owner.
+
+S3's receiving sweep additionally records the existing Core execution tests
+`core_machine_system_power`, `core_machine_memory_inspection` and
+`core_machine_executor_run`, plus the PC/PIC `cpu_instruction_fixture` family,
+as white-box CPU-header consumers. S5 reviews the execution cases with their
+Machine owner; S6 must remove the higher board fixture's private CPU-layout
+borrowing. No production caller may acquire that dependency. The final I5
+audit checks this explicitly rather than treating independent CPU tests alone
+as proof that every outer receiver already obeys the final boundary.
+
 Require a ROM-free synthetic non-PC board that uses public X86 Core interfaces
 only and links no PC chip/board/product or private test fixture. Prove real CPU
 reset fetch through board ROM mapping, RAM/MMIO and unmapped/alias behavior,

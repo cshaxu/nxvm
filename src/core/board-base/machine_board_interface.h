@@ -56,7 +56,7 @@ typedef enum core_machine_keyboard_topology {
 
 typedef struct core_machine_config {
     lib_size memory_bytes;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     x86_fpu_profile fpu_profile;
     /* Original 80386 silicon accepts MOV CR ModR/M forms with MOD other
      * than 11b, using the r/m field as the general-register selector. */
@@ -64,7 +64,7 @@ typedef struct core_machine_config {
     core_machine_a20_wrap_policy a20_wrap_policy;
     /* Compatibility base-cost shorthand when instruction_timing.base_ticks is 0. */
     lib_u32 ticks_per_instruction;
-    core_machine_instruction_timing instruction_timing;
+    x86_core_cpu_instruction_timing instruction_timing;
     core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
     /* Frozen shared system-PIT chip selection; zero preserves 8254 users. */

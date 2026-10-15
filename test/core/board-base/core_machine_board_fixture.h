@@ -12,12 +12,12 @@ static inline lib_i32 test_core_machine_fixture_nmi_prepare(core_machine *machin
     const lib_u8 program[] = {0x90u, 0x90u, 0xf4u};
     const lib_u8 handler = 0xf4u;
     const lib_u8 vector[] = {0x00u, 0x02u, 0x00u, 0x00u};
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP),
-        .values = {[CORE_MACHINE_DEBUG_ESP] = 0x1000u}
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP),
+        .values = {[X86_CORE_CPU_DEBUG_ESP] = 0x1000u}
     };
 
     return core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
@@ -29,7 +29,7 @@ static inline lib_i32 test_core_machine_fixture_nmi_prepare(core_machine *machin
 static inline lib_i32 test_core_machine_fixture_nmi_execute(core_machine *machine, lib_bool delivered)
 {
     core_machine_run_result result;
-    core_machine_cpu_state state;
+    x86_core_cpu_state state;
 
     /* Prove the CPU consumes the board signal through vector 2, rather than
      * reading its private pending bit. Masked execution must stay at the NOP. */

@@ -4,10 +4,32 @@
 
 M5 T561 remains open. S1 is accepted after coordinator actual-change review of
 pushed Shared `15d86fc8e` and NXVM `6c95c2da3`. S2 is accepted after coordinator
-actual-change review of pushed `82e3257cc`. No S is active; planned S3 is
-CPU/FPU extraction, not CPU completion.
+actual-change review of pushed `82e3257cc`. S3 CPU/FPU extraction is implemented
+and dual-width qualified; Shared publication is pushed as `8bb5bcaa5` and
+NXVM cutover delivery awaits coordinator review, not CPU completion.
 The [proposal](../proposals/m5-core-x86-core-nxvm-split.md) and
 [convergence ledger](../history/M5-T561-core-package-split.md) retain I1--I5.
+
+## Active Packet — M5 T561 S3
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T561 S3 after accepted S2 `1ecd72846`; one-session coordinator/executor. |
+| Admission And Approval | Owner approves executing the frozen split plan. Targets: Shared extraction/root registration and NXVM receiver/docs/eight PC artifacts; separate sequential P commits, reviewed as the coordinated cutover. No MyNES implementation changes. |
+| Objective | Consume I2: move the sole CPU/FPU implementation and 106 matching test files into x86-core/cpu and fpu; canonical owned symbols, standalone targets/tests and every existing receiver. |
+| Non-goals | No instruction/table/timing algorithm changes, new CPU profiles, C16/C17 qualification, neutral-machine extraction, PC policy redesign, Lib/Emulator edits, sibling imports or unrelated cleanup. |
+| Reference Baseline | Clean `1ecd72846`, S2's frozen inventory `8db742b6d`, CPU semantic baseline `b906c7138`. |
+| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), [S2 inventory](../etc/evidence/t561-s2/review.md), I2 in T561 history. |
+| Files And ABI Surface | Move 12 CPU/FPU implementation/header files and 106 test-package files, six CPU-local checkers into test/x86-core/cpu and registration; update Core/App consumers, tools/checkers/build descriptions and manifests. Owner additionally requires src/test component hierarchy symmetry. S2's 118 total was correct, but its source/test split missed cpu_trace.h; exact paths do not expand. Rename only CPU-owned declarations, not unrelated Core functions sharing a prefix. Preserve copied/opaque API shape and enum values. |
+| Applicable Rules | EXECUTION/ARCHITECTURE/CODING/DOCUMENT, NXVM design ARCHITECTURE/CODING and source policy; architecture-governance before coding-governance. Ownership, no reverse dependency, Types vocabulary, no duplicate path, exact style/algorithm preservation. |
+| Verification | Original x64/x86 Release Ninja/ccache graphs, -j8; standalone x86-core test registration and targets in those graphs; complete repository units -j4, existing specialized gates and required receiving regressions; rebuild/deploy all eight 0561 PC EXEs and check architecture/identity/hash. Validate manifests/DAG/types/old-path sweep and documentation. No new graph or cache reset. |
+| Expected Markers | CPU/FPU tests pass independently of PC targets; complete units/gates pass both widths; eight current PC artifacts; no retired CPU/FPU path/target/symbol in live code; normalized CPU/FPU algorithm diff empty. |
+| Asset Needs | Existing approved external build inputs only; preserve INI/media/ROM/snapshot and MyNES assets. Eight PC executable inputs change and require rebuilding 0.5.0561, no fabricated MyNES update. |
+| Reporting Requirements | Initial scope/estimated diff, progress at extraction/build/qualification, actual rename-aware and non-mechanical counts, retained dependencies/limitations, logs and pushed commits. |
+| Stop Conditions | Semantic/table/ABI-layout drift, new outward dependency, unclassified source conflict, missing architecture/input, failed qualification or changes required to Lib/Emulator; do not lower assertions/budgets or claim partial pass. |
+| Exit Criteria | Sole CPU/FPU owner, independent tests with no PC fixture dependency, all receivers repaired, complete required dual-width proof/artifacts and actual-change review; push complete target-separated delivery, then governance acceptance. T stays open. |
+| Original Owner Request | Proceed with the agreed x86-core/x86-nxvm split; keep Product a separate child and execute the next bounded S. |
+| Similar-Issue Sweep | All live src/test/cmake/tools CPU/FPU includes, owned declarations and target references; route old checkers to the new owner, retain historic evidence keys; verify moved files are equivalent after reversing mechanical names/paths. |
 
 ## Accepted S2 Inventory
 

@@ -52,10 +52,10 @@ typedef struct vm_profile_default_pc_at_firmware_service {
 } vm_profile_default_pc_at_firmware_service;
 
 typedef struct vm_profile_default_pc_at_cpu_contract {
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     x86_fpu_profile fpu_profile;
     lib_u32 ticks_per_instruction;
-    core_machine_instruction_timing instruction_timing;
+    x86_core_cpu_instruction_timing instruction_timing;
     core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
     core_machine_time_axis time_axis;
@@ -70,10 +70,10 @@ typedef struct vm_profile_default_pc_at_cpu_contract {
 typedef struct vm_profile_default_pc_at_descriptor {
     const char *identity;
     lib_u32 compatibility_revision;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     x86_fpu_profile fpu_profile;
     lib_u32 ticks_per_instruction;
-    core_machine_instruction_timing instruction_timing;
+    x86_core_cpu_instruction_timing instruction_timing;
     core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
     core_machine_time_axis time_axis;
@@ -150,12 +150,12 @@ typedef struct vm_profile_default_pc_at_plan_snapshot {
 } vm_profile_default_pc_at_plan_snapshot;
 
 lib_i32 vm_profile_default_pc_at_cpu_profile_is_valid(
-    core_machine_cpu_profile profile);
+    x86_core_cpu_profile profile);
 lib_i32 vm_profile_default_pc_at_fpu_profile_is_valid(
     x86_fpu_profile profile);
 lib_i32 vm_profile_default_pc_at_cpu_contract_select(
     const vm_profile_default_pc_at_descriptor *descriptor,
-    core_machine_cpu_profile requested_cpu,
+    x86_core_cpu_profile requested_cpu,
     x86_fpu_profile requested_fpu,
     vm_profile_default_pc_at_cpu_contract *out_contract);
 lib_i32 vm_profile_default_pc_at_core_config_materialize(
@@ -169,7 +169,7 @@ lib_status vm_profile_default_pc_at_topology_materialize(
     core_machine_plan_topology *out_topology);
 lib_status vm_profile_default_pc_at_values_create(
     const vm_profile_default_pc_at_descriptor *descriptor,
-    core_machine_cpu_profile cpu_profile, x86_fpu_profile fpu_profile,
+    x86_core_cpu_profile cpu_profile, x86_fpu_profile fpu_profile,
     vm_profile_contract_values *out_values);
 lib_status vm_profile_default_pc_at_snapshot_copy(
     vm_profile_default_pc_at_plan_snapshot *out_profile,

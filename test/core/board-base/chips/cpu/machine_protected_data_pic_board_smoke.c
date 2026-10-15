@@ -15,8 +15,8 @@ int main(void)
         lib_memory_copy(board.cpu.memory + CPU_PROTECTED_CODE_BASE, code, sizeof(code));
         board.cpu.cpu.data.eax = 0xaabbcc44u;
         protected_pic_board_raise(&board);
-        core_machine_cpu_execution_refresh(&board.cpu.execution);
-        core_machine_cpu_execution_refresh(&board.cpu.execution);
+        x86_core_cpu_execution_refresh(&board.cpu.execution);
+        x86_core_cpu_execution_refresh(&board.cpu.execution);
         after = board.cpu.cpu;
         lib_memory_copy(&frame_ip, board.cpu.memory + CPU_PROTECTED_STACK_BASE +
             (lib_u16)after.data.esp, sizeof(frame_ip));

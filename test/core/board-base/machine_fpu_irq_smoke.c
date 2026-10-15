@@ -11,27 +11,27 @@ typedef struct fpu_interface_machine {
     core_machine_board_state *board;
 } fpu_interface_machine;
 
-static core_machine_debug_cpu_snapshot fpu_interface_capture(core_machine *machine)
+static x86_core_cpu_debug_cpu_snapshot fpu_interface_capture(core_machine *machine)
 {
-    core_machine_debug_cpu_snapshot snapshot = {0};
-    if (core_machine_debug_capture_cpu_snapshot(machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT,
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
+    if (core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
             &snapshot) != LIB_STATUS_OK) lib_test_assert(LIB_FALSE);
     return snapshot;
 }
 
-static lib_i32 fpu_interface_prepare(core_machine_cpu_profile profile,
+static lib_i32 fpu_interface_prepare(x86_core_cpu_profile profile,
     x86_fpu_profile fpu_profile, fpu_interface_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile, .fpu_profile = fpu_profile
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
         .values = {0}
     };
     lib_memory_set(state, 0, sizeof(*state));
@@ -49,12 +49,12 @@ static lib_i32 fpu_interface_irq(const lib_u8 *instruction,
     fpu_interface_machine state = {0};
     core_machine_pic_irq_source *irq = LIB_NULL;
     core_machine_run_result result;
-    core_machine_debug_cpu_snapshot before;
-    core_machine_debug_cpu_snapshot after;
+    x86_core_cpu_debug_cpu_snapshot before;
+    x86_core_cpu_debug_cpu_snapshot after;
     lib_u8 code[8] = { 0u };
     lib_u16 frame_ip = 0u;
     lib_i32 failed = instruction_size >= sizeof(code) ||
-        !fpu_interface_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        !fpu_interface_prepare(X86_CORE_CPU_PROFILE_80386,
             X86_FPU_PROFILE_NONE, &state);
 
     if (!failed) {
@@ -70,8 +70,8 @@ static lib_i32 fpu_interface_irq(const lib_u8 *instruction,
             sizeof(hlt)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS,
-            test_core_machine_fixture_read_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS) | CORE_MACHINE_DEBUG_EFLAGS_IF);
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS,
+            test_core_machine_fixture_read_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS) | X86_CORE_CPU_DEBUG_EFLAGS_IF);
         before = fpu_interface_capture(state.machine);
         lib_memory_set(&irq, 0, sizeof(irq));
         test_pic_program_vector(state.board->shared_pic_master, 0x20u);

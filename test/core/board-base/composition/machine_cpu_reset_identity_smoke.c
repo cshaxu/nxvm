@@ -8,7 +8,7 @@ lib_i32 main(void)
     core_machine_config config = { .memory_bytes = 0u };
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
-    core_machine_cpu_execution_context *cpu;
+    x86_core_cpu_execution_context *cpu;
     lib_i32 failed = 0;
 
     failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;

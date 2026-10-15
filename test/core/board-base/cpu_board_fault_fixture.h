@@ -23,20 +23,20 @@ static lib_i32 test_cpu_board_faults(const test_cpu_board_fault_case *cases,
     for (lib_size index = 0u; index < count; ++index) {
         const test_cpu_board_fault_case *entry = &cases[index];
         core_machine *machine = LIB_NULL;
-        core_machine_debug_cpu_snapshot after = {0};
+        x86_core_cpu_debug_cpu_snapshot after = {0};
         core_machine_run_result result = {0};
-        core_machine_debug_register_patch patch = {0};
+        x86_core_cpu_debug_register_patch patch = {0};
         lib_u16 observed = 0u;
         lib_i32 failed = !test_cpu_board_limit_prepare(&machine, entry->code,
             entry->bytes, entry->writable, entry->out_of_limit);
 
         if (!failed) {
-            patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS);
-            patch.values[CORE_MACHINE_DEBUG_EAX] = entry->eax;
-            patch.values[CORE_MACHINE_DEBUG_EDX] = entry->edx;
-            patch.values[CORE_MACHINE_DEBUG_EFLAGS] = entry->flags;
+            patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+                X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS);
+            patch.values[X86_CORE_CPU_DEBUG_EAX] = entry->eax;
+            patch.values[X86_CORE_CPU_DEBUG_EDX] = entry->edx;
+            patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = entry->flags;
             failed = core_machine_debug_patch_registers(machine, &patch) !=
                     LIB_STATUS_OK ||
                 core_machine_memory_write(machine, 0x3010u, &entry->memory,
@@ -44,7 +44,7 @@ static lib_i32 test_cpu_board_faults(const test_cpu_board_fault_case *cases,
                 !test_core_machine_fixture_shutdown_wait(core_machine_run(machine,
                     (core_machine_run_budget){1u,0u}, &result), &result) ||
                 core_machine_debug_capture_cpu_snapshot(machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 core_machine_debug_read_real(machine, 0x0301u, 0u,
                     &observed, sizeof(observed)) != LIB_STATUS_OK ||
                 observed != entry->memory || after.eax != entry->eax ||

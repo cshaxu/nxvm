@@ -58,7 +58,7 @@ lib_i32 main(void)
     vm_machine_config invalid_config = {0};
     vm_machine_assets missing_assets = {0};
     vm_machine *session = LIB_NULL;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     lib_size memory_bytes;
     mydeskpro386_d4_platform_observation d4;
     lib_u32 value = 0u;
@@ -81,7 +81,7 @@ lib_i32 main(void)
         LIB_STATUS_OK || session == LIB_NULL || session->core_machine == LIB_NULL ||
         !vm_test_profile_is_model40(vm_test_profile_construction(session)) ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
-            LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+            LIB_STATUS_OK || cpu_profile != X86_CORE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
             LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
         vm_test_model40_d4_observe(session, &d4) !=

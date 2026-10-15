@@ -34,7 +34,7 @@ static void board_phase_refresh_nmi(void *owner)
     board_phase_probe *probe = owner;
     core_machine *machine = probe->machine;
     ++probe->calls[2];
-    probe->failed |= core_machine_cpu_nmi_is_masked(machine->executor_cpu_execution);
+    probe->failed |= x86_core_cpu_nmi_is_masked(machine->executor_cpu_execution);
 }
 
 static void board_phase_finalize_devices(void *owner)
@@ -125,7 +125,7 @@ static lib_i32 verify_deadline_admission(void)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS
     };
     deadline_probe probe = {.due = 5u, .l1_until = 3u};
@@ -164,7 +164,7 @@ lib_i32 main(void)
 {
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .ticks_per_instruction = 1u
     };
     if (verify_board_phases(&config) || verify_deadline_admission()) return 1;

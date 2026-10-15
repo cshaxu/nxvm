@@ -203,9 +203,9 @@ static lib_i32 lifecycle_cpu_memory_boundaries(void)
                 probe.count = 0u;
             }
             status = write ? core_machine_cpu_bus.write_memory(machine,
-                0x80000u, &value, 1u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) :
+                0x80000u, &value, 1u, X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) :
                 core_machine_cpu_bus.read_memory(machine, 0x80000u, &value, 1u,
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u);
+                    X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u);
             failed |= status != (outcome == 0u ? LIB_STATUS_OK :
                 outcome == 1u ? LIB_STATUS_IO_ERROR : LIB_STATUS_INVALID_ARGUMENT);
             failed |= probe.transfers != (outcome == 2u ? 0u : 1u);
@@ -223,7 +223,7 @@ static lib_i32 lifecycle_cpu_memory_boundaries(void)
                         CORE_MACHINE_TRACE_TRANSACTION_COMMIT : CORE_MACHINE_TRACE_TRANSACTION_CANCEL) ||
                     ((probe.events[0].detail >> 8u) & 0xffu) != (write ?
                         CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE : CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ) ||
-                    (probe.events[0].detail >> 16u) != CORE_MACHINE_CPU_MEMORY_ACCESS_DATA ||
+                    (probe.events[0].detail >> 16u) != X86_CORE_CPU_MEMORY_ACCESS_DATA ||
                     machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE;
             }
         }
@@ -232,7 +232,7 @@ static lib_i32 lifecycle_cpu_memory_boundaries(void)
         lib_u8 value = 0u;
         probe = (lifecycle_probe){ .memory_value = 0x7eu };
         failed |= core_machine_cpu_bus.read_memory(machine, 0x80000u, &value, 1u,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_TRUE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_TRUE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             value != 0x7eu || probe.count != 0u || probe.transfers != 0u;
         core_machine_cpu_bus.extension_command(machine, 0xd9u, 0xe8u);
         failed |= probe.count != 2u ||
@@ -269,7 +269,7 @@ lib_i32 main(void)
     lib_u32 cpu_retire = 0u;
     lib_i32 failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
+    config.cpu_profile = X86_CORE_CPU_PROFILE_80286;
     trace.callback = lifecycle_trace;
     trace.context = &probe;
     if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) return 1;

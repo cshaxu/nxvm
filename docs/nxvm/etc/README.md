@@ -1,5 +1,8 @@
 # Supporting Documentation Index
 
+T561 S3: [CPU/FPU extraction review](evidence/t561-s3/review.md) records the
+complete path/symbol diff, independent package boundaries and receiving proof.
+
 T561 S2: [Complete Core disposition and contract inventory](evidence/t561-s2/review.md)
 records every source/test destination, symbol and build receiver, PC-policy
 separation and the bounded extraction sequence. It is not runtime qualification.

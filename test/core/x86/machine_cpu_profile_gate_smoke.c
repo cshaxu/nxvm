@@ -12,7 +12,7 @@ typedef struct cpu_profile_machine {
 
 /* REAL_UD_TERMINAL_IVT_REJECT: fault cases make the IVT route
  * unavailable, without changing CPU IDTR. */
-static lib_i32 prepare_machine(core_machine_cpu_profile profile,
+static lib_i32 prepare_machine(x86_core_cpu_profile profile,
     cpu_profile_machine *state, lib_bool terminal_ud)
 {
     const core_machine_executor_config config = {
@@ -20,12 +20,12 @@ static lib_i32 prepare_machine(core_machine_cpu_profile profile,
         .cpu_profile = profile,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
     if (state == LIB_NULL) return 1;
     lib_memory_set(state, 0, sizeof(*state));
@@ -41,13 +41,13 @@ static lib_i32 prepare_machine(core_machine_cpu_profile profile,
     return 0;
 }
 
-static lib_i32 run_case(core_machine_cpu_profile profile, const lib_u8 *program,
+static lib_i32 run_case(x86_core_cpu_profile profile, const lib_u8 *program,
     lib_size program_size, lib_i32 expect_ud)
 {
     cpu_profile_machine state;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
     lib_status run_status = LIB_STATUS_INVALID_STATE;
     lib_i32 failed = prepare_machine(profile, &state, expect_ud != 0);
 
@@ -61,9 +61,9 @@ static lib_i32 run_case(core_machine_cpu_profile profile, const lib_u8 *program,
         if (expect_ud) {
             failed |= !diagnostic.first_fault.valid ||
                 diagnostic.first_fault.exception_mask !=
-                    (profile < CORE_MACHINE_CPU_PROFILE_80186 ?
+                    (profile < X86_CORE_CPU_PROFILE_80186 ?
                         VCPUINS_EXCEPT_UD : VCPUINS_EXCEPT_CE) ||
-                (profile >= CORE_MACHINE_CPU_PROFILE_80186 &&
+                (profile >= X86_CORE_CPU_PROFILE_80186 &&
                     diagnostic.first_fault.exception_code != 6u * 4u) ||
                 diagnostic.first_fault.point.bytes[0] != program[0];
         } else {
@@ -83,11 +83,11 @@ static lib_i32 run_pop_cs_8086(void)
     static const lib_u8 program[] = { 0xbcu, 0x00u, 0x01u, 0x0fu };
     lib_u8 selector[2] = { 0u, 0u };
     cpu_profile_machine state;
-    core_machine_cpu_state cpu;
+    x86_core_cpu_state cpu;
     core_machine_run_budget budget = { 2u, 0u };
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    lib_i32 failed = prepare_machine(CORE_MACHINE_CPU_PROFILE_8086, &state, LIB_FALSE);
+    x86_core_cpu_diagnostic diagnostic;
+    lib_i32 failed = prepare_machine(X86_CORE_CPU_PROFILE_8086, &state, LIB_FALSE);
 
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0u, program,
@@ -109,11 +109,11 @@ static lib_i32 run_mov_rm8_imm8_8086(void)
     static const lib_u8 program[] = { 0xc6u, 0x06u, 0xbeu, 0x1fu, 0x01u };
     lib_u8 value = 0u;
     cpu_profile_machine state;
-    core_machine_cpu_state cpu;
+    x86_core_cpu_state cpu;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    lib_i32 failed = prepare_machine(CORE_MACHINE_CPU_PROFILE_8086, &state, LIB_FALSE);
+    x86_core_cpu_diagnostic diagnostic;
+    lib_i32 failed = prepare_machine(X86_CORE_CPU_PROFILE_8086, &state, LIB_FALSE);
 
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0u, program,
@@ -135,7 +135,7 @@ lib_i32 main(void)
 {
     const core_machine_executor_config unqualified = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80486SX,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     core_machine *unqualified_machine = LIB_NULL;
@@ -152,18 +152,18 @@ lib_i32 main(void)
     failed |= unqualified_machine != LIB_NULL;
     core_machine_destroy(unqualified_machine);
 
-    failed |= run_case(CORE_MACHINE_CPU_PROFILE_8086, nop, sizeof(nop), 0);
-    failed |= run_case(CORE_MACHINE_CPU_PROFILE_8088, nop, sizeof(nop), 0);
+    failed |= run_case(X86_CORE_CPU_PROFILE_8086, nop, sizeof(nop), 0);
+    failed |= run_case(X86_CORE_CPU_PROFILE_8088, nop, sizeof(nop), 0);
     failed |= run_pop_cs_8086();
     failed |= run_mov_rm8_imm8_8086();
-    failed |= run_case(CORE_MACHINE_CPU_PROFILE_8086, pusha, sizeof(pusha), 1);
-    failed |= run_case(CORE_MACHINE_CPU_PROFILE_8086, shift_rm16_imm8,
+    failed |= run_case(X86_CORE_CPU_PROFILE_8086, pusha, sizeof(pusha), 1);
+    failed |= run_case(X86_CORE_CPU_PROFILE_8086, shift_rm16_imm8,
         sizeof(shift_rm16_imm8), 1);
-    failed |= run_case(CORE_MACHINE_CPU_PROFILE_80186, shift_rm16_imm8,
+    failed |= run_case(X86_CORE_CPU_PROFILE_80186, shift_rm16_imm8,
         sizeof(shift_rm16_imm8), 0);
-    failed |= run_case(CORE_MACHINE_CPU_PROFILE_80186, arpl, sizeof(arpl), 1);
-    failed |= run_case(CORE_MACHINE_CPU_PROFILE_80286, fs_prefix, sizeof(fs_prefix), 1);
-    failed |= run_case(CORE_MACHINE_CPU_PROFILE_80286, jcc_near, sizeof(jcc_near), 1);
+    failed |= run_case(X86_CORE_CPU_PROFILE_80186, arpl, sizeof(arpl), 1);
+    failed |= run_case(X86_CORE_CPU_PROFILE_80286, fs_prefix, sizeof(fs_prefix), 1);
+    failed |= run_case(X86_CORE_CPU_PROFILE_80286, jcc_near, sizeof(jcc_near), 1);
     if (failed) return 1;
     lib_c_printf("CPU-PROFILE-GATE:OK\n");
     return 0;

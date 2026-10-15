@@ -71,9 +71,9 @@ static lib_bool default_firmware_initializes_text_cursor(vm_machine *machine)
 static lib_bool default_firmware_raster_runs(core_machine *core, lib_u8 mode)
 {
     const lib_u8 program[] = {0xebu, 0xfeu};
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = {[CORE_MACHINE_DEBUG_EIP] = 0x500u}
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x500u}
     };
     lib_bool active = LIB_FALSE;
     lib_bool retrace = LIB_FALSE;
@@ -112,19 +112,19 @@ static lib_bool default_firmware_initializes_video_modes(vm_machine *machine)
         {0x10u, X86_VIDEO_KIND_EGA_640X350X16, 640u, 350u},
         {0x03u, X86_VIDEO_KIND_TEXT, 0u, 0u}
     };
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX),
-        .values = {[CORE_MACHINE_DEBUG_ESP] = 0x7000u,
-            [CORE_MACHINE_DEBUG_EIP] = 0x500u, [CORE_MACHINE_DEBUG_EFLAGS] = 2u,
-            [CORE_MACHINE_DEBUG_EBX] = 0x1357u, [CORE_MACHINE_DEBUG_ECX] = 0x2468u,
-            [CORE_MACHINE_DEBUG_EDX] = 0x369cu}
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EBX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX),
+        .values = {[X86_CORE_CPU_DEBUG_ESP] = 0x7000u,
+            [X86_CORE_CPU_DEBUG_EIP] = 0x500u, [X86_CORE_CPU_DEBUG_EFLAGS] = 2u,
+            [X86_CORE_CPU_DEBUG_EBX] = 0x1357u, [X86_CORE_CPU_DEBUG_ECX] = 0x2468u,
+            [X86_CORE_CPU_DEBUG_EDX] = 0x369cu}
     };
     core_machine *core = machine->core_machine;
 
@@ -165,7 +165,7 @@ static lib_bool default_firmware_initializes_video_modes(vm_machine *machine)
         for (lib_size reg = 0u; reg < sizeof(expected_registers) / sizeof(expected_registers[0]); ++reg) {
             lib_u32 value;
 
-            if (core_machine_debug_read_register(core, (core_machine_debug_register)reg, &value) !=
+            if (core_machine_debug_read_register(core, (x86_core_cpu_debug_register)reg, &value) !=
                     LIB_STATUS_OK || value != expected_registers[reg]) return LIB_FALSE;
         }
         if (modes[index].kind == X86_VIDEO_KIND_TEXT) {

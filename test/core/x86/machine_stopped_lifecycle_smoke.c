@@ -15,7 +15,7 @@ static lib_i32 expect_lifecycle(core_machine *machine,
 
 static lib_i32 expect_reset_vector(core_machine *machine)
 {
-    core_machine_cpu_state cpu;
+    x86_core_cpu_state cpu;
 
     return core_machine_get_cpu_state(machine, &cpu) != LIB_STATUS_OK ||
         cpu.cs != 0xf000u || cpu.eip != 0x0000fff0u;

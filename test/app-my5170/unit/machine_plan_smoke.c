@@ -10,7 +10,7 @@ static lib_i32 ibm_5170_plan_is_complete(void)
 
     if (vm_profile_ibm_5170_plan_create(&profile) != LIB_STATUS_OK ||
         !vm_profile_default_pc_at_descriptor_is_valid(&profile.descriptor) ||
-        profile.values.core.configuration.cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 ||
+        profile.values.core.configuration.cpu_profile != X86_CORE_CPU_PROFILE_80286 ||
         profile.values.core.configuration.memory_bytes != 512u * 1024u ||
         profile.values.core.configuration.pic_topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED ||
         profile.values.core.configuration.dma_controller_count !=

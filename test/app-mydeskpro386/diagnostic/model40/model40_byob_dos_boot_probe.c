@@ -112,13 +112,13 @@ typedef struct vm_byob_boot_trace {
     lib_u8 int6_pre_fault_snapshot_valid;
     lib_u16 int6_pre_fault_offset;
     lib_u16 int6_pre_fault_segment;
-    core_machine_cpu_execution_point near_ud_history[VM_BYOB_NEAR_UD_HISTORY];
+    x86_core_cpu_execution_point near_ud_history[VM_BYOB_NEAR_UD_HISTORY];
     lib_u32 near_ud_eflags[VM_BYOB_NEAR_UD_HISTORY];
     lib_u32 near_ud_eax[VM_BYOB_NEAR_UD_HISTORY];
     lib_u32 near_ud_ebx[VM_BYOB_NEAR_UD_HISTORY];
     lib_u64 near_ud_count;
     lib_u8 real_286_high_flags_observed;
-    core_machine_cpu_execution_point real_286_high_flags_point;
+    x86_core_cpu_execution_point real_286_high_flags_point;
     lib_u32 real_286_high_flags_value;
     lib_u8 boot_loader_jz_observed;
     core_machine_retirement_control_outcome boot_loader_jz_outcome;
@@ -149,7 +149,7 @@ typedef struct vm_byob_boot_trace {
     lib_u16 ibm5170_rep_stos_cx;
     lib_u16 ibm5170_rep_stos_ax;
     lib_u8 model40_invalid_entry_observed;
-    core_machine_cpu_execution_point model40_invalid_entry_source;
+    x86_core_cpu_execution_point model40_invalid_entry_source;
     lib_u16 model40_invalid_entry_ss;
     lib_u16 model40_invalid_entry_sp;
     lib_u8 model40_int10_vector_write_observed;
@@ -231,7 +231,7 @@ typedef struct vm_byob_boot_trace {
     lib_u64 model40_reset_vector_target_entries;
     lib_u32 model40_reset_vector_target_predecessor;
     lib_u8 model40_shutdown_diagnostic_valid;
-    core_machine_cpu_diagnostic model40_shutdown_diagnostic;
+    x86_core_cpu_diagnostic model40_shutdown_diagnostic;
     lib_u8 model40_protected_transition_observed;
     lib_u8 model40_gdt[32];
     lib_u8 model40_gdtr_pointer[6];
@@ -595,7 +595,7 @@ static void vm_byob_retirement_observe(void *context,
             observation->point.linear_pc;
     }
     if (trace->machine != LIB_NULL) {
-        const core_machine_debug_segment_snapshot *es = &observation->current_cpu.es;
+        const x86_core_cpu_debug_segment_snapshot *es = &observation->current_cpu.es;
 
         ++trace->model40_retirements;
         if (observation->point.linear_pc == 0x000f08f8u) {
@@ -862,7 +862,7 @@ static void vm_byob_retirement_observe(void *context,
         trace->model40_memory_error_exit_predecessor = trace->last_linear_pc;
     }
     if (observation->point.linear_pc == 0x000fd1eau && trace->machine != LIB_NULL) {
-        const core_machine_debug_cpu_snapshot *cpu = &observation->current_cpu;
+        const x86_core_cpu_debug_cpu_snapshot *cpu = &observation->current_cpu;
 
         ++trace->model40_memory_address_failures;
         trace->model40_memory_address_failure_ds = cpu->ds.selector;
@@ -1106,7 +1106,7 @@ static void vm_byob_retirement_observe(void *context,
         }
     }
     if (!trace->real_286_high_flags_observed && trace->machine != LIB_NULL &&
-        test_core_boot_capture(trace->machine).cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+        test_core_boot_capture(trace->machine).cpu_profile == X86_CORE_CPU_PROFILE_80286 &&
         (observation->current_cpu.cr0 & VCPU_CR0_PE) == 0u &&
         (observation->current_cpu.eflags & 0xf000u) != 0u) {
         trace->real_286_high_flags_observed = LIB_TRUE;
@@ -1359,7 +1359,7 @@ static void vm_byob_model40_memory_write_observe(void *context,
     lib_u32 physical, lib_uptr bytes)
 {
     vm_byob_boot_trace *trace = (vm_byob_boot_trace *)context;
-    core_machine_cpu_state cpu;
+    x86_core_cpu_state cpu;
     lib_u32 pc;
 
     if (trace == LIB_NULL || trace->machine == LIB_NULL) return;
@@ -1657,8 +1657,8 @@ int main(lib_i32 argc, char **argv)
     vm_machine *session = LIB_NULL;
     core_machine_run_result result = {0};
     x86_video_snapshot snapshot;
-    core_machine_cpu_diagnostic diagnostic = {0};
-    core_machine_debug_cpu_snapshot current_cpu;
+    x86_core_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_debug_cpu_snapshot current_cpu;
     core_machine_trace_provider trace_provider;
     vm_byob_boot_trace trace = {0};
     ULONGLONG started;
@@ -1757,11 +1757,11 @@ int main(lib_i32 argc, char **argv)
             (unsigned int)test_core_boot_capture(session->core_machine).a20,
             (unsigned int)boundary_status, (unsigned int)boundary_route);
     }
-    if (test_core_boot_capture(session->core_machine).cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
-        test_core_boot_capture(session->core_machine).cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+    if (test_core_boot_capture(session->core_machine).cpu_profile == X86_CORE_CPU_PROFILE_80286 ||
+        test_core_boot_capture(session->core_machine).cpu_profile == X86_CORE_CPU_PROFILE_80386) {
         lib_u8 reset_bytes[4] = {0u};
         const lib_u32 reset_physical =
-            test_core_boot_capture(session->core_machine).cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+            test_core_boot_capture(session->core_machine).cpu_profile == X86_CORE_CPU_PROFILE_80286 ?
                 0x00fffff0u : 0xfffffff0u;
         lib_size index;
 
@@ -1789,7 +1789,7 @@ int main(lib_i32 argc, char **argv)
             goto done;
         }
         (void)core_machine_debug_set_watchpoint(session->core_machine,
-            CORE_MACHINE_DEBUG_WATCH_WRITE, 0x00fe0000u);
+            X86_CORE_CPU_DEBUG_WATCH_WRITE, 0x00fe0000u);
     }
     {
         lib_u16 offset = 0u;
@@ -1862,7 +1862,7 @@ int main(lib_i32 argc, char **argv)
             lib_u8 fault_bytes[4] = {0u};
             lib_u8 far_pointer[6] = {0u};
             lib_u8 descriptor[8] = {0u};
-            core_machine_debug_cpu_snapshot fault_cpu;
+            x86_core_cpu_debug_cpu_snapshot fault_cpu;
 
             (void)test_core_read_physical(session->core_machine,
                 result.linear_pc, (lib_uptr)fault_bytes, sizeof(fault_bytes));
@@ -1877,7 +1877,7 @@ int main(lib_i32 argc, char **argv)
                 (unsigned int)fault_bytes[0u], (unsigned int)fault_bytes[1u],
                 (unsigned int)fault_bytes[2u], (unsigned int)fault_bytes[3u]);
             if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &fault_cpu) == LIB_STATUS_OK) {
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &fault_cpu) == LIB_STATUS_OK) {
                 printf("BOOT-PROBE=cpu-cr0=%08X-cs=%04X-base=%08X-eip=%08X-gdt=%08X/%08X\n",
                     (unsigned int)fault_cpu.cr0, (unsigned int)fault_cpu.cs.selector,
                     (unsigned int)fault_cpu.cs.base, (unsigned int)fault_cpu.eip,
@@ -1922,7 +1922,7 @@ int main(lib_i32 argc, char **argv)
                 (unsigned int)diagnostic.first_delivered_exception.ecx,
                 (unsigned int)diagnostic.first_delivered_exception.edx);
             for (index = 0u; index < diagnostic.recent_count; ++index) {
-                const core_machine_cpu_execution_point *point = &diagnostic.recent[index];
+                const x86_core_cpu_execution_point *point = &diagnostic.recent[index];
 
                 printf("BOOT-PROBE=pre-exception-%u=%05X-%02X,%02X,%02X,%02X\n",
                     (unsigned int)index, (unsigned int)point->linear_pc,
@@ -1953,7 +1953,7 @@ int main(lib_i32 argc, char **argv)
             goto done;
         }
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            core_machine_cpu_state cpu;
+            x86_core_cpu_state cpu;
             core_machine_time_observation observation;
             lib_bool advanced = LIB_FALSE;
 
@@ -2078,7 +2078,7 @@ int main(lib_i32 argc, char **argv)
         if (GetTickCount64() - progress >= no_progress_limit) {
             if (waiting_for_interrupt) {
                 if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
-                        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK) {
+                        X86_CORE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK) {
                     printf("BOOT-PROBE=waiting-cpu-snapshot-unavailable\n");
                     goto done;
                 }
@@ -2194,7 +2194,7 @@ int main(lib_i32 argc, char **argv)
         (unsigned long long)run_count, (unsigned int)last_reason,
         (unsigned int)last_wait_advanced);
     if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu) == LIB_STATUS_OK) {
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &current_cpu) == LIB_STATUS_OK) {
         printf("BOOT-PROBE=last-detail=%08X-cs=%08X-ip=%08X\n",
             (unsigned int)last_detail,
             (unsigned int)current_cpu.cs.base,
@@ -2259,7 +2259,7 @@ done:
         lib_u8 next_instruction_bytes[8] = {0u};
 
         if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK) {
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK) {
             printf("BOOT-PROBE=final-cpu-snapshot-unavailable\n");
             exit_code = 1;
             goto cleanup;
@@ -2267,7 +2267,7 @@ done:
         lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
         test_core_boot_capture_diagnostic(session->core_machine, &diagnostic);
         if (diagnostic.first_fault.valid) {
-            const core_machine_cpu_execution_point *point =
+            const x86_core_cpu_execution_point *point =
                 &diagnostic.first_fault.point;
             lib_u8 descriptor[8] = {0u};
             lib_u8 idt_descriptor[8] = {0u};
@@ -2323,7 +2323,7 @@ done:
                 (unsigned int)trace.ibm5170_rep_stos_ax);
         }
         if (diagnostic.last_delivered_exception.valid) {
-            const core_machine_cpu_execution_point *point =
+            const x86_core_cpu_execution_point *point =
                 &diagnostic.last_delivered_exception.point;
 
             printf("BOOT-PROBE=last-delivered-pc=%05X-bytes=%02X,%02X,%02X,%02X\n",
@@ -2332,7 +2332,7 @@ done:
                 (unsigned int)point->bytes[3u]);
         }
         if (trace.model40_invalid_entry_observed) {
-            const core_machine_cpu_execution_point *point =
+            const x86_core_cpu_execution_point *point =
                 &trace.model40_invalid_entry_source;
 
             printf("BOOT-PROBE=model40-invalid-entry-source=%05X-bytes=%02X,%02X,%02X,%02X-ss=%04X-sp=%04X\n",
@@ -2512,7 +2512,7 @@ done:
             }
         }
         if (diagnostic.first_delivered_exception.valid) {
-            const core_machine_cpu_execution_point *point =
+            const x86_core_cpu_execution_point *point =
                 &diagnostic.first_delivered_exception.point;
 
             printf("BOOT-PROBE=first-delivered-pc=%05X-bytes=%02X,%02X,%02X,%02X\n",
@@ -2541,7 +2541,7 @@ done:
             for (index = 0u; index < count; ++index) {
                 const lib_u8 history_index = (lib_u8)(
                     (trace.near_ud_count - count + index) % VM_BYOB_NEAR_UD_HISTORY);
-                const core_machine_cpu_execution_point *point =
+                const x86_core_cpu_execution_point *point =
                     &trace.near_ud_history[history_index];
 
                 printf("BOOT-PROBE=pre-ud-%u-pc=%05X-bytes=%02X,%02X,%02X,%02X-flags=%08X-eax=%08X-ebx=%08X\n",
@@ -2987,7 +2987,7 @@ done:
             for (shutdown_index = 0u;
                     shutdown_index < trace.model40_shutdown_diagnostic.recent_count;
                     ++shutdown_index) {
-                const core_machine_cpu_execution_point *point =
+                const x86_core_cpu_execution_point *point =
                     &trace.model40_shutdown_diagnostic.recent[shutdown_index];
 
                 printf("BOOT-PROBE=model40-shutdown-recent-%u=%05X-%02X,%02X,%02X,%02X\n",

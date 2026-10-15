@@ -200,12 +200,12 @@ lib_i32 main(void)
 
     if (!failed) {
         core_machine_run_result result;
-        core_machine_cpu_state cpu;
+        x86_core_cpu_state cpu;
         lib_u64 elapsed_before_shutdown;
 
         elapsed_before_shutdown = test_core_elapsed_ticks(machine);
         failed |= core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EIP, 0x0000fff0u) != LIB_STATUS_OK ||
+            X86_CORE_CPU_DEBUG_EIP, 0x0000fff0u) != LIB_STATUS_OK ||
             !test_core_cpu_is_halted(machine);
         test_core_request_cpu_shutdown(machine);
         failed |= core_machine_run(machine, (core_machine_run_budget){1u, 0u},

@@ -25,13 +25,13 @@ static lib_i32 test_cpu_board_de_delivery(const test_cpu_board_de_case *entry)
     const lib_u8 frame_width = 2u;
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     core_machine *machine = LIB_NULL;
-    core_machine_debug_register_patch patch = {0};
-    core_machine_debug_cpu_snapshot before = {0}, after = {0};
-    core_machine_cpu_diagnostic diagnostic = {0};
+    x86_core_cpu_debug_register_patch patch = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0}, after = {0};
+    x86_core_cpu_diagnostic diagnostic = {0};
     core_machine_run_result result = {0};
     lib_u16 frame16[3] = {0u};
     lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
@@ -39,22 +39,22 @@ static lib_i32 test_cpu_board_de_delivery(const test_cpu_board_de_case *entry)
         core_machine_reset(machine) != LIB_STATUS_OK;
 
     if (!failed) {
-        patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS);
-        patch.values[CORE_MACHINE_DEBUG_EIP] = code_offset;
-        patch.values[CORE_MACHINE_DEBUG_ESP] = 0x8000u;
-        patch.values[CORE_MACHINE_DEBUG_EAX] = entry->eax;
-        patch.values[CORE_MACHINE_DEBUG_EDX] = entry->edx;
-        patch.values[CORE_MACHINE_DEBUG_ECX] = entry->ecx;
-        patch.values[CORE_MACHINE_DEBUG_EFLAGS] = entry->flags;
+        patch.mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EDX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ECX) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS);
+        patch.values[X86_CORE_CPU_DEBUG_EIP] = code_offset;
+        patch.values[X86_CORE_CPU_DEBUG_ESP] = 0x8000u;
+        patch.values[X86_CORE_CPU_DEBUG_EAX] = entry->eax;
+        patch.values[X86_CORE_CPU_DEBUG_EDX] = entry->edx;
+        patch.values[X86_CORE_CPU_DEBUG_ECX] = entry->ecx;
+        patch.values[X86_CORE_CPU_DEBUG_EFLAGS] = entry->flags;
         failed = core_machine_debug_patch_registers(machine, &patch) !=
                 LIB_STATUS_OK ||
             core_machine_memory_write(machine, code_offset, entry->code,
@@ -66,14 +66,14 @@ static lib_i32 test_cpu_board_de_delivery(const test_cpu_board_de_case *entry)
             core_machine_memory_write(machine, handler_offset, handler,
                 sizeof(handler)) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
             core_machine_run(machine, (core_machine_run_budget){1u,0u},
                 &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
                 LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid ||
             !(diagnostic.last_delivered_exception.exception_mask &

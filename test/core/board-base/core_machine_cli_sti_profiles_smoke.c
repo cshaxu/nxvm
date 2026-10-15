@@ -7,8 +7,8 @@
 #include "machine_cli_sti_interrupt_smoke.c"
 #undef main
 
-static lib_i32 cli_sti_gprs_preserved(const core_machine_debug_cpu_snapshot *before,
-    const core_machine_debug_cpu_snapshot *after)
+static lib_i32 cli_sti_gprs_preserved(const x86_core_cpu_debug_cpu_snapshot *before,
+    const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return before->eax == after->eax &&
         before->ecx == after->ecx &&
@@ -20,8 +20,8 @@ static lib_i32 cli_sti_gprs_preserved(const core_machine_debug_cpu_snapshot *bef
         before->edi == after->edi;
 }
 
-static lib_i32 cli_sti_sregs_preserved(const core_machine_debug_cpu_snapshot *before,
-    const core_machine_debug_cpu_snapshot *after)
+static lib_i32 cli_sti_sregs_preserved(const x86_core_cpu_debug_cpu_snapshot *before,
+    const x86_core_cpu_debug_cpu_snapshot *after)
 {
     return lib_memory_compare(&before->es, &after->es,
             sizeof(before->es)) == 0 &&
@@ -40,26 +40,26 @@ static lib_i32 cli_sti_sregs_preserved(const core_machine_debug_cpu_snapshot *be
 static lib_i32 cli_sti_test_80286_defaults(void)
 {
     static const lib_u8 opcodes[] = { 0xfau, 0xfbu };
-    const lib_u32 preserved = CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_PF |
-        CORE_MACHINE_DEBUG_EFLAGS_AF | CORE_MACHINE_DEBUG_EFLAGS_ZF | CORE_MACHINE_DEBUG_EFLAGS_SF |
-        CORE_MACHINE_DEBUG_EFLAGS_DF | CORE_MACHINE_DEBUG_EFLAGS_OF;
+    const lib_u32 preserved = X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_PF |
+        X86_CORE_CPU_DEBUG_EFLAGS_AF | X86_CORE_CPU_DEBUG_EFLAGS_ZF | X86_CORE_CPU_DEBUG_EFLAGS_SF |
+        X86_CORE_CPU_DEBUG_EFLAGS_DF | X86_CORE_CPU_DEBUG_EFLAGS_OF;
     lib_u8 opcode_index;
 
     for (opcode_index = 0u;
         opcode_index != sizeof(opcodes) / sizeof(opcodes[0]);
         ++opcode_index) {
         cli_sti_machine state;
-        core_machine_debug_cpu_snapshot before = {0};
-        core_machine_debug_cpu_snapshot after = {0};
+        x86_core_cpu_debug_cpu_snapshot before = {0};
+        x86_core_cpu_debug_cpu_snapshot after = {0};
         lib_u32 expected;
-        lib_i32 failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state, LIB_FALSE);
+        lib_i32 failed = !cli_sti_prepare(X86_CORE_CPU_PROFILE_80286, &state, LIB_FALSE);
 
         if (!failed) {
-            test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS, preserved |
-                (opcodes[opcode_index] == 0xfau ? CORE_MACHINE_DEBUG_EFLAGS_IF : 0u));
+            test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS, preserved |
+                (opcodes[opcode_index] == 0xfau ? X86_CORE_CPU_DEBUG_EFLAGS_IF : 0u));
             before = cli_sti_capture(state.machine);
-            expected = (before.eflags & ~CORE_MACHINE_DEBUG_EFLAGS_IF) |
-                (opcodes[opcode_index] == 0xfbu ? CORE_MACHINE_DEBUG_EFLAGS_IF : 0u);
+            expected = (before.eflags & ~X86_CORE_CPU_DEBUG_EFLAGS_IF) |
+                (opcodes[opcode_index] == 0xfbu ? X86_CORE_CPU_DEBUG_EFLAGS_IF : 0u);
             failed = !cli_sti_run(&state, &opcodes[opcode_index], 1u, 1u,
                 &after);
             failed |= after.eip != 1u;
@@ -85,10 +85,10 @@ static lib_i32 cli_sti_test_80286_irq_contracts(void)
     cli_sti_machine state;
     core_machine_pic_irq_source *source = LIB_NULL;
     core_machine_run_result result;
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_u16 frame_ip = 0u;
-    lib_i32 failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state, LIB_FALSE);
+    lib_i32 failed = !cli_sti_prepare(X86_CORE_CPU_PROFILE_80286, &state, LIB_FALSE);
 
     if (!failed) {
         failed = !cli_sti_real_entry(state.machine, 0u);
@@ -96,8 +96,8 @@ static lib_i32 cli_sti_test_80286_irq_contracts(void)
             sizeof(cli_nop)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS,
-            cli_sti_capture(state.machine).eflags | (CORE_MACHINE_DEBUG_EFLAGS_IF));
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS,
+            cli_sti_capture(state.machine).eflags | (X86_CORE_CPU_DEBUG_EFLAGS_IF));
         before = cli_sti_capture(state.machine);
         lib_memory_set(&source, 0, sizeof(source));
         test_pic_bind_source(&source,
@@ -111,7 +111,7 @@ static lib_i32 cli_sti_test_80286_irq_contracts(void)
         after = cli_sti_capture(state.machine);
         failed |= after.eip != 2u;
         failed |= after.eflags !=
-            (before.eflags & ~CORE_MACHINE_DEBUG_EFLAGS_IF);
+            (before.eflags & ~X86_CORE_CPU_DEBUG_EFLAGS_IF);
         failed |= !cli_sti_gprs_preserved(&before, &after);
         failed |= !cli_sti_sregs_preserved(&before, &after);
         failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au),
@@ -123,7 +123,7 @@ static lib_i32 cli_sti_test_80286_irq_contracts(void)
     if (failed)
         return 0;
 
-    failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state, LIB_FALSE);
+    failed = !cli_sti_prepare(X86_CORE_CPU_PROFILE_80286, &state, LIB_FALSE);
     if (!failed) {
         failed = !cli_sti_real_entry(state.machine, 0u);
         failed |= core_machine_memory_write(state.machine, vector * 4u,
@@ -136,8 +136,8 @@ static lib_i32 cli_sti_test_80286_irq_contracts(void)
             sizeof(sti_nop)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS,
-            cli_sti_capture(state.machine).eflags & (~CORE_MACHINE_DEBUG_EFLAGS_IF));
+        test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS,
+            cli_sti_capture(state.machine).eflags & (~X86_CORE_CPU_DEBUG_EFLAGS_IF));
         before = cli_sti_capture(state.machine);
         lib_memory_set(&source, 0, sizeof(source));
         test_pic_program_vector(state.board->shared_pic_master, (lib_u8)vector);
@@ -151,7 +151,7 @@ static lib_i32 cli_sti_test_80286_irq_contracts(void)
         failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
         after = cli_sti_capture(state.machine);
         failed |= after.eip != offset;
-        failed |= CORE_MACHINE_BIT_IS_SET(after.eflags, CORE_MACHINE_DEBUG_EFLAGS_IF);
+        failed |= CORE_MACHINE_BIT_IS_SET(after.eflags, X86_CORE_CPU_DEBUG_EFLAGS_IF);
         failed |= after.eax != before.eax;
         failed |= after.ecx != before.ecx;
         failed |= after.edx != before.edx;
@@ -182,10 +182,10 @@ static lib_i32 cli_sti_test_prefixes(void)
         { 0x67u, 0u },
         { 0x66u, 0x67u }
     };
-    static const core_machine_cpu_profile legacy[] = {
-        CORE_MACHINE_CPU_PROFILE_8086,
-        CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286
+    static const x86_core_cpu_profile legacy[] = {
+        X86_CORE_CPU_PROFILE_8086,
+        X86_CORE_CPU_PROFILE_80186,
+        X86_CORE_CPU_PROFILE_80286
     };
     lib_u8 profile;
 
@@ -199,11 +199,11 @@ static lib_i32 cli_sti_test_prefixes(void)
 
             for (opcode = 0xfau; opcode <= 0xfbu; ++opcode) {
                 cli_sti_machine state;
-                core_machine_cpu_diagnostic diagnostic;
+                x86_core_cpu_diagnostic diagnostic;
                 core_machine_run_result result;
                 lib_status status;
-                core_machine_debug_cpu_snapshot before = {0};
-                core_machine_debug_cpu_snapshot after = {0};
+                x86_core_cpu_debug_cpu_snapshot before = {0};
+                x86_core_cpu_debug_cpu_snapshot after = {0};
                 lib_u8 code[] = { prefixes[prefix][0], opcode, 0u };
                 lib_u8 bytes = prefix == 2u ? 3u : 2u;
                 lib_i32 failed = !cli_sti_prepare(legacy[profile], &state, LIB_TRUE);
@@ -225,7 +225,7 @@ static lib_i32 cli_sti_test_prefixes(void)
                         &diagnostic) != LIB_STATUS_OK;
                     failed |= !diagnostic.first_fault.valid;
                     failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                        legacy[profile] == CORE_MACHINE_CPU_PROFILE_8086 ?
+                        legacy[profile] == X86_CORE_CPU_PROFILE_8086 ?
                             VCPUINS_EXCEPT_UD : VCPUINS_EXCEPT_CE);
                     failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
                 }
@@ -253,25 +253,25 @@ static lib_i32 cli_sti_test_386_prefix_and_lock(void)
 
         for (opcode = 0xfau; opcode <= 0xfbu; ++opcode) {
             cli_sti_machine state;
-            core_machine_cpu_diagnostic diagnostic;
-            core_machine_debug_cpu_snapshot before = {0};
-            core_machine_debug_cpu_snapshot after = {0};
+            x86_core_cpu_diagnostic diagnostic;
+            x86_core_cpu_debug_cpu_snapshot before = {0};
+            x86_core_cpu_debug_cpu_snapshot after = {0};
             lib_u8 code[] = { prefixes[attribute][0], opcode, 0u };
             lib_u8 bytes = attribute == 2u ? 3u : 2u;
             lib_u32 expected_flags;
-            lib_i32 failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state, LIB_FALSE);
+            lib_i32 failed = !cli_sti_prepare(X86_CORE_CPU_PROFILE_80386, &state, LIB_FALSE);
 
             if (attribute == 2u) {
                 code[1] = prefixes[attribute][1];
                 code[2] = opcode;
             }
             if (!failed) {
-                test_core_machine_fixture_write_register(state.machine, CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF |
-                    CORE_MACHINE_DEBUG_EFLAGS_DF | CORE_MACHINE_DEBUG_EFLAGS_OF |
-                    (opcode == 0xfau ? CORE_MACHINE_DEBUG_EFLAGS_IF : 0u));
+                test_core_machine_fixture_write_register(state.machine, X86_CORE_CPU_DEBUG_EFLAGS, X86_CORE_CPU_DEBUG_EFLAGS_CF |
+                    X86_CORE_CPU_DEBUG_EFLAGS_DF | X86_CORE_CPU_DEBUG_EFLAGS_OF |
+                    (opcode == 0xfau ? X86_CORE_CPU_DEBUG_EFLAGS_IF : 0u));
                 before = cli_sti_capture(state.machine);
-                expected_flags = (before.eflags & ~CORE_MACHINE_DEBUG_EFLAGS_IF) |
-                    (opcode == 0xfbu ? CORE_MACHINE_DEBUG_EFLAGS_IF : 0u);
+                expected_flags = (before.eflags & ~X86_CORE_CPU_DEBUG_EFLAGS_IF) |
+                    (opcode == 0xfbu ? X86_CORE_CPU_DEBUG_EFLAGS_IF : 0u);
                 failed = !cli_sti_run(&state, code, bytes, 1u, &after);
                 failed |= after.eip != bytes;
                 failed |= after.eflags != expected_flags;
@@ -291,15 +291,15 @@ static lib_i32 cli_sti_test_386_prefix_and_lock(void)
 
         for (opcode = 0xfau; opcode <= 0xfbu; ++opcode) {
             cli_sti_machine state;
-            core_machine_cpu_diagnostic diagnostic;
+            x86_core_cpu_diagnostic diagnostic;
             core_machine_run_result result;
             lib_status status;
-            core_machine_debug_cpu_snapshot before = {0};
-            core_machine_debug_cpu_snapshot after = {0};
+            x86_core_cpu_debug_cpu_snapshot before = {0};
+            x86_core_cpu_debug_cpu_snapshot after = {0};
             lib_u8 code[] = { 0xf0u, opcode, 0u, 0u };
             lib_u8 bytes = attribute == 0u ? 2u :
                 attribute == 3u ? 4u : 3u;
-            lib_i32 failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state, LIB_TRUE);
+            lib_i32 failed = !cli_sti_prepare(X86_CORE_CPU_PROFILE_80386, &state, LIB_TRUE);
 
             if (attribute != 0u) {
                 code[1] = prefixes[attribute - 1u][0];

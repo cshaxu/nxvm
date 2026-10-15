@@ -12,12 +12,12 @@ typedef struct core_machine_kbc_cpu_fixture {
 static void core_machine_kbc_cpu_reset(void *opaque)
 {
     core_machine_kbc_cpu_fixture *fixture = opaque;
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
     };
 
     if (fixture != LIB_NULL)
@@ -39,13 +39,13 @@ lib_i32 test_kbc_board_cpu_reset_irq1(void)
     static const lib_u8 handler = 0xf4u;
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80286,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .shared_pit_personality = X86_PIT_PERSONALITY_8253
     };
     core_machine_kbc_cpu_fixture fixture = {0};
     core_machine_run_result result;
-    core_machine_cpu_state cpu;
+    x86_core_cpu_state cpu;
     lib_u16 offset = 0x0100u;
     lib_u16 segment = 0u;
     lib_i32 failed = !test_core_machine_fixture_create_bind_freeze_reset(&config,

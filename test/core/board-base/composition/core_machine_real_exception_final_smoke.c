@@ -18,13 +18,13 @@ typedef struct real_final_machine {
 
 static lib_status real_final_set_entry(core_machine *machine)
 {
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = {[CORE_MACHINE_DEBUG_EIP] = 0x0500u}
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ES) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x0500u}
     };
     return core_machine_debug_patch_registers(machine, &entry);
 }
@@ -36,7 +36,7 @@ static lib_i32 real_final_prepare(real_final_machine *state,
     static const lib_u8 handler[] = { 0xf4u };
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const lib_u16 handler_offset = REAL_FINAL_HANDLER_OFFSET;
@@ -46,15 +46,15 @@ static lib_i32 real_final_prepare(real_final_machine *state,
         (lib_u8)idtr_limit, (lib_u8)(idtr_limit >> 8u), 0u, 0u, 0u, 0u
     };
     core_machine_run_result setup;
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
         .values = {
-            [CORE_MACHINE_DEBUG_EIP] = REAL_FINAL_CODE_OFFSET,
-            [CORE_MACHINE_DEBUG_ESP] = REAL_FINAL_STACK_OFFSET,
-            [CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_CF |
-                CORE_MACHINE_DEBUG_EFLAGS_IF
+            [X86_CORE_CPU_DEBUG_EIP] = REAL_FINAL_CODE_OFFSET,
+            [X86_CORE_CPU_DEBUG_ESP] = REAL_FINAL_STACK_OFFSET,
+            [X86_CORE_CPU_DEBUG_EFLAGS] = X86_CORE_CPU_DEBUG_EFLAGS_CF |
+                X86_CORE_CPU_DEBUG_EFLAGS_IF
         }
     };
 
@@ -91,23 +91,23 @@ static lib_i32 real_final_prepare(real_final_machine *state,
 static lib_i32 real_final_test_gp_delivery(void)
 {
     real_final_machine state;
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic;
     core_machine_run_result result = {0};
     lib_u16 frame[3] = { 0u, 0u, 0u };
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_i32 failed = !real_final_prepare(&state,
         REAL_FINAL_GP_VECTOR * 4u + 3u);
 
     if (!failed) {
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
             before.eflags !=
-            (CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF) ||
+            (X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_IF) ||
             core_machine_run(state.machine,
                 (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             diagnostic.first_fault.valid ||
@@ -118,12 +118,12 @@ static lib_i32 real_final_test_gp_delivery(void)
             ((before.esp & 0xffff0000u) |
                 (lib_u16)(before.esp - 6u)) ||
             after.eflags != (before.eflags &
-                ~(CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF)) ||
+                ~(X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_TF)) ||
             core_machine_debug_read_linear(state.machine,
                 after.ss.base + (lib_u16)after.esp, frame, sizeof(frame)) !=
             LIB_STATUS_OK || frame[0] != REAL_FINAL_CODE_OFFSET ||
             frame[1] != before.cs.selector || frame[2] !=
-            (CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF | 0x02u);
+            (X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_IF | 0x02u);
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -132,11 +132,11 @@ static lib_i32 real_final_test_gp_delivery(void)
 static lib_i32 real_final_test_gp_delivery_failure(void)
 {
     real_final_machine state;
-    core_machine_cpu_diagnostic diagnostic;
+    x86_core_cpu_diagnostic diagnostic;
     core_machine_run_result result = {0};
     lib_u16 frame[3] = {0u, 0u, 0u};
-    core_machine_debug_cpu_snapshot before = {0};
-    core_machine_debug_cpu_snapshot after = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0};
+    x86_core_cpu_debug_cpu_snapshot after = {0};
     lib_i32 failed = !real_final_prepare(&state,
         REAL_FINAL_GP_VECTOR * 4u - 1u);
     const lib_u16 df_vector[] = {0x0180u, 0u};
@@ -148,11 +148,11 @@ static lib_i32 real_final_test_gp_delivery_failure(void)
             core_machine_memory_write(state.machine, 0x0180u, &hlt,
                 sizeof(hlt)) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
             core_machine_run(state.machine,
                 (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
@@ -161,12 +161,12 @@ static lib_i32 real_final_test_gp_delivery_failure(void)
             after.eip != 0x0180u || after.esp != before.esp - 6u ||
             result.executed != 0u || result.ticks != 0u ||
             after.eflags != (before.eflags &
-                ~(CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF)) ||
+                ~(X86_CORE_CPU_DEBUG_EFLAGS_IF | X86_CORE_CPU_DEBUG_EFLAGS_TF)) ||
             core_machine_debug_read_linear(state.machine,
                 after.ss.base + (lib_u16)after.esp, frame, sizeof(frame)) !=
                 LIB_STATUS_OK || frame[0] != REAL_FINAL_CODE_OFFSET ||
             frame[1] != before.cs.selector || frame[2] !=
-                (CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF | 0x02u);
+                (X86_CORE_CPU_DEBUG_EFLAGS_CF | X86_CORE_CPU_DEBUG_EFLAGS_IF | 0x02u);
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -176,12 +176,12 @@ static lib_i32 real_final_test_shutdown_wait(void)
 {
     real_final_machine state;
     core_machine_run_result result = {0};
-    core_machine_debug_cpu_snapshot before = {0}, after = {0};
+    x86_core_cpu_debug_cpu_snapshot before = {0}, after = {0};
     lib_i32 failed = !real_final_prepare(&state, 0u);
 
     if (!failed) {
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         for (lib_u8 round = 0u; round < 2u && !failed; ++round) {
             failed |= core_machine_run(state.machine,
                     (core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_OK ||
@@ -189,7 +189,7 @@ static lib_i32 real_final_test_shutdown_wait(void)
                 result.detail != VCPUINS_EXCEPT_SHUTDOWN ||
                 result.executed != 0u || result.ticks != 0u ||
                 core_machine_debug_capture_cpu_snapshot(state.machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                    X86_CORE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
                 after.eip != before.eip || after.esp != before.esp ||
                 after.eflags != before.eflags;
         }

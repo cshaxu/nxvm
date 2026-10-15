@@ -7,8 +7,8 @@
 
 
 
-#include "core/chips/cpu/cpu_interface.h"
-#include "core/chips/fpu/fpu_interface.h"
+#include "x86-core/cpu/cpu_interface.h"
+#include "x86-core/fpu/fpu_interface.h"
 
 #include "core/x86/execution_provider_interface.h"
 
@@ -37,7 +37,7 @@ typedef struct core_machine_trace_state {
 } core_machine_trace_state;
 
 typedef struct core_machine_cpu_diagnostic_state {
-    core_machine_cpu_diagnostic snapshot;
+    x86_core_cpu_diagnostic snapshot;
     lib_size next_index;
 } core_machine_cpu_diagnostic_state;
 
@@ -81,11 +81,11 @@ struct core_machine {
     lib_bool cpu_retirement_wait_retires;
     lib_u8 external_cycle_page_valid;
     lib_u8 external_cycle_pending_valid;
-    core_machine_cpu_external_cycle_space external_cycle_pending_space;
+    x86_core_cpu_external_cycle_space external_cycle_pending_space;
     lib_u32 external_cycle_pending_physical;
     lib_u8 external_cycle_pending_bytes;
     lib_u8 external_cycle_pending_write;
-    core_machine_cpu_memory_access_provenance external_cycle_pending_provenance;
+    x86_core_cpu_memory_access_provenance external_cycle_pending_provenance;
     lib_u8 external_cycle_overlap_valid;
     lib_u32 external_cycle_overlap_next_physical;
     lib_u8 external_cycle_round_overflow;
@@ -107,12 +107,12 @@ struct core_machine {
         immutable_rom_mappings[CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY];
     lib_size immutable_rom_mapping_count;
     lib_u8 entry_plan_applied;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     lib_u8 cpu_80386_cr_mov_ignores_mod;
     x86_fpu *fpu;
     /* The CPU owns its architectural/decoder layout.  The board owns exactly
      * one opaque execution lifetime and never mirrors those fields. */
-    core_machine_cpu_execution_context *executor_cpu_execution;
+    x86_core_cpu_execution_context *executor_cpu_execution;
     t_ram executor_memory;
     t_port executor_port;
     const core_machine_firmware_provider *firmware_provider;
@@ -143,7 +143,7 @@ void core_machine_refresh_hold_advance(core_machine *machine, lib_u64 source_tic
 void core_machine_retirement_observation_initialize(core_machine *machine);
 void core_machine_retirement_observation_reset(core_machine *machine);
 void core_machine_retirement_observation_capture_instruction(core_machine *machine,
-    const core_machine_cpu_instruction_observation *observation);
+    const x86_core_cpu_instruction_observation *observation);
 void core_machine_retirement_observation_capture_eligibility_key(
     core_machine *machine);
 void core_machine_retirement_observation_publish(core_machine *machine,
@@ -165,27 +165,27 @@ lib_status core_machine_neutral_create_with_test_allocation(
 
 lib_u32 core_machine_linear_pc(const core_machine *machine);
 void core_machine_external_cycle_invalidate(core_machine *machine);
-extern const core_machine_cpu_bus_provider core_machine_cpu_bus;
+extern const x86_core_cpu_bus_provider core_machine_cpu_bus;
 void core_machine_cpu_bus_snoop_write(void *opaque, lib_u32 physical, lib_size bytes);
 void core_machine_transaction_trace(void *opaque,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
     core_machine_transaction_phase phase, lib_u32 address,
     lib_u32 value, lib_u32 detail);
 void core_machine_cpu_external_cycle_trace(void *opaque,
-    core_machine_cpu_external_cycle_phase phase,
-    core_machine_cpu_external_cycle_space space, lib_u32 address,
+    x86_core_cpu_external_cycle_phase phase,
+    x86_core_cpu_external_cycle_space space, lib_u32 address,
     lib_u8 bytes, lib_u8 write,
-    core_machine_cpu_memory_access_provenance provenance);
+    x86_core_cpu_memory_access_provenance provenance);
 void core_machine_cpu_diagnostic_capture(const core_machine *machine,
-    core_machine_cpu_diagnostic *out_diagnostic);
+    x86_core_cpu_diagnostic *out_diagnostic);
 void core_machine_cpu_diagnostic_initialize(core_machine *machine);
 void core_machine_cpu_diagnostic_reset(core_machine *machine);
-extern const core_machine_cpu_execution_diagnostic_provider
+extern const x86_core_cpu_execution_diagnostic_provider
     core_machine_cpu_diagnostic_provider;
 /* Production always retains fault and delivered-exception snapshots for the
  * runtime debugger.  Per-retirement capture is installed only when an
  * observer or a physical retirement contract actually needs it. */
-extern const core_machine_cpu_execution_diagnostic_provider
+extern const x86_core_cpu_execution_diagnostic_provider
     core_machine_cpu_fault_diagnostic_provider;
 typedef enum core_machine_time_publication_origin {
     CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT,

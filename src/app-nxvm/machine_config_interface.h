@@ -9,7 +9,7 @@
 
 typedef struct vm_profile_default_at_request {
     lib_u32 requested_options;
-    core_machine_cpu_profile cpu_profile;
+    x86_core_cpu_profile cpu_profile;
     x86_fpu_profile fpu_profile;
     lib_size memory_bytes;
     lib_u8 floppy_cmos_type;

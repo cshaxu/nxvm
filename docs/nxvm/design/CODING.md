@@ -20,6 +20,7 @@ src/
                         portable assembler/disassembler and Debug CLI
   x86-ibmpc/product/     shared PC interaction and process entry
   x86-nxvm/product/      NXVM-specific information/speed contract
+  x86-core/{cpu,fpu}/    shared CPU/FPU mechanisms and public contracts
   core/{chips,x86,board-base,board-xt,board-at,machine,product}/
                            NXVM-only machine stack and family product support
   app-my5160/           fixed IBM 5160 App: main, product binding,
@@ -62,7 +63,7 @@ former singular `core/profile` root is retired; do not restore a compatibility
 directory. Preserve existing machine identities and
 variants rather than renaming them into a replacement Standard profile.
 Do not add a framework or empty future directories. CPU-family implementations
-and selection tables stay in `core/chips/cpu`, not copied into board directories.
+and selection tables stay in `x86-core/cpu`, not copied into board directories.
 
 ROM mapping declarations and asset roles remain with the core product profile.
 Project-owned BIOS source/build lives in `src/app-nxvm/firmware`, not in the
@@ -105,7 +106,7 @@ preparation; it has no second runtime-media projection or factory body.
 
 ## Source Organization
 
-Repository-only shared tests remain `test/{lib,emulator,x86}`. The
+Repository-only shared tests follow `test/{lib,emulator,x86-debug,x86-ibmpc,x86-nxvm,x86-core}`. The
 four-App NXVM-family Product component owns `test/core/product`; individual
 App-only tests live below their matching `test/app-*/` root.
 Shared board and family tests live in `test/core/board-base`,
@@ -121,7 +122,7 @@ empty future-profile directories. Retained
 NXVM composition/configuration tests live directly in `test/app-nxvm/unit/`;
 firmware tests remain in `test/app-nxvm/unit/firmware/`. All other NXVM unit tests are direct children of `test/app-nxvm/unit/`. DeskPro unit tests
 are flat under `test/app-mydeskpro386/unit`. CPU, chip, execution-Core and board-timing tests
-live under `test/core`, preserving all CPU models. `test/x86-debug` covers
+live under `test/core`, except CPU/FPU owner tests now in `test/x86-core`, preserving all CPU models. `test/x86-debug` covers
 portable Debug/Xasm32; `test/x86-ibmpc` owns PC interaction tests and
 `test/x86-nxvm` owns its information/speed contract tests. Neutral Core tests build independently of
 NXVM board composition.

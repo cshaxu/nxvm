@@ -81,11 +81,16 @@ verification and acceptance; the task history retains the cutover sequence.
   and fixed construction in adjacent responsibility-named files.
   It constructs and destroys the selected machine through neutral device
   contracts; it does not depend on Common or Machine-adapter internals.
-- `core/chips` owns the extracted CPU, FPU, PIC, PIT, DMA, RTC, KBC, PPI,
+- `x86-core/cpu` and `x86-core/fpu` own the sole CPU/FPU mechanisms and
+  corresponding tests, with no PC/App or execution-Machine dependency. CPU
+  consumes FPU's public interface and Lib Types; FPU consumes Lib Types only.
+  Existing instruction tables, supported profiles and qualification limits
+  remain unchanged. Neutral execution extraction is a later T561 batch.
+- `core/chips` owns the extracted PIC, PIT, DMA, RTC, KBC, PPI,
   keyboard, mouse, FDC, HDC and video chip mechanisms. T539 closed their
   independent-chip source ownership. The neutral executor,
   guest timeline, memory/port routes and plan transaction live in `core/x86`.
-  Its production target depends only on Types, CPU and FPU; NXVM links that
+  Its production target depends only on Types and X86 Core CPU/FPU; NXVM links that
   sole implementation. Accepted S89 puts the complete media registry
   and display-provider slot in `core/board-base`, consumed through public
   contracts. The common PIT adapter installs four copied routes against a
@@ -101,8 +106,8 @@ verification and acceptance; the task history retains the cutover sequence.
   wiring. Emulator Product composition integrates their public contracts; neither
   family reads the common board layout. Model40 alone owns D4 memory,
   Port B and refresh state through one frozen board-profile binding.
-  The former `app-nxvm/devices` implementation is removed. Chip state stays
-  in `core/chips`, guest time in Core, and profile/firmware/media choices in
+  The former `app-nxvm/devices` implementation is removed. PC chip state stays
+  in `core/chips`, CPU/FPU state in X86 Core, guest time in Core, and profile/firmware/media choices in
   App composition. Current records T540 acceptance and the next App cutover.
 - `emulator/machine` owns the shared execution/control protocol and paused-debug
   lease; `emulator/session` is the sole product-control reducer;
@@ -186,7 +191,7 @@ the normal product artifact directory; see the source policy.
 ### CPU And Machine Preservation
 
 CPU identity, feature/timing tables and instruction dispatch remain chip-owned
-at `core/chips/cpu` and selectable by Core callers and repository-only CPU tests. Preserve all
+at `x86-core/cpu` and selectable by Core callers and repository-only CPU tests. Preserve all
 existing models and tests even when no shipped machine uses them. New 188/486
 coverage needs sources and implementation; an enum alias cannot turn 386 into
 486. Fixed products choose their documented CPU once. Do not scatter build

@@ -18,6 +18,9 @@ endif()
 if(NOT TARGET emulator-machine)
     add_subdirectory("${CORE_EMULATOR_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/emulator")
 endif()
+if(NOT TARGET x86-core-cpu)
+    add_subdirectory("${CORE_SOURCE_ROOT}/x86-core" "${CMAKE_CURRENT_BINARY_DIR}/x86-core")
+endif()
 
 function(core_add_chip target source)
     add_library(${target} STATIC ${source})
@@ -31,7 +34,6 @@ core_add_chip(core-chip-pic8259 chips/pic8259/pic.c)
 core_add_chip(core-chip-dma8237 chips/dma8237/dma.c)
 core_add_chip(core-chip-fdc8272 chips/fdc8272/fdc.c)
 core_add_chip(core-chip-hdc chips/hdc/hdc.c)
-core_add_chip(core-chip-fpu chips/fpu/fpu.c)
 core_add_chip(core-chip-video chips/video/video.c)
 core_add_chip(core-chip-ps2mouse chips/ps2mouse/mouse.c)
 core_add_chip(core-chip-keyboard chips/keyboard/keyboard.c)
@@ -39,18 +41,6 @@ core_add_chip(core-chip-ppi8255 chips/ppi8255/ppi.c)
 core_add_chip(core-chip-xtkeyboard chips/xtkeyboard/keyboard.c)
 core_add_chip(core-chip-kbc8042 chips/kbc8042/controller.c)
 target_link_libraries(core-chip-kbc8042 PRIVATE core-chip-keyboard)
-
-add_library(core-chip-cpu STATIC
-    chips/cpu/cpu.c
-    chips/cpu/cpu_instructions.c
-    chips/cpu/cpu_timing.c
-    chips/cpu/cpu_timing_model.c)
-target_include_directories(core-chip-cpu PUBLIC ${CORE_SOURCE_ROOT})
-target_link_libraries(core-chip-cpu PUBLIC types PRIVATE core-chip-fpu)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    set_source_files_properties(chips/cpu/cpu_instructions.c PROPERTIES
-        COMPILE_OPTIONS "-Wno-unused-parameter;-Wno-unused-variable;-Wno-unused-but-set-variable;-Wno-unused-function;-Wno-empty-body")
-endif()
 
 set(core_x86_sources
     x86/clock.c x86/cpu_bus.c x86/debug.c x86/entry_plan_interface.c
@@ -60,13 +50,13 @@ set(core_x86_sources
     x86/timeline.c x86/port.c x86/memory.c x86/transaction.c)
 add_library(core-x86 STATIC ${core_x86_sources})
 target_include_directories(core-x86 PUBLIC ${CORE_SOURCE_ROOT})
-target_link_libraries(core-x86 PUBLIC types core-chip-cpu core-chip-fpu)
+target_link_libraries(core-x86 PUBLIC types x86-core-cpu x86-core-fpu)
 target_compile_definitions(core-x86 PUBLIC
     CORE_MACHINE_RUNTIME_TRACE_ENABLED=$<IF:$<CONFIG:Debug>,1,0>)
 
 add_library(core-x86-observable STATIC EXCLUDE_FROM_ALL ${core_x86_sources})
 target_include_directories(core-x86-observable PUBLIC ${CORE_SOURCE_ROOT})
-target_link_libraries(core-x86-observable PUBLIC types core-chip-cpu core-chip-fpu)
+target_link_libraries(core-x86-observable PUBLIC types x86-core-cpu x86-core-fpu)
 target_compile_definitions(core-x86-observable PUBLIC CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
 add_library(core-board-at STATIC board-at/kbc.c board-at/parity.c board-at/wiring.c)

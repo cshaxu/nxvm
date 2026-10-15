@@ -62,6 +62,7 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     shared-x86-nxvm-tests
     core-product-tests
     core-x86-tests
+    x86-core-tests
     core-board-tests)
 
 set(MYDESKPRO386_D4_TEST_SOURCES
@@ -311,7 +312,7 @@ target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE my5160-machine)
 add_library(model40-d4-prefetch-scheduler-test OBJECT src/core/x86/machine_scheduler.c)
 target_link_libraries(model40-d4-prefetch-scheduler-test PRIVATE core-x86-observable)
 target_compile_definitions(model40-d4-prefetch-scheduler-test PRIVATE
-    core_machine_cpu_execution_advance_prefetch_reservation=test_cpu_prefetch_grant)
+    x86_core_cpu_execution_advance_prefetch_reservation=test_cpu_prefetch_grant)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(model40-d4-prefetch-scheduler-test PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -510,19 +511,19 @@ function(project_configure_strict_cpu_smokes)
 set(PROJECT_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-cli-sti-smoke|test/core/board-base/core_machine_cli_sti_profiles_smoke.c"
     "machine-cli-sti-interrupt-smoke|test/core/board-base/machine_cli_sti_interrupt_smoke.c"
-    "core-test-cpu_control_state|test/core/chips/cpu/cpu_control_state_smoke.c"
-    "core-test-cpu_control_transfer_branch|test/core/chips/cpu/cpu_control_transfer_branch_smoke.c"
-    "core-test-cpu_control_transfer_near|test/core/chips/cpu/cpu_control_transfer_near_smoke.c"
-    "core-test-cpu_control_transfer_far|test/core/chips/cpu/cpu_control_transfer_far_smoke.c"
-    "core-test-cpu_idt_privilege_entry|test/core/chips/cpu/cpu_idt_privilege_entry_smoke.c"
-    "core-test-cpu_protected_far|test/core/chips/cpu/cpu_protected_far_smoke.c"
-    "core-test-cpu_protected_data_access|test/core/chips/cpu/cpu_protected_data_access_smoke.c"
-    "core-test-cpu_debug_state|test/core/chips/cpu/cpu_debug_state_smoke.c"
-    "core-test-cpu_descriptor_table_register|test/core/chips/cpu/cpu_descriptor_table_register_smoke.c"
-    "core-test-cpu_descriptor_system|test/core/chips/cpu/cpu_descriptor_system_smoke.c"
-    "core-test-cpu_lar_lsl|test/core/chips/cpu/cpu_lar_lsl_smoke.c"
-    "core-test-cpu_verr_verw|test/core/chips/cpu/cpu_verr_verw_smoke.c"
-    "core-test-cpu_eflags_local|test/core/chips/cpu/cpu_eflags_local_smoke.c"
+    "x86-core-test-cpu_control_state|test/x86-core/cpu/cpu_control_state_smoke.c"
+    "x86-core-test-cpu_control_transfer_branch|test/x86-core/cpu/cpu_control_transfer_branch_smoke.c"
+    "x86-core-test-cpu_control_transfer_near|test/x86-core/cpu/cpu_control_transfer_near_smoke.c"
+    "x86-core-test-cpu_control_transfer_far|test/x86-core/cpu/cpu_control_transfer_far_smoke.c"
+    "x86-core-test-cpu_idt_privilege_entry|test/x86-core/cpu/cpu_idt_privilege_entry_smoke.c"
+    "x86-core-test-cpu_protected_far|test/x86-core/cpu/cpu_protected_far_smoke.c"
+    "x86-core-test-cpu_protected_data_access|test/x86-core/cpu/cpu_protected_data_access_smoke.c"
+    "x86-core-test-cpu_debug_state|test/x86-core/cpu/cpu_debug_state_smoke.c"
+    "x86-core-test-cpu_descriptor_table_register|test/x86-core/cpu/cpu_descriptor_table_register_smoke.c"
+    "x86-core-test-cpu_descriptor_system|test/x86-core/cpu/cpu_descriptor_system_smoke.c"
+    "x86-core-test-cpu_lar_lsl|test/x86-core/cpu/cpu_lar_lsl_smoke.c"
+    "x86-core-test-cpu_verr_verw|test/x86-core/cpu/cpu_verr_verw_smoke.c"
+    "x86-core-test-cpu_eflags_local|test/x86-core/cpu/cpu_eflags_local_smoke.c"
     "core-machine-enter-leave-smoke|test/core/board-base/core_machine_enter_leave_smoke.c"
     "machine-fpu-interface-smoke|test/core/x86/machine_fpu_interface_smoke.c"
     "core-machine-fs-gs-stack-smoke|test/core/board-base/composition/core_machine_fs_gs_stack_smoke.c"
@@ -530,12 +531,12 @@ set(PROJECT_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-gpr-push-pop-smoke|test/core/board-base/core_machine_gpr_push_pop_smoke.c"
     "core-machine-hlt-smoke|test/core/board-base/core_machine_hlt_profiles_smoke.c"
     "core-machine-imul-immediate-smoke|test/core/board-base/core_machine_imul_immediate_profiles_smoke.c"
-    "core-test-cpu_outer_return|test/core/chips/cpu/cpu_outer_return_smoke.c"
-    "core-test-cpu_task_switch16|test/core/chips/cpu/cpu_task_switch16_smoke.c"
-    "core-test-cpu_task_switch32_decode|test/core/chips/cpu/cpu_task_switch32_decode_smoke.c"
-    "core-test-cpu_task_switch32_state|test/core/chips/cpu/cpu_task_switch32_state_smoke.c"
+    "x86-core-test-cpu_outer_return|test/x86-core/cpu/cpu_outer_return_smoke.c"
+    "x86-core-test-cpu_task_switch16|test/x86-core/cpu/cpu_task_switch16_smoke.c"
+    "x86-core-test-cpu_task_switch32_decode|test/x86-core/cpu/cpu_task_switch32_decode_smoke.c"
+    "x86-core-test-cpu_task_switch32_state|test/x86-core/cpu/cpu_task_switch32_state_smoke.c"
     "core-machine-iret-smoke|test/core/board-base/core_machine_iret_profiles_smoke.c"
-    "core-test-cpu_lgdt_lidt|test/core/chips/cpu/cpu_lgdt_lidt_smoke.c"
+    "x86-core-test-cpu_lgdt_lidt|test/x86-core/cpu/cpu_lgdt_lidt_smoke.c"
     "core-machine-lea-smoke|test/core/board-base/core_machine_lea_smoke.c"
     "core-machine-legacy-sreg-stack-smoke|test/core/board-base/core_machine_legacy_sreg_stack_smoke.c"
     "core-machine-les-lds-board-smoke|test/core/board-base/core_machine_les_lds_board_smoke.c"
@@ -549,7 +550,7 @@ set(PROJECT_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-sign-extend-smoke|test/core/board-base/core_machine_sign_extend_smoke.c"
     "core-machine-software-int-smoke|test/core/board-base/core_machine_software_int_profiles_smoke.c"
     "core-machine-sreg-mov-smoke|test/core/board-base/core_machine_sreg_mov_smoke.c"
-    "core-test-cpu_sgdt_sidt|test/core/chips/cpu/cpu_sgdt_sidt_smoke.c"
+    "x86-core-test-cpu_sgdt_sidt|test/x86-core/cpu/cpu_sgdt_sidt_smoke.c"
     "machine-debug-state-board-smoke|test/core/board-base/machine_debug_state_board_smoke.c"
     "core-machine-xchg-smoke|test/core/board-base/core_machine_xchg_smoke.c")
 
@@ -692,11 +693,6 @@ if(POWERSHELL_EXECUTABLE)
     )
 endif()
 
-
-# The Shared CPU target is the sole CPU implementation linked by NXVM.  The
-# compatibility alias retains the established consumer target name without a
-# forwarding library or a second compiled source set.
-add_library(x86-cpu ALIAS core-chip-cpu)
 
 target_link_libraries(mydeskpro386-d4 PUBLIC core-chip-pit825x core-chip-rtc146818 core-chip-fdc8272 core-chip-hdc core-chip-video core-chip-ps2mouse core-chip-keyboard core-chip-kbc8042 core-chip-ppi8255 core-chip-xtkeyboard)
 target_link_libraries(mydeskpro386-d4-observable PUBLIC core-chip-pit825x core-chip-rtc146818 core-chip-fdc8272 core-chip-hdc core-chip-video core-chip-ps2mouse core-chip-keyboard core-chip-kbc8042 core-chip-ppi8255 core-chip-xtkeyboard)
@@ -1151,25 +1147,25 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-operand-address-smoke
     core-machine-prefix-attributes-smoke
     core-machine-legacy-lock-smoke
-    core-test-cpu_legacy_lock
+    x86-core-test-cpu_legacy_lock
     core-machine-setcc-smoke
-    core-test-cpu_setcc
+    x86-core-test-cpu_setcc
     core-machine-movx-smoke
-    core-test-cpu_movx
-    core-test-cpu_lea
-    core-test-cpu_prefix_attributes
-    core-test-cpu_operand_address
-    core-test-cpu_bit_scan
-    core-test-cpu_double_shift
-    core-test-cpu_imul2
+    x86-core-test-cpu_movx
+    x86-core-test-cpu_lea
+    x86-core-test-cpu_prefix_attributes
+    x86-core-test-cpu_operand_address
+    x86-core-test-cpu_bit_scan
+    x86-core-test-cpu_double_shift
+    x86-core-test-cpu_imul2
     core-machine-bit-test-smoke
-    core-test-cpu_bit_test
+    x86-core-test-cpu_bit_test
     core-machine-inc-dec-first-group-board-smoke
     core-machine-inc-dec-second-group-board-smoke
     core-machine-inc-dec-final-group-board-smoke
     core-machine-legacy-alu-smoke
     core-machine-rotate-smoke
-    core-test-cpu_eflags_local
+    x86-core-test-cpu_eflags_local
     core-machine-direct-flags-board-smoke
     core-machine-lahf-sahf-board-smoke
     core-machine-pushf-popf-board-smoke
@@ -1178,11 +1174,11 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-hlt-smoke
     core-machine-software-int-smoke
     core-machine-iret-smoke
-    core-test-cpu_outer_return
+    x86-core-test-cpu_outer_return
     machine-outer-iret-pic-board-smoke
-    core-test-cpu_task_switch16
-    core-test-cpu_task_switch32_decode
-    core-test-cpu_task_switch32_state
+    x86-core-test-cpu_task_switch16
+    x86-core-test-cpu_task_switch32_decode
+    x86-core-test-cpu_task_switch32_state
     machine-task-switch16-pic-board-smoke
     core-machine-fs-gs-stack-smoke
     core-machine-lss-lfs-lgs-smoke
@@ -1196,7 +1192,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-lea-smoke
     core-machine-xchg-smoke
     core-machine-sign-extend-smoke
-    core-test-cpu_sign_extend
+    x86-core-test-cpu_sign_extend
     core-machine-moffs-smoke
     core-machine-gpr-mov-smoke
     core-machine-sreg-mov-smoke
@@ -1205,26 +1201,26 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-lods-board-smoke
     machine-scas-board-smoke
     machine-cmps-board-smoke
-    core-test-cpu_port_strings
+    x86-core-test-cpu_port_strings
     machine-port-strings-board-smoke
-    core-test-cpu_port_io
+    x86-core-test-cpu_port_io
     machine-port-io-board-smoke
-    core-test-cpu_debug_state
+    x86-core-test-cpu_debug_state
     machine-debug-state-board-smoke
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke
     core-machine-imul-immediate-smoke
-    core-test-cpu_imul_immediate
-    core-test-cpu_control_state
-    core-test-cpu_control_transfer_branch
-    core-test-cpu_control_transfer_near
-    core-test-cpu_control_transfer_far
-    core-test-cpu_idt_privilege_entry
+    x86-core-test-cpu_imul_immediate
+    x86-core-test-cpu_control_state
+    x86-core-test-cpu_control_transfer_branch
+    x86-core-test-cpu_control_transfer_near
+    x86-core-test-cpu_control_transfer_far
+    x86-core-test-cpu_idt_privilege_entry
     machine-idt-privilege-pic-board-smoke
     machine-control-state-board-smoke
-    core-test-cpu_protected_far
-    core-test-cpu_protected_data_access
+    x86-core-test-cpu_protected_far
+    x86-core-test-cpu_protected_data_access
     machine-protected-far-pic-board-smoke
     machine-protected-data-pic-board-smoke
     core-machine-protected-16-gate-smoke
@@ -1238,15 +1234,15 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-interrupt-entry-smoke
     core-machine-real-mode-386-rep-cmps-smoke
     core-machine-80286-protected-mode-smoke
-    core-test-cpu_arpl
+    x86-core-test-cpu_arpl
     machine-arpl-board-smoke
-    core-test-cpu_bound
-    core-test-cpu_descriptor_table_register
-    core-test-cpu_descriptor_system
-    core-test-cpu_lar_lsl
-    core-test-cpu_verr_verw
-    core-test-cpu_lgdt_lidt
-    core-test-cpu_sgdt_sidt
+    x86-core-test-cpu_bound
+    x86-core-test-cpu_descriptor_table_register
+    x86-core-test-cpu_descriptor_system
+    x86-core-test-cpu_lar_lsl
+    x86-core-test-cpu_verr_verw
+    x86-core-test-cpu_lgdt_lidt
+    x86-core-test-cpu_sgdt_sidt
     machine-table-register-board-smoke
     machine-bound-board-smoke
     core-machine-segment-selector-smoke
@@ -1388,9 +1384,9 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     machine-80186-timing-manifest-runner
     machine-80286-timing-manifest-runner
     machine-80386-timing-manifest-runner
-    core-machine-80186-decoder-inventory-runner
-    core-machine-80286-decoder-inventory-runner
-    core-machine-80386-decoder-inventory-runner)
+    x86-core-inventory-80186
+    x86-core-inventory-80286
+    x86-core-inventory-80386)
 
 # The undefined-opcode verifier inventories actual unit sources, rather than a second hand-maintained
 # target list.  Every source that names a #UD producer/assertion must still
@@ -1409,10 +1405,10 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-instance-smoke
     core-machine-explicit-time-smoke
     core-machine-debug-smoke
-    core-test-cpu_execution_fault_event
+    x86-core-test-cpu_execution_fault_event
     vm-fdc-authority-smoke
     core-machine-cpu-fpu-profile-smoke
-    core-machine-cpu-context-smoke
+    x86-core-test-cpu_execution_context
     core-machine-cpu-fpu-profile-closure-smoke)
 
 # A real-mode #UD owner must not rely on an all-zero IVT entry.  The terminal
@@ -1426,18 +1422,18 @@ set(PROJECT_UNDEFINED_OPCODE_REAL_DELIVERY_TARGETS
     core-machine-real-ud-delivery-smoke
     )
 set(PROJECT_UNDEFINED_OPCODE_NO_REAL_NEGATIVE_TARGETS
-    core-test-cpu_execution_fault_event
-    core-test-cpu_descriptor_system
-    core-test-cpu_lar_lsl
-    core-test-cpu_verr_verw
+    x86-core-test-cpu_execution_fault_event
+    x86-core-test-cpu_descriptor_system
+    x86-core-test-cpu_lar_lsl
+    x86-core-test-cpu_verr_verw
     machine-fpu-escape-smoke
-    core-test-cpu_control_state
-    core-test-cpu_control_transfer_branch
-    core-test-cpu_control_transfer_far
-    core-test-cpu_debug_state
+    x86-core-test-cpu_control_state
+    x86-core-test-cpu_control_transfer_branch
+    x86-core-test-cpu_control_transfer_far
+    x86-core-test-cpu_debug_state
     core-machine-protected-16-gate-smoke
-    core-test-cpu_protected_data_access
-    core-test-cpu_protected_far
+    x86-core-test-cpu_protected_data_access
+    x86-core-test-cpu_protected_far
     core-machine-protected-ud-delivery-smoke
     machine-task-switch-cross-width-smoke
     machine-vm86-delivery-smoke
@@ -1806,6 +1802,11 @@ function(project_add_ini_integration_test target session_file)
 endfunction()
 
 get_property(shared_core_test_names DIRECTORY "${PROJECT_SOURCE_DIR}/test/core" PROPERTY TESTS)
+get_property(shared_cpu_test_names DIRECTORY "${PROJECT_SOURCE_DIR}/test/x86-core" PROPERTY TESTS)
+list(APPEND shared_core_test_names ${shared_cpu_test_names})
+get_directory_property(shared_cpu_test_targets
+    DIRECTORY "${PROJECT_SOURCE_DIR}/test/x86-core"
+    DEFINITION SHARED_X86_CORE_TEST_TARGETS)
 get_directory_property(shared_core_x86_test_targets
     DIRECTORY "${PROJECT_SOURCE_DIR}/test/core"
     DEFINITION CORE_X86_TEST_TARGETS)
@@ -1813,9 +1814,9 @@ get_directory_property(shared_core_board_test_targets
     DIRECTORY "${PROJECT_SOURCE_DIR}/test/core"
     DEFINITION CORE_BOARD_TEST_TARGETS)
 list(APPEND shared_core_test_targets
-    ${shared_core_x86_test_targets} ${shared_core_board_test_targets})
+    ${shared_core_x86_test_targets} ${shared_core_board_test_targets} ${shared_cpu_test_targets})
 foreach(target IN LISTS PROJECT_UNIT_TEST_TARGETS)
-    # Canonical Core cases already own these executables. Do not also
+    # Canonical component cases already own these executables. Do not also
     # register a product unit.* alias for the identical command.
     if(target IN_LIST shared_core_test_targets AND
        NOT "unit.${target}" IN_LIST shared_core_test_names)
@@ -2864,7 +2865,7 @@ set(PROJECT_DIRECT_COMPILATION_PRODUCTION_TARGETS
     x86-ibmpc-product
     core-board-base
     core-x86
-    core-chip-cpu
+    x86-core-cpu
     emulator-machine
     x86-debug-xasm32
     x86-debug-product

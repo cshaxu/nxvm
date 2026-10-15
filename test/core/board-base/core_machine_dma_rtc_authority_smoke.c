@@ -51,13 +51,13 @@ static lib_i32 core_machine_at_refresh_leaves_dma0_available(void)
     core_machine_board_state *board = LIB_NULL;
     core_machine_run_result result = {0};
     core_machine_time_observation time = {0};
-    core_machine_cpu_state state = {0};
+    x86_core_cpu_state state = {0};
     lib_u8 address = 0xa5u;
     const lib_u8 nop = 0x90u;
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = {[CORE_MACHINE_DEBUG_EIP] = 0x0200u}
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x0200u}
     };
     lib_i32 failed;
     lib_i32 stage = 1;
@@ -118,10 +118,10 @@ static lib_i32 core_machine_dma_refresh_follows_pit_channel_1(void)
 {
     const lib_u8 program[] = {0xdbu, 0xe3u, 0xdbu, 0xe3u,
         0xdbu, 0xe3u, 0xdbu, 0xe3u};
-    const core_machine_debug_register_patch entry = {
-        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
-            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
-        .values = {[CORE_MACHINE_DEBUG_EIP] = 0x0200u}
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x0200u}
     };
     core_machine_config configuration = {0};
     core_machine_run_result result;
@@ -306,7 +306,7 @@ int main(void)
         core_machine_configure_fdc(LIB_NULL, LIB_NULL) != LIB_STATUS_INVALID_STATE ||
         core_machine_configure_hdc(LIB_NULL, LIB_NULL) != LIB_STATUS_INVALID_STATE;
     machine_config.ticks_per_instruction = 1u;
-    machine_config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
+    machine_config.cpu_profile = X86_CORE_CPU_PROFILE_80286;
     rtc_config.index_port = 0x0070u;
     rtc_config.data_port = 0x0071u;
     rtc_config.irq = 8u;

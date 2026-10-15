@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 set(machine "${PROJECT_SOURCE_DIR}/src/core/x86/machine.c")
-set(machine_model "${PROJECT_SOURCE_DIR}/src/core/chips/cpu/cpu_timing_model.c")
+set(machine_model "${PROJECT_SOURCE_DIR}/src/x86-core/cpu/cpu_timing_model.c")
 set(interface "${PROJECT_SOURCE_DIR}/src/core/x86/machine_interface.h")
 set(smoke "${PROJECT_SOURCE_DIR}/test/core/x86/machine_instruction_timing_smoke.c")
 set(evidence "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t388-s3-physical-eligibility-boundary.md")
@@ -23,14 +23,17 @@ function(physical_timing_require text token)
         message(FATAL_ERROR "Physical-eligibility drift: ${token}")
     endif()
 endfunction()
-foreach(token IN ITEMS
-    "core_machine_source_timing_mark_unallocated"
-    "source_timing_unallocated"
-    "CORE_MACHINE_RETIREMENT_TIME_PHYSICAL"
-    "core_machine_publish_elapsed_ticks"
-    "core_machine_advance_time")
+foreach(symbol_pair IN ITEMS
+    "x86_core_cpu_source_timing_mark_unallocated|core_machine_source_timing_mark_unallocated"
+    "source_timing_unallocated|source_timing_unallocated"
+    "CORE_MACHINE_RETIREMENT_TIME_PHYSICAL|CORE_MACHINE_RETIREMENT_TIME_PHYSICAL"
+    "core_machine_publish_elapsed_ticks|core_machine_publish_elapsed_ticks"
+    "core_machine_advance_time|core_machine_advance_time")
+    string(REPLACE "|" ";" symbol_names "${symbol_pair}")
+    list(GET symbol_names 0 token)
+    list(GET symbol_names 1 historical_token)
     physical_timing_require("${machine_text}" "${token}")
-    physical_timing_require("${evidence_text}" "${token}")
+    physical_timing_require("${evidence_text}" "${historical_token}")
 endforeach()
 foreach(token IN ITEMS
     "core_machine_retirement_time_contract"

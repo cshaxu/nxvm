@@ -82,12 +82,12 @@ static const core_machine_execution_provider string_io_timing_execution = {
     string_io_timing_reset, string_io_timing_advance
 };
 
-static lib_i32 string_io_timing_prepare(core_machine_cpu_profile profile,
+static lib_i32 string_io_timing_prepare(x86_core_cpu_profile profile,
     core_machine **out_machine, string_io_timing_state *state)
 {
     const core_machine_executor_config config = { .cpu_profile = profile };
-    const lib_u32 reset_linear = profile <= CORE_MACHINE_CPU_PROFILE_80186 ?
-        0x000ffff0u : profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+    const lib_u32 reset_linear = profile <= X86_CORE_CPU_PROFILE_80186 ?
+        0x000ffff0u : profile == X86_CORE_CPU_PROFILE_80286 ?
         0x00fffff0u : STRING_IO_TIMING_RESET_LINEAR;
     const core_machine_memory_alias_config aliases[] = {
         {STRING_IO_TIMING_RESET_LINEAR, STRING_IO_TIMING_RESET_PHYSICAL, 16u},
@@ -134,10 +134,10 @@ static lib_i32 string_io_timing_load(core_machine *machine,
             sizeof(compare)) != LIB_STATUS_OK) {
         return 0;
     }
-    test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ESI, 0x1000u);
-    test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_EDI, 0x1100u);
-    test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_EDX, STRING_IO_TIMING_PORT);
-    test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_EAX, 0x0011u);
+    test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ESI, 0x1000u);
+    test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EDI, 0x1100u);
+    test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EDX, STRING_IO_TIMING_PORT);
+    test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EAX, 0x0011u);
     return 1;
 }
 
@@ -147,10 +147,10 @@ static lib_i32 string_io_timing_enter_mode(core_machine *machine,
     if (!test_core_80386_enter_port_mode(machine, mode, program, bytes, 0u,
             &state->setup_ticks) || state->advanced_ticks != state->setup_ticks)
         return 0;
-    test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ESI, 0x1000u);
-    test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_EDI, 0x1100u);
-    test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_EDX, STRING_IO_TIMING_PORT);
-    test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_EAX, 0x0011u);
+    test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ESI, 0x1000u);
+    test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EDI, 0x1100u);
+    test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EDX, STRING_IO_TIMING_PORT);
+    test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EAX, 0x0011u);
     return 1;
 }
 
@@ -167,7 +167,7 @@ static lib_i32 string_io_timing_run(core_machine *machine, string_io_timing_stat
         state->advanced_ticks == state->setup_ticks + ticks;
 }
 
-static lib_i32 string_io_timing_test_primitives(core_machine_cpu_profile profile,
+static lib_i32 string_io_timing_test_primitives(x86_core_cpu_profile profile,
     lib_u32 profile_index)
 {
     static const string_io_timing_string_row rows[] = {
@@ -190,7 +190,7 @@ static lib_i32 string_io_timing_test_primitives(core_machine_cpu_profile profile
     return failed;
 }
 
-static lib_i32 string_io_timing_test_port_primitives(core_machine_cpu_profile profile,
+static lib_i32 string_io_timing_test_port_primitives(x86_core_cpu_profile profile,
     lib_u32 profile_index)
 {
     static const string_io_timing_string_row rows[] = {
@@ -214,7 +214,7 @@ static lib_i32 string_io_timing_test_port_primitives(core_machine_cpu_profile pr
     return failed;
 }
 
-static lib_i32 string_io_timing_test_rep_movs(core_machine_cpu_profile profile,
+static lib_i32 string_io_timing_test_rep_movs(x86_core_cpu_profile profile,
     lib_u64 setup, lib_u64 iteration)
 {
     static const lib_u8 program[] = { 0xf3u, 0xa4u };
@@ -229,14 +229,14 @@ static lib_i32 string_io_timing_test_rep_movs(core_machine_cpu_profile profile,
         lib_u64 ticks = setup + iteration * counts[index];
 
         failed |= !string_io_timing_load(machine, program, sizeof(program));
-        if (!failed) test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ECX, (lib_u16)counts[index]);
+        if (!failed) test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, (lib_u16)counts[index]);
         if (!failed) failed |= !string_io_timing_run(machine, &state, instructions, ticks);
     }
     core_machine_destroy(machine);
     return failed;
 }
 
-static lib_i32 string_io_timing_test_rep_cmps_stop(core_machine_cpu_profile profile,
+static lib_i32 string_io_timing_test_rep_cmps_stop(x86_core_cpu_profile profile,
     lib_u64 setup, lib_u64 iteration)
 {
     static const lib_u8 program[] = { 0xf3u, 0xa6u };
@@ -245,9 +245,9 @@ static lib_i32 string_io_timing_test_rep_cmps_stop(core_machine_cpu_profile prof
     lib_i32 failed = !string_io_timing_prepare(profile, &machine, &state);
 
     if (!failed) failed |= !string_io_timing_load(machine, program, sizeof(program)) ||
-        (test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ECX, 3u), 0) ||
+        (test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 3u), 0) ||
         !string_io_timing_run(machine, &state, 2u, setup + 2u * iteration) ||
-        (lib_u16)test_core_machine_fixture_read_register(machine, CORE_MACHINE_DEBUG_ECX) != 1u;
+        (lib_u16)test_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_ECX) != 1u;
     core_machine_destroy(machine);
     return failed;
 }
@@ -256,7 +256,7 @@ static lib_i32 string_io_timing_test_rep_cmps_stop(core_machine_cpu_profile prof
  * separately-owned early-stop proof above.  Exercising zero, first, and
  * continuation retirement for every form keeps the source formulas coupled
  * to the stateful publisher rather than to one MOVSB representative. */
-static lib_i32 string_io_timing_test_rep_basic_strings(core_machine_cpu_profile profile,
+static lib_i32 string_io_timing_test_rep_basic_strings(x86_core_cpu_profile profile,
     lib_u32 profile_index)
 {
     static const string_io_timing_repeat_row rows[] = {
@@ -274,7 +274,7 @@ static lib_i32 string_io_timing_test_rep_basic_strings(core_machine_cpu_profile 
 
     for (row = 0u; !failed && row < sizeof(rows) / sizeof(rows[0]); ++row) {
         /* Appendix B has no selected 80286 REP LODS formula. */
-        if (profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+        if (profile == X86_CORE_CPU_PROFILE_80286 &&
             rows[row].opcode == 0xacu) continue;
         for (count = 0u; !failed && count < sizeof(counts) / sizeof(counts[0]);
             ++count) {
@@ -287,10 +287,10 @@ static lib_i32 string_io_timing_test_rep_basic_strings(core_machine_cpu_profile 
 
             failed |= !string_io_timing_load(machine, program, sizeof(program));
             if (!failed) {
-                test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ECX, (lib_u16)counts[count]);
+                test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, (lib_u16)counts[count]);
                 if (rows[row].opcode == 0xaeu) {
-                    test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_EDI, 0x1000u);
-                    test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_EAX, 0u);
+                    test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EDI, 0x1000u);
+                    test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_EAX, 0u);
                 }
             }
             if (!failed) failed |= !string_io_timing_run(machine, &state, instructions,
@@ -301,7 +301,7 @@ static lib_i32 string_io_timing_test_rep_basic_strings(core_machine_cpu_profile 
     return failed;
 }
 
-static lib_i32 string_io_timing_test_rep_port_strings(core_machine_cpu_profile profile,
+static lib_i32 string_io_timing_test_rep_port_strings(x86_core_cpu_profile profile,
     lib_u32 profile_index)
 {
     static const lib_u8 opcodes[] = { 0x6cu, 0x6eu };
@@ -331,7 +331,7 @@ static lib_i32 string_io_timing_test_rep_port_strings(core_machine_cpu_profile p
             failed |= !string_io_timing_load(machine, program, sizeof(program));
             if (!failed) {
                 state.input = 0x5au;
-                test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ECX, (lib_u16)counts[count]);
+                test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, (lib_u16)counts[count]);
             }
             if (!failed) failed |= !string_io_timing_run(machine, &state, instructions,
                 ticks) || (opcodes[opcode] == 0x6cu ?
@@ -347,13 +347,13 @@ static lib_i32 string_io_timing_test_rep_ins_80386(void)
     static const lib_u8 program[] = { 0xf3u, 0x6cu };
     string_io_timing_state state;
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !string_io_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
+    lib_i32 failed = !string_io_timing_prepare(X86_CORE_CPU_PROFILE_80386, &machine,
         &state);
 
     if (!failed) failed |= !string_io_timing_load(machine, program, sizeof(program));
     if (!failed) {
         state.input = 0x5au;
-        test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ECX, 3u);
+        test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 3u);
         failed |= !string_io_timing_run(machine, &state, 3u, 31u) || state.reads != 3u;
     }
     core_machine_destroy(machine);
@@ -366,7 +366,7 @@ static lib_i32 string_io_timing_test_ordinary_io_80386(void)
     static const lib_u8 output[] = { 0x67u, 0xeeu };
     string_io_timing_state state;
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !string_io_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
+    lib_i32 failed = !string_io_timing_prepare(X86_CORE_CPU_PROFILE_80386, &machine,
         &state);
 
     if (!failed) failed |= !string_io_timing_load(machine, input, sizeof(input));
@@ -392,7 +392,7 @@ static lib_i32 string_io_timing_test_80386_string_port_modes(void)
     for (mode = 0; mode != 3; ++mode) {
         string_io_timing_state state;
         core_machine *machine = LIB_NULL;
-        lib_i32 failed = !string_io_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !string_io_timing_prepare(X86_CORE_CPU_PROFILE_80386,
             &machine, &state) || !string_io_timing_load(machine, input, sizeof(input));
 
         if (!failed) failed |= !string_io_timing_enter_mode(machine, &state, mode,
@@ -421,10 +421,10 @@ static lib_i32 string_io_timing_test_80186_preflight(void)
     core_machine_run_result result;
     string_io_timing_state state;
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !string_io_timing_prepare(CORE_MACHINE_CPU_PROFILE_80186, &machine,
+    lib_i32 failed = !string_io_timing_prepare(X86_CORE_CPU_PROFILE_80186, &machine,
         &state) || !string_io_timing_load(machine, program, sizeof(program));
 
-    if (!failed) test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ECX, 1u);
+    if (!failed) test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 1u);
     if (!failed) {
         failed |= core_machine_run(machine, insufficient, &result) !=
             LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
@@ -448,10 +448,10 @@ static lib_i32 string_io_timing_test_repeat_continuation_reset(void)
     core_machine_run_result result;
     string_io_timing_state state;
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !string_io_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
+    lib_i32 failed = !string_io_timing_prepare(X86_CORE_CPU_PROFILE_80386, &machine,
         &state) || !string_io_timing_load(machine, program, sizeof(program));
 
-    if (!failed) test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ECX, 3u);
+    if (!failed) test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 3u);
     if (!failed) failed |= !string_io_timing_run(machine, &state, 1u, 9u);
     if (!failed) {
         failed |= core_machine_run(machine, one, &result) != LIB_STATUS_OK ||
@@ -461,7 +461,7 @@ static lib_i32 string_io_timing_test_repeat_continuation_reset(void)
     }
     if (!failed) failed |= !string_io_timing_load(machine, program, sizeof(program));
     if (!failed) {
-        test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ECX, 3u);
+        test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 3u);
         failed |= !string_io_timing_run(machine, &state, 1u, 9u);
     }
     core_machine_destroy(machine);
@@ -478,7 +478,7 @@ static lib_i32 string_io_timing_test_80386_attributes_and_failure(void)
     core_machine_run_result result;
     string_io_timing_state state;
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = !string_io_timing_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
+    lib_i32 failed = !string_io_timing_prepare(X86_CORE_CPU_PROFILE_80386, &machine,
         &state);
 
     if (!failed) failed |= !string_io_timing_load(machine, operand_size,
@@ -488,9 +488,9 @@ static lib_i32 string_io_timing_test_80386_attributes_and_failure(void)
     if (!failed) failed |= !string_io_timing_load(machine, repne_cmps,
         sizeof(repne_cmps));
     if (!failed) {
-        test_core_machine_fixture_write_word(machine, CORE_MACHINE_DEBUG_ECX, 3u);
+        test_core_machine_fixture_write_word(machine, X86_CORE_CPU_DEBUG_ECX, 3u);
         failed |= !string_io_timing_run(machine, &state, 1u, 14u) ||
-            (lib_u16)test_core_machine_fixture_read_register(machine, CORE_MACHINE_DEBUG_ECX) != 2u;
+            (lib_u16)test_core_machine_fixture_read_register(machine, X86_CORE_CPU_DEBUG_ECX) != 2u;
     }
     if (!failed) failed |= !string_io_timing_load(machine, input, sizeof(input));
     if (!failed) {
@@ -506,32 +506,32 @@ static lib_i32 string_io_timing_test_80386_attributes_and_failure(void)
 
 lib_i32 main(void)
 {
-    if (string_io_timing_test_primitives(CORE_MACHINE_CPU_PROFILE_8086, 0u) ||
-        string_io_timing_test_primitives(CORE_MACHINE_CPU_PROFILE_80186, 1u) ||
-        string_io_timing_test_primitives(CORE_MACHINE_CPU_PROFILE_80286, 2u) ||
-        string_io_timing_test_primitives(CORE_MACHINE_CPU_PROFILE_80386, 3u)) return 1;
-    if (string_io_timing_test_port_primitives(CORE_MACHINE_CPU_PROFILE_80186, 1u) ||
-        string_io_timing_test_port_primitives(CORE_MACHINE_CPU_PROFILE_80286, 2u) ||
-        string_io_timing_test_port_primitives(CORE_MACHINE_CPU_PROFILE_80386, 3u)) {
+    if (string_io_timing_test_primitives(X86_CORE_CPU_PROFILE_8086, 0u) ||
+        string_io_timing_test_primitives(X86_CORE_CPU_PROFILE_80186, 1u) ||
+        string_io_timing_test_primitives(X86_CORE_CPU_PROFILE_80286, 2u) ||
+        string_io_timing_test_primitives(X86_CORE_CPU_PROFILE_80386, 3u)) return 1;
+    if (string_io_timing_test_port_primitives(X86_CORE_CPU_PROFILE_80186, 1u) ||
+        string_io_timing_test_port_primitives(X86_CORE_CPU_PROFILE_80286, 2u) ||
+        string_io_timing_test_port_primitives(X86_CORE_CPU_PROFILE_80386, 3u)) {
         return 2;
     }
-    if (string_io_timing_test_rep_movs(CORE_MACHINE_CPU_PROFILE_8086, 9u, 17u) ||
-        string_io_timing_test_rep_movs(CORE_MACHINE_CPU_PROFILE_80186, 8u, 8u) ||
-        string_io_timing_test_rep_movs(CORE_MACHINE_CPU_PROFILE_80286, 5u, 4u) ||
-        string_io_timing_test_rep_movs(CORE_MACHINE_CPU_PROFILE_80386, 5u, 4u)) return 3;
-    if (string_io_timing_test_rep_basic_strings(CORE_MACHINE_CPU_PROFILE_8086, 0u) ||
-        string_io_timing_test_rep_basic_strings(CORE_MACHINE_CPU_PROFILE_80186, 1u) ||
-        string_io_timing_test_rep_basic_strings(CORE_MACHINE_CPU_PROFILE_80286, 2u) ||
-        string_io_timing_test_rep_basic_strings(CORE_MACHINE_CPU_PROFILE_80386, 3u) ||
-        string_io_timing_test_rep_port_strings(CORE_MACHINE_CPU_PROFILE_80186, 1u) ||
-        string_io_timing_test_rep_port_strings(CORE_MACHINE_CPU_PROFILE_80286, 2u) ||
-        string_io_timing_test_rep_port_strings(CORE_MACHINE_CPU_PROFILE_80386, 3u)) {
+    if (string_io_timing_test_rep_movs(X86_CORE_CPU_PROFILE_8086, 9u, 17u) ||
+        string_io_timing_test_rep_movs(X86_CORE_CPU_PROFILE_80186, 8u, 8u) ||
+        string_io_timing_test_rep_movs(X86_CORE_CPU_PROFILE_80286, 5u, 4u) ||
+        string_io_timing_test_rep_movs(X86_CORE_CPU_PROFILE_80386, 5u, 4u)) return 3;
+    if (string_io_timing_test_rep_basic_strings(X86_CORE_CPU_PROFILE_8086, 0u) ||
+        string_io_timing_test_rep_basic_strings(X86_CORE_CPU_PROFILE_80186, 1u) ||
+        string_io_timing_test_rep_basic_strings(X86_CORE_CPU_PROFILE_80286, 2u) ||
+        string_io_timing_test_rep_basic_strings(X86_CORE_CPU_PROFILE_80386, 3u) ||
+        string_io_timing_test_rep_port_strings(X86_CORE_CPU_PROFILE_80186, 1u) ||
+        string_io_timing_test_rep_port_strings(X86_CORE_CPU_PROFILE_80286, 2u) ||
+        string_io_timing_test_rep_port_strings(X86_CORE_CPU_PROFILE_80386, 3u)) {
         return 4;
     }
-    if (string_io_timing_test_rep_cmps_stop(CORE_MACHINE_CPU_PROFILE_8086, 9u, 22u) ||
-        string_io_timing_test_rep_cmps_stop(CORE_MACHINE_CPU_PROFILE_80186, 5u, 22u) ||
-        string_io_timing_test_rep_cmps_stop(CORE_MACHINE_CPU_PROFILE_80286, 5u, 9u) ||
-        string_io_timing_test_rep_cmps_stop(CORE_MACHINE_CPU_PROFILE_80386, 5u, 9u)) return 5;
+    if (string_io_timing_test_rep_cmps_stop(X86_CORE_CPU_PROFILE_8086, 9u, 22u) ||
+        string_io_timing_test_rep_cmps_stop(X86_CORE_CPU_PROFILE_80186, 5u, 22u) ||
+        string_io_timing_test_rep_cmps_stop(X86_CORE_CPU_PROFILE_80286, 5u, 9u) ||
+        string_io_timing_test_rep_cmps_stop(X86_CORE_CPU_PROFILE_80386, 5u, 9u)) return 5;
     if (string_io_timing_test_rep_ins_80386() || string_io_timing_test_ordinary_io_80386() ||
         string_io_timing_test_80386_string_port_modes() ||
         string_io_timing_test_80186_preflight() ||

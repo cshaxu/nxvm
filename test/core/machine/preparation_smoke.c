@@ -17,7 +17,7 @@ static lib_status prepare_at_candidate(const vm_machine_config *config,
     construction->floppy_kind = construction->media_kind = VM_PROFILE_FLOPPY_35_1440K;
     if (at_prepare_status != LIB_STATUS_OK) return at_prepare_status;
     const vm_profile_default_pc_at_descriptor descriptor = {
-        .identity = "preparation-at", .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .identity = "preparation-at", .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u, .default_memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .fdc_bounce_segment = 0x600u, .kbc_aux_absent = LIB_TRUE,
         .port_leaves = vm_at_port_leaves, .port_leaf_count = VM_AT_PORT_LEAF_COUNT,
@@ -27,7 +27,7 @@ static lib_status prepare_at_candidate(const vm_machine_config *config,
         .fdc_cylinder_count = {80u}, .fdc_ready_mask = 1u, .validate = accept_at_descriptor
     };
     lib_status status = vm_profile_default_pc_at_values_create(&descriptor,
-        CORE_MACHINE_CPU_PROFILE_DEFAULT, X86_FPU_PROFILE_NONE, &profile->values);
+        X86_CORE_CPU_PROFILE_DEFAULT, X86_FPU_PROFILE_NONE, &profile->values);
     if (status == LIB_STATUS_OK) status = vm_profile_default_pc_at_snapshot_copy(profile, &descriptor,
         descriptor.identity, 0x40u);
     if (status == LIB_STATUS_OK) {

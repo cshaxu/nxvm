@@ -16,7 +16,7 @@ static void retirement_capture(void *opaque,
     const core_machine_retirement_observation *observation)
 {
     retirement_probe *probe = (retirement_probe *)opaque;
-    core_machine_debug_cpu_snapshot snapshot;
+    x86_core_cpu_debug_cpu_snapshot snapshot;
 
     if (probe == LIB_NULL || observation == LIB_NULL) return;
     if (probe->count < 3u) probe->records[probe->count] = *observation;
@@ -24,16 +24,16 @@ static void retirement_capture(void *opaque,
     probe->set_while_running = core_machine_set_retirement_observation_provider(
         probe->machine, LIB_NULL);
     probe->snapshot_while_running[0] = core_machine_debug_capture_cpu_snapshot(
-        probe->machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot);
+        probe->machine, X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot);
     probe->snapshot_while_running[1] = core_machine_debug_capture_cpu_snapshot(
-        probe->machine, CORE_MACHINE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &snapshot);
+        probe->machine, X86_CORE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &snapshot);
 }
 
 static lib_i32 retirement_prepare(core_machine **out_machine,
     const core_machine_config *config, const lib_u8 *code,
     lib_size bytes)
 {
-    core_machine_cpu_profile profile;
+    x86_core_cpu_profile profile;
     core_machine_memory_alias_config aliases[] = {
         {0xfffffff0u, 0x000ffff0u, 16u},
         {0x000ffff0u, 0x000ffff0u, 16u}
@@ -42,11 +42,11 @@ static lib_i32 retirement_prepare(core_machine **out_machine,
     if (out_machine == LIB_NULL ||
         core_machine_create(config, out_machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_get_cpu_profile(*out_machine, &profile) != LIB_STATUS_OK) return 0;
-    aliases[1].physical_start = profile <= CORE_MACHINE_CPU_PROFILE_80186 ?
+    aliases[1].physical_start = profile <= X86_CORE_CPU_PROFILE_80186 ?
         0x000ffff0u : 0x00fffff0u;
     return core_machine_install_memory_aliases(*out_machine, aliases, 1u,
             LIB_FALSE) == LIB_STATUS_OK &&
-        (profile > CORE_MACHINE_CPU_PROFILE_80286 ||
+        (profile > X86_CORE_CPU_PROFILE_80286 ||
             core_machine_install_memory_aliases(*out_machine, &aliases[1], 1u,
                 LIB_FALSE) == LIB_STATUS_OK) &&
         core_machine_freeze_execution_providers(*out_machine) == LIB_STATUS_OK &&
@@ -61,7 +61,7 @@ static lib_i32 retirement_control_context_case(lib_u8 opcode,
     lib_u8 expected_next_components)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_run_budget budget = { 1u, 0u };
     const lib_u8 program[] = { opcode, 0x01u, 0x90u, 0x90u };
@@ -90,14 +90,14 @@ static lib_i32 retirement_control_context_case(lib_u8 opcode,
 static lib_i32 retirement_pre_mode_snapshot_case(void)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_run_budget budget = { 1u, 0u };
     const lib_u8 program[] = { 0x0fu, 0x01u, 0xf0u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    core_machine_debug_cpu_snapshot current_cpu;
-    core_machine_debug_cpu_snapshot entry_cpu;
+    x86_core_cpu_debug_cpu_snapshot current_cpu;
+    x86_core_cpu_debug_cpu_snapshot entry_cpu;
     retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, LIB_STATUS_OK,
         { LIB_STATUS_OK, LIB_STATUS_OK } };
     core_machine *machine = LIB_NULL;
@@ -108,7 +108,7 @@ static lib_i32 retirement_pre_mode_snapshot_case(void)
     probe.machine = machine;
     if (!failed) {
         failed |= core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EAX, 1u) != LIB_STATUS_OK ||
+            X86_CORE_CPU_DEBUG_EAX, 1u) != LIB_STATUS_OK ||
             core_machine_set_retirement_observation_provider(machine,
             &provider) != LIB_STATUS_OK ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
@@ -124,21 +124,21 @@ static lib_i32 retirement_pre_mode_snapshot_case(void)
             probe.snapshot_while_running[0] != LIB_STATUS_INVALID_STATE ||
             probe.snapshot_while_running[1] != LIB_STATUS_INVALID_STATE ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &entry_cpu) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &entry_cpu) != LIB_STATUS_OK ||
             current_cpu.cr0 != probe.records[0].current_cpu.cr0 ||
             current_cpu.eip != probe.records[0].current_cpu.eip ||
             entry_cpu.cr0 != probe.records[0].instruction_entry_cpu.cr0 ||
             entry_cpu.eip != probe.records[0].instruction_entry_cpu.eip ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                (core_machine_cpu_snapshot_point)2, &current_cpu) !=
+                (x86_core_cpu_snapshot_point)2, &current_cpu) !=
                 LIB_STATUS_INVALID_ARGUMENT ||
             current_cpu.eip != 0xfff3u;
         /* Published copies survive later debug writes and CPU reset. Reset
          * must not publish an old pending instruction as a new retirement. */
         failed |= core_machine_debug_write_register(machine,
-            CORE_MACHINE_DEBUG_EAX, 0x12345678u) != LIB_STATUS_OK ||
+            X86_CORE_CPU_DEBUG_EAX, 0x12345678u) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK || probe.count != 1u ||
             probe.records[0].instruction_entry_cpu.eax != 1u ||
             probe.records[0].current_cpu.eax != 1u ||
@@ -147,14 +147,14 @@ static lib_i32 retirement_pre_mode_snapshot_case(void)
             (probe.records[0].instruction_entry_cpu.cr0 & VCPU_CR0_PE) != 0u ||
             (probe.records[0].current_cpu.cr0 & VCPU_CR0_PE) == 0u ||
             core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK ||
+                X86_CORE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK ||
             current_cpu.eip != 0xfff0u || (current_cpu.cr0 & VCPU_CR0_PE) != 0u;
     }
     core_machine_destroy(machine);
     return failed;
 }
-static lib_i32 retirement_unallocated_profile_case(core_machine_cpu_profile profile,
-    core_machine_retirement_timing_origin expected_origin,
+static lib_i32 retirement_unallocated_profile_case(x86_core_cpu_profile profile,
+    x86_core_cpu_retirement_timing_origin expected_origin,
     const lib_u8 *program, lib_size bytes, lib_i32 expected_repeat)
 {
     const core_machine_config physical = {
@@ -183,11 +183,11 @@ static lib_i32 retirement_unallocated_profile_case(core_machine_cpu_profile prof
             probe.records[0].timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
             probe.records[0].source_timing_form_id !=
-                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+                X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
             probe.records[0].timing_key_id !=
-                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+                X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
             ((expected_repeat != 0) != ((probe.records[0].formula_inputs &
-                CORE_MACHINE_CPU_TIMING_INPUT_REPEAT) != 0u)) ||
+                X86_CORE_CPU_TIMING_INPUT_REPEAT) != 0u)) ||
             probe.records[0].timing_origin != expected_origin ||
             probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u ||
             core_machine_get_timeline_observation(machine, &timeline) != LIB_STATUS_OK ||
@@ -200,7 +200,7 @@ static lib_i32 retirement_unallocated_profile_case(core_machine_cpu_profile prof
 static lib_i32 retirement_8086_context_formula_case(void)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_8087
     };
     const core_machine_run_budget budget = { 1u, 0u };
@@ -228,9 +228,9 @@ static lib_i32 retirement_8086_context_formula_case(void)
             probe.records[0].timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             probe.records[0].timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
             (probe.records[0].formula_inputs &
-                CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE) == 0u;
+                X86_CORE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE) == 0u;
     }
     if (!failed) {
         failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
@@ -240,23 +240,23 @@ static lib_i32 retirement_8086_context_formula_case(void)
             core_machine_memory_write(machine, 0x1000u, &value,
                 sizeof(value)) != LIB_STATUS_OK ||
             core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_EAX, 1u) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_EAX, 1u) != LIB_STATUS_OK ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.executed != 1u || probe.count != 2u ||
             probe.records[1].source_ticks != 24u ||
             probe.records[1].timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             probe.records[1].timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY ||
             probe.records[1].modrm_form != CORE_MACHINE_RETIREMENT_MODRM_MEMORY ||
             probe.records[1].modrm_extension != 0u ||
             (probe.records[1].formula_inputs &
-                (CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
-                CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
-                CORE_MACHINE_CPU_TIMING_INPUT_LOCK)) !=
-                (CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
-                CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
-                CORE_MACHINE_CPU_TIMING_INPUT_LOCK);
+                (X86_CORE_CPU_TIMING_INPUT_MODRM |
+                X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+                X86_CORE_CPU_TIMING_INPUT_LOCK)) !=
+                (X86_CORE_CPU_TIMING_INPUT_MODRM |
+                X86_CORE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
+                X86_CORE_CPU_TIMING_INPUT_LOCK);
     }
     if (!failed) {
         failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
@@ -271,7 +271,7 @@ static lib_i32 retirement_8086_context_formula_case(void)
             probe.records[2].timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             probe.records[2].timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY;
     }
     core_machine_destroy(machine);
     return failed;
@@ -279,10 +279,10 @@ static lib_i32 retirement_8086_context_formula_case(void)
 
 static lib_i32 retirement_8088_primary_case(const lib_u8 *program,
     lib_size bytes, lib_u64 expected_ticks,
-    core_machine_retirement_timing_origin expected_origin)
+    x86_core_cpu_retirement_timing_origin expected_origin)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088
+        .cpu_profile = X86_CORE_CPU_PROFILE_8088
     };
     const core_machine_run_budget budget = { 1u, 0u };
     const lib_u16 value = 1u;
@@ -309,7 +309,7 @@ static lib_i32 retirement_8088_primary_case(const lib_u8 *program,
             probe.records[0].timing_origin !=
                 expected_origin ||
             probe.records[0].source_timing_form_id ==
-                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+                X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     }
     core_machine_destroy(machine);
     return failed;
@@ -320,7 +320,7 @@ static lib_i32 retirement_8088_branch_case(const lib_u8 *program,
     lib_u64 expected_ticks)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088
+        .cpu_profile = X86_CORE_CPU_PROFILE_8088
     };
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_retirement_observation_provider provider;
@@ -335,9 +335,9 @@ static lib_i32 retirement_8088_branch_case(const lib_u8 *program,
     probe.machine = machine;
     if (!failed) {
         failed |= core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_ECX, count) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_ECX, count) != LIB_STATUS_OK ||
             core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_EFLAGS, flags) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_EFLAGS, flags) != LIB_STATUS_OK ||
             core_machine_set_retirement_observation_provider(machine,
                 &provider) != LIB_STATUS_OK ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
@@ -346,9 +346,9 @@ static lib_i32 retirement_8088_branch_case(const lib_u8 *program,
             probe.records[0].timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             probe.records[0].timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             probe.records[0].source_timing_form_id ==
-                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+                X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     }
     core_machine_destroy(machine);
     return failed;
@@ -358,7 +358,7 @@ static lib_i32 retirement_8088_iret_case(const lib_u8 *program,
     lib_size bytes)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088
+        .cpu_profile = X86_CORE_CPU_PROFILE_8088
     };
     const core_machine_run_budget budget = { 1u, 0u };
     const lib_u16 frame[] = { 0u, 0u, 2u };
@@ -374,7 +374,7 @@ static lib_i32 retirement_8088_iret_case(const lib_u8 *program,
     probe.machine = machine;
     if (!failed) {
         failed |= core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_ESP, 0x1000u) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_ESP, 0x1000u) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x1000u, frame,
                 sizeof(frame)) != LIB_STATUS_OK ||
             core_machine_set_retirement_observation_provider(machine,
@@ -385,9 +385,9 @@ static lib_i32 retirement_8088_iret_case(const lib_u8 *program,
             probe.records[0].timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             probe.records[0].timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             probe.records[0].source_timing_form_id ==
-                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+                X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     }
     core_machine_destroy(machine);
     return failed;
@@ -396,14 +396,14 @@ static lib_i32 retirement_8088_iret_case(const lib_u8 *program,
 static lib_i32 retirement_8088_jcc_forms_case(void)
 {
     static const lib_u32 flags[16][2] = {
-        { CORE_MACHINE_DEBUG_EFLAGS_OF, 0u }, { 0u, CORE_MACHINE_DEBUG_EFLAGS_OF },
-        { CORE_MACHINE_DEBUG_EFLAGS_CF, 0u }, { 0u, CORE_MACHINE_DEBUG_EFLAGS_CF },
-        { CORE_MACHINE_DEBUG_EFLAGS_ZF, 0u }, { 0u, CORE_MACHINE_DEBUG_EFLAGS_ZF },
-        { CORE_MACHINE_DEBUG_EFLAGS_CF, 0u }, { 0u, CORE_MACHINE_DEBUG_EFLAGS_CF },
-        { CORE_MACHINE_DEBUG_EFLAGS_SF, 0u }, { 0u, CORE_MACHINE_DEBUG_EFLAGS_SF },
-        { CORE_MACHINE_DEBUG_EFLAGS_PF, 0u }, { 0u, CORE_MACHINE_DEBUG_EFLAGS_PF },
-        { CORE_MACHINE_DEBUG_EFLAGS_SF, 0u }, { 0u, CORE_MACHINE_DEBUG_EFLAGS_SF },
-        { CORE_MACHINE_DEBUG_EFLAGS_ZF, 0u }, { 0u, CORE_MACHINE_DEBUG_EFLAGS_ZF }
+        { X86_CORE_CPU_DEBUG_EFLAGS_OF, 0u }, { 0u, X86_CORE_CPU_DEBUG_EFLAGS_OF },
+        { X86_CORE_CPU_DEBUG_EFLAGS_CF, 0u }, { 0u, X86_CORE_CPU_DEBUG_EFLAGS_CF },
+        { X86_CORE_CPU_DEBUG_EFLAGS_ZF, 0u }, { 0u, X86_CORE_CPU_DEBUG_EFLAGS_ZF },
+        { X86_CORE_CPU_DEBUG_EFLAGS_CF, 0u }, { 0u, X86_CORE_CPU_DEBUG_EFLAGS_CF },
+        { X86_CORE_CPU_DEBUG_EFLAGS_SF, 0u }, { 0u, X86_CORE_CPU_DEBUG_EFLAGS_SF },
+        { X86_CORE_CPU_DEBUG_EFLAGS_PF, 0u }, { 0u, X86_CORE_CPU_DEBUG_EFLAGS_PF },
+        { X86_CORE_CPU_DEBUG_EFLAGS_SF, 0u }, { 0u, X86_CORE_CPU_DEBUG_EFLAGS_SF },
+        { X86_CORE_CPU_DEBUG_EFLAGS_ZF, 0u }, { 0u, X86_CORE_CPU_DEBUG_EFLAGS_ZF }
     };
     lib_u8 opcode;
     lib_i32 failed = 0;
@@ -424,7 +424,7 @@ static lib_i32 retirement_8088_string_case(const lib_u8 *program,
     lib_u64 first_ticks, lib_u64 next_ticks)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088
+        .cpu_profile = X86_CORE_CPU_PROFILE_8088
     };
     const core_machine_run_budget budget = { executions, 0u };
     core_machine_retirement_observation_provider provider;
@@ -439,7 +439,7 @@ static lib_i32 retirement_8088_string_case(const lib_u8 *program,
     probe.machine = machine;
     if (!failed) {
         failed |= core_machine_debug_write_register(machine,
-                CORE_MACHINE_DEBUG_ECX, count) != LIB_STATUS_OK ||
+                X86_CORE_CPU_DEBUG_ECX, count) != LIB_STATUS_OK ||
             core_machine_set_retirement_observation_provider(machine,
                 &provider) != LIB_STATUS_OK ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
@@ -448,13 +448,13 @@ static lib_i32 retirement_8088_string_case(const lib_u8 *program,
             probe.records[0].timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             probe.records[0].timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO;
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO;
         if (executions > 1u) {
             failed |= probe.records[1].source_ticks != next_ticks ||
                 probe.records[0].repeat_phase !=
-                    CORE_MACHINE_RETIREMENT_REPEAT_FIRST ||
+                    X86_CORE_CPU_RETIREMENT_REPEAT_FIRST ||
                 probe.records[1].repeat_phase !=
-                    CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION;
+                    X86_CORE_CPU_RETIREMENT_REPEAT_CONTINUATION;
         }
     }
     core_machine_destroy(machine);
@@ -464,9 +464,9 @@ static lib_i32 retirement_8088_string_case(const lib_u8 *program,
 lib_i32 main(void)
 {
     core_machine *machine = LIB_NULL;
-    core_machine_config deterministic = { .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386 };
+    core_machine_config deterministic = { .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
     core_machine_config physical = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
     };
@@ -557,47 +557,47 @@ lib_i32 main(void)
         probe.count != 1u || probe.set_while_running != LIB_STATUS_INVALID_STATE ||
         probe.records[0].sequence != 0u ||
         probe.records[0].point.linear_pc != 0xfffffff0u ||
-        probe.records[0].point.byte_count != CORE_MACHINE_CPU_DIAGNOSTIC_BYTES ||
+        probe.records[0].point.byte_count != X86_CORE_CPU_DIAGNOSTIC_BYTES ||
         probe.records[0].point.bytes[0] != nop ||
-        probe.records[0].cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+        probe.records[0].cpu_profile != X86_CORE_CPU_PROFILE_80386 ||
         probe.records[0].timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         probe.records[0].source_timing_form_id != 0u ||
         probe.records[0].timing_key_id != 0u ||
         probe.records[0].formula_inputs != 0u ||
         probe.records[0].timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK ||
         probe.records[0].modrm_form != CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE ||
         probe.records[0].modrm_extension !=
             CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ||
         probe.records[0].control_outcome != CORE_MACHINE_RETIREMENT_CONTROL_NONE ||
         probe.records[0].next_lexeme_components !=
             CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ||
-        probe.records[0].repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_NONE ||
+        probe.records[0].repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_NONE ||
         probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u ||
         probe.records[0].source_ticks == 0u || probe.records[0].protected_mode ||
         probe.records[0].virtual_8086_mode || probe.records[0].operand_size_32 ||
         probe.records[0].address_size_32 || probe.records[0].lock_prefix ||
         probe.records[0].repeat_prefix != 0u;
-    failed |= retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8086,
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY, rep_nop,
+    failed |= retirement_unallocated_profile_case(X86_CORE_CPU_PROFILE_8086,
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY, rep_nop,
         sizeof(rep_nop), 1) ||
-        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8088,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY, rep_nop,
+        retirement_unallocated_profile_case(X86_CORE_CPU_PROFILE_8088,
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY, rep_nop,
             sizeof(rep_nop), 1) ||
-        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_80186,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK, rep_nop,
+        retirement_unallocated_profile_case(X86_CORE_CPU_PROFILE_80186,
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK, rep_nop,
             sizeof(rep_nop), 1) ||
-        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_80286,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK, rep_nop,
+        retirement_unallocated_profile_case(X86_CORE_CPU_PROFILE_80286,
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK, rep_nop,
             sizeof(rep_nop), 1) ||
-        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_80386,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK, rep_nop,
+        retirement_unallocated_profile_case(X86_CORE_CPU_PROFILE_80386,
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK, rep_nop,
             sizeof(rep_nop), 1);
     for (index = 0u; index < sizeof(scalar_opcodes) / sizeof(scalar_opcodes[0]);
         ++index) {
         failed |= retirement_8088_primary_case(&scalar_opcodes[index], 1u,
-            scalar_ticks[index], CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY);
+            scalar_ticks[index], X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY);
     }
     failed |= retirement_control_context_case(0x75u,
         CORE_MACHINE_RETIREMENT_CONTROL_TAKEN, 1u) ||
@@ -606,84 +606,84 @@ lib_i32 main(void)
             CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE) ||
         retirement_pre_mode_snapshot_case() || retirement_8086_context_formula_case() ||
         retirement_8088_primary_case(add_register, sizeof(add_register), 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(add_register_memory,
             sizeof(add_register_memory), 19u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(add_memory_register,
             sizeof(add_memory_register), 30u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(mov_sreg_memory, sizeof(mov_sreg_memory), 19u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(mov_sreg_register, sizeof(mov_sreg_register),
-            2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+            2u, X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(mov_ds_memory, sizeof(mov_ds_memory), 18u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(lds_memory, sizeof(lds_memory), 30u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(xlat, sizeof(xlat), 15u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(esc_register, sizeof(esc_register), 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(shift_memory, sizeof(shift_memory), 29u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(push_ds, sizeof(push_ds), 14u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(pop_ds, sizeof(pop_ds), 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(pop_cs, sizeof(pop_cs), 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(lock_add_memory, sizeof(lock_add_memory), 32u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(mul_al, sizeof(mul_al), 70u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC) ||
         retirement_8088_primary_case(wait, sizeof(wait), 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(push_register, sizeof(push_register), 15u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(pop_register, sizeof(pop_register), 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(call_near, sizeof(call_near), 23u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(ret_near, sizeof(ret_near), 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(ret_far, sizeof(ret_far), 26u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(call_memory, sizeof(call_memory), 35u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(push_memory, sizeof(push_memory), 30u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(pop_memory, sizeof(pop_memory), 31u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(in_immediate_byte,
             sizeof(in_immediate_byte), 10u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
         retirement_8088_primary_case(in_immediate_word,
             sizeof(in_immediate_word), 14u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
         retirement_8088_primary_case(in_dx_byte, sizeof(in_dx_byte), 8u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
         retirement_8088_primary_case(in_dx_word, sizeof(in_dx_word), 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
         retirement_8088_primary_case(out_immediate_byte,
             sizeof(out_immediate_byte), 10u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
         retirement_8088_primary_case(out_immediate_word,
             sizeof(out_immediate_word), 14u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
         retirement_8088_primary_case(out_dx_byte, sizeof(out_dx_byte), 8u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
         retirement_8088_primary_case(out_dx_word, sizeof(out_dx_word), 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
         retirement_8088_jcc_forms_case() ||
         retirement_8088_branch_case(jcxz, sizeof(jcxz), 0u, 0u, 18u) ||
         retirement_8088_branch_case(jcxz, sizeof(jcxz), 1u, 0u, 6u) ||
         retirement_8088_branch_case(loop, sizeof(loop), 2u, 0u, 17u) ||
         retirement_8088_branch_case(loop, sizeof(loop), 1u, 0u, 5u) ||
         retirement_8088_branch_case(loope, sizeof(loope), 2u,
-            CORE_MACHINE_DEBUG_EFLAGS_ZF, 18u) ||
+            X86_CORE_CPU_DEBUG_EFLAGS_ZF, 18u) ||
         retirement_8088_branch_case(loope, sizeof(loope), 1u,
-            CORE_MACHINE_DEBUG_EFLAGS_ZF, 6u) ||
+            X86_CORE_CPU_DEBUG_EFLAGS_ZF, 6u) ||
         retirement_8088_branch_case(loopne, sizeof(loopne), 2u, 0u, 19u) ||
         retirement_8088_branch_case(loopne, sizeof(loopne), 1u, 0u, 5u) ||
         retirement_8088_branch_case(hlt, sizeof(hlt), 0u, 0u, 2u) ||
@@ -692,7 +692,7 @@ lib_i32 main(void)
             72u) ||
         retirement_8088_branch_case(int_other, sizeof(int_other), 0u, 0u,
             71u) ||
-        retirement_8088_branch_case(into, sizeof(into), 0u, CORE_MACHINE_DEBUG_EFLAGS_OF,
+        retirement_8088_branch_case(into, sizeof(into), 0u, X86_CORE_CPU_DEBUG_EFLAGS_OF,
             73u) ||
         retirement_8088_branch_case(into, sizeof(into), 0u, 0u, 4u) ||
         retirement_8088_iret_case(iret, sizeof(iret)) ||
@@ -733,26 +733,26 @@ lib_i32 main(void)
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR;
     if (!failed) failed |= result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
         probe.count != 1u || probe.set_while_running != LIB_STATUS_INVALID_STATE ||
-        probe.records[0].point.byte_count != CORE_MACHINE_CPU_DIAGNOSTIC_BYTES ||
+        probe.records[0].point.byte_count != X86_CORE_CPU_DIAGNOSTIC_BYTES ||
         probe.records[0].point.bytes[0] != rep_nop[0] ||
         probe.records[0].point.bytes[1] != rep_nop[1] ||
         probe.records[0].timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
         probe.records[0].source_timing_form_id !=
-            CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+            X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
         probe.records[0].timing_key_id !=
-            CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+            X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
         (probe.records[0].formula_inputs &
-            CORE_MACHINE_CPU_TIMING_INPUT_REPEAT) == 0u ||
+            X86_CORE_CPU_TIMING_INPUT_REPEAT) == 0u ||
         probe.records[0].timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK ||
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK ||
         probe.records[0].modrm_form != CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE ||
         probe.records[0].modrm_extension !=
             CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ||
         probe.records[0].control_outcome != CORE_MACHINE_RETIREMENT_CONTROL_NONE ||
         probe.records[0].next_lexeme_components !=
             CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ||
-        probe.records[0].repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_NONE ||
+        probe.records[0].repeat_phase != X86_CORE_CPU_RETIREMENT_REPEAT_NONE ||
         probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u;
     failed |= core_machine_get_timeline_observation(machine, &timeline) != LIB_STATUS_OK ||
         timeline.now != 0u;
