@@ -142,7 +142,7 @@ static lib_bool cpu_outer_nonconforming_dpl_rejection(void)
     return LIB_TRUE;
 }
 
-static lib_bool cpu_outer_iret_success(void)
+static lib_bool cpu_outer_iret_success(core_machine_cpu_profile profile)
 {
     static const lib_u8 programs[][3] = {
         {0xcfu,0,0}, {0x67u,0xcfu,0}, {0x66u,0xcfu,0}, {0x66u,0x67u,0xcfu}
@@ -157,27 +157,51 @@ static lib_bool cpu_outer_iret_success(void)
     const lib_u8 stack_big = 0x40u;
     lib_size form;
 
-    for (form = 0u; form != sizeof(programs) / sizeof(programs[0]); ++form) {
+    for (form = 0u; form != sizeof(programs) / sizeof(programs[0]); ++form)
+    for (lib_u8 source_cpl = 0u;
+         source_cpl < (profile == CORE_MACHINE_CPU_PROFILE_80486SX ? 3u : 1u); ++source_cpl)
+    for (lib_u8 old_bits = 0u;
+         old_bits < (profile == CORE_MACHINE_CPU_PROFILE_80486SX ? 4u : 1u); ++old_bits)
+    for (lib_u8 new_bits = 0u;
+         new_bits < (profile == CORE_MACHINE_CPU_PROFILE_80486SX ? 4u : 1u); ++new_bits) {
         cpu_instruction_fixture state;
         t_cpu before;
         t_cpu after;
+        lib_u32 return_frame[5];
+        const lib_u32 old_virtual = ((old_bits & 1u) ? VCPU_EFLAGS_VIF : 0u) |
+            ((old_bits & 2u) ? VCPU_EFLAGS_VIP : 0u);
+        const lib_u32 new_virtual = ((new_bits & 1u) ? VCPU_EFLAGS_VIF : 0u) |
+            ((new_bits & 2u) ? VCPU_EFLAGS_VIP : 0u);
+        const lib_u32 expected_flags = 0x203u | (source_cpl ? VCPU_EFLAGS_IOPL : 0u) |
+            (operand16[form] || source_cpl ? old_virtual : new_virtual);
         const lib_size frame_bytes = operand16[form] ? sizeof(frame16) : sizeof(frame32);
         lib_u8 frame_before[sizeof(frame32)] = {0};
         lib_u8 frame_after[sizeof(frame32)] = {0};
 
-        cpu_outer_return_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_outer_return_prepare(&state, profile);
         state.cpu.data.cs.seg.exec.defsize = LIB_TRUE;
         state.cpu.data.esp = 0x12348000u;
+        if (profile == CORE_MACHINE_CPU_PROFILE_80486SX) {
+            state.cpu.data.cs.selector |= source_cpl;
+            state.cpu.data.cs.dpl = source_cpl;
+            state.cpu.data.ss.selector |= source_cpl;
+            state.cpu.data.ss.dpl = source_cpl;
+            state.cpu.data.eflags = 0x3202u | old_virtual;
+            state.cpu.data.cr4 = VCPU_CR4_VME;
+        }
+        lib_memory_copy(return_frame, frame32, sizeof(return_frame));
+        return_frame[2] |= new_virtual;
         if (wide_stack[form]) state.memory[CPU_OUTER_GDT_BASE + 38u] = stack_big;
         lib_memory_copy(state.memory + CPU_OUTER_KERNEL_STACK_BASE + 0x8000u,
-            operand16[form] ? (const void *)frame16 : (const void *)frame32, frame_bytes);
+            operand16[form] ? (const void *)frame16 : (const void *)return_frame, frame_bytes);
         lib_memory_copy(frame_before,
             state.memory + CPU_OUTER_KERNEL_STACK_BASE + 0x8000u, frame_bytes);
         before = state.cpu;
         if (!cpu_outer_return_step(&state, programs[form], bytes[form], &after)) return LIB_FALSE;
         lib_memory_copy(frame_after,
             state.memory + CPU_OUTER_KERNEL_STACK_BASE + 0x8000u, frame_bytes);
-        if (after.data.eip != 0x10u || after.data.eflags != 0x203u ||
+        if (after.data.eip != 0x10u || after.data.eflags != expected_flags ||
+            after.data.cr4 != before.data.cr4 ||
             after.data.esp != (wide_stack[form] ? 0x1000u : 0x12341000u) ||
             !cpu_outer_user_code(&after.data.cs) || !cpu_outer_user_stack(&after.data.ss) ||
             after.data.ss.seg.data.big != wide_stack[form] ||
@@ -190,7 +214,7 @@ static lib_bool cpu_outer_iret_success(void)
     return LIB_TRUE;
 }
 
-static lib_bool cpu_outer_retf_success(void)
+static lib_bool cpu_outer_retf_success(core_machine_cpu_profile profile)
 {
     static const lib_u8 retf[] = {0xcbu};
     static const lib_u32 frame[] = {
@@ -202,7 +226,7 @@ static lib_bool cpu_outer_retf_success(void)
     lib_u8 frame_before[sizeof(frame)] = {0};
     lib_u8 frame_after[sizeof(frame)] = {0};
 
-    cpu_outer_return_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_outer_return_prepare(&state, profile);
     state.cpu.data.cs.seg.exec.defsize = LIB_TRUE;
     state.cpu.data.esp = 0x12348000u;
     lib_memory_copy(state.memory + CPU_OUTER_KERNEL_STACK_BASE + 0x8000u,
@@ -222,7 +246,7 @@ static lib_bool cpu_outer_retf_success(void)
         lib_memory_compare(frame_before, frame_after, sizeof(frame)) == 0;
 }
 
-static lib_bool cpu_outer_retf_immediate(void)
+static lib_bool cpu_outer_retf_immediate(core_machine_cpu_profile profile)
 {
     static const lib_u8 retf[] = {0xcau,0x04u,0x00u};
     static const lib_u32 frame[] = {
@@ -231,7 +255,7 @@ static lib_bool cpu_outer_retf_immediate(void)
     cpu_instruction_fixture state;
     t_cpu after;
 
-    cpu_outer_return_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_outer_return_prepare(&state, profile);
     state.cpu.data.cs.seg.exec.defsize = LIB_TRUE;
     state.cpu.data.esp = 0x12348000u;
     lib_memory_copy(state.memory + CPU_OUTER_KERNEL_STACK_BASE + 0x8000u,
@@ -379,11 +403,80 @@ static lib_bool cpu_outer_iret_rejections(void)
     return LIB_TRUE;
 }
 
+static lib_bool cpu_outer_call_gate_stack(void)
+{
+    const core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80486SX;
+
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes)
+    for (lib_u8 stack_big = 0u; stack_big < 2u; ++stack_big)
+    for (lib_u8 parameters = 0u; parameters < 2u; ++parameters) {
+        cpu_instruction_fixture state;
+        t_cpu after;
+        const lib_u8 gate[] = {0u,1u,8u,0u,(lib_u8)(parameters * 2u),0xecu,0u,0u};
+        const lib_u32 arguments[] = {0x12345678u,0x87654321u};
+        const lib_u32 frame_bytes = 16u + parameters * 8u;
+        const lib_u32 expected_sp = (stack_big ? 0u : 0x12340000u) | (0x9000u - frame_bytes);
+        const lib_bool wide = code32 != ((prefixes & 1u) != 0u);
+        lib_u8 code[9], bytes = 0u;
+        lib_u32 frame[6] = {0};
+
+        cpu_outer_return_prepare(&state, profile);
+        state.cpu.data.gdtr.limit = 0x57u;
+        lib_memory_copy(state.memory + CPU_OUTER_GDT_BASE + 0x50u, gate, sizeof(gate));
+        state.memory[CPU_OUTER_GDT_BASE + 22u] = stack_big ? 0x40u : 0u;
+        state.cpu.data.cs.selector = 0x1bu;
+        state.cpu.data.cs.base = CPU_OUTER_USER_CODE_BASE;
+        state.cpu.data.cs.dpl = 3u;
+        state.cpu.data.cs.seg.exec.defsize = code32;
+        state.cpu.data.ss.selector = 0x23u;
+        state.cpu.data.ss.base = CPU_OUTER_USER_STACK_BASE;
+        state.cpu.data.ss.dpl = 3u;
+        state.cpu.data.esp = 0x12348000u;
+        lib_memory_copy(state.memory + CPU_OUTER_USER_STACK_BASE + 0x8000u,
+            arguments, sizeof(arguments));
+        if (prefixes & 1u) code[bytes++] = 0x66u;
+        if (prefixes & 2u) code[bytes++] = 0x67u;
+        code[bytes++] = 0x9au;
+        code[bytes++] = 0u;
+        code[bytes++] = 0u;
+        if (wide) { code[bytes++] = 0u; code[bytes++] = 0u; }
+        code[bytes++] = 0x53u;
+        code[bytes++] = 0u;
+        if (!cpu_outer_return_step(&state, code, bytes, &after) ||
+            state.delivered_exception.valid || after.data.eip != 0x100u ||
+            after.data.cs.selector != 8u || after.data.ss.selector != 0x10u ||
+            after.data.esp != expected_sp || after.data.ss.seg.data.big != stack_big) {
+            lib_c_printf("Call gate profile=%u code=%u prefix=%u stack=%u params=%u ip=%x sp=%x expected=%x delivered=%x/%x terminal=%x\n",
+                (unsigned)profile, code32, prefixes, stack_big, parameters,
+                after.data.eip, after.data.esp, expected_sp,
+                state.delivered_exception.exception_mask,
+                state.delivered_exception.exception_code, state.fault.exception_mask);
+            return LIB_FALSE;
+        }
+        lib_memory_copy(frame, state.memory + CPU_OUTER_KERNEL_STACK_BASE +
+            (0x9000u - frame_bytes), frame_bytes);
+        if (frame[0] != bytes || frame[1] != 0x1bu ||
+            frame[2u + parameters * 2u] != 0x12348000u ||
+            frame[3u + parameters * 2u] != 0x23u ||
+            (parameters && (frame[2] != arguments[0] || frame[3] != arguments[1]))) {
+            lib_c_printf("Call gate frame=%x/%x/%x/%x/%x/%x\n",
+                frame[0], frame[1], frame[2], frame[3], frame[4], frame[5]);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
-    if (!cpu_outer_iret_success()) return 1;
-    if (!cpu_outer_retf_success()) return 2;
-    if (!cpu_outer_retf_immediate()) return 3;
+    for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80386;
+         profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
+        if (!cpu_outer_iret_success(profile)) return 1;
+        if (!cpu_outer_retf_success(profile)) return 2;
+        if (!cpu_outer_retf_immediate(profile)) return 3;
+    }
+    if (!cpu_outer_call_gate_stack()) return 9;
     if (!cpu_outer_iret_nonpresent_stack()) return 4;
     if (!cpu_outer_error_delivery()) return 5;
     if (!cpu_outer_iret_rejections()) return 6;

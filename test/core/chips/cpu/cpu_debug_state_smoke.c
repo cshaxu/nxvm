@@ -183,14 +183,16 @@ static lib_i32 debug_state_test_mov_dr(void)
     return 1;
 }
 
-static lib_i32 debug_state_test_debug_exceptions(void)
+static lib_i32 debug_state_test_debug_exceptions(core_machine_cpu_profile profile)
 {
     static const lib_u8 nop[] = {0x90u};
+    const lib_u32 initial_dr6 = profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+        0xffff0ff0u : 0u;
     {
         cpu_instruction_fixture fixture;
         t_cpu after;
 
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&fixture, profile);
         fixture.cpu.data.dr0 = 0u;
         fixture.cpu.data.dr7 = 0x00000001u;
         if (cpu_instruction_run(&fixture, nop, sizeof(nop), &after) !=
@@ -202,19 +204,19 @@ static lib_i32 debug_state_test_debug_exceptions(void)
         cpu_instruction_fixture fixture;
         t_cpu after;
 
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&fixture, profile);
         fixture.cpu.data.eflags = VCPU_EFLAGS_RF | VCPU_EFLAGS_IF;
         fixture.cpu.data.dr0 = 0u;
         fixture.cpu.data.dr7 = 0x00000001u;
         if (cpu_instruction_run(&fixture, nop, sizeof(nop), &after) !=
                 LIB_STATUS_OK || fixture.fault.valid ||
-            (after.data.eflags & VCPU_EFLAGS_RF) != 0u || after.data.dr6 != 0u)
+            (after.data.eflags & VCPU_EFLAGS_RF) != 0u || after.data.dr6 != initial_dr6)
             return 0;
     }
     return 1;
 }
 
-static lib_i32 debug_state_test_data_breakpoints(void)
+static lib_i32 debug_state_test_data_breakpoints(core_machine_cpu_profile profile)
 {
     static const lib_u8 read[] = {0xa1u,0x00u,0x10u};
     static const lib_u8 write[] = {0xc6u,0x06u,0x00u,0x10u,0x5au};
@@ -222,7 +224,7 @@ static lib_i32 debug_state_test_data_breakpoints(void)
     cpu_instruction_fixture fixture;
     t_cpu after;
 
-    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&fixture, profile);
     lib_memory_copy(fixture.memory + 0x1000u, source, sizeof(source));
     fixture.cpu.data.dr0 = 0x1001u;
     fixture.cpu.data.dr1 = 0x1001u;
@@ -232,7 +234,7 @@ static lib_i32 debug_state_test_data_breakpoints(void)
         (after.data.dr6 & 3u) != 3u || (after.data.eax & 0xffffu) != 0x345au)
         return 0;
 
-    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&fixture, profile);
     fixture.cpu.data.eflags = VCPU_EFLAGS_TF | VCPU_EFLAGS_IF |
         VCPU_EFLAGS_CF;
     fixture.cpu.data.dr0 = 0x1000u;
@@ -250,12 +252,14 @@ static lib_bool debug_state_test_popf_completion(void)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_size profile;
     lib_u8 form, old_rf, popped_rf, old_tf, popped_tf;
     lib_u32 rf_failures = 0u, tf_failures = 0u;
 
+    for (core_machine_cpu_profile rf_profile = CORE_MACHINE_CPU_PROFILE_80386;
+         rf_profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++rf_profile)
     for (form = 0u; form < 2u; ++form)
     for (old_rf = 0u; old_rf < 2u; ++old_rf)
     for (popped_rf = 0u; popped_rf < 2u; ++popped_rf) {
@@ -263,7 +267,7 @@ static lib_bool debug_state_test_popf_completion(void)
         t_cpu after;
         const lib_u32 image = 0x02u | (popped_rf ? VCPU_EFLAGS_RF : 0u);
 
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&fixture, rf_profile);
         fixture.cpu.data.sp = 0x8000u;
         fixture.cpu.data.eflags = 0x02u | (old_rf ? VCPU_EFLAGS_RF : 0u);
         lib_memory_copy(fixture.memory + 0x8000u, &image, form ? 4u : 2u);
@@ -275,7 +279,7 @@ static lib_bool debug_state_test_popf_completion(void)
                 (form ? 4u : 2u)) ++rf_failures;
     }
     for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
-    for (form = 0u; form < (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386 ?
+    for (form = 0u; form < (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ?
         2u : 1u); ++form)
     for (old_tf = 0u; old_tf < 2u; ++old_tf)
     for (popped_tf = 0u; popped_tf < 2u; ++popped_tf) {
@@ -301,18 +305,18 @@ static lib_bool debug_state_test_popf_completion(void)
         if (old_tf ? (!fixture.delivered_exception.valid ||
                 fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
                 after.data.eip != 0x0100u || return_ip != form + 1u ||
-                (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386 &&
+                (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 &&
                     (after.data.dr6 & 0x00004000u) == 0u)) :
             (fixture.delivered_exception.valid || after.data.eip != form + 1u ||
                 (after.data.eflags & VCPU_EFLAGS_TF) !=
                     (popped_tf ? VCPU_EFLAGS_TF : 0u))) ++tf_failures;
     }
-    lib_c_printf("POPF completion RF cases=8 failures=%u; TF cases=24 failures=%u\n",
+    lib_c_printf("POPF completion RF cases=16 failures=%u; TF cases=32 failures=%u\n",
         (unsigned)rf_failures, (unsigned)tf_failures);
     return rf_failures == 0u && tf_failures == 0u;
 }
 
-static lib_bool debug_state_test_rf_images(void)
+static lib_bool debug_state_test_rf_images(core_machine_cpu_profile profile)
 {
     static const struct {
         lib_u8 code[2];
@@ -350,7 +354,7 @@ static lib_bool debug_state_test_rf_images(void)
         /* An execution breakpoint is suppressed by RF. Test that fault with
          * RF clear; the other faults cover both incoming RF states. */
         if (index == 2u && old_rf) continue;
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&fixture, profile);
         fixture.cpu.data.sp = 0x8000u;
         if (index == 2u) fixture.cpu.data.dr7 = 1u;
         if (index == 3u) flags |= VCPU_EFLAGS_TF;
@@ -406,7 +410,7 @@ static lib_bool debug_state_test_rf_images(void)
         const lib_u8 code[] = {0x0fu,0x0bu};
         const lib_u32 flags = 0x02u | (old_rf ? VCPU_EFLAGS_RF : 0u);
 
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&fixture, profile);
         if (index == 1u && old_rf) continue;
         if (index == 1u) fixture.cpu.data.dr7 = 1u;
         fixture.cpu.data.eflags = flags;
@@ -423,7 +427,7 @@ static lib_bool debug_state_test_rf_images(void)
     return failures == 0u;
 }
 
-static lib_bool debug_state_test_ordinary_transfer_rf(void)
+static lib_bool debug_state_test_ordinary_transfer_rf(core_machine_cpu_profile profile)
 {
     static const struct {
         lib_u8 code[5];
@@ -445,7 +449,7 @@ static lib_bool debug_state_test_ordinary_transfer_rf(void)
         cpu_instruction_fixture fixture;
         t_cpu after;
 
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&fixture, profile);
         fixture.cpu.data.sp = 0x8000u;
         fixture.cpu.data.eflags = 2u | (old_rf ? VCPU_EFLAGS_RF : 0u);
         if (cpu_instruction_run(&fixture, cases[index].code,
@@ -457,7 +461,7 @@ static lib_bool debug_state_test_ordinary_transfer_rf(void)
     return LIB_TRUE;
 }
 
-static lib_bool debug_state_test_iret_completion(void)
+static lib_bool debug_state_test_iret_completion(core_machine_cpu_profile profile)
 {
     lib_u8 wide, bits;
 
@@ -474,7 +478,7 @@ static lib_bool debug_state_test_iret_completion(void)
         const lib_u32 expected_rf = (wide ? bits & 8u : bits & 4u) ?
             VCPU_EFLAGS_RF : 0u;
 
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&fixture, profile);
         fixture.cpu.data.sp = 0x8000u;
         fixture.cpu.data.eflags = 2u | ((bits & 1u) ? VCPU_EFLAGS_TF : 0u) |
             ((bits & 4u) ? VCPU_EFLAGS_RF : 0u);
@@ -503,7 +507,8 @@ static lib_bool debug_state_test_iret_completion(void)
 static lib_bool debug_state_test_ss_shadow(void)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const struct {
         lib_u8 code[5];
@@ -558,11 +563,11 @@ static lib_bool debug_state_test_ss_shadow(void)
                 ++failures;
         }
     }
-    lib_c_printf("SS/LSS single-step cases=5 failures=%u\n", (unsigned)failures);
+    lib_c_printf("SS/LSS single-step cases=8 failures=%u\n", (unsigned)failures);
     return failures == 0u;
 }
 
-static lib_bool debug_state_test_comparator_status(void)
+static lib_bool debug_state_test_comparator_status(core_machine_cpu_profile profile)
 {
     static const lib_u8 forms[][5] = {
         {0x90u,0u,0u,0u,0u}, {0xc6u,0x06u,0u,0x10u,0x5au}
@@ -579,7 +584,7 @@ static lib_bool debug_state_test_comparator_status(void)
         const lib_bool triggered = (enabled & matched) != 0u;
         const lib_u32 address = form ? 0x1000u : 0x2000u;
 
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&fixture, profile);
         core_machine_cpu_execution_load_segment(&fixture.execution,
             &fixture.cpu.data.cs, 0x0200u);
         fixture.cpu.data.sp = 0x8000u;
@@ -605,11 +610,13 @@ static lib_bool debug_state_test_comparator_status(void)
     return failures == 0u;
 }
 
-static lib_bool debug_state_test_shadow_fault_boundary(void)
+static lib_bool debug_state_test_shadow_fault_boundary(core_machine_cpu_profile profile)
 {
     static const lib_u8 forms[][2] = {{0x8eu,0xd0u},{0x17u,0u}};
     const lib_u16 handler[] = {0x0100u,0u};
     const lib_u8 write[] = {0xc6u,0x06u,0u,8u,0x5au};
+    const lib_u32 initial_dr6 = profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+        0xffff0ff0u : 0u;
     lib_u8 form, mode;
 
     for (form = 0u; form < 2u; ++form)
@@ -617,7 +624,7 @@ static lib_bool debug_state_test_shadow_fault_boundary(void)
         cpu_instruction_fixture state;
         const lib_u8 length = form ? 1u : 2u;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         core_machine_cpu_execution_load_segment(&state.execution,
             &state.cpu.data.cs, 0x0200u);
         state.cpu.data.sp = 0x8000u;
@@ -643,7 +650,7 @@ static lib_bool debug_state_test_shadow_fault_boundary(void)
         core_machine_cpu_execution_refresh(&state.execution);
         if (mode == 0u) {
             if (state.execution.stop_requested || state.delivered_exception.valid ||
-                state.cpu.data.eip != length + 1u || state.cpu.data.dr6 != 0u)
+                state.cpu.data.eip != length + 1u || state.cpu.data.dr6 != initial_dr6)
                 return LIB_FALSE;
             state.cpu.data.dr0 = 0x2001u + length;
             core_machine_cpu_execution_refresh(&state.execution);
@@ -657,7 +664,7 @@ static lib_bool debug_state_test_shadow_fault_boundary(void)
                 core_machine_cpu_execution_refresh(&state.execution);
             }
             if (state.execution.stop_requested || !state.delivered_exception.valid ||
-                state.cpu.data.eip != 0x0100u || state.cpu.data.dr6 != 1u ||
+                state.cpu.data.eip != 0x0100u || state.cpu.data.dr6 != (initial_dr6 | 1u) ||
                 state.memory[0x0800u] != 0x5au ||
                 state.delivered_exception.point.eip != length * (mode == 2u ? 2u : 1u) +
                     sizeof(write)) return LIB_FALSE;
@@ -666,26 +673,239 @@ static lib_bool debug_state_test_shadow_fault_boundary(void)
     return LIB_TRUE;
 }
 
+static lib_bool debug_state_test_sx_dr_aliases(void)
+{
+    for (lib_u8 alias = 4u; alias < 6u; ++alias)
+    for (lib_u8 write = 0u; write < 2u; ++write)
+    for (lib_u8 reg = 0u; reg < 8u; ++reg)
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes)
+    for (lib_u8 protected_mode = 0u; protected_mode < 2u; ++protected_mode) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        lib_u8 code[5], bytes = 0u;
+        const lib_u32 value = alias == 4u ? 0xffff0ff1u : 0x1400u;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        if (protected_mode) cpu_instruction_prepare_protected_exception(&fixture, 0u);
+        lib_u32 *const gprs[] = {
+            &fixture.cpu.data.eax, &fixture.cpu.data.ecx,
+            &fixture.cpu.data.edx, &fixture.cpu.data.ebx,
+            &fixture.cpu.data.esp, &fixture.cpu.data.ebp,
+            &fixture.cpu.data.esi, &fixture.cpu.data.edi
+        };
+        fixture.cpu.data.cs.seg.exec.defsize = code32;
+        *debug_state_dr(&fixture.cpu, (lib_u8)(alias + 2u)) = write ?
+            (alias == 4u ? 0xffff0ff0u : 0x400u) : value;
+        *gprs[reg] = write ? value : 0x12345678u;
+        if (prefixes & 1u) code[bytes++] = 0x66u;
+        if (prefixes & 2u) code[bytes++] = 0x67u;
+        code[bytes++] = 0x0fu;
+        code[bytes++] = write ? 0x23u : 0x21u;
+        code[bytes++] = (lib_u8)(0xc0u | (alias << 3u) | reg);
+        if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
+            fixture.fault.valid || fixture.delivered_exception.valid ||
+            after.data.eip != bytes || *gprs[reg] != value || after.data.eflags != 2u ||
+            *debug_state_dr(&after, (lib_u8)(alias + 2u)) != value)
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool debug_state_test_general_detect(void)
+{
+    const lib_u8 indices[] = {0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u};
+
+    for (lib_size index = 0u; index < sizeof(indices) / sizeof(indices[0]); ++index)
+    for (lib_u8 reg = 0u; reg < 8u; ++reg)
+    for (lib_u8 write = 0u; write < 2u; ++write)
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes)
+    for (lib_u8 protected_mode = 0u; protected_mode < 2u; ++protected_mode)
+    for (lib_u8 resume_flag = 0u; resume_flag < 2u; ++resume_flag) {
+        cpu_instruction_fixture fixture;
+        t_cpu before, after;
+        const lib_u16 handler[] = {0x100u, 0u};
+        lib_u8 code[5], bytes = 0u;
+        lib_u32 frame[3];
+        lib_u16 real_frame[3];
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        if (protected_mode) {
+            cpu_instruction_prepare_protected_exception(&fixture, 0u);
+            lib_memory_copy(fixture.memory + 0x408u, fixture.memory + 0x468u, 8u);
+        } else {
+            lib_memory_copy(fixture.memory + 4u, handler, sizeof(handler));
+            fixture.cpu.data.esp = 0x800u;
+            fixture.cpu.data.cs.selector = 0x1000u;
+        }
+        fixture.cpu.data.cs.base = 0x10000u;
+        fixture.cpu.data.cs.seg.exec.defsize = code32;
+        fixture.cpu.data.eax = 0x12345678u;
+        fixture.cpu.data.ecx = 0x23456789u;
+        fixture.cpu.data.edx = 0x3456789au;
+        fixture.cpu.data.ebx = 0x456789abu;
+        fixture.cpu.data.ebp = 0x56789abcu;
+        fixture.cpu.data.esi = 0x6789abcdu;
+        fixture.cpu.data.edi = 0x789abcdeu;
+        fixture.cpu.data.dr0 = 0x11111111u;
+        fixture.cpu.data.dr1 = 0x22222222u;
+        fixture.cpu.data.dr2 = 0x33333333u;
+        fixture.cpu.data.dr3 = 0x44444444u;
+        fixture.cpu.data.dr6 = 0xffff0ff1u;
+        fixture.cpu.data.dr7 = 0x2400u;
+        fixture.cpu.data.eflags |= VCPU_EFLAGS_IF |
+            (resume_flag ? VCPU_EFLAGS_RF : 0u);
+        before = fixture.cpu;
+        if (prefixes & 1u) code[bytes++] = 0x66u;
+        if (prefixes & 2u) code[bytes++] = 0x67u;
+        code[bytes++] = 0x0fu;
+        code[bytes++] = write ? 0x23u : 0x21u;
+        code[bytes++] = (lib_u8)(0xc0u | (indices[index] << 3u) | reg);
+        lib_memory_copy(fixture.memory + 0x10000u, code, bytes);
+        core_machine_cpu_execution_refresh(&fixture.execution);
+        after = fixture.cpu;
+        if (fixture.execution.stop_requested ||
+            fixture.fault.valid || !fixture.delivered_exception.valid ||
+            fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
+            fixture.delivered_exception.exception_code != 0u ||
+            fixture.delivered_exception.point.eip != 0u ||
+            fixture.delivered_exception.eflags != before.data.eflags ||
+            after.data.eax != before.data.eax ||
+            after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
+            after.data.ebx != before.data.ebx || after.data.ebp != before.data.ebp ||
+            after.data.esi != before.data.esi || after.data.edi != before.data.edi ||
+            after.data.dr0 != before.data.dr0 || after.data.dr1 != before.data.dr1 ||
+            after.data.dr2 != before.data.dr2 || after.data.dr3 != before.data.dr3 ||
+            after.data.dr6 != (before.data.dr6 | 0x2000u) ||
+            after.data.dr7 != (before.data.dr7 & ~0x2000u) ||
+            after.data.eip != (protected_mode ? 0x300u : 0x100u) ||
+            after.data.esp != 0x800u - (protected_mode ? 12u : 6u)) {
+            lib_c_fprintf(lib_c_stderr,
+                "GD: dr=%u reg=%u write=%u code32=%u prefix=%u protected=%u rf=%u dr6=%x dr7=%x\n",
+                (lib_u32)indices[index], (lib_u32)reg, (lib_u32)write, (lib_u32)code32,
+                (lib_u32)prefixes, (lib_u32)protected_mode, (lib_u32)resume_flag,
+                after.data.dr6, after.data.dr7);
+            return LIB_FALSE;
+        }
+        if (protected_mode) {
+            lib_memory_copy(frame, fixture.memory + after.data.esp, sizeof(frame));
+            if (frame[0] != 0u || frame[1] != before.data.cs.selector ||
+                frame[2] != (before.data.eflags | VCPU_EFLAGS_RF)) return LIB_FALSE;
+        } else {
+            lib_memory_copy(real_frame, fixture.memory + after.data.esp, sizeof(real_frame));
+            if (real_frame[0] != 0u || real_frame[1] != before.data.cs.selector ||
+                real_frame[2] != before.data.flags) return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool debug_state_test_general_detect_priority(void)
+{
+    for (lib_u8 mode = 0u; mode < 5u; ++mode)
+    for (lib_u8 locked = 0u; locked < 2u; ++locked)
+    for (lib_u8 write = 0u; write < 2u; ++write)
+    for (lib_u8 reg = 0u; reg < 8u; ++reg)
+    for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes) {
+        cpu_instruction_fixture fixture;
+        t_cpu before, after;
+        lib_u8 code[6], bytes = 0u;
+        const lib_u8 vector = locked ? 6u : 13u;
+        const lib_bool vm86 = mode == 4u;
+        const lib_u32 words = vm86 ? (locked ? 9u : 10u) : (locked ? 3u : 4u);
+        lib_u32 frame[10];
+        const lib_u8 error_words = locked ? 0u : 1u;
+
+        if (mode == 0u && !locked) continue;
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        cpu_instruction_prepare_protected_exception(&fixture, mode);
+        if (locked) lib_memory_copy(fixture.memory + 0x430u,
+            fixture.memory + 0x468u, 8u);
+        fixture.cpu.data.eax = 0x12345678u;
+        fixture.cpu.data.dr6 = 0xffff0ff1u;
+        fixture.cpu.data.dr7 = 0x2400u;
+        before = fixture.cpu;
+        if (locked) code[bytes++] = 0xf0u;
+        if (prefixes & 1u) code[bytes++] = 0x66u;
+        if (prefixes & 2u) code[bytes++] = 0x67u;
+        code[bytes++] = 0x0fu;
+        code[bytes++] = write ? 0x23u : 0x21u;
+        code[bytes++] = (lib_u8)(0xc0u | reg);
+        if (cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
+            fixture.fault.valid || !fixture.delivered_exception.valid ||
+            fixture.delivered_exception.exception_mask != (UINT32_C(1) << vector) ||
+            fixture.delivered_exception.exception_code != 0u ||
+            fixture.delivered_exception.point.eip != 0u ||
+            after.data.eax != before.data.eax || after.data.dr0 != before.data.dr0 ||
+            after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
+            after.data.ebx != before.data.ebx || after.data.ebp != before.data.ebp ||
+            after.data.esi != before.data.esi || after.data.edi != before.data.edi ||
+            after.data.dr6 != before.data.dr6 || after.data.dr7 != before.data.dr7 ||
+            after.data.eip != 0x300u ||
+            after.data.esp != (vm86 ? 0x1000u : 0x800u) - words * 4u)
+            return LIB_FALSE;
+        lib_memory_copy(frame, fixture.memory + after.data.esp, words * 4u);
+        if ((error_words && frame[0] != 0u) || frame[error_words] != 0u ||
+            frame[error_words + 1u] != before.data.cs.selector ||
+            frame[error_words + 2u] != (before.data.eflags | VCPU_EFLAGS_RF))
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool debug_state_test_trap_clears_general_detect(void)
+{
+    for (lib_u8 protected_mode = 0u; protected_mode < 2u; ++protected_mode) {
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+        const lib_u16 handler[] = {0x100u, 0u};
+        const lib_u8 code[] = {0x90u};
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        if (protected_mode) {
+            cpu_instruction_prepare_protected_exception(&fixture, 0u);
+            lib_memory_copy(fixture.memory + 0x408u, fixture.memory + 0x468u, 8u);
+        } else {
+            lib_memory_copy(fixture.memory + 4u, handler, sizeof(handler));
+            fixture.cpu.data.esp = 0x800u;
+        }
+        fixture.cpu.data.eflags |= VCPU_EFLAGS_TF;
+        fixture.cpu.data.dr7 = 0x2400u;
+        if (cpu_instruction_run(&fixture, code, sizeof(code), &after) != LIB_STATUS_OK ||
+            fixture.fault.valid || !fixture.delivered_exception.valid ||
+            fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
+            fixture.delivered_exception.point.eip != 1u ||
+            after.data.dr6 != 0xffff4ff0u || after.data.dr7 != 0x400u ||
+            after.data.eip != (protected_mode ? 0x300u : 0x100u)) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
-    if (!debug_state_test_shadow_fault_boundary()) return 1;
-    if (!debug_state_test_comparator_status()) return 1;
+    if (!debug_state_test_sx_dr_aliases()) return 1;
+    if (!debug_state_test_general_detect()) return 1;
+    if (!debug_state_test_general_detect_priority()) return 1;
+    if (!debug_state_test_trap_clears_general_detect()) return 1;
     if (!debug_state_test_ss_shadow()) return 1;
-    if (!debug_state_test_iret_completion()) return 1;
-    if (!debug_state_test_ordinary_transfer_rf()) return 1;
-    if (!debug_state_test_rf_images()) return 1;
     if (!debug_state_test_popf_completion()) return 1;
     if (!debug_state_test_mov_dr()) {
         lib_c_printf("debug-state stage=mov-dr\n");
         return 1;
     }
-    if (!debug_state_test_debug_exceptions()) {
-        lib_c_printf("debug-state stage=exceptions\n");
-        return 1;
-    }
-    if (!debug_state_test_data_breakpoints()) {
-        lib_c_printf("debug-state stage=data-breakpoints\n");
-        return 1;
+    for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80386;
+         profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
+        if (!debug_state_test_shadow_fault_boundary(profile) ||
+            !debug_state_test_comparator_status(profile) ||
+            !debug_state_test_iret_completion(profile) ||
+            !debug_state_test_ordinary_transfer_rf(profile) ||
+            !debug_state_test_rf_images(profile) ||
+            !debug_state_test_debug_exceptions(profile) ||
+            !debug_state_test_data_breakpoints(profile)) {
+            lib_c_printf("debug-state completion profile=%u\n", (unsigned)profile);
+            return 1;
+        }
     }
     lib_c_printf("DEBUG-STATE:OK\n");
     return 0;

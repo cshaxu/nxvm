@@ -84,7 +84,8 @@ coverage record; CURRENT alone admits each executing batch.
 
 S1--S5 are accepted; S5 delivery 33cb2efe1 qualifies actual cache/test commands,
 physical routing and shared memory LOCK with locked page-table updates.
-S6 feature/VME/debug/exception/SX-FPU review is next. Later numeric S boundaries
+S6 feature/VME/debug/exception/SX-FPU source/current-path review is admitted.
+Later numeric S boundaries
 remain plans until admission; simple adjacent batches may combine. Development uses focused
 batch tests, followed by required closure qualification once per stable revision.
 Reuse existing Ninja/ccache graphs. Do not split work per opcode or repeat passed

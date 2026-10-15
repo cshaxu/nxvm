@@ -5,6 +5,8 @@ typedef struct alignment_fixture {
     cpu_instruction_fixture instruction;
     lib_u32 reads;
     lib_u32 writes;
+    lib_u32 acknowledgements;
+    lib_bool interrupt;
 } alignment_fixture;
 
 static lib_status alignment_read(void *opaque, lib_u32 address, void *destination,
@@ -25,10 +27,25 @@ static lib_status alignment_write(void *opaque, lib_u32 address, const void *sou
     return cpu_instruction_write(&fixture->instruction, address, source, bytes, provenance, cache_control);
 }
 
+static lib_bool alignment_pending(void *opaque)
+{
+    return ((alignment_fixture *)opaque)->interrupt;
+}
+
+static lib_status alignment_acknowledge(void *opaque, lib_u8 *vector)
+{
+    alignment_fixture *fixture = opaque;
+    fixture->interrupt = LIB_FALSE;
+    ++fixture->acknowledgements;
+    *vector = 0x20u;
+    return LIB_STATUS_OK;
+}
+
 static const core_machine_cpu_bus_provider alignment_bus = {
     .read_memory = alignment_read,
     .write_memory = alignment_write,
-    .interrupt_pending = cpu_instruction_interrupt_pending
+    .interrupt_pending = alignment_pending,
+    .acknowledge_interrupt = alignment_acknowledge
 };
 
 static void alignment_prepare(alignment_fixture *fixture, lib_bool vm86)
@@ -300,8 +317,91 @@ static lib_bool alignment_system_references(void)
     return LIB_TRUE;
 }
 
+static lib_bool alignment_same_level_interrupt(void)
+{
+    for (lib_u8 source = 0u; source < 4u; ++source)
+    for (lib_u8 gate32 = 0u; gate32 < 2u; ++gate32)
+    for (lib_u8 residue = 0u; residue < 4u; ++residue)
+    for (lib_u8 enabled = 0u; enabled < 2u; ++enabled)
+    for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes) {
+        alignment_fixture fixture;
+        lib_u8 gate[] = {0u, 2u, 0x18u, 0u, 0u, gate32 ? 0xeeu : 0xe6u, 0u, 0u};
+        lib_u8 code[4], bytes = 0u;
+        lib_u32 frame[6], flags;
+        const lib_u32 old_sp = 0x9010u + residue;
+        const lib_u8 width = gate32 ? 4u : 2u;
+        const lib_bool fault = enabled && (residue & (width - 1u)) != 0u;
+        const lib_bool hardware = source >= 2u;
+        cpu_instruction_fixture *instruction = &fixture.instruction;
+
+        alignment_prepare(&fixture, LIB_FALSE);
+        instruction->cpu.data.eflags |= 2u;
+        if (hardware) instruction->cpu.data.eflags |= VCPU_EFLAGS_IF;
+        if (!enabled) instruction->cpu.data.eflags &= ~VCPU_EFLAGS_AC;
+        instruction->cpu.data.esp = old_sp;
+        flags = instruction->cpu.data.eflags;
+        lib_memory_copy(instruction->memory + (source == 1u ? 0x5031u :
+            source == 3u ? 0x5011u : 0x5101u),
+            gate, sizeof(gate));
+        lib_memory_set(instruction->memory + 0x9000u, 0xa5u, 32u);
+        if (prefixes & 1u) code[bytes++] = 0x66u;
+        if (prefixes & 2u) code[bytes++] = 0x67u;
+        code[bytes++] = hardware ? 0x90u : source == 0u ? 0xcdu : 0x0fu;
+        if (!hardware) code[bytes++] = source == 0u ? 0x20u : 0x0bu;
+        fixture.interrupt = source == 2u;
+        if (source == 3u && !core_machine_cpu_request_nmi(&instruction->execution))
+            return LIB_FALSE;
+        lib_memory_copy(instruction->memory, code, bytes);
+        core_machine_cpu_execution_refresh(&instruction->execution);
+        if (instruction->execution.stop_requested || instruction->fault.valid ||
+            fixture.acknowledgements != (source == 2u ? 1u : 0u)) return LIB_FALSE;
+        if (fault) {
+            if (!instruction->delivered_exception.valid ||
+                instruction->delivered_exception.exception_mask != VCPUINS_EXCEPT_AC ||
+                instruction->delivered_exception.exception_code != 0u ||
+                instruction->delivered_exception.point.eip != (hardware ? bytes : 0u) ||
+                instruction->cpu.data.eip != 0x100u || instruction->cpu.data.esp != 0x6fe8u ||
+                fixture.writes != 0u) return LIB_FALSE;
+            for (lib_u8 index = 0u; index < 32u; ++index)
+                if (instruction->memory[0x9000u + index] != 0xa5u) return LIB_FALSE;
+            lib_memory_copy(frame, instruction->memory + 0x6fe8u, sizeof(frame));
+            if (frame[0] != 0u || frame[1] != (hardware ? bytes : 0u) || frame[2] != 0x1bu ||
+                frame[3] != (flags | VCPU_EFLAGS_RF) || frame[4] != old_sp ||
+                frame[5] != 0x23u) return LIB_FALSE;
+        } else {
+            lib_u16 word_frame[3];
+
+            if ((source != 1u ? instruction->delivered_exception.valid :
+                    !instruction->delivered_exception.valid ||
+                    instruction->delivered_exception.exception_mask != VCPUINS_EXCEPT_UD ||
+                    instruction->delivered_exception.point.eip != 0u) ||
+                instruction->cpu.data.eip != 0x200u ||
+                instruction->cpu.data.cs.selector != 0x1bu ||
+                instruction->cpu.data.esp != old_sp - 3u * width || fixture.writes == 0u)
+                return LIB_FALSE;
+            for (lib_u32 address = 0x9000u; address < 0x9020u; ++address)
+                if ((address < old_sp - 3u * width || address >= old_sp) &&
+                    instruction->memory[address] != 0xa5u) return LIB_FALSE;
+            if (gate32) {
+                lib_memory_copy(frame, instruction->memory + old_sp - 12u, 12u);
+                if (frame[0] != (source != 1u ? bytes : 0u) || frame[1] != 0x1bu ||
+                    frame[2] != (flags | (source == 1u ? VCPU_EFLAGS_RF : 0u)))
+                    return LIB_FALSE;
+            } else {
+                lib_memory_copy(word_frame, instruction->memory + old_sp - 6u, sizeof(word_frame));
+                if (word_frame[0] != (source != 1u ? bytes : 0u) || word_frame[1] != 0x1bu ||
+                    word_frame[2] != (lib_u16)flags) return LIB_FALSE;
+            }
+        }
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
+    if (!alignment_same_level_interrupt()) {
+        lib_c_printf("Same-level interrupt alignment failed\n"); return 1;
+    }
     if (!alignment_system_references()) return 1;
     if (!alignment_immediate_fetch_order()) return 1;
     if (!alignment_access_order()) return 1;

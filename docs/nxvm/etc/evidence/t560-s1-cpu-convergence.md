@@ -84,6 +84,29 @@ commands, SL/VME/SMM applicability, full opcode and timing qualification
 remain open in their planned T560 owners. S3 qualification and acceptance
 are recorded in CURRENT and the delivery record, not inferred by this ledger.
 
+### S6 Feature And Exception Subcase Evidence
+
+The [S6 record](t560-s6-feature-exceptions.md#final-source-and-writer-reconciliation)
+maps R1--R7 to the complete admitted C01/C10/C13/C14 batch and carried C05
+entry/nesting class. C01's candidate VME/FPU feature execution now has direct
+proof; exact fitted PC110 applicability is not inferred. C10's CR4, virtual
+flags, INT/TSS/IVT, pending flags, IRET and hardware non-redirection use the
+single real CPU owners. Valid behavior is source-defined; malformed selected
+byte arithmetic and TSS guard inputs retain explicit bounded L2 models.
+C13 debug aliases/GD, RF/TF, comparator/shadow, required fetch, exception entry
+and provider/nesting/restart cases have direct proof. C05's carried same-level
+INT/UD/INTR/NMI stack class is reconciled with segment/page/AC priorities.
+C14's absent-FPU ESC/WAIT matrix and actual Core Executor NM delivery have
+direct proof, without reopening production construction or duplicating FPU
+mode policy in Core. The public neutral FPU fixture remains unchanged.
+
+Final 602/602 units per width, complete specialized gates, eight passing
+integration groups and eight verified 0560 EXEs are recorded in the S6
+delivery candidate. P push and coordinator acceptance remain CURRENT's
+responsibility. This evidence does not close C11/C12 SMM/power, C15's whole
+inherited corpus, C16 timing or C17 admission; S7--S10 retain them in T560.
+No applicable CPU gap is transferred outside this task.
+
 ## Initial Direct Inspection
 
 ### S4 Translation-State Subcase Evidence

@@ -5,8 +5,11 @@
 T560 remains open after accepted S5 delivery 33cb2efe1. S5 is closed after
 coordinator actual-change review of cache state and INVD/WBINVD/TR3--5,
 physical routing, second-read page updates and implicit/explicit memory LOCK.
-The next planned batch is S6 feature/VME/debug/exception/SX-FPU qualification;
-there is no concurrent active implementation packet between these batches.
+S6 is now admitted for feature/VME/debug/exception/SX-FPU qualification,
+under the owner's automatic sequential Core authority. Source/applicability
+and complete form review precede production changes. The complete S6 candidate
+is now qualified and deployed for pushed-P review; S5 remains the last accepted
+runtime baseline until that review succeeds.
 The [S5 source/route investigation](../etc/evidence/t560-s5-cache-bus.md)
 records the original cache/test-register contracts and concrete A20,
 per-access paging-attribute and external-write coherence gaps.
@@ -18,7 +21,7 @@ LOCK boundary shared with explicit RMW and implicit memory XCHG. Real Core
 tests prove DMA exclusion, changed-entry targets, cached-entry reconciliation,
 split-page failures and retained accepted effects. All accepted LOCK handlers
 have been reviewed against their common RMW entry; no second arbiter exists.
-The final snapshot passes 601/601 full repository units per width in the
+The accepted S5 snapshot passes 601/601 full repository units per width in the
 original Ninja/ccache graphs. All eight final profile/width integration groups
 pass and eight verified 0560 PC EXEs are rebuilt and deployed. C16 pin/clock
 fidelity and S6--S10 remain mandatory T560 obligations; no complete CPU or
@@ -37,6 +40,7 @@ records the exact boundary. Do not ask again for equivalent version updates.
 
 | Task | Progress |
 | --- | --- |
+| T560 S6 | Complete implementation candidate: source/writer and R1--R6 reconciliation at explicit grades; restored public FPU fixture, internal Executor proof and stale Jcc assertion repair. Final 602/602 units per width, complete specialized gates, eight passing integration groups and eight verified deployed 0560 PC EXEs. Complete P push and coordinator actual-change acceptance remain; S7--S10 and production admission stay open. |
 | T560 S5 | Accepted and closed: 33cb2efe1. Actual cache/TR/operations/snoop/page-control, second-read/locked A/D and implicit/explicit LOCK proof; 601/601 full units per width, eight passing integration groups and eight verified deployed 0560 PC EXEs. [Evidence](../etc/evidence/t560-s5-cache-bus.md). Remaining CPU obligations stay in T560. |
 | T560 S4 | Accepted and closed: c32103a24. Translation/test-command and invalidation proof, 600/600 full units per width plus final affected-test recheck, eight passing integration groups and eight verified 0560 artifacts. [Evidence](../etc/evidence/t560-s4-translation-cache.md). Internal L2 grades and remaining C04/C16 bus/CPU obligations remain explicit; production 486 admission stays closed. |
 | T560 S3 | Accepted and closed: cb52586a9. Full units pass 599/599 per width, all eight final PC integration groups pass and eight verified 0560 EXEs are deployed. [Batch evidence](../etc/evidence/t560-s3-alignment-rmw.md). S4--S10 and C13-linked exception-entry qualification remain in T560; production 486 admission stays closed. |
@@ -54,6 +58,49 @@ still owns real cache/TLB/test commands, reset/control, AC/VME/SMM and timing.
 Production 486 admission stays closed. The persistent full implementation
 objective is not complete.
 
+
+## Active Packet - T560 S6 Features And Exception Semantics
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T560 S6 after accepted S5 33cb2efe1 and closure a14f4420b; next unused numeric S, one-session coordinator/executor roles. |
+| Admission And Approval | Owner requires complete remaining 486SX semantics and automatically approves sequential Core/chips/x86 implementation, interfaces and accuracy upgrades. Target NXVM only; no Shared-six, MyNES or owner-input change. |
+| Objective | Complete C01 selected feature applicability, C10 operational VME, C13 debug/exception/restart and C14 SX absent-FPU ESC/WAIT behavior. Reconcile carried same-privilege exception-stack alignment and nested fault classification from S3 at the existing CPU owner. |
+| Non-goals | No second CPU/exception dispatcher, flags mirror, host exception emulation, generic feature framework, unrelated x87 arithmetic, new board, Shared change or production 486 admission. SMM/power, full inherited corpus and timing remain S7--S10. |
+| Reference Baseline | Clean a14f4420b after accepted S5. Pinned Intel 272769-004 selected-SX candidate, 273021-001 embedded-family developer manual and 1992 PRM; T558 source identities and T559 retained CPUID/flags evidence. Exact fitted PC110 silicon is not silently proven by the candidate datasheet. |
+| Candidate Proposal | [Complete CPU proposal](../proposals/m5-pc110-486-system.md), C01/C10/C13/C14 in the [convergence ledger](../etc/evidence/t560-s1-cpu-convergence.md), [selected source evidence](../etc/evidence/t558-s2-source-availability.md) and [S3 carried exceptions](../etc/evidence/t560-s3-alignment-rmw.md). |
+| Files And ABI Surface | Existing core/chips/cpu control/flags/interrupt/debug/FPU handlers and core/x86 bus/FPU connection only where required; owned test/core fixtures/tests/registration, actual Core proof in the existing internal Executor test rather than public FPU fixture, Core manifests and NXVM task evidence. Include the stale owned Jcc observation assertion found by final gate review (+2/-1, no production or gate relaxation). Source estimate +250--550/-60--180; test estimate refined to +1800--2400/-60--160 after actual feature/form and failure matrices, including the new VME test in the count. This supersedes +1000--1500/-20--80, not the batch scope. No Shared API or planned raw public state; necessary Core contracts are automatically approved. Eight affected 0560 PC EXEs if executable inputs change. |
+| Applicable Rules | Guide; Execution packet/P/full-coverage/artifact rules; Document; Architecture/Coding and their governance skills; NXVM architecture/layout and source/research policy. Preserve table-style original handlers and all earlier CPU personalities. |
+| Verification | Source-qualified selected CPUID/ID/CR4 and VIF/VIP writers; CLI/STI/PUSHF/POPF/INT/IRET mode/CPL/IOPL/size/prefix/LOCK/fetch/fault matrices, TSS redirect permission and actual stack/IVT effects; debug-register aliases/reserved/GD/RF/TF/breakpoint and exception priority/nesting; SX ESC/WAIT EM/TS/MP and no FPU callback on rejected forms. Test actual CPU/Core paths, not independent mirrored algorithms. Full dual-width units, relevant eight profile integrations and verified deployments on original Ninja/ccache graphs. |
+| Expected Markers | Advertised VME has actual execution proof, one architectural flags/debug/exception owner, fault/restart and accepted-effect ordering preserved, no fake FPU or undefined-feature success, earlier profiles unchanged and exact source/model limits explicit. |
+| Asset Needs | Existing lawfully supplied original manuals and external integration/build inputs read-only; any additional original research copy stays outside tracked source. Preserve INI, ROM originals, media, snapshots and MyNES artifacts. |
+| Reporting Requirements | Before editing report actual source contract, finite form inventory, all affected owners/files and refined diff. Delivery reports actual added/deleted/net code, helper/state/interface necessity, direct proof, source conflicts, exact gates/artifact hashes and unexecuted manual/RDP checks. |
+| Stop Conditions | Required Shared change, essential unresolved source conflict, undeclared consumer or owner-input mutation. Report exact issue and continue independent scoped work; no invented feature downgrade, guessed silicon, exception fallback or second control path. |
+| Exit Criteria | Entire C01/C10/C13/C14 batch and carried exception matrix reconciled with primary sources and direct actual-path proof; full dual-width qualification and eight applicable releases pass, actual diff reviewed and complete NXVM P pushed/accepted. T560 and production 486 admission remain open. |
+| Original Owner Request | Implement complete 486SX instruction semantics under governance and code-quality standards; automatically admit sequential Core batches, group related instructions and reuse existing caches rather than testing per opcode. |
+| Similar-Issue Sweep | All CR4/EFLAGS/debug writers (MOV/reset/task/IRET/POPF/debugger), software/hardware interrupt delivery and nesting, implicit stack/table accesses and FPU escape/wait/control callers; classify exact earlier-family and selected-SX differences at their one owner. |
+
+The [S6 source/current-path audit](../etc/evidence/t560-s6-feature-exceptions.md)
+confirms missing guest CR4/VME, GD handling and selected-SX absent-FPU NM
+delivery. Public Intel VME documentation is archived outside the repository;
+no confidential supplement or third-party implementation is imported.
+The source-qualified SX ESC condition is now repaired without a new path or
+state. The expanded existing FPU test passes its actual 12,288-case mode,
+prefix and control-bit matrix on both widths. Later focused batches qualify
+SX WAIT, ESC LOCK, actual Core binding and real-mode failed fetch; their
+limits and remaining failures are recorded in the same evidence. The full
+feature/exception batch remains open. The CPU candidate's full unit suites
+pass 602/602 per width after test-ownership repair; both full specialized
+aggregates, eight integration groups and eight releases also pass. S6 awaits
+complete-P review; T560 remains open.
+
+CR4 and VM86 CLI/STI/PUSHF/POPF now use the existing architectural owners.
+Additional IRET work preserves VIF/VIP where not writable and retains
+low-IOPL GP with instruction-start restart, as required by the public Intel
+instruction algorithm; there is no successful virtual IRET extension.
+Focused dual-width results and remaining obligations are recorded in the S6
+evidence. The eight S6 artifacts are the current verified delivery candidate;
+their hashes and the unexecuted manual/RDP scope are recorded there.
 
 The accepted snapshots below preserve earlier deliveries only; their old
 active/progress wording does not admit concurrent work or supersede this section.

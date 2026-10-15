@@ -185,10 +185,31 @@ typedef struct {
 #define VCPU_EFLAGS_AC    0x00040000
 #define VCPU_EFLAGS_ID    0x00200000
 #define VCPU_486SX_SIGNATURE 0x0000042bu
-/*
-#define VCPU_EFLAGS_VIF   0x00080000
-#define VCPU_EFLAGS_VIP   0x00100000
-*/
+#define VCPU_EFLAGS_VIF   0x00080000u
+#define VCPU_EFLAGS_VIP   0x00100000u
+#define VCPU_CR4_VME      0x00000001u
+
+static inline lib_u32 core_machine_cpu_eflags_reserved_mask(core_machine_cpu_profile profile)
+{
+    return profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+        VCPU_EFLAGS_RESERVED & ~(VCPU_EFLAGS_AC | VCPU_EFLAGS_ID |
+            VCPU_EFLAGS_VIF | VCPU_EFLAGS_VIP) : VCPU_EFLAGS_RESERVED;
+}
+
+static inline lib_u32 core_machine_cpu_eflags_normalize(
+    core_machine_cpu_profile profile, lib_u32 flags)
+{
+    if (profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+        flags &= ~core_machine_cpu_eflags_reserved_mask(profile);
+    return flags | 0x02u;
+}
+
+static inline lib_bool core_machine_cpu_cr4_value_valid(
+    core_machine_cpu_profile profile, lib_u32 value)
+{
+    return profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+        (value & ~VCPU_CR4_VME) == 0u;
+}
 #define _GetEFLAGS_CF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_CF))
 #define _GetEFLAGS_PF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_PF))
 #define _GetEFLAGS_AF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_AF))
@@ -204,11 +225,8 @@ typedef struct {
 #define _GetEFLAGS_NT    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_NT))
 #define _GetEFLAGS_RF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_RF))
 #define _GetEFLAGS_VM    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_VM))
-/*
-#define _GetEFLAGS_AC    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_AC))
 #define _GetEFLAGS_VIF   (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
 #define _GetEFLAGS_VIP   (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
-#define _GetEFLAGS_ID    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
 #define _SetEFLAGS_CF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_CF))
 #define _SetEFLAGS_PF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_PF))
 #define _SetEFLAGS_AF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_AF))
@@ -224,11 +242,6 @@ typedef struct {
 #define _SetEFLAGS_NT    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_NT))
 #define _SetEFLAGS_RF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_RF))
 #define _SetEFLAGS_VM    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_VM))
-/*
-#define _SetEFLAGS_AC    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_AC))
-#define _SetEFLAGS_VIF   (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
-#define _SetEFLAGS_VIP   (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
-#define _SetEFLAGS_ID    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
 #define _ClrEFLAGS_CF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_CF))
 #define _ClrEFLAGS_PF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_PF))
 #define _ClrEFLAGS_AF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_AF))
@@ -244,11 +257,6 @@ typedef struct {
 #define _ClrEFLAGS_NT    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_NT))
 #define _ClrEFLAGS_RF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_RF))
 #define _ClrEFLAGS_VM    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_VM))
-/*
-#define _ClrEFLAGS_AC    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_AC))
-#define _ClrEFLAGS_VIF   (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
-#define _ClrEFLAGS_VIP   (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
-#define _ClrEFLAGS_ID    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
 
 #define VCPU_ModRM_MOD 0xc0
 #define VCPU_ModRM_REG 0x38

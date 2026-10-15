@@ -4,8 +4,8 @@
 
 /* Private pending-event and whole-cache invariants belong to the CPU owner;
  * the board interrupt corpus separately checks PIC, frames and transactions. */
-static void cpu_interrupt_prepare(cpu_bus_fixture *fixture, lib_u8 vector,
-    lib_u8 gate_type)
+static void cpu_interrupt_prepare(cpu_bus_fixture *fixture,
+    core_machine_cpu_profile profile, lib_u8 vector, lib_u8 gate_type)
 {
     const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
@@ -15,7 +15,7 @@ static void cpu_interrupt_prepare(cpu_bus_fixture *fixture, lib_u8 vector,
     const lib_u8 gate[] = {0u,1u,0x0bu,0u,0u,gate_type,0u,0u};
     t_cpu *cpu = &fixture->cpu;
 
-    cpu_bus_prepare(fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_bus_prepare(fixture, profile);
     lib_memory_copy(fixture->memory + 0x300u, gdt, sizeof(gdt));
     lib_memory_copy(fixture->memory + 0x400u + vector * 8u, gate, sizeof(gate));
     cpu->data.cr0 = VCPU_CR0_PE;
@@ -70,7 +70,8 @@ static lib_i32 cpu_ud_cache_preservation(void)
             cpu_bus_fixture fixture;
             t_cpu before;
 
-            cpu_interrupt_prepare(&fixture, 6u, reject ? 0x80u : 0x8eu);
+            cpu_interrupt_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386,
+                6u, reject ? 0x80u : 0x8eu);
             /* The original UD cases use ring-zero 16-bit protected code. */
             fixture.memory[0x30du] = 0x9au;
             fixture.memory[0x30eu] = 0u;
@@ -114,7 +115,8 @@ static lib_i32 cpu_interrupt_pending_and_rollback(void)
         cpu_bus_fixture fixture;
         t_cpu before;
 
-        cpu_interrupt_prepare(&fixture, 2u, reject ? 0x80u : 0x8eu);
+        cpu_interrupt_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386,
+            2u, reject ? 0x80u : 0x8eu);
         fixture.memory[0] = 0x90u;
         fixture.cpu.data.eflags = 0x202u;
         if (!core_machine_cpu_request_nmi(&fixture.execution)) return 1;
@@ -139,7 +141,7 @@ static lib_i32 cpu_interrupt_pending_and_rollback(void)
         const lib_u8 gate = failure == 0u ? 0x80u :
             failure == 1u ? 0x0eu : 0x8eu;
 
-        cpu_interrupt_prepare(&fixture, 0x0du, gate);
+        cpu_interrupt_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386, 0x0du, gate);
         lib_memory_copy(fixture.memory, code, sizeof(code));
         if (failure == 2u) fixture.memory[0x30du] = 0x7au;
         if (failure == 3u) fixture.cpu.data.ss.limit = 0x7ffeu;
@@ -184,7 +186,7 @@ static lib_status cpu_entry_io_write(void *opaque, lib_u32 address, const void *
     return cpu_bus_write(&fixture->state, address, source, bytes, provenance, cache_control);
 }
 
-static lib_bool cpu_entry_provider_failure(void)
+static lib_bool cpu_entry_provider_failure(core_machine_cpu_profile profile)
 {
     const lib_u8 code[] = {0x0fu,0x01u,0xf0u};
     const lib_u8 df_gate[] = {0u,1u,0x0bu,0u,0u,0x8eu,0u,0u};
@@ -195,7 +197,8 @@ static lib_bool cpu_entry_provider_failure(void)
         cpu_entry_io_fixture fixture;
         core_machine_cpu_bus_provider bus = cpu_bus_provider;
         lib_u32 prior_flags = 0u;
-        cpu_interrupt_prepare(&fixture.state, 13u, double_fault ? 0x80u : 0x8eu);
+        cpu_interrupt_prepare(&fixture.state, profile,
+            13u, double_fault ? 0x80u : 0x8eu);
         fixture.reject_write = write != 0u;
         fixture.reject_address = write ? 0x7ff8u :
             0x400u + (double_fault ? 8u : 13u) * 8u;
@@ -213,8 +216,8 @@ static lib_bool cpu_entry_provider_failure(void)
             fixture.state.fault.exception_code != fixture.reject_address ||
             fixture.state.execution.shutdown_requested ||
             (write && (fixture.state.writes == 0u || prior_flags == 0u))) {
-            lib_c_printf("Entry IO df=%u write=%u stop=%u fault=%u/%x/%x shutdown=%u rejected=%x\n",
-                double_fault, write, fixture.state.execution.stop_requested,
+            lib_c_printf("Entry IO profile=%u df=%u write=%u stop=%u fault=%u/%x/%x shutdown=%u rejected=%x\n",
+                (unsigned)profile, double_fault, write, fixture.state.execution.stop_requested,
                 fixture.state.faults, fixture.state.fault.exception_mask,
                 fixture.state.fault.exception_code, fixture.state.execution.shutdown_requested,
                 fixture.reject_address);
@@ -224,7 +227,7 @@ static lib_bool cpu_entry_provider_failure(void)
     return LIB_TRUE;
 }
 
-static lib_bool cpu_external_error_matrix(void)
+static lib_bool cpu_external_error_matrix(core_machine_cpu_profile profile)
 {
     const lib_u8 gdt[] = {0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0,0,0x9au,0,0,
@@ -236,7 +239,7 @@ static lib_bool cpu_external_error_matrix(void)
     for (source = 0u; source < 3u; ++source) {
         cpu_bus_fixture state;
         lib_u32 error = 0u;
-        cpu_bus_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_bus_prepare(&state, profile);
         state.cpu.data.cr0 = VCPU_CR0_PE;
         state.cpu.data.cs.selector = 8u;
         state.cpu.data.ss.selector = 0x10u;
@@ -268,14 +271,15 @@ static lib_bool cpu_exception_pair_matrix(void)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const struct { lib_u8 vector; lib_bool first_286; lib_u8 class_386; } rows[] = {
         {0u,LIB_TRUE,1u}, {1u,LIB_FALSE,0u}, {2u,LIB_FALSE,0u},
         {3u,LIB_FALSE,0u}, {4u,LIB_FALSE,0u}, {5u,LIB_FALSE,0u},
         {6u,LIB_FALSE,0u}, {7u,LIB_FALSE,0u}, {9u,LIB_FALSE,1u},
         {10u,LIB_TRUE,1u}, {11u,LIB_TRUE,1u}, {12u,LIB_TRUE,1u},
-        {13u,LIB_TRUE,1u}, {14u,LIB_FALSE,2u}, {16u,LIB_FALSE,0u}
+        {13u,LIB_TRUE,1u}, {14u,LIB_FALSE,2u}, {16u,LIB_FALSE,0u},
+        {17u,LIB_FALSE,0u}
     };
     static const lib_bool table_386[3][3] = {
         {LIB_FALSE,LIB_FALSE,LIB_FALSE},
@@ -289,10 +293,15 @@ static lib_bool cpu_exception_pair_matrix(void)
     for (first = 0u; first < sizeof(rows) / sizeof(rows[0]); ++first)
     for (second = 0u; second < sizeof(rows) / sizeof(rows[0]); ++second) {
         lib_bool expected = LIB_FALSE;
+        if (profiles[profile] < CORE_MACHINE_CPU_PROFILE_80486SX &&
+            (rows[first].vector == 17u || rows[second].vector == 17u)) continue;
+        /* Intel486 PRM 9.9.9: the 386 coprocessor overrun is not generated. */
+        if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80486SX &&
+            (rows[first].vector == 9u || rows[second].vector == 9u)) continue;
         if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80286) {
             if (rows[first].vector == 14u || rows[second].vector == 14u) continue;
             expected = rows[first].first_286;
-        } else if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386)
+        } else if (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386)
             expected = table_386[rows[first].class_386][rows[second].class_386];
         ++count;
         if (cpu_exception_requires_double_fault(profiles[profile],
@@ -369,14 +378,16 @@ static lib_bool cpu_286_double_fault_task(lib_bool double_fault)
     return LIB_TRUE;
 }
 
-static lib_bool cpu_page_delivery_case(lib_u8 scenario)
+static lib_bool cpu_page_delivery_case(core_machine_cpu_profile profile, lib_u8 scenario)
 {
+    const lib_bool sx = profile == CORE_MACHINE_CPU_PROFILE_80486SX;
     const lib_bool page_first = scenario >= 2u;
     const lib_bool missing_descriptor = scenario != 0u;
-    const lib_bool double_fault = scenario == 2u;
-    const lib_u32 expected_error = scenario == 3u ? 2u : 0u;
+    const lib_bool double_fault = scenario == 2u || (sx && scenario == 3u);
+    const lib_bool delivered_page = page_first || (sx && scenario == 1u);
+    const lib_u32 expected_error = !sx && scenario == 3u ? 2u : 0u;
     const lib_u16 expected_cs = double_fault ? 8u :
-        page_first ? 0x1008u : 0x100bu;
+        sx && scenario == 1u ? 0x1bu : page_first ? 0x1008u : 0x100bu;
     const lib_u16 expected_frame_cs = page_first ? 8u : 0x0bu;
     const lib_u8 descriptor[] = {0xffu,0xffu,0u,0x20u,0u,
         page_first ? 0x9au : 0xfau,0u,0u};
@@ -391,7 +402,7 @@ static lib_bool cpu_page_delivery_case(lib_u8 scenario)
     lib_u32 frame[4] = {0};
     lib_u32 page;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     core_machine_cpu_execution_load_segment(&state.execution, &state.cpu.data.cs, 0x0200u);
     state.cpu.data.cs.selector = page_first ? 8u : 0x0bu;
     state.cpu.data.cs.dpl = page_first ? 0u : 3u;
@@ -428,16 +439,19 @@ static lib_bool cpu_page_delivery_case(lib_u8 scenario)
     if (state.execution.stop_requested || state.fault.valid ||
         !state.delivered_exception.valid ||
         state.delivered_exception.exception_mask != (double_fault ? VCPUINS_EXCEPT_DF :
-            page_first ? VCPUINS_EXCEPT_PF : VCPUINS_EXCEPT_GP) ||
+            delivered_page ? VCPUINS_EXCEPT_PF : VCPUINS_EXCEPT_GP) ||
         state.delivered_exception.exception_code != expected_error ||
         state.delivered_exception.point.eip != 0u ||
-        state.cpu.data.cr2 != (page_first ? 0x1000u : 0u) ||
-        state.cpu.data.eip != (double_fault ? 0x400u : page_first ? 0x300u : 0x100u) ||
+        /* SX's actual missing target-descriptor page faults at linear 1308;
+         * GP then PF is serial, while PF then PF requires DF (PRM 9.9.8). */
+        state.cpu.data.cr2 != (sx && (scenario == 1u || scenario == 3u) ?
+            0x1308u : page_first ? 0x1000u : 0u) ||
+        state.cpu.data.eip != (double_fault ? 0x400u : delivered_page ? 0x300u : 0x100u) ||
         state.cpu.data.cs.selector != expected_cs ||
         state.cpu.data.sp != 0x7ff0u || frame[0] != expected_error || frame[1] != 0u ||
         frame[2] != expected_frame_cs) {
-        lib_c_printf("Page delivery scenario=%u stop=%u terminal=%x delivered=%x/%x point=%x cr2=%x cs=%x ip=%x sp=%x frame=%x/%x/%x\n",
-            scenario, state.execution.stop_requested, state.fault.exception_mask,
+        lib_c_printf("Page delivery profile=%u scenario=%u stop=%u terminal=%x delivered=%x/%x point=%x cr2=%x cs=%x ip=%x sp=%x frame=%x/%x/%x\n",
+            (unsigned)profile, scenario, state.execution.stop_requested, state.fault.exception_mask,
             state.delivered_exception.exception_mask, state.delivered_exception.exception_code,
             state.delivered_exception.point.eip,
             state.cpu.data.cr2, state.cpu.data.cs.selector,
@@ -762,13 +776,18 @@ lib_i32 main(void)
     failed |= !cpu_early_fixed_ivt();
     failed |= !cpu_shutdown_protected_recovery();
     failed |= !cpu_shutdown_recovery();
-    failed |= !cpu_entry_provider_failure();
-    failed |= !cpu_external_error_matrix();
+    for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80386;
+         profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
+        failed |= !cpu_entry_provider_failure(profile);
+        failed |= !cpu_external_error_matrix(profile);
+    }
     failed |= !cpu_exception_pair_matrix();
     failed |= !cpu_286_double_fault_task(LIB_FALSE);
     failed |= !cpu_286_double_fault_task(LIB_TRUE);
-    for (lib_u8 scenario = 0u; scenario < 4u; ++scenario)
-        failed |= !cpu_page_delivery_case(scenario);
+    for (lib_u8 scenario = 0u; scenario < 4u; ++scenario) {
+        failed |= !cpu_page_delivery_case(CORE_MACHINE_CPU_PROFILE_80386, scenario);
+        failed |= !cpu_page_delivery_case(CORE_MACHINE_CPU_PROFILE_80486SX, scenario);
+    }
     failed |= !cpu_divide_return_matrix();
     failed |= !cpu_aam_return_matrix();
     if (failed) return 1;

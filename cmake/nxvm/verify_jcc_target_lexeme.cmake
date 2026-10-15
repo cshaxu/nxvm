@@ -35,7 +35,8 @@ jcc_target_require("${bus_text}" "if (observe_only) {
         return core_machine_memory_inspect_physical(&machine->executor_memory,
             address, (lib_uptr)destination, bytes, reset_fetch);
     }
-    status = core_machine_transaction_begin")
+    if (!locked) {
+        status = core_machine_transaction_begin")
 if(preview_text MATCHES "core_machine_memory_(inspect|read)_.*physical\\(")
     message(FATAL_ERROR "CPU preview must use the bus observation contract, not board memory")
 endif()

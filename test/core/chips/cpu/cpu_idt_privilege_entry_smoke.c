@@ -11,7 +11,8 @@
 
 /* CPU cache rollback and NMI latches stay here; PIC delivery and public
  * Core diagnostics stay with the board receiver. */
-static void idt_prepare(cpu_instruction_fixture *state, lib_u8 gate_access,
+static void idt_prepare(cpu_instruction_fixture *state,
+    core_machine_cpu_profile profile, lib_u8 gate_access,
     lib_u8 stack_access, lib_bool stack_big)
 {
     lib_u8 gdt[] = {
@@ -30,7 +31,7 @@ static void idt_prepare(cpu_instruction_fixture *state, lib_u8 gate_access,
     const lib_u16 ss0 = 0x0010u;
     t_cpu *const cpu = &state->cpu;
 
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     gdt[21u] = stack_access;
     idt[IDT_VECTOR * 8u] = IDT_HANDLER_OFFSET & 0xffu;
     idt[IDT_VECTOR * 8u + 1u] = IDT_HANDLER_OFFSET >> 8u;
@@ -109,7 +110,7 @@ static lib_bool idt_test_success(lib_u8 gate_access, lib_bool expect_if)
     t_cpu after;
     lib_u32 frame[5] = {0};
 
-    idt_prepare(&state, gate_access, 0x92u, LIB_TRUE);
+    idt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, gate_access, 0x92u, LIB_TRUE);
     if (!idt_run(&state, &after) || after.data.cs.selector != 0x0008u ||
         after.data.cs.dpl != 0u || after.data.eip != IDT_HANDLER_OFFSET + 1u ||
         after.data.ss.selector != 0x0010u || after.data.ss.dpl != 0u ||
@@ -124,18 +125,19 @@ static lib_bool idt_test_success(lib_u8 gate_access, lib_bool expect_if)
         state.memory[IDT_GDT_BASE + 21u] == 0x93u;
 }
 
-static lib_bool idt_test_16bit_stack(void)
+static lib_bool idt_test_16bit_stack(core_machine_cpu_profile profile)
 {
     cpu_instruction_fixture state;
     t_cpu after;
     lib_u32 frame[5] = {0};
 
-    idt_prepare(&state, 0xeeu, 0x92u, LIB_FALSE);
+    idt_prepare(&state, profile, 0xeeu, 0x92u, LIB_FALSE);
+    state.cpu.data.esp = 0x12348800u;
     if (!idt_run(&state, &after) || after.data.ss.seg.data.big ||
-        after.data.esp != 0x00008fecu) return LIB_FALSE;
+        after.data.esp != 0x12348fecu) return LIB_FALSE;
     lib_memory_copy(frame, state.memory + 0x00008fecu, sizeof(frame));
     return frame[0] == 2u && frame[1] == 0x0000001bu &&
-        frame[2] == 0x00000302u && frame[3] == 0x00008800u &&
+        frame[2] == 0x00000302u && frame[3] == 0x12348800u &&
         frame[4] == 0x00000023u;
 }
 
@@ -147,7 +149,7 @@ static lib_bool idt_test_atomic(lib_u8 gate_access, lib_u8 stack_access,
     lib_u8 cs_before;
     lib_u8 ss_before;
 
-    idt_prepare(&state, gate_access, stack_access, LIB_TRUE);
+    idt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, gate_access, stack_access, LIB_TRUE);
     if (corrupt_code) state.memory[IDT_GDT_BASE + 13u] = 0x1au;
     before = state.cpu;
     cs_before = state.memory[IDT_GDT_BASE + 13u];
@@ -170,7 +172,7 @@ static lib_bool idt_test_nmi(lib_bool invalid_gate, lib_bool user_source)
     const lib_u32 code_base = user_source ? IDT_USER_CODE_BASE : IDT_KERNEL_CODE_BASE;
     const lib_u16 code_selector = user_source ? 0x1bu : 8u;
 
-    idt_prepare(&state, 0xeeu, 0x92u, LIB_TRUE);
+    idt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0xeeu, 0x92u, LIB_TRUE);
     state.cpu.data.cs.selector = code_selector;
     state.cpu.data.cs.base = code_base;
     state.cpu.data.cs.dpl = user_source ? 3u : 0u;
@@ -222,7 +224,7 @@ static lib_bool idt_test_delivery_cache_rollback(lib_u8 failure)
     lib_u32 stack_before[4], stack_after[4];
     lib_u8 access;
 
-    idt_prepare(&state, 0xeeu, 0x92u, LIB_TRUE);
+    idt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0xeeu, 0x92u, LIB_TRUE);
     if (failure == 0u) gate[5] = 0x80u;
     if (failure == 1u) gate[5] = 0x0eu;
     if (failure == 2u) state.memory[IDT_GDT_BASE + 29u] = 0x7au;
@@ -254,7 +256,7 @@ static lib_bool idt_test_software_full_rollback(lib_u8 negative)
     t_cpu before, after;
     lib_u8 gate[] = {IDT_HANDLER_OFFSET & 0xffu, IDT_HANDLER_OFFSET >> 8u,
         8u,0,0,0x8eu,0,0};
-    idt_prepare(&state, 0xeeu, 0x92u, LIB_TRUE);
+    idt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0xeeu, 0x92u, LIB_TRUE);
     if (negative < 3u) {
         lib_memory_copy(state.memory + IDT_IDT_BASE + vectors[negative] * 8u,
             gate, sizeof(gate));
@@ -403,7 +405,7 @@ static lib_bool idt_test_rejected_ss_shadow(void)
     for (inherited = 0u; inherited < 2u; ++inherited)
     for (pending = 0u; pending < 2u; ++pending) {
         cpu_instruction_fixture state;
-        idt_prepare(&state, 0xeeu, 0x92u, LIB_TRUE);
+        idt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0xeeu, 0x92u, LIB_TRUE);
         state.cpu.data.cs.selector = 8u;
         state.cpu.data.cs.base = IDT_KERNEL_CODE_BASE;
         state.cpu.data.cs.dpl = 0u;
@@ -442,7 +444,7 @@ static lib_bool idt_test_faulting_iret_service_release(void)
 
     for (pending = 0u; pending < 2u; ++pending) {
         cpu_instruction_fixture state;
-        idt_prepare(&state, 0xeeu, 0x92u, LIB_TRUE);
+        idt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0xeeu, 0x92u, LIB_TRUE);
         state.cpu.data.cs.selector = 8u;
         state.cpu.data.cs.base = IDT_KERNEL_CODE_BASE;
         state.cpu.data.cs.dpl = 0u;
@@ -480,7 +482,9 @@ int main(void)
     if (!idt_test_nmi_entry_edge()) return 1;
     if (!idt_test_nmi_service_lifetime()) return 1;
     if (!idt_test_success(0xeeu, LIB_FALSE) ||
-        !idt_test_success(0xefu, LIB_TRUE) || !idt_test_16bit_stack() ||
+        !idt_test_success(0xefu, LIB_TRUE) ||
+        !idt_test_16bit_stack(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !idt_test_16bit_stack(CORE_MACHINE_CPU_PROFILE_80486SX) ||
         !idt_test_atomic(0x8eu, 0x92u, LIB_FALSE) ||
         !idt_test_atomic(0xeeu, 0x12u, LIB_FALSE) ||
         !idt_test_atomic(0xeeu, 0x92u, LIB_TRUE) ||

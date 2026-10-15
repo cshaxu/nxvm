@@ -10,6 +10,7 @@ typedef struct decode_fixture {
     lib_u32 injected;
     lib_u32 injected_address;
     lib_bool fail_required;
+    lib_bool fail_prefetch;
 } decode_fixture;
 
 static lib_status decode_read(void *opaque, lib_u32 address, void *destination,
@@ -19,8 +20,11 @@ static lib_status decode_read(void *opaque, lib_u32 address, void *destination,
     decode_fixture *fixture = (decode_fixture *)opaque;
 
     if (!observe_only) {
-        if (provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH) {
-            ++fixture->required_reads;
+        if (provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH ||
+            (fixture->fail_prefetch &&
+             provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH)) {
+            if (provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH)
+                ++fixture->required_reads;
             if (fixture->fail_required && address <= fixture->fail_address &&
                 (lib_u64)address + bytes > fixture->fail_address) {
                 ++fixture->injected;
@@ -392,6 +396,114 @@ static lib_i32 decode_privileged_operands(void)
     return 0;
 }
 
+static lib_i32 decode_sx_feature_fetch_failures(void)
+{
+    static const struct {
+        const char *name;
+        lib_u8 code[4];
+        lib_u8 bytes;
+        lib_bool memory;
+    } forms[] = {
+        {"CLI", {0xfau}, 1u, LIB_FALSE}, {"STI", {0xfbu}, 1u, LIB_FALSE},
+        {"PUSHF", {0x9cu}, 1u, LIB_FALSE}, {"POPF", {0x9du}, 1u, LIB_FALSE},
+        {"IRET", {0xcfu}, 1u, LIB_FALSE}, {"INT", {0xcdu, 0x21u}, 2u, LIB_FALSE},
+        {"WAIT", {0x9bu}, 1u, LIB_FALSE}, {"CPUID", {0x0fu, 0xa2u}, 2u, LIB_FALSE},
+        {"read-CR4", {0x0fu, 0x20u, 0xe0u}, 3u, LIB_FALSE},
+        {"write-CR4", {0x0fu, 0x22u, 0xe0u}, 3u, LIB_FALSE},
+        {"read-DR", {0x0fu, 0x21u, 0xc0u}, 3u, LIB_FALSE},
+        {"write-DR", {0x0fu, 0x23u, 0xc0u}, 3u, LIB_FALSE},
+        {"ESC-D8", {0xd8u, 0xc0u}, 2u, LIB_FALSE},
+        {"ESC-D9", {0xd9u, 0xc0u}, 2u, LIB_FALSE},
+        {"ESC-DA", {0xdau, 0xc0u}, 2u, LIB_FALSE},
+        {"ESC-DB", {0xdbu, 0xc0u}, 2u, LIB_FALSE},
+        {"ESC-DC", {0xdcu, 0xc0u}, 2u, LIB_FALSE},
+        {"ESC-DD", {0xddu, 0xc0u}, 2u, LIB_FALSE},
+        {"ESC-DE", {0xdeu, 0xc0u}, 2u, LIB_FALSE},
+        {"ESC-DF", {0xdfu, 0xc0u}, 2u, LIB_FALSE},
+        {"ESC-memory", {0xd8u}, 0u, LIB_TRUE}
+    };
+
+    for (lib_u8 mode = 0u; mode < 6u; ++mode)
+    for (lib_size form = 0u; form < sizeof(forms) / sizeof(forms[0]); ++form)
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes)
+    for (lib_u8 controls = 0u; controls < 16u; ++controls) {
+        lib_u8 code[8], bytes = 0u;
+
+        if (prefixes & 1u) code[bytes++] = 0x66u;
+        if (prefixes & 2u) code[bytes++] = 0x67u;
+        if (forms[form].memory) {
+            const lib_bool address32 = code32 != ((prefixes & 2u) != 0u);
+
+            code[bytes++] = 0xd8u;
+            code[bytes++] = address32 ? 0x05u : 0x06u;
+            code[bytes++] = 0u;
+            code[bytes++] = 4u;
+            if (address32) { code[bytes++] = 0u; code[bytes++] = 0u; }
+        } else {
+            lib_memory_copy(code + bytes, forms[form].code, forms[form].bytes);
+            bytes += forms[form].bytes;
+        }
+        for (lib_u8 fail_byte = 0u; fail_byte < bytes; ++fail_byte) {
+            decode_fixture fixture;
+            t_cpu before;
+
+            decode_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+            fixture.bus.execution.prefetch_capacity = 1u;
+            if (mode != 0u) {
+                const lib_u8 cpl = mode == 5u ? 3u : (lib_u8)(mode - 1u);
+                fixture.bus.cpu.data.cr0 |= VCPU_CR0_PE;
+                fixture.bus.cpu.data.cs.selector = (lib_u16)(8u | cpl);
+                fixture.bus.cpu.data.cs.dpl = cpl;
+                if (mode == 5u) fixture.bus.cpu.data.eflags |= VCPU_EFLAGS_VM;
+            }
+            fixture.bus.cpu.data.cs.seg.exec.defsize = code32;
+            fixture.bus.cpu.data.cr4 = VCPU_CR4_VME;
+            fixture.bus.cpu.data.dr7 = 0x2400u;
+            fixture.bus.cpu.data.cr0 |= ((controls & 1u) ? VCPU_CR0_EM : 0u) |
+                ((controls & 2u) ? VCPU_CR0_TS : 0u) |
+                ((controls & 4u) ? VCPU_CR0_MP : 0u) |
+                ((controls & 8u) ? VCPU_CR0_NE : 0u);
+            fixture.fail_required = LIB_TRUE;
+            fixture.fail_address = fixture.bus.cpu.data.eip + fail_byte;
+            fixture.fail_prefetch = LIB_TRUE;
+            lib_memory_copy(fixture.bus.memory + fixture.bus.cpu.data.eip, code, bytes);
+            before = fixture.bus.cpu;
+            core_machine_cpu_execution_refresh(&fixture.bus.execution);
+            /* MOV CR/DR rejects nonzero CPL at its known opcode, before
+             * requesting ModRM. That suffix is not a required fetch. */
+            if (mode >= 2u && forms[form].code[0] == 0x0fu &&
+                forms[form].code[1] >= 0x20u && forms[form].code[1] <= 0x23u &&
+                fail_byte == bytes - 1u) {
+                if (fixture.injected != 0u || fixture.data_reads != 0u ||
+                    fixture.bus.writes != 0u || fixture.bus.completions != 0u ||
+                    !decode_expect_shutdown(&fixture, before.data.eip) ||
+                    lib_memory_compare(&before, &fixture.bus.cpu, sizeof(before)) != 0)
+                    return 1;
+                continue;
+            }
+            if (fixture.injected == 0u || fixture.data_reads != 0u ||
+                fixture.bus.writes != 0u || fixture.bus.completions != 0u ||
+                fixture.bus.failed || fixture.bus.delivered_exceptions != 0u ||
+                fixture.bus.faults != 1u ||
+                fixture.bus.fault.exception_mask != VCPUINS_EXCEPT_CE ||
+                fixture.bus.fault.point.eip != before.data.eip ||
+                lib_memory_compare(&before, &fixture.bus.cpu, sizeof(before)) != 0) {
+                lib_c_printf("SX feature fetch: %s mode=%u code32=%u prefix=%u controls=%u byte=%u\n",
+                    forms[form].name, (lib_u32)mode, (lib_u32)code32, (lib_u32)prefixes,
+                    (lib_u32)controls, (lib_u32)fail_byte);
+                lib_c_printf("injected=%u reads=%u writes=%u delivered=%u faults=%u mask=%x pc=%x dr6=%x dr7=%x\n",
+                    fixture.injected, fixture.data_reads, fixture.bus.writes,
+                    fixture.bus.delivered_exceptions, fixture.bus.faults,
+                    fixture.bus.fault.exception_mask, fixture.bus.cpu.data.eip,
+                    fixture.bus.cpu.data.dr6, fixture.bus.cpu.data.dr7);
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
 static lib_i32 decode_initial_fetch_failure(void)
 {
     decode_fixture fixture;
@@ -422,6 +534,7 @@ lib_i32 main(void)
         {"wrapped-immediate", decode_wrapped_immediate},
         {"page-boundary", decode_page_boundary},
         {"privileged-operands", decode_privileged_operands},
+        {"sx-feature-fetch-failures", decode_sx_feature_fetch_failures},
         {"initial-fetch-failure", decode_initial_fetch_failure}
     };
 

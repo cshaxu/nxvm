@@ -253,3 +253,222 @@ and eight passing final integration groups; the original graphs are restored.
 The common memory LOCK replaces the unpublished page-only boundary, with
 no second cache, arbiter or Shared change. Source/model grades and C16 plus
 S6--S10 remain explicit in T560; production 486 admission remains closed.
+
+S6 is admitted after clean a14f4420b under the owner's existing automatic
+sequential Core authority. It consumes C01/C10/C13/C14 and S3's carried
+exception-entry alignment/nesting matrix. Source and current implementation
+review precede production changes; the complete feature/exception batch,
+dual-width qualification and affected eight releases remain its exit.
+Shared-six, MyNES and owner inputs remain excluded. No partial P is created
+for admission or source investigation.
+
+S6 initial audit confirms that guest CR4/VME and GD remain missing and that
+SX ESC with EM/TS clear falls through to the old FPU path. The original PRM
+requires NM for absent-FPU SX. One existing-handler condition (+2/-1 source)
+repairs this; the expanded existing FPU test (+139/-0) proves 12,288 actual
+mode/control/prefix/register-memory cases per width, including real NM frames
+and VM86 saved state. The test corrects its IVT-versus-operand counter and RF
+fault-frame expectations without production compensation. WAIT/fetch/LOCK,
+Core binding, VME/debug/exception and full S6 qualification remain open.
+Public Intel 253669-087US is archived externally for VME research; no NDA
+supplement or third-party source is imported. No partial P or new release.
+
+S6 continues with actual CR4/VME flags and focused dual-width proof. Source
+review of public Intel 325383-078US corrects an investigation hypothesis:
+VME does not admit low-IOPL IRET. Existing return owners preserve VIF/VIP
+where required; selected-SX low-IOPL GP retains the instruction-start
+checkpoint instead of overwriting it after fetch. Eight preservation and
+384 actual GP cases pass; the latest related cohort is 6/6 per width.
+Core manifests, dependency boundaries, documentation and whitespace checks
+pass. Software INT redirection, GD/exception, WAIT and whole-S6
+qualification remain open. No partial P, artifact or Windows support claim.
+
+S6 adds software INT imm8 redirection at its existing CPU owner, with one
+private TSS/IVT/frame helper (+56/-1 production) and actual-path test expansion
+(+111/-0). All 256 vectors across flags/IOPL/prefix/code forms yield 32,768
+normal cases; lower-IOPL set-bit GP and protected INT/INT3/INTO frame proofs
+also pass. Related cohorts are 7/7 on both widths. Invalid-map and paged/failing
+access ordering, hardware interrupt admission and the remaining S6 rows stay
+open. No Shared, MyNES, owner-input or asset mutation; no partial P.
+
+S6 implements selected-SX GD protection at common MOV DR decoding and GD
+clearing at the actual DB exception entry (+11/-1 production). Deferred
+debug traps stop borrowing IRQ delivery and share exception entry. The
+existing debug test grows +109/-0 for 384 actual fault forms and two trap
+cases; related cohorts pass 5/5 per width, including retained earlier debug
+cases. A test-only code/IVT overlap and nonexistent array macro are corrected
+without production compensation. Full debug priority/failure, INT failure
+and paging, WAIT/Core and whole-S6 qualification remain open. No partial P
+or new artifact; full T560 scope and production admission gate are retained.
+
+S6 confines external TEST/pending-FPU WAIT to earlier personalities after the
+unchanged TS-and-MP NM check (+7/-8 source). Existing FPU tests add 768 SX
+WAIT cases (+63/-0); debug tests add 72 LOCK/privilege competing-fault cases
+(+50/-0). Both widths pass the four-test cohort including actual Core's
+retained early-family TEST/ESC wait. That does not prove SX Core binding.
+The original-versus-modern MOV mod-field wording is explicitly retained for
+form review rather than silently altering decode. Remaining S6 rows, full
+qualification and releases remain open; no partial P or Shared mutation.
+
+S6 qualifies SX absent-FPU through actual Core using the existing pending-CPU
+test binding pattern without opening production admission. The FPU Core test
+adds +55/-6 for parameterized NM proof, 128 SX ESC and 16 WAIT control cases.
+The CPU test adds 6,144 illegal-LOCK ESC cases, retaining actual UD frames and
+no FPU publication. Both widths pass the five-test cohort including the closed
+SX production gate. The full-S6 test estimate is revised to +1000--1500
+/-20--80 before remaining failure/paging/exception work; original scope and
+all final qualification/artifact obligations remain unchanged.
+
+S6 extends the existing decode-admission fixture and table (+95/-2 test,
+no production edit) for 8,192 real-mode failed-byte cases across its feature
+instruction group. An explicit prefetch-injection control fixes the initial
+test's failure to reject bytes supplied by actual SX prefetch. Full CPU
+rollback and absence of data/FPU/port publication remain strict; old cases
+keep their original injection. Related cohorts pass 4/4 per width. Paging,
+protected/VM86 priority and remaining exception proof are not inferred.
+No partial P, full qualification or new artifact is claimed.
+
+S6 adds 96 paged VME INT cases (+119 test lines), exposing and correcting
+the new helper's whole-frame paging/early-IVT order (+5/-5 production).
+The existing segment-only frame owner and scalar pushes now follow Intel's
+FLAGS/CS/IP-before-IVT contract. Tests prove supervisor TSS versus user
+IVT/stack permissions, exact PF frames/CR2, all accepted stack writes on IVT
+failure, and only the FLAGS prefix on later cross-page failure. Related
+cohorts pass 5/5 per width, then final GPR/nine-field checks pass per width.
+Remaining malformed-map/provider/segment and exception obligations stay
+explicit. No new state, Shared mutation, partial P or release is claimed.
+
+S6 audits all flags/CR4 writers and removes a selected-SX debugger bypass.
+Private canonical mask/normalization is shared with instruction loading
+(+27/-19 production); the old local mask owner is deleted. VME tests add
+68 debugger samples and include EFLAGS in atomic invalid-CR4 patches
+(+27 test lines). Both widths pass seven-test cohorts with retained task
+regressions. Actual selected-SX task and whole failure/exception qualification
+remain open; no partial P, new public interface or artifact is claimed.
+
+S6 expands the existing task-completion table (+23/-7 test only) rather than
+duplicating TSS setup. The older matrix already covered SX RF/TF/AC/ID;
+new VIF/VIP, reserved input, outgoing-save and CR4-retention assertions bring
+the actual count to 2,560 SX plus 80 retained 386 cases, zero failures on
+both widths. Related cohorts pass 3/3 per width. Complete failure/exception
+and final S6 qualification remain open; no blanket alignment exception,
+production change, partial P or artifact is added in this phase.
+
+S6 adds same-CPL entry proof in the existing alignment fixture (+76 test
+lines, no production edit): 128 INT/UD, word/dword gate, residue, AC and
+prefix cases. Valid kernel AC delivery proves fault IP/RF and nested-entry
+handling. A wrong new physical-write-count assertion is replaced by exact
+frame/guard-byte proof; zero guest writes remains strict on AC. Both widths
+pass four-test cohorts. No blanket AC exemption or framework is introduced;
+remaining IRQ/failure/nesting and final S6 qualification stay open.
+
+S6 adds 96 VME provider failures at six TSS/frame/IVT stages (+101 test
+lines, no production edit). Each failed transfer is attempted once, full CPU
+state rolls back, and only accepted stack prefixes remain without replay.
+Both widths pass three-test cohorts. The finite remaining R1--R7 qualification
+inventory is explicit in evidence, retaining all admitted feature/exception
+requirements and final release duties. S7--S10 are not narrowed or discharged.
+
+S6 refines R1/R6 direct forms: 512 normal CR4 and 1,152 LOCK/privilege
+rejections plus valid debugger/reset readback, with a shared complete fault
+checker (net +60 VME test lines). The original FPU LOCK table now covers
+13,056 WAIT/register/memory ESC combinations (+16/-4 test lines), including
+denied DS operands without a FPU callback. Both widths pass the final
+four-test form/Core cohort. Production remains unchanged in this phase;
+failure/priority/source review and final whole-S6 release qualification remain.
+
+S6 resolves DR4/5 through the archived Intel retrospective historical alias
+contract: three production mapping lines, 512 alias read/write forms and
+4,096 full-GPR GD cases. Both widths pass four-test related cohorts.
+R5 reuses existing exception tests (+28/-15 test, no production): 1,321
+classification decisions plus actual SX GP/PF serial/DF delivery with exact
+CR2 and frames. Initial inherited 386 expectations were inapplicable to two
+SX missing-descriptor-page cases; expectations now follow PRM 9.9.8 and the
+actual absent descriptor page, without changing production or qualifying the
+inherited 386 implementation. Both widths pass four-test cohorts. Manifests,
+Core dependencies, documentation and whitespace gates pass. Whole S6 and
+T560 remain open; no partial P, new EXE or desktop qualification is claimed.
+
+S6 reuses existing debug matrices for SX RF/TF/breakpoint/shadow/IRET proof
+(+39/-34 test lines), retains fixed SX DR6 reset bits in assertions, and
+extends existing entry-provider/external-error tests (+20/-14). Another 64
+actual NMI/INTR VME cases (+73 test lines) prove IDT routing independent of
+software redirection and VIF; full VM86 frames and physical-IF gating pass.
+Both widths pass final four-test cohorts in the original cached graphs.
+No production change or new public boundary is added in that proof phase.
+The following source reconciliation restores T559's established POPF/RF
+preservation contract: original 486 PRM and selected embedded developer manual
+exempt POPF from clearing; later generic wording is not selected-SX evidence.
+Remove S6's unsupported two-line clear and mirrored expectation; existing
+POPF RF/TF tests now include SX (16 RF/32 TF total), alongside the VME matrix.
+Remaining S6 and T560 duties are not discharged by these focused tests.
+
+S6 adds six-mode fetch proof (+20 existing test lines), 256 valid map-edge
+and 160 stack-edge VME cases. Nonzero guest ESP high bits expose a real SX
+32-bit interrupt-entry publication bug; the existing owner now loads full
+TSS ESP rather than preserving stale high bits when the target stack B bit
+is clear. Original Intel486 VM86 INT algorithm supplies the contract. No API,
+helper or state is added. Both widths pass final four-test cohorts. Same-shape
+call-gate/outer-return publishers remain explicit R2 obligations, not silently
+qualified by the IRQ case. Full S6 qualification/release is still pending.
+
+S6 reconciles original eSP notation before changing those publishers: original
+CALL/outer RET/IRET select SP or ESP by B, unlike full-ESP VM86 interrupt entry.
+SX outer returns now have direct retained-fixture proof. Another 32 call-gate
+cases expose wrong operand-width dispatch; SX now chooses width from the
+already-read gate descriptor (+3/-1 source), using the same existing handlers.
+The outer test grows +78/-9 lines without another fixture. A 512-case protected
+IRET VIF/VIP permission matrix passes with no flags production change. Both
+widths pass six final related tests. Remaining source/failure/task and complete
+S6 release obligations stay open; no partial P or new release is claimed.
+
+S6 extends existing word-task proof (+25/-6 test lines): 1,024 SX plus 48
+retained-family flag cases, including stale high bits, reserved/fixed bits,
+CR4 retention and exact outgoing word FLAGS. Another 64 NOP cases qualify
+the VIF/VIP instruction-boundary GP, while hardware routes add valid VIP
+states (+35 VME test lines). A mistaken partial-source reading briefly removed
+the mandatory boundary locally; the next Intel paragraph resolved the error
+and the original production guard was restored before delivery. Both widths
+pass seven final tests. External references are read-only, hash-pinned research,
+not imported source or proof of every malformed-map classification. Remaining
+source/entry and whole-S6 release duties are unchanged.
+
+S6 adds 320 malformed-map guard cases using the existing VME failure fixture
+(+46 test lines, zero production): direct GP delivery and no guest stack/IVT
+effects, even with competing stack or provider failure. Both widths pass seven
+related tests. Evidence explicitly separates reference-supported L2 short/bounds
+guards from a conservative low-base guard without fitted-silicon proof. Neither
+a passing test nor a reference implementation is treated as a hardware upgrade;
+remaining source/entry reconciliation and whole-S6 delivery remain open.
+
+S6 reuses the alignment table for actual same-CPL INTR/NMI, bringing it to
+256 entry cases (+25/-1 test lines). Both widths pass eight related tests.
+Actual-diff review restricts full TSS ESP publication to SX VM86 origin:
+ordinary protected entry retains original eSP/B semantics, now directly
+checked by the existing IDT fixture on 386/SX with nonzero ESP high bits
+(+18/-14 test lines). Source state/API ownership is unchanged. Whole dual-width
+repository units are started as a checkpoint, not prematurely counted as
+passed or as the complete S6/release exit.
+
+S6 source reconciliation removes the unsupported blanket low-I/O-base guard
+(-2 production lines), retaining one selected-byte offset/limit path and
+explicit L2 malformed-input arithmetic. Literal map edges, invalid cached-TSS
+shutdown paths, outer IRET virtual-flag permissions and CPL0 VM86-return frames
+add actual-path proof. Full writer/Core-mode review reconciles R1--R6; exact
+fitted silicon is not guessed. Final CPU production is +199/-56.
+
+Specialized gates reject misplaced private CPU binding in the public FPU
+fixture; its complete admission contents are restored and actual SX proof
+moves into the existing internal Executor test, without gate relaxation or
+new API/file/registration. A separate stale Jcc observation assertion left
+behind by S5 is updated +2/-1 while preserving the early inspect return and
+all other checks. First failures and their corrections remain in evidence.
+
+The final ownership snapshot passes 602/602 whole units per width and both
+complete specialized aggregates. All eight profile/width integration groups
+pass and eight verified stripped 0560 PC EXEs are deployed; original graphs
+are restored to default. Public-six, MyNES and owner INI/media/ROM/snapshot
+inputs are unchanged. [S6 delivery evidence](../etc/evidence/t560-s6-feature-exceptions.md#final-implementation-delivery-candidate)
+contains counts, terminal logs, source/model limits and final artifact hashes.
+This is the complete implementation candidate pending pushed-P review; S6
+acceptance and later S7--S10 completion are not inferred from these results.

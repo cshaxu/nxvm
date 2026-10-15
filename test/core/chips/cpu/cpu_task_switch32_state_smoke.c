@@ -740,19 +740,25 @@ static lib_bool task32_test_completion_flags(void)
     static const task32_case cases[] = {TASK32_DIRECT, TASK32_NESTED_CALL,
         TASK32_NESTED_GATE_CALL, TASK32_GATE_JMP, TASK32_NESTED_CALL};
     lib_size index;
-    lib_u8 bits, step;
+    lib_u16 bits;
+    lib_u8 step;
     lib_u32 count = 0u, failures = 0u;
 
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80386;
          profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile)
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
-    for (bits = 0u; bits < (profile == CORE_MACHINE_CPU_PROFILE_80486SX ? 64u : 16u); ++bits) {
+    for (bits = 0u; bits < (profile == CORE_MACHINE_CPU_PROFILE_80486SX ? 512u : 16u); ++bits) {
         cpu_instruction_fixture fixture;
-        const lib_u32 incoming = 2u | ((bits & 4u) ? VCPU_EFLAGS_RF : 0u) |
+        const lib_u32 incoming = ((bits & 256u) ? 0xffc08028u : 2u) |
+            ((bits & 4u) ? VCPU_EFLAGS_RF : 0u) |
             ((bits & 8u) ? VCPU_EFLAGS_TF : 0u) |
             ((bits & 16u) ? VCPU_EFLAGS_AC : 0u) |
-            ((bits & 32u) ? VCPU_EFLAGS_ID : 0u);
-        const lib_u32 expected = incoming |
+            ((bits & 32u) ? VCPU_EFLAGS_ID : 0u) |
+            ((bits & 64u) ? VCPU_EFLAGS_VIF : 0u) |
+            ((bits & 128u) ? VCPU_EFLAGS_VIP : 0u);
+        const lib_u32 expected =
+            (profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+                (incoming & 0x003f7fd5u) | 2u : incoming) |
             (index == 1u || index == 2u || index == 4u ? VCPU_EFLAGS_NT : 0u);
         const lib_u32 cr3 = 0x1000u |
             (profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
@@ -778,7 +784,11 @@ static lib_bool task32_test_completion_flags(void)
         fixture.cpu.data.eflags = 2u | ((bits & 1u) ? VCPU_EFLAGS_RF : 0u) |
             ((bits & 2u) ? VCPU_EFLAGS_TF : 0u) |
             (profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
-                (VCPU_EFLAGS_AC | VCPU_EFLAGS_ID) & ~incoming : 0u);
+                (VCPU_EFLAGS_AC | VCPU_EFLAGS_ID |
+                    VCPU_EFLAGS_VIF | VCPU_EFLAGS_VIP) & ~incoming : 0u);
+        fixture.cpu.data.cr4 = profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+            VCPU_CR4_VME : 0u;
+        const lib_u32 outgoing_flags = fixture.cpu.data.eflags;
         lib_memory_copy(fixture.memory + TASK32_B_BASE + 0x24u,
             &incoming, sizeof(incoming));
         lib_memory_copy(fixture.memory + TASK32_B_BASE + 0x1cu,
@@ -789,8 +799,14 @@ static lib_bool task32_test_completion_flags(void)
             fixture.delivered_exception.valid ||
             fixture.cpu.data.tr.selector != 0x30u || fixture.cpu.data.eip != 0x100u ||
             fixture.cpu.data.cr3 != (cr3 & ~7u) ||
-            fixture.cpu.data.eflags != expected || fixture.execution.debug_trap_pending)
+            fixture.cpu.data.eflags != expected || fixture.execution.debug_trap_pending ||
+            fixture.cpu.data.cr4 != (profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+                VCPU_CR4_VME : 0u))
             ++failures;
+        lib_u32 saved_flags;
+        lib_memory_copy(&saved_flags, fixture.memory + TASK32_A_BASE + 0x24u,
+            sizeof(saved_flags));
+        if (saved_flags != outgoing_flags) ++failures;
         if (profile == CORE_MACHINE_CPU_PROFILE_80486SX)
             for (lib_u8 set = 0u; set < X86_CPU_TLB_SETS; ++set)
                 for (lib_u8 way = 0u; way < X86_CPU_TLB_WAYS; ++way)

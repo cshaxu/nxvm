@@ -314,7 +314,8 @@ static lib_bool cpu_task16_completion_flags(void)
     static const cpu_task16_case cases[] = {CPU_TASK16_DIRECT, CPU_TASK16_CALL,
         CPU_TASK16_GATE, CPU_TASK16_IDT_GATE};
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_size index, profile;
     lib_u8 old_tf, new_tf, old_rf;
@@ -323,22 +324,40 @@ static lib_bool cpu_task16_completion_flags(void)
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
     for (old_tf = 0u; old_tf < 2u; ++old_tf)
     for (new_tf = 0u; new_tf < 2u; ++new_tf)
-    for (old_rf = 0u; old_rf <= profile; ++old_rf) {
+    for (old_rf = 0u; old_rf <= (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386);
+         ++old_rf)
+    for (lib_u8 upper = 0u; upper <
+        (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80486SX ? 16u : 1u); ++upper)
+    for (lib_u8 reserved = 0u; reserved <
+        (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80486SX ? 2u : 1u); ++reserved) {
         cpu_instruction_fixture fixture;
-        const lib_u16 incoming = (lib_u16)(2u | (new_tf ? VCPU_EFLAGS_TF : 0u));
+        const lib_u16 incoming = (lib_u16)((reserved ? 0x8028u : 2u) |
+            (new_tf ? VCPU_EFLAGS_TF : 0u));
+        const lib_u32 high_flags = ((upper & 1u) ? VCPU_EFLAGS_AC : 0u) |
+            ((upper & 2u) ? VCPU_EFLAGS_ID : 0u) |
+            ((upper & 4u) ? VCPU_EFLAGS_VIF : 0u) |
+            ((upper & 8u) ? VCPU_EFLAGS_VIP : 0u);
+        lib_u16 saved_flags;
 
         cpu_task16_prepare(&fixture, profiles[profile], cases[index]);
         cpu_task16_refresh(&fixture, 1u);
         fixture.cpu.data.eflags = 2u | (old_tf ? VCPU_EFLAGS_TF : 0u) |
-            (old_rf ? VCPU_EFLAGS_RF : 0u);
+            (old_rf ? VCPU_EFLAGS_RF : 0u) | high_flags;
+        fixture.cpu.data.cr4 = profiles[profile] == CORE_MACHINE_CPU_PROFILE_80486SX ?
+            VCPU_CR4_VME : 0u;
         lib_memory_copy(fixture.memory + CPU_TASK16_B_BASE + 0x10u,
             &incoming, sizeof(incoming));
         cpu_task16_refresh(&fixture, 1u);
+        lib_memory_copy(&saved_flags, fixture.memory + CPU_TASK16_A_BASE + 0x10u,
+            sizeof(saved_flags));
         if (fixture.execution.stop_requested || fixture.fault.valid ||
             fixture.delivered_exception.valid || fixture.execution.debug_trap_pending ||
             fixture.cpu.data.tr.selector != 0x30u || fixture.cpu.data.eip != 0x100u ||
-            fixture.cpu.data.eflags != (lib_u32)(incoming |
-                (index ? VCPU_EFLAGS_NT : 0u))) return LIB_FALSE;
+            fixture.cpu.data.eflags != (lib_u32)((incoming & 0x7fd5u) | 2u |
+                (index ? VCPU_EFLAGS_NT : 0u)) ||
+            fixture.cpu.data.cr4 != (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80486SX ?
+                VCPU_CR4_VME : 0u) ||
+            saved_flags != (lib_u16)(2u | (old_tf ? VCPU_EFLAGS_TF : 0u))) return LIB_FALSE;
     }
     return LIB_TRUE;
 }

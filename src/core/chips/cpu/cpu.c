@@ -375,6 +375,11 @@ lib_status core_machine_cpu_debug_patch_registers(core_machine_cpu_execution_con
         return LIB_STATUS_INVALID_ARGUMENT;
     if (patch->mask == 0u || (patch->mask & ~valid_mask) != 0u)
         return LIB_STATUS_INVALID_ARGUMENT;
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+        (patch->mask & CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR4)) &&
+        !core_machine_cpu_cr4_value_valid(context->cpu_profile,
+            patch->values[CORE_MACHINE_DEBUG_CR4]))
+        return LIB_STATUS_INVALID_ARGUMENT;
     candidate_cpu = *context->cpu;
     candidate_context = *context;
     candidate_context.cpu = &candidate_cpu;
@@ -402,7 +407,11 @@ lib_status core_machine_cpu_debug_patch_registers(core_machine_cpu_execution_con
         case CORE_MACHINE_DEBUG_ESI: candidate_cpu.data.esi = patch->values[register_id]; break;
         case CORE_MACHINE_DEBUG_EDI: candidate_cpu.data.edi = patch->values[register_id]; break;
         case CORE_MACHINE_DEBUG_EIP: candidate_cpu.data.eip = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_EFLAGS: candidate_cpu.data.eflags = patch->values[register_id]; break;
+        case CORE_MACHINE_DEBUG_EFLAGS:
+            candidate_cpu.data.eflags = context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+                core_machine_cpu_eflags_normalize(context->cpu_profile, patch->values[register_id]) :
+                patch->values[register_id];
+            break;
         case CORE_MACHINE_DEBUG_CR0: candidate_cpu.data.cr0 = patch->values[register_id]; break;
         case CORE_MACHINE_DEBUG_CR1: candidate_cpu.data.cr1 = patch->values[register_id]; break;
         case CORE_MACHINE_DEBUG_CR2: candidate_cpu.data.cr2 = patch->values[register_id]; break;
