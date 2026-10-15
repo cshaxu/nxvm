@@ -233,7 +233,7 @@ static lib_bool cpu_signal_shadow_matrix(void)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const struct { lib_u8 code[5]; lib_u8 length; lib_bool stack; } forms[] = {
         {{0x8eu,0xc0u,0u,0u,0u},2u,LIB_FALSE},
@@ -253,7 +253,7 @@ static lib_bool cpu_signal_shadow_matrix(void)
     lib_u32 count = 0u, failures = 0u;
 
     for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
-    for (form = 0u; form < (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386 ?
+    for (form = 0u; form < (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ?
         8u : 7u); ++form)
     for (old_if = 0u; old_if < 2u; ++old_if)
     for (requests = 0u; requests < 4u; ++requests) {
@@ -349,7 +349,7 @@ static lib_bool cpu_signal_rep_boundary(void)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     const lib_u16 irq_vector[] = {0x0400u,0u};
     const lib_u8 code[] = {0xf3u,0xa4u};
@@ -375,6 +375,57 @@ static lib_bool cpu_signal_rep_boundary(void)
             state.cpu.data.cx != 2u || state.cpu.data.si != 0x501u ||
             state.cpu.data.di != 0x601u || state.memory[0x600u] != 0x5au ||
             state.memory[0x601u] != 0u) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cpu_signal_compare_boundary(void)
+{
+    const lib_u16 vector[] = {0x400u,0u};
+
+    for (lib_u8 scenario = 0u; scenario < 8u; ++scenario) {
+        const lib_bool scan = (scenario & 1u) != 0u;
+        const lib_bool repne = (scenario & 2u) != 0u;
+        const lib_bool step = (scenario & 4u) != 0u;
+        const lib_u8 code[] = {repne ? 0xf2u : 0xf3u,scan ? 0xaeu : 0xa6u};
+        const lib_u32 last_flags = 2u | VCPU_EFLAGS_IF | (step ? VCPU_EFLAGS_TF : 0u) |
+            (repne ? VCPU_EFLAGS_AF : VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF);
+        cpu_bus_fixture fixture;
+        lib_u16 frame[3];
+
+        cpu_bus_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        fixture.cpu.data.eax = 0x10u;
+        fixture.cpu.data.ecx = 3u;
+        fixture.cpu.data.esi = 0x500u;
+        fixture.cpu.data.edi = 0x600u;
+        fixture.cpu.data.eflags = 2u | VCPU_EFLAGS_IF | VCPU_EFLAGS_CF |
+            VCPU_EFLAGS_AF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF | (step ? VCPU_EFLAGS_TF : 0u);
+        lib_memory_set(fixture.memory + 0x500u, 0x10u, 3u);
+        lib_memory_set(fixture.memory + 0x600u, repne ? 0x0fu : 0x10u, 3u);
+        lib_memory_copy(fixture.memory + 0x100u, code, sizeof(code));
+        lib_memory_copy(fixture.memory + (step ? 4u : 8u), vector, sizeof(vector));
+        fixture.memory[0x400u] = 0xcfu;
+        if (!step && !core_machine_cpu_request_nmi(&fixture.execution)) return LIB_FALSE;
+        core_machine_cpu_execution_refresh(&fixture.execution);
+        lib_memory_copy(frame, fixture.memory + fixture.cpu.data.sp, sizeof(frame));
+        if (fixture.execution.stop_requested || fixture.faults ||
+            fixture.cpu.data.eip != 0x400u || fixture.cpu.data.ecx != 2u ||
+            frame[0] != 0x100u || frame[1] != 0u || frame[2] != last_flags ||
+            fixture.execution.repeat_compare_flags_valid) {
+            lib_c_printf("COMPARE-SIGNAL scenario=%u ip=%x flags=%x/%x\n",
+                scenario, fixture.cpu.data.eip, frame[2], last_flags);
+            return LIB_FALSE;
+        }
+        if (step) continue;
+        core_machine_cpu_execution_refresh(&fixture.execution);
+        if (fixture.cpu.data.eip != 0x100u || fixture.execution.repeat_compare_flags_valid)
+            return LIB_FALSE;
+        core_machine_cpu_execution_refresh(&fixture.execution);
+        if (fixture.cpu.data.ecx != 1u || !fixture.execution.repeat_compare_flags_valid ||
+            fixture.execution.repeat_compare_flags != last_flags) return LIB_FALSE;
+        core_machine_cpu_execution_refresh(&fixture.execution);
+        if (fixture.cpu.data.ecx != 0u || fixture.cpu.data.eip != 0x102u ||
+            fixture.execution.repeat_compare_flags_valid || fixture.faults) return LIB_FALSE;
     }
     return LIB_TRUE;
 }
@@ -410,6 +461,7 @@ static lib_bool cpu_signal_reset_lifetime(void)
 lib_i32 main(void)
 {
     if (!cpu_signal_sti_sequences() || !cpu_signal_rep_boundary()) return 1;
+    if (!cpu_signal_compare_boundary()) return 1;
     if (!cpu_signal_reset_lifetime()) return 1;
     if (!cpu_signal_shadow_matrix()) return 1;
     if (!cpu_signal_priority_matrix()) return 1;

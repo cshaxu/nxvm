@@ -23,8 +23,213 @@ selector behavior retain explicit L2 limits. Physical pin/PLL timing stays
 with S9 and board qualification; no fitted PC110 silicon claim is inferred.
 No manual RDP or Windows 3.1 GUI qualification is claimed.
 
-There is no active S packet between acceptance and the next admission.
-S8 full inherited semantics, S9 timing and S10 final Core admission remain
+S8 is admitted below for the complete inherited semantic inventory and its
+cohesive repairs. Source/form reconciliation precedes production edits.
+The [S8 matrix](../etc/evidence/t560-s8-inherited-semantics.md) partitions both
+opcode spaces into twenty families. Initial ALU/BCD/group-3 SX selection,
+12,288 arithmetic boundary executions and 40,000 valid-decimal cases pass
+their focused owner test on both widths. A dword carry/borrow test-oracle
+overflow is corrected with existing lib_u64. Those initial test cohorts left
+production unchanged; remaining source/form proof and complete S8 qualification
+are still open. This is not whole-C15 acceptance.
+Further S8 proof covers 4,320 multiply/divide boundary/failure executions,
+both widths' shift/rotate, extension/scan and inherited decode cohorts. An
+initial rotate failure was traced to test array-index-based timing selection;
+explicit family selection preserves every old timing assertion and passes
+the final rechecks. The [S8 evidence](../etc/evidence/t560-s8-inherited-semantics.md)
+records source-qualified undefined ranges and all initial/final outcomes.
+Stack, near/far/branch and five string-instruction owners now also execute
+their retained assertions on SX and pass focused x64/x86 tests. The S8
+evidence explicitly separates terminal-shutdown fixtures from exact-vector
+proof; remaining family/mode/failure reconciliation is still open.
+A subsequent real-IDT test exposes raw RPL leaking into selector exception
+error codes. Original-source review and same-class inventory precede 27 exact
+masking replacements at the existing instruction owner, without API/state
+changes. Precise far GP/NP, expanded port/provider-prefix proof and all 99
+CPU-owner regressions pass both widths after rebuilding 93 CPU targets each.
+This is not final S8 qualification: the eight deployed EXEs remain accepted
+S7 artifacts and must be rebuilt/qualified for the completed production batch.
+Descriptor queries, BOUND, ARPL, LSS/LFS/LGS and descriptor-system modern forms
+now replay SX with retained old-family assertions. New real-handler proofs
+cover 480 BOUND signed-range executions and 80 precise LLDT/LTR failures;
+their final six-owner cohort passes 6/6 per width. Remaining C15 disposition
+and whole/artifact qualification stay open, as detailed in the S8 evidence.
+Task/outer-return profile proof now includes SX; a fail-first word-TSS test
+also confirms that local DR7 enables incorrectly survived a 16-bit task load.
+The common task owner now selects debug clearing by CPU family rather than
+incoming TSS width, with no new API/state. Final task/return checks pass 5/5
+per width; flag-transfer/direct-flag/SETcc checks pass 3/3 per width. These
+focused checks do not complete C15 or replace the required final eight-EXE
+publication. The S8 evidence retains sources, failed reproduction and limits.
+GPR MOV/moffs/LEA/XCHG and INC/DEC now also have actual SX selection and
+expanded alias/flag-edge proof; the final focused cohort passes 6/6 per width,
+with a separate passing mode-precondition recheck. The evidence records an
+initial VM86 test-wiring correction and does not treat those initial passes
+as mode proof. Segment forms and complete C15/final release remain open.
+Segment MOV/LES/LDS and external-shadow selection now replay SX. A precise
+actual-LLDT-0 test exposes lost selector errors for unusable LDT references;
+the existing LDT descriptor reader now rejects them before generic GP(0).
+The evidence retains the initial invalid reset-derived probe and corrected
+before/after proof. All 99 CPU-owner checks pass per width after rebuilding
+93 executables each, followed by a separate passing LDTR/TR assertion check.
+No new interface/state or Shared change is involved; S8/artifacts remain open.
+Bit/IMUL/segment-stack proofs now also cover SX; the IRQ fixture uses the
+existing special-cycle callbacks required by its HLT handler. A fail-first
+observer test exposes DR4/DR5 aliases accepted by execution but rejected by
+preview. Existing metadata now owns SX alias admission; generic memory-form
+and older-family rejection remain intact. All 99 CPU-owner checks pass per
+width after rebuilding 93 targets each (11.03/6.04 s). Evidence and both Core
+manifests are updated. This is not full C15 or release qualification.
+Further reserved-form review exposes CR1/CR5--7 and C0/C1 /6 observer
+admission inconsistent with actual execution. Existing metadata branches
+now own index/extension validity and family minima, without new interfaces,
+state or executor behavior. Fail-first, an initially shadowed Group-2 fix,
+the 98/99 failed aggregate and final dual-width focused passes are retained
+in S8 evidence. Positive Group-2 lexical controls also pass separately.
+No final all-CPU, whole-repository or eight-EXE claim is inferred for this
+latest revision. Remaining C15 source/form disposition stays open.
+ASCII-adjust continuation adds actual ADD/AAA and SUB/AAS valid-digit
+proof plus base-ten AAM/AAD value/defined-flag matrices; the existing ALU
+owner passes x64/x86 in 0.28/0.24 s with no production change. Original
+Table 9-3 explicitly distinguishes reserved encodings that do not generate
+UD, so the earlier Group-2 lexical fix is only current-policy consistency
+proof, not silicon alias qualification. The S8 evidence corrects that limit
+and keeps historical encodings and invalid-BCD source dispositions open.
+The D6 SALC gap now has a source-qualified L2 repair at the existing CPU
+owner: original non-UD classification plus independently traced 486SX
+reference wiring support AL from CF, with unchanged other state. Metadata
+admits selected SX only; older policy and LOCK rejection are retained.
+The existing ALU test proves 33,792 executions. Dual-width related checks
+pass, and x64's 99 CPU-owner cases pass inside a 101/102 aggregate whose
+old board-preview assertion is then corrected/rechecked separately. Exact
+logs/grades and the remaining F1/internal-alias/BCD scope are in S8 evidence.
+No final S8 or updated-EXE qualification is claimed.
+Final x86 CPU-owner rebuild/recheck passes 99/99 in 5.82 s, separately from
+the earlier x64 combined aggregate and both widths' three-board rechecks.
+Final manifests, Types, fixture lifecycle, documentation and whitespace
+checks pass. These remain bounded S8 progress, not final C15 acceptance.
+Two more non-UD classes now have explicit L2 models: selected-SX Group-2
+/6 uses the existing SHL /4 operation and F6/F7 /1 uses TEST /0. Metadata
+is the sole lexical family owner; older execution policy is retained.
+Paired actual CPU and independent result checks cover mode/attribute/value
+dimensions; existing RMW/failure and Core preview owners include the forms.
+The final focused cohort passes 5/5 per width (3.03/0.49 s), without new
+API/state/helper/decoder. F1 subsequently gains its distinct privileged DB
+trap at the existing owner, with no new DR6 cause or state. Actual mode/gate,
+failed-entry, RF/shadow and outgoing-VM86 task proofs expose and repair the
+adjacent real-mode DB frame width, VM86 gate admission and task-plan PE guard.
+Final CPU plus three board-owner checks pass 102/102 per width (13.71/5.83 s).
+The evidence retains failed intermediate cohorts and L2 source limits.
+The subsequently reproduced incoming-VM86 task defect now reuses the existing
+real segment constructor in the two task selector owners. Actual JMP/CALL,
+task-gate and NT-IRET cases prove cache/address formation; new-task EIP/LDTR
+faults remain precise. Six-owner dual regression and final task-owner checks
+pass as separately logged in evidence. Internal encodings, BCD, whole
+qualification and releases remain open.
+The subsequent stable CPU/board-owner aggregate passes 102/102 on both
+widths (14.93/6.52 s), including all new incoming-task failure cases. Types,
+fixture lifecycle, manifests, documentation and whitespace checks pass;
+this is still bounded S8 progress, not whole-repository/artifact acceptance.
+The next reserved-form batch adds selected-SX UMOV's L2 ordinary-MOV alias
+contract by reusing four existing MOV handlers, with metadata/scanner and
+Core preview reconciliation. Register and independent memory/failure proof,
+required fetch and older/LOCK rejection pass focused dual-width cohorts.
+Primary 82 already has the correct shared byte Group-1 route; only its
+independent eight-operation proof is extended. Source limits for LOADALL,
+invalid BCD and complete/final qualification remain explicitly open.
+Final stable UMOV/82 CPU plus board-owner regression passes 102/102 per
+width in 12.33/6.35 s after complete owner rebuilds. Both Types gates,
+manifests, fixture lifecycle, documentation and whitespace checks pass.
+No partial implementation commit or updated-artifact acceptance is claimed.
+Historical LOADALL rejection now has a source-qualified L2 normal/SMM
+boundary, separate from unmodeled ICE hardware; old A-step slots retain
+selected-SX UD. Actual handlers and frames pass both widths. Invalid BCD
+inputs expose AAA/AAS AX carry/borrow and DAS original-flag defects; existing
+SX handlers are corrected at explicit retrospective L2 grade, preserving
+old-family behavior and undefined flags. Complete AX/AL input, all radix,
+real zero-divisor and LOCK-priority proof passes. The stable production
+CPU/board aggregate passes 102/102 (14.21/6.42 s); the final test-only LOCK
+addition passes separate owner rechecks. Finite C15 reconciliation and
+whole-S8 qualification/eight artifacts remain open, as detailed in evidence.
+The following descriptor-query audit removes erroneous Present requirements
+from LAR/LSL/VERR/VERW and rejects LAR interrupt/trap gate types per the
+original tables. Actual segment/task load checks remain intact. Two existing
+test owners add 65,536 type/presence/privilege/form executions. An initial
+101/102 aggregate on each width exposes four stale non-present expectations
+in the guest-bootstrap selector test; the corrected complete cohorts pass
+102/102 per width (3.02/3.01 s). Evidence retains initial failures and source
+limits. No Shared, MyNES, interface, persistent-state or artifact change is
+introduced; finite C15 and whole-S8 release qualification remain open.
+F11 now has complete condition truth tables, counter/size/wrap and byte-
+register alias proof on actual SX, replacing weaker modern witness loops.
+Required-suffix and target-fetch owners also replay SX while preserving
+all original 286/386 timing assertions; SX still explicitly lacks allocated
+timing until S9. Final CPU/board cohorts pass 102/102 per width (2.89/3.14 s).
+The evidence records 326,656 direct matrix executions and the corrected
+test-only transfer build mistakes. This is functional F11 reconciliation,
+not complete C15, whole-repository or updated-artifact qualification.
+F13 now adds 9,072 actual page-fault/guest-PTE-repair/IRET/recovery cases
+and 9,072 zero-count controls across all five string operations. REP IRQ
+boundary proof now also selects SX. Final CPU/board snapshots pass 102/102
+per width; the last zero-count-only addition passes separate 2/2 owner
+rechecks. Evidence retains the corrected test-only backward-pointer mistake.
+The compare-fault EFLAGS question is now resolved as an explicitly bounded
+retrospective L2 model: selected SX restores initial instruction flags on
+GP/SS/PF/AC, while retained 386 policy stays unchanged. Two transient private
+CPU fields carry that image through repeat iterations; no public interface,
+second executor or timing-state dependency is added. Actual PF recovery now
+asserts every saved flag. Additional real/protected GP/SS/AC, wait/pause,
+debug patch, reset/entry, NMI/step and SMM tests cover its lifetime boundaries.
+Both complete CPU/board snapshots pass 102/102 (14.58/6.85 s); the final
+test-only real-mode expansion then passes separate 5/5 owner rechecks per
+width (0.29/0.34 s). These are not full repository or artifact qualification.
+Shared-six, MyNES, owner inputs and accepted S7 EXEs remain unchanged.
+The next F17 selection sweep adds actual SX execution to PUSHF/POPF, real
+IRET and software INT owners, preserving old-family and precise assertion
+boundaries. Protected POPF includes 2,048 SX privilege/flag combinations;
+software INT now also inspects its real saved frame. Final three-owner
+rebuild/rechecks pass 3/3 per width (0.29/0.27 s); no production change is
+needed. Evidence records source, actual diff and the remaining finite-C15
+and final repository/release obligations.
+The final CPU/board cohort after those test changes passes 102/102 per width
+(2.92/3.17 s). Remaining descriptor/address/segment/VM86 owner reconciliation
+is explicitly retained; this is not whole-Core or full repository acceptance.
+The next F16 continuation replays descriptor-table/task-register forms on SX,
+checks successful table stores at CPL0--3/VM86, and adds 128 actual privileged
+load exception entries across both modern profiles. Original-versus-later
+source qualifications remain explicit; no production change is needed.
+Final four-owner checks pass 4/4 per width, followed by 102/102 CPU/board
+cohorts (2.85/2.99 s). Remaining address/segment/prefix/VM86 disposition and
+complete repository/integration/artifact qualification stay open in S8.
+Operand-span, protected addressing and eleven prefix groups now also replay
+SX at their existing owners, retaining old-family behavior and failure proof.
+The span owner includes 1,025 SX boundary/provider scenarios; protected address
+tests still use real guest mode-entry instructions. Legacy prefix rejection
+runs once. Final CPU/board cohorts pass 102/102 per width (2.93/3.13 s), with
+no further production change. Evidence records actual scope and source/model
+limits. The remaining twelve-owner investigation index is not a defect count;
+finite C15 and whole-repository/integration/eight-artifact qualification stay
+open. Shared-six, MyNES, owner inputs and deployed S7 artifacts are untouched.
+VM86 entry/return and protected data owners now also execute SX, including
+the real IRQ rebind, inner-stack frames, paging and RF cases. An incomplete
+IRET frame must demonstrate actual shutdown and unchanged stack, not merely
+unchanged CPU. A test-oracle error that confused DB diagnostic cause with a
+GP stack error is corrected without production changes. Final four-owner
+checks pass 4/4 per width; full CPU/board cohorts pass 102/102 (3.09/3.39 s).
+Evidence retains the failed intermediate run and explicit qualification
+limits. Remaining source/owner disposition, complete C15 and final S8
+repository/integration/artifact qualification are still open.
+The remaining owner investigation now has explicit dispositions rather than
+blind enum widening. Actual SX reset/observer/debug snapshots and segment
+guest-bootstrap groups pass; an uncovered Group-1 dword-immediate form is
+added at the existing ALU owner with both CF inputs. 286 and old timing rules
+remain distinct. The expanded CPU/board selection, now explicitly including
+the separately registered context case, passes 103/103 per width (2.87/3.28 s).
+No production change is needed in this continuation. The evidence maps the
+five retained old-model witness files to their actual selected-SX owners;
+final F01--F20/C15 reconciliation and full S8 qualification/publication remain
+open, without Shared, MyNES, input or deployed-artifact changes.
+S9 timing and S10 final Core admission remain
 mandatory. Production 486 construction stays closed. The persistent complete
 486SX implementation objective is not yet achieved.
 
@@ -59,6 +264,7 @@ records the exact boundary. Do not ask again for equivalent version updates.
 
 | Task | Progress |
 | --- | --- |
+| T560 S8 | Admitted: reconcile the entire C15 inherited opcode/form universe against original manuals and actual dispatch/metadata/preview/execution; establish the complete gap matrix before grouped repairs. No S8 qualification or production admission yet. |
 | T560 S7 | Accepted and closed: 0059bfd51. C11/C12 source-qualified SMM/RSM and system/power proof; final 604/604 units per width plus fixture-only rechecks, both specialized aggregates, eight passing integration groups and eight verified deployed 0560 PC EXEs. Exact timing, full inherited semantics and final admission remain S8--S10. [Evidence](../etc/evidence/t560-s7-smm-system.md). |
 | T560 S6 | Accepted and closed: 926bfe185. Selected feature/VME/debug/exception/SX-FPU and carried C05 entry proof at documented grades; no new public API or persistent field. Final 602/602 units per width, both complete specialized aggregates, eight passing integration groups and eight verified deployed 0560 PC EXEs. S7--S10 and production admission remain open. [Evidence](../etc/evidence/t560-s6-feature-exceptions.md). |
 | T560 S5 | Accepted and closed: 33cb2efe1. Actual cache/TR/operations/snoop/page-control, second-read/locked A/D and implicit/explicit LOCK proof; 601/601 full units per width, eight passing integration groups and eight verified deployed 0560 PC EXEs. [Evidence](../etc/evidence/t560-s5-cache-bus.md). Remaining CPU obligations stay in T560. |
@@ -78,6 +284,51 @@ still owns real cache/TLB/test commands, reset/control, AC/VME/SMM and timing.
 Production 486 admission stays closed. The persistent full implementation
 objective is not complete.
 
+
+## Active Packet - T560 S8 Inherited Instruction Semantics
+
+The final stack audit has additionally repaired a real SX SP=1 explicit-PUSH
+shutdown omission, proved first against a valid VM86 SS receiver; 34 selected
+PUSH cases fail before the one-predicate repair. Both profiles retain a working
+SS receiver control, and focused stack/inventory checks now pass 5/5 per width.
+The first full unit attempt is 601/605 on x64 (four inventory registrations,
+not a timeout); x86 was not run by that fail-first aggregate. Every changed
+decoder mask is now reconciled with source-qualified Group-2/reserved-CR rules,
+and both duplicated runner targets are explicitly rebuilt. The corrected
+full rebuild/unit execution now passes 605/605 on each width, 258.33/81.26 s;
+this precedes the final unary/reserved-form continuation and does not qualify
+that later snapshot. Its FE operand-read fix and final source/form candidate
+now pass 103/103 CPU/board checks per width. Complete delivery qualification
+is in progress, including a one-token correction in the existing NXVM LSL
+source gate for its renamed parameterized test. S8/C15 remain active; any
+newly built worktree EXEs are intermediate until the full eight are qualified.
+Final qualification is now complete: 605/605 whole units per width,
+251.65/67.99 s, both complete specialized aggregates, all eight profile/width
+integration groups (48 rows per width without duplicated MyNES runs), two
+restored-default identity checks and eight PE/hash-verified 0560 artifacts.
+No test row is skipped. Final C15 functional dispositions and source/model
+limits are recorded in the S8 evidence. The executor is ready for its complete
+P and coordinator actual-change review; S8/C15 are not yet marked accepted.
+Manual RDP/Windows GUI qualification and S9/S10 remain outside these results.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T560 S8 after accepted S7 implementation 0059bfd51 and acceptance 8b6d48888; next unused S, one-session coordinator/executor roles. |
+| Admission And Approval | Owner requires complete 486SX semantics and permanently authorizes sequential Core/chips/x86 work, necessary Core contracts and accuracy upgrades. Target NXVM only; Shared-six, MyNES and owner inputs excluded. |
+| Objective | Consume the complete C15 batch: reconcile both 256-entry opcode spaces, all group extensions and inherited arithmetic/BCD, multiply/divide, shifts/rotates, bit/scan, data/stack, near/far control, strings/I/O, descriptor/task, flags/interrupt and system forms. Repair confirmed classes at their existing CPU owner with real execution and retained-family proof. |
+| Non-goals | No second decoder/executor, speculative rewrite, per-BIOS checkpoint repair, unrelated x87, PC110 board/App, timing-model rewrite, production SX construction or Shared/MyNES changes. C16 timing and C17 admission remain S9/S10. |
+| Reference Baseline | Clean 8b6d48888 after S7 acceptance. Original pinned Intel 1992 PRM instruction/compatibility/exception chapters, selected SX source applicability, accepted T559 delta and T560 S2--S7 direct evidence; source identities in T558/S1. |
+| Candidate Proposal | [Complete CPU proposal](../proposals/m5-pc110-486-system.md), C15/form universe in the [convergence ledger](../etc/evidence/t560-s1-cpu-convergence.md), and [T559 inventory](../etc/evidence/t559-s1-instruction-inventory.md). |
+| Files And ABI Surface | Existing src/core/chips/cpu instruction/decode/preview/state owners and actual Core connection only when required; corresponding test/core owner cases/registration/manifests, existing NXVM LSL source-gate token, NXVM evidence and eight affected 0560 EXEs. Preliminary tests +400--900/-0--100; production count and exact file set refined from complete matrix before edits, not a quota. The source-qualified compare-fault repair may retain initial EFLAGS and validity across iterations at the existing CPU owner; no second repeat executor or timing-state dependency. No planned Shared/public raw-state API or new persistent owner. |
+| Applicable Rules | NXVM guide/Task Reading Set; Execution coverage, complete P, actual-change acceptance and artifact rules; shared Architecture/Coding/Document and NXVM architecture/layout/source policy; local architecture-governance and coding-governance skills; PDF skill for original instruction tables. Preserve original handler style and older CPU semantics. |
+| Verification | Enumerate actual dispatch, metadata, preview and profile predicates; classify documented/reserved/undefined forms against primary sources. Reconcile 8/16/32-bit operands, code/address sizes, memory/register, aliases, prefixes/LOCK/REP, real/protected CPL0--3/VM86, flags/count/divide boundaries, required fetch/access failures and restart/publication. Reuse named proof only for unchanged mechanisms; add actual CPU/Core tests for missing classes. Stable closure requires whole x64/x86 units, complete applicable static/specialized gates and affected integration/release qualification using the original Ninja/ccache graphs. |
+| Expected Markers | Complete finite C15 matrix with source, handler and regression owner for every disposition; no undocumented success-only stub, mismatched decoder/preview admission or lost accepted side effect. No complete claim from coverage counts, successful boot or a first terminal alone. |
+| Asset Needs | Read existing original manuals and lawful build inputs only; ignored research/probe outputs remain under build. Preserve all INI/ROM/media/snapshot and MyNES inputs. Rebuild/deploy eight 0560 PC EXEs if executable inputs change; test/document-only work retains qualified hashes. |
+| Reporting Requirements | Before production edits report full class inventory, confirmed gaps, owner design, exact files and refined +/- estimate. Report grouped proof, similar-issue sweep, actual source/test counts, complete terminal verification and artifact identities; do not commit a partial implementation P. |
+| Stop Conditions | Required Shared change, essential source contradiction, undeclared consumer, accuracy downgrade or owner-input mutation. Record exact unresolved fact and continue independent in-scope reconciliation; do not invent silicon semantics or silently exclude an applicable form. |
+| Exit Criteria | Every C15 member has a source-qualified disposition and direct actual-owner proof or explicit architecturally undefined/non-applicable reason; all confirmed applicable defects repaired, full dual-width qualification and affected artifacts complete, complete P pushed and actual diff accepted. S9/S10 and T560 remain open. |
+| Original Owner Request | Implement complete 486SX instruction semantics under governance/code-quality rules; automatically continue bounded Core batches, group related instructions and reuse cached builds instead of per-opcode full runs. |
+| Similar-Issue Sweep | All dispatch tables/group extensions, metadata/preview handlers, CPU profile comparisons, operand/flags/publication helpers and retained instruction tests. Classify each hit against the actual contract; include old-family distinctions and undefined encodings rather than mechanically widening 386 predicates. |
 
 ### Accepted Delivery — M5 T559 S6 CPUID And Flags
 

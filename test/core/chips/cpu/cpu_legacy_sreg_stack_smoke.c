@@ -2,7 +2,7 @@
 #include "lib/types/file.h"
 
 /* REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
-static lib_i32 legacy_sreg_stack_test_lock(void)
+static lib_i32 legacy_sreg_stack_test_lock(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 opcodes[] = {0x06u,0x07u,0x0eu,0x16u,0x17u,0x1eu,0x1fu};
     lib_u8 index;
@@ -16,7 +16,7 @@ static lib_i32 legacy_sreg_stack_test_lock(void)
         lib_u32 observed = 0u;
         lib_i32 failed;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, cpu_profile);
         failed = 0;
         if (!failed)
         {
@@ -123,7 +123,8 @@ static lib_i32 legacy_sreg_stack_test_defaults(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 push_ops[] = {0x06u,0x0eu,0x16u,0x1eu};
     static const lib_u8 pop_ops[] = {0x07u,0x17u,0x1fu};
@@ -202,7 +203,7 @@ static lib_i32 legacy_sreg_stack_test_defaults(void)
     return 1;
 }
 
-static lib_i32 legacy_sreg_stack_test_attributes(void)
+static lib_i32 legacy_sreg_stack_test_attributes(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 prefixes[][2] = {
         {0x66u, 0u}, {0x67u, 0u}, {0x66u, 0x67u}
@@ -233,7 +234,7 @@ static lib_i32 legacy_sreg_stack_test_attributes(void)
             lib_u8 width = attribute == 0u || attribute == 2u ? 4u : 2u;
             lib_u32 expected_esp = 0x12348000u - width;
             lib_i32 failed = 0;
-            cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+            cpu_instruction_prepare(&state, cpu_profile);
 
             if (!failed)
             {
@@ -276,7 +277,7 @@ static lib_i32 legacy_sreg_stack_test_attributes(void)
             lib_u8 width = attribute == 0u || attribute == 2u ? 4u : 2u;
             lib_u16 selector = (lib_u16)(0x1110u + attribute * 3u + form);
             lib_i32 failed = 0;
-            cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+            cpu_instruction_prepare(&state, cpu_profile);
 
             if (!failed)
             {
@@ -362,7 +363,7 @@ static lib_i32 legacy_sreg_stack_boot_protected(cpu_instruction_fixture *state)
     return state->cpu.data.cs.selector == 8u && state->cpu.data.eip == 0u;
 }
 
-static lib_i32 legacy_sreg_stack_test_protected_pop(void)
+static lib_i32 legacy_sreg_stack_test_protected_pop(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 opcodes[] = {0x07u,0x17u,0x1fu};
     lib_u8 form;
@@ -377,7 +378,7 @@ static lib_i32 legacy_sreg_stack_test_protected_pop(void)
         lib_u16 selector = 0x20u;
         lib_u8 access = 0u;
         lib_i32 failed = 0;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, cpu_profile);
 
         if (!failed)
             failed |= !legacy_sreg_stack_boot_protected(&state);
@@ -405,7 +406,7 @@ static lib_i32 legacy_sreg_stack_test_protected_pop(void)
     return 1;
 }
 
-static lib_i32 legacy_sreg_stack_test_protected_null(void)
+static lib_i32 legacy_sreg_stack_test_protected_null(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 opcodes[] = {0x07u, 0x1fu};
     lib_u8 form;
@@ -419,7 +420,7 @@ static lib_i32 legacy_sreg_stack_test_protected_null(void)
         lib_status status;
         lib_u16 selector = 0u;
         lib_i32 failed = 0;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, cpu_profile);
 
         if (!failed)
             failed |= !legacy_sreg_stack_boot_protected(&state);
@@ -446,12 +447,12 @@ static lib_i32 legacy_sreg_stack_test_protected_null(void)
     return 1;
 }
 
-static lib_i32 legacy_sreg_stack_test_protected_ss_null(void)
+static lib_i32 legacy_sreg_stack_test_protected_ss_null(core_machine_cpu_profile cpu_profile)
 {
     cpu_instruction_fixture state;
     t_cpu before,after; lib_status status;
     lib_u16 selector=0u; lib_i32 failed = 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, cpu_profile);
     if(!failed) failed|=!legacy_sreg_stack_boot_protected(&state);
     if(!failed) {
         failed|=cpu_instruction_write(&state, 0xc000u, &selector, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u)!=LIB_STATUS_OK ||
@@ -468,7 +469,7 @@ static lib_i32 legacy_sreg_stack_test_protected_ss_null(void)
     return !failed;
 }
 
-static lib_i32 legacy_sreg_stack_test_protected_rejects(void)
+static lib_i32 legacy_sreg_stack_test_protected_rejects(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 opcodes[] = {0x07u,0x17u,0x1fu};
     static const lib_u16 selectors[] = {0x28u,0x23u,0x30u};
@@ -478,7 +479,7 @@ static lib_i32 legacy_sreg_stack_test_protected_rejects(void)
         t_cpu before,after; lib_status status;
         lib_u16 selector=selectors[kind], observed=0u;
         lib_i32 failed = 0;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, cpu_profile);
         if(!failed) failed|=!legacy_sreg_stack_boot_protected(&state);
         if(!failed) {
             failed|=cpu_instruction_write(&state, 0xc000u, &selector, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u)!=LIB_STATUS_OK ||
@@ -498,7 +499,7 @@ static lib_i32 legacy_sreg_stack_test_protected_rejects(void)
     }return 1;
 }
 
-static lib_i32 legacy_sreg_stack_test_protected_stack_limits(void)
+static lib_i32 legacy_sreg_stack_test_protected_stack_limits(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 opcodes[] = {0x06u,0x07u};
     lib_u8 form;
@@ -507,7 +508,7 @@ static lib_i32 legacy_sreg_stack_test_protected_stack_limits(void)
         t_cpu before,after; lib_status status;
         lib_u16 image=0xbe5au; lib_u32 candidate=form==0u?0xbffeu:0xc000u;
         lib_i32 failed = 0;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, cpu_profile);
         if(!failed) failed|=!legacy_sreg_stack_boot_protected(&state);
         if(!failed) {
             state.cpu.data.ss.limit=form==0u?0xffffu:0x7fffu;
@@ -530,13 +531,13 @@ static lib_i32 legacy_sreg_stack_test_protected_stack_limits(void)
     return 1;
 }
 
-static lib_i32 legacy_sreg_stack_test_fs_gs(void)
+static lib_i32 legacy_sreg_stack_test_fs_gs(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 opcodes[] = {0xa0u,0xa1u,0xa8u,0xa9u};
     lib_u8 form;
     for (form = 0u; form != sizeof(opcodes); ++form) {
         cpu_instruction_fixture state;   t_cpu before, after; lib_u16 image = (lib_u16)(0x5500u + form); lib_i32 failed = 0;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, cpu_profile);
         if (!failed) { state.cpu.data.esp=0x8000u; state.cpu.data.fs.selector=0x1111u; state.cpu.data.gs.selector=0x2222u; if (form & 1u) failed |= cpu_instruction_write(&state, 0x8000u, &image, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u)!=LIB_STATUS_OK; failed |= cpu_instruction_write(&state, 0u, (lib_u8[]){0x0fu,opcodes[form]}, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u)!=LIB_STATUS_OK; before=state.cpu; failed |= (core_machine_cpu_execution_refresh(&state.execution), state.execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK)!=LIB_STATUS_OK || state.execution.stop_requested; after=state.cpu; failed |= state.fault.valid || after.data.eip!=2u || after.data.eflags!=before.data.eflags || !legacy_sreg_stack_gprs_same_except_esp(&before,&after); if (!(form&1u)) { lib_u16 observed=0u; failed |= after.data.esp!=0x7ffeu || cpu_instruction_read(&state, 0x7ffeu, &observed, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u)!=LIB_STATUS_OK || observed!=(form==0u?0x1111u:0x2222u); } else failed |= after.data.esp!=0x8002u || (form==1u ? after.data.fs.selector : after.data.gs.selector)!=image; }  if (failed) return 0;
     } return 1;
 }
@@ -580,7 +581,7 @@ static lib_status legacy_sreg_irq_acknowledge(void *opaque, lib_u8 *vector)
 
 /* The CPU receiver retains every original private-cache predicate. The board
  * receiver separately proves real PIC acknowledgement and the same IRQ frame. */
-static lib_i32 legacy_sreg_stack_test_irq(void)
+static lib_i32 legacy_sreg_stack_test_irq(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 codes[][3]={{0x17u,0x90u},{0x07u,0x90u},{0x1fu,0x90u},{0x06u,0x90u}};
     static const lib_u8 frame[] = {2u,1u,1u,1u};
@@ -588,7 +589,9 @@ static lib_i32 legacy_sreg_stack_test_irq(void)
         .read_memory = legacy_sreg_irq_read,
         .write_memory = legacy_sreg_irq_write,
         .interrupt_pending = legacy_sreg_irq_pending,
-        .acknowledge_interrupt = legacy_sreg_irq_acknowledge
+        .acknowledge_interrupt = legacy_sreg_irq_acknowledge,
+        .special_cycle = cpu_instruction_special_cycle,
+        .cancel_special_cycle = cpu_instruction_cancel_special_cycle
     };
     lib_u8 form;
     for (form = 0u; form != 4u; ++form) {
@@ -597,7 +600,7 @@ static lib_i32 legacy_sreg_stack_test_irq(void)
         t_cpu before, after;
         lib_u16 ip = 0u, image = 0u;
         lib_i32 failed;
-        cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(state, cpu_profile);
         fixture.pending = LIB_TRUE;
         fixture.acknowledgements = 0u;
         state->execution.bus = &bus;
@@ -625,59 +628,74 @@ static lib_i32 legacy_sreg_stack_test_irq(void)
             !legacy_sreg_stack_non_target_sregs_same(&before, &after, form == 0u ? 1u : form == 1u ? 0u : 2u) ||
             !legacy_sreg_stack_real_cache(legacy_sreg_stack_target(&after,
             form == 0u ? 1u : form == 1u ? 0u : 2u), 0u, form == 0u ? 1u : form == 1u ? 0u : 2u)));
-        if (failed) return 0;
+        if (failed) {
+            lib_c_fprintf(lib_c_stderr,
+                "segment IRQ profile=%u form=%u stop=%u fault=%x/%x ip=%x sp=%x saved=%x ack=%u pending=%u\n",
+                (unsigned)cpu_profile, form, state->execution.stop_requested,
+                state->fault.exception_mask, state->fault.exception_code,
+                after.data.eip, after.data.esp, ip, fixture.acknowledgements,
+                fixture.pending);
+            return 0;
+        }
     }
     return 1;
 }
 
 lib_i32 main(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
     if (!legacy_sreg_stack_test_defaults())
     {
         lib_c_printf("LEGACY-SREG-STACK stage=defaults\n");
         return 1;
     }
-    if (!legacy_sreg_stack_test_attributes())
-    {
-        lib_c_printf("LEGACY-SREG-STACK stage=attributes\n");
-        return 1;
-    }
-    if (!legacy_sreg_stack_test_protected_pop())
-    {
-        lib_c_printf("LEGACY-SREG-STACK stage=protected-pop\n");
-        return 1;
-    }
-    if (!legacy_sreg_stack_test_protected_null())
-    {
-        lib_c_printf("LEGACY-SREG-STACK stage=protected-null\n");
-        return 1;
-    }
-    if (!legacy_sreg_stack_test_protected_ss_null())
-    {
-        lib_c_printf("LEGACY-SREG-STACK stage=protected-ss-null\n");
-        return 1;
-    }
-    if (!legacy_sreg_stack_test_protected_rejects())
-    {
-        lib_c_printf("LEGACY-SREG-STACK stage=protected-rejects\n");
-        return 1;
-    }
-    if (!legacy_sreg_stack_test_protected_stack_limits())
-    {
-        lib_c_printf("LEGACY-SREG-STACK stage=protected-stack-limits\n");
-        return 1;
-    }
-    if (!legacy_sreg_stack_test_irq())
-    {
-        lib_c_printf("LEGACY-SREG-STACK stage=irq\n");
-        return 1;
-    }
-    if (!legacy_sreg_stack_test_fs_gs())
-        return 1;
-    if (!legacy_sreg_stack_test_lock())
-    {
-        lib_c_printf("LEGACY-SREG-STACK stage=lock\n");
-        return 1;
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
+        ++index) {
+        if (!legacy_sreg_stack_test_attributes(profiles[index]))
+        {
+            lib_c_printf("LEGACY-SREG-STACK stage=attributes\n");
+            return 1;
+        }
+        if (!legacy_sreg_stack_test_protected_pop(profiles[index]))
+        {
+            lib_c_printf("LEGACY-SREG-STACK stage=protected-pop\n");
+            return 1;
+        }
+        if (!legacy_sreg_stack_test_protected_null(profiles[index]))
+        {
+            lib_c_printf("LEGACY-SREG-STACK stage=protected-null\n");
+            return 1;
+        }
+        if (!legacy_sreg_stack_test_protected_ss_null(profiles[index]))
+        {
+            lib_c_printf("LEGACY-SREG-STACK stage=protected-ss-null\n");
+            return 1;
+        }
+        if (!legacy_sreg_stack_test_protected_rejects(profiles[index]))
+        {
+            lib_c_printf("LEGACY-SREG-STACK stage=protected-rejects\n");
+            return 1;
+        }
+        if (!legacy_sreg_stack_test_protected_stack_limits(profiles[index]))
+        {
+            lib_c_printf("LEGACY-SREG-STACK stage=protected-stack-limits\n");
+            return 1;
+        }
+        if (!legacy_sreg_stack_test_irq(profiles[index]))
+        {
+            lib_c_printf("LEGACY-SREG-STACK stage=irq\n");
+            return 1;
+        }
+        if (!legacy_sreg_stack_test_fs_gs(profiles[index]))
+            return 1;
+        if (!legacy_sreg_stack_test_lock(profiles[index]))
+        {
+            lib_c_printf("LEGACY-SREG-STACK stage=lock\n");
+            return 1;
+        }
     }
     lib_c_printf("CPU-LEGACY-SREG-STACK:OK\n");
     lib_c_printf("SREG-PUSH-POP-PROFILES:OK\n");

@@ -155,22 +155,26 @@ static lib_i32 stos_test_rejections(void)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 form, profile;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]); ++profile)
         for (form = 0u; form != 3u; ++form)
             if (!stos_expect_ud(legacy[profile], codes[form], bytes[form]))
                 return 0;
-    for (form = 3u; form != sizeof(bytes); ++form)
-        if (!stos_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
-            codes[form], bytes[form])) return 0;
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile)
+        for (form = 3u; form != sizeof(bytes); ++form)
+            if (!stos_expect_ud(modern[profile],
+                codes[form], bytes[form])) return 0;
     return 1;
 }
 
 static void stos_prepare_protected(cpu_instruction_fixture *state,
-    lib_u32 es_limit)
+    core_machine_cpu_profile profile, lib_u32 es_limit)
 {
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     stos_seed(state);
     state->cpu.data.cr0 |= VCPU_CR0_PE;
     state->cpu.data.cs.flagValid = LIB_TRUE;
@@ -194,7 +198,7 @@ static void stos_prepare_protected(cpu_instruction_fixture *state,
     state->cpu.data.ss.seg.data.writable = LIB_TRUE;
 }
 
-static lib_i32 stos_test_protected(void)
+static lib_i32 stos_test_protected(core_machine_cpu_profile profile)
 {
     static const lib_u8 codes[][2] = {{0xaau, 0u}, {0x66u, 0xabu}};
     static const lib_u8 rep[] = {0xf3u, 0xaau};
@@ -206,7 +210,7 @@ static lib_i32 stos_test_protected(void)
         lib_u32 image = 0xa5a5a5a5u;
         lib_u8 width = form == 0u ? 1u : 4u;
 
-        stos_prepare_protected(&state, 0x0fu);
+        stos_prepare_protected(&state, profile, 0x0fu);
         state.cpu.data.edi = 0x10u;
         lib_memory_copy(state.memory + 0x3010u, &image, width);
         lib_memory_copy(state.memory + 0x2000u, codes[form],
@@ -228,7 +232,7 @@ static lib_i32 stos_test_protected(void)
         t_cpu before, after;
         static const lib_u8 first = 0xa5u, second = 0xa5u;
 
-        stos_prepare_protected(&state, 0x10u);
+        stos_prepare_protected(&state, profile, 0x10u);
         state.cpu.data.edi = 0x10u;
         state.cpu.data.ecx = 0x11220003u;
         state.memory[0x3010u] = first;
@@ -261,7 +265,8 @@ lib_i32 main(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 aa = 0xaau, ab = 0xabu;
     static const lib_u8 dword[] = {0x66u, 0xabu};
@@ -273,6 +278,9 @@ lib_i32 main(void)
     static const lib_u8 repd[] = {0xf3u, 0x66u, 0xabu};
     static const lib_u8 rep67[] = {0xf3u, 0x67u, 0xaau};
     static const lib_u8 rep66_67[] = {0xf3u, 0x66u, 0x67u, 0xabu};
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
@@ -286,34 +294,37 @@ lib_i32 main(void)
             lib_c_printf("STOS stage=profile profile=%u\n", profile);
             return 1;
         }
-    if (!stos_case(CORE_MACHINE_CPU_PROFILE_80386, dword, 2u, 4u,
-        LIB_FALSE, LIB_FALSE) || !stos_case(CORE_MACHINE_CPU_PROFILE_80386,
-        address, 2u, 1u, LIB_TRUE, LIB_FALSE) ||
-        !stos_case(CORE_MACHINE_CPU_PROFILE_80386, both, 3u, 4u,
-        LIB_TRUE, LIB_FALSE) || !stos_case(CORE_MACHINE_CPU_PROFILE_80386,
-        cs, 2u, 1u, LIB_FALSE, LIB_FALSE) ||
-        !stos_case(CORE_MACHINE_CPU_PROFILE_80386, fs, 2u, 1u,
-        LIB_FALSE, LIB_FALSE) || !stos_case(CORE_MACHINE_CPU_PROFILE_80386,
-        &ab, 1u, 2u, LIB_FALSE, LIB_TRUE)) {
-        lib_c_printf("STOS stage=attributes\n");
-        return 1;
-    }
-    if (!stos_rep_case(CORE_MACHINE_CPU_PROFILE_80386, repd, 3u, 4u,
-        LIB_FALSE, 3u, LIB_FALSE) ||
-        !stos_rep_case(CORE_MACHINE_CPU_PROFILE_80386, rep67, 3u, 1u,
-        LIB_TRUE, 3u, LIB_FALSE) ||
-        !stos_rep_case(CORE_MACHINE_CPU_PROFILE_80386, rep66_67, 4u, 4u,
-        LIB_TRUE, 3u, LIB_FALSE) ||
-        !stos_rep_case(CORE_MACHINE_CPU_PROFILE_80386, repw, 2u, 2u,
-        LIB_FALSE, 3u, LIB_TRUE)) {
-        lib_c_printf("STOS stage=rep-attributes\n");
-        return 1;
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile) {
+        if (!stos_case(modern[profile], dword, 2u, 4u,
+            LIB_FALSE, LIB_FALSE) || !stos_case(modern[profile],
+            address, 2u, 1u, LIB_TRUE, LIB_FALSE) ||
+            !stos_case(modern[profile], both, 3u, 4u,
+            LIB_TRUE, LIB_FALSE) || !stos_case(modern[profile],
+            cs, 2u, 1u, LIB_FALSE, LIB_FALSE) ||
+            !stos_case(modern[profile], fs, 2u, 1u,
+            LIB_FALSE, LIB_FALSE) || !stos_case(modern[profile],
+            &ab, 1u, 2u, LIB_FALSE, LIB_TRUE)) {
+            lib_c_printf("STOS stage=attributes\n");
+            return 1;
+        }
+        if (!stos_rep_case(modern[profile], repd, 3u, 4u,
+            LIB_FALSE, 3u, LIB_FALSE) ||
+            !stos_rep_case(modern[profile], rep67, 3u, 1u,
+            LIB_TRUE, 3u, LIB_FALSE) ||
+            !stos_rep_case(modern[profile], rep66_67, 4u, 4u,
+            LIB_TRUE, 3u, LIB_FALSE) ||
+            !stos_rep_case(modern[profile], repw, 2u, 2u,
+            LIB_FALSE, 3u, LIB_TRUE)) {
+            lib_c_printf("STOS stage=rep-attributes\n");
+            return 1;
+        }
     }
     if (!stos_test_rejections()) {
         lib_c_printf("STOS stage=rejections\n");
         return 1;
     }
-    if (!stos_test_protected()) {
+    if (!stos_test_protected(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !stos_test_protected(CORE_MACHINE_CPU_PROFILE_80486SX)) {
         lib_c_printf("STOS stage=protected\n");
         return 1;
     }

@@ -29,7 +29,8 @@ typedef enum transfer_form {
     TRANSFER_FORM_COUNT,
 } transfer_form;
 
-static void transfer_prepare(cpu_instruction_fixture *state, lib_bool code32)
+static void transfer_prepare(cpu_instruction_fixture *state,
+    core_machine_cpu_profile profile, lib_bool code32)
 {
     lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
@@ -41,7 +42,7 @@ static void transfer_prepare(cpu_instruction_fixture *state, lib_bool code32)
     const lib_u32 pages[] = {0x0003u,0x9003u,0u,0xa003u};
     const lib_u8 page_fault_gate[] = {0,2u,8u,0,0,0x8eu,0,0};
 
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     gdt[14] = code32 ? 0x40u : 0u;
     lib_memory_copy(state->memory + 0x300u, gdt, sizeof(gdt));
     lib_memory_copy(state->memory + 0x470u, page_fault_gate, sizeof(page_fault_gate));
@@ -65,7 +66,7 @@ static void transfer_prepare(cpu_instruction_fixture *state, lib_bool code32)
     state->cpu.data.cr0 |= VCPU_CR0_PE | VCPU_CR0_PG;
 }
 
-static lib_i32 transfer_unmapped_target(void)
+static lib_i32 transfer_unmapped_target(core_machine_cpu_profile profile)
 {
     static cpu_instruction_fixture state;
     for (lib_u8 code32 = 0u; code32 < 2u; ++code32) {
@@ -87,7 +88,7 @@ static lib_i32 transfer_unmapped_target(void)
                 lib_u32 operand;
                 lib_u32 target_pte;
 
-                transfer_prepare(&state, code32 ? LIB_TRUE : LIB_FALSE);
+                transfer_prepare(&state, profile, code32 ? LIB_TRUE : LIB_FALSE);
                 if (form == TRANSFER_GATE_CALL && !code32) state.memory[0x31du] = 0x84u;
                 if (form >= TRANSFER_TASK16_TO16) {
                     const lib_bool old32 = ((form - TRANSFER_TASK16_TO16) & 1u) != 0u;
@@ -227,7 +228,11 @@ static lib_i32 transfer_unmapped_target(void)
                 const core_machine_cpu_timing_result timing =
                     core_machine_cpu_capture_timing(&state.execution);
                 lib_memory_copy(&target_pte, state.memory + 0x8008u, sizeof(target_pte));
-                if (timing.source_timing_unallocated || timing.ticks <= 1u ||
+                const lib_bool timing_invalid =
+                    profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+                    (!timing.source_timing_unallocated || timing.retirement_origin !=
+                        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY) :
+                    (timing.source_timing_unallocated || timing.ticks <= 1u ||
                     (!fixed_timing && !mapped && timing.retirement_origin !=
                         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL) ||
                     (!fixed_timing && mapped && (timing.retirement_origin ==
@@ -237,7 +242,8 @@ static lib_i32 transfer_unmapped_target(void)
                         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
                         timing.ticks != (form >= TRANSFER_TASK16_TO16 ?
                             task_clocks[form - TRANSFER_TASK16_TO16] : fixed_interrupt ? 59u :
-                            form == TRANSFER_SAME_IRET ? 38u : form == TRANSFER_OUTER_IRET ? 82u : 69u))) ||
+                            form == TRANSFER_SAME_IRET ? 38u : form == TRANSFER_OUTER_IRET ? 82u : 69u))));
+                if (timing_invalid ||
                     target_pte != (mapped ? (outer_return ? 0xb007u : 0xb003u) : 0u) ||
                     state.cpu.data.cr2 || state.fault.valid ||
                     state.delivered_exception.valid) {
@@ -267,7 +273,7 @@ static lib_i32 transfer_unmapped_target(void)
     return 0;
 }
 
-static lib_i32 transfer_inner_gate(void)
+static lib_i32 transfer_inner_gate(core_machine_cpu_profile profile)
 {
     static cpu_instruction_fixture state;
     const lib_u32 directory = 0x8007u;
@@ -285,7 +291,7 @@ static lib_i32 transfer_inner_gate(void)
                 core_machine_cpu_timing_result timing;
                 lib_u8 bytes = 7u;
 
-                transfer_prepare(&state, code32 != 0u);
+                transfer_prepare(&state, profile, code32 != 0u);
                 lib_memory_copy(state.memory + 0x320u, state.memory + 0x308u, 8u);
                 lib_memory_copy(state.memory + 0x328u, state.memory + 0x310u, 8u);
                 state.memory[0x325u] = 0xfau;
@@ -321,9 +327,10 @@ static lib_i32 transfer_inner_gate(void)
                         bytes = 1u;
                     }
                 } else {
-                    /* S11 owns operand/gate-width independence; this seam
-                     * uses matching widths without concealing that receiver. */
-                    if (code32 != gate32) continue;
+                    /* Retain the 386 matching-width timing recipes. SX also
+                     * checks independent operand/gate widths, without those costs. */
+                    if (profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+                        code32 != gate32) continue;
                     gate[5] = gate32 ? 0xecu : 0xe4u;
                     lib_memory_copy(state.memory + 0x318u, gate, sizeof(gate));
                     bytes = code32 ? 7u : 5u;
@@ -333,12 +340,17 @@ static lib_i32 transfer_inner_gate(void)
                 core_machine_cpu_execution_refresh(&state.execution);
                 timing = core_machine_cpu_capture_timing(&state.execution);
                 lib_memory_copy(&target_pte, state.memory + 0x8008u, sizeof(target_pte));
+                const lib_bool timing_invalid =
+                    profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+                    (!timing.source_timing_unallocated || timing.retirement_origin !=
+                        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY) :
+                    (timing.source_timing_unallocated || timing.ticks <= 1u ||
+                        (interrupt && timing.ticks != 99u));
                 if (state.execution.stop_requested || state.fault.valid ||
                     state.delivered_exception.valid || state.cpu.data.eip != 0x2000u ||
                     state.cpu.data.cs.selector != 8u || state.cpu.data.cs.dpl != 0u ||
                     state.cpu.data.ss.selector != 16u || state.cpu.data.cr2 || target_pte ||
-                    timing.source_timing_unallocated || timing.ticks <= 1u ||
-                    (interrupt && timing.ticks != 99u)) {
+                    timing_invalid) {
                     lib_c_printf("TRANSFER-INNER:code32=%u:gate32=%u:int=%u:eip=%x:cr2=%x:failed\n",
                         code32, gate32, interrupt, state.cpu.data.eip, state.cpu.data.cr2);
                     return 1;
@@ -358,7 +370,7 @@ static lib_i32 transfer_inner_gate(void)
     return 0;
 }
 
-static lib_i32 transfer_reject_current_reference(void)
+static lib_i32 transfer_reject_current_reference(core_machine_cpu_profile profile)
 {
     static cpu_instruction_fixture state;
     const lib_u8 fault_gate[] = {0,2u,8u,0,0,0x8eu,0,0};
@@ -372,7 +384,7 @@ static lib_i32 transfer_reject_current_reference(void)
             lib_u32 displacement = target - (0x1ff0u + bytes);
             lib_u32 target_pte;
 
-            transfer_prepare(&state, code32 != 0u);
+            transfer_prepare(&state, profile, code32 != 0u);
             lib_memory_copy(state.memory + 0x468u, fault_gate, sizeof(fault_gate));
             state.cpu.data.cs.limit = 0x1fffu;
             state.memory[0x309u] = 0x1fu;
@@ -412,7 +424,7 @@ static lib_i32 transfer_reject_current_reference(void)
                 return 1;
             }
         }
-        transfer_prepare(&state, code32 != 0u);
+        transfer_prepare(&state, profile, code32 != 0u);
         lib_memory_copy(state.memory + 0x460u, fault_gate, sizeof(fault_gate));
         state.cpu.data.ss.limit = 0x3100u;
         state.memory[0x9ff0u] = 0xcfu;
@@ -430,11 +442,12 @@ static lib_i32 transfer_unused_endpoints(void)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static cpu_instruction_fixture state;
 
-    for (lib_u8 profile = 0u; profile < 5u; ++profile) {
+    for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
         cpu_instruction_prepare(&state, profiles[profile]);
         state.cpu.data.cs.limit = 0u;
         state.cpu.data.ss.limit = 0u;
@@ -448,7 +461,7 @@ static lib_i32 transfer_unused_endpoints(void)
     return 0;
 }
 
-static lib_i32 transfer_restored_stack_adjustment(void)
+static lib_i32 transfer_restored_stack_adjustment(core_machine_cpu_profile profile)
 {
     static cpu_instruction_fixture state;
     const lib_u8 instruction[] = {0xcau,8u,0};
@@ -460,7 +473,7 @@ static lib_i32 transfer_restored_stack_adjustment(void)
     for (lib_u8 code32 = 0u; code32 < 2u; ++code32) {
         const lib_u8 slot_bytes = code32 ? 4u : 2u;
 
-        transfer_prepare(&state, code32 != 0u);
+        transfer_prepare(&state, profile, code32 != 0u);
         lib_memory_copy(state.memory + 0x320u, state.memory + 0x308u, 8u);
         lib_memory_copy(state.memory + 0x328u, state.memory + 0x310u, 8u);
         state.memory[0x325u] = 0xfau;
@@ -495,13 +508,15 @@ static lib_i32 transfer_restored_stack_adjustment(void)
 static lib_i32 transfer_next_term_limit(void)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static cpu_instruction_fixture state;
     const lib_u8 jump[] = {0xe9u, 0x1du, 0};
     const lib_u8 next[] = {0xb8u, 0, 0};
 
-    for (lib_u8 profile = 0u; profile < 2u; ++profile) {
+    for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
         lib_u64 estimated_ticks = 0u;
 
         for (lib_u8 complete = 0u; complete < 2u; ++complete) {
@@ -513,16 +528,21 @@ static lib_i32 transfer_next_term_limit(void)
             lib_memory_copy(state.memory + 0x20u, next, sizeof(next));
             core_machine_cpu_execution_refresh(&state.execution);
             timing = core_machine_cpu_capture_timing(&state.execution);
-            if (state.cpu.data.eip != 0x20u || state.cpu.data.cr2 ||
-                state.fault.valid || state.delivered_exception.valid ||
-                state.execution.stop_requested || timing.source_timing_unallocated ||
+            const lib_bool timing_invalid =
+                profiles[profile] == CORE_MACHINE_CPU_PROFILE_80486SX ?
+                (!timing.source_timing_unallocated || timing.retirement_origin !=
+                    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY) :
+                (timing.source_timing_unallocated ||
                 (!complete && timing.retirement_origin !=
                     CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_CONTROL_MODEL) ||
                 (complete && (timing.retirement_origin !=
                     CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
-                    timing.ticks != estimated_ticks + (profile ? 1u : 2u)))) {
+                    timing.ticks != estimated_ticks + (profile ? 1u : 2u))));
+            if (state.cpu.data.eip != 0x20u || state.cpu.data.cr2 ||
+                state.fault.valid || state.delivered_exception.valid ||
+                state.execution.stop_requested || timing_invalid) {
                 lib_c_printf("TRANSFER-TIMING:limit:profile=%u:complete=%u:failed\n",
-                    profile, complete);
+                    (lib_u32)profile, complete);
                 return 1;
             }
             estimated_ticks = timing.ticks;
@@ -533,8 +553,16 @@ static lib_i32 transfer_next_term_limit(void)
 
 lib_i32 main(void)
 {
-    return transfer_unmapped_target() || transfer_inner_gate() ||
-        transfer_reject_current_reference() || transfer_unused_endpoints() ||
-        transfer_restored_stack_adjustment() ||
-        transfer_next_term_limit();
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
+        ++index) {
+        if (transfer_unmapped_target(profiles[index]) ||
+            transfer_inner_gate(profiles[index]) ||
+            transfer_reject_current_reference(profiles[index]) ||
+            transfer_restored_stack_adjustment(profiles[index])) return 1;
+    }
+    return transfer_unused_endpoints() || transfer_next_term_limit();
 }

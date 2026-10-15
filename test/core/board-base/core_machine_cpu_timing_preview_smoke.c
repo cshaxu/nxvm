@@ -431,7 +431,7 @@ static lib_i32 preview_test_group2_immediate_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
     lib_u8 opcode;
@@ -445,9 +445,14 @@ static lib_i32 preview_test_group2_immediate_profiles(void)
         if (core_machine_cpu_instruction_lexeme_scan(code, sizeof(code),
             CORE_MACHINE_CPU_PROFILE_8086, LIB_FALSE, &lexeme) ||
             lexeme.available) return 0;
-        for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
-            if (!preview_expect(code, sizeof(code), profiles[profile],
-                LIB_FALSE, 3u, 3u)) return 0;
+        for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
+            if (extension == 6u && profiles[profile] != CORE_MACHINE_CPU_PROFILE_80486SX) {
+                if (core_machine_cpu_instruction_lexeme_scan(code, sizeof(code),
+                        profiles[profile], LIB_FALSE, &lexeme) || lexeme.available)
+                    return 0;
+            } else if (!preview_expect(code, sizeof(code), profiles[profile],
+                    LIB_FALSE, 3u, 3u)) return 0;
+        }
     }
     return preview_expect((const lib_u8[]){0x66u, 0xc1u, 0xc0u, 1u},
         4u, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 4u, 4u);
@@ -523,7 +528,8 @@ static lib_i32 preview_test_modrm_data_move_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 xchg[] = { 0x86u, 0xc1u };
     static const lib_u8 xchg_memory[] = { 0x87u, 0x06u, 0u, 0x20u };
@@ -550,7 +556,15 @@ static lib_i32 preview_test_modrm_data_move_profiles(void)
             if (!preview_expect(&mov[opcode], 2u, profiles[profile], LIB_FALSE,
                     2u, 2u)) return 0;
     }
-    return preview_expect((const lib_u8[]){0x66u, 0x87u, 0xc1u},
+    for (opcode = 0x10u; opcode <= 0x13u; ++opcode)
+        if (!preview_expect((const lib_u8[]){0x0fu, opcode, 0xc1u},
+                3u, CORE_MACHINE_CPU_PROFILE_80486SX, LIB_FALSE, 3u, 3u) ||
+            !preview_expect((const lib_u8[]){0x0fu, opcode, 0x06u, 0u, 0x20u},
+                5u, CORE_MACHINE_CPU_PROFILE_80486SX, LIB_FALSE, 5u, 4u)) return 0;
+    return preview_expect((const lib_u8[]){0x66u, 0x67u, 0x0fu, 0x13u,
+        0x05u, 0u, 0x20u, 0u, 0u}, 9u,
+        CORE_MACHINE_CPU_PROFILE_80486SX, LIB_FALSE, 9u, 6u) &&
+        preview_expect((const lib_u8[]){0x66u, 0x87u, 0xc1u},
         3u, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 3u, 3u) &&
         preview_expect((const lib_u8[]){0x67u, 0x87u, 0x46u, 0x10u},
         4u, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 4u, 4u) &&
@@ -1363,7 +1377,8 @@ static lib_i32 preview_test_group3_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile_index;
     lib_u8 extension;
@@ -1377,11 +1392,12 @@ static lib_i32 preview_test_group3_profiles(void)
             (lib_u8)((extension << 3u) | 0xc0u),
             0x78u, 0x56u, 0x34u, 0x12u };
         core_machine_cpu_instruction_lexeme lexeme;
-        const lib_u8 operand_bytes = profiles[profile_index] ==
+        const lib_u8 operand_bytes = profiles[profile_index] >=
             CORE_MACHINE_CPU_PROFILE_80386 ? 4u : 2u;
-        const lib_u8 code_32 = profiles[profile_index] ==
+        const lib_u8 code_32 = profiles[profile_index] >=
             CORE_MACHINE_CPU_PROFILE_80386 ? LIB_TRUE : LIB_FALSE;
-        const lib_u8 invalid = extension == 1u;
+        const lib_u8 invalid = extension == 1u &&
+            profiles[profile_index] != CORE_MACHINE_CPU_PROFILE_80486SX;
 
         if (invalid) {
             if (core_machine_cpu_instruction_lexeme_scan(f6, sizeof(f6),
@@ -1390,11 +1406,11 @@ static lib_i32 preview_test_group3_profiles(void)
                 profiles[profile_index], code_32, &lexeme) || lexeme.available)
                 return 0;
         } else if (!preview_expect(f6, sizeof(f6), profiles[profile_index],
-            code_32, extension == 0u ? 3u : 2u,
-            extension == 0u ? 3u : 2u) || !preview_expect(f7, sizeof(f7),
-            profiles[profile_index], code_32, extension == 0u ?
+            code_32, extension <= 1u ? 3u : 2u,
+            extension <= 1u ? 3u : 2u) || !preview_expect(f7, sizeof(f7),
+            profiles[profile_index], code_32, extension <= 1u ?
             (lib_u8)(2u + operand_bytes) : 2u,
-            extension == 0u ? 3u : 2u)) return 0;
+            extension <= 1u ? 3u : 2u)) return 0;
     }
     return 1;
 }

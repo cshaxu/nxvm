@@ -67,6 +67,9 @@ static lib_i32 software_int_test_rejections(void)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]);
@@ -88,6 +91,7 @@ static lib_i32 software_int_test_rejections(void)
             }
         }
     }
+    for (lib_size cpu = 0u; cpu < sizeof(modern) / sizeof(modern[0]); ++cpu)
     for (profile = 0u; profile != 4u; ++profile) {
         lib_u8 form;
 
@@ -97,7 +101,7 @@ static lib_i32 software_int_test_rejections(void)
             lib_u8 code[5] = {0xf0u,0,0,0,0};
             if (profile != 0u) lib_memory_copy(code + 1u, prefixes[profile - 1u], prefix_bytes);
             lib_memory_copy(code + 1u + prefix_bytes, forms[form].opcode, forms[form].bytes);
-            if (!software_int_state_reject(&state, CORE_MACHINE_CPU_PROFILE_80386,
+            if (!software_int_state_reject(&state, modern[cpu],
                     code, 1u + prefix_bytes + forms[form].bytes)) return 0;
         }
     }
@@ -111,6 +115,7 @@ static lib_bool software_int_state_transfer(core_machine_cpu_profile profile,
     t_cpu before;
     const lib_u8 width = prefix_bytes != 0u && prefix[0] == 0x66u ? 4u : 2u;
     const lib_u16 offset = 0x100u, segment = 0u;
+    lib_u32 frame[3] = {0u,0u,0u};
     cpu_instruction_prepare(&state, profile);
     software_int_state_seed(&state, VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_IF |
         VCPU_EFLAGS_TF | VCPU_EFLAGS_DF | VCPU_EFLAGS_OF | 0x8000u);
@@ -123,8 +128,17 @@ static lib_bool software_int_state_transfer(core_machine_cpu_profile profile,
     core_machine_cpu_execution_refresh(&state.execution);
     core_machine_cpu_execution_refresh(&state.execution);
     const t_cpu *after = &state.cpu;
-    return !state.execution.stop_requested && !state.fault.valid && after->data.flagHalt &&
-        after->data.eip == 0x101u && after->data.esp == before.data.esp - 3u * width &&
+    if (state.execution.stop_requested || state.fault.valid || !after->data.flagHalt ||
+        after->data.eip != 0x101u || after->data.esp != before.data.esp - 3u * width)
+        return LIB_FALSE;
+    for (lib_size item = 0u; item < sizeof(frame) / sizeof(frame[0]); ++item)
+        lib_memory_copy(&frame[item], state.memory + after->data.esp + item * width,
+            width);
+    return frame[0] == prefix_bytes + form->bytes &&
+        frame[1] == before.data.cs.selector &&
+        (frame[2] & 0x0fd5u) == (before.data.eflags & 0x0fd5u) &&
+        (frame[2] & 0x02u) != 0u &&
+        (width != 4u || (frame[2] & 0xffff0000u) == 0u) &&
         after->data.eax == before.data.eax && after->data.ecx == before.data.ecx &&
         after->data.edx == before.data.edx && after->data.ebx == before.data.ebx &&
         after->data.ebp == before.data.ebp && after->data.esi == before.data.esi &&
@@ -163,7 +177,8 @@ static lib_i32 software_int_state_real_forms(void)
         CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const software_int_form forms[] = {
         { 0x03u, { 0xccu, 0u }, 1u, 0 },
@@ -190,19 +205,22 @@ static lib_i32 software_int_state_real_forms(void)
         if (!software_int_state_into_clear(profiles[profile], no_prefix, 0u))
             return 0;
     }
-    for (profile = 0u; profile != sizeof(prefixes) / sizeof(prefixes[0]);
-        ++profile) {
-        lib_u8 form;
-        lib_u8 prefix_bytes = profile == 2u ? 2u : 1u;
+    for (lib_size cpu = 0u; cpu < sizeof(profiles) / sizeof(profiles[0]); ++cpu) {
+        if (profiles[cpu] < CORE_MACHINE_CPU_PROFILE_80386) continue;
+        for (profile = 0u; profile != sizeof(prefixes) / sizeof(prefixes[0]);
+            ++profile) {
+            lib_u8 form;
+            lib_u8 prefix_bytes = profile == 2u ? 2u : 1u;
 
-        for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
-            if (!software_int_state_transfer(CORE_MACHINE_CPU_PROFILE_80386,
+            for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
+                if (!software_int_state_transfer(profiles[cpu],
                     &forms[form], prefixes[profile], prefix_bytes))
+                    return 0;
+            }
+            if (!software_int_state_into_clear(profiles[cpu],
+                prefixes[profile], prefix_bytes))
                 return 0;
         }
-        if (!software_int_state_into_clear(CORE_MACHINE_CPU_PROFILE_80386,
-                prefixes[profile], prefix_bytes))
-            return 0;
     }
     return 1;
 }

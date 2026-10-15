@@ -94,7 +94,7 @@ static lib_i32 push_immediate_test_defaults(void)
 {
     static const core_machine_cpu_profile supported[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 push_iw[] = {0x68u, 0x34u, 0x12u};
     static const lib_u8 push_ib[] = {0x6au, 0x80u};
@@ -116,6 +116,9 @@ static lib_i32 push_immediate_test_defaults(void)
 
 static lib_i32 push_immediate_test_attributes_and_lock(void)
 {
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     static const lib_u8 iw32[] = {0x66u, 0x68u, 0x78u, 0x56u, 0x34u, 0x12u};
     static const lib_u8 ib32[] = {0x66u, 0x6au, 0x80u};
     static const lib_u8 iw67[] = {0x67u, 0x68u, 0x34u, 0x12u};
@@ -132,12 +135,13 @@ static lib_i32 push_immediate_test_attributes_and_lock(void)
     lib_u8 profile;
     lib_u8 form;
 
-    if (!push_immediate_test_success(CORE_MACHINE_CPU_PROFILE_80386, iw32,
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile)
+    if (!push_immediate_test_success(modern[profile], iw32,
         sizeof(iw32), 4u, 0x12345678u) || !push_immediate_test_success(
-        CORE_MACHINE_CPU_PROFILE_80386, ib32, sizeof(ib32), 4u, 0xffffff80u) ||
-        !push_immediate_test_success(CORE_MACHINE_CPU_PROFILE_80386, iw67,
+        modern[profile], ib32, sizeof(ib32), 4u, 0xffffff80u) ||
+        !push_immediate_test_success(modern[profile], iw67,
         sizeof(iw67), 2u, 0x1234u) || !push_immediate_test_success(
-        CORE_MACHINE_CPU_PROFILE_80386, ib66_67, sizeof(ib66_67), 4u,
+        modern[profile], ib66_67, sizeof(ib66_67), 4u,
         0xffffff80u))
         return 0;
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]); ++profile)
@@ -150,12 +154,13 @@ static lib_i32 push_immediate_test_attributes_and_lock(void)
                 return 0;
         }
     }
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile)
     for (form = 0u; form != sizeof(locks) / sizeof(locks[0]); ++form)
     {
         lib_u8 bytes = form == 0u ? 4u : (form == 1u ? 3u :
             (form == 2u ? 7u : 4u));
 
-        if (!push_immediate_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
+        if (!push_immediate_expect_ud(modern[profile],
             locks[form], bytes))
             return 0;
     }
@@ -194,7 +199,7 @@ static lib_i32 push_immediate_boot_protected(cpu_instruction_fixture *state)
     return state->cpu.data.cs.selector == 8u && state->cpu.data.eip == 0u;
 }
 
-static lib_i32 push_immediate_test_protected(void)
+static lib_i32 push_immediate_test_protected(core_machine_cpu_profile profile)
 {
     static const lib_u8 codes[][6] = {{0x68u,0x34u,0x12u},
         {0x66u,0x6au,0x80u}};
@@ -209,7 +214,7 @@ static lib_i32 push_immediate_test_protected(void)
         lib_u32 sentinel = 0xdeadbeefu;
         lib_u32 observed = 0u;
         lib_i32 failed = 0;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
 
         if (!failed)
             failed |= !push_immediate_boot_protected(&state);
@@ -251,7 +256,8 @@ static lib_i32 push_immediate_test_protected(void)
 
 lib_i32 main(void)
 {
-    if (!push_immediate_test_protected())
+    if (!push_immediate_test_protected(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !push_immediate_test_protected(CORE_MACHINE_CPU_PROFILE_80486SX))
     {
         lib_c_printf("CPU stack cache stage=test_protected\n");
         return 1;

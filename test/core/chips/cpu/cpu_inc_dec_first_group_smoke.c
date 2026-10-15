@@ -58,7 +58,8 @@ static lib_i32 inc_dec_test_register_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
     lib_u8 index;
@@ -68,17 +69,40 @@ static lib_i32 inc_dec_test_register_forms(void)
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (index = 0u; index != 8u; ++index)
     for (decrement = 0u; decrement != 2u; ++decrement)
-    for (operand32 = 0u; operand32 != (profiles[profile] ==
-        CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++operand32) {
+    for (operand32 = 0u; operand32 != (profiles[profile] >=
+        CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++operand32)
+    for (lib_u8 carry = 0u; carry < 2u; ++carry)
+    for (lib_u8 boundary = 0u; boundary < 7u; ++boundary) {
         lib_u8 code[2] = {(lib_u8)(0x40u + index + decrement * 8u),0u};
-        const lib_u32 before = decrement ? (operand32 ? 0x80000000u :
-            0xaabb8000u) : (operand32 ? 0x7fffffffu : 0xaabb7fffu);
-        const lib_u32 expected = decrement ? (operand32 ? 0x7fffffffu :
-            0xaabb7fffu) : (operand32 ? 0x80000000u : 0xaabb8000u);
-        const lib_u32 flags = decrement ?
-            (VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF) :
-            (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
+        const lib_u32 mask = operand32 ? 0xffffffffu : 0xffffu;
+        const lib_u32 sign = operand32 ? 0x80000000u : 0x8000u;
+        const struct {
+            lib_u32 value;
+            lib_u32 increment_flags;
+            lib_u32 decrement_flags;
+        } cases[] = {
+            {0u, 0u, VCPU_EFLAGS_SF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF},
+            {1u, 0u, VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF},
+            {0x0fu, VCPU_EFLAGS_AF, 0u},
+            {0x10u, VCPU_EFLAGS_PF, VCPU_EFLAGS_AF | VCPU_EFLAGS_PF},
+            {sign - 1u, VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF |
+                VCPU_EFLAGS_PF, 0u},
+            {sign, VCPU_EFLAGS_SF, VCPU_EFLAGS_OF | VCPU_EFLAGS_AF |
+                VCPU_EFLAGS_PF},
+            {mask, VCPU_EFLAGS_ZF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF,
+                VCPU_EFLAGS_SF}
+        };
+        const lib_u32 before = (operand32 ? 0u : 0xaabb0000u) |
+            cases[boundary].value;
+        const lib_u32 expected = (before & ~mask) |
+            ((decrement ? cases[boundary].value - 1u :
+                cases[boundary].value + 1u) & mask);
+        const lib_u32 flags = decrement ? cases[boundary].decrement_flags :
+            cases[boundary].increment_flags;
+        const lib_u32 preserved = VCPU_EFLAGS_IF | VCPU_EFLAGS_DF |
+            (carry ? VCPU_EFLAGS_CF : 0u);
         inc_dec_machine state;
+        t_cpu original;
         t_cpu after = {0};
         core_machine_cpu_diagnostic diagnostic;
         lib_u32 *reg;
@@ -88,11 +112,17 @@ static lib_i32 inc_dec_test_register_forms(void)
         if (!failed) {
             reg = inc_dec_register(&state.cpu, index);
             *reg = before;
-            state.cpu.data.eflags = VCPU_EFLAGS_CF;
+            state.cpu.data.eflags = preserved;
+            original = state.cpu;
             failed |= !inc_dec_run(&state, code, operand32 ? 2u : 1u, 0,
                 &after, &diagnostic) || diagnostic.first_fault.valid ||
+                after.data.eip != (operand32 ? 2u : 1u) ||
                 *inc_dec_register(&after, index) != expected ||
-                !inc_dec_flags_match(after.data.eflags, flags, VCPU_EFLAGS_CF);
+                after.data.eflags != (flags | preserved);
+            for (lib_u8 other = 0u; other < 8u; ++other) {
+                if (other != index && *inc_dec_register(&after, other) !=
+                    *inc_dec_register(&original, other)) failed = 1;
+            }
         }
         if (failed) return 0;
     }
@@ -111,13 +141,14 @@ static lib_i32 inc_dec_test_rm_forms(void)
     static const lib_u8 lengths[] = { 2u, 2u, 2u, 2u, 4u, 4u, 4u, 4u, 5u, 5u };
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
     lib_u8 form;
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (form = 0u; form != sizeof(lengths); ++form) {
-        if (form >= 8u && profiles[profile] != CORE_MACHINE_CPU_PROFILE_80386) continue;
+        if (form >= 8u && profiles[profile] < CORE_MACHINE_CPU_PROFILE_80386) continue;
         const lib_i32 decrement = (form & 1u) != 0u;
         const lib_u8 bytes = form < 2u || (form >= 4u && form < 6u) ? 1u :
             (form < 8u ? 2u : 4u);
@@ -169,14 +200,21 @@ static lib_i32 inc_dec_test_address_and_profile(void)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     static const lib_u8 accepted_legacy[] = { 0xffu,0xc0u };
     inc_dec_machine state;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
-    lib_u32 value = 0x7fffffffu;
-    lib_i32 failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_u32 value;
+    lib_i32 failed = 0;
 
-    if (!failed) {
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
+        ++index) {
+        failed = !inc_dec_prepare(profiles[index], &state);
+        if (failed) return 0;
+        value = 0x7fffffffu;
         state.cpu.data.esi = INC_DEC_MEMORY;
         state.cpu.data.eflags = VCPU_EFLAGS_CF;
         failed |= cpu_instruction_write(&state, INC_DEC_MEMORY,
@@ -188,8 +226,8 @@ static lib_i32 inc_dec_test_address_and_profile(void)
             value != 0x80000000u || !inc_dec_flags_match(after.data.eflags,
                 VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF |
                 VCPU_EFLAGS_PF, VCPU_EFLAGS_CF);
+        if (failed) return 0;
     }
-    if (failed) return 0;
 
     {
         lib_u8 profile;

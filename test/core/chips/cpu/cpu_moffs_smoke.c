@@ -31,7 +31,8 @@ static lib_i32 moffs_test_default(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 opcodes[] = { 0xa0u, 0xa1u, 0xa2u, 0xa3u };
     lib_u8 profile;
@@ -86,7 +87,7 @@ static lib_i32 moffs_test_default(void)
     return 1;
 }
 
-static lib_i32 moffs_test_386_attributes(void)
+static lib_i32 moffs_test_386_attributes(core_machine_cpu_profile profile)
 {
     static const lib_u8 read32[] = { 0x66u,0x67u,0xa1u,0x00u,0x00u,0x01u,0x00u };
     static const lib_u8 write32[] = { 0x66u,0x67u,0xa3u,0x00u,0x00u,0x01u,0x00u };
@@ -104,7 +105,7 @@ static lib_i32 moffs_test_386_attributes(void)
         lib_u32 image = 0x1122335au;
         lib_i32 failed = 0;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         /* 386 manual 14.5: PE-clear execution can retain a wide cached DS.
          * Address-size alone does not extend an ordinary real-mode segment. */
         state.cpu.data.ds.limit = 0xffffffffu;
@@ -129,7 +130,7 @@ static lib_i32 moffs_test_386_attributes(void)
     return 1;
 }
 
-static lib_i32 moffs_test_386_single_attributes(void)
+static lib_i32 moffs_test_386_single_attributes(core_machine_cpu_profile profile)
 {
     lib_u8 attribute;
     lib_u8 opcode;
@@ -148,7 +149,7 @@ static lib_i32 moffs_test_386_single_attributes(void)
         lib_u32 image = 0x1122335au;
         lib_i32 failed = 0;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         if (attribute == 0u) {
             code[1] = opcode; code[2] = 0; code[3] = 0x10u;
         } else if (attribute == 1u) {
@@ -208,7 +209,7 @@ static lib_i32 moffs_test_reject(void)
     return 1;
 }
 
-static lib_i32 moffs_test_lock(void)
+static lib_i32 moffs_test_lock(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = { 0xa0u, 0xa1u, 0xa2u, 0xa3u };
     lib_u8 opcode;
@@ -218,7 +219,7 @@ static lib_i32 moffs_test_lock(void)
         cpu_instruction_fixture state;
         lib_u8 code[] = { 0xf0u, opcodes[opcode], 0u, 0x10u };
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         moffs_set_registers(&state);
         if (!cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u))
             return 0;
@@ -226,7 +227,7 @@ static lib_i32 moffs_test_lock(void)
     return 1;
 }
 
-static lib_i32 moffs_test_segment_overrides(void)
+static lib_i32 moffs_test_segment_overrides(core_machine_cpu_profile profile)
 {
     static const lib_u8 codes[][4] = {
         { 0xa0u, 0x10u, 0x00u, 0u },
@@ -246,7 +247,7 @@ static lib_i32 moffs_test_segment_overrides(void)
         lib_u32 address = form == 0u ? 0x10u : (lib_u32)form * 0x100u + 0x10u;
         lib_i32 failed = 0;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         if (form == 1u) failed |= core_machine_cpu_execution_load_segment(
             &state.execution, &state.cpu.data.es, 0x10u) != 0;
         if (form == 2u) failed |= core_machine_cpu_execution_load_segment(
@@ -266,7 +267,7 @@ static lib_i32 moffs_test_segment_overrides(void)
     return 1;
 }
 
-static lib_i32 moffs_test_segment_writes(void)
+static lib_i32 moffs_test_segment_writes(core_machine_cpu_profile profile)
 {
     static const lib_u8 codes[][4] = {
         { 0xa2u, 0x10u, 0x00u, 0u },
@@ -287,7 +288,7 @@ static lib_i32 moffs_test_segment_writes(void)
         lib_u32 address = form == 0u ? 0x10u : (lib_u32)form * 0x100u + 0x10u;
         lib_i32 failed = 0;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         if (form == 1u) failed |= core_machine_cpu_execution_load_segment(&state.execution, &state.cpu.data.es, 0x10u) != 0;
         if (form == 2u) failed |= core_machine_cpu_execution_load_segment(&state.execution, &state.cpu.data.fs, 0x20u) != 0;
         if (form == 3u) failed |= core_machine_cpu_execution_load_segment(&state.execution, &state.cpu.data.gs, 0x30u) != 0;
@@ -303,13 +304,19 @@ static lib_i32 moffs_test_segment_writes(void)
 
 lib_i32 main(void)
 {
-    if (!moffs_test_default() ||
-        !moffs_test_386_attributes() ||
-        !moffs_test_386_single_attributes() ||
-        !moffs_test_reject() ||
-        !moffs_test_lock() ||
-        !moffs_test_segment_overrides() ||
-        !moffs_test_segment_writes()) return 1;
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
+    if (!moffs_test_default() || !moffs_test_reject()) return 1;
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
+        ++index) {
+        if (!moffs_test_386_attributes(profiles[index]) ||
+            !moffs_test_386_single_attributes(profiles[index]) ||
+            !moffs_test_lock(profiles[index]) ||
+            !moffs_test_segment_overrides(profiles[index]) ||
+            !moffs_test_segment_writes(profiles[index])) return 1;
+    }
     lib_c_printf("MOFFS:CPU:OK\n");
     return 0;
 }

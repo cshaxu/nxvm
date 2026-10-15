@@ -129,7 +129,8 @@ static lib_i32 les_lds_test_real(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 opcodes[] = {0xc4u,0xc5u};
     lib_u8 profile;
@@ -144,19 +145,23 @@ static lib_i32 les_lds_test_real(void)
                 0u))
                 return 0;
     }
-    for (segment = 0u; segment != sizeof(prefixes); ++segment)
-        if (!les_lds_real_case(CORE_MACHINE_CPU_PROFILE_80386, 0xc4u, 0u,
-            prefixes[segment]) || !les_lds_real_case(
-            CORE_MACHINE_CPU_PROFILE_80386, 0xc5u, 0u, prefixes[segment]))
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
+        if (profiles[profile] < CORE_MACHINE_CPU_PROFILE_80386) continue;
+        for (segment = 0u; segment != sizeof(prefixes); ++segment)
+            if (!les_lds_real_case(profiles[profile], 0xc4u, 0u,
+                prefixes[segment]) || !les_lds_real_case(
+                profiles[profile], 0xc5u, 0u, prefixes[segment]))
+                return 0;
+        if (!les_lds_real_case(profiles[profile], 0xc4u, 0x66u, 0u) ||
+            !les_lds_real_case(profiles[profile], 0xc4u, 0x67u, 0x36u) ||
+            !les_lds_real_case(profiles[profile], 0xc4u, 0xc6u, 0u) ||
+            !les_lds_real_case(profiles[profile], 0xc5u, 0x66u, 0u) ||
+            !les_lds_real_case(profiles[profile], 0xc5u, 0x67u, 0x36u) ||
+            !les_lds_real_case(profiles[profile], 0xc5u, 0xc6u, 0u))
             return 0;
-    return les_lds_real_case(CORE_MACHINE_CPU_PROFILE_80386, 0xc4u,
-        0x66u, 0u) && les_lds_real_case(CORE_MACHINE_CPU_PROFILE_80386,
-        0xc4u, 0x67u, 0x36u) && les_lds_real_case(
-        CORE_MACHINE_CPU_PROFILE_80386, 0xc4u, 0xc6u, 0u) &&
-        les_lds_real_case(CORE_MACHINE_CPU_PROFILE_80386, 0xc5u,
-        0x66u, 0u) && les_lds_real_case(CORE_MACHINE_CPU_PROFILE_80386,
-        0xc5u, 0x67u, 0x36u) && les_lds_real_case(
-        CORE_MACHINE_CPU_PROFILE_80386, 0xc5u, 0xc6u, 0u);
+    }
+    return 1;
 }
 
 static lib_i32 les_lds_expect_ud(core_machine_cpu_profile profile,
@@ -182,7 +187,8 @@ static lib_i32 les_lds_test_rejections(void)
     };
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 opcodes[] = {0xc4u,0xc5u};
     lib_u8 profile;
@@ -209,12 +215,15 @@ static lib_i32 les_lds_test_rejections(void)
                 return 0;
         }
     }
-    for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
-        lib_u8 lock[] = {0xf0u,opcodes[opcode],0x06u,0,0x10u};
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
+        if (profiles[profile] < CORE_MACHINE_CPU_PROFILE_80386) continue;
+        for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
+            lib_u8 lock[] = {0xf0u,opcodes[opcode],0x06u,0,0x10u};
 
-        if (!les_lds_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock,
-            sizeof(lock)))
-            return 0;
+            if (!les_lds_expect_ud(profiles[profile], lock, sizeof(lock)))
+                return 0;
+        }
     }
     return 1;
 }
@@ -244,7 +253,8 @@ static lib_i32 les_lds_boot_protected(cpu_instruction_fixture *state)
     return state->cpu.data.cs.selector == 8u && state->cpu.data.eip == 0u;
 }
 
-static lib_i32 les_lds_protected_case(lib_u8 opcode, lib_u16 selector,
+static lib_i32 les_lds_protected_case(core_machine_cpu_profile profile,
+    lib_u8 opcode, lib_u16 selector,
     lib_i32 expect_fault, lib_i32 null_selector)
 {
     cpu_instruction_fixture state;
@@ -256,7 +266,7 @@ static lib_i32 les_lds_protected_case(lib_u8 opcode, lib_u16 selector,
     lib_u8 program[4] = {opcode,0x06u,0x10u,0u};
     lib_u8 access = 0u;
     lib_i32 failed = 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
 
     pointer[2] = (lib_u8)selector;
     pointer[3] = (lib_u8)(selector >> 8u);
@@ -340,23 +350,23 @@ static lib_i32 les_lds_protected_case(lib_u8 opcode, lib_u16 selector,
     return !failed;
 }
 
-static lib_i32 les_lds_test_protected(void)
+static lib_i32 les_lds_test_protected(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = {0xc4u,0xc5u};
     lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
-        if (!les_lds_protected_case(opcodes[opcode], 0x18u, 0, 0) ||
-            !les_lds_protected_case(opcodes[opcode], 0u, 0, 1) ||
-            !les_lds_protected_case(opcodes[opcode], 0x20u, 1, 0) ||
-            !les_lds_protected_case(opcodes[opcode], 0x28u, 1, 0) ||
-            !les_lds_protected_case(opcodes[opcode], 0x33u, 1, 0))
+        if (!les_lds_protected_case(profile, opcodes[opcode], 0x18u, 0, 0) ||
+            !les_lds_protected_case(profile, opcodes[opcode], 0u, 0, 1) ||
+            !les_lds_protected_case(profile, opcodes[opcode], 0x20u, 1, 0) ||
+            !les_lds_protected_case(profile, opcodes[opcode], 0x28u, 1, 0) ||
+            !les_lds_protected_case(profile, opcodes[opcode], 0x33u, 1, 0))
             return 0;
     }
     return 1;
 }
 
-static lib_i32 les_lds_test_limit(void)
+static lib_i32 les_lds_test_limit(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = {0xc4u,0xc5u};
     lib_u8 opcode;
@@ -367,7 +377,7 @@ static lib_i32 les_lds_test_limit(void)
         t_cpu after;
         lib_u8 code[] = {opcodes[opcode],0x06u,0x10u,0u};
         lib_i32 failed = 0;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
 
         if (!failed)
             failed |= !les_lds_boot_protected(&state);
@@ -401,6 +411,10 @@ static lib_i32 les_lds_test_limit(void)
 
 lib_i32 main(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
     if (!les_lds_test_real()) {
         lib_c_printf("LES-LDS-PROFILE stage=real\n");
         return 1;
@@ -409,13 +423,16 @@ lib_i32 main(void)
         lib_c_printf("LES-LDS-PROFILE stage=rejections\n");
         return 1;
     }
-    if (!les_lds_test_protected()) {
-        lib_c_printf("LES-LDS-PROFILE stage=protected\n");
-        return 1;
-    }
-    if (!les_lds_test_limit()) {
-        lib_c_printf("LES-LDS-PROFILE stage=limit\n");
-        return 1;
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
+        ++index) {
+        if (!les_lds_test_protected(profiles[index])) {
+            lib_c_printf("LES-LDS-PROFILE stage=protected\n");
+            return 1;
+        }
+        if (!les_lds_test_limit(profiles[index])) {
+            lib_c_printf("LES-LDS-PROFILE stage=limit\n");
+            return 1;
+        }
     }
     lib_c_printf("LES-LDS:OK\n");
     lib_c_printf("LES-LDS-PROFILES:OK\n");

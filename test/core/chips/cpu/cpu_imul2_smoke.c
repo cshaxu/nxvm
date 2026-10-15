@@ -1,7 +1,7 @@
 #include "support/cpu_operand_probe_fixture.h"
 #include "lib/types/file.h"
 
-static lib_i32 imul_forms(void)
+static lib_i32 imul_forms(core_machine_cpu_profile profile)
 {
     static const lib_i32 left[] = { -2, 0x7fff, -2, 0x7fffffff };
     static const lib_i32 right[] = { 3, 2, 0x40000000, 2 };
@@ -23,7 +23,7 @@ static lib_i32 imul_forms(void)
             (product > LIB_INT16_MAX || product < LIB_INT16_MIN);
         lib_i32 failed = 0;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         if (memory && width) code[bytes++] = 0x67u;
         if (width) code[bytes++] = 0x66u;
         code[bytes++] = 0x0fu;
@@ -80,7 +80,8 @@ static lib_i32 imul_profile(void)
 
 lib_i32 main(void)
 {
-    if (!imul_forms() || !imul_profile()) return 1;
+    if (!imul_forms(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !imul_forms(CORE_MACHINE_CPU_PROFILE_80486SX) || !imul_profile()) return 1;
     lib_c_printf("CPU-IMUL2:OK\n");
     return 0;
 }

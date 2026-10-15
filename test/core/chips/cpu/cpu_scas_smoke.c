@@ -78,14 +78,14 @@ static lib_i32 scas_single(core_machine_cpu_profile profile,
     return observed == (width == 4u ? 0xaabb0001u : 1u);
 }
 
-static lib_i32 scas_flag_case(lib_u8 accumulator, lib_u8 image,
-    lib_u32 expected)
+static lib_i32 scas_flag_case(core_machine_cpu_profile profile,
+    lib_u8 accumulator, lib_u8 image, lib_u32 expected)
 {
     const lib_u8 code = 0xaeu;
     cpu_instruction_fixture state;
     t_cpu before, after;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     scas_seed(&state);
     state.cpu.data.eax = (state.cpu.data.eax & 0xffffff00u) | accumulator;
     state.memory[0x20020u] = image;
@@ -94,7 +94,7 @@ static lib_i32 scas_flag_case(lib_u8 accumulator, lib_u8 image,
         state.fault.valid || after.data.eip != 1u ||
         !scas_others_same(&before, &after) ||
         after.data.ecx != before.data.ecx || after.data.edi != 0x21u ||
-        !scas_flags_match(CORE_MACHINE_CPU_PROFILE_80386,
+        !scas_flags_match(profile,
             &before, &after, expected) ||
         state.memory[0x20020u] != image) return 0;
     return 1;
@@ -167,22 +167,26 @@ static lib_i32 scas_test_rejections(void)
         {0xf0u,0xf3u,0x66u,0x67u,0xafu}
     };
     static const lib_u8 lock_bytes[] = {2u, 2u, 3u, 3u, 3u, 3u, 4u, 5u};
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile, form;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]); ++profile)
         for (form = 0u; form != sizeof(attr_bytes); ++form)
             if (!scas_expect_ud(legacy[profile], attr[form],
                 attr_bytes[form])) return 0;
-    for (form = 0u; form != sizeof(lock_bytes); ++form)
-        if (!scas_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
-            locks[form], lock_bytes[form])) return 0;
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile)
+        for (form = 0u; form != sizeof(lock_bytes); ++form)
+            if (!scas_expect_ud(modern[profile],
+                locks[form], lock_bytes[form])) return 0;
     return 1;
 }
 
-static void scas_prepare_protected(cpu_instruction_fixture *state,
-    lib_u32 es_limit)
+static void scas_prepare_protected(core_machine_cpu_profile profile,
+    cpu_instruction_fixture *state, lib_u32 es_limit)
 {
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     scas_seed(state);
     state->cpu.data.cr0 |= VCPU_CR0_PE;
     state->cpu.data.cs.flagValid = LIB_TRUE;
@@ -206,14 +210,14 @@ static void scas_prepare_protected(cpu_instruction_fixture *state,
     state->cpu.data.ss.seg.data.writable = LIB_TRUE;
 }
 
-static lib_i32 scas_test_protected(void)
+static lib_i32 scas_test_protected(core_machine_cpu_profile profile)
 {
     static const lib_u8 single[] = {0xaeu};
     static const lib_u8 rep[] = {0xf3u, 0xaeu};
     cpu_instruction_fixture state;
     t_cpu before, after;
 
-    scas_prepare_protected(&state, 0x0fu);
+    scas_prepare_protected(profile, &state, 0x0fu);
     state.cpu.data.edi = 0x10u;
     state.memory[0x3010u] = 1u;
     state.memory[0x2000u] = single[0];
@@ -231,7 +235,7 @@ static lib_i32 scas_test_protected(void)
             sizeof(before.data.es)) != 0 || state.memory[0x3010u] != 1u)
         return 0;
 
-    scas_prepare_protected(&state, 0x10u);
+    scas_prepare_protected(profile, &state, 0x10u);
     state.cpu.data.edi = 0x10u;
     state.cpu.data.ecx = 0x11220003u;
     state.memory[0x3010u] = 0x10u;
@@ -247,8 +251,8 @@ static lib_i32 scas_test_protected(void)
         after.data.eip == 0u && after.data.eax == before.data.eax &&
         after.data.ecx == 0x11220002u && after.data.edi == 0x11u &&
         scas_others_same(&before, &after) &&
-        after.data.eflags == (VCPU_EFLAGS_IF | VCPU_EFLAGS_PF |
-            VCPU_EFLAGS_ZF) &&
+        after.data.eflags == (profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+            before.data.eflags : VCPU_EFLAGS_IF | VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF) &&
         lib_memory_compare(&before.data.es, &after.data.es,
             sizeof(before.data.es)) == 0 &&
         state.memory[0x3010u] == 0x10u && state.memory[0x3011u] == 1u;
@@ -258,7 +262,8 @@ lib_i32 main(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 ae = 0xaeu, af = 0xafu;
     static const lib_u8 dword[] = {0x66u, 0xafu};
@@ -271,6 +276,9 @@ lib_i32 main(void)
     static const lib_u8 unequal[] = {1u, 0x10u, 1u};
     static const lib_u8 zero[] = {1u, 1u, 1u};
     static const lib_u8 one[] = {0x10u, 1u, 1u};
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
@@ -293,29 +301,38 @@ lib_i32 main(void)
             lib_c_printf("SCAS stage=profile %u\n", profile);
             return 1;
         }
-    if (!scas_single(CORE_MACHINE_CPU_PROFILE_80386, dword, 2u, 4u,
-            LIB_FALSE, LIB_FALSE) ||
-        !scas_single(CORE_MACHINE_CPU_PROFILE_80386, address, 2u, 1u,
-            LIB_TRUE, LIB_FALSE) ||
-        !scas_single(CORE_MACHINE_CPU_PROFILE_80386, both, 3u, 4u,
-            LIB_TRUE, LIB_FALSE) ||
-        !scas_single(CORE_MACHINE_CPU_PROFILE_80386, &af, 1u, 2u,
-            LIB_FALSE, LIB_TRUE) ||
-        !scas_single(CORE_MACHINE_CPU_PROFILE_80386, cs, 2u, 1u,
-            LIB_FALSE, LIB_FALSE) ||
-        !scas_single(CORE_MACHINE_CPU_PROFILE_80386, fs, 2u, 1u,
-            LIB_FALSE, LIB_FALSE)) {
-        lib_c_printf("SCAS stage=attributes\n");
+    if (!scas_test_rejections()) {
+        lib_c_printf("SCAS stage=rejections\n");
         return 1;
     }
-    if (!scas_flag_case(0x10u, 0x01u, VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) ||
-        !scas_flag_case(0x10u, 0x10u, VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF) ||
-        !scas_flag_case(0x00u, 0x01u, VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
-            VCPU_EFLAGS_AF | VCPU_EFLAGS_SF) ||
-        !scas_flag_case(0x80u, 0x01u, VCPU_EFLAGS_AF | VCPU_EFLAGS_OF) ||
-        !scas_test_rejections() || !scas_test_protected()) {
-        lib_c_printf("SCAS stage=flags/rejections/protected\n");
-        return 1;
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile) {
+        if (!scas_single(modern[profile], dword, 2u, 4u,
+                LIB_FALSE, LIB_FALSE) ||
+            !scas_single(modern[profile], address, 2u, 1u,
+                LIB_TRUE, LIB_FALSE) ||
+            !scas_single(modern[profile], both, 3u, 4u,
+                LIB_TRUE, LIB_FALSE) ||
+            !scas_single(modern[profile], &af, 1u, 2u,
+                LIB_FALSE, LIB_TRUE) ||
+            !scas_single(modern[profile], cs, 2u, 1u,
+                LIB_FALSE, LIB_FALSE) ||
+            !scas_single(modern[profile], fs, 2u, 1u,
+                LIB_FALSE, LIB_FALSE)) {
+            lib_c_printf("SCAS stage=attributes\n");
+            return 1;
+        }
+        if (!scas_flag_case(modern[profile], 0x10u, 0x01u,
+                VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) ||
+            !scas_flag_case(modern[profile], 0x10u, 0x10u,
+                VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF) ||
+            !scas_flag_case(modern[profile], 0x00u, 0x01u,
+                VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF | VCPU_EFLAGS_SF) ||
+            !scas_flag_case(modern[profile], 0x80u, 0x01u,
+                VCPU_EFLAGS_AF | VCPU_EFLAGS_OF) ||
+            !scas_test_protected(modern[profile])) {
+            lib_c_printf("SCAS stage=flags/rejections/protected\n");
+            return 1;
+        }
     }
     lib_c_printf("SCAS:OK\n");
     lib_c_printf("SCAS-PROFILES:OK\n");

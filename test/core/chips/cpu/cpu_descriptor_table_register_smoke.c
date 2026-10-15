@@ -56,11 +56,12 @@ static lib_i32 dttr_test_registers(void)
     static const lib_u8 ltr[] = {0xb8u,0x20u,0,0x0fu,0,0xd8u};
     static const lib_u8 str[] = {0x0fu,0,0xc8u};
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
 
-    for (profile = 0u; profile != 2u; ++profile) {
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
         cpu_instruction_fixture state;
         t_cpu after;
         lib_u8 access = 0u;
@@ -89,7 +90,7 @@ static lib_i32 dttr_test_registers(void)
     return 1;
 }
 
-static lib_i32 dttr_test_memory_and_attributes(void)
+static lib_i32 dttr_test_memory_and_attributes(core_machine_cpu_profile profile)
 {
     static const lib_u8 sldt[] = {0xb8u,0x18u,0,0x0fu,0,0xd0u,
         0x0fu,0,0x06u,0,0x40u};
@@ -104,18 +105,18 @@ static lib_i32 dttr_test_memory_and_attributes(void)
     lib_u16 selector = 0x20u;
     lib_u8 form;
 
-    dttr_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    dttr_prepare(&state, profile);
     if (!dttr_run(&state, sldt, sizeof(sldt), &after)) return 0;
     lib_memory_copy(&selector, state.memory + 0x4000u, sizeof(selector));
     if (selector != 0x18u) return 0;
     for (form = 0u; form != 3u; ++form) {
-        dttr_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        dttr_prepare(&state, profile);
         state.cpu.data.eax = 0xa1a10018u;
         if (!dttr_run(&state, attributes[form], attribute_bytes[form], &after) ||
             after.data.ldtr.selector != 0x18u ||
             after.data.eip != attribute_bytes[form]) return 0;
     }
-    dttr_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    dttr_prepare(&state, profile);
     if (!dttr_run(&state, (const lib_u8[]){0xb8u,0,0,0x0fu,0,0xd0u},
             6u, &after) || after.data.ldtr.selector != 0u ||
         after.data.ldtr.flagValid) return 0;
@@ -141,6 +142,8 @@ static lib_i32 dttr_test_rejections(void)
         dttr_expect_ud(CORE_MACHINE_CPU_PROFILE_80286, form, sizeof(form)) &&
         dttr_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, form, sizeof(form)) &&
         dttr_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock, sizeof(lock)) &&
+        dttr_expect_ud(CORE_MACHINE_CPU_PROFILE_80486SX, form, sizeof(form)) &&
+        dttr_expect_ud(CORE_MACHINE_CPU_PROFILE_80486SX, lock, sizeof(lock)) &&
         dttr_expect_ud(CORE_MACHINE_CPU_PROFILE_80286, prefix66, sizeof(prefix66)) &&
         dttr_expect_ud(CORE_MACHINE_CPU_PROFILE_80286, prefix67, sizeof(prefix67));
 }
@@ -148,7 +151,8 @@ static lib_i32 dttr_test_rejections(void)
 lib_i32 main(void)
 {
     lib_i32 registers = dttr_test_registers();
-    lib_i32 forms = dttr_test_memory_and_attributes();
+    lib_i32 forms = dttr_test_memory_and_attributes(CORE_MACHINE_CPU_PROFILE_80386) &&
+        dttr_test_memory_and_attributes(CORE_MACHINE_CPU_PROFILE_80486SX);
     lib_i32 rejections = dttr_test_rejections();
 
     if (!registers || !forms || !rejections) {

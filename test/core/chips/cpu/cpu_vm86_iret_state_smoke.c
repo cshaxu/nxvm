@@ -33,7 +33,7 @@ static lib_status vm86_iret_run(vm86_iret_state *state, lib_u32 instructions)
 }
 
 static lib_i32 vm86_iret_prepare(vm86_iret_state *state,
-    const lib_u8 *instruction, lib_u8 bytes,
+    core_machine_cpu_profile profile, const lib_u8 *instruction, lib_u8 bytes,
     lib_u32 stack_limit)
 {
     const lib_u32 frame[9u] = {
@@ -43,7 +43,7 @@ static lib_i32 vm86_iret_prepare(vm86_iret_state *state,
     };
     t_cpu *cpu;
 
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     if (vm86_iret_write(state, VM86_IRET_CODE, instruction,
             bytes) != LIB_STATUS_OK ||
         vm86_iret_write(state, 0x2010u,
@@ -53,7 +53,7 @@ static lib_i32 vm86_iret_prepare(vm86_iret_state *state,
         return 0;
     cpu = &state->cpu;
     cpu->data.cr0 = VCPU_CR0_PE;
-    cpu->data.eflags = CORE_MACHINE_DEBUG_EFLAGS_IF;
+    cpu->data.eflags = 2u | CORE_MACHINE_DEBUG_EFLAGS_IF;
     cpu->data.cs.flagValid = LIB_TRUE; cpu->data.cs.selector = 0x0008u;
     cpu->data.cs.sregtype = SREG_CODE; cpu->data.cs.base = VM86_IRET_CODE;
     cpu->data.cs.limit = 0x0000ffffu; cpu->data.cs.dpl = 0u;
@@ -79,12 +79,12 @@ static lib_i32 vm86_iret_cache(const t_cpu_data_sreg *sreg,
             !sreg->seg.data.expdown && sreg->seg.data.writable);
 }
 
-static lib_i32 vm86_iret_success(const lib_u8 *instruction,
+static lib_i32 vm86_iret_success(core_machine_cpu_profile profile, const lib_u8 *instruction,
     lib_u8 bytes)
 {
     vm86_iret_state state;
     lib_i32 failed = !vm86_iret_prepare(
-        &state, instruction, bytes, 0x0000ffffu);
+        &state, profile, instruction, bytes, 0x0000ffffu);
 
     if (!failed) {
         failed |= vm86_iret_run(&state, 2u) != LIB_STATUS_OK ||
@@ -103,25 +103,33 @@ static lib_i32 vm86_iret_success(const lib_u8 *instruction,
     return !failed;
 }
 
-static lib_i32 vm86_iret_stack_atomic(void)
+static lib_i32 vm86_iret_stack_atomic(core_machine_cpu_profile profile)
 {
     vm86_iret_state state; t_cpu before, after;
-    lib_i32 failed = !vm86_iret_prepare(&state, (const lib_u8[]){ 0xcfu },
+    lib_u8 frame_before[36], frame_after[36];
+    lib_i32 failed = !vm86_iret_prepare(&state, profile, (const lib_u8[]){ 0xcfu },
         1u, VM86_IRET_STACK + 31u);
 
     if (!failed) {
         before = state.cpu;
+        lib_memory_copy(frame_before, state.memory + VM86_IRET_STACK, sizeof(frame_before));
         (void)vm86_iret_run(&state, 1u);
         after = state.cpu;
-        failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
+        lib_memory_copy(frame_after, state.memory + VM86_IRET_STACK, sizeof(frame_after));
+        failed |= !core_machine_cpu_is_shutdown(&state.execution) ||
+            state.execution.stop_requested || state.fault.valid ||
+            !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
+            lib_memory_compare(&before, &after, sizeof(before)) != 0 ||
+            lib_memory_compare(frame_before, frame_after, sizeof(frame_before)) != 0;
     }
     return !failed;
 }
 
-static lib_i32 vm86_iret_paging_success(void)
+static lib_i32 vm86_iret_paging_success(core_machine_cpu_profile profile)
 {
     vm86_iret_state state;
-    lib_i32 failed = !vm86_iret_prepare(&state, (const lib_u8[]){ 0xcfu },
+    lib_i32 failed = !vm86_iret_prepare(&state, profile, (const lib_u8[]){ 0xcfu },
         1u, 0x0000ffffu);
 
     if (!failed) {
@@ -149,7 +157,7 @@ static lib_i32 vm86_iret_paging_success(void)
     return !failed;
 }
 
-static lib_bool vm86_iret_flags_matrix(void)
+static lib_bool vm86_iret_flags_matrix(core_machine_cpu_profile profile)
 {
     lib_u8 wide, old_rf, new_rf;
 
@@ -164,7 +172,7 @@ static lib_bool vm86_iret_flags_matrix(void)
         const lib_u32 expected = 3u | VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL |
             ((wide ? new_rf : old_rf) ? VCPU_EFLAGS_RF : 0u);
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         state.cpu.data.cr0 |= VCPU_CR0_PE;
         state.cpu.data.cs.selector = 0x0200u;
         state.cpu.data.cs.base = 0x2000u;
@@ -191,11 +199,19 @@ static lib_bool vm86_iret_flags_matrix(void)
 
 lib_i32 main(void)
 {
-    if (!vm86_iret_flags_matrix()) return 1;
-    if (!vm86_iret_success((const lib_u8[]){ 0xcfu }, 1u) ||
-        !vm86_iret_success((const lib_u8[]){ 0x67u, 0xcfu }, 2u) ||
-        !vm86_iret_stack_atomic() || !vm86_iret_paging_success())
-        return 1;
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        if (!vm86_iret_flags_matrix(profiles[index]) ||
+            !vm86_iret_success(profiles[index], (const lib_u8[]){ 0xcfu }, 1u) ||
+            !vm86_iret_success(profiles[index], (const lib_u8[]){ 0x67u, 0xcfu }, 2u) ||
+            !vm86_iret_stack_atomic(profiles[index]) ||
+            !vm86_iret_paging_success(profiles[index])) {
+            lib_c_printf("VM86-IRET-CPU:profile=%u:FAILED\n", profiles[index]);
+            return 1;
+        }
+    }
     lib_c_printf("VM86-IRET-CPU-STATE:OK\n");
     return 0;
 }

@@ -2,7 +2,7 @@
 #include "lib/types/file.h"
 
 /* REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
-static lib_i32 fs_gs_test_real(void)
+static lib_i32 fs_gs_test_real(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = { 0xa0u, 0xa1u, 0xa8u, 0xa9u };
     lib_u8 opcode;
@@ -19,7 +19,7 @@ static lib_i32 fs_gs_test_real(void)
         lib_u16 selector = opcode < 2u ? 0x1234u : 0x5678u;
         lib_i32 pop = (opcodes[opcode] & 1u) != 0u;
         lib_i32 failed = 0;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         if (!failed && size) {
             code[0] = 0x66u;
             code[1] = 0x0fu;
@@ -89,7 +89,8 @@ static lib_i32 fs_gs_test_80286_reject(void)
     return 1;
 }
 
-static lib_i32 fs_gs_prepare_protected(cpu_instruction_fixture *state)
+static lib_i32 fs_gs_prepare_protected(cpu_instruction_fixture *state,
+    core_machine_cpu_profile profile)
 {
     static const lib_u8 pointer[] = { 0x1fu,0,0,0x03u,0,0 };
     static const lib_u8 gdt[] = {
@@ -101,7 +102,7 @@ static lib_i32 fs_gs_prepare_protected(cpu_instruction_fixture *state)
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,0xb8u,0x18u,0x00u,0x8eu,
         0xd0u,0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     lib_memory_copy(state->memory + 0x100u, pointer, sizeof(pointer));
     lib_memory_copy(state->memory + 0x300u, gdt, sizeof(gdt));
     lib_memory_copy(state->memory, bootstrap, sizeof(bootstrap));
@@ -112,7 +113,7 @@ static lib_i32 fs_gs_prepare_protected(cpu_instruction_fixture *state)
     return state->cpu.data.cs.selector == 8u && state->cpu.data.eip == 0u;
 }
 
-static lib_i32 fs_gs_test_protected_pop(void)
+static lib_i32 fs_gs_test_protected_pop(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = { 0xa1u, 0xa9u };
     lib_u8 opcode;
@@ -121,7 +122,7 @@ static lib_i32 fs_gs_test_protected_pop(void)
 
         t_cpu after;
         lib_u16 selector = 0x0010u;
-        lib_i32 failed = !fs_gs_prepare_protected(&state);
+        lib_i32 failed = !fs_gs_prepare_protected(&state, profile);
         if (!failed) {
             state.cpu.data.fs.selector = 0x1111u;
             state.cpu.data.gs.selector = 0x2222u;
@@ -140,7 +141,7 @@ static lib_i32 fs_gs_test_protected_pop(void)
     return 1;
 }
 
-static lib_i32 fs_gs_test_pop_stack_fault(void)
+static lib_i32 fs_gs_test_pop_stack_fault(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = { 0xa1u, 0xa9u };
     lib_u8 opcode;
@@ -149,7 +150,7 @@ static lib_i32 fs_gs_test_pop_stack_fault(void)
         t_cpu after;
         lib_u16 before_selector;
         lib_u32 before_flags;
-        lib_i32 failed = !fs_gs_prepare_protected(&state);
+        lib_i32 failed = !fs_gs_prepare_protected(&state, profile);
         if (!failed) {
             state.cpu.data.ss.limit = 0x7fffu;
             state.cpu.data.esp = 0x8000u;
@@ -179,10 +180,16 @@ static lib_i32 fs_gs_test_pop_stack_fault(void)
 
 lib_i32 main(void)
 {
-    if (!fs_gs_test_real()) { lib_c_printf("FS-GS stage=real\n"); return 1; }
+    const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
     if (!fs_gs_test_80286_reject()) { lib_c_printf("FS-GS stage=reject\n"); return 1; }
-    if (!fs_gs_test_protected_pop()) { lib_c_printf("FS-GS stage=protected\n"); return 1; }
-    if (!fs_gs_test_pop_stack_fault()) return 1;
+    for (lib_size profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
+        if (!fs_gs_test_real(profiles[profile])) { lib_c_printf("FS-GS stage=real\n"); return 1; }
+        if (!fs_gs_test_protected_pop(profiles[profile])) { lib_c_printf("FS-GS stage=protected\n"); return 1; }
+        if (!fs_gs_test_pop_stack_fault(profiles[profile])) return 1;
+    }
     lib_c_printf("CPU-FS-GS-STACK:OK\n");
     return 0;
 }

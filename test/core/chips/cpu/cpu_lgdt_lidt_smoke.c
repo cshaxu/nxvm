@@ -39,16 +39,20 @@ static lib_i32 lgdt_lidt_case(core_machine_cpu_profile profile,
     state.cpu.data.eflags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF;
     before = state.cpu;
     if (!lgdt_lidt_run(&state, code, bytes, &after)) return 0;
-    if (idt) return after.data.idtr.limit == limit &&
-        after.data.idtr.base == (operand32 ? base : (base & 0x00ffffffu));
-    return after.data.gdtr.limit == limit &&
-        after.data.gdtr.base == (operand32 ? base : (base & 0x00ffffffu)) &&
+    return (idt ? after.data.idtr.limit == limit &&
+        after.data.idtr.base == (operand32 ? base : (base & 0x00ffffffu)) :
+        after.data.gdtr.limit == limit &&
+        after.data.gdtr.base == (operand32 ? base : (base & 0x00ffffffu))) &&
         after.data.eax == before.data.eax && after.data.ecx == before.data.ecx &&
         after.data.eflags == before.data.eflags;
 }
 
 static lib_i32 lgdt_lidt_test_values(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     static const lib_u8 lgdt[] = {0x0fu,0x01u,0x16u,0x00u,0x02u};
     static const lib_u8 lidt[] = {0x0fu,0x01u,0x1eu,0x00u,0x02u};
     static const lib_u8 lgdt32[] = {0x66u,0x0fu,0x01u,0x16u,0x00u,0x02u};
@@ -66,26 +70,31 @@ static lib_i32 lgdt_lidt_test_values(void)
         0x66u,0x67u,0x0fu,0x01u,0x1du,0x00u,0x02u,0x00u,0x00u
     };
 
-    return lgdt_lidt_case(CORE_MACHINE_CPU_PROFILE_80286, lgdt,
-            sizeof(lgdt), LIB_FALSE, LIB_FALSE) &&
-        lgdt_lidt_case(CORE_MACHINE_CPU_PROFILE_80286, lidt,
-            sizeof(lidt), LIB_TRUE, LIB_FALSE) &&
-        lgdt_lidt_case(CORE_MACHINE_CPU_PROFILE_80386, lgdt,
-            sizeof(lgdt), LIB_FALSE, LIB_FALSE) &&
-        lgdt_lidt_case(CORE_MACHINE_CPU_PROFILE_80386, lidt,
-            sizeof(lidt), LIB_TRUE, LIB_FALSE) &&
-        lgdt_lidt_case(CORE_MACHINE_CPU_PROFILE_80386, lgdt32,
-            sizeof(lgdt32), LIB_FALSE, LIB_TRUE) &&
-        lgdt_lidt_case(CORE_MACHINE_CPU_PROFILE_80386, lidt32,
-            sizeof(lidt32), LIB_TRUE, LIB_TRUE) &&
-        lgdt_lidt_case(CORE_MACHINE_CPU_PROFILE_80386, lgdt_address32,
-            sizeof(lgdt_address32), LIB_FALSE, LIB_FALSE) &&
-        lgdt_lidt_case(CORE_MACHINE_CPU_PROFILE_80386, lidt_address32,
-            sizeof(lidt_address32), LIB_TRUE, LIB_FALSE) &&
-        lgdt_lidt_case(CORE_MACHINE_CPU_PROFILE_80386, lgdt_both32,
-            sizeof(lgdt_both32), LIB_FALSE, LIB_TRUE) &&
-        lgdt_lidt_case(CORE_MACHINE_CPU_PROFILE_80386, lidt_both32,
-            sizeof(lidt_both32), LIB_TRUE, LIB_TRUE);
+    static const struct {
+        const lib_u8 *code;
+        lib_u8 bytes;
+        lib_bool idt, operand32;
+    } forms[] = {
+        {lgdt,sizeof(lgdt),LIB_FALSE,LIB_FALSE},
+        {lidt,sizeof(lidt),LIB_TRUE,LIB_FALSE},
+        {lgdt32,sizeof(lgdt32),LIB_FALSE,LIB_TRUE},
+        {lidt32,sizeof(lidt32),LIB_TRUE,LIB_TRUE},
+        {lgdt_address32,sizeof(lgdt_address32),LIB_FALSE,LIB_FALSE},
+        {lidt_address32,sizeof(lidt_address32),LIB_TRUE,LIB_FALSE},
+        {lgdt_both32,sizeof(lgdt_both32),LIB_FALSE,LIB_TRUE},
+        {lidt_both32,sizeof(lidt_both32),LIB_TRUE,LIB_TRUE}
+    };
+
+    for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
+        const lib_size count = profiles[profile] == CORE_MACHINE_CPU_PROFILE_80286 ?
+            2u : sizeof(forms) / sizeof(forms[0]);
+        for (lib_size form = 0u; form < count; ++form) {
+            if (!lgdt_lidt_case(profiles[profile], forms[form].code,
+                forms[form].bytes, forms[form].idt, forms[form].operand32)) return 0;
+        }
+    }
+    return 1;
 }
 
 static lib_i32 lgdt_lidt_expect_ud(core_machine_cpu_profile profile,
@@ -98,6 +107,9 @@ static lib_i32 lgdt_lidt_expect_ud(core_machine_cpu_profile profile,
 
 static lib_i32 lgdt_lidt_test_rejections(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     static const lib_u8 low[] = {0x0fu,0x01u,0x16u,0x00u,0x02u};
     static const lib_u8 register_form[] = {0x0fu,0x01u,0xd0u};
     static const lib_u8 lock[] = {0xf0u,0x0fu,0x01u,0x16u,0x00u,0x02u};
@@ -121,12 +133,14 @@ static lib_i32 lgdt_lidt_test_rejections(void)
         address[3] |= table << 3u;
         if (!lgdt_lidt_expect_ud(CORE_MACHINE_CPU_PROFILE_80186, low_code,
                 sizeof(low_code)) || !lgdt_lidt_expect_ud(
-                CORE_MACHINE_CPU_PROFILE_80386, direct, sizeof(direct)) ||
-            !lgdt_lidt_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, locked,
-                sizeof(locked)) || !lgdt_lidt_expect_ud(
                 CORE_MACHINE_CPU_PROFILE_80286, operand, sizeof(operand)) ||
             !lgdt_lidt_expect_ud(CORE_MACHINE_CPU_PROFILE_80286, address,
                 sizeof(address))) return 0;
+        for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+            ++profile) {
+            if (!lgdt_lidt_expect_ud(profiles[profile], direct, sizeof(direct)) ||
+                !lgdt_lidt_expect_ud(profiles[profile], locked, sizeof(locked))) return 0;
+        }
     }
     return 1;
 }

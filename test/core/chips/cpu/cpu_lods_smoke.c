@@ -144,22 +144,26 @@ static lib_i32 lods_test_rejections(void)
         {0xf0u, 0xf3u, 0x66u, 0x67u, 0xadu}
     };
     static const lib_u8 lock_bytes[] = {2u, 2u, 3u, 3u, 3u, 4u, 3u, 4u, 4u, 5u};
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile, form;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
         for (form = 0u; form != sizeof(prefix_bytes); ++form)
             if (!lods_expect_ud(profiles[profile], prefixes[form], prefix_bytes[form]))
                 return 0;
-    for (form = 0u; form != sizeof(lock_bytes); ++form)
-        if (!lods_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
-            locks[form], lock_bytes[form])) return 0;
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile)
+        for (form = 0u; form != sizeof(lock_bytes); ++form)
+            if (!lods_expect_ud(modern[profile],
+                locks[form], lock_bytes[form])) return 0;
     return 1;
 }
 
-static void lods_prepare_protected(cpu_instruction_fixture *state,
-    lib_u32 ds_limit)
+static void lods_prepare_protected(core_machine_cpu_profile profile,
+    cpu_instruction_fixture *state, lib_u32 ds_limit)
 {
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     lods_seed(state);
     state->cpu.data.cr0 |= VCPU_CR0_PE;
     state->cpu.data.cs.flagValid = LIB_TRUE;
@@ -183,7 +187,7 @@ static void lods_prepare_protected(cpu_instruction_fixture *state,
     state->cpu.data.ss.seg.data.writable = LIB_TRUE;
 }
 
-static lib_i32 lods_test_protected_limits(void)
+static lib_i32 lods_test_protected_limits(core_machine_cpu_profile profile)
 {
     static const lib_u8 single_codes[][2] = {{0xacu, 0u}, {0x66u, 0xadu}};
     static const lib_u8 rep_ac[] = {0xf3u, 0xacu};
@@ -195,7 +199,7 @@ static lib_i32 lods_test_protected_limits(void)
         lib_u32 source = 0x11223344u;
         lib_u8 width = form == 0u ? 1u : 4u;
 
-        lods_prepare_protected(&state, 0x0fu);
+        lods_prepare_protected(profile, &state, 0x0fu);
         lib_memory_copy(state.memory + 0x3010u, &source, width);
         lib_memory_copy(state.memory + 0x2000u, single_codes[form],
             form == 0u ? 1u : 2u);
@@ -223,7 +227,7 @@ static lib_i32 lods_test_protected_limits(void)
         t_cpu before, after;
         const lib_u8 first = 0x51u, second = 0x62u;
 
-        lods_prepare_protected(&state, 0x10u);
+        lods_prepare_protected(profile, &state, 0x10u);
         state.cpu.data.ecx = 0x11220003u;
         state.memory[0x3010u] = first;
         state.memory[0x3011u] = second;
@@ -255,7 +259,8 @@ lib_i32 main(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 ac = 0xacu, ad = 0xadu;
     static const lib_u8 dword[] = {0x66u, 0xadu}, addr[] = {0x67u, 0xacu};
@@ -271,6 +276,9 @@ lib_i32 main(void)
     static const lib_u32 byte_source[] = {0x51u, 0x62u, 0x73u};
     static const lib_u32 word_source[] = {0x1151u, 0x2262u, 0x3373u};
     static const lib_u32 dword_source[] = {0x10203040u, 0x50607080u, 0x90a0b0c0u};
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
@@ -285,35 +293,41 @@ lib_i32 main(void)
             lib_c_printf("LODS stage=profile profile=%u\n", profile);
             return 1;
         }
-    if (!lods_case(CORE_MACHINE_CPU_PROFILE_80386, dword, 2u, 4u, LIB_FALSE,
-        LIB_FALSE, 0x10010u, 0x12345678u) ||
-        !lods_case(CORE_MACHINE_CPU_PROFILE_80386, addr, 2u, 1u, LIB_TRUE,
-        LIB_FALSE, 0x11010u, 0x12345678u) ||
-        !lods_case(CORE_MACHINE_CPU_PROFILE_80386, both, 3u, 4u, LIB_TRUE,
-        LIB_FALSE, 0x11010u, 0x12345678u) ||
-        !lods_case(CORE_MACHINE_CPU_PROFILE_80386, &ad, 1u, 2u, LIB_FALSE,
-        LIB_TRUE, 0x10010u, 0x12345678u) ||
-        !lods_case(CORE_MACHINE_CPU_PROFILE_80386, cs, 2u, 1u, LIB_FALSE,
-        LIB_FALSE, 0x10u, 0x51u) ||
-        !lods_case(CORE_MACHINE_CPU_PROFILE_80386, ss, 2u, 1u, LIB_FALSE,
-        LIB_FALSE, 0x30010u, 0x52u) ||
-        !lods_case(CORE_MACHINE_CPU_PROFILE_80386, es, 2u, 1u, LIB_FALSE,
-        LIB_FALSE, 0x20010u, 0x53u) ||
-        !lods_case(CORE_MACHINE_CPU_PROFILE_80386, fs, 2u, 1u, LIB_FALSE,
-        LIB_FALSE, 0x40010u, 0x54u) ||
-        !lods_case(CORE_MACHINE_CPU_PROFILE_80386, gs, 2u, 1u, LIB_FALSE,
-        LIB_FALSE, 0x50010u, 0x55u) ||
-        !lods_rep_case(CORE_MACHINE_CPU_PROFILE_80386, rep_66_ad, 3u, 4u,
-        LIB_FALSE, LIB_FALSE, 3u, dword_source) ||
-        !lods_rep_case(CORE_MACHINE_CPU_PROFILE_80386, rep_67_ac, 3u, 1u,
-        LIB_TRUE, LIB_FALSE, 3u, byte_source) ||
-        !lods_rep_case(CORE_MACHINE_CPU_PROFILE_80386, rep_66_67_ad, 4u, 4u,
-        LIB_TRUE, LIB_FALSE, 3u, dword_source) ||
-        !lods_rep_case(CORE_MACHINE_CPU_PROFILE_80386, rep_ac, 2u, 1u,
-        LIB_FALSE, LIB_TRUE, 3u, byte_source) || !lods_test_rejections() ||
-        !lods_test_protected_limits()) {
-        lib_c_printf("LODS stage=extended\n");
+    if (!lods_test_rejections()) {
+        lib_c_printf("LODS stage=rejections\n");
         return 1;
+    }
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile) {
+        if (!lods_case(modern[profile], dword, 2u, 4u, LIB_FALSE,
+            LIB_FALSE, 0x10010u, 0x12345678u) ||
+            !lods_case(modern[profile], addr, 2u, 1u, LIB_TRUE,
+            LIB_FALSE, 0x11010u, 0x12345678u) ||
+            !lods_case(modern[profile], both, 3u, 4u, LIB_TRUE,
+            LIB_FALSE, 0x11010u, 0x12345678u) ||
+            !lods_case(modern[profile], &ad, 1u, 2u, LIB_FALSE,
+            LIB_TRUE, 0x10010u, 0x12345678u) ||
+            !lods_case(modern[profile], cs, 2u, 1u, LIB_FALSE,
+            LIB_FALSE, 0x10u, 0x51u) ||
+            !lods_case(modern[profile], ss, 2u, 1u, LIB_FALSE,
+            LIB_FALSE, 0x30010u, 0x52u) ||
+            !lods_case(modern[profile], es, 2u, 1u, LIB_FALSE,
+            LIB_FALSE, 0x20010u, 0x53u) ||
+            !lods_case(modern[profile], fs, 2u, 1u, LIB_FALSE,
+            LIB_FALSE, 0x40010u, 0x54u) ||
+            !lods_case(modern[profile], gs, 2u, 1u, LIB_FALSE,
+            LIB_FALSE, 0x50010u, 0x55u) ||
+            !lods_rep_case(modern[profile], rep_66_ad, 3u, 4u,
+            LIB_FALSE, LIB_FALSE, 3u, dword_source) ||
+            !lods_rep_case(modern[profile], rep_67_ac, 3u, 1u,
+            LIB_TRUE, LIB_FALSE, 3u, byte_source) ||
+            !lods_rep_case(modern[profile], rep_66_67_ad, 4u, 4u,
+            LIB_TRUE, LIB_FALSE, 3u, dword_source) ||
+            !lods_rep_case(modern[profile], rep_ac, 2u, 1u,
+            LIB_FALSE, LIB_TRUE, 3u, byte_source) ||
+            !lods_test_protected_limits(modern[profile])) {
+            lib_c_printf("LODS stage=extended\n");
+            return 1;
+        }
     }
     lib_c_printf("LODS:OK\n");
     lib_c_printf("LODS-PROFILES:OK\n");

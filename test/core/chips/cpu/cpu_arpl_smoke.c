@@ -108,7 +108,7 @@ static lib_i32 arpl_execute(cpu_instruction_fixture *state,
     return !state->execution.stop_requested && !state->fault.valid;
 }
 
-static lib_i32 arpl_test_registers(void)
+static lib_i32 arpl_test_registers(core_machine_cpu_profile profile)
 {
     lib_u8 destination, source;
 
@@ -124,10 +124,12 @@ static lib_i32 arpl_test_registers(void)
             const lib_u8 code[] = {0x63u,
                 (lib_u8)(0xc0u | (source << 3u) | destination)};
 
-            arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+            arpl_prepare(&state, profile);
             arpl_seed(&state.cpu);
-            arpl_set_register(&state.cpu, destination, dst);
-            arpl_set_register(&state.cpu, source, src);
+            arpl_set_register(&state.cpu, destination,
+                (arpl_register(&state.cpu, destination) & 0xffff0000u) | dst);
+            arpl_set_register(&state.cpu, source,
+                (arpl_register(&state.cpu, source) & 0xffff0000u) | src);
             before = state.cpu;
             if (!arpl_execute(&state, code, sizeof(code), &after) ||
                 (arpl_register(&after, destination) & 0xffff0000u) !=
@@ -144,7 +146,7 @@ static lib_i32 arpl_test_registers(void)
     return 1;
 }
 
-static lib_i32 arpl_test_flags(void)
+static lib_i32 arpl_test_flags(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x63u,0xcau};
     lib_u8 change;
@@ -153,7 +155,7 @@ static lib_i32 arpl_test_flags(void)
         cpu_instruction_fixture state;
         t_cpu before, after;
 
-        arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        arpl_prepare(&state, profile);
         arpl_seed(&state.cpu);
         state.cpu.data.edx = 0xc3c31201u;
         state.cpu.data.ecx = 0xb2b25600u | (change ? 3u : 1u);
@@ -203,15 +205,15 @@ static lib_i32 arpl_test_286_forms(void)
     return 1;
 }
 
-static lib_i32 arpl_test_memory_case(const lib_u8 *code, lib_u8 bytes,
-    lib_u32 address, lib_bool change)
+static lib_i32 arpl_test_memory_case(core_machine_cpu_profile profile,
+    const lib_u8 *code, lib_u8 bytes, lib_u32 address, lib_bool change)
 {
     cpu_instruction_fixture state;
     t_cpu before, after;
     const lib_u16 adjacent = 0x3ca5u;
     lib_u16 value = change ? 0x5a01u : 0x5a03u;
 
-    arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    arpl_prepare(&state, profile);
     arpl_seed(&state.cpu);
     state.cpu.data.ecx = 0xb2b20003u;
     state.cpu.data.ebp = 0xe5e50400u;
@@ -232,7 +234,7 @@ static lib_i32 arpl_test_memory_case(const lib_u8 *code, lib_u8 bytes,
         arpl_same_other_registers(&before, &after, 8u);
 }
 
-static lib_i32 arpl_test_memory(void)
+static lib_i32 arpl_test_memory(core_machine_cpu_profile profile)
 {
     static const lib_u8 ds[] = {0x63u,0x0eu,0x00u,0x04u};
     static const lib_u8 ss[] = {0x63u,0x4eu,0x00u};
@@ -243,16 +245,16 @@ static lib_i32 arpl_test_memory(void)
     static const lib_u8 combined[] = {0x66u,0x67u,0x63u,0x0eu};
     static const lib_u8 operand[] = {0x66u,0x63u,0x0eu,0x00u,0x04u};
 
-    return arpl_test_memory_case(ds, sizeof(ds), 0x3400u, LIB_TRUE) &&
-        arpl_test_memory_case(ss, sizeof(ss), 0x5400u, LIB_FALSE) &&
-        arpl_test_memory_case(es, sizeof(es), 0x4400u, LIB_TRUE) &&
-        arpl_test_memory_case(fs, sizeof(fs), 0x6400u, LIB_TRUE) &&
-        arpl_test_memory_case(gs, sizeof(gs), 0x7400u, LIB_TRUE) &&
-        arpl_test_memory_case(address32, sizeof(address32), 0x3400u,
+    return arpl_test_memory_case(profile, ds, sizeof(ds), 0x3400u, LIB_TRUE) &&
+        arpl_test_memory_case(profile, ss, sizeof(ss), 0x5400u, LIB_FALSE) &&
+        arpl_test_memory_case(profile, es, sizeof(es), 0x4400u, LIB_TRUE) &&
+        arpl_test_memory_case(profile, fs, sizeof(fs), 0x6400u, LIB_TRUE) &&
+        arpl_test_memory_case(profile, gs, sizeof(gs), 0x7400u, LIB_TRUE) &&
+        arpl_test_memory_case(profile, address32, sizeof(address32), 0x3400u,
             LIB_TRUE) &&
-        arpl_test_memory_case(combined, sizeof(combined), 0x3400u,
+        arpl_test_memory_case(profile, combined, sizeof(combined), 0x3400u,
             LIB_TRUE) &&
-        arpl_test_memory_case(operand, sizeof(operand), 0x3400u,
+        arpl_test_memory_case(profile, operand, sizeof(operand), 0x3400u,
             LIB_TRUE);
 }
 
@@ -288,6 +290,9 @@ static lib_i32 arpl_test_rejections(void)
         {0xf0u,0x67u,0x63u,0xc8u,0u},
         {0xf0u,0x66u,0x67u,0x63u,0xc8u}
     };
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile, form;
 
     for (profile = 0u; profile != 3u; ++profile)
@@ -296,20 +301,23 @@ static lib_i32 arpl_test_rejections(void)
         for (form = 0u; form != 3u; ++form)
             if (!arpl_expect_ud(legacy[profile], attributes[form],
                 form == 2u ? 4u : 3u)) return 0;
-    for (form = 0u; form != 4u; ++form)
-        if (!arpl_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, locks[form],
-            form == 3u ? 5u : 4u)) return 0;
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile) {
+        if (!arpl_expect_ud(modern[profile], basic, sizeof(basic))) return 0;
+        for (form = 0u; form != 4u; ++form)
+            if (!arpl_expect_ud(modern[profile], locks[form],
+                form == 3u ? 5u : 4u)) return 0;
+    }
     return 1;
 }
 
-static lib_i32 arpl_test_protected_limit(void)
+static lib_i32 arpl_test_protected_limit(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x63u,0x0eu,0x00u,0x04u};
     cpu_instruction_fixture state;
     t_cpu before, after;
     const lib_u16 value = 0x5a01u;
 
-    arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    arpl_prepare(&state, profile);
     arpl_seed(&state.cpu);
     state.cpu.data.ecx = 3u;
     state.cpu.data.ds.limit = 0x000fu;
@@ -344,21 +352,24 @@ static lib_i32 arpl_test_metadata(void)
 
 lib_i32 main(void)
 {
-    lib_i32 registers = arpl_test_registers();
-    lib_i32 flags = arpl_test_flags();
-    lib_i32 forms286 = arpl_test_286_forms();
-    lib_i32 limit = arpl_test_protected_limit();
-    lib_i32 memory = arpl_test_memory();
-    lib_i32 rejections = arpl_test_rejections();
-    lib_i32 metadata = arpl_test_metadata();
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
 
-    if (!registers || !flags || !forms286 || !limit || !memory ||
-        !rejections || !metadata) {
-        lib_c_fprintf(lib_c_stderr,
-            "ARPL CPU failed register=%d flags=%d 286=%d limit=%d memory=%d reject=%d metadata=%d\n",
-            registers, flags, forms286, limit, memory, rejections,
-            metadata);
-        return 1;
+    if (!arpl_test_286_forms() || !arpl_test_rejections() ||
+        !arpl_test_metadata()) return 1;
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        const lib_i32 registers = arpl_test_registers(profiles[index]);
+        const lib_i32 flags = arpl_test_flags(profiles[index]);
+        const lib_i32 limit = arpl_test_protected_limit(profiles[index]);
+        const lib_i32 memory = arpl_test_memory(profiles[index]);
+
+        if (!registers || !flags || !limit || !memory) {
+            lib_c_fprintf(lib_c_stderr,
+                "ARPL CPU failed profile=%u register=%d flags=%d limit=%d memory=%d\n",
+                profiles[index], registers, flags, limit, memory);
+            return 1;
+        }
     }
     lib_c_printf("ARPL-CPU:OK\n");
     return 0;

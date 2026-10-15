@@ -12,7 +12,8 @@
 
 
 /* Full cached CPU rollback belongs to the CPU owner, not the PC board. */
-static lib_i32 vm86_delivery_prepare(cpu_instruction_fixture *state, lib_u8 vector)
+static lib_i32 vm86_delivery_prepare(cpu_instruction_fixture *state,
+    core_machine_cpu_profile profile, lib_u8 vector)
 {
     static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0x40u,0,
@@ -24,7 +25,7 @@ static lib_i32 vm86_delivery_prepare(cpu_instruction_fixture *state, lib_u8 vect
     lib_u16 ss0 = 0x0010u;
     t_cpu *cpu;
 
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     idt[vector * 8u] = 0u; idt[vector * 8u + 1u] = 0x01u;
     idt[vector * 8u + 2u] = 0x08u; idt[vector * 8u + 5u] = 0x8eu;
     idt[8u] = 0u; idt[9u] = 0x01u; idt[10u] = 0x08u; idt[13u] = 0x8eu;
@@ -35,7 +36,7 @@ static lib_i32 vm86_delivery_prepare(cpu_instruction_fixture *state, lib_u8 vect
     state->memory[VM86_HANDLER_BASE] = 0xf4u;
     cpu = &state->cpu;
     cpu->data.cr0 = VCPU_CR0_PE;
-    cpu->data.eflags = CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF;
+    cpu->data.eflags = 2u | CORE_MACHINE_DEBUG_EFLAGS_VM | CORE_MACHINE_DEBUG_EFLAGS_IF;
     cpu->data.idtr.flagValid = LIB_TRUE; cpu->data.idtr.sregtype = SREG_IDTR;
     cpu->data.idtr.base = VM86_IDT_BASE; cpu->data.idtr.limit = sizeof(idt) - 1u;
     cpu->data.gdtr.flagValid = LIB_TRUE; cpu->data.gdtr.sregtype = SREG_GDTR;
@@ -87,9 +88,9 @@ static lib_i32 vm86_delivery_expect_prepublication(cpu_instruction_fixture *stat
         lib_memory_compare(&before, &after, sizeof(before)) == 0 &&
         lib_memory_compare(stack_before, stack_after, sizeof(stack_before)) == 0;
 }
-static lib_i32 vm86_delivery_invalid_gate(void)
+static lib_i32 vm86_delivery_invalid_gate(core_machine_cpu_profile profile)
 {
-    cpu_instruction_fixture state; lib_i32 failed = !vm86_delivery_prepare(&state, 6u);
+    cpu_instruction_fixture state; lib_i32 failed = !vm86_delivery_prepare(&state, profile, 6u);
     if (!failed) {
         lib_u8 absent[8u] = {0u};
         failed |= vm86_state_write(&state, VM86_IDT_BASE + 6u * 8u, absent,
@@ -97,9 +98,9 @@ static lib_i32 vm86_delivery_invalid_gate(void)
     }
     return !failed;
 }
-static lib_i32 vm86_delivery_bad_gate_access(lib_u8 access)
+static lib_i32 vm86_delivery_bad_gate_access(core_machine_cpu_profile profile, lib_u8 access)
 {
-    cpu_instruction_fixture state; lib_i32 failed = !vm86_delivery_prepare(&state, 6u);
+    cpu_instruction_fixture state; lib_i32 failed = !vm86_delivery_prepare(&state, profile, 6u);
     if (!failed) {
         failed |= vm86_state_write(&state, VM86_IDT_BASE + 6u * 8u + 5u,
             &access, sizeof(access)) != LIB_STATUS_OK ||
@@ -107,18 +108,18 @@ static lib_i32 vm86_delivery_bad_gate_access(lib_u8 access)
     }
     return !failed;
 }
-static lib_i32 vm86_delivery_invalid_tss(void)
+static lib_i32 vm86_delivery_invalid_tss(core_machine_cpu_profile profile)
 {
-    cpu_instruction_fixture state; lib_i32 failed = !vm86_delivery_prepare(&state, 6u);
+    cpu_instruction_fixture state; lib_i32 failed = !vm86_delivery_prepare(&state, profile, 6u);
     if (!failed) {
         state.cpu.data.tr.flagValid = LIB_FALSE;
         failed |= !vm86_delivery_expect_prepublication(&state);
     }
     return !failed;
 }
-static lib_i32 vm86_delivery_bad_tss(lib_i32 short_tss)
+static lib_i32 vm86_delivery_bad_tss(core_machine_cpu_profile profile, lib_i32 short_tss)
 {
-    cpu_instruction_fixture state; lib_i32 failed = !vm86_delivery_prepare(&state, 6u);
+    cpu_instruction_fixture state; lib_i32 failed = !vm86_delivery_prepare(&state, profile, 6u);
     if (!failed) {
         if (short_tss) state.cpu.data.tr.limit = 7u;
         else state.cpu.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_AVL;
@@ -126,20 +127,20 @@ static lib_i32 vm86_delivery_bad_tss(lib_i32 short_tss)
     }
     return !failed;
 }
-static lib_i32 vm86_delivery_invalid_ss0(void)
+static lib_i32 vm86_delivery_invalid_ss0(core_machine_cpu_profile profile)
 {
     cpu_instruction_fixture state; lib_u16 ss0 = 0u;
-    lib_i32 failed = !vm86_delivery_prepare(&state, 6u);
+    lib_i32 failed = !vm86_delivery_prepare(&state, profile, 6u);
     if (!failed) {
         failed |= vm86_state_write(&state, VM86_TSS_BASE + 8u, &ss0,
             sizeof(ss0)) != LIB_STATUS_OK || !vm86_delivery_expect_prepublication(&state);
     }
     return !failed;
 }
-static lib_i32 vm86_delivery_bad_ss0(lib_u16 ss0, lib_u8 access,
+static lib_i32 vm86_delivery_bad_ss0(core_machine_cpu_profile profile, lib_u16 ss0, lib_u8 access,
     lib_u32 esp0)
 {
-    cpu_instruction_fixture state; lib_i32 failed = !vm86_delivery_prepare(&state, 6u);
+    cpu_instruction_fixture state; lib_i32 failed = !vm86_delivery_prepare(&state, profile, 6u);
     if (!failed) {
         failed |= vm86_state_write(&state, VM86_TSS_BASE + 4u, &esp0,
             sizeof(esp0)) != LIB_STATUS_OK || vm86_state_write(&state,
@@ -149,12 +150,12 @@ static lib_i32 vm86_delivery_bad_ss0(lib_u16 ss0, lib_u8 access,
     }
     return !failed;
 }
-static lib_i32 vm86_delivery_short_stack(void)
+static lib_i32 vm86_delivery_short_stack(core_machine_cpu_profile profile)
 {
     cpu_instruction_fixture state; lib_u8 limit_lo = 0x1fu;
     lib_u8 limit_hi = 0u; lib_u8 flags = 0x40u;
     lib_u32 esp0 = 0x00000020u;
-    lib_i32 failed = !vm86_delivery_prepare(&state, 6u);
+    lib_i32 failed = !vm86_delivery_prepare(&state, profile, 6u);
     if (!failed) {
         failed |= vm86_state_write(&state, VM86_TSS_BASE + 4u, &esp0,
             sizeof(esp0)) != LIB_STATUS_OK || vm86_state_write(&state,
@@ -167,13 +168,13 @@ static lib_i32 vm86_delivery_short_stack(void)
     return !failed;
 }
 
-static lib_bool vm86_state_delivery(lib_u8 vector, const lib_u8 *code,
+static lib_bool vm86_state_delivery(core_machine_cpu_profile profile, lib_u8 vector, const lib_u8 *code,
     lib_u8 bytes, lib_bool trap, lib_bool breakpoint)
 {
     cpu_instruction_fixture state;
     lib_u32 frame[10] = {0};
     const lib_bool error_frame = vector == 13u;
-    if (!vm86_delivery_prepare(&state, vector)) return LIB_FALSE;
+    if (!vm86_delivery_prepare(&state, profile, vector)) return LIB_FALSE;
     lib_memory_copy(state.memory + 0x2000u, code, bytes);
     if (vector == 7u) state.cpu.data.cr0 |= VCPU_CR0_EM;
     if (trap) state.cpu.data.eflags |= VCPU_EFLAGS_TF;
@@ -189,6 +190,7 @@ static lib_bool vm86_state_delivery(lib_u8 vector, const lib_u8 *code,
     return !state.execution.stop_requested && !state.fault.valid &&
         state.delivered_exception.valid &&
         state.delivered_exception.exception_mask == (1u << vector) &&
+        (!error_frame || state.delivered_exception.exception_code == 0u) &&
         state.cpu.data.eip == 0x101u && state.cpu.data.cs.selector == 8u &&
         state.cpu.data.ss.selector == 0x10u &&
         !state.cpu.data.es.flagValid && !state.cpu.data.ds.flagValid &&
@@ -196,9 +198,10 @@ static lib_bool vm86_state_delivery(lib_u8 vector, const lib_u8 *code,
         state.cpu.data.esp == VM86_STACK_TOP - (error_frame ? 40u : 36u) &&
         (state.cpu.data.eflags & (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF)) == 0u &&
         (!breakpoint || (state.cpu.data.dr6 & 1u) != 0u) &&
+        (!error_frame || frame[0] == 0u) &&
         frame[error_frame ? 1u : 0u] == (trap ? 1u : 0u) &&
         frame[error_frame ? 2u : 1u] == 0x200u &&
-        frame[error_frame ? 3u : 2u] == (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF |
+        frame[error_frame ? 3u : 2u] == (2u | VCPU_EFLAGS_VM | VCPU_EFLAGS_IF |
             (trap ? VCPU_EFLAGS_TF : VCPU_EFLAGS_RF)) &&
         frame[error_frame ? 4u : 3u] == 0x1234u &&
         frame[error_frame ? 5u : 4u] == 0x300u &&
@@ -208,11 +211,11 @@ static lib_bool vm86_state_delivery(lib_u8 vector, const lib_u8 *code,
         frame[error_frame ? 9u : 8u] == 0x700u;
 }
 
-static lib_bool vm86_state_nmi(lib_bool masked)
+static lib_bool vm86_state_nmi(core_machine_cpu_profile profile, lib_bool masked)
 {
     cpu_instruction_fixture state;
     const lib_u8 nop = 0x90u;
-    if (!vm86_delivery_prepare(&state, 2u)) return LIB_FALSE;
+    if (!vm86_delivery_prepare(&state, profile, 2u)) return LIB_FALSE;
     state.memory[0x2000u] = nop;
     state.execution.nmi_pending = LIB_TRUE;
     state.execution.nmi_masked = masked;
@@ -242,7 +245,7 @@ static lib_status vm86_irq_acknowledge(void *opaque, lib_u8 *vector)
     return LIB_STATUS_OK;
 }
 
-static lib_bool vm86_state_irq(void)
+static lib_bool vm86_state_irq(core_machine_cpu_profile profile)
 {
     vm86_irq_state state;
     const core_machine_instruction_timing timing = {.base_ticks = 1u};
@@ -250,11 +253,13 @@ static lib_bool vm86_state_irq(void)
         .read_memory = cpu_instruction_read,
         .write_memory = cpu_instruction_write,
         .interrupt_pending = vm86_irq_pending,
-        .acknowledge_interrupt = vm86_irq_acknowledge
+        .acknowledge_interrupt = vm86_irq_acknowledge,
+        .special_cycle = cpu_instruction_special_cycle,
+        .cancel_special_cycle = cpu_instruction_cancel_special_cycle
     };
     cpu_instruction_fixture *const fixture = &state.fixture;
     lib_u32 frame[9] = {0};
-    if (!vm86_delivery_prepare(fixture, 0x20u)) return LIB_FALSE;
+    if (!vm86_delivery_prepare(fixture, profile, 0x20u)) return LIB_FALSE;
     fixture->memory[0x2000u] = 0x90u;
     state.pending = LIB_TRUE;
     /* The first member is the CPU fixture consumed by its memory callbacks.
@@ -262,7 +267,7 @@ static lib_bool vm86_state_irq(void)
     core_machine_cpu_execution_context_initialize(&fixture->execution,
         &fixture->cpu, &fixture->instructions, &bus, &state);
     core_machine_cpu_execution_context_bind_profiles(&fixture->execution,
-        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+        profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
     core_machine_cpu_execution_context_bind_diagnostic_provider(&fixture->execution,
         &cpu_instruction_diagnostics, fixture);
     core_machine_cpu_execution_refresh(&fixture->execution);
@@ -274,32 +279,43 @@ static lib_bool vm86_state_irq(void)
         !fixture->cpu.data.gs.flagValid && fixture->cpu.data.eip == 0x101u &&
         fixture->cpu.data.esp == VM86_STACK_TOP - 36u &&
         frame[0] == 1u && frame[1] == 0x200u &&
-        frame[2] == (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF) &&
+        frame[2] == (2u | VCPU_EFLAGS_VM | VCPU_EFLAGS_IF) &&
         frame[3] == 0x1234u && frame[4] == 0x300u && frame[5] == 0x500u &&
         frame[6] == 0x400u && frame[7] == 0x600u && frame[8] == 0x700u;
 }
 
 lib_i32 main(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     static const lib_u8 ud[] = {0x0fu,0x0bu};
     static const lib_u8 gp[] = {0xfau};
     static const lib_u8 nm[] = {0xd8u,0xc0u};
     static const lib_u8 nop[] = {0x90u};
-    if (!vm86_state_irq() || !vm86_state_nmi(LIB_FALSE) || !vm86_state_nmi(LIB_TRUE) ||
-        !vm86_state_delivery(6u, ud, sizeof(ud), LIB_FALSE, LIB_FALSE) ||
-        !vm86_state_delivery(13u, gp, sizeof(gp), LIB_FALSE, LIB_FALSE) ||
-        !vm86_state_delivery(7u, nm, sizeof(nm), LIB_FALSE, LIB_FALSE) ||
-        !vm86_state_delivery(1u, nop, sizeof(nop), LIB_TRUE, LIB_FALSE) ||
-        !vm86_state_delivery(1u, nop, sizeof(nop), LIB_FALSE, LIB_TRUE)) return 1;
-    if (!vm86_delivery_invalid_gate() ||
-        !vm86_delivery_bad_gate_access(0x0eu) ||
-        !vm86_delivery_bad_gate_access(0x80u) ||
-        !vm86_delivery_invalid_tss() || !vm86_delivery_bad_tss(0) ||
-        !vm86_delivery_bad_tss(1) || !vm86_delivery_invalid_ss0() ||
-        !vm86_delivery_bad_ss0(0x0013u, 0x92u, VM86_STACK_TOP) ||
-        !vm86_delivery_bad_ss0(0x0010u, 0x12u, VM86_STACK_TOP) ||
-        !vm86_delivery_bad_ss0(0x0010u, 0x90u, VM86_STACK_TOP) ||
-        !vm86_delivery_short_stack()) return 1;
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        const core_machine_cpu_profile profile = profiles[index];
+
+        if (!vm86_state_irq(profile) || !vm86_state_nmi(profile, LIB_FALSE) ||
+            !vm86_state_nmi(profile, LIB_TRUE) ||
+            !vm86_state_delivery(profile, 6u, ud, sizeof(ud), LIB_FALSE, LIB_FALSE) ||
+            !vm86_state_delivery(profile, 13u, gp, sizeof(gp), LIB_FALSE, LIB_FALSE) ||
+            !vm86_state_delivery(profile, 7u, nm, sizeof(nm), LIB_FALSE, LIB_FALSE) ||
+            !vm86_state_delivery(profile, 1u, nop, sizeof(nop), LIB_TRUE, LIB_FALSE) ||
+            !vm86_state_delivery(profile, 1u, nop, sizeof(nop), LIB_FALSE, LIB_TRUE) ||
+            !vm86_delivery_invalid_gate(profile) ||
+            !vm86_delivery_bad_gate_access(profile, 0x0eu) ||
+            !vm86_delivery_bad_gate_access(profile, 0x80u) ||
+            !vm86_delivery_invalid_tss(profile) || !vm86_delivery_bad_tss(profile, 0) ||
+            !vm86_delivery_bad_tss(profile, 1) || !vm86_delivery_invalid_ss0(profile) ||
+            !vm86_delivery_bad_ss0(profile, 0x0013u, 0x92u, VM86_STACK_TOP) ||
+            !vm86_delivery_bad_ss0(profile, 0x0010u, 0x12u, VM86_STACK_TOP) ||
+            !vm86_delivery_bad_ss0(profile, 0x0010u, 0x90u, VM86_STACK_TOP) ||
+            !vm86_delivery_short_stack(profile)) {
+            lib_c_printf("VM86-DELIVERY-CPU:profile=%u:FAILED\n", profile);
+            return 1;
+        }
+    }
     lib_c_printf("VM86-FULL-ROLLBACK:OK\n");
     return 0;
 }

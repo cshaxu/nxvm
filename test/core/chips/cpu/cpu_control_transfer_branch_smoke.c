@@ -19,7 +19,7 @@ static lib_i32 control_transfer_test_short_jcc(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286
     };
     static const control_transfer_jcc_case cases[] = {
         {0x70u,VCPU_EFLAGS_OF}, {0x71u,0u},
@@ -62,6 +62,153 @@ static lib_i32 control_transfer_test_short_jcc(void)
     return 1;
 }
 
+static lib_i32 control_transfer_test_condition_matrix(core_machine_cpu_profile profile)
+{
+    for (lib_u32 context = 0u; context < 384u; ++context) {
+        const lib_u8 mode = (lib_u8)(context % 6u);
+        const lib_bool code32 = ((context / 6u) & 1u) != 0u;
+        const lib_u8 prefixes = (lib_u8)((context / 12u) & 3u);
+        const lib_bool near_form = ((context / 48u) & 1u) != 0u;
+        const lib_bool backward = ((context / 96u) & 1u) != 0u;
+        const lib_u32 origin = context >= 192u ? 0x10000u : 0u;
+        const lib_bool operand32 = code32 != ((prefixes & 1u) != 0u);
+        cpu_instruction_fixture state;
+
+        if (code32 && (mode == 0u || mode == 5u)) continue;
+        if (origin != 0u && !code32) continue;
+        cpu_instruction_prepare(&state, profile);
+        if (mode != 0u) cpu_instruction_prepare_protected_exception(
+            &state, mode == 5u ? 4u : (lib_u8)(mode - 1u));
+        state.cpu.data.cs.seg.exec.defsize = code32;
+        if (origin != 0u) state.cpu.data.cs.limit = 0x1ffffu;
+        state.cpu.data.eax = 0x123456a5u;
+        state.cpu.data.ecx = 0x89abcdefu;
+        for (lib_u32 index = 0u; index < 512u; ++index) {
+            const lib_u8 condition = (lib_u8)(index & 15u);
+            const lib_u8 image = (lib_u8)(index >> 4u);
+            const lib_bool cf = (image & 1u) != 0u;
+            const lib_bool pf = (image & 2u) != 0u;
+            const lib_bool zf = (image & 4u) != 0u;
+            const lib_bool sf = (image & 8u) != 0u;
+            const lib_bool of = (image & 16u) != 0u;
+            const lib_bool taken[] = {of,!of,cf,!cf,zf,!zf,cf || zf,
+                !cf && !zf,sf,!sf,pf,!pf,sf != of,sf == of,
+                zf || sf != of,!zf && sf == of};
+            const lib_u8 displacement_bytes = near_form ?
+                (operand32 ? 4u : 2u) : 1u;
+            lib_u8 code[8] = {0u};
+            lib_u8 bytes = 0u;
+            t_cpu expected;
+            t_cpu after;
+
+            if ((prefixes & 1u) != 0u) code[bytes++] = 0x66u;
+            if ((prefixes & 2u) != 0u) code[bytes++] = 0x67u;
+            if (near_form) code[bytes++] = 0x0fu;
+            code[bytes++] = (lib_u8)((near_form ? 0x80u : 0x70u) | condition);
+            for (lib_u8 byte = 0u; byte < displacement_bytes; ++byte)
+                code[bytes++] = backward ? 0xffu : (byte == 0u ? 17u : 0u);
+            state.cpu.data.eip = origin;
+            state.cpu.data.eflags = 2u | VCPU_EFLAGS_AF | VCPU_EFLAGS_DF |
+                VCPU_EFLAGS_IF | (mode == 5u ? VCPU_EFLAGS_VM : 0u) |
+                (cf ? VCPU_EFLAGS_CF : 0u) | (pf ? VCPU_EFLAGS_PF : 0u) |
+                (zf ? VCPU_EFLAGS_ZF : 0u) | (sf ? VCPU_EFLAGS_SF : 0u) |
+                (of ? VCPU_EFLAGS_OF : 0u);
+            expected = state.cpu;
+            expected.data.eip = origin + bytes;
+            if (taken[condition]) {
+                expected.data.eip += backward ? 0xffffffffu : 17u;
+                if (!operand32) expected.data.eip &= 0xffffu;
+            }
+            lib_memory_copy(state.memory + origin, code, bytes);
+            core_machine_cpu_execution_invalidate_prefetch(&state.execution);
+            if (cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK ||
+                state.fault.valid ||
+                state.delivered_exception.valid || state.writes != 0u ||
+                core_machine_cpu_is_shutdown(&state.execution) ||
+                lib_memory_compare(&expected, &after, sizeof(after)) != 0) {
+                lib_c_fprintf(lib_c_stderr,
+                    "JCC:MATRIX profile=%u context=%u case=%u eip=%x/%x\n",
+                    profile, context, index, after.data.eip, expected.data.eip);
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+static lib_i32 control_transfer_test_counter_matrix(core_machine_cpu_profile profile)
+{
+    static const lib_u32 counts[] = {0u,1u,2u,0xffffu,0x10000u,0xffffffffu,
+        0xabcd0002u,0x12340002u};
+
+    for (lib_u32 context = 0u; context < 192u; ++context) {
+        const lib_u8 mode = (lib_u8)(context % 6u);
+        const lib_bool code32 = ((context / 6u) & 1u) != 0u;
+        const lib_u8 prefixes = (lib_u8)((context / 12u) & 3u);
+        const lib_bool backward = ((context / 48u) & 1u) != 0u;
+        const lib_u32 origin = context >= 96u ? 0x10000u : 0u;
+        const lib_bool address32 = code32 != ((prefixes & 2u) != 0u);
+        const lib_bool operand32 = code32 != ((prefixes & 1u) != 0u);
+        cpu_instruction_fixture state;
+
+        if (code32 && (mode == 0u || mode == 5u)) continue;
+        if (origin != 0u && !code32) continue;
+        cpu_instruction_prepare(&state, profile);
+        if (mode != 0u) cpu_instruction_prepare_protected_exception(
+            &state, mode == 5u ? 4u : (lib_u8)(mode - 1u));
+        state.cpu.data.cs.seg.exec.defsize = code32;
+        if (origin != 0u) state.cpu.data.cs.limit = 0x1ffffu;
+        state.cpu.data.eax = 0x123456a5u;
+        for (lib_u32 index = 0u; index < 64u; ++index) {
+            const lib_u8 operation = (lib_u8)(index & 3u);
+            const lib_bool zf = (index & 4u) != 0u;
+            const lib_u32 count = counts[index >> 3u];
+            const lib_u32 active = address32 ? count : count & 0xffffu;
+            const lib_u32 remaining = operation == 3u ? active :
+                ((active - 1u) & (address32 ? 0xffffffffu : 0xffffu));
+            const lib_bool taken = operation == 3u ? active == 0u :
+                remaining != 0u && (operation == 2u ||
+                    (operation == 1u ? zf : !zf));
+            lib_u8 code[4];
+            lib_u8 bytes = 0u;
+            t_cpu expected;
+            t_cpu after;
+
+            if ((prefixes & 1u) != 0u) code[bytes++] = 0x66u;
+            if ((prefixes & 2u) != 0u) code[bytes++] = 0x67u;
+            code[bytes++] = (lib_u8)(0xe0u | operation);
+            code[bytes++] = backward ? 0xffu : 17u;
+            state.cpu.data.eip = origin;
+            state.cpu.data.ecx = count;
+            state.cpu.data.eflags = 2u | VCPU_EFLAGS_CF | VCPU_EFLAGS_OF |
+                VCPU_EFLAGS_AF | VCPU_EFLAGS_DF | VCPU_EFLAGS_IF |
+                (zf ? VCPU_EFLAGS_ZF : 0u) | (mode == 5u ? VCPU_EFLAGS_VM : 0u);
+            expected = state.cpu;
+            if (operation != 3u) expected.data.ecx = address32 ? remaining :
+                (count & 0xffff0000u) | remaining;
+            expected.data.eip = origin + bytes;
+            if (taken) {
+                expected.data.eip += backward ? 0xffffffffu : 17u;
+                if (!operand32) expected.data.eip &= 0xffffu;
+            }
+            lib_memory_copy(state.memory + origin, code, bytes);
+            core_machine_cpu_execution_invalidate_prefetch(&state.execution);
+            if (cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK ||
+                state.fault.valid ||
+                state.delivered_exception.valid || state.writes != 0u ||
+                core_machine_cpu_is_shutdown(&state.execution) ||
+                lib_memory_compare(&expected, &after, sizeof(after)) != 0) {
+                lib_c_fprintf(lib_c_stderr,
+                    "LOOP-JCXZ:MATRIX profile=%u context=%u case=%u ecx=%x/%x eip=%x/%x\n",
+                    profile, context, index, after.data.ecx, expected.data.ecx,
+                    after.data.eip, expected.data.eip);
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
 static lib_i32 control_transfer_test_zero_displacement_timing(void)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -94,88 +241,23 @@ static lib_i32 control_transfer_test_zero_displacement_timing(void)
     return 1;
 }
 
-static lib_i32 control_transfer_test_jumps_and_near_jcc(void)
+static lib_i32 control_transfer_test_jumps(core_machine_cpu_profile profile)
 {
     static const lib_u8 code32_jumps[][6] = {
         { 0xebu,2u }, { 0xe9u,2u,0u,0u,0u },
         { 0x66u,0xe9u,2u,0u }
     };
     static const lib_u8 jump_sizes[] = { 2u, 5u, 4u };
-    static const lib_u8 near_jcc_code32[] = { 0x0fu,0x84u,2u,0u,0u,0u };
-    static const lib_u8 near_jcc_code16[] = { 0x66u,0x0fu,0x84u,2u,0u };
-    static const lib_u8 near_jcc_default16[] = { 0x0fu,0x84u,2u,0u };
-    static const lib_u8 near_jcc_default32[] = {
-        0x66u,0x0fu,0x84u,2u,0u,0u,0u
-    };
-    static const control_transfer_jcc_case conditions[] = {
-        {0x80u,VCPU_EFLAGS_OF}, {0x81u,0u},
-        {0x82u,VCPU_EFLAGS_CF}, {0x83u,0u},
-        {0x84u,VCPU_EFLAGS_ZF}, {0x85u,0u},
-        {0x86u,VCPU_EFLAGS_CF}, {0x87u,0u},
-        {0x88u,VCPU_EFLAGS_SF}, {0x89u,0u},
-        {0x8au,VCPU_EFLAGS_PF}, {0x8bu,0u},
-        {0x8cu,VCPU_EFLAGS_SF}, {0x8du,0u},
-        {0x8eu,VCPU_EFLAGS_ZF}, {0x8fu,0u}
-    };
 
     for (lib_size form = 0u; form < sizeof(code32_jumps) / sizeof(code32_jumps[0]);
         ++form) {
         cpu_instruction_fixture state;
         t_cpu after;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         state.cpu.data.cs.seg.data.big = LIB_TRUE;
         if (!control_transfer_run(&state, code32_jumps[form], jump_sizes[form],
             &after) || after.data.eip != jump_sizes[form] + 2u) return 0;
-    }
-    for (lib_size form = 0u; form < sizeof(conditions) / sizeof(conditions[0]);
-        ++form) {
-        lib_u8 code32[sizeof(near_jcc_code32)];
-        cpu_instruction_fixture state;
-        t_cpu before;
-        t_cpu after;
-
-        lib_memory_copy(code32, near_jcc_code32, sizeof(code32));
-        code32[1] = conditions[form].opcode;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-        state.cpu.data.cs.seg.data.big = LIB_TRUE;
-        state.cpu.data.eax = 0x123456a5u;
-        state.cpu.data.eflags = 0x00000002u | conditions[form].taken_flags;
-        before = state.cpu;
-        if (!control_transfer_run(&state, code32, sizeof(code32), &after) ||
-            after.data.eip != 8u || after.data.eax != before.data.eax ||
-            after.data.eflags != before.data.eflags) return 0;
-
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-        state.cpu.data.cs.seg.data.big = LIB_TRUE;
-        state.cpu.data.eflags = 0x00000002u |
-            conditions[form ^ 1u].taken_flags;
-        if (!control_transfer_run(&state, code32, sizeof(code32), &after) ||
-            after.data.eip != sizeof(code32)) return 0;
-    }
-    {
-        cpu_instruction_fixture state;
-        t_cpu after;
-
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-        state.cpu.data.cs.seg.data.big = LIB_TRUE;
-        state.cpu.data.eflags = VCPU_EFLAGS_ZF | 0x00000002u;
-        if (!control_transfer_run(&state, near_jcc_code16,
-            sizeof(near_jcc_code16), &after) ||
-            after.data.eip != sizeof(near_jcc_code16) + 2u) return 0;
-    }
-    for (lib_size form = 0u; form != 2u; ++form) {
-        const lib_u8 *code = form == 0u ? near_jcc_default16 :
-            near_jcc_default32;
-        const lib_u8 bytes = form == 0u ? sizeof(near_jcc_default16) :
-            sizeof(near_jcc_default32);
-        cpu_instruction_fixture state;
-        t_cpu after;
-
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-        state.cpu.data.eflags = VCPU_EFLAGS_ZF | 0x00000002u;
-        if (!control_transfer_run(&state, code, bytes, &after) ||
-            after.data.eip != bytes + 2u) return 0;
     }
     return 1;
 }
@@ -184,7 +266,7 @@ static lib_i32 control_transfer_test_loop_and_jcxz(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286
     };
     static const lib_u8 opcodes[] = { 0xe0u, 0xe1u, 0xe2u };
 
@@ -235,43 +317,12 @@ static lib_i32 control_transfer_test_loop_and_jcxz(void)
     return 1;
 }
 
-static lib_i32 control_transfer_test_386_address_forms(void)
-{
-    static const lib_u8 loop[] = { 0xe2u,2u };
-    static const lib_u8 address_loop[] = { 0x67u,0xe2u,2u };
-    static const lib_u8 address_jcxz[] = { 0x67u,0xe3u,2u };
-    cpu_instruction_fixture state;
-    t_cpu after;
-
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-    state.cpu.data.ecx = 0xabcd0002u;
-    if (!control_transfer_run(&state, loop, sizeof(loop), &after) ||
-        after.data.ecx != 0xabcd0001u) return 0;
-
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-    state.cpu.data.ecx = 0x12340002u;
-    if (!control_transfer_run(&state, address_loop, sizeof(address_loop), &after) ||
-        after.data.ecx != 0x12340001u) return 0;
-
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-    state.cpu.data.cs.seg.data.big = LIB_TRUE;
-    state.cpu.data.ecx = 0x12340002u;
-    if (!control_transfer_run(&state, address_loop, sizeof(address_loop), &after) ||
-        after.data.ecx != 0x12340001u) return 0;
-
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-    state.cpu.data.ecx = 0u;
-    if (!control_transfer_run(&state, address_jcxz, sizeof(address_jcxz), &after) ||
-        after.data.eip != 5u) return 0;
-    return 1;
-}
-
-static lib_i32 control_transfer_expect_fault(const lib_u8 *code, lib_u8 bytes,
-    lib_u32 flags, lib_u32 ecx)
+static lib_i32 control_transfer_expect_fault(core_machine_cpu_profile profile,
+    const lib_u8 *code, lib_u8 bytes, lib_u32 flags, lib_u32 ecx)
 {
     cpu_instruction_fixture state;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     state.cpu.data.cs.seg.data.big = LIB_TRUE;
     state.cpu.data.cs.limit = 0x007fu;
     state.cpu.data.eflags = flags;
@@ -284,10 +335,17 @@ static lib_i32 control_transfer_test_fault_atomicity_and_profile(void)
     static const lib_u8 jcc_fault[] = { 0x74u,0x7fu };
     static const lib_u8 loop_fault[] = { 0xe2u,0x7fu };
     static const lib_u8 near_jcc[] = { 0x0fu,0x84u,0u,0u };
-    if (!control_transfer_expect_fault(jcc_fault, sizeof(jcc_fault),
-        VCPU_EFLAGS_ZF | 0x00000002u, 0u) ||
-        !control_transfer_expect_fault(loop_fault, sizeof(loop_fault),
-            0x00000002u, 2u)) return 0;
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
+        ++index) {
+        if (!control_transfer_expect_fault(profiles[index], jcc_fault,
+                sizeof(jcc_fault), VCPU_EFLAGS_ZF | 0x00000002u, 0u) ||
+            !control_transfer_expect_fault(profiles[index], loop_fault,
+                sizeof(loop_fault), 0x00000002u, 2u)) return 0;
+    }
     {
         cpu_instruction_fixture state;
 
@@ -301,10 +359,17 @@ static lib_i32 control_transfer_test_fault_atomicity_and_profile(void)
 int main(void)
 {
     if (!control_transfer_test_short_jcc()) goto fail_short_jcc;
+    if (!control_transfer_test_condition_matrix(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !control_transfer_test_condition_matrix(CORE_MACHINE_CPU_PROFILE_80486SX))
+        goto fail_near_jcc;
+    if (!control_transfer_test_counter_matrix(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !control_transfer_test_counter_matrix(CORE_MACHINE_CPU_PROFILE_80486SX))
+        goto fail_loop;
     if (!control_transfer_test_zero_displacement_timing()) goto fail_short_jcc;
-    if (!control_transfer_test_jumps_and_near_jcc()) goto fail_near_jcc;
+    if (!control_transfer_test_jumps(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !control_transfer_test_jumps(CORE_MACHINE_CPU_PROFILE_80486SX))
+        goto fail_near_jcc;
     if (!control_transfer_test_loop_and_jcxz()) goto fail_loop;
-    if (!control_transfer_test_386_address_forms()) goto fail_address;
     if (!control_transfer_test_fault_atomicity_and_profile()) goto fail_fault;
     lib_c_printf("%s\n", "LOOP-JCXZ-PROFILES:OK");
     lib_c_printf("%s\n", "NEAR-JCC-PROFILES:OK");
@@ -319,9 +384,6 @@ fail_near_jcc:
     goto fail;
 fail_loop:
     lib_c_fprintf(lib_c_stderr, "%s", "loop: ");
-    goto fail;
-fail_address:
-    lib_c_fprintf(lib_c_stderr, "%s", "address: ");
     goto fail;
 fail_fault:
     lib_c_fprintf(lib_c_stderr, "%s", "fault: ");

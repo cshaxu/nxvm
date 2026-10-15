@@ -32,7 +32,8 @@ static lib_i32 lea_test_real_forms(void)
         CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     const lib_u8 *codes[] = { code16, code66, code67, code6766 };
     const lib_u8 code_bytes[] = { 3u, 4u, 4u, 5u };
@@ -53,7 +54,7 @@ static lib_i32 lea_test_real_forms(void)
             cpu_instruction_prepare(&state, profiles[profile]);
 
             lea_set_registers(&state);
-            if (profile != 3u && form != 0u)
+            if (profiles[profile] < CORE_MACHINE_CPU_PROFILE_80386 && form != 0u)
                 state.cpu.data.idtr.limit = 0x17u;
             before = state.cpu;
             if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80186 && form != 0u) {
@@ -71,7 +72,7 @@ static lib_i32 lea_test_real_forms(void)
                     after.data.eflags != before.data.eflags) return 0;
                 continue;
             }
-            if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386 || form == 0u) {
+            if (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 || form == 0u) {
                 failed |= state.execution.stop_requested ||
                     state.fault.valid ||
                     after.data.eip != code_bytes[form] ||
@@ -101,7 +102,8 @@ static lib_i32 lea_test_register_direct(void)
         CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 code[] = { 0x8du, 0xc0u };
     lib_u8 profile;
@@ -144,7 +146,7 @@ static lib_i32 lea_test_register_direct(void)
     return 1;
 }
 
-static lib_i32 lea_test_lock_ud(void)
+static lib_i32 lea_test_lock_ud(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = { 0xf0u, 0x8du, 0x40u, 0x10u };
     cpu_instruction_fixture state;
@@ -152,7 +154,7 @@ static lib_i32 lea_test_lock_ud(void)
     t_cpu after;
     lib_i32 failed = 0;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
 
     lea_set_registers(&state);
     state.cpu.data.idtr.limit = 0x17u;
@@ -167,7 +169,8 @@ static lib_i32 lea_test_lock_ud(void)
     return !failed;
 }
 
-static lib_i32 lea_prepare_protected(cpu_instruction_fixture *state)
+static lib_i32 lea_prepare_protected(cpu_instruction_fixture *state,
+    core_machine_cpu_profile profile)
 {
     static const lib_u8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
     static const lib_u8 gdt[] = {
@@ -182,7 +185,7 @@ static lib_i32 lea_prepare_protected(cpu_instruction_fixture *state)
         0x00u
     };
     static const lib_u8 hlt[] = { 0xf4u };
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     lib_memory_copy(state->memory + 0x0100u, pointer, sizeof(pointer));
     lib_memory_copy(state->memory + 0x0300u, gdt, sizeof(gdt));
     lib_memory_copy(state->memory, bootstrap, sizeof(bootstrap));
@@ -195,7 +198,7 @@ static lib_i32 lea_prepare_protected(cpu_instruction_fixture *state)
     return 0;
 }
 
-static lib_i32 lea_test_protected(void)
+static lib_i32 lea_test_protected(core_machine_cpu_profile profile)
 {
     static const lib_u8 code16[] = { 0x8du, 0x40u, 0x10u };
     static const lib_u8 code66[] = { 0x66u, 0x8du, 0x40u, 0x10u };
@@ -214,7 +217,7 @@ static lib_i32 lea_test_protected(void)
         cpu_instruction_fixture state;
         t_cpu before;
         t_cpu after;
-        lib_i32 failed = !lea_prepare_protected(&state);
+        lib_i32 failed = !lea_prepare_protected(&state, profile);
 
         if (!failed) {
             lea_set_registers(&state);
@@ -238,13 +241,13 @@ static lib_i32 lea_test_protected(void)
     return 1;
 }
 
-static lib_i32 lea_test_null_ds_no_read(void)
+static lib_i32 lea_test_null_ds_no_read(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = { 0x8du, 0x40u, 0x10u };
     cpu_instruction_fixture state;
     t_cpu before;
     t_cpu after;
-    lib_i32 failed = !lea_prepare_protected(&state);
+    lib_i32 failed = !lea_prepare_protected(&state, profile);
 
     if (!failed) {
         lea_set_registers(&state);
@@ -270,11 +273,18 @@ static lib_i32 lea_test_null_ds_no_read(void)
 
 lib_i32 main(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
     if (!lea_test_real_forms()) { lib_c_printf("lea real\n"); return 1; }
     if (!lea_test_register_direct()) { lib_c_printf("lea register\n"); return 1; }
-    if (!lea_test_lock_ud()) { lib_c_printf("lea lock\n"); return 1; }
-    if (!lea_test_protected()) { lib_c_printf("lea protected\n"); return 1; }
-    if (!lea_test_null_ds_no_read()) { lib_c_printf("lea null\n"); return 1; }
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
+        ++index) {
+        if (!lea_test_lock_ud(profiles[index])) { lib_c_printf("lea lock\n"); return 1; }
+        if (!lea_test_protected(profiles[index])) { lib_c_printf("lea protected\n"); return 1; }
+        if (!lea_test_null_ds_no_read(profiles[index])) { lib_c_printf("lea null\n"); return 1; }
+    }
     lib_c_printf("LEA-CPU:OK\n");
     return 0;
 }

@@ -108,11 +108,12 @@ static lib_i32 port_strings_test_single_and_rep(void)
     static const lib_u8 rep_insd[] = {0xf3u,0x66u,0x67u,0x6du};
     static const lib_u8 rep_outsd[] = {0xf3u,0x66u,0x67u,0x6fu};
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
 
-    for (profile = 0u; profile != 2u; ++profile) {
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
 #define CASE(code, input, width, address32, count) \
         port_strings_case(profiles[profile], code, sizeof(code), input, \
             width, address32, count, LIB_FALSE, 0x20000u)
@@ -120,7 +121,7 @@ static lib_i32 port_strings_test_single_and_rep(void)
             !CASE(insw, LIB_TRUE, 2u, LIB_FALSE, 1u) ||
             !CASE(outsb, LIB_FALSE, 1u, LIB_FALSE, 1u) ||
             !CASE(outsw, LIB_FALSE, 2u, LIB_FALSE, 1u)) return 0;
-        if (profile == 1u) {
+        if (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386) {
             if (!CASE(insd, LIB_TRUE, 4u, LIB_FALSE, 1u) ||
                 !CASE(outsd, LIB_FALSE, 4u, LIB_FALSE, 1u) ||
                 !CASE(ins32, LIB_TRUE, 1u, LIB_TRUE, 1u) ||
@@ -128,12 +129,11 @@ static lib_i32 port_strings_test_single_and_rep(void)
                 !CASE(ins_both, LIB_TRUE, 4u, LIB_TRUE, 1u) ||
                 !CASE(out_both, LIB_FALSE, 4u, LIB_TRUE, 1u)) return 0;
         }
-        if (profile == 0u &&
-            (!CASE(rep_insb, LIB_TRUE, 1u, LIB_FALSE, 3u) ||
+        if (!CASE(rep_insb, LIB_TRUE, 1u, LIB_FALSE, 3u) ||
             !CASE(rep_insw, LIB_TRUE, 2u, LIB_FALSE, 3u) ||
             !CASE(rep_outsb, LIB_FALSE, 1u, LIB_FALSE, 3u) ||
-            !CASE(rep_outsw, LIB_FALSE, 2u, LIB_FALSE, 3u))) return 0;
-        if (profile == 1u &&
+            !CASE(rep_outsw, LIB_FALSE, 2u, LIB_FALSE, 3u)) return 0;
+        if (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 &&
             (!CASE(rep_insd, LIB_TRUE, 4u, LIB_TRUE, 3u) ||
             !CASE(rep_outsd, LIB_FALSE, 4u, LIB_TRUE, 3u))) return 0;
 #undef CASE
@@ -141,7 +141,7 @@ static lib_i32 port_strings_test_single_and_rep(void)
     return 1;
 }
 
-static lib_i32 port_strings_test_boundaries(void)
+static lib_i32 port_strings_test_boundaries(core_machine_cpu_profile profile)
 {
     static const lib_u8 rep_ins[] = {0xf3u,0x6cu};
     static const lib_u8 rep_out[] = {0xf3u,0x6eu};
@@ -152,7 +152,6 @@ static lib_i32 port_strings_test_boundaries(void)
     static const lib_u8 out_cs[] = {0x2eu,0x6eu};
     static const lib_u8 out_fs[] = {0x64u,0x6eu};
     static const lib_u8 ins[] = {0x6cu}, out[] = {0x6eu};
-    const core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80386;
 
 #define CASE(code, input, address32, count, direction, base) \
     port_strings_case(profile, code, sizeof(code), input, 1u, address32, \
@@ -202,6 +201,9 @@ static lib_i32 port_strings_test_rejections(void)
         {0xf0u,0x6fu,0,0,0}, {0xf0u,0xf3u,0x66u,0x67u,0x6du}
     };
     static const lib_u8 bytes[] = {1u,1u,1u,1u,2u,2u,2u,2u,3u,2u,2u,2u,2u,5u};
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile, form;
 
     for (form = 0u; form != 6u; ++form)
@@ -211,18 +213,21 @@ static lib_i32 port_strings_test_rejections(void)
         for (form = 6u; form != 9u; ++form)
             if (!port_strings_expect_ud(pre386[profile], forms[form],
                 bytes[form])) { lib_c_printf("UD old %u %u\n",profile,form); return 0; }
-    for (form = 9u; form != sizeof(bytes); ++form)
-        if (!port_strings_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
-            forms[form], bytes[form])) { lib_c_printf("UD 386 %u\n",form); return 0; }
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile)
+        for (form = 9u; form != sizeof(bytes); ++form)
+            if (!port_strings_expect_ud(modern[profile], forms[form], bytes[form])) {
+                lib_c_printf("UD modern profile=%u form=%u\n", modern[profile], form);
+                return 0;
+            }
     return 1;
 }
 
 static void port_strings_prepare_protected(cpu_port_instruction_fixture *state,
-    lib_bool input, lib_bool repeated)
+    core_machine_cpu_profile profile, lib_bool input, lib_bool repeated)
 {
     t_cpu *cpu;
 
-    cpu_port_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_port_prepare(state, profile);
     port_strings_seed(state);
     cpu = &state->instruction.cpu;
     cpu->data.cr0 |= VCPU_CR0_PE;
@@ -257,7 +262,8 @@ static void port_strings_prepare_protected(cpu_port_instruction_fixture *state,
     state->input_value = 0x5au;
 }
 
-static lib_i32 port_strings_protected_case(lib_bool input, lib_bool repeated)
+static lib_i32 port_strings_protected_case(core_machine_cpu_profile profile,
+    lib_bool input, lib_bool repeated)
 {
     static const lib_u8 ins[] = {0x6cu};
     static const lib_u8 outs[] = {0x6eu};
@@ -271,7 +277,7 @@ static lib_i32 port_strings_protected_case(lib_bool input, lib_bool repeated)
     const lib_u8 source[] = {0x5au,0x6bu};
     const lib_u8 destination[] = {0xa5u,0xb6u};
 
-    port_strings_prepare_protected(&state, input, repeated);
+    port_strings_prepare_protected(&state, profile, input, repeated);
     lib_memory_copy(state.instruction.memory + 0x3010u, source, sizeof(source));
     lib_memory_copy(state.instruction.memory + 0x4010u, destination,
         sizeof(destination));
@@ -306,26 +312,86 @@ static lib_i32 port_strings_protected_case(lib_bool input, lib_bool repeated)
         state.instruction.memory[0x4011u] == destination[1];
 }
 
+static lib_bool port_strings_provider_failure(core_machine_cpu_profile profile)
+{
+    static const lib_u8 widths[] = {1u,2u,4u};
+
+    for (lib_u8 form = 0u; form < sizeof(widths); ++form) {
+        for (lib_u8 input = 0u; input < 2u; ++input) {
+            for (lib_u8 address32 = 0u; address32 < 2u; ++address32) {
+                cpu_port_instruction_fixture state;
+                t_cpu before;
+                lib_u8 code[4] = {0xf3u};
+                lib_u8 bytes = 1u;
+                lib_u8 destination[12];
+                const lib_u32 source[] = {0x11223344u,0x55667788u,0x99aabbccu};
+                const lib_u8 width = widths[form];
+
+                cpu_port_prepare(&state, profile);
+                port_strings_seed(&state);
+                if (width == 4u) code[bytes++] = 0x66u;
+                if (address32) code[bytes++] = 0x67u;
+                code[bytes++] = (lib_u8)((input ? 0x6cu : 0x6eu) + (width != 1u));
+                state.instruction.cpu.data.ecx = address32 ? 3u : 0x11220003u;
+                state.input_value = 0x5au;
+                lib_memory_copy(state.instruction.memory + 0x20010u, source, sizeof(source));
+                lib_memory_set(state.instruction.memory + 0x30020u, 0xa5u, sizeof(destination));
+                lib_memory_copy(state.instruction.memory, code, bytes);
+                core_machine_cpu_execution_refresh(&state.instruction.execution);
+                before = state.instruction.cpu;
+                if (state.instruction.execution.stop_requested || state.instruction.fault.valid ||
+                    before.data.eip != 0u || before.data.ecx != (address32 ? 2u : 0x11220002u) ||
+                    before.data.esi != (input ? 0x10u : 0x10u + width) ||
+                    before.data.edi != (input ? 0x20u + width : 0x20u) ||
+                    state.transfer_count != 1u || state.complete_count != 1u) return LIB_FALSE;
+                lib_memory_copy(destination, state.instruction.memory + 0x30020u,
+                    sizeof(destination));
+                state.fail_status = LIB_STATUS_IO_ERROR;
+                core_machine_cpu_execution_refresh(&state.instruction.execution);
+                if (!state.instruction.execution.stop_requested || !state.instruction.fault.valid ||
+                    state.instruction.fault.exception_mask != VCPUINS_EXCEPT_CE ||
+                    state.instruction.fault.exception_code != 0x00e0u ||
+                    state.instruction.delivered_exception.valid ||
+                    lib_memory_compare(&before, &state.instruction.cpu, sizeof(before)) != 0 ||
+                    state.transfer_count != 1u || state.complete_count != 1u ||
+                    lib_memory_compare(destination, state.instruction.memory + 0x30020u,
+                        sizeof(destination)) != 0 ||
+                    lib_memory_compare(source, state.instruction.memory + 0x20010u,
+                        sizeof(source)) != 0) {
+                    lib_c_printf("PORT-STRINGS provider profile=%u width=%u input=%u address32=%u\n",
+                        profile, width, input, address32);
+                    return LIB_FALSE;
+                }
+            }
+        }
+    }
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     if (!port_strings_test_single_and_rep()) {
         lib_c_printf("PORT-STRINGS stage=single-rep\n");
-        return 1;
-    }
-    if (!port_strings_test_boundaries()) {
-        lib_c_printf("PORT-STRINGS stage=boundaries\n");
         return 1;
     }
     if (!port_strings_test_rejections()) {
         lib_c_printf("PORT-STRINGS stage=rejections\n");
         return 1;
     }
-    if (!port_strings_protected_case(LIB_TRUE, LIB_FALSE) ||
-        !port_strings_protected_case(LIB_FALSE, LIB_FALSE) ||
-        !port_strings_protected_case(LIB_TRUE, LIB_TRUE) ||
-        !port_strings_protected_case(LIB_FALSE, LIB_TRUE)) {
-        lib_c_printf("PORT-STRINGS stage=protected\n");
-        return 1;
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        if (!port_strings_test_boundaries(profiles[index]) ||
+            !port_strings_provider_failure(profiles[index]) ||
+            !port_strings_protected_case(profiles[index], LIB_TRUE, LIB_FALSE) ||
+            !port_strings_protected_case(profiles[index], LIB_FALSE, LIB_FALSE) ||
+            !port_strings_protected_case(profiles[index], LIB_TRUE, LIB_TRUE) ||
+            !port_strings_protected_case(profiles[index], LIB_FALSE, LIB_TRUE)) {
+            lib_c_printf("PORT-STRINGS stage=boundaries/protected profile=%u\n",
+                profiles[index]);
+            return 1;
+        }
     }
     lib_c_printf("PORT-STRINGS:OK\n");
     return 0;

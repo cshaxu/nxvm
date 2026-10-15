@@ -75,7 +75,8 @@ static lib_i32 gpr_push_pop_test_push_registers(void)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
 
@@ -125,7 +126,7 @@ static lib_i32 gpr_push_pop_test_push_registers(void)
     return 1;
 }
 
-static lib_i32 gpr_push_pop_test_pop_esp_address(void)
+static lib_i32 gpr_push_pop_test_pop_esp_address(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x67u, 0x8fu, 0x44u, 0x24u, 0x04u};
     cpu_instruction_fixture state;
@@ -134,7 +135,7 @@ static lib_i32 gpr_push_pop_test_pop_esp_address(void)
     lib_u16 old_target = 0xbeefu;
     lib_u16 observed = 0u;
     lib_i32 failed = 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
 
     if (!failed)
     {
@@ -160,7 +161,8 @@ static lib_i32 gpr_push_pop_test_pop_registers(void)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
 
@@ -230,7 +232,8 @@ static lib_i32 gpr_push_pop_test_rm_forms(void)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
     lib_u8 form;
@@ -238,7 +241,7 @@ static lib_i32 gpr_push_pop_test_rm_forms(void)
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
     {
-        if (form >= 6u && profiles[profile] != CORE_MACHINE_CPU_PROFILE_80386) continue;
+        if (form >= 6u && profiles[profile] < CORE_MACHINE_CPU_PROFILE_80386) continue;
         cpu_instruction_fixture state;
         t_cpu before;
         t_cpu after;
@@ -376,7 +379,7 @@ static lib_i32 gpr_push_pop_test_rejections(void)
     return 1;
 }
 
-static lib_i32 gpr_push_pop_test_386_attributes(void)
+static lib_i32 gpr_push_pop_test_attributes(core_machine_cpu_profile profile)
 {
     static const lib_u8 push32[] = {0x66u, 0x50u};
     static const lib_u8 pop32[] = {0x66u, 0x59u};
@@ -396,7 +399,7 @@ static lib_i32 gpr_push_pop_test_386_attributes(void)
         lib_u32 value = 0xface7788u;
         lib_u32 observed = 0u;
         lib_i32 failed = 0;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
 
         if (!failed)
         {
@@ -475,7 +478,8 @@ static lib_i32 gpr_push_pop_boot_protected(cpu_instruction_fixture *state)
     return state->cpu.data.cs.selector == 8u && state->cpu.data.eip == 0u;
 }
 
-static lib_i32 gpr_push_pop_protected_fault(const lib_u8 *code, lib_u8 bytes,
+static lib_i32 gpr_push_pop_protected_fault(core_machine_cpu_profile profile,
+    const lib_u8 *code, lib_u8 bytes,
     lib_u8 limit_segment, lib_u32 limit, lib_i32 expdown)
 {
     cpu_instruction_fixture state;
@@ -484,7 +488,7 @@ static lib_i32 gpr_push_pop_protected_fault(const lib_u8 *code, lib_u8 bytes,
     lib_u32 sentinel = 0xdeadbeefu;
     lib_u32 observed = 0u;
     lib_i32 failed = 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
 
     if (!failed)
         failed |= !gpr_push_pop_boot_protected(&state);
@@ -529,32 +533,32 @@ static lib_i32 gpr_push_pop_protected_fault(const lib_u8 *code, lib_u8 bytes,
     return !failed;
 }
 
-static lib_i32 gpr_push_pop_test_protected_faults(void)
+static lib_i32 gpr_push_pop_test_protected_faults(core_machine_cpu_profile profile)
 {
     static const lib_u8 push[] = {0x50u};
     static const lib_u8 pop[] = {0x59u};
     static const lib_u8 push_source[] = {0xffu, 0x36u, 0x10u, 0x00u};
     static const lib_u8 pop_dest[] = {0x8fu, 0x06u, 0x10u, 0x00u};
 
-    if (!gpr_push_pop_protected_fault(push, sizeof(push), 0u, 0xffffu,
+    if (!gpr_push_pop_protected_fault(profile, push, sizeof(push), 0u, 0xffffu,
         LIB_TRUE))
     {
         lib_c_printf("protected push\n");
         return 0;
     }
-    if (!gpr_push_pop_protected_fault(pop, sizeof(pop), 0u, 0x7fffu,
+    if (!gpr_push_pop_protected_fault(profile, pop, sizeof(pop), 0u, 0x7fffu,
         LIB_FALSE))
     {
         lib_c_printf("protected pop\n");
         return 0;
     }
-    if (!gpr_push_pop_protected_fault(push_source, sizeof(push_source), 1u,
+    if (!gpr_push_pop_protected_fault(profile, push_source, sizeof(push_source), 1u,
         0x0fu, LIB_FALSE))
     {
         lib_c_printf("protected push-source\n");
         return 0;
     }
-    if (!gpr_push_pop_protected_fault(pop_dest, sizeof(pop_dest), 1u, 0x0fu,
+    if (!gpr_push_pop_protected_fault(profile, pop_dest, sizeof(pop_dest), 1u, 0x0fu,
         LIB_FALSE))
     {
         lib_c_printf("protected pop-dest\n");
@@ -594,7 +598,7 @@ static lib_bool gpr_push_pop_test_early_wrap(void)
     return passed;
 }
 
-static lib_bool gpr_push_pop_test_push_shutdown(void)
+static lib_bool gpr_push_pop_test_push_shutdown(core_machine_cpu_profile profile)
 {
     static const lib_u8 forms[][4] = {
         {0x50u}, {0x68u, 0x34u, 0x12u}, {0xffu, 0x36u, 0u, 0x40u},
@@ -607,7 +611,7 @@ static lib_bool gpr_push_pop_test_push_shutdown(void)
     for (vm = 0u; vm < 2u; ++vm) {
         cpu_instruction_fixture state;
         t_cpu after;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         gpr_push_pop_seed(&state);
         state.cpu.data.esp = 1u;
         if (vm) {
@@ -628,7 +632,92 @@ static lib_bool gpr_push_pop_test_push_shutdown(void)
     return passed;
 }
 
-static lib_bool gpr_push_pop_test_alias_failure_matrix(void)
+static lib_bool gpr_push_pop_test_push_shutdown_receiver(core_machine_cpu_profile profile)
+{
+    static const lib_u8 forms[][2] = {
+        {0x50u}, {0x51u}, {0x52u}, {0x53u}, {0x54u}, {0x55u}, {0x56u}, {0x57u},
+        {0x68u}, {0x6au}, {0xffu}, {0x06u}, {0x0eu}, {0x16u}, {0x1eu},
+        {0x0fu, 0xa0u}, {0x0fu, 0xa8u}, {0x9cu}, {0x58u}
+    };
+    lib_u8 form, operand32;
+    lib_bool passed = LIB_TRUE;
+
+    for (form = 0u; form < sizeof(forms) / sizeof(forms[0]); ++form)
+    for (operand32 = 0u; operand32 < 2u; ++operand32) {
+        cpu_instruction_fixture state;
+        lib_u8 code[7] = {0u};
+        lib_u8 bytes = 0u;
+        lib_u8 gate[] = {0u, 1u, 8u, 0u, 0u, 0x8eu, 0u, 0u};
+        lib_u32 esp0 = 0x8000u;
+        lib_u16 ss0 = 0x18u;
+        const lib_bool receiver_control = form == sizeof(forms) / sizeof(forms[0]) - 1u;
+        t_cpu before;
+
+        cpu_instruction_prepare(&state, profile);
+        if (!gpr_push_pop_boot_protected(&state)) return LIB_FALSE;
+        gpr_push_pop_seed(&state);
+        state.cpu.data.esp = receiver_control ? 0xffffu : 1u;
+        state.cpu.data.eflags |= 2u | VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL;
+        state.cpu.data.cs.selector = state.cpu.data.ss.selector =
+            state.cpu.data.ds.selector = 0u;
+        state.cpu.data.cs.base = state.cpu.data.ss.base = state.cpu.data.ds.base = 0u;
+        state.cpu.data.cs.dpl = state.cpu.data.ss.dpl = state.cpu.data.ds.dpl = 3u;
+        state.cpu.data.cs.seg.exec.defsize = LIB_FALSE;
+        state.cpu.data.ss.seg.data.big = LIB_FALSE;
+        state.cpu.data.eip = 0x5000u;
+        state.cpu.data.idtr.flagValid = LIB_TRUE;
+        state.cpu.data.idtr.sregtype = SREG_IDTR;
+        state.cpu.data.idtr.base = 0x1000u;
+        state.cpu.data.idtr.limit = 0x100u;
+        state.cpu.data.tr.flagValid = LIB_TRUE;
+        state.cpu.data.tr.sregtype = SREG_TR;
+        state.cpu.data.tr.selector = 0x20u;
+        state.cpu.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
+        state.cpu.data.tr.base = 0x600u;
+        state.cpu.data.tr.limit = 0x67u;
+        lib_memory_copy(state.memory + 0x604u, &esp0, sizeof(esp0));
+        lib_memory_copy(state.memory + 0x608u, &ss0, sizeof(ss0));
+        lib_memory_copy(state.memory + 0x1000u + 12u * 8u, gate, sizeof(gate));
+        state.memory[0x2100u] = 0x90u;
+        lib_memory_set(state.memory + 0xc000u - 40u, 0xa5, 40u);
+        if (operand32) code[bytes++] = 0x66u;
+        code[bytes++] = forms[form][0];
+        if (forms[form][0] == 0x0fu) code[bytes++] = forms[form][1];
+        if (forms[form][0] == 0x68u) {
+            code[bytes++] = 0x7fu; code[bytes++] = 0u;
+            if (operand32) { code[bytes++] = 0u; code[bytes++] = 0u; }
+        }
+        if (forms[form][0] == 0x6au) code[bytes++] = 0x7fu;
+        if (forms[form][0] == 0xffu) {
+            code[bytes++] = 0x36u; code[bytes++] = 0u; code[bytes++] = 0x40u;
+        }
+        lib_memory_copy(state.memory + 0x5000u, code, bytes);
+        before = state.cpu;
+        core_machine_cpu_execution_refresh(&state.execution);
+        if (state.fault.valid || state.execution.stop_requested ||
+            (receiver_control ?
+                (state.execution.shutdown_requested ||
+                 state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SS ||
+                 state.cpu.data.cs.selector != 8u || state.cpu.data.eip != 0x100u) :
+                (!state.execution.shutdown_requested ||
+                 state.delivered_exception.exception_mask != VCPUINS_EXCEPT_SHUTDOWN ||
+                 !gpr_push_pop_cpu_same(&before, &state.cpu)))) {
+            lib_c_printf("PUSH receiver profile=%u form=%u wide=%u mask=%x cs=%x eip=%x\n",
+                (unsigned)profile, (unsigned)form, (unsigned)operand32,
+                (unsigned)state.delivered_exception.exception_mask,
+                (unsigned)state.cpu.data.cs.selector, (unsigned)state.cpu.data.eip);
+            passed = LIB_FALSE;
+        }
+        if (!receiver_control) {
+            lib_u8 byte;
+            for (byte = 0u; byte < 40u; ++byte)
+                if (state.memory[0xc000u - 40u + byte] != 0xa5u) passed = LIB_FALSE;
+        }
+    }
+    return passed;
+}
+
+static lib_bool gpr_push_pop_test_alias_failure_matrix(core_machine_cpu_profile profile)
 {
     static const core_machine_cpu_bus_provider bus = {
         .read_memory = cpu_stack_probe_read,
@@ -660,7 +749,7 @@ static lib_bool gpr_push_pop_test_alias_failure_matrix(void)
         if (form == 1u) code[bytes++] = 0xc4u;
         if (form == 2u) { code[bytes++] = 0x44u; code[bytes++] = 0x24u; code[bytes++] = 4u; }
         lib_memory_set(&fixture, 0, sizeof(fixture));
-        cpu_instruction_prepare_with_bus(state, CORE_MACHINE_CPU_PROFILE_80386, &bus, &fixture);
+        cpu_instruction_prepare_with_bus(state, profile, &bus, &fixture);
         gpr_push_pop_seed(state);
         state->cpu.data.esp = initial_sp;
         state->cpu.data.ss.limit = state->cpu.data.ds.limit =
@@ -750,12 +839,13 @@ static lib_bool gpr_push_pop_test_early_frame_callers(void)
 static lib_bool gpr_push_pop_test_real_stack_range(void)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     const lib_u8 vector[] = {0u, 2u, 0u, 0u};
     lib_u8 profile, leave;
     lib_bool passed = LIB_TRUE;
-    for (profile = 0u; profile < 2u; ++profile)
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (leave = 0u; leave < 2u; ++leave) {
         const lib_u8 code[] = {leave ? 0xc9u : 0x58u};
         cpu_instruction_fixture state;
@@ -764,10 +854,11 @@ static lib_bool gpr_push_pop_test_real_stack_range(void)
         gpr_push_pop_seed(&state);
         if (leave) state.cpu.data.bp = 0xffffu;
         else state.cpu.data.sp = 0xffffu;
-        cpu_instruction_write(&state, (profile ? 12u : 13u) * 4u, vector, sizeof(vector),
+        cpu_instruction_write(&state, (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ?
+                12u : 13u) * 4u, vector, sizeof(vector),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u);
         cpu_instruction_run(&state, code, sizeof(code), &after);
-        if (state.delivered_exception.exception_mask != (profile ?
+        if (state.delivered_exception.exception_mask != (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ?
                 VCPUINS_EXCEPT_SS : VCPUINS_EXCEPT_GP) ||
             after.data.eip != 0x200u || state.execution.shutdown_requested) {
             lib_c_printf("real stack profile=%u leave=%u delivered=%x eip=%x\n",
@@ -782,22 +873,26 @@ static lib_bool gpr_push_pop_test_real_stack_range(void)
 
 lib_i32 main(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+    lib_u8 profile;
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile) {
+        if (!gpr_push_pop_test_push_shutdown_receiver(profiles[profile]) ||
+            !gpr_push_pop_test_alias_failure_matrix(profiles[profile]) ||
+            !gpr_push_pop_test_push_shutdown(profiles[profile]) ||
+            !gpr_push_pop_test_protected_faults(profiles[profile])) return 1;
+    }
     if (!gpr_push_pop_test_real_stack_range()) return 1;
     if (!gpr_push_pop_test_early_frame_callers()) return 1;
-    if (!gpr_push_pop_test_alias_failure_matrix()) return 1;
-    if (!gpr_push_pop_test_push_shutdown()) return 1;
     if (!gpr_push_pop_test_early_wrap()) return 1;
-    if (!gpr_push_pop_test_protected_faults())
-    {
-        lib_c_printf("CPU stack cache stage=test_protected_faults\n");
-        return 1;
-    }
     if (!gpr_push_pop_test_push_registers())
     {
         lib_c_printf("GPR-PUSH-POP stage=push-registers\n");
         return 1;
     }
-    if (!gpr_push_pop_test_pop_esp_address())
+    if (!gpr_push_pop_test_pop_esp_address(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !gpr_push_pop_test_pop_esp_address(CORE_MACHINE_CPU_PROFILE_80486SX))
     {
         lib_c_printf("GPR-PUSH-POP stage=pop-esp-address\n");
         return 1;
@@ -817,7 +912,8 @@ lib_i32 main(void)
         lib_c_printf("GPR-PUSH-POP stage=rejections\n");
         return 1;
     }
-    if (!gpr_push_pop_test_386_attributes())
+    if (!gpr_push_pop_test_attributes(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !gpr_push_pop_test_attributes(CORE_MACHINE_CPU_PROFILE_80486SX))
     {
         lib_c_printf("GPR-PUSH-POP stage=attributes\n");
         return 1;

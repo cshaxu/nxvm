@@ -2,7 +2,7 @@
 #include "lib/types/file.h"
 
 /* REAL_UD_TERMINAL_CPU_OWNER: terminal-UD assertions stay CPU-owned. */
-static lib_i32 lfg_test_real(void)
+static lib_i32 lfg_test_real(core_machine_cpu_profile profile)
 {
     static const lib_u8 op[] = { 0xb2u, 0xb4u, 0xb5u };
     lib_u8 i;
@@ -17,7 +17,7 @@ static lib_i32 lfg_test_real(void)
             lib_u8 p16[] = { 0x44u, 0x33u, 0x34u, 0x12u };
             lib_u8 p32[] = { 0x44u, 0x33u, 0x22u, 0x11u, 0x34u, 0x12u };
             lib_i32 f = 0;
-            cpu_instruction_prepare(&s, CORE_MACHINE_CPU_PROFILE_80386);
+            cpu_instruction_prepare(&s, profile);
 
             if (z) {
                 c[0] = 0x66u;
@@ -57,7 +57,7 @@ static lib_i32 lfg_test_real(void)
     }
     return 1;
 }
-static lib_i32 lfg_test_reg_direct_80386(void)
+static lib_i32 lfg_test_reg_direct(core_machine_cpu_profile profile)
 {
     static const lib_u8 op[] = { 0xb2u, 0xb4u, 0xb5u };
     lib_u8 i;
@@ -66,7 +66,7 @@ static lib_i32 lfg_test_reg_direct_80386(void)
         cpu_instruction_fixture s;
         lib_u8 c[] = { 0x0fu, op[i], 0xc0u };
         lib_i32 f = 0;
-        cpu_instruction_prepare(&s, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&s, profile);
 
         if (!f) {
             s.cpu.data.ss.selector = 0x0018u;
@@ -115,7 +115,8 @@ static lib_i32 lfg_test_80286_memory(void)
     }
     return 1;
 }
-static lib_i32 lfg_prepare_protected(cpu_instruction_fixture *state)
+static lib_i32 lfg_prepare_protected(cpu_instruction_fixture *state,
+    core_machine_cpu_profile profile)
 {
     static const lib_u8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
     static const lib_u8 gdt[] = {
@@ -130,7 +131,7 @@ static lib_i32 lfg_prepare_protected(cpu_instruction_fixture *state)
         0x00u
     };
 
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     lib_memory_copy(state->memory + 0x100u, pointer, sizeof(pointer));
     lib_memory_copy(state->memory + 0x300u, gdt, sizeof(gdt));
     lib_memory_copy(state->memory, bootstrap, sizeof(bootstrap));
@@ -140,7 +141,7 @@ static lib_i32 lfg_prepare_protected(cpu_instruction_fixture *state)
     }
     return state->cpu.data.cs.selector == 8u && state->cpu.data.eip == 0u;
 }
-static lib_i32 lfg_test_protected(void)
+static lib_i32 lfg_test_protected(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = { 0xb2u, 0xb4u, 0xb5u };
     static const lib_u8 pointer16[] = { 0x44u, 0x33u, 0x10u, 0x00u };
@@ -157,7 +158,7 @@ static lib_i32 lfg_test_protected(void)
             lib_u8 code_bytes = operand32 ? 6u : 5u;
             lib_u8 pointer_bytes = operand32 ? 6u : 4u;
             lib_u32 expected_offset = operand32 ? 0x11223344u : 0x3344u;
-            lib_i32 failed = !lfg_prepare_protected(&state);
+            lib_i32 failed = !lfg_prepare_protected(&state, profile);
 
             if (!failed && operand32) {
                 code[0] = 0x66u;
@@ -191,7 +192,7 @@ static lib_i32 lfg_test_protected(void)
     }
     return 1;
 }
-static lib_i32 lfg_test_source_fault_atomicity(void)
+static lib_i32 lfg_test_source_fault_atomicity(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = { 0xb2u, 0xb4u, 0xb5u };
     lib_u8 opcode;
@@ -201,7 +202,7 @@ static lib_i32 lfg_test_source_fault_atomicity(void)
         t_cpu before = {0};
         t_cpu after = {0};
         lib_u8 code[] = { 0x0fu, opcodes[opcode], 0x06u, 0x00u, 0x10u };
-        lib_i32 failed = !lfg_prepare_protected(&state);
+        lib_i32 failed = !lfg_prepare_protected(&state, profile);
 
         if (!failed) {
             state.cpu.data.ds.limit = 0x1001u;
@@ -239,24 +240,23 @@ static lib_i32 lfg_test_source_fault_atomicity(void)
 
 lib_i32 main(void)
 {
-    if (!lfg_test_real()) {
-        lib_c_printf("LFG stage=real\n");
-        return 1;
-    }
-    if (!lfg_test_reg_direct_80386()) {
-        lib_c_printf("LFG stage=regdirect\n");
-        return 1;
-    }
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
     if (!lfg_test_80286_memory()) {
         lib_c_printf("LFG stage=80286\n");
         return 1;
     }
-    if (!lfg_test_protected()) {
-        lib_c_printf("LFG stage=protected\n");
-        return 1;
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        if (!lfg_test_real(profiles[index]) ||
+            !lfg_test_reg_direct(profiles[index]) ||
+            !lfg_test_protected(profiles[index]) ||
+            !lfg_test_source_fault_atomicity(profiles[index])) {
+            lib_c_printf("LFG stage=profile profile=%u\n", profiles[index]);
+            return 1;
+        }
     }
-    if (!lfg_test_source_fault_atomicity())
-        return 1;
     lib_c_printf("LSS-LFS-LGS:OK\n");
     return 0;
 }

@@ -33,7 +33,7 @@ static lib_u32 shift_result(lib_u32 destination, lib_u32 source, lib_u8 count,
         ((destination << count) | (source >> (width - count))) & mask;
 }
 
-static lib_i32 shift_test_forms(void)
+static lib_i32 shift_test_forms(core_machine_cpu_profile profile)
 {
     static const lib_u8 immediate_opcodes[] = {0xa4u, 0xacu};
     static const lib_u8 cl_opcodes[] = {0xa5u, 0xadu};
@@ -77,7 +77,7 @@ static lib_i32 shift_test_forms(void)
         } else code[bytes++] = 0xc8u;
         if (!cl) code[bytes++] = count;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         state.cpu.data.eax = destination;
         state.cpu.data.ecx = source;
         state.cpu.data.esi = 0x4000u;
@@ -93,7 +93,7 @@ static lib_i32 shift_test_forms(void)
                 width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
                 LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK;
         else observed = after.data.eax;
-        /* Intel 386 pseudocode leaves count >= operand width undefined.
+        /* The selected 486 PRM also leaves count >= operand width undefined.
          * Retain that context without turning a deterministic choice into L3. */
         if (count < (width ? 32u : 16u))
             failed |= (width ? observed : (observed & 0xffffu)) != expected ||
@@ -111,7 +111,7 @@ static lib_i32 shift_test_forms(void)
     return 1;
 }
 
-static lib_i32 shift_test_count_zero(void)
+static lib_i32 shift_test_count_zero(core_machine_cpu_profile profile)
 {
     static const lib_u8 immediate[] = {0x66u, 0x0fu, 0xa4u, 0xc8u, 0u};
     static const lib_u8 cl[] = {0x0fu, 0xadu, 0xc8u};
@@ -122,7 +122,7 @@ static lib_i32 shift_test_count_zero(void)
     for (index = 0u; index < 2u; ++index) {
         cpu_instruction_fixture state;
         t_cpu after;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         state.cpu.data.eax = 0xaabbccddu;
         state.cpu.data.ecx = 0u;
         state.cpu.data.eflags = flags;
@@ -154,7 +154,7 @@ static lib_i32 shift_test_profile(void)
     return 1;
 }
 
-static lib_bool shift_test_undefined_capture(void)
+static lib_bool shift_test_undefined_capture(core_machine_cpu_profile profile)
 {
     static const lib_u8 counts[] = {17u, 18u, 31u, 255u};
     lib_u8 direction, count_index, memory, cl;
@@ -176,7 +176,7 @@ static lib_bool shift_test_undefined_capture(void)
         code[bytes++] = memory ? 0x0eu : 0xc8u;
         if (memory) { code[bytes++] = 0u; code[bytes++] = 0x40u; }
         if (!cl) code[bytes++] = counts[count_index];
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         state.cpu.data.eax = destination;
         state.cpu.data.ecx = source;
         state.cpu.data.eflags = VCPU_EFLAGS_IF;
@@ -199,8 +199,14 @@ static lib_bool shift_test_undefined_capture(void)
 
 lib_i32 main(void)
 {
-    if (!shift_test_forms() || !shift_test_count_zero() ||
-        !shift_test_profile() || !shift_test_undefined_capture()) return 1;
+    const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
+    for (lib_size profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+        if (!shift_test_forms(profiles[profile]) || !shift_test_count_zero(profiles[profile]) ||
+            !shift_test_undefined_capture(profiles[profile])) return 1;
+    if (!shift_test_profile()) return 1;
     lib_c_printf("CPU-DOUBLE-SHIFT:OK\n");
     return 0;
 }

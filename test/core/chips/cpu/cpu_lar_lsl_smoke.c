@@ -25,7 +25,8 @@ static lib_i32 lar_lsl_test_register_forms(void)
     static const lib_u8 lar[] = {0x0fu, 0x02u, 0xc1u, 0xf4u};
     static const lib_u8 lsl[] = {0x0fu, 0x03u, 0xc1u, 0xf4u};
     const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_size profile;
 
@@ -36,14 +37,16 @@ static lib_i32 lar_lsl_test_register_forms(void)
             !lar_lsl_run_case(profiles[profile], lsl, sizeof(lsl), 0x0010u,
                 0xa1a10000u, LIB_TRUE, 0xa1a1ffffu) ||
             !lar_lsl_run_case(profiles[profile], lar, sizeof(lar), 0x0018u,
-                0xa1a10000u, LIB_FALSE, 0xa1a10000u) ||
+                0xa1a10000u, LIB_TRUE, 0xa1a11200u) ||
+            !lar_lsl_run_case(profiles[profile], lsl, sizeof(lsl), 0x0018u,
+                0xa1a10000u, LIB_TRUE, 0xa1a1ffffu) ||
             !lar_lsl_run_case(profiles[profile], lsl, sizeof(lsl), 0x0020u,
                 0xa1a10000u, LIB_TRUE, 0xa1a1ffffu)) return 0;
     }
     return 1;
 }
 
-static lib_i32 lar_lsl_test_386_attributes_and_memory(void)
+static lib_i32 lar_lsl_test_attributes_and_memory(core_machine_cpu_profile profile)
 {
     static const lib_u8 lar32[] = {0x66u, 0x0fu, 0x02u, 0xc1u, 0xf4u};
     static const lib_u8 lsl32[] = {0x66u, 0x0fu, 0x03u, 0xc1u, 0xf4u};
@@ -58,18 +61,18 @@ static lib_i32 lar_lsl_test_386_attributes_and_memory(void)
     cpu_instruction_fixture fixture;
     t_cpu after;
 
-    if (!lar_lsl_run_case(CORE_MACHINE_CPU_PROFILE_80386, lar32,
+    if (!lar_lsl_run_case(profile, lar32,
             sizeof(lar32), selector, 0xa1a10000u, LIB_TRUE, 0x00009300u) ||
-        !lar_lsl_run_case(CORE_MACHINE_CPU_PROFILE_80386, lsl32,
+        !lar_lsl_run_case(profile, lsl32,
             sizeof(lsl32), selector, 0xa1a10000u, LIB_TRUE, 0x0000ffffu))
         return 0;
-    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&fixture, profile);
     cpu_descriptor_query_enter_protected(&fixture, 0u);
     cpu_descriptor_query_install_gdt(&fixture);
     fixture.cpu.data.ecx = page_selector;
     if (!cpu_descriptor_query_run(&fixture, lsl32, sizeof(lsl32), &after) ||
         after.data.eax != 0x0fffffffu) return 0;
-    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&fixture, profile);
     cpu_descriptor_query_enter_protected(&fixture, 0u);
     cpu_descriptor_query_install_gdt(&fixture);
     fixture.cpu.data.ecx = 0x1234u;
@@ -77,7 +80,7 @@ static lib_i32 lar_lsl_test_386_attributes_and_memory(void)
     if (!cpu_descriptor_query_run(&fixture, lar_memory, sizeof(lar_memory),
             &after) || after.data.ecx != 0x00009300u ||
         !CPU_DESCRIPTOR_QUERY_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF)) return 0;
-    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&fixture, profile);
     cpu_descriptor_query_enter_protected(&fixture, 0u);
     cpu_descriptor_query_install_gdt(&fixture);
     fixture.cpu.data.ecx = 0x1234u;
@@ -87,7 +90,7 @@ static lib_i32 lar_lsl_test_386_attributes_and_memory(void)
         CPU_DESCRIPTOR_QUERY_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF);
 }
 
-static lib_i32 lar_lsl_test_bp_ss_source(void)
+static lib_i32 lar_lsl_test_bp_ss_source(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {
         0x0fu, 0x03u, 0x4eu, 0x00u, 0xf4u
@@ -96,7 +99,7 @@ static lib_i32 lar_lsl_test_bp_ss_source(void)
     cpu_instruction_fixture fixture;
     t_cpu after;
 
-    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&fixture, profile);
     cpu_descriptor_query_enter_protected(&fixture, 0u);
     cpu_descriptor_query_install_gdt(&fixture);
     /* This is the former real-board bootstrap's loaded SS cache, made
@@ -115,7 +118,7 @@ static lib_i32 lar_lsl_test_bp_ss_source(void)
         CPU_DESCRIPTOR_QUERY_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF);
 }
 
-static lib_i32 lar_lsl_test_sib_source(void)
+static lib_i32 lar_lsl_test_sib_source(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {
         0x66u, 0xbcu, 0x00u, 0x01u, 0x00u, 0x00u,
@@ -125,7 +128,7 @@ static lib_i32 lar_lsl_test_sib_source(void)
     cpu_instruction_fixture fixture;
 
     if (!cpu_descriptor_query_boot_protected(&fixture,
-            CORE_MACHINE_CPU_PROFILE_80386)) return 0;
+            profile)) return 0;
     fixture.cpu.data.eip = 0u;
     fixture.cpu.data.flagHalt = LIB_FALSE;
     fixture.cpu.data.ecx = 0x1234u;
@@ -141,7 +144,7 @@ static lib_i32 lar_lsl_test_sib_source(void)
     return 1;
 }
 
-static lib_i32 lar_lsl_test_sib_and_overrides(void)
+static lib_i32 lar_lsl_test_sib_and_overrides(core_machine_cpu_profile profile)
 {
     static const lib_u8 override_codes[][7] = {
         {0x26u,0x0fu,0x02u,0x0eu,0x20u,0x01u,0xf4u},
@@ -159,7 +162,7 @@ static lib_i32 lar_lsl_test_sib_and_overrides(void)
 
     for (index = 0u; index < sizeof(override_codes) / sizeof(override_codes[0]);
         ++index) {
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&fixture, profile);
         cpu_descriptor_query_enter_protected(&fixture, 0u);
         cpu_descriptor_query_install_gdt(&fixture);
         fixture.cpu.data.es.base = bases[index];
@@ -187,13 +190,13 @@ static lib_i32 lar_lsl_test_sib_and_overrides(void)
     return 1;
 }
 
-static lib_i32 lar_lsl_test_visibility(void)
+static lib_i32 lar_lsl_test_visibility(core_machine_cpu_profile profile)
 {
     static const lib_u8 lsl[] = {0x0fu, 0x03u, 0xc1u, 0xf4u};
     cpu_instruction_fixture fixture;
     t_cpu after;
 
-    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&fixture, profile);
     cpu_descriptor_query_enter_protected(&fixture, 3u);
     cpu_descriptor_query_install_gdt(&fixture);
     fixture.cpu.data.ecx = 0x0013u;
@@ -203,7 +206,7 @@ static lib_i32 lar_lsl_test_visibility(void)
         after.data.eax == 0xa1a10000u;
 }
 
-static lib_i32 lar_lsl_test_rejection(void)
+static lib_i32 lar_lsl_test_rejection(core_machine_cpu_profile profile)
 {
     static const lib_u8 lar[] = {0x0fu, 0x02u, 0xc1u};
     static const lib_u8 lsl[] = {0x0fu, 0x03u, 0xc1u};
@@ -213,17 +216,17 @@ static lib_i32 lar_lsl_test_rejection(void)
     cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80186);
     if (!cpu_descriptor_query_fault(&fixture, lar, sizeof(lar),
             VCPUINS_EXCEPT_UD)) return 0;
-    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&fixture, profile);
     if (!cpu_descriptor_query_fault(&fixture, lock_lar, sizeof(lock_lar),
             VCPUINS_EXCEPT_UD)) return 0;
-    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&fixture, profile);
     fixture.cpu.data.cr0 |= VCPU_CR0_PE;
     fixture.cpu.data.eflags |= VCPU_EFLAGS_VM;
     return cpu_descriptor_query_fault(&fixture, lsl, sizeof(lsl),
         VCPUINS_EXCEPT_UD);
 }
 
-static lib_i32 lar_lsl_test_source_limit(void)
+static lib_i32 lar_lsl_test_source_limit(core_machine_cpu_profile profile)
 {
     static const lib_u8 codes[][5] = {
         {0x0fu,0x02u,0x0eu,0x10u,0x00u},
@@ -236,7 +239,7 @@ static lib_i32 lar_lsl_test_source_limit(void)
         cpu_instruction_fixture fixture;
         t_cpu before;
 
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&fixture, profile);
         cpu_descriptor_query_enter_protected(&fixture, 0u);
         cpu_descriptor_query_install_gdt(&fixture);
         fixture.cpu.data.ds.limit = 0x000fu;
@@ -254,7 +257,7 @@ static lib_i32 lar_lsl_test_source_limit(void)
     return 1;
 }
 
-static lib_i32 lar_lsl_test_ldt_selector(void)
+static lib_i32 lar_lsl_test_ldt_selector(core_machine_cpu_profile profile)
 {
     static const lib_u8 ldt_descriptor[] = {
         0xffu,0xffu,0x00u,0x70u,0x00u,0x92u,0x00u,0x00u
@@ -275,7 +278,7 @@ static lib_i32 lar_lsl_test_ldt_selector(void)
         cpu_instruction_fixture fixture;
 
         if (!cpu_descriptor_query_boot_protected(&fixture,
-                CORE_MACHINE_CPU_PROFILE_80386)) return 0;
+                profile)) return 0;
         fixture.cpu.data.gdtr.limit = 0x0037u;
         fixture.cpu.data.eip = 0u;
         fixture.cpu.data.flagHalt = LIB_FALSE;
@@ -316,53 +319,116 @@ static lib_i32 lar_lsl_run_system_type_case(core_machine_cpu_profile profile,
     return expected_zf || after.data.eax == 0xa1a10000u;
 }
 
-static lib_i32 lar_lsl_test_system_type_generations(void)
+static lib_i32 lar_lsl_test_system_type_generations(core_machine_cpu_profile profile)
 {
     static const lib_u8 lar[] = {0x0fu,0x02u,0xc1u,0xf4u};
     static const lib_u8 lsl[] = {0x0fu,0x03u,0xc1u,0xf4u};
-    static const lib_u8 lar_286[] = {1u,2u,3u,4u,5u,6u,7u};
-    static const lib_u8 lar_386[] = {9u,11u,12u,14u,15u};
+    static const lib_u8 lar_286[] = {1u,2u,3u,4u,5u};
+    static const lib_u8 lar_386[] = {9u,11u,12u};
     static const lib_u8 lsl_286[] = {1u,2u,3u};
     static const lib_u8 lsl_386[] = {9u,11u};
-    static const lib_u8 invalid[] = {0u,8u,10u,13u};
+    static const lib_u8 invalid[] = {0u,6u,7u,8u,10u,13u,14u,15u};
     lib_size index;
 
     for (index = 0u; index < sizeof(lar_286); ++index) {
         if (!lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80286,
                 lar, lar_286[index], LIB_TRUE) ||
-            !lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80386,
+            !lar_lsl_run_system_type_case(profile,
                 lar, lar_286[index], LIB_TRUE)) return 0;
     }
     for (index = 0u; index < sizeof(lar_386); ++index) {
         if (!lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80286,
                 lar, lar_386[index], LIB_FALSE) ||
-            !lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80386,
+            !lar_lsl_run_system_type_case(profile,
                 lar, lar_386[index], LIB_TRUE)) return 0;
     }
     for (index = 0u; index < sizeof(lsl_286); ++index) {
         if (!lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80286,
                 lsl, lsl_286[index], LIB_TRUE) ||
-            !lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80386,
+            !lar_lsl_run_system_type_case(profile,
                 lsl, lsl_286[index], LIB_TRUE)) return 0;
     }
     for (index = 0u; index < sizeof(lsl_386); ++index) {
         if (!lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80286,
                 lsl, lsl_386[index], LIB_FALSE) ||
-            !lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80386,
+            !lar_lsl_run_system_type_case(profile,
                 lsl, lsl_386[index], LIB_TRUE)) return 0;
     }
     for (index = 0u; index < sizeof(invalid); ++index) {
         if (!lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80286,
                 lar, invalid[index], LIB_FALSE) ||
-            !lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80386,
+            !lar_lsl_run_system_type_case(profile,
                 lar, invalid[index], LIB_FALSE) ||
             !lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80286,
                 lsl, invalid[index], LIB_FALSE) ||
-            !lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80386,
+            !lar_lsl_run_system_type_case(profile,
                 lsl, invalid[index], LIB_FALSE)) return 0;
     }
-    return lar_lsl_run_system_type_case(CORE_MACHINE_CPU_PROFILE_80386,
+    return lar_lsl_run_system_type_case(profile,
         lsl, 4u, LIB_FALSE);
+}
+
+static lib_i32 lar_lsl_test_type_presence_privilege(core_machine_cpu_profile profile)
+{
+    static const lib_u8 code[][7] = {
+        {0x0fu,0x02u,0xc1u,0xf4u},
+        {0x0fu,0x03u,0xc1u,0xf4u},
+        {0x66u,0x0fu,0x02u,0x06u,0x00u,0x01u,0xf4u},
+        {0x66u,0x0fu,0x03u,0x06u,0x00u,0x01u,0xf4u}
+    };
+    static const lib_u8 bytes[] = {4u,4u,7u,7u};
+    /* Original PRM LAR/LSL tables: system types admitted by each query. */
+    static const lib_u16 system_types[] = {0x1a3eu,0x0a0eu};
+
+    for (lib_u32 index = 0u; index < 16384u; ++index) {
+        const lib_u8 type = (lib_u8)(index & 31u);
+        const lib_u8 present = (lib_u8)((index >> 5u) & 1u);
+        const lib_u8 dpl = (lib_u8)((index >> 6u) & 3u);
+        const lib_u8 cpl = (lib_u8)((index >> 8u) & 3u);
+        const lib_u8 rpl = (lib_u8)((index >> 10u) & 3u);
+        const lib_u8 form = (lib_u8)(index >> 12u);
+        const lib_bool conforming = (type & 0x1cu) == 0x1cu;
+        const lib_bool valid_type = type >= 16u ||
+            (system_types[form & 1u] & (1u << type)) != 0u;
+        const lib_bool expected_zf = valid_type &&
+            (conforming || (cpl <= dpl && rpl <= dpl));
+        const lib_u16 selector = (lib_u16)(0x18u | rpl);
+        const lib_u8 access = (lib_u8)((present << 7u) | (dpl << 5u) | type);
+        const lib_u8 descriptor[] = {0x45u,0x23u,0u,0u,0u,access,0x81u,0u};
+        const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
+            VCPU_EFLAGS_AF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF | VCPU_EFLAGS_IF;
+        lib_u32 expected = 0xa1a10000u;
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+
+        cpu_instruction_prepare(&fixture, profile);
+        cpu_descriptor_query_enter_protected(&fixture, cpl);
+        cpu_descriptor_query_install_gdt(&fixture);
+        lib_memory_copy(fixture.memory + CPU_DESCRIPTOR_QUERY_GDT_ADDRESS +
+            0x18u, descriptor, sizeof(descriptor));
+        lib_memory_copy(fixture.memory + 0x100u, &selector, sizeof(selector));
+        fixture.cpu.data.eax = expected;
+        fixture.cpu.data.ecx = 0xb2b20000u | selector;
+        fixture.cpu.data.eflags = flags;
+        if (expected_zf) {
+            expected = (form & 1u) != 0u ? 0x12345fffu :
+                0x00800000u | ((lib_u32)access << 8u);
+            if (form < 2u) expected = 0xa1a10000u | (expected & 0xffffu);
+        }
+        if (!cpu_descriptor_query_run(&fixture, code[form], bytes[form], &after) ||
+            core_machine_cpu_is_shutdown(&fixture.execution) ||
+            after.data.eip != (lib_u32)(bytes[form] - 1u) ||
+            after.data.eax != expected || after.data.ecx != (0xb2b20000u | selector) ||
+            after.data.eflags != (flags | (expected_zf ? VCPU_EFLAGS_ZF : 0u)) ||
+            fixture.writes != 0u || lib_memory_compare(fixture.memory +
+                CPU_DESCRIPTOR_QUERY_GDT_ADDRESS + 0x18u, descriptor,
+                sizeof(descriptor)) != 0) {
+            lib_c_fprintf(lib_c_stderr, "LAR-LSL:TYPE profile=%u case=%u\n",
+                profile, index);
+            return 0;
+        }
+    }
+    return 1;
 }
 
 static lib_i32 lar_lsl_test_invalid_ldtr_is_negative(void)
@@ -374,7 +440,7 @@ static lib_i32 lar_lsl_test_invalid_ldtr_is_negative(void)
     static const lib_u8 descriptor[] = {0xffu,0xffu,0,0,0,0x93u,0,0};
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_size profile_index;
     lib_size index;
@@ -406,7 +472,7 @@ static lib_i32 lar_lsl_test_invalid_ldtr_is_negative(void)
     return 1;
 }
 
-static lib_i32 lar_lsl_test_descriptor_bytes_unchanged(void)
+static lib_i32 lar_lsl_test_descriptor_bytes_unchanged(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[][4] = {
         {0x0fu,0x02u,0xc1u,0xf4u},
@@ -419,7 +485,7 @@ static lib_i32 lar_lsl_test_descriptor_bytes_unchanged(void)
         cpu_instruction_fixture fixture;
         t_cpu after;
 
-        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&fixture, profile);
         cpu_descriptor_query_enter_protected(&fixture, 0u);
         cpu_descriptor_query_install_gdt(&fixture);
         fixture.cpu.data.ecx = 0x0010u;
@@ -434,14 +500,14 @@ static lib_i32 lar_lsl_test_descriptor_bytes_unchanged(void)
     return 1;
 }
 
-static lib_i32 lar_lsl_test_386_lar_defined_mask(void)
+static lib_i32 lar_lsl_test_lar_defined_mask(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x66u,0x0fu,0x02u,0xc1u,0xf4u};
     static const lib_u8 descriptor[] = {0xffu,0xffu,0,0,0,0x93u,0xcfu,0};
     cpu_instruction_fixture fixture;
     t_cpu after;
 
-    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&fixture, profile);
     cpu_descriptor_query_enter_protected(&fixture, 0u);
     cpu_descriptor_query_install_gdt(&fixture);
     fixture.cpu.data.ecx = 0x0010u;
@@ -454,17 +520,30 @@ static lib_i32 lar_lsl_test_386_lar_defined_mask(void)
 
 lib_i32 main(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
     if (!lar_lsl_test_register_forms() ||
-        !lar_lsl_test_386_attributes_and_memory() ||
-        !lar_lsl_test_bp_ss_source() ||
-        !lar_lsl_test_sib_source() ||
-        !lar_lsl_test_sib_and_overrides() ||
-        !lar_lsl_test_visibility() || !lar_lsl_test_rejection() ||
-        !lar_lsl_test_source_limit() || !lar_lsl_test_ldt_selector() ||
-        !lar_lsl_test_system_type_generations() ||
-        !lar_lsl_test_invalid_ldtr_is_negative() ||
-        !lar_lsl_test_descriptor_bytes_unchanged() ||
-        !lar_lsl_test_386_lar_defined_mask()) return 1;
+        !lar_lsl_test_invalid_ldtr_is_negative()) return 1;
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        if (!lar_lsl_test_type_presence_privilege(profiles[index]) ||
+            !lar_lsl_test_attributes_and_memory(profiles[index]) ||
+            !lar_lsl_test_bp_ss_source(profiles[index]) ||
+            !lar_lsl_test_sib_source(profiles[index]) ||
+            !lar_lsl_test_sib_and_overrides(profiles[index]) ||
+            !lar_lsl_test_visibility(profiles[index]) ||
+            !lar_lsl_test_rejection(profiles[index]) ||
+            !lar_lsl_test_source_limit(profiles[index]) ||
+            !lar_lsl_test_ldt_selector(profiles[index]) ||
+            !lar_lsl_test_system_type_generations(profiles[index]) ||
+            !lar_lsl_test_descriptor_bytes_unchanged(profiles[index]) ||
+            !lar_lsl_test_lar_defined_mask(profiles[index])) {
+            lib_c_fprintf(lib_c_stderr, "LAR-LSL:FAIL profile=%u\n",
+                profiles[index]);
+            return 1;
+        }
+    }
     lib_c_printf("%s\n", "LAR-LSL:OK");
     return 0;
 }

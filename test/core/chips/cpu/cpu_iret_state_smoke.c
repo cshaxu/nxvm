@@ -168,7 +168,8 @@ static lib_i32 iret_test_real(void)
         CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 prefixes[][2] = {
         { 0x66u, 0u },
@@ -188,13 +189,16 @@ static lib_i32 iret_test_real(void)
                 0u, LIB_TRUE))
             return 0;
     }
-    for (profile = 0u; profile != sizeof(prefixes) / sizeof(prefixes[0]);
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
-        lib_u8 bytes = profile == 2u ? 2u : 1u;
+        if (profiles[profile] < CORE_MACHINE_CPU_PROFILE_80386) continue;
+        for (lib_size prefix = 0u; prefix < sizeof(prefixes) / sizeof(prefixes[0]);
+            ++prefix) {
+            lib_u8 bytes = prefix == 2u ? 2u : 1u;
 
-        if (!iret_real_case(CORE_MACHINE_CPU_PROFILE_80386,
-                prefixes[profile], bytes, LIB_FALSE))
-            return 0;
+            if (!iret_real_case(profiles[profile], prefixes[prefix], bytes,
+                LIB_FALSE)) return 0;
+        }
     }
     return 1;
 }
@@ -257,6 +261,9 @@ static lib_i32 iret_test_rejections(void)
         { 0xf0u, 0x67u, 0xcfu, 0u },
         { 0xf0u, 0x66u, 0x67u, 0xcfu }
     };
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]);
@@ -271,13 +278,13 @@ static lib_i32 iret_test_rejections(void)
                 return 0;
         }
     }
-    for (profile = 0u; profile != sizeof(lock_forms) / sizeof(lock_forms[0]);
-        ++profile) {
-        lib_u8 bytes = profile == 3u ? 4u : profile == 0u ? 2u : 3u;
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile) {
+        for (lib_size form = 0u; form < sizeof(lock_forms) / sizeof(lock_forms[0]);
+            ++form) {
+            lib_u8 bytes = form == 3u ? 4u : form == 0u ? 2u : 3u;
 
-        if (!iret_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
-                lock_forms[profile], bytes))
-            return 0;
+            if (!iret_expect_ud(modern[profile], lock_forms[form], bytes)) return 0;
+        }
     }
     return 1;
 }

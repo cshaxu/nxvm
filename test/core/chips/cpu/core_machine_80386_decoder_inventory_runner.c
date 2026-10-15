@@ -46,7 +46,6 @@ lib_i32 main(void)
         }
         if (primary_seen[opcode]) ++primary_count;
     }
-    if (pairs != 63021u || primary_count != 253u) return 1;
     file = lib_c_fopen(path, "wb");
     if (file == LIB_NULL) return 1;
     if (lib_c_fprintf(file,
@@ -94,6 +93,9 @@ lib_i32 main(void)
     if (lib_c_fprintf(file, "\n  }\n}\n") < 0) goto fail;
     if (lib_c_fclose(file) != 0) return 1;
     lib_c_printf("I386-DECODER-LEXEME:%u:%u\n", pairs, primary_count);
+    /* C0/C1 extension 6 is rejected, matching execution rather than the
+     * historical inventory's 64 preview-only candidates. */
+    if (pairs != 62957u || primary_count != 253u) return 1;
     return 0;
 
 fail:

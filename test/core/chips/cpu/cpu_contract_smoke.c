@@ -51,7 +51,8 @@ lib_i32 main(void)
         {CORE_MACHINE_CPU_PROFILE_8088, "8088", LIB_TRUE},
         {CORE_MACHINE_CPU_PROFILE_80186, "80186", LIB_FALSE},
         {CORE_MACHINE_CPU_PROFILE_80286, "80286", LIB_FALSE},
-        {CORE_MACHINE_CPU_PROFILE_80386, "80386", LIB_FALSE}
+        {CORE_MACHINE_CPU_PROFILE_80386, "80386", LIB_FALSE},
+        {CORE_MACHINE_CPU_PROFILE_80486SX, "80486SX", LIB_FALSE}
     };
     for (lib_size i = 0u; i < sizeof(profiles) / sizeof(profiles[0]); ++i)
         if (lib_text_compare(core_machine_cpu_profile_name(profiles[i].profile), profiles[i].name) != 0 ||

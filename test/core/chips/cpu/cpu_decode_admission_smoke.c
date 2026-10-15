@@ -80,27 +80,44 @@ static lib_i32 decode_failed_suffixes(void)
 {
     static const struct {
         const char *name;
-        lib_u8 code[6];
+        lib_u8 code[7];
         lib_u8 bytes;
+        lib_bool requires_386;
     } cases[] = {
-        { "TEST", {0x85u,0x06u,0x00u,0x04u}, 4u },
-        { "XCHG", {0x87u,0x06u,0x00u,0x04u}, 4u },
-        { "MOV-store", {0x89u,0x06u,0x00u,0x04u}, 4u },
-        { "MOV-load", {0x8bu,0x06u,0x00u,0x04u}, 4u },
-        { "LEA", {0x8du,0x06u,0x00u,0x04u}, 4u },
-        { "CALL-far", {0x9au,0x00u,0x02u,0x00u,0x00u}, 5u },
-        { "RET", {0xc2u,0x02u,0x00u}, 3u },
-        { "RETF", {0xcau,0x02u,0x00u}, 3u },
-        { "INT", {0xcdu,0x20u}, 2u },
-        { "AAM", {0xd4u,0x0au}, 2u },
-        { "AAD", {0xd5u,0x0au}, 2u },
-        { "JCXZ", {0xe3u,0x02u}, 2u },
-        { "JMP", {0xe9u,0x02u,0x00u}, 3u }
+        { "TEST", {0x85u,0x06u,0x00u,0x04u}, 4u, LIB_FALSE },
+        { "XCHG", {0x87u,0x06u,0x00u,0x04u}, 4u, LIB_FALSE },
+        { "MOV-store", {0x89u,0x06u,0x00u,0x04u}, 4u, LIB_FALSE },
+        { "MOV-load", {0x8bu,0x06u,0x00u,0x04u}, 4u, LIB_FALSE },
+        { "LEA", {0x8du,0x06u,0x00u,0x04u}, 4u, LIB_FALSE },
+        { "CALL-far", {0x9au,0x00u,0x02u,0x00u,0x00u}, 5u, LIB_FALSE },
+        { "RET", {0xc2u,0x02u,0x00u}, 3u, LIB_FALSE },
+        { "RETF", {0xcau,0x02u,0x00u}, 3u, LIB_FALSE },
+        { "INT", {0xcdu,0x20u}, 2u, LIB_FALSE },
+        { "AAM", {0xd4u,0x0au}, 2u, LIB_FALSE },
+        { "AAD", {0xd5u,0x0au}, 2u, LIB_FALSE },
+        { "JCXZ", {0xe3u,0x02u}, 2u, LIB_FALSE },
+        { "JMP", {0xe9u,0x02u,0x00u}, 3u, LIB_FALSE },
+        { "JZ-short", {0x74u,0x02u}, 2u, LIB_FALSE },
+        { "JNZ-short", {0x75u,0x02u}, 2u, LIB_FALSE },
+        { "LOOPNZ", {0xe0u,0x02u}, 2u, LIB_FALSE },
+        { "LOOPZ", {0xe1u,0x02u}, 2u, LIB_FALSE },
+        { "LOOP", {0xe2u,0x02u}, 2u, LIB_FALSE },
+        { "CALL-near", {0xe8u,0x02u,0x00u}, 3u, LIB_FALSE },
+        { "JZ-near16", {0x0fu,0x84u,0x02u,0x00u}, 4u, LIB_TRUE },
+        { "JNZ-near16", {0x0fu,0x85u,0x02u,0x00u}, 4u, LIB_TRUE },
+        { "JZ-near32", {0x66u,0x0fu,0x84u,0x02u,0,0,0}, 7u, LIB_TRUE },
+        { "JNZ-near32", {0x66u,0x0fu,0x85u,0x02u,0,0,0}, 7u, LIB_TRUE },
+        { "CALL-near32", {0x66u,0xe8u,0x02u,0,0,0}, 6u, LIB_TRUE },
+        { "JMP-near32", {0x66u,0xe9u,0x02u,0,0,0}, 6u, LIB_TRUE },
+        { "JECXZ", {0x67u,0xe3u,0x02u}, 3u, LIB_TRUE },
+        { "SETZ-memory", {0x0fu,0x94u,0x06u,0x00u,0x04u}, 5u, LIB_TRUE }
     };
 
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_8086;
-        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+        profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
         for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+            if (cases[index].requires_386 &&
+                profile < CORE_MACHINE_CPU_PROFILE_80386) continue;
             for (lib_u8 fail_byte = 1u; fail_byte < cases[index].bytes; ++fail_byte) {
                 decode_fixture fixture;
                 t_cpu before;
@@ -133,9 +150,9 @@ static lib_i32 decode_failed_suffixes(void)
 static lib_i32 decode_family_lengths(void)
 {
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_8086;
-        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+        profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
         lib_u8 legal_bytes = profile == CORE_MACHINE_CPU_PROFILE_80286 ? 10u :
-            profile == CORE_MACHINE_CPU_PROFILE_80386 ? 15u : 32u;
+            profile >= CORE_MACHINE_CPU_PROFILE_80386 ? 15u : 32u;
 
         for (lib_u8 over = 0u; over != 2u; ++over) {
             for (lib_u8 cached = 0u; cached != 2u; ++cached) {
@@ -167,7 +184,7 @@ static lib_i32 decode_family_lengths(void)
 static lib_i32 decode_endpoint_publication(void)
 {
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_8086;
-        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+        profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
         decode_fixture fixture;
         lib_u32 next = profile >= CORE_MACHINE_CPU_PROFILE_80286 ? 0x10000u : 0u;
 
@@ -201,11 +218,11 @@ static lib_i32 decode_component_lengths(void)
     };
 
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80286;
-        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+        profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
         lib_u8 limit = profile == CORE_MACHINE_CPU_PROFILE_80286 ? 10u : 15u;
 
         for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
-            if (cases[index].later && profile != CORE_MACHINE_CPU_PROFILE_80386)
+            if (cases[index].later && profile < CORE_MACHINE_CPU_PROFILE_80386)
                 continue;
             for (lib_u8 over = 0u; over != 2u; ++over) {
                 decode_fixture fixture;
@@ -232,7 +249,7 @@ static lib_i32 decode_component_lengths(void)
 static lib_i32 decode_wrapped_immediate(void)
 {
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_8086;
-        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+        profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
         decode_fixture fixture;
 
         decode_prepare(&fixture, profile);
@@ -357,10 +374,10 @@ static lib_i32 decode_privileged_operands(void)
     };
 
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80286;
-        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+        profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
         for (lib_size index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
             for (lib_u8 mode = 0u; mode <
-                (profile == CORE_MACHINE_CPU_PROFILE_80386 ? 3u : 1u); ++mode) {
+                (profile >= CORE_MACHINE_CPU_PROFILE_80386 ? 3u : 1u); ++mode) {
                 decode_fixture fixture;
                 lib_u32 start;
                 lib_u32 entry;
@@ -411,6 +428,19 @@ static lib_i32 decode_sx_feature_fetch_failures(void)
         {"CLI", {0xfau}, 1u, LIB_FALSE}, {"STI", {0xfbu}, 1u, LIB_FALSE},
         {"PUSHF", {0x9cu}, 1u, LIB_FALSE}, {"POPF", {0x9du}, 1u, LIB_FALSE},
         {"IRET", {0xcfu}, 1u, LIB_FALSE}, {"INT", {0xcdu, 0x21u}, 2u, LIB_FALSE},
+        {"INT1", {0xf1u}, 1u, LIB_FALSE},
+        {"AAM", {0xd4u, 10u}, 2u, LIB_FALSE},
+        {"AAM-zero", {0xd4u, 0u}, 2u, LIB_FALSE},
+        {"AAD", {0xd5u, 10u}, 2u, LIB_FALSE},
+        {"AAD-zero", {0xd5u, 0u}, 2u, LIB_FALSE},
+        {"UMOV-store-byte", {0x0fu, 0x10u, 0xc0u}, 3u, LIB_FALSE},
+        {"UMOV-store-word", {0x0fu, 0x11u, 0xc0u}, 3u, LIB_FALSE},
+        {"UMOV-load-byte", {0x0fu, 0x12u, 0xc0u}, 3u, LIB_FALSE},
+        {"UMOV-load-word", {0x0fu, 0x13u, 0xc0u}, 3u, LIB_FALSE},
+        {"UMOV-store-byte-memory", {0x0fu, 0x10u}, 2u, LIB_TRUE},
+        {"UMOV-store-word-memory", {0x0fu, 0x11u}, 2u, LIB_TRUE},
+        {"UMOV-load-byte-memory", {0x0fu, 0x12u}, 2u, LIB_TRUE},
+        {"UMOV-load-word-memory", {0x0fu, 0x13u}, 2u, LIB_TRUE},
         {"WAIT", {0x9bu}, 1u, LIB_FALSE}, {"CPUID", {0x0fu, 0xa2u}, 2u, LIB_FALSE},
         {"read-CR4", {0x0fu, 0x20u, 0xe0u}, 3u, LIB_FALSE},
         {"write-CR4", {0x0fu, 0x22u, 0xe0u}, 3u, LIB_FALSE},
@@ -424,7 +454,7 @@ static lib_i32 decode_sx_feature_fetch_failures(void)
         {"ESC-DD", {0xddu, 0xc0u}, 2u, LIB_FALSE},
         {"ESC-DE", {0xdeu, 0xc0u}, 2u, LIB_FALSE},
         {"ESC-DF", {0xdfu, 0xc0u}, 2u, LIB_FALSE},
-        {"ESC-memory", {0xd8u}, 0u, LIB_TRUE}
+        {"ESC-memory", {0xd8u}, 1u, LIB_TRUE}
     };
 
     for (lib_u8 mode = 0u; mode < 6u; ++mode)
@@ -432,21 +462,19 @@ static lib_i32 decode_sx_feature_fetch_failures(void)
     for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
     for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes)
     for (lib_u8 controls = 0u; controls < 16u; ++controls) {
-        lib_u8 code[8], bytes = 0u;
+        lib_u8 code[9], bytes = 0u;
 
         if (prefixes & 1u) code[bytes++] = 0x66u;
         if (prefixes & 2u) code[bytes++] = 0x67u;
+        lib_memory_copy(code + bytes, forms[form].code, forms[form].bytes);
+        bytes += forms[form].bytes;
         if (forms[form].memory) {
             const lib_bool address32 = code32 != ((prefixes & 2u) != 0u);
 
-            code[bytes++] = 0xd8u;
             code[bytes++] = address32 ? 0x05u : 0x06u;
             code[bytes++] = 0u;
             code[bytes++] = 4u;
             if (address32) { code[bytes++] = 0u; code[bytes++] = 0u; }
-        } else {
-            lib_memory_copy(code + bytes, forms[form].code, forms[form].bytes);
-            bytes += forms[form].bytes;
         }
         for (lib_u8 fail_byte = 0u; fail_byte < bytes; ++fail_byte) {
             decode_fixture fixture;

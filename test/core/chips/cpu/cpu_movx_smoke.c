@@ -18,7 +18,7 @@ static lib_i32 movx_run(cpu_instruction_fixture *state, const lib_u8 *code,
         !state->execution.stop_requested;
 }
 
-static lib_i32 movx_test_forms(void)
+static lib_i32 movx_test_forms(core_machine_cpu_profile profile)
 {
     static const movx_form forms[] = {
         {0xb6u, 0x00000080u, 0x00000080u, 1u},
@@ -49,7 +49,7 @@ static lib_i32 movx_test_forms(void)
                 lib_i32 failed = 0;
                 lib_size index = 0u;
 
-                cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+                cpu_instruction_prepare(&state, profile);
 
                 if (operand32) code[index++] = 0x66u;
                 code[index++] = 0x0fu;
@@ -74,7 +74,7 @@ static lib_i32 movx_test_forms(void)
     return 1;
 }
 
-static lib_i32 movx_test_address_prefix(void)
+static lib_i32 movx_test_address_prefix(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x67u,0x66u,0x0fu,0xbfu,0x0eu};
     const lib_u8 source[] = {0x01u,0x80u};
@@ -83,7 +83,7 @@ static lib_i32 movx_test_address_prefix(void)
     t_cpu after;
     lib_i32 failed = 0;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     state.cpu.data.ecx = 0xaabbccddu;
     state.cpu.data.esi = 0x4000u;
     state.cpu.data.eflags = flags;
@@ -96,7 +96,13 @@ static lib_i32 movx_test_address_prefix(void)
 
 lib_i32 main(void)
 {
-    if (!movx_test_forms() || !movx_test_address_prefix()) return 1;
+    const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
+    for (lib_size profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+        if (!movx_test_forms(profiles[profile]) || !movx_test_address_prefix(profiles[profile]))
+            return 1;
     lib_c_printf("MOVX-CPU:OK\n");
     return 0;
 }

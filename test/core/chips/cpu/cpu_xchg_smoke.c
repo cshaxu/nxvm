@@ -13,7 +13,7 @@ typedef struct xchg_vector {
     lib_u32 ecx_after;
 } xchg_vector;
 
-static lib_i32 xchg_test_real(void)
+static lib_i32 xchg_test_real(core_machine_cpu_profile profile)
 {
     static const lib_u8 r8[] = { 0x86u, 0xc1u };
     static const lib_u8 m8[] = { 0x86u, 0x06u, 0x00u, 0x10u };
@@ -21,13 +21,21 @@ static lib_i32 xchg_test_real(void)
     static const lib_u8 m16[] = { 0x87u, 0x06u, 0x00u, 0x10u };
     static const lib_u8 r32[] = { 0x66u, 0x87u, 0xc1u };
     static const lib_u8 m32[] = { 0x67u, 0x66u, 0x87u, 0x46u, 0x10u };
+    static const lib_u8 al_ah[] = { 0x86u, 0xc4u };
+    static const lib_u8 ah_al[] = { 0x86u, 0xe0u };
+    static const lib_u8 ah_ch[] = { 0x86u, 0xe5u };
+    static const lib_u8 ah_ah[] = { 0x86u, 0xe4u };
     static const xchg_vector vectors[] = {
         { r8, sizeof(r8), 0u, 0u, 0u, 0u, 0xaabb3388u, 0x55667744u },
         { m8, sizeof(m8), 1u, 0x1000u, 0x22u, 0x44u, 0xaabb3322u, 0x55667788u },
         { r16, sizeof(r16), 0u, 0u, 0u, 0u, 0xaabb7788u, 0x55663344u },
         { m16, sizeof(m16), 2u, 0x1000u, 0x7788u, 0x3344u, 0xaabb7788u, 0x55667788u },
         { r32, sizeof(r32), 0u, 0u, 0u, 0u, 0x55667788u, 0xaabb3344u },
-        { m32, sizeof(m32), 4u, 0x1010u, 0x11223344u, 0xaabb3344u, 0x11223344u, 0x55667788u }
+        { m32, sizeof(m32), 4u, 0x1010u, 0x11223344u, 0xaabb3344u, 0x11223344u, 0x55667788u },
+        { al_ah, sizeof(al_ah), 0u, 0u, 0u, 0u, 0xaabb4433u, 0x55667788u },
+        { ah_al, sizeof(ah_al), 0u, 0u, 0u, 0u, 0xaabb4433u, 0x55667788u },
+        { ah_ch, sizeof(ah_ch), 0u, 0u, 0u, 0u, 0xaabb7744u, 0x55663388u },
+        { ah_ah, sizeof(ah_ah), 0u, 0u, 0u, 0u, 0xaabb3344u, 0x55667788u }
     };
     lib_u8 form;
 
@@ -37,7 +45,7 @@ static lib_i32 xchg_test_real(void)
         t_cpu after;
         lib_u32 memory_after = 0u;
         lib_i32 failed = 0;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
 
         state.cpu.data.eax = 0xaabb3344u;
         state.cpu.data.ecx = 0x55667788u;
@@ -128,7 +136,7 @@ static lib_i32 xchg_test_legacy_default16(void)
     return 1;
 }
 
-static lib_i32 xchg_test_lock(void)
+static lib_i32 xchg_test_lock(core_machine_cpu_profile profile)
 {
     static const lib_u8 plain_code[] = {0x87u,0x06u,0x00u,0x10u};
     static const lib_u8 memory_code[] = {0xf0u,0x87u,0x06u,0x00u,0x10u};
@@ -137,7 +145,7 @@ static lib_i32 xchg_test_lock(void)
     t_cpu after;
     lib_u16 memory = 0x7788u;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     state.cpu.data.eax = 0xaabb3344u;
     if (cpu_instruction_write(&state, 0x1000u, &memory, 2u,
         CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
@@ -205,7 +213,8 @@ static lib_i32 xchg_test_accumulator(void)
         CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
     lib_u8 opcode;
@@ -311,7 +320,7 @@ static lib_i32 xchg_test_accumulator_reject(void)
     return 1;
 }
 
-static lib_i32 xchg_test_accumulator_lock(void)
+static lib_i32 xchg_test_accumulator_lock(core_machine_cpu_profile profile)
 {
     lib_u8 opcode;
 
@@ -320,7 +329,7 @@ static lib_i32 xchg_test_accumulator_lock(void)
         cpu_instruction_fixture state;
         lib_u8 code[] = { 0xf0u, opcode };
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         state.cpu.data.eax = 0xaabb3344u;
         state.cpu.data.ecx = 0x55667788u;
         state.cpu.data.eflags = VCPU_EFLAGS_CF;
@@ -330,7 +339,7 @@ static lib_i32 xchg_test_accumulator_lock(void)
     return 1;
 }
 
-static lib_i32 xchg_test_accumulator_386_boundaries(void)
+static lib_i32 xchg_test_accumulator_386_boundaries(core_machine_cpu_profile profile)
 {
     lib_u8 opcode;
 
@@ -348,7 +357,7 @@ static lib_i32 xchg_test_accumulator_386_boundaries(void)
         lib_memory_set(&after, 0, sizeof(after));
         status = LIB_STATUS_INVALID_ARGUMENT;
         failed = 0;
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
 
         state.cpu.data.eax = 0xaabb3344u;
         state.cpu.data.ecx = 0x11112222u;
@@ -397,10 +406,32 @@ static lib_i32 xchg_test_accumulator_386_boundaries(void)
 
 lib_i32 main(void)
 {
-    if (!xchg_test_real())
-    {
-        lib_c_printf("XCHG stage=real\n");
-        return 1;
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
+        ++index) {
+        if (!xchg_test_real(profiles[index]))
+        {
+            lib_c_printf("XCHG stage=real\n");
+            return 1;
+        }
+        if (!xchg_test_lock(profiles[index]))
+        {
+            lib_c_printf("XCHG stage=lock\n");
+            return 1;
+        }
+        if (!xchg_test_accumulator_386_boundaries(profiles[index]))
+        {
+            lib_c_printf("XCHG acc stage=386\n");
+            return 1;
+        }
+        if (!xchg_test_accumulator_lock(profiles[index]))
+        {
+            lib_c_printf("XCHG acc stage=lock\n");
+            return 1;
+        }
     }
     if (!xchg_test_profiles_and_lock())
     {
@@ -412,29 +443,14 @@ lib_i32 main(void)
         lib_c_printf("XCHG stage=legacy\n");
         return 1;
     }
-    if (!xchg_test_lock())
-    {
-        lib_c_printf("XCHG stage=lock\n");
-        return 1;
-    }
     if (!xchg_test_accumulator())
     {
         lib_c_printf("XCHG acc stage=default\n");
         return 1;
     }
-    if (!xchg_test_accumulator_386_boundaries())
-    {
-        lib_c_printf("XCHG acc stage=386\n");
-        return 1;
-    }
     if (!xchg_test_accumulator_reject())
     {
         lib_c_printf("XCHG acc stage=reject\n");
-        return 1;
-    }
-    if (!xchg_test_accumulator_lock())
-    {
-        lib_c_printf("XCHG acc stage=lock\n");
         return 1;
     }
     lib_c_printf("XCHG:CPU:OK\n");

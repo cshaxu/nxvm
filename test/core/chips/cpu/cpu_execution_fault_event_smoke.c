@@ -769,9 +769,493 @@ static lib_bool cpu_shutdown_recovery(void)
     return LIB_TRUE;
 }
 
+static lib_bool cpu_string_page_restart(core_machine_cpu_profile profile)
+{
+    static const lib_u8 opcodes[] = {0xa4u,0xa6u,0xaau,0xacu,0xaeu};
+    static const lib_u8 widths[] = {1u,2u,4u};
+    const lib_u32 arithmetic = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
+        VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF;
+
+    for (lib_u32 context = 0u; context < 720u; ++context) {
+        const lib_u8 mode = (lib_u8)(context % 5u);
+        const lib_bool code32 = ((context / 5u) & 1u) != 0u;
+        const lib_bool address32 = ((context / 10u) & 1u) != 0u;
+        const lib_bool backward = ((context / 20u) & 1u) != 0u;
+        const lib_bool repne = ((context / 40u) & 1u) != 0u;
+        const lib_u8 width = widths[(context / 80u) % 3u];
+        const lib_u32 completed = context / 240u;
+
+        if (mode == 4u && code32) continue;
+        for (lib_u8 operand = 0u; operand < 10u; ++operand) {
+            const lib_u8 operation = (lib_u8)(operand / 2u);
+            const lib_bool source_fault = (operand & 1u) == 0u;
+            const lib_bool source_used = operation == 0u || operation == 1u || operation == 3u;
+            const lib_bool destination_used = operation != 3u;
+            const lib_bool compares = operation == 1u || operation == 4u;
+            const lib_u32 boundary = source_fault ? 0xa000u : 0xd000u;
+            const lib_u32 start = backward ? boundary - width + completed * width :
+                boundary - completed * width;
+            const lib_u32 source = source_fault ? start : 0xb100u;
+            const lib_u32 destination = source_fault ? 0xe100u : start;
+            const lib_u32 missing_page = backward ? boundary - 0x1000u : boundary;
+            const lib_u32 pte_address = 0x11000u + (missing_page >> 12u) * 4u;
+            const lib_u32 repaired_pte = missing_page | 7u;
+            const lib_u32 directory = 0x11007u;
+            const lib_u32 mask = width == 1u ? 0xffu : width == 2u ? 0xffffu : 0xffffffffu;
+            const lib_u32 count_upper = address32 ? 0u : 0x56780000u;
+            const lib_u32 index_upper = address32 ? 0u : 0x12340000u;
+            const lib_u8 target_cpl = mode == 4u ? 0u : mode;
+            lib_u8 handler[] = {0x66u,0x50u,0x1eu,0xb8u,
+                (lib_u8)(0x10u | target_cpl),0u,0x8eu,0xd8u,
+                0x66u,0x67u,0xc7u,0x05u,0,0,0,0,0,0,0,0,
+                0x1fu,0x66u,0x58u,0x83u,0xc4u,0x04u,0x66u,0xcfu};
+            const lib_u8 handler_cs[] = {0xffu,0xffu,0,0,0,
+                (lib_u8)(0x9bu | (target_cpl << 5u)),0,0};
+            const lib_u8 gate[] = {0u,3u,(lib_u8)(0x28u | target_cpl),0,0,0x8eu,0,0};
+            lib_u8 code[5], bytes = 0u;
+            lib_u32 frame[10], values[3], initial_destination[3];
+            cpu_instruction_fixture fixture;
+            t_cpu checkpoint;
+
+            if ((source_fault && !source_used) || (!source_fault && !destination_used)) continue;
+            cpu_instruction_prepare(&fixture, profile);
+            cpu_instruction_prepare_protected_exception(&fixture, mode);
+            fixture.cpu.data.cs.seg.exec.defsize = code32;
+            fixture.cpu.data.ds.selector = (lib_u16)(0x10u | target_cpl);
+            fixture.cpu.data.es.selector = (lib_u16)(0x10u | target_cpl);
+            fixture.cpu.data.ds.dpl = mode == 4u ? 3u : mode;
+            fixture.cpu.data.es.dpl = mode == 4u ? 3u : mode;
+            if (mode == 4u) {
+                fixture.cpu.data.cs.selector = 0u;
+                fixture.cpu.data.ds.selector = 0u;
+                fixture.cpu.data.es.selector = 0u;
+                fixture.cpu.data.ss.selector = 0u;
+            }
+            fixture.cpu.data.eip = 0x1000u;
+            fixture.cpu.data.esp = 0x8000u;
+            fixture.cpu.data.esi = index_upper | source;
+            fixture.cpu.data.edi = index_upper | destination;
+            fixture.cpu.data.ecx = count_upper | 3u;
+            fixture.cpu.data.eax = 0x10u;
+            fixture.cpu.data.edx = 0x89abcdefu;
+            fixture.cpu.data.ebx = 0x11223344u;
+            fixture.cpu.data.ebp = 0x76543210u;
+            fixture.cpu.data.eflags |= arithmetic | (backward ? VCPU_EFLAGS_DF : 0u) |
+                (mode == 4u ? VCPU_EFLAGS_IOPL : 0u);
+            fixture.cpu.data.cr0 |= VCPU_CR0_PG;
+            fixture.cpu.data.cr3 = 0x10000u;
+            fixture.cpu.data.gdtr.limit = 0x2fu;
+            fixture.memory[0x20eu] = code32 ? 0x40u : 0u;
+            fixture.memory[0x215u] = (lib_u8)(0x93u | (target_cpl << 5u));
+            fixture.memory[0x216u] = 0x8fu;
+            lib_memory_copy(fixture.memory + 0x228u, handler_cs, sizeof(handler_cs));
+            lib_memory_copy(fixture.memory + 0x470u, gate, sizeof(gate));
+            lib_memory_copy(fixture.memory + 0x10000u, &directory, sizeof(directory));
+            for (lib_u32 page = 0u; page < 128u; ++page) {
+                const lib_u32 entry = page * 0x1000u == missing_page ? 0u : page * 0x1000u + 7u;
+                lib_memory_copy(fixture.memory + 0x11000u + page * 4u, &entry, sizeof(entry));
+            }
+            for (lib_u32 element = 0u; element < 3u; ++element) {
+                const lib_u32 delta = backward ? 0u - element * width : element * width;
+                values[element] = compares ? 0x10u : 0x10203040u + element;
+                initial_destination[element] = compares ? (repne ? 0x0fu : 0x10u) : 0xa5a5a5a5u;
+                lib_memory_copy(fixture.memory + (source + delta), &values[element], width);
+                lib_memory_copy(fixture.memory + (destination + delta), &initial_destination[element], width);
+            }
+            if (width == 1u ? repne : code32 != (width == 4u)) code[bytes++] = 0x66u;
+            if (code32 != address32) code[bytes++] = 0x67u;
+            code[bytes++] = repne ? 0xf2u : 0xf3u;
+            code[bytes++] = (lib_u8)(opcodes[operation] + (width != 1u));
+            lib_memory_copy(fixture.memory + 0x1000u, code, bytes);
+            lib_memory_copy(handler + 12u, &pte_address, sizeof(pte_address));
+            lib_memory_copy(handler + 16u, &repaired_pte, sizeof(repaired_pte));
+            lib_memory_copy(fixture.memory + 0x300u, handler, sizeof(handler));
+            const lib_u32 initial_flags = fixture.cpu.data.eflags;
+            checkpoint = fixture.cpu;
+            fixture.cpu.data.ecx = count_upper;
+            t_cpu zero_count = fixture.cpu;
+            zero_count.data.eip += bytes;
+            core_machine_cpu_execution_refresh(&fixture.execution);
+            if (fixture.execution.stop_requested || fixture.fault.valid ||
+                fixture.delivered_exception.valid ||
+                lib_memory_compare(&zero_count, &fixture.cpu, sizeof(zero_count)) != 0)
+                goto failure;
+            fixture.cpu = checkpoint;
+            core_machine_cpu_execution_invalidate_prefetch(&fixture.execution);
+            for (lib_u32 step = 0u; step < completed; ++step) {
+                core_machine_cpu_execution_refresh(&fixture.execution);
+                const lib_u32 delta = backward ? 0u - (step + 1u) * width : (step + 1u) * width;
+                if (fixture.execution.stop_requested || fixture.fault.valid ||
+                    fixture.delivered_exception.valid || fixture.cpu.data.eip != 0x1000u ||
+                    fixture.cpu.data.ecx != count_upper + 2u - step ||
+                    fixture.cpu.data.esi != (index_upper | source) + (source_used ? delta : 0u) ||
+                    fixture.cpu.data.edi != (index_upper | destination) + (destination_used ? delta : 0u) ||
+                    fixture.cpu.data.eax != (operation == 3u ? values[step] & mask : 0x10u) ||
+                    fixture.execution.repeat_compare_flags_valid !=
+                        (compares && profile == CORE_MACHINE_CPU_PROFILE_80486SX))
+                    goto failure;
+            }
+            checkpoint = fixture.cpu;
+            core_machine_cpu_execution_refresh(&fixture.execution);
+            if (fixture.execution.stop_requested || fixture.fault.valid ||
+                !fixture.delivered_exception.valid || core_machine_cpu_is_shutdown(&fixture.execution) ||
+                fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_PF ||
+                fixture.delivered_exception.exception_code !=
+                    ((mode >= 3u ? 4u : 0u) | (!source_fault && (operation == 0u || operation == 2u) ? 2u : 0u)) ||
+                fixture.delivered_exception.point.eip != 0x1000u ||
+                fixture.cpu.data.cr2 != (backward ? boundary - width : boundary) ||
+                fixture.cpu.data.eip != 0x300u || fixture.execution.repeat_compare_flags_valid ||
+                fixture.cpu.data.eax != checkpoint.data.eax ||
+                fixture.cpu.data.ecx != checkpoint.data.ecx ||
+                fixture.cpu.data.esi != checkpoint.data.esi || fixture.cpu.data.edi != checkpoint.data.edi)
+                goto failure;
+            lib_memory_copy(frame, fixture.memory + fixture.cpu.data.ss.base +
+                fixture.cpu.data.esp, sizeof(frame));
+            if (compares && context == 240u)
+                lib_c_printf("STRING-COMPARE-CHECKPOINT profile=%u operation=%u operand=%u initial=%x last=%x fault=%x\n",
+                    profile, operation, operand, initial_flags & arithmetic,
+                    checkpoint.data.eflags & arithmetic, frame[3] & arithmetic);
+            const lib_u32 expected_flags = compares &&
+                profile == CORE_MACHINE_CPU_PROFILE_80486SX ? initial_flags : checkpoint.data.eflags;
+            if (frame[0] != fixture.delivered_exception.exception_code || frame[1] != 0x1000u ||
+                frame[2] != checkpoint.data.cs.selector ||
+                frame[3] != (expected_flags | VCPU_EFLAGS_RF) ||
+                fixture.delivered_exception.eflags != expected_flags)
+                goto failure;
+            for (lib_u32 element = 0u; element < 3u; ++element) {
+                const lib_u32 delta = backward ? 0u - element * width : element * width;
+                lib_u32 actual = 0u;
+                const lib_u32 expected = element < completed && operation == 0u ? values[element] :
+                    element < completed && operation == 2u ? 0x10u : initial_destination[element];
+                lib_memory_copy(&actual, fixture.memory + (destination + delta), width);
+                if (actual != (expected & mask)) goto failure;
+                lib_memory_copy(&actual, fixture.memory + (source + delta), width);
+                if (actual != (values[element] & mask)) goto failure;
+            }
+            fixture.delivered_exception.valid = LIB_FALSE;
+            for (lib_u8 step = 0u; step < 9u; ++step) {
+                core_machine_cpu_execution_refresh(&fixture.execution);
+                if (fixture.execution.stop_requested || fixture.fault.valid ||
+                    fixture.delivered_exception.valid || fixture.execution.repeat_compare_flags_valid)
+                    goto failure;
+            }
+            if (fixture.cpu.data.eip != 0x1000u || fixture.cpu.data.esp != 0x8000u ||
+                fixture.cpu.data.ecx != checkpoint.data.ecx ||
+                fixture.cpu.data.eax != checkpoint.data.eax ||
+                fixture.cpu.data.esi != checkpoint.data.esi || fixture.cpu.data.edi != checkpoint.data.edi)
+                goto failure;
+            lib_memory_copy(frame, fixture.memory + pte_address, sizeof(repaired_pte));
+            if (frame[0] != repaired_pte) goto failure;
+            for (lib_u32 step = completed; step < 3u; ++step) {
+                core_machine_cpu_execution_refresh(&fixture.execution);
+                if (fixture.execution.stop_requested || fixture.fault.valid ||
+                    fixture.delivered_exception.valid) goto failure;
+            }
+            if (fixture.cpu.data.eip != 0x1000u + bytes || fixture.cpu.data.ecx != count_upper ||
+                fixture.execution.repeat_compare_flags_valid ||
+                fixture.cpu.data.eax != (operation == 3u ? values[2] & mask : 0x10u) ||
+                fixture.cpu.data.edx != 0x89abcdefu || fixture.cpu.data.ebx != 0x11223344u ||
+                fixture.cpu.data.ebp != 0x76543210u || fixture.cpu.data.esp != 0x8000u ||
+                fixture.cpu.data.esi != ((index_upper | source) +
+                    (source_used ? (backward ? 0u - 3u * width : 3u * width) : 0u)) ||
+                fixture.cpu.data.edi != ((index_upper | destination) +
+                    (destination_used ? (backward ? 0u - 3u * width : 3u * width) : 0u))) goto failure;
+            for (lib_u32 element = 0u; element < 3u; ++element) {
+                const lib_u32 delta = backward ? 0u - element * width : element * width;
+                const lib_u32 expected = operation == 0u ? values[element] :
+                    operation == 2u ? 0x10u : initial_destination[element];
+                lib_u32 actual = 0u;
+                lib_memory_copy(&actual, fixture.memory + (destination + delta), width);
+                if (actual != (expected & mask)) goto failure;
+                lib_memory_copy(&actual, fixture.memory + (source + delta), width);
+                if (actual != (values[element] & mask)) goto failure;
+            }
+            continue;
+failure:
+            lib_c_printf("STRING-PAGE-RESTART profile=%u context=%u operand=%u ip=%x flags=%x cr2=%x count=%x fault=%x/%x stop=%u\n",
+                profile, context, operand, fixture.cpu.data.eip, fixture.cpu.data.eflags,
+                fixture.cpu.data.cr2, fixture.cpu.data.ecx, fixture.delivered_exception.exception_mask,
+                fixture.delivered_exception.exception_code, fixture.execution.stop_requested);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cpu_compare_fault_flags(void)
+{
+    for (lib_u8 scenario = 0u; scenario < 8u; ++scenario)
+    for (lib_u8 form = 0u; form < 3u; ++form)
+    for (lib_u8 repne = 0u; repne < 2u; ++repne) {
+        const lib_bool real = scenario >= 6u;
+        const lib_bool alignment = scenario == 4u || scenario == 5u;
+        const lib_bool scan = scenario == 3u || scenario == 5u || scenario == 7u;
+        const lib_bool source_fault = scenario == 1u || scenario == 2u;
+        const lib_bool stack = scenario == 2u;
+        const lib_u8 width = (lib_u8)(1u << form);
+        const lib_u8 vector = alignment ? 17u : stack ? 12u : 13u;
+        const lib_u32 value = 0x10u;
+        const lib_u32 right = repne ? 0x0fu : value;
+        lib_u8 code[4], bytes = 0u;
+        lib_u32 frame[4] = {0u};
+        lib_u16 real_frame[3] = {0u};
+        cpu_instruction_fixture fixture;
+
+        if (alignment && width == 1u) continue;
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        if (!real) cpu_instruction_prepare_protected_exception(&fixture, alignment ? 3u : 0u);
+        else fixture.cpu.data.esp = 0x800u;
+        fixture.cpu.data.eip = 0x1000u;
+        fixture.cpu.data.eax = value;
+        fixture.cpu.data.esi = 0x3000u;
+        fixture.cpu.data.edi = real ? 0x10000u - width : alignment ? 0x4001u : 0x4000u;
+        fixture.cpu.data.ecx = 3u;
+        fixture.cpu.data.eflags |= VCPU_EFLAGS_CF | VCPU_EFLAGS_AF | VCPU_EFLAGS_SF |
+            VCPU_EFLAGS_OF | (alignment ? VCPU_EFLAGS_AC : 0u);
+        fixture.cpu.data.ds.dpl = fixture.cpu.data.es.dpl = alignment ? 3u : 0u;
+        if (!real) fixture.cpu.data.ds.selector = fixture.cpu.data.es.selector = alignment ? 0x13u : 0x10u;
+        if (alignment) fixture.cpu.data.cr0 |= VCPU_CR0_AM;
+        else if (stack) fixture.cpu.data.ss.limit = 0x3000u + width - 1u;
+        else if (source_fault) fixture.cpu.data.ds.limit = 0x3000u + width - 1u;
+        else if (!real) fixture.cpu.data.es.limit = 0x4000u + width - 1u;
+        if (!real) {
+            fixture.cpu.data.idtr.limit = 0x8fu;
+            lib_memory_copy(fixture.memory + 0x400u + vector * 8u,
+                fixture.memory + 0x468u, 8u);
+        } else {
+            const lib_u16 handler[] = {0x300u,0u};
+            lib_memory_copy(fixture.memory + vector * 4u, handler, sizeof(handler));
+        }
+        lib_memory_copy(fixture.memory + 0x3000u, &value, width);
+        lib_memory_copy(fixture.memory + fixture.cpu.data.edi, &right, width);
+        code[bytes++] = repne ? 0xf2u : 0xf3u;
+        if (width == 4u) code[bytes++] = 0x66u;
+        if (real) code[bytes++] = 0x67u;
+        if (stack) code[bytes++] = 0x36u;
+        code[bytes++] = (lib_u8)((scan ? 0xaeu : 0xa6u) | (width != 1u));
+        lib_memory_copy(fixture.memory + 0x1000u, code, bytes);
+        const lib_u32 initial_flags = fixture.cpu.data.eflags;
+        if (!alignment) {
+            core_machine_cpu_execution_refresh(&fixture.execution);
+            if (fixture.delivered_exception.valid || fixture.fault.valid ||
+                fixture.cpu.data.eip != 0x1000u || fixture.cpu.data.ecx != 2u ||
+                !fixture.execution.repeat_compare_flags_valid) return LIB_FALSE;
+        }
+        core_machine_cpu_execution_refresh(&fixture.execution);
+        if (real) lib_memory_copy(real_frame, fixture.memory + fixture.cpu.data.sp, sizeof(real_frame));
+        else lib_memory_copy(frame, fixture.memory + fixture.cpu.data.ss.base +
+            fixture.cpu.data.esp, sizeof(frame));
+        if (fixture.execution.stop_requested || fixture.fault.valid ||
+            core_machine_cpu_is_shutdown(&fixture.execution) || fixture.execution.repeat_compare_flags_valid ||
+            !fixture.delivered_exception.valid || fixture.delivered_exception.exception_mask != (1u << vector) ||
+            fixture.delivered_exception.exception_code != 0u ||
+            fixture.delivered_exception.eflags != initial_flags ||
+            fixture.delivered_exception.point.eip != 0x1000u || fixture.cpu.data.eip != 0x300u ||
+            (!real && (frame[0] != 0u || frame[1] != 0x1000u || frame[3] != (initial_flags | VCPU_EFLAGS_RF))) ||
+            (real && (real_frame[0] != 0x1000u || real_frame[1] != 0u || real_frame[2] != initial_flags)) ||
+            fixture.cpu.data.ecx != (alignment ? 3u : 2u) ||
+            fixture.cpu.data.esi != (scan || alignment ? 0x3000u : 0x3000u + width) ||
+            fixture.cpu.data.edi != (real ? 0x10000u : alignment ? 0x4001u : 0x4000u + width)) {
+            lib_c_printf("COMPARE-FAULT-FLAGS scenario=%u form=%u repne=%u mask=%x flags=%x/%x frame=%x\n",
+                scenario, form, repne, fixture.delivered_exception.exception_mask,
+                fixture.delivered_exception.eflags, initial_flags, frame[3]);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cpu_compare_flags_lifetime(void)
+{
+    const lib_u8 code[] = {0xf3u,0xa6u};
+    const lib_u32 flags = 2u | VCPU_EFLAGS_CF | VCPU_EFLAGS_AF | VCPU_EFLAGS_OF;
+
+    for (lib_u8 scenario = 0u; scenario < 7u; ++scenario) {
+        cpu_instruction_fixture fixture;
+        core_machine_cpu_execution_context *context = &fixture.execution;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        fixture.cpu.data.ecx = 2u;
+        fixture.cpu.data.esi = 0x500u;
+        fixture.cpu.data.edi = 0x600u;
+        fixture.cpu.data.eflags = flags;
+        core_machine_cpu_execution_invalidate_prefetch(context);
+        if (cpu_instruction_run(&fixture, code, sizeof(code), &fixture.cpu) != LIB_STATUS_OK ||
+            !context->repeat_compare_flags_valid || context->repeat_compare_flags != flags ||
+            fixture.cpu.data.ecx != 1u || fixture.delivered_exception.valid) return LIB_FALSE;
+        {
+            const core_machine_cpu_execution_context before = *context;
+            core_machine_cpu_instruction_lexeme lexeme;
+            if (!core_machine_cpu_execution_preview_lexeme(context, &lexeme) ||
+                !lexeme.available || lexeme.byte_count != sizeof(code) ||
+                lib_memory_compare(&before, context, sizeof(before)) != 0) return LIB_FALSE;
+            core_machine_cpu_execution_request_debug_pause(context);
+            if (!core_machine_cpu_execution_consume_debug_pause_request(context) ||
+                !context->repeat_compare_flags_valid) return LIB_FALSE;
+        }
+        if (scenario == 0u) {
+            const t_cpu before = fixture.cpu;
+            if (core_machine_cpu_set_stop_clock(context, LIB_TRUE) != LIB_STATUS_OK) return LIB_FALSE;
+            core_machine_cpu_execution_refresh(context);
+            if (!context->stop_granted || !context->repeat_compare_flags_valid ||
+                lib_memory_compare(&before, &fixture.cpu, sizeof(before)) != 0) return LIB_FALSE;
+            if (core_machine_cpu_set_clock_running(context, LIB_FALSE) != LIB_STATUS_OK) return LIB_FALSE;
+            core_machine_cpu_execution_refresh(context);
+            if (!context->repeat_compare_flags_valid) return LIB_FALSE;
+            if (core_machine_cpu_set_clock_running(context, LIB_TRUE) != LIB_STATUS_OK ||
+                core_machine_cpu_set_stop_clock(context, LIB_FALSE) != LIB_STATUS_OK) return LIB_FALSE;
+            core_machine_cpu_execution_refresh(context);
+        } else if (scenario == 1u) {
+            lib_u32 value = 0u;
+            core_machine_debug_register_patch patch = {
+                .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR4)};
+            patch.values[CORE_MACHINE_DEBUG_CR4] = 0xffffffffu;
+            if (core_machine_cpu_debug_read_register(context, CORE_MACHINE_DEBUG_EFLAGS, &value) != LIB_STATUS_OK ||
+                !context->repeat_compare_flags_valid ||
+                core_machine_cpu_debug_patch_registers(context, &patch) != LIB_STATUS_INVALID_ARGUMENT ||
+                !context->repeat_compare_flags_valid) return LIB_FALSE;
+            patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS);
+            patch.values[CORE_MACHINE_DEBUG_EFLAGS] = flags;
+            if (core_machine_cpu_debug_patch_registers(context, &patch) != LIB_STATUS_OK) return LIB_FALSE;
+        } else if (scenario == 2u) core_machine_cpu_state_reset(context);
+        else if (scenario == 3u) {
+            if (core_machine_cpu_state_soft_reset(context) != LIB_STATUS_OK) return LIB_FALSE;
+        } else if (scenario == 4u || scenario == 5u) {
+            const core_machine_entry_plan_state state = {.ip = 0x100u,.sp = 0x700u};
+            core_machine_cpu_prepared_entry *entry = LIB_NULL;
+            if (core_machine_cpu_prepare_entry(context, &state, &entry) != LIB_STATUS_OK) return LIB_FALSE;
+            core_machine_cpu_finish_entry(entry, LIB_FALSE);
+            if (!context->repeat_compare_flags_valid ||
+                core_machine_cpu_prepare_entry(context, &state, &entry) != LIB_STATUS_OK) return LIB_FALSE;
+            core_machine_cpu_finish_entry(entry, scenario == 4u);
+            if (scenario == 5u) {
+                if (!context->repeat_compare_flags_valid) return LIB_FALSE;
+                core_machine_cpu_execution_refresh(context);
+            }
+        } else core_machine_cpu_execution_refresh(context);
+        if (context->repeat_compare_flags_valid) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cpu_sx_reserved_escaped_slots(void)
+{
+    /* Original opcode map plus the selected stepping's historical-form
+     * dispositions: MSR, ICE/LOADALL and A-step forms are not admitted. */
+    static const lib_u8 ranges[][2] = {
+        {0x04u, 0x05u}, {0x07u, 0x07u}, {0x0au, 0x0fu}, {0x14u, 0x1fu},
+        {0x25u, 0x25u}, {0x27u, 0x7fu}, {0xa6u, 0xa7u}, {0xaeu, 0xaeu},
+        {0xb8u, 0xb9u}, {0xc2u, 0xc7u}, {0xd0u, 0xffu}
+    };
+    lib_size range;
+    lib_u16 opcode;
+    lib_u8 code32, prefix, tail;
+
+    for (range = 0u; range < sizeof(ranges) / sizeof(ranges[0]); ++range)
+    for (opcode = ranges[range][0]; opcode <= ranges[range][1]; ++opcode)
+    for (code32 = 0u; code32 < 2u; ++code32)
+    for (prefix = 0u; prefix < 2u; ++prefix)
+    for (tail = 0u; tail < 2u; ++tail) {
+        const lib_u8 code[] = {0x66u, 0x0fu, (lib_u8)opcode,
+            tail ? 0xc0u : 0x06u, 0u, 0u, 0u};
+        const lib_u8 start = prefix ? 0u : 1u;
+        cpu_instruction_fixture state;
+        core_machine_cpu_instruction_lexeme lexeme;
+        lib_bool passed;
+
+        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80486SX);
+        state.cpu.data.cs.seg.exec.defsize = code32;
+        state.cpu.data.eax = 0x12345678u;
+        state.cpu.data.ecx = 0x87654321u;
+        state.cpu.data.eflags = 2u | VCPU_EFLAGS_CF | VCPU_EFLAGS_DF | VCPU_EFLAGS_IF;
+        passed = !core_machine_cpu_instruction_lexeme_scan(code + start,
+            sizeof(code) - start, CORE_MACHINE_CPU_PROFILE_80486SX, code32, &lexeme) &&
+            !lexeme.available && cpu_instruction_expect_real_fault(&state,
+                code + start, sizeof(code) - start, 6u);
+        core_machine_cpu_execution_finalize(&state.execution);
+        if (!passed) {
+            lib_c_printf("SX reserved 0F%02X code32=%u prefix=%u tail=%u\n",
+                opcode, code32, prefix, tail);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cpu_sx_reserved_modrm_forms(void)
+{
+    static const struct {
+        lib_u8 opcode;
+        lib_bool escaped;
+        lib_u8 rejected_extensions;
+        lib_bool register_only;
+    } forms[] = {
+        {0x8fu, LIB_FALSE, 0xfeu, LIB_FALSE},
+        {0xc6u, LIB_FALSE, 0xfeu, LIB_FALSE},
+        {0xc7u, LIB_FALSE, 0xfeu, LIB_FALSE},
+        {0xfeu, LIB_FALSE, 0xfcu, LIB_FALSE},
+        {0xffu, LIB_FALSE, 0x80u, LIB_FALSE},
+        {0x8cu, LIB_FALSE, 0xc0u, LIB_FALSE},
+        {0x8eu, LIB_FALSE, 0xc2u, LIB_FALSE},
+        {0x00u, LIB_TRUE, 0xc0u, LIB_FALSE},
+        {0x01u, LIB_TRUE, 0x20u, LIB_FALSE},
+        {0xbau, LIB_TRUE, 0x0fu, LIB_FALSE},
+        {0x62u, LIB_FALSE, 0xffu, LIB_TRUE},
+        {0x8du, LIB_FALSE, 0xffu, LIB_TRUE},
+        {0xc4u, LIB_FALSE, 0xffu, LIB_TRUE},
+        {0xc5u, LIB_FALSE, 0xffu, LIB_TRUE},
+        {0xffu, LIB_FALSE, 0x28u, LIB_TRUE},
+        {0x01u, LIB_TRUE, 0x8fu, LIB_TRUE},
+        {0xb2u, LIB_TRUE, 0xffu, LIB_TRUE},
+        {0xb4u, LIB_TRUE, 0xffu, LIB_TRUE},
+        {0xb5u, LIB_TRUE, 0xffu, LIB_TRUE}
+    };
+    lib_size form;
+    lib_u16 modrm;
+    lib_u8 code32, prefix;
+    lib_bool reported[sizeof(forms) / sizeof(forms[0])] = {LIB_FALSE};
+    lib_bool all_passed = LIB_TRUE;
+
+    for (form = 0u; form < sizeof(forms) / sizeof(forms[0]); ++form)
+    for (modrm = 0u; modrm < 256u; ++modrm)
+    for (code32 = 0u; code32 < 2u; ++code32)
+    for (prefix = 0u; prefix < 2u; ++prefix) {
+        lib_u8 code[15] = {0u};
+        lib_u8 bytes = 0u;
+        cpu_instruction_fixture state;
+        core_machine_cpu_instruction_lexeme lexeme;
+        lib_bool passed;
+
+        if (!(forms[form].rejected_extensions & (1u << ((modrm >> 3u) & 7u))) ||
+            (forms[form].register_only && modrm < 0xc0u)) continue;
+        if (prefix) code[bytes++] = 0x66u;
+        if (forms[form].escaped) code[bytes++] = 0x0fu;
+        code[bytes++] = forms[form].opcode;
+        code[bytes++] = (lib_u8)modrm;
+        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80486SX);
+        state.cpu.data.cs.seg.exec.defsize = code32;
+        state.cpu.data.eax = 0x12345678u;
+        state.cpu.data.ecx = 0x87654321u;
+        state.cpu.data.eflags = 2u | VCPU_EFLAGS_CF | VCPU_EFLAGS_DF | VCPU_EFLAGS_IF;
+        passed = !core_machine_cpu_instruction_lexeme_scan(code, sizeof(code),
+            CORE_MACHINE_CPU_PROFILE_80486SX, code32, &lexeme) && !lexeme.available &&
+            cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u);
+        core_machine_cpu_execution_finalize(&state.execution);
+        if (!passed && !reported[form]) {
+            lib_c_printf("SX reserved form=%zu modrm=%02X code32=%u prefix=%u\n",
+                form, modrm, code32, prefix);
+            reported[form] = LIB_TRUE;
+        }
+        all_passed = all_passed && passed;
+    }
+    return all_passed;
+}
+
 lib_i32 main(void)
 {
     lib_bool failed = LIB_FALSE;
+    failed |= !cpu_sx_reserved_escaped_slots();
+    failed |= !cpu_sx_reserved_modrm_forms();
     failed |= !cpu_real_entry_new_cs();
     failed |= !cpu_early_fixed_ivt();
     failed |= !cpu_shutdown_protected_recovery();
@@ -780,6 +1264,7 @@ lib_i32 main(void)
          profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
         failed |= !cpu_entry_provider_failure(profile);
         failed |= !cpu_external_error_matrix(profile);
+        failed |= !cpu_string_page_restart(profile);
     }
     failed |= !cpu_exception_pair_matrix();
     failed |= !cpu_286_double_fault_task(LIB_FALSE);
@@ -790,6 +1275,12 @@ lib_i32 main(void)
     }
     failed |= !cpu_divide_return_matrix();
     failed |= !cpu_aam_return_matrix();
+    if (!cpu_compare_fault_flags()) {
+        lib_c_printf("COMPARE-FAULT-FLAGS failed\n"); failed = LIB_TRUE;
+    }
+    if (!cpu_compare_flags_lifetime()) {
+        lib_c_printf("COMPARE-FLAGS-LIFETIME failed\n"); failed = LIB_TRUE;
+    }
     if (failed) return 1;
     if (cpu_ud_cache_preservation() || cpu_interrupt_pending_and_rollback()) return 1;
     lib_c_printf("%s\n", "CPU-EXECUTION-FAULT-EVENT:OK");

@@ -32,7 +32,8 @@ static lib_i32 sign_extend_test_default(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 opcodes[] = {0x98u, 0x99u};
     lib_u8 profile, opcode, sign;
@@ -64,7 +65,7 @@ static lib_i32 sign_extend_test_default(void)
     return 1;
 }
 
-static lib_i32 sign_extend_test_operand32(void)
+static lib_i32 sign_extend_test_operand32(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = {0x98u, 0x99u};
     lib_u8 opcode, sign;
@@ -76,7 +77,7 @@ static lib_i32 sign_extend_test_operand32(void)
         const lib_u8 code[] = {0x66u, opcodes[opcode]};
         lib_u32 expected_eax, expected_edx;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         sign_extend_set_registers(&state.cpu);
         state.cpu.data.eax = opcodes[opcode] == 0x98u ?
             (sign == 0u ? 0xabcd7f00u : 0xabcd8000u) :
@@ -95,7 +96,7 @@ static lib_i32 sign_extend_test_operand32(void)
     return 1;
 }
 
-static lib_i32 sign_extend_test_address_prefix(void)
+static lib_i32 sign_extend_test_address_prefix(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = {0x98u, 0x99u};
     lib_u8 opcode;
@@ -105,7 +106,7 @@ static lib_i32 sign_extend_test_address_prefix(void)
         t_cpu before, after;
         const lib_u8 code[] = {0x67u, opcodes[opcode]};
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         sign_extend_set_registers(&state.cpu);
         state.cpu.data.eax = opcodes[opcode] == 0x98u ?
             0xaabb0080u : 0xaabb8000u;
@@ -146,7 +147,7 @@ static lib_i32 sign_extend_test_prefix_reject(void)
     return 1;
 }
 
-static lib_i32 sign_extend_test_lock_diagnostic(void)
+static lib_i32 sign_extend_test_lock_diagnostic(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = {0x98u, 0x99u};
     lib_u8 opcode;
@@ -155,7 +156,7 @@ static lib_i32 sign_extend_test_lock_diagnostic(void)
         cpu_instruction_fixture state;
         const lib_u8 code[] = {0xf0u, opcodes[opcode]};
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         sign_extend_set_registers(&state.cpu);
         state.cpu.data.eax = 0xaabb0080u;
         if (!cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u)) {
@@ -169,10 +170,15 @@ static lib_i32 sign_extend_test_lock_diagnostic(void)
 
 lib_i32 main(void)
 {
-    if (!sign_extend_test_default() || !sign_extend_test_operand32() ||
-        !sign_extend_test_address_prefix() ||
-        !sign_extend_test_prefix_reject() ||
-        !sign_extend_test_lock_diagnostic()) return 1;
+    const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
+    if (!sign_extend_test_default() || !sign_extend_test_prefix_reject()) return 1;
+    for (lib_size profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+        if (!sign_extend_test_operand32(profiles[profile]) ||
+            !sign_extend_test_address_prefix(profiles[profile]) ||
+            !sign_extend_test_lock_diagnostic(profiles[profile])) return 1;
     lib_c_printf("CPU-SIGN-EXTEND:OK\n");
     return 0;
 }

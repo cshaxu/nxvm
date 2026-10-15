@@ -55,7 +55,7 @@ static lib_i32 cpu_bus_cases(const cpu_bus_reset_case *reset)
     if (fixture.write_cpu.eip != 0x103u) return 1;
 
     for (lib_u8 bytes = 1u; bytes <= 4u; bytes *= 2u) {
-        if (bytes == 4u && reset->profile != CORE_MACHINE_CPU_PROFILE_80386) continue;
+        if (bytes == 4u && reset->profile < CORE_MACHINE_CPU_PROFILE_80386) continue;
         for (lib_u8 write = 0u; write < 2u; ++write) {
             lib_u32 offset = 0x100u;
             lib_u32 mask = bytes == 1u ? 0xffu : bytes == 2u ? 0xffffu : LIB_UINT32_MAX;
@@ -194,7 +194,8 @@ lib_i32 main(void)
         {CORE_MACHINE_CPU_PROFILE_8088, 0x000ffff0u, 0x000ffff0u},
         {CORE_MACHINE_CPU_PROFILE_80186, 0x000ffff0u, 0x000ffff0u},
         {CORE_MACHINE_CPU_PROFILE_80286, 0x00ff0000u, 0x00fffff0u},
-        {CORE_MACHINE_CPU_PROFILE_80386, 0xffff0000u, 0xfffffff0u}
+        {CORE_MACHINE_CPU_PROFILE_80386, 0xffff0000u, 0xfffffff0u},
+        {CORE_MACHINE_CPU_PROFILE_80486SX, 0xffff0000u, 0xfffffff0u}
     };
 
     for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)

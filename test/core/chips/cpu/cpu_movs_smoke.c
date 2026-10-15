@@ -72,7 +72,8 @@ static lib_i32 movs_test_single(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 movsb = 0xa4u, movsw = 0xa5u;
     static const lib_u8 dword[] = {0x66u, 0xa5u};
@@ -83,6 +84,9 @@ static lib_i32 movs_test_single(void)
     static const lib_u8 fs[] = {0x64u, 0xa4u};
     static const lib_u8 gs[] = {0x65u, 0xa4u};
     static const lib_u8 es[] = {0x26u, 0xa4u};
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
@@ -90,24 +94,27 @@ static lib_i32 movs_test_single(void)
             LIB_FALSE, 0x10010u, 0x20020u, 0x12345678u) ||
             !movs_single(profiles[profile], &movsw, 1u, 2u, LIB_FALSE,
             LIB_FALSE, 0x10010u, 0x20020u, 0x12345678u)) return 0;
-    return movs_single(CORE_MACHINE_CPU_PROFILE_80386, dword, 2u, 4u,
-            LIB_FALSE, LIB_FALSE, 0x10010u, 0x20020u, 0x12345678u) &&
-        movs_single(CORE_MACHINE_CPU_PROFILE_80386, addr, 2u, 1u,
-            LIB_TRUE, LIB_FALSE, 0x11010u, 0x21020u, 0x12345678u) &&
-        movs_single(CORE_MACHINE_CPU_PROFILE_80386, both, 3u, 4u,
-            LIB_TRUE, LIB_FALSE, 0x11010u, 0x21020u, 0x12345678u) &&
-        movs_single(CORE_MACHINE_CPU_PROFILE_80386, cs, 2u, 1u,
-            LIB_FALSE, LIB_FALSE, 0x10u, 0x20020u, 0x1100u) &&
-        movs_single(CORE_MACHINE_CPU_PROFILE_80386, ss, 2u, 1u,
-            LIB_FALSE, LIB_FALSE, 0x30010u, 0x20020u, 0x1101u) &&
-        movs_single(CORE_MACHINE_CPU_PROFILE_80386, fs, 2u, 1u,
-            LIB_FALSE, LIB_FALSE, 0x40010u, 0x20020u, 0x1102u) &&
-        movs_single(CORE_MACHINE_CPU_PROFILE_80386, gs, 2u, 1u,
-            LIB_FALSE, LIB_FALSE, 0x50010u, 0x20020u, 0x1103u) &&
-        movs_single(CORE_MACHINE_CPU_PROFILE_80386, es, 2u, 1u,
-            LIB_FALSE, LIB_FALSE, 0x20010u, 0x20020u, 0x1104u) &&
-        movs_single(CORE_MACHINE_CPU_PROFILE_80386, &movsw, 1u, 2u,
-            LIB_FALSE, LIB_TRUE, 0x10010u, 0x20020u, 0x1105u);
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile) {
+        if (!movs_single(modern[profile], dword, 2u, 4u,
+                LIB_FALSE, LIB_FALSE, 0x10010u, 0x20020u, 0x12345678u) ||
+            !movs_single(modern[profile], addr, 2u, 1u,
+                LIB_TRUE, LIB_FALSE, 0x11010u, 0x21020u, 0x12345678u) ||
+            !movs_single(modern[profile], both, 3u, 4u,
+                LIB_TRUE, LIB_FALSE, 0x11010u, 0x21020u, 0x12345678u) ||
+            !movs_single(modern[profile], cs, 2u, 1u,
+                LIB_FALSE, LIB_FALSE, 0x10u, 0x20020u, 0x1100u) ||
+            !movs_single(modern[profile], ss, 2u, 1u,
+                LIB_FALSE, LIB_FALSE, 0x30010u, 0x20020u, 0x1101u) ||
+            !movs_single(modern[profile], fs, 2u, 1u,
+                LIB_FALSE, LIB_FALSE, 0x40010u, 0x20020u, 0x1102u) ||
+            !movs_single(modern[profile], gs, 2u, 1u,
+                LIB_FALSE, LIB_FALSE, 0x50010u, 0x20020u, 0x1103u) ||
+            !movs_single(modern[profile], es, 2u, 1u,
+                LIB_FALSE, LIB_FALSE, 0x20010u, 0x20020u, 0x1104u) ||
+            !movs_single(modern[profile], &movsw, 1u, 2u,
+                LIB_FALSE, LIB_TRUE, 0x10010u, 0x20020u, 0x1105u)) return 0;
+    }
+    return 1;
 }
 
 static lib_i32 movs_rep(core_machine_cpu_profile profile, const lib_u8 *code,
@@ -200,13 +207,17 @@ static lib_i32 movs_test_rep(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 rep_movsb[] = {0xf3u, 0xa4u};
     static const lib_u8 rep_movsw[] = {0xf3u, 0xa5u};
     static const lib_u8 rep_movsd[] = {0x66u, 0xf3u, 0xa5u};
     static const lib_u8 rep_addr32_movsb[] = {0xf3u, 0x67u, 0xa4u};
     static const lib_u8 rep_addr32_movsd[] = {0xf3u, 0x66u, 0x67u, 0xa5u};
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
@@ -216,14 +227,17 @@ static lib_i32 movs_test_rep(void)
             rep_movsb, 2u, 1u, LIB_FALSE, 3u, LIB_FALSE) ||
             !movs_rep(profiles[profile], rep_movsw, 2u, 2u, LIB_FALSE,
             3u, LIB_FALSE)) return 0;
-    return movs_rep(CORE_MACHINE_CPU_PROFILE_80386, rep_movsd, 3u, 4u,
-            LIB_FALSE, 3u, LIB_FALSE) &&
-        movs_rep(CORE_MACHINE_CPU_PROFILE_80386, rep_addr32_movsb, 3u, 1u,
-            LIB_TRUE, 3u, LIB_FALSE) &&
-        movs_rep(CORE_MACHINE_CPU_PROFILE_80386, rep_addr32_movsd, 4u, 4u,
-            LIB_TRUE, 3u, LIB_FALSE) &&
-        movs_rep(CORE_MACHINE_CPU_PROFILE_80386, rep_movsw, 2u, 2u,
-            LIB_FALSE, 3u, LIB_TRUE);
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile) {
+        if (!movs_rep(modern[profile], rep_movsd, 3u, 4u,
+                LIB_FALSE, 3u, LIB_FALSE) ||
+            !movs_rep(modern[profile], rep_addr32_movsb, 3u, 1u,
+                LIB_TRUE, 3u, LIB_FALSE) ||
+            !movs_rep(modern[profile], rep_addr32_movsd, 4u, 4u,
+                LIB_TRUE, 3u, LIB_FALSE) ||
+            !movs_rep(modern[profile], rep_movsw, 2u, 2u,
+                LIB_FALSE, 3u, LIB_TRUE)) return 0;
+    }
+    return 1;
 }
 
 static lib_i32 movs_rejection(core_machine_cpu_profile profile,
@@ -260,19 +274,23 @@ static lib_i32 movs_test_rejections(void)
         {0xf0u, 0xa4u}, {0xf0u, 0xf3u, 0xa5u}
     };
     static const lib_u8 lock_bytes[] = {2u, 3u};
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile, form;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
         for (form = 0u; form != sizeof(prefix_bytes); ++form)
             if (!movs_rejection(profiles[profile], prefixes[form],
                 prefix_bytes[form])) return 0;
-    for (form = 0u; form != sizeof(lock_bytes); ++form)
-        if (!movs_rejection(CORE_MACHINE_CPU_PROFILE_80386,
-            locks[form], lock_bytes[form])) return 0;
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile)
+        for (form = 0u; form != sizeof(lock_bytes); ++form)
+            if (!movs_rejection(modern[profile],
+                locks[form], lock_bytes[form])) return 0;
     return 1;
 }
 
-static lib_i32 movs_test_protected_limits(void)
+static lib_i32 movs_test_protected_limits(core_machine_cpu_profile profile)
 {
     static const lib_u8 codes[][2] = {{0xa4u, 0u}, {0x66u, 0xa5u}};
     lib_u8 form;
@@ -286,7 +304,7 @@ static lib_i32 movs_test_protected_limits(void)
         lib_u32 destination_address = form == 0u ? 0x3020u : 0x3010u;
         lib_u8 width = form == 0u ? 1u : 4u;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         movs_seed(&state);
         state.cpu.data.cr0 |= VCPU_CR0_PE;
         state.cpu.data.cs.flagValid = LIB_TRUE;
@@ -353,7 +371,8 @@ lib_i32 main(void)
         lib_c_printf("MOVS stage=rejections\n");
         return 1;
     }
-    if (!movs_test_protected_limits()) {
+    if (!movs_test_protected_limits(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !movs_test_protected_limits(CORE_MACHINE_CPU_PROFILE_80486SX)) {
         lib_c_printf("MOVS stage=protected\n");
         return 1;
     }

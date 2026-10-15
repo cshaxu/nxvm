@@ -103,7 +103,7 @@ static lib_i32 oas_run_gp(oas_machine *state, const lib_u8 *code,
     return 1;
 }
 
-static lib_i32 oas_test_prefix_and_ea(void)
+static lib_i32 oas_test_prefix_and_ea(core_machine_cpu_profile profile)
 {
     static const lib_u8 repeat_prefix[] = {
         0x66u,0x66u,0xb8u,0x34u,0x12u,0xb9u,0x78u,0x56u,0x34u,0x12u,0xf4u
@@ -124,13 +124,13 @@ static lib_i32 oas_test_prefix_and_ea(void)
     const lib_u32 ss_source = 0x2468ace0u;
     oas_machine state;
     t_cpu cpu;
-    lib_i32 failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    lib_i32 failed = !oas_prepare(&state, profile, 1);
 
     if (!failed) failed |= !oas_run_halt(&state, repeat_prefix,
         sizeof(repeat_prefix), &cpu) || cpu.data.eax != 0x00001234u ||
         cpu.data.ecx != 0x12345678u;
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         state.chip.cpu.data.ebx = 0x0040u;
         state.chip.cpu.data.esi = 0x0010u;
@@ -139,7 +139,7 @@ static lib_i32 oas_test_prefix_and_ea(void)
                 sizeof(address16), &cpu) || cpu.data.eax != word_source;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         state.chip.cpu.data.eax = 0x0070u;
         failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0070u, &word_source,
@@ -147,14 +147,14 @@ static lib_i32 oas_test_prefix_and_ea(void)
                 sizeof(operand16), &cpu) || cpu.data.eax != 0x0000beefu;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0060u, &word_source,
                 sizeof(word_source)) || !oas_run_halt(&state, moffs16,
                 sizeof(moffs16), &cpu) || cpu.data.eax != word_source;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         state.chip.cpu.data.eax = 0x0100u;
         state.chip.cpu.data.ecx = 1u;
@@ -163,13 +163,13 @@ static lib_i32 oas_test_prefix_and_ea(void)
                 sizeof(sib_scaled), &cpu) || cpu.data.eax != sib_source;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0120u,
             &absolute_source, sizeof(absolute_source)) || !oas_run_halt(&state,
             sib_absolute, sizeof(sib_absolute), &cpu) ||
             cpu.data.eax != absolute_source;
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         state.chip.cpu.data.ebp = 0x0080u;
         failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0080u, &ds_source,
@@ -178,7 +178,7 @@ static lib_i32 oas_test_prefix_and_ea(void)
                 ss_default, sizeof(ss_default), &cpu) || cpu.data.eax != ss_source;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         state.chip.cpu.data.ebp = 0x0080u;
         failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0080u, &ds_source,
@@ -190,7 +190,7 @@ static lib_i32 oas_test_prefix_and_ea(void)
     return !failed;
 }
 
-static lib_i32 oas_test_16bit_code_and_faults(void)
+static lib_i32 oas_test_16bit_code_and_faults(core_machine_cpu_profile profile)
 {
     static const lib_u8 defaults16[] = {
         0x66u,0xb8u,0x78u,0x56u,0x34u,0x12u,0xb9u,0x34u,0x12u,0xf4u
@@ -208,7 +208,7 @@ static lib_i32 oas_test_16bit_code_and_faults(void)
     t_cpu before;
     t_cpu after;
     const lib_u32 source = 0xcafebabeu;
-    lib_i32 failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
+    lib_i32 failed = !oas_prepare(&state, profile, 0);
 
     if (!failed) {
         state.chip.cpu.data.ecx = 0xdead0000u;
@@ -216,7 +216,7 @@ static lib_i32 oas_test_16bit_code_and_faults(void)
             after.data.eax != 0x12345678u || after.data.ecx != 0xdead1234u;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         state.chip.cpu.data.ds.limit = 0x10u;
         state.chip.cpu.data.eax = 0xaabbccddu;
@@ -225,7 +225,7 @@ static lib_i32 oas_test_16bit_code_and_faults(void)
             after.data.eax != before.data.eax;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         state.chip.cpu.data.ds.limit = 0x10u;
         state.chip.cpu.data.ds.seg.data.expdown = LIB_TRUE;
@@ -237,7 +237,7 @@ static lib_i32 oas_test_16bit_code_and_faults(void)
             after.data.eax != before.data.eax;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
+    if (!failed) failed = !oas_prepare(&state, profile, 0);
     if (!failed) {
         state.chip.cpu.data.eax = 0x00010070u;
         failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x00010070u, &source,
@@ -245,13 +245,13 @@ static lib_i32 oas_test_16bit_code_and_faults(void)
                 sizeof(address32), &after) || after.data.eax != 0x0001babeu;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
+    if (!failed) failed = !oas_prepare(&state, profile, 0);
     if (!failed) {
         failed |= !oas_write(&state, OAS_CODE_ADDRESS + 0xffffu, nop,
                 sizeof(nop)) || !oas_write(&state, OAS_CODE_ADDRESS, halt,
                 sizeof(halt));
         oas_resume(&state, 0xffffu);
-        /* A 386 does not wrap sequential 16-bit code fetch to offset zero.
+        /* A 386/SX does not wrap sequential 16-bit code fetch to offset zero.
          * Retire the legal NOP first; the next fetch fails. The deliberately
          * absent delivery gate produces CPU-owned resident shutdown. */
         failed |= oas_execute(&state, 1u) != LIB_STATUS_OK ||
@@ -274,7 +274,7 @@ static void oas_set_stack32(oas_machine *state, lib_u32 esp)
     state->chip.cpu.data.esp = esp;
 }
 
-static lib_i32 oas_test_stack_forms(void)
+static lib_i32 oas_test_stack_forms(core_machine_cpu_profile profile)
 {
     static const lib_u8 push_pop32[] = { 0x50u,0x59u,0xf4u };
     static const lib_u8 push_pop16[] = { 0x66u,0x50u,0x66u,0x5bu,0xf4u };
@@ -293,7 +293,7 @@ static lib_i32 oas_test_stack_forms(void)
     oas_machine state;
     t_cpu before;
     t_cpu after;
-    lib_i32 failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    lib_i32 failed = !oas_prepare(&state, profile, 1);
 
     if (!failed) {
         state.chip.cpu.data.esp = 0x0100u;
@@ -302,7 +302,7 @@ static lib_i32 oas_test_stack_forms(void)
             after.data.esp != 0x0100u || after.data.ecx != 0x11223344u;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         state.chip.cpu.data.esp = 0x0100u;
         state.chip.cpu.data.eax = 0x11223344u;
@@ -310,7 +310,7 @@ static lib_i32 oas_test_stack_forms(void)
             after.data.esp != 0x0100u || after.data.ebx != 0x00003344u;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         oas_set_stack32(&state, 0x00010100u);
         state.chip.cpu.data.eax = 0x55667788u;
@@ -318,7 +318,7 @@ static lib_i32 oas_test_stack_forms(void)
             after.data.esp != 0x00010100u || after.data.ebx != 0x00007788u;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         oas_set_stack32(&state, 0x00000100u);
         state.chip.cpu.data.eax = 0x11111111u;
@@ -340,7 +340,7 @@ static lib_i32 oas_test_stack_forms(void)
             after.data.edi != before.data.edi;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         oas_set_stack32(&state, 0x00000100u);
         state.chip.cpu.data.eflags = 0x00000002u;
@@ -351,7 +351,7 @@ static lib_i32 oas_test_stack_forms(void)
             (after.data.eflags & VCPU_EFLAGS_IF) == 0u;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         oas_set_stack32(&state, 0x00000100u);
         state.chip.cpu.data.ebp = 0x00000080u;
@@ -360,7 +360,7 @@ static lib_i32 oas_test_stack_forms(void)
             after.data.esp != before.data.esp || after.data.ebp != before.data.ebp;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         oas_set_stack32(&state, 0x00000100u);
         state.chip.cpu.data.ebp = 0x00000080u;
@@ -373,7 +373,7 @@ static lib_i32 oas_test_stack_forms(void)
     return !failed;
 }
 
-static lib_i32 oas_test_memory_strings(void)
+static lib_i32 oas_test_memory_strings(core_machine_cpu_profile profile)
 {
     static const lib_u8 movs[] = { 0xbeu,0,1,0,0,0xbfu,0,2,0,0,
         0xb9u,2,0,0,0,0xf3u,0xa4u,0xf4u };
@@ -389,7 +389,7 @@ static lib_i32 oas_test_memory_strings(void)
     lib_u8 destination[2] = {0};
     oas_machine state;
     t_cpu after;
-    lib_i32 failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    lib_i32 failed = !oas_prepare(&state, profile, 1);
 
     if (!failed) failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0100u,
         source, sizeof(source)) || !oas_run_halt(&state, movs, sizeof(movs),
@@ -397,7 +397,7 @@ static lib_i32 oas_test_memory_strings(void)
         after.data.ecx != 0u || oas_read(&state, OAS_DATA_ADDRESS + 0x0200u, destination, sizeof(destination)) !=
             LIB_STATUS_OK || lib_memory_compare(source, destination, sizeof(source));
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         state.chip.cpu.data.es.base = OAS_STACK_ADDRESS;
         failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0100u, source, 1u) ||
@@ -406,7 +406,7 @@ static lib_i32 oas_test_memory_strings(void)
                 destination, 1u) != LIB_STATUS_OK || destination[0] != source[0];
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) {
         state.chip.cpu.data.ds.limit = 0x00ffu;
         failed |= !oas_run_gp(&state, limited_movs, sizeof(limited_movs), &after) ||
@@ -414,17 +414,17 @@ static lib_i32 oas_test_memory_strings(void)
             after.data.ecx != 1u;
     }
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0101u,
         source, 1u) || !oas_run_halt(&state, df_movs, sizeof(df_movs), &after) ||
         after.data.esi != 0x0100u || after.data.edi != 0x0200u;
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0xffffu,
         source, 1u) || !oas_run_halt(&state, wrap_movs, sizeof(wrap_movs),
         &after) || after.data.esi != 0u || after.data.edi != 0u;
 
-    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed = !oas_prepare(&state, profile, 1);
     if (!failed) failed |= !oas_run_halt(&state, stos_lods, sizeof(stos_lods),
         &after) || after.data.al != 0x5au || after.data.esi != 0x0301u ||
         after.data.edi != 0x0301u;
@@ -434,10 +434,20 @@ static lib_i32 oas_test_memory_strings(void)
 
 lib_i32 main(void)
 {
-    if (!oas_test_prefix_and_ea()) return 1;
-    if (!oas_test_16bit_code_and_faults()) return 1;
-    if (!oas_test_stack_forms()) return 1;
-    if (!oas_test_memory_strings()) return 1;
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
+    for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
+        if (!oas_test_prefix_and_ea(profiles[profile]) ||
+            !oas_test_16bit_code_and_faults(profiles[profile]) ||
+            !oas_test_stack_forms(profiles[profile]) ||
+            !oas_test_memory_strings(profiles[profile])) {
+            lib_c_printf("CPU-OPERAND-ADDRESS:profile=%u:FAILED\n", profiles[profile]);
+            return 1;
+        }
+    }
     lib_c_printf("CPU-OPERAND-ADDRESS:OK\n");
     return 0;
 }

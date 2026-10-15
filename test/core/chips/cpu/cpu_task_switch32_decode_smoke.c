@@ -1,14 +1,14 @@
 #include "support/cpu_task_switch16_fixture.h"
 #include "lib/types/file.h"
 
-static lib_bool cpu_task32_expect_decode(cpu_task16_case test_case,
-    lib_u16 expected_saved_ip)
+static lib_bool cpu_task32_expect_decode(core_machine_cpu_profile profile,
+    cpu_task16_case test_case, lib_u16 expected_saved_ip)
 {
     cpu_instruction_fixture fixture;
     t_cpu after = {0};
     lib_u16 saved_ip = 0u;
 
-    cpu_task16_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386, test_case);
+    cpu_task16_prepare(&fixture, profile, test_case);
     cpu_task16_refresh(&fixture, 8u);
     after = fixture.cpu;
     lib_memory_copy(&saved_ip, fixture.memory + CPU_TASK16_A_BASE + 0x0eu,
@@ -36,14 +36,18 @@ int main(void)
         {CPU_TASK16_INDIRECT_ADDRESS32, 0x000au},
         {CPU_TASK16_INDIRECT_OPERAND_ADDRESS32, 0x000bu}
     };
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_size index;
 
-    for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
-        if (!cpu_task32_expect_decode(cases[index].test_case,
-                cases[index].expected_saved_ip)) {
-            lib_c_fprintf(lib_c_stderr, "%s", "TASK32-DECODE:FAIL\n");
-            return 1;
-        }
+    for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+        for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
+            if (!cpu_task32_expect_decode(profiles[profile], cases[index].test_case,
+                    cases[index].expected_saved_ip)) {
+                lib_c_fprintf(lib_c_stderr, "%s", "TASK32-DECODE:FAIL\n");
+                return 1;
+            }
     lib_c_printf("%s\n", "TASK32-DECODE:OK");
     return 0;
 }

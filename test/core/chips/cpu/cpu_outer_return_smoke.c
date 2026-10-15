@@ -50,7 +50,8 @@ static void cpu_outer_prepare_return_segments(cpu_instruction_fixture *state,
 static lib_bool cpu_outer_conforming_returns(void)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 conforming_access[] = {0x9eu,0xfeu};
     static const lib_u8 programs[][1] = {{0xcbu},{0xcfu}};
@@ -106,7 +107,8 @@ static lib_bool cpu_outer_conforming_returns(void)
 static lib_bool cpu_outer_nonconforming_dpl_rejection(void)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 programs[][1] = {{0xcbu},{0xcfu}};
     static const lib_u16 frames[][5] = {
@@ -265,7 +267,7 @@ static lib_bool cpu_outer_retf_immediate(core_machine_cpu_profile profile)
         cpu_outer_user_code(&after.data.cs) && cpu_outer_user_stack(&after.data.ss);
 }
 
-static lib_bool cpu_outer_iret_nonpresent_stack(void)
+static lib_bool cpu_outer_iret_nonpresent_stack(core_machine_cpu_profile profile)
 {
     static const lib_u8 iret[] = {0xcfu};
     static const lib_u32 frame[] = {
@@ -277,7 +279,7 @@ static lib_bool cpu_outer_iret_nonpresent_stack(void)
     lib_u8 frame_before[sizeof(frame)] = {0};
     lib_u8 frame_after[sizeof(frame)] = {0};
 
-    cpu_outer_return_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_outer_return_prepare(&state, profile);
     state.cpu.data.cs.seg.exec.defsize = LIB_TRUE;
     state.cpu.data.esp = 0x12348000u;
     lib_memory_copy(state.memory + CPU_OUTER_KERNEL_STACK_BASE + 0x8000u,
@@ -312,7 +314,7 @@ typedef struct cpu_outer_error_case {
     lib_u16 handler_eip;
 } cpu_outer_error_case;
 
-static lib_bool cpu_outer_error_delivery(void)
+static lib_bool cpu_outer_error_delivery(core_machine_cpu_profile profile)
 {
     static const cpu_outer_error_case cases[] = {
         {0x002bu,0x0023u,0x0028u,VCPUINS_EXCEPT_NP,0x0111u},
@@ -338,7 +340,7 @@ static lib_bool cpu_outer_error_delivery(void)
             lib_u8 frame_before[sizeof(iret_frame)] = {0};
             lib_u8 frame_after[sizeof(iret_frame)] = {0};
 
-            cpu_outer_return_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
+            cpu_outer_return_prepare(&state, profile);
             lib_memory_copy(state.memory + CPU_OUTER_KERNEL_STACK_BASE + 0x8000u,
                 frame, frame_bytes);
             lib_memory_copy(frame_before,
@@ -377,6 +379,9 @@ static lib_bool cpu_outer_iret_rejections(void)
         {0xf0u,0xcfu,0u,0u}, {0xf0u,0x66u,0xcfu,0u},
         {0xf0u,0x67u,0xcfu,0u}, {0xf0u,0x66u,0x67u,0xcfu}
     };
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_size index;
     lib_size form;
 
@@ -391,14 +396,16 @@ static lib_bool cpu_outer_iret_rejections(void)
                 return LIB_FALSE;
         }
     }
-    for (form = 0u; form != sizeof(lock_forms) / sizeof(lock_forms[0]); ++form) {
-        cpu_instruction_fixture state;
-        const lib_u8 bytes = form == 0u ? 2u : form == 3u ? 4u : 3u;
+    for (index = 0u; index < sizeof(modern) / sizeof(modern[0]); ++index) {
+        for (form = 0u; form != sizeof(lock_forms) / sizeof(lock_forms[0]); ++form) {
+            cpu_instruction_fixture state;
+            const lib_u8 bytes = form == 0u ? 2u : form == 3u ? 4u : 3u;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-        if (!cpu_instruction_expect_real_fault(&state, lock_forms[form],
-                bytes, 6u))
-            return LIB_FALSE;
+            cpu_instruction_prepare(&state, modern[index]);
+            if (!cpu_instruction_expect_real_fault(&state, lock_forms[form],
+                    bytes, 6u))
+                return LIB_FALSE;
+        }
     }
     return LIB_TRUE;
 }
@@ -475,10 +482,11 @@ int main(void)
         if (!cpu_outer_iret_success(profile)) return 1;
         if (!cpu_outer_retf_success(profile)) return 2;
         if (!cpu_outer_retf_immediate(profile)) return 3;
+        if (!cpu_outer_iret_nonpresent_stack(profile)) return 4;
+        if (!cpu_outer_error_delivery(profile)) return 5;
     }
     if (!cpu_outer_call_gate_stack()) return 9;
-    if (!cpu_outer_iret_nonpresent_stack()) return 4;
-    if (!cpu_outer_error_delivery()) return 5;
+    if (!cpu_outer_error_delivery(CORE_MACHINE_CPU_PROFILE_80286)) return 5;
     if (!cpu_outer_iret_rejections()) return 6;
     if (!cpu_outer_conforming_returns()) return 7;
     if (!cpu_outer_nonconforming_dpl_rejection()) return 8;

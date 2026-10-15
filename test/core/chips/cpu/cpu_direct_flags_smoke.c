@@ -60,7 +60,8 @@ static lib_i32 direct_flags_test_default(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const direct_flags_case cases[] = {
         {0xf5u,0u}, {0xf5u,VCPU_EFLAGS_CF}, {0xf8u,VCPU_EFLAGS_CF},
@@ -109,6 +110,9 @@ static lib_i32 direct_flags_test_attributes(void)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
 
     for (lib_size profile = 0u; profile < sizeof(legacy) / sizeof(legacy[0]);
         ++profile) {
@@ -127,15 +131,17 @@ static lib_i32 direct_flags_test_attributes(void)
             }
         }
     }
+    for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+        ++profile)
     for (lib_size opcode = 0u; opcode < sizeof(opcodes); ++opcode) {
         lib_u8 code[] = {0xf0u,opcodes[opcode]};
-        if (!direct_flags_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, code,
+        if (!direct_flags_expect_ud(profiles[profile], code,
             sizeof(code))) return 0;
     }
     return 1;
 }
 
-static lib_i32 direct_flags_test_386_attributes(void)
+static lib_i32 direct_flags_test_386_attributes(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
 
@@ -152,7 +158,7 @@ static lib_i32 direct_flags_test_386_attributes(void)
                 code[1] = 0x67u;
                 code[2] = opcodes[opcode];
             }
-            cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+            cpu_instruction_prepare(&state, profile);
             direct_flags_seed(&state);
             before = state.cpu;
             if (!direct_flags_run(&state, code, bytes, &after) ||
@@ -165,7 +171,7 @@ static lib_i32 direct_flags_test_386_attributes(void)
     return 1;
 }
 
-static lib_i32 direct_flags_test_vm86(void)
+static lib_i32 direct_flags_test_vm86(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
     const lib_u32 flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_IF |
@@ -178,7 +184,7 @@ static lib_i32 direct_flags_test_vm86(void)
         t_cpu before;
         t_cpu after = {0};
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         direct_flags_seed(&state);
         state.cpu.data.cr0 |= VCPU_CR0_PE;
         state.cpu.data.eflags = flags;
@@ -208,7 +214,8 @@ static lib_i32 direct_flags_test_real_identity(void)
         { CORE_MACHINE_CPU_PROFILE_8088, 0x0fd7u, 0x0002u },
         { CORE_MACHINE_CPU_PROFILE_80186, 0x0fd7u, 0x0002u },
         { CORE_MACHINE_CPU_PROFILE_80286, 0x7fd7u, 0x0002u },
-        { CORE_MACHINE_CPU_PROFILE_80386, 0xffd7u, 0x7002u }
+        { CORE_MACHINE_CPU_PROFILE_80386, 0xffd7u, 0x7002u },
+        { CORE_MACHINE_CPU_PROFILE_80486SX, 0xffd7u, 0x7002u }
     };
 
     for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]);
@@ -238,7 +245,7 @@ static lib_bool direct_flags_test_interrupt_privilege(void)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
@@ -328,6 +335,10 @@ static lib_bool direct_flags_test_interrupt_privilege(void)
 
 int main(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
     if (!direct_flags_test_interrupt_privilege()) return 1;
     if (!direct_flags_test_default()) {
         lib_c_fprintf(lib_c_stderr, "%s", "CPU-DIRECT-FLAGS:DEFAULT:FAIL\n");
@@ -337,13 +348,16 @@ int main(void)
         lib_c_fprintf(lib_c_stderr, "%s", "CPU-DIRECT-FLAGS:ATTRIBUTES:FAIL\n");
         return 1;
     }
-    if (!direct_flags_test_386_attributes()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "CPU-DIRECT-FLAGS:386-ATTRIBUTES:FAIL\n");
-        return 1;
-    }
-    if (!direct_flags_test_vm86()) {
-        lib_c_fprintf(lib_c_stderr, "%s", "CPU-DIRECT-FLAGS:VM86:FAIL\n");
-        return 1;
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
+        ++index) {
+        if (!direct_flags_test_386_attributes(profiles[index])) {
+            lib_c_fprintf(lib_c_stderr, "%s", "CPU-DIRECT-FLAGS:386-ATTRIBUTES:FAIL\n");
+            return 1;
+        }
+        if (!direct_flags_test_vm86(profiles[index])) {
+            lib_c_fprintf(lib_c_stderr, "%s", "CPU-DIRECT-FLAGS:VM86:FAIL\n");
+            return 1;
+        }
     }
     if (!direct_flags_test_real_identity()) {
         lib_c_fprintf(lib_c_stderr, "%s", "CPU-DIRECT-FLAGS:REAL-IDENTITY:FAIL\n");

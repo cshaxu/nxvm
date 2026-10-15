@@ -190,7 +190,7 @@ static lib_i32 enter_leave_test_defaults(void)
 {
     static const core_machine_cpu_profile supported[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386};
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX};
     static const lib_u8 enter0[] = {0xc8u, 0x04u, 0x00u, 0x00u};
     static const lib_u8 enter1[] = {0xc8u, 0x00u, 0x00u, 0x01u};
     static const lib_u8 enter3[] = {0xc8u, 0x04u, 0x00u, 0x03u};
@@ -226,7 +226,7 @@ static lib_i32 enter_leave_test_defaults(void)
     return 1;
 }
 
-static lib_i32 enter_leave_test_attributes(void)
+static lib_i32 enter_leave_test_attributes(core_machine_cpu_profile profile)
 {
     static const lib_u8 enter32[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
     static const lib_u8 leave32[] = {0x66u, 0xc9u};
@@ -236,22 +236,22 @@ static lib_i32 enter_leave_test_attributes(void)
         0x01u};
     static const lib_u8 leave3267[] = {0x66u, 0x67u, 0xc9u};
 
-    if (!enter_leave_test_enter(CORE_MACHINE_CPU_PROFILE_80386, enter32,
+    if (!enter_leave_test_enter(profile, enter32,
         sizeof(enter32), 4u, 8u, 2u, 0))
         return 0;
-    if (!enter_leave_test_leave(CORE_MACHINE_CPU_PROFILE_80386, leave32,
+    if (!enter_leave_test_leave(profile, leave32,
         sizeof(leave32), 4u, 0))
         return 0;
-    if (!enter_leave_test_enter(CORE_MACHINE_CPU_PROFILE_80386, enter67,
+    if (!enter_leave_test_enter(profile, enter67,
         sizeof(enter67), 2u, 4u, 0u, 0))
         return 0;
-    if (!enter_leave_test_leave(CORE_MACHINE_CPU_PROFILE_80386, leave67,
+    if (!enter_leave_test_leave(profile, leave67,
         sizeof(leave67), 2u, 0))
         return 0;
-    if (!enter_leave_test_enter(CORE_MACHINE_CPU_PROFILE_80386, enter3267,
+    if (!enter_leave_test_enter(profile, enter3267,
         sizeof(enter3267), 4u, 4u, 1u, 0))
         return 0;
-    if (!enter_leave_test_leave(CORE_MACHINE_CPU_PROFILE_80386, leave3267,
+    if (!enter_leave_test_leave(profile, leave3267,
         sizeof(leave3267), 4u, 0))
         return 0;
     return 1;
@@ -364,7 +364,7 @@ static lib_i32 enter_leave_boot_protected(cpu_instruction_fixture *state)
     return state->cpu.data.cs.selector == 8u && state->cpu.data.eip == 0u;
 }
 
-static lib_i32 enter_leave_test_protected_stack32(void)
+static lib_i32 enter_leave_test_protected_stack32(core_machine_cpu_profile profile)
 {
     static const lib_u8 enter[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
     static const lib_u8 leave[] = {0x66u, 0xc9u};
@@ -373,7 +373,7 @@ static lib_i32 enter_leave_test_protected_stack32(void)
     t_cpu after;
     lib_u32 parent = 0x11112222u;
     lib_i32 failed = 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
 
     if (!failed)
         failed |= !enter_leave_boot_protected(&state);
@@ -422,7 +422,7 @@ static lib_i32 enter_leave_test_protected_stack32(void)
     return !failed;
 }
 
-static lib_i32 enter_leave_test_protected_faults(void)
+static lib_i32 enter_leave_test_protected_faults(core_machine_cpu_profile profile)
 {
     static const lib_u8 enter[] = {0xc8u, 0x00u, 0x00u, 0x03u};
     static const lib_u8 leave[] = {0xc9u};
@@ -434,7 +434,7 @@ static lib_i32 enter_leave_test_protected_faults(void)
     lib_u16 observed_frame[5];
     lib_u32 value;
     lib_i32 failed = 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
 
     if (!failed)
         failed |= !enter_leave_boot_protected(&state);
@@ -472,7 +472,7 @@ static lib_i32 enter_leave_test_protected_faults(void)
 
     if (failed)
         return 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     failed = 0;
     if (!failed)
         failed |= !enter_leave_boot_protected(&state);
@@ -499,7 +499,7 @@ static lib_i32 enter_leave_test_protected_faults(void)
     return !failed;
 }
 
-static lib_bool enter_leave_test_chain_attributes(void)
+static lib_bool enter_leave_test_chain_attributes(core_machine_cpu_profile profile)
 {
     lib_u8 operand32, stack32;
     lib_bool passed = LIB_TRUE;
@@ -518,7 +518,7 @@ static lib_bool enter_leave_test_chain_attributes(void)
         t_cpu after;
         lib_u32 observed = 0u;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         enter_leave_seed(&state);
         state.cpu.data.esp = 0x18000u;
         state.cpu.data.ebp = 0x19000u;
@@ -550,11 +550,13 @@ static lib_bool enter_leave_test_ordered_failure(void)
     static const core_machine_cpu_bus_provider bus = {
         .read_memory = cpu_stack_probe_read,
         .write_memory = cpu_stack_probe_write,
-        .interrupt_pending = cpu_instruction_interrupt_pending
+        .interrupt_pending = cpu_instruction_interrupt_pending,
+        .special_cycle = cpu_instruction_special_cycle,
+        .cancel_special_cycle = cpu_instruction_cancel_special_cycle
     };
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 levels[] = {0u, 1u, 2u, 31u, 32u, 33u, 255u};
     const lib_u32 sentinel = 0xdeadc0deu;
@@ -562,11 +564,11 @@ static lib_bool enter_leave_test_ordered_failure(void)
     lib_u16 failure, slot;
     lib_bool passed = LIB_TRUE;
 
-    for (profile = 0u; profile < 3u; ++profile)
-    for (operand32 = 0u; operand32 < (profile == 2u ? 2u : 1u); ++operand32)
-    for (stack32 = 0u; stack32 < (profile == 2u ? 2u : 1u); ++stack32)
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (operand32 = 0u; operand32 < (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++operand32)
+    for (stack32 = 0u; stack32 < (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++stack32)
     for (level_index = 0u; level_index < sizeof(levels); ++level_index) {
-        const lib_u8 level = profile == 0u ? levels[level_index] :
+        const lib_u8 level = profiles[profile] == CORE_MACHINE_CPU_PROFILE_80186 ? levels[level_index] :
             levels[level_index] & 0x1fu;
         const lib_u8 width = operand32 ? 4u : 2u;
         const lib_u16 transfers = level ? (lib_u16)2u * level : 1u;
@@ -640,18 +642,21 @@ static lib_bool enter_leave_test_allocation_admission(void)
     static const core_machine_cpu_bus_provider bus = {
         .read_memory = cpu_stack_probe_read,
         .write_memory = cpu_stack_probe_write,
-        .interrupt_pending = cpu_instruction_interrupt_pending
+        .interrupt_pending = cpu_instruction_interrupt_pending,
+        .special_cycle = cpu_instruction_special_cycle,
+        .cancel_special_cycle = cpu_instruction_cancel_special_cycle
     };
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 levels[] = {0u, 1u, 2u, 31u, 32u, 33u, 255u};
     static const lib_u16 allocations[] = {0u, 8u, 0x80u, 0xffu, 0x100u, 0xffffu};
     lib_u8 profile, operand32, stack32, down, level_index, allocation_index;
     lib_bool passed = LIB_TRUE;
-    for (profile = 0u; profile < 2u; ++profile)
-    for (operand32 = 0u; operand32 < (profile ? 2u : 1u); ++operand32)
-    for (stack32 = 0u; stack32 < (profile ? 2u : 1u); ++stack32)
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (operand32 = 0u; operand32 < (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++operand32)
+    for (stack32 = 0u; stack32 < (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++stack32)
     for (down = 0u; down < 2u; ++down)
     for (level_index = 0u; level_index < sizeof(levels); ++level_index)
     for (allocation_index = 0u; allocation_index < sizeof(allocations) / sizeof(allocations[0]); ++allocation_index) {
@@ -699,18 +704,18 @@ static lib_bool enter_leave_test_overlapping_chain(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 levels[] = {2u, 31u, 32u, 255u};
     const lib_u32 sentinel = 0xdeadc0deu;
     lib_u8 profile, operand32, stack32, level_index;
     lib_u16 slot;
     lib_bool passed = LIB_TRUE;
-    for (profile = 0u; profile < 3u; ++profile)
-    for (operand32 = 0u; operand32 < (profile == 2u ? 2u : 1u); ++operand32)
-    for (stack32 = 0u; stack32 < (profile == 2u ? 2u : 1u); ++stack32)
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (operand32 = 0u; operand32 < (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++operand32)
+    for (stack32 = 0u; stack32 < (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++stack32)
     for (level_index = 0u; level_index < sizeof(levels); ++level_index) {
-        const lib_u8 level = profile == 0u ? levels[level_index] : levels[level_index] & 0x1fu;
+        const lib_u8 level = profiles[profile] == CORE_MACHINE_CPU_PROFILE_80186 ? levels[level_index] : levels[level_index] & 0x1fu;
         const lib_u8 width = operand32 ? 4u : 2u;
         const lib_u16 pushes = (lib_u16)1u + level;
         cpu_instruction_fixture state;
@@ -745,13 +750,15 @@ lib_i32 main(void)
     if (!enter_leave_test_overlapping_chain()) return 1;
     if (!enter_leave_test_allocation_admission()) return 1;
     if (!enter_leave_test_ordered_failure()) return 1;
-    if (!enter_leave_test_chain_attributes()) return 1;
+    if (!enter_leave_test_chain_attributes(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !enter_leave_test_chain_attributes(CORE_MACHINE_CPU_PROFILE_80486SX)) return 1;
     if (!enter_leave_test_defaults())
     {
         lib_c_printf("ENTER-LEAVE stage=defaults\n");
         return 1;
     }
-    if (!enter_leave_test_attributes())
+    if (!enter_leave_test_attributes(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !enter_leave_test_attributes(CORE_MACHINE_CPU_PROFILE_80486SX))
     {
         lib_c_printf("ENTER-LEAVE stage=attributes\n");
         return 1;
@@ -761,12 +768,14 @@ lib_i32 main(void)
         lib_c_printf("ENTER-LEAVE stage=rejections\n");
         return 1;
     }
-    if (!enter_leave_test_protected_stack32())
+    if (!enter_leave_test_protected_stack32(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !enter_leave_test_protected_stack32(CORE_MACHINE_CPU_PROFILE_80486SX))
     {
         lib_c_printf("ENTER-LEAVE stage=protected-stack32\n");
         return 1;
     }
-    if (!enter_leave_test_protected_faults())
+    if (!enter_leave_test_protected_faults(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !enter_leave_test_protected_faults(CORE_MACHINE_CPU_PROFILE_80486SX))
     {
         lib_c_printf("ENTER-LEAVE stage=protected-faults\n");
         return 1;

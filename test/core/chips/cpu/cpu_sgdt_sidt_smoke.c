@@ -54,6 +54,10 @@ static lib_i32 sgdt_sidt_case(core_machine_cpu_profile profile,
 
 static lib_i32 sgdt_sidt_test_values(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     static const lib_u8 sgdt[] = {0x0fu,0x01u,0x06u,0x00u,0x02u};
     static const lib_u8 sidt[] = {0x0fu,0x01u,0x0eu,0x00u,0x02u};
     static const lib_u8 sgdt32[] = {0x66u,0x0fu,0x01u,0x06u,0x00u,0x02u};
@@ -71,26 +75,31 @@ static lib_i32 sgdt_sidt_test_values(void)
         0x66u,0x67u,0x0fu,0x01u,0x0du,0x00u,0x02u,0x00u,0x00u
     };
 
-    return sgdt_sidt_case(CORE_MACHINE_CPU_PROFILE_80286, sgdt,
-            sizeof(sgdt), LIB_FALSE, LIB_FALSE) &&
-        sgdt_sidt_case(CORE_MACHINE_CPU_PROFILE_80286, sidt,
-            sizeof(sidt), LIB_TRUE, LIB_FALSE) &&
-        sgdt_sidt_case(CORE_MACHINE_CPU_PROFILE_80386, sgdt,
-            sizeof(sgdt), LIB_FALSE, LIB_FALSE) &&
-        sgdt_sidt_case(CORE_MACHINE_CPU_PROFILE_80386, sidt,
-            sizeof(sidt), LIB_TRUE, LIB_FALSE) &&
-        sgdt_sidt_case(CORE_MACHINE_CPU_PROFILE_80386, sgdt32,
-            sizeof(sgdt32), LIB_FALSE, LIB_TRUE) &&
-        sgdt_sidt_case(CORE_MACHINE_CPU_PROFILE_80386, sidt32,
-            sizeof(sidt32), LIB_TRUE, LIB_TRUE) &&
-        sgdt_sidt_case(CORE_MACHINE_CPU_PROFILE_80386, sgdt_address32,
-            sizeof(sgdt_address32), LIB_FALSE, LIB_FALSE) &&
-        sgdt_sidt_case(CORE_MACHINE_CPU_PROFILE_80386, sidt_address32,
-            sizeof(sidt_address32), LIB_TRUE, LIB_FALSE) &&
-        sgdt_sidt_case(CORE_MACHINE_CPU_PROFILE_80386, sgdt_both32,
-            sizeof(sgdt_both32), LIB_FALSE, LIB_TRUE) &&
-        sgdt_sidt_case(CORE_MACHINE_CPU_PROFILE_80386, sidt_both32,
-            sizeof(sidt_both32), LIB_TRUE, LIB_TRUE);
+    static const struct {
+        const lib_u8 *code;
+        lib_u8 bytes;
+        lib_bool idt, operand32;
+    } forms[] = {
+        {sgdt,sizeof(sgdt),LIB_FALSE,LIB_FALSE},
+        {sidt,sizeof(sidt),LIB_TRUE,LIB_FALSE},
+        {sgdt32,sizeof(sgdt32),LIB_FALSE,LIB_TRUE},
+        {sidt32,sizeof(sidt32),LIB_TRUE,LIB_TRUE},
+        {sgdt_address32,sizeof(sgdt_address32),LIB_FALSE,LIB_FALSE},
+        {sidt_address32,sizeof(sidt_address32),LIB_TRUE,LIB_FALSE},
+        {sgdt_both32,sizeof(sgdt_both32),LIB_FALSE,LIB_TRUE},
+        {sidt_both32,sizeof(sidt_both32),LIB_TRUE,LIB_TRUE}
+    };
+
+    for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
+        const lib_size count = profiles[profile] == CORE_MACHINE_CPU_PROFILE_80286 ?
+            2u : sizeof(forms) / sizeof(forms[0]);
+        for (lib_size form = 0u; form < count; ++form) {
+            if (!sgdt_sidt_case(profiles[profile], forms[form].code,
+                forms[form].bytes, forms[form].idt, forms[form].operand32)) return 0;
+        }
+    }
+    return 1;
 }
 
 static lib_i32 sgdt_sidt_expect_ud(core_machine_cpu_profile profile,
@@ -103,6 +112,9 @@ static lib_i32 sgdt_sidt_expect_ud(core_machine_cpu_profile profile,
 
 static lib_i32 sgdt_sidt_test_rejections(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     static const lib_u8 low[] = {0x0fu,0x01u,0x06u,0x00u,0x02u};
     static const lib_u8 register_form[] = {0x0fu,0x01u,0xc0u};
     static const lib_u8 reserved_form[] = {0x0fu,0x01u,0x2eu,0x00u,0x02u};
@@ -119,16 +131,22 @@ static lib_i32 sgdt_sidt_test_rejections(void)
         direct[2] |= table << 3u;
         lock[3] |= table << 3u;
         if (!sgdt_sidt_expect_ud(CORE_MACHINE_CPU_PROFILE_80186, code,
-                sizeof(code)) || !sgdt_sidt_expect_ud(
-                CORE_MACHINE_CPU_PROFILE_80386, direct, sizeof(direct)) ||
-            !sgdt_sidt_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock,
-                sizeof(lock))) return 0;
+            sizeof(code))) return 0;
+        for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+            ++profile) {
+            if (!sgdt_sidt_expect_ud(profiles[profile], direct, sizeof(direct)) ||
+                !sgdt_sidt_expect_ud(profiles[profile], lock, sizeof(lock))) return 0;
+        }
     }
-    return sgdt_sidt_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
-        reserved_form, sizeof(reserved_form));
+    for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
+        if (!sgdt_sidt_expect_ud(profiles[profile], reserved_form,
+            sizeof(reserved_form))) return 0;
+    }
+    return 1;
 }
 
-static lib_i32 sgdt_sidt_test_segments_and_vm86(void)
+static lib_i32 sgdt_sidt_test_segments_and_vm86(core_machine_cpu_profile profile)
 {
     static const lib_u8 forms[][6] = {
         {0x0fu,0x01u,0x06u,0x00u,0x02u,0u},
@@ -144,7 +162,7 @@ static lib_i32 sgdt_sidt_test_segments_and_vm86(void)
         t_cpu after;
         lib_u8 image[6], expected[6];
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         if (form == 1u) state.cpu.data.ss.base = 0x4000u;
         if (form == 2u) state.cpu.data.es.base = 0x8000u;
         state.cpu.data.ebp = 0x20u;
@@ -157,7 +175,7 @@ static lib_i32 sgdt_sidt_test_segments_and_vm86(void)
         lib_memory_copy(image, state.memory + addresses[form], sizeof(image));
         sgdt_sidt_expected(expected, form == 2u ? 0x1357u : 0x2468u,
             form == 2u ? 0x89abcdefu : 0x12345678u, LIB_FALSE,
-            CORE_MACHINE_CPU_PROFILE_80386);
+            profile);
         if (lib_memory_compare(image, expected, sizeof(image)) != 0) return 0;
     }
     {
@@ -166,7 +184,7 @@ static lib_i32 sgdt_sidt_test_segments_and_vm86(void)
         t_cpu after;
         lib_u8 image[6], expected[6];
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         state.cpu.data.cr0 |= VCPU_CR0_PE;
         state.cpu.data.eflags |= VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL;
         state.cpu.data.cs.dpl = 3u;
@@ -177,7 +195,7 @@ static lib_i32 sgdt_sidt_test_segments_and_vm86(void)
         if (!sgdt_sidt_run(&state, sgdt, sizeof(sgdt), &after)) { lib_c_fprintf(lib_c_stderr, "vm run\n"); return 0; }
         lib_memory_copy(image, state.memory + 0x0200u, sizeof(image));
         sgdt_sidt_expected(expected, 0x9876u, 0x12345678u, LIB_FALSE,
-            CORE_MACHINE_CPU_PROFILE_80386);
+            profile);
         if (lib_memory_compare(image, expected, sizeof(image)) != 0) { lib_c_fprintf(lib_c_stderr, "vm image\n"); return 0; }
     }
     return 1;
@@ -187,7 +205,8 @@ lib_i32 main(void)
 {
     lib_i32 values = sgdt_sidt_test_values();
     lib_i32 rejections = sgdt_sidt_test_rejections();
-    lib_i32 routes = sgdt_sidt_test_segments_and_vm86();
+    lib_i32 routes = sgdt_sidt_test_segments_and_vm86(CORE_MACHINE_CPU_PROFILE_80386) &&
+        sgdt_sidt_test_segments_and_vm86(CORE_MACHINE_CPU_PROFILE_80486SX);
 
     if (!values || !rejections || !routes) {
         lib_c_fprintf(lib_c_stderr, "SGDT-SIDT CPU failed values=%d reject=%d routes=%d\n",

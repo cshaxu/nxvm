@@ -134,7 +134,7 @@ static lib_i32 prefix_attributes_gprs_same_except_ecx_edi(
         before->data.esi == after->data.esi;
 }
 
-static lib_i32 prefix_attributes_test_segments(void)
+static lib_i32 prefix_attributes_test_segments(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 prefixes[] = {
         0x26u, 0x2eu, 0x36u, 0x3eu, 0x64u, 0x65u
@@ -155,7 +155,7 @@ static lib_i32 prefix_attributes_test_segments(void)
             prefixes[form], 0x8au, 0x06u, 0x00u, 0x01u
         };
         lib_i32 failed = !prefix_attributes_prepare(
-            CORE_MACHINE_CPU_PROFILE_80386, &state);
+            cpu_profile, &state);
 
         if (!failed) {
             state.chip.cpu.data.es.base = bases[0u];
@@ -186,7 +186,7 @@ static lib_i32 prefix_attributes_test_segments(void)
     return 1;
 }
 
-static lib_i32 prefix_attributes_test_last_wins(void)
+static lib_i32 prefix_attributes_test_last_wins(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 code[] = { 0x2eu, 0x36u, 0x8au, 0x06u, 0x00u, 0x01u };
     prefix_attributes_machine state;
@@ -196,7 +196,7 @@ static lib_i32 prefix_attributes_test_last_wins(void)
     lib_u8 cs_source = 0x11u;
     lib_u8 ss_source = 0x22u;
     lib_i32 failed = !prefix_attributes_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
+        cpu_profile, &state);
 
     if (!failed) {
         state.chip.cpu.data.cs.base = 0x11000u;
@@ -214,7 +214,7 @@ static lib_i32 prefix_attributes_test_last_wins(void)
     return !failed;
 }
 
-static lib_i32 prefix_attributes_test_attributes_and_lock(void)
+static lib_i32 prefix_attributes_test_attributes_and_lock(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 read_operand32[] = {
         0x66u, 0x8bu, 0x06u, 0x00u, 0x01u
@@ -239,7 +239,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(void)
     lib_u8 other_byte = 0u;
     lib_u8 observed_byte = 0u;
     lib_i32 failed = !prefix_attributes_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
+        cpu_profile, &state);
 
     if (!failed) {
         state.chip.cpu.data.esi = 0x0100u;
@@ -258,7 +258,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(void)
         return 0;
     }
 
-    failed = !prefix_attributes_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    failed = !prefix_attributes_prepare(cpu_profile,
         &state);
     if (!failed) {
         image = 0x55667788u;
@@ -280,7 +280,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(void)
         return 0;
     }
 
-    failed = !prefix_attributes_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    failed = !prefix_attributes_prepare(cpu_profile,
         &state);
     if (!failed) {
         image = 0x11223344u;
@@ -302,7 +302,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(void)
         return 0;
     }
 
-    failed = !prefix_attributes_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    failed = !prefix_attributes_prepare(cpu_profile,
         &state);
     if (!failed) {
         byte_image = 0x6du;
@@ -337,7 +337,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(void)
         return 0;
     }
 
-    failed = !prefix_attributes_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    failed = !prefix_attributes_prepare(cpu_profile,
         &state);
     if (!failed) {
         byte_image = 0x22u;
@@ -368,7 +368,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(void)
         return 0;
     }
 
-    failed = !prefix_attributes_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    failed = !prefix_attributes_prepare(cpu_profile,
         &state);
     if (!failed) {
         state.chip.cpu.data.esi = 0x0100u;
@@ -390,7 +390,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(void)
         return 0;
     }
 
-    failed = !prefix_attributes_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    failed = !prefix_attributes_prepare(cpu_profile,
         &state);
     if (!failed) {
         image = 1u;
@@ -408,7 +408,7 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(void)
         return 0;
     }
 
-    failed = !prefix_attributes_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    failed = !prefix_attributes_prepare(cpu_profile,
         &state);
     if (!failed) {
         image = 0x55667788u;
@@ -428,63 +428,68 @@ static lib_i32 prefix_attributes_test_attributes_and_lock(void)
                 LIB_STATUS_OK || image != 0x55667788u;
     }
 
-    if (failed) {
-        return 0;
-    }
+    return !failed;
+}
 
-    {
-        static const core_machine_cpu_profile profiles[] = {
-            CORE_MACHINE_CPU_PROFILE_8086,
-            CORE_MACHINE_CPU_PROFILE_80186,
-            CORE_MACHINE_CPU_PROFILE_80286
-        };
-        static const lib_u8 forms[][6] = {
-            { 0x66u, 0x8bu, 0x06u, 0x00u, 0x01u, 0u },
-            { 0x67u, 0x8bu, 0x06u, 0x00u, 0x01u, 0u },
-            { 0x66u, 0x67u, 0x8bu, 0x06u, 0u, 0u }
-        };
-        static const lib_size lengths[] = { 5u, 5u, 4u };
-        lib_u8 profile;
-        lib_u8 form;
+static lib_i32 prefix_attributes_test_legacy_attributes(void)
+{
+    prefix_attributes_machine state;
+    core_machine_cpu_fault_snapshot diagnostic;
+    t_cpu before, after;
+    lib_status status;
+    lib_i32 failed = 0;
 
-        for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
-            ++profile) {
-            for (form = 0u; form != sizeof(forms) / sizeof(forms[0]);
-                ++form) {
-                failed = !prefix_attributes_prepare(profiles[profile],
-                    &state);
-                if (!failed) {
-                    before = state.chip.cpu;
-                    if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80186) {
-                        if (!cpu_instruction_expect_real_fault(&state.chip,
-                                forms[form], (lib_u8)lengths[form], 6u)) return 0;
-                        continue;
-                    }
-                    failed |= !prefix_attributes_preflight_ud(&state) || !prefix_attributes_run(&state, forms[form],
-                        lengths[form], 1u, &after, &diagnostic, &status) ||
-                        (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80286 ?
-                            (status != LIB_STATUS_OK || diagnostic.valid ||
-                                !core_machine_cpu_is_shutdown(&state.chip.execution) ||
-                                state.chip.execution.stop_requested ||
-                                !state.chip.delivered_exception.valid ||
-                                state.chip.delivered_exception.exception_mask !=
-                                    VCPUINS_EXCEPT_SHUTDOWN) :
-                            (status != LIB_STATUS_INTERNAL_ERROR || !diagnostic.valid ||
-                                !X86_CPU_BIT_IS_SET(diagnostic.exception_mask,
-                                    VCPUINS_EXCEPT_UD))) ||
-                        !prefix_attributes_cpu_same(&before, &after);
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086,
+        CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286
+    };
+    static const lib_u8 forms[][6] = {
+        { 0x66u, 0x8bu, 0x06u, 0x00u, 0x01u, 0u },
+        { 0x67u, 0x8bu, 0x06u, 0x00u, 0x01u, 0u },
+        { 0x66u, 0x67u, 0x8bu, 0x06u, 0u, 0u }
+    };
+    static const lib_size lengths[] = { 5u, 5u, 4u };
+    lib_u8 profile;
+    lib_u8 form;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
+        for (form = 0u; form != sizeof(forms) / sizeof(forms[0]);
+            ++form) {
+            failed = !prefix_attributes_prepare(profiles[profile],
+                &state);
+            if (!failed) {
+                before = state.chip.cpu;
+                if (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80186) {
+                    if (!cpu_instruction_expect_real_fault(&state.chip,
+                            forms[form], (lib_u8)lengths[form], 6u)) return 0;
+                    continue;
                 }
+                failed |= !prefix_attributes_preflight_ud(&state) || !prefix_attributes_run(&state, forms[form],
+                    lengths[form], 1u, &after, &diagnostic, &status) ||
+                    (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80286 ?
+                        (status != LIB_STATUS_OK || diagnostic.valid ||
+                            !core_machine_cpu_is_shutdown(&state.chip.execution) ||
+                            state.chip.execution.stop_requested ||
+                            !state.chip.delivered_exception.valid ||
+                            state.chip.delivered_exception.exception_mask !=
+                                VCPUINS_EXCEPT_SHUTDOWN) :
+                        (status != LIB_STATUS_INTERNAL_ERROR || !diagnostic.valid ||
+                            !X86_CPU_BIT_IS_SET(diagnostic.exception_mask,
+                                VCPUINS_EXCEPT_UD))) ||
+                    !prefix_attributes_cpu_same(&before, &after);
+            }
 
-                if (failed) {
-                    return 0;
-                }
+            if (failed) {
+                return 0;
             }
         }
     }
     return !failed;
 }
 
-static lib_i32 prefix_attributes_test_lock_group_legality(void)
+static lib_i32 prefix_attributes_test_lock_group_legality(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 forms[][7] = {
         { 0xf0u, 0x0fu, 0xa3u, 0x06u, 0x00u, 0x01u, 0u },
@@ -505,7 +510,7 @@ static lib_i32 prefix_attributes_test_lock_group_legality(void)
         lib_status status;
         lib_u16 image = 0x1234u;
         lib_i32 failed = !prefix_attributes_prepare(
-            CORE_MACHINE_CPU_PROFILE_80386, &state);
+            cpu_profile, &state);
 
         if (!failed) {
             before = state.chip.cpu;
@@ -530,7 +535,7 @@ static lib_i32 prefix_attributes_test_lock_group_legality(void)
     return 1;
 }
 
-static lib_i32 prefix_attributes_test_lock_group_writes(void)
+static lib_i32 prefix_attributes_test_lock_group_writes(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 forms[][5] = {
         { 0xf0u, 0xf6u, 0x16u, 0x00u, 0x01u },
@@ -550,7 +555,7 @@ static lib_i32 prefix_attributes_test_lock_group_writes(void)
         lib_status status;
         lib_u16 image = 0x1234u;
         lib_i32 failed = !prefix_attributes_prepare(
-            CORE_MACHINE_CPU_PROFILE_80386, &state);
+            cpu_profile, &state);
 
         if (!failed) {
             before = state.chip.cpu;
@@ -573,7 +578,7 @@ static lib_i32 prefix_attributes_test_lock_group_writes(void)
     return 1;
 }
 
-static lib_i32 prefix_attributes_test_repeated_width_prefixes(void)
+static lib_i32 prefix_attributes_test_repeated_width_prefixes(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 operand_code[] = {
         0x66u, 0x66u, 0xb8u, 0x78u, 0x56u, 0x34u, 0x12u
@@ -589,7 +594,7 @@ static lib_i32 prefix_attributes_test_repeated_width_prefixes(void)
     lib_u8 selected = 0x5au;
     lib_u8 unselected = 0x3cu;
     lib_i32 failed = !prefix_attributes_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
+        cpu_profile, &state);
 
     if (!failed) {
         before = state.chip.cpu;
@@ -607,7 +612,7 @@ static lib_i32 prefix_attributes_test_repeated_width_prefixes(void)
         return 0;
     }
 
-    failed = !prefix_attributes_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    failed = !prefix_attributes_prepare(cpu_profile,
         &state);
     if (!failed) {
         state.chip.cpu.data.ds.limit = 0xffffffffu;
@@ -631,7 +636,7 @@ static lib_i32 prefix_attributes_test_repeated_width_prefixes(void)
     return !failed;
 }
 
-static lib_i32 prefix_attributes_test_fixed_segment_and_register(void)
+static lib_i32 prefix_attributes_test_fixed_segment_and_register(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 fixed_segment[] = { 0x26u, 0xa4u };
     static const lib_u8 register_only[] = {
@@ -645,7 +650,7 @@ static lib_i32 prefix_attributes_test_fixed_segment_and_register(void)
     lib_u8 source = 0x4du;
     lib_u8 target = 0u;
     lib_i32 failed = !prefix_attributes_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
+        cpu_profile, &state);
 
     if (!failed) {
         state.chip.cpu.data.ds.base = 0x10000u;
@@ -666,7 +671,7 @@ static lib_i32 prefix_attributes_test_fixed_segment_and_register(void)
         return 0;
     }
 
-    failed = !prefix_attributes_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    failed = !prefix_attributes_prepare(cpu_profile,
         &state);
     if (!failed) {
         before = state.chip.cpu;
@@ -689,7 +694,7 @@ static lib_i32 prefix_attributes_test_fixed_segment_and_register(void)
     return !failed;
 }
 
-static lib_i32 prefix_attributes_test_rep_movs(void)
+static lib_i32 prefix_attributes_test_rep_movs(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 code[] = { 0xf3u, 0xa4u, 0xf4u };
     prefix_attributes_machine state;
@@ -699,7 +704,7 @@ static lib_i32 prefix_attributes_test_rep_movs(void)
     lib_u8 source[] = { 0x31u, 0x42u, 0x53u };
     lib_u8 target[] = { 0u, 0u, 0u };
     lib_i32 failed = !prefix_attributes_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
+        cpu_profile, &state);
 
     if (!failed) {
         state.chip.cpu.data.ds.base = 0x10000u;
@@ -722,7 +727,7 @@ static lib_i32 prefix_attributes_test_rep_movs(void)
     return !failed;
 }
 
-static lib_i32 prefix_attributes_test_rep_edges(void)
+static lib_i32 prefix_attributes_test_rep_edges(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 code[] = { 0xf3u, 0xa4u, 0xf4u };
     const lib_u32 counts[] = { 0u, 1u };
@@ -736,7 +741,7 @@ static lib_i32 prefix_attributes_test_rep_edges(void)
         lib_u8 source = 0x5au;
         lib_u8 target = 0xc3u;
         lib_i32 failed = !prefix_attributes_prepare(
-            CORE_MACHINE_CPU_PROFILE_80386, &state);
+            cpu_profile, &state);
 
         if (!failed) {
             state.chip.cpu.data.esi = 0x0100u;
@@ -765,7 +770,7 @@ static lib_i32 prefix_attributes_test_rep_edges(void)
     return 1;
 }
 
-static lib_i32 prefix_attributes_test_repne_movs(void)
+static lib_i32 prefix_attributes_test_repne_movs(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 code[] = { 0xf2u, 0xa4u };
     prefix_attributes_machine state;
@@ -775,7 +780,7 @@ static lib_i32 prefix_attributes_test_repne_movs(void)
     lib_u8 source = 0x7eu;
     lib_u8 target = 0u;
     lib_i32 failed = !prefix_attributes_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
+        cpu_profile, &state);
 
     if (!failed) {
         state.chip.cpu.data.esi = 0x0100u;
@@ -795,7 +800,7 @@ static lib_i32 prefix_attributes_test_repne_movs(void)
     return !failed;
 }
 
-static lib_i32 prefix_attributes_test_mixed_repeat_last_wins(void)
+static lib_i32 prefix_attributes_test_mixed_repeat_last_wins(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 forms[][3] = {
         { 0xf2u, 0xf3u, 0xaeu },
@@ -815,7 +820,7 @@ static lib_i32 prefix_attributes_test_mixed_repeat_last_wins(void)
         lib_u8 image[] = { 0x3cu, 0x3cu };
         lib_u8 observed[] = { 0u, 0u };
         lib_i32 failed = !prefix_attributes_prepare(
-            CORE_MACHINE_CPU_PROFILE_80386, &state);
+            cpu_profile, &state);
 
         if (!failed) {
             state.chip.cpu.data.eax = 0xaabbcc3cu;
@@ -852,49 +857,36 @@ static lib_i32 prefix_attributes_test_mixed_repeat_last_wins(void)
 
 lib_i32 main(void)
 {
-    if (!prefix_attributes_test_segments()) {
-        lib_c_fprintf(lib_c_stderr, "prefix segment grid failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_test_last_wins()) {
-        lib_c_fprintf(lib_c_stderr, "prefix last-wins failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_test_attributes_and_lock()) {
-        lib_c_fprintf(lib_c_stderr, "prefix attribute/LOCK failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_test_lock_group_legality()) {
-        lib_c_fprintf(lib_c_stderr, "prefix LOCK group legality failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_test_lock_group_writes()) {
-        lib_c_fprintf(lib_c_stderr, "prefix LOCK group writes failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_test_repeated_width_prefixes()) {
-        lib_c_fprintf(lib_c_stderr, "prefix repeated width-prefix failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_test_fixed_segment_and_register()) {
-        lib_c_fprintf(lib_c_stderr, "prefix fixed-segment/register prefix failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_test_rep_movs()) {
-        lib_c_fprintf(lib_c_stderr, "prefix REP MOVS failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_test_rep_edges()) {
-        lib_c_fprintf(lib_c_stderr, "prefix REP edges failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_test_repne_movs()) {
-        lib_c_fprintf(lib_c_stderr, "prefix REPNE MOVS failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_test_mixed_repeat_last_wins()) {
-        lib_c_fprintf(lib_c_stderr, "prefix mixed repeat-prefix failed\n");
-        return 1;
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+    static const struct {
+        const char *name;
+        lib_i32 (*run)(core_machine_cpu_profile);
+    } cases[] = {
+        {"segment grid",prefix_attributes_test_segments},
+        {"last-wins",prefix_attributes_test_last_wins},
+        {"attribute/LOCK",prefix_attributes_test_attributes_and_lock},
+        {"LOCK group legality",prefix_attributes_test_lock_group_legality},
+        {"LOCK group writes",prefix_attributes_test_lock_group_writes},
+        {"repeated width-prefix",prefix_attributes_test_repeated_width_prefixes},
+        {"fixed-segment/register",prefix_attributes_test_fixed_segment_and_register},
+        {"REP MOVS",prefix_attributes_test_rep_movs},
+        {"REP edges",prefix_attributes_test_rep_edges},
+        {"REPNE MOVS",prefix_attributes_test_repne_movs},
+        {"mixed repeat-prefix",prefix_attributes_test_mixed_repeat_last_wins}
+    };
+
+    if (!prefix_attributes_test_legacy_attributes()) return 1;
+    for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
+        for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+            if (!cases[index].run(profiles[profile])) {
+                lib_c_fprintf(lib_c_stderr, "prefix %s CPU=%u failed\n",
+                    cases[index].name, profiles[profile]);
+                return 1;
+            }
+        }
     }
     lib_c_printf("CPU-PREFIX-ATTRIBUTES:OK\n");
     return 0;

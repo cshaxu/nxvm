@@ -54,7 +54,9 @@ static const core_machine_cpu_bus_provider cpu_port_bus = {
     .write_memory = cpu_instruction_write,
     .transfer_port = cpu_port_transfer,
     .complete_port = cpu_port_complete,
-    .interrupt_pending = cpu_instruction_interrupt_pending
+    .interrupt_pending = cpu_instruction_interrupt_pending,
+    .special_cycle = cpu_instruction_special_cycle,
+    .cancel_special_cycle = cpu_instruction_cancel_special_cycle
 };
 
 static void cpu_port_prepare(cpu_port_instruction_fixture *fixture,

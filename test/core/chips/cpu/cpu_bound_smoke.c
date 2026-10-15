@@ -63,26 +63,32 @@ static lib_i32 bound_test_width_and_attributes(void)
     const lib_i32 pair32[] = {-4,4};
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
 
-    for (profile = 0u; profile != 3u; ++profile)
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
         if (!bound_check_success(profiles[profile], word, sizeof(word),
             pair16, sizeof(pair16), 0xa1a10001u)) return 0;
-    return bound_check_success(CORE_MACHINE_CPU_PROFILE_80386, dword,
-            sizeof(dword), pair32, sizeof(pair32), 1u) &&
-        bound_check_success(CORE_MACHINE_CPU_PROFILE_80386, address,
-            sizeof(address), pair16, sizeof(pair16), 1u) &&
-        bound_check_success(CORE_MACHINE_CPU_PROFILE_80386, combined,
-            sizeof(combined), pair32, sizeof(pair32), 1u) &&
-        bound_check_success(CORE_MACHINE_CPU_PROFILE_80386, word,
-            sizeof(word), pair16, sizeof(pair16), 0xfffeu) &&
-        bound_check_success(CORE_MACHINE_CPU_PROFILE_80386, word,
-            sizeof(word), pair16, sizeof(pair16), 2u);
+    for (profile = 0u; profile < sizeof(modern) / sizeof(modern[0]); ++profile) {
+        if (!bound_check_success(modern[profile], dword,
+                sizeof(dword), pair32, sizeof(pair32), 1u) ||
+            !bound_check_success(modern[profile], address,
+                sizeof(address), pair16, sizeof(pair16), 1u) ||
+            !bound_check_success(modern[profile], combined,
+                sizeof(combined), pair32, sizeof(pair32), 1u) ||
+            !bound_check_success(modern[profile], word,
+                sizeof(word), pair16, sizeof(pair16), 0xfffeu) ||
+            !bound_check_success(modern[profile], word,
+                sizeof(word), pair16, sizeof(pair16), 2u)) return 0;
+    }
+    return 1;
 }
 
-static lib_i32 bound_test_segments(void)
+static lib_i32 bound_test_segments(core_machine_cpu_profile profile)
 {
     static const lib_u8 forms[][5] = {
         {0x62u,0x06u,0x10u,0u,0u},
@@ -103,7 +109,7 @@ static lib_i32 bound_test_segments(void)
         const lib_u16 selector = (lib_u16)(0x1000u + form * 0x1000u);
         const lib_u32 base = (lib_u32)selector << 4u;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         segment = form == 1u ? &state.cpu.data.ss :
             form == 2u ? &state.cpu.data.cs :
             form == 3u ? &state.cpu.data.es :
@@ -128,14 +134,14 @@ static lib_i32 bound_test_segments(void)
     return 1;
 }
 
-static lib_i32 bound_test_sib_ss(void)
+static lib_i32 bound_test_sib_ss(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x67u,0x62u,0x44u,0x24u,0x10u};
     const lib_i16 pair[] = {-2,2};
     cpu_instruction_fixture state;
     t_cpu before, after;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     if (core_machine_cpu_execution_load_segment(&state.execution,
             &state.cpu.data.ss, 0x1800u) != 0) return 0;
     state.cpu.data.eax = 1u;
@@ -150,14 +156,14 @@ static lib_i32 bound_test_sib_ss(void)
         sizeof(pair)) == 0;
 }
 
-static lib_i32 bound_test_vm86(void)
+static lib_i32 bound_test_vm86(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x62u,0x06u,0x00u,0x04u};
     const lib_i16 pair[] = {-2,2};
     cpu_instruction_fixture state;
     t_cpu before, after;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     state.cpu.data.cr0 |= VCPU_CR0_PE;
     state.cpu.data.eflags = VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL |
         VCPU_EFLAGS_IF | VCPU_EFLAGS_CF;
@@ -203,21 +209,111 @@ static lib_i32 bound_test_rejections(void)
         CORE_MACHINE_CPU_PROFILE_80286
     };
     static const lib_u8 bare[] = {0x62u,0x06u,0x00u,0x04u};
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile, form;
 
-    if (!bound_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
-            word_register, sizeof(word_register)) ||
-        !bound_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
-            dword_register, sizeof(dword_register)) ||
-        !bound_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
-            locked, sizeof(locked)) ||
-        !bound_expect_ud(CORE_MACHINE_CPU_PROFILE_8086,
-            bare, sizeof(bare))) return 0;
+    for (profile = 0u; profile < sizeof(modern) / sizeof(modern[0]); ++profile) {
+        if (!bound_expect_ud(modern[profile], word_register, sizeof(word_register)) ||
+            !bound_expect_ud(modern[profile], dword_register, sizeof(dword_register)) ||
+            !bound_expect_ud(modern[profile], locked, sizeof(locked))) return 0;
+    }
+    if (!bound_expect_ud(CORE_MACHINE_CPU_PROFILE_8086, bare, sizeof(bare))) return 0;
     for (profile = 0u; profile != 3u; ++profile)
         for (form = 0u; form != 3u; ++form)
             if (!bound_expect_ud(legacy[profile], prefix[form],
                     form == 2u ? 6u : 5u)) return 0;
     return 1;
+}
+
+static lib_bool bound_test_range(core_machine_cpu_profile profile)
+{
+    static const struct {
+        lib_u32 lower, upper, index;
+        lib_u8 width;
+        lib_bool fault;
+    } cases[] = {
+        {0xfffeu,2u,0xfffdu,2u,LIB_TRUE}, {0xfffeu,2u,3u,2u,LIB_TRUE},
+        {0xfffeu,2u,0xfffeu,2u,LIB_FALSE}, {0xfffeu,2u,2u,2u,LIB_FALSE},
+        {0x8000u,0x7fffu,0x8000u,2u,LIB_FALSE}, {2u,0xfffeu,0u,2u,LIB_TRUE},
+        {0xfffffffeu,2u,0xfffffffdu,4u,LIB_TRUE},
+        {0xfffffffeu,2u,3u,4u,LIB_TRUE},
+        {0xfffffffeu,2u,0xfffffffeu,4u,LIB_FALSE},
+        {0xfffffffeu,2u,2u,4u,LIB_FALSE},
+        {0x80000000u,0x7fffffffu,0x80000000u,4u,LIB_FALSE},
+        {2u,0xfffffffeu,0u,4u,LIB_TRUE}
+    };
+
+    for (lib_u8 mode = 0u; mode < 10u; ++mode) {
+        const lib_bool code32 = mode > 0u && mode < 9u && (mode & 1u) == 0u;
+
+        for (lib_u8 address32 = 0u; address32 < 2u; ++address32) {
+            for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+                cpu_instruction_fixture state;
+                t_cpu before, after;
+                lib_u8 code[8] = {0};
+                lib_u8 bytes = 0u;
+
+                cpu_instruction_prepare(&state, profile);
+                if (mode == 0u) {
+                    const lib_u16 vector[] = {0x300u,0u};
+
+                    lib_memory_copy(state.memory + 5u * 4u, vector, sizeof(vector));
+                    state.cpu.data.esp = 0x8000u;
+                } else {
+                    cpu_instruction_prepare_protected_exception(&state,
+                        mode == 9u ? 4u : (lib_u8)((mode - 1u) / 2u));
+                    state.cpu.data.ds.dpl = mode == 9u ? 3u : (lib_u8)((mode - 1u) / 2u);
+                    state.cpu.data.ds.selector = (lib_u16)(0x10u | state.cpu.data.ds.dpl);
+                    lib_memory_copy(state.memory + 0x428u, state.memory + 0x468u, 8u);
+                }
+                state.cpu.data.cs.seg.exec.defsize = code32;
+                state.cpu.data.eax = cases[index].index;
+                state.cpu.data.eip = 0x1000u;
+                state.cpu.data.eflags |= VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF |
+                    VCPU_EFLAGS_OF | VCPU_EFLAGS_DF | VCPU_EFLAGS_IF;
+                if (code32 != (cases[index].width == 4u)) code[bytes++] = 0x66u;
+                if (code32 != address32) code[bytes++] = 0x67u;
+                code[bytes++] = 0x62u;
+                code[bytes++] = address32 ? 5u : 6u;
+                code[bytes++] = 0u;
+                code[bytes++] = 0x50u;
+                if (address32) {
+                    code[bytes++] = 0u;
+                    code[bytes++] = 0u;
+                }
+                lib_memory_copy(state.memory + 0x5000u, &cases[index].lower,
+                    cases[index].width);
+                lib_memory_copy(state.memory + 0x5000u + cases[index].width,
+                    &cases[index].upper, cases[index].width);
+                lib_memory_copy(state.memory + 0x1000u, code, bytes);
+                before = state.cpu;
+                core_machine_cpu_execution_refresh(&state.execution);
+                after = state.cpu;
+                if (state.execution.stop_requested || state.fault.valid ||
+                    core_machine_cpu_is_shutdown(&state.execution) ||
+                    state.delivered_exception.valid != cases[index].fault) return LIB_FALSE;
+                if (cases[index].fault) {
+                    if (state.delivered_exception.exception_mask != VCPUINS_EXCEPT_BR ||
+                        state.delivered_exception.exception_code != 0u ||
+                        state.delivered_exception.point.eip != before.data.eip ||
+                        state.delivered_exception.point.cs != before.data.cs.selector ||
+                        after.data.eip != 0x300u || after.data.eax != before.data.eax ||
+                        after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
+                        after.data.ebx != before.data.ebx || after.data.ebp != before.data.ebp ||
+                        after.data.esi != before.data.esi || after.data.edi != before.data.edi)
+                        return LIB_FALSE;
+                } else if (after.data.eip != before.data.eip + bytes ||
+                    !bound_same_state(&before, &after)) return LIB_FALSE;
+                if (lib_memory_compare(state.memory + 0x5000u, &cases[index].lower,
+                        cases[index].width) != 0 ||
+                    lib_memory_compare(state.memory + 0x5000u + cases[index].width,
+                        &cases[index].upper, cases[index].width) != 0) return LIB_FALSE;
+            }
+        }
+    }
+    return LIB_TRUE;
 }
 
 lib_i32 main(void)
@@ -230,10 +326,20 @@ lib_i32 main(void)
         lib_c_fprintf(lib_c_stderr, "BOUND invalid forms were not #UD\n");
         return 1;
     }
-    if (!bound_test_segments() || !bound_test_sib_ss() ||
-        !bound_test_vm86()) {
-        lib_c_fprintf(lib_c_stderr, "BOUND segment route failed\n");
+    if (!bound_test_range(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !bound_test_range(CORE_MACHINE_CPU_PROFILE_80486SX)) {
+        lib_c_fprintf(lib_c_stderr, "BOUND signed range or BR delivery failed\n");
         return 1;
+    }
+    for (lib_u8 index = 0u; index < 2u; ++index) {
+        const core_machine_cpu_profile profile = index == 0u ?
+            CORE_MACHINE_CPU_PROFILE_80386 : CORE_MACHINE_CPU_PROFILE_80486SX;
+
+        if (!bound_test_segments(profile) || !bound_test_sib_ss(profile) ||
+            !bound_test_vm86(profile)) {
+            lib_c_fprintf(lib_c_stderr, "BOUND segment route failed profile=%u\n", profile);
+            return 1;
+        }
     }
     lib_c_printf("%s\n", "BOUND-REGISTER-UD:OK");
     return 0;

@@ -1137,7 +1137,7 @@ static lib_u32 _kma_linear_logical(core_machine_cpu_execution_context *context, 
             break;
         case SREG_TR:
             CPU_TRACE_BLOCK_BEGIN("sregtype(SREG_TR)");
-            CPU_TRACE_CHECK_RETURN_ZERO(_SetExcept_TS(rsreg->selector));
+            CPU_TRACE_CHECK_RETURN_ZERO(_SetExcept_TS(rsreg->selector & 0xfffcu));
             CPU_TRACE_BLOCK_END;
             break;
         default:
@@ -1605,10 +1605,11 @@ static void _ksa_read_ldt(core_machine_cpu_execution_context *context, lib_u16 s
         CPU_TRACE_IMPOSSIBLE_RETURN;
     if (!_GetSelector_TI(selector))
         CPU_TRACE_IMPOSSIBLE_RETURN;
-    if (X86_CPU_MASK_U16(_GetSelector_Offset(selector) + 7) > X86_CPU_MASK_U16(cpu_state.data.ldtr.limit))
+    if (!cpu_state.data.ldtr.flagValid ||
+        X86_CPU_MASK_U16(_GetSelector_Offset(selector) + 7) > X86_CPU_MASK_U16(cpu_state.data.ldtr.limit))
     {
-        CPU_TRACE_BLOCK_BEGIN("Selector_Offset(>ldtr.limit)");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+        CPU_TRACE_BLOCK_BEGIN("!ldtr.flagValid/Selector_Offset(>ldtr.limit)");
+        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.ldtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
@@ -1624,7 +1625,7 @@ static void _ksa_read_gdt(core_machine_cpu_execution_context *context, lib_u16 s
     if (X86_CPU_MASK_U16(_GetSelector_Offset(selector) + 7) > X86_CPU_MASK_U16(cpu_state.data.gdtr.limit))
     {
         CPU_TRACE_BLOCK_BEGIN("Selector_Offset(>gdtr.limit)");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CHECK_RETURN(_ksa_read_table(context,
@@ -1845,13 +1846,13 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
             if (!_IsDescCode(descriptor))
             {
                 CPU_TRACE_BLOCK_BEGIN("!DescCode");
-                CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
                 CPU_TRACE_BLOCK_END;
             }
             if (!_IsDescPresent(descriptor))
             {
                 CPU_TRACE_BLOCK_BEGIN("!DescPresent");
-                CPU_TRACE_CHECK_RETURN(_SetExcept_NP(selector));
+                CPU_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
                 CPU_TRACE_BLOCK_END;
             }
             CPU_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, X86_CPU_REFERENCE_OF(descriptor)));
@@ -1896,7 +1897,7 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
                 if (!_IsDescData(descriptor) && !_IsDescCodeReadable(descriptor))
                 {
                     CPU_TRACE_BLOCK_BEGIN("!DescData,!DescCodeReadable");
-                    CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                    CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
                     CPU_TRACE_BLOCK_END;
                 }
                 if (_IsDescData(descriptor) || _IsDescCodeNonConform(descriptor))
@@ -1906,7 +1907,7 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
                         _GetCPL > _GetDesc_DPL(descriptor))
                     {
                         CPU_TRACE_BLOCK_BEGIN("PL(fail)");
-                        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
                         CPU_TRACE_BLOCK_END;
                     }
                     CPU_TRACE_BLOCK_END;
@@ -1914,7 +1915,7 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
                 if (!_IsDescPresent(descriptor))
                 {
                     CPU_TRACE_BLOCK_BEGIN("!DescPresent");
-                    CPU_TRACE_CHECK_RETURN(_SetExcept_NP(selector));
+                    CPU_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
                     CPU_TRACE_BLOCK_END;
                 }
                 CPU_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, X86_CPU_REFERENCE_OF(descriptor)));
@@ -1964,26 +1965,26 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
             if (_GetSelector_RPL(selector) != _GetCPL)
             {
                 CPU_TRACE_BLOCK_BEGIN("Selector_RPL(!CPL)");
-                CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
                 CPU_TRACE_BLOCK_END;
             }
             CPU_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector, X86_CPU_REFERENCE_OF(descriptor)));
             if (!_IsDescDataWritable(descriptor))
             {
                 CPU_TRACE_BLOCK_BEGIN("!DescDataWritable");
-                CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
                 CPU_TRACE_BLOCK_END;
             }
             if (_GetDesc_DPL(descriptor) != _GetCPL)
             {
                 CPU_TRACE_BLOCK_BEGIN("Desc_DPL(!CPL)");
-                CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
                 CPU_TRACE_BLOCK_END;
             }
             if (!_IsDescPresent(descriptor))
             {
                 CPU_TRACE_BLOCK_BEGIN("!DescPresent");
-                CPU_TRACE_CHECK_RETURN(_SetExcept_SS(selector));
+                CPU_TRACE_CHECK_RETURN(_SetExcept_SS(selector & 0xfffcu));
                 CPU_TRACE_BLOCK_END;
             }
             CPU_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, X86_CPU_REFERENCE_OF(descriptor)));
@@ -2026,13 +2027,13 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
         if (!_IsDescTSSAvl(descriptor))
         {
             CPU_TRACE_BLOCK_BEGIN("!DescTssAvl");
-            CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+            CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
             CPU_TRACE_BLOCK_END;
         }
         if (!_IsDescPresent(descriptor))
         {
             CPU_TRACE_BLOCK_BEGIN("!DescPresent");
-            CPU_TRACE_CHECK_RETURN(_SetExcept_NP(selector));
+            CPU_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
             CPU_TRACE_BLOCK_END;
         }
         _SetDescTSSBusy(descriptor);
@@ -2067,13 +2068,13 @@ static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_da
             if (!_IsDescLDT(descriptor))
             {
                 CPU_TRACE_BLOCK_BEGIN("descriptor(!LDT)");
-                CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
                 CPU_TRACE_BLOCK_END;
             }
             if (!_IsDescPresent(descriptor))
             {
                 CPU_TRACE_BLOCK_BEGIN("descriptor(!P)");
-                CPU_TRACE_CHECK_RETURN(_SetExcept_NP(selector));
+                CPU_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
                 CPU_TRACE_BLOCK_END;
             }
             rsreg->flagValid = LIB_TRUE;
@@ -2504,7 +2505,7 @@ static void _s_load_ldtr(core_machine_cpu_execution_context *context, lib_u16 se
     if (_GetSelector_TI(selector))
     {
         CPU_TRACE_BLOCK_BEGIN("Selector_TI(1)");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.ldtr, selector));
@@ -2522,7 +2523,7 @@ static void _s_load_tr(core_machine_cpu_execution_context *context, lib_u16 sele
     if (_GetSelector_TI(selector))
     {
         CPU_TRACE_BLOCK_BEGIN("Selector_TI(1)");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.tr, selector));
@@ -3978,13 +3979,13 @@ _______todo _ser_call_far_cs_conf(core_machine_cpu_execution_context *context, l
     if (_GetDesc_DPL(descriptor) > _GetCPL)
     {
         CPU_TRACE_BLOCK_BEGIN("DPL(>CPL)");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
     if (!_IsDescPresent(descriptor))
     {
         CPU_TRACE_BLOCK_BEGIN("!DescPresent");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_NP(newcs));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CHECK_RETURN(_kec_call_far(context, newcs, neweip, byte));
@@ -4003,13 +4004,13 @@ _______todo _ser_call_far_cs_nonc(core_machine_cpu_execution_context *context, l
         _GetSelector_RPL(newcs) > _GetCPL)
     {
         CPU_TRACE_BLOCK_BEGIN("DPL(!CPL)/RPL(>CPL)");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
     if (!_IsDescPresent(descriptor))
     {
         CPU_TRACE_BLOCK_BEGIN("!DescPresent");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_NP(newcs));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CHECK_RETURN(_kec_call_far(context, newcs, neweip, byte));
@@ -4775,9 +4776,11 @@ static void _ser_int_protected(core_machine_cpu_execution_context *context,
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     CPU_TRACE_CHECK_RETURN(_s_read_idt(context, intid,
         X86_CPU_REFERENCE_OF(gate_desc)));
-    /* VM86 admission is limited to a 32-bit interrupt gate. */
+    /* VM86 uses a task gate or a 32-bit interrupt/trap gate. */
     if (_GetEFLAGS_VM && _GetDesc_Type(gate_desc) !=
-        VCPU_DESC_SYS_TYPE_INTGATE_32)
+        VCPU_DESC_SYS_TYPE_INTGATE_32 && _GetDesc_Type(gate_desc) !=
+        VCPU_DESC_SYS_TYPE_TRAPGATE_32 && _GetDesc_Type(gate_desc) !=
+        VCPU_DESC_SYS_TYPE_TASKGATE)
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     /* An unavailable target-stack facility is an architectural task fault. */
     if (_GetEFLAGS_VM && (!cpu_state.data.tr.flagValid ||
@@ -4952,13 +4955,13 @@ static void _ser_jmp_far_cs_conf(core_machine_cpu_execution_context *context, li
     if (_GetDesc_DPL(descriptor) > _GetCPL)
     {
         CPU_TRACE_BLOCK_BEGIN("DPL(>CPL)");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
     if (!_IsDescPresent(descriptor))
     {
         CPU_TRACE_BLOCK_BEGIN("!DescPresent");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_NP(newcs));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CHECK_RETURN(_kec_jmp_far(context, newcs, neweip, byte));
@@ -4977,13 +4980,13 @@ static void _ser_jmp_far_cs_nonc(core_machine_cpu_execution_context *context, li
         _GetSelector_RPL(newcs) > _GetCPL)
     {
         CPU_TRACE_BLOCK_BEGIN("DPL(!CPL)/RPL(>CPL)");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
     if (!_IsDescPresent(descriptor))
     {
         CPU_TRACE_BLOCK_BEGIN("!DescPresent");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_NP(newcs));
+        CPU_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CHECK_RETURN(_kec_jmp_far(context, newcs, neweip, byte));
@@ -5170,6 +5173,13 @@ static void _s_task_validate_data_selector(
     lib_u64 descriptor = 0u;
 
     CPU_TRACE_CALL_BEGIN("_s_task_validate_data_selector");
+    if (_GetEFLAGS_VM) {
+        lib_memory_set(out_cache, 0, sizeof(*out_cache));
+        out_cache->sregtype = sregtype;
+        _ksa_load_real_sreg(context, out_cache, selector, LIB_TRUE);
+        CPU_TRACE_CALL_END;
+        return;
+    }
     if (_IsSelectorNull(selector)) {
         if (sregtype == SREG_STACK)
             CPU_TRACE_CHECK_RETURN(_SetExcept_TS(0));
@@ -5207,6 +5217,15 @@ static void _s_task_validate_code_selector(
     lib_u64 descriptor;
 
     CPU_TRACE_CALL_BEGIN("_s_task_validate_code_selector");
+    if (_GetEFLAGS_VM) {
+        lib_memory_set(out_cache, 0, sizeof(*out_cache));
+        out_cache->sregtype = SREG_CODE;
+        _ksa_load_real_sreg(context, out_cache, selector, LIB_TRUE);
+        CPU_TRACE_CHECK_RETURN(_kma_test_logical(context, out_cache, eip, 1u,
+            LIB_FALSE, 3u, LIB_TRUE));
+        CPU_TRACE_CALL_END;
+        return;
+    }
     if (_IsSelectorNull(selector) || _GetSelector_RPL(selector) != cpl) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
     }
@@ -5410,7 +5429,7 @@ static void _ser_task_transition_tss_plan(
     lib_u8 incoming_cpl;
 
     CPU_TRACE_CALL_BEGIN("_ser_task_transition_tss_plan");
-    if (!_IsProtected || _GetSelector_TI(newcs))
+    if (!_GetCR0_PE || _GetSelector_TI(newcs))
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     if (!cpu_state.data.tr.flagValid || _GetSelector_TI(cpu_state.data.tr.selector))
         CPU_TRACE_CHECK_RETURN(_SetExcept_TS(0));
@@ -5574,7 +5593,8 @@ static void _ser_task_transition_tss_plan(
     newtr.sys.type = new_is_32 ? VCPU_DESC_SYS_TYPE_TSS_32_BUSY :
         VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
     cpu_state.data.tr = newtr;
-    if (new_is_32) cpu_state.data.dr7 &= ~VCPU_DR7_LOCAL_ENABLE_MASK;
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+        cpu_state.data.dr7 &= ~VCPU_DR7_LOCAL_ENABLE_MASK;
     _SetCR0_TS;
     if (new_is_32 && X86_CPU_GET_LSB(debug_trap)) cpu_state.data.dr6 |= VCPU_DR6_BT;
     if (nested) _SetEFLAGS_NT;
@@ -5707,7 +5727,7 @@ static void _e_push(core_machine_cpu_execution_context *context, lib_uptr rdata,
             _kdf_check_prefix(context, instruction_state.data.opcodes[index])) ++index;
         opcode = index < instruction_state.data.oplen ?
             instruction_state.data.opcodes[index] : 0u;
-        if (opcode == 0x9cu || (context->cpu_profile ==
+        if (opcode == 0x9cu || (context->cpu_profile >=
             CORE_MACHINE_CPU_PROFILE_80386 &&
             ((opcode >= 0x50u && opcode <= 0x57u) || opcode == 0x68u ||
             opcode == 0x6au || opcode == 0x06u || opcode == 0x0eu ||
@@ -5895,6 +5915,7 @@ _______todo _e_intr_n(core_machine_cpu_execution_context *context,
     lib_u8 intid, lib_u8 byte, lib_u8 external_origin)
 {
     CPU_TRACE_CALL_BEGIN("_e_intr_n");
+    context->repeat_compare_flags_valid = LIB_FALSE;
     if (!_GetCR0_PE)
     {
         CPU_TRACE_BLOCK_BEGIN("Real");
@@ -5925,6 +5946,7 @@ _______todo _e_except_n(core_machine_cpu_execution_context *context, lib_u8 exid
     lib_u32 oldflags = cpu_state.data.eflags;
 
     CPU_TRACE_CALL_BEGIN("_e_except_n");
+    context->repeat_compare_flags_valid = LIB_FALSE;
     if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX && exid == 1u)
         cpu_state.data.dr7 &= ~VCPU_DR7_GD;
     /* Fault images set RF; the rollback checkpoint and trap images do not.
@@ -6514,7 +6536,7 @@ static void _e_jmp_far(core_machine_cpu_execution_context *context, lib_u16 newc
         else
         {
             CPU_TRACE_BLOCK_BEGIN("newcs(invalid)");
-            CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+            CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
             CPU_TRACE_BLOCK_END;
         }
         CPU_TRACE_BLOCK_END;
@@ -8703,6 +8725,7 @@ static lib_u8 core_machine_cpu_instruction_lexeme_has_modrm(
 {
     if (extended) {
         return opcode <= 0x03u ||
+            (opcode >= 0x10u && opcode <= 0x13u) ||
             (opcode >= 0x20u && opcode <= 0x24u) || opcode == 0x26u ||
             (opcode >= 0x90u && opcode <= 0x9fu) || opcode == 0xa3u ||
             (opcode >= 0xa4u && opcode <= 0xa5u) || opcode == 0xabu ||
@@ -8732,7 +8755,6 @@ static lib_u8 core_machine_cpu_instruction_lexeme_modrm_form_valid(
     lib_u8 reg = (modrm >> 3u) & 7u;
 
     if (extended) {
-        if ((opcode == 0x21u || opcode == 0x23u) && (reg == 4u || reg == 5u)) return LIB_FALSE;
         if ((opcode == 0x24u || opcode == 0x26u) &&
             (reg < (profile == CORE_MACHINE_CPU_PROFILE_80486SX ? 3u : 6u) ||
              (opcode == 0x24u && reg == 5u))) return LIB_FALSE;
@@ -8754,8 +8776,6 @@ static lib_u8 core_machine_cpu_instruction_lexeme_modrm_form_valid(
         return (modrm >> 6u) != 3u;
     if (opcode == 0x8fu || opcode == 0xc6u || opcode == 0xc7u)
         return reg == 0u;
-    if (opcode == 0xf6u || opcode == 0xf7u)
-        return reg != 1u;
     if (opcode == 0xfeu)
         return reg <= 1u;
     if (opcode == 0xffu)
@@ -8927,8 +8947,8 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
         }
         else if ((opcode >= 0x60u && opcode <= 0x62u) || opcode == 0x68u ||
                  opcode == 0x69u || opcode == 0x6au || opcode == 0x6bu ||
-                 (opcode >= 0x6cu && opcode <= 0x6fu) || opcode == 0xc0u ||
-                 opcode == 0xc1u || opcode == 0xc8u || opcode == 0xc9u)
+                 (opcode >= 0x6cu && opcode <= 0x6fu) ||
+                 opcode == 0xc8u || opcode == 0xc9u)
         {
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80186;
         }
@@ -8942,7 +8962,7 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
         }
         else if (opcode == 0xd6u || opcode == 0xf1u)
         {
-            metadata.valid = 0;
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80486SX;
         }
         else if (opcode == 0x8cu)
         {
@@ -8957,10 +8977,18 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
             else if (((modrm >> 3u) & 7u) >= 4u)
                 metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
         }
-        else if (opcode >= 0xd0u && opcode <= 0xd3u &&
-                 ((modrm >> 3u) & 7u) == 6u)
+        else if (opcode == 0xc0u || opcode == 0xc1u ||
+                 (opcode >= 0xd0u && opcode <= 0xd3u))
         {
-            metadata.valid = 0;
+            if (opcode == 0xc0u || opcode == 0xc1u)
+                metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80186;
+            if (((modrm >> 3u) & 7u) == 6u)
+                metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80486SX;
+        }
+        else if ((opcode == 0xf6u || opcode == 0xf7u) &&
+                 ((modrm >> 3u) & 7u) == 1u)
+        {
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80486SX;
         }
         break;
     case CORE_MACHINE_CPU_INSTRUCTION_0F:
@@ -8989,13 +9017,26 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80286;
             metadata.valid = 1;
         }
-        else if ((opcode == 0x20u || opcode == 0x22u) &&
-                 ((modrm >> 3u) & 7u) == 4u)
+        else if (opcode >= 0x10u && opcode <= 0x13u)
         {
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80486SX;
             metadata.valid = LIB_TRUE;
         }
-        else if ((opcode >= 0x20u && opcode <= 0x24u) || opcode == 0x26u ||
+        else if (opcode == 0x20u || opcode == 0x22u)
+        {
+            const lib_u8 reg = (modrm >> 3u) & 7u;
+
+            metadata.minimum_cpu = reg == 4u ? CORE_MACHINE_CPU_PROFILE_80486SX :
+                CORE_MACHINE_CPU_PROFILE_80386;
+            metadata.valid = reg != 1u && reg <= 4u;
+        }
+        else if ((opcode == 0x21u || opcode == 0x23u) &&
+                 (((modrm >> 3u) & 7u) == 4u || ((modrm >> 3u) & 7u) == 5u))
+        {
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80486SX;
+            metadata.valid = LIB_TRUE;
+        }
+        else if (opcode == 0x21u || opcode == 0x23u || opcode == 0x24u || opcode == 0x26u ||
                  (opcode >= 0x80u && opcode <= 0x8fu) ||
                  (opcode >= 0x90u && opcode <= 0x9fu) ||
                  opcode == 0xa0u || opcode == 0xa1u || opcode == 0xa3u ||
@@ -10213,6 +10254,7 @@ static void PREFIX_CS(core_machine_cpu_execution_context *context)
 static void DAS(core_machine_cpu_execution_context *context)
 {
     lib_u8 oldAL = cpu_state.data.al;
+    const lib_bool oldCF = _GetEFLAGS_CF;
     CPU_TRACE_CALL_BEGIN("DAS");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
         _adv;
@@ -10227,12 +10269,13 @@ static void DAS(core_machine_cpu_execution_context *context)
     }
     else
         _ClrEFLAGS_AF;
-    if ((cpu_state.data.al > 0x9f) || _GetEFLAGS_CF)
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+        (oldAL > 0x99u || oldCF) : (cpu_state.data.al > 0x9f) || _GetEFLAGS_CF)
     {
         cpu_state.data.al -= 0x60;
         _SetEFLAGS_CF;
     }
-    else
+    else if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX)
         _ClrEFLAGS_CF;
     instruction_state.data.bit = 8;
     instruction_state.data.result = (lib_u32)cpu_state.data.al;
@@ -10401,8 +10444,13 @@ static void AAA(core_machine_cpu_execution_context *context)
     }
     if (((cpu_state.data.al & 0x0f) > 0x09) || _GetEFLAGS_AF)
     {
-        cpu_state.data.al += 0x06;
-        cpu_state.data.ah += 0x01;
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+            cpu_state.data.ax += 0x0106u;
+        else
+        {
+            cpu_state.data.al += 0x06;
+            cpu_state.data.ah += 0x01;
+        }
         _SetEFLAGS_AF;
         _SetEFLAGS_CF;
     }
@@ -10563,8 +10611,13 @@ static void AAS(core_machine_cpu_execution_context *context)
     }
     if (((cpu_state.data.al & 0x0f) > 0x09) || _GetEFLAGS_AF)
     {
-        cpu_state.data.al -= 0x06;
-        cpu_state.data.ah -= 0x01;
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+            cpu_state.data.ax -= 0x0106u;
+        else
+        {
+            cpu_state.data.al -= 0x06;
+            cpu_state.data.ah -= 0x01;
+        }
         _SetEFLAGS_AF;
         _SetEFLAGS_CF;
     }
@@ -14875,7 +14928,8 @@ static void INS_C0(core_machine_cpu_execution_context *context)
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
         CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
-        switch (instruction_state.data.cr)
+        switch (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+            instruction_state.data.cr == 6u ? 4u : instruction_state.data.cr)
         {
         case 0: /* ROL_RM8_I8 */
             CPU_TRACE_BLOCK_BEGIN("ROL_RM8_I8");
@@ -14944,7 +14998,8 @@ static void INS_C1(core_machine_cpu_execution_context *context)
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
         CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
-        switch (instruction_state.data.cr)
+        switch (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+            instruction_state.data.cr == 6u ? 4u : instruction_state.data.cr)
         {
         case 0: /* ROL_RM32_I8 */
             CPU_TRACE_BLOCK_BEGIN("ROL_RM32_I8");
@@ -15570,7 +15625,8 @@ static void INS_D0(core_machine_cpu_execution_context *context)
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
-    switch (instruction_state.data.cr)
+    switch (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+        instruction_state.data.cr == 6u ? 4u : instruction_state.data.cr)
     {
     case 0: /* ROL_RM8 */
         CPU_TRACE_BLOCK_BEGIN("ROL_RM8");
@@ -15628,7 +15684,8 @@ static void INS_D1(core_machine_cpu_execution_context *context)
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
-        switch (instruction_state.data.cr)
+        switch (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+            instruction_state.data.cr == 6u ? 4u : instruction_state.data.cr)
         {
         case 0: /* ROL_RM32 */
             CPU_TRACE_BLOCK_BEGIN("ROL_RM32");
@@ -15746,7 +15803,8 @@ static void INS_D2(core_machine_cpu_execution_context *context)
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
-    switch (instruction_state.data.cr)
+    switch (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+        instruction_state.data.cr == 6u ? 4u : instruction_state.data.cr)
     {
     case 0: /* ROL_RM8_CL */
         CPU_TRACE_BLOCK_BEGIN("ROL_RM8_CL");
@@ -15804,7 +15862,8 @@ static void INS_D3(core_machine_cpu_execution_context *context)
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
-        switch (instruction_state.data.cr)
+        switch (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+            instruction_state.data.cr == 6u ? 4u : instruction_state.data.cr)
         {
         case 0: /* ROL_RM32_CL */
             CPU_TRACE_BLOCK_BEGIN("ROL_RM32_CL");
@@ -15958,6 +16017,13 @@ static void AAD(core_machine_cpu_execution_context *context)
     instruction_state.data.result = X86_CPU_MASK_U8(cpu_state.data.al);
     CPU_TRACE_CHECK_RETURN(_kaf_set_flags(context, AAD_FLAG));
     instruction_state.data.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_CF);
+    CPU_TRACE_CALL_END;
+}
+static void SALC(core_machine_cpu_execution_context *context)
+{
+    CPU_TRACE_CALL_BEGIN("SALC");
+    _adv;
+    cpu_state.data.al = _GetEFLAGS_CF ? 0xffu : 0u;
     CPU_TRACE_CALL_END;
 }
 static void XLAT(core_machine_cpu_execution_context *context)
@@ -16499,6 +16565,14 @@ static void PREFIX_LOCK(core_machine_cpu_execution_context *context)
     }
     CPU_TRACE_CALL_END;
 }
+static void INT1(core_machine_cpu_execution_context *context)
+{
+    CPU_TRACE_CALL_BEGIN("INT1");
+    _adv;
+    /* Presence and DR6 cause are independent: INT1 adds no cause bits. */
+    context->debug_trap_pending = LIB_TRUE;
+    CPU_TRACE_CALL_END;
+}
 static void PREFIX_REPNZ(core_machine_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("PREFIX_REPNZ");
@@ -16576,7 +16650,8 @@ static void INS_F6(core_machine_cpu_execution_context *context)
         CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     else
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
-    switch (instruction_state.data.cr)
+    switch (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+        instruction_state.data.cr == 1u ? 0u : instruction_state.data.cr)
     {
     case 0: /* TEST_RM8_I8 */
         CPU_TRACE_BLOCK_BEGIN("TEST_RM8_I8");
@@ -16641,7 +16716,8 @@ static void INS_F7(core_machine_cpu_execution_context *context)
             CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         else
             CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
-        switch (instruction_state.data.cr)
+        switch (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+            instruction_state.data.cr == 1u ? 0u : instruction_state.data.cr)
         {
         case 0: /* TEST_RM32_I32 */
             CPU_TRACE_BLOCK_BEGIN("TEST_RM32_I32");
@@ -16906,19 +16982,10 @@ static void STD(core_machine_cpu_execution_context *context)
 static void INS_FE(core_machine_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INS_FE");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
-    {
-        _adv;
-    }
-    else
-    {
-        _adv;
-    }
+    _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     if (instruction_state.data.cr < 2u)
         CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
-    else
-        CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     switch (instruction_state.data.cr)
     {
     case 0: /* INC_RM8 */
@@ -17843,7 +17910,7 @@ static void INS_0F_00(core_machine_cpu_execution_context *context)
             {
                 CPU_TRACE_BLOCK_BEGIN("selector(valid)");
                 CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, X86_CPU_MASK_U16(instruction_state.data.crm), X86_CPU_REFERENCE_OF(descriptor)));
-                if (_IsDescSys(descriptor) || !_IsDescPresent(descriptor) ||
+                if (_IsDescSys(descriptor) ||
                     (!_IsDescCodeConform(descriptor) &&
                      (_GetCPL > _GetDesc_DPL(descriptor) ||
                       _GetSelector_RPL(X86_CPU_MASK_U16(instruction_state.data.crm)) > _GetDesc_DPL(descriptor))))
@@ -17877,7 +17944,7 @@ static void INS_0F_00(core_machine_cpu_execution_context *context)
             {
                 CPU_TRACE_BLOCK_BEGIN("selector(valid)");
                 CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, X86_CPU_MASK_U16(instruction_state.data.crm), X86_CPU_REFERENCE_OF(descriptor)));
-                if (_IsDescSys(descriptor) || !_IsDescPresent(descriptor) ||
+                if (_IsDescSys(descriptor) ||
                     (!_IsDescCodeConform(descriptor) &&
                      (_GetCPL > _GetDesc_DPL(descriptor) ||
                       _GetSelector_RPL(X86_CPU_MASK_U16(instruction_state.data.crm)) > _GetDesc_DPL(descriptor))))
@@ -18061,11 +18128,7 @@ static void LAR_R32_RM32(core_machine_cpu_execution_context *context)
         {
             CPU_TRACE_BLOCK_BEGIN("selector(valid)");
             CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, selector, X86_CPU_REFERENCE_OF(descriptor)));
-            if (!_IsDescPresent(descriptor))
-            {
-                _ClrEFLAGS_ZF;
-            }
-            else if (_IsDescUser(descriptor))
+            if (_IsDescUser(descriptor))
             {
                 if (_IsDescCodeConform(descriptor))
                     _SetEFLAGS_ZF;
@@ -18086,15 +18149,11 @@ static void LAR_R32_RM32(core_machine_cpu_execution_context *context)
                 case VCPU_DESC_SYS_TYPE_TSS_16_BUSY:
                 case VCPU_DESC_SYS_TYPE_CALLGATE_16:
                 case VCPU_DESC_SYS_TYPE_TASKGATE:
-                case VCPU_DESC_SYS_TYPE_TRAPGATE_16:
-                case VCPU_DESC_SYS_TYPE_INTGATE_16:
                     _SetEFLAGS_ZF;
                     break;
                 case VCPU_DESC_SYS_TYPE_TSS_32_AVL:
                 case VCPU_DESC_SYS_TYPE_TSS_32_BUSY:
                 case VCPU_DESC_SYS_TYPE_CALLGATE_32:
-                case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
-                case VCPU_DESC_SYS_TYPE_INTGATE_32:
                     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
                         _SetEFLAGS_ZF;
                     else
@@ -18163,11 +18222,7 @@ static void LSL_R32_RM32(core_machine_cpu_execution_context *context)
         {
             CPU_TRACE_BLOCK_BEGIN("selector(valid)");
             CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, selector, X86_CPU_REFERENCE_OF(descriptor)));
-            if (!_IsDescPresent(descriptor))
-            {
-                _ClrEFLAGS_ZF;
-            }
-            else if (_IsDescUser(descriptor))
+            if (_IsDescUser(descriptor))
             {
                 if (_IsDescCodeConform(descriptor))
                     _SetEFLAGS_ZF;
@@ -19111,6 +19166,7 @@ static lib_bool _smm_enter(core_machine_cpu_execution_context *context)
          context->shutdown_state != CPU_SHUTDOWN_SMM) ||
         context->reset_requested != CORE_MACHINE_CPU_RESET_NONE ||
         instruction_state.data.memory_lock_active) return LIB_FALSE;
+    context->repeat_compare_flags_valid = LIB_FALSE;
     _smm_build_image(context, image);
     /* No ExecInit/prefetch: SMI must work even when the next guest instruction
      * cannot be fetched. The existing finalizer owns any provider failure. */
@@ -19731,11 +19787,11 @@ static void _debug_complete_instruction(
     cause = context->interrupt_shadow == CPU_INTERRUPT_SHADOW_SEGMENT ?
         0u : _debug_match_data_breakpoint(context, &matched);
     if (cause != 0u) cpu_state.data.dr6 |= matched;
-    /* INT/INTO and task entry suppress the outgoing instruction's step trap;
+    /* Explicit interrupt and task entry suppress the outgoing step trap;
      * ordinary completion uses TF sampled before execution, including POPF. */
     if (context->debug_tf_before && !context->instruction_task_switched &&
         context->interrupt_shadow != CPU_INTERRUPT_SHADOW_SEGMENT &&
-        opcode != 0xccu && opcode != 0xcdu && !(opcode == 0xceu &&
+        opcode != 0xf1u && opcode != 0xccu && opcode != 0xcdu && !(opcode == 0xceu &&
             X86_CPU_BIT_IS_SET(instruction_state.data.oldcpu.data.eflags,
                 VCPU_EFLAGS_OF))) cause |= VCPU_DR6_BS;
     _debug_schedule_trap(context, cause);
@@ -19755,7 +19811,8 @@ static void _debug_deliver_trap(core_machine_cpu_execution_context *context)
     context->debug_trap_cause = 0u;
     trap_cpu = cpu_state;
     ExecInit(context);
-    _e_except_n(context, 0x01u, _GetOperandSize);
+    /* The completed instruction's size does not select an exception frame. */
+    _e_except_n(context, 0x01u, 2u);
     if (!instruction_state.data.except && context->diagnostic_provider !=
         LIB_NULL && context->diagnostic_provider->record_delivered_exception !=
         LIB_NULL) {
@@ -19824,9 +19881,18 @@ static void ExecFinal(core_machine_cpu_execution_context *context)
         cpu_state.data.cs = instruction_state.data.oldcpu.data.cs;
         cpu_state.data.eip = instruction_state.data.oldcpu.data.eip;
     }
-    if (!instruction_state.data.except) return;
+    if (!instruction_state.data.except) {
+        if (!instruction_state.data.flagInsLoop)
+            context->repeat_compare_flags_valid = LIB_FALSE;
+        return;
+    }
     fault_cpu = context->instruction_task_switched ?
         context->instruction_task_checkpoint : instruction_state.data.oldcpu;
+    if (context->repeat_compare_flags_valid &&
+        X86_CPU_BIT_IS_SET(instruction_state.data.except,
+            VCPUINS_EXCEPT_GP | VCPUINS_EXCEPT_SS | VCPUINS_EXCEPT_PF | VCPUINS_EXCEPT_AC))
+        fault_cpu.data.eflags = context->repeat_compare_flags;
+    context->repeat_compare_flags_valid = LIB_FALSE;
     active = instruction_state.data.except;
     code = instruction_state.data.excode;
     if (active == VCPUINS_EXCEPT_DB) fault_cpu.data.dr6 = cpu_state.data.dr6;
@@ -19944,6 +20010,16 @@ static void ExecIns(core_machine_cpu_execution_context *context)
         {
             UndefinedOpcode(context);
             break;
+        }
+        if (!_kdf_check_prefix(context, opcode)) {
+            const lib_bool comparing = context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+                instruction_state.data.prefix_rep != PREFIX_REP_NONE &&
+                ((opcode & 0xfeu) == 0xa6u || (opcode & 0xfeu) == 0xaeu);
+
+            if (comparing && !context->repeat_compare_flags_valid) {
+                context->repeat_compare_flags = instruction_state.data.oldcpu.data.eflags;
+                context->repeat_compare_flags_valid = LIB_TRUE;
+            } else if (!comparing) context->repeat_compare_flags_valid = LIB_FALSE;
         }
         CPU_TRACE_CHECK_BREAK(ExecCpuInstruction(instruction_state.connect.insTable[opcode]));
         CPU_TRACE_CALL_END;
@@ -20297,7 +20373,7 @@ void core_machine_cpu_execution_initialize(
     instruction_state.connect.insTable[0xd3] = (core_machine_cpu_instruction_handler)INS_D3;
     instruction_state.connect.insTable[0xd4] = (core_machine_cpu_instruction_handler)AAM;
     instruction_state.connect.insTable[0xd5] = (core_machine_cpu_instruction_handler)AAD;
-    instruction_state.connect.insTable[0xd6] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
+    instruction_state.connect.insTable[0xd6] = (core_machine_cpu_instruction_handler)SALC;
     instruction_state.connect.insTable[0xd7] = (core_machine_cpu_instruction_handler)XLAT;
     instruction_state.connect.insTable[0xd8] = (core_machine_cpu_instruction_handler)FPU_ESCAPE;
     instruction_state.connect.insTable[0xd9] = (core_machine_cpu_instruction_handler)FPU_ESCAPE;
@@ -20324,7 +20400,7 @@ void core_machine_cpu_execution_initialize(
     instruction_state.connect.insTable[0xee] = (core_machine_cpu_instruction_handler)OUT_DX_AL;
     instruction_state.connect.insTable[0xef] = (core_machine_cpu_instruction_handler)OUT_DX_EAX;
     instruction_state.connect.insTable[0xf0] = (core_machine_cpu_instruction_handler)PREFIX_LOCK;
-    instruction_state.connect.insTable[0xf1] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
+    instruction_state.connect.insTable[0xf1] = (core_machine_cpu_instruction_handler)INT1;
     instruction_state.connect.insTable[0xf2] = (core_machine_cpu_instruction_handler)PREFIX_REPNZ;
     instruction_state.connect.insTable[0xf3] = (core_machine_cpu_instruction_handler)PREFIX_REPZ;
     instruction_state.connect.insTable[0xf4] = (core_machine_cpu_instruction_handler)HLT;
@@ -20355,10 +20431,10 @@ void core_machine_cpu_execution_initialize(
     instruction_state.connect.insTable_0f[0x0d] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0x0e] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0x0f] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0x10] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0x11] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0x12] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0x13] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
+    instruction_state.connect.insTable_0f[0x10] = (core_machine_cpu_instruction_handler)MOV_RM8_R8;
+    instruction_state.connect.insTable_0f[0x11] = (core_machine_cpu_instruction_handler)MOV_RM32_R32;
+    instruction_state.connect.insTable_0f[0x12] = (core_machine_cpu_instruction_handler)MOV_R8_RM8;
+    instruction_state.connect.insTable_0f[0x13] = (core_machine_cpu_instruction_handler)MOV_R32_RM32;
     instruction_state.connect.insTable_0f[0x14] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0x15] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0x16] = (core_machine_cpu_instruction_handler)UndefinedOpcode;

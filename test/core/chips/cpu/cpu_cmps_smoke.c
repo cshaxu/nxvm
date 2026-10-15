@@ -77,13 +77,14 @@ static lib_i32 cmps_single(core_machine_cpu_profile profile,
     return cmps_memory_same(&state, source, destination, &left, &right, width);
 }
 
-static lib_i32 cmps_flag_case(lib_u8 left, lib_u8 right, lib_u32 flags)
+static lib_i32 cmps_flag_case(core_machine_cpu_profile profile,
+    lib_u8 left, lib_u8 right, lib_u32 flags)
 {
     const lib_u8 code = 0xa6u;
     cpu_instruction_fixture state;
     t_cpu before, after;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     cmps_seed(&state);
     state.memory[0x20010u] = left;
     state.memory[0x30020u] = right;
@@ -100,14 +101,14 @@ static lib_i32 cmps_flag_case(lib_u8 left, lib_u8 right, lib_u32 flags)
             &left, &right, 1u);
 }
 
-static lib_i32 cmps_override(const lib_u8 *code, lib_u8 bytes,
-    lib_u32 source)
+static lib_i32 cmps_override(core_machine_cpu_profile profile,
+    const lib_u8 *code, lib_u8 bytes, lib_u32 source)
 {
     cpu_instruction_fixture state;
     t_cpu before, after;
     const lib_u8 left = 0x10u, right = 1u;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     cmps_seed(&state);
     state.memory[source] = left;
     state.memory[0x30020u] = right;
@@ -162,8 +163,9 @@ static lib_i32 cmps_rep(core_machine_cpu_profile profile,
     return 1;
 }
 
-static lib_i32 cmps_rep_attributes(const lib_u8 *code, lib_u8 bytes,
-    lib_u8 width, lib_bool address32, lib_bool decrement)
+static lib_i32 cmps_rep_attributes(core_machine_cpu_profile profile,
+    const lib_u8 *code, lib_u8 bytes, lib_u8 width,
+    lib_bool address32, lib_bool decrement)
 {
     cpu_instruction_fixture state;
     t_cpu before, after;
@@ -176,7 +178,7 @@ static lib_i32 cmps_rep_attributes(const lib_u8 *code, lib_u8 bytes,
     lib_u32 expected_source, expected_dest;
     lib_u8 item;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     cmps_seed(&state);
     if (decrement) {
         source_index += width * 2u;
@@ -254,22 +256,26 @@ static lib_i32 cmps_test_rejections(void)
         {0xf0u,0xf3u,0x66u,0x67u,0xa7u}
     };
     static const lib_u8 lock_bytes[] = {2u, 2u, 3u, 3u, 3u, 3u, 4u, 5u};
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile, form;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]); ++profile)
         for (form = 0u; form != sizeof(attr_bytes); ++form)
             if (!cmps_expect_ud(legacy[profile], attr[form],
                 attr_bytes[form])) return 0;
-    for (form = 0u; form != sizeof(lock_bytes); ++form)
-        if (!cmps_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
-            locks[form], lock_bytes[form])) return 0;
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile)
+        for (form = 0u; form != sizeof(lock_bytes); ++form)
+            if (!cmps_expect_ud(modern[profile],
+                locks[form], lock_bytes[form])) return 0;
     return 1;
 }
 
-static void cmps_prepare_protected(cpu_instruction_fixture *state,
-    lib_bool source_fault, lib_u32 limit)
+static void cmps_prepare_protected(core_machine_cpu_profile profile,
+    cpu_instruction_fixture *state, lib_bool source_fault, lib_u32 limit)
 {
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     cmps_seed(state);
     state->cpu.data.cr0 |= VCPU_CR0_PE;
     state->cpu.data.cs.flagValid = LIB_TRUE;
@@ -299,8 +305,8 @@ static void cmps_prepare_protected(cpu_instruction_fixture *state,
     state->cpu.data.ss.seg.data.writable = LIB_TRUE;
 }
 
-static lib_i32 cmps_protected_case(lib_bool source_fault,
-    lib_bool repeated)
+static lib_i32 cmps_protected_case(core_machine_cpu_profile profile,
+    lib_bool source_fault, lib_bool repeated)
 {
     static const lib_u8 single[] = {0xa6u};
     static const lib_u8 rep[] = {0xf3u, 0xa6u};
@@ -311,7 +317,7 @@ static lib_i32 cmps_protected_case(lib_bool source_fault,
     const lib_u8 left[] = {0x10u, 1u};
     const lib_u8 right[] = {0x10u, 1u};
 
-    cmps_prepare_protected(&state, source_fault, repeated ? 0x10u : 0x0fu);
+    cmps_prepare_protected(profile, &state, source_fault, repeated ? 0x10u : 0x0fu);
     state.cpu.data.esi = repeated || source_fault ? 0x10u : 0u;
     state.cpu.data.edi = repeated || !source_fault ? 0x10u : 0u;
     if (repeated) state.cpu.data.ecx = 0x11220003u;
@@ -329,7 +335,7 @@ static lib_i32 cmps_protected_case(lib_bool source_fault,
         after.data.ecx == (repeated ? 0x11220002u : before.data.ecx) &&
         after.data.esi == (repeated ? 0x11u : before.data.esi) &&
         after.data.edi == (repeated ? 0x11u : before.data.edi) &&
-        after.data.eflags == (repeated ? VCPU_EFLAGS_IF | VCPU_EFLAGS_PF |
+        after.data.eflags == (repeated && profile != CORE_MACHINE_CPU_PROFILE_80486SX ? VCPU_EFLAGS_IF | VCPU_EFLAGS_PF |
             VCPU_EFLAGS_ZF : before.data.eflags) &&
         lib_memory_compare(&before.data.ds, &after.data.ds,
             sizeof(before.data.ds)) == 0 &&
@@ -343,7 +349,8 @@ lib_i32 main(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 a6 = 0xa6u, a7 = 0xa7u;
     static const lib_u8 dword[] = {0x66u, 0xa7u};
@@ -358,6 +365,9 @@ lib_i32 main(void)
     static const lib_u8 operand32[] = {0xf3u, 0x66u, 0xa7u};
     static const lib_u8 address32[] = {0xf3u, 0x67u, 0xa6u};
     static const lib_u8 combined[] = {0xf3u, 0x66u, 0x67u, 0xa7u};
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
@@ -380,35 +390,47 @@ lib_i32 main(void)
             lib_c_printf("CMPS stage=profile %u\n", profile);
             return 1;
         }
-    if (!cmps_single(CORE_MACHINE_CPU_PROFILE_80386, dword, 2u, 4u,
-            LIB_FALSE, LIB_FALSE, 0x20010u, 0x30020u) ||
-        !cmps_single(CORE_MACHINE_CPU_PROFILE_80386, address, 2u, 1u,
-            LIB_TRUE, LIB_FALSE, 0x21010u, 0x31020u) ||
-        !cmps_single(CORE_MACHINE_CPU_PROFILE_80386, both, 3u, 4u,
-            LIB_TRUE, LIB_FALSE, 0x21010u, 0x31020u) ||
-        !cmps_single(CORE_MACHINE_CPU_PROFILE_80386, &a7, 1u, 2u,
-            LIB_FALSE, LIB_TRUE, 0x20010u, 0x30020u) ||
-        !cmps_override(cs, 2u, 0x10u) ||
-        !cmps_override(fs, 2u, 0x40010u) ||
-        !cmps_rep_attributes(operand32, 3u, 4u, LIB_FALSE, LIB_FALSE) ||
-        !cmps_rep_attributes(address32, 3u, 1u, LIB_TRUE, LIB_FALSE) ||
-        !cmps_rep_attributes(combined, 4u, 4u, LIB_TRUE, LIB_FALSE) ||
-        !cmps_rep_attributes(repe, 2u, 1u, LIB_FALSE, LIB_TRUE)) {
-        lib_c_printf("CMPS stage=attributes\n");
+    if (!cmps_test_rejections()) {
+        lib_c_printf("CMPS stage=rejections\n");
         return 1;
     }
-    if (!cmps_flag_case(0x10u, 0x01u, VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) ||
-        !cmps_flag_case(0x10u, 0x10u, VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF) ||
-        !cmps_flag_case(0x00u, 0x01u, VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
-            VCPU_EFLAGS_AF | VCPU_EFLAGS_SF) ||
-        !cmps_flag_case(0x80u, 0x01u, VCPU_EFLAGS_AF | VCPU_EFLAGS_OF) ||
-        !cmps_test_rejections() ||
-        !cmps_protected_case(LIB_TRUE, LIB_FALSE) ||
-        !cmps_protected_case(LIB_FALSE, LIB_FALSE) ||
-        !cmps_protected_case(LIB_TRUE, LIB_TRUE) ||
-        !cmps_protected_case(LIB_FALSE, LIB_TRUE)) {
-        lib_c_printf("CMPS stage=flags/rejections/protected\n");
-        return 1;
+    for (profile = 0u; profile != sizeof(modern) / sizeof(modern[0]); ++profile) {
+        if (!cmps_single(modern[profile], dword, 2u, 4u,
+                LIB_FALSE, LIB_FALSE, 0x20010u, 0x30020u) ||
+            !cmps_single(modern[profile], address, 2u, 1u,
+                LIB_TRUE, LIB_FALSE, 0x21010u, 0x31020u) ||
+            !cmps_single(modern[profile], both, 3u, 4u,
+                LIB_TRUE, LIB_FALSE, 0x21010u, 0x31020u) ||
+            !cmps_single(modern[profile], &a7, 1u, 2u,
+                LIB_FALSE, LIB_TRUE, 0x20010u, 0x30020u) ||
+            !cmps_override(modern[profile], cs, 2u, 0x10u) ||
+            !cmps_override(modern[profile], fs, 2u, 0x40010u) ||
+            !cmps_rep_attributes(modern[profile], operand32, 3u, 4u,
+                LIB_FALSE, LIB_FALSE) ||
+            !cmps_rep_attributes(modern[profile], address32, 3u, 1u,
+                LIB_TRUE, LIB_FALSE) ||
+            !cmps_rep_attributes(modern[profile], combined, 4u, 4u,
+                LIB_TRUE, LIB_FALSE) ||
+            !cmps_rep_attributes(modern[profile], repe, 2u, 1u,
+                LIB_FALSE, LIB_TRUE)) {
+            lib_c_printf("CMPS stage=attributes\n");
+            return 1;
+        }
+        if (!cmps_flag_case(modern[profile], 0x10u, 0x01u,
+                VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) ||
+            !cmps_flag_case(modern[profile], 0x10u, 0x10u,
+                VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF) ||
+            !cmps_flag_case(modern[profile], 0x00u, 0x01u,
+                VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF | VCPU_EFLAGS_SF) ||
+            !cmps_flag_case(modern[profile], 0x80u, 0x01u,
+                VCPU_EFLAGS_AF | VCPU_EFLAGS_OF) ||
+            !cmps_protected_case(modern[profile], LIB_TRUE, LIB_FALSE) ||
+            !cmps_protected_case(modern[profile], LIB_FALSE, LIB_FALSE) ||
+            !cmps_protected_case(modern[profile], LIB_TRUE, LIB_TRUE) ||
+            !cmps_protected_case(modern[profile], LIB_FALSE, LIB_TRUE)) {
+            lib_c_printf("CMPS stage=flags/rejections/protected\n");
+            return 1;
+        }
     }
     lib_c_printf("CMPS:OK\n");
     lib_c_printf("CMPS-PROFILES:OK\n");

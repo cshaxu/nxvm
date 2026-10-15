@@ -658,6 +658,49 @@ static lib_bool smm_rsm_form_failures(smm_fixture *fixture)
         !lib_memory_compare(&before, &fixture->instruction.cpu, sizeof(before)) && !fixture->bad_order;
 }
 
+static lib_bool smm_loadall_rejection(smm_fixture *fixture)
+{
+    static const lib_u8 opcodes[] = {0x05u, 0x07u};
+    const lib_u8 vector[] = {0x20u, 0x80u, 0u, 0x30u};
+
+    for (lib_size opcode = 0u; opcode < sizeof(opcodes); ++opcode)
+    for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes)
+    for (lib_u8 locked = 0u; locked < 2u; ++locked) {
+        core_machine_cpu_execution_context *context = &fixture->instruction.execution;
+        lib_u8 code[5], bytes = 0u;
+        lib_u16 frame[3];
+
+        smm_prepare(fixture);
+        fixture->instruction.cpu.data.esp = 0x8000u;
+        fixture->instruction.cpu.data.edi = 0x1000u;
+        lib_memory_copy(fixture->instruction.memory + 0x18u, vector, sizeof(vector));
+        if (locked) code[bytes++] = 0xf0u;
+        if (prefixes & 1u) code[bytes++] = 0x66u;
+        if (prefixes & 2u) code[bytes++] = 0x67u;
+        code[bytes++] = 0x0fu;
+        code[bytes++] = opcodes[opcode];
+        lib_memory_copy(fixture->instruction.memory + 0x38000u, code, bytes);
+        if (!smm_enter(fixture)) return LIB_FALSE;
+        core_machine_cpu_execution_refresh(context);
+        if (!context->smm_active || !fixture->active || fixture->releases ||
+            fixture->reads || fixture->instruction.fault.valid ||
+            !fixture->instruction.delivered_exception.valid ||
+            fixture->instruction.delivered_exception.exception_mask != VCPUINS_EXCEPT_UD ||
+            fixture->instruction.delivered_exception.exception_code != 0u ||
+            fixture->instruction.delivered_exception.point.cs != 0x3000u ||
+            fixture->instruction.delivered_exception.point.eip != 0x8000u ||
+            fixture->instruction.cpu.data.eip != 0x8020u ||
+            fixture->instruction.cpu.data.esp != 0x7ffau ||
+            fixture->instruction.cpu.data.edi != 0x1000u || fixture->bad_order)
+            return LIB_FALSE;
+        lib_memory_copy(frame, fixture->instruction.memory + 0x7ffau, sizeof(frame));
+        if (frame[0] != 0x8000u || frame[1] != 0x3000u) return LIB_FALSE;
+        core_machine_cpu_execution_finalize(context);
+        if (fixture->active || fixture->releases != 1u) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 static lib_bool smm_entry_priority(smm_fixture *fixture)
 {
     for (lib_u8 kind = 0u; kind < 3u; ++kind) {
@@ -1111,6 +1154,45 @@ static lib_bool smm_suspend_image(smm_fixture *fixture)
         fixture->assertions == 2u && fixture->releases == 2u && !fixture->bad_order;
 }
 
+static lib_bool smm_compare_checkpoint(smm_fixture *fixture)
+{
+    for (lib_u8 scenario = 0u; scenario < 4u; ++scenario) {
+        const lib_bool repne = (scenario & 1u) != 0u;
+        const lib_u8 code[] = {repne ? 0xf2u : 0xf3u,
+            (scenario & 2u) != 0u ? 0xaeu : 0xa6u};
+        core_machine_cpu_execution_context *context = &fixture->instruction.execution;
+        t_cpu *cpu = &fixture->instruction.cpu;
+        lib_u32 last_flags;
+
+        smm_prepare(fixture);
+        cpu->data.eax = 0x10u;
+        cpu->data.esi = 0x500u;
+        cpu->data.edi = 0x600u;
+        cpu->data.ecx = 3u;
+        cpu->data.eflags = 2u | VCPU_EFLAGS_CF | VCPU_EFLAGS_AF | VCPU_EFLAGS_OF;
+        lib_memory_set(fixture->instruction.memory + 0x500u, 0x10u, 3u);
+        lib_memory_set(fixture->instruction.memory + 0x600u, repne ? 0x0fu : 0x10u, 3u);
+        lib_memory_copy(fixture->instruction.memory, code, sizeof(code));
+        core_machine_cpu_execution_refresh(context);
+        last_flags = cpu->data.eflags;
+        if (!context->repeat_compare_flags_valid || cpu->data.ecx != 2u ||
+            cpu->data.eip != 0u || fixture->instruction.fault.valid) return LIB_FALSE;
+        if (!smm_enter(fixture) || context->repeat_compare_flags_valid ||
+            smm_image_get(fixture, 0x7ff4u) != last_flags) return LIB_FALSE;
+        core_machine_cpu_execution_refresh(context);
+        if (context->smm_active || context->repeat_compare_flags_valid ||
+            cpu->data.eip != 0u || cpu->data.ecx != 2u || cpu->data.eflags != last_flags)
+            return LIB_FALSE;
+        core_machine_cpu_execution_refresh(context);
+        if (cpu->data.ecx != 1u || !context->repeat_compare_flags_valid ||
+            context->repeat_compare_flags != last_flags) return LIB_FALSE;
+        core_machine_cpu_execution_refresh(context);
+        if (cpu->data.ecx != 0u || cpu->data.eip != sizeof(code) ||
+            context->repeat_compare_flags_valid || fixture->instruction.fault.valid) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
     smm_fixture *fixture = lib_allocate_zero(1u, sizeof(*fixture));
@@ -1122,13 +1204,14 @@ lib_i32 main(void)
         {"relocation-pending",smm_relocation_and_pending}, {"failures",smm_failures},
         {"halt-restart",smm_halt_restart}, {"io-restart",smm_io_restart},
         {"invalid-state",smm_invalid_state}, {"preview-admission",smm_preview_and_admission},
+        {"loadall-rejection",smm_loadall_rejection},
         {"rsm-form-failures",smm_rsm_form_failures},
         {"entry-priority",smm_entry_priority}, {"nmi-cache",smm_nmi_and_cache},
         {"handler-intr",smm_handler_intr}, {"handler-debug",smm_handler_debug},
         {"lock-boundary",smm_lock_boundary}, {"suspend-image",smm_suspend_image},
         {"power-wait",smm_power_wait}, {"power-wake",smm_power_wake},
         {"power-cancel",smm_power_cancel}, {"flush-priority",smm_flush_and_priority},
-        {"power-rep",smm_power_rep}
+        {"power-rep",smm_power_rep}, {"compare-checkpoint",smm_compare_checkpoint}
     };
     lib_bool passed = LIB_TRUE;
 

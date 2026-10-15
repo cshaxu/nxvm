@@ -4,7 +4,6 @@
 
 #define LAHF_SAHF_MASK (VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF | \
     VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF)
-#define LAHF_SAHF_IGNORED_AH_BITS 0x2au
 
 static void lahf_sahf_seed(cpu_instruction_fixture *state)
 {
@@ -45,21 +44,21 @@ static lib_i32 lahf_sahf_test_default(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 lahf = 0x9fu;
     static const lib_u8 sahf = 0x9eu;
-    static const lib_u32 transfer_values[] = {0u, LAHF_SAHF_MASK};
 
     for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
-        for (lib_size transfer = 0u; transfer != sizeof(transfer_values) /
-            sizeof(transfer_values[0]); ++transfer) {
+        for (lib_u32 image = 0u; image < 256u; ++image) {
             cpu_instruction_fixture state;
             t_cpu before;
             t_cpu after = {0};
+            const lib_u32 transfer = image & LAHF_SAHF_MASK;
             lib_u32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_DF |
-                VCPU_EFLAGS_OF | transfer_values[transfer];
+                VCPU_EFLAGS_OF | transfer;
 
             cpu_instruction_prepare(&state, profiles[profile]);
             lahf_sahf_seed(&state);
@@ -69,21 +68,19 @@ static lib_i32 lahf_sahf_test_default(void)
                 after.data.eip != 1u ||
                 !lahf_sahf_nonparticipants_same(&before, &after) ||
                 after.data.eax != ((before.data.eax & 0xffff00ffu) |
-                    ((transfer_values[transfer] | 0x02u) << 8u)) ||
+                    ((transfer | 0x02u) << 8u)) ||
                 after.data.eflags != flags) return 0;
 
             cpu_instruction_prepare(&state, profiles[profile]);
             lahf_sahf_seed(&state);
-            state.cpu.data.eax = 0xaabb00ddU |
-                ((transfer_values[transfer] |
-                    LAHF_SAHF_IGNORED_AH_BITS) << 8u);
+            state.cpu.data.eax = 0xaabb00ddU | (image << 8u);
             before = state.cpu;
             if (!lahf_sahf_run(&state, &sahf, sizeof(sahf), &after) ||
                 after.data.eip != 1u ||
                 !lahf_sahf_nonparticipants_same(&before, &after) ||
                 after.data.eax != before.data.eax ||
                 (after.data.eflags & LAHF_SAHF_MASK) !=
-                    transfer_values[transfer] ||
+                    transfer ||
                 (after.data.eflags & ~LAHF_SAHF_MASK) !=
                     (before.data.eflags & ~LAHF_SAHF_MASK)) return 0;
         }
@@ -113,22 +110,28 @@ static lib_i32 lahf_sahf_test_attributes(void)
     };
     static const lib_u8 lock_lahf[] = {0xf0u,0x9fu};
     static const lib_u8 lock_sahf[] = {0xf0u,0x9eu};
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
 
-    for (lib_size profile = 0u; profile < sizeof(legacy) / sizeof(legacy[0]);
-        ++profile) {
+    for (lib_size index = 0u; index < sizeof(legacy) / sizeof(legacy[0]);
+        ++index) {
         for (lib_size form = 0u; form < sizeof(codes) / sizeof(codes[0]);
             ++form) {
-            if (!lahf_sahf_expect_ud(legacy[profile], codes[form],
+            if (!lahf_sahf_expect_ud(legacy[index], codes[form],
                 form == 2u || form == 5u ? 3u : 2u)) return 0;
         }
     }
-    return lahf_sahf_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock_lahf,
-        sizeof(lock_lahf)) &&
-        lahf_sahf_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock_sahf,
-            sizeof(lock_sahf));
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
+        ++index) {
+        if (!lahf_sahf_expect_ud(profiles[index], lock_lahf, sizeof(lock_lahf)) ||
+            !lahf_sahf_expect_ud(profiles[index], lock_sahf, sizeof(lock_sahf)))
+            return 0;
+    }
+    return 1;
 }
 
-static lib_i32 lahf_sahf_test_386_attributes(void)
+static lib_i32 lahf_sahf_test_386_attributes(core_machine_cpu_profile profile)
 {
     static const lib_u8 codes[][3] = {
         {0x66u,0x9fu,0u}, {0x67u,0x9fu,0u}, {0x66u,0x67u,0x9fu},
@@ -142,7 +145,7 @@ static lib_i32 lahf_sahf_test_386_attributes(void)
         t_cpu after = {0};
         lib_u8 bytes = form == 2u || form == 5u ? 3u : 2u;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         lahf_sahf_seed(&state);
         if (form < 3u) state.cpu.data.eflags |= LAHF_SAHF_MASK;
         else state.cpu.data.eax = 0xaabb00ddU;
@@ -161,7 +164,7 @@ static lib_i32 lahf_sahf_test_386_attributes(void)
     return 1;
 }
 
-static lib_i32 lahf_sahf_test_vm86(void)
+static lib_i32 lahf_sahf_test_vm86(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = {0x9fu,0x9eu};
     const lib_u32 flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_IF |
@@ -173,7 +176,7 @@ static lib_i32 lahf_sahf_test_vm86(void)
         t_cpu before;
         t_cpu after = {0};
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         lahf_sahf_seed(&state);
         state.cpu.data.cr0 |= VCPU_CR0_PE;
         state.cpu.data.eflags = flags;
@@ -196,12 +199,12 @@ static lib_i32 lahf_sahf_test_vm86(void)
     return 1;
 }
 
-static lib_i32 lahf_sahf_test_386_checksum_sequence(void)
+static lib_i32 lahf_sahf_test_386_checksum_sequence(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x9eu,0x66u,0xd1u,0xd3u,0x9fu};
     cpu_instruction_fixture state;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     lahf_sahf_seed(&state);
     state.cpu.data.eax = 0x00000300u;
     state.cpu.data.ebx = 0x80000000u;
@@ -220,11 +223,18 @@ static lib_i32 lahf_sahf_test_386_checksum_sequence(void)
 
 int main(void)
 {
-    if (!lahf_sahf_test_default() ||
-        !lahf_sahf_test_attributes() ||
-        !lahf_sahf_test_386_attributes() ||
-        !lahf_sahf_test_vm86() ||
-        !lahf_sahf_test_386_checksum_sequence()) {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+    lib_bool passed = lahf_sahf_test_default() && lahf_sahf_test_attributes();
+
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
+        ++index) {
+        passed &= lahf_sahf_test_386_attributes(profiles[index]) &&
+            lahf_sahf_test_vm86(profiles[index]) &&
+            lahf_sahf_test_386_checksum_sequence(profiles[index]);
+    }
+    if (!passed) {
         lib_c_fprintf(lib_c_stderr, "%s", "CPU-LAHF-SAHF:FAIL\n");
         return 1;
     }

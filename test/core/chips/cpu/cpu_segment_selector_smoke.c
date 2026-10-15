@@ -215,7 +215,7 @@ static lib_i32 segment_boot_protected_286(segment_cpu *state)
         state->chip.cpu.data.flagHalt;
 }
 
-static lib_i32 segment_test_real_load_forms(void)
+static lib_i32 segment_test_real_load_forms(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 mov_code[] = {
         0xb8u,0x34u,0x12u,0x8eu,0xe0u,0x8cu,0xe0u,0xf4u
@@ -234,21 +234,21 @@ static lib_i32 segment_test_real_load_forms(void)
     static const lib_u8 pop_value[] = { 0x56u,0x34u,0xefu,0xbeu };
     segment_cpu state;
     t_cpu cpu;
-    lib_i32 failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !segment_prepare(&state, cpu_profile);
 
     if (!failed) {
         failed |= !segment_run_halt(&state, mov_code, sizeof(mov_code), 0u,
             &cpu) || cpu.data.fs.selector != 0x1234u ||
             cpu.data.fs.base != 0x12340u || (cpu.data.eax & 0xffffu) != 0x1234u;
     }
-    if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    if (!failed) failed = !segment_prepare(&state, cpu_profile);
     if (!failed) {
         failed |= !segment_write(&state, 0x0400u, pointer16, sizeof(pointer16)) ||
             !segment_run_halt(&state, les_code, sizeof(les_code), 0u, &cpu) ||
             cpu.data.es.selector != 0x3456u || cpu.data.es.base != 0x34560u ||
             (cpu.data.ebx & 0xffffu) != 0x5678u;
     }
-    if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    if (!failed) failed = !segment_prepare(&state, cpu_profile);
     if (!failed) {
         failed |= !segment_write(&state, 0x0400u, pointer32_bytes,
             sizeof(pointer32_bytes)) ||
@@ -256,7 +256,7 @@ static lib_i32 segment_test_real_load_forms(void)
             cpu.data.fs.selector != 0x3456u || cpu.data.fs.base != 0x34560u ||
             cpu.data.ebx != 0x12345678u;
     }
-    if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    if (!failed) failed = !segment_prepare(&state, cpu_profile);
     if (!failed) {
         state.chip.cpu.data.esp = 0x0100u;
         failed |= !segment_write(&state, 0x0100u, pop_value, sizeof(pop_value)) ||
@@ -515,7 +515,8 @@ typedef struct segment_lxs_form {
     lib_u8 target;
 } segment_lxs_form;
 
-static lib_i32 segment_test_lxs_success(const segment_lxs_form *form,
+static lib_i32 segment_test_lxs_success(core_machine_cpu_profile cpu_profile,
+    const segment_lxs_form *form,
     lib_i32 protected_mode, lib_i32 pointer32)
 {
     static const lib_u8 pointer16[] = { 0x78u,0x56u,0x10u,0x00u };
@@ -532,7 +533,7 @@ static lib_i32 segment_test_lxs_success(const segment_lxs_form *form,
     segment_cpu state;
     t_cpu cpu;
     const t_cpu_data_sreg *sreg;
-    lib_i32 failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !segment_prepare(&state, cpu_profile);
 
     if (!failed && protected_mode) failed = !segment_boot_protected(&state);
     if (!failed) {
@@ -558,7 +559,7 @@ static lib_i32 segment_test_lxs_success(const segment_lxs_form *form,
     return failed;
 }
 
-static lib_i32 segment_test_lxs_memory_only(void)
+static lib_i32 segment_test_lxs_memory_only(core_machine_cpu_profile cpu_profile)
 {
     static const segment_lxs_form forms[] = {
         { 0xc4u,0u,1u,0u }, { 0xc5u,0u,1u,1u },
@@ -573,7 +574,7 @@ static lib_i32 segment_test_lxs_memory_only(void)
     for (protected_mode = 0; protected_mode <= 1; ++protected_mode) {
         for (pointer32 = 0; pointer32 <= 1; ++pointer32) {
             for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index)
-                failed |= segment_test_lxs_success(&forms[index], protected_mode,
+                failed |= segment_test_lxs_success(cpu_profile, &forms[index], protected_mode,
                     pointer32);
         }
     }
@@ -586,7 +587,7 @@ static lib_i32 segment_test_lxs_memory_only(void)
             t_cpu after;
             lib_i32 case_failed;
 
-            if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 1;
+            if (!segment_prepare(&state, cpu_profile)) return 1;
             if (protected_mode && !segment_boot_protected(&state)) {
                 return 1;
             }
@@ -603,7 +604,7 @@ static lib_i32 segment_test_lxs_memory_only(void)
     return failed;
 }
 
-static lib_i32 segment_test_lxs_fault_atomicity(void)
+static lib_i32 segment_test_lxs_fault_atomicity(core_machine_cpu_profile cpu_profile)
 {
     static const segment_lxs_form forms[] = {
         { 0xc4u,0u,1u,0u }, { 0xc5u,0u,1u,1u },
@@ -624,7 +625,7 @@ static lib_i32 segment_test_lxs_fault_atomicity(void)
         lib_u32 exception = forms[index].target == 2u ? VCPUINS_EXCEPT_SS :
             VCPUINS_EXCEPT_NP;
 
-        if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
+        if (!segment_prepare(&state, cpu_profile) ||
             !segment_boot_protected(&state)) return 1;
         code[code_size++] = forms[index].first;
         if (forms[index].bytes == 2u) code[code_size++] = forms[index].second;
@@ -663,7 +664,7 @@ typedef struct segment_sreg_form {
     lib_u8 pop_bytes;
 } segment_sreg_form;
 
-static lib_i32 segment_test_real_sreg_loads(void)
+static lib_i32 segment_test_real_sreg_loads(core_machine_cpu_profile cpu_profile)
 {
     static const segment_sreg_form forms[] = {
         { 0u,0xc0u,0x07u,0u,1u }, { 2u,0xd0u,0x17u,0u,1u },
@@ -682,7 +683,7 @@ static lib_i32 segment_test_real_sreg_loads(void)
         t_cpu cpu;
         const t_cpu_data_sreg *sreg;
 
-        if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 1;
+        if (!segment_prepare(&state, cpu_profile)) return 1;
         failed |= !segment_run_halt(&state, code, sizeof(code), 0u, &cpu);
         sreg = segment_sreg(&cpu, forms[index].target);
         failed |= sreg == LIB_NULL || sreg->selector != 0x1234u ||
@@ -696,7 +697,7 @@ static lib_i32 segment_test_real_sreg_loads(void)
             t_cpu cpu;
             const t_cpu_data_sreg *sreg;
 
-            if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 1;
+            if (!segment_prepare(&state, cpu_profile)) return 1;
             state.chip.cpu.data.esp = 0x0100u;
             if (width32) code[code_size++] = 0x66u;
             code[code_size++] = forms[index].pop_first;
@@ -716,7 +717,7 @@ static lib_i32 segment_test_real_sreg_loads(void)
     return failed;
 }
 
-static lib_i32 segment_test_protected_sreg_success(void)
+static lib_i32 segment_test_protected_sreg_success(core_machine_cpu_profile cpu_profile)
 {
     static const segment_sreg_form forms[] = {
         { 0u,0xc0u,0x07u,0u,1u }, { 2u,0xd0u,0x17u,0u,1u },
@@ -735,7 +736,7 @@ static lib_i32 segment_test_protected_sreg_success(void)
         t_cpu cpu;
         const t_cpu_data_sreg *sreg;
 
-        if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
+        if (!segment_prepare(&state, cpu_profile) ||
             !segment_boot_protected(&state)) return 1;
         failed |= !segment_run_halt(&state, code, sizeof(code), SEG_CODE_ADDRESS,
             &cpu);
@@ -751,7 +752,7 @@ static lib_i32 segment_test_protected_sreg_success(void)
             t_cpu cpu;
             const t_cpu_data_sreg *sreg;
 
-            if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
+            if (!segment_prepare(&state, cpu_profile) ||
                 !segment_boot_protected(&state)) return 1;
             state.chip.cpu.data.esp = 0x8000u;
             if (!width32) code[code_size++] = 0x66u;
@@ -782,7 +783,7 @@ typedef struct segment_sreg_failure {
     lib_u8 access_value;
 } segment_sreg_failure;
 
-static lib_i32 segment_test_protected_sreg_failures(void)
+static lib_i32 segment_test_protected_sreg_failures(core_machine_cpu_profile cpu_profile)
 {
     static const segment_sreg_failure failures[] = {
         { 1u,0xd8u,0x0018u,VCPUINS_EXCEPT_NP,SEG_GDT_ADDRESS + 29u,0x12u },
@@ -808,7 +809,7 @@ static lib_i32 segment_test_protected_sreg_failures(void)
 
         code[1u] = (lib_u8)failures[index].selector;
         code[2u] = (lib_u8)(failures[index].selector >> 8u);
-        if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
+        if (!segment_prepare(&state, cpu_profile) ||
             !segment_boot_protected(&state)) return 1;
         before = state.chip.cpu;
         case_failed = !segment_run_exception(&state, code, sizeof(code),
@@ -840,7 +841,7 @@ static lib_i32 segment_test_protected_sreg_failures(void)
         lib_u8 access = 0u;
         lib_i32 case_failed;
 
-        if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
+        if (!segment_prepare(&state, cpu_profile) ||
             !segment_boot_protected(&state)) return 1;
         state.chip.cpu.data.esp = 0x8000u;
         before = state.chip.cpu;
@@ -864,7 +865,7 @@ static lib_i32 segment_test_protected_sreg_failures(void)
     return failed;
 }
 
-static lib_i32 segment_test_protected_selector_forms(void)
+static lib_i32 segment_test_protected_selector_forms(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 lar_code[] = {
         0xb8u,0x10u,0x00u,0x00u,0x00u,0x0fu,0x02u,0xc0u,0xf4u
@@ -887,39 +888,39 @@ static lib_i32 segment_test_protected_selector_forms(void)
     };
     segment_cpu state;
     t_cpu cpu;
-    lib_i32 failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !segment_prepare(&state, cpu_profile);
 
     if (!failed) failed |= !segment_boot_protected(&state) ||
         !segment_run_halt(&state, lar_code, sizeof(lar_code), SEG_CODE_ADDRESS,
             &cpu) || cpu.data.eax != 0x00409300u ||
         !X86_CPU_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
-    if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    if (!failed) failed = !segment_prepare(&state, cpu_profile);
     if (!failed) failed |= !segment_boot_protected(&state) ||
         !segment_run_halt(&state, lsl_code, sizeof(lsl_code), SEG_CODE_ADDRESS,
             &cpu) || cpu.data.eax != 0x0000ffffu ||
         !X86_CPU_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
-    if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    if (!failed) failed = !segment_prepare(&state, cpu_profile);
     if (!failed) failed |= !segment_boot_protected(&state) ||
         !segment_run_halt(&state, lar16_code, sizeof(lar16_code), SEG_CODE_ADDRESS,
             &cpu) || cpu.data.eax != 0xabcd9300u ||
         !X86_CPU_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
-    if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    if (!failed) failed = !segment_prepare(&state, cpu_profile);
     if (!failed) failed |= !segment_boot_protected(&state) ||
         !segment_run_halt(&state, arpl_code, sizeof(arpl_code), SEG_CODE_ADDRESS,
             &cpu) || (cpu.data.eax & 0xffffu) != 0x0003u ||
         !X86_CPU_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
-    if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    if (!failed) failed = !segment_prepare(&state, cpu_profile);
     if (!failed) failed |= !segment_boot_protected(&state) ||
         !segment_run_halt(&state, verr_code, sizeof(verr_code), SEG_CODE_ADDRESS,
             &cpu) || !X86_CPU_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
-    if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    if (!failed) failed = !segment_prepare(&state, cpu_profile);
     if (!failed) failed |= !segment_boot_protected(&state) ||
         !segment_run_halt(&state, verw_code, sizeof(verw_code), SEG_CODE_ADDRESS,
             &cpu) || !X86_CPU_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
     return failed;
 }
 
-static lib_i32 segment_test_selector_query_edges(void)
+static lib_i32 segment_test_selector_query_edges(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 lsl16_code[] = {
         0xb8u,0x10u,0x00u,0xcdu,0xabu,0x66u,0x0fu,0x03u,0xc0u,0xf4u
@@ -978,10 +979,10 @@ static lib_i32 segment_test_selector_query_edges(void)
         sizeof(verr_nonpresent), sizeof(verw_nonpresent), sizeof(verr_memory),
         sizeof(verw_memory) };
     const lib_u32 expected_eax[] = { 0xabcdffffu,0xabcd0028u,0xabcd0028u,
-        0xabcd0018u,0xabcd0018u,0x00408900u,0x0000ffffu,0xabcd0033u,
+        0x00401200u,0xabcdffffu,0x00408900u,0x0000ffffu,0xabcd0033u,
         0xabcd0033u,0x00000020u,0x00000020u,0x00000018u,0x00000018u,
         0x00000010u,0x00000010u };
-    const lib_i32 expected_zf[] = { 1,0,0,0,0,1,1,0,0,0,0,0,0,1,1 };
+    const lib_i32 expected_zf[] = { 1,0,0,1,1,1,1,0,0,0,0,1,1,1,1 };
     lib_size index;
     lib_i32 failed = 0;
 
@@ -993,7 +994,7 @@ static lib_i32 segment_test_selector_query_edges(void)
         lib_u8 nonpresent_access = 0u;
         lib_i32 case_failed;
 
-        if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
+        if (!segment_prepare(&state, cpu_profile) ||
             !segment_boot_protected(&state)) return 1;
         before = state.chip.cpu;
         if (index >= 13u)
@@ -1038,7 +1039,8 @@ static lib_i32 segment_test_rejected_forms(void)
     static const lib_u8 verw_real[] = { 0x0fu,0x00u,0xe8u };
     static const lib_u8 lar_66[] = { 0x66u,0x0fu,0x02u,0xc0u };
     const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     const lib_u8 *programs[] = { mov_cs, mov_from_fs, mov_to_fs, pop_fs,
         pop_gs, lss, lfs, lgs, lar_real, lsl_real, verr_real, verw_real,
@@ -1048,13 +1050,13 @@ static lib_i32 segment_test_rejected_forms(void)
         sizeof(lfs), sizeof(lgs), sizeof(lar_real), sizeof(lsl_real),
         sizeof(verr_real), sizeof(verw_real), sizeof(lar_66) };
     const core_machine_cpu_profile maximum_profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80486SX, CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80386,
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80386,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80486SX, CORE_MACHINE_CPU_PROFILE_80486SX,
+        CORE_MACHINE_CPU_PROFILE_80486SX, CORE_MACHINE_CPU_PROFILE_80486SX,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_size profile_index;
     lib_size program_index;
@@ -1081,7 +1083,7 @@ static lib_i32 segment_test_rejected_forms(void)
     return failed;
 }
 
-static lib_i32 segment_test_pop_fault_atomicity(void)
+static lib_i32 segment_test_pop_fault_atomicity(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 pop_fs[] = { 0x66u,0x0fu,0xa1u };
     static const lib_u8 selector[] = { 0x18u,0x00u,0,0 };
@@ -1089,7 +1091,7 @@ static lib_i32 segment_test_pop_fault_atomicity(void)
     segment_cpu state;
     t_cpu before;
     t_cpu after;
-    lib_i32 failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !segment_prepare(&state, cpu_profile);
 
     if (!failed) failed |= !segment_boot_protected(&state);
     if (!failed) {
@@ -1112,7 +1114,7 @@ static lib_i32 segment_test_pop_fault_atomicity(void)
     return failed;
 }
 
-static lib_i32 segment_test_vm86_pop_fs_gs_timing(void)
+static lib_i32 segment_test_vm86_pop_fs_gs_timing(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 opcodes[] = { 0xa1u, 0xa9u };
     static const lib_u16 selectors[] = { 0x1234u, 0x5678u };
@@ -1124,7 +1126,7 @@ static lib_i32 segment_test_vm86_pop_fs_gs_timing(void)
         cpu_instruction_fixture state;
         t_cpu after;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, cpu_profile);
         state.cpu.data.cr0 = VCPU_CR0_PE;
         state.cpu.data.eflags |= VCPU_EFLAGS_VM;
         state.cpu.data.esp = 0x0200u;
@@ -1133,7 +1135,9 @@ static lib_i32 segment_test_vm86_pop_fs_gs_timing(void)
                 LIB_STATUS_OK || cpu_instruction_run(&state, code, sizeof(code),
                 &after) != LIB_STATUS_OK) return 1;
         timing = core_machine_cpu_capture_timing(&state.execution);
-        if (timing.source_timing_unallocated || timing.ticks != 7u ||
+        if ((cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+                !timing.source_timing_unallocated :
+                (timing.source_timing_unallocated || timing.ticks != 7u)) ||
             (opcodes[index] == 0xa1u ? after.data.fs.selector :
                 after.data.gs.selector) != selectors[index]) return 1;
     }
@@ -1159,31 +1163,37 @@ static lib_i32 segment_test_metadata(void)
 
 lib_i32 main(void)
 {
-    lib_i32 real_loads = segment_test_real_load_forms();
-    lib_i32 protected_286 = segment_test_80286_protected_legal_forms();
-    lib_i32 protected_286_rejections =
-        segment_test_80286_protected_cache_rejections();
-    lib_i32 lxs_memory_only = segment_test_lxs_memory_only();
-    lib_i32 lxs_atomicity = segment_test_lxs_fault_atomicity();
-    lib_i32 real_sregs = segment_test_real_sreg_loads();
-    lib_i32 protected_sregs = segment_test_protected_sreg_success();
-    lib_i32 protected_sreg_failures = segment_test_protected_sreg_failures();
-    lib_i32 protected_forms = segment_test_protected_selector_forms();
-    lib_i32 query_edges = segment_test_selector_query_edges();
-    lib_i32 rejected = segment_test_rejected_forms();
-    lib_i32 atomicity = segment_test_pop_fault_atomicity();
-    lib_i32 vm86_pop = segment_test_vm86_pop_fs_gs_timing();
-    lib_i32 metadata = segment_test_metadata();
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+    static const struct {
+        const char *name;
+        lib_i32 (*run)(core_machine_cpu_profile);
+    } cases[] = {
+        {"real",segment_test_real_load_forms},
+        {"lxs",segment_test_lxs_memory_only},
+        {"lxs-atomic",segment_test_lxs_fault_atomicity},
+        {"sreg-real",segment_test_real_sreg_loads},
+        {"sreg-protected",segment_test_protected_sreg_success},
+        {"sreg-fault",segment_test_protected_sreg_failures},
+        {"protected",segment_test_protected_selector_forms},
+        {"query",segment_test_selector_query_edges},
+        {"atomic",segment_test_pop_fault_atomicity},
+        {"vm86-pop",segment_test_vm86_pop_fs_gs_timing}
+    };
 
-    if (real_loads || protected_286 || protected_286_rejections || lxs_memory_only || lxs_atomicity || real_sregs || protected_sregs ||
-        protected_sreg_failures || protected_forms || query_edges || rejected ||
-        atomicity || vm86_pop || metadata) {
-        lib_c_fprintf(lib_c_stderr,
-            "M5::SEGMENT-SELECTOR:FAIL real=%d protected-286=%d protected-286-reject=%d lxs=%d lxs-atomic=%d sreg-real=%d sreg-protected=%d sreg-fault=%d protected=%d query=%d rejected=%d atomic=%d vm86-pop=%d metadata=%d\n",
-            real_loads, protected_286, protected_286_rejections, lxs_memory_only, lxs_atomicity, real_sregs, protected_sregs,
-            protected_sreg_failures, protected_forms, query_edges, rejected,
-            atomicity, vm86_pop, metadata);
-        return 1;
+    if (segment_test_80286_protected_legal_forms() ||
+        segment_test_80286_protected_cache_rejections() ||
+        segment_test_rejected_forms() || segment_test_metadata()) return 1;
+    for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
+        for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+            if (cases[index].run(profiles[profile])) {
+                lib_c_fprintf(lib_c_stderr, "SEGMENT-SELECTOR:%s:CPU=%u:FAIL\n",
+                    cases[index].name, profiles[profile]);
+                return 1;
+            }
+        }
     }
     lib_c_printf("M5::SEGMENT-SELECTOR:OK\n");
     return 0;

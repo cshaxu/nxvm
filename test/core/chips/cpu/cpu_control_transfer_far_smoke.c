@@ -25,7 +25,8 @@ static lib_i32 far_steps(cpu_instruction_fixture *state, const lib_u8 *code,
     return 1;
 }
 
-static void far_prepare_protected(cpu_instruction_fixture *state)
+static void far_prepare_protected(cpu_instruction_fixture *state,
+    core_machine_cpu_profile profile)
 {
     static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
@@ -39,7 +40,7 @@ static void far_prepare_protected(cpu_instruction_fixture *state)
     t_cpu_data_sreg *const ds = &state->cpu.data.ds;
     t_cpu_data_sreg *const ss = &state->cpu.data.ss;
 
-    cpu_instruction_prepare(state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(state, profile);
     lib_memory_copy(state->memory + 0x0300u, gdt, sizeof(gdt));
     state->cpu.data.gdtr.base = 0x0300u;
     state->cpu.data.gdtr.limit = (lib_u16)(sizeof(gdt) - 1u);
@@ -98,7 +99,7 @@ static lib_i32 far_expect_protected_fault(cpu_instruction_fixture *state,
         after.data.cs.seg.exec.defsize == before->data.cs.seg.exec.defsize;
 }
 
-static lib_i32 far_test_protected_forms(void)
+static lib_i32 far_test_protected_forms(core_machine_cpu_profile profile)
 {
     static const lib_u8 jmp32[] = {0xeau,7u,0u,0u,0u,8u,0u,0xf4u};
     static const lib_u8 jmp16[] = {0x66u,0xeau,6u,0u,8u,0u,0xf4u};
@@ -121,7 +122,7 @@ static lib_i32 far_test_protected_forms(void)
     t_cpu after;
 
     for (lib_size index = 0u; index < 2u; ++index) {
-        far_prepare_protected(&state);
+        far_prepare_protected(&state, profile);
         if (!far_step(&state, jumps[index], jump_sizes[index], &after) ||
             after.data.cs.selector != 8u || after.data.eip != 7u - index) {
             lib_c_fprintf(lib_c_stderr, "protected jump %u cs=%u ip=%u fault=%u\n", (unsigned)index,
@@ -131,7 +132,7 @@ static lib_i32 far_test_protected_forms(void)
         }
     }
     for (lib_size index = 0u; index < 2u; ++index) {
-        far_prepare_protected(&state);
+        far_prepare_protected(&state, profile);
         before = state.cpu;
         if (!far_step(&state, calls[index], call_sizes[index], &after) ||
             after.data.eip != 10u - index || after.data.esp >= before.data.esp) {
@@ -154,7 +155,7 @@ static lib_i32 far_test_protected_forms(void)
         if (state.execution.stop_requested || state.fault.valid ||
             after.data.eax != 0xa5u) return 0;
     }
-    far_prepare_protected(&state);
+    far_prepare_protected(&state, profile);
     lib_memory_copy(state.memory + state.cpu.data.ds.base + 0x0100u,
         (const lib_u8[]){6u,0u,0u,0u,8u,0u}, 6u);
     if (!far_step(&state, indirect_jmp, sizeof(indirect_jmp), &after) ||
@@ -162,7 +163,7 @@ static lib_i32 far_test_protected_forms(void)
         lib_c_fprintf(lib_c_stderr, "%s", "protected indirect jump\n");
         return 0;
     }
-    far_prepare_protected(&state);
+    far_prepare_protected(&state, profile);
     lib_memory_copy(state.memory + state.cpu.data.ds.base + 0x0100u,
         (const lib_u8[]){9u,0u,0u,0u,8u,0u}, 6u);
     before = state.cpu;
@@ -181,7 +182,7 @@ static lib_i32 far_test_protected_forms(void)
     core_machine_cpu_execution_refresh(&state.execution);
     after = state.cpu;
     if (state.execution.stop_requested || state.fault.valid || after.data.eax != 0xa5u) return 0;
-    far_prepare_protected(&state);
+    far_prepare_protected(&state, profile);
     lib_memory_copy(state.memory + state.cpu.data.ss.base + state.cpu.data.esp,
         (const lib_u8[]){0u,0u,0u,0u,0x20u,0u,0u,0u}, 8u);
     before = state.cpu;
@@ -191,7 +192,7 @@ static lib_i32 far_test_protected_forms(void)
         return 0;
     }
     if (state.memory[0x0325u] != 0xbau) return 0;
-    far_prepare_protected(&state);
+    far_prepare_protected(&state, profile);
     lib_memory_copy(state.memory + state.cpu.data.ss.base + state.cpu.data.esp,
         (const lib_u8[]){0u,0u,0u,0u,0x28u,0u,0u,0u}, 8u);
     before = state.cpu;
@@ -201,14 +202,14 @@ static lib_i32 far_test_protected_forms(void)
         return 0;
     }
     if (state.memory[0x032du] != 0x1au) return 0;
-    far_prepare_protected(&state);
+    far_prepare_protected(&state, profile);
     before = state.cpu;
     if (!far_expect_protected_fault(&state, (const lib_u8[]){0xffu,0xd8u}, 2u,
             VCPUINS_EXCEPT_UD, &before)) {
         lib_c_fprintf(lib_c_stderr, "%s", "protected reserved d8\n");
         return 0;
     }
-    far_prepare_protected(&state);
+    far_prepare_protected(&state, profile);
     before = state.cpu;
     if (!far_expect_protected_fault(&state, (const lib_u8[]){0xffu,0xe8u}, 2u,
             VCPUINS_EXCEPT_UD, &before)) {
@@ -329,7 +330,7 @@ static lib_i32 far_test_real_mode(core_machine_cpu_profile profile)
         after.data.cs.selector != 0x100u || after.data.cs.base != 0x1000u) return 0;
     cpu_instruction_prepare(&state, profile);
     /* Separate DS from CS so wrapped pointer bytes cannot alias the opcode.
-     * Early CPUs wrap the second word; 286/386 reject the full four-byte span. */
+     * Early CPUs wrap the second word; 286 and later reject the full four-byte span. */
     state.cpu.data.ds.base = 0x10000u;
     lib_memory_copy(state.memory + 0x1fffeu, (const lib_u8[]){0u,0u}, 2u);
     lib_memory_copy(state.memory + 0x10000u, (const lib_u8[]){0u,2u}, 2u);
@@ -363,9 +364,11 @@ int main(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
-    if (!far_test_protected_forms()) {
+    if (!far_test_protected_forms(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !far_test_protected_forms(CORE_MACHINE_CPU_PROFILE_80486SX)) {
         lib_c_fprintf(lib_c_stderr, "%s", "protected\n");
         return 1;
     }

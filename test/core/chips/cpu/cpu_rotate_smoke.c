@@ -565,7 +565,8 @@ static lib_i32 rotate_test_8086_immediate_rejection(void)
 static lib_i32 rotate_test_80186_immediate_extensions(void)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
     lib_u8 width_index;
@@ -573,7 +574,8 @@ static lib_i32 rotate_test_80186_immediate_extensions(void)
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (width_index = 0u; width_index != 2u; ++width_index)
-    for (extension = 0u; extension != 8u; ++extension) {        const lib_u8 width = width_index == 0u ? 8u : 16u;
+    for (extension = 0u; extension != 8u; ++extension) {
+        const lib_u8 width = width_index == 0u ? 8u : 16u;
         const lib_u8 opcode = width == 8u ? 0xc0u : 0xc1u;
         const lib_u8 code[] = {
             opcode, (lib_u8)((extension << 3u) | 0xc0u), 1u
@@ -585,8 +587,23 @@ static lib_i32 rotate_test_80186_immediate_extensions(void)
         lib_u8 effective = 0u;
         rotate_fixture state;
         t_cpu after;
+        core_machine_cpu_instruction_lexeme lexeme;
+        const core_machine_cpu_instruction_metadata metadata =
+            core_machine_cpu_instruction_metadata_get(
+                CORE_MACHINE_CPU_INSTRUCTION_PRIMARY, opcode, code[1]);
+        const lib_bool available = core_machine_cpu_instruction_lexeme_scan(
+            code, sizeof(code), profiles[profile], LIB_FALSE, &lexeme);
 
         lib_i32 failed = 0;
+        if (metadata.minimum_cpu != (extension == 6u ? CORE_MACHINE_CPU_PROFILE_80486SX :
+                CORE_MACHINE_CPU_PROFILE_80186) || !metadata.valid ||
+            available != (extension != 6u || profiles[profile] == CORE_MACHINE_CPU_PROFILE_80486SX) ||
+            lexeme.available != available ||
+            (available && lexeme.byte_count != sizeof(code))) {
+            lib_c_printf("Group-2 admission: profile=%u opcode=%x extension=%u\n",
+                (lib_u32)profiles[profile], (lib_u32)opcode, (lib_u32)extension);
+            return 0;
+        }
         cpu_instruction_prepare(&state, profiles[profile]);
 
         state.cpu.data.eax = initial;
@@ -595,13 +612,13 @@ static lib_i32 rotate_test_80186_immediate_extensions(void)
         if (extension < 4u)
             expected = rotate_result(extension, width, initial, 1u,
                 &carry, &effective);
-        else if (extension == 4u)
+        else if (extension == 4u || extension == 6u)
             expected = shift_result(0u, width, initial, 1u, &carry);
         else if (extension == 5u)
             expected = shift_result(1u, width, initial, 1u, &carry);
         else if (extension == 7u)
             expected = shift_result(2u, width, initial, 1u, &carry);
-        if (extension == 6u) {
+        if (extension == 6u && profiles[profile] != CORE_MACHINE_CPU_PROFILE_80486SX) {
             failed |= !cpu_instruction_expect_real_fault(&state, code,
                 sizeof(code), 6u);
         } else {
@@ -629,7 +646,7 @@ static lib_bool rotate_test_carry_ring_boundaries(void)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 counts[] = {0u, 1u, 8u, 9u, 10u, 16u,
         17u, 18u, 31u, 32u, 33u, 255u};
@@ -638,13 +655,14 @@ static lib_bool rotate_test_carry_ring_boundaries(void)
     lib_u8 profile, width_index, direction, count_index, carry, memory;
 
     for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
-    for (width_index = 0u; width_index < (profile == 4u ? 3u : 2u); ++width_index)
+    for (width_index = 0u; width_index <
+        (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ? 3u : 2u); ++width_index)
     for (direction = 0u; direction < 2u; ++direction)
     for (count_index = 0u; count_index < sizeof(counts); ++count_index)
     for (carry = 0u; carry < 2u; ++carry)
     for (memory = 0u; memory < 2u; ++memory) {
         const lib_u8 width = width_index == 0u ? 8u : width_index == 1u ? 16u : 32u;
-        const lib_u8 count = profile < 2u ? counts[count_index] :
+        const lib_u8 count = core_machine_cpu_profile_has_8086_semantics(profiles[profile]) ? counts[count_index] :
             (lib_u8)(counts[count_index] & 0x1fu);
         const lib_u8 steps = (lib_u8)(count % (width + 1u));
         const lib_u32 mask = rotate_mask(width);
@@ -705,10 +723,11 @@ static lib_bool rotate_test_carry_ring_boundaries(void)
                 (unsigned)counts[count_index], (unsigned)carry, (unsigned)memory);
             return LIB_FALSE;
         }
-        if (!memory && profile != 1u && profile != 4u) {
+        if (!memory && profiles[profile] != CORE_MACHINE_CPU_PROFILE_8088 &&
+            profiles[profile] < CORE_MACHINE_CPU_PROFILE_80386) {
             const core_machine_cpu_timing_result timing =
                 core_machine_cpu_capture_timing(&state.execution);
-            const lib_u64 expected_ticks = profile == 0u ?
+            const lib_u64 expected_ticks = profiles[profile] == CORE_MACHINE_CPU_PROFILE_8086 ?
                 8u + 4u * count : 5u + count;
             if (timing.source_timing_unallocated || timing.ticks != expected_ticks)
                 return LIB_FALSE;
@@ -722,18 +741,19 @@ static lib_bool rotate_test_sar_extremes(void)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     static const lib_u8 counts[] = {0u, 1u, 7u, 8u, 15u, 16u, 31u, 32u, 33u, 255u};
     lib_u8 profile, width_index, count_index, negative, memory;
 
     for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
-    for (width_index = 0u; width_index < (profile == 4u ? 3u : 2u); ++width_index)
+    for (width_index = 0u; width_index <
+        (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ? 3u : 2u); ++width_index)
     for (count_index = 0u; count_index < sizeof(counts); ++count_index)
     for (negative = 0u; negative < 2u; ++negative)
     for (memory = 0u; memory < 2u; ++memory) {
         const lib_u8 width = width_index == 0u ? 8u : width_index == 1u ? 16u : 32u;
-        const lib_u8 count = profile < 2u ? counts[count_index] :
+        const lib_u8 count = core_machine_cpu_profile_has_8086_semantics(profiles[profile]) ? counts[count_index] :
             (lib_u8)(counts[count_index] & 0x1fu);
         const lib_u32 mask = rotate_mask(width);
         const lib_u32 sign = UINT32_C(1) << (width - 1u);
@@ -787,8 +807,95 @@ static lib_bool rotate_test_sar_extremes(void)
     return LIB_TRUE;
 }
 
+static lib_bool rotate_test_sx_shl_aliases(void)
+{
+    static const lib_u8 opcodes[] = {0xc0u, 0xc1u, 0xd0u, 0xd1u, 0xd2u, 0xd3u};
+    static const lib_u8 counts[] = {0u, 1u, 2u, 7u, 15u, 31u, 32u, 33u, 255u};
+    static const lib_u32 values[] = {0u, 0x80018081u, 0xffffffffu};
+
+    for (lib_u8 mode = 0u; mode < 6u; ++mode)
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes)
+    for (lib_u8 memory = 0u; memory < 2u; ++memory)
+    for (lib_size opcode = 0u; opcode < sizeof(opcodes); ++opcode)
+    for (lib_size count_index = 0u; count_index < sizeof(counts); ++count_index)
+    for (lib_size value = 0u; value < sizeof(values) / sizeof(values[0]); ++value) {
+        rotate_fixture state;
+        t_cpu canonical;
+        lib_u32 canonical_writes = 0u;
+        lib_u8 code[9], bytes = 0u, modrm_index;
+        const lib_bool implicit = opcodes[opcode] == 0xd0u || opcodes[opcode] == 0xd1u;
+        const lib_bool address32 = code32 != ((prefixes & 2u) != 0u);
+        const lib_u8 width = (opcodes[opcode] & 1u) ?
+            ((code32 != ((prefixes & 1u) != 0u)) ? 32u : 16u) : 8u;
+        const lib_u8 count = implicit ? 1u : counts[count_index];
+        const lib_u32 expected = (lib_u32)((lib_u64)values[value] << (count & 31u)) &
+            rotate_mask(width);
+
+        if ((mode == 5u && code32) || (implicit && count_index != 0u)) continue;
+        if (prefixes & 1u) code[bytes++] = 0x66u;
+        if (prefixes & 2u) code[bytes++] = 0x67u;
+        code[bytes++] = opcodes[opcode];
+        modrm_index = bytes;
+        code[bytes++] = (lib_u8)(0x20u | (memory ? (address32 ? 5u : 6u) : 0xc0u));
+        if (memory) {
+            code[bytes++] = 0u;
+            code[bytes++] = 0x40u;
+            if (address32) { code[bytes++] = 0u; code[bytes++] = 0u; }
+        }
+        if (opcode < 2u) code[bytes++] = count;
+        for (lib_u8 alias = 0u; alias < 2u; ++alias) {
+            core_machine_cpu_instruction_lexeme lexeme;
+            t_cpu after;
+            lib_u32 observed = 0u;
+
+            code[modrm_index] = (lib_u8)((code[modrm_index] & 0xc7u) |
+                (alias ? 0x30u : 0x20u));
+            cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80486SX);
+            if (mode) {
+                const lib_u8 cpl = mode == 5u ? 3u : mode - 1u;
+
+                cpu_instruction_prepare_protected_exception(&state, mode == 5u ? 4u : cpl);
+                state.cpu.data.ds.selector = (lib_u16)(0x10u | cpl);
+                state.cpu.data.ds.dpl = cpl;
+            }
+            state.cpu.data.cs.seg.exec.defsize = code32;
+            state.cpu.data.eax = values[value];
+            state.cpu.data.ecx = 0x55667700u | count;
+            state.cpu.data.eflags |= VCPU_EFLAGS_IF | VCPU_EFLAGS_DF |
+                VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
+            if (memory && cpu_instruction_write(&state, 0x4000u, &values[value], width / 8u,
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK) return LIB_FALSE;
+            if (!core_machine_cpu_instruction_lexeme_scan(code, bytes,
+                    CORE_MACHINE_CPU_PROFILE_80486SX, code32, &lexeme) ||
+                lexeme.byte_count != bytes ||
+                cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK ||
+                state.fault.valid || state.delivered_exception.valid) {
+                lib_c_printf("SHL alias admission: mode=%u code32=%u prefix=%u memory=%u opcode=%x count=%u alias=%u\n",
+                    (lib_u32)mode, (lib_u32)code32, (lib_u32)prefixes, (lib_u32)memory,
+                    (lib_u32)opcodes[opcode], (lib_u32)count, (lib_u32)alias);
+                return LIB_FALSE;
+            }
+            if (memory) {
+                if (cpu_instruction_read(&state, 0x4000u, &observed, width / 8u,
+                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
+                        LIB_STATUS_OK) return LIB_FALSE;
+            } else observed = after.data.eax & rotate_mask(width);
+            if (observed != expected || after.data.eip != bytes) return LIB_FALSE;
+            if (!alias) {
+                canonical = after;
+                canonical_writes = state.writes;
+            } else if (state.writes != canonical_writes ||
+                lib_memory_compare(&canonical, &after, sizeof(after)) != 0)
+                return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
+    if (!rotate_test_sx_shl_aliases()) return 1;
     if (!rotate_test_carry_ring_boundaries()) return 1;
     if (!rotate_test_sar_extremes()) return 1;
     if (!rotate_test_forms()) { lib_c_fprintf(lib_c_stderr, "forms\n"); return 1; }

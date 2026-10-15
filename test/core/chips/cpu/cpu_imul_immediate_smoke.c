@@ -69,6 +69,7 @@ static lib_i32 imul_run(core_machine_cpu_profile profile, const lib_u8 *code,
         after.data.ecx != before.data.ecx ||
         after.data.edx != before.data.edx ||
         after.data.ebx != before.data.ebx ||
+        after.data.esp != before.data.esp ||
         after.data.ebp != before.data.ebp ||
         after.data.esi != before.data.esi ||
         after.data.edi != before.data.edi ||
@@ -102,7 +103,7 @@ static lib_i32 imul_test_defaults(void)
     static const lib_u8 overflow[] = {0x69u, 0xc1u, 0x00u, 0x40u};
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
 
@@ -147,19 +148,25 @@ static lib_i32 imul_test_attributes_and_rejects(void)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_u8 index;
 
-    if (!imul_run(CORE_MACHINE_CPU_PROFILE_80386, dword_iw,
-            sizeof(dword_iw), 2u, 0x80000000u, 1, 1) ||
-        !imul_run(CORE_MACHINE_CPU_PROFILE_80386, dword_ib,
-            sizeof(dword_ib), 0xfffffffeu, 4u, 0, 1) ||
-        !imul_run(CORE_MACHINE_CPU_PROFILE_80386, inert,
-            sizeof(inert), 0xb2b2fffeu, 4u, 0, 0) ||
-        !imul_run(CORE_MACHINE_CPU_PROFILE_80386, combined,
-            sizeof(combined), 0xfffffffeu, 4u, 0, 1)) return 0;
-    for (index = 0u; index < sizeof(lock_bytes); ++index)
-        if (!imul_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock[index],
-                lock_bytes[index])) return 0;
+    for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
+        if (!imul_run(profiles[profile], dword_iw,
+                sizeof(dword_iw), 2u, 0x80000000u, 1, 1) ||
+            !imul_run(profiles[profile], dword_ib,
+                sizeof(dword_ib), 0xfffffffeu, 4u, 0, 1) ||
+            !imul_run(profiles[profile], inert,
+                sizeof(inert), 0xb2b2fffeu, 4u, 0, 0) ||
+            !imul_run(profiles[profile], combined,
+                sizeof(combined), 0xfffffffeu, 4u, 0, 1)) return 0;
+        for (index = 0u; index < sizeof(lock_bytes); ++index)
+            if (!imul_expect_ud(profiles[profile], lock[index],
+                    lock_bytes[index])) return 0;
+    }
     for (index = 0u; index < sizeof(pre386) / sizeof(pre386[0]); ++index)
         if (!imul_expect_ud(pre386[index], dword_iw, sizeof(dword_iw)) ||
             !imul_expect_ud(pre386[index], inert, sizeof(inert)) ||
@@ -191,13 +198,12 @@ static lib_i32 imul_test_memory_forms(void)
     };
     static const core_machine_cpu_profile word_profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 form;
 
     for (form = 0u; form < sizeof(codes) / sizeof(codes[0]); ++form) {
-        const lib_u8 profile_count = form < 2u ?
-            sizeof(word_profiles) / sizeof(word_profiles[0]) : 1u;
+        const lib_u8 profile_count = sizeof(word_profiles) / sizeof(word_profiles[0]);
         lib_u8 profile_index;
 
         for (profile_index = 0u; profile_index < profile_count;
@@ -207,8 +213,9 @@ static lib_i32 imul_test_memory_forms(void)
             lib_u32 source_after = 0u;
             const lib_i32 dword = form >= 2u;
 
-            cpu_instruction_prepare(&state, form < 2u ?
-                word_profiles[profile_index] : CORE_MACHINE_CPU_PROFILE_80386);
+            if (dword && word_profiles[profile_index] <
+                CORE_MACHINE_CPU_PROFILE_80386) continue;
+            cpu_instruction_prepare(&state, word_profiles[profile_index]);
             imul_seed(&state.cpu);
             before = state.cpu;
             if (cpu_instruction_write(&state, 0x4000u,
@@ -236,7 +243,7 @@ static lib_i32 imul_test_memory_forms(void)
     return 1;
 }
 
-static lib_i32 imul_test_segments(void)
+static lib_i32 imul_test_segments(core_machine_cpu_profile profile)
 {
     static const lib_u8 codes[][7] = {
         {0x69u, 0x06u, 0x10u, 0x00u, 0xfeu, 0xffu, 0u},
@@ -258,7 +265,7 @@ static lib_i32 imul_test_segments(void)
         lib_u32 code_address = 0u;
         const lib_u16 source = 0xfffeu;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         imul_seed(&state.cpu);
         segment = &state.cpu.data.ds;
         if (form == 1u) segment = &state.cpu.data.ss;
@@ -289,7 +296,7 @@ static lib_i32 imul_test_segments(void)
     return 1;
 }
 
-static lib_i32 imul_test_67_sib_ss(void)
+static lib_i32 imul_test_67_sib_ss(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {
         0x67u, 0x69u, 0x44u, 0x24u, 0x10u, 0xfeu, 0xffu
@@ -298,7 +305,7 @@ static lib_i32 imul_test_67_sib_ss(void)
     cpu_instruction_fixture state;
     t_cpu before, after;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     imul_seed(&state.cpu);
     state.cpu.data.ss.selector = 0x2000u;
     state.cpu.data.ss.base = 0x20000u;
@@ -313,13 +320,13 @@ static lib_i32 imul_test_67_sib_ss(void)
         imul_sregs_same(&before, &after);
 }
 
-static lib_i32 imul_test_vm86(void)
+static lib_i32 imul_test_vm86(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x69u, 0xc1u, 0xfeu, 0xffu};
     cpu_instruction_fixture state;
     t_cpu before, after;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     imul_seed(&state.cpu);
     state.cpu.data.cr0 |= VCPU_CR0_PE;
     state.cpu.data.eflags = VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL | VCPU_EFLAGS_IF;
@@ -354,13 +361,13 @@ static lib_i32 imul_test_vm86(void)
         imul_nonparticipants_same(&before, &after);
 }
 
-static lib_i32 imul_test_synthetic_ss_limit(void)
+static lib_i32 imul_test_synthetic_ss_limit(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x69u, 0x46u, 0u, 0xfeu, 0xffu};
     cpu_instruction_fixture state;
     t_cpu before, after;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     imul_seed(&state.cpu);
     state.cpu.data.cr0 |= VCPU_CR0_PE;
     state.cpu.data.ebp = 0x10u;
@@ -376,7 +383,7 @@ static lib_i32 imul_test_synthetic_ss_limit(void)
         imul_sregs_same(&before, &after);
 }
 
-static lib_bool imul_test_dword_byte_extremes(void)
+static lib_bool imul_test_dword_byte_extremes(core_machine_cpu_profile profile)
 {
     static const lib_u32 sources[] = {
         0u, 1u, 0xffffffffu, 0x40000000u, 0x7fffffffu, 0x80000000u
@@ -404,7 +411,7 @@ static lib_bool imul_test_dword_byte_extremes(void)
         code[bytes++] = memory ? 0x06u : alias ? 0xc0u : 0xc1u;
         if (memory) { code[bytes++] = 0u; code[bytes++] = 0x40u; }
         code[bytes++] = (lib_u8)multipliers[multiplier_index];
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         imul_seed(&state.cpu);
         state.cpu.data.ecx = source;
         if (alias) state.cpu.data.eax = source;
@@ -429,15 +436,22 @@ static lib_bool imul_test_dword_byte_extremes(void)
 
 lib_i32 main(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     static const lib_u8 iw[] = {0x69u, 0xc1u, 0xfeu, 0xffu};
     static const lib_u8 ib[] = {0x6bu, 0xc1u, 0xfeu};
 
     if (!imul_expect_ud(CORE_MACHINE_CPU_PROFILE_8086, iw, sizeof(iw)) ||
         !imul_expect_ud(CORE_MACHINE_CPU_PROFILE_8086, ib, sizeof(ib)) ||
         !imul_test_defaults() || !imul_test_attributes_and_rejects() ||
-        !imul_test_memory_forms() || !imul_test_segments() ||
-        !imul_test_67_sib_ss() || !imul_test_vm86() ||
-        !imul_test_synthetic_ss_limit() || !imul_test_dword_byte_extremes()) return 1;
+        !imul_test_memory_forms()) return 1;
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index)
+        if (!imul_test_segments(profiles[index]) ||
+            !imul_test_67_sib_ss(profiles[index]) ||
+            !imul_test_vm86(profiles[index]) ||
+            !imul_test_synthetic_ss_limit(profiles[index]) ||
+            !imul_test_dword_byte_extremes(profiles[index])) return 1;
     lib_c_printf("CPU-IMUL-IMMEDIATE:OK\n");
     return 0;
 }

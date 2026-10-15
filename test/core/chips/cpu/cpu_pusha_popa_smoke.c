@@ -156,7 +156,7 @@ static lib_i32 pusha_popa_test_defaults(void)
 {
     static const core_machine_cpu_profile supported[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386};
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX};
     static const lib_u8 pusha[] = {0x60u};
     static const lib_u8 popa[] = {0x61u};
     lib_u8 profile;
@@ -172,7 +172,7 @@ static lib_i32 pusha_popa_test_defaults(void)
     return 1;
 }
 
-static lib_i32 pusha_popa_test_attributes(void)
+static lib_i32 pusha_popa_test_attributes(core_machine_cpu_profile profile)
 {
     static const lib_u8 pusha32[] = {0x66u, 0x60u};
     static const lib_u8 popa32[] = {0x66u, 0x61u};
@@ -181,15 +181,15 @@ static lib_i32 pusha_popa_test_attributes(void)
     static const lib_u8 pusha32_67[] = {0x66u, 0x67u, 0x60u};
     static const lib_u8 popa32_67[] = {0x66u, 0x67u, 0x61u};
 
-    return pusha_popa_test_pusha_success(CORE_MACHINE_CPU_PROFILE_80386,
+    return pusha_popa_test_pusha_success(profile,
         pusha32, sizeof(pusha32), 4u) && pusha_popa_test_popa_success(
-        CORE_MACHINE_CPU_PROFILE_80386, popa32, sizeof(popa32), 4u) &&
-        pusha_popa_test_pusha_success(CORE_MACHINE_CPU_PROFILE_80386, pusha67,
+        profile, popa32, sizeof(popa32), 4u) &&
+        pusha_popa_test_pusha_success(profile, pusha67,
         sizeof(pusha67), 2u) && pusha_popa_test_popa_success(
-        CORE_MACHINE_CPU_PROFILE_80386, popa67, sizeof(popa67), 2u) &&
-        pusha_popa_test_pusha_success(CORE_MACHINE_CPU_PROFILE_80386,
+        profile, popa67, sizeof(popa67), 2u) &&
+        pusha_popa_test_pusha_success(profile,
         pusha32_67, sizeof(pusha32_67), 4u) && pusha_popa_test_popa_success(
-        CORE_MACHINE_CPU_PROFILE_80386, popa32_67, sizeof(popa32_67), 4u);
+        profile, popa32_67, sizeof(popa32_67), 4u);
 }
 
 static lib_i32 pusha_popa_test_reject_case(core_machine_cpu_profile profile,
@@ -304,7 +304,7 @@ static lib_i32 pusha_popa_boot_protected(cpu_instruction_fixture *state)
     return state->cpu.data.cs.selector == 8u && state->cpu.data.eip == 0u;
 }
 
-static lib_i32 pusha_popa_test_protected_pusha_limit(void)
+static lib_i32 pusha_popa_test_protected_pusha_limit(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x60u};
     cpu_instruction_fixture state;
@@ -313,7 +313,7 @@ static lib_i32 pusha_popa_test_protected_pusha_limit(void)
     lib_u16 expected[] = {0xa001u, 0xa002u, 0xa003u, 0xa004u, 0xa005u};
     lib_u8 slot;
     lib_i32 failed = 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
 
     if (!failed)
         failed |= !pusha_popa_boot_protected(&state);
@@ -353,7 +353,7 @@ static lib_i32 pusha_popa_test_protected_pusha_limit(void)
     return !failed;
 }
 
-static lib_i32 pusha_popa_test_protected_popa_limit(void)
+static lib_i32 pusha_popa_test_protected_popa_limit(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x61u};
     static const lib_u16 image[] = {0x1111u, 0x2222u, 0x3333u, 0x4444u,
@@ -363,7 +363,7 @@ static lib_i32 pusha_popa_test_protected_popa_limit(void)
     t_cpu after;
     lib_u8 slot;
     lib_i32 failed = 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
 
     if (!failed)
         failed |= !pusha_popa_boot_protected(&state);
@@ -409,16 +409,19 @@ static lib_bool pusha_popa_test_frame_admission(void)
     static const core_machine_cpu_bus_provider bus = {
         .read_memory = cpu_stack_probe_read,
         .write_memory = cpu_stack_probe_write,
-        .interrupt_pending = cpu_instruction_interrupt_pending
+        .interrupt_pending = cpu_instruction_interrupt_pending,
+        .special_cycle = cpu_instruction_special_cycle,
+        .cancel_special_cycle = cpu_instruction_cancel_special_cycle
     };
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile, operand32, stack32, pop, invalid;
     lib_bool passed = LIB_TRUE;
-    for (profile = 0u; profile < 2u; ++profile)
-    for (operand32 = 0u; operand32 < (profile ? 2u : 1u); ++operand32)
-    for (stack32 = 0u; stack32 < (profile ? 2u : 1u); ++stack32)
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (operand32 = 0u; operand32 < (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++operand32)
+    for (stack32 = 0u; stack32 < (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++stack32)
     for (pop = 0u; pop < 2u; ++pop)
     for (invalid = 0u; invalid < 2u; ++invalid) {
         cpu_stack_probe_fixture fixture;
@@ -459,17 +462,19 @@ static lib_bool pusha_popa_test_ordered_failure(void)
     static const core_machine_cpu_bus_provider bus = {
         .read_memory = cpu_stack_probe_read,
         .write_memory = cpu_stack_probe_write,
-        .interrupt_pending = cpu_instruction_interrupt_pending
+        .interrupt_pending = cpu_instruction_interrupt_pending,
+        .special_cycle = cpu_instruction_special_cycle,
+        .cancel_special_cycle = cpu_instruction_cancel_special_cycle
     };
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile, operand32, stack32, pop, failure, slot;
     lib_bool passed = LIB_TRUE;
-    for (profile = 0u; profile < 3u; ++profile)
-    for (operand32 = 0u; operand32 < (profile == 2u ? 2u : 1u); ++operand32)
-    for (stack32 = 0u; stack32 < (profile == 2u ? 2u : 1u); ++stack32)
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (operand32 = 0u; operand32 < (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++operand32)
+    for (stack32 = 0u; stack32 < (profiles[profile] >= CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++stack32)
     for (pop = 0u; pop < 2u; ++pop)
     for (failure = 1u; failure <= 8u; ++failure) {
         cpu_stack_probe_fixture fixture;
@@ -528,14 +533,15 @@ static lib_bool pusha_popa_test_ordered_failure(void)
 static lib_bool pusha_popa_test_initial_sp(void)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     const lib_u8 code[] = {0x60u};
     const lib_u8 vector[] = {0u, 2u, 0u, 0u};
     lib_u8 profile, stack;
     lib_bool passed = LIB_TRUE;
 
-    for (profile = 0u; profile < 2u; ++profile)
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (stack = 1u; stack < 16u; stack += 2u) {
         cpu_instruction_fixture state;
         t_cpu after;
@@ -580,12 +586,14 @@ static lib_status pusha_vm_read(void *opaque, lib_u32 address, void *destination
         bytes, provenance, observe_only, reset_fetch, cache_control);
 }
 
-static lib_bool pusha_popa_test_vm_initial_sp(void)
+static lib_bool pusha_popa_test_vm_initial_sp(core_machine_cpu_profile profile)
 {
     static const core_machine_cpu_bus_provider bus = {
         .read_memory = pusha_vm_read,
         .write_memory = cpu_instruction_write,
-        .interrupt_pending = cpu_instruction_interrupt_pending
+        .interrupt_pending = cpu_instruction_interrupt_pending,
+        .special_cycle = cpu_instruction_special_cycle,
+        .cancel_special_cycle = cpu_instruction_cancel_special_cycle
     };
     lib_u8 operand32, stack;
     lib_bool passed = LIB_TRUE;
@@ -597,7 +605,7 @@ static lib_bool pusha_popa_test_vm_initial_sp(void)
         const lib_u8 offset = operand32 ? 0u : 1u;
         t_cpu after;
         lib_memory_set(&fixture, 0, sizeof(fixture));
-        cpu_instruction_prepare_with_bus(state, CORE_MACHINE_CPU_PROFILE_80386,
+        cpu_instruction_prepare_with_bus(state, profile,
             &bus, &fixture);
         state->cpu.data.cr0 |= VCPU_CR0_PE;
         state->cpu.data.eflags |= VCPU_EFLAGS_VM;
@@ -619,16 +627,19 @@ static lib_bool pusha_popa_test_vm_initial_sp(void)
 
 lib_i32 main(void)
 {
-    if (!pusha_popa_test_vm_initial_sp()) return 1;
+    if (!pusha_popa_test_vm_initial_sp(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !pusha_popa_test_vm_initial_sp(CORE_MACHINE_CPU_PROFILE_80486SX)) return 1;
     if (!pusha_popa_test_ordered_failure()) return 1;
     if (!pusha_popa_test_initial_sp()) return 1;
     if (!pusha_popa_test_frame_admission()) return 1;
-    if (!pusha_popa_test_protected_pusha_limit())
+    if (!pusha_popa_test_protected_pusha_limit(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !pusha_popa_test_protected_pusha_limit(CORE_MACHINE_CPU_PROFILE_80486SX))
     {
         lib_c_printf("CPU stack cache stage=test_protected_pusha_limit\n");
         return 1;
     }
-    if (!pusha_popa_test_protected_popa_limit())
+    if (!pusha_popa_test_protected_popa_limit(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !pusha_popa_test_protected_popa_limit(CORE_MACHINE_CPU_PROFILE_80486SX))
     {
         lib_c_printf("CPU stack cache stage=test_protected_popa_limit\n");
         return 1;
@@ -638,7 +649,8 @@ lib_i32 main(void)
         lib_c_printf("PUSHA-POPA stage=defaults\n");
         return 1;
     }
-    if (!pusha_popa_test_attributes())
+    if (!pusha_popa_test_attributes(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !pusha_popa_test_attributes(CORE_MACHINE_CPU_PROFILE_80486SX))
     {
         lib_c_printf("PUSHA-POPA stage=attributes\n");
         return 1;

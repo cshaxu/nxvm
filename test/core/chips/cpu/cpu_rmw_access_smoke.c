@@ -220,12 +220,13 @@ int main(void)
         const lib_bool shift = !base->extended &&
             (base->opcode == 0xc0u || base->opcode == 0xc1u ||
              (base->opcode >= 0xd0u && base->opcode <= 0xd3u));
-        const lib_u8 variants = arithmetic ? 7u : shift ? 8u : 1u;
+        const lib_bool test = !base->extended && !base->modifies &&
+            (base->opcode == 0xf6u || base->opcode == 0xf7u);
+        const lib_u8 variants = arithmetic ? 7u : shift ? 8u : test ? 2u : 1u;
 
         for (lib_u8 variant = 0u; variant < variants; ++variant) {
             rmw_form selected = *base;
-            if (shift && variant == 6u) continue;
-            if (arithmetic || shift) selected.reg = variant;
+            if (arithmetic || shift || test) selected.reg = variant;
             for (lib_u8 width = base->byte ? 1u : 2u;
                     width <= (base->byte ? 1u : 4u); width *= 2u)
                 for (lib_u8 scenario = 0u; scenario < 7u; ++scenario)

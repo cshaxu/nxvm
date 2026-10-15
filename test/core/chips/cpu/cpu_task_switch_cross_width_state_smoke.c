@@ -327,8 +327,8 @@ typedef enum task_switch_tss32_rejection {
     TASK_SWITCH_TSS32_DEBUG_TRAP_SUCCESS
 } task_switch_tss32_rejection;
 
-static lib_i32 task_switch_expect_cross_width_16_to_32(lib_u8 nested,
-    lib_u8 task_gate, lib_u8 task_return)
+static lib_i32 task_switch_expect_cross_width_16_to_32(core_machine_cpu_profile profile,
+    lib_u8 nested, lib_u8 task_gate, lib_u8 task_return)
 {
     task_switch_fixture fixture;
     task_switch_smoke_tss32_state target = {
@@ -344,9 +344,14 @@ static lib_i32 task_switch_expect_cross_width_16_to_32(lib_u8 nested,
     lib_u16 saved_ldtr = 0xffffu;
     lib_u8 busy[2] = {0u, 0u};
     t_cpu cpu;
-    lib_i32 failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !task_switch_prepare(&fixture, profile);
 
     if (!failed) {
+        fixture.cpu.data.dr0 = 0xfffffff0u;
+        fixture.cpu.data.dr1 = 0xfffffff4u;
+        fixture.cpu.data.dr2 = 0xfffffff8u;
+        fixture.cpu.data.dr3 = 0xfffffffcu;
+        fixture.cpu.data.dr7 = 0x4ffu;
         failed |= !task_switch_install(&fixture, nested ?
             (task_gate ? TASK_SWITCH_CASE_TASK_GATE_SUCCESS :
                 TASK_SWITCH_CASE_CALL_SUCCESS) : TASK_SWITCH_CASE_SUCCESS) ||
@@ -360,6 +365,9 @@ static lib_i32 task_switch_expect_cross_width_16_to_32(lib_u8 nested,
             !task_switch_run(&fixture);
         cpu = fixture.cpu;
         failed |= cpu.data.tr.selector != (task_return ? 0x28u : 0x30u) ||
+            cpu.data.dr7 != 0x4aau || cpu.data.dr0 != 0xfffffff0u ||
+            cpu.data.dr1 != 0xfffffff4u || cpu.data.dr2 != 0xfffffff8u ||
+            cpu.data.dr3 != 0xfffffffcu ||
             cpu.data.tr.sys.type != (task_return ? VCPU_DESC_SYS_TYPE_TSS_16_BUSY :
                 VCPU_DESC_SYS_TYPE_TSS_32_BUSY) || cpu.data.eax !=
                 (task_return ? 0xffff1111u : target.eax) ||
@@ -409,8 +417,8 @@ typedef struct task_switch_smoke_tss16_state {
 _Static_assert(sizeof(task_switch_smoke_tss16_state) == 0x1eu,
     "TSS16 test image must retain the complete Intel saved-state span");
 
-static lib_i32 task_switch_expect_cross_width_32_to_16(lib_u8 nested,
-    lib_u8 task_gate, lib_u8 task_return)
+static lib_i32 task_switch_expect_cross_width_32_to_16(core_machine_cpu_profile profile,
+    lib_u8 nested, lib_u8 task_gate, lib_u8 task_return)
 {
     task_switch_fixture fixture;
     task_switch_smoke_tss32_state outgoing;
@@ -450,11 +458,16 @@ static lib_i32 task_switch_expect_cross_width_32_to_16(lib_u8 nested,
     };
     lib_u8 busy[2] = {0u, 0u};
     t_cpu cpu;
-    lib_i32 failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !task_switch_prepare(&fixture, profile);
 
     if (nested) source[48] = 0x9au;
     if (task_gate) source[51] = 0x38u;
     if (!failed) {
+        fixture.cpu.data.dr0 = 0xfffffff0u;
+        fixture.cpu.data.dr1 = 0xfffffff4u;
+        fixture.cpu.data.dr2 = 0xfffffff8u;
+        fixture.cpu.data.dr3 = 0xfffffffcu;
+        fixture.cpu.data.dr7 = 0x4ffu;
         failed |= !write_bytes(&fixture, GDT_POINTER, gdt_pointer,
                 sizeof(gdt_pointer)) || !write_bytes(&fixture, GDT_BASE,
                 gdt, sizeof(gdt)) || !write_bytes(&fixture, 0u,
@@ -473,6 +486,9 @@ static lib_i32 task_switch_expect_cross_width_32_to_16(lib_u8 nested,
             !task_switch_run(&fixture);
         cpu = fixture.cpu;
         failed |= cpu.data.tr.selector != (task_return ? 0x28u : 0x30u) ||
+            cpu.data.dr7 != 0x4aau || cpu.data.dr0 != 0xfffffff0u ||
+            cpu.data.dr1 != 0xfffffff4u || cpu.data.dr2 != 0xfffffff8u ||
+            cpu.data.dr3 != 0xfffffffcu ||
             cpu.data.eax != (task_return ? 0x11111111u : 0xffff2222u) ||
             cpu.data.ecx != (task_return ? 0x22222222u : 0xffff3333u) ||
             cpu.data.edx != (task_return ? 0x33333333u : 0xffff4444u) ||
@@ -496,24 +512,29 @@ static lib_i32 task_switch_expect_cross_width_32_to_16(lib_u8 nested,
 
 int main(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
     lib_i32 failed = 0;
 
-    failed |= task_switch_expect_cross_width_16_to_32(LIB_FALSE, LIB_FALSE,
-        LIB_FALSE);
-    failed |= task_switch_expect_cross_width_16_to_32(LIB_TRUE, LIB_FALSE,
-        LIB_FALSE);
-    failed |= task_switch_expect_cross_width_16_to_32(LIB_TRUE, LIB_TRUE,
-        LIB_FALSE);
-    failed |= task_switch_expect_cross_width_16_to_32(LIB_TRUE, LIB_FALSE,
-        LIB_TRUE);
-    failed |= task_switch_expect_cross_width_32_to_16(LIB_FALSE, LIB_FALSE,
-        LIB_FALSE);
-    failed |= task_switch_expect_cross_width_32_to_16(LIB_TRUE, LIB_FALSE,
-        LIB_FALSE);
-    failed |= task_switch_expect_cross_width_32_to_16(LIB_TRUE, LIB_TRUE,
-        LIB_FALSE);
-    failed |= task_switch_expect_cross_width_32_to_16(LIB_TRUE, LIB_FALSE,
-        LIB_TRUE);
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        failed |= task_switch_expect_cross_width_16_to_32(profiles[index], LIB_FALSE, LIB_FALSE,
+            LIB_FALSE);
+        failed |= task_switch_expect_cross_width_16_to_32(profiles[index], LIB_TRUE, LIB_FALSE,
+            LIB_FALSE);
+        failed |= task_switch_expect_cross_width_16_to_32(profiles[index], LIB_TRUE, LIB_TRUE,
+            LIB_FALSE);
+        failed |= task_switch_expect_cross_width_16_to_32(profiles[index], LIB_TRUE, LIB_FALSE,
+            LIB_TRUE);
+        failed |= task_switch_expect_cross_width_32_to_16(profiles[index], LIB_FALSE, LIB_FALSE,
+            LIB_FALSE);
+        failed |= task_switch_expect_cross_width_32_to_16(profiles[index], LIB_TRUE, LIB_FALSE,
+            LIB_FALSE);
+        failed |= task_switch_expect_cross_width_32_to_16(profiles[index], LIB_TRUE, LIB_TRUE,
+            LIB_FALSE);
+        failed |= task_switch_expect_cross_width_32_to_16(profiles[index], LIB_TRUE, LIB_FALSE,
+            LIB_TRUE);
+    }
     if (failed) return 1;
     lib_c_printf("TASK-SWITCH:OK\n");
     lib_c_printf("TASK-SWITCH:CORPUS:OK\n");

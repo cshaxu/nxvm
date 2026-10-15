@@ -23,7 +23,7 @@ static lib_i32 near_run_steps(cpu_instruction_fixture *state,
     return 1;
 }
 
-static lib_i32 near_test_call_and_return_forms(void)
+static lib_i32 near_test_call_and_return_forms(core_machine_cpu_profile profile)
 {
     static const lib_u8 code32_call32[] = {0xe8u,3u,0,0,0,0xb0u,0xa5u,0xf4u,0xc3u};
     static const lib_u8 code32_call16[] = {0x66u,0xe8u,3u,0,0xb0u,0xa5u,0xf4u,0x66u,0xc3u};
@@ -40,7 +40,7 @@ static lib_i32 near_test_call_and_return_forms(void)
         t_cpu before;
         t_cpu after;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         state.cpu.data.cs.seg.data.big = index < 2u;
         state.cpu.data.esp = 0x8000u;
         before = state.cpu;
@@ -51,7 +51,7 @@ static lib_i32 near_test_call_and_return_forms(void)
     return 1;
 }
 
-static lib_i32 near_test_return_immediate(void)
+static lib_i32 near_test_return_immediate(core_machine_cpu_profile profile)
 {
     static const lib_u8 ret16[] = {0x66u,0xc2u,4u,0,0xf4u};
     static const lib_u8 ret32[] = {0xc2u,4u,0,0xf4u};
@@ -68,7 +68,7 @@ static lib_i32 near_test_return_immediate(void)
         t_cpu before;
         t_cpu after;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         state.cpu.data.cs.seg.data.big = LIB_TRUE;
         state.cpu.data.ss.seg.data.big = LIB_TRUE;
         state.cpu.data.ss.limit = 0xffffffffu;
@@ -82,7 +82,7 @@ static lib_i32 near_test_return_immediate(void)
     return 1;
 }
 
-static lib_i32 near_test_indirect_and_fault_boundaries(void)
+static lib_i32 near_test_indirect_and_fault_boundaries(core_machine_cpu_profile profile)
 {
     static const lib_u8 call32[] = {0xb8u,10u,0,0,0,0xffu,0xd0u,0xb0u,0xa5u,0xf4u,0xc3u};
     static const lib_u8 call16[] = {0xb8u,8u,0,0xffu,0xd0u,0xb0u,0xa5u,0xf4u,0xc3u};
@@ -96,29 +96,29 @@ static lib_i32 near_test_indirect_and_fault_boundaries(void)
     t_cpu before;
     t_cpu after;
 
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     state.cpu.data.cs.seg.data.big = LIB_TRUE;
     state.cpu.data.esp = 0x8000u;
     before = state.cpu;
     if (!near_run_steps(&state, call32, sizeof(call32), 4u, &after) ||
         after.data.eax != 0xa5u || after.data.esp != before.data.esp) return 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     state.cpu.data.esp = 0x8000u;
     before = state.cpu;
     if (!near_run_steps(&state, call16, sizeof(call16), 4u, &after) ||
         after.data.eax != 0xa5u || after.data.esp != before.data.esp) return 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     state.cpu.data.cs.seg.data.big = LIB_TRUE;
     lib_memory_copy(state.memory + 0x100u, target32, sizeof(target32));
     if (!near_run(&state, jmp32, sizeof(jmp32), &after) || after.data.eip != 8u) return 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     lib_memory_copy(state.memory + 0x100u, target16, sizeof(target16));
     if (!near_run(&state, jmp16, sizeof(jmp16), &after) || after.data.eip != 6u) return 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     state.cpu.data.cs.seg.data.big = LIB_TRUE;
     state.cpu.data.cs.limit = 0x7fu;
     if (!cpu_instruction_expect_real_fault(&state, call_fault, sizeof(call_fault), 13u)) return 0;
-    cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&state, profile);
     state.cpu.data.cs.seg.data.big = LIB_TRUE;
     state.cpu.data.cs.limit = 0x7fu;
     state.cpu.data.eax = 0x80u;
@@ -129,9 +129,12 @@ static lib_i32 near_test_indirect_and_fault_boundaries(void)
 
 int main(void)
 {
-    if (!near_test_call_and_return_forms()) goto fail_call;
-    if (!near_test_return_immediate()) goto fail_return;
-    if (!near_test_indirect_and_fault_boundaries()) goto fail_indirect;
+    if (!near_test_call_and_return_forms(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !near_test_call_and_return_forms(CORE_MACHINE_CPU_PROFILE_80486SX)) goto fail_call;
+    if (!near_test_return_immediate(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !near_test_return_immediate(CORE_MACHINE_CPU_PROFILE_80486SX)) goto fail_return;
+    if (!near_test_indirect_and_fault_boundaries(CORE_MACHINE_CPU_PROFILE_80386) ||
+        !near_test_indirect_and_fault_boundaries(CORE_MACHINE_CPU_PROFILE_80486SX)) goto fail_indirect;
     lib_c_printf("%s\n", "NEAR-RETURN-PROFILES:OK");
     lib_c_printf("%s\n", "CPU-CONTROL-TRANSFER-NEAR:OK");
     return 0;

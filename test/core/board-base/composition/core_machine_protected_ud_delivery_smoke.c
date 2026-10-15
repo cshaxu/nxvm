@@ -288,18 +288,20 @@ static lib_i32 ud_lexeme_8086_pop_cs(void)
 }
 static lib_i32 ud_primary_metadata_and_lexeme(void)
 {
-    static const lib_u8 reserved[] = { 0xf1u };
+    static const lib_u8 later[] = { 0xf1u };
     core_machine_cpu_instruction_lexeme lexeme;
     core_machine_cpu_instruction_metadata metadata =
         core_machine_cpu_instruction_metadata_get(
             CORE_MACHINE_CPU_INSTRUCTION_PRIMARY, 0xf1u, 0u);
 
-    return !metadata.valid && !core_machine_cpu_instruction_lexeme_scan(
-        reserved, sizeof(reserved), CORE_MACHINE_CPU_PROFILE_80386,
+    return metadata.valid && metadata.minimum_cpu == CORE_MACHINE_CPU_PROFILE_80486SX &&
+        !core_machine_cpu_instruction_lexeme_scan(
+        later, sizeof(later), CORE_MACHINE_CPU_PROFILE_80386,
         LIB_TRUE, &lexeme);
 }
 static core_machine_cpu_profile ud_primary_expected_minimum(lib_u8 opcode)
 {
+    if (opcode == 0xd6u || opcode == 0xf1u) return CORE_MACHINE_CPU_PROFILE_80486SX;
     if ((opcode >= 0x60u && opcode <= 0x62u) || opcode == 0x68u ||
         opcode == 0x69u || opcode == 0x6au || opcode == 0x6bu ||
         (opcode >= 0x6cu && opcode <= 0x6fu) || opcode == 0xc0u ||
@@ -320,16 +322,15 @@ static lib_i32 ud_primary_metadata_matrix(void)
         core_machine_cpu_instruction_metadata metadata =
             core_machine_cpu_instruction_metadata_get(
                 CORE_MACHINE_CPU_INSTRUCTION_PRIMARY, opcode, 0u);
-        lib_u8 reserved = opcode == 0xd6u || opcode == 0xf1u;
-
-        if (metadata.valid == reserved || (!reserved &&
-            metadata.minimum_cpu != ud_primary_expected_minimum(opcode))) return 0;
+        if (!metadata.valid ||
+            metadata.minimum_cpu != ud_primary_expected_minimum(opcode)) return 0;
     }
     return 1;
 }
 static core_machine_cpu_profile ud_0f_expected_minimum(lib_u8 opcode)
 {
     if (opcode == 0x08u || opcode == 0x09u ||
+        (opcode >= 0x10u && opcode <= 0x13u) ||
         opcode == 0xa2u || opcode == 0xaau || opcode == 0xb0u || opcode == 0xb1u ||
         opcode == 0xc0u || opcode == 0xc1u ||
         (opcode >= 0xc8u && opcode <= 0xcfu))

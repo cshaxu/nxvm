@@ -392,6 +392,48 @@ static lib_i32 control_real_data_cache(const t_cpu_data_sreg *sreg,
 
 /* The full cache assertions formerly mixed into the Core descriptor receiver
  * belong here: copied Core snapshots do not expose CPU cache bookkeeping. */
+static lib_bool control_test_reserved_cr_forms(void)
+{
+    static const lib_u8 reserved[] = {1u, 5u, 6u, 7u};
+
+    for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80386;
+         profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile)
+    for (lib_u8 write = 0u; write < 2u; ++write)
+    for (lib_size index = 0u; index < sizeof(reserved); ++index)
+    for (lib_u8 reg = 0u; reg < 8u; ++reg)
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes) {
+        cpu_instruction_fixture fixture;
+        core_machine_cpu_instruction_lexeme lexeme;
+        core_machine_cpu_instruction_metadata metadata;
+        lib_u8 code[5], bytes = 0u;
+        const lib_u8 opcode = write ? 0x22u : 0x20u;
+        const lib_u8 modrm = (lib_u8)(0xc0u | (reserved[index] << 3u) | reg);
+
+        if (prefixes & 1u) code[bytes++] = 0x66u;
+        if (prefixes & 2u) code[bytes++] = 0x67u;
+        code[bytes++] = 0x0fu;
+        code[bytes++] = opcode;
+        code[bytes++] = modrm;
+        metadata = core_machine_cpu_instruction_metadata_get(
+            CORE_MACHINE_CPU_INSTRUCTION_0F, opcode, modrm);
+        if (metadata.valid ||
+            core_machine_cpu_instruction_lexeme_scan(code, bytes, profile,
+                code32, &lexeme) || lexeme.available) {
+            lib_c_printf("reserved CR admission: profile=%u CR=%u write=%u reg=%u code32=%u prefix=%u\n",
+                (lib_u32)profile, (lib_u32)reserved[index], (lib_u32)write,
+                (lib_u32)reg, (lib_u32)code32, (lib_u32)prefixes);
+            return LIB_FALSE;
+        }
+        cpu_instruction_prepare(&fixture, profile);
+        control_seed(&fixture);
+        fixture.cpu.data.cs.seg.exec.defsize = code32;
+        if (!cpu_instruction_expect_real_fault(&fixture, code, bytes, 6u))
+            return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 static lib_i32 control_test_leave_protected_mode(void)
 {
     static const lib_u8 code[] = {
@@ -1132,8 +1174,71 @@ failed:
     return LIB_TRUE;
 }
 
+static lib_bool control_test_historical_encoding_rejection(void)
+{
+    static const lib_u8 opcodes[] = {0x05u, 0x07u, 0xa6u, 0xa7u};
+
+    for (lib_size opcode = 0u; opcode < sizeof(opcodes); ++opcode)
+    for (lib_u8 mode = 0u; mode < 6u; ++mode)
+    for (lib_u8 code32 = 0u; code32 < 2u; ++code32)
+    for (lib_u8 prefixes = 0u; prefixes < 4u; ++prefixes)
+    for (lib_u8 locked = 0u; locked < 2u; ++locked) {
+        cpu_instruction_fixture fixture;
+        core_machine_cpu_instruction_lexeme lexeme;
+        t_cpu before, after;
+        lib_u8 code[5], bytes = 0u;
+        const lib_u32 stack = mode == 5u ? 0x1000u - 36u :
+            0x800u - (mode ? 12u : 6u);
+
+        if (mode == 5u && code32) continue;
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        if (mode) {
+            cpu_instruction_prepare_protected_exception(&fixture, mode - 1u);
+            lib_memory_copy(fixture.memory + 0x430u, fixture.memory + 0x468u, 8u);
+            if (mode == 5u) {
+                fixture.cpu.data.cs.selector = 0u;
+                fixture.cpu.data.ss.selector = 0u;
+            }
+        } else {
+            const lib_u16 vector[] = {0x300u, 0u};
+
+            lib_memory_copy(fixture.memory + 6u * 4u, vector, sizeof(vector));
+            fixture.cpu.data.esp = 0x800u;
+        }
+        fixture.cpu.data.cs.seg.exec.defsize = code32;
+        fixture.cpu.data.eax = 0x11223344u;
+        fixture.cpu.data.edi = 0x5000u;
+        before = fixture.cpu;
+        if (locked) code[bytes++] = 0xf0u;
+        if (prefixes & 1u) code[bytes++] = 0x66u;
+        if (prefixes & 2u) code[bytes++] = 0x67u;
+        code[bytes++] = 0x0fu;
+        code[bytes++] = opcodes[opcode];
+        if (core_machine_cpu_instruction_lexeme_scan(code, bytes,
+                CORE_MACHINE_CPU_PROFILE_80486SX, code32, &lexeme) || lexeme.available ||
+            cpu_instruction_run(&fixture, code, bytes, &after) != LIB_STATUS_OK ||
+            fixture.fault.valid || !fixture.delivered_exception.valid ||
+            fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_UD ||
+            fixture.delivered_exception.exception_code != 0u ||
+            fixture.delivered_exception.point.eip != 0u ||
+            after.data.eip != 0x300u || after.data.esp != stack ||
+            after.data.eax != before.data.eax || after.data.edi != before.data.edi ||
+            after.data.cr0 != before.data.cr0 || after.data.cr3 != before.data.cr3 ||
+            fixture.writes != (mode == 5u ? 9u : 3u))
+            return LIB_FALSE;
+        lib_u32 saved_ip = 0u;
+        lib_memory_copy(&saved_ip, fixture.memory + stack, mode ? 4u : 2u);
+        if (saved_ip != 0u) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
+    if (!control_test_historical_encoding_rejection()) {
+        lib_c_printf("control-state stage=historical-encoding-rejection\n");
+        return 1;
+    }
     if (!control_test_486_alignment()) {
         lib_c_printf("control-state stage=486-alignment\n");
         return 1;
@@ -1184,6 +1289,10 @@ int main(void)
     }
     if (!control_test_mov_cr()) {
         lib_c_printf("control-state stage=mov-cr\n");
+        return 1;
+    }
+    if (!control_test_reserved_cr_forms()) {
+        lib_c_printf("control-state stage=reserved-cr-forms\n");
         return 1;
     }
     if (!control_test_leave_protected_mode()) {

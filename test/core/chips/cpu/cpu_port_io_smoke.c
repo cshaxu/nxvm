@@ -82,7 +82,8 @@ static lib_i32 port_io_test_default_forms(void)
     };
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile, form;
 
@@ -96,7 +97,7 @@ static lib_i32 port_io_test_default_forms(void)
     return 1;
 }
 
-static lib_i32 port_io_test_386_attributes(void)
+static lib_i32 port_io_test_attributes(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = {
         0xe4u,0xe5u,0xe6u,0xe7u,0xecu,0xedu,0xeeu,0xefu
@@ -115,7 +116,7 @@ static lib_i32 port_io_test_386_attributes(void)
             if (attribute == 2u) code[1] = 0x67u;
             code[prefix_bytes] = opcodes[form];
             if (form < 4u) code[prefix_bytes + 1u] = 0x5au;
-            if (!port_io_success(CORE_MACHINE_CPU_PROFILE_80386, code,
+            if (!port_io_success(profile, code,
                 bytes, form < 2u || (form >= 4u && form < 6u), width,
                 form < 4u ? 0x005au : 0x00e0u)) return 0;
         }
@@ -127,11 +128,12 @@ static lib_i32 port_io_test_provider_failure(void)
     static const lib_u8 in_code[] = {0xe4u,0x5au};
     static const lib_u8 out_code[] = {0xe7u,0x5au};
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile, form;
 
-    for (profile = 0u; profile != 2u; ++profile)
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
         for (form = 0u; form != 2u; ++form) {
             cpu_port_instruction_fixture state;
             t_cpu before, after;
@@ -154,13 +156,13 @@ static lib_i32 port_io_test_provider_failure(void)
     return 1;
 }
 
-static lib_i32 port_io_test_vm86(void)
+static lib_i32 port_io_test_vm86(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0xe4u,0x5au};
     cpu_port_instruction_fixture state;
     t_cpu before, after;
 
-    cpu_port_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_port_prepare(&state, profile);
     port_io_seed(&state.instruction.cpu);
     state.instruction.cpu.data.cr0 |= VCPU_CR0_PE;
     state.instruction.cpu.data.eflags = VCPU_EFLAGS_VM |
@@ -180,7 +182,7 @@ static lib_i32 port_io_test_vm86(void)
         state.transfer_count == 0u && state.complete_count == 0u;
 }
 
-static lib_i32 port_io_test_tss_iomap(void)
+static lib_i32 port_io_test_tss_iomap(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0xe4u,0xe0u};
     const lib_u16 iomap_base = 0x0080u;
@@ -191,7 +193,7 @@ static lib_i32 port_io_test_tss_iomap(void)
         t_cpu before, after;
         lib_u8 bitmap = denied == 1u ? 0x01u : 0u;
 
-        cpu_port_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_port_prepare(&state, profile);
         port_io_seed(&state.instruction.cpu);
         state.instruction.cpu.data.cr0 |= VCPU_CR0_PE;
         state.instruction.cpu.data.eflags = denied == 2u ?
@@ -241,7 +243,7 @@ static lib_i32 port_io_expect_ud(core_machine_cpu_profile profile,
         state.transfer_count == 0u && state.complete_count == 0u;
 }
 
-static lib_i32 port_io_test_rejections(void)
+static lib_i32 port_io_test_rejections(core_machine_cpu_profile modern)
 {
     static const lib_u8 opcodes[] = {
         0xe4u,0xe5u,0xe6u,0xe7u,0xecu,0xedu,0xeeu,0xefu
@@ -271,12 +273,12 @@ static lib_i32 port_io_test_rejections(void)
         lib_u8 both[] = {0xf0u,0x66u,0x67u,opcodes[form],0x5au};
         lib_u8 bytes = form < 4u ? 3u : 2u;
 
-        if (!port_io_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock, bytes) ||
-            !port_io_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock66,
+        if (!port_io_expect_ud(modern, lock, bytes) ||
+            !port_io_expect_ud(modern, lock66,
                 (lib_u8)(bytes + 1u)) ||
-            !port_io_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock67,
+            !port_io_expect_ud(modern, lock67,
                 (lib_u8)(bytes + 1u)) ||
-            !port_io_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, both,
+            !port_io_expect_ud(modern, both,
                 (lib_u8)(bytes + 2u))) return 0;
     }
     return 1;
@@ -284,11 +286,23 @@ static lib_i32 port_io_test_rejections(void)
 
 lib_i32 main(void)
 {
-    if (!port_io_test_default_forms() || !port_io_test_386_attributes() ||
-        !port_io_test_provider_failure() || !port_io_test_vm86() ||
-        !port_io_test_tss_iomap() || !port_io_test_rejections()) {
-        lib_c_printf("Scalar port I/O CPU semantics failed\n");
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
+    if (!port_io_test_default_forms() || !port_io_test_provider_failure()) {
+        lib_c_printf("Scalar port I/O CPU default/failure semantics failed\n");
         return 1;
+    }
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        if (!port_io_test_attributes(profiles[index]) ||
+            !port_io_test_vm86(profiles[index]) ||
+            !port_io_test_tss_iomap(profiles[index]) ||
+            !port_io_test_rejections(profiles[index])) {
+            lib_c_printf("Scalar port I/O CPU semantics failed profile=%u\n",
+                profiles[index]);
+            return 1;
+        }
     }
     lib_c_printf("PORT-IO:OK\n");
     return 0;

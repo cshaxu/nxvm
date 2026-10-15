@@ -219,7 +219,7 @@ static lib_bool cpu_task16_expect_nested_return(core_machine_cpu_profile profile
     return !fixture.fault.valid && !fixture.delivered_exception.valid &&
         after.data.flagHalt && after.data.eip == 9u && after.data.tr.selector == 0x28u &&
         (after.data.eflags & VCPU_EFLAGS_NT) == 0u &&
-        after.data.eax == (profile == CORE_MACHINE_CPU_PROFILE_80386 ?
+        after.data.eax == (profile >= CORE_MACHINE_CPU_PROFILE_80386 ?
             0xffff1111u : 0x1111u) &&
         fixture.memory[CPU_TASK16_GDT_BASE + 0x2du] == 0x83u &&
         fixture.memory[CPU_TASK16_GDT_BASE + 0x35u] == 0x81u;
@@ -289,14 +289,13 @@ static lib_bool cpu_task16_expect_idt_gate(core_machine_cpu_profile profile)
         fixture.memory[CPU_TASK16_GDT_BASE + 0x35u] == 0x83u;
 }
 
-static lib_bool cpu_task16_expect_double_fault_gate(void)
+static lib_bool cpu_task16_expect_double_fault_gate(core_machine_cpu_profile profile)
 {
     cpu_instruction_fixture fixture;
     t_cpu after = {0};
     lib_u16 marker = 0u;
 
-    cpu_task16_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386,
-        CPU_TASK16_DOUBLE_FAULT_GATE);
+    cpu_task16_prepare(&fixture, profile, CPU_TASK16_DOUBLE_FAULT_GATE);
     cpu_task16_refresh(&fixture, 8u);
     after = fixture.cpu;
     lib_memory_copy(&marker, fixture.memory + CPU_TASK16_DATA_BASE,
@@ -362,80 +361,111 @@ static lib_bool cpu_task16_completion_flags(void)
     return LIB_TRUE;
 }
 
+static lib_bool cpu_task16_debug_local_enables(core_machine_cpu_profile profile)
+{
+    static const struct {
+        cpu_task16_case test_case;
+        lib_u16 task;
+        lib_bool switched;
+    } cases[] = {
+        {CPU_TASK16_DIRECT, 0x30u, LIB_TRUE},
+        {CPU_TASK16_INDIRECT, 0x30u, LIB_TRUE},
+        {CPU_TASK16_CALL, 0x30u, LIB_TRUE},
+        {CPU_TASK16_GATE, 0x30u, LIB_TRUE},
+        {CPU_TASK16_NESTED_RETURN, 0x28u, LIB_TRUE},
+        {CPU_TASK16_IDT_GATE, 0x30u, LIB_TRUE},
+        {CPU_TASK16_LDT_NOT_PRESENT, 0x48u, LIB_TRUE},
+        {CPU_TASK16_INVALID, 0x28u, LIB_FALSE},
+        {CPU_TASK16_NOT_PRESENT, 0x28u, LIB_FALSE},
+        {CPU_TASK16_BUSY, 0x28u, LIB_FALSE},
+        {CPU_TASK16_SHORT, 0x28u, LIB_FALSE}
+    };
+
+    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+        cpu_instruction_fixture fixture;
+        const lib_u32 expected = cases[index].switched ? 0x4aau : 0x4ffu;
+
+        cpu_task16_prepare(&fixture, profile, cases[index].test_case);
+        fixture.cpu.data.dr0 = 0xfffffff0u;
+        fixture.cpu.data.dr1 = 0xfffffff4u;
+        fixture.cpu.data.dr2 = 0xfffffff8u;
+        fixture.cpu.data.dr3 = 0xfffffffcu;
+        fixture.cpu.data.dr7 = 0x4ffu;
+        if (cases[index].test_case == CPU_TASK16_NESTED_RETURN) {
+            cpu_task16_refresh(&fixture, 2u);
+            if (fixture.cpu.data.tr.selector != 0x30u) return LIB_FALSE;
+            fixture.cpu.data.dr7 = 0x4ffu;
+        }
+        cpu_task16_refresh(&fixture, 8u);
+        if (fixture.cpu.data.tr.selector != cases[index].task ||
+            fixture.cpu.data.dr7 != expected ||
+            fixture.cpu.data.dr0 != 0xfffffff0u ||
+            fixture.cpu.data.dr1 != 0xfffffff4u ||
+            fixture.cpu.data.dr2 != 0xfffffff8u ||
+            fixture.cpu.data.dr3 != 0xfffffffcu) {
+            lib_c_fprintf(lib_c_stderr,
+                "task16 debug profile=%u case=%u tr=%04x dr7=%08x expected=%08x\n",
+                (unsigned)profile, (unsigned)cases[index].test_case,
+                fixture.cpu.data.tr.selector, (unsigned)fixture.cpu.data.dr7,
+                (unsigned)expected);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
 int main(void)
 {
-    if (!cpu_task16_completion_flags()) return 1;
-    lib_bool failed = LIB_FALSE;
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+    static const cpu_task16_case success[] = {
+        CPU_TASK16_DIRECT, CPU_TASK16_INDIRECT, CPU_TASK16_CALL, CPU_TASK16_GATE
+    };
+    static const struct {
+        cpu_task16_case test_case;
+        lib_u32 exception;
+        lib_u16 error;
+    } faults[] = {
+        {CPU_TASK16_INVALID,VCPUINS_EXCEPT_GP,0x0040u},
+        {CPU_TASK16_NOT_PRESENT,VCPUINS_EXCEPT_NP,0x0030u},
+        {CPU_TASK16_BUSY,VCPUINS_EXCEPT_GP,0x0030u},
+        {CPU_TASK16_SHORT,VCPUINS_EXCEPT_TS,0x0030u},
+        {CPU_TASK16_LDT_NOT_PRESENT,VCPUINS_EXCEPT_NP,0x0040u}
+    };
+    lib_bool failed = !cpu_task16_completion_flags();
 
-    failed |= !cpu_task16_expect_success(CORE_MACHINE_CPU_PROFILE_80286,
-        CPU_TASK16_DIRECT);
-    failed |= !cpu_task16_expect_success(CORE_MACHINE_CPU_PROFILE_80386,
-        CPU_TASK16_DIRECT);
-    failed |= !cpu_task16_expect_success(CORE_MACHINE_CPU_PROFILE_80286,
-        CPU_TASK16_INDIRECT);
-    failed |= !cpu_task16_expect_success(CORE_MACHINE_CPU_PROFILE_80386,
-        CPU_TASK16_INDIRECT);
-    failed |= !cpu_task16_expect_success(CORE_MACHINE_CPU_PROFILE_80286,
-        CPU_TASK16_CALL);
-    failed |= !cpu_task16_expect_success(CORE_MACHINE_CPU_PROFILE_80386,
-        CPU_TASK16_CALL);
-    failed |= !cpu_task16_expect_success(CORE_MACHINE_CPU_PROFILE_80286,
-        CPU_TASK16_GATE);
-    failed |= !cpu_task16_expect_success(CORE_MACHINE_CPU_PROFILE_80386,
-        CPU_TASK16_GATE);
-    failed |= !cpu_task16_expect_ldt(CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= !cpu_task16_expect_ldt(CORE_MACHINE_CPU_PROFILE_80386);
-    failed |= !cpu_task16_expect_ring3(CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= !cpu_task16_expect_ring3(CORE_MACHINE_CPU_PROFILE_80386);
-    failed |= !cpu_task16_expect_ring3_source_direct(
-        CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= !cpu_task16_expect_ring3_source_direct(
-        CORE_MACHINE_CPU_PROFILE_80386);
-    failed |= !cpu_task16_expect_ring3_source_call(
-        CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= !cpu_task16_expect_ring3_source_call(
-        CORE_MACHINE_CPU_PROFILE_80386);
-    failed |= !cpu_task16_expect_ring3_source_gate_jump(
-        CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= !cpu_task16_expect_ring3_source_gate_jump(
-        CORE_MACHINE_CPU_PROFILE_80386);
-    failed |= !cpu_task16_expect_ring3_source_gate_privilege(
-        CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= !cpu_task16_expect_ring3_source_gate_privilege(
-        CORE_MACHINE_CPU_PROFILE_80386);
-    failed |= !cpu_task16_expect_ring3_source_gate_call(
-        CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= !cpu_task16_expect_ring3_source_gate_call(
-        CORE_MACHINE_CPU_PROFILE_80386);
-    failed |= !cpu_task16_expect_readable_code_data(
-        CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= !cpu_task16_expect_readable_code_data(
-        CORE_MACHINE_CPU_PROFILE_80386);
-    failed |= !cpu_task16_expect_nested_return(CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= !cpu_task16_expect_nested_return(CORE_MACHINE_CPU_PROFILE_80386);
-    failed |= !cpu_task16_expect_gate_rejection(CORE_MACHINE_CPU_PROFILE_80286,
-        CPU_TASK16_GATE_PRIVILEGE, VCPUINS_EXCEPT_GP);
-    failed |= !cpu_task16_expect_gate_rejection(CORE_MACHINE_CPU_PROFILE_80286,
-        CPU_TASK16_GATE_NOT_PRESENT, VCPUINS_EXCEPT_DF);
-    failed |= !cpu_task16_expect_gate_rejection(CORE_MACHINE_CPU_PROFILE_80386,
-        CPU_TASK16_GATE_NOT_PRESENT, VCPUINS_EXCEPT_DF);
-    failed |= !cpu_task16_expect_stack_limit(CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= !cpu_task16_expect_stack_limit(CORE_MACHINE_CPU_PROFILE_80386);
-    failed |= !cpu_task16_expect_idt_gate(CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= !cpu_task16_expect_idt_gate(CORE_MACHINE_CPU_PROFILE_80386);
-    failed |= !cpu_task16_expect_double_fault_gate();
-    failed |= !cpu_task16_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
-        CPU_TASK16_INVALID, VCPUINS_EXCEPT_GP, 0x0040u);
-    failed |= !cpu_task16_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
-        CPU_TASK16_NOT_PRESENT, VCPUINS_EXCEPT_NP, 0x0030u);
-    failed |= !cpu_task16_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
-        CPU_TASK16_BUSY, VCPUINS_EXCEPT_GP, 0x0030u);
-    failed |= !cpu_task16_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
-        CPU_TASK16_SHORT, VCPUINS_EXCEPT_TS, 0x0030u);
-    failed |= !cpu_task16_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
-        CPU_TASK16_LDT_NOT_PRESENT, VCPUINS_EXCEPT_NP, 0x0040u);
-    failed |= !cpu_task16_expect_fault(CORE_MACHINE_CPU_PROFILE_80386,
-        CPU_TASK16_LOCK, VCPUINS_EXCEPT_GP, 0x0033u);
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        const core_machine_cpu_profile profile = profiles[index];
+
+        for (lib_size form = 0u; form < sizeof(success) / sizeof(success[0]); ++form)
+            failed |= !cpu_task16_expect_success(profile, success[form]);
+        failed |= !cpu_task16_expect_ldt(profile);
+        failed |= !cpu_task16_expect_ring3(profile);
+        failed |= !cpu_task16_expect_ring3_source_direct(profile);
+        failed |= !cpu_task16_expect_ring3_source_call(profile);
+        failed |= !cpu_task16_expect_ring3_source_gate_jump(profile);
+        failed |= !cpu_task16_expect_ring3_source_gate_privilege(profile);
+        failed |= !cpu_task16_expect_ring3_source_gate_call(profile);
+        failed |= !cpu_task16_expect_readable_code_data(profile);
+        failed |= !cpu_task16_expect_nested_return(profile);
+        failed |= !cpu_task16_expect_gate_rejection(profile,
+            CPU_TASK16_GATE_PRIVILEGE, VCPUINS_EXCEPT_GP);
+        failed |= !cpu_task16_expect_gate_rejection(profile,
+            CPU_TASK16_GATE_NOT_PRESENT, VCPUINS_EXCEPT_DF);
+        failed |= !cpu_task16_expect_stack_limit(profile);
+        failed |= !cpu_task16_expect_idt_gate(profile);
+        for (lib_size form = 0u; form < sizeof(faults) / sizeof(faults[0]); ++form)
+            failed |= !cpu_task16_expect_fault(profile, faults[form].test_case,
+                faults[form].exception, faults[form].error);
+        if (profile >= CORE_MACHINE_CPU_PROFILE_80386) {
+            failed |= !cpu_task16_debug_local_enables(profile);
+            failed |= !cpu_task16_expect_double_fault_gate(profile);
+            failed |= !cpu_task16_expect_fault(profile,
+                CPU_TASK16_LOCK, VCPUINS_EXCEPT_GP, 0x0033u);
+        }
+    }
     if (failed) {
         lib_c_fprintf(lib_c_stderr, "%s", "TASK16:FAIL\n");
         return 1;

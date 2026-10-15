@@ -82,7 +82,7 @@ static lib_i32 span_xlat(void)
     static span_fixture state;
     t_cpu after;
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_8086;
-        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+        profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
         for (lib_u8 override = 0u; override < 2u; ++override) {
             const lib_u8 code[] = {override ? 0x26u : 0x3eu, 0xd7u};
             span_prepare(&state, profile);
@@ -95,15 +95,18 @@ static lib_i32 span_xlat(void)
                 LIB_STATUS_OK || after.data.eax != 0x123400a5u ||
                 state.reads != 1u || state.addresses[0] != 0x10000u) return 1;
         }
+        if (profile >= CORE_MACHINE_CPU_PROFILE_80386) {
+            span_prepare(&state, profile);
+            state.chip.cpu.data.ds.limit = 0x1ffffu;
+            state.chip.cpu.data.ebx = 0xffffu;
+            state.chip.cpu.data.al = 1u;
+            state.chip.memory[0x20000u] = 0x5au;
+            if (cpu_instruction_run(&state.chip, (const lib_u8[]){0x67u,0xd7u}, 2u,
+                &after) != LIB_STATUS_OK || after.data.al != 0x5au ||
+                state.reads != 1u || state.addresses[0] != 0x20000u) return 1;
+        }
     }
-    span_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-    state.chip.cpu.data.ds.limit = 0x1ffffu;
-    state.chip.cpu.data.ebx = 0xffffu;
-    state.chip.cpu.data.al = 1u;
-    state.chip.memory[0x20000u] = 0x5au;
-    return cpu_instruction_run(&state.chip, (const lib_u8[]){0x67u,0xd7u}, 2u,
-        &after) != LIB_STATUS_OK || after.data.al != 0x5au ||
-        state.reads != 1u || state.addresses[0] != 0x20000u;
+    return 0;
 }
 
 static lib_i32 span_real_limits(void)
@@ -113,7 +116,7 @@ static lib_i32 span_real_limits(void)
     static const lib_u8 store[] = {0xa3u,0xffu,0xffu};
     t_cpu after;
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_8086;
-        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+        profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
         for (lib_u8 write = 0u; write < 2u; ++write) {
             span_prepare(&state, profile);
             state.chip.cpu.data.ax = 0x5678u;
@@ -130,16 +133,18 @@ static lib_i32 span_real_limits(void)
                 state.chip.delivered_exception.exception_mask != VCPUINS_EXCEPT_GP ||
                 after.data.eip != 0x200u || after.data.ax != 0x5678u) return 1;
         }
+        /* An ordinary SS operand has a valid delivery stack: it is not shutdown. */
+        if (profile >= CORE_MACHINE_CPU_PROFILE_80386) {
+            span_prepare(&state, profile);
+            state.tracked_first = 0x4fff0u; state.tracked_last = 0x50003u;
+            state.chip.cpu.data.ax = 0x5678u;
+            if (cpu_instruction_run(&state.chip, (const lib_u8[]){0x36u,0xa1u,0xffu,0xffu},
+                4u, &after) != LIB_STATUS_OK || state.reads || state.writes ||
+                state.chip.delivered_exception.exception_mask != VCPUINS_EXCEPT_SS ||
+                after.data.eip != 0x200u || after.data.ax != 0x5678u ||
+                state.chip.execution.shutdown_requested) return 1;
+        }
     }
-    /* An ordinary SS operand has a valid delivery stack: it is not shutdown. */
-    span_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-    state.tracked_first = 0x4fff0u; state.tracked_last = 0x50003u;
-    state.chip.cpu.data.ax = 0x5678u;
-    if (cpu_instruction_run(&state.chip, (const lib_u8[]){0x36u,0xa1u,0xffu,0xffu},
-        4u, &after) != LIB_STATUS_OK || state.reads || state.writes ||
-        state.chip.delivered_exception.exception_mask != VCPUINS_EXCEPT_SS ||
-        after.data.eip != 0x200u || after.data.ax != 0x5678u ||
-        state.chip.execution.shutdown_requested) return 1;
     return 0;
 }
 
@@ -151,7 +156,7 @@ static lib_i32 span_expand_down(void)
         0xfffffffcu,0xfffffffeu,0xffffffffu};
     t_cpu after;
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80286;
-        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+        profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
         for (lib_u8 stack = 0u; stack < 2u; ++stack) {
             for (lib_u8 big = 0u; big < 2u; ++big) {
                 if (profile == CORE_MACHINE_CPU_PROFILE_80286 && big) continue;
@@ -182,9 +187,9 @@ static lib_i32 span_expand_down(void)
                             state.tracked_last = state.sparse_address + width - 1u;
                             code[n++] = stack ? 0x36u : 0x3eu;
                             if (width == 4u) code[n++] = 0x66u;
-                            if (profile == CORE_MACHINE_CPU_PROFILE_80386) code[n++] = 0x67u;
+                            if (profile >= CORE_MACHINE_CPU_PROFILE_80386) code[n++] = 0x67u;
                             code[n++] = width == 1u ? 0xa0u : 0xa1u;
-                            const lib_u8 address_bytes = profile == CORE_MACHINE_CPU_PROFILE_80386 ? 4u : 2u;
+                            const lib_u8 address_bytes = profile >= CORE_MACHINE_CPU_PROFILE_80386 ? 4u : 2u;
                             lib_memory_copy(code + n, &offsets[o],address_bytes); n += address_bytes;
                             (void)cpu_instruction_run(&state.chip, code, n, &after);
                             if (valid ? (state.bytes_read != width || after.data.al != 0xa5u ||
@@ -200,7 +205,7 @@ static lib_i32 span_expand_down(void)
     return 0;
 }
 
-static lib_i32 span_bit_indices(void)
+static lib_i32 span_bit_indices(core_machine_cpu_profile profile)
 {
     static span_fixture state;
     static const lib_u8 opcodes[] = {0xa3u,0xabu,0xb3u,0xbbu};
@@ -220,7 +225,7 @@ static lib_i32 span_bit_indices(void)
                     const lib_u32 mask = 1u << bit;
                     const lib_u32 initial = size == 2u ? 0xffffu : LIB_UINT32_MAX;
                     const lib_u32 expected = form < 2u ? initial : initial & ~mask;
-                    span_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+                    span_prepare(&state, profile);
                     state.chip.cpu.data.ds.limit = LIB_UINT32_MAX;
                     state.chip.cpu.data.ecx = (lib_u32)indices[i];
                     state.sparse_address = 0x10000u + offset;
@@ -246,7 +251,7 @@ static lib_i32 span_bit_indices(void)
     return 0;
 }
 
-static lib_i32 span_bit_immediates(void)
+static lib_i32 span_bit_immediates(core_machine_cpu_profile profile)
 {
     static span_fixture state;
     static const lib_u8 immediates[] = {0u,15u,16u,31u,32u,33u,127u,128u,255u};
@@ -259,7 +264,7 @@ static lib_i32 span_bit_immediates(void)
                 const lib_u32 initial = size == 2u ? 0xffffu : LIB_UINT32_MAX;
                 const lib_u32 expected = form < 2u ? initial : initial & ~(1u << bit);
                 lib_u32 observed = 0u;
-                span_prepare(&state,CORE_MACHINE_CPU_PROFILE_80386);
+                span_prepare(&state,profile);
                 lib_memory_copy(state.chip.memory + 0x10200u,&initial,size);
                 if (size == 4u) code[n++] = 0x66u;
                 code[n++] = 0x0fu; code[n++] = 0xbau;
@@ -299,16 +304,16 @@ static lib_i32 span_composite_phases(void)
     };
     t_cpu before, after;
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_8086;
-        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+        profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
         for (lib_size f = 0u; f < sizeof(forms)/sizeof(forms[0]); ++f) {
             if (profile < forms[f].minimum) continue;
             for (lib_u8 size = 2u; size <=
-                (profile == CORE_MACHINE_CPU_PROFILE_80386 ? 4u : 2u); size += 2u) {
+                (profile >= CORE_MACHINE_CPU_PROFILE_80386 ? 4u : 2u); size += 2u) {
                 const lib_u8 first = forms[f].kind == 2u ? 2u : size;
                 const lib_u8 second = forms[f].kind == 2u ? 4u :
                     forms[f].kind == 0u ? size : 2u;
                 for (lib_u8 address32 = 0u; address32 <
-                    (profile == CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++address32) {
+                    (profile >= CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++address32) {
                     for (lib_u8 test = 0u; test < 8u; ++test) {
                         if (test == 7u && profile < CORE_MACHINE_CPU_PROFILE_80286) continue;
                         lib_u8 code[10], image[8] = {0}; lib_u8 n = 0u;
@@ -381,7 +386,7 @@ static lib_i32 span_composite_phases(void)
     return 0;
 }
 
-static lib_i32 span_vm_and_cached_limits(void)
+static lib_i32 span_vm_and_cached_limits(core_machine_cpu_profile profile)
 {
     static span_fixture state;
     t_cpu after;
@@ -391,7 +396,7 @@ static lib_i32 span_vm_and_cached_limits(void)
              * not a hardware eligibility oracle. PE-clear preserves caches. */
             if (vm && wide) continue;
             lib_u8 code[] = {0x67u,0xa0u,0u,0u,1u,0u};
-            span_prepare(&state,CORE_MACHINE_CPU_PROFILE_80386);
+            span_prepare(&state,profile);
             state.chip.cpu.data.ds.limit = wide ? 0x1ffffu : 0xffffu;
             state.chip.memory[0x20000u] = 0xa5u;
             if (vm) {
@@ -414,14 +419,21 @@ lib_i32 main(void)
 {
     static const struct {const char *name; lib_i32 (*run)(void);} cases[] = {
         {"xlat",span_xlat}, {"real-limits",span_real_limits},
-        {"expand-down",span_expand_down}, {"bit-indices",span_bit_indices},
-        {"bit-immediates",span_bit_immediates},
-        {"composite-phases",span_composite_phases},
-        {"vm-cached-limits",span_vm_and_cached_limits}
+        {"expand-down",span_expand_down}, {"composite-phases",span_composite_phases}
+    };
+    static const core_machine_cpu_profile modern[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     for (lib_size i = 0u; i < sizeof(cases)/sizeof(cases[0]); ++i) {
         if (cases[i].run()) {
             lib_c_printf("CPU-ADDRESS-SPAN:%s:FAILED\n",cases[i].name);
+            return 1;
+        }
+    }
+    for (lib_size profile = 0u; profile < sizeof(modern) / sizeof(modern[0]); ++profile) {
+        if (span_bit_indices(modern[profile]) || span_bit_immediates(modern[profile]) ||
+            span_vm_and_cached_limits(modern[profile])) {
+            lib_c_printf("CPU-ADDRESS-SPAN:modern=%u:FAILED\n", modern[profile]);
             return 1;
         }
     }

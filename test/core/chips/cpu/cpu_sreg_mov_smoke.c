@@ -72,7 +72,8 @@ static lib_i32 sreg_mov_test_real_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_u8 profile;
     lib_u8 sreg;
@@ -147,7 +148,7 @@ static lib_i32 sreg_mov_test_real_forms(void)
     return !failed;
 }
 
-static lib_i32 sreg_mov_test_386_extensions(void)
+static lib_i32 sreg_mov_test_386_extensions(core_machine_cpu_profile cpu_profile)
 {
     lib_u8 sreg;
     lib_i32 failed = 0;
@@ -166,7 +167,7 @@ static lib_i32 sreg_mov_test_386_extensions(void)
         lib_status status;
         lib_u16 image = 0xbe5au;
 
-        if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 0;
+        if (!sreg_mov_prepare(&state, cpu_profile)) return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
         failed |= !sreg_mov_run(&state, store, sizeof(store), &after,
@@ -176,7 +177,7 @@ static lib_i32 sreg_mov_test_386_extensions(void)
             after.data.eax != ((before.data.eax & 0xffff0000u) |
                 sreg_mov_sreg(&before, sreg)->selector);
 
-        if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 0;
+        if (!sreg_mov_prepare(&state, cpu_profile)) return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
         failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
@@ -187,7 +188,7 @@ static lib_i32 sreg_mov_test_386_extensions(void)
             cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || image !=
                 sreg_mov_sreg(&before, sreg)->selector;
 
-        if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 0;
+        if (!sreg_mov_prepare(&state, cpu_profile)) return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
         failed |= !sreg_mov_run(&state, load, sizeof(load), &after,
@@ -198,7 +199,7 @@ static lib_i32 sreg_mov_test_386_extensions(void)
             sreg_mov_sreg(&after,
                 sreg)->base != 0x33440u;
 
-        if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 0;
+        if (!sreg_mov_prepare(&state, cpu_profile)) return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
         image = 0xbe5au;
@@ -213,7 +214,7 @@ static lib_i32 sreg_mov_test_386_extensions(void)
     return !failed;
 }
 
-static lib_i32 sreg_mov_test_rejections_and_attributes(void)
+static lib_i32 sreg_mov_test_rejections_and_attributes(core_machine_cpu_profile cpu_profile)
 {
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -250,7 +251,7 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
     for (form = 0u; form != sizeof(rejected) / sizeof(rejected[0]); ++form) {
         cpu_instruction_fixture state;
 
-        if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386))
+        if (!sreg_mov_prepare(&state, cpu_profile))
             return 0;
         sreg_mov_seed(&state);
         failed |= !cpu_instruction_expect_real_fault(&state, rejected[form], 2u, 6u);
@@ -260,7 +261,7 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
             (lib_u8)(form ? 0x8eu : 0x8cu), 0xc0u};
         cpu_instruction_fixture state;
 
-        if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386))
+        if (!sreg_mov_prepare(&state, cpu_profile))
             return 0;
         sreg_mov_seed(&state);
         failed |= !cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u);
@@ -272,7 +273,7 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
         t_cpu before;
         lib_u16 image = 0xbe5au;
 
-        if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386))
+        if (!sreg_mov_prepare(&state, cpu_profile))
             return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
@@ -286,7 +287,7 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
         t_cpu before;
         lib_u16 image = 0xbe5au;
 
-        if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 0;
+        if (!sreg_mov_prepare(&state, cpu_profile)) return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
         failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
@@ -309,7 +310,7 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
         lib_status status;
         lib_u16 image = 0xbe5au;
 
-        if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 0;
+        if (!sreg_mov_prepare(&state, cpu_profile)) return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
         failed |= !sreg_mov_run(&state, store, sizeof(store), &after,
@@ -317,7 +318,7 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
             diagnostic.first_fault.valid || after.data.eip != sizeof(store) ||
             !sreg_mov_gprs_same(&before, &after, 0u) || after.data.eax !=
             ((before.data.eax & 0xffff0000u) | before.data.es.selector);
-        if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386))
+        if (!sreg_mov_prepare(&state, cpu_profile))
             return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
@@ -327,7 +328,7 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
             !sreg_mov_gprs_same(&before, &after, 8u) ||
             sreg_mov_sreg(&after, 0u)->selector != 0x3344u ||
             sreg_mov_sreg(&after, 0u)->base != 0x33440u;
-        if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386))
+        if (!sreg_mov_prepare(&state, cpu_profile))
             return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
@@ -337,7 +338,7 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
             diagnostic.first_fault.valid || after.data.eip != sizeof(store67) ||
             !sreg_mov_gprs_same(&before, &after, 8u) ||
             cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || image != before.data.es.selector;
-        if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386))
+        if (!sreg_mov_prepare(&state, cpu_profile))
             return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
@@ -421,7 +422,7 @@ static lib_i32 sreg_mov_protected_fault(cpu_instruction_fixture *state,
         image == 0xbe5au;
 }
 
-static lib_i32 sreg_mov_test_protected(void)
+static lib_i32 sreg_mov_test_protected(core_machine_cpu_profile cpu_profile)
 {
     static const lib_u8 load_codes[] = {0xc0u, 0xd8u, 0xd0u, 0xe0u, 0xe8u};
     static const lib_u8 null_codes[] = {0xc0u, 0xd8u, 0xe0u, 0xe8u};
@@ -437,7 +438,7 @@ static lib_i32 sreg_mov_test_protected(void)
         lib_status status;
         t_cpu_data_sreg *target;
         lib_u8 access = 0u;
-        lib_i32 failed = !sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !sreg_mov_prepare(&state, cpu_profile);
 
         if (!failed) failed |= !sreg_mov_boot_protected(&state);
         if (!failed) {
@@ -467,7 +468,7 @@ static lib_i32 sreg_mov_test_protected(void)
         const t_cpu_data_sreg *target;
         lib_u8 index = form == 0u ? 0u : form == 1u ? 3u :
             form == 2u ? 4u : 5u;
-        lib_i32 failed = !sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !sreg_mov_prepare(&state, cpu_profile);
 
         if (!failed) failed |= !sreg_mov_boot_protected(&state);
         if (!failed) {
@@ -491,7 +492,7 @@ static lib_i32 sreg_mov_test_protected(void)
             form == 2u ? 0x20u : 0x2bu;
         lib_u32 address = 0x3010u;
         lib_u8 modrm = form == 0u ? 0xd0u : 0xd8u;
-        lib_i32 failed = !sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !sreg_mov_prepare(&state, cpu_profile);
 
         if (!failed) failed |= !sreg_mov_boot_protected(&state);
         if (!failed) {
@@ -506,7 +507,7 @@ static lib_i32 sreg_mov_test_protected(void)
         cpu_instruction_fixture state;
         t_cpu before;
         lib_u16 image = 0xbe5au;
-        lib_i32 failed = !sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !sreg_mov_prepare(&state, cpu_profile);
 
         if (!failed) failed |= !sreg_mov_boot_protected(&state);
         if (!failed) {
@@ -526,24 +527,140 @@ static lib_i32 sreg_mov_test_protected(void)
 
 
 
+static lib_bool sreg_mov_test_precise_faults(core_machine_cpu_profile profile)
+{
+    static const lib_u8 targets[] = {0u, 2u, 3u, 4u, 5u};
+    static const struct {
+        lib_u16 selector, error;
+        lib_u8 vector;
+        lib_bool stack_only;
+    } cases[] = {
+        {0x18u, 0x18u, 11u, LIB_FALSE},
+        {0x2bu, 0x28u, 13u, LIB_FALSE},
+        {0x23u, 0x20u, 13u, LIB_FALSE},
+        {0x43u, 0x40u, 13u, LIB_FALSE},
+        {0x07u, 0x04u, 13u, LIB_FALSE},
+        {0x03u, 0u, 13u, LIB_TRUE},
+        {0x1bu, 0x18u, 13u, LIB_TRUE}
+    };
+    const lib_u8 gate[] = {0u, 1u, 8u, 0u, 0u, 0x8eu, 0u, 0u};
+    const lib_u8 clear_ldt[] = {0xb8u, 0u, 0u, 0x0fu, 0u, 0xd0u};
+
+    for (lib_size target = 0u; target < sizeof(targets); ++target)
+    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
+    for (lib_u8 form = 0u; form < 8u; ++form) {
+        cpu_instruction_fixture state;
+        t_cpu before, after, expected;
+        lib_u8 code[8] = {0u};
+        lib_u8 bytes = 0u;
+        lib_u8 descriptors[0x40];
+        lib_u32 frame[4] = {0u};
+        lib_u16 source = 0u;
+        const lib_u8 vector = targets[target] == 2u &&
+            cases[index].vector == 11u ? 12u : cases[index].vector;
+
+        if (cases[index].stack_only && targets[target] != 2u) continue;
+        cpu_instruction_prepare(&state, profile);
+        if (!sreg_mov_boot_protected(&state)) return LIB_FALSE;
+        lib_memory_copy(state.memory + 0x2000u, clear_ldt, sizeof(clear_ldt));
+        for (lib_u8 step = 0u; step < 2u; ++step)
+            core_machine_cpu_execution_refresh(&state.execution);
+        if (state.execution.stop_requested || state.fault.valid ||
+            state.delivered_exception.valid || state.cpu.data.ldtr.flagValid ||
+            state.cpu.data.ldtr.selector != 0u ||
+            state.cpu.data.eip != sizeof(clear_ldt)) return LIB_FALSE;
+        state.cpu.data.eip = 0u;
+        core_machine_cpu_execution_invalidate_prefetch(&state.execution);
+        state.cpu.data.idtr = (t_cpu_data_sreg){.flagValid = LIB_TRUE,
+            .sregtype = SREG_IDTR, .base = 0x1000u, .limit = 0x7fu};
+        lib_memory_copy(state.memory + 0x1000u + vector * 8u, gate, sizeof(gate));
+        state.cpu.data.eax = 0xaabb0000u | cases[index].selector;
+        state.cpu.data.eflags = 2u | VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
+        lib_memory_copy(state.memory + 0x3010u, &cases[index].selector, 2u);
+        if (form & 1u) code[bytes++] = 0x66u;
+        if (form & 4u) code[bytes++] = 0x67u;
+        code[bytes++] = 0x8eu;
+        code[bytes++] = (lib_u8)((targets[target] << 3u) |
+            (form & 2u ? (form & 4u ? 5u : 6u) : 0xc0u));
+        if (form & 2u) {
+            code[bytes++] = 0x10u;
+            code[bytes++] = 0u;
+            if (form & 4u) bytes += 2u;
+        }
+        lib_memory_copy(state.memory + 0x2000u, code, bytes);
+        lib_memory_copy(descriptors, state.memory + 0x300u, sizeof(descriptors));
+        before = state.cpu;
+        core_machine_cpu_execution_refresh(&state.execution);
+        after = state.cpu;
+        expected = before;
+        expected.data.esp -= sizeof(frame);
+        expected.data.eflags &= ~VCPU_EFLAGS_IF;
+        lib_memory_copy(frame, state.memory + after.data.ss.base + after.data.sp,
+            sizeof(frame));
+        lib_memory_copy(&source, state.memory + 0x3010u, sizeof(source));
+        if (state.execution.stop_requested || state.fault.valid ||
+            core_machine_cpu_is_shutdown(&state.execution) ||
+            !state.delivered_exception.valid ||
+            state.delivered_exception.exception_mask != (UINT32_C(1) << vector) ||
+            state.delivered_exception.exception_code != cases[index].error ||
+            state.delivered_exception.point.eip != 0u ||
+            state.delivered_exception.point.cs != before.data.cs.selector ||
+            after.data.eip != 0x100u || after.data.cs.selector != 8u ||
+            !sreg_mov_gprs_same(&expected, &after, 8u) ||
+            frame[0] != cases[index].error || frame[1] != 0u || frame[2] != 8u ||
+            (frame[3] & ~VCPU_EFLAGS_RF) != before.data.eflags ||
+            source != cases[index].selector ||
+            state.execution.interrupt_shadow != CPU_INTERRUPT_SHADOW_NONE ||
+            lib_memory_compare(&before.data.ldtr, &after.data.ldtr,
+                sizeof(before.data.ldtr)) != 0 ||
+            lib_memory_compare(&before.data.tr, &after.data.tr,
+                sizeof(before.data.tr)) != 0 ||
+            lib_memory_compare(descriptors, state.memory + 0x300u,
+                sizeof(descriptors)) != 0) {
+            lib_c_fprintf(lib_c_stderr,
+                "SREG fault profile=%u target=%u case=%u form=%u vector=%x error=%x ip=%x\n",
+                (unsigned)profile, targets[target], (unsigned)index, form,
+                state.delivered_exception.exception_mask,
+                state.delivered_exception.exception_code, after.data.eip);
+            return LIB_FALSE;
+        }
+        for (lib_size segment = 0u; segment < sizeof(targets); ++segment) {
+            if (lib_memory_compare(sreg_mov_sreg(&before, targets[segment]),
+                sreg_mov_sreg(&after, targets[segment]), sizeof(t_cpu_data_sreg)))
+                return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+    lib_bool precise = LIB_TRUE;
+
     if (!sreg_mov_test_real_forms()) {
         lib_c_printf("SREG-MOV stage=real\n");
         return 1;
     }
-    if (!sreg_mov_test_386_extensions()) {
-        lib_c_printf("SREG-MOV stage=extensions\n");
-        return 1;
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
+        ++index) {
+        if (!sreg_mov_test_386_extensions(profiles[index])) {
+            lib_c_printf("SREG-MOV stage=extensions\n");
+            return 1;
+        }
+        if (!sreg_mov_test_rejections_and_attributes(profiles[index])) {
+            lib_c_printf("SREG-MOV stage=reject\n");
+            return 1;
+        }
+        if (!sreg_mov_test_protected(profiles[index])) {
+            lib_c_printf("SREG-MOV stage=protected\n");
+            return 1;
+        }
+        precise &= sreg_mov_test_precise_faults(profiles[index]);
     }
-    if (!sreg_mov_test_rejections_and_attributes()) {
-        lib_c_printf("SREG-MOV stage=reject\n");
-        return 1;
-    }
-    if (!sreg_mov_test_protected()) {
-        lib_c_printf("SREG-MOV stage=protected\n");
-        return 1;
-    }
+    if (!precise) return 1;
     lib_c_printf("SREG-MOV:OK\n");
     lib_c_printf("SREG-MOV-PROFILES:OK\n");
     return 0;

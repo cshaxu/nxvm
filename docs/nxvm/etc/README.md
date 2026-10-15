@@ -12,6 +12,10 @@ T560 S7: [SMM and system-signal investigation](evidence/t560-s7-smm-system.md)
 records the original state map, finite event matrix, actual owners and source
 limits before implementation; it is not runtime qualification.
 
+T560 S8: [Inherited instruction reconciliation](evidence/t560-s8-inherited-semantics.md)
+records the complete opcode/group universe, family proof owners and actual
+source-versus-test gaps; open rows are not qualification.
+
 T559 S7: [Whole instruction-delta qualification](evidence/t559-s7-instruction-qualification.md)
 records whole-ledger reconciliation, the bit-operation LOCK repair and final
 dual-width unit, external and artifact validation.

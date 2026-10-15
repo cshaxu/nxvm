@@ -2,7 +2,7 @@
 #include "lib/types/file.h"
 
 /* REAL_UD_TERMINAL_CPU_OWNER: unsupported-profile #UD is CPU-owned. */
-static lib_i32 scan_test_forms(void)
+static lib_i32 scan_test_forms(core_machine_cpu_profile profile)
 {
     static const lib_u8 opcodes[] = { 0xbcu, 0xbdu };
     const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
@@ -21,7 +21,7 @@ static lib_i32 scan_test_forms(void)
         const lib_u32 expected = opcode ? (width ? 31u : 15u) : 5u;
         lib_i32 failed = 0;
 
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         if (memory && width) code[bytes++] = 0x67u;
         if (width) code[bytes++] = 0x66u;
         code[bytes++] = 0x0fu;
@@ -90,7 +90,7 @@ static lib_i32 scan_test_profile(void)
     return 1;
 }
 
-static lib_bool scan_test_single_bits(void)
+static lib_bool scan_test_single_bits(core_machine_cpu_profile profile)
 {
     lib_u8 width, bit, direction, memory, alias;
 
@@ -116,7 +116,7 @@ static lib_bool scan_test_single_bits(void)
         code[bytes++] = direction ? 0xbdu : 0xbcu;
         code[bytes++] = memory ? 0x0eu : alias ? 0xc0u : 0xc8u;
         if (memory) { code[bytes++] = 0u; code[bytes++] = 0x40u; }
-        cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        cpu_instruction_prepare(&state, profile);
         state.cpu.data.eax = initial_eax;
         state.cpu.data.ecx = initial_ecx;
         state.cpu.data.eflags = VCPU_EFLAGS_IF | VCPU_EFLAGS_ZF;
@@ -145,7 +145,14 @@ static lib_bool scan_test_single_bits(void)
 
 lib_i32 main(void)
 {
-    if (!scan_test_forms() || !scan_test_profile() || !scan_test_single_bits()) return 1;
+    const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
+    if (!scan_test_profile()) return 1;
+    for (lib_size profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+        if (!scan_test_forms(profiles[profile]) || !scan_test_single_bits(profiles[profile]))
+            return 1;
     lib_c_printf("CPU-BIT-SCAN:OK\n");
     return 0;
 }

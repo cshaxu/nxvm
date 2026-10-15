@@ -69,7 +69,10 @@ void core_machine_cpu_finish_entry(core_machine_cpu_prepared_entry *entry,
     lib_bool commit)
 {
     if (entry == LIB_NULL) return;
-    if (commit) *entry->owner->cpu = entry->cpu;
+    if (commit) {
+        *entry->owner->cpu = entry->cpu;
+        entry->owner->repeat_compare_flags_valid = LIB_FALSE;
+    }
     lib_release(entry);
 }
 
@@ -492,6 +495,7 @@ lib_status core_machine_cpu_debug_patch_registers(core_machine_cpu_execution_con
         }
     }
     *context->cpu = candidate_cpu;
+    context->repeat_compare_flags_valid = LIB_FALSE;
     if (patch->mask & (CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR0) |
         CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR3))) {
         core_machine_cpu_execution_invalidate_tlb(context);
@@ -549,6 +553,8 @@ void core_machine_cpu_execution_context_initialize(
     context->debug_trap_pending = LIB_FALSE;
     context->debug_tf_before = LIB_FALSE;
     context->debug_rf_before = LIB_FALSE;
+    context->repeat_compare_flags_valid = LIB_FALSE;
+    context->repeat_compare_flags = 0u;
     context->instruction_task_switched = LIB_FALSE;
     context->interrupt_shadow = CPU_INTERRUPT_SHADOW_NONE;
     context->debug_segment_shadow_before = LIB_FALSE;
@@ -675,6 +681,8 @@ static void core_machine_cpu_state_apply_reset(
         context->cpu_profile) || context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186;
     const lib_u32 smbase = context->smbase;
     context->source_repeat_active = LIB_FALSE;
+    context->repeat_compare_flags_valid = LIB_FALSE;
+    context->repeat_compare_flags = 0u;
     context->source_repeat_cs = 0u;
     context->source_repeat_eip = 0u;
     context->source_repeat_opcode = 0u;

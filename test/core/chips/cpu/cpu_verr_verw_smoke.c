@@ -39,10 +39,11 @@ static lib_i32 verr_verw_test_outcomes(void)
     static const lib_u16 selectors[] = {
         0x0010u, 0x0008u, 0x0020u, 0x0018u, 0x0000u, 0x0013u
     };
-    static const lib_u8 expected_verr[] = {1u, 1u, 0u, 0u, 0u, 0u};
-    static const lib_u8 expected_verw[] = {1u, 0u, 0u, 0u, 0u, 0u};
+    static const lib_u8 expected_verr[] = {1u, 1u, 0u, 1u, 0u, 0u};
+    static const lib_u8 expected_verw[] = {1u, 0u, 0u, 1u, 0u, 0u};
     const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_size profile;
     lib_size selector;
@@ -60,7 +61,7 @@ static lib_i32 verr_verw_test_outcomes(void)
     return 1;
 }
 
-static lib_i32 verr_verw_test_memory_and_prefix_forms(void)
+static lib_i32 verr_verw_test_memory_and_prefix_forms(core_machine_cpu_profile profile)
 {
     static const lib_u8 codes[][6] = {
         {0x0fu,0x00u,0x26u,0x00u,0x01u,0xf4u},
@@ -76,7 +77,7 @@ static lib_i32 verr_verw_test_memory_and_prefix_forms(void)
         cpu_instruction_fixture fixture;
         t_cpu after;
 
-        verr_verw_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        verr_verw_prepare(&fixture, profile);
         fixture.cpu.data.eax = 0xa1a10010u;
         lib_memory_copy(fixture.memory + 0x0100u, &selector, sizeof(selector));
         if (!cpu_descriptor_query_run(&fixture, codes[index], sizes[index], &after) ||
@@ -85,7 +86,7 @@ static lib_i32 verr_verw_test_memory_and_prefix_forms(void)
     return 1;
 }
 
-static lib_i32 verr_verw_test_protected_memory_forms(void)
+static lib_i32 verr_verw_test_protected_memory_forms(core_machine_cpu_profile profile)
 {
     static const lib_u8 verr_code[] = {
         0x0fu,0x00u,0x26u,0x10u,0x00u,0xf4u
@@ -101,7 +102,7 @@ static lib_i32 verr_verw_test_protected_memory_forms(void)
         cpu_instruction_fixture fixture;
 
         if (!cpu_descriptor_query_boot_protected(&fixture,
-                CORE_MACHINE_CPU_PROFILE_80386)) return 0;
+                profile)) return 0;
         fixture.cpu.data.eip = 0u;
         fixture.cpu.data.flagHalt = LIB_FALSE;
         fixture.cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
@@ -116,7 +117,7 @@ static lib_i32 verr_verw_test_protected_memory_forms(void)
     return 1;
 }
 
-static lib_i32 verr_verw_test_rejection(void)
+static lib_i32 verr_verw_test_rejection(core_machine_cpu_profile profile)
 {
     static const lib_u8 verr[] = {0x0fu, 0x00u, VERR_VERW_CPU_VERR_MODRM};
     static const lib_u8 lock_verw[] = {
@@ -127,17 +128,17 @@ static lib_i32 verr_verw_test_rejection(void)
     cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80186);
     if (!cpu_descriptor_query_fault(&fixture, verr, sizeof(verr),
             VCPUINS_EXCEPT_UD)) return 0;
-    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&fixture, profile);
     if (!cpu_descriptor_query_fault(&fixture, lock_verw, sizeof(lock_verw),
             VCPUINS_EXCEPT_UD)) return 0;
-    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    cpu_instruction_prepare(&fixture, profile);
     fixture.cpu.data.cr0 |= VCPU_CR0_PE;
     fixture.cpu.data.eflags |= VCPU_EFLAGS_VM;
     return cpu_descriptor_query_fault(&fixture, verr, sizeof(verr),
         VCPUINS_EXCEPT_UD);
 }
 
-static lib_i32 verr_verw_test_source_limit(void)
+static lib_i32 verr_verw_test_source_limit(core_machine_cpu_profile profile)
 {
     static const lib_u8 codes[][5] = {
         {0x0fu,0x00u,0x26u,0x10u,0x00u},
@@ -150,7 +151,7 @@ static lib_i32 verr_verw_test_source_limit(void)
         cpu_instruction_fixture fixture;
         t_cpu before;
 
-        verr_verw_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        verr_verw_prepare(&fixture, profile);
         fixture.cpu.data.ds.limit = 0x000fu;
         fixture.cpu.data.eax = 0xa1a10010u;
         fixture.cpu.data.eflags = VCPU_EFLAGS_CF;
@@ -165,7 +166,7 @@ static lib_i32 verr_verw_test_source_limit(void)
     return 1;
 }
 
-static lib_i32 verr_verw_test_ldt_selector(void)
+static lib_i32 verr_verw_test_ldt_selector(core_machine_cpu_profile profile)
 {
     static const lib_u8 ldt_descriptor[] = {
         0xffu,0xffu,0x00u,0x70u,0x00u,0x92u,0x00u,0x00u
@@ -185,7 +186,7 @@ static lib_i32 verr_verw_test_ldt_selector(void)
         cpu_instruction_fixture fixture;
 
         if (!cpu_descriptor_query_boot_protected(&fixture,
-                CORE_MACHINE_CPU_PROFILE_80386)) return 0;
+                profile)) return 0;
         fixture.cpu.data.gdtr.limit = 0x0037u;
         fixture.cpu.data.eip = 0u;
         fixture.cpu.data.flagHalt = LIB_FALSE;
@@ -204,6 +205,62 @@ static lib_i32 verr_verw_test_ldt_selector(void)
     return 1;
 }
 
+static lib_i32 verr_verw_test_type_presence_privilege(core_machine_cpu_profile profile)
+{
+    static const lib_u8 code[][7] = {
+        {0x0fu,0x00u,VERR_VERW_CPU_VERR_MODRM,0xf4u},
+        {0x0fu,0x00u,VERR_VERW_CPU_VERW_MODRM,0xf4u},
+        {0x66u,0x0fu,0x00u,0x26u,0x00u,0x01u,0xf4u},
+        {0x66u,0x0fu,0x00u,0x2eu,0x00u,0x01u,0xf4u}
+    };
+    static const lib_u8 bytes[] = {4u,4u,7u,7u};
+
+    for (lib_u32 index = 0u; index < 16384u; ++index) {
+        const lib_u8 type = (lib_u8)(index & 31u);
+        const lib_u8 present = (lib_u8)((index >> 5u) & 1u);
+        const lib_u8 dpl = (lib_u8)((index >> 6u) & 3u);
+        const lib_u8 cpl = (lib_u8)((index >> 8u) & 3u);
+        const lib_u8 rpl = (lib_u8)((index >> 10u) & 3u);
+        const lib_u8 form = (lib_u8)(index >> 12u);
+        const lib_bool data = type >= 16u && type < 24u;
+        const lib_bool readable = data || (type >= 24u && (type & 2u) != 0u);
+        const lib_bool writable = data && (type & 2u) != 0u;
+        const lib_bool conforming = (type & 0x1cu) == 0x1cu;
+        const lib_bool expected_zf = ((form & 1u) != 0u ? writable : readable) &&
+            (conforming || (cpl <= dpl && rpl <= dpl));
+        const lib_u16 selector = (lib_u16)(0x18u | rpl);
+        const lib_u8 descriptor[] = {0xffu,0xffu,0u,0u,0u,
+            (lib_u8)((present << 7u) | (dpl << 5u) | type),0u,0u};
+        const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
+            VCPU_EFLAGS_AF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF | VCPU_EFLAGS_IF;
+        cpu_instruction_fixture fixture;
+        t_cpu after;
+
+        verr_verw_prepare(&fixture, profile);
+        cpu_descriptor_query_enter_protected(&fixture, cpl);
+        lib_memory_copy(fixture.memory + CPU_DESCRIPTOR_QUERY_GDT_ADDRESS +
+            0x18u, descriptor, sizeof(descriptor));
+        lib_memory_copy(fixture.memory + 0x100u, &selector, sizeof(selector));
+        fixture.cpu.data.eax = 0xa1a10000u | selector;
+        fixture.cpu.data.ecx = 0xb2b20000u;
+        fixture.cpu.data.eflags = flags;
+        if (!cpu_descriptor_query_run(&fixture, code[form], bytes[form], &after) ||
+            core_machine_cpu_is_shutdown(&fixture.execution) ||
+            after.data.eip != (lib_u32)(bytes[form] - 1u) ||
+            after.data.eax != (0xa1a10000u | selector) ||
+            after.data.ecx != 0xb2b20000u ||
+            after.data.eflags != (flags | (expected_zf ? VCPU_EFLAGS_ZF : 0u)) ||
+            fixture.writes != 0u || lib_memory_compare(fixture.memory +
+                CPU_DESCRIPTOR_QUERY_GDT_ADDRESS + 0x18u, descriptor,
+                sizeof(descriptor)) != 0) {
+            lib_c_fprintf(lib_c_stderr, "VERR-VERW:TYPE profile=%u case=%u\n",
+                profile, index);
+            return 0;
+        }
+    }
+    return 1;
+}
+
 static lib_i32 verr_verw_test_invalid_ldtr_is_negative(void)
 {
     static const lib_u8 code[][4] = {
@@ -213,7 +270,7 @@ static lib_i32 verr_verw_test_invalid_ldtr_is_negative(void)
     static const lib_u8 descriptor[] = {0xffu,0xffu,0,0,0,0x93u,0,0};
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
     };
     lib_size profile_index;
     lib_size index;
@@ -242,7 +299,7 @@ static lib_i32 verr_verw_test_invalid_ldtr_is_negative(void)
     return 1;
 }
 
-static lib_i32 verr_verw_test_descriptor_bytes_unchanged(void)
+static lib_i32 verr_verw_test_descriptor_bytes_unchanged(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[][4] = {
         {0x0fu,0x00u,VERR_VERW_CPU_VERR_MODRM,0xf4u},
@@ -255,7 +312,7 @@ static lib_i32 verr_verw_test_descriptor_bytes_unchanged(void)
         cpu_instruction_fixture fixture;
         t_cpu after;
 
-        verr_verw_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+        verr_verw_prepare(&fixture, profile);
         fixture.cpu.data.eax = 0xa1a10010u;
         lib_memory_copy(fixture.memory + CPU_DESCRIPTOR_QUERY_GDT_ADDRESS + 0x10u,
             descriptor, sizeof(descriptor));
@@ -270,14 +327,24 @@ static lib_i32 verr_verw_test_descriptor_bytes_unchanged(void)
 
 lib_i32 main(void)
 {
-    if (!verr_verw_test_outcomes() || !verr_verw_test_memory_and_prefix_forms() ||
-        !verr_verw_test_protected_memory_forms() ||
-        !verr_verw_test_rejection() || !verr_verw_test_source_limit() ||
-        !verr_verw_test_ldt_selector() ||
-        !verr_verw_test_invalid_ldtr_is_negative() ||
-        !verr_verw_test_descriptor_bytes_unchanged()) {
-        lib_c_fprintf(lib_c_stderr, "VERR-VERW:FAIL\n");
-        return 1;
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80486SX
+    };
+
+    if (!verr_verw_test_outcomes() ||
+        !verr_verw_test_invalid_ldtr_is_negative()) return 1;
+    for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        if (!verr_verw_test_type_presence_privilege(profiles[index]) ||
+            !verr_verw_test_memory_and_prefix_forms(profiles[index]) ||
+            !verr_verw_test_protected_memory_forms(profiles[index]) ||
+            !verr_verw_test_rejection(profiles[index]) ||
+            !verr_verw_test_source_limit(profiles[index]) ||
+            !verr_verw_test_ldt_selector(profiles[index]) ||
+            !verr_verw_test_descriptor_bytes_unchanged(profiles[index])) {
+            lib_c_fprintf(lib_c_stderr, "VERR-VERW:FAIL profile=%u\n",
+                profiles[index]);
+            return 1;
+        }
     }
     lib_c_printf("%s\n", "VERR-VERW:OK");
     return 0;
