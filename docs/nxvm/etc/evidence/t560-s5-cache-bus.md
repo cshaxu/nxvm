@@ -499,8 +499,16 @@ and locked-update semantics have source-qualified CPU and actual Core proof.
 Logical line fills, conservative route cacheability and alias coherence remain
 explicit L2 models; C16 owns pin/burst/wait/clock timing. S6--S10 retain feature,
 VME/debug/SX-FPU, SMM/power, inherited semantic, timing and final admission
-obligations. No applicable obligation leaves T560. Coordinator review of the
-complete pushed P remains required before S5 closure.
+obligations. No applicable obligation leaves T560.
+
+Coordinator actual-change review accepts pushed implementation 33cb2efe1:
+the real CPU cache is the only state owner, Core is the routing/arbitration
+owner, all 51 mechanical migrations are reconciled, changed proof preserves
+existing assertions, and the qualified artifacts match the recorded hashes.
+The review covers the packet's original request, complete finite matrix,
+source grades, failures, provider lifetime, gates and excluded owner inputs.
+S5 is closed by the subsequent pure-governance P, not by narrowing the full
+CPU objective. Earlier pending sections remain chronological evidence only.
 
 ### Final LOCK-Fixed Whole-Unit Snapshot
 

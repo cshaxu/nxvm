@@ -2,11 +2,11 @@
 
 ## Current Work
 
-T560 remains open after accepted S4 delivery c32103a24. S4 is closed;
-S5 is admitted for actual cache state and INVD/WBINVD/TR3--5 with
-physical-bus reconciliation, under the owner's automatic sequential Core
-authority. Implementation and executor qualification are complete; coordinator
-review of the complete pushed delivery is still required before S5 closes.
+T560 remains open after accepted S5 delivery 33cb2efe1. S5 is closed after
+coordinator actual-change review of cache state and INVD/WBINVD/TR3--5,
+physical routing, second-read page updates and implicit/explicit memory LOCK.
+The next planned batch is S6 feature/VME/debug/exception/SX-FPU qualification;
+there is no concurrent active implementation packet between these batches.
 The [S5 source/route investigation](../etc/evidence/t560-s5-cache-bus.md)
 records the original cache/test-register contracts and concrete A20,
 per-access paging-attribute and external-write coherence gaps.
@@ -20,9 +20,9 @@ split-page failures and retained accepted effects. All accepted LOCK handlers
 have been reviewed against their common RMW entry; no second arbiter exists.
 The final snapshot passes 601/601 full repository units per width in the
 original Ninja/ccache graphs. All eight final profile/width integration groups
-pass and eight verified 0560 PC EXEs are rebuilt and deployed. No accepted S5
-closure is claimed yet. C16 pin/clock fidelity and S6--S10 remain mandatory
-T560 obligations.
+pass and eight verified 0560 PC EXEs are rebuilt and deployed. C16 pin/clock
+fidelity and S6--S10 remain mandatory T560 obligations; no complete CPU or
+production 486 admission is claimed.
 S4 whole units passed 600/600 per width, all eight final profile integration
 groups pass and eight verified 0560 EXEs are deployed.
 The [complete CPU proposal](../proposals/m5-pc110-486-system.md) and
@@ -37,7 +37,7 @@ records the exact boundary. Do not ask again for equivalent version updates.
 
 | Task | Progress |
 | --- | --- |
-| T560 S5 | Executor delivery complete, coordinator review pending: actual cache/TR/operations/snoop/page-control, second-read/locked A/D and implicit/explicit LOCK proof; 601/601 full units per width, eight passing integration groups and eight verified deployed 0560 PC EXEs. |
+| T560 S5 | Accepted and closed: 33cb2efe1. Actual cache/TR/operations/snoop/page-control, second-read/locked A/D and implicit/explicit LOCK proof; 601/601 full units per width, eight passing integration groups and eight verified deployed 0560 PC EXEs. [Evidence](../etc/evidence/t560-s5-cache-bus.md). Remaining CPU obligations stay in T560. |
 | T560 S4 | Accepted and closed: c32103a24. Translation/test-command and invalidation proof, 600/600 full units per width plus final affected-test recheck, eight passing integration groups and eight verified 0560 artifacts. [Evidence](../etc/evidence/t560-s4-translation-cache.md). Internal L2 grades and remaining C04/C16 bus/CPU obligations remain explicit; production 486 admission stays closed. |
 | T560 S3 | Accepted and closed: cb52586a9. Full units pass 599/599 per width, all eight final PC integration groups pass and eight verified 0560 EXEs are deployed. [Batch evidence](../etc/evidence/t560-s3-alignment-rmw.md). S4--S10 and C13-linked exception-entry qualification remain in T560; production 486 admission stays closed. |
 | T560 S2 | Accepted and closed: e7c3f4e78 / ddb260095. Base system tests pass 597/597 per width; all eight integration groups pass and eight 0560 EXEs are published. See the [S2 evidence](../etc/evidence/t560-s2-base-system.md). Complete CPU qualification and planned S3--S10 remain open in T560. |
@@ -54,26 +54,6 @@ still owns real cache/TLB/test commands, reset/control, AC/VME/SMM and timing.
 Production 486 admission stays closed. The persistent full implementation
 objective is not complete.
 
-## Active Packet - T560 S5 Cache And Physical Bus
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T560 S5 after accepted S4 c32103a24 and closure 5560979f9; next unused numeric S, one-session coordinator/executor roles. |
-| Admission And Approval | Owner requires all remaining 486SX CPU gaps and automatically approves sequential Core/chips/x86 implementation, Core interface changes and accuracy upgrades. Target NXVM only; Shared-six, MyNES and unrelated App changes remain excluded. |
-| Objective | Complete C07 actual CPU cache, INVD/WBINVD and TR3/TR4/TR5 operations at one owner; connect cacheability, external operation order and coherence to actual Core physical routing. Reconcile the carried C04/C16 page-table update/bus obligations rather than hiding them behind cache success. |
-| Non-goals | No second executor, host-memory cache, MMIO inference by hard-coded address, fake command success, generic device/cache framework, Shared API, MyNES change, new board or production 486 admission. SMM/VME and complete instruction/timing qualification remain their T560 batches. |
-| Reference Baseline | Clean 5560979f9 after accepted S4; pinned Intel PRM chapters 10/12/13/26 and 273021-001 chapters 6/7/10/appendix B, with T558 original identities. Selected SX applicability must distinguish write-through cache from later write-back variants. |
-| Candidate Proposal | [Complete 486SX CPU](../proposals/m5-pc110-486-system.md), C07 and C04/C16 in the [convergence ledger](../etc/evidence/t560-s1-cpu-convergence.md), carried [S4 source/model limits](../etc/evidence/t560-s4-translation-cache.md). |
-| Files And ABI Surface | Existing CPU private cache/test-buffer state, physical access/control/instruction/metadata paths, reset/debug/preview where required; existing Core cpu_bus/memory/scheduler contracts and directly owned tests/registration, Core manifests and task evidence. Refined production +500--1000/-40--200, tests +1700--2500/-350--650: one read/write ABI migrates owned callbacks and their setup callers, alongside real state/effect proof. One Core-only memory-lock begin/complete pair replaces the unpublished page-specific pair and reuses existing transaction state; a private actual CPU LOCK signal distinguishes hardware assertion from lexical prefix. Exact cacheability/operation/snoop/control declarations and failures are in S5 evidence. Eight affected 0560 PC artifacts. |
-| Applicable Rules | Guide and Execution packet/P/coverage/artifact rules; Document; Architecture/Coding and their skills; NXVM architecture/layout and source policy; PDF skill for original diagrams. No third-party source import or model inferred from boot. |
-| Verification | Actual ordinary fetch/read/write and test commands share cache lines; all documented sets/ways/buffer selectors/commands, valid/replacement readback, empty/hit/miss/conflict, cacheable/uncacheable and CR0 CD/NW/page attributes, reset/control, external writeback then flush, write-through and snoop visibility, MMIO/ROM/A20 route safety, failed reads/writes/commands and unchanged preview. Full MOV directions/indices/mode/CPL/prefix/LOCK/fetch/restart matrix including TR5 read prohibition. Focused cohesive batch, then full repository units per width, affected integrations and eight verified deployments in original Ninja/ccache graphs. |
-| Expected Markers | No passive TR copies, successful cache no-op or independent test cache. Real Core routes select memory attributes; external effects are commands, not mislabeled diagnostic observations. Failed publication retains correct ownership/state and source grades remain explicit. |
-| Asset Needs | Existing original manuals and admitted external build/integration inputs read-only. Preserve all INIs, ROM masters, media/snapshots and MyNES artifacts; no new firmware/media acquisition. |
-| Reporting Requirements | Before production changes report cache personality, exact CPU/Core contract and callers, complete finite proof matrix and refined file/diff estimates. Delivery records actual added/deleted/net code, real state/helper necessity, source/model grades, exact tests/artifact hashes and unexecuted desktop/RDP scope. |
-| Stop Conditions | Required Shared change, source contradiction essential to selected behavior, undeclared consumer or owner-input mutation. Continue independent scoped research/work; do not create a fallback cache, second timeline, guessed pin behavior or accuracy downgrade. |
-| Exit Criteria | Complete C07 batch has source-qualified effects and actual CPU/Core proof, carried physical-bus obligations are reconciled or explicitly owned within the remaining T560 ledger, full dual-width unit/integration/artifact gates pass, actual changes reviewed and complete NXVM P pushed/accepted. T560 and production 486 admission remain open. |
-| Original Owner Request | Implement complete 486SX instruction semantics under governance and quality standards; group related instructions, reuse original build caches and avoid per-opcode full runs. |
-| Similar-Issue Sweep | All physical memory/fetch/page-table paths, memory providers/A20/ROM/MMIO, CPU and non-CPU writes, cache/control/test-register decode/metadata/reset/debug/preview and external-cycle callers. Retained older-family paths require explicit distinct semantics, not cache-enabled copies. |
 
 The accepted snapshots below preserve earlier deliveries only; their old
 active/progress wording does not admit concurrent work or supersede this section.
