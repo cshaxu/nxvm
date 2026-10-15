@@ -56,7 +56,7 @@ static lib_i32 run_halt(const core_machine_external_cycle_timing *timing,
     static const lib_u8 code[] = {
         0xebu, 0x01u, 0x90u, 0xb0u, 0x5au, 0xe6u, 0xe0u, 0xf4u
     };
-    core_machine_executor_config config = {0};
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u };
     core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     lib_i32 failed = 0;
@@ -81,7 +81,7 @@ static lib_i32 run_halt_with_port_wait(lib_u64 *out_ticks)
     static const lib_u8 code[] = {
         0xebu, 0x01u, 0x90u, 0xb0u, 0x5au, 0xe6u, 0xe0u, 0xf4u
     };
-    core_machine_executor_config config = {0};
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u };
     core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     lib_i32 failed = 0;
@@ -108,7 +108,7 @@ static lib_i32 run_write(const core_machine_external_cycle_timing *timing,
     static const lib_u8 code[] = {
         0xb0u, 0x5au, 0xa2u, 0x10u, 0x00u, 0xf4u
     };
-    core_machine_executor_config config = {0};
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u };
     core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     lib_u8 value = 0u;
@@ -136,7 +136,7 @@ static lib_i32 run_read(const core_machine_external_cycle_timing *timing,
 {
     static const lib_u8 code[] = { 0xa0u, 0x10u, 0x00u, 0xf4u };
     static const lib_u8 data = 0x5au;
-    core_machine_executor_config config = {0};
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u };
     core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     lib_i32 failed = 0;
@@ -161,7 +161,7 @@ static lib_i32 external_cycle_observer_contract(void)
 {
     static const core_machine_external_cycle_timing explicit_timing = {2048u,
         2u, 1u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL, 0u, 0u};
-    core_machine_executor_config config = {0};
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
     core_machine *machine = LIB_NULL;
     x86_core_cpu_external_cycle_provider provider;
     void *context;
@@ -230,6 +230,8 @@ static lib_i32 refresh_external_cycle_contract(void)
     const core_machine_external_cycle_timing timing = {2048u, 2u, 1u,
         CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u};
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .transaction_contract = {.external_cycle_timing = timing}
     };
     core_machine *machine = LIB_NULL;
@@ -263,7 +265,7 @@ static lib_i32 retirement_wait_contract(void)
     static const lib_u8 data = 0x5au;
     static const core_machine_external_cycle_timing timing = {2048u, 2u, 0u,
         CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u};
-    core_machine_executor_config config = {0};
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u };
     core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     lib_i32 failed = 0;
@@ -316,7 +318,7 @@ static lib_i32 faulted_external_wait_contract(x86_core_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x67u, 0xa4u, 0xf4u};
     static const lib_u8 source = 0x5au;
-    core_machine_executor_config config = {0};
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u };
     core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     lib_status status;
@@ -376,7 +378,7 @@ static lib_i32 faulted_external_wait_contract(x86_core_cpu_profile profile)
 }
 static lib_i32 cecg_aperture_wait_contract(void)
 {
-    core_machine_executor_config config = {0};
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
     core_machine *machine = LIB_NULL;
     x86_core_cpu_external_cycle_provider provider;
     void *context;
@@ -410,7 +412,7 @@ static lib_i32 cecg_aperture_wait_contract(void)
 }
 static lib_i32 d4_cecg_memory_class_contract(void)
 {
-    core_machine_executor_config config = {0};
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
     core_machine *machine = LIB_NULL;
     x86_core_cpu_external_cycle_provider provider;
     void *context;
@@ -438,7 +440,7 @@ static lib_i32 d4_cecg_memory_class_contract(void)
 }
 static lib_i32 cecg_port_wait_contract(void)
 {
-    core_machine_executor_config config = {0};
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
     core_machine *machine = LIB_NULL;
     x86_core_cpu_external_cycle_provider provider;
     void *context;
@@ -488,7 +490,7 @@ static lib_i32 prefetch_grant_contract(void)
 {
     static const core_machine_external_cycle_timing timing = {2048u, 2u, 0u,
         CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u};
-    core_machine_executor_config config = {0};
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u };
     core_machine *machine = LIB_NULL;
     lib_bool refresh_pending = LIB_FALSE;
     const core_machine_attachment attachment = {

@@ -143,7 +143,7 @@ static const core_machine_firmware_provider firmware_failed_probe_provider = {
 
 lib_i32 main(void)
 {
-    const core_machine_config config = { .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES };
+    const core_machine_config config = { .memory_bytes = (2u * 1024u * 1024u) };
     core_machine *machine = LIB_NULL;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result = {0};

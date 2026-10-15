@@ -34,8 +34,8 @@ typedef struct core_machine_hdc_topology {
 struct core_machine_plan {
     core_machine_config configuration;
     core_machine_plan_topology topology;
-    core_machine_timing_declaration declarations[
-        CORE_MACHINE_TIMING_CAPABILITY_COUNT];
+    core_machine_board_timing_declaration declarations[
+        CORE_MACHINE_BOARD_TIMING_CAPABILITY_COUNT];
     lib_size declaration_count;
     core_machine_controller_timing_rules controller_timing;
     core_machine_board_profile_factory profile_factory;
@@ -55,6 +55,9 @@ typedef struct core_machine_absent_memory {
 struct core_machine_board_state {
     /* Execution is Core-owned; this handle is borrowed until finalization. */
     core_machine *core;
+    core_machine_board_timing_declaration timing_declarations[
+        CORE_MACHINE_BOARD_TIMING_CAPABILITY_COUNT];
+    lib_bool timing_declarations_copied;
     core_machine_pic_bus *shared_pic_master;
     core_machine_pic_bus *shared_pic_slave;
     core_machine_pic_irq_source *shared_pit_irq0_source;
@@ -130,7 +133,6 @@ lib_status core_machine_board_initialize_clocks(core_machine_board_state *board,
     const core_machine_clock_plan *plan);
 void core_machine_board_reset_clocks(void *owner);
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,
-    lib_bool timing_qualified,
     core_machine_attachment_deadline_observation *out_observation);
 lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address);
 void core_machine_board_refresh_complete(void *owner);

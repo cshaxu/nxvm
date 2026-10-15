@@ -68,9 +68,6 @@ struct core_machine {
     lib_u32 fault_detail;
     lib_u64 elapsed_ticks;
     core_machine_timeline timeline;
-    core_machine_timing_declaration timing_declarations[
-        CORE_MACHINE_TIMING_CAPABILITY_COUNT];
-    lib_u8 timing_declarations_copied;
     core_machine_transaction_state transaction;
     core_machine_transaction_contract transaction_contract;
     lib_u32 external_cycle_page_tag;
@@ -208,8 +205,6 @@ lib_status core_machine_firmware_invoke(core_machine *machine,
     lib_status (*callback)(void *, core_machine_firmware_context *));
 lib_i32 core_machine_retirement_time_contract_is_valid(
     core_machine_retirement_time_contract contract);
-lib_i32 core_machine_timing_capability_is_valid(
-    core_machine_timing_capability capability);
 lib_i32 core_machine_external_cycle_timing_is_valid(
     const core_machine_external_cycle_timing *timing);
 lib_i32 core_machine_external_access_wait_windows_are_valid(

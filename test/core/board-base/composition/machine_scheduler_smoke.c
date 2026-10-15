@@ -28,11 +28,9 @@ static const core_machine_execution_provider scheduler_provider = {
 typedef struct scheduler_deadline_probe {
     core_machine_attachment_deadline_observation value;
     lib_u32 calls;
-    lib_bool timing_qualified;
 } scheduler_deadline_probe;
 
 static void scheduler_board_deadline(void *owner, lib_u64 now,
-    lib_bool timing_qualified,
     core_machine_attachment_deadline_observation *out_observation);
 
 typedef struct scheduler_board_probe {
@@ -53,16 +51,15 @@ typedef struct scheduler_board_probe {
 } scheduler_board_probe;
 
 static void scheduler_board_deadline_forward(void *owner, lib_u64 now,
-    lib_bool timing_qualified,
     core_machine_attachment_deadline_observation *out_observation)
 {
     scheduler_board_probe *probe = owner;
     if (probe->deadline_probe != LIB_NULL) {
-        scheduler_board_deadline(probe->deadline_probe, now, timing_qualified,
+        scheduler_board_deadline(probe->deadline_probe, now,
             out_observation);
         return;
     }
-    probe->production.deadline(probe->production.context, now, timing_qualified,
+    probe->production.deadline(probe->production.context, now,
         out_observation);
 }
 
@@ -153,12 +150,10 @@ static lib_u8 scheduler_board_pic_acknowledge(void *owner)
 }
 
 static void scheduler_board_deadline(void *owner, lib_u64 now,
-    lib_bool timing_qualified,
     core_machine_attachment_deadline_observation *out_observation)
 {
     scheduler_deadline_probe *probe = owner;
     (void)now;
-    probe->timing_qualified = timing_qualified;
     ++probe->calls;
     *out_observation = probe->value;
 }
@@ -272,15 +267,13 @@ lib_i32 main(void)
     board_probe.deadline_probe = &deadline_probe;
     deadline_probe.value.source_ticks = 5u;
     core_machine_capture_time_observation_private(machine, &observation);
-    failed |= deadline_probe.calls != 1u || deadline_probe.timing_qualified ||
+    failed |= deadline_probe.calls != 1u ||
         !observation.next_deadline_valid ||
         observation.next_deadline_tick != machine->elapsed_ticks + 5u ||
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE;
     deadline_probe.value.immediate_due = LIB_TRUE;
-    /* Same-owner injection isolates the copied callback input. */
-    machine->timing_declarations_copied = LIB_TRUE;
     core_machine_capture_time_observation_private(machine, &observation);
-    failed |= !deadline_probe.timing_qualified || observation.next_deadline_valid ||
+    failed |= deadline_probe.calls != 2u || observation.next_deadline_valid ||
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_IMMEDIATE;
     deadline_probe.value.immediate_due = LIB_FALSE;
     deadline_probe.value.l1_compatibility = LIB_TRUE;

@@ -11,7 +11,7 @@ static lib_i32 invalid_cecg_is_failure_atomic(void)
     core_machine_board_state *board = LIB_NULL;
     lib_i32 valid;
 
-    machine_config.memory_bytes = CORE_MACHINE_DEFAULT_MEMORY_BYTES;
+    machine_config.memory_bytes = (16u * 1024u * 1024u);
     display_config.text_timing = (x86_video_text_timing) {48u, 8u, 8u};
     display_config.ega_present = LIB_TRUE;
     display_config.ega_personality =

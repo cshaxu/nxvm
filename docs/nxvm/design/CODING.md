@@ -65,6 +65,13 @@ variants rather than renaming them into a replacement Standard profile.
 Do not add a framework or empty future directories. CPU-family implementations
 and selection tables stay in `x86-core/cpu`, not copied into board directories.
 
+PC-wide timing declarations and device trace identities are public Board-Base
+contracts in `core/board-base/{timing,trace}_interface.h`, not neutral execution
+types. Their implementation remains with the cohesive plan/deadline owners.
+Matching qualification/trace tests stay under `test/core/board-base` until
+that whole owner migrates. Neutral executor fixtures supply explicit CPU and
+RAM inputs; ordinary test allocation sizes do not import PC resize policy.
+
 ROM mapping declarations and asset roles remain with the core product profile.
 Project-owned BIOS source/build lives in `src/app-nxvm/firmware`, not in the
 runtime driver or devices. Its build produces a candidate ROM under `build/`

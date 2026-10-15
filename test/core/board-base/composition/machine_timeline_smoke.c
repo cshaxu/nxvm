@@ -25,7 +25,7 @@ static void timeline_trace(void *opaque,
 }
 
 static const core_machine_trace_event *timeline_find_trace_event(
-    const timeline_trace_probe *probe, core_machine_trace_event_type type)
+    const timeline_trace_probe *probe, lib_u32 type)
 {
     lib_u32 index;
 
@@ -89,9 +89,9 @@ static lib_i32 timeline_machine_contract(void)
         const core_machine_trace_event *dma = timeline_find_trace_event(
             &trace_probe, CORE_MACHINE_TRACE_DMA_ADVANCE);
         const core_machine_trace_event *pit = timeline_find_trace_event(
-            &trace_probe, CORE_MACHINE_TRACE_PIT_ADVANCE);
+            &trace_probe, CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE);
         const core_machine_trace_event *pic = timeline_find_trace_event(
-            &trace_probe, CORE_MACHINE_TRACE_PIC_REFRESH);
+            &trace_probe, CORE_MACHINE_BOARD_TRACE_PIC_REFRESH);
         const core_machine_trace_event *boundary = timeline_find_trace_event(
             &trace_probe, CORE_MACHINE_TRACE_RUN_BOUNDARY);
 

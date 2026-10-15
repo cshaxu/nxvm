@@ -53,17 +53,10 @@ typedef enum core_machine_trace_event_type {
     CORE_MACHINE_TRACE_CPU_RETIRE,
     CORE_MACHINE_TRACE_EXTERNAL_TIME,
     CORE_MACHINE_TRACE_DMA_ADVANCE,
-    CORE_MACHINE_TRACE_PIT_ADVANCE,
-    CORE_MACHINE_TRACE_PIC_REFRESH,
-    CORE_MACHINE_TRACE_RTC_ADVANCE,
-    CORE_MACHINE_TRACE_KBC_ADVANCE,
-    CORE_MACHINE_TRACE_VADP_ADVANCE,
-    CORE_MACHINE_TRACE_RUN_BOUNDARY,
+    CORE_MACHINE_TRACE_RUN_BOUNDARY = 14,
     CORE_MACHINE_TRACE_STOP,
     CORE_MACHINE_TRACE_FAULT,
-    CORE_MACHINE_TRACE_FDC_ADVANCE,
-    CORE_MACHINE_TRACE_HDC_ADVANCE,
-    CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
+    CORE_MACHINE_TRACE_TRANSACTION_BEGIN = 19,
     CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
     CORE_MACHINE_TRACE_TRANSACTION_CANCEL,
     CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST,
@@ -76,7 +69,7 @@ typedef enum core_machine_trace_event_type {
 } core_machine_trace_event_type;
 
 typedef struct core_machine_trace_event {
-    core_machine_trace_event_type type;
+    lib_u32 type;
     lib_u64 sequence;
     lib_u64 elapsed_ticks;
     lib_u64 timeline_ticks;
@@ -104,7 +97,7 @@ lib_status core_machine_set_trace_provider(
 #if CORE_MACHINE_RUNTIME_TRACE_ENABLED || defined(CORE_MACHINE_TRACE_IMPLEMENTATION)
 void core_machine_trace_record(
     core_machine *machine,
-    core_machine_trace_event_type type,
+    lib_u32 type,
     lib_u32 address,
     lib_u32 value,
     lib_u32 detail);

@@ -46,7 +46,6 @@ static lib_u8 board_consider_pit(const x86_pit *pit,
 }
 
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,
-    lib_bool timing_qualified,
     core_machine_attachment_deadline_observation *out_observation)
 {
     const core_machine_board_state *board = owner;
@@ -68,7 +67,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     dma_pending = core_machine_dma_has_pending_request(
         board->shared_dma) ?
         LIB_TRUE : LIB_FALSE;
-    dma_qualified = timing_qualified &&
+    dma_qualified = board->timing_declarations_copied &&
         board->dma_clock_explicit;
     if (dma_pending && !dma_qualified) {
         out_observation->l1_compatibility = LIB_TRUE;
@@ -77,7 +76,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
 
     /* A frozen fallback ratio remains an L2 timing claim, but is still a
      * Core-local conversion for a programmed PIT wake edge. */
-    if (timing_qualified) {
+    if (board->timing_declarations_copied) {
         if (x86_video_ticks_until_event(board->shared_vadp->chip, &device_ticks) ==
                 LIB_STATUS_OK && board_consider_clock(&board->vadp_clock,
                     device_ticks, &out_observation->source_ticks))
@@ -90,7 +89,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
                 &board->auxiliary_pit_clock, &out_observation->source_ticks))
             out_observation->immediate_due = LIB_TRUE;
     }
-    if (timing_qualified && board->rtc_cmos_configured &&
+    if (board->timing_declarations_copied && board->rtc_cmos_configured &&
         x86_rtc_ticks_until_irq(board->shared_rtc, &device_ticks) ==
             LIB_STATUS_OK && board_consider_clock(&board->rtc_clock,
                 device_ticks, &out_observation->source_ticks))

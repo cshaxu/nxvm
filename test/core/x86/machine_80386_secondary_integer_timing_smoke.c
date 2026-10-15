@@ -45,6 +45,7 @@ static const core_machine_execution_provider secondary_integer_timing_execution 
 static lib_i32 secondary_integer_timing_prepare(core_machine **out_machine, secondary_integer_timing_state *state)
 {
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_memory_alias_config aliases[] = {

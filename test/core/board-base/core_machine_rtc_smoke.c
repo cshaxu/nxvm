@@ -36,7 +36,8 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     const core_machine_executor_config executor_config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     if (core_machine_neutral_create(&executor_config, &machine) != LIB_STATUS_OK)
         return 1;

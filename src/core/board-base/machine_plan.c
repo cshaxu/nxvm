@@ -3,6 +3,80 @@
 
 #include "core/board-base/machine_board_state.h"
 
+_Static_assert(CORE_MACHINE_BOARD_TIMING_CAPABILITY_PRODUCT_DEBUG + 1u ==
+    CORE_MACHINE_BOARD_TIMING_CAPABILITY_COUNT,
+    "timing capability count must match the frozen T433 universe");
+
+static lib_i32 core_machine_board_timing_capability_is_valid(
+    core_machine_board_timing_capability capability)
+{
+    return capability >= CORE_MACHINE_BOARD_TIMING_CAPABILITY_CPU_EXEC &&
+        capability <= CORE_MACHINE_BOARD_TIMING_CAPABILITY_PRODUCT_DEBUG;
+}
+
+lib_status core_machine_board_get_timing_disposition(const core_machine_board_state *board,
+    core_machine_board_timing_capability capability,
+    core_machine_board_timing_disposition *out_disposition)
+{
+    if (board == LIB_NULL || out_disposition == LIB_NULL ||
+        !board->timing_declarations_copied ||
+        !core_machine_board_timing_capability_is_valid(capability)) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    *out_disposition = board->timing_declarations[capability].disposition;
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_board_validate_timing_declarations(
+    const core_machine_board_timing_declaration *declarations, lib_size count)
+{
+    lib_bool seen[CORE_MACHINE_BOARD_TIMING_CAPABILITY_COUNT] = {LIB_FALSE};
+    lib_size index;
+
+    if (declarations == LIB_NULL || count != CORE_MACHINE_BOARD_TIMING_CAPABILITY_COUNT)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    for (index = 0u; index < count; ++index) {
+        const core_machine_board_timing_declaration *declaration = &declarations[index];
+
+        if (!core_machine_board_timing_capability_is_valid(declaration->capability) ||
+            declaration->disposition < CORE_MACHINE_BOARD_TIMING_DISPOSITION_L2_FALLBACK ||
+            declaration->disposition > CORE_MACHINE_BOARD_TIMING_DISPOSITION_L3_REQUIRED ||
+            declaration->seam < CORE_MACHINE_BOARD_TIMING_SEAM_CPU_PROGRAM ||
+            declaration->seam > CORE_MACHINE_BOARD_TIMING_SEAM_OBSERVATION ||
+            seen[declaration->capability]) return LIB_STATUS_INVALID_ARGUMENT;
+        seen[declaration->capability] = LIB_TRUE;
+    }
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_board_install_timing_declarations(core_machine_board_state *board,
+    const core_machine_board_timing_declaration *declarations, lib_size count)
+{
+    lib_size index;
+
+    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core) ||
+        board->timing_declarations_copied) return LIB_STATUS_INVALID_STATE;
+    if (core_machine_board_validate_timing_declarations(declarations, count) !=
+            LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
+    for (index = 0u; index < count; ++index)
+        board->timing_declarations[declarations[index].capability] = declarations[index];
+    board->timing_declarations_copied = LIB_TRUE;
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_board_get_timing_declaration(const core_machine_board_state *board,
+    core_machine_board_timing_capability capability,
+    core_machine_board_timing_declaration *out_declaration)
+{
+    if (board == LIB_NULL || out_declaration == LIB_NULL ||
+        !board->timing_declarations_copied ||
+        !core_machine_board_timing_capability_is_valid(capability)) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    *out_declaration = board->timing_declarations[capability];
+    return LIB_STATUS_OK;
+}
+
 static lib_i32 core_machine_controller_timing_rule_is_valid(
     core_machine_controller_timing_rule rule)
 {
@@ -18,28 +92,28 @@ static lib_i32 core_machine_clock_ratio_is_explicit(
         ratio->denominator != 0u;
 }
 
-static core_machine_timing_disposition core_machine_controller_timing_disposition(
+static core_machine_board_timing_disposition core_machine_controller_timing_disposition(
     const core_machine_plan *plan,
-    core_machine_timing_capability capability)
+    core_machine_board_timing_capability capability)
 {
-    if (capability == CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT &&
+    if (capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_PIT &&
         plan->controller_timing.pit_clock ==
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK) {
-        return CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+        return CORE_MACHINE_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
     }
-    if (capability == CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA &&
+    if (capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_DMA &&
         plan->controller_timing.dma_clock ==
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK &&
         plan->controller_timing.dma_service ==
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES) {
-        return CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+        return CORE_MACHINE_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
     }
-    if (capability == CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS &&
+    if (capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_RTC_CMOS &&
         plan->controller_timing.rtc_clock ==
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK) {
-        return CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+        return CORE_MACHINE_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
     }
-    return CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
+    return CORE_MACHINE_BOARD_TIMING_DISPOSITION_L2_FALLBACK;
 }
 
 static lib_i32 core_machine_controller_timing_rules_are_valid(
@@ -91,53 +165,53 @@ static lib_i32 core_machine_controller_timing_rules_are_valid(
 }
 
 static lib_i32 core_machine_timing_capability_is_non_guest_time(
-    core_machine_timing_capability capability)
+    core_machine_board_timing_capability capability)
 {
-    return capability == CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_PRESENT ||
-        capability == CORE_MACHINE_TIMING_CAPABILITY_INPUT_HOST ||
-        capability == CORE_MACHINE_TIMING_CAPABILITY_TRACE_DEBUG ||
-        capability == CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_MAILBOX ||
-        capability == CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_RESOURCE ||
-        capability == CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_WAIT ||
-        capability == CORE_MACHINE_TIMING_CAPABILITY_SESSION_COMMAND ||
-        capability == CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG;
+    return capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_DISPLAY_PRESENT ||
+        capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_INPUT_HOST ||
+        capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_TRACE_DEBUG ||
+        capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_PLATFORM_MAILBOX ||
+        capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_PLATFORM_RESOURCE ||
+        capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_PLATFORM_WAIT ||
+        capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_SESSION_COMMAND ||
+        capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_PRODUCT_DEBUG;
 }
 
-static core_machine_timing_seam core_machine_timing_capability_seam(
-    core_machine_timing_capability capability)
+static core_machine_board_timing_seam core_machine_timing_capability_seam(
+    core_machine_board_timing_capability capability)
 {
-    if (capability == CORE_MACHINE_TIMING_CAPABILITY_CPU_RETIRE) {
-        return CORE_MACHINE_TIMING_SEAM_RETIREMENT;
+    if (capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_CPU_RETIRE) {
+        return CORE_MACHINE_BOARD_TIMING_SEAM_RETIREMENT;
     }
-    if (capability <= CORE_MACHINE_TIMING_CAPABILITY_CPU_FPU) {
-        return CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM;
+    if (capability <= CORE_MACHINE_BOARD_TIMING_CAPABILITY_CPU_FPU) {
+        return CORE_MACHINE_BOARD_TIMING_SEAM_CPU_PROGRAM;
     }
-    if (capability == CORE_MACHINE_TIMING_CAPABILITY_TIME_CLOCK) {
-        return CORE_MACHINE_TIMING_SEAM_CLOCK;
+    if (capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_TIME_CLOCK) {
+        return CORE_MACHINE_BOARD_TIMING_SEAM_CLOCK;
     }
-    if (capability == CORE_MACHINE_TIMING_CAPABILITY_TIME_LIFECYCLE) {
-        return CORE_MACHINE_TIMING_SEAM_LIFECYCLE;
+    if (capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_TIME_LIFECYCLE) {
+        return CORE_MACHINE_BOARD_TIMING_SEAM_LIFECYCLE;
     }
-    if (capability <= CORE_MACHINE_TIMING_CAPABILITY_TXN_ARBITRATION) {
-        return CORE_MACHINE_TIMING_SEAM_TRANSACTION;
+    if (capability <= CORE_MACHINE_BOARD_TIMING_CAPABILITY_TXN_ARBITRATION) {
+        return CORE_MACHINE_BOARD_TIMING_SEAM_TRANSACTION;
     }
-    if (capability <= CORE_MACHINE_TIMING_CAPABILITY_MEM_ROM_FIRMWARE) {
-        return CORE_MACHINE_TIMING_SEAM_MEMORY;
+    if (capability <= CORE_MACHINE_BOARD_TIMING_CAPABILITY_MEM_ROM_FIRMWARE) {
+        return CORE_MACHINE_BOARD_TIMING_SEAM_MEMORY;
     }
-    if (capability == CORE_MACHINE_TIMING_CAPABILITY_MACHINE_CONFIG) {
-        return CORE_MACHINE_TIMING_SEAM_CONFIGURATION;
+    if (capability == CORE_MACHINE_BOARD_TIMING_CAPABILITY_MACHINE_CONFIG) {
+        return CORE_MACHINE_BOARD_TIMING_SEAM_CONFIGURATION;
     }
-    if (capability <= CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_VADP) {
-        return CORE_MACHINE_TIMING_SEAM_DEVICE;
+    if (capability <= CORE_MACHINE_BOARD_TIMING_CAPABILITY_DISPLAY_VADP) {
+        return CORE_MACHINE_BOARD_TIMING_SEAM_DEVICE;
     }
-    return CORE_MACHINE_TIMING_SEAM_OBSERVATION;
+    return CORE_MACHINE_BOARD_TIMING_SEAM_OBSERVATION;
 }
 
 lib_status core_machine_plan_validate(const core_machine_plan *plan)
 {
     lib_size index;
 
-    if (plan == LIB_NULL || core_machine_validate_timing_declarations(
+    if (plan == LIB_NULL || core_machine_board_validate_timing_declarations(
             plan->declarations, plan->declaration_count) != LIB_STATUS_OK ||
         (plan->configuration.keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_8042 &&
         plan->configuration.keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) ||
@@ -175,7 +249,7 @@ lib_status core_machine_plan_validate(const core_machine_plan *plan)
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     for (index = 0u; index < plan->declaration_count; ++index) {
-        const core_machine_timing_declaration *declaration =
+        const core_machine_board_timing_declaration *declaration =
             &plan->declarations[index];
 
         if (declaration->seam != core_machine_timing_capability_seam(
@@ -185,7 +259,7 @@ lib_status core_machine_plan_validate(const core_machine_plan *plan)
         if (core_machine_timing_capability_is_non_guest_time(
                 declaration->capability)) {
             if (declaration->disposition !=
-                CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME) {
+                CORE_MACHINE_BOARD_TIMING_DISPOSITION_NON_GUEST_TIME) {
                 return LIB_STATUS_INVALID_ARGUMENT;
             }
         } else if (declaration->disposition !=
@@ -274,7 +348,7 @@ lib_status core_machine_create_from_plan(const core_machine_plan *plan,
     if (status != LIB_STATUS_OK) return status;
     status = core_machine_plan_apply_topology(machine, board, plan);
     if (status == LIB_STATUS_OK)
-        status = core_machine_install_timing_declarations(machine,
+        status = core_machine_board_install_timing_declarations(board,
             plan->declarations, plan->declaration_count);
     if (status != LIB_STATUS_OK) {
         core_machine_destroy(machine);
@@ -297,18 +371,18 @@ lib_status core_machine_plan_create(const core_machine_config *configuration,
     plan = (core_machine_plan *)lib_allocate_zero(1u, sizeof(*plan));
     if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     if (configuration != LIB_NULL) plan->configuration = *configuration;
-    plan->declaration_count = CORE_MACHINE_TIMING_CAPABILITY_COUNT;
+    plan->declaration_count = CORE_MACHINE_BOARD_TIMING_CAPABILITY_COUNT;
     for (index = 0u; index < plan->declaration_count; ++index) {
-        core_machine_timing_capability capability =
-            (core_machine_timing_capability)index;
+        core_machine_board_timing_capability capability =
+            (core_machine_board_timing_capability)index;
 
         plan->declarations[index].capability = capability;
         plan->declarations[index].seam =
             core_machine_timing_capability_seam(capability);
         plan->declarations[index].disposition =
             core_machine_timing_capability_is_non_guest_time(capability) ?
-            CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME :
-            CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
+            CORE_MACHINE_BOARD_TIMING_DISPOSITION_NON_GUEST_TIME :
+            CORE_MACHINE_BOARD_TIMING_DISPOSITION_L2_FALLBACK;
     }
     *out_plan = plan;
     return LIB_STATUS_OK;
@@ -332,18 +406,18 @@ lib_status core_machine_plan_set_controller_timing_rules(core_machine_plan *plan
 {
     if (plan == LIB_NULL || rules == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     plan->controller_timing = *rules;
-    plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC].disposition =
+    plan->declarations[CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_PIC].disposition =
         core_machine_controller_timing_disposition(plan,
-            CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC);
-    plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA].disposition =
+            CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_PIC);
+    plan->declarations[CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_DMA].disposition =
         core_machine_controller_timing_disposition(plan,
-            CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA);
-    plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT].disposition =
+            CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_DMA);
+    plan->declarations[CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_PIT].disposition =
         core_machine_controller_timing_disposition(plan,
-            CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT);
-    plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS].disposition =
+            CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_PIT);
+    plan->declarations[CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_RTC_CMOS].disposition =
         core_machine_controller_timing_disposition(plan,
-            CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS);
+            CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_RTC_CMOS);
     return LIB_STATUS_OK;
 }
 

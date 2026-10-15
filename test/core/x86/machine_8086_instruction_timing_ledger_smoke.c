@@ -89,6 +89,7 @@ static lib_i32 timing_8086_prepare(core_machine **out_machine,
     timing_8086_state *state)
 {
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_8087,
         .ticks_per_instruction = 29u,

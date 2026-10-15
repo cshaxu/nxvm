@@ -18,7 +18,7 @@ static void pit_irq0_finalize(pit_irq0_fixture *fixture);
 
 static lib_status pit_irq0_initialize(pit_irq0_fixture *fixture)
 {
-    const core_machine_executor_config config = { .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES };
+    const core_machine_executor_config config = { .cpu_profile = X86_CORE_CPU_PROFILE_80386, .memory_bytes = (2u * 1024u * 1024u) };
     *fixture = (pit_irq0_fixture){0};
     lib_status status = core_machine_neutral_create(&config, &fixture->machine);
     if (status != LIB_STATUS_OK) return status;

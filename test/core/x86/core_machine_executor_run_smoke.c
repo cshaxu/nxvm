@@ -14,7 +14,7 @@
 static lib_bool executor_sx_fpu_interface(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -103,7 +103,7 @@ static lib_bool executor_sx_fpu_interface(void)
 static lib_bool executor_event_time(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -180,7 +180,7 @@ static void executor_reset_event(void *context, lib_u64 due_tick)
 static lib_bool executor_sx_soft_reset(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -288,7 +288,7 @@ static lib_status executor_smm_memory_control(void *context, lib_u32 address,
 static lib_bool executor_sx_smm(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -364,7 +364,7 @@ static lib_bool executor_sx_smm(void)
 static lib_bool executor_sx_smm_fault(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -526,7 +526,7 @@ static lib_bool executor_dma_hold(void)
     for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (lib_u32 wait = 0u; wait < 2u; ++wait) {
         const core_machine_executor_config config = {
-            .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+            .memory_bytes = (2u * 1024u * 1024u),
             .cpu_profile = profiles[profile] == X86_CORE_CPU_PROFILE_80486SX ?
                 X86_CORE_CPU_PROFILE_80386 : profiles[profile],
             .fpu_profile = X86_FPU_PROFILE_NONE,
@@ -600,7 +600,7 @@ static lib_bool executor_dma_hold(void)
 
 lib_i32 main(void)
 {
-    core_machine_executor_config config = { .memory_bytes = 0u };
+    core_machine_executor_config config = { .cpu_profile = X86_CORE_CPU_PROFILE_80386, .memory_bytes = 16u * 1024u * 1024u };
     core_machine_run_budget budget = {1u, 0u};
     const core_machine_run_budget alu_budget = {2u, 0u};
     core_machine_run_result result;

@@ -22,9 +22,6 @@ extern "C" {
 
 typedef struct core_machine core_machine;
 
-#define CORE_MACHINE_DEFAULT_MEMORY_BYTES (16u * 1024u * 1024u)
-#define CORE_MACHINE_MINIMUM_MEMORY_BYTES (2u * 1024u * 1024u)
-#define CORE_MACHINE_MAXIMUM_MEMORY_BYTES (64u * 1024u * 1024u)
 /* A domain receives floor((phase + elapsed * numerator) / denominator)
  * ticks. All-zero is retained configuration shorthand for identity 1/1. */
 typedef struct core_machine_clock_ratio {
@@ -104,65 +101,6 @@ typedef struct core_machine_transaction_contract {
     lib_u32 refresh_cycle_source_ticks;
 } core_machine_transaction_contract;
 
-#define CORE_MACHINE_TIMING_CAPABILITY_COUNT 30u
-
-typedef enum core_machine_timing_capability {
-    CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC,
-    CORE_MACHINE_TIMING_CAPABILITY_CPU_EXCEPT,
-    CORE_MACHINE_TIMING_CAPABILITY_CPU_PREFETCH,
-    CORE_MACHINE_TIMING_CAPABILITY_CPU_RETIRE,
-    CORE_MACHINE_TIMING_CAPABILITY_CPU_FPU,
-    CORE_MACHINE_TIMING_CAPABILITY_TIME_CLOCK,
-    CORE_MACHINE_TIMING_CAPABILITY_TIME_LIFECYCLE,
-    CORE_MACHINE_TIMING_CAPABILITY_TXN_MEMORY,
-    CORE_MACHINE_TIMING_CAPABILITY_TXN_PORT,
-    CORE_MACHINE_TIMING_CAPABILITY_TXN_ARBITRATION,
-    CORE_MACHINE_TIMING_CAPABILITY_MEM_RAM_A20_PARITY,
-    CORE_MACHINE_TIMING_CAPABILITY_MEM_ROM_FIRMWARE,
-    CORE_MACHINE_TIMING_CAPABILITY_MACHINE_CONFIG,
-    CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC,
-    CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA,
-    CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT,
-    CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS,
-    CORE_MACHINE_TIMING_CAPABILITY_CTRL_KBC_NMI,
-    CORE_MACHINE_TIMING_CAPABILITY_CTRL_FDC,
-    CORE_MACHINE_TIMING_CAPABILITY_CTRL_HDC,
-    CORE_MACHINE_TIMING_CAPABILITY_MEDIA_BACKING,
-    CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_VADP,
-    CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_PRESENT,
-    CORE_MACHINE_TIMING_CAPABILITY_INPUT_HOST,
-    CORE_MACHINE_TIMING_CAPABILITY_TRACE_DEBUG,
-    CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_MAILBOX,
-    CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_RESOURCE,
-    CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_WAIT,
-    CORE_MACHINE_TIMING_CAPABILITY_SESSION_COMMAND,
-    CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG
-} core_machine_timing_capability;
-
-typedef enum core_machine_timing_disposition {
-    CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK,
-    CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME,
-    CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED
-} core_machine_timing_disposition;
-
-typedef enum core_machine_timing_seam {
-    CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM,
-    CORE_MACHINE_TIMING_SEAM_RETIREMENT,
-    CORE_MACHINE_TIMING_SEAM_CLOCK,
-    CORE_MACHINE_TIMING_SEAM_LIFECYCLE,
-    CORE_MACHINE_TIMING_SEAM_TRANSACTION,
-    CORE_MACHINE_TIMING_SEAM_MEMORY,
-    CORE_MACHINE_TIMING_SEAM_CONFIGURATION,
-    CORE_MACHINE_TIMING_SEAM_DEVICE,
-    CORE_MACHINE_TIMING_SEAM_OBSERVATION
-} core_machine_timing_seam;
-
-typedef struct core_machine_timing_declaration {
-    core_machine_timing_capability capability;
-    core_machine_timing_disposition disposition;
-    core_machine_timing_seam seam;
-} core_machine_timing_declaration;
-
 typedef enum core_machine_stop_reason {
     CORE_MACHINE_STOP_NONE = 0,
     /* Also used for a successfully delivered synchronous fault: that run
@@ -226,22 +164,6 @@ typedef struct core_machine_timeline_observation {
     lib_u32 pending_events;
 } core_machine_timeline_observation;
 
-lib_status core_machine_get_timing_disposition(const core_machine *machine,
-    core_machine_timing_capability capability,
-    core_machine_timing_disposition *out_disposition);
-lib_status core_machine_get_timing_declaration(const core_machine *machine,
-    core_machine_timing_capability capability,
-    core_machine_timing_declaration *out_declaration);
-
-/* Validate complete copied table representation; board provenance and seam
- * policy remain the composition's responsibility. */
-lib_status core_machine_validate_timing_declarations(
-    const core_machine_timing_declaration *declarations, lib_size count);
-/* Construction-only, once-only publication. Failure changes no live entry;
- * the caller's array is not retained. Reset preserves the frozen table. */
-lib_status core_machine_install_timing_declarations(core_machine *machine,
-    const core_machine_timing_declaration *declarations, lib_size count);
-
 lib_status core_machine_reset(core_machine *machine);
 
 lib_status core_machine_reconfigure_memory(core_machine *machine,
@@ -251,7 +173,8 @@ lib_status core_machine_reconfigure_memory(core_machine *machine,
  * eligibility check, not a lifecycle transition or a private-state lease. */
 lib_i32 core_machine_mutable_operation_is_allowed(const core_machine *machine);
 
-/* Construction values consumed only by the neutral executor. The board
+/* Explicit construction values consumed only by the neutral executor. CPU
+ * profile must name an admitted model and memory_bytes must be nonzero. The board
  * composition derives this temporary value from its one frozen configuration;
  * Core never retains a second configuration or any board selection. */
 typedef struct core_machine_executor_config {

@@ -29,8 +29,8 @@ foreach(required "core_machine_board_pit_ticks_advance("
     "core_machine_board_pit_pic_advance("
     "core_machine_clock_domain_advance(&board->pit_clock"
     "&board->auxiliary_pit_clock" "x86_pit_advance("
-    "CORE_MACHINE_TRACE_PIT_ADVANCE" "core_machine_pic_refresh("
-    "CORE_MACHINE_TRACE_PIC_REFRESH")
+    "CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE" "core_machine_pic_refresh("
+    "CORE_MACHINE_BOARD_TRACE_PIC_REFRESH")
     string(FIND "${board}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board PIT/PIC tail lacks ${required}")

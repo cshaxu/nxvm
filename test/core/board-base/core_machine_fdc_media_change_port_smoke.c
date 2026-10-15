@@ -99,7 +99,7 @@ int main(void)
     static const lib_u8 read_0[] = {0xe6u, 0x00u, 0x00u, 0x00u, 0x01u,
         0x02u, 0x01u, 0x1bu, 0xffu};
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u

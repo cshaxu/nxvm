@@ -149,7 +149,8 @@ static lib_bool vm_keyboard_set3_receiving_route(void)
         {KVM_KEY_PRINT_SCREEN,0u,0u,0x57,LIB_FALSE}
     };
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     core_machine *machine = LIB_NULL;
     core_machine_pic_bus *master = LIB_NULL;

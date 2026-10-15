@@ -40,7 +40,7 @@ static lib_i32 cli_sti_prepare(x86_core_cpu_profile profile,
     cli_sti_machine *state, lib_bool reject_ud)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = profile,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .shared_pit_personality = X86_PIT_PERSONALITY_8253,

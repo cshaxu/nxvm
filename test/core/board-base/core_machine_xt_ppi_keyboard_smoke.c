@@ -10,7 +10,7 @@
 static lib_i32 core_machine_xt_ppi_keyboard_path(void)
 {
     const core_machine_config configuration = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .time_axis = {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 1000000u},
         .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
         .xt_ppi_keyboard = {0x0060u, 0x0061u, 0x0062u, 0x0063u, 1u,
@@ -141,7 +141,7 @@ static lib_i32 core_machine_xt_ppi_keyboard_path(void)
 static lib_i32 core_machine_xt_ppi_does_not_change_at_8042(void)
 {
     const core_machine_config configuration = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
@@ -165,7 +165,7 @@ static lib_i32 core_machine_xt_ppi_does_not_change_at_8042(void)
 static lib_i32 core_machine_xt_ppi_parity_nmi_path(void)
 {
     const core_machine_config configuration = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
         .xt_ppi_keyboard = {0x0060u, 0x0061u, 0x0062u, 0x0063u, 1u}
     };
@@ -225,7 +225,7 @@ static lib_i32 core_machine_xt_ppi_parity_nmi_path(void)
 static lib_i32 core_machine_xt_keyboard_reset_bat_path(void)
 {
     const core_machine_config configuration = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .time_axis = {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 1000000u},
         .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
         .xt_ppi_keyboard = {0x0060u, 0x0061u, 0x0062u, 0x0063u, 1u}
@@ -304,7 +304,7 @@ static lib_i32 core_machine_xt_keyboard_reset_bat_path(void)
 static lib_i32 core_machine_xt_keyboard_repeat_path(void)
 {
     const core_machine_config configuration = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .time_axis = {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 1000000u},
         .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
         .xt_ppi_keyboard = {0x60u, 0x61u, 0x62u, 0x63u, 1u}
@@ -359,7 +359,7 @@ static lib_i32 core_machine_xt_keyboard_refused_completion(lib_bool bat,
     lib_bool reset_pending, lib_bool mode_release)
 {
     const core_machine_config configuration = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .time_axis = {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 1000000u},
         .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
         .xt_ppi_keyboard = {0x0060u, 0x0061u, 0x0062u, 0x0063u, 1u}
@@ -448,7 +448,7 @@ static void xt_teardown_speaker(void *owner, lib_u8 gate, lib_u8 data)
 static lib_i32 core_machine_xt_teardown_order(void)
 {
     const core_machine_config configuration = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
         .xt_ppi_keyboard = {0x60u, 0x61u, 0x62u, 0x63u, 1u, 0u, 0u}
     };

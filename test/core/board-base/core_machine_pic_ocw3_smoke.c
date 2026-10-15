@@ -16,7 +16,8 @@ static void pic_ocw3_initialize(pic_ocw3_fixture *fixture,
     lib_u8 master_icw4)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     *fixture = (pic_ocw3_fixture){0};
     if (core_machine_neutral_create(&config, &fixture->machine) != LIB_STATUS_OK ||

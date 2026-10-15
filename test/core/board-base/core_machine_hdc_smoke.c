@@ -207,7 +207,7 @@ static lib_i32 core_machine_hdc_fill(core_machine *machine, core_machine_board_s
 static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
@@ -349,7 +349,7 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
 lib_i32 main(void)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u

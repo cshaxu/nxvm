@@ -76,7 +76,7 @@ static void lifecycle_trace(void *opaque,
 }
 
 static lib_i32 lifecycle_find_transaction(const lifecycle_probe *probe,
-    core_machine_trace_event_type type, core_machine_transaction_owner owner,
+    lib_u32 type, core_machine_transaction_owner owner,
     core_machine_transaction_kind kind, lib_u32 *out_index)
 {
     lib_u32 index;
@@ -95,7 +95,7 @@ static lib_i32 lifecycle_find_transaction(const lifecycle_probe *probe,
 }
 
 static lib_i32 lifecycle_find_event(const lifecycle_probe *probe,
-    core_machine_trace_event_type type, lib_u32 *out_index)
+    lib_u32 type, lib_u32 *out_index)
 {
     lib_u32 index;
 

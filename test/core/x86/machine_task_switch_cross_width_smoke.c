@@ -52,7 +52,7 @@ static lib_i32 task_switch_prepare(task_switch_fixture *fixture,
     x86_core_cpu_profile profile)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = profile,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

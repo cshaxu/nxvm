@@ -85,7 +85,7 @@ static const core_machine_execution_provider string_io_timing_execution = {
 static lib_i32 string_io_timing_prepare(x86_core_cpu_profile profile,
     core_machine **out_machine, string_io_timing_state *state)
 {
-    const core_machine_executor_config config = { .cpu_profile = profile };
+    const core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = profile };
     const lib_u32 reset_linear = profile <= X86_CORE_CPU_PROFILE_80186 ?
         0x000ffff0u : profile == X86_CORE_CPU_PROFILE_80286 ?
         0x00fffff0u : STRING_IO_TIMING_RESET_LINEAR;

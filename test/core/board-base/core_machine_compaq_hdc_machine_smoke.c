@@ -77,7 +77,7 @@ static const core_machine_media_provider core_machine_compaq_hdc_machine_hdc_pro
 lib_i32 main(void)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u

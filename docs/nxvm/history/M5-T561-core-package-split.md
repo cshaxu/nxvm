@@ -143,3 +143,24 @@ The governance-only acceptance confirms no retired CPU/FPU paths in the Git
 tree or targets in either current graph, eight unchanged qualified artifact
 hashes, the ten-tree/MyNES/INI preservation diff and documentation governance.
 The full S3 packet remains in the P2 revision of CURRENT. S3 is closed, not T561.
+
+## S4 PC Policy Separation Delivery
+
+[S4 evidence](../etc/evidence/t561-s4-pc-policy-separation.md) accounts for
+170 changed source/test/build/manifest paths and eight published artifact
+hashes. P2/P3/P5 prerequisite ownership moves the full timing declaration
+contract/storage and PC defaults into Board-Base, while producer-owned trace
+IDs preserve all 28 numeric values and one neutral buffer. Whole plan rules,
+deadline calculations and device emission order match the prior implementation
+after the declared owner substitutions. CPU/FPU algorithms and closed 486SX
+production admission are unchanged. Production C/H is +282/-266 (net +16),
+test C/H +602/-460 (net +142), family checks +20/-8 (net +12).
+
+Both original graphs pass 627/627 complete repository units, specialized gates,
+48 receiving integration executions plus restored-default identity per width,
+and all eight published CLI/INI/PE/version/hash checks. Eight current 0561 PC
+EXEs are rebuilt/deployed. Imported packages, X86 Core CPU/FPU, MyNES and owner
+inputs remain unchanged. Manual RDP/physical/full Windows GUI is unverified.
+This delivers the I3 prerequisite, not neutral Machine extraction, I4/I5 or
+T560's remaining CPU qualification. Coordinator actual-change acceptance and
+its pushed implementation reference are recorded separately before S4 closes.

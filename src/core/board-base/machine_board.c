@@ -124,8 +124,10 @@ lib_status core_machine_board_prepare_executor(
     if (config == LIB_NULL || out_executor == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     const core_machine_executor_config executor = {
-        .memory_bytes = config->memory_bytes,
-        .cpu_profile = config->cpu_profile,
+        .memory_bytes = config->memory_bytes == 0u ?
+            CORE_MACHINE_BOARD_DEFAULT_MEMORY_BYTES : config->memory_bytes,
+        .cpu_profile = config->cpu_profile == X86_CORE_CPU_PROFILE_DEFAULT ?
+            X86_CORE_CPU_PROFILE_80386 : config->cpu_profile,
         .fpu_profile = config->fpu_profile,
         .cpu_80386_cr_mov_ignores_mod = config->cpu_80386_cr_mov_ignores_mod,
         .a20_wrap_policy = config->a20_wrap_policy,
@@ -539,9 +541,12 @@ static lib_status core_machine_board_memory_admission(void *owner,
     const core_machine_board_state *board = owner;
     core_machine_planar_parity_observation parity = {0};
 
-    (void)memory_bytes;
-    if (board != LIB_NULL) core_machine_at_parity_observe(board->planar_parity, &parity);
-    if (board == LIB_NULL || parity.configured) {
+    if (board == LIB_NULL || memory_bytes < CORE_MACHINE_BOARD_MINIMUM_MEMORY_BYTES ||
+        memory_bytes > CORE_MACHINE_BOARD_MAXIMUM_MEMORY_BYTES) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    core_machine_at_parity_observe(board->planar_parity, &parity);
+    if (parity.configured) {
         return LIB_STATUS_INVALID_STATE;
     }
     return LIB_STATUS_OK;

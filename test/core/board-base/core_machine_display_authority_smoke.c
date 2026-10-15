@@ -15,7 +15,7 @@ static lib_bool display_write_crtc(core_machine *machine, lib_u8 index, lib_u8 v
 static lib_bool display_cga_clock_routing(void)
 {
     const core_machine_config machine_config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .clock_plan = {.vadp = {315u, 1408u, 0u}}
     };
     const core_machine_display_config display_config = {
@@ -81,7 +81,7 @@ done:
 static lib_bool display_blink_without_irq(core_machine_display_config config)
 {
     const core_machine_config machine_config = {
-        .memory_bytes = CORE_MACHINE_DEFAULT_MEMORY_BYTES,
+        .memory_bytes = (16u * 1024u * 1024u),
         .clock_plan = {.vadp = {1u, 2u, 0u}}
     };
     static const lib_u8 registers[][2] = {
@@ -147,7 +147,8 @@ static lib_bool display_blink_without_irq(core_machine_display_config config)
     valid &= x86_video_ticks_until_event(board->shared_vadp->chip, &device_due) == LIB_STATUS_OK &&
         core_machine_clock_domain_source_ticks_until(&board->vadp_clock,
             device_due, &source_due) == LIB_STATUS_OK && source_due > 0u && source_due <= 2048u;
-    core_machine_board_deadline_observe(board, 0u, LIB_TRUE, &deadline);
+    board->timing_declarations_copied = LIB_TRUE;
+    core_machine_board_deadline_observe(board, 0u, &deadline);
     valid &= deadline.source_ticks == source_due && !deadline.immediate_due;
     if (!valid) goto done;
     stage = 3u;
@@ -155,7 +156,7 @@ static lib_bool display_blink_without_irq(core_machine_display_config config)
     core_machine_board_peripheral_advance(board, source_due - 1u);
     valid &= core_machine_capture_display_snapshot(board, snapshot) == LIB_STATUS_OK &&
         !snapshot->buffer_changed && snapshot->pixels[0] == 2u;
-    core_machine_board_deadline_observe(board, source_due - 1u, LIB_TRUE, &deadline);
+    core_machine_board_deadline_observe(board, source_due - 1u, &deadline);
     valid &= deadline.source_ticks == 1u && !deadline.immediate_due;
     if (!valid) goto done;
     stage = 4u;
@@ -183,7 +184,7 @@ int main(void)
     lib_u8 pixel = 0x5au;
     lib_i32 failed = !display_cga_clock_routing();
 
-    machine_config.memory_bytes = CORE_MACHINE_DEFAULT_MEMORY_BYTES;
+    machine_config.memory_bytes = (16u * 1024u * 1024u);
     machine_config.clock_plan.vadp = (core_machine_clock_ratio){1u, 2u, 0u};
     display_config.text_timing.active_display_ticks = 48u;
     display_config.text_timing.horizontal_blank_ticks = 8u;
@@ -251,7 +252,8 @@ int main(void)
             !display_write_crtc(machine, 0x15u, 5u) || !display_write_crtc(machine, 0x11u, 0x19u);
         failed |= x86_video_ticks_until_event(board->shared_vadp->chip, &due) != LIB_STATUS_OK ||
             due != 32u || board->shared_vadp->irq_source == LIB_NULL;
-        core_machine_board_deadline_observe(board, 0u, LIB_TRUE, &deadline);
+        board->timing_declarations_copied = LIB_TRUE;
+        core_machine_board_deadline_observe(board, 0u, &deadline);
         failed |= deadline.source_ticks != 64u || deadline.immediate_due;
         core_machine_board_peripheral_advance(board, 63u);
         failed |= core_machine_pic_irq_source_is_asserted(board->shared_vadp->irq_source);
@@ -281,7 +283,8 @@ int main(void)
                 !display_write_crtc(machine, 0u, 6u) || !display_write_crtc(machine, 6u, 8u) ||
                 !display_write_crtc(machine, 7u, 0u) || !display_write_crtc(machine, 0x15u, 5u) ||
                 !display_write_crtc(machine, 0x11u, 0x19u);
-            core_machine_board_deadline_observe(board, 0u, LIB_TRUE, &deadline);
+            board->timing_declarations_copied = LIB_TRUE;
+            core_machine_board_deadline_observe(board, 0u, &deadline);
             failed |= deadline.source_ticks != source_due || deadline.immediate_due;
             core_machine_board_peripheral_advance(board, source_due - 1u);
             failed |= core_machine_pic_irq_source_is_asserted(board->shared_vadp->irq_source);
@@ -297,7 +300,8 @@ int main(void)
             !display_write_crtc(machine, 0x15u, 5u) ||
             !display_write_crtc(machine, 0x17u, 0xe7u) ||
             !display_write_crtc(machine, 0x11u, 0x19u);
-        core_machine_board_deadline_observe(board, 0u, LIB_TRUE, &deadline);
+        board->timing_declarations_copied = LIB_TRUE;
+        core_machine_board_deadline_observe(board, 0u, &deadline);
         failed |= deadline.source_ticks != 144u || deadline.immediate_due;
         core_machine_board_peripheral_advance(board, 143u);
         failed |= core_machine_pic_irq_source_is_asserted(board->shared_vadp->irq_source);

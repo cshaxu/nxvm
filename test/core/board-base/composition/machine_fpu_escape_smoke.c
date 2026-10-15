@@ -13,7 +13,7 @@ static lib_i32 prepare_machine(x86_fpu_profile fpu_profile,
     lib_u32 cr0, fpu_escape_machine *state)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = fpu_profile
     };

@@ -22,7 +22,7 @@ static void input_display_trace(void *opaque,
 }
 
 static const core_machine_trace_event *input_display_find_event(
-    const input_display_trace_probe *probe, core_machine_trace_event_type type)
+    const input_display_trace_probe *probe, lib_u32 type)
 {
     lib_u32 index;
 
@@ -35,7 +35,7 @@ static const core_machine_trace_event *input_display_find_event(
 static lib_i32 input_display_lifecycle_guards(core_machine_keyboard_topology topology)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .keyboard_topology = topology,
         .xt_ppi_keyboard = {0x60u, 0x61u, 0x62u, 0x63u, 1u, 0x0du, 0x02u}
     };
@@ -157,13 +157,13 @@ lib_i32 main(void)
         const core_machine_trace_event *retire = input_display_find_event(&probe,
             CORE_MACHINE_TRACE_CPU_RETIRE);
         const core_machine_trace_event *fdc = input_display_find_event(&probe,
-            CORE_MACHINE_TRACE_FDC_ADVANCE);
+            CORE_MACHINE_BOARD_TRACE_FDC_ADVANCE);
         const core_machine_trace_event *hdc = input_display_find_event(&probe,
-            CORE_MACHINE_TRACE_HDC_ADVANCE);
+            CORE_MACHINE_BOARD_TRACE_HDC_ADVANCE);
         const core_machine_trace_event *kbc = input_display_find_event(&probe,
-            CORE_MACHINE_TRACE_KBC_ADVANCE);
+            CORE_MACHINE_BOARD_TRACE_KBC_ADVANCE);
         const core_machine_trace_event *vadp = input_display_find_event(&probe,
-            CORE_MACHINE_TRACE_VADP_ADVANCE);
+            CORE_MACHINE_BOARD_TRACE_VADP_ADVANCE);
         const core_machine_trace_event *boundary = input_display_find_event(&probe,
             CORE_MACHINE_TRACE_RUN_BOUNDARY);
 

@@ -11,7 +11,7 @@ static lib_i32 sign_extend_test_irq(void)
     static const lib_u8 opcodes[] = {0x98u, 0x99u};
     static const lib_u8 hlt = 0xf4u;
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

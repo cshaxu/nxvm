@@ -65,7 +65,7 @@ lib_i32 main(void)
     debug_port_probe port_probe = {LIB_STATUS_OK, 0x11u};
     core_machine_port_provider port_provider = {debug_port_read, debug_port_write};
 
-    if (test_core_machine_create_executor(0u, &machine) != LIB_STATUS_OK ||
+    if (test_core_machine_create_executor(16u * 1024u * 1024u, &machine) != LIB_STATUS_OK ||
         core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
             &port_provider, &port_probe) != LIB_STATUS_OK ||
         core_machine_debug_read_cpu(machine, &cpu) != LIB_STATUS_INVALID_STATE ||

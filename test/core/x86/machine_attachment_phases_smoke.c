@@ -107,11 +107,10 @@ typedef struct deadline_probe {
     lib_u32 finalized;
 } deadline_probe;
 
-static void probe_deadline(void *owner, lib_u64 now, lib_bool qualified,
+static void probe_deadline(void *owner, lib_u64 now,
     core_machine_attachment_deadline_observation *out)
 {
     deadline_probe *probe = owner;
-    (void)qualified;
     *out = (core_machine_attachment_deadline_observation){
         .source_ticks = probe->due > now ? probe->due - now : 0u,
         .immediate_due = probe->due <= now,
@@ -124,7 +123,7 @@ static void deadline_finalize(void *owner) { ++((deadline_probe *)owner)->finali
 static lib_i32 verify_deadline_admission(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS
     };
@@ -163,7 +162,7 @@ done:
 lib_i32 main(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .ticks_per_instruction = 1u
     };

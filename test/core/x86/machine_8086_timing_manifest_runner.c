@@ -209,6 +209,7 @@ static lib_i32 timing_manifest_prepare(core_machine **out_machine,
     lib_size program_bytes)
 {
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE,
         .ticks_per_instruction = 29u,
         .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }

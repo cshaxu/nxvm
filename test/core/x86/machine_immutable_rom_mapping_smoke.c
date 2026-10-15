@@ -13,7 +13,7 @@ lib_i32 main(void)
     static const lib_u8 high_image[] = { 0x5au };
     static const lib_u8 reset_jump[] = { 0xeau, 0x00u, 0x10u, 0x00u, 0x00u };
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u

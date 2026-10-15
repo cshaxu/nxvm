@@ -2,6 +2,8 @@
 #define CORE_MACHINE_BOARD_INTERFACE_H
 
 #include "core/x86/machine_interface.h"
+#include "core/board-base/timing_interface.h"
+#include "core/board-base/trace_interface.h"
 #include "core/board-base/controller_interface.h"
 #include "core/board-base/display_interface.h"
 #include "core/board-base/pic_bus_interface.h"
@@ -14,6 +16,11 @@ extern "C" {
 
 typedef struct core_machine_board_state core_machine_board_state;
 #include "core/board-base/board_profile_interface.h"
+
+#define CORE_MACHINE_BOARD_DEFAULT_MEMORY_BYTES (16u * 1024u * 1024u)
+/* Stopped PC RAM replacement limits, not allocator or construction minima. */
+#define CORE_MACHINE_BOARD_MINIMUM_MEMORY_BYTES (2u * 1024u * 1024u)
+#define CORE_MACHINE_BOARD_MAXIMUM_MEMORY_BYTES (64u * 1024u * 1024u)
 
 /* Construction-only lifetime transfer; rejects replacement and incomplete
  * bindings. On failure the caller still owns the Profile object. */

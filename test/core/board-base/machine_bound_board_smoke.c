@@ -9,7 +9,7 @@ static lib_i32 bound_board_create(core_machine **out_machine,
     core_machine_board_state **out_board)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = profile, .fpu_profile = X86_FPU_PROFILE_NONE
     };
     core_machine *machine = LIB_NULL;

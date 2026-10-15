@@ -14,7 +14,7 @@ static lib_status conflicting_write(void *owner, lib_u16 port, lib_u32 value)
 lib_i32 main(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const core_machine_port_provider provider = {LIB_NULL, conflicting_write};

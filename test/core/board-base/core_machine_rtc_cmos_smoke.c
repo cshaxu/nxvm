@@ -45,7 +45,8 @@ static void rtc_cmos_finalize(rtc_cmos_fixture *fixture)
 static lib_status rtc_cmos_initialize(rtc_cmos_fixture *fixture)
 {
     const core_machine_executor_config executor_config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     x86_rtc_config config = {4u, 0u, 0u};
     lib_status status;

@@ -87,7 +87,7 @@ static lib_i32 ie_prepare(interrupt_entry_machine *state,
     interrupt_entry_negative negative, lib_u8 gate_type)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

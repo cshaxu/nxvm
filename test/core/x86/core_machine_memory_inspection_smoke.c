@@ -130,7 +130,7 @@ static lib_status probe_memory_control(void *opaque, lib_u32 address,
  * production machine-admission gate or substituting the real memory bus. */
 static lib_bool inspection_cache_execution(void)
 {
-    const core_machine_executor_config config = {.cpu_profile = X86_CORE_CPU_PROFILE_80386};
+    const core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
     const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
     const lib_u8 read[] = {0xa1u, 0u, 0x30u};
     const lib_u8 write[] = {0xa3u, 0u, 0x30u};
@@ -341,7 +341,7 @@ static lib_bool inspection_cache_execution(void)
 
 lib_i32 main(void)
 {
-    const core_machine_executor_config config = {.cpu_profile = X86_CORE_CPU_PROFILE_80386};
+    const core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
     core_machine *machine = LIB_NULL;
     x86_core_cpu_instruction_lexeme lexeme;
     inspection_probe probe = {0};

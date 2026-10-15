@@ -47,18 +47,19 @@ lib_i32 test_plan_core_xt_routes(core_machine *machine, lib_bool after_reset)
         core_machine_port_has_write(&machine->executor_port, 0x0071u));
 }
 
-lib_i32 test_plan_core_pit_deadline(core_machine *machine)
+lib_i32 test_plan_core_pit_deadline(core_machine *machine,
+    core_machine_board_state *board)
 {
     core_machine_time_observation observation;
-    core_machine_timing_disposition disposition;
+    core_machine_board_timing_disposition disposition;
     lib_u8 advanced = LIB_FALSE;
     lib_i32 failed = 0;
 
     failed |= !failed && core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_get_timing_disposition(machine,
-        CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK;
-    failed |= !failed && disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
+    failed |= !failed && core_machine_board_get_timing_disposition(board,
+        CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK;
+    failed |= !failed && disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L2_FALLBACK;
     core_machine_port_write(&machine->executor_port, 0x0043u, 0x34u);
     core_machine_port_write(&machine->executor_port, 0x0040u, 4u);
     core_machine_port_write(&machine->executor_port, 0x0040u, 0u);

@@ -65,7 +65,7 @@ static void power_finalize(void *opaque)
 static lib_bool power_run(x86_core_cpu_special_cycle cycle, lib_u8 finish)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .transaction_contract = {.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE}

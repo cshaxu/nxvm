@@ -24,7 +24,7 @@ static lib_i32 test_cpu_board_de_delivery(const test_cpu_board_de_case *entry)
      * operand-size prefix on the faulting DIV/IDIV does not widen it. */
     const lib_u8 frame_width = 2u;
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

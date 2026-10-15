@@ -59,6 +59,7 @@ static lib_i32 timing_prepare(core_machine **out_machine,
     timing_port_state *port_state)
 {
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80286,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u }
@@ -243,6 +244,7 @@ static lib_i32 timing_capture_qualification(const lib_u8 *program,
     lib_size program_bytes, core_machine_retirement_eligibility_key *out_key)
 {
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u }
@@ -284,9 +286,13 @@ static lib_i32 timing_test_invalid_qualification(void)
         &entry, 0u
     };
     const core_machine_executor_config missing_config = {
+        .memory_bytes = 16u * 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .retirement_qualification = &missing_entries
     };
     const core_machine_executor_config empty_config = {
+        .memory_bytes = 16u * 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .retirement_qualification = &empty_entries
     };
     core_machine *machine = LIB_NULL;
@@ -309,6 +315,7 @@ static lib_i32 timing_test_physical_contract(void)
         entries, sizeof(entries) / sizeof(entries[0])
     };
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u },
@@ -370,6 +377,7 @@ static lib_i32 timing_test_physical_contract(void)
 static lib_i32 timing_test_next_fetch_publication(void)
 {
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u
     };
@@ -423,6 +431,7 @@ static lib_i32 timing_test_next_fetch_publication(void)
 static lib_i32 timing_test_interrupt_retirement(void)
 {
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u
     };

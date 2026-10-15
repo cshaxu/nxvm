@@ -287,6 +287,7 @@ static lib_i32 timing_80186_manifest_prepare(core_machine **out_machine,
     const char *key_id)
 {
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80186,
         .ticks_per_instruction = 29u,
         .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }

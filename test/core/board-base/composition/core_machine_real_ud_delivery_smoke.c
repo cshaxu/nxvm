@@ -28,7 +28,7 @@ static lib_i32 real_ud_prepare(real_ud_machine *state,
 {
     static const lib_u8 handler[] = { 0x40u, 0xf4u };
     core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

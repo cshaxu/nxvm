@@ -11,7 +11,7 @@ static lib_i32 arpl_board_prepare(core_machine **out_machine,
     core_machine_board_state **out_board)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = profile, .fpu_profile = X86_FPU_PROFILE_NONE
     };
     static const lib_u8 gdt_pointer[] = {0x37u,0,0,0x03u,0,0};

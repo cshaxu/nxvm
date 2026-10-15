@@ -22,7 +22,7 @@ static lib_i32 legacy_alu_divide_error_delivery(void)
     for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0]);
         ++index) {
         const core_machine_config config = {
-            .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+            .memory_bytes = (2u * 1024u * 1024u),
             .cpu_profile = profiles[index],
             .fpu_profile = X86_FPU_PROFILE_NONE
         };

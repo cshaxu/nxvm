@@ -40,7 +40,7 @@ static lib_i32 rational_clock_prepare(core_machine **out_machine,
     const lib_u8 program[RATIONAL_CLOCK_STEPS] = {
         0x90u, 0x90u, 0x90u, 0x90u
     };
-    core_machine_executor_config config = { 0 };
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u };
 
     config.ticks_per_instruction = 1u;
     config.cpu_profile = X86_CORE_CPU_PROFILE_80286;

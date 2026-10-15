@@ -86,7 +86,7 @@ static lib_i32 dma_memory_contract(core_machine *machine, lib_u8 *overlay)
 lib_i32 main(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

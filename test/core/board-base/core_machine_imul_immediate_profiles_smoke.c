@@ -99,7 +99,7 @@ static lib_i32 imul_irq_no_shadow(void)
         0x69u, 0x06u, 0x00u, 0x40u, 0xfeu, 0xffu, 0x90u
     };
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

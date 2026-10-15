@@ -100,13 +100,13 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_pa
         0xeau,0u,0u,0x08u,0u
     };
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = profile,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const core_machine_planar_parity_config parity = {
         .port = CORE_MACHINE_PC_AT_PORT_B,
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
         .refresh_status_toggle_ticks = 0u
     };

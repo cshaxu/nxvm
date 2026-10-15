@@ -162,7 +162,7 @@ static void xebec_configure_dma3(core_machine *port, lib_u16 address,
 lib_i32 main(void)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8088,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .dma_controller_count = 1u,

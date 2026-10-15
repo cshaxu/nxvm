@@ -145,8 +145,8 @@ static void transaction_state_trace(void *opaque,
 }
 
 static lib_i32 transaction_has_pair(const transaction_probe *probe,
-    core_machine_trace_event_type begin_type,
-    core_machine_trace_event_type end_type, lib_u8 owner,
+    lib_u32 begin_type,
+    lib_u32 end_type, lib_u8 owner,
     lib_u8 kind)
 {
     lib_u32 index;
@@ -197,7 +197,7 @@ static lib_i32 transaction_has_port_write_value(const transaction_probe *probe,
 }
 
 static lib_i32 transaction_find_external_cycle(const transaction_probe *probe,
-    core_machine_trace_event_type type,
+    lib_u32 type,
     x86_core_cpu_memory_access_provenance provenance,
     lib_u32 *out_index)
 {
@@ -214,7 +214,7 @@ static lib_i32 transaction_find_external_cycle(const transaction_probe *probe,
     return 0;
 }
 static lib_u32 transaction_count_external_cycles(
-    const transaction_probe *probe, core_machine_trace_event_type type,
+    const transaction_probe *probe, lib_u32 type,
     x86_core_cpu_memory_access_provenance provenance)
 {
     lib_u32 index;

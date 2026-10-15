@@ -24,7 +24,7 @@ static lib_i32 machine_configuration_expect(lib_status actual,
 lib_i32 main(void)
 {
     core_machine *machine = LIB_NULL;
-    core_machine_executor_config config = { 0 };
+    core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
     core_machine_port_provider port_provider = {
         machine_configuration_port_read, LIB_NULL
     };

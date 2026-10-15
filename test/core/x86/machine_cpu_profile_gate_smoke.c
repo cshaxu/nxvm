@@ -16,7 +16,7 @@ static lib_i32 prepare_machine(x86_core_cpu_profile profile,
     cpu_profile_machine *state, lib_bool terminal_ud)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = profile,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -134,7 +134,7 @@ static lib_i32 run_mov_rm8_imm8_8086(void)
 lib_i32 main(void)
 {
     const core_machine_executor_config unqualified = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80486SX,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

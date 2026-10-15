@@ -43,7 +43,7 @@ static lib_i32 iret_prepare(iret_machine *state, iret_negative negative,
     lib_i32 small_stack, lib_i32 conforming, lib_i32 user_cpl)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

@@ -54,7 +54,9 @@ lib_i32 main(void)
     failed |= core_machine_request_stop(machine) != LIB_STATUS_OK;
     failed |= core_machine_run(machine, budget, &run_result) != LIB_STATUS_OK;
     failed |= core_machine_reconfigure_memory(machine, 1u * 1024u * 1024u) !=
-        LIB_STATUS_INVALID_STATE;
+        LIB_STATUS_OK;
+    failed |= core_machine_get_memory_bytes(machine, &memory_bytes) != LIB_STATUS_OK ||
+        memory_bytes != 1u * 1024u * 1024u;
     failed |= core_machine_report_fault(machine, 0x172u) != LIB_STATUS_OK;
     failed |= core_machine_reconfigure_memory(machine, 8u * 1024u * 1024u) !=
         LIB_STATUS_INVALID_STATE;

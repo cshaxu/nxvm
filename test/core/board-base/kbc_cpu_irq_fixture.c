@@ -38,7 +38,7 @@ lib_i32 test_kbc_board_cpu_reset_irq1(void)
     };
     static const lib_u8 handler = 0xf4u;
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80286,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .shared_pit_personality = X86_PIT_PERSONALITY_8253

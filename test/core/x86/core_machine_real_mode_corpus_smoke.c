@@ -29,7 +29,7 @@ static lib_i32 corpus_prepare_machine(core_machine **out_machine,
     const core_machine_port_provider *port_provider, void *port_owner)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u

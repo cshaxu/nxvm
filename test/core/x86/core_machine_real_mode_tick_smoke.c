@@ -15,6 +15,7 @@ static lib_i32 core_machine_real_mode_tick_case(
     lib_u64 expected_ticks)
 {
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = profile,
         .ticks_per_instruction = 2u
     };

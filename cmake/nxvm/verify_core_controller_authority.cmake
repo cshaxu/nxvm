@@ -118,11 +118,11 @@ file(GLOB_RECURSE nxvm_signal_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/core/board-xt/*.c")
 foreach(source IN LISTS nxvm_signal_sources)
     file(READ "${source}" source_text)
-    if(source MATCHES "/src/(app-nxvm|app-mydeskpro386|ibmpc/board-(common|at|xt))/" AND
+    if(source MATCHES "/src/(app-(nxvm|my5160|my5170|mydeskpro386)|core/board-(base|at|xt))/" AND
        source_text MATCHES "#[ \t]*include[ \t]*[<\"]core/x86/(machine|memory|port|transaction|timeline)\\.h[>\"]")
         message(FATAL_ERROR "Board source imports private Core layout: ${source}")
     endif()
-    if(source MATCHES "/board-common/(board[^/]*|machine_board[^/]*|machine_plan|machine_display)\\.c$" AND
+    if(source MATCHES "/board-base/(board[^/]*|machine_board[^/]*|machine_plan|machine_display)\\.c$" AND
        source_text MATCHES "->[ \t]*elapsed_ticks")
         message(FATAL_ERROR "Board must receive copied Core time: ${source}")
     endif()
@@ -133,13 +133,13 @@ foreach(source IN LISTS nxvm_signal_sources)
     if(source STREQUAL machine_lifecycle_source)
         continue()
     endif()
-    if(source MATCHES "/board-common/(board[^/]*|machine_board[^/]*|machine_plan|machine_display)\\.c$" AND
+    if(source MATCHES "/board-base/(board[^/]*|machine_board[^/]*|machine_plan|machine_display)\\.c$" AND
        source_text MATCHES "(machine|mutable_machine)->(lifecycle|transaction_contract|cpu_cycle_bus_ready|dma_cycle_bus_ready)")
         message(FATAL_ERROR "Board borrows private Core lifecycle or READY state: ${source}")
     endif()
-    if(NOT source MATCHES "/core/x86/(machine|machine_scheduler)\\.c$" AND
+    if(NOT source MATCHES "/core/board-base/(machine_plan|board_deadline)\\.c$" AND
        source_text MATCHES "->[ \t]*(timing_declarations|timing_declarations_copied)")
-        message(FATAL_ERROR "Core timing declaration state outside its owner: ${source}")
+        message(FATAL_ERROR "PC qualification state outside Board-Base ownership: ${source}")
     endif()
     if(NOT source MATCHES "/core/x86/(machine_firmware|memory_interface|rom_mapping_interface)\\.c$")
         foreach(forbidden IN ITEMS "machine->immutable_rom" "machine->firmware_provider"
@@ -175,6 +175,13 @@ foreach(forbidden IN ITEMS "const core_machine_config *"
 endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/machine.h" private_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/attachment_interface.h" attachment_contract)
+file(GLOB neutral_policy_sources "${PROJECT_SOURCE_DIR}/src/core/x86/*.[ch]")
+foreach(source IN LISTS neutral_policy_sources)
+    file(READ "${source}" neutral_policy_text)
+    if(neutral_policy_text MATCHES "timing_declarations|timing_qualified|core_machine_board_timing_|CORE_MACHINE_(BOARD_)?TIMING_CAPABILITY|CORE_MACHINE_(BOARD_)?(DEFAULT|MINIMUM|MAXIMUM)_MEMORY_BYTES|CORE_MACHINE_(BOARD_)?TRACE_(PIT|PIC|RTC|KBC|VADP|FDC|HDC)_")
+        message(FATAL_ERROR "Neutral executor retains PC qualification/default/trace policy: ${source}")
+    endif()
+endforeach()
 string(FIND "${private_header}" "core_machine_attachment attachment;" attachment_state)
 if(attachment_state EQUAL -1)
     message(FATAL_ERROR "Core must own one copied attachment binding")
@@ -332,7 +339,7 @@ foreach(forbidden IN ITEMS "core_machine_get_board(" "get_board_context("
     endif()
 endforeach()
 foreach(validator IN ITEMS retirement_time_contract_is_valid
-    timing_capability_is_valid external_cycle_timing_is_valid
+    external_cycle_timing_is_valid
     external_access_wait_windows_are_valid transaction_contract_is_valid)
     set(definition "lib_i32 core_machine_${validator}(")
     string(FIND "${machine_plan_text}" "${definition}" board_position)
@@ -341,6 +348,11 @@ foreach(validator IN ITEMS retirement_time_contract_is_valid
         message(FATAL_ERROR "Neutral validator must belong to Core: ${validator}")
     endif()
 endforeach()
+string(FIND "${machine_plan_text}" "static lib_i32 core_machine_board_timing_capability_is_valid(" board_qualification)
+string(FIND "${machine_lifecycle_text}" "timing_capability_is_valid(" neutral_qualification)
+if(board_qualification EQUAL -1 OR NOT neutral_qualification EQUAL -1)
+    message(FATAL_ERROR "PC qualification validator must belong to Board-Base")
+endif()
 set(machine_text "${machine_board_text}${machine_lifecycle_text}${machine_plan_text}")
 foreach(required IN ITEMS "core_machine_configure_fdc" "core_machine_configure_hdc"
     "core_machine_fdc_create" "core_machine_fdc_configure"

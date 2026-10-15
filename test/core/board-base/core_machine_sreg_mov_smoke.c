@@ -12,7 +12,7 @@ static lib_i32 sreg_mov_prepare(sreg_mov_machine *state,
     x86_core_cpu_profile profile)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = profile,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

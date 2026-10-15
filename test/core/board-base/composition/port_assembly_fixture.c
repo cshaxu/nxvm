@@ -43,7 +43,7 @@ lib_i32 port_assembly_fresh_default_create(void)
 
 lib_i32 port_assembly_range_transaction(void)
 {
-    const core_machine_config config = { .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES };
+    const core_machine_config config = { .memory_bytes = (2u * 1024u * 1024u) };
     const core_machine_port_provider provider = { port_assembly_read, port_assembly_write };
     core_machine_port_test_allocation allocation = { 3u, 0u };
     port_assembly_probe_state state = {0u};
@@ -78,7 +78,7 @@ lib_i32 port_assembly_range_transaction(void)
 lib_i32 port_assembly_batch_transaction(void)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES};
+        .memory_bytes = (2u * 1024u * 1024u)};
     const core_machine_port_provider existing = {
         port_assembly_read, port_assembly_write};
     port_assembly_probe_state state = {0u};
@@ -202,7 +202,7 @@ lib_i32 port_assembly_port_b_time(void)
 lib_i32 port_assembly_dma_byte_lanes(void)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES};
+        .memory_bytes = (2u * 1024u * 1024u)};
     core_machine *machine = LIB_NULL;
     lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
@@ -232,10 +232,10 @@ lib_i32 port_assembly_dma_byte_lanes(void)
 lib_i32 port_assembly_create_failure(void)
 {
     const core_machine_config variants[] = {
-        {.memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES},
-        {.memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        {.memory_bytes = (2u * 1024u * 1024u)},
+        {.memory_bytes = (2u * 1024u * 1024u),
             .auxiliary_pit_present = LIB_TRUE, .auxiliary_pit_base_port = 0x48u},
-        {.memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        {.memory_bytes = (2u * 1024u * 1024u),
             .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
             .xt_ppi_keyboard = {0x60u, 0x61u, 0x62u, 0x63u, 1u},
             .dma_controller_count = 1u, .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_SINGLE}
@@ -333,7 +333,7 @@ lib_i32 port_assembly_pic_transaction(void)
 
 lib_i32 port_assembly_fdc_transaction(lib_size fail_at)
 {
-    const core_machine_config config = { .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES };
+    const core_machine_config config = { .memory_bytes = (2u * 1024u * 1024u) };
     core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_bus *dma = LIB_NULL;
     core_machine_dma_request_binding request = {0};
@@ -376,7 +376,7 @@ lib_i32 port_assembly_fdc_transaction(lib_size fail_at)
 lib_i32 port_assembly_rtc_transaction(lib_size fail_at)
 {
     const core_machine_config machine_config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     const core_machine_rtc_cmos_config rtc_config = {
         .index_port = 0x0070u, .data_port = 0x0071u, .nmi_mask_bit = 0x80u,
@@ -413,7 +413,7 @@ lib_i32 port_assembly_rtc_transaction(lib_size fail_at)
 lib_i32 port_assembly_rtc_collision(void)
 {
     const core_machine_config machine_config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     const core_machine_rtc_cmos_config rtc_config = {
         .index_port = 0x0070u, .data_port = 0x0071u, .nmi_mask_bit = 0x80u,
@@ -502,7 +502,7 @@ lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
     lib_size fail_at, lib_bool busy_dma, lib_bool busy_port)
 {
     const core_machine_config machine_config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_bus *dma = LIB_NULL;

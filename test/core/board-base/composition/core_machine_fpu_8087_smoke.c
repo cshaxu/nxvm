@@ -34,7 +34,7 @@ static lib_i32 fpu_test_prepare(fpu_test_machine *state,
     x86_core_cpu_profile cpu_profile, x86_fpu_profile fpu_profile)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = cpu_profile,
         .fpu_profile = fpu_profile
     };

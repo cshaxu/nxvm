@@ -22,7 +22,7 @@ static lib_i32 ram_create_success(lib_size memory_bytes)
     failed |= !failed && core_machine_get_memory_bytes(machine, &installed_bytes) !=
         LIB_STATUS_OK;
     failed |= !failed && installed_bytes != (memory_bytes == 0u ?
-        CORE_MACHINE_DEFAULT_MEMORY_BYTES : memory_bytes);
+        (16u * 1024u * 1024u) : memory_bytes);
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
@@ -79,11 +79,11 @@ static lib_i32 ram_fixture_retained(void)
     lib_i32 failed = 0;
 
     failed |= core_machine_memory_initialize_for(&ram,
-        CORE_MACHINE_DEFAULT_MEMORY_BYTES, LIB_NULL) != LIB_STATUS_OK;
-    failed |= ram.connect.installed_bytes != CORE_MACHINE_DEFAULT_MEMORY_BYTES;
+        (16u * 1024u * 1024u), LIB_NULL) != LIB_STATUS_OK;
+    failed |= ram.connect.installed_bytes != (16u * 1024u * 1024u);
     failed |= core_machine_memory_allocate_for(&ram,
-        CORE_MACHINE_MINIMUM_MEMORY_BYTES) != LIB_STATUS_OK;
-    failed |= ram.connect.installed_bytes != CORE_MACHINE_MINIMUM_MEMORY_BYTES;
+        (2u * 1024u * 1024u)) != LIB_STATUS_OK;
+    failed |= ram.connect.installed_bytes != (2u * 1024u * 1024u);
     failed |= core_machine_memory_write_physical(&ram, 0u,
         (lib_uptr)&value, sizeof(value)) != LIB_STATUS_OK;
     failed |= core_machine_memory_read_physical(&ram, 0u,
@@ -136,9 +136,9 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     failed |= ram_create_success(0u);
-    failed |= ram_create_success(CORE_MACHINE_MINIMUM_MEMORY_BYTES);
+    failed |= ram_create_success((2u * 1024u * 1024u));
     failed |= ram_create_failure(0u);
-    failed |= ram_create_failure(CORE_MACHINE_MINIMUM_MEMORY_BYTES);
+    failed |= ram_create_failure((2u * 1024u * 1024u));
     failed |= ram_fixture_retained();
     failed |= ram_create_preflight();
     failed |= configuration_board_publication();

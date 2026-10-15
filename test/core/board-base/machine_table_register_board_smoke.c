@@ -9,7 +9,7 @@ static lib_i32 table_register_board_create(core_machine **out_machine,
     core_machine_board_state **out_board)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -114,7 +114,7 @@ static lib_i32 table_register_board_ltr_memory(void)
     };
     static const lib_u8 ltr[] = {0x0fu,0,0x1eu,0,0x40u,0xf4u};
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -244,7 +244,7 @@ static lib_i32 table_register_board_source_limit(void)
     static const lib_u8 store_target[] = {0x0fu,0x01u,0x06u,0x0eu,0,0xf4u};
     static const lib_u8 handler = 0xf4u;
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -355,7 +355,7 @@ static lib_i32 table_register_board_dos_sgdt_discriminator(void)
 
     for (index = 0u; index != sizeof(cases) / sizeof(cases[0]); ++index) {
         const core_machine_config config = {
-            .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+            .memory_bytes = (2u * 1024u * 1024u),
             .cpu_profile = cases[index].profile,
             .fpu_profile = X86_FPU_PROFILE_NONE
         };
@@ -424,7 +424,7 @@ static lib_i32 table_register_board_lgdt_consumer(void)
         0xffu,0x0fu,0,0x40u,0,0x92u,0,0
     };
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -515,7 +515,7 @@ static lib_i32 table_register_board_cpl_reject(void)
     for (profile = 0u; profile != 2u; ++profile) for (operation = 0u;
         operation != 2u; ++operation) {
         const core_machine_config config = {
-            .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+            .memory_bytes = (2u * 1024u * 1024u),
             .cpu_profile = profiles[profile], .fpu_profile = X86_FPU_PROFILE_NONE
         };
         const x86_core_cpu_debug_register_patch entry = {

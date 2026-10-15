@@ -183,7 +183,7 @@ lib_i32 main(void)
     core_machine_compaq_hdc_media slave_media = {0};
     core_machine_media_registry *registry = LIB_NULL;
     const core_machine_executor_config executor = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086};
     core_machine_hdc *hdc = LIB_NULL;
     core_machine_hdc *empty_hdc = LIB_NULL;

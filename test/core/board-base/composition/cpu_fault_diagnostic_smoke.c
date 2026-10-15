@@ -8,7 +8,7 @@
 static lib_bool diagnostic_run_case(lib_bool shutdown)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_DEFAULT_MEMORY_BYTES
+        .memory_bytes = (16u * 1024u * 1024u)
     };
     lib_u8 program[X86_CORE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 2u];
     core_machine *machine = LIB_NULL;

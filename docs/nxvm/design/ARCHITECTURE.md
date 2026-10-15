@@ -102,6 +102,17 @@ verification and acceptance; the task history retains the cutover sequence.
   verification and acceptance status.
   `core/board-base` also owns the complete board construction, reset,
   clock/deadline reduction and teardown, plus opaque FDC/HDC/video adapters.
+  Its timing contract owns the complete 30-item PC qualification table,
+  copied once at construction and retained over reset; the neutral executor
+  neither stores it nor supplies a qualification flag to board deadlines.
+  Board preparation alone resolves default CPU/zero RAM to the existing
+  80386/16 MiB choices. Neutral construction consumes an explicit admitted CPU
+  and nonzero RAM. The existing 2--64 MiB stopped-PC resize bounds are board
+  policy, not an allocator minimum or a new PC construction restriction.
+  Trace retains one Core-owned buffer, sequence and time stamp. Its copied
+  scalar ID accepts producer-owned events: CPU/bus identities, including DMA,
+  remain neutral; PIT/PIC/RTC/KBC/video/FDC/HDC identities belong to the board.
+  Existing numeric IDs, emission order and Release no-op behavior are preserved.
   `core/board-at` owns KBC and planar parity; `core/board-xt` owns PPI keyboard
   wiring. Emulator Product composition integrates their public contracts; neither
   family reads the common board layout. Model40 alone owns D4 memory,

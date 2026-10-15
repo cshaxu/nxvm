@@ -28,7 +28,7 @@ lib_i32 main(void)
     core_machine_run_result result;
     lib_i32 failed = 0;
 
-    failed |= test_core_machine_create_executor(0u, &machine) != LIB_STATUS_OK;
+    failed |= test_core_machine_create_executor(16u * 1024u * 1024u, &machine) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= expect_lifecycle(machine, CORE_MACHINE_STOPPED);

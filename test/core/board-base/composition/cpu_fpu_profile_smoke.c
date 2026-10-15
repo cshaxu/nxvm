@@ -7,7 +7,7 @@ static lib_i32 verify_machine_profiles(x86_core_cpu_profile cpu_profile,
     x86_fpu_profile fpu_profile)
 {
     core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = cpu_profile,
         .fpu_profile = fpu_profile
     };
@@ -26,7 +26,7 @@ static lib_i32 verify_machine_profiles(x86_core_cpu_profile cpu_profile,
 lib_i32 main(void)
 {
     core_machine_config default_config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     x86_core_cpu_instruction_metadata metadata;
     core_machine *machine = LIB_NULL;

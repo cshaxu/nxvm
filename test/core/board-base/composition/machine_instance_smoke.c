@@ -53,10 +53,10 @@ lib_i32 main(void)
     lib_i32 result = 0;
 
     result |= expect_status(test_board_create_executor(
-                                CORE_MACHINE_MINIMUM_MEMORY_BYTES, &first),
+                                (2u * 1024u * 1024u), &first),
                             LIB_STATUS_OK);
     result |= expect_status(test_board_create_executor(
-                                CORE_MACHINE_MINIMUM_MEMORY_BYTES, &second),
+                                (2u * 1024u * 1024u), &second),
                             LIB_STATUS_OK);
     result |= expect_status(core_machine_install_port_provider(
                                 first, 0x1234u, 0x1234u, &ops, &first_port),

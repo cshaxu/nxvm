@@ -79,7 +79,7 @@ static vm_machine_construction prepare(construction_probe *probe)
 {
     vm_machine_construction value = {
         .core_config = {
-            .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+            .memory_bytes = (2u * 1024u * 1024u),
             .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_8042,
             .shared_pit_personality = X86_PIT_PERSONALITY_8254
         },
@@ -214,7 +214,7 @@ static void check_transaction(lib_status configure_status,
     construction.core_config.memory_bytes = 0u;
     construction.floppy_slot_count = 0u;
     lib_test_assert(vm_machine_get_information(machine, &information) == LIB_STATUS_OK);
-    lib_test_assert(information.memory_bytes == CORE_MACHINE_MINIMUM_MEMORY_BYTES);
+    lib_test_assert(information.memory_bytes == (2u * 1024u * 1024u));
     lib_test_assert(vm_machine_describe_emulator_driver(machine, &driver) == LIB_STATUS_OK);
     lib_test_assert(driver.context == machine && driver.reset(driver.context));
     lib_test_assert(probe.configure_count == 1u && probe.firmware_count == 1u);

@@ -60,7 +60,7 @@ static lib_i32 fpu_interface_prepare(x86_core_cpu_profile profile,
     x86_fpu_profile fpu_profile, fpu_interface_machine *state)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = profile,
         .fpu_profile = fpu_profile
     };
@@ -391,6 +391,7 @@ static lib_i32 fpu_interface_external_test_input_profile(
 {
     static const lib_u8 code[] = { 0x9bu, 0x90u };
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = profile,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -454,6 +455,7 @@ static lib_i32 fpu_interface_wait_interrupt(void)
     static const lib_u8 wait[] = {0x9bu};
     static const lib_u8 hlt = 0xf4u;
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
@@ -531,6 +533,7 @@ static lib_i32 fpu_interface_80186_escape_trap(void)
     static const lib_u8 escape[] = {0xd8u, 0xc0u};
     static const lib_u8 hlt = 0xf4u;
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80186,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

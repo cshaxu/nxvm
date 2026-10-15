@@ -90,7 +90,7 @@ static void core_machine_capture_time_with_board(const core_machine *machine,
         source_ticks = machine->refresh_cycle_ticks_remaining;
     if (machine->attachment.deadline != LIB_NULL)
         machine->attachment.deadline(machine->attachment.context,
-            machine->elapsed_ticks, machine->timing_declarations_copied, &board);
+            machine->elapsed_ticks, &board);
     if (out_board != LIB_NULL) *out_board = board;
     if (board.immediate_due) immediate_due = LIB_TRUE;
     if (board.source_ticks != 0u &&

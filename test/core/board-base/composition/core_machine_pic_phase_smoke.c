@@ -134,7 +134,7 @@ static lib_i32 pic_phase_has_acknowledgement_before_frame(
 
 static lib_i32 pic_phase_cascaded_bus(void)
 {
-    const core_machine_executor_config config = {0};
+    const core_machine_executor_config config = { .memory_bytes = 16u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80386 };
     pic_phase_state state = {0};
     const core_machine_trace_provider trace = { pic_phase_trace, &state };
     core_machine_pic_irq_source *irq = LIB_NULL;
@@ -193,7 +193,7 @@ static lib_i32 pic_phase_cascaded_bus(void)
 lib_i32 main(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

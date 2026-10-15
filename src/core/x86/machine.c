@@ -5,10 +5,6 @@
 
 #define CORE_MACHINE_L1_COMPATIBILITY_MAXIMUM_STEPS 16u
 
-_Static_assert(CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG + 1u ==
-    CORE_MACHINE_TIMING_CAPABILITY_COUNT,
-    "timing capability count must match the frozen T433 universe");
-
 lib_u32 core_machine_linear_pc(const core_machine *machine)
 {
     return x86_core_cpu_linear_pc(machine->executor_cpu_execution);
@@ -60,13 +56,6 @@ static lib_bool core_machine_finish_shutdown(core_machine *machine,
     result->linear_pc = core_machine_linear_pc(machine);
     result->elapsed_ticks = machine->elapsed_ticks;
     return LIB_TRUE;
-}
-
-static x86_core_cpu_profile core_machine_resolve_cpu_profile(
-    x86_core_cpu_profile profile)
-{
-    return profile == X86_CORE_CPU_PROFILE_DEFAULT ?
-        X86_CORE_CPU_PROFILE_80386 : profile;
 }
 
 static lib_u32 core_machine_resolve_ticks_per_instruction(lib_u32 ticks)
@@ -128,13 +117,6 @@ static lib_i32 core_machine_valid_fpu_profile(x86_fpu_profile profile)
 {
     return profile >= X86_FPU_PROFILE_NONE &&
         profile <= X86_FPU_PROFILE_80387;
-}
-
-static lib_size core_machine_resolve_memory_bytes(
-    const core_machine_executor_config *config)
-{
-    return config->memory_bytes == 0u ?
-        CORE_MACHINE_DEFAULT_MEMORY_BYTES : config->memory_bytes;
 }
 
 lib_i32 core_machine_configuration_is_open(const core_machine *machine)
@@ -320,13 +302,6 @@ lib_i32 core_machine_retirement_time_contract_is_valid(
         contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
 }
 
-lib_i32 core_machine_timing_capability_is_valid(
-    core_machine_timing_capability capability)
-{
-    return capability >= CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC &&
-        capability <= CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG;
-}
-
 lib_i32 core_machine_external_cycle_timing_is_valid(
     const core_machine_external_cycle_timing *timing)
 {
@@ -381,9 +356,8 @@ lib_i32 core_machine_transaction_contract_is_valid(
 lib_i32 core_machine_neutral_config_is_valid(
     const core_machine_executor_config *config)
 {
-    return config != LIB_NULL &&
-        core_machine_valid_cpu_profile(
-            core_machine_resolve_cpu_profile(config->cpu_profile)) &&
+    return config != LIB_NULL && config->memory_bytes != 0u &&
+        core_machine_valid_cpu_profile(config->cpu_profile) &&
         core_machine_valid_fpu_profile(config->fpu_profile) &&
         (config->a20_wrap_policy == CORE_MACHINE_A20_WRAP_GLOBAL_MASK ||
          config->a20_wrap_policy == CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB) &&
@@ -419,7 +393,7 @@ lib_status core_machine_neutral_create_with_test_allocation(
     *out_machine = LIB_NULL;
     if (!core_machine_neutral_config_is_valid(config))
         return LIB_STATUS_INVALID_ARGUMENT;
-    memory_bytes = core_machine_resolve_memory_bytes(config);
+    memory_bytes = config->memory_bytes;
 
     machine = (core_machine *)lib_allocate_zero(1u, sizeof(*machine));
     if (machine == LIB_NULL) {
@@ -427,7 +401,7 @@ lib_status core_machine_neutral_create_with_test_allocation(
     }
 
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
-    machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
+    machine->cpu_profile = config->cpu_profile;
     machine->retirement_time_contract = config->retirement_time_contract;
     machine->transaction_contract = config->transaction_contract;
     machine->time_axis = config->time_axis;
@@ -537,69 +511,6 @@ lib_status core_machine_neutral_create(
         LIB_NULL, LIB_NULL, out_machine);
 }
 
-lib_status core_machine_get_timing_disposition(const core_machine *machine,
-    core_machine_timing_capability capability,
-    core_machine_timing_disposition *out_disposition)
-{
-    if (machine == LIB_NULL || out_disposition == LIB_NULL ||
-        !machine->timing_declarations_copied ||
-        !core_machine_timing_capability_is_valid(capability)) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    *out_disposition = machine->timing_declarations[capability].disposition;
-    return LIB_STATUS_OK;
-}
-
-lib_status core_machine_validate_timing_declarations(
-    const core_machine_timing_declaration *declarations, lib_size count)
-{
-    lib_bool seen[CORE_MACHINE_TIMING_CAPABILITY_COUNT] = {LIB_FALSE};
-    lib_size index;
-
-    if (declarations == LIB_NULL || count != CORE_MACHINE_TIMING_CAPABILITY_COUNT)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    for (index = 0u; index < count; ++index) {
-        const core_machine_timing_declaration *declaration = &declarations[index];
-
-        if (!core_machine_timing_capability_is_valid(declaration->capability) ||
-            declaration->disposition < CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK ||
-            declaration->disposition > CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED ||
-            declaration->seam < CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM ||
-            declaration->seam > CORE_MACHINE_TIMING_SEAM_OBSERVATION ||
-            seen[declaration->capability]) return LIB_STATUS_INVALID_ARGUMENT;
-        seen[declaration->capability] = LIB_TRUE;
-    }
-    return LIB_STATUS_OK;
-}
-
-lib_status core_machine_install_timing_declarations(core_machine *machine,
-    const core_machine_timing_declaration *declarations, lib_size count)
-{
-    lib_size index;
-
-    if (!core_machine_configuration_is_open(machine) ||
-        machine->timing_declarations_copied) return LIB_STATUS_INVALID_STATE;
-    if (core_machine_validate_timing_declarations(declarations, count) !=
-            LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
-    for (index = 0u; index < count; ++index)
-        machine->timing_declarations[declarations[index].capability] = declarations[index];
-    machine->timing_declarations_copied = LIB_TRUE;
-    return LIB_STATUS_OK;
-}
-
-lib_status core_machine_get_timing_declaration(const core_machine *machine,
-    core_machine_timing_capability capability,
-    core_machine_timing_declaration *out_declaration)
-{
-    if (machine == LIB_NULL || out_declaration == LIB_NULL ||
-        !machine->timing_declarations_copied ||
-        !core_machine_timing_capability_is_valid(capability)) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    *out_declaration = machine->timing_declarations[capability];
-    return LIB_STATUS_OK;
-}
-
 static lib_status core_machine_cold_reset(core_machine *machine)
 {
     lib_status status;
@@ -699,8 +610,7 @@ lib_status core_machine_reconfigure_memory(core_machine *machine,
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         !machine->execution_provider_frozen ||
         machine->lifecycle != CORE_MACHINE_STOPPED ||
-        memory_bytes < CORE_MACHINE_MINIMUM_MEMORY_BYTES ||
-        memory_bytes > CORE_MACHINE_MAXIMUM_MEMORY_BYTES) {
+        memory_bytes == 0u) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (machine->attachment.memory_admission != LIB_NULL) {

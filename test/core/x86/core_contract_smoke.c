@@ -13,7 +13,7 @@ lib_i32 main(void)
     core_machine_run_result result;
     lib_u8 halt = 0xf4u;
 
-    if (test_core_machine_create_executor(0u, &machine) != LIB_STATUS_OK) {
+    if (test_core_machine_create_executor(16u * 1024u * 1024u, &machine) != LIB_STATUS_OK) {
         return 1;
     }
 

@@ -20,7 +20,7 @@ static lib_i32 check_parity(lib_bool memory_present,
     core_machine_planar_parity_refresh_status_source source)
 {
     const core_machine_executor_config executor = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = 2u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const core_machine_planar_parity_config config = {

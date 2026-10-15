@@ -94,6 +94,7 @@ static lib_i32 secondary_privileged_timing_enter_protected(core_machine *machine
 static lib_i32 secondary_privileged_timing_prepare(core_machine **out_machine, secondary_privileged_timing_state *state)
 {
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_memory_alias_config aliases[] = {

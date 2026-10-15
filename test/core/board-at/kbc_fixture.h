@@ -10,7 +10,8 @@
 static inline core_machine *test_kbc_create_executor(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     core_machine *machine = LIB_NULL;
     if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK)

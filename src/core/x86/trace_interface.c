@@ -63,7 +63,7 @@ lib_status core_machine_set_trace_provider(
 
 void core_machine_trace_record(
     core_machine *machine,
-    core_machine_trace_event_type type,
+    lib_u32 type,
     lib_u32 address,
     lib_u32 value,
     lib_u32 detail)

@@ -29,7 +29,7 @@ lib_i32 main(void)
     core_machine_pic_irq_source *peers[2] = {LIB_NULL, LIB_NULL};
     lib_i32 failed = 0;
 
-    const core_machine_executor_config config = { .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES };
+    const core_machine_executor_config config = { .cpu_profile = X86_CORE_CPU_PROFILE_80386, .memory_bytes = (2u * 1024u * 1024u) };
     if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
     port = machine;
     failed = core_machine_pic_initialize(&master, &slave, machine,

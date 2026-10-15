@@ -65,7 +65,7 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     failed |= expect_status(test_board_create_executor(
-        CORE_MACHINE_MINIMUM_MEMORY_BYTES, &machine), LIB_STATUS_OK);
+        (2u * 1024u * 1024u), &machine), LIB_STATUS_OK);
     if (failed) return 1;
 
     failed |= expect_status(core_machine_memory_query(machine, 0u, 1u,

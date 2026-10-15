@@ -8,7 +8,10 @@ static lib_status test_core_machine_create_executor(
     lib_size memory_bytes,
     core_machine **out_machine)
 {
-    core_machine_executor_config config = { .memory_bytes = memory_bytes };
+    core_machine_executor_config config = {
+        .memory_bytes = memory_bytes,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386
+    };
     lib_status status;
 
     status = core_machine_neutral_create(&config, out_machine);

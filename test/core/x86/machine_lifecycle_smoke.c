@@ -34,7 +34,7 @@ lib_i32 main(void)
     lib_u8 halt = 0xf4u;
     lib_i32 result = 0;
 
-    result |= expect_status(test_core_machine_create_executor(0u, &machine),
+    result |= expect_status(test_core_machine_create_executor(16u * 1024u * 1024u, &machine),
                             LIB_STATUS_OK);
     result |= expect_lifecycle(machine, CORE_MACHINE_INITIALIZED);
     result |= expect_status(core_machine_run(machine, budget, &run_result),

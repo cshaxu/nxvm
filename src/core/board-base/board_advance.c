@@ -77,12 +77,12 @@ void core_machine_board_pit_pic_advance(void *owner,
         x86_pit_advance(board->auxiliary_pit, ticks.auxiliary);
     }
     if (ticks.primary != 0u) {
-        core_machine_trace_record(board->core, CORE_MACHINE_TRACE_PIT_ADVANCE,
+        core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE,
             0u, (lib_u32)ticks.primary, 0u);
     }
     core_machine_pic_refresh(board->shared_pic_master,
         board->shared_pic_slave);
-    core_machine_trace_record(board->core, CORE_MACHINE_TRACE_PIC_REFRESH,
+    core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_PIC_REFRESH,
         0u, 0u, 0u);
 }
 
@@ -110,12 +110,12 @@ void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
     if (board == LIB_NULL || source_ticks == 0u) return;
     if (board->fdc_configured) {
         core_machine_fdc_advance_at(board->fdc, due_tick);
-        core_machine_trace_record(board->core, CORE_MACHINE_TRACE_FDC_ADVANCE,
+        core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_FDC_ADVANCE,
             0u, 0u, 0u);
     }
     if (board->hdc_configured) {
         core_machine_hdc_advance_at(board->hdc, due_tick);
-        core_machine_trace_record(board->core, CORE_MACHINE_TRACE_HDC_ADVANCE,
+        core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_HDC_ADVANCE,
             0u, 0u, 0u);
     }
 }
@@ -130,7 +130,7 @@ void core_machine_board_rtc_advance(void *owner, lib_u64 source_ticks)
     if (board->rtc_cmos_configured) {
         x86_rtc_advance(board->shared_rtc, rtc_ticks);
     }
-    core_machine_trace_record(board->core, CORE_MACHINE_TRACE_RTC_ADVANCE,
+    core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_RTC_ADVANCE,
         0u, (lib_u32)rtc_ticks, 0u);
 }
 
@@ -151,10 +151,10 @@ void core_machine_board_peripheral_advance(void *owner, lib_u64 source_ticks)
     }
     core_machine_pic_advance(board->shared_pic_master, board->shared_pic_slave,
         source_ticks);
-    core_machine_trace_record(board->core, CORE_MACHINE_TRACE_KBC_ADVANCE,
+    core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_KBC_ADVANCE,
         0u, (lib_u32)kbc_ticks, 0u);
     vadp_ticks = core_machine_clock_domain_advance(&board->vadp_clock, source_ticks);
     core_machine_vadp_advance(board->shared_vadp, vadp_ticks);
-    core_machine_trace_record(board->core, CORE_MACHINE_TRACE_VADP_ADVANCE,
+    core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_VADP_ADVANCE,
         0u, (lib_u32)vadp_ticks, 0u);
 }

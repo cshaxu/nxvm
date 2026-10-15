@@ -88,6 +88,7 @@ static lib_i32 timing_ledger_prepare(core_machine **out_machine,
     timing_ledger_state *state)
 {
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     core_machine *machine = LIB_NULL;
@@ -245,6 +246,7 @@ static lib_i32 timing_ledger_physical_case(const lib_u8 *program,
         &entry, 1u
     };
     core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
@@ -307,6 +309,7 @@ static lib_i32 timing_ledger_physical_protected_mov_sreg_memory(void)
     static const lib_u8 program[] = { 0x8eu, 0x1eu, 0x00u, 0x10u };
     static const lib_u8 selector[] = { 0x30u, 0x00u };
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_run_budget budget = { 1u, 0u };
@@ -354,6 +357,7 @@ static lib_i32 timing_ledger_physical_far_jmp_memory(lib_i32 protected_mode)
     static const lib_u8 pointer[] = { 0xfeu, 0xffu, 0x00u, 0xf0u };
     static const lib_u8 target[] = { 0x90u };
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
@@ -412,7 +416,7 @@ static lib_i32 timing_ledger_physical_protected_far_jmp_memory(void)
     static const lib_u8 pointer[] = { 0x28u, 0u, 0x08u, 0u };
     static const lib_u8 target[] = { 0x90u };
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_run_budget setup_budget = { 10u, 0u };
@@ -688,6 +692,7 @@ static lib_i32 timing_ledger_test_compatibility_is_not_source_truth(void)
 {
     static const lib_u8 prefixed_nop[] = { 0x26u, 0x90u };
     const core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .ticks_per_instruction = 10u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u }

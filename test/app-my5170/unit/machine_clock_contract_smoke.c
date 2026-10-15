@@ -74,20 +74,20 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         board.controller_timing.rtc_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
     {
-        core_machine_timing_disposition disposition;
+        core_machine_board_timing_disposition disposition;
 
-        failed = failed || core_machine_get_timing_disposition(session->core_machine,
-            CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC, &disposition) != LIB_STATUS_OK ||
-            disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
-        failed = failed || core_machine_get_timing_disposition(session->core_machine,
-            CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS, &disposition) !=
-            LIB_STATUS_OK || disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
-        failed = failed || core_machine_get_timing_disposition(session->core_machine,
-            CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA, &disposition) != LIB_STATUS_OK ||
-            disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
-        failed = failed || core_machine_get_timing_disposition(session->core_machine,
-            CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK ||
-            disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+        failed = failed || core_machine_board_get_timing_disposition(session->board,
+            CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_PIC, &disposition) != LIB_STATUS_OK ||
+            disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L2_FALLBACK;
+        failed = failed || core_machine_board_get_timing_disposition(session->board,
+            CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_RTC_CMOS, &disposition) !=
+            LIB_STATUS_OK || disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
+        failed = failed || core_machine_board_get_timing_disposition(session->board,
+            CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_DMA, &disposition) != LIB_STATUS_OK ||
+            disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
+        failed = failed || core_machine_board_get_timing_disposition(session->board,
+            CORE_MACHINE_BOARD_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK ||
+            disposition != CORE_MACHINE_BOARD_TIMING_DISPOSITION_L3_REQUIRED;
     }
     failed = failed || board.kbc_typematic_initial_ticks != 4000000u ||
         board.kbc_typematic_repeat_ticks != 800000u ||

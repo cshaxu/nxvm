@@ -4,6 +4,19 @@
 #include "core/x86/machine_interface.h"
 #include "core_machine_board_fixture.h"
 
+_Static_assert(CORE_MACHINE_TRACE_DMA_ADVANCE == 8 &&
+    CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE == 9 &&
+    CORE_MACHINE_BOARD_TRACE_PIC_REFRESH == 10 &&
+    CORE_MACHINE_BOARD_TRACE_RTC_ADVANCE == 11 &&
+    CORE_MACHINE_BOARD_TRACE_KBC_ADVANCE == 12 &&
+    CORE_MACHINE_BOARD_TRACE_VADP_ADVANCE == 13 &&
+    CORE_MACHINE_TRACE_RUN_BOUNDARY == 14 &&
+    CORE_MACHINE_BOARD_TRACE_FDC_ADVANCE == 17 &&
+    CORE_MACHINE_BOARD_TRACE_HDC_ADVANCE == 18 &&
+    CORE_MACHINE_TRACE_TRANSACTION_BEGIN == 19 &&
+    CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_OVERLAP_DECLARE == 28,
+    "split trace owners must preserve diagnostic event identities");
+
 typedef struct arbitration_trace_probe {
     core_machine_trace_event events[64];
     lib_u32 count;
@@ -30,11 +43,11 @@ static lib_i32 arbitration_expect_chain(const arbitration_trace_probe *probe)
         const core_machine_trace_event *event = &probe->events[index];
 
         if (event->type == CORE_MACHINE_TRACE_DMA_ADVANCE ||
-            event->type == CORE_MACHINE_TRACE_PIT_ADVANCE ||
-            event->type == CORE_MACHINE_TRACE_PIC_REFRESH) {
-            core_machine_trace_event_type expected = phase == 0u ?
+            event->type == CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE ||
+            event->type == CORE_MACHINE_BOARD_TRACE_PIC_REFRESH) {
+            lib_u32 expected = phase == 0u ?
                 CORE_MACHINE_TRACE_DMA_ADVANCE : phase == 1u ?
-                CORE_MACHINE_TRACE_PIT_ADVANCE : CORE_MACHINE_TRACE_PIC_REFRESH;
+                CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE : CORE_MACHINE_BOARD_TRACE_PIC_REFRESH;
 
             if (event->type != expected || event->timeline_ticks != selected_tick) {
                 return 1;

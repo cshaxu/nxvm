@@ -10,7 +10,7 @@ static lib_i32 test_cpu_board_limit_prepare_exact(core_machine **out_machine,
     const lib_u8 *code, lib_size bytes, lib_bool writable, lib_u16 ds_limit)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

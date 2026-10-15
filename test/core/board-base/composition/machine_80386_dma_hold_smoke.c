@@ -33,7 +33,7 @@ static void competition_dma_read(void *opaque, t_latch *latch)
 }
 
 static lib_i32 competition_find_event(const competition_probe *probe,
-    core_machine_trace_event_type type, lib_u32 *out_index)
+    lib_u32 type, lib_u32 *out_index)
 {
     lib_u32 index;
 
@@ -48,7 +48,7 @@ static lib_i32 competition_find_event(const competition_probe *probe,
 }
 
 static lib_i32 competition_find_event_after(const competition_probe *probe,
-    core_machine_trace_event_type type, lib_u32 start,
+    lib_u32 type, lib_u32 start,
     lib_u32 *out_index)
 {
     lib_u32 index;
@@ -64,7 +64,7 @@ static lib_i32 competition_find_event_after(const competition_probe *probe,
 }
 
 static lib_i32 competition_find_transaction(const competition_probe *probe,
-    core_machine_trace_event_type phase, core_machine_transaction_owner owner,
+    lib_u32 phase, core_machine_transaction_owner owner,
     core_machine_transaction_kind kind, lib_u32 *out_index)
 {
     lib_u32 index;
@@ -182,13 +182,13 @@ lib_i32 main(void)
         CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, &dma_commit);
     failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_DMA_ADVANCE,
         dma_commit, &dma_advance);
-    failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_PIT_ADVANCE,
+    failed |= !competition_find_event_after(&probe, CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE,
         dma_advance, &pit_advance);
-    failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_PIC_REFRESH,
+    failed |= !competition_find_event_after(&probe, CORE_MACHINE_BOARD_TRACE_PIC_REFRESH,
         pit_advance, &pic_refresh);
-    failed |= competition_find_event(&probe, CORE_MACHINE_TRACE_FDC_ADVANCE,
+    failed |= competition_find_event(&probe, CORE_MACHINE_BOARD_TRACE_FDC_ADVANCE,
         &fdc_advance);
-    failed |= competition_find_event(&probe, CORE_MACHINE_TRACE_HDC_ADVANCE,
+    failed |= competition_find_event(&probe, CORE_MACHINE_BOARD_TRACE_HDC_ADVANCE,
         &hdc_advance);
     failed |= !competition_find_event(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST, &hold_request);

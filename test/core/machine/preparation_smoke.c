@@ -18,7 +18,7 @@ static lib_status prepare_at_candidate(const vm_machine_config *config,
     if (at_prepare_status != LIB_STATUS_OK) return at_prepare_status;
     const vm_profile_default_pc_at_descriptor descriptor = {
         .identity = "preparation-at", .cpu_profile = X86_CORE_CPU_PROFILE_80386,
-        .ticks_per_instruction = 1u, .default_memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .ticks_per_instruction = 1u, .default_memory_bytes = (2u * 1024u * 1024u),
         .fdc_bounce_segment = 0x600u, .kbc_aux_absent = LIB_TRUE,
         .port_leaves = vm_at_port_leaves, .port_leaf_count = VM_AT_PORT_LEAF_COUNT,
         .routes = vm_at_routes_without_aux, .route_count = 4u,

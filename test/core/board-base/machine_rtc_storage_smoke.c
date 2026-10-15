@@ -28,9 +28,9 @@ static lib_i32 readiness_expect_rtc(const readiness_trace_probe *probe)
     for (index = 0u; index < probe->count; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
 
-        if (event->type == CORE_MACHINE_TRACE_FDC_ADVANCE ||
-            event->type == CORE_MACHINE_TRACE_HDC_ADVANCE) return 1;
-        if (event->type == CORE_MACHINE_TRACE_RTC_ADVANCE) {
+        if (event->type == CORE_MACHINE_BOARD_TRACE_FDC_ADVANCE ||
+            event->type == CORE_MACHINE_BOARD_TRACE_HDC_ADVANCE) return 1;
+        if (event->type == CORE_MACHINE_BOARD_TRACE_RTC_ADVANCE) {
             if (event->timeline_ticks != 3u) return 1;
             found = LIB_TRUE;
         }
@@ -39,7 +39,7 @@ static lib_i32 readiness_expect_rtc(const readiness_trace_probe *probe)
 }
 
 static lib_i32 readiness_has_event(const readiness_trace_probe *probe,
-    core_machine_trace_event_type type)
+    lib_u32 type)
 {
     lib_u32 index;
 

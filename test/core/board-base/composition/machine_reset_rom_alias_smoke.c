@@ -80,7 +80,7 @@ static lib_i32 reset_rom_run(x86_core_cpu_profile profile)
 static lib_i32 absent_fallback_run(void)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_absent_memory_config absent = {
@@ -135,7 +135,7 @@ static lib_status policy_configure(void *opaque,
 static lib_i32 reset_rom_policy(lib_u32 mode)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386
     };
     const core_machine_firmware_provider provider = {

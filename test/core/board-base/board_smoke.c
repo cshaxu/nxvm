@@ -6,7 +6,7 @@ static lib_i32 check_board(core_machine_keyboard_topology keyboard,
     x86_pit_personality pit)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .time_axis = {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 1000000u},
         .shared_pit_personality = pit,
         .keyboard_topology = keyboard,

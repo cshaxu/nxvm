@@ -30,7 +30,8 @@ static void pic_lifecycle_initialize(pic_lifecycle_fixture *fixture,
     lib_u8 icw1, x86_pit *pit)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     *fixture = (pic_lifecycle_fixture){0};
     if (core_machine_neutral_create(&config, &fixture->machine) != LIB_STATUS_OK ||
@@ -201,7 +202,8 @@ static lib_i32 pic_lifecycle_test_edge_empty_and_bind(void)
 static lib_i32 pic_lifecycle_test_allocation_rollback(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     core_machine *machine = LIB_NULL;
     core_machine_pic_bus *master = LIB_NULL;
@@ -252,7 +254,8 @@ static lib_status pic_lifecycle_existing_port(void *owner, lib_u16 port,
 static lib_i32 pic_lifecycle_test_route_rollback(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .memory_bytes = (2u * 1024u * 1024u)
     };
     const core_machine_pic_topology topologies[] = {
         CORE_MACHINE_PIC_TOPOLOGY_SINGLE, CORE_MACHINE_PIC_TOPOLOGY_CASCADED

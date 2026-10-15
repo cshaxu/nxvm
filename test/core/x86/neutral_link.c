@@ -46,7 +46,7 @@ static void neutral_time_advance(void *owner, lib_u64 ticks) { *(lib_u64 *)owner
 static lib_i32 neutral_time_publication(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const core_machine_execution_provider provider = {neutral_time_reset, neutral_time_advance};
@@ -100,7 +100,7 @@ done:
 static lib_i32 neutral_port_routes(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     neutral_probe first = {.port_value = 0x0fu}, second = {.port_value = 0xf0u};
@@ -175,7 +175,7 @@ static lib_status bank_write(void *owner, lib_u16 port, lib_u32 value)
 }
 static lib_i32 neutral_port_bank(void)
 {
-    const core_machine_executor_config config = {.memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+    const core_machine_executor_config config = {.memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086};
     bank_probe probe = {.values = {0x12u, 0x34u}};
     const core_machine_port_route route = {.address = 0x2000u, .read = bank_read,
@@ -205,7 +205,7 @@ done:
 static lib_i32 neutral_memory_aliases(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const core_machine_memory_alias_config aliases[2] = {
@@ -264,7 +264,7 @@ done:
 static lib_i32 neutral_ready_levels(void)
 {
     core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const lib_i32 levels[] = {0, 1, -3};
@@ -308,89 +308,6 @@ done:
     return failed;
 }
 
-static lib_i32 neutral_timing_declarations(void)
-{
-    const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = X86_CORE_CPU_PROFILE_8086
-    };
-    core_machine_timing_declaration declarations[CORE_MACHINE_TIMING_CAPABILITY_COUNT];
-    core_machine_timing_declaration observed;
-    const core_machine_timing_declaration invalid_entries[] = {
-        {CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG, CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK, CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM},
-        {(core_machine_timing_capability)-1, CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK, CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM},
-        {(core_machine_timing_capability)CORE_MACHINE_TIMING_CAPABILITY_COUNT, CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK, CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM},
-        {CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC, (core_machine_timing_disposition)-1, CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM},
-        {CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC, (core_machine_timing_disposition)(CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED + 1), CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM},
-        {CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC, CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK, (core_machine_timing_seam)-1},
-        {CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC, CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK, (core_machine_timing_seam)(CORE_MACHINE_TIMING_SEAM_OBSERVATION + 1)}
-    };
-    core_machine *machine = LIB_NULL;
-    lib_i32 failed = 1;
-    lib_size index;
-
-    /* Neutral representation is tested independently of a board's source
-     * policy. Reverse order proves publication indexes capability, not input. */
-    for (index = 0u; index < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++index)
-        declarations[index] = (core_machine_timing_declaration){
-            (core_machine_timing_capability)(CORE_MACHINE_TIMING_CAPABILITY_COUNT - 1u - index),
-            CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK, CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM};
-    if (core_machine_validate_timing_declarations(LIB_NULL,
-            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_ARGUMENT ||
-        core_machine_validate_timing_declarations(declarations, 0u) != LIB_STATUS_INVALID_ARGUMENT ||
-        core_machine_validate_timing_declarations(declarations,
-            CORE_MACHINE_TIMING_CAPABILITY_COUNT - 1u) != LIB_STATUS_INVALID_ARGUMENT ||
-        core_machine_validate_timing_declarations(declarations,
-            CORE_MACHINE_TIMING_CAPABILITY_COUNT + 1u) != LIB_STATUS_INVALID_ARGUMENT ||
-        core_machine_install_timing_declarations(LIB_NULL, declarations,
-            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE ||
-        core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK)
-        goto done;
-    if (core_machine_install_timing_declarations(machine, LIB_NULL,
-            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_ARGUMENT) goto done;
-    for (index = 0u; index < sizeof(invalid_entries) / sizeof(invalid_entries[0]); ++index) {
-        core_machine_timing_declaration saved = declarations[CORE_MACHINE_TIMING_CAPABILITY_COUNT - 1u];
-        core_machine_timing_declaration *invalid = &declarations[CORE_MACHINE_TIMING_CAPABILITY_COUNT - 1u];
-
-        *invalid = invalid_entries[index];
-        if (core_machine_install_timing_declarations(machine, declarations,
-                CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_ARGUMENT ||
-            machine->timing_declarations_copied) goto done;
-        for (lib_size entry = 0u; entry < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++entry)
-            if (machine->timing_declarations[entry].capability != 0) goto done;
-        *invalid = saved;
-    }
-    machine->firmware_operation_active = LIB_TRUE;
-    if (core_machine_install_timing_declarations(machine, declarations,
-            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE) goto done;
-    machine->firmware_operation_active = LIB_FALSE;
-    if (core_machine_install_timing_declarations(machine, declarations,
-            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_OK ||
-        core_machine_install_timing_declarations(machine, declarations,
-            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE) goto done;
-    declarations[0].disposition = CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
-    if (core_machine_get_timing_declaration(machine,
-            CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG, &observed) != LIB_STATUS_OK ||
-        observed.disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_get_timing_declaration(machine,
-            CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG, &observed) != LIB_STATUS_OK ||
-        observed.disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK ||
-        core_machine_install_timing_declarations(machine, declarations,
-            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE) goto done;
-    core_machine_destroy(machine);
-    machine = LIB_NULL;
-    if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
-        core_machine_install_timing_declarations(machine, declarations,
-            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE ||
-        machine->timing_declarations_copied) goto done;
-    failed = 0;
-done:
-    core_machine_destroy(machine);
-    return failed;
-}
 
 static lib_status neutral_firmware_configure(void *owner,
     core_machine_firmware_context *firmware)
@@ -429,7 +346,7 @@ static lib_status neutral_firmware_reset(void *owner,
 static lib_i32 neutral_firmware_alias_contract(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const core_machine_firmware_provider firmware = {neutral_firmware_configure, neutral_firmware_reset, LIB_NULL};
@@ -465,7 +382,7 @@ done:
 static lib_i32 neutral_rom_windows(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
     const lib_u8 image[4] = {0x11u, 0x22u, 0x33u, 0x44u};
@@ -522,9 +439,14 @@ static lib_i32 neutral_construction_rejects_invalid_input(void)
     core_machine sentinel = {0};
     core_machine *machine = &sentinel;
     const core_machine_executor_config invalid[] = {
-        {.cpu_profile = (x86_core_cpu_profile)-1},
-        {.provider_clock = {1u, 0u}},
-        {.time_axis = {CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 0u}}
+        {.memory_bytes = 65536u, .cpu_profile = (x86_core_cpu_profile)-1},
+        {.memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_DEFAULT},
+        {.memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX},
+        {.cpu_profile = X86_CORE_CPU_PROFILE_8086},
+        {.memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_8086,
+            .provider_clock = {1u, 0u}},
+        {.memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_8086,
+            .time_axis = {CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 0u}}
     };
 
     if (core_machine_neutral_create(LIB_NULL, LIB_NULL) !=
@@ -540,10 +462,41 @@ static lib_i32 neutral_construction_rejects_invalid_input(void)
     return 0;
 }
 
+static lib_i32 neutral_explicit_small_memory(void)
+{
+    const core_machine_executor_config config = {
+        .memory_bytes = 65536u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086
+    };
+    core_machine *machine = LIB_NULL;
+    lib_size bytes = 0u;
+    lib_u8 value = 0xa5u, observed = 0u;
+    lib_i32 failed = 1;
+
+    if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_get_memory_bytes(machine, &bytes) != LIB_STATUS_OK ||
+        bytes != config.memory_bytes ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 65535u, &value, 1u) != LIB_STATUS_OK ||
+        core_machine_memory_read(machine, 65535u, &observed, 1u) != LIB_STATUS_OK ||
+        observed != value ||
+        core_machine_reconfigure_memory(machine, 0u) != LIB_STATUS_INVALID_STATE ||
+        core_machine_get_memory_bytes(machine, &bytes) != LIB_STATUS_OK ||
+        bytes != config.memory_bytes ||
+        core_machine_reconfigure_memory(machine, 16384u) != LIB_STATUS_OK ||
+        core_machine_get_memory_bytes(machine, &bytes) != LIB_STATUS_OK ||
+        bytes != 16384u) goto done;
+    failed = 0;
+done:
+    core_machine_destroy(machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     const core_machine_executor_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .ticks_per_instruction = 1u
     };
@@ -563,8 +516,7 @@ lib_i32 main(void)
     lib_u8 byte = 0u;
     lib_i32 failed = 1;
 
-    if (neutral_construction_rejects_invalid_input() || neutral_firmware_alias_contract() || neutral_time_publication() || neutral_port_bank() || neutral_port_routes() || neutral_memory_aliases() || neutral_rom_windows() || neutral_ready_levels() ||
-        neutral_timing_declarations()) goto done;
+    if (neutral_construction_rejects_invalid_input() || neutral_explicit_small_memory() || neutral_firmware_alias_contract() || neutral_time_publication() || neutral_port_bank() || neutral_port_routes() || neutral_memory_aliases() || neutral_rom_windows() || neutral_ready_levels()) goto done;
     if (core_machine_neutral_create(&config, &machine) !=
             LIB_STATUS_OK) goto done;
     if (machine->attachment.context != LIB_NULL ||

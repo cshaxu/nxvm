@@ -54,7 +54,7 @@ static lib_i32 stos_irq_case(lib_bool repeated, lib_u8 width)
 {
     static const lib_u8 halt = 0xf4u;
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };

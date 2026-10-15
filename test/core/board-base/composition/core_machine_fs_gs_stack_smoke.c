@@ -8,7 +8,7 @@ typedef struct fs_gs_machine { core_machine *machine; } fs_gs_machine;
 static lib_i32 fs_gs_prepare(x86_core_cpu_profile profile, fs_gs_machine *state)
 {
     const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .memory_bytes = (2u * 1024u * 1024u),
         .cpu_profile = profile, .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const x86_core_cpu_debug_register_patch entry = {
