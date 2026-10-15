@@ -1,5 +1,9 @@
 # Supporting Documentation Index
 
+T561 S2: [Complete Core disposition and contract inventory](evidence/t561-s2/review.md)
+records every source/test destination, symbol and build receiver, PC-policy
+separation and the bounded extraction sequence. It is not runtime qualification.
+
 T561 S1: [Pinned SoftPC ten-tree import](evidence/t561-s1-softpc-ten-tree-import.md)
 records exact paths, normalized source review, receiver lifetime and qualification.
 

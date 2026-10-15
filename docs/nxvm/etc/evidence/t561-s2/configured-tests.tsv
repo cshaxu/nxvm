@@ -1,0 +1,1313 @@
+width	test	labels	disposition
+x64	core.app-test-support-boundary	unit;core	partition by source/assertion owner
+x64	core.board-at/assembly	unit;core	partition by source/assertion owner
+x64	core.board-at/contract	unit;core	partition by source/assertion owner
+x64	core.board-at/parity	unit;core	partition by source/assertion owner
+x64	core.board-base/board	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_80286_protected_mode	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_call_gate_privilege_entry_board	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_fs_gs_stack	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_legacy_alu	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_legacy_lock	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_movx	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_operand_address	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_protected_16_call_gate_board	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_protected_16_external_board	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_protected_16_gate_board	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_protected_16_outer_board	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_protected_16_outer_iret_board	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_protected_ud_delivery	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_real_exception_final	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_real_ud_delivery	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/core_machine_segment_selector	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/cpu_fault_diagnostic	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/cpu_fpu_profile	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/cpu_fpu_profile_closure	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/dma_route_rollback	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/machine_fpu_escape	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/machine_protected_privilege_board	unit;core	partition by source/assertion owner
+x64	core.board-base/composition/machine_task_switch32_paging	unit;core	partition by source/assertion owner
+x64	core.board-base/construction_helpers	unit;core	partition by source/assertion owner
+x64	core.board-base/display_provider	unit;core	partition by source/assertion owner
+x64	core.board-base/dma_ports	unit;core	partition by source/assertion owner
+x64	core.board-base/pit_ports	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/address-span-boundary	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_486_nominal_timing	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_486_repeat_timing	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_address_span	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_alignment_access	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_arpl	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_bit_scan	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_bit_test	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_bound	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_bswap	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_cache	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_cmps	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_cmpxchg	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_contract	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_control_state	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_control_transfer_branch	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_control_transfer_far	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_control_transfer_near	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_cpuid_flags	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_debug_state	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_decode_admission	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_descriptor_system	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_descriptor_table_register	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_direct_flags	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_double_shift	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_eflags_local	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_enter_leave	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_execution_bus	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_execution_fault_event	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_execution_lifecycle	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_execution_paging	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_execution_signal_prefetch	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_fpu_interface_state	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_fs_gs_stack	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_gpr_mov	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_gpr_push_pop	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_idt_privilege_entry	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_imul2	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_imul_immediate	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_inc_dec_final_group	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_inc_dec_first_group	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_inc_dec_second_group	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_integer_multiply_divide	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_iret_state	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_lahf_sahf	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_lar_lsl	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_lea	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_legacy_alu	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_legacy_lock	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_legacy_sreg_stack	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_les_lds	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_les_lds_profile_matrix	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_lgdt_lidt	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_lods	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_lss_lfs_lgs	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_moffs	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_movs	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_movx	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_operand_address	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_outer_return	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_port_io	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_port_strings	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_prefix_attributes	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_protected_data_access	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_protected_far	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_protected_iret_state	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_push_immediate	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_pusha_popa	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_pushf_popf	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_rmw_access	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_rotate	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_scas	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_segment_selector	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_setcc	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_sgdt_sidt	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_sign_extend	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_smm	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_software_int_state	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_sreg_mov	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_stos	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_task_switch16	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_task_switch32_decode	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_task_switch32_state	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_task_switch_cross_width_state	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_test_register	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_tlb	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_transfer_boundary	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_verr_verw	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_vm86_delivery_state	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_vm86_iret_state	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_vme	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_xadd	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/cpu_xchg	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/decode-admission-boundary	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/decoder-80186	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/decoder-80286	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/decoder-80386	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/host-arithmetic-boundary	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/host-arithmetic-verifier-negative	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/stack-frame-boundary	unit;core	partition by source/assertion owner
+x64	core.chips/cpu/stack-frame-verifier-negative	unit;core	partition by source/assertion owner
+x64	core.chips/dma8237/dma_contract	unit;core	partition by source/assertion owner
+x64	core.chips/fdc8272/fdc_allocation	unit;core	partition by source/assertion owner
+x64	core.chips/fdc8272/fdc_causes	unit;core	partition by source/assertion owner
+x64	core.chips/fdc8272/fdc_contract	unit;core	partition by source/assertion owner
+x64	core.chips/fdc8272/fdc_records	unit;core	partition by source/assertion owner
+x64	core.chips/fpu/fpu_contract	unit;core	partition by source/assertion owner
+x64	core.chips/hdc/hdc_allocation	unit;core	partition by source/assertion owner
+x64	core.chips/hdc/hdc_contract	unit;core	partition by source/assertion owner
+x64	core.chips/hdc/hdc_taskfile	unit;core	partition by source/assertion owner
+x64	core.chips/kbc8042/controller_contract	unit;core	partition by source/assertion owner
+x64	core.chips/keyboard/keyboard_contract	unit;core	partition by source/assertion owner
+x64	core.chips/pic8259/pic_commands	unit;core	partition by source/assertion owner
+x64	core.chips/pic8259/pic_contract	unit;core	partition by source/assertion owner
+x64	core.chips/pit825x/pit_8253	unit;core	partition by source/assertion owner
+x64	core.chips/pit825x/pit_contract	unit;core	partition by source/assertion owner
+x64	core.chips/pit825x/pit_readback	unit;core	partition by source/assertion owner
+x64	core.chips/pit825x/pit_waveform	unit;core	partition by source/assertion owner
+x64	core.chips/ppi8255/ppi_contract	unit;core	partition by source/assertion owner
+x64	core.chips/ps2mouse/mouse_contract	unit;core	partition by source/assertion owner
+x64	core.chips/rtc146818/rtc_calendar	unit;core	partition by source/assertion owner
+x64	core.chips/rtc146818/rtc_contract	unit;core	partition by source/assertion owner
+x64	core.chips/video/cga_640	unit;core	partition by source/assertion owner
+x64	core.chips/video/cga_graphics	unit;core	partition by source/assertion owner
+x64	core.chips/video/compaq_cecg_contract	unit;core	partition by source/assertion owner
+x64	core.chips/video/compaq_cecg_feature_environment	unit;core	partition by source/assertion owner
+x64	core.chips/video/compaq_cecg_input_status	unit;core	partition by source/assertion owner
+x64	core.chips/video/compaq_cecg_io_base	unit;core	partition by source/assertion owner
+x64	core.chips/video/compaq_cecg_odd_even_page	unit;core	partition by source/assertion owner
+x64	core.chips/video/compaq_ega_personality	unit;core	partition by source/assertion owner
+x64	core.chips/video/ega_controller	unit;core	partition by source/assertion owner
+x64	core.chips/video/ega_crtc_boundary_port	unit;core	partition by source/assertion owner
+x64	core.chips/video/ega_external	unit;core	partition by source/assertion owner
+x64	core.chips/video/ega_mode10	unit;core	partition by source/assertion owner
+x64	core.chips/video/ega_planar	unit;core	partition by source/assertion owner
+x64	core.chips/video/ega_sequencer	unit;core	partition by source/assertion owner
+x64	core.chips/video/video_allocation	unit;core	partition by source/assertion owner
+x64	core.chips/video/video_contract	unit;core	partition by source/assertion owner
+x64	core.chips/video/video_inspection	unit;core	partition by source/assertion owner
+x64	core.chips/video/video_text	unit;core	partition by source/assertion owner
+x64	core.chips/video/video_text_status	unit;core	partition by source/assertion owner
+x64	core.chips/xtkeyboard/xt_keyboard_contract	unit;core	partition by source/assertion owner
+x64	core.corpus	unit;core	partition by source/assertion owner
+x64	core.cpu-bus-boundary-negative	unit;core	partition by source/assertion owner
+x64	core.dependency-dag-negative	unit;core	partition by source/assertion owner
+x64	core.machine/construction	unit;core	partition by source/assertion owner
+x64	core.machine/debug_budget	unit;core	partition by source/assertion owner
+x64	core.machine/input	unit;core	partition by source/assertion owner
+x64	core.machine/mouse_mapper	unit;core	partition by source/assertion owner
+x64	core.machine/preparation	unit;core	partition by source/assertion owner
+x64	core.manifest	unit;core	partition by source/assertion owner
+x64	core.product/factory	unit;core	partition by source/assertion owner
+x64	core.product/ini	unit;core	partition by source/assertion owner
+x64	core.product/startup	unit;core	partition by source/assertion owner
+x64	core.rom-mapping	unit;core	partition by source/assertion owner
+x64	core.test-manifest	unit;core	partition by source/assertion owner
+x64	core.test-ownership	unit;core	partition by source/assertion owner
+x64	core.test-route-partition	unit;core	partition by source/assertion owner
+x64	core.test-route-partition-negative	unit;core	partition by source/assertion owner
+x64	core.test-types-boundary	unit;core	partition by source/assertion owner
+x64	core.verifier-negative	unit;core	partition by source/assertion owner
+x64	core.x86/core_machine_system_power	unit;core	partition by source/assertion owner
+x64	core.x86/timeline	unit;core	partition by source/assertion owner
+x64	emulator.control_reconciler_integration	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.control_state_matrix	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.corpus	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.input_queue_mouse_fifo	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.input_queue_ownership	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.machine	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.machine_wait	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.manifest	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.physical_key_identity	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.presentation_plan	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.product/composition	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.product/monitor	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.reconciler	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.session_frame	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.session_monitor	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.session_queue_failure	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.sync	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.test-boundaries	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.test-manifest	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.test-types-boundary	unit;emulator	retain existing owner; update inward references if required
+x64	emulator.verifier-negative	unit;emulator	retain existing owner; update inward references if required
+x64	integration.pc-product-ini-identity-smoke	core;integration	partition by source/assertion owner
+x64	integration.session-ini-status-smoke	integration;core	partition by source/assertion owner
+x64	integration.vm-app-default-profile-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-ata-pio-dos-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-cga-640-system-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-cga-graphics-dos-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-control-lifecycle-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-debug-pause-boundary-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-dos-keyboard-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-dos-mem-fault-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-dos-prompt-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-dos-video-port-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-ega-planar-dos-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-fdc-read-track-dos-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-full-pc-session-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-hdc-hdd-boot-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-mouse-driver-dos-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-no-media-video-port-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-profile-floppy-boot-matrix.default-pc-at-80386-1440k-hdd.ini	integration	retain existing owner; update inward references if required
+x64	integration.vm-rom-ega-int10-dos-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-timer-firmware-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-unified-debug-backend-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x64	integration.vm-windows31-checkpoint	integration;app-nxvm	retain existing owner; update inward references if required
+x64	lib.audio_stream	unit;lib	retain existing owner; update inward references if required
+x64	lib.audio_win32_platform	unit;lib	retain existing owner; update inward references if required
+x64	lib.base_sync_ownership	unit;lib	retain existing owner; update inward references if required
+x64	lib.component-control-ownership	unit;lib	retain existing owner; update inward references if required
+x64	lib.component-dag	unit;lib	retain existing owner; update inward references if required
+x64	lib.component-dag-forbidden-include	unit;lib	retain existing owner; update inward references if required
+x64	lib.component-dag-relative-include	unit;lib	retain existing owner; update inward references if required
+x64	lib.console_blocking_gate	unit;lib	retain existing owner; update inward references if required
+x64	lib.console_broker	unit;lib	retain existing owner; update inward references if required
+x64	lib.console_broker_cancel	unit;lib	retain existing owner; update inward references if required
+x64	lib.console_broker_display	unit;lib;desktop	retain existing owner; update inward references if required
+x64	lib.console_broker_reader_failure	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm-naming	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm-naming-forbidden	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm_component_contract	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm_console_retirement_barrier	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm_frame_copy	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm_frame_damage_mouse	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm_frame_lock	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm_input_admission	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm_keyboard_lifetime	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm_leaf_control_capacity	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm_mailbox_selection	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm_shutdown_failure	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm_window_capture_contract	unit;lib	retain existing owner; update inward references if required
+x64	lib.kvm_window_modal	unit;lib;desktop	retain existing owner; update inward references if required
+x64	lib.kvm_window_retirement	unit;lib;desktop	retain existing owner; update inward references if required
+x64	lib.lib_console	unit;lib	retain existing owner; update inward references if required
+x64	lib.lib_console_event_gate	unit;lib	retain existing owner; update inward references if required
+x64	lib.lib_console_io_contract	unit;lib	retain existing owner; update inward references if required
+x64	lib.lib_failure_output_contract	unit;lib	retain existing owner; update inward references if required
+x64	lib.linux-build-contract	unit;lib	retain existing owner; update inward references if required
+x64	lib.linux_input_contract	unit;lib	retain existing owner; update inward references if required
+x64	lib.linux_storage_contract	unit;lib	retain existing owner; update inward references if required
+x64	lib.linux_wait_contract	unit;lib	retain existing owner; update inward references if required
+x64	lib.manifest	unit;lib	retain existing owner; update inward references if required
+x64	lib.process_directory	unit;lib	retain existing owner; update inward references if required
+x64	lib.storage_file_writer_binary	unit;lib	retain existing owner; update inward references if required
+x64	lib.storage_position	unit;lib	retain existing owner; update inward references if required
+x64	lib.test-boundaries	unit;lib	retain existing owner; update inward references if required
+x64	lib.test-boundaries-selftest	unit;lib	retain existing owner; update inward references if required
+x64	lib.test-manifest	unit;lib	retain existing owner; update inward references if required
+x64	lib.test-types-boundary	unit;lib	retain existing owner; update inward references if required
+x64	lib.test-types-boundary-selftest	unit;lib	retain existing owner; update inward references if required
+x64	lib.types-layout	unit;lib	retain existing owner; update inward references if required
+x64	lib.types-layout-selftest	unit;lib	retain existing owner; update inward references if required
+x64	lib.types_contract	unit;lib	retain existing owner; update inward references if required
+x64	lib.win32_keyboard	unit;lib	retain existing owner; update inward references if required
+x64	lib.win32_presentation	unit;lib	retain existing owner; update inward references if required
+x64	lib.win32_vocabulary_ownership	unit;lib	retain existing owner; update inward references if required
+x64	lib.win32_window_bounds	unit;lib	retain existing owner; update inward references if required
+x64	mynes.app.battery-failure-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.app.command-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.app.composition-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.app.config-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.addressing-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.alu-exhaustive-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.alu-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.apu-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.branch-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.bus-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.cartridge-contract-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.control-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.controller-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.cycle-ledger-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.decode-ledger-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.dma-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.indirect-wrap-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.interrupt-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.load-semantics-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.logic-compare-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.machine-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.mapper-mapping-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.mapper1-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.mapper2-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.mapper3-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.mapper4-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.memory-increment-semantics-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.opcode-profile	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.ppu-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.register-semantics-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.reset-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.rmw-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.run-step-equivalence-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.shift-semantics-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.snapshot-fields	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.snapshot-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.stack-control-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.status-instruction-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.core.store-addressing-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.integration.app-debug-commands-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x64	mynes.integration.app-media-commands-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x64	mynes.integration.app-snapshot-commands-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x64	mynes.integration.controller-rom-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x64	mynes.integration.debug-workflow-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x64	mynes.integration.lifecycle-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x64	mynes.integration.motion-rom-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x64	mynes.integration.native-console-smoke	integration;app-mynes;desktop	retain existing owner; update inward references if required
+x64	mynes.integration.native-window-smoke	integration;app-mynes;desktop	retain existing owner; update inward references if required
+x64	mynes.integration.ppu-timing-rom-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x64	mynes.integration.snapshot-transaction-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x64	mynes.integration.visual-rom-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x64	mynes.machine.battery_persistence_smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.machine.media_failure_contract_smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.machine.media_title_suffix_smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.machine.owner_rom_probe	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.machine.pacing_smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	mynes.machine.palette_smoke	unit;app-mynes	retain existing owner; update inward references if required
+x64	unit.core-machine-80186-decoder-inventory-runner	unit;core	partition by source/assertion owner
+x64	unit.core-machine-80286-decoder-inventory-runner	unit;core	partition by source/assertion owner
+x64	unit.core-machine-80286-protected-mode-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-80386-decoder-inventory-runner	unit;core	partition by source/assertion owner
+x64	unit.core-machine-80386-paging-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-8086-decoder-ledger	unit;core	partition by source/assertion owner
+x64	unit.core-machine-8086-timing-results	unit;core	partition by source/assertion owner
+x64	unit.core-machine-8088-timing-results	unit;core	partition by source/assertion owner
+x64	unit.core-machine-arbitration-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-attachment-phases-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-auxiliary-pit-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-bit-scan-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-bit-test-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-board-binding-identity-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-board-timing-qualification-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-call-gate-privilege-entry-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-cga-640-port-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-cga-graphics-port-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-checked-memory-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-cli-sti-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-compaq-cecg-contract-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-compaq-cecg-cpu-video-gate-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-compaq-cecg-odd-even-page-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-compaq-hdc-dual-drive-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-compaq-hdc-machine-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-competition-80386-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-competition-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-configuration-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-contract-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-controller-authority-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-cpu-context-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-cpu-fault-diagnostic-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-cpu-fpu-profile-closure-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-cpu-fpu-profile-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-cpu-pic-lifecycle-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-cpu-reset-identity-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-cpu-timing-preview-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-d4-memory-transaction-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.core-machine-d4-platform-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.core-machine-d4-refresh-hold-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.core-machine-debug-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-descriptor-system-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-direct-flags-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-display-authority-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-dma-binding-token-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-dma-channel-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-dma-rtc-authority-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-double-shift-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-ega-controller-port-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-ega-external-port-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-ega-planar-port-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-ega-registration-transaction-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-ega-sequencer-port-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-enter-leave-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-entry-plan-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-executor-run-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-explicit-time-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-external-time-trace-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-fdc-media-change-port-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-fdc-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-fdc-topology-port-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-firmware-capability-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-fpu-8087-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-fs-gs-stack-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-gpr-mov-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-gpr-push-pop-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-hdc-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-hlt-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-immutable-rom-mapping-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-imul-immediate-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-imul2-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-inc-dec-final-group-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-inc-dec-first-group-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-inc-dec-second-group-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-input-display-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-instance-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-int-ivt-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-interrupt-return-composition-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-iret-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-kbc-aux-port-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-kbc-controller-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-kbc-serial-cadence-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-lahf-sahf-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-lea-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-legacy-alu-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-legacy-lock-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-legacy-sreg-stack-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-les-lds-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-les-lds-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-lifecycle-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-lss-lfs-lgs-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-media-provider-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-memory-device-registration-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-memory-inspection-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-memory-reconfigure-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-moffs-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-movx-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-neutral-link-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-operand-address-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-pic-command-priority-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-pic-irq-lifecycle-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-pic-lifecycle-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-pic-ocw3-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-pic-phase-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-pit-divider-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-pit-irq0-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-plan-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-planar-parity-nmi-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-port-rollback-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-prefetch-locality-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-prefix-attributes-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-protected-16-call-gate-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-protected-16-external-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-protected-16-gate-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-protected-16-outer-iret-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-protected-16-outer-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-protected-ud-delivery-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-push-immediate-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-pusha-popa-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-pushf-popf-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-ram-create-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-ram-port-context-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-rational-clock-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-real-exception-final-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-real-mode-386-address-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-real-mode-386-rep-cmps-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-real-mode-corpus-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-real-mode-tick-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-real-ud-delivery-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-reset-rom-alias-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-retirement-observation-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-rom-route-transaction-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-rotate-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-rtc-cmos-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-rtc-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-rtc-storage-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-scheduler-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-segment-selector-smoke	unit	retain existing owner; update inward references if required
+x64	unit.core-machine-setcc-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-sign-extend-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-software-int-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-sreg-mov-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-stopped-lifecycle-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-time-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-timeline-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-timing-checkpoint-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-trace-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-transaction-lifecycle-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-transaction-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-xchg-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-xebec-wiring-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-machine-xt-ppi-keyboard-smoke	unit;core	partition by source/assertion owner
+x64	unit.core-mantle-shape-smoke	unit;core	partition by source/assertion owner
+x64	unit.fdc-boundary-negative	unit;core	partition by source/assertion owner
+x64	unit.machine-80186-instruction-timing-ledger-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-80186-timing-manifest-runner	unit;core	partition by source/assertion owner
+x64	unit.machine-80286-instruction-timing-ledger-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-80286-timing-manifest-runner	unit;core	partition by source/assertion owner
+x64	unit.machine-80386-privileged-timing-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-80386-protected-io-timing-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-80386-secondary-integer-timing-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-80386-timing-manifest-runner	unit;core	partition by source/assertion owner
+x64	unit.machine-8086-instruction-timing-ledger-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-8086-timing-manifest-runner	unit;core	partition by source/assertion owner
+x64	unit.machine-8088-timing-manifest-runner	unit;core	partition by source/assertion owner
+x64	unit.machine-arithmetic-data-timing-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-arpl-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-bound-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-call-gate-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-cli-sti-interrupt-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-cmps-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-control-stack-timing-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-control-state-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-cpu-profile-gate-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-debug-state-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-fpu-escape-smoke	unit	retain existing owner; update inward references if required
+x64	unit.machine-fpu-interface-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-fpu-irq-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-hardware-delivery-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-idt-privilege-pic-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-instruction-timing-ledger-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-instruction-timing-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-interrupt-entry-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-legacy-timing-normalization-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-lods-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-movs-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-outer-iret-pic-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-port-io-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-port-ownership-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-port-strings-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-protected-data-pic-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-protected-far-pic-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-protected-iret-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-protected-privilege-board-smoke	unit	retain existing owner; update inward references if required
+x64	unit.machine-scas-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-stos-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-string-io-timing-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-table-register-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-task-switch-cross-width-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-task-switch16-pic-board-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-task-switch32-paging-smoke	unit	retain existing owner; update inward references if required
+x64	unit.machine-tss-iomap-port-authorization-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-vm86-delivery-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-vm86-iret-smoke	unit;core	partition by source/assertion owner
+x64	unit.machine-vm86-lgdt-lidt-smoke	unit;core	partition by source/assertion owner
+x64	unit.model40-d4-port-assembly-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.model40-d4-prefetch-locality-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.model40-d4-refresh-deadline-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.my5160-dma-deadline-smoke	unit;app-my5160	retain existing owner; update inward references if required
+x64	unit.my5170-clock-contract-smoke	unit;app-my5170	retain existing owner; update inward references if required
+x64	unit.my5170-dma-deadline-smoke	unit;app-my5170	retain existing owner; update inward references if required
+x64	unit.my5170-plan-smoke	unit;app-my5170	retain existing owner; update inward references if required
+x64	unit.mydeskpro386-dma-deadline-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.mydeskpro386-plan-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.nxvm-default-dma-deadline-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.nxvm-default-pc-at-plan-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.nxvm-firmware-build	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.nxvm-firmware-embedding	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.nxvm-firmware-floppy-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.nxvm-firmware-text-cursor-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-app-session-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-cga-graphics-system-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-cmos-rtc-port-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-console-pause-resume-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-core-executor-storage-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-default-ega-topology-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-default-pc-at-apply-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-default-pc-at-profile-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-default-pc-at-rom-materialization-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-display-composition-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-ega-controller-system-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-ega-sequencer-system-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-fault-outcome-runner-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-fdc-authority-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-fdc-port-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-fdc-read-track-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-hdc-port-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-host-cancellation-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-ibm-5170-model-339-cga-topology-smoke	unit;app-my5170	retain existing owner; update inward references if required
+x64	unit.vm-ibm-5170-model-339-composition-smoke	unit;app-my5170	retain existing owner; update inward references if required
+x64	unit.vm-ibm-5170-model-339-firmware-fdc-topology-smoke	unit;app-my5170	retain existing owner; update inward references if required
+x64	unit.vm-kbc-aux-guest-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-keyboard-host-ingress-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-keyboard-set1-mapper-smoke	unit;core	partition by source/assertion owner
+x64	unit.vm-machine-executor-state-smoke	unit;core	partition by source/assertion owner
+x64	unit.vm-machine-frame-smoke	unit;core	partition by source/assertion owner
+x64	unit.vm-machine-initialization-atomicity-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-machine-media-lifecycle-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-machine-speed-policy-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-media-close-failure-smoke	unit;core	partition by source/assertion owner
+x64	unit.vm-media-direct-readonly-smoke	unit;core	partition by source/assertion owner
+x64	unit.vm-media-provider-smoke	unit;core	partition by source/assertion owner
+x64	unit.vm-model40-byob-boot-media-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-byob-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-cecg-cpu-video-gate-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-cecg-feature-environment-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-cecg-input-status-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-cecg-io-base-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-cecg-odd-even-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-cecg-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-cmos-seed-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-composition-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-d4-a20-reset-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-d4-compatibility-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-d4-map-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-d4-parity-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-dma-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-fdc-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-fdd-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-hdc-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-machine-contract-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-model40-rom-layout-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x64	unit.vm-pcat-composition-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-pcat-ownership-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-pcat-topology-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-profile-contract-smoke	unit;core	partition by source/assertion owner
+x64	unit.vm-runner-display-cadence-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-runner-error-propagation-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-two-session-isolation-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-x86-debug-mapping-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x64	unit.vm-xt-5160-268-profile-smoke	unit;app-my5160	retain existing owner; update inward references if required
+x64	x86-debug.corpus	unit;x86-debug	retain existing owner; update inward references if required
+x64	x86-debug.corpus-negative	unit;x86-debug	retain existing owner; update inward references if required
+x64	x86-debug.manifest	unit;x86-debug	retain existing owner; update inward references if required
+x64	x86-debug.product/linear	unit;x86-debug	retain existing owner; update inward references if required
+x64	x86-debug.product/machine	unit;x86-debug	retain existing owner; update inward references if required
+x64	x86-debug.product/output	unit;x86-debug	retain existing owner; update inward references if required
+x64	x86-debug.test-boundaries	unit;x86-debug	retain existing owner; update inward references if required
+x64	x86-debug.test-manifest	unit;x86-debug	retain existing owner; update inward references if required
+x64	x86-debug.test-types-boundary	unit;x86-debug	retain existing owner; update inward references if required
+x64	x86-debug.xasm32/xasm32	unit;x86-debug	retain existing owner; update inward references if required
+x64	x86-debug.xasm32/xasm32_bounds	unit;x86-debug	retain existing owner; update inward references if required
+x64	x86-debug.xasm32/xasm32_contract	unit;x86-debug	retain existing owner; update inward references if required
+x64	x86-ibmpc.corpus	unit;x86-ibmpc	retain existing owner; update inward references if required
+x64	x86-ibmpc.corpus-negative	unit;x86-ibmpc	retain existing owner; update inward references if required
+x64	x86-ibmpc.manifest	unit;x86-ibmpc	retain existing owner; update inward references if required
+x64	x86-ibmpc.product/command	unit;x86-ibmpc	retain existing owner; update inward references if required
+x64	x86-ibmpc.product/entry	unit;x86-ibmpc	retain existing owner; update inward references if required
+x64	x86-ibmpc.product/keyboard	unit;x86-ibmpc	retain existing owner; update inward references if required
+x64	x86-ibmpc.test-boundaries	unit;x86-ibmpc	retain existing owner; update inward references if required
+x64	x86-ibmpc.test-manifest	unit;x86-ibmpc	retain existing owner; update inward references if required
+x64	x86-ibmpc.test-types-boundary	unit;x86-ibmpc	retain existing owner; update inward references if required
+x64	x86-nxvm.corpus	unit;x86-nxvm	retain existing owner; update inward references if required
+x64	x86-nxvm.corpus-negative	unit;x86-nxvm	retain existing owner; update inward references if required
+x64	x86-nxvm.manifest	unit;x86-nxvm	retain existing owner; update inward references if required
+x64	x86-nxvm.product/machine	unit;x86-nxvm	retain existing owner; update inward references if required
+x64	x86-nxvm.test-boundaries	unit;x86-nxvm	retain existing owner; update inward references if required
+x64	x86-nxvm.test-manifest	unit;x86-nxvm	retain existing owner; update inward references if required
+x64	x86-nxvm.test-types-boundary	unit;x86-nxvm	retain existing owner; update inward references if required
+x86	core.app-test-support-boundary	unit;core	partition by source/assertion owner
+x86	core.board-at/assembly	unit;core	partition by source/assertion owner
+x86	core.board-at/contract	unit;core	partition by source/assertion owner
+x86	core.board-at/parity	unit;core	partition by source/assertion owner
+x86	core.board-base/board	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_80286_protected_mode	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_call_gate_privilege_entry_board	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_fs_gs_stack	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_legacy_alu	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_legacy_lock	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_movx	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_operand_address	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_protected_16_call_gate_board	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_protected_16_external_board	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_protected_16_gate_board	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_protected_16_outer_board	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_protected_16_outer_iret_board	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_protected_ud_delivery	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_real_exception_final	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_real_ud_delivery	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/core_machine_segment_selector	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/cpu_fault_diagnostic	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/cpu_fpu_profile	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/cpu_fpu_profile_closure	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/dma_route_rollback	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/machine_fpu_escape	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/machine_protected_privilege_board	unit;core	partition by source/assertion owner
+x86	core.board-base/composition/machine_task_switch32_paging	unit;core	partition by source/assertion owner
+x86	core.board-base/construction_helpers	unit;core	partition by source/assertion owner
+x86	core.board-base/display_provider	unit;core	partition by source/assertion owner
+x86	core.board-base/dma_ports	unit;core	partition by source/assertion owner
+x86	core.board-base/pit_ports	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/address-span-boundary	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_486_nominal_timing	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_486_repeat_timing	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_address_span	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_alignment_access	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_arpl	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_bit_scan	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_bit_test	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_bound	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_bswap	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_cache	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_cmps	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_cmpxchg	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_contract	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_control_state	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_control_transfer_branch	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_control_transfer_far	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_control_transfer_near	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_cpuid_flags	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_debug_state	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_decode_admission	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_descriptor_system	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_descriptor_table_register	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_direct_flags	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_double_shift	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_eflags_local	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_enter_leave	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_execution_bus	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_execution_fault_event	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_execution_lifecycle	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_execution_paging	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_execution_signal_prefetch	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_fpu_interface_state	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_fs_gs_stack	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_gpr_mov	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_gpr_push_pop	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_idt_privilege_entry	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_imul2	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_imul_immediate	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_inc_dec_final_group	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_inc_dec_first_group	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_inc_dec_second_group	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_integer_multiply_divide	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_iret_state	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_lahf_sahf	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_lar_lsl	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_lea	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_legacy_alu	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_legacy_lock	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_legacy_sreg_stack	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_les_lds	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_les_lds_profile_matrix	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_lgdt_lidt	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_lods	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_lss_lfs_lgs	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_moffs	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_movs	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_movx	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_operand_address	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_outer_return	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_port_io	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_port_strings	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_prefix_attributes	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_protected_data_access	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_protected_far	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_protected_iret_state	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_push_immediate	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_pusha_popa	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_pushf_popf	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_rmw_access	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_rotate	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_scas	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_segment_selector	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_setcc	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_sgdt_sidt	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_sign_extend	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_smm	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_software_int_state	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_sreg_mov	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_stos	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_task_switch16	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_task_switch32_decode	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_task_switch32_state	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_task_switch_cross_width_state	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_test_register	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_tlb	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_transfer_boundary	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_verr_verw	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_vm86_delivery_state	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_vm86_iret_state	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_vme	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_xadd	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/cpu_xchg	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/decode-admission-boundary	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/decoder-80186	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/decoder-80286	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/decoder-80386	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/host-arithmetic-boundary	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/host-arithmetic-verifier-negative	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/stack-frame-boundary	unit;core	partition by source/assertion owner
+x86	core.chips/cpu/stack-frame-verifier-negative	unit;core	partition by source/assertion owner
+x86	core.chips/dma8237/dma_contract	unit;core	partition by source/assertion owner
+x86	core.chips/fdc8272/fdc_allocation	unit;core	partition by source/assertion owner
+x86	core.chips/fdc8272/fdc_causes	unit;core	partition by source/assertion owner
+x86	core.chips/fdc8272/fdc_contract	unit;core	partition by source/assertion owner
+x86	core.chips/fdc8272/fdc_records	unit;core	partition by source/assertion owner
+x86	core.chips/fpu/fpu_contract	unit;core	partition by source/assertion owner
+x86	core.chips/hdc/hdc_allocation	unit;core	partition by source/assertion owner
+x86	core.chips/hdc/hdc_contract	unit;core	partition by source/assertion owner
+x86	core.chips/hdc/hdc_taskfile	unit;core	partition by source/assertion owner
+x86	core.chips/kbc8042/controller_contract	unit;core	partition by source/assertion owner
+x86	core.chips/keyboard/keyboard_contract	unit;core	partition by source/assertion owner
+x86	core.chips/pic8259/pic_commands	unit;core	partition by source/assertion owner
+x86	core.chips/pic8259/pic_contract	unit;core	partition by source/assertion owner
+x86	core.chips/pit825x/pit_8253	unit;core	partition by source/assertion owner
+x86	core.chips/pit825x/pit_contract	unit;core	partition by source/assertion owner
+x86	core.chips/pit825x/pit_readback	unit;core	partition by source/assertion owner
+x86	core.chips/pit825x/pit_waveform	unit;core	partition by source/assertion owner
+x86	core.chips/ppi8255/ppi_contract	unit;core	partition by source/assertion owner
+x86	core.chips/ps2mouse/mouse_contract	unit;core	partition by source/assertion owner
+x86	core.chips/rtc146818/rtc_calendar	unit;core	partition by source/assertion owner
+x86	core.chips/rtc146818/rtc_contract	unit;core	partition by source/assertion owner
+x86	core.chips/video/cga_640	unit;core	partition by source/assertion owner
+x86	core.chips/video/cga_graphics	unit;core	partition by source/assertion owner
+x86	core.chips/video/compaq_cecg_contract	unit;core	partition by source/assertion owner
+x86	core.chips/video/compaq_cecg_feature_environment	unit;core	partition by source/assertion owner
+x86	core.chips/video/compaq_cecg_input_status	unit;core	partition by source/assertion owner
+x86	core.chips/video/compaq_cecg_io_base	unit;core	partition by source/assertion owner
+x86	core.chips/video/compaq_cecg_odd_even_page	unit;core	partition by source/assertion owner
+x86	core.chips/video/compaq_ega_personality	unit;core	partition by source/assertion owner
+x86	core.chips/video/ega_controller	unit;core	partition by source/assertion owner
+x86	core.chips/video/ega_crtc_boundary_port	unit;core	partition by source/assertion owner
+x86	core.chips/video/ega_external	unit;core	partition by source/assertion owner
+x86	core.chips/video/ega_mode10	unit;core	partition by source/assertion owner
+x86	core.chips/video/ega_planar	unit;core	partition by source/assertion owner
+x86	core.chips/video/ega_sequencer	unit;core	partition by source/assertion owner
+x86	core.chips/video/video_allocation	unit;core	partition by source/assertion owner
+x86	core.chips/video/video_contract	unit;core	partition by source/assertion owner
+x86	core.chips/video/video_inspection	unit;core	partition by source/assertion owner
+x86	core.chips/video/video_text	unit;core	partition by source/assertion owner
+x86	core.chips/video/video_text_status	unit;core	partition by source/assertion owner
+x86	core.chips/xtkeyboard/xt_keyboard_contract	unit;core	partition by source/assertion owner
+x86	core.corpus	unit;core	partition by source/assertion owner
+x86	core.cpu-bus-boundary-negative	unit;core	partition by source/assertion owner
+x86	core.dependency-dag-negative	unit;core	partition by source/assertion owner
+x86	core.machine/construction	unit;core	partition by source/assertion owner
+x86	core.machine/debug_budget	unit;core	partition by source/assertion owner
+x86	core.machine/input	unit;core	partition by source/assertion owner
+x86	core.machine/mouse_mapper	unit;core	partition by source/assertion owner
+x86	core.machine/preparation	unit;core	partition by source/assertion owner
+x86	core.manifest	unit;core	partition by source/assertion owner
+x86	core.product/factory	unit;core	partition by source/assertion owner
+x86	core.product/ini	unit;core	partition by source/assertion owner
+x86	core.product/startup	unit;core	partition by source/assertion owner
+x86	core.rom-mapping	unit;core	partition by source/assertion owner
+x86	core.test-manifest	unit;core	partition by source/assertion owner
+x86	core.test-ownership	unit;core	partition by source/assertion owner
+x86	core.test-route-partition	unit;core	partition by source/assertion owner
+x86	core.test-route-partition-negative	unit;core	partition by source/assertion owner
+x86	core.test-types-boundary	unit;core	partition by source/assertion owner
+x86	core.verifier-negative	unit;core	partition by source/assertion owner
+x86	core.x86/core_machine_system_power	unit;core	partition by source/assertion owner
+x86	core.x86/timeline	unit;core	partition by source/assertion owner
+x86	emulator.control_reconciler_integration	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.control_state_matrix	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.corpus	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.input_queue_mouse_fifo	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.input_queue_ownership	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.machine	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.machine_wait	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.manifest	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.physical_key_identity	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.presentation_plan	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.product/composition	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.product/monitor	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.reconciler	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.session_frame	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.session_monitor	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.session_queue_failure	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.sync	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.test-boundaries	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.test-manifest	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.test-types-boundary	unit;emulator	retain existing owner; update inward references if required
+x86	emulator.verifier-negative	unit;emulator	retain existing owner; update inward references if required
+x86	integration.pc-product-ini-identity-smoke	core;integration	partition by source/assertion owner
+x86	integration.session-ini-status-smoke	integration;core	partition by source/assertion owner
+x86	integration.vm-app-default-profile-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-ata-pio-dos-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-cga-640-system-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-cga-graphics-dos-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-control-lifecycle-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-debug-pause-boundary-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-dos-keyboard-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-dos-mem-fault-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-dos-prompt-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-dos-video-port-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-ega-planar-dos-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-fdc-read-track-dos-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-full-pc-session-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-hdc-hdd-boot-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-mouse-driver-dos-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-no-media-video-port-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-profile-floppy-boot-matrix.default-pc-at-80386-1440k-hdd.ini	integration	retain existing owner; update inward references if required
+x86	integration.vm-rom-ega-int10-dos-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-timer-firmware-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-unified-debug-backend-smoke	integration;app-nxvm	retain existing owner; update inward references if required
+x86	integration.vm-windows31-checkpoint	integration;app-nxvm	retain existing owner; update inward references if required
+x86	lib.audio_stream	unit;lib	retain existing owner; update inward references if required
+x86	lib.audio_win32_platform	unit;lib	retain existing owner; update inward references if required
+x86	lib.base_sync_ownership	unit;lib	retain existing owner; update inward references if required
+x86	lib.component-control-ownership	unit;lib	retain existing owner; update inward references if required
+x86	lib.component-dag	unit;lib	retain existing owner; update inward references if required
+x86	lib.component-dag-forbidden-include	unit;lib	retain existing owner; update inward references if required
+x86	lib.component-dag-relative-include	unit;lib	retain existing owner; update inward references if required
+x86	lib.console_blocking_gate	unit;lib	retain existing owner; update inward references if required
+x86	lib.console_broker	unit;lib	retain existing owner; update inward references if required
+x86	lib.console_broker_cancel	unit;lib	retain existing owner; update inward references if required
+x86	lib.console_broker_display	unit;lib;desktop	retain existing owner; update inward references if required
+x86	lib.console_broker_reader_failure	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm-naming	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm-naming-forbidden	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm_component_contract	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm_console_retirement_barrier	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm_frame_copy	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm_frame_damage_mouse	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm_frame_lock	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm_input_admission	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm_keyboard_lifetime	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm_leaf_control_capacity	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm_mailbox_selection	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm_shutdown_failure	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm_window_capture_contract	unit;lib	retain existing owner; update inward references if required
+x86	lib.kvm_window_modal	unit;lib;desktop	retain existing owner; update inward references if required
+x86	lib.kvm_window_retirement	unit;lib;desktop	retain existing owner; update inward references if required
+x86	lib.lib_console	unit;lib	retain existing owner; update inward references if required
+x86	lib.lib_console_event_gate	unit;lib	retain existing owner; update inward references if required
+x86	lib.lib_console_io_contract	unit;lib	retain existing owner; update inward references if required
+x86	lib.lib_failure_output_contract	unit;lib	retain existing owner; update inward references if required
+x86	lib.linux-build-contract	unit;lib	retain existing owner; update inward references if required
+x86	lib.linux_input_contract	unit;lib	retain existing owner; update inward references if required
+x86	lib.linux_storage_contract	unit;lib	retain existing owner; update inward references if required
+x86	lib.linux_wait_contract	unit;lib	retain existing owner; update inward references if required
+x86	lib.manifest	unit;lib	retain existing owner; update inward references if required
+x86	lib.process_directory	unit;lib	retain existing owner; update inward references if required
+x86	lib.storage_file_writer_binary	unit;lib	retain existing owner; update inward references if required
+x86	lib.storage_position	unit;lib	retain existing owner; update inward references if required
+x86	lib.test-boundaries	unit;lib	retain existing owner; update inward references if required
+x86	lib.test-boundaries-selftest	unit;lib	retain existing owner; update inward references if required
+x86	lib.test-manifest	unit;lib	retain existing owner; update inward references if required
+x86	lib.test-types-boundary	unit;lib	retain existing owner; update inward references if required
+x86	lib.test-types-boundary-selftest	unit;lib	retain existing owner; update inward references if required
+x86	lib.types-layout	unit;lib	retain existing owner; update inward references if required
+x86	lib.types-layout-selftest	unit;lib	retain existing owner; update inward references if required
+x86	lib.types_contract	unit;lib	retain existing owner; update inward references if required
+x86	lib.win32_keyboard	unit;lib	retain existing owner; update inward references if required
+x86	lib.win32_presentation	unit;lib	retain existing owner; update inward references if required
+x86	lib.win32_vocabulary_ownership	unit;lib	retain existing owner; update inward references if required
+x86	lib.win32_window_bounds	unit;lib	retain existing owner; update inward references if required
+x86	mynes.app.battery-failure-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.app.command-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.app.composition-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.app.config-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.addressing-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.alu-exhaustive-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.alu-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.apu-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.branch-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.bus-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.cartridge-contract-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.control-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.controller-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.cycle-ledger-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.decode-ledger-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.dma-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.indirect-wrap-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.interrupt-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.load-semantics-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.logic-compare-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.machine-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.mapper-mapping-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.mapper1-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.mapper2-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.mapper3-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.mapper4-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.memory-increment-semantics-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.opcode-profile	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.ppu-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.register-semantics-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.reset-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.rmw-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.run-step-equivalence-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.shift-semantics-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.snapshot-fields	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.snapshot-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.stack-control-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.status-instruction-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.core.store-addressing-smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.integration.app-debug-commands-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x86	mynes.integration.app-media-commands-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x86	mynes.integration.app-snapshot-commands-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x86	mynes.integration.controller-rom-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x86	mynes.integration.debug-workflow-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x86	mynes.integration.lifecycle-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x86	mynes.integration.motion-rom-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x86	mynes.integration.native-console-smoke	integration;app-mynes;desktop	retain existing owner; update inward references if required
+x86	mynes.integration.native-window-smoke	integration;app-mynes;desktop	retain existing owner; update inward references if required
+x86	mynes.integration.ppu-timing-rom-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x86	mynes.integration.snapshot-transaction-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x86	mynes.integration.visual-rom-smoke	integration;app-mynes	retain existing owner; update inward references if required
+x86	mynes.machine.battery_persistence_smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.machine.media_failure_contract_smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.machine.media_title_suffix_smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.machine.owner_rom_probe	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.machine.pacing_smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	mynes.machine.palette_smoke	unit;app-mynes	retain existing owner; update inward references if required
+x86	unit.core-machine-80186-decoder-inventory-runner	unit;core	partition by source/assertion owner
+x86	unit.core-machine-80286-decoder-inventory-runner	unit;core	partition by source/assertion owner
+x86	unit.core-machine-80286-protected-mode-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-80386-decoder-inventory-runner	unit;core	partition by source/assertion owner
+x86	unit.core-machine-80386-paging-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-8086-decoder-ledger	unit;core	partition by source/assertion owner
+x86	unit.core-machine-8086-timing-results	unit;core	partition by source/assertion owner
+x86	unit.core-machine-8088-timing-results	unit;core	partition by source/assertion owner
+x86	unit.core-machine-arbitration-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-attachment-phases-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-auxiliary-pit-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-bit-scan-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-bit-test-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-board-binding-identity-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-board-timing-qualification-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-call-gate-privilege-entry-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-cga-640-port-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-cga-graphics-port-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-checked-memory-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-cli-sti-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-compaq-cecg-contract-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-compaq-cecg-cpu-video-gate-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-compaq-cecg-odd-even-page-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-compaq-hdc-dual-drive-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-compaq-hdc-machine-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-competition-80386-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-competition-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-configuration-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-contract-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-controller-authority-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-cpu-context-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-cpu-fault-diagnostic-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-cpu-fpu-profile-closure-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-cpu-fpu-profile-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-cpu-pic-lifecycle-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-cpu-reset-identity-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-cpu-timing-preview-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-d4-memory-transaction-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.core-machine-d4-platform-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.core-machine-d4-refresh-hold-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.core-machine-debug-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-descriptor-system-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-direct-flags-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-display-authority-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-dma-binding-token-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-dma-channel-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-dma-rtc-authority-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-double-shift-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-ega-controller-port-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-ega-external-port-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-ega-planar-port-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-ega-registration-transaction-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-ega-sequencer-port-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-enter-leave-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-entry-plan-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-executor-run-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-explicit-time-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-external-time-trace-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-fdc-media-change-port-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-fdc-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-fdc-topology-port-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-firmware-capability-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-fpu-8087-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-fs-gs-stack-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-gpr-mov-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-gpr-push-pop-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-hdc-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-hlt-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-immutable-rom-mapping-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-imul-immediate-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-imul2-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-inc-dec-final-group-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-inc-dec-first-group-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-inc-dec-second-group-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-input-display-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-instance-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-int-ivt-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-interrupt-return-composition-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-iret-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-kbc-aux-port-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-kbc-controller-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-kbc-serial-cadence-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-lahf-sahf-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-lea-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-legacy-alu-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-legacy-lock-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-legacy-sreg-stack-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-les-lds-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-les-lds-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-lifecycle-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-lss-lfs-lgs-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-media-provider-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-memory-device-registration-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-memory-inspection-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-memory-reconfigure-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-moffs-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-movx-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-neutral-link-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-operand-address-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-pic-command-priority-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-pic-irq-lifecycle-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-pic-lifecycle-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-pic-ocw3-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-pic-phase-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-pit-divider-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-pit-irq0-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-plan-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-planar-parity-nmi-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-port-rollback-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-prefetch-locality-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-prefix-attributes-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-protected-16-call-gate-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-protected-16-external-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-protected-16-gate-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-protected-16-outer-iret-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-protected-16-outer-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-protected-ud-delivery-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-push-immediate-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-pusha-popa-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-pushf-popf-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-ram-create-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-ram-port-context-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-rational-clock-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-real-exception-final-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-real-mode-386-address-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-real-mode-386-rep-cmps-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-real-mode-corpus-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-real-mode-tick-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-real-ud-delivery-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-reset-rom-alias-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-retirement-observation-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-rom-route-transaction-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-rotate-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-rtc-cmos-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-rtc-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-rtc-storage-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-scheduler-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-segment-selector-smoke	unit	retain existing owner; update inward references if required
+x86	unit.core-machine-setcc-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-sign-extend-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-software-int-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-sreg-mov-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-stopped-lifecycle-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-time-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-timeline-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-timing-checkpoint-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-trace-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-transaction-lifecycle-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-transaction-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-xchg-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-xebec-wiring-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-machine-xt-ppi-keyboard-smoke	unit;core	partition by source/assertion owner
+x86	unit.core-mantle-shape-smoke	unit;core	partition by source/assertion owner
+x86	unit.fdc-boundary-negative	unit;core	partition by source/assertion owner
+x86	unit.machine-80186-instruction-timing-ledger-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-80186-timing-manifest-runner	unit;core	partition by source/assertion owner
+x86	unit.machine-80286-instruction-timing-ledger-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-80286-timing-manifest-runner	unit;core	partition by source/assertion owner
+x86	unit.machine-80386-privileged-timing-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-80386-protected-io-timing-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-80386-secondary-integer-timing-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-80386-timing-manifest-runner	unit;core	partition by source/assertion owner
+x86	unit.machine-8086-instruction-timing-ledger-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-8086-timing-manifest-runner	unit;core	partition by source/assertion owner
+x86	unit.machine-8088-timing-manifest-runner	unit;core	partition by source/assertion owner
+x86	unit.machine-arithmetic-data-timing-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-arpl-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-bound-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-call-gate-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-cli-sti-interrupt-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-cmps-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-control-stack-timing-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-control-state-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-cpu-profile-gate-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-debug-state-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-fpu-escape-smoke	unit	retain existing owner; update inward references if required
+x86	unit.machine-fpu-interface-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-fpu-irq-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-hardware-delivery-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-idt-privilege-pic-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-instruction-timing-ledger-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-instruction-timing-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-interrupt-entry-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-legacy-timing-normalization-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-lods-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-movs-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-outer-iret-pic-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-port-io-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-port-ownership-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-port-strings-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-protected-data-pic-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-protected-far-pic-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-protected-iret-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-protected-privilege-board-smoke	unit	retain existing owner; update inward references if required
+x86	unit.machine-scas-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-stos-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-string-io-timing-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-table-register-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-task-switch-cross-width-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-task-switch16-pic-board-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-task-switch32-paging-smoke	unit	retain existing owner; update inward references if required
+x86	unit.machine-tss-iomap-port-authorization-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-vm86-delivery-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-vm86-iret-smoke	unit;core	partition by source/assertion owner
+x86	unit.machine-vm86-lgdt-lidt-smoke	unit;core	partition by source/assertion owner
+x86	unit.model40-d4-port-assembly-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.model40-d4-prefetch-locality-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.model40-d4-refresh-deadline-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.my5160-dma-deadline-smoke	unit;app-my5160	retain existing owner; update inward references if required
+x86	unit.my5170-clock-contract-smoke	unit;app-my5170	retain existing owner; update inward references if required
+x86	unit.my5170-dma-deadline-smoke	unit;app-my5170	retain existing owner; update inward references if required
+x86	unit.my5170-plan-smoke	unit;app-my5170	retain existing owner; update inward references if required
+x86	unit.mydeskpro386-dma-deadline-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.mydeskpro386-plan-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.nxvm-default-dma-deadline-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.nxvm-default-pc-at-plan-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.nxvm-firmware-build	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.nxvm-firmware-embedding	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.nxvm-firmware-floppy-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.nxvm-firmware-text-cursor-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-app-session-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-cga-graphics-system-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-cmos-rtc-port-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-console-pause-resume-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-core-executor-storage-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-default-ega-topology-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-default-pc-at-apply-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-default-pc-at-profile-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-default-pc-at-rom-materialization-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-display-composition-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-ega-controller-system-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-ega-sequencer-system-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-fault-outcome-runner-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-fdc-authority-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-fdc-port-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-fdc-read-track-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-hdc-port-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-host-cancellation-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-ibm-5170-model-339-cga-topology-smoke	unit;app-my5170	retain existing owner; update inward references if required
+x86	unit.vm-ibm-5170-model-339-composition-smoke	unit;app-my5170	retain existing owner; update inward references if required
+x86	unit.vm-ibm-5170-model-339-firmware-fdc-topology-smoke	unit;app-my5170	retain existing owner; update inward references if required
+x86	unit.vm-kbc-aux-guest-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-keyboard-host-ingress-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-keyboard-set1-mapper-smoke	unit;core	partition by source/assertion owner
+x86	unit.vm-machine-executor-state-smoke	unit;core	partition by source/assertion owner
+x86	unit.vm-machine-frame-smoke	unit;core	partition by source/assertion owner
+x86	unit.vm-machine-initialization-atomicity-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-machine-media-lifecycle-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-machine-speed-policy-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-media-close-failure-smoke	unit;core	partition by source/assertion owner
+x86	unit.vm-media-direct-readonly-smoke	unit;core	partition by source/assertion owner
+x86	unit.vm-media-provider-smoke	unit;core	partition by source/assertion owner
+x86	unit.vm-model40-byob-boot-media-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-byob-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-cecg-cpu-video-gate-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-cecg-feature-environment-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-cecg-input-status-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-cecg-io-base-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-cecg-odd-even-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-cecg-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-cmos-seed-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-composition-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-d4-a20-reset-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-d4-compatibility-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-d4-map-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-d4-parity-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-dma-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-fdc-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-fdd-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-hdc-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-machine-contract-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-model40-rom-layout-smoke	unit;app-mydeskpro386	retain existing owner; update inward references if required
+x86	unit.vm-pcat-composition-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-pcat-ownership-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-pcat-topology-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-profile-contract-smoke	unit;core	partition by source/assertion owner
+x86	unit.vm-runner-display-cadence-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-runner-error-propagation-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-two-session-isolation-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-x86-debug-mapping-smoke	unit;app-nxvm	retain existing owner; update inward references if required
+x86	unit.vm-xt-5160-268-profile-smoke	unit;app-my5160	retain existing owner; update inward references if required
+x86	x86-debug.corpus	unit;x86-debug	retain existing owner; update inward references if required
+x86	x86-debug.corpus-negative	unit;x86-debug	retain existing owner; update inward references if required
+x86	x86-debug.manifest	unit;x86-debug	retain existing owner; update inward references if required
+x86	x86-debug.product/linear	unit;x86-debug	retain existing owner; update inward references if required
+x86	x86-debug.product/machine	unit;x86-debug	retain existing owner; update inward references if required
+x86	x86-debug.product/output	unit;x86-debug	retain existing owner; update inward references if required
+x86	x86-debug.test-boundaries	unit;x86-debug	retain existing owner; update inward references if required
+x86	x86-debug.test-manifest	unit;x86-debug	retain existing owner; update inward references if required
+x86	x86-debug.test-types-boundary	unit;x86-debug	retain existing owner; update inward references if required
+x86	x86-debug.xasm32/xasm32	unit;x86-debug	retain existing owner; update inward references if required
+x86	x86-debug.xasm32/xasm32_bounds	unit;x86-debug	retain existing owner; update inward references if required
+x86	x86-debug.xasm32/xasm32_contract	unit;x86-debug	retain existing owner; update inward references if required
+x86	x86-ibmpc.corpus	unit;x86-ibmpc	retain existing owner; update inward references if required
+x86	x86-ibmpc.corpus-negative	unit;x86-ibmpc	retain existing owner; update inward references if required
+x86	x86-ibmpc.manifest	unit;x86-ibmpc	retain existing owner; update inward references if required
+x86	x86-ibmpc.product/command	unit;x86-ibmpc	retain existing owner; update inward references if required
+x86	x86-ibmpc.product/entry	unit;x86-ibmpc	retain existing owner; update inward references if required
+x86	x86-ibmpc.product/keyboard	unit;x86-ibmpc	retain existing owner; update inward references if required
+x86	x86-ibmpc.test-boundaries	unit;x86-ibmpc	retain existing owner; update inward references if required
+x86	x86-ibmpc.test-manifest	unit;x86-ibmpc	retain existing owner; update inward references if required
+x86	x86-ibmpc.test-types-boundary	unit;x86-ibmpc	retain existing owner; update inward references if required
+x86	x86-nxvm.corpus	unit;x86-nxvm	retain existing owner; update inward references if required
+x86	x86-nxvm.corpus-negative	unit;x86-nxvm	retain existing owner; update inward references if required
+x86	x86-nxvm.manifest	unit;x86-nxvm	retain existing owner; update inward references if required
+x86	x86-nxvm.product/machine	unit;x86-nxvm	retain existing owner; update inward references if required
+x86	x86-nxvm.test-boundaries	unit;x86-nxvm	retain existing owner; update inward references if required
+x86	x86-nxvm.test-manifest	unit;x86-nxvm	retain existing owner; update inward references if required
+x86	x86-nxvm.test-types-boundary	unit;x86-nxvm	retain existing owner; update inward references if required

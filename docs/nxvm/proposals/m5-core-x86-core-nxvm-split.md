@@ -142,15 +142,29 @@ the necessary NXVM information/speed and machine-lifetime adapter.
 Do not claim the header-only X86 NXVM package already implements the full
 planned machine/chip/board package.
 
-The following remaining batches are plans, not allocated S identifiers:
+S2 freezes the complete [disposition and contract review](../etc/evidence/t561-s2/review.md):
+679 tracked Core paths, declaration/include records, complete affected CMake
+statements and both existing configured build/test graph witnesses. Its file
+ledger assigns all source/test files, including infrastructure partitions and
+mixed-contract fragments. No source or ABI changes occur in this prerequisite.
+
+The refined remaining batches are plans, not allocated S identifiers:
 
 | Batch | Deliverable | Exit evidence |
 | --- | --- | --- |
-| 1. Inventory and contract freeze | File/symbol/test/target disposition for all Core paths; SoftPC split dependency; consumer DAG; PC-assumption ledger and accepted baseline. | Every source/test has one destination or justified disposition; exact cross-target boundary and invariants. |
-| 2. CPU and FPU extraction | Shared cpu/fpu sources, public contracts, independent targets and matching tests; PC receivers updated. | No PC/App includes or private-layout access; both host widths pass moved owner suites and relevant CPU qualification. |
-| 3. Neutral machine extraction | Shared execution, routing, time and observation; move PC policies to board receivers. | Non-PC synthetic board proof plus PC timing/transaction regression; one execution/time owner. |
-| 4. NXVM package consolidation | chips, board-base/xt/at, machine, product; reconcile speed/info and four-App includes/builds. | Four Apps use the same package; no duplicate old Core/X86 compatibility implementation. |
-| 5. Complete acceptance | Final DAG/manifest/test ownership review, full dual-width regression, required four-profile integration and artifacts, current docs. | Actual-diff review, source/test ownership ledger, qualified artifacts and explicit residual limits. |
+| S2 inventory prerequisite | Complete file/symbol/test/target disposition; consumer graph and PC-assumption review against S1. | Hashed paths and explicit neutral/board receiving decisions; documentation-only proof, not extraction qualification. |
+| Planned S3 CPU/FPU | Shared cpu/fpu sources, public contracts, independent targets and matching tests; all PC receivers updated. | No PC/App or machine-internal test-header dependency; both widths pass owner suites and unchanged CPU qualification. |
+| Planned S4 PC metadata separation | Move whole-PC timing qualification and board trace/default policy out of neutral contracts before scheduler extraction. | Original grades/IDs/admission retained; one table owner, no mirrored qualification state. |
+| Planned S5 neutral machine | Shared execution/routing/time/observation; board owns device sequencing, address policy and interrupt-source wiring. | Real non-PC synthetic board proof plus PC timing/transaction/reset regression; one execution/time/bus owner. |
+| Planned S6 NXVM consolidation | Remaining chips, board-base/XT/AT, adapter and product; fixtures/checkers/registrations and all App receivers. | One full x86-nxvm package absorbs current speed/info contract; retired Core paths/aliases removed, all four Apps qualified. |
+| Planned S7 complete acceptance | Independent package builds, final DAG/manifests/ownership audit, full dual-width units and four-profile integrations/artifacts. | Actual-change review, reconciled file/test ledger, qualified artifacts and explicit CPU residual limits. |
+
+The review records exact file/target ownership, symbol-family rules, required
+mixed-file splits, each batch's estimated non-mechanical diff and stop/exit
+conditions. In particular, PC timing declarations and named PIT/PIC/RTC/media
+progression do not become neutral merely because they currently reside in
+core/x86. CPU/FPU extraction preserves the real FPU link dependency and every
+implemented CPU model; it does not reopen production 486SX admission.
 
 Choose independently buildable commit boundaries during admission; extraction
 and receiver updates must not leave a broken tree. Do not merge architecture

@@ -1,0 +1,921 @@
+width	target	sources	disposition	destination_target
+x64	core-board-at	src/core/board-at/kbc.c;src/core/board-at/parity.c;src/core/board-at/wiring.c	x86-nxvm	x86-nxvm-board-at
+x64	core-board-base	src/core/board-base/at_assembly.c;src/core/board-base/board_advance.c;src/core/board-base/board_deadline.c;src/core/board-base/display.c;src/core/board-base/dma_bus.c;src/core/board-base/fdc.c;src/core/board-base/floppy.c;src/core/board-base/hdc.c;src/core/board-base/machine_board.c;src/core/board-base/machine_display.c;src/core/board-base/machine_plan.c;src/core/board-base/media_interface.c;src/core/board-base/pc_at_profile.c;src/core/board-base/pc_at_rom.c;src/core/board-base/pic_bus.c;src/core/board-base/pit_bus.c;src/core/board-base/profile_contract.c;src/core/board-base/rom_mapping.c;src/core/board-base/rom_validation.c;src/core/board-base/vadp.c	x86-nxvm	x86-nxvm-board-base
+x64	core-board-base-observable	src/core/board-base/at_assembly.c;src/core/board-base/board_advance.c;src/core/board-base/board_deadline.c;src/core/board-base/display.c;src/core/board-base/dma_bus.c;src/core/board-base/fdc.c;src/core/board-base/floppy.c;src/core/board-base/hdc.c;src/core/board-base/machine_board.c;src/core/board-base/machine_display.c;src/core/board-base/machine_plan.c;src/core/board-base/media_interface.c;src/core/board-base/pc_at_profile.c;src/core/board-base/pc_at_rom.c;src/core/board-base/pic_bus.c;src/core/board-base/pit_bus.c;src/core/board-base/profile_contract.c;src/core/board-base/rom_mapping.c;src/core/board-base/rom_validation.c;src/core/board-base/vadp.c	x86-nxvm	x86-nxvm-board-base-observable
+x64	core-board-xt	src/core/board-xt/xt_ppi_keyboard.c	x86-nxvm	x86-nxvm-board-xt
+x64	core-chip-cpu	src/core/chips/cpu/cpu.c;src/core/chips/cpu/cpu_instructions.c;src/core/chips/cpu/cpu_timing.c;src/core/chips/cpu/cpu_timing_model.c	x86-core	x86-core-cpu
+x64	core-chip-dma8237	src/core/chips/dma8237/dma.c	x86-nxvm	x86-nxvm-chip-dma8237
+x64	core-chip-fdc8272	src/core/chips/fdc8272/fdc.c	x86-nxvm	x86-nxvm-chip-fdc8272
+x64	core-chip-fpu	src/core/chips/fpu/fpu.c	x86-core	x86-core-fpu
+x64	core-chip-hdc	src/core/chips/hdc/hdc.c	x86-nxvm	x86-nxvm-chip-hdc
+x64	core-chip-kbc8042	src/core/chips/kbc8042/controller.c	x86-nxvm	x86-nxvm-chip-kbc8042
+x64	core-chip-keyboard	src/core/chips/keyboard/keyboard.c	x86-nxvm	x86-nxvm-chip-keyboard
+x64	core-chip-pic8259	src/core/chips/pic8259/pic.c	x86-nxvm	x86-nxvm-chip-pic8259
+x64	core-chip-pit825x	src/core/chips/pit825x/pit.c	x86-nxvm	x86-nxvm-chip-pit825x
+x64	core-chip-ppi8255	src/core/chips/ppi8255/ppi.c	x86-nxvm	x86-nxvm-chip-ppi8255
+x64	core-chip-ps2mouse	src/core/chips/ps2mouse/mouse.c	x86-nxvm	x86-nxvm-chip-ps2mouse
+x64	core-chip-rtc146818	src/core/chips/rtc146818/rtc.c	x86-nxvm	x86-nxvm-chip-rtc146818
+x64	core-chip-video	src/core/chips/video/video.c	x86-nxvm	x86-nxvm-chip-video
+x64	core-chip-xtkeyboard	src/core/chips/xtkeyboard/keyboard.c	x86-nxvm	x86-nxvm-chip-xtkeyboard
+x64	core-decoder-80186	test/core/chips/cpu/core_machine_80186_decoder_inventory_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-decoder-80286	test/core/chips/cpu/core_machine_80286_decoder_inventory_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-decoder-80386	test/core/chips/cpu/core_machine_80386_decoder_inventory_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine	src/core/machine/control.c;src/core/machine/debug.c;src/core/machine/debug_adapter.c;src/core/machine/display.c;src/core/machine/executor_state.c;src/core/machine/fault.c;src/core/machine/lifecycle.c;src/core/machine/machine.c;src/core/machine/machine_devices.c;src/core/machine/machine_info.c;src/core/machine/pc_at_preparation.c;src/core/machine/preparation.c;src/core/machine/runner.c;src/core/machine/waiting.c	x86-nxvm	x86-nxvm-machine
+x64	core-machine-80186-decoder-inventory-runner	test/core/chips/cpu/core_machine_80186_decoder_inventory_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-80286-decoder-inventory-runner	test/core/chips/cpu/core_machine_80286_decoder_inventory_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-80286-protected-mode-smoke	test/core/board-base/composition/core_machine_80286_protected_mode_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-80386-decoder-inventory-runner	test/core/chips/cpu/core_machine_80386_decoder_inventory_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-80386-paging-smoke	test/core/x86/core_machine_80386_paging_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-arbitration-smoke	test/core/board-base/machine_arbitration_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-attachment-phases-smoke	test/core/x86/machine_attachment_phases_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-auxiliary-pit-smoke	test/core/board-base/composition/time_fixture.c;test/core/board-base/core_machine_auxiliary_pit_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-bit-scan-smoke	test/core/board-base/core_machine_bit_scan_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-bit-test-smoke	test/core/board-base/core_machine_bit_test_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-board-binding-identity-smoke	test/core/board-base/board_binding_fixture.c;test/core/board-base/composition/machine_board_binding_identity_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-board-timing-qualification-smoke	test/core/board-base/machine_board_timing_qualification_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-call-gate-privilege-entry-smoke	test/core/board-base/composition/core_machine_call_gate_privilege_entry_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-cga-640-port-smoke	test/core/board-base/core_machine_cga_640_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-cga-graphics-port-smoke	test/core/board-base/core_machine_cga_graphics_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-checked-memory-smoke	test/core/board-base/composition/machine_checked_memory_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-cli-sti-smoke	test/core/board-base/core_machine_cli_sti_profiles_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-compaq-cecg-contract-smoke	test/core/board-base/core_machine_compaq_cecg_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-compaq-cecg-cpu-video-gate-smoke	test/core/board-base/core_machine_compaq_cecg_cpu_video_gate_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-compaq-cecg-odd-even-page-smoke	test/core/board-base/core_machine_compaq_cecg_odd_even_page_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-compaq-hdc-dual-drive-smoke	test/core/board-base/core_machine_compaq_hdc_dual_drive_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-compaq-hdc-machine-smoke	test/core/board-base/core_machine_compaq_hdc_machine_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-competition-80386-smoke	test/core/board-base/composition/machine_80386_dma_hold_smoke.c;test/core/board-base/dma_competition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-competition-smoke	test/core/board-base/composition/composition_fixture.c;test/core/board-base/composition/time_fixture.c;test/core/board-base/machine_competition_smoke.c;test/core/board-base/support/composition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-configuration-smoke	test/core/x86/machine_configuration_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-contract-smoke	test/core/x86/core_contract_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-controller-authority-smoke	test/core/board-base/core_machine_controller_authority_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-conversion	src/core/machine/frame.c;src/core/machine/keyboard_mapper.c;src/core/machine/mouse_mapper.c	x86-nxvm	x86-nxvm-machine-conversion
+x64	core-machine-cpu-context-smoke	test/core/chips/cpu/cpu_execution_context_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-cpu-fault-diagnostic-smoke	test/core/board-base/composition/cpu_fault_diagnostic_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-cpu-fpu-profile-closure-smoke	test/core/board-base/composition/cpu_fpu_profile_closure_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-cpu-fpu-profile-smoke	test/core/board-base/composition/cpu_fpu_profile_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-cpu-pic-lifecycle-smoke	test/core/board-base/machine_cpu_pic_lifecycle_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-cpu-reset-identity-smoke	test/core/board-base/composition/machine_cpu_reset_identity_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-cpu-timing-preview-smoke	test/core/board-base/composition/composition_fixture.c;test/core/board-base/core_machine_cpu_timing_preview_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-d4-memory-transaction-smoke	test/app-mydeskpro386/unit/d4_memory_transaction_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/support/memory_registration_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	core-machine-d4-platform-smoke	test/app-mydeskpro386/unit/mydeskpro386_d4_platform_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/composition/time_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	core-machine-d4-refresh-hold-smoke	test/app-mydeskpro386/unit/d4_refresh_fixture.c;test/app-mydeskpro386/unit/machine_d4_refresh_hold_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/composition/time_fixture.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	core-machine-debug-smoke	test/core/x86/machine_debug_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-descriptor-system-smoke	test/core/x86/core_machine_descriptor_system_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-direct-flags-board-smoke	test/core/board-base/core_machine_direct_flags_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-display-authority-smoke	test/core/board-base/core_machine_display_authority_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-dma-binding-token-smoke	test/core/board-base/core_machine_dma_binding_token_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-dma-channel-smoke	test/core/board-base/core_machine_dma_channel_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-dma-rtc-authority-smoke	test/core/board-base/composition/time_fixture.c;test/core/board-base/core_machine_dma_rtc_authority_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-double-shift-smoke	test/core/board-base/core_machine_double_shift_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-ega-controller-port-smoke	test/core/board-base/core_machine_ega_controller_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-ega-external-port-smoke	test/core/board-base/core_machine_ega_external_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-ega-planar-port-smoke	test/core/board-base/core_machine_ega_planar_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-ega-registration-transaction-smoke	test/core/board-base/composition/core_machine_ega_registration_transaction_smoke.c;test/core/board-base/video_registration_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-ega-sequencer-port-smoke	test/core/board-base/core_machine_ega_sequencer_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-enter-leave-smoke	test/core/board-base/core_machine_enter_leave_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-entry-plan-smoke	test/core/x86/machine_entry_plan_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-executor-run-smoke	test/core/x86/core_machine_executor_run_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-explicit-time-smoke	test/core/board-base/composition/machine_explicit_time_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-external-time-trace-smoke	test/core/x86/machine_external_time_trace_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-fdc-media-change-port-smoke	test/core/board-base/core_machine_fdc_media_change_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-fdc-smoke	test/core/board-base/core_machine_fdc_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-fdc-topology-port-smoke	test/core/board-base/core_machine_fdc_topology_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-firmware-capability-smoke	test/core/board-base/composition/machine_firmware_capability_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-fpu-8087-smoke	test/core/board-base/composition/core_machine_fpu_8087_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-fs-gs-stack-smoke	test/core/board-base/composition/core_machine_fs_gs_stack_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-gpr-mov-smoke	test/core/board-base/core_machine_gpr_mov_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-gpr-push-pop-smoke	test/core/board-base/core_machine_gpr_push_pop_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-hdc-smoke	test/core/board-base/core_machine_hdc_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-hlt-smoke	test/core/board-base/core_machine_hlt_profiles_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-immutable-rom-mapping-smoke	test/core/x86/machine_immutable_rom_mapping_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-imul-immediate-smoke	test/core/board-base/core_machine_imul_immediate_profiles_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-imul2-smoke	test/core/board-base/core_machine_imul2_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-inc-dec-final-group-board-smoke	test/core/board-base/core_machine_inc_dec_final_group_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-inc-dec-first-group-board-smoke	test/core/board-base/core_machine_inc_dec_first_group_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-inc-dec-second-group-board-smoke	test/core/board-base/core_machine_inc_dec_second_group_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-input-display-smoke	test/core/board-base/composition/composition_fixture.c;test/core/board-base/machine_input_display_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-instance-smoke	test/core/board-base/composition/machine_instance_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-int-ivt-smoke	test/core/x86/cpu_int_ivt_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-interrupt-return-composition-smoke	test/core/board-base/core_machine_interrupt_return_composition_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-iret-smoke	test/core/board-base/core_machine_iret_profiles_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-kbc-aux-port-smoke	test/core/board-at/core_machine_kbc_aux_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-kbc-controller-smoke	test/core/board-at/core_machine_kbc_controller_smoke.c;test/core/board-base/composition/kbc_controller_fixture.c;test/core/board-base/kbc_cpu_irq_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-kbc-serial-cadence-smoke	test/core/board-at/core_machine_kbc_serial_cadence_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-lahf-sahf-board-smoke	test/core/board-base/core_machine_lahf_sahf_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-lea-smoke	test/core/board-base/core_machine_lea_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-legacy-alu-smoke	test/core/board-base/composition/core_machine_legacy_alu_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-legacy-lock-smoke	test/core/board-base/composition/core_machine_legacy_lock_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-legacy-sreg-stack-smoke	test/core/board-base/core_machine_legacy_sreg_stack_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-les-lds-board-smoke	test/core/board-base/core_machine_les_lds_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-les-lds-smoke	test/core/board-base/core_machine_les_lds_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-lifecycle-smoke	test/core/x86/machine_lifecycle_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-lss-lfs-lgs-smoke	test/core/board-base/core_machine_lss_lfs_lgs_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-media	src/core/machine/media/fdd.c;src/core/machine/media/hdd.c	x86-nxvm	x86-nxvm-machine-media
+x64	core-machine-media-provider-smoke	test/core/board-base/core_machine_media_provider_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-memory-device-registration-smoke	test/core/x86/machine_memory_device_registration_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-memory-inspection-smoke	test/core/x86/core_machine_memory_inspection_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-memory-reconfigure-smoke	test/core/x86/machine_memory_reconfigure_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-moffs-smoke	test/core/board-base/core_machine_moffs_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-movx-smoke	test/core/board-base/composition/core_machine_movx_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-neutral-link-smoke	test/core/x86/neutral_link.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-operand-address-smoke	test/core/board-base/composition/core_machine_operand_address_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-pic-command-priority-smoke	test/core/board-base/core_machine_pic_command_priority_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-pic-irq-lifecycle-smoke	test/core/board-base/core_machine_pic_irq_lifecycle_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-pic-lifecycle-smoke	test/core/board-base/core_machine_pic_lifecycle_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-pic-ocw3-smoke	test/core/board-base/core_machine_pic_ocw3_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-pic-phase-smoke	test/core/board-base/composition/core_machine_pic_phase_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-pit-divider-smoke	test/core/board-base/core_machine_pit_divider_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-pit-irq0-smoke	test/core/board-base/core_machine_pit_irq0_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-plan-smoke	test/core/board-base/board_construction_fixture.c;test/core/board-base/composition/plan_core_fixture.c;test/core/board-base/core_machine_plan_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-planar-parity-nmi-smoke	test/core/board-base/composition/planar_parity_fixture.c;test/core/board-base/core_machine_planar_parity_nmi_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-port-rollback-smoke	test/core/board-base/board_construction_fixture.c;test/core/board-base/composition/port_assembly_core_smoke.c;test/core/board-base/composition/port_assembly_fixture.c;test/core/board-base/port_assembly_board_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-prefetch-locality-smoke	test/core/x86/machine_prefetch_locality_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-prefetch-scheduler-test	src/core/x86/machine_scheduler.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-prefix-attributes-smoke	test/core/board-base/core_machine_prefix_attributes_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-protected-16-call-gate-smoke	test/core/board-base/composition/core_machine_protected_16_call_gate_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-protected-16-external-smoke	test/core/board-base/composition/core_machine_protected_16_external_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-protected-16-gate-smoke	test/core/board-base/composition/core_machine_protected_16_gate_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-protected-16-outer-iret-smoke	test/core/board-base/composition/core_machine_protected_16_outer_iret_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-protected-16-outer-smoke	test/core/board-base/composition/core_machine_protected_16_outer_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-protected-ud-delivery-smoke	test/core/board-base/composition/core_machine_protected_ud_delivery_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-push-immediate-smoke	test/core/board-base/core_machine_push_immediate_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-pusha-popa-smoke	test/core/board-base/core_machine_pusha_popa_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-pushf-popf-board-smoke	test/core/board-base/core_machine_pushf_popf_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-ram-create-smoke	test/core/board-base/board_binding_fixture.c;test/core/board-base/board_construction_fixture.c;test/core/board-base/composition/core_machine_ram_create_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-ram-port-context-smoke	test/core/x86/ram_port_context_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-rational-clock-smoke	test/core/x86/machine_rational_clock_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-real-exception-final-smoke	test/core/board-base/composition/core_machine_real_exception_final_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-real-mode-386-address-smoke	test/core/x86/core_machine_real_mode_386_address_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-real-mode-386-rep-cmps-smoke	test/core/x86/core_machine_real_mode_386_rep_cmps_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-real-mode-corpus-smoke	test/core/x86/core_machine_real_mode_corpus_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-real-mode-tick-smoke	test/core/x86/core_machine_real_mode_tick_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-real-ud-delivery-smoke	test/core/board-base/composition/core_machine_real_ud_delivery_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-reset-rom-alias-smoke	test/core/board-base/absent_memory_fixture.c;test/core/board-base/composition/machine_reset_rom_alias_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-retirement-observation-smoke	test/core/board-base/composition/machine_retirement_observation_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-rom-route-transaction-smoke	test/core/board-base/composition/core_machine_rom_route_transaction_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-rotate-smoke	test/core/board-base/core_machine_rotate_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-rtc-cmos-smoke	test/core/board-base/core_machine_rtc_cmos_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-rtc-smoke	test/core/board-base/core_machine_rtc_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-rtc-storage-smoke	test/core/board-base/machine_rtc_storage_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-scheduler-smoke	test/core/board-base/composition/machine_scheduler_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-segment-selector-smoke	test/core/board-base/composition/core_machine_segment_selector_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-setcc-smoke	test/core/board-base/core_machine_setcc_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-sign-extend-smoke	test/core/board-base/core_machine_sign_extend_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-software-int-smoke	test/core/board-base/core_machine_software_int_profiles_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-sreg-mov-smoke	test/core/board-base/core_machine_sreg_mov_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-stopped-lifecycle-smoke	test/core/x86/machine_stopped_lifecycle_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-time-smoke	test/core/board-base/composition/composition_fixture.c;test/core/board-base/composition/time_fixture.c;test/core/board-base/machine_time_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-timeline-smoke	test/core/board-base/composition/machine_timeline_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-timing-checkpoint-smoke	test/core/board-base/machine_timing_checkpoint_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-trace-smoke	test/core/x86/machine_trace_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-machine-transaction-lifecycle-smoke	test/core/board-base/composition/machine_transaction_lifecycle_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-transaction-smoke	test/core/board-base/composition/machine_transaction_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-xchg-smoke	test/core/board-base/core_machine_xchg_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-xebec-wiring-smoke	test/core/board-base/core_machine_xebec_wiring_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-machine-xt-ppi-keyboard-smoke	test/core/board-base/composition/time_fixture.c;test/core/board-base/composition/xt_ppi_controller_fixture.c;test/core/board-base/core_machine_xt_ppi_keyboard_smoke.c;test/core/board-xt/controller_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-mantle-shape-smoke	test/core/board-base/machine_provider_composition_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-product	src/core/product/factory.c;src/core/product/ini.c;src/core/product/startup.c	x86-nxvm	x86-nxvm-product
+x64	core-rom-mapping-test	src/core/board-base/rom_mapping.c;test/core/board-base/rom_mapping_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-assembly	test/core/board-at/assembly_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-board	test/core/board-base/board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-cga_640	test/core/chips/video/cga_640_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-cga_graphics	test/core/chips/video/cga_graphics_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-compaq_cecg_contract	test/core/chips/video/compaq_cecg_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-compaq_cecg_feature_environment	test/core/chips/video/compaq_cecg_feature_environment_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-compaq_cecg_input_status	test/core/chips/video/compaq_cecg_input_status_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-compaq_cecg_io_base	test/core/chips/video/compaq_cecg_io_base_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-compaq_cecg_odd_even_page	test/core/chips/video/compaq_cecg_odd_even_page_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-compaq_ega_personality	test/core/chips/video/compaq_ega_personality_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-construction	test/core/machine/construction_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-construction_helpers	test/core/board-base/construction_helpers_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-contract	test/core/board-at/contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-controller_contract	test/core/chips/kbc8042/controller_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_80286_protected_mode	test/core/board-base/composition/core_machine_80286_protected_mode_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_call_gate_privilege_entry_board	test/core/board-base/composition/core_machine_call_gate_privilege_entry_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_fs_gs_stack	test/core/board-base/composition/core_machine_fs_gs_stack_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_legacy_alu	test/core/board-base/composition/core_machine_legacy_alu_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_legacy_lock	test/core/board-base/composition/core_machine_legacy_lock_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_movx	test/core/board-base/composition/core_machine_movx_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_operand_address	test/core/board-base/composition/core_machine_operand_address_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_protected_16_call_gate_board	test/core/board-base/composition/core_machine_protected_16_call_gate_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_protected_16_external_board	test/core/board-base/composition/core_machine_protected_16_external_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_protected_16_gate_board	test/core/board-base/composition/core_machine_protected_16_gate_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_protected_16_outer_board	test/core/board-base/composition/core_machine_protected_16_outer_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_protected_16_outer_iret_board	test/core/board-base/composition/core_machine_protected_16_outer_iret_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_protected_ud_delivery	test/core/board-base/composition/core_machine_protected_ud_delivery_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_real_exception_final	test/core/board-base/composition/core_machine_real_exception_final_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_real_ud_delivery	test/core/board-base/composition/core_machine_real_ud_delivery_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_segment_selector	test/core/board-base/composition/core_machine_segment_selector_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-core_machine_system_power	test/core/x86/core_machine_system_power_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_486_nominal_timing	test/core/chips/cpu/cpu_486_nominal_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_486_repeat_timing	test/core/chips/cpu/cpu_486_repeat_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_address_span	test/core/chips/cpu/cpu_address_span_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_alignment_access	test/core/chips/cpu/cpu_alignment_access_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_arpl	test/core/chips/cpu/cpu_arpl_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_bit_scan	test/core/chips/cpu/cpu_bit_scan_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_bit_test	test/core/chips/cpu/cpu_bit_test_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_bound	test/core/chips/cpu/cpu_bound_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_bswap	test/core/chips/cpu/cpu_bswap_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_cache	test/core/chips/cpu/cpu_cache_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_cmps	test/core/chips/cpu/cpu_cmps_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_cmpxchg	test/core/chips/cpu/cpu_cmpxchg_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_contract	test/core/chips/cpu/cpu_contract_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_control_state	test/core/chips/cpu/cpu_control_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_control_transfer_branch	test/core/chips/cpu/cpu_control_transfer_branch_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_control_transfer_far	test/core/chips/cpu/cpu_control_transfer_far_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_control_transfer_near	test/core/chips/cpu/cpu_control_transfer_near_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_cpuid_flags	test/core/chips/cpu/cpu_cpuid_flags_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_debug_state	test/core/chips/cpu/cpu_debug_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_decode_admission	test/core/chips/cpu/cpu_decode_admission_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_descriptor_system	test/core/chips/cpu/cpu_descriptor_system_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_descriptor_table_register	test/core/chips/cpu/cpu_descriptor_table_register_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_direct_flags	test/core/chips/cpu/cpu_direct_flags_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_double_shift	test/core/chips/cpu/cpu_double_shift_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_eflags_local	test/core/chips/cpu/cpu_eflags_local_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_enter_leave	test/core/chips/cpu/cpu_enter_leave_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_execution_bus	test/core/chips/cpu/cpu_execution_bus_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_execution_fault_event	test/core/chips/cpu/cpu_execution_fault_event_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_execution_lifecycle	test/core/chips/cpu/cpu_execution_lifecycle_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_execution_paging	test/core/chips/cpu/cpu_execution_paging_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_execution_signal_prefetch	test/core/chips/cpu/cpu_execution_signal_prefetch_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_fault_diagnostic	test/core/board-base/composition/cpu_fault_diagnostic_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_fpu_interface_state	test/core/chips/cpu/cpu_fpu_interface_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_fpu_profile	test/core/board-base/composition/cpu_fpu_profile_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_fpu_profile_closure	test/core/board-base/composition/cpu_fpu_profile_closure_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_fs_gs_stack	test/core/chips/cpu/cpu_fs_gs_stack_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_gpr_mov	test/core/chips/cpu/cpu_gpr_mov_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_gpr_push_pop	test/core/chips/cpu/cpu_gpr_push_pop_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_idt_privilege_entry	test/core/chips/cpu/cpu_idt_privilege_entry_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_imul2	test/core/chips/cpu/cpu_imul2_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_imul_immediate	test/core/chips/cpu/cpu_imul_immediate_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_inc_dec_final_group	test/core/chips/cpu/cpu_inc_dec_final_group_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_inc_dec_first_group	test/core/chips/cpu/cpu_inc_dec_first_group_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_inc_dec_second_group	test/core/chips/cpu/cpu_inc_dec_second_group_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_integer_multiply_divide	test/core/chips/cpu/cpu_integer_multiply_divide_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_iret_state	test/core/chips/cpu/cpu_iret_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_lahf_sahf	test/core/chips/cpu/cpu_lahf_sahf_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_lar_lsl	test/core/chips/cpu/cpu_lar_lsl_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_lea	test/core/chips/cpu/cpu_lea_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_legacy_alu	test/core/chips/cpu/cpu_legacy_alu_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_legacy_lock	test/core/chips/cpu/cpu_legacy_lock_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_legacy_sreg_stack	test/core/chips/cpu/cpu_legacy_sreg_stack_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_les_lds	test/core/chips/cpu/cpu_les_lds_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_les_lds_profile_matrix	test/core/chips/cpu/cpu_les_lds_profile_matrix_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_lgdt_lidt	test/core/chips/cpu/cpu_lgdt_lidt_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_lods	test/core/chips/cpu/cpu_lods_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_lss_lfs_lgs	test/core/chips/cpu/cpu_lss_lfs_lgs_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_moffs	test/core/chips/cpu/cpu_moffs_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_movs	test/core/chips/cpu/cpu_movs_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_movx	test/core/chips/cpu/cpu_movx_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_operand_address	test/core/chips/cpu/cpu_operand_address_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_outer_return	test/core/chips/cpu/cpu_outer_return_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_port_io	test/core/chips/cpu/cpu_port_io_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_port_strings	test/core/chips/cpu/cpu_port_strings_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_prefix_attributes	test/core/chips/cpu/cpu_prefix_attributes_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_protected_data_access	test/core/chips/cpu/cpu_protected_data_access_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_protected_far	test/core/chips/cpu/cpu_protected_far_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_protected_iret_state	test/core/chips/cpu/cpu_protected_iret_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_push_immediate	test/core/chips/cpu/cpu_push_immediate_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_pusha_popa	test/core/chips/cpu/cpu_pusha_popa_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_pushf_popf	test/core/chips/cpu/cpu_pushf_popf_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_rmw_access	test/core/chips/cpu/cpu_rmw_access_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_rotate	test/core/chips/cpu/cpu_rotate_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_scas	test/core/chips/cpu/cpu_scas_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_segment_selector	test/core/chips/cpu/cpu_segment_selector_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_setcc	test/core/chips/cpu/cpu_setcc_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_sgdt_sidt	test/core/chips/cpu/cpu_sgdt_sidt_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_sign_extend	test/core/chips/cpu/cpu_sign_extend_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_smm	test/core/chips/cpu/cpu_smm_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_software_int_state	test/core/chips/cpu/cpu_software_int_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_sreg_mov	test/core/chips/cpu/cpu_sreg_mov_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_stos	test/core/chips/cpu/cpu_stos_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_task_switch16	test/core/chips/cpu/cpu_task_switch16_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_task_switch32_decode	test/core/chips/cpu/cpu_task_switch32_decode_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_task_switch32_state	test/core/chips/cpu/cpu_task_switch32_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_task_switch_cross_width_state	test/core/chips/cpu/cpu_task_switch_cross_width_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_test_register	test/core/chips/cpu/cpu_test_register_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_tlb	test/core/chips/cpu/cpu_tlb_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_transfer_boundary	test/core/chips/cpu/cpu_transfer_boundary_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_verr_verw	test/core/chips/cpu/cpu_verr_verw_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_vm86_delivery_state	test/core/chips/cpu/cpu_vm86_delivery_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_vm86_iret_state	test/core/chips/cpu/cpu_vm86_iret_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_vme	test/core/chips/cpu/cpu_vme_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_xadd	test/core/chips/cpu/cpu_xadd_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-cpu_xchg	test/core/chips/cpu/cpu_xchg_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-debug_budget	test/core/machine/debug_budget_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-display_provider	test/core/board-base/display_provider_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-dma_contract	test/core/chips/dma8237/dma_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-dma_ports	test/core/board-base/dma_ports_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-dma_route_rollback	test/core/board-base/composition/dma_route_rollback_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-ega_controller	test/core/chips/video/ega_controller_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-ega_crtc_boundary_port	test/core/chips/video/ega_crtc_boundary_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-ega_external	test/core/chips/video/ega_external_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-ega_mode10	test/core/chips/video/ega_mode10_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-ega_planar	test/core/chips/video/ega_planar_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-ega_sequencer	test/core/chips/video/ega_sequencer_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-factory	test/core/product/factory_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-fdc_allocation	test/core/chips/fdc8272/fdc_allocation_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-fdc_causes	test/core/chips/fdc8272/fdc_causes_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-fdc_contract	test/core/chips/fdc8272/fdc_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-fdc_records	test/core/chips/fdc8272/fdc_records_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-fpu_contract	test/core/chips/fpu/fpu_contract_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-hdc_allocation	test/core/chips/hdc/hdc_allocation_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-hdc_contract	test/core/chips/hdc/hdc_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-hdc_taskfile	test/core/chips/hdc/hdc_taskfile_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-ini	test/core/product/ini_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-input	test/core/machine/input_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-keyboard_contract	test/core/chips/keyboard/keyboard_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-machine_fpu_escape	test/core/board-base/composition/machine_fpu_escape_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-machine_protected_privilege_board	test/core/board-base/composition/machine_protected_privilege_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-machine_task_switch32_paging	test/core/board-base/composition/machine_task_switch32_paging_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-mouse_contract	test/core/chips/ps2mouse/mouse_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-mouse_mapper	test/core/machine/mouse_mapper_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-parity	test/core/board-at/parity_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-pic_commands	test/core/chips/pic8259/pic_commands_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-pic_contract	test/core/chips/pic8259/pic_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-pit_8253	test/core/chips/pit825x/pit_8253_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-pit_contract	test/core/chips/pit825x/pit_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-pit_ports	test/core/board-base/pit_ports_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-pit_readback	test/core/chips/pit825x/pit_readback_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-pit_waveform	test/core/chips/pit825x/pit_waveform_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-ppi_contract	test/core/chips/ppi8255/ppi_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-preparation	test/core/machine/preparation_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-rtc_calendar	test/core/chips/rtc146818/rtc_calendar_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-rtc_contract	test/core/chips/rtc146818/rtc_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-startup	test/core/product/startup_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-timeline	test/core/x86/timeline_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	core-test-video_allocation	test/core/chips/video/video_allocation_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-video_contract	test/core/chips/video/video_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-video_inspection	test/core/chips/video/video_inspection_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-video_text	test/core/chips/video/video_text_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-video_text_status	test/core/chips/video/video_text_status_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-test-xt_keyboard_contract	test/core/chips/xtkeyboard/xt_keyboard_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	core-x86	src/core/x86/clock.c;src/core/x86/cpu_bus.c;src/core/x86/debug.c;src/core/x86/entry_plan_interface.c;src/core/x86/machine.c;src/core/x86/machine_firmware.c;src/core/x86/machine_scheduler.c;src/core/x86/memory.c;src/core/x86/memory_interface.c;src/core/x86/port.c;src/core/x86/port_interface.c;src/core/x86/retirement_observation_interface.c;src/core/x86/rom_mapping_interface.c;src/core/x86/timeline.c;src/core/x86/trace_interface.c;src/core/x86/transaction.c	x86-core	x86-core-machine
+x64	core-x86-observable	src/core/x86/clock.c;src/core/x86/cpu_bus.c;src/core/x86/debug.c;src/core/x86/entry_plan_interface.c;src/core/x86/machine.c;src/core/x86/machine_firmware.c;src/core/x86/machine_scheduler.c;src/core/x86/memory.c;src/core/x86/memory_interface.c;src/core/x86/port.c;src/core/x86/port_interface.c;src/core/x86/retirement_observation_interface.c;src/core/x86/rom_mapping_interface.c;src/core/x86/timeline.c;src/core/x86/trace_interface.c;src/core/x86/transaction.c	x86-core	x86-core-machine-observable
+x64	integration-session-ini-support	test/core/setup/session_ini.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-80186-instruction-timing-ledger-smoke	test/core/x86/machine_80186_instruction_timing_ledger_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-80186-timing-manifest-runner	test/core/x86/machine_80186_timing_manifest_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-80286-instruction-timing-ledger-smoke	test/core/x86/machine_80286_instruction_timing_ledger_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-80286-timing-manifest-runner	test/core/x86/machine_80286_timing_manifest_runner.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-80386-privileged-timing-smoke	test/core/x86/machine_80386_privileged_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-80386-protected-io-timing-smoke	test/core/x86/machine_80386_protected_io_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-80386-secondary-integer-timing-smoke	test/core/x86/machine_80386_secondary_integer_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-80386-timing-manifest-runner	test/core/board-base/composition/composition_fixture.c;test/core/x86/machine_80386_timing_manifest_runner.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-8086-instruction-timing-ledger-smoke	test/core/x86/machine_8086_instruction_timing_ledger_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-8086-timing-manifest-runner	test/core/x86/machine_8086_timing_manifest_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-8088-timing-manifest-runner	test/core/x86/machine_8086_timing_manifest_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-arithmetic-data-timing-smoke	test/core/board-base/composition/machine_arithmetic_data_timing_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-arpl-board-smoke	test/core/board-base/machine_arpl_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-bound-board-smoke	test/core/board-base/machine_bound_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-call-gate-smoke	test/core/x86/machine_call_gate_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-cli-sti-interrupt-smoke	test/core/board-base/machine_cli_sti_interrupt_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-cmps-board-smoke	test/core/board-base/machine_cmps_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-control-stack-timing-smoke	test/core/board-base/composition/machine_control_stack_timing_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-control-state-board-smoke	test/core/board-base/machine_control_state_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-cpu-profile-gate-smoke	test/core/x86/machine_cpu_profile_gate_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-debug-state-board-smoke	test/core/board-base/machine_debug_state_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-fpu-escape-smoke	test/core/board-base/composition/machine_fpu_escape_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-fpu-interface-smoke	test/core/x86/machine_fpu_interface_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-fpu-irq-smoke	test/core/board-base/machine_fpu_irq_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-hardware-delivery-smoke	test/core/board-base/machine_hardware_delivery_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-idt-privilege-pic-board-smoke	test/core/board-base/chips/cpu/machine_idt_privilege_pic_board_smoke.c;test/core/board-base/composition/composition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-instruction-timing-ledger-smoke	test/core/board-base/composition/machine_instruction_timing_ledger_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-instruction-timing-smoke	test/core/x86/machine_instruction_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-interrupt-entry-smoke	test/core/board-base/machine_interrupt_entry_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-legacy-timing-normalization-smoke	test/core/board-base/composition/machine_legacy_timing_normalization_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-lods-board-smoke	test/core/board-base/machine_lods_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-movs-board-smoke	test/core/board-base/machine_movs_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-outer-iret-pic-board-smoke	test/core/board-base/chips/cpu/machine_outer_iret_pic_board_smoke.c;test/core/board-base/composition/composition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-port-io-board-smoke	test/core/board-base/machine_port_io_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-port-ownership-board-smoke	test/core/board-base/machine_port_ownership_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-port-strings-board-smoke	test/core/board-base/machine_port_strings_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-protected-data-pic-board-smoke	test/core/board-base/chips/cpu/machine_protected_data_pic_board_smoke.c;test/core/board-base/composition/composition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-protected-far-pic-board-smoke	test/core/board-base/chips/cpu/machine_protected_far_pic_board_smoke.c;test/core/board-base/composition/composition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-protected-iret-smoke	test/core/x86/machine_protected_iret_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-protected-privilege-board-smoke	test/core/board-base/composition/machine_protected_privilege_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-scas-board-smoke	test/core/board-base/machine_scas_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-stos-board-smoke	test/core/board-base/machine_stos_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-string-io-timing-smoke	test/core/x86/machine_string_io_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-table-register-board-smoke	test/core/board-base/machine_table_register_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-task-switch-cross-width-smoke	test/core/x86/machine_task_switch_cross_width_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-task-switch16-pic-board-smoke	test/core/board-base/chips/cpu/machine_task_switch16_pic_board_smoke.c;test/core/board-base/composition/composition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-task-switch32-paging-smoke	test/core/board-base/composition/machine_task_switch32_paging_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-tss-iomap-port-authorization-smoke	test/core/x86/machine_tss_iomap_port_authorization_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-vm86-delivery-smoke	test/core/board-base/machine_vm86_delivery_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	machine-vm86-iret-smoke	test/core/x86/machine_vm86_iret_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	machine-vm86-lgdt-lidt-smoke	test/core/board-base/machine_vm86_lgdt_lidt_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	model40-d4-port-assembly-smoke	test/app-mydeskpro386/unit/d4_port_b_assembly_smoke.c;test/core/board-base/board_construction_fixture.c;test/core/board-base/composition/port_assembly_fixture.c;test/core/board-base/port_assembly_board_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	model40-d4-prefetch-scheduler-test	src/core/x86/machine_scheduler.c	x86-core	retain behavior identity; owner prefix follows file destination
+x64	model40-d4-refresh-deadline-smoke	test/app-mydeskpro386/unit/d4_refresh_deadline_smoke.c;test/app-mydeskpro386/unit/d4_refresh_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/composition/time_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	my5160-dma-deadline-smoke	test/app-my5160/unit/machine_dma_deadline_smoke.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	my5170-clock-contract-smoke	test/app-my5170/unit/machine_clock_contract_smoke.c;test/core/board-at/support/state_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/kbc_state_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	my5170-console-lifecycle-smoke	test/app-my5170/integration/my5170_console_lifecycle_smoke.c;test/core/setup/pc_console_process.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	my5170-dma-deadline-smoke	test/app-my5170/unit/machine_dma_deadline_smoke.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	mydeskpro386-dma-deadline-smoke	test/app-mydeskpro386/unit/model40_dma_deadline_smoke.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	nxvm-default-dma-deadline-smoke	test/app-nxvm/unit/nxvm_dma_deadline_smoke.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	pc-product-ini-identity-smoke	test/core/integration/product_ini_identity_smoke.c;test/core/setup/pc_console_process.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	session-ini-status-smoke	test/core/integration/session_ini_status_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	vm-cmos-rtc-port-smoke	test/app-nxvm/unit/nxvm_cmos_rtc_port_smoke.c;test/core/board-base/support/cmos_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-default-ega-topology-smoke	test/app-nxvm/unit/nxvm_ega_topology_smoke.c;test/core/board-base/support/video_topology_fixture.c;test/core/support/video_topology_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-default-pc-at-apply-smoke	test/app-nxvm/unit/machine_apply_smoke.c;test/core/board-base/composition/time_fixture.c;test/core/board-base/support/cmos_fixture.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-fdc-authority-smoke	test/app-nxvm/unit/nxvm_fdc_authority_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-fdc-port-smoke	test/app-nxvm/unit/nxvm_fdc_port_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-fdc-read-track-smoke	test/app-nxvm/unit/nxvm_fdc_read_track_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-hdc-hdd-boot-smoke	test/app-nxvm/integration/hdd/nxvm_hdc_hdd_boot_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-hdc-port-smoke	test/app-nxvm/unit/nxvm_hdc_port_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-ibm-5170-model-339-cga-topology-smoke	test/app-my5170/unit/machine_video_topology_smoke.c;test/core/board-base/support/video_topology_fixture.c;test/core/support/video_topology_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-ibm-5170-model-339-composition-smoke	test/app-my5170/unit/machine_composition_smoke.c;test/core/board-at/support/state_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/kbc_state_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-ibm-5170-model-339-firmware-fdc-topology-smoke	test/app-my5170/unit/machine_firmware_fdc_topology_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-ini-cmos-seed-smoke	test/app-nxvm/integration/nxvm_ini_cmos_seed_smoke.c;test/core/board-base/composition/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-keyboard-set1-mapper-smoke	test/core/machine/keyboard_mapper_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	vm-machine-executor-state-smoke	test/core/machine/executor_state_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	vm-machine-frame-smoke	test/core/machine/frame_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	vm-machine-initialization-atomicity-smoke	test/app-nxvm/unit/nxvm_initialization_atomicity_smoke.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-media-close-failure-smoke	test/core/machine/media/close_failure_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	vm-media-direct-readonly-smoke	test/core/machine/media/direct_readonly_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	vm-media-provider-smoke	test/core/machine/media/provider_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-byob-dos-boot-probe	test/app-mydeskpro386/diagnostic/model40/model40_byob_dos_boot_probe.c;test/core/board-at/support/boot_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/boot_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/controller_fixture.c;test/core/board-xt/support/boot_fixture.c;test/core/support/boot_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-byob-retirement-capture	test/app-mydeskpro386/diagnostic/model40/vm_model40_retirement_capture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/cmos_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-byob-smoke	test/app-mydeskpro386/unit/vm_model40_byob_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/composition/time_fixture.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-cecg-cpu-video-gate-smoke	test/app-mydeskpro386/unit/vm_model40_cecg_cpu_video_gate_smoke.c;test/core/support/video_topology_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-cecg-smoke	test/app-mydeskpro386/unit/vm_model40_cecg_smoke.c;test/core/support/video_topology_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-cmos-seed-smoke	test/app-mydeskpro386/unit/vm_model40_cmos_seed_smoke.c;test/core/board-base/composition/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-composition-smoke	test/app-mydeskpro386/unit/vm_model40_composition_smoke.c;test/core/board-at/support/state_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/cmos_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/kbc_state_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-console-ini-smoke	test/app-mydeskpro386/integration/product/vm_model40_console_ini_smoke.c;test/core/setup/pc_console_process.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-d4-a20-reset-smoke	test/app-mydeskpro386/unit/vm_model40_d4_a20_reset_smoke.c;test/core/board-base/composition/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-d4-compatibility-smoke	test/app-mydeskpro386/unit/vm_model40_d4_compatibility_smoke.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-d4-parity-smoke	test/app-mydeskpro386/unit/vm_model40_d4_parity_smoke.c;test/core/board-base/composition/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-dma-smoke	test/app-mydeskpro386/unit/vm_model40_dma_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-fdc-smoke	test/app-mydeskpro386/unit/vm_model40_fdc_smoke.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-fdd-smoke	test/app-mydeskpro386/unit/model40_floppy_geometry_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-hdc-smoke	test/app-mydeskpro386/unit/vm_model40_hdc_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-model40-machine-contract-smoke	test/app-mydeskpro386/unit/vm_model40_machine_contract_smoke.c;test/core/board-at/support/state_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/cmos_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/controller_fixture.c;test/core/board-base/support/kbc_state_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-pcat-composition-smoke	test/app-nxvm/unit/nxvm_pcat_composition_smoke.c;test/core/board-at/support/state_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/kbc_state_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-pcat-topology-smoke	test/app-nxvm/unit/nxvm_pcat_topology_smoke.c;test/core/board-at/support/state_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/kbc_state_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-profile-contract-smoke	test/core/board-base/profile_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	vm-profile-floppy-boot-matrix	test/core/board-base/support/controller_fixture.c;test/core/integration/dos/pc_profile_floppy_boot_matrix.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x64	vm-runner-error-propagation-smoke	test/app-nxvm/unit/nxvm_runner_error_propagation_smoke.c;test/core/board-base/composition/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-two-session-isolation-smoke	test/app-nxvm/unit/nxvm_two_session_isolation_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-windows31-hdd-admission-probe	test/app-nxvm/diagnostic/windows/nxvm_windows31_hdd_admission_probe.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-windows31-setup-probe	test/app-nxvm/diagnostic/windows/nxvm_windows31_setup_probe.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x64	vm-xt-5160-268-profile-smoke	test/app-my5160/unit/machine_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	core-board-at	src/core/board-at/kbc.c;src/core/board-at/parity.c;src/core/board-at/wiring.c	x86-nxvm	x86-nxvm-board-at
+x86	core-board-base	src/core/board-base/at_assembly.c;src/core/board-base/board_advance.c;src/core/board-base/board_deadline.c;src/core/board-base/display.c;src/core/board-base/dma_bus.c;src/core/board-base/fdc.c;src/core/board-base/floppy.c;src/core/board-base/hdc.c;src/core/board-base/machine_board.c;src/core/board-base/machine_display.c;src/core/board-base/machine_plan.c;src/core/board-base/media_interface.c;src/core/board-base/pc_at_profile.c;src/core/board-base/pc_at_rom.c;src/core/board-base/pic_bus.c;src/core/board-base/pit_bus.c;src/core/board-base/profile_contract.c;src/core/board-base/rom_mapping.c;src/core/board-base/rom_validation.c;src/core/board-base/vadp.c	x86-nxvm	x86-nxvm-board-base
+x86	core-board-base-observable	src/core/board-base/at_assembly.c;src/core/board-base/board_advance.c;src/core/board-base/board_deadline.c;src/core/board-base/display.c;src/core/board-base/dma_bus.c;src/core/board-base/fdc.c;src/core/board-base/floppy.c;src/core/board-base/hdc.c;src/core/board-base/machine_board.c;src/core/board-base/machine_display.c;src/core/board-base/machine_plan.c;src/core/board-base/media_interface.c;src/core/board-base/pc_at_profile.c;src/core/board-base/pc_at_rom.c;src/core/board-base/pic_bus.c;src/core/board-base/pit_bus.c;src/core/board-base/profile_contract.c;src/core/board-base/rom_mapping.c;src/core/board-base/rom_validation.c;src/core/board-base/vadp.c	x86-nxvm	x86-nxvm-board-base-observable
+x86	core-board-xt	src/core/board-xt/xt_ppi_keyboard.c	x86-nxvm	x86-nxvm-board-xt
+x86	core-chip-cpu	src/core/chips/cpu/cpu.c;src/core/chips/cpu/cpu_instructions.c;src/core/chips/cpu/cpu_timing.c;src/core/chips/cpu/cpu_timing_model.c	x86-core	x86-core-cpu
+x86	core-chip-dma8237	src/core/chips/dma8237/dma.c	x86-nxvm	x86-nxvm-chip-dma8237
+x86	core-chip-fdc8272	src/core/chips/fdc8272/fdc.c	x86-nxvm	x86-nxvm-chip-fdc8272
+x86	core-chip-fpu	src/core/chips/fpu/fpu.c	x86-core	x86-core-fpu
+x86	core-chip-hdc	src/core/chips/hdc/hdc.c	x86-nxvm	x86-nxvm-chip-hdc
+x86	core-chip-kbc8042	src/core/chips/kbc8042/controller.c	x86-nxvm	x86-nxvm-chip-kbc8042
+x86	core-chip-keyboard	src/core/chips/keyboard/keyboard.c	x86-nxvm	x86-nxvm-chip-keyboard
+x86	core-chip-pic8259	src/core/chips/pic8259/pic.c	x86-nxvm	x86-nxvm-chip-pic8259
+x86	core-chip-pit825x	src/core/chips/pit825x/pit.c	x86-nxvm	x86-nxvm-chip-pit825x
+x86	core-chip-ppi8255	src/core/chips/ppi8255/ppi.c	x86-nxvm	x86-nxvm-chip-ppi8255
+x86	core-chip-ps2mouse	src/core/chips/ps2mouse/mouse.c	x86-nxvm	x86-nxvm-chip-ps2mouse
+x86	core-chip-rtc146818	src/core/chips/rtc146818/rtc.c	x86-nxvm	x86-nxvm-chip-rtc146818
+x86	core-chip-video	src/core/chips/video/video.c	x86-nxvm	x86-nxvm-chip-video
+x86	core-chip-xtkeyboard	src/core/chips/xtkeyboard/keyboard.c	x86-nxvm	x86-nxvm-chip-xtkeyboard
+x86	core-decoder-80186	test/core/chips/cpu/core_machine_80186_decoder_inventory_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-decoder-80286	test/core/chips/cpu/core_machine_80286_decoder_inventory_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-decoder-80386	test/core/chips/cpu/core_machine_80386_decoder_inventory_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine	src/core/machine/control.c;src/core/machine/debug.c;src/core/machine/debug_adapter.c;src/core/machine/display.c;src/core/machine/executor_state.c;src/core/machine/fault.c;src/core/machine/lifecycle.c;src/core/machine/machine.c;src/core/machine/machine_devices.c;src/core/machine/machine_info.c;src/core/machine/pc_at_preparation.c;src/core/machine/preparation.c;src/core/machine/runner.c;src/core/machine/waiting.c	x86-nxvm	x86-nxvm-machine
+x86	core-machine-80186-decoder-inventory-runner	test/core/chips/cpu/core_machine_80186_decoder_inventory_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-80286-decoder-inventory-runner	test/core/chips/cpu/core_machine_80286_decoder_inventory_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-80286-protected-mode-smoke	test/core/board-base/composition/core_machine_80286_protected_mode_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-80386-decoder-inventory-runner	test/core/chips/cpu/core_machine_80386_decoder_inventory_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-80386-paging-smoke	test/core/x86/core_machine_80386_paging_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-arbitration-smoke	test/core/board-base/machine_arbitration_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-attachment-phases-smoke	test/core/x86/machine_attachment_phases_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-auxiliary-pit-smoke	test/core/board-base/composition/time_fixture.c;test/core/board-base/core_machine_auxiliary_pit_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-bit-scan-smoke	test/core/board-base/core_machine_bit_scan_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-bit-test-smoke	test/core/board-base/core_machine_bit_test_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-board-binding-identity-smoke	test/core/board-base/board_binding_fixture.c;test/core/board-base/composition/machine_board_binding_identity_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-board-timing-qualification-smoke	test/core/board-base/machine_board_timing_qualification_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-call-gate-privilege-entry-smoke	test/core/board-base/composition/core_machine_call_gate_privilege_entry_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-cga-640-port-smoke	test/core/board-base/core_machine_cga_640_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-cga-graphics-port-smoke	test/core/board-base/core_machine_cga_graphics_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-checked-memory-smoke	test/core/board-base/composition/machine_checked_memory_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-cli-sti-smoke	test/core/board-base/core_machine_cli_sti_profiles_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-compaq-cecg-contract-smoke	test/core/board-base/core_machine_compaq_cecg_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-compaq-cecg-cpu-video-gate-smoke	test/core/board-base/core_machine_compaq_cecg_cpu_video_gate_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-compaq-cecg-odd-even-page-smoke	test/core/board-base/core_machine_compaq_cecg_odd_even_page_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-compaq-hdc-dual-drive-smoke	test/core/board-base/core_machine_compaq_hdc_dual_drive_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-compaq-hdc-machine-smoke	test/core/board-base/core_machine_compaq_hdc_machine_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-competition-80386-smoke	test/core/board-base/composition/machine_80386_dma_hold_smoke.c;test/core/board-base/dma_competition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-competition-smoke	test/core/board-base/composition/composition_fixture.c;test/core/board-base/composition/time_fixture.c;test/core/board-base/machine_competition_smoke.c;test/core/board-base/support/composition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-configuration-smoke	test/core/x86/machine_configuration_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-contract-smoke	test/core/x86/core_contract_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-controller-authority-smoke	test/core/board-base/core_machine_controller_authority_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-conversion	src/core/machine/frame.c;src/core/machine/keyboard_mapper.c;src/core/machine/mouse_mapper.c	x86-nxvm	x86-nxvm-machine-conversion
+x86	core-machine-cpu-context-smoke	test/core/chips/cpu/cpu_execution_context_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-cpu-fault-diagnostic-smoke	test/core/board-base/composition/cpu_fault_diagnostic_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-cpu-fpu-profile-closure-smoke	test/core/board-base/composition/cpu_fpu_profile_closure_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-cpu-fpu-profile-smoke	test/core/board-base/composition/cpu_fpu_profile_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-cpu-pic-lifecycle-smoke	test/core/board-base/machine_cpu_pic_lifecycle_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-cpu-reset-identity-smoke	test/core/board-base/composition/machine_cpu_reset_identity_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-cpu-timing-preview-smoke	test/core/board-base/composition/composition_fixture.c;test/core/board-base/core_machine_cpu_timing_preview_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-d4-memory-transaction-smoke	test/app-mydeskpro386/unit/d4_memory_transaction_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/support/memory_registration_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	core-machine-d4-platform-smoke	test/app-mydeskpro386/unit/mydeskpro386_d4_platform_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/composition/time_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	core-machine-d4-refresh-hold-smoke	test/app-mydeskpro386/unit/d4_refresh_fixture.c;test/app-mydeskpro386/unit/machine_d4_refresh_hold_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/composition/time_fixture.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	core-machine-debug-smoke	test/core/x86/machine_debug_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-descriptor-system-smoke	test/core/x86/core_machine_descriptor_system_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-direct-flags-board-smoke	test/core/board-base/core_machine_direct_flags_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-display-authority-smoke	test/core/board-base/core_machine_display_authority_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-dma-binding-token-smoke	test/core/board-base/core_machine_dma_binding_token_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-dma-channel-smoke	test/core/board-base/core_machine_dma_channel_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-dma-rtc-authority-smoke	test/core/board-base/composition/time_fixture.c;test/core/board-base/core_machine_dma_rtc_authority_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-double-shift-smoke	test/core/board-base/core_machine_double_shift_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-ega-controller-port-smoke	test/core/board-base/core_machine_ega_controller_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-ega-external-port-smoke	test/core/board-base/core_machine_ega_external_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-ega-planar-port-smoke	test/core/board-base/core_machine_ega_planar_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-ega-registration-transaction-smoke	test/core/board-base/composition/core_machine_ega_registration_transaction_smoke.c;test/core/board-base/video_registration_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-ega-sequencer-port-smoke	test/core/board-base/core_machine_ega_sequencer_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-enter-leave-smoke	test/core/board-base/core_machine_enter_leave_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-entry-plan-smoke	test/core/x86/machine_entry_plan_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-executor-run-smoke	test/core/x86/core_machine_executor_run_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-explicit-time-smoke	test/core/board-base/composition/machine_explicit_time_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-external-time-trace-smoke	test/core/x86/machine_external_time_trace_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-fdc-media-change-port-smoke	test/core/board-base/core_machine_fdc_media_change_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-fdc-smoke	test/core/board-base/core_machine_fdc_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-fdc-topology-port-smoke	test/core/board-base/core_machine_fdc_topology_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-firmware-capability-smoke	test/core/board-base/composition/machine_firmware_capability_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-fpu-8087-smoke	test/core/board-base/composition/core_machine_fpu_8087_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-fs-gs-stack-smoke	test/core/board-base/composition/core_machine_fs_gs_stack_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-gpr-mov-smoke	test/core/board-base/core_machine_gpr_mov_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-gpr-push-pop-smoke	test/core/board-base/core_machine_gpr_push_pop_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-hdc-smoke	test/core/board-base/core_machine_hdc_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-hlt-smoke	test/core/board-base/core_machine_hlt_profiles_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-immutable-rom-mapping-smoke	test/core/x86/machine_immutable_rom_mapping_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-imul-immediate-smoke	test/core/board-base/core_machine_imul_immediate_profiles_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-imul2-smoke	test/core/board-base/core_machine_imul2_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-inc-dec-final-group-board-smoke	test/core/board-base/core_machine_inc_dec_final_group_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-inc-dec-first-group-board-smoke	test/core/board-base/core_machine_inc_dec_first_group_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-inc-dec-second-group-board-smoke	test/core/board-base/core_machine_inc_dec_second_group_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-input-display-smoke	test/core/board-base/composition/composition_fixture.c;test/core/board-base/machine_input_display_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-instance-smoke	test/core/board-base/composition/machine_instance_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-int-ivt-smoke	test/core/x86/cpu_int_ivt_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-interrupt-return-composition-smoke	test/core/board-base/core_machine_interrupt_return_composition_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-iret-smoke	test/core/board-base/core_machine_iret_profiles_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-kbc-aux-port-smoke	test/core/board-at/core_machine_kbc_aux_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-kbc-controller-smoke	test/core/board-at/core_machine_kbc_controller_smoke.c;test/core/board-base/composition/kbc_controller_fixture.c;test/core/board-base/kbc_cpu_irq_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-kbc-serial-cadence-smoke	test/core/board-at/core_machine_kbc_serial_cadence_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-lahf-sahf-board-smoke	test/core/board-base/core_machine_lahf_sahf_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-lea-smoke	test/core/board-base/core_machine_lea_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-legacy-alu-smoke	test/core/board-base/composition/core_machine_legacy_alu_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-legacy-lock-smoke	test/core/board-base/composition/core_machine_legacy_lock_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-legacy-sreg-stack-smoke	test/core/board-base/core_machine_legacy_sreg_stack_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-les-lds-board-smoke	test/core/board-base/core_machine_les_lds_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-les-lds-smoke	test/core/board-base/core_machine_les_lds_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-lifecycle-smoke	test/core/x86/machine_lifecycle_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-lss-lfs-lgs-smoke	test/core/board-base/core_machine_lss_lfs_lgs_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-media	src/core/machine/media/fdd.c;src/core/machine/media/hdd.c	x86-nxvm	x86-nxvm-machine-media
+x86	core-machine-media-provider-smoke	test/core/board-base/core_machine_media_provider_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-memory-device-registration-smoke	test/core/x86/machine_memory_device_registration_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-memory-inspection-smoke	test/core/x86/core_machine_memory_inspection_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-memory-reconfigure-smoke	test/core/x86/machine_memory_reconfigure_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-moffs-smoke	test/core/board-base/core_machine_moffs_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-movx-smoke	test/core/board-base/composition/core_machine_movx_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-neutral-link-smoke	test/core/x86/neutral_link.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-operand-address-smoke	test/core/board-base/composition/core_machine_operand_address_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-pic-command-priority-smoke	test/core/board-base/core_machine_pic_command_priority_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-pic-irq-lifecycle-smoke	test/core/board-base/core_machine_pic_irq_lifecycle_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-pic-lifecycle-smoke	test/core/board-base/core_machine_pic_lifecycle_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-pic-ocw3-smoke	test/core/board-base/core_machine_pic_ocw3_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-pic-phase-smoke	test/core/board-base/composition/core_machine_pic_phase_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-pit-divider-smoke	test/core/board-base/core_machine_pit_divider_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-pit-irq0-smoke	test/core/board-base/core_machine_pit_irq0_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-plan-smoke	test/core/board-base/board_construction_fixture.c;test/core/board-base/composition/plan_core_fixture.c;test/core/board-base/core_machine_plan_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-planar-parity-nmi-smoke	test/core/board-base/composition/planar_parity_fixture.c;test/core/board-base/core_machine_planar_parity_nmi_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-port-rollback-smoke	test/core/board-base/board_construction_fixture.c;test/core/board-base/composition/port_assembly_core_smoke.c;test/core/board-base/composition/port_assembly_fixture.c;test/core/board-base/port_assembly_board_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-prefetch-locality-smoke	test/core/x86/machine_prefetch_locality_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-prefetch-scheduler-test	src/core/x86/machine_scheduler.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-prefix-attributes-smoke	test/core/board-base/core_machine_prefix_attributes_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-protected-16-call-gate-smoke	test/core/board-base/composition/core_machine_protected_16_call_gate_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-protected-16-external-smoke	test/core/board-base/composition/core_machine_protected_16_external_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-protected-16-gate-smoke	test/core/board-base/composition/core_machine_protected_16_gate_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-protected-16-outer-iret-smoke	test/core/board-base/composition/core_machine_protected_16_outer_iret_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-protected-16-outer-smoke	test/core/board-base/composition/core_machine_protected_16_outer_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-protected-ud-delivery-smoke	test/core/board-base/composition/core_machine_protected_ud_delivery_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-push-immediate-smoke	test/core/board-base/core_machine_push_immediate_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-pusha-popa-smoke	test/core/board-base/core_machine_pusha_popa_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-pushf-popf-board-smoke	test/core/board-base/core_machine_pushf_popf_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-ram-create-smoke	test/core/board-base/board_binding_fixture.c;test/core/board-base/board_construction_fixture.c;test/core/board-base/composition/core_machine_ram_create_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-ram-port-context-smoke	test/core/x86/ram_port_context_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-rational-clock-smoke	test/core/x86/machine_rational_clock_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-real-exception-final-smoke	test/core/board-base/composition/core_machine_real_exception_final_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-real-mode-386-address-smoke	test/core/x86/core_machine_real_mode_386_address_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-real-mode-386-rep-cmps-smoke	test/core/x86/core_machine_real_mode_386_rep_cmps_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-real-mode-corpus-smoke	test/core/x86/core_machine_real_mode_corpus_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-real-mode-tick-smoke	test/core/x86/core_machine_real_mode_tick_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-real-ud-delivery-smoke	test/core/board-base/composition/core_machine_real_ud_delivery_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-reset-rom-alias-smoke	test/core/board-base/absent_memory_fixture.c;test/core/board-base/composition/machine_reset_rom_alias_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-retirement-observation-smoke	test/core/board-base/composition/machine_retirement_observation_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-rom-route-transaction-smoke	test/core/board-base/composition/core_machine_rom_route_transaction_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-rotate-smoke	test/core/board-base/core_machine_rotate_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-rtc-cmos-smoke	test/core/board-base/core_machine_rtc_cmos_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-rtc-smoke	test/core/board-base/core_machine_rtc_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-rtc-storage-smoke	test/core/board-base/machine_rtc_storage_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-scheduler-smoke	test/core/board-base/composition/machine_scheduler_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-segment-selector-smoke	test/core/board-base/composition/core_machine_segment_selector_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-setcc-smoke	test/core/board-base/core_machine_setcc_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-sign-extend-smoke	test/core/board-base/core_machine_sign_extend_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-software-int-smoke	test/core/board-base/core_machine_software_int_profiles_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-sreg-mov-smoke	test/core/board-base/core_machine_sreg_mov_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-stopped-lifecycle-smoke	test/core/x86/machine_stopped_lifecycle_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-time-smoke	test/core/board-base/composition/composition_fixture.c;test/core/board-base/composition/time_fixture.c;test/core/board-base/machine_time_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-timeline-smoke	test/core/board-base/composition/machine_timeline_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-timing-checkpoint-smoke	test/core/board-base/machine_timing_checkpoint_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-trace-smoke	test/core/x86/machine_trace_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-machine-transaction-lifecycle-smoke	test/core/board-base/composition/machine_transaction_lifecycle_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-transaction-smoke	test/core/board-base/composition/machine_transaction_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-xchg-smoke	test/core/board-base/core_machine_xchg_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-xebec-wiring-smoke	test/core/board-base/core_machine_xebec_wiring_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-machine-xt-ppi-keyboard-smoke	test/core/board-base/composition/time_fixture.c;test/core/board-base/composition/xt_ppi_controller_fixture.c;test/core/board-base/core_machine_xt_ppi_keyboard_smoke.c;test/core/board-xt/controller_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-mantle-shape-smoke	test/core/board-base/machine_provider_composition_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-product	src/core/product/factory.c;src/core/product/ini.c;src/core/product/startup.c	x86-nxvm	x86-nxvm-product
+x86	core-rom-mapping-test	src/core/board-base/rom_mapping.c;test/core/board-base/rom_mapping_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-assembly	test/core/board-at/assembly_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-board	test/core/board-base/board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-cga_640	test/core/chips/video/cga_640_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-cga_graphics	test/core/chips/video/cga_graphics_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-compaq_cecg_contract	test/core/chips/video/compaq_cecg_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-compaq_cecg_feature_environment	test/core/chips/video/compaq_cecg_feature_environment_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-compaq_cecg_input_status	test/core/chips/video/compaq_cecg_input_status_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-compaq_cecg_io_base	test/core/chips/video/compaq_cecg_io_base_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-compaq_cecg_odd_even_page	test/core/chips/video/compaq_cecg_odd_even_page_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-compaq_ega_personality	test/core/chips/video/compaq_ega_personality_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-construction	test/core/machine/construction_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-construction_helpers	test/core/board-base/construction_helpers_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-contract	test/core/board-at/contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-controller_contract	test/core/chips/kbc8042/controller_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_80286_protected_mode	test/core/board-base/composition/core_machine_80286_protected_mode_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_call_gate_privilege_entry_board	test/core/board-base/composition/core_machine_call_gate_privilege_entry_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_fs_gs_stack	test/core/board-base/composition/core_machine_fs_gs_stack_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_legacy_alu	test/core/board-base/composition/core_machine_legacy_alu_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_legacy_lock	test/core/board-base/composition/core_machine_legacy_lock_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_movx	test/core/board-base/composition/core_machine_movx_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_operand_address	test/core/board-base/composition/core_machine_operand_address_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_protected_16_call_gate_board	test/core/board-base/composition/core_machine_protected_16_call_gate_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_protected_16_external_board	test/core/board-base/composition/core_machine_protected_16_external_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_protected_16_gate_board	test/core/board-base/composition/core_machine_protected_16_gate_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_protected_16_outer_board	test/core/board-base/composition/core_machine_protected_16_outer_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_protected_16_outer_iret_board	test/core/board-base/composition/core_machine_protected_16_outer_iret_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_protected_ud_delivery	test/core/board-base/composition/core_machine_protected_ud_delivery_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_real_exception_final	test/core/board-base/composition/core_machine_real_exception_final_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_real_ud_delivery	test/core/board-base/composition/core_machine_real_ud_delivery_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_segment_selector	test/core/board-base/composition/core_machine_segment_selector_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-core_machine_system_power	test/core/x86/core_machine_system_power_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_486_nominal_timing	test/core/chips/cpu/cpu_486_nominal_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_486_repeat_timing	test/core/chips/cpu/cpu_486_repeat_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_address_span	test/core/chips/cpu/cpu_address_span_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_alignment_access	test/core/chips/cpu/cpu_alignment_access_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_arpl	test/core/chips/cpu/cpu_arpl_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_bit_scan	test/core/chips/cpu/cpu_bit_scan_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_bit_test	test/core/chips/cpu/cpu_bit_test_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_bound	test/core/chips/cpu/cpu_bound_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_bswap	test/core/chips/cpu/cpu_bswap_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_cache	test/core/chips/cpu/cpu_cache_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_cmps	test/core/chips/cpu/cpu_cmps_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_cmpxchg	test/core/chips/cpu/cpu_cmpxchg_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_contract	test/core/chips/cpu/cpu_contract_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_control_state	test/core/chips/cpu/cpu_control_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_control_transfer_branch	test/core/chips/cpu/cpu_control_transfer_branch_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_control_transfer_far	test/core/chips/cpu/cpu_control_transfer_far_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_control_transfer_near	test/core/chips/cpu/cpu_control_transfer_near_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_cpuid_flags	test/core/chips/cpu/cpu_cpuid_flags_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_debug_state	test/core/chips/cpu/cpu_debug_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_decode_admission	test/core/chips/cpu/cpu_decode_admission_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_descriptor_system	test/core/chips/cpu/cpu_descriptor_system_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_descriptor_table_register	test/core/chips/cpu/cpu_descriptor_table_register_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_direct_flags	test/core/chips/cpu/cpu_direct_flags_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_double_shift	test/core/chips/cpu/cpu_double_shift_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_eflags_local	test/core/chips/cpu/cpu_eflags_local_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_enter_leave	test/core/chips/cpu/cpu_enter_leave_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_execution_bus	test/core/chips/cpu/cpu_execution_bus_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_execution_fault_event	test/core/chips/cpu/cpu_execution_fault_event_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_execution_lifecycle	test/core/chips/cpu/cpu_execution_lifecycle_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_execution_paging	test/core/chips/cpu/cpu_execution_paging_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_execution_signal_prefetch	test/core/chips/cpu/cpu_execution_signal_prefetch_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_fault_diagnostic	test/core/board-base/composition/cpu_fault_diagnostic_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_fpu_interface_state	test/core/chips/cpu/cpu_fpu_interface_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_fpu_profile	test/core/board-base/composition/cpu_fpu_profile_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_fpu_profile_closure	test/core/board-base/composition/cpu_fpu_profile_closure_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_fs_gs_stack	test/core/chips/cpu/cpu_fs_gs_stack_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_gpr_mov	test/core/chips/cpu/cpu_gpr_mov_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_gpr_push_pop	test/core/chips/cpu/cpu_gpr_push_pop_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_idt_privilege_entry	test/core/chips/cpu/cpu_idt_privilege_entry_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_imul2	test/core/chips/cpu/cpu_imul2_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_imul_immediate	test/core/chips/cpu/cpu_imul_immediate_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_inc_dec_final_group	test/core/chips/cpu/cpu_inc_dec_final_group_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_inc_dec_first_group	test/core/chips/cpu/cpu_inc_dec_first_group_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_inc_dec_second_group	test/core/chips/cpu/cpu_inc_dec_second_group_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_integer_multiply_divide	test/core/chips/cpu/cpu_integer_multiply_divide_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_iret_state	test/core/chips/cpu/cpu_iret_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_lahf_sahf	test/core/chips/cpu/cpu_lahf_sahf_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_lar_lsl	test/core/chips/cpu/cpu_lar_lsl_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_lea	test/core/chips/cpu/cpu_lea_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_legacy_alu	test/core/chips/cpu/cpu_legacy_alu_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_legacy_lock	test/core/chips/cpu/cpu_legacy_lock_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_legacy_sreg_stack	test/core/chips/cpu/cpu_legacy_sreg_stack_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_les_lds	test/core/chips/cpu/cpu_les_lds_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_les_lds_profile_matrix	test/core/chips/cpu/cpu_les_lds_profile_matrix_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_lgdt_lidt	test/core/chips/cpu/cpu_lgdt_lidt_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_lods	test/core/chips/cpu/cpu_lods_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_lss_lfs_lgs	test/core/chips/cpu/cpu_lss_lfs_lgs_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_moffs	test/core/chips/cpu/cpu_moffs_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_movs	test/core/chips/cpu/cpu_movs_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_movx	test/core/chips/cpu/cpu_movx_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_operand_address	test/core/chips/cpu/cpu_operand_address_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_outer_return	test/core/chips/cpu/cpu_outer_return_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_port_io	test/core/chips/cpu/cpu_port_io_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_port_strings	test/core/chips/cpu/cpu_port_strings_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_prefix_attributes	test/core/chips/cpu/cpu_prefix_attributes_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_protected_data_access	test/core/chips/cpu/cpu_protected_data_access_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_protected_far	test/core/chips/cpu/cpu_protected_far_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_protected_iret_state	test/core/chips/cpu/cpu_protected_iret_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_push_immediate	test/core/chips/cpu/cpu_push_immediate_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_pusha_popa	test/core/chips/cpu/cpu_pusha_popa_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_pushf_popf	test/core/chips/cpu/cpu_pushf_popf_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_rmw_access	test/core/chips/cpu/cpu_rmw_access_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_rotate	test/core/chips/cpu/cpu_rotate_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_scas	test/core/chips/cpu/cpu_scas_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_segment_selector	test/core/chips/cpu/cpu_segment_selector_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_setcc	test/core/chips/cpu/cpu_setcc_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_sgdt_sidt	test/core/chips/cpu/cpu_sgdt_sidt_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_sign_extend	test/core/chips/cpu/cpu_sign_extend_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_smm	test/core/chips/cpu/cpu_smm_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_software_int_state	test/core/chips/cpu/cpu_software_int_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_sreg_mov	test/core/chips/cpu/cpu_sreg_mov_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_stos	test/core/chips/cpu/cpu_stos_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_task_switch16	test/core/chips/cpu/cpu_task_switch16_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_task_switch32_decode	test/core/chips/cpu/cpu_task_switch32_decode_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_task_switch32_state	test/core/chips/cpu/cpu_task_switch32_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_task_switch_cross_width_state	test/core/chips/cpu/cpu_task_switch_cross_width_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_test_register	test/core/chips/cpu/cpu_test_register_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_tlb	test/core/chips/cpu/cpu_tlb_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_transfer_boundary	test/core/chips/cpu/cpu_transfer_boundary_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_verr_verw	test/core/chips/cpu/cpu_verr_verw_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_vm86_delivery_state	test/core/chips/cpu/cpu_vm86_delivery_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_vm86_iret_state	test/core/chips/cpu/cpu_vm86_iret_state_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_vme	test/core/chips/cpu/cpu_vme_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_xadd	test/core/chips/cpu/cpu_xadd_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-cpu_xchg	test/core/chips/cpu/cpu_xchg_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-debug_budget	test/core/machine/debug_budget_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-display_provider	test/core/board-base/display_provider_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-dma_contract	test/core/chips/dma8237/dma_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-dma_ports	test/core/board-base/dma_ports_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-dma_route_rollback	test/core/board-base/composition/dma_route_rollback_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-ega_controller	test/core/chips/video/ega_controller_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-ega_crtc_boundary_port	test/core/chips/video/ega_crtc_boundary_port_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-ega_external	test/core/chips/video/ega_external_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-ega_mode10	test/core/chips/video/ega_mode10_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-ega_planar	test/core/chips/video/ega_planar_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-ega_sequencer	test/core/chips/video/ega_sequencer_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-factory	test/core/product/factory_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-fdc_allocation	test/core/chips/fdc8272/fdc_allocation_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-fdc_causes	test/core/chips/fdc8272/fdc_causes_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-fdc_contract	test/core/chips/fdc8272/fdc_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-fdc_records	test/core/chips/fdc8272/fdc_records_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-fpu_contract	test/core/chips/fpu/fpu_contract_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-hdc_allocation	test/core/chips/hdc/hdc_allocation_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-hdc_contract	test/core/chips/hdc/hdc_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-hdc_taskfile	test/core/chips/hdc/hdc_taskfile_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-ini	test/core/product/ini_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-input	test/core/machine/input_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-keyboard_contract	test/core/chips/keyboard/keyboard_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-machine_fpu_escape	test/core/board-base/composition/machine_fpu_escape_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-machine_protected_privilege_board	test/core/board-base/composition/machine_protected_privilege_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-machine_task_switch32_paging	test/core/board-base/composition/machine_task_switch32_paging_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-mouse_contract	test/core/chips/ps2mouse/mouse_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-mouse_mapper	test/core/machine/mouse_mapper_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-parity	test/core/board-at/parity_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-pic_commands	test/core/chips/pic8259/pic_commands_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-pic_contract	test/core/chips/pic8259/pic_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-pit_8253	test/core/chips/pit825x/pit_8253_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-pit_contract	test/core/chips/pit825x/pit_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-pit_ports	test/core/board-base/pit_ports_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-pit_readback	test/core/chips/pit825x/pit_readback_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-pit_waveform	test/core/chips/pit825x/pit_waveform_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-ppi_contract	test/core/chips/ppi8255/ppi_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-preparation	test/core/machine/preparation_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-rtc_calendar	test/core/chips/rtc146818/rtc_calendar_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-rtc_contract	test/core/chips/rtc146818/rtc_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-startup	test/core/product/startup_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-timeline	test/core/x86/timeline_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	core-test-video_allocation	test/core/chips/video/video_allocation_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-video_contract	test/core/chips/video/video_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-video_inspection	test/core/chips/video/video_inspection_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-video_text	test/core/chips/video/video_text_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-video_text_status	test/core/chips/video/video_text_status_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-test-xt_keyboard_contract	test/core/chips/xtkeyboard/xt_keyboard_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	core-x86	src/core/x86/clock.c;src/core/x86/cpu_bus.c;src/core/x86/debug.c;src/core/x86/entry_plan_interface.c;src/core/x86/machine.c;src/core/x86/machine_firmware.c;src/core/x86/machine_scheduler.c;src/core/x86/memory.c;src/core/x86/memory_interface.c;src/core/x86/port.c;src/core/x86/port_interface.c;src/core/x86/retirement_observation_interface.c;src/core/x86/rom_mapping_interface.c;src/core/x86/timeline.c;src/core/x86/trace_interface.c;src/core/x86/transaction.c	x86-core	x86-core-machine
+x86	core-x86-observable	src/core/x86/clock.c;src/core/x86/cpu_bus.c;src/core/x86/debug.c;src/core/x86/entry_plan_interface.c;src/core/x86/machine.c;src/core/x86/machine_firmware.c;src/core/x86/machine_scheduler.c;src/core/x86/memory.c;src/core/x86/memory_interface.c;src/core/x86/port.c;src/core/x86/port_interface.c;src/core/x86/retirement_observation_interface.c;src/core/x86/rom_mapping_interface.c;src/core/x86/timeline.c;src/core/x86/trace_interface.c;src/core/x86/transaction.c	x86-core	x86-core-machine-observable
+x86	integration-session-ini-support	test/core/setup/session_ini.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-80186-instruction-timing-ledger-smoke	test/core/x86/machine_80186_instruction_timing_ledger_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-80186-timing-manifest-runner	test/core/x86/machine_80186_timing_manifest_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-80286-instruction-timing-ledger-smoke	test/core/x86/machine_80286_instruction_timing_ledger_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-80286-timing-manifest-runner	test/core/x86/machine_80286_timing_manifest_runner.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-80386-privileged-timing-smoke	test/core/x86/machine_80386_privileged_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-80386-protected-io-timing-smoke	test/core/x86/machine_80386_protected_io_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-80386-secondary-integer-timing-smoke	test/core/x86/machine_80386_secondary_integer_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-80386-timing-manifest-runner	test/core/board-base/composition/composition_fixture.c;test/core/x86/machine_80386_timing_manifest_runner.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-8086-instruction-timing-ledger-smoke	test/core/x86/machine_8086_instruction_timing_ledger_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-8086-timing-manifest-runner	test/core/x86/machine_8086_timing_manifest_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-8088-timing-manifest-runner	test/core/x86/machine_8086_timing_manifest_runner.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-arithmetic-data-timing-smoke	test/core/board-base/composition/machine_arithmetic_data_timing_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-arpl-board-smoke	test/core/board-base/machine_arpl_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-bound-board-smoke	test/core/board-base/machine_bound_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-call-gate-smoke	test/core/x86/machine_call_gate_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-cli-sti-interrupt-smoke	test/core/board-base/machine_cli_sti_interrupt_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-cmps-board-smoke	test/core/board-base/machine_cmps_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-control-stack-timing-smoke	test/core/board-base/composition/machine_control_stack_timing_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-control-state-board-smoke	test/core/board-base/machine_control_state_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-cpu-profile-gate-smoke	test/core/x86/machine_cpu_profile_gate_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-debug-state-board-smoke	test/core/board-base/machine_debug_state_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-fpu-escape-smoke	test/core/board-base/composition/machine_fpu_escape_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-fpu-interface-smoke	test/core/x86/machine_fpu_interface_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-fpu-irq-smoke	test/core/board-base/machine_fpu_irq_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-hardware-delivery-smoke	test/core/board-base/machine_hardware_delivery_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-idt-privilege-pic-board-smoke	test/core/board-base/chips/cpu/machine_idt_privilege_pic_board_smoke.c;test/core/board-base/composition/composition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-instruction-timing-ledger-smoke	test/core/board-base/composition/machine_instruction_timing_ledger_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-instruction-timing-smoke	test/core/x86/machine_instruction_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-interrupt-entry-smoke	test/core/board-base/machine_interrupt_entry_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-legacy-timing-normalization-smoke	test/core/board-base/composition/machine_legacy_timing_normalization_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-lods-board-smoke	test/core/board-base/machine_lods_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-movs-board-smoke	test/core/board-base/machine_movs_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-outer-iret-pic-board-smoke	test/core/board-base/chips/cpu/machine_outer_iret_pic_board_smoke.c;test/core/board-base/composition/composition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-port-io-board-smoke	test/core/board-base/machine_port_io_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-port-ownership-board-smoke	test/core/board-base/machine_port_ownership_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-port-strings-board-smoke	test/core/board-base/machine_port_strings_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-protected-data-pic-board-smoke	test/core/board-base/chips/cpu/machine_protected_data_pic_board_smoke.c;test/core/board-base/composition/composition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-protected-far-pic-board-smoke	test/core/board-base/chips/cpu/machine_protected_far_pic_board_smoke.c;test/core/board-base/composition/composition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-protected-iret-smoke	test/core/x86/machine_protected_iret_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-protected-privilege-board-smoke	test/core/board-base/composition/machine_protected_privilege_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-scas-board-smoke	test/core/board-base/machine_scas_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-stos-board-smoke	test/core/board-base/machine_stos_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-string-io-timing-smoke	test/core/x86/machine_string_io_timing_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-table-register-board-smoke	test/core/board-base/machine_table_register_board_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-task-switch-cross-width-smoke	test/core/x86/machine_task_switch_cross_width_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-task-switch16-pic-board-smoke	test/core/board-base/chips/cpu/machine_task_switch16_pic_board_smoke.c;test/core/board-base/composition/composition_fixture.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-task-switch32-paging-smoke	test/core/board-base/composition/machine_task_switch32_paging_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-tss-iomap-port-authorization-smoke	test/core/x86/machine_tss_iomap_port_authorization_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-vm86-delivery-smoke	test/core/board-base/machine_vm86_delivery_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	machine-vm86-iret-smoke	test/core/x86/machine_vm86_iret_smoke.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	machine-vm86-lgdt-lidt-smoke	test/core/board-base/machine_vm86_lgdt_lidt_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	model40-d4-port-assembly-smoke	test/app-mydeskpro386/unit/d4_port_b_assembly_smoke.c;test/core/board-base/board_construction_fixture.c;test/core/board-base/composition/port_assembly_fixture.c;test/core/board-base/port_assembly_board_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	model40-d4-prefetch-scheduler-test	src/core/x86/machine_scheduler.c	x86-core	retain behavior identity; owner prefix follows file destination
+x86	model40-d4-refresh-deadline-smoke	test/app-mydeskpro386/unit/d4_refresh_deadline_smoke.c;test/app-mydeskpro386/unit/d4_refresh_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/composition/time_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	my5160-dma-deadline-smoke	test/app-my5160/unit/machine_dma_deadline_smoke.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	my5170-clock-contract-smoke	test/app-my5170/unit/machine_clock_contract_smoke.c;test/core/board-at/support/state_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/kbc_state_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	my5170-console-lifecycle-smoke	test/app-my5170/integration/my5170_console_lifecycle_smoke.c;test/core/setup/pc_console_process.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	my5170-dma-deadline-smoke	test/app-my5170/unit/machine_dma_deadline_smoke.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	mydeskpro386-dma-deadline-smoke	test/app-mydeskpro386/unit/model40_dma_deadline_smoke.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	nxvm-default-dma-deadline-smoke	test/app-nxvm/unit/nxvm_dma_deadline_smoke.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	pc-product-ini-identity-smoke	test/core/integration/product_ini_identity_smoke.c;test/core/setup/pc_console_process.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	session-ini-status-smoke	test/core/integration/session_ini_status_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	vm-cmos-rtc-port-smoke	test/app-nxvm/unit/nxvm_cmos_rtc_port_smoke.c;test/core/board-base/support/cmos_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-default-ega-topology-smoke	test/app-nxvm/unit/nxvm_ega_topology_smoke.c;test/core/board-base/support/video_topology_fixture.c;test/core/support/video_topology_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-default-pc-at-apply-smoke	test/app-nxvm/unit/machine_apply_smoke.c;test/core/board-base/composition/time_fixture.c;test/core/board-base/support/cmos_fixture.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-fdc-authority-smoke	test/app-nxvm/unit/nxvm_fdc_authority_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-fdc-port-smoke	test/app-nxvm/unit/nxvm_fdc_port_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-fdc-read-track-smoke	test/app-nxvm/unit/nxvm_fdc_read_track_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-hdc-hdd-boot-smoke	test/app-nxvm/integration/hdd/nxvm_hdc_hdd_boot_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-hdc-port-smoke	test/app-nxvm/unit/nxvm_hdc_port_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-ibm-5170-model-339-cga-topology-smoke	test/app-my5170/unit/machine_video_topology_smoke.c;test/core/board-base/support/video_topology_fixture.c;test/core/support/video_topology_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-ibm-5170-model-339-composition-smoke	test/app-my5170/unit/machine_composition_smoke.c;test/core/board-at/support/state_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/kbc_state_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-ibm-5170-model-339-firmware-fdc-topology-smoke	test/app-my5170/unit/machine_firmware_fdc_topology_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-ini-cmos-seed-smoke	test/app-nxvm/integration/nxvm_ini_cmos_seed_smoke.c;test/core/board-base/composition/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-keyboard-set1-mapper-smoke	test/core/machine/keyboard_mapper_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	vm-machine-executor-state-smoke	test/core/machine/executor_state_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	vm-machine-frame-smoke	test/core/machine/frame_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	vm-machine-initialization-atomicity-smoke	test/app-nxvm/unit/nxvm_initialization_atomicity_smoke.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-media-close-failure-smoke	test/core/machine/media/close_failure_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	vm-media-direct-readonly-smoke	test/core/machine/media/direct_readonly_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	vm-media-provider-smoke	test/core/machine/media/provider_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-byob-dos-boot-probe	test/app-mydeskpro386/diagnostic/model40/model40_byob_dos_boot_probe.c;test/core/board-at/support/boot_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/boot_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/controller_fixture.c;test/core/board-xt/support/boot_fixture.c;test/core/support/boot_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-byob-retirement-capture	test/app-mydeskpro386/diagnostic/model40/vm_model40_retirement_capture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/cmos_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-byob-smoke	test/app-mydeskpro386/unit/vm_model40_byob_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/composition/time_fixture.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-cecg-cpu-video-gate-smoke	test/app-mydeskpro386/unit/vm_model40_cecg_cpu_video_gate_smoke.c;test/core/support/video_topology_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-cecg-smoke	test/app-mydeskpro386/unit/vm_model40_cecg_smoke.c;test/core/support/video_topology_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-cmos-seed-smoke	test/app-mydeskpro386/unit/vm_model40_cmos_seed_smoke.c;test/core/board-base/composition/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-composition-smoke	test/app-mydeskpro386/unit/vm_model40_composition_smoke.c;test/core/board-at/support/state_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/cmos_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/kbc_state_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-console-ini-smoke	test/app-mydeskpro386/integration/product/vm_model40_console_ini_smoke.c;test/core/setup/pc_console_process.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-d4-a20-reset-smoke	test/app-mydeskpro386/unit/vm_model40_d4_a20_reset_smoke.c;test/core/board-base/composition/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-d4-compatibility-smoke	test/app-mydeskpro386/unit/vm_model40_d4_compatibility_smoke.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-d4-parity-smoke	test/app-mydeskpro386/unit/vm_model40_d4_parity_smoke.c;test/core/board-base/composition/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-dma-smoke	test/app-mydeskpro386/unit/vm_model40_dma_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-fdc-smoke	test/app-mydeskpro386/unit/vm_model40_fdc_smoke.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-fdd-smoke	test/app-mydeskpro386/unit/model40_floppy_geometry_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-hdc-smoke	test/app-mydeskpro386/unit/vm_model40_hdc_smoke.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-model40-machine-contract-smoke	test/app-mydeskpro386/unit/vm_model40_machine_contract_smoke.c;test/core/board-at/support/state_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/cmos_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/controller_fixture.c;test/core/board-base/support/kbc_state_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-pcat-composition-smoke	test/app-nxvm/unit/nxvm_pcat_composition_smoke.c;test/core/board-at/support/state_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/kbc_state_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-pcat-topology-smoke	test/app-nxvm/unit/nxvm_pcat_topology_smoke.c;test/core/board-at/support/state_fixture.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/kbc_state_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-profile-contract-smoke	test/core/board-base/profile_contract_smoke.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	vm-profile-floppy-boot-matrix	test/core/board-base/support/controller_fixture.c;test/core/integration/dos/pc_profile_floppy_boot_matrix.c	x86-nxvm	retain behavior identity; owner prefix follows file destination
+x86	vm-runner-error-propagation-smoke	test/app-nxvm/unit/nxvm_runner_error_propagation_smoke.c;test/core/board-base/composition/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-two-session-isolation-smoke	test/app-nxvm/unit/nxvm_two_session_isolation_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-windows31-hdd-admission-probe	test/app-nxvm/diagnostic/windows/nxvm_windows31_hdd_admission_probe.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-windows31-setup-probe	test/app-nxvm/diagnostic/windows/nxvm_windows31_setup_probe.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination
+x86	vm-xt-5160-268-profile-smoke	test/app-my5160/unit/machine_smoke.c;test/core/board-base/composition/composition_fixture.c;test/core/board-base/support/composition_fixture.c;test/core/board-base/support/controller_fixture.c	retain App target; inward receiver edits only	retain behavior identity; owner prefix follows file destination

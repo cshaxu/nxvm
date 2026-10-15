@@ -3,10 +3,31 @@
 ## Current Work
 
 M5 T561 remains open. S1 is accepted after coordinator actual-change review of
-pushed Shared `15d86fc8e` and NXVM `6c95c2da3`. No S is active; the next planned
-batch is the complete Core disposition/contract inventory, not CPU completion.
+pushed Shared `15d86fc8e` and NXVM `6c95c2da3`. S2 is admitted for the complete
+Core disposition/contract inventory, not CPU completion.
 The [proposal](../proposals/m5-core-x86-core-nxvm-split.md) and
 [convergence ledger](../history/M5-T561-core-package-split.md) retain I1--I5.
+
+## Active Packet — M5 T561 S2
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, next unused S2 of open M5 T561; S1 accepted at `8db742b6d`. Single-session coordinator/executor role switching. |
+| Admission And Approval | Owner: execute S2; audit current implementation and enumerate every Core file, symbol, test and target before extraction. Allowed change target: NXVM documentation only. |
+| Objective | Freeze I1: complete hashed file disposition, declaration/symbol and build-registration inventories; identify neutral mechanisms versus PC policies and their receiving owners. |
+| Non-goals | No production/test/build edits, physical moves, Shared or MyNES changes, firmware research/import, new API implementation, CPU semantic/timing work or T closure. |
+| Reference Baseline | Clean `8db742b6d`; S1 source/artifact `6c95c2da3`, CPU frozen `b906c7138`, upstream ten-tree prerequisite pinned `3af1955932fcb9e61ceec3456493580e316a12c9`. |
+| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), I1 in [T561 ledger](../history/M5-T561-core-package-split.md). |
+| Files And ABI Surface | Read all src/core and test/core files, their consumers and build registrations. Write only this packet, proposal, T561 history, supporting index and S2 evidence/inventory under docs/nxvm. No ABI changes. |
+| Applicable Rules | Product guide reading set; shared EXECUTION, ARCHITECTURE, CODING, DOCUMENT; NXVM design ARCHITECTURE/CODING; architecture-governance then coding-governance skills. |
+| Verification | Exact tracked path/hash coverage, symbol extraction and destination coverage, CMake registrations and consumer dependencies; validate generated inventory against frozen input, inspect actual diff, documentation governance. This prerequisite is design-only: no manufactured runtime qualification; retain S1 dual-width runnable baseline. |
+| Expected Markers | Zero missing/duplicate/unassigned inventory paths or destinations; reproducible declaration and registration inventories; governance PASS; only NXVM documentation changed. |
+| Asset Needs | None. Preserve ten deployed EXEs, all INI/ROM/media/snapshot files and existing reusable build/cache trees. No executable input changes, hence no rebuild/version change. |
+| Reporting Requirements | Counts and migration destinations, real boundary gaps, proposed bounded next S sequence; actual source/test/build delta zero, documentation delta separately; explicit unperformed dynamic/non-PC qualification. |
+| Stop Conditions | Missing file/symbol/target disposition, unknown callback lifetime, destructive owner conflict, lost CPU grade/feature or need to implement a Shared/public contract. Report before broadening scope. |
+| Exit Criteria | Auditable finite inventory and reviewed contracts/plans account for every current Core file; tests follow behavioral owner, targets and external registrations have receivers; no claim of implemented independence. Complete P push and coordinator actual-change review; T remains open. |
+| Original Owner Request | Execute S2 according to governance/quality rules; list file, symbol, test and target destinations and separate PC strategy from neutral execution without omissions. |
+| Similar-Issue Sweep | Static ownership sweep across all Core source/test files, their includes and build/checker consumers; classify split files, cross-package fixtures and mixed registrations. No behavioral defect fix is implemented in S2. |
 
 ## Accepted S1 Import And Runnable Baseline
 
