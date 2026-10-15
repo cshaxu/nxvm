@@ -169,3 +169,22 @@ ownership, guard/failure semantics, complete moved policy bodies, test routing,
 Imported packages, CPU/FPU, MyNES, INI and other inputs have no change.
 Documentation governance and whitespace checks pass. S4 is closed; I3 actual
 extraction, I4 and I5 remain open. The full S4 packet is retained in P1's CURRENT.
+
+## S5 Advancement Boundary Delivery
+
+After accepted S4, the coordinator refines the former single large neutral
+extraction batch into S5 P4/P6 progression/interrupt separation, S6 P7/P8
+decode/construction review, S7 neutral extraction/non-PC proof, S8 NXVM
+consolidation and S9 final qualification. I0--I5 and CPU residuals do not change.
+The actual scheduler/memory audit justifies these bounded prerequisites before
+a directory move can hide PC policy; the current proposal/packet owns the plan.
+
+[S5 evidence](../etc/evidence/t561-s5-neutral-advance.md) records two neutral
+advance phases replacing named device slots, preserved Board effect bodies,
+neutral interrupt operations and complete dual-width receiving qualification:
+627/627 repository units, all specialized gates, 48 receiving integrations plus
+restored identity per width, and eight rebuilt/deployed qualified PC EXEs.
+I3 P4/P6 is not accepted until complete delivery and actual-change review.
+The 25 existing higher Board/adapter test files that
+directly include execution private headers join S2 T1's explicit S7/S8 receiver
+cleanup obligation; final I5 rejects all unresolved cross-package borrowing.

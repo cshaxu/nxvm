@@ -3,6 +3,9 @@
 T561 S4: [PC metadata/default/trace separation](evidence/t561-s4-pc-policy-separation.md)
 records the Board-owned qualification and defaults before neutral execution moves.
 
+T561 S5: [neutral advancement/interrupt boundary](evidence/t561-s5-neutral-advance.md)
+records Board-owned progression around the sole internal CPU/FPU readiness path.
+
 T561 S3: [CPU/FPU extraction review](evidence/t561-s3/review.md) records the
 complete path/symbol diff, independent package boundaries and receiving proof.
 

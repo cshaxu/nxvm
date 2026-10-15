@@ -189,7 +189,6 @@ static void core_machine_arbitration_advance(core_machine *machine,
     lib_u64 source_ticks)
 {
     lib_u64 dma_ticks;
-    core_machine_attachment_pit_ticks pit_ticks = {0u, 0u};
     lib_u8 refresh_pending;
     lib_u8 refresh_address;
     lib_bool refresh_occupied;
@@ -197,9 +196,6 @@ static void core_machine_arbitration_advance(core_machine *machine,
     if (machine == LIB_NULL || source_ticks == 0u) return;
     dma_ticks = machine->attachment.dma_ticks != LIB_NULL ?
         machine->attachment.dma_ticks(machine->attachment.context, source_ticks) : 0u;
-    if (machine->attachment.pit_ticks != LIB_NULL)
-        pit_ticks = machine->attachment.pit_ticks(machine->attachment.context,
-            source_ticks);
     refresh_pending = machine->attachment.refresh_request != LIB_NULL &&
         machine->attachment.refresh_request(machine->attachment.context,
             &refresh_address);
@@ -261,29 +257,15 @@ static void core_machine_arbitration_advance(core_machine *machine,
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_DMA_ADVANCE,
             0u, (lib_u32)dma_ticks, 0u);
     }
-    if (machine->attachment.pit_pic != LIB_NULL)
-        machine->attachment.pit_pic(machine->attachment.context, pit_ticks);
 }
 
-/*
- * RTC progression and removable-media observation have a distinct readiness
- * boundary.  This callback intentionally follows the immediate DMA/PIT/PIC
- * arbitration callback at a shared due tick: sources made ready here become
- * eligible for PIC arbitration at the following due tick. FDC and ATA command
- * and completion service are advanced here before their retained observation
- * refresh paths.
- */
-static void core_machine_readiness_advance(core_machine *machine,
-    lib_u64 source_ticks, lib_u64 due_tick)
+static void core_machine_internal_advance(core_machine *machine,
+    lib_u64 source_ticks)
 {
     if (machine == LIB_NULL || source_ticks == 0u) return;
-    if (machine->attachment.media != LIB_NULL)
-        machine->attachment.media(machine->attachment.context, source_ticks, due_tick);
     x86_fpu_advance(machine->fpu, source_ticks);
     x86_core_cpu_execution_advance_wait(machine->executor_cpu_execution,
         source_ticks);
-    if (machine->attachment.rtc != LIB_NULL)
-        machine->attachment.rtc(machine->attachment.context, source_ticks);
 }
 
 static void core_machine_advance_scheduler(core_machine *machine,
@@ -321,9 +303,13 @@ static void core_machine_advance_scheduler(core_machine *machine,
         machine->elapsed_ticks = due_tick;
         (void)core_machine_timeline_advance(&machine->timeline, due_tick);
         core_machine_arbitration_advance(machine, source_ticks);
-        core_machine_readiness_advance(machine, source_ticks, due_tick);
-        if (machine->attachment.peripheral != LIB_NULL)
-            machine->attachment.peripheral(machine->attachment.context, source_ticks);
+        if (machine->attachment.before_internal_advance != LIB_NULL)
+            machine->attachment.before_internal_advance(machine->attachment.context,
+                source_ticks, due_tick);
+        core_machine_internal_advance(machine, source_ticks);
+        if (machine->attachment.after_internal_advance != LIB_NULL)
+            machine->attachment.after_internal_advance(machine->attachment.context,
+                source_ticks, due_tick);
     }
     provider_ticks = core_machine_clock_domain_advance(&machine->provider_clock,
         elapsed_ticks);

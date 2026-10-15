@@ -193,8 +193,8 @@ foreach(forbidden IN ITEMS "machine.h" "machine_board" "core_machine_board_state
     endif()
 endforeach()
 foreach(callback IN ITEMS deadline refresh_request refresh_complete dma_ticks
-    dma_request dma_advance pit_ticks pit_pic pic_pending pic_acknowledge
-    shutdown_reset media rtc peripheral reset_devices reset_clocks refresh_nmi
+    dma_request dma_advance interrupt_pending interrupt_acknowledge
+    shutdown_reset before_internal_advance after_internal_advance reset_devices reset_clocks refresh_nmi
     finalize_devices firmware)
     string(FIND "${attachment_contract}" " ${callback};" declaration)
     string(FIND "${machine_board_text}" ".${callback} = core_machine_board_" publication)
@@ -226,8 +226,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_advance.c" board_adva
 file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/board_deadline.c" board_deadline_text)
 set(board_callbacks "${machine_board_text}${board_advance_text}${board_deadline_text}")
 foreach(callback IN ITEMS deadline_observe refresh_request refresh_complete dma_ticks
-    dma_request dma_advance pit_ticks_advance pit_pic_advance pic_pending pic_acknowledge
-    shutdown_resets media_advance rtc_advance peripheral_advance reset_devices reset_clocks
+    dma_request dma_advance before_internal_advance after_internal_advance pic_pending pic_acknowledge
+    shutdown_resets reset_devices reset_clocks
     refresh_nmi finalize_devices register_reset_rom_alias)
     if(NOT board_callbacks MATCHES
        "core_machine_board_${callback}\\(void \\*owner[^;{]*\\{[ \t\r\n]*(const )?core_machine_board_state \\*board = owner;")

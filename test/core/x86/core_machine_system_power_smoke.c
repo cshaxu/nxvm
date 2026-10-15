@@ -47,8 +47,9 @@ static void power_complete(void *opaque, x86_core_cpu_special_cycle cycle, lib_b
     else ++probe->cancels;
 }
 
-static void power_ticks(void *opaque, lib_u64 ticks)
+static void power_ticks(void *opaque, lib_u64 ticks, lib_u64 due_tick)
 {
+    (void)due_tick;
     ((power_probe *)opaque)->ticks += ticks;
 }
 
@@ -80,7 +81,7 @@ static lib_bool power_run(x86_core_cpu_special_cycle cycle, lib_u8 finish)
     power_probe probe = {.cycle = cycle};
     const core_machine_attachment attachment = {.context = &probe,
         .special_cycle = power_cycle, .complete_special_cycle = power_complete,
-        .peripheral = power_ticks, .finalize_devices = power_finalize};
+        .after_internal_advance = power_ticks, .finalize_devices = power_finalize};
     core_machine *machine = LIB_NULL;
     core_machine_run_result result = {0};
     x86_core_cpu_debug_cpu_snapshot before = {0}, after = {0};

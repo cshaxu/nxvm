@@ -17,14 +17,22 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/board-base/vadp.c" video)
 if(NOT video MATCHES "x86_video_advance\\(adapter->chip, ticks\\)")
     message(FATAL_ERROR "Video adapter does not forward the settled device ticks")
 endif()
-string(FIND "${core}" "core_machine_readiness_advance(machine, source_ticks, due_tick);"
+string(FIND "${core}" "core_machine_internal_advance(machine, source_ticks);"
     readiness_position)
-string(FIND "${core}" "machine->attachment.peripheral(machine->attachment.context, source_ticks);"
+string(FIND "${core}" "machine->attachment.after_internal_advance(machine->attachment.context,"
     peripheral_position)
 if(readiness_position LESS 0 OR peripheral_position LESS readiness_position)
     message(FATAL_ERROR "Core lost readiness-before-peripheral order")
 endif()
-string(FIND "${creation}" "core_machine_board_peripheral_advance" binding)
+string(FIND "${board}" "x86_rtc_advance(" rtc_position)
+string(FIND "${board}" "x86_xt_keyboard_advance(" keyboard_position)
+string(FIND "${board}" "core_machine_pic_advance(" pic_position)
+string(FIND "${board}" "core_machine_vadp_advance(" video_position)
+if(rtc_position LESS 0 OR keyboard_position LESS rtc_position OR
+   pic_position LESS keyboard_position OR video_position LESS pic_position)
+    message(FATAL_ERROR "Board lost RTC-input-PIC-video order")
+endif()
+string(FIND "${creation}" "core_machine_board_after_internal_advance" binding)
 if(binding LESS 0)
     message(FATAL_ERROR "Peripheral provider is not bound at creation")
 endif()

@@ -34,6 +34,14 @@ static void arbitration_trace(void *opaque,
 
 static lib_i32 arbitration_expect_chain(const arbitration_trace_probe *probe)
 {
+    static const lib_u32 expected[] = {
+        CORE_MACHINE_TRACE_DMA_ADVANCE,
+        CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE,
+        CORE_MACHINE_BOARD_TRACE_PIC_REFRESH,
+        CORE_MACHINE_BOARD_TRACE_RTC_ADVANCE,
+        CORE_MACHINE_BOARD_TRACE_KBC_ADVANCE,
+        CORE_MACHINE_BOARD_TRACE_VADP_ADVANCE
+    };
     lib_u32 index;
     lib_u32 selected_tick = 3u;
     lib_u32 phase = 0u;
@@ -44,16 +52,15 @@ static lib_i32 arbitration_expect_chain(const arbitration_trace_probe *probe)
 
         if (event->type == CORE_MACHINE_TRACE_DMA_ADVANCE ||
             event->type == CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE ||
-            event->type == CORE_MACHINE_BOARD_TRACE_PIC_REFRESH) {
-            lib_u32 expected = phase == 0u ?
-                CORE_MACHINE_TRACE_DMA_ADVANCE : phase == 1u ?
-                CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE : CORE_MACHINE_BOARD_TRACE_PIC_REFRESH;
-
-            if (event->type != expected || event->timeline_ticks != selected_tick) {
+            event->type == CORE_MACHINE_BOARD_TRACE_PIC_REFRESH ||
+            event->type == CORE_MACHINE_BOARD_TRACE_RTC_ADVANCE ||
+            event->type == CORE_MACHINE_BOARD_TRACE_KBC_ADVANCE ||
+            event->type == CORE_MACHINE_BOARD_TRACE_VADP_ADVANCE) {
+            if (event->type != expected[phase] || event->timeline_ticks != selected_tick) {
                 return 1;
             }
             ++phase;
-            if (phase == 3u) {
+            if (phase == sizeof(expected) / sizeof(expected[0])) {
                 phase = 0u;
                 ++groups;
             }

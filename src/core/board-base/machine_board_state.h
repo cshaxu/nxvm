@@ -140,16 +140,12 @@ lib_bool core_machine_board_cpu_hold_asserted(void *owner);
 lib_u64 core_machine_board_dma_ticks(void *owner, lib_u64 source_ticks);
 lib_bool core_machine_board_dma_request(void *owner);
 void core_machine_board_dma_advance(void *owner, lib_u64 dma_ticks);
-core_machine_attachment_pit_ticks core_machine_board_pit_ticks_advance(void *owner,
-    lib_u64 source_ticks);
-void core_machine_board_pit_pic_advance(void *owner,
-    core_machine_attachment_pit_ticks ticks);
+void core_machine_board_before_internal_advance(void *owner,
+    lib_u64 source_ticks, lib_u64 due_tick);
 lib_bool core_machine_board_pic_pending(void *owner);
 lib_u8 core_machine_board_pic_acknowledge(void *owner);
-void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
-    lib_u64 due_tick);
-void core_machine_board_rtc_advance(void *owner, lib_u64 source_ticks);
-void core_machine_board_peripheral_advance(void *owner, lib_u64 source_ticks);
+void core_machine_board_after_internal_advance(void *owner,
+    lib_u64 source_ticks, lib_u64 due_tick);
 lib_status core_machine_board_register_a20_port(core_machine *machine);
 void core_machine_board_after_pit_reset(core_machine_board_state *board);
 void core_machine_board_refresh_nmi(void *owner);

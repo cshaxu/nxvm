@@ -464,8 +464,8 @@ static lib_i32 fpu_interface_wait_interrupt(void)
     };
     const core_machine_attachment attachment = {
         .wait_test_asserted = fpu_interface_wait_test_asserted,
-        .pic_pending = fpu_interface_interrupt_pending,
-        .pic_acknowledge = fpu_interface_acknowledge_interrupt,
+        .interrupt_pending = fpu_interface_interrupt_pending,
+        .interrupt_acknowledge = fpu_interface_acknowledge_interrupt,
         .finalize_devices = fpu_interface_test_finalize,
         .context = &input
     };

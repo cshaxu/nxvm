@@ -155,9 +155,19 @@ The refined remaining batches are plans, not allocated S identifiers:
 | S2 inventory prerequisite | Complete file/symbol/test/target disposition; consumer graph and PC-assumption review against S1. | Hashed paths and explicit neutral/board receiving decisions; documentation-only proof, not extraction qualification. |
 | Accepted S3 CPU/FPU | Shared cpu/fpu sources, public contracts, independent targets and matching tests; all PC receivers updated. | Pushed `8bb5bcaa5` / `039d946ab`, [actual-change proof](../etc/evidence/t561-s3/review.md): 112 owner tests and 627 repository units per width, preserved algorithms/grades and eight qualified PC artifacts. |
 | Accepted S4 PC metadata separation | Move whole-PC timing qualification and board trace/default policy out of neutral contracts before scheduler extraction. | Pushed `f136911be`, [frozen proof](../etc/evidence/t561-s4-pc-policy-separation.md): original grades/IDs/admission retained, one table owner; full dual-width units/integrations and eight qualified PC artifacts. |
-| Planned S5 neutral machine | Shared execution/routing/time/observation; board owns device sequencing, address policy and interrupt-source wiring. | Real non-PC synthetic board proof plus PC timing/transaction/reset regression; one execution/time/bus owner. |
-| Planned S6 NXVM consolidation | Remaining chips, board-base/XT/AT, adapter and product; fixtures/checkers/registrations and all App receivers. | One full x86-nxvm package absorbs current speed/info contract; retired Core paths/aliases removed, all four Apps qualified. |
-| Planned S7 complete acceptance | Independent package builds, final DAG/manifests/ownership audit, full dual-width units and four-profile integrations/artifacts. | Actual-change review, reconciled file/test ledger, qualified artifacts and explicit CPU residual limits. |
+| Admitted S5 progression/interrupt boundary | Consume I3 P4/P6: Board owns its contiguous device progression around neutral internal readiness; interrupt pending/ack becomes CPU-signal terminology. | Original bus/refresh/DMA, device/readiness order and trace/clock proof; no PIT-pair contract or competing scheduler. |
+| Planned S6 decode/construction boundary | Consume I3 P7/P8: separate PC A20/decode policy from neutral routes; preserve ROM/reset priority, fallthrough, failure and callback lifetime. | Both current PC decode policies and reset aliases retain direct proof without a per-byte policy facade or new BIOS path. |
+| Planned S7 neutral machine | Move the audited execution/routing/time/observation owner and tests into X86 Core, repairing private CPU-layout test receivers. | Real non-PC synthetic board proof plus PC timing/transaction/reset regression; one execution/time/bus owner. |
+| Planned S8 NXVM consolidation | Remaining chips, board-base/XT/AT, adapter and product; fixtures/checkers/registrations and all App receivers. | One full x86-nxvm package absorbs current speed/info contract; retired Core paths/aliases removed, all four Apps qualified. |
+| Planned S9 complete acceptance | Independent package builds, final DAG/manifests/ownership audit, full dual-width units and four-profile integrations/artifacts. | Actual-change review, reconciled file/test ledger, qualified artifacts and explicit CPU residual limits. |
+
+After S4, the actual scheduler and memory audit separates the previously
+combined neutral-Machine batch into two bounded contract prerequisites and
+the move itself. This does not change I0--I5, approve additional hardware or
+defer any completion requirement. P4's device ordering and P7's reset/decode
+priority need independent review before a mechanical move could hide their
+PC assumptions. The original S2 estimates remain frozen planning evidence;
+current admissions refine those estimates against the actual source.
 
 The review records exact file/target ownership, symbol-family rules, required
 mixed-file splits, each batch's estimated non-mechanical diff and stop/exit
@@ -188,8 +198,8 @@ at package roots; fixture support stays inside its actual component owner.
 S3's receiving sweep additionally records the existing Core execution tests
 `core_machine_system_power`, `core_machine_memory_inspection` and
 `core_machine_executor_run`, plus the PC/PIC `cpu_instruction_fixture` family,
-as white-box CPU-header consumers. S5 reviews the execution cases with their
-Machine owner; S6 must remove the higher board fixture's private CPU-layout
+as white-box CPU-header consumers. S7 reviews the execution cases with their
+Machine owner; S8 must remove the higher board fixture's private CPU-layout
 borrowing. No production caller may acquire that dependency. The final I5
 audit checks this explicitly rather than treating independent CPU tests alone
 as proof that every outer receiver already obeys the final boundary.

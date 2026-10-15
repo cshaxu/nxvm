@@ -55,17 +55,17 @@ static lib_bool display_cga_clock_routing(void)
         stage = 3u;
         if (core_machine_clock_domain_source_ticks_until(&board->vadp_clock,
                 65u * scale, &ticks) != LIB_STATUS_OK) goto done;
-        core_machine_board_peripheral_advance(board, ticks);
+        core_machine_board_after_internal_advance(board, ticks, 0u);
         stage = 4u;
         if (core_machine_bus_read(machine, CORE_MACHINE_VADP_PORT_STATUS, &status) !=
                 LIB_STATUS_OK || status != 0u ||
             core_machine_clock_domain_source_ticks_until(&board->vadp_clock,
                 3u * scale, &ticks) != LIB_STATUS_OK || ticks == 0u) goto done;
-        core_machine_board_peripheral_advance(board, ticks - 1u);
+        core_machine_board_after_internal_advance(board, ticks - 1u, 0u);
         stage = 5u;
         if (core_machine_bus_read(machine, CORE_MACHINE_VADP_PORT_STATUS, &status) !=
                 LIB_STATUS_OK || status != 0u) goto done;
-        core_machine_board_peripheral_advance(board, 1u);
+        core_machine_board_after_internal_advance(board, 1u, 0u);
         stage = 6u;
         if (core_machine_bus_read(machine, CORE_MACHINE_VADP_PORT_STATUS, &status) !=
                 LIB_STATUS_OK || status != 1u) goto done;
@@ -153,14 +153,14 @@ static lib_bool display_blink_without_irq(core_machine_display_config config)
     if (!valid) goto done;
     stage = 3u;
     /* Port setup itself advances guest time; use the real clock remainder. */
-    core_machine_board_peripheral_advance(board, source_due - 1u);
+    core_machine_board_after_internal_advance(board, source_due - 1u, 0u);
     valid &= core_machine_capture_display_snapshot(board, snapshot) == LIB_STATUS_OK &&
         !snapshot->buffer_changed && snapshot->pixels[0] == 2u;
     core_machine_board_deadline_observe(board, source_due - 1u, &deadline);
     valid &= deadline.source_ticks == 1u && !deadline.immediate_due;
     if (!valid) goto done;
     stage = 4u;
-    core_machine_board_peripheral_advance(board, 1u);
+    core_machine_board_after_internal_advance(board, 1u, 0u);
     valid &= core_machine_capture_display_snapshot(board, snapshot) == LIB_STATUS_OK &&
         snapshot->buffer_changed && snapshot->pixels[0] == 1u &&
         x86_video_observe_bus(board->shared_vadp->chip, &observation) == LIB_STATUS_OK &&
@@ -255,9 +255,9 @@ int main(void)
         board->timing_declarations_copied = LIB_TRUE;
         core_machine_board_deadline_observe(board, 0u, &deadline);
         failed |= deadline.source_ticks != 64u || deadline.immediate_due;
-        core_machine_board_peripheral_advance(board, 63u);
+        core_machine_board_after_internal_advance(board, 63u, 0u);
         failed |= core_machine_pic_irq_source_is_asserted(board->shared_vadp->irq_source);
-        core_machine_board_peripheral_advance(board, 1u);
+        core_machine_board_after_internal_advance(board, 1u, 0u);
         failed |= !core_machine_pic_irq_source_is_asserted(board->shared_vadp->irq_source) ||
             core_machine_pic_capture_registers(board->shared_pic_slave, &pic) != LIB_STATUS_OK ||
             (pic.irr & 2u) == 0u ||
@@ -266,7 +266,7 @@ int main(void)
         failed |= !display_write_crtc(machine, 0x11u, 9u) ||
             core_machine_pic_irq_source_is_asserted(board->shared_vadp->irq_source);
         failed |= !display_write_crtc(machine, 0x11u, 0x19u);
-        core_machine_board_peripheral_advance(board, 160u);
+        core_machine_board_after_internal_advance(board, 160u, 0u);
         failed |= !core_machine_pic_irq_source_is_asserted(board->shared_vadp->irq_source);
         for (lib_u8 divided = 0u; divided < 2u; ++divided) {
             const lib_u64 source_due = divided ? 164u : 74u;
@@ -286,9 +286,9 @@ int main(void)
             board->timing_declarations_copied = LIB_TRUE;
             core_machine_board_deadline_observe(board, 0u, &deadline);
             failed |= deadline.source_ticks != source_due || deadline.immediate_due;
-            core_machine_board_peripheral_advance(board, source_due - 1u);
+            core_machine_board_after_internal_advance(board, source_due - 1u, 0u);
             failed |= core_machine_pic_irq_source_is_asserted(board->shared_vadp->irq_source);
-            core_machine_board_peripheral_advance(board, 1u);
+            core_machine_board_after_internal_advance(board, 1u, 0u);
             failed |= !core_machine_pic_irq_source_is_asserted(board->shared_vadp->irq_source);
         }
         failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
@@ -303,9 +303,9 @@ int main(void)
         board->timing_declarations_copied = LIB_TRUE;
         core_machine_board_deadline_observe(board, 0u, &deadline);
         failed |= deadline.source_ticks != 144u || deadline.immediate_due;
-        core_machine_board_peripheral_advance(board, 143u);
+        core_machine_board_after_internal_advance(board, 143u, 0u);
         failed |= core_machine_pic_irq_source_is_asserted(board->shared_vadp->irq_source);
-        core_machine_board_peripheral_advance(board, 1u);
+        core_machine_board_after_internal_advance(board, 1u, 0u);
         failed |= !core_machine_pic_irq_source_is_asserted(board->shared_vadp->irq_source);
         failed |= core_machine_reset(machine) != LIB_STATUS_OK;
         /* Teardown with an asserted borrowed lease must finish before PIC dies. */
@@ -314,7 +314,7 @@ int main(void)
         failed |= !display_write_crtc(machine, 0u, 6u) ||
             !display_write_crtc(machine, 6u, 8u) || !display_write_crtc(machine, 0x15u, 5u) ||
             !display_write_crtc(machine, 0x11u, 0x19u);
-        core_machine_board_peripheral_advance(board, 64u);
+        core_machine_board_after_internal_advance(board, 64u, 0u);
         failed |= !core_machine_pic_irq_source_is_asserted(board->shared_vadp->irq_source);
     }
     core_machine_destroy(machine);

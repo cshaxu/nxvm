@@ -37,16 +37,12 @@ typedef struct scheduler_board_probe {
     core_machine *machine;
     core_machine_attachment production;
     scheduler_deadline_probe *deadline_probe;
-    lib_u32 media_calls;
-    lib_u32 rtc_calls;
+    lib_u32 before_internal_calls;
     lib_u32 dma_calls;
-    lib_u32 pit_pic_calls;
     lib_u32 calls;
-    lib_u64 media_due_tick;
-    lib_u64 media_ticks;
-    lib_u64 rtc_ticks;
+    lib_u64 before_internal_due_tick;
+    lib_u64 before_internal_ticks;
     lib_u64 dma_ticks;
-    core_machine_attachment_pit_ticks pit_ticks;
     lib_u64 advanced_ticks;
 } scheduler_board_probe;
 
@@ -63,30 +59,25 @@ static void scheduler_board_deadline_forward(void *owner, lib_u64 now,
         out_observation);
 }
 
-static void scheduler_board_peripheral(void *owner, lib_u64 source_ticks)
+static void scheduler_board_after_internal(void *owner, lib_u64 source_ticks,
+    lib_u64 due_tick)
 {
     scheduler_board_probe *probe = owner;
     ++probe->calls;
     probe->advanced_ticks += source_ticks;
-    probe->production.peripheral(probe->production.context, source_ticks);
+    probe->production.after_internal_advance(probe->production.context,
+        source_ticks, due_tick);
 }
 
-static void scheduler_board_media(void *owner, lib_u64 source_ticks,
+static void scheduler_board_before_internal(void *owner, lib_u64 source_ticks,
     lib_u64 due_tick)
 {
     scheduler_board_probe *probe = owner;
-    ++probe->media_calls;
-    probe->media_ticks += source_ticks;
-    probe->media_due_tick = due_tick;
-    probe->production.media(probe->production.context, source_ticks, due_tick);
-}
-
-static void scheduler_board_rtc(void *owner, lib_u64 source_ticks)
-{
-    scheduler_board_probe *probe = owner;
-    ++probe->rtc_calls;
-    probe->rtc_ticks += source_ticks;
-    probe->production.rtc(probe->production.context, source_ticks);
+    ++probe->before_internal_calls;
+    probe->before_internal_ticks += source_ticks;
+    probe->before_internal_due_tick = due_tick;
+    probe->production.before_internal_advance(probe->production.context,
+        source_ticks, due_tick);
 }
 
 static lib_bool scheduler_board_refresh_request(void *owner, lib_u8 *out_address)
@@ -121,32 +112,16 @@ static void scheduler_board_dma_advance(void *owner, lib_u64 dma_ticks)
     probe->production.dma_advance(probe->production.context, dma_ticks);
 }
 
-static core_machine_attachment_pit_ticks scheduler_board_pit_ticks(void *owner,
-    lib_u64 source_ticks)
-{
-    scheduler_board_probe *probe = owner;
-    return probe->production.pit_ticks(probe->production.context, source_ticks);
-}
-
-static void scheduler_board_pit_pic(void *owner,
-    core_machine_attachment_pit_ticks ticks)
-{
-    scheduler_board_probe *probe = owner;
-    ++probe->pit_pic_calls;
-    probe->pit_ticks = ticks;
-    probe->production.pit_pic(probe->production.context, ticks);
-}
-
 static lib_bool scheduler_board_pic_pending(void *owner)
 {
     scheduler_board_probe *probe = owner;
-    return probe->production.pic_pending(probe->production.context);
+    return probe->production.interrupt_pending(probe->production.context);
 }
 
 static lib_u8 scheduler_board_pic_acknowledge(void *owner)
 {
     scheduler_board_probe *probe = owner;
-    return probe->production.pic_acknowledge(probe->production.context);
+    return probe->production.interrupt_acknowledge(probe->production.context);
 }
 
 static void scheduler_board_deadline(void *owner, lib_u64 now,
@@ -229,14 +204,11 @@ lib_i32 main(void)
         .dma_ticks = scheduler_board_dma_ticks,
         .dma_request = scheduler_board_dma_request,
         .dma_advance = scheduler_board_dma_advance,
-        .pit_ticks = scheduler_board_pit_ticks,
-        .pit_pic = scheduler_board_pit_pic,
-        .pic_pending = scheduler_board_pic_pending,
-        .pic_acknowledge = scheduler_board_pic_acknowledge,
+        .interrupt_pending = scheduler_board_pic_pending,
+        .interrupt_acknowledge = scheduler_board_pic_acknowledge,
         .shutdown_reset = scheduler_board_shutdown_reset,
-        .media = scheduler_board_media,
-        .rtc = scheduler_board_rtc,
-        .peripheral = scheduler_board_peripheral,
+        .before_internal_advance = scheduler_board_before_internal,
+        .after_internal_advance = scheduler_board_after_internal,
         .reset_devices = scheduler_board_reset_devices,
         .reset_clocks = scheduler_board_reset_clocks,
         .refresh_nmi = scheduler_board_refresh_nmi,
@@ -249,7 +221,7 @@ lib_i32 main(void)
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
         result.ticks != 0u || result.elapsed_ticks != 0u ||
         provider_probe.advances != 0u || provider_probe.advanced_ticks != 0u ||
-        board_probe.media_calls != 0u || board_probe.rtc_calls != 0u ||
+        board_probe.before_internal_calls != 0u ||
         board_probe.calls != 0u;
 
     budget.instructions = 1u;
@@ -258,10 +230,9 @@ lib_i32 main(void)
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
         result.ticks != 3u || result.elapsed_ticks != 3u ||
         provider_probe.advances != 1u || provider_probe.advanced_ticks != 3u ||
-        board_probe.media_calls == 0u || board_probe.rtc_calls == 0u ||
-        board_probe.pit_pic_calls == 0u ||
-        board_probe.media_ticks != 3u || board_probe.rtc_ticks != 3u ||
-        board_probe.media_due_tick != machine->elapsed_ticks ||
+        board_probe.before_internal_calls == 0u ||
+        board_probe.before_internal_ticks != 3u ||
+        board_probe.before_internal_due_tick != machine->elapsed_ticks ||
         board_probe.calls == 0u || board_probe.advanced_ticks != 3u;
 
     board_probe.deadline_probe = &deadline_probe;
@@ -298,12 +269,12 @@ lib_i32 main(void)
     {
         lib_u8 advanced = LIB_FALSE;
         const lib_u64 before = provider_probe.advanced_ticks;
-        const lib_u32 before_calls = board_probe.media_calls;
+        const lib_u32 before_calls = board_probe.before_internal_calls;
         failed |= core_machine_advance_to_next_deadline(machine, &advanced) !=
             LIB_STATUS_OK || !advanced || machine->elapsed_ticks != LIB_UINT64_MAX ||
             provider_probe.advanced_ticks != before + 5u ||
-            board_probe.media_calls != before_calls + 1u ||
-            board_probe.media_due_tick != LIB_UINT64_MAX;
+            board_probe.before_internal_calls != before_calls + 1u ||
+            board_probe.before_internal_due_tick != LIB_UINT64_MAX;
         core_machine_capture_time_observation_private(machine, &observation);
         failed |= observation.next_deadline_valid ||
             observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE;

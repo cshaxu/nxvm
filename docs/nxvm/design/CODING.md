@@ -71,6 +71,10 @@ types. Their implementation remains with the cohesive plan/deadline owners.
 Matching qualification/trace tests stay under `test/core/board-base` until
 that whole owner migrates. Neutral executor fixtures supply explicit CPU and
 RAM inputs; ordinary test allocation sizes do not import PC resize policy.
+Device advancement stays cohesive in Board-Base's `board_advance.c`; the neutral
+attachment declares only before/after-internal advancement and CPU interrupt
+signals, not PIT pairs or media/RTC/peripheral slots. Matching Board-order and
+neutral internal-readiness assertions stay with those respective test owners.
 
 ROM mapping declarations and asset roles remain with the core product profile.
 Project-owned BIOS source/build lives in `src/app-nxvm/firmware`, not in the

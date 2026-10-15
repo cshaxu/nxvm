@@ -18,9 +18,7 @@ typedef struct core_machine_attachment_deadline_observation {
 } core_machine_attachment_deadline_observation;
 typedef void (*core_machine_attachment_deadline_provider)(void *owner, lib_u64 now,
     core_machine_attachment_deadline_observation *out_observation);
-typedef void (*core_machine_attachment_ticks_provider)(void *owner,
-    lib_u64 source_ticks);
-typedef void (*core_machine_attachment_media_provider)(void *owner,
+typedef void (*core_machine_attachment_advance_provider)(void *owner,
     lib_u64 source_ticks, lib_u64 due_tick);
 typedef lib_bool (*core_machine_attachment_refresh_request_provider)(void *owner,
     lib_u8 *out_address);
@@ -33,16 +31,8 @@ typedef lib_u64 (*core_machine_attachment_dma_ticks_provider)(void *owner,
 typedef lib_bool (*core_machine_attachment_dma_request_provider)(void *owner);
 typedef void (*core_machine_attachment_dma_advance_provider)(void *owner,
     lib_u64 dma_ticks);
-typedef struct core_machine_attachment_pit_ticks {
-    lib_u64 primary;
-    lib_u64 auxiliary;
-} core_machine_attachment_pit_ticks;
-typedef core_machine_attachment_pit_ticks (*core_machine_attachment_pit_ticks_provider)(
-    void *owner, lib_u64 source_ticks);
-typedef void (*core_machine_attachment_pit_pic_provider)(void *owner,
-    core_machine_attachment_pit_ticks ticks);
-typedef lib_bool (*core_machine_attachment_pic_pending_provider)(void *owner);
-typedef lib_u8 (*core_machine_attachment_pic_acknowledge_provider)(void *owner);
+typedef lib_bool (*core_machine_attachment_interrupt_pending_provider)(void *owner);
+typedef lib_u8 (*core_machine_attachment_interrupt_acknowledge_provider)(void *owner);
 /*
  * Board adaptation of the CPU TEST input for WAIT.  True means the CPU must
  * remain suspended; the attachment owns any physical signal-polarity mapping.
@@ -70,16 +60,16 @@ typedef struct core_machine_attachment {
     core_machine_attachment_dma_ticks_provider dma_ticks;
     core_machine_attachment_dma_request_provider dma_request;
     core_machine_attachment_dma_advance_provider dma_advance;
-    core_machine_attachment_pit_ticks_provider pit_ticks;
-    core_machine_attachment_pit_pic_provider pit_pic;
-    core_machine_attachment_pic_pending_provider pic_pending;
-    core_machine_attachment_pic_acknowledge_provider pic_acknowledge;
+    core_machine_attachment_interrupt_pending_provider interrupt_pending;
+    core_machine_attachment_interrupt_acknowledge_provider interrupt_acknowledge;
     core_machine_attachment_wait_test_asserted_provider wait_test_asserted;
     core_machine_attachment_escape_trap_provider escape_trap_enabled;
     core_machine_attachment_shutdown_reset_provider shutdown_reset;
-    core_machine_attachment_media_provider media;
-    core_machine_attachment_ticks_provider rtc;
-    core_machine_attachment_ticks_provider peripheral;
+    /* Timeline and bus arbitration precede these callbacks. Board source work
+     * runs before internal FPU/WAIT readiness; remaining board work follows it.
+     * Each board owns its device order within these two bounded phases. */
+    core_machine_attachment_advance_provider before_internal_advance;
+    core_machine_attachment_advance_provider after_internal_advance;
     core_machine_attachment_phase_provider reset_devices;
     core_machine_attachment_phase_provider reset_clocks;
     core_machine_attachment_phase_provider refresh_nmi;

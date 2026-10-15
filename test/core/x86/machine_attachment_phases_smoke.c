@@ -159,6 +159,74 @@ done:
     return failed || probe.finalized != 1u;
 }
 
+typedef struct internal_advance_probe {
+    core_machine *machine;
+    lib_u64 pending_ticks;
+    lib_u32 before_calls, after_calls, finalized;
+    lib_bool failed;
+} internal_advance_probe;
+
+static void internal_advance_before(void *owner, lib_u64 ticks, lib_u64 due)
+{
+    internal_advance_probe *probe = owner;
+    lib_u64 pending = 0u;
+
+    ++probe->before_calls;
+    probe->failed |= probe->after_calls != 0u ||
+        ticks != probe->pending_ticks || due != probe->pending_ticks ||
+        x86_fpu_ticks_until_completion(probe->machine->fpu, &pending) !=
+            LIB_STATUS_OK || pending != probe->pending_ticks;
+}
+
+static void internal_advance_after(void *owner, lib_u64 ticks, lib_u64 due)
+{
+    internal_advance_probe *probe = owner;
+
+    ++probe->after_calls;
+    probe->failed |= probe->before_calls != 1u ||
+        ticks != probe->pending_ticks || due != probe->pending_ticks ||
+        x86_fpu_ticks_until_completion(probe->machine->fpu, &(lib_u64){0u}) !=
+            LIB_STATUS_INVALID_STATE;
+}
+
+static void internal_advance_finalize(void *owner)
+{
+    ++((internal_advance_probe *)owner)->finalized;
+}
+
+static lib_i32 verify_internal_advance_boundary(void)
+{
+    const core_machine_executor_config config = {
+        .memory_bytes = 65536u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .fpu_profile = X86_FPU_PROFILE_80387
+    };
+    internal_advance_probe probe = {0};
+    const core_machine_attachment attachment = {
+        .before_internal_advance = internal_advance_before,
+        .after_internal_advance = internal_advance_after,
+        .finalize_devices = internal_advance_finalize,
+        .context = &probe
+    };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = 1;
+
+    if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
+    probe.machine = machine;
+    if (core_machine_bind_attachment(machine, &attachment) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK) goto done;
+    x86_fpu_begin_command(machine->fpu, 0xd8u, 0xc0u);
+    if (x86_fpu_ticks_until_completion(machine->fpu, &probe.pending_ticks) !=
+            LIB_STATUS_OK || probe.pending_ticks == 0u ||
+        core_machine_publish_elapsed_ticks(machine, probe.pending_ticks,
+            CORE_MACHINE_TIME_PUBLICATION_DEADLINE) != LIB_STATUS_OK) goto done;
+    failed = probe.failed || probe.before_calls != 1u || probe.after_calls != 1u;
+done:
+    core_machine_destroy(machine);
+    return failed || probe.finalized != 1u;
+}
+
 lib_i32 main(void)
 {
     const core_machine_executor_config config = {
@@ -166,7 +234,8 @@ lib_i32 main(void)
         .cpu_profile = X86_CORE_CPU_PROFILE_8086,
         .ticks_per_instruction = 1u
     };
-    if (verify_board_phases(&config) || verify_deadline_admission()) return 1;
+    if (verify_board_phases(&config) || verify_deadline_admission() ||
+        verify_internal_advance_boundary()) return 1;
     lib_c_printf("%s\n", "CORE-ATTACHMENT-PHASES:OK");
     return 0;
 }

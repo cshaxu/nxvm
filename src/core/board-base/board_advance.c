@@ -54,36 +54,43 @@ void core_machine_board_dma_advance(void *owner, lib_u64 dma_ticks)
         board->core, dma_ticks);
 }
 
-core_machine_attachment_pit_ticks core_machine_board_pit_ticks_advance(void *owner,
-    lib_u64 source_ticks)
+void core_machine_board_before_internal_advance(void *owner,
+    lib_u64 source_ticks, lib_u64 due_tick)
 {
     core_machine_board_state *board = owner;
-    core_machine_attachment_pit_ticks ticks = {0u, 0u};
-    if (board == LIB_NULL) return ticks;
-    ticks.primary = core_machine_clock_domain_advance(&board->pit_clock,
-        source_ticks);
-    ticks.auxiliary = core_machine_clock_domain_advance(
-        &board->auxiliary_pit_clock, source_ticks);
-    return ticks;
-}
+    lib_u64 primary_ticks;
+    lib_u64 auxiliary_ticks;
 
-void core_machine_board_pit_pic_advance(void *owner,
-    core_machine_attachment_pit_ticks ticks)
-{
-    core_machine_board_state *board = owner;
-    if (board == LIB_NULL) return;
-    x86_pit_advance(board->shared_pit, ticks.primary);
+    if (board == LIB_NULL || source_ticks == 0u) return;
+    primary_ticks = core_machine_clock_domain_advance(&board->pit_clock,
+        source_ticks);
+    auxiliary_ticks = core_machine_clock_domain_advance(
+        &board->auxiliary_pit_clock, source_ticks);
+    x86_pit_advance(board->shared_pit, primary_ticks);
     if (board->auxiliary_pit_configured) {
-        x86_pit_advance(board->auxiliary_pit, ticks.auxiliary);
+        x86_pit_advance(board->auxiliary_pit, auxiliary_ticks);
     }
-    if (ticks.primary != 0u) {
+    if (primary_ticks != 0u) {
         core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE,
-            0u, (lib_u32)ticks.primary, 0u);
+            0u, (lib_u32)primary_ticks, 0u);
     }
     core_machine_pic_refresh(board->shared_pic_master,
         board->shared_pic_slave);
     core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_PIC_REFRESH,
         0u, 0u, 0u);
+
+    /* Newly ready media cannot enter the PIC arbitration already completed at
+     * this tick; preserve the board's existing readiness boundary. */
+    if (board->fdc_configured) {
+        core_machine_fdc_advance_at(board->fdc, due_tick);
+        core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_FDC_ADVANCE,
+            0u, 0u, 0u);
+    }
+    if (board->hdc_configured) {
+        core_machine_hdc_advance_at(board->hdc, due_tick);
+        core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_HDC_ADVANCE,
+            0u, 0u, 0u);
+    }
 }
 
 lib_bool core_machine_board_pic_pending(void *owner)
@@ -102,29 +109,17 @@ lib_u8 core_machine_board_pic_acknowledge(void *owner)
         board->shared_pic_slave);
 }
 
-void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
-    lib_u64 due_tick)
-{
-    core_machine_board_state *board = owner;
-
-    if (board == LIB_NULL || source_ticks == 0u) return;
-    if (board->fdc_configured) {
-        core_machine_fdc_advance_at(board->fdc, due_tick);
-        core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_FDC_ADVANCE,
-            0u, 0u, 0u);
-    }
-    if (board->hdc_configured) {
-        core_machine_hdc_advance_at(board->hdc, due_tick);
-        core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_HDC_ADVANCE,
-            0u, 0u, 0u);
-    }
-}
-
-void core_machine_board_rtc_advance(void *owner, lib_u64 source_ticks)
+/* Input and video follow Core's readiness phase. Presentation only consumes
+ * copied snapshots outside this guest-time advancement. */
+void core_machine_board_after_internal_advance(void *owner,
+    lib_u64 source_ticks, lib_u64 due_tick)
 {
     core_machine_board_state *board = owner;
     lib_u64 rtc_ticks;
+    lib_u64 kbc_ticks;
+    lib_u64 vadp_ticks;
 
+    (void)due_tick;
     if (board == LIB_NULL || source_ticks == 0u) return;
     rtc_ticks = core_machine_clock_domain_advance(&board->rtc_clock, source_ticks);
     if (board->rtc_cmos_configured) {
@@ -132,17 +127,6 @@ void core_machine_board_rtc_advance(void *owner, lib_u64 source_ticks)
     }
     core_machine_trace_record(board->core, CORE_MACHINE_BOARD_TRACE_RTC_ADVANCE,
         0u, (lib_u32)rtc_ticks, 0u);
-}
-
-/* Input and video follow Core's readiness phase. Presentation only consumes
- * copied snapshots outside this guest-time advancement. */
-void core_machine_board_peripheral_advance(void *owner, lib_u64 source_ticks)
-{
-    core_machine_board_state *board = owner;
-    lib_u64 kbc_ticks;
-    lib_u64 vadp_ticks;
-
-    if (board == LIB_NULL || source_ticks == 0u) return;
     kbc_ticks = core_machine_clock_domain_advance(&board->kbc_clock, source_ticks);
     if (board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         x86_xt_keyboard_advance(board->xt_keyboard, source_ticks);

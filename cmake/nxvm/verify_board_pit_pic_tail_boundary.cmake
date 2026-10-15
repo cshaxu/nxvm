@@ -17,16 +17,15 @@ foreach(forbidden "machine->pit_clock" "machine->auxiliary_pit_clock"
         message(FATAL_ERROR "Core scheduler directly owns board PIT/PIC: ${forbidden}")
     endif()
 endforeach()
-foreach(required "attachment.pit_ticks(machine->attachment.context,"
-    "attachment.pit_pic(machine->attachment.context, pit_ticks)"
+foreach(required "attachment.before_internal_advance(machine->attachment.context,"
+    "attachment.after_internal_advance(machine->attachment.context,"
     "x86_core_cpu_execution_advance_prefetch_reservation(")
     string(FIND "${core}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Core PIT/PIC phase lacks ${required}")
     endif()
 endforeach()
-foreach(required "core_machine_board_pit_ticks_advance("
-    "core_machine_board_pit_pic_advance("
+foreach(required "core_machine_board_before_internal_advance("
     "core_machine_clock_domain_advance(&board->pit_clock"
     "&board->auxiliary_pit_clock" "x86_pit_advance("
     "CORE_MACHINE_BOARD_TRACE_PIT_ADVANCE" "core_machine_pic_refresh("
@@ -36,11 +35,15 @@ foreach(required "core_machine_board_pit_ticks_advance("
         message(FATAL_ERROR "Board PIT/PIC tail lacks ${required}")
     endif()
 endforeach()
-foreach(required ".pit_ticks = core_machine_board_pit_ticks_advance"
-    ".pit_pic = core_machine_board_pit_pic_advance")
+foreach(required ".before_internal_advance = core_machine_board_before_internal_advance"
+    ".after_internal_advance = core_machine_board_after_internal_advance")
     string(FIND "${creation}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board PIT/PIC provider not bound: ${required}")
     endif()
 endforeach()
+file(READ "${PROJECT_SOURCE_DIR}/src/core/x86/attachment_interface.h" contract)
+if(contract MATCHES "pit_ticks|pit_pic|pic_pending|pic_acknowledge|media_provider|provider (media|rtc|peripheral);")
+    message(FATAL_ERROR "Neutral advancement contract retains PC device slots")
+endif()
 message("BOARD-PIT-PIC-TAIL:OK")

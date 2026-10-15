@@ -113,6 +113,13 @@ verification and acceptance; the task history retains the cutover sequence.
   scalar ID accepts producer-owned events: CPU/bus identities, including DMA,
   remain neutral; PIT/PIC/RTC/KBC/video/FDC/HDC identities belong to the board.
   Existing numeric IDs, emission order and Release no-op behavior are preserved.
+  Neutral attachment advancement has two bounded board callbacks around the
+  executor's internal FPU/WAIT readiness. Board owns PIT/PIC/media before that
+  boundary and RTC/input/video after it; Core owns due timeline work and bus
+  arbitration first. Board readiness cannot re-enter earlier same-tick PIC
+  arbitration. PIT tick pairs and named device progression slots do not cross
+  the execution boundary. CPU samples neutral interrupt pending/acknowledgement
+  signals; PIC state and cascade behavior remain Board-owned.
   `core/board-at` owns KBC and planar parity; `core/board-xt` owns PPI keyboard
   wiring. Emulator Product composition integrates their public contracts; neither
   family reads the common board layout. Model40 alone owns D4 memory,

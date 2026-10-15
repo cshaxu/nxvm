@@ -48,8 +48,8 @@ static lib_status pic_phase_create(const core_machine_executor_config *config,
     pic_phase_state *state)
 {
     const core_machine_attachment attachment = {
-        .pic_pending = pic_phase_pending,
-        .pic_acknowledge = pic_phase_acknowledge,
+        .interrupt_pending = pic_phase_pending,
+        .interrupt_acknowledge = pic_phase_acknowledge,
         .reset_devices = pic_phase_reset_pic,
         .finalize_devices = pic_phase_finalize,
         .context = state

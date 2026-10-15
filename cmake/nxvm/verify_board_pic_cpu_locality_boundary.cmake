@@ -14,8 +14,8 @@ foreach(forbidden "machine->shared_pic_master" "machine->shared_pic_slave"
         message(FATAL_ERROR "CPU bus directly owns board PIC: ${forbidden}")
     endif()
 endforeach()
-foreach(required "attachment.pic_pending(machine->attachment.context)"
-    "attachment.pic_acknowledge(machine->attachment.context)"
+foreach(required "attachment.interrupt_pending(machine->attachment.context)"
+    "attachment.interrupt_acknowledge(machine->attachment.context)"
     "CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE"
     "core_machine_transaction_commit(" "core_machine_external_cycle_invalidate(machine)")
     string(FIND "${core}" "${required}" position)
@@ -38,8 +38,8 @@ string(FIND "${wiring}" "core_machine_cpu_bus_refresh_pulse(platform->core)" pos
 if(position LESS 0)
     message(FATAL_ERROR "Board refresh pulse does not notify Core")
 endif()
-foreach(required ".pic_pending = core_machine_board_pic_pending"
-    ".pic_acknowledge = core_machine_board_pic_acknowledge")
+foreach(required ".interrupt_pending = core_machine_board_pic_pending"
+    ".interrupt_acknowledge = core_machine_board_pic_acknowledge")
     string(FIND "${creation}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board PIC provider not bound: ${required}")
