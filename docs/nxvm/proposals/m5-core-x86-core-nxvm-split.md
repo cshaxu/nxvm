@@ -153,7 +153,7 @@ The refined remaining batches are plans, not allocated S identifiers:
 | Batch | Deliverable | Exit evidence |
 | --- | --- | --- |
 | S2 inventory prerequisite | Complete file/symbol/test/target disposition; consumer graph and PC-assumption review against S1. | Hashed paths and explicit neutral/board receiving decisions; documentation-only proof, not extraction qualification. |
-| Planned S3 CPU/FPU | Shared cpu/fpu sources, public contracts, independent targets and matching tests; all PC receivers updated. | No PC/App or machine-internal test-header dependency; both widths pass owner suites and unchanged CPU qualification. |
+| Accepted S3 CPU/FPU | Shared cpu/fpu sources, public contracts, independent targets and matching tests; all PC receivers updated. | Pushed `8bb5bcaa5` / `039d946ab`, [actual-change proof](../etc/evidence/t561-s3/review.md): 112 owner tests and 627 repository units per width, preserved algorithms/grades and eight qualified PC artifacts. |
 | Planned S4 PC metadata separation | Move whole-PC timing qualification and board trace/default policy out of neutral contracts before scheduler extraction. | Original grades/IDs/admission retained; one table owner, no mirrored qualification state. |
 | Planned S5 neutral machine | Shared execution/routing/time/observation; board owns device sequencing, address policy and interrupt-source wiring. | Real non-PC synthetic board proof plus PC timing/transaction/reset regression; one execution/time/bus owner. |
 | Planned S6 NXVM consolidation | Remaining chips, board-base/XT/AT, adapter and product; fixtures/checkers/registrations and all App receivers. | One full x86-nxvm package absorbs current speed/info contract; retired Core paths/aliases removed, all four Apps qualified. |

@@ -189,3 +189,11 @@ NXVM commit switches the receivers and removes old implementations/tests.
 The bounded publication interval is not a permanent alternate runtime path.
 Coordinator acceptance reviews the complete cutover and only then discharges
 I2. I3--I5, planned S4--S7 and the original CPU successor remain open.
+
+Coordinator actual-change review accepts Shared `8bb5bcaa5` plus NXVM
+`039d946ab`. All 438 delivered file hashes and eight artifact hashes match
+the reviewed bytes; retired CPU/FPU paths are absent from the committed tree
+and old target names are absent from both generated graphs. Ten-tree,
+MyNES/owner-INI preservation and documentation checks pass. I2 is accepted
+within this CPU/FPU batch; the named white-box receiver work remains with
+I3/I4 and cannot disappear from the final I5 audit. S3 closes; T561 does not.

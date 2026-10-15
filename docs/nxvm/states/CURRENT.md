@@ -4,32 +4,36 @@
 
 M5 T561 remains open. S1 is accepted after coordinator actual-change review of
 pushed Shared `15d86fc8e` and NXVM `6c95c2da3`. S2 is accepted after coordinator
-actual-change review of pushed `82e3257cc`. S3 CPU/FPU extraction is implemented
-and dual-width qualified; Shared publication is pushed as `8bb5bcaa5` and
-NXVM cutover delivery awaits coordinator review, not CPU completion.
+actual-change review of pushed `82e3257cc`. S3 CPU/FPU extraction is accepted
+after actual-change review of pushed Shared `8bb5bcaa5` and NXVM `039d946ab`.
+There is no active S packet between this acceptance and the next admission.
 The [proposal](../proposals/m5-core-x86-core-nxvm-split.md) and
 [convergence ledger](../history/M5-T561-core-package-split.md) retain I1--I5.
 
-## Active Packet — M5 T561 S3
+## Accepted S3 CPU/FPU Extraction
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T561 S3 after accepted S2 `1ecd72846`; one-session coordinator/executor. |
-| Admission And Approval | Owner approves executing the frozen split plan. Targets: Shared extraction/root registration and NXVM receiver/docs/eight PC artifacts; separate sequential P commits, reviewed as the coordinated cutover. No MyNES implementation changes. |
-| Objective | Consume I2: move the sole CPU/FPU implementation and 106 matching test files into x86-core/cpu and fpu; canonical owned symbols, standalone targets/tests and every existing receiver. |
-| Non-goals | No instruction/table/timing algorithm changes, new CPU profiles, C16/C17 qualification, neutral-machine extraction, PC policy redesign, Lib/Emulator edits, sibling imports or unrelated cleanup. |
-| Reference Baseline | Clean `1ecd72846`, S2's frozen inventory `8db742b6d`, CPU semantic baseline `b906c7138`. |
-| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), [S2 inventory](../etc/evidence/t561-s2/review.md), I2 in T561 history. |
-| Files And ABI Surface | Move 12 CPU/FPU implementation/header files and 106 test-package files, six CPU-local checkers into test/x86-core/cpu and registration; update Core/App consumers, tools/checkers/build descriptions and manifests. Owner additionally requires src/test component hierarchy symmetry. S2's 118 total was correct, but its source/test split missed cpu_trace.h; exact paths do not expand. Rename only CPU-owned declarations, not unrelated Core functions sharing a prefix. Preserve copied/opaque API shape and enum values. |
-| Applicable Rules | EXECUTION/ARCHITECTURE/CODING/DOCUMENT, NXVM design ARCHITECTURE/CODING and source policy; architecture-governance before coding-governance. Ownership, no reverse dependency, Types vocabulary, no duplicate path, exact style/algorithm preservation. |
-| Verification | Original x64/x86 Release Ninja/ccache graphs, -j8; standalone x86-core test registration and targets in those graphs; complete repository units -j4, existing specialized gates and required receiving regressions; rebuild/deploy all eight 0561 PC EXEs and check architecture/identity/hash. Validate manifests/DAG/types/old-path sweep and documentation. No new graph or cache reset. |
-| Expected Markers | CPU/FPU tests pass independently of PC targets; complete units/gates pass both widths; eight current PC artifacts; no retired CPU/FPU path/target/symbol in live code; normalized CPU/FPU algorithm diff empty. |
-| Asset Needs | Existing approved external build inputs only; preserve INI/media/ROM/snapshot and MyNES assets. Eight PC executable inputs change and require rebuilding 0.5.0561, no fabricated MyNES update. |
-| Reporting Requirements | Initial scope/estimated diff, progress at extraction/build/qualification, actual rename-aware and non-mechanical counts, retained dependencies/limitations, logs and pushed commits. |
-| Stop Conditions | Semantic/table/ABI-layout drift, new outward dependency, unclassified source conflict, missing architecture/input, failed qualification or changes required to Lib/Emulator; do not lower assertions/budgets or claim partial pass. |
-| Exit Criteria | Sole CPU/FPU owner, independent tests with no PC fixture dependency, all receivers repaired, complete required dual-width proof/artifacts and actual-change review; push complete target-separated delivery, then governance acceptance. T stays open. |
-| Original Owner Request | Proceed with the agreed x86-core/x86-nxvm split; keep Product a separate child and execute the next bounded S. |
-| Similar-Issue Sweep | All live src/test/cmake/tools CPU/FPU includes, owned declarations and target references; route old checkers to the new owner, retain historic evidence keys; verify moved files are equivalent after reversing mechanical names/paths. |
+[Actual-change review](../etc/evidence/t561-s3/review.md) verifies 12 moved
+implementation/header files and 106 test files, six CPU-local checkers, all
+438 changed source/test/build/tool hashes and the 511-name ownership map.
+Production C/H is mechanically equivalent, net zero lines; two test-only
+utility dependency removals yield net -3 test C/H lines. No CPU algorithm,
+table, layout, grade, new profile, worker or scheduler changes. The original
+CPU/FPU paths and targets are retired; new src/test hierarchies match.
+
+Both original graphs pass 627/627 complete repository units, including all
+112 X86 Core owner cases, and all specialized gates. Four-profile integrations
+pass 48 executions per width plus restored-default identity. All eight
+optimized/stripped 0561 PC Assets EXEs pass PE/version/hash and published
+INFO/SPEED/HELP/EXIT/INI checks. Both graphs return to default; persistent
+ccache is preserved. Imported ten trees, Lib/Emulator, MyNES and owner inputs
+are unchanged. Manual RDP/physical/full Windows GUI qualification is not claimed.
+
+The coordinator reviewed both pushed implementation commits and actual frozen
+bytes, not only the test report. I2 is discharged as CPU/FPU extraction. The
+recorded execution/board white-box test receivers remain explicit S5/S6 work;
+they are not a claim of final package-boundary completion. I3--I5, planned
+S4--S7 and T560 C16/C17/final qualification remain open. T561 remains open.
+The complete S3 admission packet is retained in `039d946ab`'s CURRENT revision.
 
 ## Accepted S2 Inventory
 
