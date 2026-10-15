@@ -8,33 +8,13 @@ actual-change review of pushed `82e3257cc`. S3 CPU/FPU extraction is accepted
 after actual-change review of pushed Shared `8bb5bcaa5` and NXVM `039d946ab`.
 S4 PC metadata/default/trace separation is accepted after actual-change review
 of pushed `f136911be`. Neutral Machine extraction is next; CPU qualification
-does not resume. S5 is admitted for neutral advancement and interrupt wiring,
-before address-decode separation and the actual Machine move.
+does not resume. S5 neutral advancement and interrupt wiring is accepted after
+actual-change review of pushed `d72a0165d`; address-decode separation and the
+actual Machine move remain next.
 The [proposal](../proposals/m5-core-x86-core-nxvm-split.md) and
 [convergence ledger](../history/M5-T561-core-package-split.md) retain I1--I5.
 
-## Active Packet — M5 T561 S5
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T561 S5 after accepted S4 `91046e0f8`; one-session coordinator/executor. |
-| Admission And Approval | Owner-approved complete Core split and automatic sequential S admission; NXVM source/test/checker/docs/eight artifacts only. No Lib/Emulator, imported package, CPU/FPU or MyNES changes in this prerequisite. |
-| Objective | Consume I3 P4/P6: remove PIT/PIC, media and RTC progression slots from neutral execution; Board owns its device order through two explicit advancement boundaries around internal CPU/FPU readiness. CPU consumes neutral interrupt pending/acknowledgement rather than PIC-named slots. |
-| Non-goals | No directory move yet, A20/decode implementation (next S), CPU algorithm/timing grade, C16/C17, device waveform, second scheduler, callback registry, persisted temporary clock state, Lib/Emulator edit or sibling import. |
-| Reference Baseline | Clean accepted `91046e0f8`; S2 P4/P6 and S4's exact original timing/trace policies and eight 0561 artifacts. |
-| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), [S2 contract review](../etc/evidence/t561-s2/review.md), [T561 ledger](../history/M5-T561-core-package-split.md). |
-| Files And ABI Surface | Core attachment/scheduler/CPU bus, Board advance/binding/declarations, directly affected tests and ownership checkers, Core manifests/docs/eight PC EXEs. Two bounded before/after-internal advance callbacks replace named PIT/media/RTC/peripheral slots; Board privately combines contiguous device work. Remove the PIT-pair public type. Neutral interrupt slot names replace PIC names without aliases. Preliminary production +110--200/-150--260, tests +120--240/-70--160, checker/registration +20--70/-20--70; refine from actual changes. No new state or thread. |
-| Applicable Rules | Execution/Architecture/Coding/Document, NXVM design Architecture/Coding and source policy; architecture-governance then coding-governance. Preserve one timeline/bus/executor, inward dependency, Types vocabulary, mirrored test owners and existing closed CPU eligibility. |
-| Verification | Original dual-width Ninja/ccache graphs, build -j8/test -j4. Focused complete advancement/clock/interrupt/arbitration/deadline/attachment batch first, actual diff review, then complete repository units/specialized gates and required four-profile integrations; rebuild/deploy eight 0561 artifacts and verify real published CLI/INI/PE/version/hash. No alternate graph or reduced timeout/assertion. |
-| Expected Markers | Core names no PIT/PIC/media/RTC progression slot or PIT-pair representation. Timeline then bus/refresh/DMA then Board PIT/PIC/media then internal FPU/WAIT then Board RTC/input/video remains the causal order. A readiness source cannot enter earlier same-tick PIC arbitration. Bus HOLD/READY/prefetch ownership stays Core. IRQ sampling/ack is one path. |
-| Asset Needs | Existing approved external firmware/media inputs only; preserve owner INI/ROM/disks/snapshots and MyNES assets. Rebuild eight PC EXEs (four dual-width pairs), not unrelated MyNES artifacts. |
-| Reporting Requirements | Before implementation record real owners, clock-conversion placement and call-order proof, file scope and estimates; report actual added/deleted/net lines, retained and deleted mechanisms, full qualification and unexecuted manual boundaries. Complete implementation P pushed before separate coordinator acceptance. |
-| Stop Conditions | Changed guest ordering/timing, observable difference from local clock conversion relocation, lost refresh/DMA ownership, outward dependency, new state/registry/thread, necessary Lib/Emulator/CPU change or unrelated conflict. Revise design rather than mask failure. |
-| Exit Criteria | P4/P6 whole batch has explicit neutral contracts, Board device order and regression proof on both widths; applicable complete qualification/artifacts/manifests/docs pass, actual diff reviewed and delivery/acceptance pushed. I3 extraction and P7/P8, I4/I5 remain open. |
-| Original Owner Request | Execute complete Core-to-X86-Core/X86-NXVM split, keep Product separate, and mirror all source/test component hierarchies. |
-| Similar-Issue Sweep | All attachment initializers/callers, reset/deadline/idle/run paths, clock conversions and readiness/trace order, PIC pending/ack and CPU interrupt sampling; checkers and tests must enforce the real owner, not obsolete spelling. Deferred A20 and cross-package private fixtures remain explicit later ledger items. |
-
-## Delivered S5 Advancement Boundary
+## Accepted S5 Advancement Boundary
 
 [Frozen S5 proof](../etc/evidence/t561-s5-neutral-advance.md) and its
 [21-file review hashes](../etc/evidence/t561-s5-file-review.tsv) record the
@@ -47,7 +27,10 @@ Both original graphs pass 627/627 repository units, specialized gates and
 rebuilt/deployed 0561 PC EXEs pass actual CLI/INI/PE/version/hash checks.
 Lib/Emulator, imported packages, CPU/FPU, MyNES and owner inputs are unchanged.
 Manual RDP/physical/full Windows GUI qualification is not claimed. Coordinator
-actual-change acceptance remains required; T561 and I3 extraction/I4/I5 stay open.
+actual-change review accepts pushed `d72a0165d` against the packet, ownership,
+preserved effect bodies, all 21 file hashes, receiving tests and eight assets.
+The full S5 packet remains in that implementation revision. S5 is closed;
+T561 and I3 extraction/I4/I5 stay open, with no work before the next packet.
 
 ## Accepted S4 PC Policy Separation
 

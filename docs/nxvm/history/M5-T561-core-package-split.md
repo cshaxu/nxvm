@@ -13,7 +13,7 @@ queued with its complete original ledger and requires later admission.
 | I0 exact ten-tree prerequisite | Lib/Emulator/X86 Debug/X86 IBM PC/X86 NXVM src/test match pinned SoftPC commit; manifests, root registration and migrated product receivers verified. | S1 accepted after pushed P1/P2 actual-change review; 264 exact files and full receiving proof below. |
 | I1 complete disposition | Every current Core source/test/target and public contract has one destination, dependency and verification owner; all PC assumptions and SoftPC split prerequisites classified. | S2 accepted after actual-change review of pushed `82e3257cc`: complete 679-path inventory and explicit mixed-contract receiving decisions; no implementation qualification implied. |
 | I2 CPU/FPU extraction | One independent shared CPU/FPU implementation and corresponding tests, correct interfaces, all old consumers migrated and superseded paths removed. | S3 accepted after actual-change review of Shared `8bb5bcaa5` and NXVM `039d946ab`; original CPU functionality/grades retained. I3/I4 private-test receiving obligations remain explicit. |
-| I3 neutral execution core | CPU composition, memory/port routes, guest time, transactions and debug independent of PC policy, with real ROM-free non-PC board proof. | S4 prerequisite P2/P3/P5 accepted in `f136911be`; actual neutral execution extraction/proof remains open, with one executor/timeline. |
+| I3 neutral execution core | CPU composition, memory/port routes, guest time, transactions and debug independent of PC policy, with real ROM-free non-PC board proof. | S4 P2/P3/P5 accepted in `f136911be`; S5 P4/P6 accepted in `d72a0165d`. P7/P8 and actual extraction/non-PC proof remain open, with one executor/timeline. |
 | I4 NXVM consolidation | Chips, board-base/XT/AT, driver and family Product in X86 NXVM; all four Apps use the same package, no duplicates or old-path aliases. | Future batch; real PC product/runtime receivers mapped before moving. |
 | I5 final qualification | Full dual-width units/gates, all required PC integrations and affected artifacts, independent package builds, exact ownership and documentation, no dependency on retired roots. | T exit; not implied by staged S1 tests. |
 
@@ -184,7 +184,12 @@ advance phases replacing named device slots, preserved Board effect bodies,
 neutral interrupt operations and complete dual-width receiving qualification:
 627/627 repository units, all specialized gates, 48 receiving integrations plus
 restored identity per width, and eight rebuilt/deployed qualified PC EXEs.
-I3 P4/P6 is not accepted until complete delivery and actual-change review.
+Coordinator actual-change review accepts pushed implementation `d72a0165d`:
+actual callback/Board/IRQ changes, preserved function/effect bodies, all 21
+frozen hashes, test and checker changes, eight artifact hashes and unchanged
+protected/other-target inputs satisfy the packet. C/H is +64/-111 production
+and +130/-82 tests; six checks are +47/-24. Full S5 admission remains in P1's
+CURRENT revision. S5 is closed, not T561; I3 P4/P6 prerequisites are accepted.
 The 25 existing higher Board/adapter test files that
 directly include execution private headers join S2 T1's explicit S7/S8 receiver
 cleanup obligation; final I5 rejects all unresolved cross-package borrowing.
