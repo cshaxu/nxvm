@@ -889,3 +889,33 @@ to the source-qualified functional contract above; C01 fitted-silicon limits,
 C15/S8, C16/S9 and C17/S10 remain mandatory in T560. Production SX admission
 stays closed. There is no assertion of a complete 486 CPU, full Windows GUI
 compatibility or manual/RDP qualification.
+
+## Coordinator Actual-Change Acceptance
+
+On 2026-10-15 the same session switched from executor to coordinator and
+reviewed pushed P1 0059bfd5117baf503f734252935d2eca20eb44e5. This is an actual
+diff review under the one-session rule, not an independent-person review.
+It inspected the CPU reset cause and common reset body, complete physical
+SMM image and candidate RSM publication, instruction/event ordering, power
+input ownership, Core transaction/native RDY handling, cancellation before
+attachment teardown, and the two existing scheduler DMA/HOLD predicates.
+The CPU and real Core tests, registration, manifest changes, final logs,
+deployment hashes and stripped sections were reconciled to E01--E20.
+
+Accepted invariants: CPU owns architectural state and pin/event latches;
+Core owns physical routing, one transaction and timeline; the board owns
+actual SMRAM decode and qualified electrical timing. Every new field and
+bounded callback has a real consumer. Failure preserves accepted physical
+effects and uses existing exception/fault paths, without rollback machinery,
+second executor or successful stub. Shared-six/MyNES/owner inputs are absent
+from the actual diff. All twelve production files and ten test files fit
+the admitted mechanism; test growth supplies explicit form and failure proof.
+Eight affected PC EXEs are part of the complete P1, not deferred publication.
+
+C11/C12 are accepted at the documented functional source/model grades, with
+their complete E01--E20 dispositions. C01 fitted-silicon, C15 inherited corpus,
+C16 exact timing and C17 production admission limits remain visible in the
+convergence ledger and proposal. No unresolved member is hidden behind a
+later boot checkpoint. S7 is accepted and closed; T560 stays open and the
+next planned batch is S8. No production or binary changes accompany this
+acceptance record, so P1's artifact identities remain current.

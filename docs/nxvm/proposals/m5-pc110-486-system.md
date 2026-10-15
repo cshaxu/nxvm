@@ -82,16 +82,17 @@ coverage record; CURRENT alone admits each executing batch.
 - Final batch: complete ledger reconciliation, production Core connection,
   retained-machine regressions and full dual-width artifact qualification.
 
-S1--S6 are accepted. S5 delivery 33cb2efe1 qualifies actual cache/test commands,
+S1--S7 are accepted. S5 delivery 33cb2efe1 qualifies actual cache/test commands,
 physical routing and shared memory LOCK with locked page-table updates.
 S6 delivery 926bfe185 qualifies selected VME/debug/exception/SX-FPU semantics
-and carried entry priorities at its explicit source/model grades. S7's
-SMM/power source and state-owner review is admitted in CURRENT. The active S7
-worktree now implements physical SMM/RSM, qualified power signals, held special
-cycles and deferred/held FLUSH. Final whole units pass 604/604 per width,
-complete specialized gates and all eight integration/release groups pass, and
-eight verified 0560 EXEs are deployed. Complete-P push and coordinator actual
-change acceptance remain; this is not production 486 admission or S7 closure.
+and carried entry priorities at its explicit source/model grades. S7 delivery
+0059bfd51 is accepted after actual-change review of physical SMM/RSM,
+qualified power signals, held special cycles and deferred/held FLUSH. Final
+whole units pass 604/604 per width, with the separately recorded fixture-only
+rechecks. Complete specialized gates and all eight integration/release groups
+pass, and eight verified 0560 EXEs are deployed. C11/C12 acceptance is bounded
+by its explicit source/model grades; C15/S8, C16/S9 and C17/S10 remain open.
+This is not production 486 admission or complete CPU qualification.
 Later numeric S boundaries
 remain plans until admission; simple adjacent batches may combine. Development uses focused
 batch tests, followed by required closure qualification once per stable revision.

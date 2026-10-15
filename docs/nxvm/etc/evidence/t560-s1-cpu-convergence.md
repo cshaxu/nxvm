@@ -107,6 +107,31 @@ records S6 closure. This evidence does not close C11/C12 SMM/power, C15's whole
 inherited corpus, C16 timing or C17 admission; S7--S10 retain them in T560.
 No applicable CPU gap is transferred outside this task.
 
+### S7 SMM And System Subcase Acceptance
+
+Coordinator actual-change review accepts pushed implementation 0059bfd51
+against the [S7 event/exit matrix](t560-s7-smm-system.md#exit-matrix-and-self-review).
+C11 moves from the initial RSM TODO to source-qualified physical save/restore,
+guest-modified image, relocation, I/O/HALT restart and nested-signal proof.
+C12 moves from inherited-only evidence to direct selected-SX reset distinction,
+IRQ/NMI/SMI priorities, HOLD/LOCK, held special-cycle RDY, Stop Grant, qualified
+CLK and deferred/held FLUSH proof in the existing CPU/Core owners. Early/late
+provider failures, accepted write prefixes and teardown order are exercised.
+
+The complete batch is E01--E20, not a successful firmware checkpoint. Public
+save slots are source-backed; unpublished hidden-state encoding, DR7 ambiguity
+and relocated selector detail remain explicit L2 models. Physical synchronizer/
+PLL durations and exact instruction costs remain C16/S9. Exact fitted PC110
+package/stepping remains a C01 qualification limit, not established by these
+functional tests. C15/S8 and C17/S10 stay mandatory; production construction
+still rejects SX. No applicable CPU work transfers outside T560.
+
+Final full repository units pass 604/604 per width, followed by the separately
+recorded fixture-only 2/2 rechecks. Both complete specialized aggregates and
+all eight integration/release groups pass; eight stripped 0560 PC EXEs are
+deployed with PE, version, INI identity and SHA-256 evidence. This acceptance
+does not claim Windows 3.1 GUI or manual/RDP qualification.
+
 ## Initial Direct Inspection
 
 ### S4 Translation-State Subcase Evidence
