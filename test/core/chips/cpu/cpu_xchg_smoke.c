@@ -44,14 +44,14 @@ static lib_i32 xchg_test_real(void)
         state.cpu.data.esi = 0x00001000u;
         state.cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
         if (vectors[form].memory_width != 0u)
-            failed |= cpu_instruction_write(&state, vectors[form].memory_address, &vectors[form].memory_before, vectors[form].memory_width, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            failed |= cpu_instruction_write(&state, vectors[form].memory_address, &vectors[form].memory_before, vectors[form].memory_width, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         failed |= cpu_instruction_run(&state, vectors[form].code, vectors[form].bytes, &after) != LIB_STATUS_OK || state.fault.valid ||
             after.data.eip != vectors[form].bytes ||
             after.data.eax != vectors[form].eax_after ||
             after.data.ecx != vectors[form].ecx_after ||
             after.data.eflags != (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF);
         if (vectors[form].memory_width != 0u)
-            failed |= cpu_instruction_read(&state, vectors[form].memory_address, &memory_after, vectors[form].memory_width, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+            failed |= cpu_instruction_read(&state, vectors[form].memory_address, &memory_after, vectors[form].memory_width, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                 memory_after != vectors[form].memory_after;
         if (failed)
             return 0;
@@ -115,7 +115,7 @@ static lib_i32 xchg_test_legacy_default16(void)
         state.cpu.data.eip = 0u;
         state.cpu.data.eax = 0xaabb3344u;
         state.cpu.data.ecx = 0x55667788u;
-        failed |= cpu_instruction_write(&state, 0x1000u, &memory, sizeof(memory), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+        failed |= cpu_instruction_write(&state, 0x1000u, &memory, sizeof(memory), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_run(&state, memory_code, sizeof(memory_code), &after) != LIB_STATUS_OK ||
             state.fault.valid || after.data.eip != 4u ||
             after.data.eax != 0xaabb7788u ||
@@ -140,14 +140,14 @@ static lib_i32 xchg_test_lock(void)
     cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
     state.cpu.data.eax = 0xaabb3344u;
     if (cpu_instruction_write(&state, 0x1000u, &memory, 2u,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
         cpu_instruction_run(&state, plain_code, sizeof(plain_code), &after) != LIB_STATUS_OK)
         return 0;
     state.cpu.data.eip = 0u;
     state.cpu.data.eax = 0xaabb3344u;
     memory = 0x7788u;
     if (cpu_instruction_write(&state, 0x1000u, &memory, 2u,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
         cpu_instruction_run(&state, memory_code, sizeof(memory_code), &after) != LIB_STATUS_OK ||
         after.data.eax != 0xaabb7788u) return 0;
     state.cpu.data.eip = 0u;

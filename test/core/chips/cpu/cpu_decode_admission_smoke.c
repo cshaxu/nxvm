@@ -14,7 +14,7 @@ typedef struct decode_fixture {
 
 static lib_status decode_read(void *opaque, lib_u32 address, void *destination,
     lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     decode_fixture *fixture = (decode_fixture *)opaque;
 
@@ -34,7 +34,7 @@ static lib_status decode_read(void *opaque, lib_u32 address, void *destination,
         }
     }
     return cpu_bus_read(&fixture->bus, address, destination, bytes, provenance,
-        observe_only, reset_fetch);
+        observe_only, reset_fetch, cache_control);
 }
 
 static const core_machine_cpu_bus_provider decode_provider = {
@@ -256,8 +256,9 @@ typedef struct decode_paging_fixture {
 static lib_status decode_paging_read(void *opaque, lib_u32 address,
     void *destination, lib_u8 bytes,
     core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
+    (void)cache_control;
     decode_paging_fixture *fixture = (decode_paging_fixture *)opaque;
 
     (void)reset_fetch;
@@ -272,8 +273,9 @@ static lib_status decode_paging_read(void *opaque, lib_u32 address,
 
 static lib_status decode_paging_write(void *opaque, lib_u32 address,
     const void *source, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance)
+    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
+    (void)cache_control;
     decode_paging_fixture *fixture = (decode_paging_fixture *)opaque;
 
     (void)provenance;

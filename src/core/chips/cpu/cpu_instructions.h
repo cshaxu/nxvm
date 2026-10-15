@@ -102,6 +102,7 @@ typedef struct {
     lib_u64 crm, cr, cimm;
     lib_u8 flagMem; /* if rm is in memory */
     lib_u8 flagLock;
+    lib_bool memory_lock_active; /* Actual LOCK signal, not lexical prefix. */
     lib_u8 source_lsl_granularity_valid;
     lib_u8 source_lsl_page_granular;
 
@@ -153,6 +154,15 @@ struct t_cpuins {
 
 #define X86_CPU_TLB_SETS 8u
 #define X86_CPU_TLB_WAYS 4u
+#define X86_CPU_CACHE_SETS 128u
+#define X86_CPU_CACHE_WAYS 4u
+#define X86_CPU_CACHE_LINE_DWORDS 4u
+
+typedef struct cpu_cache_line {
+    lib_u32 tag;
+    lib_u32 data[X86_CPU_CACHE_LINE_DWORDS];
+    lib_bool valid;
+} cpu_cache_line;
 
 typedef struct cpu_tlb_entry {
     lib_u32 linear;
@@ -214,6 +224,10 @@ struct core_machine_cpu_execution_context {
     lib_u8 preview_mode;
     cpu_tlb_entry tlb[X86_CPU_TLB_SETS][X86_CPU_TLB_WAYS];
     lib_u8 tlb_lru[X86_CPU_TLB_SETS];
+    cpu_cache_line cache[X86_CPU_CACHE_SETS][X86_CPU_CACHE_WAYS];
+    lib_u8 cache_lru[X86_CPU_CACHE_SETS];
+    lib_u32 cache_fill[X86_CPU_CACHE_LINE_DWORDS];
+    lib_u32 cache_read[X86_CPU_CACHE_LINE_DWORDS];
     core_machine_cpu_memory_access_provenance memory_access_provenance;
     lib_u32 prefetch_linear;
     lib_u32 prefetch_expected_linear;

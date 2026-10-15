@@ -8,8 +8,9 @@ typedef struct cpu_contract_bus {
 static lib_status cpu_contract_read(void *opaque, lib_u32 address,
     void *destination, lib_u8 bytes,
     core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
+    (void)cache_control;
     cpu_contract_bus *bus = (cpu_contract_bus *)opaque;
 
     (void)provenance;
@@ -22,8 +23,9 @@ static lib_status cpu_contract_read(void *opaque, lib_u32 address,
 
 static lib_status cpu_contract_write(void *opaque, lib_u32 address,
     const void *source, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance)
+    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
+    (void)cache_control;
     cpu_contract_bus *bus = (cpu_contract_bus *)opaque;
 
     (void)provenance;

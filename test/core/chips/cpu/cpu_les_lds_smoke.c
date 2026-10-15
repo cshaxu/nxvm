@@ -46,7 +46,7 @@ static lib_i32 lld_test_real(void)
                         VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
                     state.cpu.data.es.selector = 0x1111u;
                     state.cpu.data.ds.selector = 0x2222u;
-                    failed |= cpu_instruction_write(&state, 0x1000u, pointer, pointer_bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                    failed |= cpu_instruction_write(&state, 0x1000u, pointer, pointer_bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
                         (status = cpu_instruction_run(&state, code, code_bytes, &after)) != LIB_STATUS_OK ||
                         state.fault.valid || after.data.eip != code_bytes ||
                         after.data.eflags !=
@@ -177,8 +177,8 @@ static lib_i32 lld_test_protected(void)
                 state.cpu.data.ds.selector = 0x2222u;
                 state.cpu.data.eflags =
                     VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
-                failed |= cpu_instruction_write(&state, 0x1000u, pointer, pointer_bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
-                    cpu_instruction_write(&state, 0x2000u, code, code_bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                failed |= cpu_instruction_write(&state, 0x1000u, pointer, pointer_bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
+                    cpu_instruction_write(&state, 0x2000u, code, code_bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
                 state.cpu.data.eip = 0u;
                 core_machine_cpu_execution_refresh(&state.execution);
                 failed |= state.execution.stop_requested;
@@ -217,7 +217,7 @@ static lib_i32 lld_test_source_fault_atomicity(void)
             state.cpu.data.ds.selector = 0x2222u;
             state.cpu.data.eflags =
                 VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
-            failed |= cpu_instruction_write(&state, 0x2000u, code, sizeof(code), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            failed |= cpu_instruction_write(&state, 0x2000u, code, sizeof(code), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             state.cpu.data.eip = 0u;
             before = state.cpu;
             core_machine_cpu_execution_refresh(&state.execution);

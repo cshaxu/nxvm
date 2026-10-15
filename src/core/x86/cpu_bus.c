@@ -4,19 +4,35 @@
 static lib_status core_machine_cpu_bus_read_memory(void *opaque,
     lib_u32 address, void *destination, lib_u8 bytes,
     core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     core_machine *machine = (core_machine *)opaque;
     lib_status status;
+    const lib_bool locked = machine != LIB_NULL &&
+        machine->transaction.owner == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+        machine->transaction.kind == CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK;
 
+    if (machine == LIB_NULL ||
+        (cache_control & ~(CORE_MACHINE_CPU_MEMORY_CACHE_PWT | CORE_MACHINE_CPU_MEMORY_CACHE_PCD)))
+        return LIB_STATUS_INVALID_ARGUMENT;
     if (observe_only) {
         return core_machine_memory_inspect_physical(&machine->executor_memory,
             address, (lib_uptr)destination, bytes, reset_fetch);
     }
-    status = core_machine_transaction_begin(&machine->transaction,
-        CORE_MACHINE_TRANSACTION_OWNER_CPU, CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ,
-        address, bytes, provenance);
-    if (status != LIB_STATUS_OK) return status;
+    if (!locked) {
+        status = core_machine_transaction_begin(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_CPU, CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ,
+            address, bytes, (lib_u32)provenance | ((lib_u32)cache_control << 8u));
+        if (status != LIB_STATUS_OK) return status;
+    }
+    if (machine->attachment.memory_cache_control != LIB_NULL) {
+        status = machine->attachment.memory_cache_control(machine->attachment.context,
+            address, bytes, LIB_FALSE, cache_control);
+        if (status != LIB_STATUS_OK) {
+            if (!locked) core_machine_transaction_cancel(&machine->transaction);
+            return status;
+        }
+    }
     status = reset_fetch ?
         core_machine_memory_read_reset_physical(&machine->executor_memory,
             address, (lib_uptr)destination, bytes) :
@@ -26,26 +42,73 @@ static lib_status core_machine_cpu_bus_read_memory(void *opaque,
         status = core_machine_memory_read_physical(&machine->executor_memory,
             address, (lib_uptr)destination, bytes);
     }
-    if (status == LIB_STATUS_OK) core_machine_transaction_commit(&machine->transaction);
-    else core_machine_transaction_cancel(&machine->transaction);
+    if (!locked) {
+        if (status == LIB_STATUS_OK) core_machine_transaction_commit(&machine->transaction);
+        else core_machine_transaction_cancel(&machine->transaction);
+    }
     return status;
 }
 
 static lib_status core_machine_cpu_bus_write_memory(void *opaque,
     lib_u32 address, const void *source, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance)
+    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     core_machine *machine = (core_machine *)opaque;
-    lib_status status = core_machine_transaction_begin(&machine->transaction,
-        CORE_MACHINE_TRANSACTION_OWNER_CPU, CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE,
-        address, bytes, provenance);
+    lib_status status;
+    const lib_bool locked = machine != LIB_NULL &&
+        machine->transaction.owner == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+        machine->transaction.kind == CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK;
 
-    if (status != LIB_STATUS_OK) return status;
+    if (machine == LIB_NULL ||
+        (cache_control & ~(CORE_MACHINE_CPU_MEMORY_CACHE_PWT | CORE_MACHINE_CPU_MEMORY_CACHE_PCD)))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (!locked) {
+        status = core_machine_transaction_begin(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_CPU, CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE,
+            address, bytes, (lib_u32)provenance | ((lib_u32)cache_control << 8u));
+        if (status != LIB_STATUS_OK) return status;
+    }
+    if (machine->attachment.memory_cache_control != LIB_NULL) {
+        status = machine->attachment.memory_cache_control(machine->attachment.context,
+            address, bytes, LIB_TRUE, cache_control);
+        if (status != LIB_STATUS_OK) {
+            if (!locked) core_machine_transaction_cancel(&machine->transaction);
+            return status;
+        }
+    }
+    const lib_u32 lock_address = machine->transaction.address;
+    if (locked) {
+        /* Only this actual write range suppresses its raw self-snoop. Alias
+         * backing or provider side effects retain their own invalidation. */
+        machine->transaction.address = address;
+        machine->transaction.value = bytes;
+    }
     status = core_machine_memory_write_physical(&machine->executor_memory,
         address, (lib_uptr)source, bytes);
-    if (status == LIB_STATUS_OK) core_machine_transaction_commit(&machine->transaction);
-    else core_machine_transaction_cancel(&machine->transaction);
+    if (locked) {
+        machine->transaction.address = lock_address;
+        machine->transaction.value = 0u;
+    } else {
+        if (status == LIB_STATUS_OK) core_machine_transaction_commit(&machine->transaction);
+        else core_machine_transaction_cancel(&machine->transaction);
+    }
     return status;
+}
+
+void core_machine_cpu_bus_snoop_write(void *opaque, lib_u32 physical,
+    lib_size bytes)
+{
+    core_machine *machine = opaque;
+
+    if (machine->transaction.owner == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+        (machine->transaction.kind == CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE ||
+         machine->transaction.kind == CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK) &&
+        physical >= machine->transaction.address &&
+        (lib_u64)physical + bytes <= (lib_u64)machine->transaction.address +
+            machine->transaction.value)
+        return;
+    core_machine_cpu_signal_cache_write(machine->executor_cpu_execution,
+        physical, bytes);
 }
 
 static void core_machine_cpu_bus_port_phase(core_machine *machine,
@@ -173,6 +236,65 @@ static void core_machine_cpu_bus_extension_command(void *opaque,
     }
 }
 
+static lib_status core_machine_cpu_bus_query_cache_memory(void *opaque,
+    lib_u32 address, core_machine_cpu_cache_query query,
+    core_machine_cpu_cache_memory *out_memory)
+{
+    core_machine *machine = opaque;
+
+    if (machine == LIB_NULL || out_memory == LIB_NULL ||
+        (query != CORE_MACHINE_CPU_CACHE_LOOKUP &&
+         query != CORE_MACHINE_CPU_CACHE_RESET_LOOKUP &&
+         query != CORE_MACHINE_CPU_CACHE_FILL_PROBE))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    return core_machine_memory_query_cpu_cache(&machine->executor_memory,
+        address, query == CORE_MACHINE_CPU_CACHE_RESET_LOOKUP,
+        query == CORE_MACHINE_CPU_CACHE_FILL_PROBE,
+        &out_memory->address, &out_memory->fill_enabled);
+}
+
+static lib_status core_machine_cpu_bus_cache_operation(void *opaque,
+    core_machine_cpu_cache_operation operation)
+{
+    core_machine *machine = opaque;
+    lib_status status;
+
+    if (machine == LIB_NULL ||
+        (operation != CORE_MACHINE_CPU_CACHE_WRITEBACK &&
+         operation != CORE_MACHINE_CPU_CACHE_FLUSH))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    status = core_machine_transaction_begin(&machine->transaction,
+        CORE_MACHINE_TRANSACTION_OWNER_CPU, CORE_MACHINE_TRANSACTION_CPU_CACHE_OPERATION,
+        0u, (lib_u32)operation, 0u);
+    if (status != LIB_STATUS_OK) return status;
+    status = machine->attachment.cache_operation != LIB_NULL ?
+        machine->attachment.cache_operation(machine->attachment.context, operation) :
+        LIB_STATUS_OK;
+    if (status == LIB_STATUS_OK) core_machine_transaction_commit(&machine->transaction);
+    else core_machine_transaction_cancel(&machine->transaction);
+    return status;
+}
+
+static lib_status core_machine_cpu_bus_begin_memory_lock(void *opaque)
+{
+    core_machine *machine = opaque;
+
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return core_machine_transaction_begin(&machine->transaction,
+        CORE_MACHINE_TRANSACTION_OWNER_CPU, CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK,
+        0u, 0u, 0u);
+}
+
+static void core_machine_cpu_bus_complete_memory_lock(void *opaque, lib_bool commit)
+{
+    core_machine *machine = opaque;
+
+    if (machine == LIB_NULL || machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_CPU ||
+        machine->transaction.kind != CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK) return;
+    if (commit) core_machine_transaction_commit(&machine->transaction);
+    else core_machine_transaction_cancel(&machine->transaction);
+}
+
 const core_machine_cpu_bus_provider core_machine_cpu_bus = {
     .read_memory = core_machine_cpu_bus_read_memory,
     .write_memory = core_machine_cpu_bus_write_memory,
@@ -182,7 +304,11 @@ const core_machine_cpu_bus_provider core_machine_cpu_bus = {
     .escape_trap_enabled = core_machine_cpu_bus_escape_trap_enabled,
     .interrupt_pending = core_machine_cpu_bus_interrupt_pending,
     .acknowledge_interrupt = core_machine_cpu_bus_acknowledge_interrupt,
-    .extension_command = core_machine_cpu_bus_extension_command
+    .extension_command = core_machine_cpu_bus_extension_command,
+    .query_cache_memory = core_machine_cpu_bus_query_cache_memory,
+    .cache_operation = core_machine_cpu_bus_cache_operation,
+    .begin_memory_lock = core_machine_cpu_bus_begin_memory_lock,
+    .complete_memory_lock = core_machine_cpu_bus_complete_memory_lock
 };
 
 /* Board bus arbitration, wait windows and trace publication are not CPU state. */

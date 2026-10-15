@@ -95,19 +95,12 @@ static lib_bool test_register_invalid_forms(void)
 
 static lib_bool test_register_privilege(void)
 {
-    static const lib_u8 stack_descriptor[] = {0xffu, 0xffu, 0u, 0u, 0u, 0x93u, 0u, 0u};
-
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80386;
          profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile) {
         for (lib_u8 mode = 1u; mode != 5u; ++mode) {
             const lib_bool vm86 = mode == 4u;
             const lib_u8 cpl = vm86 ? 3u : mode;
             const lib_u8 target_cpl = vm86 ? 0u : cpl;
-            const lib_u8 descriptor[] = {0xffu, 0xffu, 0u, 0u, 0u,
-                (lib_u8)(0x9bu | (target_cpl << 5u)), 0u, 0u};
-            const lib_u8 gate[] = {0u, 3u, (lib_u8)(8u | target_cpl),
-                0u, 0u, 0x8eu, 0u, 0u};
-
             for (lib_u8 write = 0u; write != 2u; ++write) {
                 for (lib_u8 reg = profile == CORE_MACHINE_CPU_PROFILE_80386 ? 6u : 3u;
                      reg != 8u; ++reg) {
@@ -116,37 +109,11 @@ static lib_bool test_register_privilege(void)
                     lib_u32 frame[4];
                     const lib_u8 code[] = {0x0fu, write ? 0x26u : 0x24u,
                         (lib_u8)(0xc0u | (reg << 3u))};
-                    const lib_u32 ring0_sp = 0x1000u;
-                    const lib_u16 ring0_ss = 0x10u;
-
                     cpu_instruction_prepare(&fixture, profile);
-                    fixture.cpu.data.cr0 = VCPU_CR0_PE;
-                    fixture.cpu.data.cs.selector = (lib_u16)(8u | cpl);
-                    fixture.cpu.data.cs.dpl = cpl;
-                    fixture.cpu.data.ss.selector = (lib_u16)(0x10u | cpl);
-                    fixture.cpu.data.ss.dpl = cpl;
-                    fixture.cpu.data.esp = 0x800u;
+                    cpu_instruction_prepare_protected_exception(&fixture, mode);
                     fixture.cpu.data.eax = 0x12345678u;
                     fixture.cpu.data.tr6 = 0x87654321u;
                     fixture.cpu.data.tr7 = 0xabcdef01u;
-                    fixture.cpu.data.eflags = 2u | (vm86 ? VCPU_EFLAGS_VM : 0u);
-                    fixture.cpu.data.gdtr = (t_cpu_data_sreg){
-                        .flagValid = LIB_TRUE, .sregtype = SREG_GDTR,
-                        .base = 0x200u, .limit = 23u};
-                    fixture.cpu.data.idtr = (t_cpu_data_sreg){
-                        .flagValid = LIB_TRUE, .sregtype = SREG_IDTR,
-                        .base = 0x400u, .limit = 0x87u};
-                    lib_memory_copy(fixture.memory + 0x208u, descriptor, sizeof(descriptor));
-                    lib_memory_copy(fixture.memory + 0x210u, stack_descriptor, sizeof(stack_descriptor));
-                    lib_memory_copy(fixture.memory + 0x468u, gate, sizeof(gate));
-                    if (vm86) {
-                        fixture.cpu.data.tr = (t_cpu_data_sreg){
-                            .flagValid = LIB_TRUE, .sregtype = SREG_TR,
-                            .selector = 0x18u, .base = 0x600u, .limit = 0x67u};
-                        fixture.cpu.data.tr.sys.type = 0xbu;
-                        lib_memory_copy(fixture.memory + 0x604u, &ring0_sp, sizeof(ring0_sp));
-                        lib_memory_copy(fixture.memory + 0x608u, &ring0_ss, sizeof(ring0_ss));
-                    }
                     if (cpu_instruction_run(&fixture, code, sizeof(code), &after) != LIB_STATUS_OK ||
                         fixture.fault.valid || !fixture.delivered_exception.valid ||
                         fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_GP ||
@@ -180,7 +147,7 @@ typedef struct test_register_fetch_fixture {
 
 static lib_status test_register_read(void *opaque, lib_u32 address, void *destination,
     lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     test_register_fetch_fixture *fixture = opaque;
 
@@ -192,7 +159,7 @@ static lib_status test_register_read(void *opaque, lib_u32 address, void *destin
         return LIB_STATUS_IO_ERROR;
     }
     return cpu_instruction_read(&fixture->instruction, address, destination,
-        bytes, provenance, observe_only, reset_fetch);
+        bytes, provenance, observe_only, reset_fetch, cache_control);
 }
 
 static lib_bool test_register_failed_fetch(void)

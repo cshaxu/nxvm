@@ -214,7 +214,7 @@ static lib_i32 imul_test_memory_forms(void)
             if (cpu_instruction_write(&state, 0x4000u,
                     dword ? (const void *)&dword_source :
                         (const void *)&word_source,
-                    dword ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+                    dword ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
                     LIB_STATUS_OK ||
                 cpu_instruction_run(&state, codes[form], sizes[form], &after) !=
                     LIB_STATUS_OK || state.fault.valid ||
@@ -228,7 +228,7 @@ static lib_i32 imul_test_memory_forms(void)
                 !imul_nonarithmetic_flags_same(&before, &after) ||
                 cpu_instruction_read(&state, 0x4000u, &source_after,
                     dword ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
-                    LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                    LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                 (dword ? source_after != dword_source :
                     (lib_u16)source_after != word_source)) return 0;
         }
@@ -272,10 +272,10 @@ static lib_i32 imul_test_segments(void)
         if (form == 1u) state.cpu.data.ebp = 0x00000010u;
         before = state.cpu;
         if (cpu_instruction_write(&state, code_address, codes[form],
-                bytes[form], CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+                bytes[form], CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
                 LIB_STATUS_OK ||
             cpu_instruction_write(&state, address, &source, sizeof(source),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK)
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
             return 0;
         core_machine_cpu_execution_refresh(&state.execution);
         after = state.cpu;
@@ -305,7 +305,7 @@ static lib_i32 imul_test_67_sib_ss(void)
     state.cpu.data.esp = 0u;
     before = state.cpu;
     return cpu_instruction_write(&state, 0x20010u, &source, sizeof(source),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) == LIB_STATUS_OK &&
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) == LIB_STATUS_OK &&
         cpu_instruction_run(&state, code, sizeof(code), &after) == LIB_STATUS_OK &&
         !state.fault.valid && after.data.eip == sizeof(code) &&
         after.data.eax == ((before.data.eax & 0xffff0000u) | 4u) &&
@@ -410,7 +410,7 @@ static lib_bool imul_test_dword_byte_extremes(void)
         if (alias) state.cpu.data.eax = source;
         before = state.cpu;
         if (memory && cpu_instruction_write(&state, 0x4000u, &source,
-                4u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK)
+                4u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
             return LIB_FALSE;
         if (cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK ||
                 state.fault.valid || after.data.eip != bytes ||
@@ -421,7 +421,7 @@ static lib_bool imul_test_dword_byte_extremes(void)
                 !imul_nonarithmetic_flags_same(&before, &after) ||
                 !imul_sregs_same(&before, &after)) return LIB_FALSE;
         if (memory && (cpu_instruction_read(&state, 0x4000u, &source_after,
-                4u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                4u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                     LIB_STATUS_OK || source_after != source)) return LIB_FALSE;
     }
     return LIB_TRUE;

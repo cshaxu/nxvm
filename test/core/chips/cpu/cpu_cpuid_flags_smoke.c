@@ -172,7 +172,7 @@ typedef struct reset_fetch_fixture {
 static lib_status reset_fetch_read(void *opaque, lib_u32 address,
     void *destination, lib_u8 bytes,
     core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     reset_fetch_fixture *fixture = (reset_fetch_fixture *)opaque;
     const lib_bool high = address >= 0xfffffff0u;
@@ -187,7 +187,7 @@ static lib_status reset_fetch_read(void *opaque, lib_u32 address,
     }
     return cpu_instruction_read(&fixture->instruction,
         high ? address & 0xffffu : address, destination, bytes,
-        provenance, observe_only, reset_fetch);
+        provenance, observe_only, reset_fetch, cache_control);
 }
 
 static lib_bool cpuid_reset_fetch(void)
@@ -284,7 +284,7 @@ typedef struct cpuid_fetch_fixture {
 
 static lib_status cpuid_fetch(void *opaque, lib_u32 address, void *destination,
     lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     cpuid_fetch_fixture *fixture = opaque;
 
@@ -296,7 +296,7 @@ static lib_status cpuid_fetch(void *opaque, lib_u32 address, void *destination,
         return LIB_STATUS_IO_ERROR;
     }
     return cpu_instruction_read(&fixture->instruction, address, destination,
-        bytes, provenance, observe_only, reset_fetch);
+        bytes, provenance, observe_only, reset_fetch, cache_control);
 }
 
 static lib_bool cpuid_failed_fetch(void)

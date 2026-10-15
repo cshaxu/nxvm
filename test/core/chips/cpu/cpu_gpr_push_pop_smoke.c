@@ -105,7 +105,7 @@ static lib_i32 gpr_push_pop_test_push_registers(void)
                 if (index == 4u && profiles[profile] < CORE_MACHINE_CPU_PROFILE_80286)
                     expected = 0x7ffeu;
                 failed |= cpu_instruction_read(&state, 0x7ffeu, &image, 2u,
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                     image != expected || after.data.eip != 1u ||
                     after.data.eflags != before.data.eflags ||
                     after.data.eax != before.data.eax ||
@@ -141,15 +141,15 @@ static lib_i32 gpr_push_pop_test_pop_esp_address(void)
         gpr_push_pop_seed(&state);
         state.cpu.data.esp = 0x00008000u;
         failed |= cpu_instruction_write(&state, 0x8000u, &stack_value, sizeof(stack_value),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_write(&state, 0x8006u, &old_target, sizeof(old_target),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
 
                 cpu_instruction_run(&state, code, sizeof(code), &after) != LIB_STATUS_OK ||
                 state.fault.valid ||
             after.data.eip != sizeof(code) || after.data.esp != 0x00008002u ||
             cpu_instruction_read(&state, 0x8006u, &observed, sizeof(observed),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
             LIB_STATUS_OK || observed != stack_value;
     }
     return !failed;
@@ -184,7 +184,7 @@ static lib_i32 gpr_push_pop_test_pop_registers(void)
             {
                 gpr_push_pop_seed(&state);
                 failed |= cpu_instruction_write(&state, 0x8000u, &value, sizeof(value),
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
                 before = state.cpu;
                 failed |= cpu_instruction_run(&state, code, sizeof(code), &after) != LIB_STATUS_OK ||
                     state.fault.valid || after.data.eip != 1u ||
@@ -260,10 +260,10 @@ static lib_i32 gpr_push_pop_test_rm_forms(void)
                 state.cpu.data.esp = 0x00008000u;
             if (push && form != 0u)
                 failed |= cpu_instruction_write(&state, address, &source, 2u,
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             if (!push)
                 failed |= cpu_instruction_write(&state, 0x8000u, &image, 2u,
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             before = state.cpu;
             failed |= cpu_instruction_run(&state, codes[form], bytes[form], &after) != LIB_STATUS_OK ||
                 state.fault.valid || after.data.eip != bytes[form] ||
@@ -274,7 +274,7 @@ static lib_i32 gpr_push_pop_test_rm_forms(void)
                 failed |= after.data.esp != ((before.data.esp & 0xffff0000u) |
                     ((before.data.sp - 2u) & 0xffffu));
                 failed |= cpu_instruction_read(&state, 0x7ffeu, &observed, 2u,
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                     observed != (form == 0u ? (before.data.eax & 0xffffu) :
                     (source & 0xffffu));
             }
@@ -284,7 +284,7 @@ static lib_i32 gpr_push_pop_test_rm_forms(void)
                     0x8002u);
                 if (form != 1u)
                     failed |= cpu_instruction_read(&state, address, &observed, 2u,
-                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                         observed != (image & 0xffffu);
             }
             failed |= after.data.eax != before.data.eax || after.data.edx !=
@@ -314,17 +314,17 @@ static lib_i32 gpr_push_pop_expect_ud(core_machine_cpu_profile profile,
     {
         gpr_push_pop_seed(&state);
         failed |= cpu_instruction_write(&state, 0x20u, &source, sizeof(source),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
 
             cpu_instruction_write(&state, 0x7ffcu, &source, sizeof(source),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         before = state.cpu;
         failed |= !cpu_instruction_expect_real_fault(&state, code, bytes, 6u) ||
                 cpu_instruction_read(&state, 0x20u, &image, sizeof(image),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                 image != source ||
             cpu_instruction_read(&state, 0x7ffcu, &image, sizeof(image),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             image != (profile < CORE_MACHINE_CPU_PROFILE_80186 ? source :
                 (lib_u32)(lib_u16)(before.data.flags | 2u |
                     (profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0xf000u : 0u)) << 16u);
@@ -403,10 +403,10 @@ static lib_i32 gpr_push_pop_test_386_attributes(void)
             gpr_push_pop_seed(&state);
             if (form == 2u)
                 failed |= cpu_instruction_write(&state, 0x20u, &value, sizeof(value),
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             if (form == 1u || form == 3u)
                 failed |= cpu_instruction_write(&state, 0x8000u, &value, sizeof(value),
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             before = state.cpu;
             failed |= cpu_instruction_run(&state, codes[form], bytes[form], &after) != LIB_STATUS_OK ||
                 state.fault.valid || after.data.eip != bytes[form] ||
@@ -421,7 +421,7 @@ static lib_i32 gpr_push_pop_test_386_attributes(void)
                 failed |= after.data.esp != ((before.data.esp & 0xffff0000u) |
                     stack) ||
                     cpu_instruction_read(&state, stack, &observed, width,
-                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                     LIB_STATUS_OK || observed != (width == 2u ?
                     (expected & 0xffffu) : expected);
             }
@@ -432,7 +432,7 @@ static lib_i32 gpr_push_pop_test_386_attributes(void)
             {
                 failed |= after.data.esp != 0x12348004u ||
                     cpu_instruction_read(&state, 0x20u, &observed, sizeof(observed),
-                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                     LIB_STATUS_OK || observed != value;
             }
         }
@@ -461,11 +461,11 @@ static lib_i32 gpr_push_pop_boot_protected(cpu_instruction_fixture *state)
     lib_u8 instruction;
 
     if (cpu_instruction_write(state, 0x0100u, pointer, sizeof(pointer),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
         cpu_instruction_write(state, 0x0300u, gdt, sizeof(gdt),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
         cpu_instruction_write(state, 0u, bootstrap, sizeof(bootstrap),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK)
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
         return 0;
     for (instruction = 0u; instruction != 10u; ++instruction)
     {
@@ -500,12 +500,12 @@ static lib_i32 gpr_push_pop_protected_fault(const lib_u8 *code, lib_u8 bytes,
         else
             state.cpu.data.ds.limit = limit;
         failed |= cpu_instruction_write(&state, 0x3010u, &sentinel, sizeof(sentinel),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
 
             cpu_instruction_write(&state, 0x4010u, &sentinel, sizeof(sentinel),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_write(&state, 0x2000u, code, bytes,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         before = state.cpu;
         state.cpu.data.eip = 0u;
         core_machine_cpu_execution_refresh(&state.execution);
@@ -520,10 +520,10 @@ static lib_i32 gpr_push_pop_protected_fault(const lib_u8 *code, lib_u8 bytes,
             after.data.edi != before.data.edi || after.data.eflags !=
             before.data.eflags || !gpr_push_pop_sregs_same(&before, &after) ||
             cpu_instruction_read(&state, 0x3010u, &observed, sizeof(observed),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                 observed != sentinel ||
             cpu_instruction_read(&state, 0x4010u, &observed, sizeof(observed),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
             LIB_STATUS_OK || observed != sentinel;
     }
     return !failed;
@@ -676,9 +676,9 @@ static lib_bool gpr_push_pop_test_alias_failure_matrix(void)
             if (mode == 2u) state->cpu.data.eflags |= VCPU_EFLAGS_VM;
         }
         cpu_instruction_write(state, stack_address, &source, width,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u);
         cpu_instruction_write(state, target, &sentinel, width,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u);
         fixture.frame_base = 0x4000u; fixture.frame_size = 0x12000u;
         fixture.reject_at = failure;
         before = state->cpu;
@@ -698,7 +698,7 @@ static lib_bool gpr_push_pop_test_alias_failure_matrix(void)
             passed = LIB_FALSE;
         }
         cpu_instruction_read(state, target, &observed, width,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE);
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u);
         if (observed != ((form == 2u && !failure ? source : sentinel) &
                 (operand32 ? 0xffffffffu : 0xffffu))) passed = LIB_FALSE;
     }
@@ -730,7 +730,7 @@ static lib_bool gpr_push_pop_test_early_frame_callers(void)
         gpr_push_pop_seed(&state);
         state.cpu.data.sp = stacks[stack];
         cpu_instruction_write(&state, 0x30u * 4u, vector, sizeof(vector),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u);
         state.memory[0x200u] = 0x90u;
         if (cpu_instruction_run(&state, codes[form], lengths[form], &after) !=
                 LIB_STATUS_OK || state.fault.valid || after.data.sp != final_sp ||
@@ -765,7 +765,7 @@ static lib_bool gpr_push_pop_test_real_stack_range(void)
         if (leave) state.cpu.data.bp = 0xffffu;
         else state.cpu.data.sp = 0xffffu;
         cpu_instruction_write(&state, (profile ? 12u : 13u) * 4u, vector, sizeof(vector),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u);
         cpu_instruction_run(&state, code, sizeof(code), &after);
         if (state.delivered_exception.exception_mask != (profile ?
                 VCPUINS_EXCEPT_SS : VCPUINS_EXCEPT_GP) ||

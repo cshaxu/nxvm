@@ -22,19 +22,19 @@ typedef struct idt_pic_board {
 
 static lib_status idt_pic_read(void *opaque, lib_u32 address, void *destination,
     lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     idt_pic_board *const board = opaque;
     return cpu_instruction_read(&board->cpu, address, destination, bytes,
-        provenance, observe_only, reset_fetch);
+        provenance, observe_only, reset_fetch, cache_control);
 }
 
 static lib_status idt_pic_write(void *opaque, lib_u32 address,
     const void *source, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance)
+    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     idt_pic_board *const board = opaque;
-    return cpu_instruction_write(&board->cpu, address, source, bytes, provenance);
+    return cpu_instruction_write(&board->cpu, address, source, bytes, provenance, cache_control);
 }
 
 static lib_bool idt_pic_interrupt_pending(void *opaque)

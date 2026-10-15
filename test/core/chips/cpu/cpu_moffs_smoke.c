@@ -59,7 +59,7 @@ static lib_i32 moffs_test_default(void)
             moffs_set_registers(&state);
             if (opcodes[opcode] == 0xa0u || opcodes[opcode] == 0xa1u)
                 failed |= cpu_instruction_write(&state, 0x1000u, &image, opcodes[opcode] == 0xa0u ? 1u : 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             before = state.cpu;
             expected_eax = opcodes[opcode] == 0xa0u ? 0xaabb335au :
                 opcodes[opcode] == 0xa1u ? 0xaabbbeefu : before.data.eax;
@@ -71,7 +71,7 @@ static lib_i32 moffs_test_default(void)
             {
                 image = 0u;
                 failed |= cpu_instruction_read(&state, 0x1000u, &image, opcodes[opcode] == 0xa2u ? 1u : 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                     image != (opcodes[opcode] == 0xa2u ? 0x44u : 0x3344u);
             }
 
@@ -111,7 +111,7 @@ static lib_i32 moffs_test_386_attributes(void)
         moffs_set_registers(&state);
         if (!write[form])
             failed |= cpu_instruction_write(&state, 0x10000u, &image, widths[form],
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         failed |= cpu_instruction_run(&state, codes[form], 7u, &after) != LIB_STATUS_OK || state.fault.valid ||
             after.data.eip != 7u;
         if (form == 0u) failed |= after.data.eax != 0x1122335au;
@@ -120,7 +120,7 @@ static lib_i32 moffs_test_386_attributes(void)
         {
             image = 0u;
             failed |= cpu_instruction_read(&state, 0x10000u, &image, widths[form],
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                 image != (form == 1u ? 0xaabb3344u : 0x44u);
         }
 
@@ -157,7 +157,7 @@ static lib_i32 moffs_test_386_single_attributes(void)
         moffs_set_registers(&state);
         if (opcode == 0xa0u || opcode == 0xa1u)
             failed |= cpu_instruction_write(&state, address, &image, width,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         before = state.cpu;
         failed |= cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK || state.fault.valid ||
             after.data.eip != bytes || !moffs_nonparticipants(&before,
@@ -168,7 +168,7 @@ static lib_i32 moffs_test_386_single_attributes(void)
         if (opcode == 0xa2u || opcode == 0xa3u) {
             image = 0u;
             failed |= cpu_instruction_read(&state, address, &image, width,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                 image != (width == 1u ? 0x44u : width == 2u ? 0x3344u :
                 0xaabb3344u);
         }
@@ -255,7 +255,7 @@ static lib_i32 moffs_test_segment_overrides(void)
             &state.execution, &state.cpu.data.gs, 0x30u) != 0;
         moffs_set_registers(&state);
         failed |= cpu_instruction_write(&state, address, &values[form], 1u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         before = state.cpu;
         failed |= cpu_instruction_run(&state, codes[form], bytes[form], &after) != LIB_STATUS_OK || state.fault.valid ||
             after.data.eip != bytes[form] || after.data.eax != (0xaabb3300u | values[form]) ||
@@ -294,7 +294,7 @@ static lib_i32 moffs_test_segment_writes(void)
         moffs_set_registers(&state);
         before = state.cpu;
         failed |= cpu_instruction_run(&state, codes[form], bytes[form], &after) != LIB_STATUS_OK || state.fault.valid || after.data.eip != bytes[form] || !moffs_nonparticipants(&before, &after, 0xa2u) || cpu_instruction_read(&state, address, &image, widths[form],
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || image != (widths[form] == 1u ? 0x44u : 0x3344u);
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || image != (widths[form] == 1u ? 0x44u : 0x3344u);
 
         if (failed) return 0;
     }

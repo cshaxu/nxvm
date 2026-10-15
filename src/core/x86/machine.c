@@ -520,6 +520,8 @@ lib_status core_machine_neutral_create_with_test_allocation(
         core_machine_destroy(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
+    machine->executor_memory.connect.cpu_snoop = core_machine_cpu_bus_snoop_write;
+    machine->executor_memory.connect.cpu_snoop_context = machine;
     *out_machine = machine;
     return LIB_STATUS_OK;
 }
@@ -1302,6 +1304,8 @@ void core_machine_destroy(core_machine *machine)
         if (machine->attachment.finalize_devices != LIB_NULL) {
             machine->attachment.finalize_devices(machine->attachment.context);
         }
+        machine->executor_memory.connect.cpu_snoop = LIB_NULL;
+        machine->executor_memory.connect.cpu_snoop_context = LIB_NULL;
         core_machine_cpu_destroy(machine->executor_cpu_execution);
         x86_fpu_destroy(machine->fpu);
         core_machine_port_finalize(&machine->executor_port);

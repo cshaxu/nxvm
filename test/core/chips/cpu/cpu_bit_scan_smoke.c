@@ -40,7 +40,7 @@ static lib_i32 scan_test_forms(void)
         state.cpu.data.eflags = flags;
         if (memory)
             failed |= cpu_instruction_write(&state, 0x4000u, &source,
-                width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+                width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
                 LIB_STATUS_OK;
         failed |= cpu_instruction_run(&state, code, (lib_u8)bytes, &after) !=
             LIB_STATUS_OK || state.fault.valid;
@@ -51,7 +51,7 @@ static lib_i32 scan_test_forms(void)
         if (memory)
             failed |= cpu_instruction_read(&state, 0x4000u, &read,
                 width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
-                LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || read != source;
+                LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || read != source;
         if (failed) {
             lib_c_fprintf(lib_c_stderr, "bit scan form %u/%u/%u/%u status fault=%u eip=%u\n",
                 (unsigned)opcode, (unsigned)width, (unsigned)memory,
@@ -121,7 +121,7 @@ static lib_bool scan_test_single_bits(void)
         state.cpu.data.ecx = initial_ecx;
         state.cpu.data.eflags = VCPU_EFLAGS_IF | VCPU_EFLAGS_ZF;
         if (memory && cpu_instruction_write(&state, 0x4000u, &source,
-                width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK)
+                width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
             return LIB_FALSE;
         if (cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK ||
                 state.fault.valid || after.data.eip != bytes ||
@@ -137,7 +137,7 @@ static lib_bool scan_test_single_bits(void)
         }
         if (memory && (cpu_instruction_read(&state, 0x4000u, &observed,
                 width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
-                LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || observed != source))
+                LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || observed != source))
             return LIB_FALSE;
     }
     return LIB_TRUE;

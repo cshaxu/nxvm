@@ -58,7 +58,7 @@ static lib_i32 push_immediate_test_success(core_machine_cpu_profile profile,
             !push_immediate_gprs_same(&before, &after) ||
             !push_immediate_sregs_same(&before, &after) ||
             cpu_instruction_read(&state, stack, &observed, width,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             observed != (width == 2u ? (expected & 0xffffu) : expected);
     }
     return !failed;
@@ -78,11 +78,11 @@ static lib_i32 push_immediate_expect_ud(core_machine_cpu_profile profile,
     {
         push_immediate_seed(&state);
         failed |= cpu_instruction_write(&state, 0x7ffcu, &sentinel, sizeof(sentinel),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         before = state.cpu;
         failed |= !cpu_instruction_expect_real_fault(&state, code, bytes, 6u) ||
             cpu_instruction_read(&state, 0x7ffcu, &observed, sizeof(observed),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
             LIB_STATUS_OK || observed != (profile < CORE_MACHINE_CPU_PROFILE_80186 ? sentinel :
                 (lib_u32)(lib_u16)(before.data.flags | 2u |
                     (profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0xf000u : 0u)) << 16u);
@@ -180,11 +180,11 @@ static lib_i32 push_immediate_boot_protected(cpu_instruction_fixture *state)
     lib_u8 instruction;
 
     if (cpu_instruction_write(state, 0x0100u, pointer, sizeof(pointer),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
         cpu_instruction_write(state, 0x0300u, gdt, sizeof(gdt),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
         cpu_instruction_write(state, 0u, bootstrap, sizeof(bootstrap),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK)
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
         return 0;
     for (instruction = 0u; instruction != 10u; ++instruction)
     {
@@ -222,10 +222,10 @@ static lib_i32 push_immediate_test_protected(void)
             state.cpu.data.ss.limit = 0xffffu;
             state.cpu.data.ss.seg.data.expdown = LIB_TRUE;
             failed |= cpu_instruction_write(&state, stack, &sentinel, width,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
 
                 cpu_instruction_write(&state, 0x2000u, codes[form], bytes[form],
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             before = state.cpu;
             state.cpu.data.eip = 0u;
             core_machine_cpu_execution_refresh(&state.execution);
@@ -240,7 +240,7 @@ static lib_i32 push_immediate_test_protected(void)
                 after.data.edi != before.data.edi || after.data.eflags !=
             before.data.eflags || !push_immediate_sregs_same(&before, &after) ||
             cpu_instruction_read(&state, stack, &observed, width,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             observed != (width == 2u ? (sentinel & 0xffffu) : sentinel);
         }
         if (failed)

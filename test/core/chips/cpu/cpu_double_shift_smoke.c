@@ -84,14 +84,14 @@ static lib_i32 shift_test_forms(void)
         state.cpu.data.eflags = initial_flags;
         if (memory)
             failed |= cpu_instruction_write(&state, 0x4000u, &destination,
-                width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+                width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
                 LIB_STATUS_OK;
         failed |= cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK ||
             state.fault.valid;
         if (memory)
             failed |= cpu_instruction_read(&state, 0x4000u, &observed,
                 width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
-                LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK;
+                LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK;
         else observed = after.data.eax;
         /* Intel 386 pseudocode leaves count >= operand width undefined.
          * Retain that context without turning a deterministic choice into L3. */
@@ -181,7 +181,7 @@ static lib_bool shift_test_undefined_capture(void)
         state.cpu.data.ecx = source;
         state.cpu.data.eflags = VCPU_EFLAGS_IF;
         if (memory && cpu_instruction_write(&state, 0x4000u, &destination,
-                2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK)
+                2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
             return LIB_FALSE;
         if (cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK ||
                 state.fault.valid || after.data.eip != bytes ||

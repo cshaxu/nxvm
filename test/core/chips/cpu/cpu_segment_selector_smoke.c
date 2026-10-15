@@ -49,7 +49,7 @@ static lib_i32 segment_write(segment_cpu *state, lib_u32 address,
     const void *bytes, lib_size byte_count)
 {
     return state != LIB_NULL &&
-        cpu_instruction_write(&state->chip, address, bytes, byte_count, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) ==
+        cpu_instruction_write(&state->chip, address, bytes, byte_count, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) ==
             LIB_STATUS_OK;
 }
 
@@ -390,7 +390,7 @@ static lib_i32 segment_test_80286_protected_legal_forms(void)
             lib_u16 selector = 0u;
 
             failed |= cpu.data.esp != 0x7ffeu ||
-                cpu_instruction_read(&state.chip, SEG_DATA_ADDRESS + 0x7ffeu, &selector, sizeof(selector), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                cpu_instruction_read(&state.chip, SEG_DATA_ADDRESS + 0x7ffeu, &selector, sizeof(selector), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                 selector != 0x0010u;
             break;
         }
@@ -412,7 +412,7 @@ static lib_i32 segment_test_80286_protected_legal_forms(void)
             lib_u16 selector = 0u;
 
             failed |= cpu.data.ldtr.selector != 0x0028u ||
-                cpu_instruction_read(&state.chip, SEG_DATA_ADDRESS + 0x0400u, &selector, sizeof(selector), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                cpu_instruction_read(&state.chip, SEG_DATA_ADDRESS + 0x0400u, &selector, sizeof(selector), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || selector != 0x0028u;
             break;
         }
@@ -425,7 +425,7 @@ static lib_i32 segment_test_80286_protected_legal_forms(void)
             lib_u16 selector = 0u;
 
             failed |= cpu.data.tr.selector != 0x0030u ||
-                cpu_instruction_read(&state.chip, SEG_DATA_ADDRESS + 0x0400u, &selector, sizeof(selector), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                cpu_instruction_read(&state.chip, SEG_DATA_ADDRESS + 0x0400u, &selector, sizeof(selector), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || selector != 0x0030u;
             break;
         }
@@ -1129,7 +1129,7 @@ static lib_i32 segment_test_vm86_pop_fs_gs_timing(void)
         state.cpu.data.eflags |= VCPU_EFLAGS_VM;
         state.cpu.data.esp = 0x0200u;
         if (cpu_instruction_write(&state, 0x0200u, &selectors[index],
-                sizeof(selectors[index]), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+                sizeof(selectors[index]), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
                 LIB_STATUS_OK || cpu_instruction_run(&state, code, sizeof(code),
                 &after) != LIB_STATUS_OK) return 1;
         timing = core_machine_cpu_capture_timing(&state.execution);

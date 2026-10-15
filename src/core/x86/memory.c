@@ -629,6 +629,15 @@ lib_status core_machine_memory_read_reset_physical(t_ram *ram,
     return provider->read(provider->owner, physical, destination, bytes,
         LIB_FALSE);
 }
+static void core_machine_memory_snoop_written(t_ram *ram, lib_u32 physical,
+    lib_u32 decoded, lib_size bytes)
+{
+    if (ram->connect.cpu_snoop == LIB_NULL) return;
+    ram->connect.cpu_snoop(ram->connect.cpu_snoop_context, physical, bytes);
+    if (decoded != physical)
+        ram->connect.cpu_snoop(ram->connect.cpu_snoop_context, decoded, bytes);
+}
+
 lib_status core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
     lib_uptr source, lib_uptr byte)
 {
@@ -666,6 +675,10 @@ lib_status core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
     }
     if (provider != LIB_NULL) {
         status = provider->write(provider->owner, provider_physical, source, byte);
+        /* An error can follow a provider's accepted prefix; cancellation is
+         * not rollback. UNSUPPORTED alone declines this route without effects. */
+        if (status != LIB_STATUS_UNSUPPORTED)
+            core_machine_memory_snoop_written(ram, physical, provider_physical, byte);
         if (status != LIB_STATUS_UNSUPPORTED) return status;
         status = core_machine_memory_offset(ram, physical, byte, &offset);
         if (status != LIB_STATUS_OK) return status;
@@ -676,11 +689,13 @@ lib_status core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
         if (mapping->selected && !mapping->writable &&
             physical >= mapping->physical_start &&
             (lib_u64)physical - mapping->physical_start + byte <= mapping->bytes) {
+            core_machine_memory_snoop_written(ram, physical, (lib_u32)offset, byte);
             return LIB_STATUS_OK;
         }
     }
     lib_memory_copy((void *)(ram->connect.backing + offset),
         (void *)source, byte);
+    core_machine_memory_snoop_written(ram, physical, (lib_u32)offset, byte);
     if (ram->connect.parity != 0u && offset < ram->connect.parity_bytes) {
         lib_uptr index;
         lib_uptr written = byte;
@@ -712,6 +727,48 @@ lib_status core_machine_memory_query_physical(const t_ram *ram,
     if (status != LIB_STATUS_OK) return status;
     *out_route = provider == LIB_NULL ? CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM :
         CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
+    return LIB_STATUS_OK;
+}
+
+/* Core cache-enable policy: direct RAM only. Resolve every byte because a
+ * provider narrower than the line must not disappear into RAM fallback. */
+lib_status core_machine_memory_query_cpu_cache(const t_ram *ram,
+    lib_u32 physical, lib_bool reset_fetch, lib_bool check_fill,
+    lib_u32 *out_address, lib_bool *out_fill_enabled)
+{
+    lib_u32 first;
+    lib_size first_offset = 0u;
+
+    if (ram == LIB_NULL || out_address == LIB_NULL || out_fill_enabled == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    *out_address = reset_fetch ? physical : core_machine_memory_wrap_a20(ram, physical);
+    *out_fill_enabled = LIB_FALSE;
+    if (reset_fetch || !check_fill) return LIB_STATUS_OK;
+    first = *out_address & ~15u;
+    for (lib_uptr index = 0u; index < ram->connect.mapping_count; ++index) {
+        const core_machine_memory_mapping *mapping = &ram->connect.mappings[index];
+        if ((lib_u64)first < (lib_u64)mapping->physical_start + mapping->bytes &&
+            (lib_u64)mapping->physical_start < (lib_u64)first + 16u)
+            return LIB_STATUS_OK;
+    }
+    for (lib_u32 byte = 0u; byte < 16u; ++byte) {
+        const core_machine_memory_device_provider *provider;
+        lib_u32 provider_physical;
+        lib_size offset;
+        lib_status status = core_machine_memory_route_resolve(ram, first + byte,
+            1u, CORE_MACHINE_MEMORY_ACCESS_READ, &provider,
+            &provider_physical, &offset);
+
+        /* A failed speculative line query disables fills. The requested data
+         * access still reports its own route failure through the normal bus. */
+        if (status != LIB_STATUS_OK) return LIB_STATUS_OK;
+        if (provider != LIB_NULL) return LIB_STATUS_OK;
+        if (byte == 0u) first_offset = offset;
+        if (offset != first_offset + byte || offset !=
+                core_machine_memory_wrap_a20(ram, first + byte))
+            return LIB_STATUS_OK;
+    }
+    *out_fill_enabled = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 

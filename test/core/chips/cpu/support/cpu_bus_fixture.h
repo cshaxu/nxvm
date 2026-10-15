@@ -34,8 +34,9 @@ typedef struct cpu_bus_fixture {
 
 static lib_status cpu_bus_read(void *opaque, lib_u32 address, void *destination,
     lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
+    (void)cache_control;
     cpu_bus_fixture *fixture = (cpu_bus_fixture *)opaque;
     lib_u8 *output = (lib_u8 *)destination;
 
@@ -50,8 +51,9 @@ static lib_status cpu_bus_read(void *opaque, lib_u32 address, void *destination,
 }
 
 static lib_status cpu_bus_write(void *opaque, lib_u32 address, const void *source,
-    lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance)
+    lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
+    (void)cache_control;
     cpu_bus_fixture *fixture = (cpu_bus_fixture *)opaque;
     const lib_u8 *input = (const lib_u8 *)source;
 

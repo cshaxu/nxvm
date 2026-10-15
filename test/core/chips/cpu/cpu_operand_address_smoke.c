@@ -16,7 +16,7 @@ static lib_i32 oas_write(oas_machine *state, lib_u32 address,
 {
     return byte_count <= 255u && cpu_instruction_write(&state->chip,
         address, bytes, (lib_u8)byte_count,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) == LIB_STATUS_OK;
+        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) == LIB_STATUS_OK;
 }
 
 static lib_status oas_read(oas_machine *state, lib_u32 address,
@@ -25,7 +25,7 @@ static lib_status oas_read(oas_machine *state, lib_u32 address,
     if (byte_count > 255u) return LIB_STATUS_INVALID_ARGUMENT;
     return cpu_instruction_read(&state->chip, address, bytes,
         (lib_u8)byte_count, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
-        LIB_FALSE, LIB_FALSE);
+        LIB_FALSE, LIB_FALSE, 0u);
 }
 
 static lib_status oas_execute(oas_machine *state, lib_u32 budget)

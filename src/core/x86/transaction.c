@@ -58,7 +58,7 @@ lib_status core_machine_transaction_begin(core_machine_transaction_state *state,
 {
     if (state == LIB_NULL || owner == CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         kind < CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ ||
-        kind > CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE ||
+        kind > CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK ||
         state->owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         (state->hold_owner != CORE_MACHINE_TRANSACTION_OWNER_NONE &&
          (state->hold_owner != owner || !state->hold_acknowledged))) {

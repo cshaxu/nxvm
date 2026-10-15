@@ -2850,7 +2850,7 @@ static lib_i32 core_machine_control_stack_direct_call_gate_parameters(
         context->bus_context,
         table_base + (selector & VCPU_SELECTOR_IDX) + 4u,
         out_parameters, 1u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
-        LIB_TRUE, LIB_FALSE) == LIB_STATUS_OK;
+        LIB_TRUE, LIB_FALSE, 0u) == LIB_STATUS_OK;
 }
 
 static lib_i32 core_machine_control_stack_call_gate_parameters(core_machine_cpu_execution_context *context,
@@ -2865,7 +2865,7 @@ static lib_i32 core_machine_control_stack_call_gate_parameters(core_machine_cpu_
         context->bus_context,
         table_base + (selector & VCPU_SELECTOR_IDX) + 4u,
         out_parameters, 1u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
-        LIB_TRUE, LIB_FALSE) == LIB_STATUS_OK;
+        LIB_TRUE, LIB_FALSE, 0u) == LIB_STATUS_OK;
 }
 
 static lib_i32 core_machine_control_stack_selector_is_task_gate(core_machine_cpu_execution_context *context,
@@ -2881,7 +2881,7 @@ static lib_i32 core_machine_control_stack_selector_is_task_gate(core_machine_cpu
             context->bus_context,
             table_base + (selector & VCPU_SELECTOR_IDX) + 5u,
             &access, 1u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
-            LIB_TRUE, LIB_FALSE) != LIB_STATUS_OK) return 0;
+            LIB_TRUE, LIB_FALSE, 0u) != LIB_STATUS_OK) return 0;
     return (access & 0x0fu) == VCPU_DESC_SYS_TYPE_TASKGATE;
 }
 

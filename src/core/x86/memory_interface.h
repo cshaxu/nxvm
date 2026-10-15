@@ -57,6 +57,8 @@ typedef enum core_machine_memory_route {
 typedef lib_status (*core_machine_memory_device_read)(void *owner,
     lib_u32 physical, lib_uptr destination,
     lib_uptr bytes, lib_bool observe_only);
+/* UNSUPPORTED declines without effects. Other write errors may retain an
+ * accepted prefix; Core cancellation cannot undo device publication. */
 typedef lib_status (*core_machine_memory_device_write)(void *owner,
     lib_u32 physical, lib_uptr source,
     lib_uptr bytes);

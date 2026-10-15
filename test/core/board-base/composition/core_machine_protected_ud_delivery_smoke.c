@@ -329,7 +329,8 @@ static lib_i32 ud_primary_metadata_matrix(void)
 }
 static core_machine_cpu_profile ud_0f_expected_minimum(lib_u8 opcode)
 {
-    if (opcode == 0xa2u || opcode == 0xb0u || opcode == 0xb1u ||
+    if (opcode == 0x08u || opcode == 0x09u ||
+        opcode == 0xa2u || opcode == 0xb0u || opcode == 0xb1u ||
         opcode == 0xc0u || opcode == 0xc1u ||
         (opcode >= 0xc8u && opcode <= 0xcfu))
         return CORE_MACHINE_CPU_PROFILE_80486SX;
@@ -399,12 +400,15 @@ lib_i32 main(void)
     static const lib_u8 reserved_0f25[] = { 0x0fu, 0x25u, 0xc0u };
     static const lib_u8 invalid_operand[] = { 0x62u, 0xc0u };
     static const lib_u8 invalid_lock[] = { 0xf0u, 0x90u };
+    static const lib_u8 unsupported_invd[] = { 0x0fu, 0x08u };
+    static const lib_u8 unsupported_wbinvd[] = { 0x0fu, 0x09u };
     const lib_u8 *forms[] = {
-        invalid_primary, reserved_0f, reserved_0f25, invalid_operand, invalid_lock
+        invalid_primary, reserved_0f, reserved_0f25, invalid_operand, invalid_lock,
+        unsupported_invd, unsupported_wbinvd
     };
     const lib_size sizes[] = {
         sizeof(invalid_primary), sizeof(reserved_0f), sizeof(reserved_0f25), sizeof(invalid_operand),
-        sizeof(invalid_lock)
+        sizeof(invalid_lock), sizeof(unsupported_invd), sizeof(unsupported_wbinvd)
     };
     lib_size index;
 

@@ -2,6 +2,7 @@
 #define CORE_MACHINE_ATTACHMENT_INTERFACE_H
 
 #include "lib/types/types_interface.h"
+#include "core/chips/cpu/cpu_interface.h"
 
 typedef struct core_machine core_machine;
 
@@ -88,6 +89,14 @@ typedef struct core_machine_attachment {
     /* Optional board admission before stopped RAM replacement. A rejection
      * changes no Core allocation, mapping or lifecycle state. */
     core_machine_attachment_memory_admission_provider memory_admission;
+    /* Optional external cache. A failure leaves any already-completed board
+     * effect visible; Core cancels this cycle, without inventing rollback. */
+    lib_status (*cache_operation)(void *owner,
+        core_machine_cpu_cache_operation operation);
+    /* Drive the cache-control pins of this admitted memory cycle. Observation
+     * accesses do not invoke this; failure cancels before data publication. */
+    lib_status (*memory_cache_control)(void *owner, lib_u32 address,
+        lib_u8 bytes, lib_bool write, lib_u8 cache_control);
     void *context;
 } core_machine_attachment;
 

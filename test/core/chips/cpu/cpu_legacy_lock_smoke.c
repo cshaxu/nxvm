@@ -77,11 +77,11 @@ static lib_i32 legacy_lock_test_transparent_real(void)
         cpu_instruction_prepare(&state, profiles[profile]);
         state.cpu.data.eax = 0xaabb0002u;
         failed = cpu_instruction_write(&state, 0x100u, &image, sizeof(image),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             !legacy_lock_run(&state, add_memory, sizeof(add_memory),
             1u, &after) || after.data.eip != sizeof(add_memory) ||
             cpu_instruction_read(&state, 0x100u, &image, sizeof(image),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || image != 5u;
         if (failed) {
             lib_c_fprintf(lib_c_stderr, "LOCK ADD profile=%u\n", (unsigned)profile);
@@ -93,15 +93,15 @@ static lib_i32 legacy_lock_test_transparent_real(void)
         state.cpu.data.esi = 0x0100u;
         state.cpu.data.edi = 0x0200u;
         failed = cpu_instruction_write(&state, 0x100u, source, sizeof(source),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_write(&state, 0x200u, target, sizeof(target),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             !legacy_lock_run(&state, rep_movs, sizeof(rep_movs), 2u,
                 &after) || after.data.eip != sizeof(rep_movs) ||
             after.data.ecx != 0x11220000u || after.data.esi != 0x0102u ||
             after.data.edi != 0x0202u ||
             cpu_instruction_read(&state, 0x200u, target, sizeof(target),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || lib_memory_compare(source, target,
                 sizeof(source)) != 0;
         if (failed) {
@@ -160,11 +160,11 @@ static lib_i32 legacy_lock_test_register_sources(core_machine_cpu_profile profil
                 legal[length++] = 0u;
                 legal[length++] = 1u;
                 if (cpu_instruction_write(&state, 0x100u, &image, width,
-                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
                     !legacy_lock_run(&state, legal, length, 1u, &after) ||
                     after.data.eip != length ||
                     cpu_instruction_read(&state, 0x100u, &image, width,
-                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                         LIB_STATUS_OK ||
                     image != (results[operation] & (size == 2u ? LIB_UINT32_MAX :
                         size == 1u ? 0xffffu : 0xffu))) return 0;

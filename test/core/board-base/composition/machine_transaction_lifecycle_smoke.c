@@ -203,9 +203,9 @@ static lib_i32 lifecycle_cpu_memory_boundaries(void)
                 probe.count = 0u;
             }
             status = write ? core_machine_cpu_bus.write_memory(machine,
-                0x80000u, &value, 1u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) :
+                0x80000u, &value, 1u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) :
                 core_machine_cpu_bus.read_memory(machine, 0x80000u, &value, 1u,
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE);
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u);
             failed |= status != (outcome == 0u ? LIB_STATUS_OK :
                 outcome == 1u ? LIB_STATUS_IO_ERROR : LIB_STATUS_INVALID_ARGUMENT);
             failed |= probe.transfers != (outcome == 2u ? 0u : 1u);
@@ -232,7 +232,7 @@ static lib_i32 lifecycle_cpu_memory_boundaries(void)
         lib_u8 value = 0u;
         probe = (lifecycle_probe){ .memory_value = 0x7eu };
         failed |= core_machine_cpu_bus.read_memory(machine, 0x80000u, &value, 1u,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_TRUE, LIB_FALSE) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_TRUE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             value != 0x7eu || probe.count != 0u || probe.transfers != 0u;
         core_machine_cpu_bus.extension_command(machine, 0xd9u, 0xe8u);
         failed |= probe.count != 2u ||

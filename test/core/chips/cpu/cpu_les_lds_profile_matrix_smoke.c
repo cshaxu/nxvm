@@ -35,7 +35,7 @@ static lib_i32 les_lds_read(cpu_instruction_fixture *state, lib_u32 physical,
     void *data, lib_u8 bytes)
 {
     return cpu_instruction_read(state, physical, data, bytes,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) == LIB_STATUS_OK;
+        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) == LIB_STATUS_OK;
 }
 
 static lib_i32 les_lds_real_case(core_machine_cpu_profile profile,
@@ -95,7 +95,7 @@ static lib_i32 les_lds_real_case(core_machine_cpu_profile profile,
         lib_memory_copy(source, operand32 ? pointer32 : pointer16,
             operand32 ? sizeof(pointer32) : sizeof(pointer16));
         physical = source_base + 0x1000u;
-        failed |= cpu_instruction_write(&state, physical, source, operand32 ? sizeof(pointer32) : sizeof(pointer16), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+        failed |= cpu_instruction_write(&state, physical, source, operand32 ? sizeof(pointer32) : sizeof(pointer16), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         before = state.cpu;
         expected_eax = operand32 ? 0x11223344u :
             ((before.data.eax & 0xffff0000u) | 0x3344u);
@@ -274,7 +274,7 @@ static lib_i32 les_lds_protected_case(lib_u8 opcode, lib_u16 selector,
         state.cpu.data.ds.limit = 0xffffu;
         state.cpu.data.ss.base = 0x3000u;
         state.cpu.data.es = original;
-        failed |= cpu_instruction_write(&state, 0x3010u, pointer, sizeof(pointer), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK || cpu_instruction_write(&state, 0x2000u, program, sizeof(program), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+        failed |= cpu_instruction_write(&state, 0x3010u, pointer, sizeof(pointer), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK || cpu_instruction_write(&state, 0x2000u, program, sizeof(program), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         state.cpu.data.eip = 0u;
         before = state.cpu;
         core_machine_cpu_execution_refresh(&state.execution);
@@ -376,7 +376,7 @@ static lib_i32 les_lds_test_limit(void)
             state.cpu.data.cs.base = 0x2000u;
             state.cpu.data.ds.base = 0x3000u;
             state.cpu.data.ds.limit = 0x11u;
-            failed |= cpu_instruction_write(&state, 0x2000u, code, sizeof(code), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            failed |= cpu_instruction_write(&state, 0x2000u, code, sizeof(code), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             state.cpu.data.eip = 0u;
             before = state.cpu;
             core_machine_cpu_execution_refresh(&state.execution);

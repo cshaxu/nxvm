@@ -63,19 +63,43 @@ typedef enum core_machine_cpu_memory_access_provenance {
     CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE
 } core_machine_cpu_memory_access_provenance;
 
+typedef struct core_machine_cpu_cache_memory {
+    lib_u32 address;
+    lib_bool fill_enabled;
+} core_machine_cpu_cache_memory;
+
+typedef enum core_machine_cpu_cache_query {
+    CORE_MACHINE_CPU_CACHE_LOOKUP = 0,
+    CORE_MACHINE_CPU_CACHE_RESET_LOOKUP,
+    CORE_MACHINE_CPU_CACHE_FILL_PROBE
+} core_machine_cpu_cache_query;
+
+typedef enum core_machine_cpu_cache_operation {
+    CORE_MACHINE_CPU_CACHE_WRITEBACK = 0,
+    CORE_MACHINE_CPU_CACHE_FLUSH
+} core_machine_cpu_cache_operation;
+
+enum {
+    CORE_MACHINE_CPU_MEMORY_CACHE_PWT = 0x08u,
+    CORE_MACHINE_CPU_MEMORY_CACHE_PCD = 0x10u
+};
+
 /* Borrowed for the CPU lifetime; one execution owner serializes all calls.
  * Memory operations complete one logical transfer, not an entire instruction.
  * Observation reads must not consume device state or publish bus effects.
  * A successful port transfer is completed only after CPU-local publication;
  * a failed transfer must cancel its own admission before returning.
+ * Memory writes may retain an accepted prefix on failure; there is no storage
+ * rollback. Cache-control bits are the declared PWT/PCD flags of this cycle.
  * Callbacks may propagate signals, but cannot reenter CPU execution/destruction.
  * Widths are bytes; port widths are 1, 2 or 4. No board state is exposed. */
 typedef struct core_machine_cpu_bus_provider {
     lib_status (*read_memory)(void *context, lib_u32 address, void *destination,
         lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
-        lib_bool observe_only, lib_bool reset_fetch);
+        lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control);
     lib_status (*write_memory)(void *context, lib_u32 address, const void *source,
-        lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance);
+        lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
+        lib_u8 cache_control);
     lib_status (*transfer_port)(void *context, lib_u16 port, lib_u8 bytes,
         lib_bool write, lib_u32 *value);
     void (*complete_port)(void *context, lib_u16 port, lib_u8 bytes,
@@ -87,6 +111,23 @@ typedef struct core_machine_cpu_bus_provider {
     lib_bool (*interrupt_pending)(void *context);
     lib_status (*acknowledge_interrupt)(void *context, lib_u8 *vector);
     void (*extension_command)(void *context, lib_u8 opcode, lib_u8 modrm);
+    /* Lookup resolves live A20 only; reset lookup preserves the raw address.
+     * Only a fill probe checks eligibility of the complete aligned 16-byte
+     * line, without reading device data. Absent callback means identity
+     * addressing with automatic cache fills disabled. */
+    lib_status (*query_cache_memory)(void *context, lib_u32 address,
+        core_machine_cpu_cache_query query, core_machine_cpu_cache_memory *out_memory);
+    /* Complete one actual external special cycle. Missing implementation is
+     * not successful delivery. WBINVD requests writeback, then flush. */
+    lib_status (*cache_operation)(void *context,
+        core_machine_cpu_cache_operation operation);
+    /* Assert/release the CPU's memory LOCK signal. All CPU memory cycles
+     * inside it use the existing callbacks, including split operands and
+     * page-table updates. Complete it
+     * exactly once after a successful begin, also on a CPU or provider fault.
+     * Both callbacks may be absent only for a sole-owner isolated bus. */
+    lib_status (*begin_memory_lock)(void *context);
+    void (*complete_memory_lock)(void *context, lib_bool commit);
 } core_machine_cpu_bus_provider;
 
 static inline lib_i32 core_machine_cpu_profile_has_8086_semantics(
@@ -540,6 +581,11 @@ void core_machine_cpu_execution_advance_prefetch_reservation(
 
 void core_machine_cpu_execution_invalidate_prefetch(
     core_machine_cpu_execution_context *context);
+
+/* Owning executor thread only. Physical external-write snoop ignores A20M,
+ * respects NW and changes only matching cache valid bits, not tags/data. */
+void core_machine_cpu_signal_cache_write(core_machine_cpu_execution_context *context,
+    lib_u32 physical, lib_size bytes);
 
 void core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context);

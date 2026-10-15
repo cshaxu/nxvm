@@ -67,7 +67,7 @@ typedef struct tlb_probe {
 
 static lib_status tlb_probe_read(void *opaque, lib_u32 address, void *destination,
     lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     tlb_probe *probe = opaque;
 
@@ -79,18 +79,18 @@ static lib_status tlb_probe_read(void *opaque, lib_u32 address, void *destinatio
          provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH))
         return LIB_STATUS_IO_ERROR;
     return cpu_instruction_read(&probe->instruction, address, destination,
-        bytes, provenance, observe_only, reset_fetch);
+        bytes, provenance, observe_only, reset_fetch, cache_control);
 }
 
 static lib_status tlb_probe_write(void *opaque, lib_u32 address, const void *source,
-    lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance)
+    lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     tlb_probe *probe = opaque;
 
     if (probe->fail_table_write && address == 0x2100u &&
         provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE)
         return LIB_STATUS_IO_ERROR;
-    return cpu_instruction_write(&probe->instruction, address, source, bytes, provenance);
+    return cpu_instruction_write(&probe->instruction, address, source, bytes, provenance, cache_control);
 }
 
 static const core_machine_cpu_bus_provider tlb_probe_bus = {

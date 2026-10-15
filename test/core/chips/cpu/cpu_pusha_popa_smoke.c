@@ -50,7 +50,7 @@ static lib_i32 pusha_popa_read_image(cpu_instruction_fixture *state, lib_u32 add
 {
     *value = 0u;
     return cpu_instruction_read(state, address, &*value, width,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) == LIB_STATUS_OK;
+        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) == LIB_STATUS_OK;
 }
 
 static lib_i32 pusha_popa_expect_push_image(cpu_instruction_fixture *state,
@@ -91,7 +91,7 @@ static lib_i32 pusha_popa_test_pusha_success(core_machine_cpu_profile profile,
         pusha_popa_seed(&state);
         for (slot = 0u; slot != 8u; ++slot)
             failed |= cpu_instruction_write(&state, stack + slot * width, &sentinel, width,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         before = state.cpu;
         failed |= cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK || state.fault.valid ||
             after.data.eip != bytes || after.data.eax != before.data.eax ||
@@ -123,7 +123,7 @@ static lib_i32 pusha_popa_test_popa_success(core_machine_cpu_profile profile,
         pusha_popa_seed(&state);
         for (slot = 0u; slot != 8u; ++slot)
             failed |= cpu_instruction_write(&state, 0x8000u + slot * width, &image[slot], width,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         before = state.cpu;
         failed |= cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK || state.fault.valid ||
             after.data.eip != bytes || after.data.eflags != before.data.eflags ||
@@ -210,15 +210,15 @@ static lib_i32 pusha_popa_test_reject_case(core_machine_cpu_profile profile,
     {
         pusha_popa_seed(&state);
         failed |= cpu_instruction_write(&state, 0x7000u, image, sizeof(image),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_write(&state, 0x9000u, image, sizeof(image),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         failed |= !cpu_instruction_expect_real_fault(&state, code, bytes, 6u) ||
             cpu_instruction_read(&state, 0x7000u, &observed, sizeof(observed),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             lib_memory_compare(observed, image, sizeof(image)) != 0 ||
             cpu_instruction_read(&state, 0x9000u, &observed, sizeof(observed),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             lib_memory_compare(observed, image, sizeof(image)) != 0;
     }
     return !failed;
@@ -290,11 +290,11 @@ static lib_i32 pusha_popa_boot_protected(cpu_instruction_fixture *state)
     lib_u8 instruction;
 
     if (cpu_instruction_write(state, 0x0100u, pointer, sizeof(pointer),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
         cpu_instruction_write(state, 0x0300u, gdt, sizeof(gdt),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
         cpu_instruction_write(state, 0u, bootstrap, sizeof(bootstrap),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK)
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
         return 0;
     for (instruction = 0u; instruction != 10u; ++instruction)
     {
@@ -324,10 +324,10 @@ static lib_i32 pusha_popa_test_protected_pusha_limit(void)
         state.cpu.data.ss.seg.data.expdown = LIB_TRUE;
         state.cpu.data.esp = 0x12340022u;
         failed |= cpu_instruction_write(&state, 0x4018u, expected, sizeof(expected),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
 
             cpu_instruction_write(&state, 0x2000u, code, sizeof(code),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         before = state.cpu;
         state.cpu.data.eip = 0u;
         core_machine_cpu_execution_refresh(&state.execution);
@@ -373,10 +373,10 @@ static lib_i32 pusha_popa_test_protected_popa_limit(void)
         state.cpu.data.ss.limit = 0x1fu;
         state.cpu.data.esp = 0x12340018u;
         failed |= cpu_instruction_write(&state, 0x4018u, image, sizeof(image),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
 
             cpu_instruction_write(&state, 0x2000u, code, sizeof(code),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         before = state.cpu;
         state.cpu.data.eip = 0u;
         core_machine_cpu_execution_refresh(&state.execution);
@@ -497,7 +497,7 @@ static lib_bool pusha_popa_test_ordered_failure(void)
             lib_u32 value = pop ? 0x43210000u + slot : sentinel;
             lib_u32 address = pop ? 0x4080u + slot * width : 0x4080u - (slot + 1u) * width;
             cpu_instruction_write(state, address, &value, width,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u);
         }
         fixture.frame_base = 0x4000u;
         fixture.frame_size = 0x100u;
@@ -518,7 +518,7 @@ static lib_bool pusha_popa_test_ordered_failure(void)
             const lib_u32 value = pop ? 0x43210000u + slot :
                 (slot + 1u < failure ? expected[slot] : sentinel);
             if (cpu_instruction_read(state, address, &observed, width,
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                     LIB_STATUS_OK || observed != (value & mask)) passed = LIB_FALSE;
         }
     }
@@ -544,7 +544,7 @@ static lib_bool pusha_popa_test_initial_sp(void)
         pusha_popa_seed(&state);
         state.cpu.data.esp = stack;
         cpu_instruction_write(&state, 13u * 4u, vector, sizeof(vector),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u);
         cpu_instruction_run(&state, code, sizeof(code), &after);
         if (!state.delivered_exception.valid ||
             state.delivered_exception.exception_mask != (shutdown ?
@@ -571,13 +571,13 @@ typedef struct pusha_vm_fixture {
 
 static lib_status pusha_vm_read(void *opaque, lib_u32 address, void *destination,
     lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     pusha_vm_fixture *fixture = opaque;
     if (!observe_only && address >= 0x3000u && address < 0x3800u &&
         fixture->first_idt == 0u) fixture->first_idt = address;
     return cpu_instruction_read(&fixture->instruction, address, destination,
-        bytes, provenance, observe_only, reset_fetch);
+        bytes, provenance, observe_only, reset_fetch, cache_control);
 }
 
 static lib_bool pusha_popa_test_vm_initial_sp(void)

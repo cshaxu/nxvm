@@ -166,22 +166,22 @@ typedef struct cpu_entry_io_fixture {
 
 static lib_status cpu_entry_io_read(void *opaque, lib_u32 address, void *destination,
     lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     cpu_entry_io_fixture *fixture = (cpu_entry_io_fixture *)opaque;
     if (!fixture->reject_write && address == fixture->reject_address)
         return LIB_STATUS_IO_ERROR;
     return cpu_bus_read(&fixture->state, address, destination, bytes,
-        provenance, observe_only, reset_fetch);
+        provenance, observe_only, reset_fetch, cache_control);
 }
 
 static lib_status cpu_entry_io_write(void *opaque, lib_u32 address, const void *source,
-    lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance)
+    lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     cpu_entry_io_fixture *fixture = (cpu_entry_io_fixture *)opaque;
     if (fixture->reject_write && address == fixture->reject_address)
         return LIB_STATUS_IO_ERROR;
-    return cpu_bus_write(&fixture->state, address, source, bytes, provenance);
+    return cpu_bus_write(&fixture->state, address, source, bytes, provenance, cache_control);
 }
 
 static lib_bool cpu_entry_provider_failure(void)

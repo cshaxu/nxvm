@@ -35,7 +35,7 @@ static lib_i32 fs_gs_test_real(void)
             if (!pop && opcode < 2u) state.cpu.data.fs.selector = selector;
             if (!pop && opcode >= 2u) state.cpu.data.gs.selector = selector;
             if (pop)
-                failed |= cpu_instruction_write(&state, before_esp, &selector, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                failed |= cpu_instruction_write(&state, before_esp, &selector, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             status = cpu_instruction_run(&state, code, size ? 3u : 2u, &after);
             failed |= status != LIB_STATUS_OK || state.fault.valid ||
                 after.data.eip != (size ? 3u : 2u) || after.data.eflags != (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF) ||
@@ -43,7 +43,7 @@ static lib_i32 fs_gs_test_real(void)
                 after.data.esp != (pop ? before_esp + (size ? 4u : 2u) :
                 before_esp - (size ? 4u : 2u));
             if (!pop)
-                failed |= cpu_instruction_read(&state, after.data.ss.base + after.data.esp, &image, size ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                failed |= cpu_instruction_read(&state, after.data.ss.base + after.data.esp, &image, size ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                     (size ? image != (lib_u32)selector : (image & 0xffffu) != selector);
             else if (opcode < 2u) failed |= after.data.fs.selector != selector;
             else failed |= after.data.gs.selector != selector;
@@ -125,8 +125,8 @@ static lib_i32 fs_gs_test_protected_pop(void)
         if (!failed) {
             state.cpu.data.fs.selector = 0x1111u;
             state.cpu.data.gs.selector = 0x2222u;
-            failed |= cpu_instruction_write(&state, 0xc000u, &selector, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
-                cpu_instruction_write(&state, 0x2000u, (lib_u8[]){0x0fu,opcodes[opcode]}, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            failed |= cpu_instruction_write(&state, 0xc000u, &selector, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
+                cpu_instruction_write(&state, 0x2000u, (lib_u8[]){0x0fu,opcodes[opcode]}, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             state.cpu.data.eip = 0u;
             core_machine_cpu_execution_refresh(&state.execution);
             failed |= state.execution.stop_requested;
@@ -159,7 +159,7 @@ static lib_i32 fs_gs_test_pop_stack_fault(void)
             before_selector = opcode == 0u ? state.cpu.data.fs.selector :
                 state.cpu.data.gs.selector;
             before_flags = state.cpu.data.eflags;
-            failed |= cpu_instruction_write(&state, 0x2000u, (lib_u8[]){0x0fu,opcodes[opcode]}, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            failed |= cpu_instruction_write(&state, 0x2000u, (lib_u8[]){0x0fu,opcodes[opcode]}, 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             state.cpu.data.eip = 0u;
             core_machine_cpu_execution_refresh(&state.execution);
             failed |= !core_machine_cpu_is_shutdown(&state.execution) || state.execution.stop_requested;

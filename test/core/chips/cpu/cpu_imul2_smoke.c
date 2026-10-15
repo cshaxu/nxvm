@@ -43,7 +43,7 @@ static lib_i32 imul_forms(void)
         state.cpu.data.eflags = VCPU_EFLAGS_ZF;
         if (memory)
             failed |= cpu_instruction_write(&state, 0x4000u, &rhs,
-                width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+                width ? 4u : 2u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
                 LIB_STATUS_OK;
         failed |= cpu_instruction_run(&state, code, (lib_u8)bytes, &after) !=
             LIB_STATUS_OK || state.fault.valid ||

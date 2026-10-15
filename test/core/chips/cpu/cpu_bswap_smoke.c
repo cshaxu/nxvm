@@ -81,7 +81,7 @@ typedef struct bswap_fetch_fixture {
 
 static lib_status bswap_fetch(void *opaque, lib_u32 address, void *destination,
     lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     bswap_fetch_fixture *fixture = opaque;
 
@@ -93,7 +93,7 @@ static lib_status bswap_fetch(void *opaque, lib_u32 address, void *destination,
         return LIB_STATUS_IO_ERROR;
     }
     return cpu_instruction_read(&fixture->instruction, address, destination,
-        bytes, provenance, observe_only, reset_fetch);
+        bytes, provenance, observe_only, reset_fetch, cache_control);
 }
 
 static lib_bool bswap_failed_fetch(void)

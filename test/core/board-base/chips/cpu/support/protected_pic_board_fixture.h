@@ -18,19 +18,19 @@ typedef struct protected_pic_board_fixture {
 static inline lib_status protected_pic_board_read(void *opaque, lib_u32 address,
     void *destination, lib_u8 bytes,
     core_machine_cpu_memory_access_provenance provenance, lib_bool observe_only,
-    lib_bool reset_fetch)
+    lib_bool reset_fetch, lib_u8 cache_control)
 {
     protected_pic_board_fixture *board = opaque;
     return cpu_instruction_read(&board->cpu, address, destination, bytes,
-        provenance, observe_only, reset_fetch);
+        provenance, observe_only, reset_fetch, cache_control);
 }
 
 static inline lib_status protected_pic_board_write(void *opaque, lib_u32 address,
     const void *source, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance)
+    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     protected_pic_board_fixture *board = opaque;
-    return cpu_instruction_write(&board->cpu, address, source, bytes, provenance);
+    return cpu_instruction_write(&board->cpu, address, source, bytes, provenance, cache_control);
 }
 
 static inline lib_bool protected_pic_board_pending(void *opaque)

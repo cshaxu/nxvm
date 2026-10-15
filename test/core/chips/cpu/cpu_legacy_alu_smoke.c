@@ -157,7 +157,7 @@ static lib_i32 legacy_alu_binary_case(core_machine_cpu_profile profile,
         failed |= cpu_instruction_write(&state, LEGACY_ALU_MEMORY,
             encoding == 0u ? &left : &right,
             width == 8u ? 1u : (width == 16u ? 2u : 4u),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
     before = state.cpu;
     failed |= !legacy_alu_run(&state, code, bytes, 0, &after) ||
         state.fault.valid || after.data.eip != bytes ||
@@ -167,7 +167,7 @@ static lib_i32 legacy_alu_binary_case(core_machine_cpu_profile profile,
         failed |= cpu_instruction_read(&state, LEGACY_ALU_MEMORY,
             &observed, width == 8u ? 1u : (width == 16u ? 2u : 4u),
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE,
-            LIB_FALSE) != LIB_STATUS_OK ||
+            LIB_FALSE, 0u) != LIB_STATUS_OK ||
             observed != (encoding == 0u && operation != LEGACY_ALU_CMP ?
                 expected : (encoding == 0u ? left : right));
     else if (operation != LEGACY_ALU_CMP)
@@ -328,7 +328,7 @@ static lib_i32 legacy_alu_group1_case(core_machine_cpu_profile profile,
         VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
     if (memory)
         failed |= cpu_instruction_write(&state, LEGACY_ALU_MEMORY, &left, width == 8u ? 1u : 2u,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
     before = state.cpu;
     failed |= !legacy_alu_run(&state, code, bytes, 0, &after) ||
         state.fault.valid || after.data.eip != bytes ||
@@ -336,7 +336,7 @@ static lib_i32 legacy_alu_group1_case(core_machine_cpu_profile profile,
             width, expected, before.data.eflags);
     if (memory)
         failed |= cpu_instruction_read(&state, LEGACY_ALU_MEMORY, &observed, width == 8u ? 1u : 2u,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             observed != (operation == LEGACY_ALU_CMP ? left : expected);
     else if (operation != LEGACY_ALU_CMP)
         failed |= (after.data.eax & mask) != expected;
@@ -568,7 +568,7 @@ static lib_i32 legacy_alu_test_adjust_and_xlat_forms(void)
         if (form == 6u)
             failed |= cpu_instruction_write(&state,
                 LEGACY_ALU_MEMORY + 2u, &table_value,
-                sizeof(table_value), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+                sizeof(table_value), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
                 LIB_STATUS_OK;
         before = state.cpu;
         failed |= !legacy_alu_run(&state, codes[form], lengths[form], 0,
@@ -710,12 +710,12 @@ static lib_i32 legacy_alu_test_inc_dec_and_shift_extensions(void)
             VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
         failed |= cpu_instruction_write(&state, LEGACY_ALU_MEMORY,
             &value, sizeof(value),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK || !legacy_alu_run(&state,
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK || !legacy_alu_run(&state,
             code, sizeof(code), 0, &after) ||
             state.fault.valid || after.data.eip != sizeof(code) ||
             cpu_instruction_read(&state, LEGACY_ALU_MEMORY, &observed,
             sizeof(observed), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA,
-            LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || observed != (decrement ?
+            LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || observed != (decrement ?
             0x7fu : 0x80u) || (after.data.eflags & VCPU_EFLAGS_CF) !=
             VCPU_EFLAGS_CF;
 

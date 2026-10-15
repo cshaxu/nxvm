@@ -439,12 +439,12 @@ static lib_i32 control_test_leave_protected_mode(void)
 static lib_status control_cli_sti_read(void *opaque, lib_u32 address,
     void *destination, lib_u8 bytes,
     core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     if (address < 28u && (lib_u64)address + bytes > 24u)
         return LIB_STATUS_IO_ERROR;
     return cpu_instruction_read(opaque, address, destination, bytes,
-        provenance, observe_only, reset_fetch);
+        provenance, observe_only, reset_fetch, cache_control);
 }
 
 static lib_i32 control_cli_sti_storage_preserved(const t_cpu *before,

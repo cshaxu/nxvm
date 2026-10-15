@@ -112,12 +112,12 @@ static lib_i32 sreg_mov_test_real_forms(void)
             if (!sreg_mov_prepare(&state, profiles[profile])) return 0;
             sreg_mov_seed(&state);
             before = state.cpu;
-            failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK || !sreg_mov_run(&state,
+            failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK || !sreg_mov_run(&state,
                 store_memory, sizeof(store_memory), &after, &diagnostic, &status) ||
                 status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 after.data.eip != sizeof(store_memory) ||
                 !sreg_mov_gprs_same(&before, &after, 8u) ||
-                cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                     LIB_STATUS_OK || image != sreg_mov_sreg(&before, sreg)->selector;
 
             if (sreg == 1u) continue;
@@ -135,7 +135,7 @@ static lib_i32 sreg_mov_test_real_forms(void)
             if (!sreg_mov_prepare(&state, profiles[profile])) return 0;
             sreg_mov_seed(&state);
             before = state.cpu;
-            failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK || !sreg_mov_run(&state,
+            failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK || !sreg_mov_run(&state,
                 load_memory, sizeof(load_memory), &after, &diagnostic, &status) ||
                 status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 after.data.eip != sizeof(load_memory) ||
@@ -179,12 +179,12 @@ static lib_i32 sreg_mov_test_386_extensions(void)
         if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
-        failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+        failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
             LIB_STATUS_OK || !sreg_mov_run(&state, store_memory,
             sizeof(store_memory), &after, &diagnostic, &status) || status !=
             LIB_STATUS_OK || diagnostic.first_fault.valid || after.data.eip !=
             sizeof(store_memory) || !sreg_mov_gprs_same(&before, &after, 8u) ||
-            cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || image !=
+            cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || image !=
                 sreg_mov_sreg(&before, sreg)->selector;
 
         if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 0;
@@ -202,7 +202,7 @@ static lib_i32 sreg_mov_test_386_extensions(void)
         sreg_mov_seed(&state);
         before = state.cpu;
         image = 0xbe5au;
-        failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+        failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
             LIB_STATUS_OK || !sreg_mov_run(&state, load_memory,
             sizeof(load_memory), &after, &diagnostic, &status) || status !=
             LIB_STATUS_OK || diagnostic.first_fault.valid || after.data.eip !=
@@ -276,8 +276,8 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
             return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
-        failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
-            LIB_STATUS_OK || !cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u) || cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+        failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
+            LIB_STATUS_OK || !cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u) || cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             image != 0xbe5au;
     }
     {
@@ -289,8 +289,8 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
         if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
-        failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
-            LIB_STATUS_OK || !cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u) || cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+        failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
+            LIB_STATUS_OK || !cpu_instruction_expect_real_fault(&state, code, sizeof(code), 6u) || cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             image != 0xbe5au;
     }
     {
@@ -331,18 +331,18 @@ static lib_i32 sreg_mov_test_rejections_and_attributes(void)
             return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
-        failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+        failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
             LIB_STATUS_OK || !sreg_mov_run(&state, store67, sizeof(store67),
             &after, &diagnostic, &status) || status != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || after.data.eip != sizeof(store67) ||
             !sreg_mov_gprs_same(&before, &after, 8u) ||
-            cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || image != before.data.es.selector;
+            cpu_instruction_read(&state, before.data.ds.base + 0x1000u, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || image != before.data.es.selector;
         if (!sreg_mov_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386))
             return 0;
         sreg_mov_seed(&state);
         before = state.cpu;
         image = 0xbe5au;
-        failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) !=
+        failed |= cpu_instruction_write(&state, before.data.ds.base + 0x1000u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) !=
             LIB_STATUS_OK || !sreg_mov_run(&state, load6766,
             sizeof(load6766), &after, &diagnostic, &status) || status !=
             LIB_STATUS_OK || diagnostic.first_fault.valid || after.data.eip !=
@@ -389,7 +389,7 @@ static lib_i32 sreg_mov_protected_step(cpu_instruction_fixture *state,
     core_machine_cpu_diagnostic *diagnostic, lib_status *status)
 {
     if (cpu_instruction_write(state, 0x2000u, code, bytes,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK) return 0;
+        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK) return 0;
     state->cpu.data.eip = 0u;
     core_machine_cpu_execution_refresh(&state->execution);
     *status = state->execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
@@ -417,7 +417,7 @@ static lib_i32 sreg_mov_protected_fault(cpu_instruction_fixture *state,
         lib_memory_compare(&before->data.ds, &after.data.ds, sizeof(before->data.ds)) == 0 &&
         lib_memory_compare(&before->data.fs, &after.data.fs, sizeof(before->data.fs)) == 0 &&
         lib_memory_compare(&before->data.gs, &after.data.gs, sizeof(before->data.gs)) == 0 &&
-        cpu_instruction_read(state, address, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) == LIB_STATUS_OK &&
+        cpu_instruction_read(state, address, (void *)((lib_uptr)&image), sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) == LIB_STATUS_OK &&
         image == 0xbe5au;
 }
 
@@ -453,7 +453,7 @@ static lib_i32 sreg_mov_test_protected(void)
             failed |= target->selector != 0x30u || target->base != 0x5000u ||
                 target->limit != 0xffffu || !target->flagValid ||
                 !target->seg.data.writable ||
-                cpu_instruction_read(&state, 0x335u, (void *)((lib_uptr)&access), sizeof(access), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                cpu_instruction_read(&state, 0x335u, (void *)((lib_uptr)&access), sizeof(access), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                     LIB_STATUS_OK || access != 0x93u;
         }
         if (failed) return 0;
@@ -497,7 +497,7 @@ static lib_i32 sreg_mov_test_protected(void)
         if (!failed) {
             state.cpu.data.eax = 0xaabb0000u | selector;
             before = state.cpu;
-            failed |= cpu_instruction_write(&state, address, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK || !sreg_mov_protected_fault(
+            failed |= cpu_instruction_write(&state, address, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK || !sreg_mov_protected_fault(
                 &state, (lib_u8[]){0x8eu, modrm}, 2u, &before, address, image);
         }
         if (failed) return 0;
@@ -515,7 +515,7 @@ static lib_i32 sreg_mov_test_protected(void)
                 2u, &before, &(core_machine_cpu_diagnostic){0},
                 &(lib_status){0});
             before = state.cpu;
-            failed |= cpu_instruction_write(&state, 0x5010u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK || !sreg_mov_protected_fault(
+            failed |= cpu_instruction_write(&state, 0x5010u, &image, sizeof(image), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK || !sreg_mov_protected_fault(
                 &state, form == 0u ? load_limit : store_limit, 4u, &before,
                 0x5010u, image);
         }

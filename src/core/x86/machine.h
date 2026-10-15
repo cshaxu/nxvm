@@ -166,6 +166,7 @@ lib_status core_machine_neutral_create_with_test_allocation(
 lib_u32 core_machine_linear_pc(const core_machine *machine);
 void core_machine_external_cycle_invalidate(core_machine *machine);
 extern const core_machine_cpu_bus_provider core_machine_cpu_bus;
+void core_machine_cpu_bus_snoop_write(void *opaque, lib_u32 physical, lib_size bytes);
 void core_machine_transaction_trace(void *opaque,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
     core_machine_transaction_phase phase, lib_u32 address,

@@ -10,7 +10,7 @@ typedef struct rmw_fixture {
 
 static lib_status rmw_read(void *opaque, lib_u32 address, void *destination,
     lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     rmw_fixture *fixture = opaque;
     if (address >= 0x9000u && address < 0xb000u) {
@@ -18,11 +18,11 @@ static lib_status rmw_read(void *opaque, lib_u32 address, void *destination,
         if (fixture->failure == 5u) return LIB_STATUS_IO_ERROR;
     }
     return cpu_instruction_read(&fixture->instruction, address, destination,
-        bytes, provenance, observe_only, reset_fetch);
+        bytes, provenance, observe_only, reset_fetch, cache_control);
 }
 
 static lib_status rmw_write(void *opaque, lib_u32 address, const void *source,
-    lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance)
+    lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     rmw_fixture *fixture = opaque;
     if (address >= 0x9000u && address < 0xb000u) {
@@ -30,7 +30,7 @@ static lib_status rmw_write(void *opaque, lib_u32 address, const void *source,
         if (fixture->failure == 6u) return LIB_STATUS_IO_ERROR;
     }
     return cpu_instruction_write(&fixture->instruction, address, source, bytes,
-        provenance);
+        provenance, cache_control);
 }
 
 static const core_machine_cpu_bus_provider rmw_bus = {

@@ -18,8 +18,9 @@ typedef struct cpu_instruction_fixture {
 static lib_status cpu_instruction_read(void *opaque, lib_u32 address,
     void *destination, lib_u8 bytes,
     core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
+    (void)cache_control;
     cpu_instruction_fixture *fixture = (cpu_instruction_fixture *)opaque;
 
     (void)provenance;
@@ -33,8 +34,9 @@ static lib_status cpu_instruction_read(void *opaque, lib_u32 address,
 
 static lib_status cpu_instruction_write(void *opaque, lib_u32 address,
     const void *source, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance)
+    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
+    (void)cache_control;
     cpu_instruction_fixture *fixture = (cpu_instruction_fixture *)opaque;
 
     (void)provenance;

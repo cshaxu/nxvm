@@ -68,13 +68,13 @@ static lib_i32 bit_test_immediate_and_memory(void)
         state.cpu.data.ecx = 0xffffu;
         state.cpu.data.eflags = VCPU_EFLAGS_ZF;
         if (cpu_instruction_write(&state, 0x4000u, &first, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_write(&state, 0x4002u, &second, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_run(&state, signed_code, sizeof(signed_code),
                 &after) != LIB_STATUS_OK || state.fault.valid ||
             cpu_instruction_read(&state, 0x4000u, &read, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || read != 0x8000u ||
             X86_CPU_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_CF)) return 0;
 
@@ -83,27 +83,27 @@ static lib_i32 bit_test_immediate_and_memory(void)
         if (cpu_instruction_run(&state, immediate_code, sizeof(immediate_code),
                 &after) != LIB_STATUS_OK || state.fault.valid ||
             cpu_instruction_read(&state, 0x4002u, &read, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || read != 0u ||
             cpu_instruction_read(&state, 0x4000u, &read, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || read != 0x8001u ||
             X86_CPU_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_CF)) return 0;
 
         state.cpu.data.eip = 0u;
         state.cpu.data.eflags = VCPU_EFLAGS_ZF;
         if (cpu_instruction_write(&state, 0x4008u, &third, 4u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_write(&state, 0x400cu, &fourth, 4u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_run(&state, immediate32_code,
                 sizeof(immediate32_code), &after) != LIB_STATUS_OK ||
             state.fault.valid ||
             cpu_instruction_read(&state, 0x400cu, &fourth, 4u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || fourth != 0u ||
             cpu_instruction_read(&state, 0x4008u, &third, 4u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || third != 2u ||
             X86_CPU_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_CF)) return 0;
     }
@@ -118,11 +118,11 @@ static lib_i32 bit_test_immediate_and_memory(void)
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
         state.cpu.data.ecx = 1u;
         if (cpu_instruction_write(&state, 0x4000u, &word, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_run(&state, memory_bt, sizeof(memory_bt), &after) !=
                 LIB_STATUS_OK || state.fault.valid ||
             cpu_instruction_read(&state, 0x4000u, &read16, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || read16 != word ||
             !X86_CPU_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_CF)) return 0;
 
@@ -130,12 +130,12 @@ static lib_i32 bit_test_immediate_and_memory(void)
         state.cpu.data.esi = 0x4004u;
         state.cpu.data.ecx = 1u;
         if (cpu_instruction_write(&state, 0x4004u, &dword, 4u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_run(&state, address32_bts,
                 sizeof(address32_bts), &after) != LIB_STATUS_OK ||
             state.fault.valid ||
             cpu_instruction_read(&state, 0x4004u, &read32, 4u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || read32 != 2u ||
             X86_CPU_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_CF)) return 0;
     }
@@ -158,22 +158,22 @@ static lib_i32 bit_test_memory_destination_forms(void)
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
         state.cpu.data.ecx = 1u;
         if (cpu_instruction_write(&state, 0x4000u, &value, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_run(&state, indexed, sizeof(indexed), &after) !=
                 LIB_STATUS_OK || state.fault.valid ||
             cpu_instruction_read(&state, 0x4000u, &read, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || read != (form >= 2u ? 0u : 2u) ||
             !X86_CPU_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_CF)) return 0;
 
         state.cpu.data.eip = 0u;
         value = 2u;
         if (cpu_instruction_write(&state, 0x4000u, &value, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_run(&state, immediate, sizeof(immediate), &after) !=
                 LIB_STATUS_OK || state.fault.valid ||
             cpu_instruction_read(&state, 0x4000u, &read, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || read != (form >= 2u ? 0u : 2u) ||
             !X86_CPU_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_CF)) return 0;
     }

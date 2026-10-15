@@ -69,6 +69,8 @@ typedef struct {
     core_machine_memory_write_observer_slot
         write_observers[CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY];
     lib_uptr write_observer_count;
+    core_machine_memory_write_observer cpu_snoop;
+    void *cpu_snoop_context;
     core_machine_memory_device_provider *device_providers;
     lib_uptr device_provider_count;
     lib_uptr device_provider_capacity;
@@ -109,6 +111,9 @@ lib_status core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
 lib_status core_machine_memory_query_physical(const t_ram *ram,
     lib_u32 physical, lib_uptr size,
     core_machine_memory_access access, core_machine_memory_route *out_route);
+lib_status core_machine_memory_query_cpu_cache(const t_ram *ram,
+    lib_u32 physical, lib_bool reset_fetch, lib_bool check_fill,
+    lib_u32 *out_address, lib_bool *out_fill_enabled);
 lib_status core_machine_memory_initialize_for(t_ram *ram, lib_size bytes,
     core_machine_memory_test_allocation *test_allocation);
 void core_machine_memory_reset(t_ram *ram);

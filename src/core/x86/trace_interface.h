@@ -34,7 +34,9 @@ typedef enum core_machine_transaction_kind {
     CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND,
     /* The first logical INTA acknowledges the selected PIC request.  Vector
      * delivery remains the CPU interrupt-entry operation that follows. */
-    CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE
+    CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE,
+    CORE_MACHINE_TRANSACTION_CPU_CACHE_OPERATION,
+    CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK
 } core_machine_transaction_kind;
 
 #ifndef CORE_MACHINE_RUNTIME_TRACE_ENABLED

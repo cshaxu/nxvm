@@ -131,12 +131,12 @@ static lib_i32 rotate_test_forms(void)
         state.cpu.data.eflags = flags;
         if (memory)
             failed |= cpu_instruction_write(&state, 0x4000u, &initial, width == 8u ? 1u : width == 16u ? 2u : 4u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         failed |= !rotate_run_cpu(&state, code, bytes, 0, &after) ||
             state.fault.valid;
         if (memory) {
             failed |= cpu_instruction_read(&state, 0x4000u, &observed, width == 8u ? 1u : width == 16u ? 2u : 4u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK;
         } else
             observed = after.data.eax;
         failed |= (width == 8u ? (observed & 0xffu) : width == 16u ?
@@ -415,10 +415,10 @@ static lib_i32 rotate_test_shift_forms(void)
         state.cpu.data.esi = 0x4000u;
         state.cpu.data.eflags = flags;
         if (memory) failed |= cpu_instruction_write(&state, 0x4000u, &initial, width == 8u ? 1u : width == 16u ? 2u : 4u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         failed |= !rotate_run_cpu(&state, code, bytes, 0, &after) || state.fault.valid;
         if (memory) failed |= cpu_instruction_read(&state, 0x4000u, &observed, width == 8u ? 1u : width == 16u ? 2u : 4u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK;
         else observed = after.data.eax;
         failed |= (width == 8u ? observed & 0xffu : width == 16u ? observed & 0xffffu : observed) != expected ||
             (after.data.eflags & flag_mask) != (expected_flags & flag_mask) ||
@@ -675,13 +675,13 @@ static lib_bool rotate_test_carry_ring_boundaries(void)
         state.cpu.data.ecx = 0x55667700u | counts[count_index];
         state.cpu.data.eflags = flags;
         if (memory && cpu_instruction_write(&state, 0x4000u, &initial,
-                width / 8u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK)
+                width / 8u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
             return LIB_FALSE;
         if (cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK ||
                 state.fault.valid) return LIB_FALSE;
         if (memory) {
             if (cpu_instruction_read(&state, 0x4000u, &observed, width / 8u,
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                     LIB_STATUS_OK) return LIB_FALSE;
         } else observed = after.data.eax;
         if ((observed & mask) != expected ||
@@ -762,13 +762,13 @@ static lib_bool rotate_test_sar_extremes(void)
         state.cpu.data.ecx = counts[count_index];
         state.cpu.data.eflags = flags;
         if (memory && cpu_instruction_write(&state, 0x4000u, &initial,
-                width / 8u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK)
+                width / 8u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK)
             return LIB_FALSE;
         if (cpu_instruction_run(&state, code, bytes, &after) != LIB_STATUS_OK ||
                 state.fault.valid) return LIB_FALSE;
         if (memory) {
             if (cpu_instruction_read(&state, 0x4000u, &observed, width / 8u,
-                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                     LIB_STATUS_OK) return LIB_FALSE;
         } else observed = after.data.eax;
         if ((observed & mask) != expected || state.instructions.data.opr2 != count ||

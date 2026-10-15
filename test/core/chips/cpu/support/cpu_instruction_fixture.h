@@ -18,8 +18,9 @@ typedef struct cpu_instruction_fixture {
 static lib_status cpu_instruction_read(void *opaque, lib_u32 address,
     void *destination, lib_u8 bytes,
     core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
+    (void)cache_control;
     cpu_instruction_fixture *fixture = (cpu_instruction_fixture *)opaque;
 
     (void)provenance;
@@ -33,8 +34,9 @@ static lib_status cpu_instruction_read(void *opaque, lib_u32 address,
 
 static lib_status cpu_instruction_write(void *opaque, lib_u32 address,
     const void *source, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance)
+    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
+    (void)cache_control;
     cpu_instruction_fixture *fixture = (cpu_instruction_fixture *)opaque;
 
     (void)provenance;
@@ -114,6 +116,44 @@ static inline lib_status cpu_instruction_run(cpu_instruction_fixture *fixture,
     core_machine_cpu_execution_refresh(&fixture->execution);
     *after = fixture->cpu;
     return fixture->execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
+}
+
+/* Configure a real protected GP handler, including the VM86 ring-zero stack.
+ * The caller retains its selected CPU and bus; this adds no simulated fault. */
+static inline void cpu_instruction_prepare_protected_exception(
+    cpu_instruction_fixture *fixture, lib_u8 mode)
+{
+    const lib_bool vm86 = mode == 4u;
+    const lib_u8 cpl = vm86 ? 3u : mode;
+    const lib_u8 target_cpl = vm86 ? 0u : cpl;
+    const lib_u8 descriptor[] = {0xffu, 0xffu, 0u, 0u, 0u,
+        (lib_u8)(0x9bu | (target_cpl << 5u)), 0u, 0u};
+    const lib_u8 stack[] = {0xffu, 0xffu, 0u, 0u, 0u, 0x93u, 0u, 0u};
+    const lib_u8 gate[] = {0u, 3u, (lib_u8)(8u | target_cpl), 0u, 0u, 0x8eu, 0u, 0u};
+
+    fixture->cpu.data.cr0 = VCPU_CR0_PE;
+    fixture->cpu.data.cs.selector = (lib_u16)(8u | cpl);
+    fixture->cpu.data.cs.dpl = cpl;
+    fixture->cpu.data.ss.selector = (lib_u16)(0x10u | cpl);
+    fixture->cpu.data.ss.dpl = cpl;
+    fixture->cpu.data.esp = 0x800u;
+    fixture->cpu.data.eflags = 2u | (vm86 ? VCPU_EFLAGS_VM : 0u);
+    fixture->cpu.data.gdtr = (t_cpu_data_sreg){.flagValid = LIB_TRUE,
+        .sregtype = SREG_GDTR, .base = 0x200u, .limit = 23u};
+    fixture->cpu.data.idtr = (t_cpu_data_sreg){.flagValid = LIB_TRUE,
+        .sregtype = SREG_IDTR, .base = 0x400u, .limit = 0x87u};
+    lib_memory_copy(fixture->memory + 0x208u, descriptor, sizeof(descriptor));
+    lib_memory_copy(fixture->memory + 0x210u, stack, sizeof(stack));
+    lib_memory_copy(fixture->memory + 0x468u, gate, sizeof(gate));
+    if (vm86) {
+        const lib_u32 ring0_sp = 0x1000u;
+        const lib_u16 ring0_ss = 0x10u;
+        fixture->cpu.data.tr = (t_cpu_data_sreg){.flagValid = LIB_TRUE,
+            .sregtype = SREG_TR, .selector = 0x18u, .base = 0x600u, .limit = 0x67u};
+        fixture->cpu.data.tr.sys.type = 0xbu;
+        lib_memory_copy(fixture->memory + 0x604u, &ring0_sp, sizeof(ring0_sp));
+        lib_memory_copy(fixture->memory + 0x608u, &ring0_ss, sizeof(ring0_ss));
+    }
 }
 
 /* Real UD/GP proofs use valid handlers; early strict diagnostics do not invent

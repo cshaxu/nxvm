@@ -474,6 +474,10 @@ void core_machine_cpu_execution_context_initialize(
     context->preview_mode = LIB_FALSE;
     lib_memory_set(context->tlb, 0u, sizeof(context->tlb));
     lib_memory_set(context->tlb_lru, 0u, sizeof(context->tlb_lru));
+    lib_memory_set(context->cache, 0u, sizeof(context->cache));
+    lib_memory_set(context->cache_lru, 0u, sizeof(context->cache_lru));
+    lib_memory_set(context->cache_fill, 0u, sizeof(context->cache_fill));
+    lib_memory_set(context->cache_read, 0u, sizeof(context->cache_read));
     context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
     context->prefetch_count = 0u;
     context->prefetch_capacity = 15u;

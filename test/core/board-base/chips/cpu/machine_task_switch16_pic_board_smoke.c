@@ -12,19 +12,19 @@ typedef struct task16_pic_board {
 
 static lib_status task16_pic_read(void *opaque, lib_u32 address, void *to,
     lib_u8 bytes, core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe, lib_bool reset_fetch)
+    lib_bool observe, lib_bool reset_fetch, lib_u8 cache_control)
 {
     task16_pic_board *const board = opaque;
     return cpu_instruction_read(&board->cpu, address, to, bytes, provenance,
-        observe, reset_fetch);
+        observe, reset_fetch, cache_control);
 }
 
 static lib_status task16_pic_write(void *opaque, lib_u32 address,
     const void *from, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance)
+    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     task16_pic_board *const board = opaque;
-    return cpu_instruction_write(&board->cpu, address, from, bytes, provenance);
+    return cpu_instruction_write(&board->cpu, address, from, bytes, provenance, cache_control);
 }
 
 static lib_bool task16_pic_pending(void *opaque)

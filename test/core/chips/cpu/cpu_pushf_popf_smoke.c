@@ -507,7 +507,7 @@ static lib_bool pushf_test_286_real_preservation(void)
         before = state.cpu;
         expected = (before.data.eflags & privileged) | (popped & 0x0fd5u);
         if (cpu_instruction_write(&state, 0x8000u, &popped, sizeof(popped),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_run(&state, code, sizeof(code), &after) != LIB_STATUS_OK ||
             state.fault.valid || (after.data.eflags & 0x7fd5u) != expected ||
             after.data.sp != 0x8002u || after.data.eip != 1u ||

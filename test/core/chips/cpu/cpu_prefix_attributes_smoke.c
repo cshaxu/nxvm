@@ -22,7 +22,7 @@ static lib_status prefix_attributes_write(prefix_attributes_machine *state,
 {
     if (byte_count > 255u) return LIB_STATUS_INVALID_ARGUMENT;
     return cpu_instruction_write(&state->chip, address, bytes, (lib_u8)byte_count,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u);
 }
 
 static lib_status prefix_attributes_read(prefix_attributes_machine *state,
@@ -30,7 +30,7 @@ static lib_status prefix_attributes_read(prefix_attributes_machine *state,
 {
     if (byte_count > 255u) return LIB_STATUS_INVALID_ARGUMENT;
     return cpu_instruction_read(&state->chip, address, bytes, (lib_u8)byte_count,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE);
+        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u);
 }
 
 static lib_i32 prefix_attributes_preflight_ud(prefix_attributes_machine *state)

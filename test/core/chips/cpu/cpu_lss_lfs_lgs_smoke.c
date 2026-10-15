@@ -31,7 +31,7 @@ static lib_i32 lfg_test_real(void)
                 s.cpu.data.eflags =
                     VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
                 f |= cpu_instruction_write(&s, 0x1000u, z ? p32 :
-                        p16, z ? 6u : 4u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                        p16, z ? 6u : 4u, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
                     (st = cpu_instruction_run(&s, c, z ? 6u : 5u, &a)) != LIB_STATUS_OK || s.fault.valid ||
                     a.data.eip != (z ? 6u : 5u) ||
                     a.data.eflags != (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF) ||
@@ -172,8 +172,8 @@ static lib_i32 lfg_test_protected(void)
                 state.cpu.data.fs.selector = 0x1111u;
                 state.cpu.data.gs.selector = 0x2222u;
                 state.cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
-                failed |= cpu_instruction_write(&state, 0x1000u, pointer, pointer_bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
-                    cpu_instruction_write(&state, 0x2000u, code, code_bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                failed |= cpu_instruction_write(&state, 0x1000u, pointer, pointer_bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
+                    cpu_instruction_write(&state, 0x2000u, code, code_bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
                 state.cpu.data.eip = 0u;
                 core_machine_cpu_execution_refresh(&state.execution);
                 failed |= state.execution.stop_requested;
@@ -210,7 +210,7 @@ static lib_i32 lfg_test_source_fault_atomicity(void)
             state.cpu.data.fs.selector = 0x1111u;
             state.cpu.data.gs.selector = 0x2222u;
             state.cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
-            failed |= cpu_instruction_write(&state, 0x2000u, code, sizeof(code), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+            failed |= cpu_instruction_write(&state, 0x2000u, code, sizeof(code), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             state.cpu.data.eip = 0u;
             before = state.cpu;
             core_machine_cpu_execution_refresh(&state.execution);

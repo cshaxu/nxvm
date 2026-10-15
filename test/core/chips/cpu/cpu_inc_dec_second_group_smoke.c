@@ -69,13 +69,13 @@ static lib_i32 inc_dec_test_test_rm_reg_forms(void)
                 state.cpu.data.edx = source;
                 state.cpu.data.eflags = initial_flags;
                 if (memory) failed |= cpu_instruction_write(&state,
-                    INC_DEC_MEMORY, &destination, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                    INC_DEC_MEMORY, &destination, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
                 failed |= !inc_dec_run(&state, forms[form], lengths[form], 0, &after,
                     &diagnostic) || diagnostic.first_fault.valid ||
                     after.data.ecx != destination || after.data.edx != source ||
                     (after.data.eflags & TEST_DEFINED_FLAGS) != expected_flags;
                 if (memory) failed |= cpu_instruction_read(&state,
-                    INC_DEC_MEMORY, &observed, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                    INC_DEC_MEMORY, &observed, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                     observed != (destination & mask);
             }
                         if (failed) return 0;
@@ -102,14 +102,14 @@ static lib_i32 inc_dec_test_test_rm_reg_attribute_and_profile(void)
         state.cpu.data.edx = 0x80000000u;
         state.cpu.data.eflags = initial_flags;
         failed |= cpu_instruction_write(&state, INC_DEC_MEMORY,
-            &destination, sizeof(destination), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            &destination, sizeof(destination), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             !inc_dec_run(&state, address_code, sizeof(address_code), 0, &after,
                 &diagnostic) || diagnostic.first_fault.valid ||
             after.data.edx != 0x80000000u ||
             (after.data.eflags & TEST_DEFINED_FLAGS) !=
                 (VCPU_EFLAGS_SF | VCPU_EFLAGS_PF) ||
             cpu_instruction_read(&state, INC_DEC_MEMORY, &destination,
-                sizeof(destination), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || destination != 0xffffffffu;
+                sizeof(destination), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || destination != 0xffffffffu;
     }
         if (failed) return 0;
 
@@ -173,14 +173,14 @@ static lib_i32 inc_dec_test_add_rm_reg_forms(void)
                 destination : source;
             state.cpu.data.eflags = 0u;
             if (memory) failed |= cpu_instruction_write(&state, INC_DEC_MEMORY,
-                &(lib_u32){ memory_source ? source : destination }, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                &(lib_u32){ memory_source ? source : destination }, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             failed |= !inc_dec_run(&state, forms[form], lengths[form], 0, &after,
                 &diagnostic) || diagnostic.first_fault.valid ||
                 (after.data.eflags & ADD_DEFINED_FLAGS) !=
                     (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
             if (memory) {
                 failed |= cpu_instruction_read(&state, INC_DEC_MEMORY, &observed,
-                    bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || observed != (memory_source ? source : 0u);
+                    bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || observed != (memory_source ? source : 0u);
                 if (memory_source) failed |= (after.data.edx & mask) != 0u;
             } else if (reg_destination) {
                 failed |= after.data.edx != expected || after.data.ecx != source;
@@ -230,12 +230,12 @@ static lib_i32 inc_dec_test_add_immediate_forms(void)
             state.cpu.data.eax = destination;
             state.cpu.data.ecx = destination;
             if (memory) failed |= cpu_instruction_write(&state, INC_DEC_MEMORY,
-                &destination, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                &destination, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             failed |= !inc_dec_run(&state, forms[form], lengths[form], 0, &after,
                 &diagnostic) || diagnostic.first_fault.valid ||
                 (after.data.eflags & ADD_DEFINED_FLAGS) != flags;
             if (memory) failed |= cpu_instruction_read(&state, INC_DEC_MEMORY,
-                &observed, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || observed != expected;
+                &observed, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || observed != expected;
             else if (form < 3u) failed |= (after.data.eax & mask) != expected;
             else failed |= (after.data.ecx & mask) != expected;
         }
@@ -292,13 +292,13 @@ static lib_i32 inc_dec_test_add_attribute_and_profile(void)
         state.cpu.data.esi = INC_DEC_MEMORY;
         state.cpu.data.edx = 1u;
         failed |= cpu_instruction_write(&state, INC_DEC_MEMORY, &destination,
-            sizeof(destination), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK || !inc_dec_run(&state, address_code,
+            sizeof(destination), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK || !inc_dec_run(&state, address_code,
                 sizeof(address_code), 0, &after, &diagnostic) ||
             diagnostic.first_fault.valid || after.data.edx != 1u ||
             (after.data.eflags & ADD_DEFINED_FLAGS) !=
                 (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF) ||
             cpu_instruction_read(&state, INC_DEC_MEMORY, &destination,
-                sizeof(destination), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || destination != 0u;
+                sizeof(destination), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || destination != 0u;
     }
         if (failed) return 0;
 
@@ -376,14 +376,14 @@ static lib_i32 inc_dec_test_adc_forms(void)
             if (memory) {
                 const lib_u32 memory_value = memory_source ? 0u : destination;
                 failed |= cpu_instruction_write(&state, INC_DEC_MEMORY,
-                    &memory_value, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                    &memory_value, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             }
             failed |= !inc_dec_run(&state, forms[form], lengths[form], 0, &after,
                 &diagnostic) || diagnostic.first_fault.valid ||
                 (after.data.eflags & ADD_DEFINED_FLAGS) !=
                     (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
             if (memory) failed |= cpu_instruction_read(&state, INC_DEC_MEMORY,
-                &observed, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || observed != (memory_source ? 0u : 0u);
+                &observed, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || observed != (memory_source ? 0u : 0u);
             else if (accumulator) failed |= (after.data.eax & mask) != 0u;
             else if (immediate || !register_destination) failed |= (after.data.ecx & mask) != 0u;
             else failed |= (after.data.edx & mask) != 0u;
@@ -442,12 +442,12 @@ static lib_i32 inc_dec_test_adc_attribute_profile_fault(void)
         state.cpu.data.edx = 0u;
         state.cpu.data.eflags = VCPU_EFLAGS_CF;
         failed |= cpu_instruction_write(&state, INC_DEC_MEMORY, &value,
-            sizeof(value), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK || !inc_dec_run(&state, address_code,
+            sizeof(value), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK || !inc_dec_run(&state, address_code,
                 sizeof(address_code), 0, &after, &diagnostic) || diagnostic.first_fault.valid ||
             after.data.edx != 0u || (after.data.eflags & ADD_DEFINED_FLAGS) !=
                 (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF) ||
             cpu_instruction_read(&state, INC_DEC_MEMORY, &value,
-                sizeof(value), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || value != 0u;
+                sizeof(value), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || value != 0u;
     }
         if (failed) return 0;
     failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
@@ -533,7 +533,7 @@ static lib_i32 inc_dec_test_sbb_forms(void)
             if (memory) {
                 const lib_u32 value = 0u;
                 failed |= cpu_instruction_write(&state, INC_DEC_MEMORY,
-                    &value, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                    &value, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             }
             failed |= !inc_dec_run(&state, forms[form], lengths[form], 0, &after,
                 &diagnostic) || diagnostic.first_fault.valid ||
@@ -541,7 +541,7 @@ static lib_i32 inc_dec_test_sbb_forms(void)
                     (VCPU_EFLAGS_CF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
             if (memory) {
                 failed |= cpu_instruction_read(&state, INC_DEC_MEMORY,
-                    &observed, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                    &observed, bytes, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                     observed != (memory_source ? 0u : mask);
             } else if (accumulator) {
                 failed |= (after.data.eax & mask) != mask;
@@ -639,10 +639,10 @@ static lib_i32 inc_dec_test_sbb_boundaries(void)
             state.cpu.data.edx = 0u;
             state.cpu.data.eflags = VCPU_EFLAGS_CF;
             failed |= cpu_instruction_write(&state, INC_DEC_MEMORY, &value,
-                sizeof(value), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK || !inc_dec_run(&state, address_code,
+                sizeof(value), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK || !inc_dec_run(&state, address_code,
                     sizeof(address_code), 0, &after, &diagnostic) ||
                 diagnostic.first_fault.valid || cpu_instruction_read(&state,
-                    INC_DEC_MEMORY, &value, sizeof(value), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                    INC_DEC_MEMORY, &value, sizeof(value), CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                 value != 0xffffffffu;
         }
                 if (failed) return 0;

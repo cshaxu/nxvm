@@ -237,10 +237,91 @@ static lib_i32 _kma_is_reset_vector_fetch(
         physical <= LIB_UINT32_MAX - (lib_u32)(bytes - 1u);
 }
 
-/* read content from physical */
-static void _kma_read_physical(core_machine_cpu_execution_context *context, lib_u32 physical, lib_uptr rdata, lib_u8 byte, core_machine_cpu_memory_access_provenance provenance)
+static void _kma_cache_touch(core_machine_cpu_execution_context *context,
+    lib_u8 set, lib_u8 way);
+static void _kma_cache_report(core_machine_cpu_execution_context *context,
+    lib_u8 set, lib_u8 way);
+
+static lib_u8 _kma_cache_way(core_machine_cpu_execution_context *context,
+    lib_u32 address)
+{
+    const lib_u8 set = (address >> 4u) & (X86_CPU_CACHE_SETS - 1u);
+    for (lib_u8 way = 0u; way < X86_CPU_CACHE_WAYS; ++way)
+        if (context->cache[set][way].valid &&
+            context->cache[set][way].tag == (address & 0xfffff800u)) return way;
+    return X86_CPU_CACHE_WAYS;
+}
+
+static lib_u8 _kma_cache_replacement(core_machine_cpu_execution_context *context,
+    lib_u8 set)
+{
+    const lib_u8 lru = context->cache_lru[set];
+    for (lib_u8 way = 0u; way < X86_CPU_CACHE_WAYS; ++way)
+        if (!context->cache[set][way].valid) return way;
+    return lru & 1u ? (lib_u8)(2u + ((lru >> 2u) & 1u)) :
+        (lib_u8)((lru >> 1u) & 1u);
+}
+
+static lib_u8 _kma_memory_cache_control(core_machine_cpu_execution_context *context,
+    lib_u32 attributes)
+{
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX) return 0u;
+    return (attributes & (CORE_MACHINE_CPU_MEMORY_CACHE_PWT |
+        CORE_MACHINE_CPU_MEMORY_CACHE_PCD)) |
+        ((cpu_state.data.cr0 & VCPU_CR0_CD) != 0u ? CORE_MACHINE_CPU_MEMORY_CACHE_PCD : 0u);
+}
+
+static void _kma_begin_memory_lock(core_machine_cpu_execution_context *context)
+{
+    CPU_TRACE_CALL_BEGIN("_kma_begin_memory_lock");
+    if (instruction_state.data.memory_lock_active) return;
+    if ((context->bus->begin_memory_lock != LIB_NULL) !=
+        (context->bus->complete_memory_lock != LIB_NULL))
+        CPU_TRACE_CHECK_RETURN(_SetExcept_CE(0u));
+    if (context->bus->begin_memory_lock != LIB_NULL &&
+        context->bus->begin_memory_lock(context->bus_context) != LIB_STATUS_OK)
+        CPU_TRACE_CHECK_RETURN(_SetExcept_CE(0u));
+    instruction_state.data.memory_lock_active = LIB_TRUE;
+    CPU_TRACE_CALL_END;
+}
+
+static void _kma_complete_memory_lock(core_machine_cpu_execution_context *context,
+    lib_bool commit)
+{
+    if (!instruction_state.data.memory_lock_active) return;
+    instruction_state.data.memory_lock_active = LIB_FALSE;
+    if (context->bus->complete_memory_lock != LIB_NULL)
+        context->bus->complete_memory_lock(context->bus_context, commit);
+}
+
+/* A completed bus transfer is the sole external-read publication path. */
+static void _kma_read_bus(core_machine_cpu_execution_context *context,
+    lib_u32 physical, lib_uptr rdata, lib_u8 byte,
+    core_machine_cpu_memory_access_provenance provenance, lib_u32 attributes)
 {
     lib_status memory_status;
+    CPU_TRACE_CALL_BEGIN("_kma_read_bus");
+    _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
+        physical, byte, LIB_FALSE, provenance);
+    memory_status = context->bus->read_memory(context->bus_context, physical,
+        (void *)rdata, byte, provenance, context->preview_mode,
+        _kma_is_reset_vector_fetch(context, physical, byte, provenance),
+        _kma_memory_cache_control(context, attributes));
+    if (memory_status != LIB_STATUS_OK) {
+        _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
+            physical, byte, LIB_FALSE, provenance);
+        CPU_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
+    }
+    _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
+        physical, byte, LIB_FALSE, provenance);
+    CPU_TRACE_CALL_END;
+}
+
+/* Cache eligibility affects fills, not hits in an already resident line. */
+static void _kma_read_physical(core_machine_cpu_execution_context *context,
+    lib_u32 physical, lib_uptr rdata, lib_u8 byte,
+    core_machine_cpu_memory_access_provenance provenance, lib_u32 attributes)
+{
     CPU_TRACE_CALL_BEGIN("_kma_read_physical");
     /* The processor owns the width of its external physical-address bus.
      * Board A20 routing remains in the memory owner and is applied afterwards.
@@ -251,32 +332,82 @@ static void _kma_read_physical(core_machine_cpu_execution_context *context, lib_
     } else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
         physical &= 0x00ffffffu;
     }
-    _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-        physical, byte, LIB_FALSE, provenance);
-    memory_status = context->bus->read_memory(context->bus_context, physical,
-        (void *)rdata, byte, provenance, context->preview_mode,
-        _kma_is_reset_vector_fetch(context, physical, byte, provenance));
-    if (memory_status != LIB_STATUS_OK) {
-        _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            physical, byte, LIB_FALSE, provenance);
-        CPU_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX) {
+        CPU_TRACE_CHECK_RETURN(_kma_read_bus(context, physical, rdata, byte, provenance, attributes));
+        CPU_TRACE_CALL_END;
+        return;
     }
-    _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-        physical, byte, LIB_FALSE, provenance);
+    for (lib_u8 done = 0u; done < byte;) {
+        core_machine_cpu_cache_memory memory = {.address = physical + done};
+        const core_machine_cpu_cache_query query =
+            _kma_is_reset_vector_fetch(context, physical + done, 1u, provenance) ?
+                CORE_MACHINE_CPU_CACHE_RESET_LOOKUP : CORE_MACHINE_CPU_CACHE_LOOKUP;
+        lib_u8 way, part, offset, set;
+
+        if (context->bus->query_cache_memory != LIB_NULL &&
+            context->bus->query_cache_memory(context->bus_context, physical + done,
+                query, &memory) != LIB_STATUS_OK)
+            CPU_TRACE_CHECK_RETURN(_SetExcept_CE(physical + done));
+        offset = memory.address & 15u;
+        part = byte - done;
+        if (part > 16u - offset) part = 16u - offset;
+        if (instruction_state.data.memory_lock_active) {
+            CPU_TRACE_CHECK_RETURN(_kma_read_bus(context, memory.address,
+                rdata + done, part, provenance, attributes));
+            done += part;
+            continue;
+        }
+        set = (memory.address >> 4u) & (X86_CPU_CACHE_SETS - 1u);
+        way = _kma_cache_way(context, memory.address);
+        if (way == X86_CPU_CACHE_WAYS && !context->preview_mode &&
+            query == CORE_MACHINE_CPU_CACHE_LOOKUP &&
+            (cpu_state.data.cr0 & VCPU_CR0_CD) == 0u &&
+            (attributes & CORE_MACHINE_CPU_MEMORY_CACHE_PCD) == 0u &&
+            context->bus->query_cache_memory != LIB_NULL &&
+            context->bus->query_cache_memory(context->bus_context, physical + done,
+                CORE_MACHINE_CPU_CACHE_FILL_PROBE, &memory) != LIB_STATUS_OK)
+            CPU_TRACE_CHECK_RETURN(_SetExcept_CE(physical + done));
+        if (way != X86_CPU_CACHE_WAYS) {
+            lib_memory_copy((void *)(rdata + done),
+                (const lib_u8 *)context->cache[set][way].data + offset, part);
+            if (!context->preview_mode) {
+                _kma_cache_touch(context, set, way);
+                if (provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_DATA ||
+                    provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ)
+                    _kma_cache_report(context, set, way);
+            }
+        } else if (!context->preview_mode && memory.fill_enabled &&
+            (cpu_state.data.cr0 & VCPU_CR0_CD) == 0u && (attributes & 0x10u) == 0u) {
+            lib_u32 data[X86_CPU_CACHE_LINE_DWORDS];
+            CPU_TRACE_CHECK_RETURN(_kma_read_bus(context, memory.address & ~15u,
+                (lib_uptr)data, sizeof(data), provenance, attributes));
+            way = _kma_cache_replacement(context, set);
+            context->cache[set][way] = (cpu_cache_line){
+                .tag = memory.address & 0xfffff800u, .valid = LIB_TRUE};
+            lib_memory_copy(context->cache[set][way].data, data, sizeof(data));
+            lib_memory_copy(context->cache_fill, data, sizeof(data));
+            _kma_cache_touch(context, set, way);
+            _kma_cache_report(context, set, way);
+            lib_memory_copy((void *)(rdata + done), (const lib_u8 *)data + offset, part);
+        } else {
+            CPU_TRACE_CHECK_RETURN(_kma_read_bus(context, memory.address,
+                rdata + done, part, provenance, attributes));
+        }
+        done += part;
+    }
     CPU_TRACE_CALL_END;
-}/* write content to physical */
-static void _kma_write_physical(core_machine_cpu_execution_context *context, lib_u32 physical, lib_uptr rdata, lib_u8 byte, core_machine_cpu_memory_access_provenance provenance)
+}
+
+static void _kma_write_bus(core_machine_cpu_execution_context *context,
+    lib_u32 physical, lib_uptr rdata, lib_u8 byte,
+    core_machine_cpu_memory_access_provenance provenance, lib_u32 attributes)
 {
-    CPU_TRACE_CALL_BEGIN("_kma_write_physical");
-    if (context->cpu_profile <= CORE_MACHINE_CPU_PROFILE_80186) {
-        physical &= 0x000fffffu;
-    } else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
-        physical &= 0x00ffffffu;
-    }
+    CPU_TRACE_CALL_BEGIN("_kma_write_bus");
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
         physical, byte, LIB_TRUE, provenance);
     if (context->bus->write_memory(context->bus_context, physical,
-            (const void *)rdata, byte, provenance) != LIB_STATUS_OK) {
+            (const void *)rdata, byte, provenance,
+            _kma_memory_cache_control(context, attributes)) != LIB_STATUS_OK) {
         _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
             physical, byte, LIB_TRUE, provenance);
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
@@ -284,6 +415,143 @@ static void _kma_write_physical(core_machine_cpu_execution_context *context, lib
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
         physical, byte, LIB_TRUE, provenance);
     CPU_TRACE_CALL_END;
+}
+
+/* write content to physical */
+static void _kma_write_physical(core_machine_cpu_execution_context *context, lib_u32 physical, lib_uptr rdata, lib_u8 byte, core_machine_cpu_memory_access_provenance provenance, lib_u32 attributes)
+{
+    CPU_TRACE_CALL_BEGIN("_kma_write_physical");
+    if (context->cpu_profile <= CORE_MACHINE_CPU_PROFILE_80186) {
+        physical &= 0x000fffffu;
+    } else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
+        physical &= 0x00ffffffu;
+    }
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX) {
+        for (lib_u8 done = 0u; done < byte;) {
+            core_machine_cpu_cache_memory memory = {.address = physical + done};
+            lib_u8 way, part, offset, set;
+
+            if (context->bus->query_cache_memory != LIB_NULL &&
+                context->bus->query_cache_memory(context->bus_context,
+                    physical + done, CORE_MACHINE_CPU_CACHE_LOOKUP, &memory) != LIB_STATUS_OK)
+                CPU_TRACE_CHECK_RETURN(_SetExcept_CE(physical + done));
+            offset = memory.address & 15u;
+            part = byte - done;
+            if (part > 16u - offset) part = 16u - offset;
+            set = (memory.address >> 4u) & (X86_CPU_CACHE_SETS - 1u);
+            way = _kma_cache_way(context, memory.address);
+            if (instruction_state.data.memory_lock_active || way == X86_CPU_CACHE_WAYS ||
+                (cpu_state.data.cr0 & VCPU_CR0_NW) == 0u) {
+                _kma_write_bus(context, memory.address,
+                    rdata + done, part, provenance, attributes);
+                if (instruction_state.data.except) {
+                    if (way != X86_CPU_CACHE_WAYS)
+                        context->cache[set][way].valid = LIB_FALSE;
+                    CPU_TRACE_CALL_END;
+                    return;
+                }
+            }
+            if (way != X86_CPU_CACHE_WAYS) {
+                lib_memory_copy((lib_u8 *)context->cache[set][way].data + offset,
+                    (const void *)(rdata + done), part);
+                _kma_cache_touch(context, set, way);
+                _kma_cache_report(context, set, way);
+            }
+            done += part;
+        }
+        CPU_TRACE_CALL_END;
+        return;
+    }
+    CPU_TRACE_CHECK_RETURN(_kma_write_bus(context, physical, rdata, byte, provenance, attributes));
+    CPU_TRACE_CALL_END;
+}
+
+/* Invalidating does not erase the tag or data arrays (Intel 273021-001 B.2.5). */
+static void _kma_cache_invalidate(core_machine_cpu_execution_context *context)
+{
+    for (lib_u8 set = 0u; set < X86_CPU_CACHE_SETS; ++set) {
+        for (lib_u8 way = 0u; way < X86_CPU_CACHE_WAYS; ++way)
+            context->cache[set][way].valid = LIB_FALSE;
+        context->cache_lru[set] = 0u;
+    }
+}
+
+static void _kma_cache_touch(core_machine_cpu_execution_context *context,
+    lib_u8 set, lib_u8 way)
+{
+    lib_u8 lru = context->cache_lru[set];
+
+    if (way < 2u)
+        lru = (lru & 4u) | 1u | (way == 0u ? 2u : 0u);
+    else
+        lru = (lru & 2u) | (way == 2u ? 4u : 0u);
+    context->cache_lru[set] = lru;
+}
+
+static void _kma_cache_test(core_machine_cpu_execution_context *context,
+    lib_u32 command)
+{
+    const lib_u8 set = (command >> 4u) & (X86_CPU_CACHE_SETS - 1u);
+    const lib_u8 way = (command >> 2u) & (X86_CPU_CACHE_WAYS - 1u);
+    cpu_cache_line *line = &context->cache[set][way];
+
+    cpu_state.data.tr5 = command & 0x7ffu;
+    switch (command & 3u) {
+    case 0u:
+        break;
+    case 1u:
+        line->tag = cpu_state.data.tr4 & 0xfffff800u;
+        line->valid = (cpu_state.data.tr4 & 0x400u) != 0u;
+        lib_memory_copy(line->data, context->cache_fill, sizeof(line->data));
+        _kma_cache_touch(context, set, way);
+        break;
+    case 2u:
+        _kma_cache_report(context, set, way);
+        break;
+    case 3u:
+        _kma_cache_invalidate(context);
+        break;
+    }
+}
+
+static void _kma_cache_report(core_machine_cpu_execution_context *context,
+    lib_u8 set, lib_u8 way)
+{
+    const cpu_cache_line *line = &context->cache[set][way];
+    cpu_state.data.tr4 = line->tag | (line->valid ? 0x400u : 0u) |
+        ((lib_u32)context->cache_lru[set] << 7u);
+    for (lib_u8 entry = 0u; entry < X86_CPU_CACHE_WAYS; ++entry)
+        if (context->cache[set][entry].valid)
+            cpu_state.data.tr4 |= 1u << (entry + 3u);
+    lib_memory_copy(context->cache_read, line->data, sizeof(line->data));
+}
+
+void core_machine_cpu_signal_cache_write(core_machine_cpu_execution_context *context,
+    lib_u32 physical, lib_size bytes)
+{
+    lib_u64 end, remaining;
+
+    if (context == LIB_NULL || bytes == 0u ||
+        context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX ||
+        (cpu_state.data.cr0 & VCPU_CR0_NW) != 0u) return;
+    remaining = (lib_u64)LIB_UINT32_MAX + 1u - physical;
+    end = (lib_u64)physical + (bytes > remaining ? remaining : bytes);
+    if ((end - (physical & ~15u)) / 16u < X86_CPU_CACHE_SETS) {
+        for (lib_u64 address = physical & ~15u; address < end; address += 16u) {
+            const lib_u8 set = (address >> 4u) & (X86_CPU_CACHE_SETS - 1u);
+            for (lib_u8 way = 0u; way < X86_CPU_CACHE_WAYS; ++way)
+                if (context->cache[set][way].tag == ((lib_u32)address & 0xfffff800u))
+                    context->cache[set][way].valid = LIB_FALSE;
+        }
+    } else {
+        for (lib_u8 set = 0u; set < X86_CPU_CACHE_SETS; ++set)
+        for (lib_u8 way = 0u; way < X86_CPU_CACHE_WAYS; ++way) {
+            cpu_cache_line *line = &context->cache[set][way];
+            const lib_u32 address = line->tag | ((lib_u32)set << 4u);
+            if ((lib_u64)address < end && (lib_u64)address + 16u > physical)
+                line->valid = LIB_FALSE;
+        }
+    }
 }
 
 void core_machine_cpu_execution_invalidate_tlb(
@@ -410,8 +678,67 @@ typedef struct t_kma_linear_translation {
     lib_u32 cpte;
     lib_u8 paging;
     lib_u8 pde_accessed;
+    lib_u8 vpl;
     lib_bool tlb_hit;
 } t_kma_linear_translation;
+
+/* The locked second read, not a cached first value, owns the A/D update. */
+static void _kma_update_page_entry(core_machine_cpu_execution_context *context,
+    t_kma_linear_translation *translation, lib_bool directory, lib_u8 write)
+{
+    const lib_u32 physical = directory ? translation->ppde : translation->ppte;
+    const lib_u32 attributes = directory ? cpu_state.data.cr3 : translation->cpde;
+    const lib_u32 required = directory || !write ? 0x20u : 0x60u;
+    const lib_bool user = translation->vpl == 3u;
+    const lib_bool owns_lock = !instruction_state.data.memory_lock_active;
+    core_machine_cpu_cache_memory memory = {.address = physical};
+    lib_u32 entry = 0u;
+    lib_u8 set, way;
+    CPU_TRACE_CALL_BEGIN("_kma_update_page_entry");
+
+    if (context->bus->query_cache_memory != LIB_NULL &&
+        context->bus->query_cache_memory(context->bus_context, physical,
+            CORE_MACHINE_CPU_CACHE_LOOKUP, &memory) != LIB_STATUS_OK)
+        CPU_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
+    set = (memory.address >> 4u) & (X86_CPU_CACHE_SETS - 1u);
+    way = _kma_cache_way(context, memory.address);
+    CPU_TRACE_CHECK_RETURN(_kma_begin_memory_lock(context));
+
+    _kma_read_bus(context, memory.address, X86_CPU_REFERENCE_OF(entry), 4u,
+        CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ, attributes);
+    if (!instruction_state.data.except && !_IsPageEntryPresent(entry)) {
+        cpu_state.data.cr2 = translation->linear;
+        _SetExcept_PF(_MakePageFaultErrorCode(0, write, user));
+    }
+    if (!instruction_state.data.except && !directory &&
+        ((user && !_GetPageEntry_US(entry)) ||
+         (write && (user || (cpu_state.data.cr0 & VCPU_CR0_WP) != 0u) &&
+          !_IsPageEntryWritable(entry)))) {
+        cpu_state.data.cr2 = translation->linear;
+        _SetExcept_PF(_MakePageFaultErrorCode(1, write, user));
+    }
+    if (!instruction_state.data.except && (entry & required) != required) {
+        entry |= required;
+        _kma_write_bus(context, memory.address, X86_CPU_REFERENCE_OF(entry), 4u,
+            CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE, attributes);
+        if (way != X86_CPU_CACHE_WAYS) {
+            cpu_cache_line *line = &context->cache[set][way];
+            if (instruction_state.data.except) line->valid = LIB_FALSE;
+            else if (line->valid) {
+                lib_memory_copy((lib_u8 *)line->data + (memory.address & 15u),
+                    &entry, sizeof(entry));
+                _kma_cache_touch(context, set, way);
+                _kma_cache_report(context, set, way);
+            }
+        }
+    }
+    if (owns_lock) _kma_complete_memory_lock(context, instruction_state.data.except == 0u);
+    if (!instruction_state.data.except) {
+        if (directory) translation->cpde = entry;
+        else translation->cpte = entry;
+    }
+    CPU_TRACE_CALL_END;
+}
 
 /* Validate a linear page translation without publishing page-table side effects. */
 static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *context, lib_u32 linear, lib_u8 byte, lib_u8 write, lib_u8 vpl, t_kma_linear_translation *translation)
@@ -421,6 +748,7 @@ static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *con
     CPU_TRACE_CALL_BEGIN("_kma_prepare_physical_linear");
     *translation = (t_kma_linear_translation) {0};
     translation->linear = linear;
+    translation->vpl = vpl;
     if (_GetLinear_Offset(linear) > X86_CPU_MASK_U32(_GetPageSize - byte))
         CPU_TRACE_IMPOSSIBLE_RETURN;
     if (!_IsPaging)
@@ -462,7 +790,7 @@ static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *con
         }
     }
     ppde = _GetCR3_Base + _GetLinear_Dir(linear) * 4;
-    CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, ppde, X86_CPU_REFERENCE_OF(cpde), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ));
+    CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, ppde, X86_CPU_REFERENCE_OF(cpde), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ, cpu_state.data.cr3));
     if (!_IsPageEntryPresent(cpde))
     {
         CPU_TRACE_BLOCK_BEGIN("!PageDirEntryPresent");
@@ -475,10 +803,18 @@ static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *con
      * second-level page table (80386 PRM 5.3.4.3), even when that walk later
      * finds a protection violation in the page-table entry. */
     if (!context->preview_mode) {
-        _SetPageEntry_A(cpde);
-        CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, ppde,
-            X86_CPU_REFERENCE_OF(cpde), 4,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+            (cpde & 0x20u) == 0u) {
+            translation->ppde = ppde;
+            translation->cpde = cpde;
+            CPU_TRACE_CHECK_RETURN(_kma_update_page_entry(context, translation, LIB_TRUE, write));
+            cpde = translation->cpde;
+        } else if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX) {
+            _SetPageEntry_A(cpde);
+            CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, ppde,
+                X86_CPU_REFERENCE_OF(cpde), 4,
+                CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE, cpu_state.data.cr3));
+        }
         translation->pde_accessed = LIB_TRUE;
     }
     if (vpl == 0x03 || (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
@@ -504,7 +840,7 @@ static void _kma_prepare_physical_linear(core_machine_cpu_execution_context *con
         CPU_TRACE_BLOCK_END;
     }
     ppte = _GetPageEntry_Base(cpde) + _GetLinear_Page(linear) * 4;
-    CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, ppte, X86_CPU_REFERENCE_OF(cpte), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ));
+    CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, ppte, X86_CPU_REFERENCE_OF(cpte), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ, cpde));
     if (!_IsPageEntryPresent(cpte))
     {
         CPU_TRACE_BLOCK_BEGIN("!PageTabEntryPresent");
@@ -565,13 +901,23 @@ static void _kma_commit_physical_linear(core_machine_cpu_execution_context *cont
         _SetPageEntry_A(translation->cpde);
         CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, translation->ppde,
             X86_CPU_REFERENCE_OF(translation->cpde), 4,
-            CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
+            CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE, cpu_state.data.cr3));
     }
-    _SetPageEntry_A(translation->cpte);
-    if (write)
-        _SetPageEntry_D(translation->cpte);
-    CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, translation->ppte,
-        X86_CPU_REFERENCE_OF(translation->cpte), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
+    const lib_u32 required = write ? 0x60u : 0x20u;
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+        (translation->cpte & required) != required) {
+        CPU_TRACE_CHECK_RETURN(_kma_update_page_entry(context, translation, LIB_FALSE, write));
+        translation->physical = _GetPageEntry_Base(translation->cpte) +
+            _GetLinear_Offset(translation->linear);
+        translation->attributes = (translation->cpte & 0x58u) |
+            ((translation->cpde & translation->cpte) & 6u);
+    } else if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX) {
+        _SetPageEntry_A(translation->cpte);
+        if (write)
+            _SetPageEntry_D(translation->cpte);
+        CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, translation->ppte,
+            X86_CPU_REFERENCE_OF(translation->cpte), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE, translation->cpde));
+    }
     if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
         _kma_tlb_fill(context, translation->linear, translation->physical,
             translation->attributes | (write ? 0x40u : 0u));
@@ -579,7 +925,7 @@ static void _kma_commit_physical_linear(core_machine_cpu_execution_context *cont
 }
 
 /* Translate and publish a single checked linear page access. */
-static lib_u32 _kma_physical_linear(core_machine_cpu_execution_context *context, lib_u32 linear, lib_u8 byte, lib_u8 write, lib_u8 vpl)
+static lib_u32 _kma_physical_linear(core_machine_cpu_execution_context *context, lib_u32 linear, lib_u8 byte, lib_u8 write, lib_u8 vpl, lib_u32 *out_attributes)
 {
     t_kma_linear_translation translation;
 
@@ -588,6 +934,7 @@ static lib_u32 _kma_physical_linear(core_machine_cpu_execution_context *context,
         byte, write, vpl, &translation));
     CPU_TRACE_CHECK_RETURN_ZERO(_kma_commit_physical_linear(context,
         &translation, write));
+    if (out_attributes != LIB_NULL) *out_attributes = translation.attributes;
     CPU_TRACE_CALL_END;
     return translation.physical;
 }
@@ -795,6 +1142,7 @@ static lib_u32 _kma_linear_logical(core_machine_cpu_execution_context *context, 
 static void _kma_read_linear(core_machine_cpu_execution_context *context, lib_u32 linear, lib_uptr rdata, lib_u8 byte, lib_u8 vpl, lib_u8 force)
 {
     lib_u32 phy1, phy2;
+    lib_u32 attributes1, attributes2;
     lib_u8 byte1, byte2;
     CPU_TRACE_CALL_BEGIN("_kma_read_logical");
     if (_GetLinear_Offset(linear) > X86_CPU_MASK_U32(_GetPageSize - byte))
@@ -815,17 +1163,19 @@ static void _kma_read_linear(core_machine_cpu_execution_context *context, lib_u3
                 &translation2, 0));
             phy1 = translation1.physical;
             phy2 = translation2.physical;
+            attributes1 = translation1.attributes;
+            attributes2 = translation2.attributes;
         }
-        CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, phy1, rdata, byte1, context->memory_access_provenance));
-        CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, phy2, rdata + byte1, byte2, context->memory_access_provenance));
+        CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, phy1, rdata, byte1, context->memory_access_provenance, attributes1));
+        CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, phy2, rdata + byte1, byte2, context->memory_access_provenance, attributes2));
         CPU_TRACE_BLOCK_END;
     }
     else
     {
         CPU_TRACE_BLOCK_BEGIN("Linear_Offset(<=PageSize)");
         byte1 = byte;
-        CPU_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, 0, vpl));
-        CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, phy1, rdata, byte1, context->memory_access_provenance));
+        CPU_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, 0, vpl, &attributes1));
+        CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, phy1, rdata, byte1, context->memory_access_provenance, attributes1));
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CALL_END;
@@ -834,6 +1184,7 @@ static void _kma_read_linear(core_machine_cpu_execution_context *context, lib_u3
 static void _kma_write_linear(core_machine_cpu_execution_context *context, lib_u32 linear, lib_uptr rdata, lib_u8 byte, lib_u8 vpl, lib_u8 force)
 {
     lib_u32 phy1, phy2;
+    lib_u32 attributes1, attributes2;
     lib_u8 byte1, byte2;
     CPU_TRACE_CALL_BEGIN("_kma_write_linear");
     if (_GetLinear_Offset(linear) > X86_CPU_MASK_U32(_GetPageSize - byte))
@@ -854,17 +1205,19 @@ static void _kma_write_linear(core_machine_cpu_execution_context *context, lib_u
                 &translation2, 1));
             phy1 = translation1.physical;
             phy2 = translation2.physical;
+            attributes1 = translation1.attributes;
+            attributes2 = translation2.attributes;
         }
-        CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, phy1, rdata, byte1, context->memory_access_provenance));
-        CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, phy2, rdata + byte1, byte2, context->memory_access_provenance));
+        CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, phy1, rdata, byte1, context->memory_access_provenance, attributes1));
+        CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, phy2, rdata + byte1, byte2, context->memory_access_provenance, attributes2));
         CPU_TRACE_BLOCK_END;
     }
     else
     {
         CPU_TRACE_BLOCK_BEGIN("Linear_Offset(<=PageSize)");
         byte1 = byte;
-        CPU_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, 1, vpl));
-        CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, phy1, rdata, byte1, context->memory_access_provenance));
+        CPU_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, 1, vpl, &attributes1));
+        CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, phy1, rdata, byte1, context->memory_access_provenance, attributes1));
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CALL_END;
@@ -1026,7 +1379,7 @@ static void _kma_test_linear(core_machine_cpu_execution_context *context, lib_u3
     {
         CPU_TRACE_BLOCK_BEGIN("Linear_Offset(<=PageSize)");
         byte1 = byte;
-        CPU_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, write, vpl));
+        CPU_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, write, vpl, LIB_NULL));
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CALL_END;
@@ -1108,13 +1461,18 @@ static void _m_read_rm(core_machine_cpu_execution_context *context, lib_u8 byte)
 }
 /* A modifying operand must pass write checks before its first data read.
  * Register forms retain the ordinary register read and need no memory probe. */
-static void _m_read_rmw(core_machine_cpu_execution_context *context, lib_u8 byte)
+static void _m_read_rmw(core_machine_cpu_execution_context *context, lib_u8 byte,
+    lib_bool implicit_lock)
 {
     CPU_TRACE_CALL_BEGIN("_m_read_rmw");
-    if (instruction_state.data.flagMem)
+    if (instruction_state.data.flagMem) {
         CPU_TRACE_CHECK_RETURN(_m_test_access(context,
             instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset,
             byte, LIB_TRUE));
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+            (implicit_lock || instruction_state.data.flagLock))
+            CPU_TRACE_CHECK_RETURN(_kma_begin_memory_lock(context));
+    }
     CPU_TRACE_CHECK_RETURN(_m_read_rm(context, byte));
     CPU_TRACE_CALL_END;
 }
@@ -1188,7 +1546,7 @@ static void _ksa_read_table(core_machine_cpu_execution_context *context,
             rdata, byte, 0u, 1u));
     else
         CPU_TRACE_CHECK_RETURN(_kma_read_physical(context, base + offset,
-            rdata, byte, context->memory_access_provenance));
+            rdata, byte, context->memory_access_provenance, 0u));
     CPU_TRACE_CALL_END;
 }
 static void _ksa_write_table(core_machine_cpu_execution_context *context,
@@ -1200,7 +1558,7 @@ static void _ksa_write_table(core_machine_cpu_execution_context *context,
             rdata, byte, 0u, 1u));
     else
         CPU_TRACE_CHECK_RETURN(_kma_write_physical(context, rtable->base + offset,
-            rdata, byte, context->memory_access_provenance));
+            rdata, byte, context->memory_access_provenance, 0u));
     CPU_TRACE_CALL_END;
 }
 static void _ksa_read_idt(core_machine_cpu_execution_context *context, lib_u8 intid, lib_uptr rdata)
@@ -8281,7 +8639,9 @@ static lib_u8 core_machine_cpu_instruction_lexeme_modrm_form_valid(
 
     if (extended) {
         if ((opcode == 0x21u || opcode == 0x23u) && (reg == 4u || reg == 5u)) return LIB_FALSE;
-        if ((opcode == 0x24u || opcode == 0x26u) && reg < 6u) return LIB_FALSE;
+        if ((opcode == 0x24u || opcode == 0x26u) &&
+            (reg < (profile == CORE_MACHINE_CPU_PROFILE_80486SX ? 3u : 6u) ||
+             (opcode == 0x24u && reg == 5u))) return LIB_FALSE;
         if (opcode == 0x01u && (reg == 5u ||
             (reg == 7u && profile != CORE_MACHINE_CPU_PROFILE_80486SX))) return LIB_FALSE;
         if ((opcode >= 0x20u && opcode <= 0x24u) || opcode == 0x26u) {
@@ -8553,7 +8913,8 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
             metadata.valid = ((modrm >> 3u) & 7u) >= 4u;
         }
-        else if (opcode == 0xa2u || opcode == 0xb0u || opcode == 0xb1u ||
+        else if (opcode == 0x08u || opcode == 0x09u ||
+                 opcode == 0xa2u || opcode == 0xb0u || opcode == 0xb1u ||
                  opcode == 0xc0u || opcode == 0xc1u ||
                  (opcode >= 0xc8u && opcode <= 0xcfu))
         {
@@ -8754,7 +9115,7 @@ static void ADD_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -8767,7 +9128,7 @@ static void ADD_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -8776,7 +9137,7 @@ static void ADD_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -8916,7 +9277,7 @@ static void OR_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -8929,7 +9290,7 @@ static void OR_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -8938,7 +9299,7 @@ static void OR_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -9110,7 +9471,7 @@ static void ADC_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -9123,7 +9484,7 @@ static void ADC_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -9132,7 +9493,7 @@ static void ADC_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -9272,7 +9633,7 @@ static void SBB_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -9285,7 +9646,7 @@ static void SBB_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -9294,7 +9655,7 @@ static void SBB_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -9434,7 +9795,7 @@ static void AND_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -9447,7 +9808,7 @@ static void AND_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -9456,7 +9817,7 @@ static void AND_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -9612,7 +9973,7 @@ static void SUB_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -9625,7 +9986,7 @@ static void SUB_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -9634,7 +9995,7 @@ static void SUB_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -9790,7 +10151,7 @@ static void XOR_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -9803,7 +10164,7 @@ static void XOR_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -9812,7 +10173,7 @@ static void XOR_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
         CPU_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -11288,7 +11649,7 @@ static void ARPL_RM16_R16(core_machine_cpu_execution_context *context)
         {
             _adv;
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
             instruction_state.data.cr = X86_CPU_MASK_U16(instruction_state.data.cr);
             if (_GetSelector_RPL(instruction_state.data.crm) < _GetSelector_RPL(instruction_state.data.cr))
             {
@@ -11897,7 +12258,7 @@ static void INS_80(core_machine_cpu_execution_context *context)
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
     if (instruction_state.data.cr != 7u)
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     else
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     switch (instruction_state.data.cr)
@@ -11972,7 +12333,7 @@ static void INS_81(core_machine_cpu_execution_context *context)
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         if (instruction_state.data.cr != 7u)
-            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         else
             CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (instruction_state.data.cr)
@@ -12043,7 +12404,7 @@ static void INS_81(core_machine_cpu_execution_context *context)
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 2));
         if (instruction_state.data.cr != 7u)
-            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
         else
             CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         switch (instruction_state.data.cr)
@@ -12120,7 +12481,7 @@ static void INS_83(core_machine_cpu_execution_context *context)
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
         if (instruction_state.data.cr != 7u)
-            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         else
             CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         bit = (_GetOperandSize * 8 + 8) >> 1;
@@ -12191,7 +12552,7 @@ static void INS_83(core_machine_cpu_execution_context *context)
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
         if (instruction_state.data.cr != 7u)
-            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
         else
             CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         bit = 12;
@@ -12305,7 +12666,7 @@ static void XCHG_RM8_R8(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_TRUE));
     CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(instruction_state.data.crm), 1));
     instruction_state.data.crm = instruction_state.data.cr;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
@@ -12318,7 +12679,7 @@ static void XCHG_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_TRUE));
         CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
         instruction_state.data.crm = instruction_state.data.cr;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -12327,7 +12688,7 @@ static void XCHG_RM32_R32(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_TRUE));
         CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr, X86_CPU_REFERENCE_OF(instruction_state.data.crm), 2));
         instruction_state.data.crm = instruction_state.data.cr;
         CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -14392,7 +14753,7 @@ static void INS_C0(core_machine_cpu_execution_context *context)
         }
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
         switch (instruction_state.data.cr)
         {
         case 0: /* ROL_RM8_I8 */
@@ -14461,7 +14822,7 @@ static void INS_C1(core_machine_cpu_execution_context *context)
         }
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         switch (instruction_state.data.cr)
         {
         case 0: /* ROL_RM32_I8 */
@@ -15087,7 +15448,7 @@ static void INS_D0(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     switch (instruction_state.data.cr)
     {
     case 0: /* ROL_RM8 */
@@ -15145,7 +15506,7 @@ static void INS_D1(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         switch (instruction_state.data.cr)
         {
         case 0: /* ROL_RM32 */
@@ -15199,7 +15560,7 @@ static void INS_D1(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
         switch (instruction_state.data.cr)
         {
         case 0: /* ROL_RM16 */
@@ -15263,7 +15624,7 @@ static void INS_D2(core_machine_cpu_execution_context *context)
         _adv;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     switch (instruction_state.data.cr)
     {
     case 0: /* ROL_RM8_CL */
@@ -15321,7 +15682,7 @@ static void INS_D3(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         switch (instruction_state.data.cr)
         {
         case 0: /* ROL_RM32_CL */
@@ -15375,7 +15736,7 @@ static void INS_D3(core_machine_cpu_execution_context *context)
     {
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
         switch (instruction_state.data.cr)
         {
         case 0: /* ROL_RM16_CL */
@@ -16089,7 +16450,7 @@ static void INS_F6(core_machine_cpu_execution_context *context)
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     if (instruction_state.data.cr == 2u || instruction_state.data.cr == 3u)
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     else
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     switch (instruction_state.data.cr)
@@ -16154,7 +16515,7 @@ static void INS_F7(core_machine_cpu_execution_context *context)
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         if (instruction_state.data.cr == 2u || instruction_state.data.cr == 3u)
-            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
         else
             CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (instruction_state.data.cr)
@@ -16214,7 +16575,7 @@ static void INS_F7(core_machine_cpu_execution_context *context)
         _adv;
         CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         if (instruction_state.data.cr == 2u || instruction_state.data.cr == 3u)
-            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
         else
             CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         switch (instruction_state.data.cr)
@@ -16425,7 +16786,7 @@ static void INS_FE(core_machine_cpu_execution_context *context)
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     if (instruction_state.data.cr < 2u)
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     else
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     switch (instruction_state.data.cr)
@@ -16495,7 +16856,7 @@ static void INS_FF(core_machine_cpu_execution_context *context)
         case 0: /* INC_RM32 */
             CPU_TRACE_BLOCK_BEGIN("INC_RM32");
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
-            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
             CPU_TRACE_CHECK_RETURN(_a_inc(context, instruction_state.data.crm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
             CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -16504,7 +16865,7 @@ static void INS_FF(core_machine_cpu_execution_context *context)
         case 1: /* DEC_RM32 */
             CPU_TRACE_BLOCK_BEGIN("DEC_RM32");
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
-            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
             CPU_TRACE_CHECK_RETURN(_a_dec(context, instruction_state.data.crm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
             CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -16594,7 +16955,7 @@ static void INS_FF(core_machine_cpu_execution_context *context)
         case 0: /* INC_RM16 */
             CPU_TRACE_BLOCK_BEGIN("INC_RM16");
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
-            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
             CPU_TRACE_CHECK_RETURN(_a_inc(context, instruction_state.data.crm, 16));
             instruction_state.data.crm = instruction_state.data.result;
             CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -16603,7 +16964,7 @@ static void INS_FF(core_machine_cpu_execution_context *context)
         case 1: /* DEC_RM16 */
             CPU_TRACE_BLOCK_BEGIN("DEC_RM16");
             CPU_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
-            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2));
+            CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 2, LIB_FALSE));
             CPU_TRACE_CHECK_RETURN(_a_dec(context, instruction_state.data.crm, 16));
             instruction_state.data.crm = instruction_state.data.result;
             CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
@@ -16819,19 +17180,22 @@ static void _d_modrm_treg(core_machine_cpu_execution_context *context)
         CPU_TRACE_BLOCK_END;
         break;
     case 3:
-        CPU_TRACE_BLOCK_BEGIN("instruction_state.data.cr(3)");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
-        CPU_TRACE_BLOCK_END;
+        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX)
+            CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        instruction_state.data.rr = (lib_uptr)&cpu_state.data.tr3;
+        instruction_state.data.cr = cpu_state.data.tr3;
         break;
     case 4:
-        CPU_TRACE_BLOCK_BEGIN("instruction_state.data.cr(4)");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
-        CPU_TRACE_BLOCK_END;
+        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX)
+            CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        instruction_state.data.rr = (lib_uptr)&cpu_state.data.tr4;
+        instruction_state.data.cr = cpu_state.data.tr4;
         break;
     case 5:
-        CPU_TRACE_BLOCK_BEGIN("instruction_state.data.cr(5)");
-        CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
-        CPU_TRACE_BLOCK_END;
+        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX)
+            CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        instruction_state.data.rr = (lib_uptr)&cpu_state.data.tr5;
+        instruction_state.data.cr = cpu_state.data.tr5;
         break;
     case 6:
         instruction_state.data.rr = (lib_uptr)&cpu_state.data.tr6;
@@ -17755,11 +18119,36 @@ static void CLTS(core_machine_cpu_execution_context *context)
     }
     CPU_TRACE_CALL_END;
 }
-_______todo WBINVD(core_machine_cpu_execution_context *context)
+static void _kma_cache_flush_instruction(core_machine_cpu_execution_context *context,
+    lib_bool writeback)
+{
+    CPU_TRACE_CALL_BEGIN("_kma_cache_flush_instruction");
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX)
+        CPU_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+    _adv;
+    if (_GetCPL) CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+    _kma_cache_invalidate(context);
+    core_machine_cpu_execution_invalidate_prefetch(context);
+    if (context->bus->cache_operation == LIB_NULL)
+        CPU_TRACE_CHECK_RETURN(_SetExcept_CE(0u));
+    if (writeback && context->bus->cache_operation(context->bus_context,
+            CORE_MACHINE_CPU_CACHE_WRITEBACK) != LIB_STATUS_OK)
+        CPU_TRACE_CHECK_RETURN(_SetExcept_CE(0u));
+    if (context->bus->cache_operation(context->bus_context,
+            CORE_MACHINE_CPU_CACHE_FLUSH) != LIB_STATUS_OK)
+        CPU_TRACE_CHECK_RETURN(_SetExcept_CE(0u));
+    CPU_TRACE_CALL_END;
+}
+static void INVD(core_machine_cpu_execution_context *context)
+{
+    CPU_TRACE_CALL_BEGIN("INVD");
+    CPU_TRACE_CHECK_RETURN(_kma_cache_flush_instruction(context, LIB_FALSE));
+    CPU_TRACE_CALL_END;
+}
+static void WBINVD(core_machine_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("WBINVD");
-    UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = LIB_TRUE;
+    CPU_TRACE_CHECK_RETURN(_kma_cache_flush_instruction(context, LIB_TRUE));
     CPU_TRACE_CALL_END;
 }
 static void MOV_R32_CR(core_machine_cpu_execution_context *context)
@@ -17855,6 +18244,12 @@ static void MOV_R32_TR(core_machine_cpu_execution_context *context)
         CPU_TRACE_BLOCK_END;
     }
     CPU_TRACE_CHECK_RETURN(_d_modrm_treg(context));
+    if (instruction_state.data.rr == (lib_uptr)&cpu_state.data.tr5)
+        CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+    if (instruction_state.data.rr == (lib_uptr)&cpu_state.data.tr3) {
+        cpu_state.data.tr3 = context->cache_read[(cpu_state.data.tr5 >> 2u) & 3u];
+        instruction_state.data.cr = cpu_state.data.tr3;
+    }
     CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rrm, X86_CPU_REFERENCE_OF(instruction_state.data.cr), 4));
     CPU_TRACE_CALL_END;
 }
@@ -17872,7 +18267,14 @@ static void MOV_TR_R32(core_machine_cpu_execution_context *context)
     CPU_TRACE_CHECK_RETURN(_d_modrm_treg(context));
     if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
     {
-        if (instruction_state.data.rr == (lib_uptr)&cpu_state.data.tr6)
+        if (instruction_state.data.rr == (lib_uptr)&cpu_state.data.tr3) {
+            cpu_state.data.tr3 = X86_CPU_MASK_U32(instruction_state.data.crm);
+            context->cache_fill[(cpu_state.data.tr5 >> 2u) & 3u] = cpu_state.data.tr3;
+        } else if (instruction_state.data.rr == (lib_uptr)&cpu_state.data.tr4)
+            cpu_state.data.tr4 = X86_CPU_MASK_U32(instruction_state.data.crm);
+        else if (instruction_state.data.rr == (lib_uptr)&cpu_state.data.tr5)
+            _kma_cache_test(context, X86_CPU_MASK_U32(instruction_state.data.crm));
+        else if (instruction_state.data.rr == (lib_uptr)&cpu_state.data.tr6)
             _kma_tlb_test(context, X86_CPU_MASK_U32(instruction_state.data.crm));
         else
             cpu_state.data.tr7 = X86_CPU_MASK_U32(instruction_state.data.crm) & 0xfffffc1cu;
@@ -18234,7 +18636,7 @@ static void CMPXCHG_RM8_R8(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("CMPXCHG_RM8_R8");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_cmp(context, cpu_state.data.al,
         instruction_state.data.crm, 8));
     if (cpu_state.data.al == instruction_state.data.crm)
@@ -18250,7 +18652,7 @@ static void CMPXCHG_RM32_R32(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("CMPXCHG_RM32_R32");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
     accumulator = _GetOperandSize == 2 ? cpu_state.data.ax : cpu_state.data.eax;
     CPU_TRACE_CHECK_RETURN(_a_cmp(context, accumulator,
         instruction_state.data.crm, _GetOperandSize * 8));
@@ -18268,7 +18670,7 @@ static void XADD_RM8_R8(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("XADD_RM8_R8");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, 1, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm,
         instruction_state.data.cr, 8));
     CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr,
@@ -18282,7 +18684,7 @@ static void XADD_RM32_R32(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("XADD_RM32_R32");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm,
         instruction_state.data.cr, _GetOperandSize * 8));
     CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, instruction_state.data.rr,
@@ -18336,7 +18738,7 @@ static void SHLD_RM32_R32_I8(core_machine_cpu_execution_context *context)
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_shld(context, instruction_state.data.crm, instruction_state.data.cr, X86_CPU_MASK_U8(instruction_state.data.cimm), _GetOperandSize * 8));
     if (X86_CPU_MASK_U8(instruction_state.data.cimm) & 0x1f)
     {
@@ -18350,7 +18752,7 @@ static void SHLD_RM32_R32_CL(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("SHLD_RM32_R32_CL");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_shld(context, instruction_state.data.crm, instruction_state.data.cr, cpu_state.data.cl, _GetOperandSize * 8));
     if (cpu_state.data.cl & 0x1f)
     {
@@ -18388,7 +18790,7 @@ static void BTS_RM32_R32(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("BTS_RM32_R32");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_bts(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -18400,7 +18802,7 @@ static void SHRD_RM32_R32_I8(core_machine_cpu_execution_context *context)
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
     CPU_TRACE_CHECK_RETURN(_d_imm(context, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_shrd(context, instruction_state.data.crm, instruction_state.data.cr, X86_CPU_MASK_U8(instruction_state.data.cimm), _GetOperandSize * 8));
     if (X86_CPU_MASK_U8(instruction_state.data.cimm) & 0x1f)
     {
@@ -18414,7 +18816,7 @@ static void SHRD_RM32_R32_CL(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("SHRD_RM32_R32_CL");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_shrd(context, instruction_state.data.crm, instruction_state.data.cr, cpu_state.data.cl, _GetOperandSize * 8));
     if (cpu_state.data.cl & 0x1f)
     {
@@ -18463,7 +18865,7 @@ static void BTR_RM32_R32(core_machine_cpu_execution_context *context)
     CPU_TRACE_CALL_BEGIN("BTR_RM32_R32");
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_btr(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -18554,7 +18956,7 @@ static void INS_0F_BA(core_machine_cpu_execution_context *context)
         write = 1;
     CPU_TRACE_CHECK_RETURN(_d_bit_rmimm(context, 0, _GetOperandSize, write));
     if (write)
-        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+        CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
     else
         CPU_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     switch (instruction_state.data.cr)
@@ -18617,7 +19019,7 @@ static void BTC_RM32_R32(core_machine_cpu_execution_context *context)
     _new_code_path_;
     _adv;
     CPU_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
-    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize));
+    CPU_TRACE_CHECK_RETURN(_m_read_rmw(context, _GetOperandSize, LIB_FALSE));
     CPU_TRACE_CHECK_RETURN(_a_btc(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
@@ -18776,7 +19178,18 @@ lib_u8 core_machine_cpu_execution_preview_lexeme(
     }
     preview_cpu = *context->cpu;
     preview_instructions = *context->instructions;
-    preview = *context;
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX) {
+        preview = *context;
+    } else {
+        /* Old-family previews never access 486 cache/TLB storage. Preserve the
+         * scalar execution state without copying a dormant 12-KiB cache. */
+        const lib_size first = lib_offsetof(core_machine_cpu_execution_context, tlb);
+        const lib_size last = lib_offsetof(core_machine_cpu_execution_context,
+            memory_access_provenance);
+        lib_memory_copy(&preview, context, first);
+        lib_memory_copy((lib_u8 *)&preview + last, (const lib_u8 *)context + last,
+            sizeof(preview) - last);
+    }
     preview.cpu = &preview_cpu;
     preview.instructions = &preview_instructions;
     preview.diagnostic_provider = LIB_NULL;
@@ -19004,6 +19417,7 @@ static void ExecFinal(core_machine_cpu_execution_context *context)
     lib_u32 active, code, secondary, secondary_code;
     lib_u8 vector;
 
+    _kma_complete_memory_lock(context, instruction_state.data.except == 0u);
     if (instruction_state.data.flagInsLoop) {
         cpu_state.data.cs = instruction_state.data.oldcpu.data.cs;
         cpu_state.data.eip = instruction_state.data.oldcpu.data.eip;
@@ -19517,7 +19931,7 @@ void core_machine_cpu_execution_initialize(
     instruction_state.connect.insTable_0f[0x05] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0x06] = (core_machine_cpu_instruction_handler)CLTS;
     instruction_state.connect.insTable_0f[0x07] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
-    instruction_state.connect.insTable_0f[0x08] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
+    instruction_state.connect.insTable_0f[0x08] = (core_machine_cpu_instruction_handler)INVD;
     instruction_state.connect.insTable_0f[0x09] = (core_machine_cpu_instruction_handler)WBINVD;
     instruction_state.connect.insTable_0f[0x0a] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
     instruction_state.connect.insTable_0f[0x0b] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
@@ -19771,6 +20185,10 @@ void core_machine_cpu_execution_reset(
 {
     lib_memory_set(context->tlb, 0u, sizeof(context->tlb));
     lib_memory_set(context->tlb_lru, 0u, sizeof(context->tlb_lru));
+    lib_memory_set(context->cache, 0u, sizeof(context->cache));
+    lib_memory_set(context->cache_lru, 0u, sizeof(context->cache_lru));
+    lib_memory_set(context->cache_fill, 0u, sizeof(context->cache_fill));
+    lib_memory_set(context->cache_read, 0u, sizeof(context->cache_read));
     lib_memory_set((void *)(&instruction_state.data), 0u, sizeof(t_cpuins_data));
     context->debug_pause_requested = LIB_FALSE;
     context->debug_trap_pending = LIB_FALSE;

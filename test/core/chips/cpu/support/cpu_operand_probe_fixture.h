@@ -12,24 +12,24 @@ typedef struct cpu_operand_probe_fixture {
 static lib_status cpu_operand_probe_read(void *opaque, lib_u32 address,
     void *destination, lib_u8 bytes,
     core_machine_cpu_memory_access_provenance provenance,
-    lib_bool observe_only, lib_bool reset_fetch)
+    lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     cpu_operand_probe_fixture *fixture = (cpu_operand_probe_fixture *)opaque;
 
     if (address == 0x5000u && !observe_only) ++fixture->operand_reads;
     return cpu_instruction_read(&fixture->instruction, address, destination,
-        bytes, provenance, observe_only, reset_fetch);
+        bytes, provenance, observe_only, reset_fetch, cache_control);
 }
 
 static lib_status cpu_operand_probe_write(void *opaque, lib_u32 address,
     const void *source, lib_u8 bytes,
-    core_machine_cpu_memory_access_provenance provenance)
+    core_machine_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     cpu_operand_probe_fixture *fixture = (cpu_operand_probe_fixture *)opaque;
 
     if (address == 0x5000u) ++fixture->operand_writes;
     return cpu_instruction_write(&fixture->instruction, address, source,
-        bytes, provenance);
+        bytes, provenance, cache_control);
 }
 
 static const core_machine_cpu_bus_provider cpu_operand_probe_bus = {

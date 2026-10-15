@@ -62,11 +62,11 @@ static lib_i32 setcc_test_memory_conditions(void)
         state.cpu.data.eax = 0x87654321u;
         state.cpu.data.eflags = flags;
         if (cpu_instruction_write(&state, destination, &initial, sizeof(initial),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_run(&state, code, sizeof(code), &after) !=
                 LIB_STATUS_OK || state.fault.valid ||
             cpu_instruction_read(&state, destination, &value, sizeof(value),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || value != (lib_u8)truth ||
             after.data.eax != 0x87654321u || after.data.eflags != flags ||
             after.data.eip != sizeof(code)) return 0;
@@ -97,11 +97,11 @@ static lib_i32 setcc_test_prefix_forms(void)
     state.cpu.data.esi = address;
     state.cpu.data.eflags = flags;
     if (cpu_instruction_write(&state, address, &initial, sizeof(initial),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
         cpu_instruction_run(&state, address_prefix, sizeof(address_prefix),
             &after) != LIB_STATUS_OK || state.fault.valid ||
         cpu_instruction_read(&state, address, &value, sizeof(value),
-            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
             LIB_STATUS_OK || value != 1u || after.data.esi != address ||
         after.data.eflags != flags ||
         after.data.eip != sizeof(address_prefix)) return 0;

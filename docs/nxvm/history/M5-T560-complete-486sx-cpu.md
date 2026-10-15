@@ -137,3 +137,111 @@ explicit internal L2 choices are not relabelled L3, and C04/C16 physical-bus
 work remains mandatory before full CPU admission. Shared-six, MyNES and owner
 inputs are unchanged. S4 is accepted and closed, T560 remains open; no next
 implementation packet is admitted by this closure-only P.
+
+## S5 Cache And Physical-Bus Admission
+
+The coordinator revalidated clean 5560979f9 and admits S5 under the owner's
+automatic sequential Core and interface authority. The active packet consumes
+C07 and the relevant carried C04/C16 source obligations. Cache tags/lines and
+TR buffers remain CPU-owned; physical attributes, external effects and
+coherence must connect to actual Core routing. Original-source and exact
+contract review precede edits. This admission changes no production, tests,
+Shared-six, MyNES or artifacts and claims no S5 runtime qualification.
+
+The executor inspected the original PRM cache test-register diagram and
+developer cache-control, page-cacheability, A20M and test-buffer contracts.
+The [source/route evidence](../etc/evidence/t560-s5-cache-bus.md) records why
+CD is not a cache-hit bypass, NW cache-as-RAM behavior must survive, test and
+ordinary accesses share circuitry, and the Core-only A20 mask cannot remain
+below an unmasked CPU cache. Actual route and write publication inspection
+also found the narrow-provider span and observer-coverage constraints.
+These are design inputs, not completed cache semantics or new runtime proof.
+
+The first CPU-owned implementation now supplies cache lines/LRU and fill/read
+buffers, real MOV TR3--5 commands, TR5 read rejection and reset ownership.
+Focused cache/TLB/TR regressions pass on x64 and x86 in the original cached
+graphs; Core manifests, dependency and documentation gates pass. Ordinary
+cache access and physical-bus integration are not implemented yet, so this is
+ongoing S5 work, not a complete P, C07 acceptance or artifact release. Actual
+interim counts and proof boundaries are recorded in the S5 evidence.
+
+Ordinary CPU access now consumes the Core cache query and one shared cache:
+real hit/fill/no-allocation write, write-through/cache-as-RAM, per-access
+CR3/PDE/PTE attributes and independent split-page reads. External transfers
+share one bus-publication owner across old and selected profiles. Direct
+failure checks preserve cache/backing data, and actual rebuilt dual-width
+focused selections pass 4/4 with a final test-only recheck. Original manuals,
+code/model limits and the diagnosed null-DS fixture error are recorded in S5
+evidence. External commands, snoops, full C07 matrix/integration and final
+whole-unit/artifact qualification remain open; no complete P or release yet.
+
+INVD/WBINVD now enter through the existing selected-family metadata/dispatch
+gate, invalidate real internal state and deliver ordered typed external
+operations. Core executes the frozen attachment callback within its existing
+transaction, preserving failure/cancellation without replay. Focused dual-width
+proof covers mode/prefix and populated/empty cases, actual CPL/VM86 GP frames,
+failed fetch, missing implementation and failure at each WBINVD stage; Core
+directly proves no-cache transaction completion and attachment cancellation
+and reuse. CPU-owned protected-exception setup is shared with retained TR
+tests without dropping assertions. S5/T560 remain open for snoop, remaining
+attribute/matrix/integration work and complete qualification; artifacts remain
+the verified S4 baseline.
+
+CPU range invalidation is connected to the existing Core physical-write
+publication owner. Actual CPU-write transactions suppress self-snoop; DMA,
+debug and firmware writes use one borrowed private callback without consuming
+board observer slots. Real Core CPU instructions prove RAM/alias/DMA visibility,
+write-through residency and NW preservation; tests also cover provider write
+failure, accepted provider publication and binding lifetime through RAM
+replacement. The final focused four-test selection passes on both widths,
+with a changed-test-only x64 recheck after the final provider assertion.
+Core dual-address alias coherence is recorded as L2 rather than physical pin
+qualification. Remaining page-control, complete sweep/matrix and whole-S
+qualification stay active; no partial P or artifact release is made.
+
+Further S5 review removes repeated fill-route probing from cache hits and
+writes through one typed Core query. Refreshed aggregate unit-consumer builds
+complete on both widths; reset, saturating snoop ranges and all replacement
+states have direct focused proof. The selected 486 page walk now omits writes
+when A/D requirements are already satisfied; a 32-case 486/386 matrix and
+failed-update checks pass with TLB/alignment/RMW regressions, 4/4 per width.
+The original second-read/locked-update rule remains unimplemented and explicit,
+not discharged by this smaller correction. S5/T560 stay open; no complete P,
+whole-S qualification or new release is claimed.
+
+The next S5 increment connects second reads to the paired Core transaction
+boundary. Changed directory/table values select actual new targets and
+attributes; begin/read/write failure completes the acquired pair. Real PF
+frames prove second-value presence and supervisor-WP checks without target
+access. Six focused cases per width pass, with the final cache test rebuilt
+per width after correcting exception-delivery fixture counts. Full privilege,
+cached-entry, split-redirection and actual Core paged execution proof remains
+open. This is not full C04/S5 qualification or a new release.
+
+Further S5 sweep confirms stale-cache memory XCHG through a one-shot ignored
+diagnostic. The unpublished page-specific pair is then replaced by one memory
+LOCK signal boundary shared by page updates and RMW. Implicit XCHG preserves
+lexical-prefix identity; one real private CPU signal controls cached-read
+bypass, forced external writes and fault release. Core retains its existing
+arbiter and scopes self-snoop only to each actual write. Real CPU/Core alias
+and DMA exclusion tests plus the eleven-case related cohort pass per width.
+The prior whole x64 baseline was 599/601 with two aliases of an outdated
+metadata table; its exact expectations and retained-386 UD cases are corrected
+and rechecked per width, not called a new full pass. Final whole qualification,
+accepted LOCK form/fault review and eight releases remain open in S5/T560.
+
+The final LOCK-fixed snapshot passes 601/601 repository units on both x64
+and x86 in the existing release-ccache graphs. Actual handler review confirms
+all accepted memory LOCK forms use the common RMW entry, with implicit XCHG
+separate from lexical-prefix identity. The sequential eight profile/width
+release and external-integration groups are now running. This is not yet a
+complete S5 delivery; C16 and remaining CPU batches retain their T560 owners.
+
+Final S5 executor qualification passes all eight profile/width integration
+groups (35/15/17/17 per width) and rebuilds/deploys eight verified 0560 PC
+EXEs. The [S5 evidence](../etc/evidence/t560-s5-cache-bus.md) records actual
+diff (+828/-140 source, +2068/-427 tests), source/model grades, all final logs
+and artifact hashes. Core manifests/dependency and documentation checks pass;
+Shared-six, MyNES and owner inputs remain unchanged. Complete implementation
+P and coordinator acceptance are required before bounded S5 closure. T560
+and production 486 admission remain open.

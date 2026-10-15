@@ -69,7 +69,7 @@ static lib_i32 gpr_mov_test_defaults(void)
             cpu_instruction_prepare(&state, profiles[profile]);
             gpr_mov_seed(&state);
             failed |= cpu_instruction_write(&state, 0x1000u, &image, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             before = state.cpu;
             failed |= cpu_instruction_run(&state, memory_codes[form], 4u, &after) != LIB_STATUS_OK || state.fault.valid || after.data.eip != 4u ||
                 !gpr_mov_nonparticipants(&before, &after,
@@ -77,7 +77,7 @@ static lib_i32 gpr_mov_test_defaults(void)
                     (form == 0u || form == 1u) ? 8u : 0u);
             if (form == 0u) failed |= (after.data.eax & 0xffu) != 0x44u;
             if (form == 1u) failed |= cpu_instruction_read(&state, 0x1000u, &image, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK || image != 0x5566u;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK || image != 0x5566u;
             if (form == 2u)
                 failed |= after.data.eax !=
                     ((before.data.eax & 0xffffff00u) | 0x5au);
@@ -202,7 +202,7 @@ static lib_i32 gpr_mov_test_immediate_and_reject(void)
             state.fault.valid || after.data.eip != bytes ||
             !gpr_mov_nonparticipants(&before, &after, 8u) ||
             cpu_instruction_read(&state, 0x1000u, &image, 2u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
             image != (form == 0u ? 0x005au : 0x1234u);
 
         if (failed) return 0;
@@ -221,11 +221,11 @@ static lib_i32 gpr_mov_test_immediate_and_reject(void)
             cpu_instruction_prepare(&state, profiles[profile]);
             gpr_mov_seed(&state);
             failed |= cpu_instruction_write(&state, 0x1000u, &image, sizeof(image),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             failed |= !cpu_instruction_expect_real_fault(&state, code,
                 form ? 6u : 5u, 6u) ||
                 cpu_instruction_read(&state, 0x1000u, &image, sizeof(image),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                     LIB_STATUS_OK || image != 0xbeefu;
 
             if (failed) return 0;
@@ -258,13 +258,13 @@ static lib_i32 gpr_mov_test_386_attributes(void)
         gpr_mov_seed(&state);
         before = state.cpu;
         failed |= cpu_instruction_write(&state, 0x1000u, &image, 4u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_run(&state, codes[form], bytes[form], &after) != LIB_STATUS_OK || state.fault.valid ||
             after.data.eip != bytes[form] ||
             !gpr_mov_nonparticipants(&before, &after, destination);
         if (form == 0u)
             failed |= cpu_instruction_read(&state, 0x1000u, &image, 4u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                 image != 0x11225566u;
         if (form == 1u)
             failed |= after.data.eax != 0xaabbccddu;
@@ -369,11 +369,11 @@ static lib_i32 gpr_mov_test_prefix_lock(void)
             cpu_instruction_prepare(&state, profiles[profile]);
             gpr_mov_seed(&state);
             failed |= cpu_instruction_write(&state, 0x1000u, &image, sizeof(image),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
             failed |= !cpu_instruction_expect_real_fault(&state,
                 prefix_codes[form], prefix_sizes[form], 6u) ||
                 cpu_instruction_read(&state, 0x1000u, &image, sizeof(image),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                     LIB_STATUS_OK || image != 0xbeefu;
 
             if (failed) return 0;
@@ -387,11 +387,11 @@ static lib_i32 gpr_mov_test_prefix_lock(void)
         cpu_instruction_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
         gpr_mov_seed(&state);
         failed |= cpu_instruction_write(&state, 0x1000u, &image, sizeof(image),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK;
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK;
         failed |= !cpu_instruction_expect_real_fault(&state, lock_codes[form],
             lock_sizes[form], 6u) ||
             cpu_instruction_read(&state, 0x1000u, &image, sizeof(image),
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) !=
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) !=
                 LIB_STATUS_OK || image != 0xbeefu;
 
         if (failed) return 0;
@@ -448,7 +448,7 @@ static lib_i32 gpr_mov_test_segments(void)
         state.cpu.data.ebp = 0x10u;
         before = state.cpu;
         failed |= cpu_instruction_write(&state, address, &image, 1u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, 0u) != LIB_STATUS_OK ||
             cpu_instruction_run(&state, codes[form], bytes[form], &after) != LIB_STATUS_OK ||
             state.fault.valid || after.data.eip != bytes[form] ||
             !gpr_mov_nonparticipants(&before, &after,
@@ -460,7 +460,7 @@ static lib_i32 gpr_mov_test_segments(void)
         if (form == 2u || form == 4u) {
             image = 0u;
             failed |= cpu_instruction_read(&state, address, &image, 1u,
-                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE) != LIB_STATUS_OK ||
+                CORE_MACHINE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) != LIB_STATUS_OK ||
                 image != 0x44u;
         }
 

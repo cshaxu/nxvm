@@ -82,8 +82,8 @@ coverage record; CURRENT alone admits each executing batch.
 - Final batch: complete ledger reconciliation, production Core connection,
   retained-machine regressions and full dual-width artifact qualification.
 
-S1--S4 are accepted; S5 is the next planned cache/test-command and physical-bus
-batch. Later numeric S boundaries
+S1--S4 are accepted; S5 is admitted for cache/test-command and physical-bus
+source/contract review followed by implementation. Later numeric S boundaries
 remain plans until admission; simple adjacent batches may combine. Development uses focused
 batch tests, followed by required closure qualification once per stable revision.
 Reuse existing Ninja/ccache graphs. Do not split work per opcode or repeat passed
