@@ -954,21 +954,6 @@ lib_status core_machine_run(
                     }
                     if (machine->cpu_retirement_wait_ticks != 0u) continue;
                 }
-                if (!machine->cpu_retirement_wait_retires) {
-                    machine->cpu_retirement_wait_pending = LIB_FALSE;
-                    machine->cpu_retirement_completion_ticks = 0u;
-                    machine->cpu_retirement_source_ticks = 0u;
-                    if (core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
-                        if (core_machine_finish_shutdown(machine, result))
-                            return core_machine_complete_run_boundary(machine, result);
-                        continue;
-                    }
-                    machine->lifecycle = CORE_MACHINE_PAUSED;
-                    result->reason = CORE_MACHINE_STOP_BUDGET;
-                    result->linear_pc = core_machine_linear_pc(machine);
-                    result->elapsed_ticks = machine->elapsed_ticks;
-                    return LIB_STATUS_OK;
-                }
                 if (budget.ticks != 0u && machine->cpu_retirement_completion_ticks >
                     budget.ticks - result->ticks) {
                     machine->lifecycle = CORE_MACHINE_PAUSED;
@@ -986,6 +971,29 @@ lib_status core_machine_run(
                     result->detail = machine->fault_detail;
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return LIB_STATUS_INTERNAL_ERROR;
+                }
+                if (!machine->cpu_retirement_wait_retires) {
+                    const lib_u64 event_ticks = machine->cpu_retirement_completion_ticks;
+
+                    if (event_ticks != 0u) {
+                        if (core_machine_publish_elapsed_ticks(machine, event_ticks,
+                                CORE_MACHINE_TIME_PUBLICATION_CPU_EVENT) != LIB_STATUS_OK)
+                            return LIB_STATUS_INTERNAL_ERROR;
+                        result->ticks += event_ticks;
+                    }
+                    machine->cpu_retirement_wait_pending = LIB_FALSE;
+                    machine->cpu_retirement_completion_ticks = 0u;
+                    machine->cpu_retirement_source_ticks = 0u;
+                    if (core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
+                        if (core_machine_finish_shutdown(machine, result))
+                            return core_machine_complete_run_boundary(machine, result);
+                        continue;
+                    }
+                    machine->lifecycle = CORE_MACHINE_PAUSED;
+                    result->reason = CORE_MACHINE_STOP_BUDGET;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return LIB_STATUS_OK;
                 }
                 if (!core_machine_publish_successful_retirement(machine)) {
                     (void)core_machine_report_fault(machine, 0x54494d55u);
@@ -1034,12 +1042,12 @@ lib_status core_machine_run(
                 }
                 if (core_machine_cpu_execution_consume_instruction_fault_delivery(
                         machine->executor_cpu_execution)) {
-                    /* A synchronous exception frame and vector are committed, but
-                     * the faulting instruction did not retire. A committed external
-                     * cycle still consumes its separately modelled board wait; it
-                     * completes through the same pending owner without publishing a
-                     * synthetic CPU retirement. Shutdown/NMI is handled above by
-                     * its explicit reset or interrupt-wait contract. */
+                    const lib_u64 event_ticks = core_machine_cpu_capture_timing(
+                        machine->executor_cpu_execution).event_ticks;
+
+                    /* Committed entry did not retire the interrupted/faulting
+                     * instruction. Its CPU subtotal and separate board wait use
+                     * the existing pending owner without synthetic retirement. */
                     if (machine->external_cycle_round_overflow) {
                         (void)core_machine_report_fault(machine, 0x54494d45u);
                         result->reason = CORE_MACHINE_STOP_FAULT;
@@ -1048,9 +1056,9 @@ lib_status core_machine_run(
                         result->elapsed_ticks = machine->elapsed_ticks;
                         return LIB_STATUS_INTERNAL_ERROR;
                     }
-                    if (machine->external_cycle_round_ticks != 0u) {
+                    if (machine->external_cycle_round_ticks != 0u || event_ticks != 0u) {
                         core_machine_begin_retirement_wait(machine,
-                            machine->external_cycle_round_ticks, 0u, 0u, LIB_FALSE);
+                            machine->external_cycle_round_ticks, event_ticks, 0u, LIB_FALSE);
                         continue;
                     }
                     if (!core_machine_cpu_is_shutdown(machine->executor_cpu_execution)) {
@@ -1105,7 +1113,8 @@ lib_status core_machine_run(
                     return LIB_STATUS_INTERNAL_ERROR;
                 }
                 instruction_ticks = timing_result.ticks;
-                if (!core_machine_timing_add_ticks(&instruction_ticks,
+                if (!core_machine_timing_add_ticks(&instruction_ticks, timing_result.event_ticks) ||
+                    !core_machine_timing_add_ticks(&instruction_ticks,
                         machine->external_cycle_round_ticks) ||
                     LIB_UINT64_MAX - result->ticks < instruction_ticks ||
                     LIB_UINT64_MAX - machine->elapsed_ticks < instruction_ticks) {

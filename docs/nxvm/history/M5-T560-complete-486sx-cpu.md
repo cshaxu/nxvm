@@ -1,5 +1,16 @@
 # M5 T560 Complete 486SX CPU
 
+## Owner-Approved Stage Boundary (2026-10-15)
+
+The owner approved staged closure and priority adjustment, not complete 486SX
+delivery. S9 is frozen for actual review, full required regression and eight
+0560 artifacts. The original full-CPU completion requirement remains unmet;
+all unfinished C16 timing/runtime/preview, C17 production admission and final
+qualification transfer to the [second queued CPU candidate](../proposals/m5-486sx-timing-production-completion.md),
+after the first queued Core refactor. Original no-transfer wording below is
+historical and is superseded only for this explicitly approved stage. No new
+CPU capability or next T is admitted by this closure decision.
+
 ## Admission
 
 Owner explicitly approved T559 closure and the next task completing all
@@ -823,3 +834,137 @@ and limits. S8/C15 is closed, not the complete CPU task. The active packet is
 removed from Current and retained in P1's Git snapshot; the latest open T560
 keeps compact progress. No S9 implementation is performed before admission.
 Production timing/admission and final qualification remain S9/S10.
+
+S9 is admitted from clean `6621f09f0` for the complete C16 timing batch.
+Original Appendix E integer/control/I/O tables and footnotes are visually
+reviewed before nominal implementation. The first grouped implementation
+adds a private nominal calculator and actual CPU-execution proof, without
+connecting an incomplete model to the retirement selector. Dynamic penalties,
+source conflicts, final selection/transport and qualification remain open in
+the S9 evidence; this is neither a complete P nor S9 acceptance.
+
+S9's next grouped stage records actual decoder/gate/descriptor/INVLPG facts,
+extends nominal mode-specific I/O, unsigned multiply, REP setup and control
+costs, and proves 1,606 cost cases plus 1,660 decode/lifetime witnesses in the
+new smoke. Existing call-gate, TLB and task-switch tests also check source
+values, including incoming 16/32-bit TSS and VM86. Focused dual-width checks
+pass; fixture null-selector failures and their corrections are retained in
+the evidence. Dynamic access/event costs, final retirement/preview integration,
+source-conflict disposition and full qualification are still open. Shared,
+MyNES, owner inputs and deployed S8 artifacts remain unchanged.
+
+The next S9 stage supplies nominal E-13/E-14 event/setup clocks through one
+new field in the existing CPU timing result and the existing Core pending
+owner, without counting entry as instruction retirement. Direct CPU/Executor
+proof covers origin/mode, HALT wake, provider failure, overflow, deferred
+completion budgets and an actually reproduced task-marker/IDT-route error.
+Both broad Core runs pass 380 unit rows but initially fail a stale root INI
+integration executable; rebuilding the two omitted root targets passes both
+integration rows per width without source/input repair. Evidence records the
+failed aggregates, affected rechecks, actual diff and restored S8 publication
+baseline after the automatic default-pair deployment. Complete C16, final
+runtime/preview allocation and whole-repository release qualification remain
+open; no partial P or S9 acceptance is claimed.
+
+The following access stage records actual completed cache/TLB, alignment and
+A/D-update outcomes in the existing CPU owners. Its private subtotal and
+existing Cache fixture prove ordinary MOV and documented cold-table costs,
+preview isolation, failure accounting and boundary clearing. CPU-owned
+regression passes 104/104 per width; evidence preserves the incorrect cached
+fixture setup, its correction, the separately rebuilt x64 decoder trio and
+final expanded Cache rechecks. Cached/raced walks, multiple cold lines and
+remaining instruction/fetch/dependency cases are not silently allocated.
+Complete C16 selection and qualification remain active; no partial P, new
+artifact release or Shared/MyNES modification is made.
+
+The prefix/address subtotal stage adds ordinary-prefix and decoded-address
+costs in the private timing owner, avoiding an indexed-LEA double charge and
+keeping unsupported REP combinations unallocated. Actual execution supplies
+2,235 numerical witnesses; both original graphs rebuild all 98 selected CPU
+binaries and pass 110 CPU/static rows per width. The evidence records the
+source assumptions' required L2 qualification and the incomplete AGI writer
+census rather than introducing a changed-value shortcut or partial history.
+Remaining C16 source/dynamic/lifetime/selection and release work stays open;
+S9 is neither delivered as a partial P nor accepted.
+
+The adjacent-write stage instruments 311 direct GPR lvalues reversibly and
+records reference, stack-read and SMM destinations at their existing owners.
+Actual producer/consumer proof detects same-value and partial-register writes,
+PUSH/POP exceptions and fault/NMI/debugger/prepared-entry/reset boundaries.
+A new DAA observation assertion exposes the no-adjustment branch's skipped
+redundant AL assignment; the destination observation is corrected without
+changing decimal arithmetic. Both original graphs rebuild all 359 Core unit
+binaries and pass 380/380 per width, with no disabled rows. The evidence
+retains the build/runtime failures, actual diff, source/model limits and the
+still-open C16 runtime/preview/release work. Shared, MyNES, owner inputs and
+released S8 EXEs remain unchanged; no partial P or acceptance is claimed.
+
+The REP stage extracts one existing repeat-record owner and gives selected SX
+one explicit selector branch, still using unallocated compatibility costs
+until full C16 selection is complete. Current phases distinguish first,
+continuation, final and zero-count execution; continuation no longer recharges
+macro setup. Actual byte identity, termination/failure, NMI/IRET and debugger,
+prepared-entry, clock and reset boundaries have direct CPU proof. New-test
+failures expose an omitted AGI expectation, querying a decoder after async
+reuse, and a 16-bit fault-address wrap; the corrected probes retain these
+distinctions. Both original graphs rebuild 360 Core unit binaries and pass
+381/381 units per width. Full C16 timing, runtime/preview, integration and
+artifact qualification remain open; Shared, MyNES and S8 releases are unchanged.
+
+The integer/bit access stage allocates E-3--E-6 and E-9 operand cache columns at
+one private helper, preserving actual cache/LOCK facts and existing translation/
+alignment owners. It distinguishes ordinary reads, unlocked/locked RMW and
+always-locked XCHG without charging its included transfer twice. Independent
+nominal conflicts are not resolved by the access columns. The existing cache
+smoke adds 1,124 real encoding variants, 96 alignment/split variants and four
+provider failures; both original graphs rebuild 99 CPU binaries and pass
+111/111 CPU/static rows per width. Broader Core/repository, integration and
+artifact qualification still belong to complete C16 delivery; no partial P
+or C17 admission is claimed.
+
+The coordinator freezes explicit L2 IMUL and variable RCL/RCR choices under
+the standing timing-upgrade approval, retaining contradictory Intel statements
+as model limits rather than a hardware-exact claim. One CPU-private pure
+evaluator is disjoint from original nominal rows; its common magnitude math
+does not change the retained 386 formula. The existing nominal smoke executes
+1,944 IMUL and 1,344 carry-rotate variants with numerical/purity/ownership proof
+and real provider-failure rejection. Both original graphs rebuild 103 binaries
+and pass 115/115 CPU/386/static rows per width. Full selected publication,
+remaining C16 models and final qualification remain open; no partial P or
+production admission is claimed.
+
+The fetch stage records one private fastest-burst subtotal at successful bus
+reads and resets it at the existing instruction boundary. Preview, data reads
+and older profiles cannot enter it. It is explicitly L2, not pipeline or fitted
+hardware time. The cache fixture proves cold/warm/cache-disabled/queue behavior,
+whole-state preview purity, partial fetch failures and separate operand cost.
+A new clipped four-byte read initially exposes missing starting-dword offset;
+its retained failing test passes after the direct coverage calculation is fixed.
+Both original graphs then rebuild 105 selected binaries and pass 117/117
+CPU/386/Core/static rows per width. Complete C16 publication/preview and final
+qualification remain mandatory; no partial P, new release or acceptance is claimed.
+
+## S9 Frozen-Stage Executor Delivery
+
+The owner's explicit 2026-10-15 amendment freezes existing S9 implementation
+and permits bounded stage closure, not CPU completion. Actual source/test
+review and the [final frozen-stage qualification](../etc/evidence/t560-s9-selected-timing.md#final-frozen-stage-qualification)
+are complete: 607/607 repository units per width, complete specialized gates,
+48 integration executions plus restored-default identity per width and eight
+current PE/hash-verified, debug-info-stripped 0560 PC EXEs. Both original
+Ninja/ccache graphs are restored to default. Shared-six, MyNES and owner
+inputs remain unchanged. No manual RDP or complete Windows GUI proof is claimed.
+
+The stage changes nine production paths (+1484/-391, net +1093) and twelve
+test/registration paths (+2539/-15, net +2524), excluding manifests/docs/assets.
+The existing Core timing-result field has a real event consumer; private
+nominal/dynamic facts and pure calculators are not falsely described as a
+complete selected runtime/preview. The sole SX instruction recipe remains
+explicitly compatibility/unallocated and production construction stays closed.
+
+The [Core refactor](../proposals/m5-core-x86-core-nxvm-split.md) is first in
+Queue; the [complete CPU residual receiver](../proposals/m5-486sx-timing-production-completion.md)
+is second. Original C01--C17 ledger and evidence remain intact, and the original
+proposal is archived without changing its historical full-CPU requirement.
+No numeric successor or original planned S10 is admitted. Complete P push and
+coordinator actual-change acceptance are still required before T560 closes.

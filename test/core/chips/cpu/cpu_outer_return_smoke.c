@@ -1,5 +1,6 @@
 #include "support/cpu_outer_return_fixture.h"
 #include "lib/types/file.h"
+#include "core/chips/cpu/cpu_timing.h"
 
 static lib_bool cpu_outer_user_code(const t_cpu_data_sreg *segment)
 {
@@ -463,6 +464,12 @@ static lib_bool cpu_outer_call_gate_stack(void)
         }
         lib_memory_copy(frame, state.memory + CPU_OUTER_KERNEL_STACK_BASE +
             (0x9000u - frame_bytes), frame_bytes);
+        lib_u64 nominal_ticks = 0u;
+        if (!core_machine_80486_nominal_instruction_cost(&state.execution, &nominal_ticks) ||
+            nominal_ticks != (parameters ? 85u : 69u) ||
+            state.instructions.data.timing_transfer_type != VCPU_DESC_SYS_TYPE_CALLGATE_32 ||
+            state.instructions.data.timing_transfer_parameters != parameters * 2u)
+            return LIB_FALSE;
         if (frame[0] != bytes || frame[1] != 0x1bu ||
             frame[2u + parameters * 2u] != 0x12348000u ||
             frame[3u + parameters * 2u] != 0x23u ||

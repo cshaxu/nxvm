@@ -611,6 +611,28 @@ static lib_i32 core_machine_source_timing_string_repeat_is_defined(
 static core_machine_source_transfer_plan
     core_machine_source_timing_string_transfer_plan(
         const t_cpuins_data *data, core_machine_source_timing_form form);
+static lib_bool core_machine_source_timing_repeat_continuing(
+    const core_machine_cpu_execution_context *context, const t_cpuins_data *data)
+{
+    if (!context->source_repeat_active) return LIB_FALSE;
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX) {
+        const lib_u32 bytes = core_machine_instruction_prefix_count(data) + 1u;
+
+        if (bytes != context->source_repeat_byte_count ||
+            lib_memory_compare(data->opcodes, context->source_repeat_bytes, bytes) != 0)
+            return LIB_FALSE;
+    }
+    return context->source_repeat_cs == data->oldcpu.data.cs.selector &&
+        context->source_repeat_eip == data->oldcpu.data.eip &&
+        context->source_repeat_opcode == data->opcodes[
+            core_machine_instruction_prefix_count(data)] &&
+        context->source_repeat_prefix == (lib_u8)data->prefix_rep &&
+        context->source_repeat_operand_size ==
+            (data->oldcpu.data.cs.seg.exec.defsize != (data->prefix_oprsize != LIB_FALSE)) &&
+        context->source_repeat_address_size ==
+            (data->oldcpu.data.cs.seg.exec.defsize != (data->prefix_addrsize != LIB_FALSE));
+}
+
 static lib_u64 core_machine_source_timing_repeat_string(
     core_machine_cpu_execution_context *context, const t_cpuins_data *data,
     const core_machine_source_repeat_timing_entry *entry,
@@ -982,45 +1004,26 @@ static lib_u64 core_machine_source_timing_string_modifiers(
     return modifiers;
 }
 
-static lib_u64 core_machine_source_timing_repeat_string(
-    core_machine_cpu_execution_context *context, const t_cpuins_data *data,
-    const core_machine_source_repeat_timing_entry *entry,
-    const core_machine_source_transfer_plan *transfer_plan)
+static void core_machine_source_timing_record_repeat(
+    core_machine_cpu_execution_context *context, const t_cpuins_data *data)
 {
-    lib_u8 operand_size;
-    lib_u8 address_size;
-    lib_u32 count;
-    lib_i32 continuing;
-    lib_u64 ticks;
-
-    if (context == LIB_NULL || data == LIB_NULL || entry == LIB_NULL) return 0u;
-    operand_size = data->oldcpu.data.cs.seg.exec.defsize !=
+    const lib_bool operand_size = data->oldcpu.data.cs.seg.exec.defsize !=
         (data->prefix_oprsize != LIB_FALSE);
-    address_size = data->oldcpu.data.cs.seg.exec.defsize !=
+    const lib_bool address_size = data->oldcpu.data.cs.seg.exec.defsize !=
         (data->prefix_addrsize != LIB_FALSE);
+
     if (data->prefix_rep == PREFIX_REP_NONE) {
         context->timing_result.repeat_phase =
             CORE_MACHINE_RETIREMENT_REPEAT_PRIMITIVE;
         context->source_repeat_active = LIB_FALSE;
-        return entry->primitive_ticks + core_machine_source_timing_string_modifiers(
-            context, data, entry->form, transfer_plan);
+        return;
     }
-    count = address_size ? data->oldcpu.data.ecx : data->oldcpu.data.cx;
-    continuing = context->source_repeat_active &&
-        context->source_repeat_cs == data->oldcpu.data.cs.selector &&
-        context->source_repeat_eip == data->oldcpu.data.eip &&
-        context->source_repeat_opcode == data->opcodes[
-            core_machine_instruction_prefix_count(data)] &&
-        context->source_repeat_prefix == (lib_u8)data->prefix_rep &&
-        context->source_repeat_operand_size == operand_size &&
-        context->source_repeat_address_size == address_size;
+    const lib_u32 count = address_size ? data->oldcpu.data.ecx : data->oldcpu.data.cx;
+    const lib_bool continuing = core_machine_source_timing_repeat_continuing(context, data);
     context->timing_result.repeat_phase = count == 0u ?
         CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT : continuing ?
         CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION :
         CORE_MACHINE_RETIREMENT_REPEAT_FIRST;
-    ticks = count == 0u ? entry->repeat_setup_ticks : continuing ?
-        entry->repeat_iteration_ticks : entry->repeat_setup_ticks +
-        entry->repeat_iteration_ticks;
     context->source_repeat_active = count != 0u &&
         context->cpu->data.eip == data->oldcpu.data.eip;
     if (context->source_repeat_active) {
@@ -1031,6 +1034,28 @@ static lib_u64 core_machine_source_timing_repeat_string(
         context->source_repeat_prefix = (lib_u8)data->prefix_rep;
         context->source_repeat_operand_size = operand_size;
         context->source_repeat_address_size = address_size;
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX) {
+            context->source_repeat_byte_count = (lib_u8)(core_machine_instruction_prefix_count(data) + 1u);
+            lib_memory_copy(context->source_repeat_bytes, data->opcodes,
+                context->source_repeat_byte_count);
+        }
+    }
+}
+
+static lib_u64 core_machine_source_timing_repeat_string(
+    core_machine_cpu_execution_context *context, const t_cpuins_data *data,
+    const core_machine_source_repeat_timing_entry *entry,
+    const core_machine_source_transfer_plan *transfer_plan)
+{
+    lib_u64 ticks;
+
+    if (context == LIB_NULL || data == LIB_NULL || entry == LIB_NULL) return 0u;
+    core_machine_source_timing_record_repeat(context, data);
+    switch (context->timing_result.repeat_phase) {
+    case CORE_MACHINE_RETIREMENT_REPEAT_PRIMITIVE: ticks = entry->primitive_ticks; break;
+    case CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT: ticks = entry->repeat_setup_ticks; break;
+    case CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION: ticks = entry->repeat_iteration_ticks; break;
+    default: ticks = entry->repeat_setup_ticks + entry->repeat_iteration_ticks; break;
     }
     return ticks + core_machine_source_timing_string_modifiers(context, data,
         entry->form, transfer_plan);
@@ -3554,7 +3579,7 @@ lib_i32 core_machine_control_stack_source_instruction_cost(
     }
 }
 
-static lib_u64 core_machine_80386_timing_signed_magnitude(
+static lib_u64 core_machine_source_timing_signed_magnitude(
     lib_u64 value, lib_u8 bytes)
 {
     lib_u64 mask;
@@ -3568,7 +3593,7 @@ static lib_u64 core_machine_80386_timing_signed_magnitude(
     return (value & sign) == 0u ? value : ((~value + 1u) & mask);
 }
 
-static lib_u64 core_machine_80386_timing_ceiling_log2(
+static lib_u64 core_machine_source_timing_ceiling_log2(
     lib_u64 value)
 {
     lib_u64 result = 0u;
@@ -3643,11 +3668,11 @@ lib_i32 core_machine_80386_dynamic_multiply_cost(core_machine_cpu_execution_cont
     } else {
         return 0;
     }
-    magnitude = signed_multiplier ? core_machine_80386_timing_signed_magnitude(
+    magnitude = signed_multiplier ? core_machine_source_timing_signed_magnitude(
         multiplier, operand_bytes) : multiplier &
         (operand_bytes == 4u ? LIB_UINT32_MAX :
             operand_bytes == 2u ? LIB_UINT16_MAX : LIB_UINT8_MAX);
-    scale = core_machine_80386_timing_ceiling_log2(magnitude);
+    scale = core_machine_source_timing_ceiling_log2(magnitude);
     *out_ticks = magnitude == 0u ? 9u : (scale < 3u ? 3u : scale) + 6u;
     if (memory_multiplier) *out_ticks += 3u;
     context->timing_result.form_id = (lib_u32)form;
@@ -4334,4 +4359,799 @@ lib_i32 core_machine_compatibility_instruction_cost(core_machine_cpu_execution_c
     }
     *out_ticks = ticks;
     return 1;
+}
+
+lib_i32 core_machine_80486_source_instruction_cost(core_machine_cpu_execution_context *context,
+    lib_u64 *out_ticks)
+{
+    core_machine_source_timing_form form;
+    const t_cpuins_data *data;
+    lib_u32 prefixes;
+
+    if (context == LIB_NULL || out_ticks == LIB_NULL || context->instructions == LIB_NULL ||
+        context->cpu == LIB_NULL ||
+        context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX) return 0;
+    data = &context->instructions->data;
+    prefixes = core_machine_instruction_prefix_count(data);
+    /* Preserve the explicitly unallocated recipe until all C16 costs can be
+     * selected here. This is not physical timing or a second fallback route. */
+    if (!core_machine_compatibility_instruction_cost(context, out_ticks)) return 0;
+    if (prefixes < data->oplen &&
+        core_machine_source_timing_string_form(data->opcodes[prefixes], &form) &&
+        core_machine_source_timing_string_repeat_is_defined(form, data->prefix_rep)) {
+        context->timing_result.form_id = (lib_u32)form;
+        core_machine_source_timing_record_repeat(context, data);
+    } else context->source_repeat_active = LIB_FALSE;
+    return 1;
+}
+
+/* E-13: TS depends on the incoming TSS/mode, not the outgoing task. */
+static lib_u64 core_machine_80486_nominal_task_cost(
+    const core_machine_cpu_execution_context *context)
+{
+    const t_cpu_data *incoming = &context->instruction_task_checkpoint.data;
+
+    if ((incoming->eflags & VCPU_EFLAGS_VM) != 0u) return 140u;
+    return incoming->tr.sys.type == VCPU_DESC_SYS_TYPE_TSS_16_BUSY ? 143u : 162u;
+}
+
+/* E-8/E-9. The executing route captures the actual gate class and copied
+ * parameter count; timing never rereads a potentially changed descriptor. */
+static lib_u64 core_machine_80486_nominal_far_cost(
+    const core_machine_cpu_execution_context *context,
+    const t_cpuins_data *data, lib_bool call, lib_bool indirect)
+{
+    const lib_u8 gate = data->timing_transfer_type;
+
+    if ((data->oldcpu.data.cr0 & VCPU_CR0_PE) == 0u ||
+        (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u)
+        return call ? (indirect ? 17u : 18u) : (indirect ? 13u : 17u);
+    if (context->instruction_task_switched)
+        return core_machine_80486_nominal_task_cost(context) +
+            (call ? 37u : indirect ? 41u : 42u) +
+            (gate == VCPU_DESC_SYS_TYPE_TASKGATE ? 1u : 0u);
+    if (gate == VCPU_DESC_SYS_TYPE_CALLGATE_16 || gate == VCPU_DESC_SYS_TYPE_CALLGATE_32) {
+        if (!call) return indirect ? 31u : 32u;
+        if (data->oldcpu.data.cs.dpl == context->cpu->data.cs.dpl) return 35u;
+        return data->timing_transfer_parameters == 0u ? 69u :
+            77u + 4u * data->timing_transfer_parameters;
+    }
+    return call ? 20u : indirect ? 18u : 19u;
+}
+
+/* E-13 setup precedes the separate E-14 INT subtotal. Read the original
+ * faulting opcode before entry; the handler must not become the timing key. */
+lib_u64 core_machine_80486_exception_setup_cost(
+    const core_machine_cpu_execution_context *context, lib_u8 vector)
+{
+    const t_cpuins_data *data = &context->instructions->data;
+    const lib_u32 prefixes = core_machine_instruction_prefix_count(data);
+    lib_u8 opcode;
+
+    if (vector == 14u || vector == 5u) return 24u;
+    if (vector != 13u || (context->cpu->data.eflags & VCPU_EFLAGS_VM) == 0u ||
+        prefixes >= data->oplen) return 0u;
+    opcode = data->opcodes[prefixes];
+    switch (opcode) {
+    case 0xfau: case 0xfbu: case 0x9du:
+        return 8u;
+    case 0xcdu: case 0x9cu: case 0xcfu:
+        return 9u;
+    case 0xe4u: case 0xe5u: case 0xe6u: case 0xe7u:
+        return 50u;
+    case 0xecu: case 0xedu: case 0xeeu: case 0xefu:
+        return 51u;
+    case 0x6cu: case 0x6du: case 0x6eu: case 0x6fu:
+        return data->prefix_rep == PREFIX_REP_NONE ? 50u : 51u;
+    default:
+        return 0u;
+    }
+}
+
+/* E-14's INT value; instruction-specific setup is a separate E-13 term. */
+lib_u64 core_machine_80486_interrupt_entry_cost(
+    const core_machine_cpu_execution_context *context,
+    lib_u32 entry_cr0, lib_u32 entry_flags, lib_u8 entry_cpl, lib_bool task_entry)
+{
+    if (task_entry)
+        return 37u + core_machine_80486_nominal_task_cost(context);
+    if ((entry_cr0 & VCPU_CR0_PE) == 0u) return 26u;
+    if ((entry_flags & VCPU_EFLAGS_VM) != 0u)
+        return (context->cpu->data.eflags & VCPU_EFLAGS_VM) != 0u ? 26u : 82u;
+    return entry_cpl == context->cpu->data.cs.dpl ? 44u : 71u;
+}
+
+/* E-15: real, protected without/with I/O permission checks, then VM86.
+ * Columns are IN imm/DX, OUT imm/DX, string primitive, REP IN/OUT setup. */
+static lib_u64 core_machine_80486_nominal_io_cost(
+    const core_machine_cpu_execution_context *context,
+    const t_cpuins_data *data, lib_u8 opcode)
+{
+    static const lib_u8 clocks[4][7] = {
+        {14u, 14u, 16u, 16u, 17u, 16u, 17u},
+        {9u, 8u, 11u, 10u, 10u, 10u, 11u},
+        {29u, 28u, 31u, 30u, 32u, 30u, 31u},
+        {27u, 27u, 29u, 29u, 30u, 29u, 30u}
+    };
+    const lib_u8 mode = (data->oldcpu.data.cr0 & VCPU_CR0_PE) == 0u ? 0u :
+        (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ? 3u :
+        data->oldcpu.data.cs.dpl <=
+            ((data->oldcpu.data.eflags & VCPU_EFLAGS_IOPL) >> 12u) ? 1u : 2u;
+
+    if (opcode >= 0xe4u)
+        return clocks[mode][((opcode & 2u) != 0u ? 2u : 0u) +
+            (opcode >= 0xecu ? 1u : 0u)];
+    if (data->prefix_rep == PREFIX_REP_NONE) return clocks[mode][4];
+    const lib_bool address32 = data->oldcpu.data.cs.seg.exec.defsize != data->prefix_addrsize;
+    const lib_u32 count = address32 ? data->oldcpu.data.ecx : data->oldcpu.data.cx;
+    const lib_bool output = opcode >= 0x6eu;
+    const lib_u64 iteration = output ? 5u : 8u;
+
+    if (count == 0u) return clocks[mode][output ? 6u : 5u];
+    return iteration + (context->timing_result.repeat_phase == CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION ?
+        0u : clocks[mode][output ? 6u : 5u]);
+}
+
+static lib_bool core_machine_80486_push_pop_opcode(lib_u16 opcode)
+{
+    const lib_u8 primary = (lib_u8)opcode;
+    const lib_u8 secondary = (lib_u8)(opcode >> 8u);
+
+    if (primary >= 0x50u && primary <= 0x61u) return LIB_TRUE;
+    switch (primary) {
+    case 0x06u: case 0x07u: case 0x0eu: case 0x16u: case 0x17u:
+    case 0x1eu: case 0x1fu: case 0x68u: case 0x6au: case 0x9cu: case 0x9du:
+        return LIB_TRUE;
+    case 0x8fu: return ((secondary >> 3u) & 7u) == 0u;
+    case 0xffu: return ((secondary >> 3u) & 7u) == 6u;
+    case 0x0fu:
+        return secondary == 0xa0u || secondary == 0xa1u || secondary == 0xa8u || secondary == 0xa9u;
+    default: return LIB_FALSE;
+    }
+}
+
+/* Prefix costs are per decoded macroinstruction. The selected REP owner must
+ * not charge these again for a continuation of that same instruction. */
+lib_bool core_machine_80486_decode_penalty(
+    const core_machine_cpu_execution_context *context, lib_u64 *out_ticks)
+{
+    const t_cpuins_data *data;
+    lib_u32 prefixes;
+    lib_u8 opcode, repeats = 0u;
+    lib_u64 ticks = 0u;
+
+    if (context == LIB_NULL || out_ticks == LIB_NULL ||
+        context->instructions == LIB_NULL || context->cpu == LIB_NULL ||
+        context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX ||
+        context->instruction_fault_delivered || context->stop_requested)
+        return LIB_FALSE;
+    data = &context->instructions->data;
+    if (data->except != 0u) return LIB_FALSE;
+    prefixes = core_machine_instruction_prefix_count(data);
+    if (prefixes >= data->oplen) return LIB_FALSE;
+    opcode = data->opcodes[prefixes];
+    for (lib_u32 index = 0u; index < prefixes; ++index) {
+        if (data->opcodes[index] == 0xf2u || data->opcodes[index] == 0xf3u) ++repeats;
+        else ++ticks;
+    }
+    /* E-11 includes REP in string timing, not in the ordinary one-clock
+     * prefixes. Redundant REP and REP on other instructions need separate
+     * source/model disposition rather than a guessed zero-prefix cost. */
+    if (repeats > 1u || (repeats != 0u &&
+        !(opcode >= 0x6cu && opcode <= 0x6fu) &&
+        !(opcode >= 0xa4u && opcode <= 0xa7u) &&
+        !(opcode >= 0xaau && opcode <= 0xafu)))
+        return LIB_FALSE;
+    if (context->timing_result.repeat_phase == CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION) {
+        *out_ticks = 0u;
+        return LIB_TRUE;
+    }
+    if (data->timing_ea_indexed && opcode != 0x8du) ++ticks;
+    if (data->timing_ea_displacement && data->timing_immediate) ++ticks;
+    {
+        const lib_u16 current_opcode = opcode | (prefixes + 1u < data->oplen ?
+            (lib_u32)data->opcodes[prefixes + 1u] << 8u : 0u);
+        lib_u8 writes = data->timing_previous_gpr_writes;
+        const lib_u8 bases = data->timing_ea_base_mask | (data->timing_stack_access ? 0x10u : 0u);
+
+        /* E.2 exempts back-to-back PUSH/POP stack adjustment, not a POP's
+         * non-SP destination subsequently used as an ordinary address base. */
+        if (core_machine_80486_push_pop_opcode(current_opcode) &&
+            core_machine_80486_push_pop_opcode(data->timing_previous_opcode)) writes &= (lib_u8)~0x10u;
+        if ((writes & bases) != 0u) ++ticks;
+    }
+    *out_ticks = ticks;
+    return LIB_TRUE;
+}
+
+/* E-3--E-9: one integer operand's actual cache miss, not a per-bus-read
+ * surcharge. Stack, string, descriptor and split-miss rows have separate
+ * contracts and cannot inherit an ordinary operand's coefficient. */
+static lib_bool core_machine_80486_operand_cache_penalty(
+    const t_cpuins_data *data, lib_u32 prefixes, lib_u64 *out_ticks)
+{
+    const lib_u8 opcode = data->opcodes[prefixes];
+    const lib_u8 extension = prefixes + 1u < data->oplen ?
+        (data->opcodes[prefixes + 1u] >> 3u) & 7u : 0u;
+    lib_bool read = LIB_FALSE, lockable = LIB_FALSE, implicit_lock = LIB_FALSE;
+    lib_u8 miss = 0u, locked = 2u;
+
+    if (opcode <= 0x3du && (opcode & 7u) <= 5u) {
+        const lib_bool compare = (opcode & 0x38u) == 0x38u;
+
+        read = data->flagMem && (opcode & 7u) < 4u;
+        lockable = !compare && (opcode & 2u) == 0u;
+        miss = compare || (opcode & 2u) != 0u ? 2u : 6u;
+    } else if ((opcode >= 0x40u && opcode <= 0x4fu) ||
+        (opcode >= 0xb0u && opcode <= 0xbfu)) {
+        /* Register-only forms have no data operand access. */
+    } else switch (opcode) {
+    case 0x69u: case 0x6bu:
+        read = data->flagMem;
+        miss = 2u;
+        break;
+    case 0x80u: case 0x81u: case 0x82u: case 0x83u:
+        read = data->flagMem;
+        lockable = extension != 7u;
+        miss = extension == 7u ? 2u : 6u;
+        break;
+    case 0x84u: case 0x85u:
+        read = data->flagMem;
+        miss = 2u;
+        break;
+    case 0x86u: case 0x87u:
+        read = data->flagMem;
+        implicit_lock = lockable = LIB_TRUE;
+        locked = 0u; /* E-3 note 2: the five nominal clocks already use LOCK. */
+        break;
+    case 0x88u: case 0x89u: case 0x8au: case 0x8bu:
+        read = data->flagMem && (opcode & 2u) != 0u;
+        miss = 2u;
+        break;
+    case 0xa0u: case 0xa1u:
+        read = LIB_TRUE;
+        miss = 2u;
+        break;
+    case 0x8du: case 0x90u: case 0xa2u: case 0xa3u:
+    case 0xa8u: case 0xa9u: case 0xc6u: case 0xc7u:
+        break;
+    case 0xc0u: case 0xc1u: case 0xd0u: case 0xd1u:
+    case 0xd2u: case 0xd3u:
+        read = data->flagMem;
+        /* Variable carry-rotate has no listed cache-miss surcharge. Its
+         * unresolved nominal formula is not qualified by this access row. */
+        miss = (extension == 2u || extension == 3u) &&
+            opcode != 0xd0u && opcode != 0xd1u ? 0u : 6u;
+        break;
+    case 0xf6u: case 0xf7u:
+        read = data->flagMem;
+        lockable = extension == 2u || extension == 3u;
+        miss = extension < 2u ? 2u : extension < 4u ? 6u : extension == 4u ? 1u : 0u;
+        break;
+    case 0xfeu: case 0xffu:
+        if (extension > 1u) return LIB_FALSE;
+        read = data->flagMem;
+        lockable = LIB_TRUE;
+        miss = 6u;
+        break;
+    case 0x0fu: {
+        lib_u8 secondary;
+
+        if (prefixes + 2u >= data->oplen) return LIB_FALSE;
+        secondary = data->opcodes[prefixes + 1u];
+        read = data->flagMem;
+        switch (secondary) {
+        case 0xafu: miss = 1u; break;
+        case 0xb6u: case 0xb7u: case 0xbeu: case 0xbfu: miss = 2u; break;
+        case 0xa4u: case 0xacu: miss = 6u; break;
+        case 0xa5u: case 0xadu: miss = 5u; break;
+        case 0xb0u: case 0xb1u: lockable = LIB_TRUE; miss = 2u; break;
+        case 0xc0u: case 0xc1u: lockable = LIB_TRUE; miss = 6u; break;
+        case 0xa3u: case 0xbcu: miss = 2u; break;
+        case 0xbdu: miss = 1u; break;
+        case 0xabu: case 0xb3u: case 0xbbu:
+            lockable = LIB_TRUE;
+            miss = 3u;
+            locked = 1u;
+            break;
+        case 0xbau: {
+            const lib_u8 operation = (data->opcodes[prefixes + 2u] >> 3u) & 7u;
+
+            if (operation < 4u) return LIB_FALSE;
+            lockable = operation != 4u;
+            miss = lockable ? 2u : 1u;
+            locked = 0u;
+            break;
+        }
+        default: return LIB_FALSE;
+        }
+        break;
+    }
+    default:
+        return LIB_FALSE;
+    }
+    if (!read) {
+        if (data->timing_data_misses != 0u || data->timing_locked_reads != 0u)
+            return LIB_FALSE;
+        *out_ticks = 0u;
+    } else if (implicit_lock || data->flagLock) {
+        if (!lockable || data->timing_data_misses != 0u || data->timing_locked_reads != 1u)
+            return LIB_FALSE;
+        *out_ticks = locked;
+    } else {
+        if (data->timing_locked_reads != 0u || data->timing_data_misses > 1u)
+            return LIB_FALSE;
+        *out_ticks = (lib_u64)miss * data->timing_data_misses;
+    }
+    return LIB_TRUE;
+}
+
+/* Intel 1992 PRM Appendix E.2 and E-3--E-9: completed access facts. */
+lib_bool core_machine_80486_memory_penalty(
+    const core_machine_cpu_execution_context *context, lib_u64 *out_ticks)
+{
+    const t_cpuins_data *data;
+    lib_u32 prefixes;
+    lib_u64 walks, updates, ticks, operand;
+
+    if (context == LIB_NULL || out_ticks == LIB_NULL ||
+        context->instructions == LIB_NULL || context->cpu == LIB_NULL ||
+        context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX ||
+        context->instruction_fault_delivered || context->stop_requested)
+        return LIB_FALSE;
+    data = &context->instructions->data;
+    if (data->except != 0u) return LIB_FALSE;
+    prefixes = core_machine_instruction_prefix_count(data);
+    if (prefixes >= data->oplen) return LIB_FALSE;
+    if (!core_machine_80486_operand_cache_penalty(data, prefixes, &operand))
+        return LIB_FALSE;
+    walks = (lib_u64)data->timing_tlb_walks[0] + data->timing_tlb_walks[1] +
+        data->timing_tlb_walks[2];
+    updates = (lib_u64)data->timing_tlb_walks[1] + 2u * (lib_u64)data->timing_tlb_walks[2];
+    /* E.2's 13/21/28 clocks assume neither paging entry is cached. A raced
+     * locked reread without an update is not the documented zero-update case. */
+    if (data->timing_table_misses != 2u * walks ||
+        data->timing_tlb_update_attempts != updates)
+        return LIB_FALSE;
+    ticks = 13u * (lib_u64)data->timing_tlb_walks[0] +
+        21u * (lib_u64)data->timing_tlb_walks[1] +
+        28u * (lib_u64)data->timing_tlb_walks[2] +
+        3u * (lib_u64)data->timing_unaligned_accesses +
+        operand;
+    *out_ticks = ticks;
+    return LIB_TRUE;
+}
+
+/* Explicit L2 choices for conflicting E-14 formulas, not hardware-exact
+ * cache-hit rows. Keep access/prefix costs and result qualification separate. */
+lib_bool core_machine_80486_l2_arithmetic_cost(
+    const core_machine_cpu_execution_context *context, lib_u64 *out_ticks)
+{
+    const t_cpuins_data *data;
+    lib_u32 prefixes;
+    lib_u8 opcode, extension, bytes;
+    lib_u64 multiplier, magnitude, scale, ticks;
+
+    if (context == LIB_NULL || out_ticks == LIB_NULL || context->instructions == LIB_NULL ||
+        context->cpu == LIB_NULL || context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX ||
+        context->instruction_fault_delivered || context->stop_requested) return LIB_FALSE;
+    data = &context->instructions->data;
+    if (data->except != 0u) return LIB_FALSE;
+    prefixes = core_machine_instruction_prefix_count(data);
+    if (prefixes >= data->oplen) return LIB_FALSE;
+    opcode = data->opcodes[prefixes];
+    extension = prefixes + 1u < data->oplen ? (data->opcodes[prefixes + 1u] >> 3u) & 7u : 0u;
+    bytes = data->oldcpu.data.cs.seg.exec.defsize != data->prefix_oprsize ? 4u : 2u;
+
+    if ((opcode == 0xc0u || opcode == 0xc1u || opcode == 0xd2u || opcode == 0xd3u) &&
+        (extension == 2u || extension == 3u)) {
+        const lib_u8 width = (opcode & 1u) != 0u ? bytes * 8u : 8u;
+        const lib_u8 count = (opcode < 0xd0u ? data->cimm : data->oldcpu.data.ecx) & 31u;
+
+        /* Notes 4/5: preserve the pre-modulo count, and follow their printed
+         * +9 equation despite the inconsistent memory range endpoint. */
+        ticks = count <= width ? (data->flagMem ? 9u : 8u) : (count / width) * 7u + 9u;
+    } else {
+        if ((opcode == 0xf6u || opcode == 0xf7u) && extension == 5u) {
+            if (opcode == 0xf6u) bytes = 1u;
+            multiplier = data->crm;
+        } else if (opcode == 0x69u || opcode == 0x6bu) {
+            multiplier = data->cimm;
+            if (opcode == 0x6bu) bytes = 1u;
+        } else if (opcode == 0x0fu && prefixes + 2u < data->oplen &&
+            data->opcodes[prefixes + 1u] == 0xafu) multiplier = data->crm;
+        else return LIB_FALSE;
+        magnitude = core_machine_source_timing_signed_magnitude(multiplier, bytes);
+        scale = core_machine_source_timing_ceiling_log2(magnitude);
+        const lib_u8 minimum = (multiplier & (UINT64_C(1) << (bytes * 8u - 1u))) != 0u ? 5u : 3u;
+
+        /* Note 3 supplies 10/n; chapter 26 supplies ceiling rounding. The
+         * final encoded source is this model's optimizing multiplier. */
+        ticks = magnitude == 0u ? 13u : 10u + (scale < minimum ? minimum : scale);
+    }
+    *out_ticks = ticks;
+    return LIB_TRUE;
+}
+
+/* Intel 1992 PRM Appendix E, E-3--E-13: cache-hit costs, before the
+ * separately specified prefix, access and event terms. Use the decoder's
+ * completed operands; timing must not read guest memory a second time. */
+lib_bool core_machine_80486_nominal_instruction_cost(
+    const core_machine_cpu_execution_context *context, lib_u64 *out_ticks)
+{
+    const t_cpuins_data *data;
+    lib_u32 prefixes;
+    lib_u8 opcode, extension;
+    lib_bool memory, protected_mode;
+    lib_u64 ticks;
+
+    if (context == LIB_NULL || out_ticks == LIB_NULL ||
+        context->instructions == LIB_NULL || context->cpu == LIB_NULL ||
+        context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX ||
+        context->instruction_fault_delivered || context->stop_requested)
+        return LIB_FALSE;
+    data = &context->instructions->data;
+    if (data->except != 0u) return LIB_FALSE;
+    prefixes = core_machine_instruction_prefix_count(data);
+    if (prefixes >= data->oplen) return LIB_FALSE;
+    opcode = data->opcodes[prefixes];
+    extension = prefixes + 1u < data->oplen ?
+        (data->opcodes[prefixes + 1u] >> 3u) & 7u : 0u;
+    memory = data->flagMem != 0u;
+    protected_mode = (data->oldcpu.data.cr0 & VCPU_CR0_PE) != 0u &&
+        (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) == 0u;
+
+    if (opcode <= 0x3du && (opcode & 7u) <= 5u) {
+        const lib_u8 form = opcode & 7u;
+        const lib_bool compare = (opcode & 0x38u) == 0x38u;
+
+        ticks = !memory || form >= 4u ? 1u :
+            compare || (form & 2u) != 0u ? 2u : 3u;
+    } else if (opcode >= 0x40u && opcode <= 0x5fu) {
+        ticks = 1u;
+    } else if (opcode >= 0xb0u && opcode <= 0xbfu) {
+        ticks = 1u;
+    } else if (opcode >= 0x91u && opcode <= 0x97u) {
+        ticks = 3u;
+    } else if (opcode >= 0x70u && opcode <= 0x7fu) {
+        lib_i32 taken;
+
+        if (!core_machine_control_stack_condition_taken(data->oldcpu.data.eflags,
+                opcode, &taken)) return LIB_FALSE;
+        ticks = taken ? 3u : 1u;
+    } else switch (opcode) {
+    case 0x06u: case 0x0eu: case 0x16u: case 0x1eu:
+        ticks = 3u;
+        break;
+    case 0x07u: case 0x17u: case 0x1fu:
+        ticks = protected_mode ? 9u : 3u;
+        break;
+    case 0x27u: case 0x2fu:
+        ticks = 2u;
+        break;
+    case 0x37u: case 0x3fu:
+        ticks = 3u;
+        break;
+    case 0x60u:
+        ticks = 11u;
+        break;
+    case 0x61u:
+        ticks = 9u;
+        break;
+    case 0x63u:
+        ticks = 9u;
+        break;
+    case 0x62u:
+        ticks = 7u;
+        break;
+    case 0x68u: case 0x6au:
+        ticks = 1u;
+        break;
+    case 0x6cu: case 0x6du: case 0x6eu: case 0x6fu:
+        ticks = core_machine_80486_nominal_io_cost(context, data, opcode);
+        break;
+    case 0x80u: case 0x81u: case 0x82u: case 0x83u:
+        ticks = !memory ? 1u : extension == 7u ? 2u : 3u;
+        break;
+    case 0x84u: case 0x85u:
+        ticks = memory ? 2u : 1u;
+        break;
+    case 0x86u: case 0x87u:
+        ticks = memory ? 5u : 3u;
+        break;
+    case 0x88u: case 0x89u: case 0x8au: case 0x8bu:
+    case 0x90u: case 0xa0u: case 0xa1u: case 0xa2u: case 0xa3u:
+    case 0xc6u: case 0xc7u:
+        ticks = 1u;
+        break;
+    case 0x8cu:
+        ticks = 3u;
+        break;
+    case 0x8du:
+        ticks = data->timing_ea_indexed ? 2u : 1u;
+        break;
+    case 0x8eu:
+        ticks = protected_mode ? 9u : 3u;
+        break;
+    case 0x8fu:
+        ticks = memory ? 5u : 4u;
+        break;
+    case 0x98u: case 0x99u: case 0x9fu:
+        ticks = 3u;
+        break;
+    case 0x9cu:
+        ticks = protected_mode ? 3u : 4u;
+        break;
+    case 0x9du:
+        ticks = protected_mode ? 6u : 9u;
+        break;
+    case 0x9eu:
+        ticks = 2u;
+        break;
+    case 0xa8u: case 0xa9u:
+        ticks = 1u;
+        break;
+    case 0xa4u: case 0xa5u: case 0xa6u: case 0xa7u:
+    case 0xaau: case 0xabu: case 0xacu: case 0xadu:
+    case 0xaeu: case 0xafu:
+        ticks = opcode <= 0xa5u ? 7u : opcode <= 0xa7u ? 8u :
+            opcode <= 0xadu ? 5u : 6u;
+        if (data->prefix_rep != PREFIX_REP_NONE) {
+            const lib_bool address32 = data->oldcpu.data.cs.seg.exec.defsize !=
+                data->prefix_addrsize;
+            const lib_u32 count = address32 ? data->oldcpu.data.ecx : data->oldcpu.data.cx;
+            const lib_bool continuing = context->timing_result.repeat_phase ==
+                CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION;
+
+            if (count == 0u) ticks = 5u;
+            else if (opcode <= 0xa5u) ticks = continuing ? 3u : count == 1u ? 13u : 15u;
+            else {
+                const lib_u64 iteration = opcode <= 0xa7u ? 7u : opcode <= 0xadu ? 4u : 5u;
+
+                ticks = iteration + (continuing ? 0u : 7u);
+            }
+        }
+        break;
+    case 0xc0u: case 0xc1u: case 0xd0u: case 0xd1u:
+    case 0xd2u: case 0xd3u:
+        if ((extension == 2u || extension == 3u) &&
+            opcode != 0xd0u && opcode != 0xd1u) return LIB_FALSE;
+        ticks = memory ? 4u : opcode == 0xc0u || opcode == 0xc1u ? 2u : 3u;
+        break;
+    case 0xc4u: case 0xc5u:
+        ticks = protected_mode ? 12u : 6u;
+        break;
+    case 0xc2u: case 0xc3u:
+        ticks = 5u;
+        break;
+    case 0x9au: case 0xeau:
+        ticks = core_machine_80486_nominal_far_cost(context, data, opcode == 0x9au, LIB_FALSE);
+        break;
+    case 0xcau: case 0xcbu:
+        ticks = !protected_mode ? 13u :
+            data->oldcpu.data.cs.dpl == context->cpu->data.cs.dpl ? 17u : 35u;
+        if (opcode == 0xcau) ++ticks;
+        break;
+    case 0xccu: case 0xcdu: case 0xceu:
+        if (opcode == 0xceu && (data->oldcpu.data.eflags & VCPU_EFLAGS_OF) == 0u)
+            ticks = 3u;
+        else {
+            ticks = core_machine_80486_interrupt_entry_cost(context,
+                data->oldcpu.data.cr0, data->oldcpu.data.eflags, data->oldcpu.data.cs.dpl,
+                context->instruction_task_switched);
+            if (opcode == 0xcdu && !protected_mode) ticks += 4u;
+            if (opcode == 0xceu) ticks += 2u;
+        }
+        break;
+    case 0xcfu:
+        ticks = !protected_mode ? 15u : context->instruction_task_switched ?
+            32u + core_machine_80486_nominal_task_cost(context) :
+            data->oldcpu.data.cs.dpl == context->cpu->data.cs.dpl ? 20u : 36u;
+        break;
+    case 0xc8u: {
+        lib_u8 level;
+
+        if (prefixes + 3u >= data->oplen) return LIB_FALSE;
+        level = data->opcodes[prefixes + 3u] & 31u;
+        ticks = level == 0u ? 14u : level == 1u ? 17u : 17u + 3u * level;
+        break;
+    }
+    case 0xc9u:
+        ticks = 5u;
+        break;
+    case 0xd4u:
+        ticks = 15u;
+        break;
+    case 0xd5u:
+        ticks = 14u;
+        break;
+    case 0xd7u:
+        ticks = 4u;
+        break;
+    case 0xe0u: case 0xe1u: case 0xe2u: case 0xe3u: {
+        const lib_bool address32 = data->oldcpu.data.cs.seg.exec.defsize !=
+            data->prefix_addrsize;
+        lib_u32 count = address32 ? data->oldcpu.data.ecx : data->oldcpu.data.cx;
+        const lib_bool zero = (data->oldcpu.data.eflags & VCPU_EFLAGS_ZF) != 0u;
+        lib_bool taken;
+
+        if (opcode == 0xe3u) ticks = count == 0u ? 8u : 5u;
+        else {
+            count = address32 ? count - 1u : (lib_u16)(count - 1u);
+            taken = count != 0u && (opcode == 0xe2u ||
+                (opcode == 0xe1u ? zero : !zero));
+            ticks = taken ? (opcode == 0xe2u ? 7u : 9u) : 6u;
+        }
+        break;
+    }
+    case 0xe4u: case 0xe5u: case 0xe6u: case 0xe7u:
+    case 0xecu: case 0xedu: case 0xeeu: case 0xefu:
+        ticks = core_machine_80486_nominal_io_cost(context, data, opcode);
+        break;
+    case 0xe8u: case 0xe9u: case 0xebu:
+        ticks = 3u;
+        break;
+    case 0xf4u:
+        ticks = 4u;
+        break;
+    case 0xf5u: case 0xf8u: case 0xf9u: case 0xfcu: case 0xfdu:
+        ticks = 2u;
+        break;
+    case 0xfau: case 0xfbu:
+        ticks = 5u;
+        break;
+    case 0xf6u: case 0xf7u:
+        if (extension == 5u) return LIB_FALSE;
+        if (extension == 4u) {
+            const lib_bool dword = data->oldcpu.data.cs.seg.exec.defsize !=
+                data->prefix_oprsize;
+            const lib_u64 mask = opcode == 0xf6u ? LIB_UINT8_MAX :
+                dword ? LIB_UINT32_MAX : LIB_UINT16_MAX;
+            const lib_u64 scale = core_machine_source_timing_ceiling_log2(data->crm & mask);
+
+            /* 1992 PRM 26-218, corroborated by E-5/E-14. */
+            ticks = 10u + (scale < 3u ? 3u : scale);
+        } else if (extension >= 6u) {
+            const lib_bool dword = data->oldcpu.data.cs.seg.exec.defsize !=
+                data->prefix_oprsize;
+
+            ticks = opcode == 0xf6u ? 16u : dword ? 40u : 24u;
+            if (extension == 7u) ticks += 3u + memory;
+        } else ticks = !memory ? 1u : extension < 2u ? 2u : 3u;
+        break;
+    case 0xfeu:
+        if (extension > 1u) return LIB_FALSE;
+        ticks = memory ? 3u : 1u;
+        break;
+    case 0xffu:
+        if (extension < 2u) ticks = memory ? 3u : 1u;
+        else if (extension == 6u) ticks = 4u;
+        else if (extension == 2u || extension == 4u) ticks = 5u;
+        else if (extension == 3u || extension == 5u)
+            ticks = core_machine_80486_nominal_far_cost(context, data, extension == 3u, LIB_TRUE);
+        else return LIB_FALSE;
+        break;
+    case 0x0fu: {
+        lib_u8 secondary;
+
+        if (prefixes + 1u >= data->oplen) return LIB_FALSE;
+        secondary = data->opcodes[prefixes + 1u];
+        extension = prefixes + 2u < data->oplen ?
+            (data->opcodes[prefixes + 2u] >> 3u) & 7u : 0u;
+        if (secondary >= 0xc8u && secondary <= 0xcfu) ticks = 1u;
+        else if (secondary >= 0x80u && secondary <= 0x9fu) {
+            lib_i32 taken;
+
+            if (!core_machine_control_stack_condition_taken(data->oldcpu.data.eflags,
+                    secondary, &taken)) return LIB_FALSE;
+            ticks = secondary < 0x90u ? (taken ? 3u : 1u) :
+                memory ? (taken ? 3u : 4u) : (taken ? 4u : 3u);
+        }
+        else switch (secondary) {
+        case 0x00u:
+            if (extension == 0u || extension == 1u) ticks = memory ? 3u : 2u;
+            else if (extension == 2u || extension == 4u || extension == 5u) ticks = 11u;
+            else if (extension == 3u) ticks = 20u;
+            else return LIB_FALSE;
+            break;
+        case 0x01u:
+            if (extension < 2u) ticks = 10u;
+            else if (extension < 4u) ticks = 12u;
+            else if (extension == 4u) ticks = memory ? 3u : 2u;
+            else if (extension == 6u) ticks = 13u;
+            else if (extension == 7u) ticks = data->timing_invlpg_hit ? 12u : 11u;
+            else return LIB_FALSE;
+            break;
+        case 0x02u:
+            ticks = 11u;
+            break;
+        case 0x03u:
+            ticks = 10u;
+            break;
+        case 0x06u:
+            ticks = 7u;
+            break;
+        case 0x08u:
+            ticks = 4u;
+            break;
+        case 0x09u:
+            ticks = 5u;
+            break;
+        case 0x20u:
+            ticks = 4u;
+            break;
+        case 0x21u:
+            ticks = 9u;
+            break;
+        case 0x22u:
+            ticks = extension == 0u ? 17u : 4u;
+            break;
+        case 0x23u:
+            ticks = 10u;
+            break;
+        case 0x24u:
+            ticks = extension == 3u ? 3u : 4u;
+            break;
+        case 0x26u:
+            ticks = 4u;
+            break;
+        case 0xa0u: case 0xa8u:
+            ticks = 3u;
+            break;
+        case 0xa1u: case 0xa9u:
+            ticks = protected_mode ? 9u : 3u;
+            break;
+        case 0xa2u:
+            /* Intel 273021-001, Table D-1: selected late-SX supplement. */
+            ticks = data->oldcpu.data.eax == 1u ? 14u : 9u;
+            break;
+        case 0xa3u:
+            ticks = memory ? 8u : 3u;
+            break;
+        case 0xabu: case 0xb3u: case 0xbbu:
+            ticks = memory ? 13u : 6u;
+            break;
+        case 0xbau:
+            if (extension < 4u) return LIB_FALSE;
+            ticks = extension == 4u ? 3u : memory ? 8u : 6u;
+            break;
+        case 0xa4u: case 0xacu:
+            ticks = memory ? 3u : 2u;
+            break;
+        case 0xa5u: case 0xadu:
+            ticks = memory ? 4u : 3u;
+            break;
+        case 0xb0u: case 0xb1u:
+            ticks = !memory ? 6u :
+                (context->cpu->data.eflags & VCPU_EFLAGS_ZF) != 0u ? 7u : 10u;
+            break;
+        case 0xb2u: case 0xb4u: case 0xb5u:
+            ticks = protected_mode ? 12u : 6u;
+            break;
+        case 0xb6u: case 0xb7u: case 0xbeu: case 0xbfu:
+            ticks = 3u;
+            break;
+        case 0xbcu: case 0xbdu:
+            if (data->opr1 == 0u) ticks = 6u + memory;
+            else if (secondary == 0xbdu) ticks = 7u + 3u * (32u - data->result) + memory;
+            else {
+                const lib_u32 bit = (lib_u32)data->result;
+
+                ticks = 8u + 4u * ((bit >> 3u) + 1u) +
+                    3u * (((bit >> 2u) & 1u) + 1u) + 3u * ((bit & 3u) + 1u) + memory;
+            }
+            break;
+        case 0xc0u: case 0xc1u:
+            ticks = memory ? 4u : 3u;
+            break;
+        default:
+            return LIB_FALSE;
+        }
+        break;
+    }
+    default:
+        return LIB_FALSE;
+    }
+    *out_ticks = ticks;
+    return LIB_TRUE;
 }

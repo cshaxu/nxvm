@@ -1251,9 +1251,149 @@ static lib_bool cpu_sx_reserved_modrm_forms(void)
     return all_passed;
 }
 
+typedef struct cpu_event_timing_fixture {
+    cpu_instruction_fixture instruction;
+    lib_bool pending;
+    lib_bool reject_acknowledge;
+    lib_u8 vector;
+    lib_u8 acknowledgements;
+} cpu_event_timing_fixture;
+
+static lib_bool cpu_event_timing_pending(void *opaque)
+{
+    return ((cpu_event_timing_fixture *)opaque)->pending;
+}
+
+static lib_status cpu_event_timing_acknowledge(void *opaque, lib_u8 *vector)
+{
+    cpu_event_timing_fixture *fixture = opaque;
+
+    ++fixture->acknowledgements;
+    if (fixture->reject_acknowledge) return LIB_STATUS_IO_ERROR;
+    fixture->pending = LIB_FALSE;
+    *vector = fixture->vector;
+    return LIB_STATUS_OK;
+}
+
+static lib_bool cpu_vm86_exception_timing(void)
+{
+    static const struct {
+        lib_u8 code[2];
+        lib_u8 clocks;
+    } cases[] = {
+        {{0xfau, 0x90u}, 90u}, {{0xfbu, 0x90u}, 90u},
+        {{0x9cu, 0x90u}, 91u}, {{0x9du, 0x90u}, 90u},
+        {{0xcfu, 0x90u}, 91u}, {{0xcdu, 0x20u}, 91u},
+        {{0xe4u, 0x80u}, 132u}, {{0xe5u, 0x80u}, 132u},
+        {{0xe6u, 0x80u}, 132u}, {{0xe7u, 0x80u}, 132u},
+        {{0xecu, 0x90u}, 133u}, {{0xedu, 0x90u}, 133u},
+        {{0xeeu, 0x90u}, 133u}, {{0xefu, 0x90u}, 133u},
+        {{0x6cu, 0x90u}, 132u}, {{0x6du, 0x90u}, 132u},
+        {{0x6eu, 0x90u}, 132u}, {{0x6fu, 0x90u}, 132u},
+        {{0xf3u, 0x6cu}, 133u}, {{0xf3u, 0x6du}, 133u},
+        {{0xf3u, 0x6eu}, 133u}, {{0xf3u, 0x6fu}, 133u}
+    };
+    const lib_u16 absent_bitmap = 0xffffu;
+
+    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+        cpu_instruction_fixture fixture;
+        core_machine_cpu_timing_result timing;
+        t_cpu after;
+
+        cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80486SX);
+        cpu_instruction_prepare_protected_exception(&fixture, 4u);
+        fixture.cpu.data.ecx = 2u;
+        fixture.cpu.data.edx = 0x80u;
+        lib_memory_copy(fixture.memory + 0x666u, &absent_bitmap, sizeof(absent_bitmap));
+        if (cpu_instruction_run(&fixture, cases[index].code, sizeof(cases[index].code),
+                &after) != LIB_STATUS_OK || fixture.fault.valid ||
+            !fixture.delivered_exception.valid ||
+            fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_GP)
+            return LIB_FALSE;
+        timing = core_machine_cpu_capture_timing(&fixture.execution);
+        if (timing.ticks != 0u || timing.event_ticks != cases[index].clocks) {
+            lib_c_printf("VM86 exception timing: case=%zu expected=%u actual=%llu\n",
+                index, cases[index].clocks, timing.event_ticks);
+            return LIB_FALSE;
+        }
+        core_machine_cpu_execution_finalize(&fixture.execution);
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cpu_event_entry_timing(void)
+{
+    const lib_u16 real_vector[] = {0x100u, 0u};
+    static const lib_u8 vectors[] = {6u, 2u, 0x30u, 2u, 0x30u, 2u, 0x30u};
+    static const lib_u8 entry_clocks[] = {26u, 44u, 44u, 82u, 71u};
+
+    for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80386;
+         profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile)
+    for (lib_u8 mode = 0u; mode < sizeof(entry_clocks); ++mode)
+    for (lib_u8 route = 0u; route < sizeof(vectors); ++route) {
+        cpu_event_timing_fixture fixture = {0};
+        core_machine_cpu_bus_provider bus = cpu_instruction_bus;
+        cpu_instruction_fixture *instruction = &fixture.instruction;
+        const lib_bool nmi = route == 1u || route == 3u;
+        const lib_bool halted = route == 3u || route == 4u;
+        const lib_bool reject = route == 6u;
+        const lib_bool retired = route != 0u && !halted;
+        const lib_u64 expected = profile != CORE_MACHINE_CPU_PROFILE_80486SX || reject ?
+            0u : entry_clocks[mode] + (route == 0u ? 0u : nmi ? 3u : 11u);
+        core_machine_cpu_timing_result timing;
+
+        bus.interrupt_pending = cpu_event_timing_pending;
+        bus.acknowledge_interrupt = cpu_event_timing_acknowledge;
+        cpu_instruction_prepare_with_bus(instruction, profile, &bus, &fixture);
+        if (mode != 0u) {
+            cpu_instruction_prepare_protected_exception(instruction,
+                mode == 1u ? 0u : mode == 2u ? 3u : 4u);
+            if (mode == 4u) instruction->cpu.data.eflags &= ~VCPU_EFLAGS_VM;
+            instruction->cpu.data.idtr.limit = 0x187u;
+            lib_memory_copy(instruction->memory + 0x400u + vectors[route] * 8u,
+                instruction->memory + 0x468u, 8u);
+        } else {
+            lib_memory_copy(instruction->memory + vectors[route] * 4u,
+                real_vector, sizeof(real_vector));
+        }
+        instruction->memory[0] = route == 0u ? 0x0fu : 0x90u;
+        instruction->memory[1] = route == 0u ? 0x0bu : 0x90u;
+        instruction->memory[mode ? 0x300u : 0x100u] = 0x90u;
+        instruction->cpu.data.eflags |= VCPU_EFLAGS_IF;
+        instruction->cpu.data.flagHalt = halted;
+        fixture.pending = route != 0u && !nmi;
+        fixture.reject_acknowledge = reject;
+        fixture.vector = vectors[route];
+        if (nmi && !core_machine_cpu_request_nmi(&instruction->execution)) return LIB_FALSE;
+        core_machine_cpu_execution_refresh(&instruction->execution);
+        timing = core_machine_cpu_capture_timing(&instruction->execution);
+        if (timing.event_ticks != expected || (timing.ticks != 0u) != retired ||
+            instruction->execution.stop_requested != reject || instruction->fault.valid != reject ||
+            fixture.acknowledgements != (route != 0u && !nmi ? 1u : 0u) ||
+            (!reject && (instruction->cpu.data.eip != (mode ? 0x300u : 0x100u) ||
+                core_machine_cpu_execution_consume_instruction_fault_delivery(
+                    &instruction->execution) != !retired))) {
+            lib_c_printf("Entry timing: profile=%u mode=%u route=%u ticks=%llu event=%llu expected=%llu\n",
+                (lib_u32)profile, mode, route, timing.ticks, timing.event_ticks, expected);
+            return LIB_FALSE;
+        }
+        if (!reject) {
+            core_machine_cpu_execution_refresh(&instruction->execution);
+            timing = core_machine_cpu_capture_timing(&instruction->execution);
+            if (timing.event_ticks != 0u || timing.ticks == 0u ||
+                instruction->execution.stop_requested || instruction->fault.valid)
+                return LIB_FALSE;
+        }
+        core_machine_cpu_execution_finalize(&instruction->execution);
+    }
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
     lib_bool failed = LIB_FALSE;
+    failed |= !cpu_event_entry_timing();
+    failed |= !cpu_vm86_exception_timing();
     failed |= !cpu_sx_reserved_escaped_slots();
     failed |= !cpu_sx_reserved_modrm_forms();
     failed |= !cpu_real_entry_new_cs();

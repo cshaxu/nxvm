@@ -1,4 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
+#include "core/chips/cpu/cpu_timing.h"
 #include "lib/types/file.h"
 
 #define TASK32_GDT_BASE 0x0300u
@@ -686,6 +687,7 @@ static lib_bool task32_test_published_fault_context(core_machine_cpu_profile pro
     if (fixture.execution.stop_requested || fixture.cpu.data.tr.selector != 0x28u ||
         fixture.cpu.data.eip != 48u) return LIB_FALSE;
     core_machine_cpu_execution_refresh(&fixture.execution);
+    const lib_u64 event_ticks = core_machine_cpu_capture_timing(&fixture.execution).event_ticks;
     lib_memory_copy(&outgoing_ip, fixture.memory + TASK32_A_BASE + 0x20u,
         sizeof(outgoing_ip));
     if (fixture.execution.stop_requested || fixture.fault.valid ||
@@ -698,13 +700,14 @@ static lib_bool task32_test_published_fault_context(core_machine_cpu_profile pro
         fixture.delivered_exception.esp != 0x8000u ||
         fixture.cpu.data.tr.selector != 0x30u || fixture.cpu.data.eip != 0x180u ||
         fixture.cpu.data.esp != 0x7ff8u || outgoing_ip != 53u ||
+        event_ticks != (profile == CORE_MACHINE_CPU_PROFILE_80486SX ? 44u : 0u) ||
         (fixture.cpu.data.dr6 & 0x00008000u) == 0u) {
-        lib_c_fprintf(lib_c_stderr, "Published task fault point=%x mask=%x code=%x tr=%x ip=%x sp=%x old-ip=%x\n",
+        lib_c_fprintf(lib_c_stderr, "Published task fault point=%x mask=%x code=%x tr=%x ip=%x sp=%x old-ip=%x event=%llu\n",
             fixture.delivered_exception.point.eip,
             fixture.delivered_exception.exception_mask,
             fixture.delivered_exception.exception_code,
             fixture.cpu.data.tr.selector, fixture.cpu.data.eip,
-            fixture.cpu.data.esp, outgoing_ip);
+            fixture.cpu.data.esp, outgoing_ip, event_ticks);
         return LIB_FALSE;
     }
     return LIB_TRUE;
@@ -742,6 +745,8 @@ static lib_bool task32_test_completion_flags(void)
     static const task32_case cases[] = {TASK32_DIRECT, TASK32_NESTED_CALL,
         TASK32_NESTED_GATE_CALL, TASK32_GATE_JMP, TASK32_NESTED_CALL,
         TASK32_NESTED_CALL};
+    /* E-13: TSS32 TS=162, with direct/gate JMP, CALL or IDT task gate. */
+    static const lib_u16 task_clocks[] = {204u, 199u, 200u, 205u, 199u};
     lib_size index;
     lib_u16 bits;
     lib_u8 step;
@@ -837,6 +842,16 @@ static lib_bool task32_test_completion_flags(void)
             sizeof(saved_flags));
         if (saved_flags != (int1_vm86 ? outgoing_flags & ~VCPU_EFLAGS_RF : outgoing_flags))
             ++failures;
+        if (profile == CORE_MACHINE_CPU_PROFILE_80486SX && !int1_vm86) {
+            lib_u64 ticks = 0u;
+
+            if (!core_machine_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
+                ticks != task_clocks[index]) {
+                lib_c_printf("TSS32 timing: route=%zu expected=%u actual=%llu\n",
+                    index, task_clocks[index], ticks);
+                ++failures;
+            }
+        }
         if (int1_vm86) {
             lib_u32 saved_ip;
 
@@ -858,6 +873,8 @@ static lib_bool task32_test_vm86_entry(void)
     static const task32_case cases[] = {TASK32_DIRECT, TASK32_NESTED_CALL,
         TASK32_NESTED_GATE_CALL, TASK32_GATE_JMP, TASK32_NESTED_CALL,
         TASK32_NESTED_RETURN};
+    /* E-13: incoming VM86 TS=140, including IDT task gate and IRET. */
+    static const lib_u16 task_clocks[] = {182u, 177u, 178u, 183u, 177u, 172u};
 
     for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80386;
          profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile)
@@ -929,6 +946,16 @@ static lib_bool task32_test_vm86_entry(void)
                 fixture.cpu.data.tr.selector, fixture.cpu.data.eip,
                 fixture.delivered_exception.exception_mask, fixture.delivered_exception.exception_code);
             return LIB_FALSE;
+        }
+        if (profile == CORE_MACHINE_CPU_PROFILE_80486SX) {
+            lib_u64 ticks = 0u;
+
+            if (!core_machine_80486_nominal_instruction_cost(&fixture.execution, &ticks) ||
+                ticks != task_clocks[route]) {
+                lib_c_printf("VM86 task timing: route=%zu expected=%u actual=%llu\n",
+                    route, task_clocks[route], ticks);
+                return LIB_FALSE;
+            }
         }
         const t_cpu_data_sreg *segments[] = {&fixture.cpu.data.cs, &fixture.cpu.data.ss,
             &fixture.cpu.data.ds, &fixture.cpu.data.es, &fixture.cpu.data.fs, &fixture.cpu.data.gs};

@@ -100,6 +100,78 @@ static lib_bool executor_sx_fpu_interface(void)
     return LIB_TRUE;
 }
 
+static lib_bool executor_event_time(void)
+{
+    const core_machine_executor_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = X86_FPU_PROFILE_NONE
+    };
+    const core_machine_instruction_timing timing = {.base_ticks = 1u};
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+        .values = {[CORE_MACHINE_DEBUG_ESP] = 0x8000u, [CORE_MACHINE_DEBUG_EFLAGS] = 2u}
+    };
+    const lib_u16 vector[] = {0x100u, 0u};
+    const lib_u8 nop = 0x90u;
+
+    for (core_machine_cpu_profile profile = CORE_MACHINE_CPU_PROFILE_80386;
+         profile <= CORE_MACHINE_CPU_PROFILE_80486SX; ++profile)
+    for (lib_u8 route = 0u; route < 3u; ++route) {
+        core_machine *machine = LIB_NULL;
+        core_machine_run_result result = {0};
+        const lib_bool nmi = route == 1u;
+        const lib_bool overflow = route == 2u;
+        const lib_u8 code[] = {nmi ? 0x90u : 0x0fu, 0x0bu};
+        const lib_u64 clocks = profile == CORE_MACHINE_CPU_PROFILE_80486SX ?
+            (nmi ? 30u : 26u) : nmi ? 3u : 0u;
+        const lib_u64 before = overflow ? LIB_UINT64_MAX - 25u : 0u;
+        lib_status status = LIB_STATUS_INTERNAL_ERROR;
+        lib_bool failed;
+
+        if (overflow && profile != CORE_MACHINE_CPU_PROFILE_80486SX) continue;
+        failed = core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
+        if (!failed) {
+            failed = core_machine_bind_execution_provider(machine, LIB_NULL, LIB_NULL) != LIB_STATUS_OK ||
+                core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+                core_machine_reset(machine) != LIB_STATUS_OK ||
+                core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+                core_machine_memory_write(machine, 0u, code, sizeof(code)) != LIB_STATUS_OK ||
+                core_machine_memory_write(machine, nmi ? 8u : 24u, vector, sizeof(vector)) != LIB_STATUS_OK ||
+                core_machine_memory_write(machine, vector[0], &nop, sizeof(nop)) != LIB_STATUS_OK;
+        }
+        if (!failed) {
+            /* Qualify the real Executor seam without opening production SX admission. */
+            core_machine_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
+                profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
+            machine->elapsed_ticks = before;
+            failed = nmi && !core_machine_cpu_request_nmi(machine->executor_cpu_execution);
+            status = core_machine_run(machine, (core_machine_run_budget){1u, 0u}, &result);
+            failed = failed || status != (overflow ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) ||
+                result.executed != (nmi ? 1u : 0u) ||
+                result.reason != (overflow ? CORE_MACHINE_STOP_FAULT : CORE_MACHINE_STOP_BUDGET) ||
+                result.ticks != (overflow ? 0u : clocks) ||
+                result.elapsed_ticks != (overflow ? before : clocks) ||
+                machine->elapsed_ticks != result.elapsed_ticks;
+        }
+        if (!failed && !overflow) {
+            failed = core_machine_run(machine, (core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_OK ||
+                result.executed != 1u || result.ticks != (profile == CORE_MACHINE_CPU_PROFILE_80486SX ? 1u : 3u) ||
+                result.elapsed_ticks != clocks + result.ticks;
+        }
+        if (failed)
+            lib_c_printf("Executor event: profile=%u route=%u status=%u count=%llu ticks=%llu elapsed=%llu\n",
+                (lib_u32)profile, route, (lib_u32)status, result.executed, result.ticks, result.elapsed_ticks);
+        core_machine_destroy(machine);
+        if (failed) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 static void executor_reset_event(void *context, lib_u64 due_tick)
 {
     *(lib_u64 *)context = due_tick;
@@ -543,7 +615,7 @@ lib_i32 main(void)
         0xf4u
     };
 
-    if (!executor_sx_fpu_interface() || !executor_sx_soft_reset() || !executor_sx_smm() ||
+    if (!executor_event_time() || !executor_sx_fpu_interface() || !executor_sx_soft_reset() || !executor_sx_smm() ||
         !executor_sx_smm_fault() || !executor_dma_hold()) return 1;
     if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) {
         core_machine_destroy(machine);

@@ -48,7 +48,7 @@ Do not change production behavior merely to make an unavailable-effects test
 pass. The existing Core machine profile gate still rejects profiles above
 80386; isolated CPU tests are not production admission.
 
-The [system receiver](../../proposals/m5-pc110-486-system.md) explicitly receives
+The [system receiver](../../history/M5-T560-complete-486sx-cpu-proposal.md) explicitly receives
 the complete per-form implementation and proof, including the decode/privilege/
 address work that cannot yet be connected to real effects. This is the S1
 ledger's permitted unavailable-owner disposition, not a new scope reduction.

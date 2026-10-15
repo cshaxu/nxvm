@@ -195,7 +195,8 @@ typedef enum core_machine_retirement_repeat_phase {
  * without a ledger lookup intentionally reports this sentinel. */
 #define CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ((lib_u32)-1)
 
-/* A result is built once for every successful CPU timing selection.  The
+/* A result is cleared per CPU round; selection fills successful retirement
+ * timing and committed event entry adds its separate elapsed subtotal. The
  * decoder-form key is Core-private; the S3 result verifier maps it to the
  * corresponding manifest record without exposing machine storage. */
 typedef struct core_machine_cpu_timing_result {
@@ -206,6 +207,9 @@ typedef struct core_machine_cpu_timing_result {
     lib_u8 source_timing_unallocated;
     lib_u32 form_id;
     core_machine_retirement_repeat_phase repeat_phase;
+    /* Entry time is separate from a successfully retired instruction. Zero
+     * ticks with nonzero event_ticks is a valid event-only CPU round. */
+    lib_u64 event_ticks;
 } core_machine_cpu_timing_result;
 
 #define CORE_MACHINE_CPU_DEVICE_NAME "Intel 8086+"

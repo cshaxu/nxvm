@@ -40,6 +40,40 @@ lib_i32 core_machine_80386_source_instruction_cost(core_machine_cpu_execution_co
     lib_u64 *out_ticks);
 lib_i32 core_machine_compatibility_instruction_cost(core_machine_cpu_execution_context *context,
     lib_u64 *out_ticks);
+/* Sole selected-SX candidate. Incomplete C16 costs stay explicitly unallocated
+ * while the existing repeat/result owner records their actual lifetime. */
+lib_i32 core_machine_80486_source_instruction_cost(core_machine_cpu_execution_context *context,
+    lib_u64 *out_ticks);
+
+/* Selected-SX cache-hit instruction cost only. Prefix/access/event penalties
+ * belong to the selected timing owner, not this nominal calculation. A missing
+ * source form returns false without changing the destination or qualification. */
+lib_bool core_machine_80486_nominal_instruction_cost(
+    const core_machine_cpu_execution_context *context, lib_u64 *out_ticks);
+
+/* Explicit L2 IMUL and variable RCL/RCR models; disjoint from the original
+ * nominal rows. Pure query, no access costs or hardware-exact qualification. */
+lib_bool core_machine_80486_l2_arithmetic_cost(
+    const core_machine_cpu_execution_context *context, lib_u64 *out_ticks);
+
+/* E-14 entry subtotal from the mode before actual committed entry. The caller
+ * owns event-specific setup and successful-instruction versus event transport. */
+lib_u64 core_machine_80486_interrupt_entry_cost(
+    const core_machine_cpu_execution_context *context,
+    lib_u32 entry_cr0, lib_u32 entry_flags, lib_u8 entry_cpl, lib_bool task_entry);
+lib_u64 core_machine_80486_exception_setup_cost(
+    const core_machine_cpu_execution_context *context, lib_u8 vector);
+
+/* Memory subtotal only; fetch-cache, prefixes, EA and event setup have separate
+ * source terms. Unallocated access combinations leave the output unchanged. */
+lib_bool core_machine_80486_memory_penalty(
+    const core_machine_cpu_execution_context *context, lib_u64 *out_ticks);
+
+/* Per decoded instruction, not per REP continuation. E-11 prefixes and the
+ * E.2 index/displacement assumptions; nominal LEA already includes its index.
+ * AGI uses the actual adjacent GPR-write record, including same-value writes. */
+lib_bool core_machine_80486_decode_penalty(
+    const core_machine_cpu_execution_context *context, lib_u64 *out_ticks);
 
 #ifdef __cplusplus
 }

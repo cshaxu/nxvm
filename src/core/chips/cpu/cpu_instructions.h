@@ -102,6 +102,29 @@ typedef struct {
     lib_u64 crm, cr, cimm;
     lib_u8 flagMem; /* if rm is in memory */
     lib_u8 flagLock;
+    /* Selected-SX decode facts, reset with this instruction record. */
+    lib_u8 timing_ea_base_mask;
+    lib_bool timing_ea_indexed;
+    lib_bool timing_ea_displacement;
+    lib_bool timing_immediate;
+    lib_u8 timing_transfer_type;
+    lib_u8 timing_transfer_parameters;
+    lib_u8 timing_unaccessed_descriptors;
+    lib_bool timing_invlpg_hit;
+    /* Actual destination identity and one adjacent instruction, not value deltas. */
+    lib_u8 timing_gpr_writes;
+    lib_u8 timing_previous_gpr_writes;
+    lib_u16 timing_previous_opcode;
+    lib_bool timing_stack_access;
+    /* Actual completed access facts, not a second cache/TLB state. The walk
+     * histogram is indexed by zero, one or two published A/D updates. */
+    lib_u32 timing_fetch_bus_ticks; /* L2 serialized 2-1 burst baseline; waits are external. */
+    lib_u32 timing_data_misses;
+    lib_u32 timing_locked_reads;
+    lib_u32 timing_table_misses;
+    lib_u32 timing_unaligned_accesses;
+    lib_u32 timing_tlb_walks[3];
+    lib_u32 timing_tlb_update_attempts;
     lib_bool memory_lock_active; /* Actual LOCK signal, not lexical prefix. */
     lib_u8 source_lsl_granularity_valid;
     lib_u8 source_lsl_page_granular;
@@ -177,13 +200,17 @@ struct core_machine_cpu_execution_context {
     t_cpuins *instructions;
     core_machine_instruction_timing instruction_timing;
     core_machine_cpu_timing_result timing_result;
-    lib_u8 source_repeat_active;
+    lib_bool source_repeat_active;
     lib_u16 source_repeat_cs;
     lib_u32 source_repeat_eip;
     lib_u8 source_repeat_opcode;
     lib_u8 source_repeat_prefix;
     lib_u8 source_repeat_operand_size;
     lib_u8 source_repeat_address_size;
+    /* Selected-SX identity includes segment/redundant prefixes, not a second
+     * repeat lifecycle. Older profiles retain their existing identity. */
+    lib_u8 source_repeat_byte_count;
+    lib_u8 source_repeat_bytes[15];
     const core_machine_cpu_bus_provider *bus;
     void *bus_context;
     const core_machine_cpu_execution_diagnostic_provider *diagnostic_provider;

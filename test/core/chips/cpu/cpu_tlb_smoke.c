@@ -1,5 +1,6 @@
 #include "support/cpu_instruction_fixture.h"
 #include "lib/types/file.h"
+#include "core/chips/cpu/cpu_timing.h"
 
 /* Commands and operands go through real CPU dispatch, not a test TLB API. */
 static lib_bool tlb_run(cpu_instruction_fixture *fixture,
@@ -111,6 +112,7 @@ static lib_bool tlb_instruction_forms(void)
         const lib_u32 linear = segment == 2u ? 0x1234u : 0x11234u;
         lib_u8 code[10], bytes = 0u;
         lib_u32 result;
+        lib_u64 nominal_ticks;
         core_machine_cpu_instruction_lexeme lexeme;
 
         cpu_instruction_prepare_with_bus(fixture, CORE_MACHINE_CPU_PROFILE_80486SX,
@@ -136,6 +138,12 @@ static lib_bool tlb_instruction_forms(void)
             lexeme.byte_count != bytes || !tlb_run(fixture, code, bytes) ||
             fixture->cpu.data.eflags != flags || fixture->writes != writes ||
             probe.data_reads != 0u ||
+            !core_machine_80486_nominal_instruction_cost(&fixture->execution, &nominal_ticks) ||
+            nominal_ticks != 12u || !fixture->instructions.data.timing_invlpg_hit ||
+            !tlb_run(fixture, code, bytes) ||
+            !core_machine_80486_nominal_instruction_cost(&fixture->execution, &nominal_ticks) ||
+            nominal_ticks != 11u || fixture->instructions.data.timing_invlpg_hit ||
+            probe.data_reads != 0u || fixture->writes != writes ||
             !tlb_lookup(fixture, (linear & VCPU_CR3_BASE) | 0xfe0u, &result) ||
             (result & 0x10u)) return LIB_FALSE;
         for (lib_u8 available = 0u; available < bytes; ++available)

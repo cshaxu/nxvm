@@ -192,12 +192,13 @@ typedef enum core_machine_time_publication_origin {
     CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT,
     CORE_MACHINE_TIME_PUBLICATION_DEADLINE,
     CORE_MACHINE_TIME_PUBLICATION_DETERMINISTIC_ADVANCE,
-    CORE_MACHINE_TIME_PUBLICATION_L1_COMPATIBILITY
+    CORE_MACHINE_TIME_PUBLICATION_L1_COMPATIBILITY,
+    CORE_MACHINE_TIME_PUBLICATION_CPU_EVENT
 } core_machine_time_publication_origin;
 lib_status core_machine_publish_elapsed_ticks(core_machine *machine,
     lib_u64 elapsed_ticks, core_machine_time_publication_origin origin);
-/* Deterministic Core-test helper. Product composition advances only through
- * CPU retirement or core_machine_advance_to_next_deadline(). */
+/* Deterministic Core-test helper. Product execution advances through the
+ * CPU/event boundary or core_machine_advance_to_next_deadline(). */
 lib_status core_machine_advance_time(core_machine *machine,
     lib_u64 source_ticks);
 void core_machine_capture_time_observation_private(const core_machine *machine,

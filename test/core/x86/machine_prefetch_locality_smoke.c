@@ -312,7 +312,7 @@ static lib_i32 retirement_wait_contract(void)
     return !failed;
 }
 
-static lib_i32 faulted_external_wait_contract(void)
+static lib_i32 faulted_external_wait_contract(core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = {0x67u, 0xa4u, 0xf4u};
     static const lib_u8 source = 0x5au;
@@ -321,15 +321,23 @@ static lib_i32 faulted_external_wait_contract(void)
     core_machine_run_result result;
     lib_status status;
     lib_i32 failed = 0;
+    const core_machine_instruction_timing instruction_timing = {.base_ticks = 1u};
+    const lib_bool sx = profile == CORE_MACHINE_CPU_PROFILE_80486SX;
+    /* SX preflights both MOVS operands before its data read; its preceding
+     * committed fetch, rather than an absent data cycle, supplies the wait. */
+    const lib_u32 wait_address = sx ? 0xfffffff0u : 0x100u;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.transaction_contract.external_access_wait_windows[0] =
         (core_machine_external_access_wait_window) {
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x100u, 0x100u, 1u};
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, wait_address, wait_address, 1u};
     failed |= core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
     failed |= prefetch_reset_mapping(machine) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
+    /* Internal CPU/Executor timing proof; production SX admission stays closed. */
+    core_machine_cpu_execution_context_bind_profiles(machine->executor_cpu_execution,
+        profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &instruction_timing);
     failed |= core_machine_memory_write(machine, 0x000ffff0u, code, sizeof(code)) !=
         LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0x100u, &source, 1u) != LIB_STATUS_OK;
@@ -343,8 +351,26 @@ static lib_i32 faulted_external_wait_contract(void)
     failed |= status != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
         result.ticks != 1u || result.elapsed_ticks != 1u ||
-        machine->elapsed_ticks != 1u || machine->cpu_retirement_wait_pending != LIB_FALSE ||
+        machine->elapsed_ticks != 1u || machine->cpu_retirement_wait_pending != sx ||
         machine->cpu_retirement_wait_retires != LIB_FALSE;
+    if (sx && !failed) {
+        failed |= machine->cpu_retirement_wait_ticks != 0u ||
+            machine->cpu_retirement_completion_ticks != 26u;
+        /* A small next budget cannot discard or partially publish committed entry. */
+        failed |= core_machine_run(machine, (core_machine_run_budget){0u, 25u},
+            &result) != LIB_STATUS_OK || result.executed != 0u || result.ticks != 0u ||
+            result.elapsed_ticks != 1u || !machine->cpu_retirement_wait_pending ||
+            machine->cpu_retirement_completion_ticks != 26u;
+        failed |= core_machine_run(machine, (core_machine_run_budget){0u, 26u},
+            &result) != LIB_STATUS_OK || result.executed != 0u || result.ticks != 26u ||
+            result.elapsed_ticks != 27u || machine->elapsed_ticks != 27u ||
+            machine->cpu_retirement_wait_pending || machine->cpu_retirement_wait_retires;
+    }
+    if (failed)
+        lib_c_printf("Fault wait: profile=%u status=%u ticks=%llu elapsed=%llu executed=%llu pending=%u wait=%llu completion=%llu\n",
+            (lib_u32)profile, (lib_u32)status, result.ticks, result.elapsed_ticks, result.executed,
+            machine->cpu_retirement_wait_pending, machine->cpu_retirement_wait_ticks,
+            machine->cpu_retirement_completion_ticks);
     core_machine_destroy(machine);
     return !failed;
 }
@@ -540,7 +566,8 @@ lib_i32 main(void)
     failed |= !external_cycle_observer_contract();
     failed |= !refresh_external_cycle_contract();
     failed |= !retirement_wait_contract();
-    failed |= !faulted_external_wait_contract();
+    failed |= !faulted_external_wait_contract(CORE_MACHINE_CPU_PROFILE_80386);
+    failed |= !faulted_external_wait_contract(CORE_MACHINE_CPU_PROFILE_80486SX);
     failed |= !prefetch_grant_contract();
     failed |= !cecg_port_wait_contract();
     failed |= !d4_cecg_memory_class_contract();

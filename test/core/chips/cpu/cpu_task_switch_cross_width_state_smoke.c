@@ -1,4 +1,5 @@
 #include "support/cpu_instruction_fixture.h"
+#include "core/chips/cpu/cpu_timing.h"
 #include "lib/types/file.h"
 
 #define GDT_POINTER 0x0100u
@@ -64,13 +65,33 @@ static lib_i32 task_switch_prepare(task_switch_fixture *fixture,
     return 1;
 }
 
-static lib_i32 task_switch_run(task_switch_fixture *fixture)
+static lib_i32 task_switch_run(task_switch_fixture *fixture,
+    const lib_u16 *task_clocks, lib_size task_count)
 {
     lib_u32 instruction;
+    lib_size task_index = 0u;
+
     for (instruction = 0u; instruction != 128u && !fixture->cpu.data.flagHalt &&
-            !fixture->execution.stop_requested; ++instruction)
+            !fixture->execution.stop_requested; ++instruction) {
         core_machine_cpu_execution_refresh(&fixture->execution);
-    return fixture->cpu.data.flagHalt && !fixture->execution.stop_requested;
+        if (fixture->execution.cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX &&
+            fixture->execution.instruction_task_switched) {
+            lib_u64 ticks = 0u;
+
+            if (task_index >= task_count ||
+                !core_machine_80486_nominal_instruction_cost(&fixture->execution, &ticks) ||
+                ticks != task_clocks[task_index]) {
+                lib_c_printf("Task timing: transition=%u expected=%u actual=%llu\n",
+                    (lib_u32)task_index, task_index < task_count ? task_clocks[task_index] : 0u,
+                    ticks);
+                return 0;
+            }
+            ++task_index;
+        }
+    }
+    return fixture->cpu.data.flagHalt && !fixture->execution.stop_requested &&
+        (fixture->execution.cpu_profile != CORE_MACHINE_CPU_PROFILE_80486SX ||
+            task_index == task_count);
 }
 
 static lib_i32 task_switch_install(task_switch_fixture *fixture,
@@ -330,6 +351,8 @@ typedef enum task_switch_tss32_rejection {
 static lib_i32 task_switch_expect_cross_width_16_to_32(core_machine_cpu_profile profile,
     lib_u8 nested, lib_u8 task_gate, lib_u8 task_return)
 {
+    /* E-13: incoming TSS32, then nested return to TSS16. */
+    const lib_u16 task_clocks[] = {nested ? (task_gate ? 200u : 199u) : 204u, 175u};
     task_switch_fixture fixture;
     task_switch_smoke_tss32_state target = {
         .eip = 0x100u, .eflags = 0x2u, .eax = 0xa1a12222u,
@@ -362,7 +385,7 @@ static lib_i32 task_switch_expect_cross_width_16_to_32(core_machine_cpu_profile 
             (task_return && (!write_bytes(&fixture, KERNEL_BASE + 0x100u,
                 iret, sizeof(iret)) || !write_bytes(&fixture,
                 KERNEL_BASE + 8u, &iret[1], 1u))) ||
-            !task_switch_run(&fixture);
+            !task_switch_run(&fixture, task_clocks, task_return ? 2u : 1u);
         cpu = fixture.cpu;
         failed |= cpu.data.tr.selector != (task_return ? 0x28u : 0x30u) ||
             cpu.data.dr7 != 0x4aau || cpu.data.dr0 != 0xfffffff0u ||
@@ -420,6 +443,8 @@ _Static_assert(sizeof(task_switch_smoke_tss16_state) == 0x1eu,
 static lib_i32 task_switch_expect_cross_width_32_to_16(core_machine_cpu_profile profile,
     lib_u8 nested, lib_u8 task_gate, lib_u8 task_return)
 {
+    /* E-13: incoming TSS16, then nested return to TSS32. */
+    const lib_u16 task_clocks[] = {nested ? (task_gate ? 181u : 180u) : 185u, 194u};
     task_switch_fixture fixture;
     task_switch_smoke_tss32_state outgoing;
     task_switch_smoke_tss16_state target = {
@@ -483,7 +508,7 @@ static lib_i32 task_switch_expect_cross_width_32_to_16(core_machine_cpu_profile 
                 }, sizeof(task_switch_smoke_tss32_state)) != LIB_STATUS_OK ||
             task_switch_write(&fixture, TASK_B_BASE + 0x0eu,
                 &target, sizeof(target)) != LIB_STATUS_OK ||
-            !task_switch_run(&fixture);
+            !task_switch_run(&fixture, task_clocks, task_return ? 2u : 1u);
         cpu = fixture.cpu;
         failed |= cpu.data.tr.selector != (task_return ? 0x28u : 0x30u) ||
             cpu.data.dr7 != 0x4aau || cpu.data.dr0 != 0xfffffff0u ||

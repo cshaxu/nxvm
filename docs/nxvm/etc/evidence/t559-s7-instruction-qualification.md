@@ -152,7 +152,7 @@ failure tests remain in the full unit run. The earlier successful integrations
 were not reused as final evidence after changing production code.
 
 I4--I6 and I11 remain incomplete real 486 semantics with their complete
-[system receiver](../../proposals/m5-pc110-486-system.md). AC/ID storage and
+[system receiver](../../history/M5-T560-complete-486sx-cpu-proposal.md). AC/ID storage and
 candidate CPUID encoding do not prove AC/VME effects or exact selected silicon.
 The board admission gate remains closed. This delivery completes S7's bounded
 instruction qualification, not a runnable 486 or PC110, and does not declare

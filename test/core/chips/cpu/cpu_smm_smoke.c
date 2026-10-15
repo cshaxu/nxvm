@@ -345,6 +345,7 @@ static lib_bool smm_guest_changes(smm_fixture *fixture)
             fixture->instruction.cpu.data.ds.limit != LIB_UINT32_MAX)) return LIB_FALSE;
     }
     return !context->smm_active && fixture->instruction.cpu.data.eax == 0x12345678u &&
+        fixture->instruction.instructions.data.timing_gpr_writes == 0xffu &&
         fixture->instruction.cpu.data.dr0 == 0x11223344u &&
         fixture->instruction.cpu.data.eip == 0x100u &&
         (fixture->instruction.cpu.data.eflags & VCPU_EFLAGS_RF) &&

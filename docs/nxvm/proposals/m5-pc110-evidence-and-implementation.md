@@ -71,7 +71,8 @@ production chip code. Unresolved facts must have a bounded research/decision
 receiver before its design gate closes.
 
 1. [486SX instruction semantics](m5-pc110-486-instructions.md).
-2. [486SX system, reset and timing](m5-pc110-486-system.md).
+2. [486SX system, reset and timing](../history/M5-T560-complete-486sx-cpu-proposal.md),
+   retained as a stage with its [complete CPU successor](m5-486sx-timing-production-completion.md).
 3. [Board, chipset and firmware mapping](m5-pc110-board.md).
 4. [Keyboard, pointer and power](m5-pc110-input-power.md).
 5. [F65535 display and font ROM](m5-pc110-display.md).

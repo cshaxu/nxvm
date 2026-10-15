@@ -2,16 +2,20 @@
 
 ## Current Work
 
-M5 T560 remains open. S1--S8 are accepted; no S is currently active.
+M5 T560 remains open pending coordinator acceptance of its staged closure.
+S1--S8 are accepted; frozen S9 executor review and qualification are complete.
+The owner approved this scope change on 2026-10-15; no further CPU expansion
+is admitted. This is not complete 486SX qualification.
 S8 implementation `585e08dad` completes the frozen C15 inherited functional
-source/form batch at its explicit original/L2 qualifications. The next
-planned admission is S9 for C16 selected timing and dynamic penalties.
-C17 production construction remains closed until S9 and final S10 proof.
+source/form batch at its explicit original/L2 qualifications. S9 delivers
+bounded timing mechanisms and proof only. Complete C16 and C17 production
+construction remain with the queued CPU successor after Core refactoring.
 
 | Task | Retained progress |
 | --- | --- |
 | T560 S8 | Accepted after same-session coordinator actual-change review: 605/605 repository units per width, complete specialized gates, 48 integration executions per width, restored-default process identities and eight verified 0560 PC EXEs. |
-| T560 remaining | S9: complete C16 timing corpus and penalties; S10: complete C17 Core production connection, final ledger/regression/artifact qualification. Neither is discharged by S8. |
+| T560 S9 | Executor delivery complete: 607/607 repository units per width, complete specialized gates, 48 profile integration executions plus restored identity per width and eight verified 0560 PC EXEs. Implementation push and coordinator acceptance remain required. |
+| T560 remaining | Complete C16, C17 and final CPU qualification are transferred, not discharged, through the second queued candidate after Core refactoring. Original planned S10 is not admitted. |
 
 The [S8 evidence](../etc/evidence/t560-s8-inherited-semantics.md) retains
 the complete twenty-family disposition, source/model limits, failed
@@ -25,6 +29,73 @@ MyNES 0044 source/released binaries and owner INI/ROM/media/snapshot inputs
 remain unchanged. No manual RDP or complete Windows 3.1 GUI qualification
 is claimed, and this is not complete 486/PC110 production admission.
 
+## Active Packet - M5 T560 S9 Selected Timing
+
+### Owner-Approved Closure Amendment (2026-10-15)
+
+The owner explicitly approved staged closure and priority adjustment, not
+complete 486SX qualification. This amendment supersedes the original whole-C16
+objective, expected markers and exit below only for the frozen S9 delivery.
+Finish actual-diff review, complete x64/x86 repository units and specialized
+gates, required profile integrations and eight verified 0560 PC artifacts.
+Preserve all incomplete C16, C17 and final-qualification requirements in the
+second queued candidate after the Core refactor; retain the original ledger
+and source/model evidence. Do not add more CPU functionality. The existing
+selected-SX compatibility/unallocated bridge is not qualified timing and C17
+stays closed. Shared-six, MyNES and owner inputs remain outside change scope.
+The complete P requires these proofs, followed by coordinator actual-change
+review, acceptance P and a clean worktree. No successor is automatically
+admitted. The packet below incorporates this amendment; original whole-C16
+requirements remain in the retained proposal and convergence ledger.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T560 S9 after accepted S8 implementation 585e08dad and governance 6621f09f0. One-session coordinator/executor roles are sequential, not independent reviewers. |
+| Admission And Approval | Owner explicitly approved staged closure and priority adjustment on 2026-10-15, freezing completed S9 work, preserving complete residual CPU requirements and publishing eight current PC artifacts. This is not complete 486SX qualification. Target NXVM only; no accuracy downgrade or Shared-six change. |
+| Objective | Audit and qualify the frozen S9 stage, preserve original evidence and transfer the complete remaining C16/C17/final-qualification obligation to queue position two after Core refactoring. Stop further CPU implementation. |
+| Non-goals | No Shared six, MyNES, INI, ROM/media/snapshot changes, sibling imports/writes, second executor/timeline, generic timing framework, or early C17 production admission. No PC110 or complete Windows GUI qualification. |
+| Reference Baseline | Clean 6621f09f011449e08cbe24b04951e001e37f5af6; S8 C15 functional source/form disposition. Intel 1992 PRM 26.2.2.3 and complete applicable Appendix E tables/notes; pinned selected-SX developer/data-sheet sources in the convergence ledger. The evidence's Bounded Arithmetic Model Decision freezes explicit L2 IMUL and variable RCL/RCR choices under the standing timing-upgrade approval; conflicting source statements are retained, not relabeled hardware-exact. |
+| Candidate Proposal | [Original 486SX CPU scope](../history/M5-T560-complete-486sx-cpu-proposal.md), [C16 convergence batch](../etc/evidence/t560-s1-cpu-convergence.md), [S9 source and ownership evidence](../etc/evidence/t560-s9-selected-timing.md), [complete residual receiver](../proposals/m5-486sx-timing-production-completion.md). |
+| Files And ABI Surface | Frozen nine Core production paths and twelve test/registration paths, Core manifests, NXVM records and eight 0560 PC EXEs. Actual source +1484/-391 and tests +2539/-15, excluding manifests/docs/assets. Existing Core timing-result structure gains the consumed event subtotal; no public function/type, Shared-six or MyNES change. No further CPU implementation expansion. |
+| Applicable Rules | NXVM guide and Task Reading Set; Execution packet, complete-P, convergence, actual-change review, artifacts and long-running job rules; Architecture/Coding and local governance skills; Document; NXVM architecture/layout and source/research policy. No Shared rule edit. |
+| Verification | Actual frozen source/test diff and chronological direct proof, with independent vectors, real instruction/access/event/lifetime execution, failure and nonmutating queries; retain older-family assertions. Run complete x64/x86 repository units and specialized gates on original Ninja/ccache graphs, all required profile integration groups and eight PE/hash-verified artifacts. Audit complete residual transfer against original C01--C17 ledger; do not claim complete timing or preview integration. |
+| Expected Markers | Frozen mechanisms have direct proof and explicit source/model limits; one selector/state owner and no host-derived guest ticks; full regression and eight verified artifacts; C16/C17 remain unqualified, selected-SX compatibility remains explicitly unallocated and all residual obligations have the complete named receiver. |
+| Asset Needs | Existing external original manuals and admitted firmware/media build/test inputs only. Preserve owner inputs and MyNES 0044 pair. No new asset acquisition is required for current research. |
+| Reporting Requirements | Report source/ownership census, exact proposed paths and revised diff before code; record complete C16 disposition, actual added/deleted/net code, retained paths/state, terminal tests and artifact hashes. Distinguish automated tests from unperformed manual desktop/RDP and full GUI qualification. |
+| Stop Conditions | Stop affected work for a genuine unresolved source/model conflict, required accuracy downgrade, missing lawful prerequisite or Shared-six edit; report evidence and continue independent safe in-scope work. Never hide unresolved rows behind a passing boot or a narrower allocation claim. |
+| Exit Criteria | Frozen diff reviewed, complete dual-width repository units/gates and required integrations pass, eight current PC artifacts verified, residual proposal second in Queue with original ledger preserved; implementation P pushed, coordinator actual-diff acceptance P and clean worktree. C16/C17 remain unmet and no successor is automatically admitted. |
+| Original Owner Request | Implement complete 486SX instruction semantics under execution/code-quality rules; finish all CPU gaps, group simple instructions efficiently, preserve source grades, automatically admit numeric S tasks and publish all affected PC artifacts. |
+| Similar-Issue Sweep | Review changed timing, access/event and register-write owners and boundary callers; classify selected-SX compatibility as temporary unallocated staging with its receiver/removal gate. Preserve distinct earlier-family owners and transfer the complete remaining source/runtime/preview/admission sweep, rather than silently excluding it. Shared and App inputs are read-only. |
+
+S9 has staged nominal/control, actual access, prefix/address, event transport,
+adjacent GPR-write/AGI and REP lifetime proof at the existing owners. The REP
+stage rebuilds all 360 Core unit binaries and passes 381/381 units per width.
+The subsequent integer/bit operand-cost stage passes 111/111 CPU/static rows
+per width. The explicit L2 IMUL/carry-rotate model stage passes 115/115 rows
+per width. The latest fetch-bus baseline stage rebuilds 105 CPU/386/Core test
+binaries and passes 117/117 CPU/386/Core/static rows per width; it does not
+repeat the whole Core suite. All final selections have zero failures or disabled
+rows and pass Types. Actual
+producer/consumer tests cover same-value writes, aliases, stack exceptions,
+REP first/continuation/termination and fault/NMI/debugger/prepared-entry/reset
+boundaries, actual cold/warm/LOCK operand and alignment/failure paths, and
+source-qualified arithmetic model inputs with preserved older-family formulas,
+and actual fetch/queue/cache/preview/failure and clipped-word boundaries.
+Evidence retains earlier failed reproductions and corrected
+checks, including prior INI integration requalification; the latest unit-only
+selection does not claim integration.
+
+Whole C16 remains open: REP dynamic penalties, remaining access/fetch/control
+and entry/SMM costs, source conflicts, complete selected runtime/preview and
+final CPU qualification. Assumption-based terms need explicit final L2
+qualification. The sole selected-SX branch still uses unallocated compatibility
+costs; recording REP phases is not physical timing admission. All residuals
+transfer to the complete second queued proposal. Shared six, MyNES and owner
+inputs remain unchanged; eight 0560 PC assets are rebuilt, deployed and
+qualified for this stage. See the evidence's final frozen-stage qualification
+for actual terminal results, diff review and hashes. No C17 admission or
+complete CPU claim is authorized.
+
 ## Retained Historical Packets (Not Active)
 
 ### Accepted Delivery — M5 T559 S6 CPUID And Flags
@@ -36,7 +107,7 @@ is claimed, and this is not complete 486/PC110 production admission.
 | Objective | Freeze source-qualified selected SX CPUID/ID behavior and implement it with the existing flags owner; reconcile PUSHF/POPF, IRET and task-load masks without duplicated profile state. |
 | Non-goals | No production 486 admission, invented zero-feature silicon, unproved VME advertisement, SMM/cache/TLB hardware, PC110 board, Shared or MyNES changes. Real AC/VIF/VIP hardware effects remain mandatory system gates. |
 | Reference Baseline | 8e6159de4; S1 I7/I8, pinned selected-SX data sheets and original Intel manuals. Audit exact stepping applicability and current flags paths before implementation. |
-| Candidate Proposal | [Selected 486SX instructions](../proposals/m5-pc110-486-instructions.md), [finite ledger](../etc/evidence/t559-s1-instruction-inventory.md), and [system receiver](../proposals/m5-pc110-486-system.md). |
+| Candidate Proposal | [Selected 486SX instructions](../proposals/m5-pc110-486-instructions.md), [finite ledger](../etc/evidence/t559-s1-instruction-inventory.md), and [system receiver](../history/M5-T560-complete-486sx-cpu-proposal.md). |
 | Files And ABI Surface | Core CPU existing instructions, flags definitions and profile reset only where source-qualified, directly affected CPU tests/registration, Core manifests and NXVM evidence. Preliminary production +60--160/-10--60 and tests +200--400/-0--30; refine after source/form audit. No planned public API or persistent-state addition. Rebuild eight PC EXEs if executable inputs change. |
 | Applicable Rules | NXVM guide; Execution lifecycle/coverage/artifacts; Document; Architecture/Coding and their skills; NXVM architecture/layout and source/research policy. |
 | Verification | Full I7 leaf/GPR/flags/privilege/LOCK/fetch/old-profile matrix; I8 PUSHF/POPF, real/protected/VM86 IRET and task-load masks, 16-bit upper-half preservation and privilege rules. Focused whole batch, actual-change review, then full x64/x86 repository units and affected artifact/INI identity checks. |

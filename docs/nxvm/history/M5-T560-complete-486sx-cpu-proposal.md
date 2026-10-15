@@ -1,5 +1,15 @@
 # Selected 486SX System, Reset And Timing
 
+## Owner-Approved Stage Closure Override (2026-10-15)
+
+The owner explicitly approves freezing completed S9 work and closing T560 as
+a bounded stage after actual review, required regression and eight-artifact
+publication. This overrides the original no-transfer exit below only for this
+stage. It is not complete 486SX delivery: all remaining C16, C17 and final
+qualification transfer intact to [the CPU successor](../proposals/m5-486sx-timing-production-completion.md),
+queue position two after the Core refactor. The original objective, ledger,
+source restrictions and evidence remain preserved; C17 stays closed.
+
 ## Admission And Dependencies
 
 Admitted as M5 T560 by the owner after T559 closure at fb8021291.
@@ -7,7 +17,7 @@ The owner requires completion of all remaining 486SX CPU gaps, not only
 the previously transferred system instruction subset. S1 freezes the complete
 coverage ledger from current code and primary sources before implementation.
 Depends on: accepted T559 selected 486SX instruction semantics baseline.
-Use the [PC110 programme contract](m5-pc110-evidence-and-implementation.md)
+Use the [PC110 programme contract](../proposals/m5-pc110-evidence-and-implementation.md)
 and its convergence ledger; the task packet freezes the exact batch and source
 baseline before implementation. Research references are not implementation imports.
 

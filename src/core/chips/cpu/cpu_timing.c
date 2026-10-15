@@ -222,6 +222,7 @@ lib_i32 core_machine_cpu_timing_select(core_machine_cpu_execution_context *conte
     context->timing_result.formula_inputs = 0u;
     context->timing_result.repeat_phase = CORE_MACHINE_RETIREMENT_REPEAT_NONE;
     lib_memory_set(&result, 0, sizeof(result));
+    result.event_ticks = context->timing_result.event_ticks;
 
     if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
         if (!core_machine_cpu_timing_try(context, &result,
@@ -243,6 +244,10 @@ lib_i32 core_machine_cpu_timing_select(core_machine_cpu_execution_context *conte
         if (!core_machine_cpu_timing_select_80186(context, &result)) return 0;
     } else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
         if (!core_machine_cpu_timing_select_80286(context, &result)) return 0;
+    } else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX) {
+        if (!core_machine_cpu_timing_try(context, &result,
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY,
+                core_machine_80486_source_instruction_cost)) return 0;
     } else if (!core_machine_cpu_timing_try(context, &result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO,
             core_machine_string_io_source_instruction_cost) &&

@@ -72,6 +72,12 @@ void core_machine_cpu_finish_entry(core_machine_cpu_prepared_entry *entry,
     if (commit) {
         *entry->owner->cpu = entry->cpu;
         entry->owner->repeat_compare_flags_valid = LIB_FALSE;
+        if (entry->owner->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+            entry->owner->source_repeat_active = LIB_FALSE;
+        if (entry->owner->instructions != LIB_NULL) {
+            entry->owner->instructions->data.timing_gpr_writes = 0u;
+            entry->owner->instructions->data.timing_previous_gpr_writes = 0u;
+        }
     }
     lib_release(entry);
 }
@@ -496,6 +502,12 @@ lib_status core_machine_cpu_debug_patch_registers(core_machine_cpu_execution_con
     }
     *context->cpu = candidate_cpu;
     context->repeat_compare_flags_valid = LIB_FALSE;
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80486SX)
+        context->source_repeat_active = LIB_FALSE;
+    if (context->instructions != LIB_NULL) {
+        instruction_state.data.timing_gpr_writes = 0u;
+        instruction_state.data.timing_previous_gpr_writes = 0u;
+    }
     if (patch->mask & (CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR0) |
         CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR3))) {
         core_machine_cpu_execution_invalidate_tlb(context);
@@ -532,6 +544,7 @@ void core_machine_cpu_execution_context_initialize(
     context->instructions = instructions;
     context->instruction_timing = (core_machine_instruction_timing) { .base_ticks = 1u };
     context->timing_result = (core_machine_cpu_timing_result) {0};
+    context->source_repeat_byte_count = 0u;
     context->bus = bus;
     context->bus_context = bus_context;
     context->diagnostic_provider = LIB_NULL;

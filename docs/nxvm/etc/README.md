@@ -16,6 +16,10 @@ T560 S8: [Inherited instruction reconciliation](evidence/t560-s8-inherited-seman
 records the complete opcode/group universe, family proof owners and actual
 source-versus-test gaps; open rows are not qualification.
 
+T560 S9: [Selected timing source and implementation evidence](evidence/t560-s9-selected-timing.md)
+records nominal forms, dynamic-access/event ownership, original-source conflicts
+and staged implementation proof. It does not open production admission.
+
 T559 S7: [Whole instruction-delta qualification](evidence/t559-s7-instruction-qualification.md)
 records whole-ledger reconciliation, the bit-operation LOCK repair and final
 dual-width unit, external and artifact validation.
