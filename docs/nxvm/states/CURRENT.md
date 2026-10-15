@@ -2,27 +2,31 @@
 
 ## Current Work
 
-M5 T561 is admitted; S1 imports the owner-corrected five SoftPC source/test
-pairs before Core extraction. T560 remains stage-closed, not CPU-complete.
+M5 T561 remains open. S1 is accepted after coordinator actual-change review of
+pushed Shared `15d86fc8e` and NXVM `6c95c2da3`. No S is active; the next planned
+batch is the complete Core disposition/contract inventory, not CPU completion.
+The [proposal](../proposals/m5-core-x86-core-nxvm-split.md) and
+[convergence ledger](../history/M5-T561-core-package-split.md) retain I1--I5.
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New M5 T561 S1, sequential coordinator/executor roles. |
-| Admission And Approval | Owner admission on 2026-10-15 of queue-first Core refactor and inserted exact SoftPC import; corrected scope includes x86-ibmpc src/test. Shared and NXVM receiver changes authorized; sibling read-only. |
-| Objective | Import ten canonical trees and replace old X86 tools/Product with one correctly connected split path. |
-| Non-goals | No Core extraction, CPU feature/timing changes, new compatibility path, MyNES policy changes or protected asset import. |
-| Reference Baseline | Clean NXVM 453455e59; frozen CPU b906c7138; clean SoftPC 3af1955932fcb9e61ceec3456493580e316a12c9. |
-| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), [S1 plan](../history/M5-T561-core-package-split.md). |
-| Files And ABI Surface | src/test lib, emulator, x86-debug, x86-ibmpc, x86-nxvm; retire old src/test/x86. Necessary root infrastructure, Core consumers/tests/manifests, PC version/presets/artifacts and NXVM current design records. Imported public contracts remain byte-identical. |
-| Applicable Rules | NXVM guide; shared Execution, Architecture, Coding, Document; NXVM architecture/layout and source/research policy. One owner, inward dependencies, target-separated commits and real artifact qualification. |
-| Verification | Ten-tree path/hash equality; manifests/types/dependency gates; both original Ninja/ccache graphs; complete dual-width units and specialized gates; all required PC integrations and receiver regression; eight 0561 EXE PE/deployment identity. |
-| Expected Markers | No live old X86 package or aliases; PC shell does not require NXVM information/speed; preserved CPU stage and product UX. |
-| Asset Needs | Existing admitted external ROM/media build inputs only; protect INI, disks, snapshots and MyNES inputs. |
-| Reporting Requirements | Record actual import/receiver diff, provenance, complete qualification, artifacts, remaining desktop/RDP boundaries and pushed commits. |
-| Stop Conditions | Canonical upstream defect requiring non-import Shared changes, missing protected input or contradictory owner contract; report evidence, do not invent fallback. |
-| Exit Criteria | Exact ten-tree import and single-path receivers pass required qualification, actual changes reviewed, manifests/artifacts current, complete target-scoped P commits pushed. T561 stays open for Core extraction. |
-| Original Owner Request | Admit queue first; insert S1 importing SoftPC lib, emulator, x86-debug, x86-nxvm src/test; owner added x86-ibmpc src/test. |
-| Similar-Issue Sweep | All include/symbol/target/checker/docs references, assembler/debug consumers, factory ownership and extension lifetime, standalone test registration and no CPU semantic drift. |
+## Accepted S1 Import And Runnable Baseline
+
+[S1 evidence](../etc/evidence/t561-s1-softpc-ten-tree-import.md): all 264 files
+in the five source/test pairs match pinned SoftPC `3af1955932fcb9e61ceec3456493580e316a12c9`.
+Old src/test/x86 is retired and Core uses the split contracts, with no alias
+or parallel runtime. Lib, Emulator and CPU implementations remain unchanged.
+
+Both widths pass 621/621 complete repository units and all specialized gates,
+48 profile integration executions plus restored-default identity, and the
+strengthened INFO/SPEED/INI checks against every published PC EXE. Final Core
+manifest/corpus/factory/startup checks pass 5/5 per width. Automated desktop
+cases pass; manual RDP, full Windows GUI and PC110 acceptance are not claimed.
+
+Eight optimized, stripped, PE/hash-verified 0.5.0561 PC EXEs are deployed in
+the four existing Assets roots. Source/artifact commit is `6c95c2da3`; current
+target is `vm-0-5-0561`. Both original Release Ninja/ccache graphs are restored
+to default and the persistent cache is retained. MyNES 0044, INI, ROM, media
+and snapshot inputs are unchanged. The full admission packet remains in the
+P2 revision of this file. T560's CPU residual successor remains paused.
 
 | Task | Closure |
 | --- | --- |
@@ -34,7 +38,7 @@ pairs before Core extraction. T560 remains stage-closed, not CPU-complete.
 607/607 complete repository units per width; complete specialized gates;
 48 profile integration executions plus restored-default identity per width;
 eight rebuilt, deployed, PE/hash-verified and debug-info-stripped 0560 PC EXEs.
-Both original Release Ninja/ccache graphs are restored to default. The current
+Both original Release Ninja/ccache graphs were restored to default. The
 PC artifact target at that delivery was `vm-0-5-0560`; its source/artifact baseline is
 implementation `b906c7138`. Shared-six, MyNES 0044 and owner INI/ROM/media/
 snapshot inputs are unchanged. Automated desktop-labelled tests pass; manual
@@ -46,10 +50,10 @@ preserve accepted mechanisms, source/model restrictions and all residuals.
 The sole selected-SX instruction recipe remains explicitly compatibility/
 unallocated, and production 486SX construction remains closed.
 
-The [Queue](QUEUE.md) places
+The former [Queue](QUEUE.md) placed
 [Core refactoring](../proposals/m5-core-x86-core-nxvm-split.md) first and
 [complete remaining 486SX qualification](../proposals/m5-486sx-timing-production-completion.md)
-second in the former queue. Core refactoring is now admitted as T561; CPU work
+second. Core refactoring is now admitted as T561; CPU work
 stays paused until the refactor is accepted and its successor is admitted.
 
 ## Retained Historical Packets (Not Active)

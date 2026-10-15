@@ -163,3 +163,6 @@ strict compilation or that all CPU qualification debt is complete.
 Shared implementation P1 is `15d86fc8e`: 71 paths, +1,287/-683, net +604,
 including canonical split verifiers/manifests and root test/build ownership.
 NXVM P2 supplies the receiving Core changes, evidence and eight artifacts.
+P2 is `6c95c2da3`: 46 paths, +604/-153, net +451, plus the eight binary
+replacements. Coordinator actual-change review accepts S1 against the complete
+pushed pair, not the intermediate cross-target repository. T561 stays open.

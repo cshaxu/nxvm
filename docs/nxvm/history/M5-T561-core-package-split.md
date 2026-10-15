@@ -10,7 +10,7 @@ queued with its complete original ledger and requires later admission.
 
 | Coverage unit | Owner and completion predicate | Initial disposition |
 | --- | --- | --- |
-| I0 exact ten-tree prerequisite | Lib/Emulator/X86 Debug/X86 IBM PC/X86 NXVM src/test match pinned SoftPC commit; manifests, root registration and migrated product receivers verified. | S1 qualified; implementation delivery and acceptance audit below. |
+| I0 exact ten-tree prerequisite | Lib/Emulator/X86 Debug/X86 IBM PC/X86 NXVM src/test match pinned SoftPC commit; manifests, root registration and migrated product receivers verified. | S1 accepted after pushed P1/P2 actual-change review; 264 exact files and full receiving proof below. |
 | I1 complete disposition | Every current Core source/test/target and public contract has one destination, dependency and verification owner; all PC assumptions and SoftPC split prerequisites classified. | Next inventory batch; not discharged by import. |
 | I2 CPU/FPU extraction | One independent shared CPU/FPU implementation and corresponding tests, correct interfaces, all old consumers migrated and superseded paths removed. | Future batch; original CPU functionality/grades retained. |
 | I3 neutral execution core | CPU composition, memory/port routes, guest time, transactions and debug independent of PC policy, with real ROM-free non-PC board proof. | Future batch; one executor/timeline. |
@@ -66,7 +66,13 @@ aggregate deadline is retained as an aborted attempt, not a pass; native
 qualification passes without a budget/assertion change.
 
 Shared P1 `15d86fc8e` imports the split and root infrastructure. NXVM P2
-provides Core receiving code, tests, documentation and artifacts. The
-coordinator reviews their combined actual diff before S1 acceptance. I1--I5
+`6c95c2da3` provides Core receiving code, tests, documentation and artifacts.
+The coordinator reviewed the combined actual diff and accepts S1. I1--I5
 remain open and the CPU successor stays paused; S1 is not Core extraction or
 complete 486SX qualification. No further S is admitted in this delivery.
+
+The full admission packet is retained in P2's CURRENT revision. Closure
+rechecks the ten-tree equality, artifact hashes, preserved input/CPU/MyNES
+diffs and push state. The preflight lesson is to build the complete replacement
+artifact set before its version-sensitive gate and freeze upstream from a Git
+archive before validating against a concurrently changing sibling worktree.
