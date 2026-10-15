@@ -13,7 +13,7 @@ puts the nine PC110 implementation receivers first. They are candidates, not
 preallocated T numbers or authorization to skip their prerequisite gates.
 The owner accepted T558 research delivery 7ea9084fe and closed T558 on
 2026-10-13. Former entry 1 became T559, selected 486SX instructions, now
-owner-closed. The system receiver is active T560 as recorded below; the
+owner-closed. The system receiver is staged-closed T560 as recorded below; the
 remaining PC110 receivers retain their explicit source/asset gates.
 
 The [T554 default-PC text cursor restoration](../history/M5-T554-pc-text-cursor-restoration.md)
@@ -38,9 +38,9 @@ The [T553 four PC App code-quality audit](../history/M5-T553-four-pc-app-code-qu
 is closed after its corrective full-route audit, repair and dual-width
 qualification; retained closure facts are historical, not another active packet.
 
-T559 is owner-closed at fb8021291. The former first candidate is admitted as
-T560, [complete 486SX CPU](../history/M5-T560-complete-486sx-cpu-proposal.md); CURRENT owns
-its active batch. On 2026-10-15 the owner explicitly approved staged closure
+T559 is owner-closed at fb8021291. The former first candidate became
+T560, [complete 486SX CPU](../history/M5-T560-complete-486sx-cpu-proposal.md).
+CURRENT records its bounded closure. On 2026-10-15 the owner approved staged closure
 and priority adjustment, not complete 486SX qualification. All unfinished C16,
 C17 and final CPU qualification move intact to the second candidate below.
 

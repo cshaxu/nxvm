@@ -968,3 +968,31 @@ is second. Original C01--C17 ledger and evidence remain intact, and the original
 proposal is archived without changing its historical full-CPU requirement.
 No numeric successor or original planned S10 is admitted. Complete P push and
 coordinator actual-change acceptance are still required before T560 closes.
+
+## Coordinator Acceptance And Owner-Approved Stage Closure
+
+The same session switches to coordinator and reviews the actual pushed P1
+`b906c7138`, including its complete source/test diff, new CPU tests, actual
+register-write/event/REP callers, manifest path/hash deltas, eight artifact
+hashes, original-proposal archival and complete two-candidate queue change.
+This is sequential dual-role review, not independent-person review. The
+qualified source/tests/artifacts are identical to P1; this acceptance adds
+governance only. The recorded source/test counts match actual Git numstat,
+including all physical lines of the new repeat test, excluding manifests,
+documents and artifacts. Each production observation has one owner; staged
+pure calculators and the explicit unallocated bridge have a bounded receiver
+and removal gate, not a false claim of finished runtime timing.
+
+The original full-CPU request, S1--S8 accepted evidence, amended S9 packet,
+applicable rules and owner-approved stage/priority decision were reconciled.
+All required current regression, integrations, deployment, input protection
+and documentation checks pass. No known delivery item remains in the amended
+stage. C16/C17 and final CPU qualification do remain incomplete, explicitly
+preserved in the successor; the owner override does not accept them as done.
+
+Accept S9 P1 and close S9 and T560 as a bounded stage. No original planned
+S10 or next T is admitted. Current retains a task-level closure row and no
+active packet. The Core refactor is queue first, the complete CPU receiver
+second. Manual RDP, complete Windows GUI, fitted PC110 silicon and production
+486SX eligibility remain outside this acceptance. No Shared-six, MyNES or
+owner input change accompanies this governance P.
