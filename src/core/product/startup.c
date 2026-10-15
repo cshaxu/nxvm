@@ -6,6 +6,28 @@
 #include "lib/base/process_interface.h"
 #include "lib/types/file.h"
 
+/* The run-scoped NXVM descriptor owns the real machine. The PC shell only
+ * borrows it for lifetime callbacks and extension configuration. Driver
+ * callbacks retain their original machine context. */
+static lib_status vm_app_bind_composed(void *opaque, emulator_machine *emulator)
+{
+    x86_nxvm_product_machine *machine = opaque;
+    return machine->composition.bind(machine->composition.machine, emulator);
+}
+
+static lib_status vm_app_destroy_composed(void *opaque)
+{
+    x86_nxvm_product_machine *machine = opaque;
+    return machine->composition.destroy(machine->composition.machine);
+}
+
+static lib_status vm_app_configure_extensions(app_composed_machine *machine,
+    x86_ibmpc_product_command_extensions *extensions)
+{
+    return vm_app_configure_standard_extensions(machine->composition.machine,
+        extensions);
+}
+
 lib_status vm_app_ini_executable_path(const char *name, lib_u8 *path,
     lib_size capacity)
 {
@@ -44,20 +66,28 @@ lib_i32 vm_app_run(const char *name, const char *ini_name,
     const vm_app_machine_binding *binding)
 {
     vm_session_request request = {0};
-    x86_product_definition definition = {0};
+    x86_ibmpc_product_definition definition = {0};
+    x86_nxvm_product_machine machine = {0};
     char banner[256];
     lib_i32 written;
 
     if (name == LIB_NULL || binding == LIB_NULL ||
         vm_app_ini_load_request(ini_name, &request) != LIB_STATUS_OK ||
         vm_app_configure_ui(&request, &definition.ui) != LIB_STATUS_OK ||
-        vm_app_compose_machine(binding, &request, &definition.machine) != LIB_STATUS_OK)
+        vm_app_compose_machine(binding, &request, &machine) != LIB_STATUS_OK)
         return 1;
     written = lib_c_snprintf(banner, sizeof(banner), "%s [%s]\n%s", name,
         CORE_PRODUCT_VERSION, CORE_PRODUCT_COPYRIGHT);
-    if (written < 0 || (lib_size)written >= sizeof(banner)) return 1;
+    if (written < 0 || (lib_size)written >= sizeof(banner)) {
+        (void)machine.composition.destroy(machine.composition.machine);
+        return 1;
+    }
+    definition.machine.composition = machine.composition;
+    definition.machine.composition.machine = &machine;
+    definition.machine.composition.bind = vm_app_bind_composed;
+    definition.machine.composition.destroy = vm_app_destroy_composed;
     definition.name = name;
     definition.banner = banner;
-    definition.configure_extensions = vm_app_configure_standard_extensions;
-    return x86_product_run(&definition);
+    definition.configure_extensions = vm_app_configure_extensions;
+    return x86_ibmpc_product_run(&definition);
 }

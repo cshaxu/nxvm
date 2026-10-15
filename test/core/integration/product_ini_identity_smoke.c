@@ -45,8 +45,11 @@ int main(int argc, char **argv)
         "my5160.ini", "my5170.ini", "mydeskpro386.ini", "nxvm.ini"};
     static const char valid[] =
         "[presentation]\ndisplay=window\nconsole_control=1\n[media]\n";
-    static const char *const commands[] = {"help\r", "exit\r"};
-    static const char *const markers[] = {"Control your virtual machine:", ""};
+    static const char *const commands[] = {
+        "info\r", "speed\r", "speed turbo\r", "speed standard\r", "help\r", "exit\r"};
+    static const char *const markers[] = {
+        "Device Info", "Speed:", "Speed: turbo", "Speed: standard",
+        "Control your virtual machine:", ""};
     char directory[MAX_PATH] = {0}, executable[MAX_PATH] = {0};
     char cwd[MAX_PATH] = {0}, cwd_ini[MAX_PATH] = {0};
     char media[MAX_PATH] = {0};
@@ -87,7 +90,8 @@ int main(int argc, char **argv)
     /* A correct adjacent INI wins despite wrong product files and invalid CWD INI.
      * Renaming the test EXE also proves the name is not inferred from argv[0]. */
     if (!write_ini(cwd_ini, "[invalid]\nkey=value\n") ||
-        !pc_console_process_run(executable, cwd, commands, markers, 2u)) goto done;
+        !pc_console_process_run(executable, cwd, commands, markers,
+            sizeof(commands) / sizeof(commands[0]))) goto done;
     if (!DeleteFileA(paths[selected]) || !write_ini(cwd_ini, valid)) goto done;
     for (lib_size i = 0u; i < sizeof(names) / sizeof(names[0]); ++i)
         if (i != selected && !write_ini(paths[i], valid)) goto done;

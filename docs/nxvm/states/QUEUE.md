@@ -42,25 +42,28 @@ T559 is owner-closed at fb8021291. The former first candidate became
 T560, [complete 486SX CPU](../history/M5-T560-complete-486sx-cpu-proposal.md).
 CURRENT records its bounded closure. On 2026-10-15 the owner approved staged closure
 and priority adjustment, not complete 486SX qualification. All unfinished C16,
-C17 and final CPU qualification move intact to the second candidate below.
+C17 and final CPU qualification move intact to its successor candidate below.
 
 On 2026-10-15 the owner placed the Core package split first. This supersedes
 the earlier PC110-first ordering. The subsequent owner-approved T560 staged
 closure places its CPU successor second; remaining candidates keep their order.
 
-1. [Split Core into X86 Core and X86 NXVM](../proposals/m5-core-x86-core-nxvm-split.md)
-2. [Complete remaining 486SX timing and production qualification](../proposals/m5-486sx-timing-production-completion.md)
-3. [PC110: board, chipset and firmware mapping](../proposals/m5-pc110-board.md)
-4. [PC110: keyboard, pointer and power](../proposals/m5-pc110-input-power.md)
-5. [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md)
-6. [PC110: PCMCIA, flash and boot storage](../proposals/m5-pc110-storage.md)
-7. [PC110: audio and remaining peripherals](../proposals/m5-pc110-audio-aux.md)
-8. [PC110: real firmware POST, setup and guest boot](../proposals/m5-pc110-firmware-boot.md)
-9. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md)
-10. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-11. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
-12. [MyArcade: RAIDEN II](../proposals/myarcade-raiden2.md)
-13. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+The owner admitted the former first candidate,
+[Core split](../proposals/m5-core-x86-core-nxvm-split.md), as T561, with S1
+importing SoftPC's five source/test pairs. CURRENT owns that active packet.
+
+1. [Complete remaining 486SX timing and production qualification](../proposals/m5-486sx-timing-production-completion.md)
+2. [PC110: board, chipset and firmware mapping](../proposals/m5-pc110-board.md)
+3. [PC110: keyboard, pointer and power](../proposals/m5-pc110-input-power.md)
+4. [PC110: F65535 display and font ROM](../proposals/m5-pc110-display.md)
+5. [PC110: PCMCIA, flash and boot storage](../proposals/m5-pc110-storage.md)
+6. [PC110: audio and remaining peripherals](../proposals/m5-pc110-audio-aux.md)
+7. [PC110: real firmware POST, setup and guest boot](../proposals/m5-pc110-firmware-boot.md)
+8. [MyPC110: product and guest qualification](../proposals/m5-pc110-qualification.md)
+9. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+10. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+11. [MyArcade: RAIDEN II](../proposals/myarcade-raiden2.md)
+12. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
 
 [T544](../history/M5-T544-retained-cpu-qualification.md) is closed as a
 completed CPU audit by owner direction. Its eighteen complete repair/proof

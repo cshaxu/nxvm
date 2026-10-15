@@ -3,8 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 foreach(file IN ITEMS
-    "src/x86/debug/debug_interface.h"
-    "src/x86/debug/command.c")
+    "src/x86-debug/product/debug_interface.h"
+    "src/x86-debug/product/command.c")
     file(READ "${PROJECT_SOURCE_DIR}/${file}" source)
     foreach(forbidden IN ITEMS
         "core_debugger"

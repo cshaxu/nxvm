@@ -2,21 +2,40 @@
 
 ## Current Work
 
-No active T or S. On 2026-10-15 the owner approved T560 staged closure and
-priority adjustment, not completion of all 486SX CPU work.
+M5 T561 is admitted; S1 imports the owner-corrected five SoftPC source/test
+pairs before Core extraction. T560 remains stage-closed, not CPU-complete.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New M5 T561 S1, sequential coordinator/executor roles. |
+| Admission And Approval | Owner admission on 2026-10-15 of queue-first Core refactor and inserted exact SoftPC import; corrected scope includes x86-ibmpc src/test. Shared and NXVM receiver changes authorized; sibling read-only. |
+| Objective | Import ten canonical trees and replace old X86 tools/Product with one correctly connected split path. |
+| Non-goals | No Core extraction, CPU feature/timing changes, new compatibility path, MyNES policy changes or protected asset import. |
+| Reference Baseline | Clean NXVM 453455e59; frozen CPU b906c7138; clean SoftPC 3af1955932fcb9e61ceec3456493580e316a12c9. |
+| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), [S1 plan](../history/M5-T561-core-package-split.md). |
+| Files And ABI Surface | src/test lib, emulator, x86-debug, x86-ibmpc, x86-nxvm; retire old src/test/x86. Necessary root infrastructure, Core consumers/tests/manifests, PC version/presets/artifacts and NXVM current design records. Imported public contracts remain byte-identical. |
+| Applicable Rules | NXVM guide; shared Execution, Architecture, Coding, Document; NXVM architecture/layout and source/research policy. One owner, inward dependencies, target-separated commits and real artifact qualification. |
+| Verification | Ten-tree path/hash equality; manifests/types/dependency gates; both original Ninja/ccache graphs; complete dual-width units and specialized gates; all required PC integrations and receiver regression; eight 0561 EXE PE/deployment identity. |
+| Expected Markers | No live old X86 package or aliases; PC shell does not require NXVM information/speed; preserved CPU stage and product UX. |
+| Asset Needs | Existing admitted external ROM/media build inputs only; protect INI, disks, snapshots and MyNES inputs. |
+| Reporting Requirements | Record actual import/receiver diff, provenance, complete qualification, artifacts, remaining desktop/RDP boundaries and pushed commits. |
+| Stop Conditions | Canonical upstream defect requiring non-import Shared changes, missing protected input or contradictory owner contract; report evidence, do not invent fallback. |
+| Exit Criteria | Exact ten-tree import and single-path receivers pass required qualification, actual changes reviewed, manifests/artifacts current, complete target-scoped P commits pushed. T561 stays open for Core extraction. |
+| Original Owner Request | Admit queue first; insert S1 importing SoftPC lib, emulator, x86-debug, x86-nxvm src/test; owner added x86-ibmpc src/test. |
+| Similar-Issue Sweep | All include/symbol/target/checker/docs references, assembler/debug consumers, factory ownership and extension lifetime, standalone test registration and no CPU semantic drift. |
 
 | Task | Closure |
 | --- | --- |
-| T560 | Closed as an owner-approved bounded stage. S1--S8 remain accepted; S9 implementation `b906c7138` passes coordinator actual-change review. Complete C16 timing/runtime/preview, C17 production admission and final CPU qualification remain unmet and transfer intact to the second queued candidate. |
+| T560 | Closed as an owner-approved bounded stage. S1--S8 remain accepted; S9 implementation `b906c7138` passes coordinator actual-change review. Complete C16 timing/runtime/preview, C17 production admission and final CPU qualification remain unmet and transfer intact to the CPU successor after T561. |
 
-## Accepted Stage And Runnable Baseline
+## Retained T560 Stage Baseline
 
 [Final S9 evidence](../etc/evidence/t560-s9-selected-timing.md#final-frozen-stage-qualification):
 607/607 complete repository units per width; complete specialized gates;
 48 profile integration executions plus restored-default identity per width;
 eight rebuilt, deployed, PE/hash-verified and debug-info-stripped 0560 PC EXEs.
 Both original Release Ninja/ccache graphs are restored to default. The current
-PC artifact target remains `vm-0-5-0560`; source/artifact baseline is
+PC artifact target at that delivery was `vm-0-5-0560`; its source/artifact baseline is
 implementation `b906c7138`. Shared-six, MyNES 0044 and owner INI/ROM/media/
 snapshot inputs are unchanged. Automated desktop-labelled tests pass; manual
 RDP, full Windows GUI and PC110 qualification are not claimed.
@@ -30,7 +49,7 @@ unallocated, and production 486SX construction remains closed.
 The [Queue](QUEUE.md) places
 [Core refactoring](../proposals/m5-core-x86-core-nxvm-split.md) first and
 [complete remaining 486SX qualification](../proposals/m5-486sx-timing-production-completion.md)
-second. Neither candidate is admitted or allocated a numeric T yet. CPU work
+second in the former queue. Core refactoring is now admitted as T561; CPU work
 stays paused until the refactor is accepted and its successor is admitted.
 
 ## Retained Historical Packets (Not Active)

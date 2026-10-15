@@ -9,7 +9,7 @@ extern "C" {
 #include "lib/types/types_interface.h"
 
 #include "core/x86/debug_interface.h"
-#include "x86/debug/protocol_interface.h"
+#include "x86-debug/product/protocol_interface.h"
 
 #define VM_MACHINE_DEVICE_DEBUG "Unknown Hardware Debugger"
 

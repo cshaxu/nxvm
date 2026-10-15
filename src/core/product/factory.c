@@ -7,10 +7,10 @@
 static lib_status vm_app_bind(void *machine, emulator_machine *emulator);
 static lib_status vm_app_release_machine(void *machine);
 static lib_status vm_app_read_information(const void *context, const void *machine,
-    x86_product_information *out_info);
+    x86_nxvm_product_information *out_info);
 static lib_status vm_app_read_speed(const void *machine,
-    x86_product_speed *out_speed);
-static lib_status vm_app_write_speed(void *machine, x86_product_speed speed);
+    x86_nxvm_product_speed *out_speed);
+static lib_status vm_app_write_speed(void *machine, x86_nxvm_product_speed speed);
 
 static const emulator_product_help_row vm_app_standard_help_rows[] = {
     {"info", "list device information"},
@@ -19,8 +19,8 @@ static const emulator_product_help_row vm_app_standard_help_rows[] = {
     {"floppy eject", "eject drive A media while stopped/paused"}
 };
 
-static lib_status vm_app_information_read(const app_composed_machine *machine,
-    x86_product_information *out_info)
+static lib_status vm_app_information_read(const x86_nxvm_product_machine *machine,
+    x86_nxvm_product_information *out_info)
 {
     if (machine == LIB_NULL || machine->composition.machine == LIB_NULL ||
         machine->information == LIB_NULL)
@@ -29,8 +29,8 @@ static lib_status vm_app_information_read(const app_composed_machine *machine,
         out_info);
 }
 
-static lib_status vm_app_speed_read(const app_composed_machine *machine,
-    x86_product_speed *out_speed)
+static lib_status vm_app_speed_read(const x86_nxvm_product_machine *machine,
+    x86_nxvm_product_speed *out_speed)
 {
     if (machine == LIB_NULL || machine->composition.machine == LIB_NULL ||
         machine->get_speed == LIB_NULL)
@@ -38,8 +38,8 @@ static lib_status vm_app_speed_read(const app_composed_machine *machine,
     return machine->get_speed(machine->composition.machine, out_speed);
 }
 
-static lib_status vm_app_speed_write(const app_composed_machine *machine,
-    x86_product_speed speed)
+static lib_status vm_app_speed_write(const x86_nxvm_product_machine *machine,
+    x86_nxvm_product_speed speed)
 {
     if (machine == LIB_NULL || machine->composition.machine == LIB_NULL ||
         machine->set_speed == LIB_NULL)
@@ -76,7 +76,7 @@ lib_status vm_app_configure_machine(const vm_app_machine_binding *binding,
 }
 
 lib_status vm_app_compose_machine(const vm_app_machine_binding *binding,
-    const vm_session_request *request, app_composed_machine *out_machine)
+    const vm_session_request *request, x86_nxvm_product_machine *out_machine)
 {
     vm_machine_config config;
     vm_machine_construction construction;
@@ -86,7 +86,7 @@ lib_status vm_app_compose_machine(const vm_app_machine_binding *binding,
 
     if (out_machine == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    *out_machine = (app_composed_machine){0};
+    *out_machine = (x86_nxvm_product_machine){0};
     if (binding == LIB_NULL || binding->prepare == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     status = vm_app_configure_machine(binding, request, &config);
@@ -100,7 +100,7 @@ lib_status vm_app_compose_machine(const vm_app_machine_binding *binding,
         vm_machine_destroy(machine);
         return status;
     }
-    *out_machine = (app_composed_machine){
+    *out_machine = (x86_nxvm_product_machine){
         .composition = {
             .machine = machine,
             .driver = driver,
@@ -124,14 +124,14 @@ static lib_status vm_app_release_machine(void *machine)
 }
 
 static lib_status vm_app_read_information(const void *context, const void *machine,
-    x86_product_information *out_info)
+    x86_nxvm_product_information *out_info)
 {
     const vm_app_machine_binding *binding = context;
     vm_machine_information info;
     lib_status status = vm_machine_get_information(machine, &info);
 
     if (status != LIB_STATUS_OK) return status;
-    *out_info = (x86_product_information){
+    *out_info = (x86_nxvm_product_information){
         .machine_name = binding->name,
         .cpu_name = core_machine_cpu_profile_name(info.cpu_profile),
         .memory_bytes = info.memory_bytes,
@@ -146,19 +146,19 @@ static lib_status vm_app_read_information(const void *context, const void *machi
     return LIB_STATUS_OK;
 }
 
-static lib_status vm_app_read_speed(const void *machine, x86_product_speed *out_speed)
+static lib_status vm_app_read_speed(const void *machine, x86_nxvm_product_speed *out_speed)
 {
     vm_machine_speed speed;
     lib_status status = vm_machine_get_speed(machine, &speed);
 
     if (status == LIB_STATUS_OK) *out_speed = speed == VM_MACHINE_SPEED_TURBO ?
-        X86_PRODUCT_SPEED_TURBO : X86_PRODUCT_SPEED_STANDARD;
+        X86_NXVM_PRODUCT_SPEED_TURBO : X86_NXVM_PRODUCT_SPEED_STANDARD;
     return status;
 }
 
-static lib_status vm_app_write_speed(void *machine, x86_product_speed speed)
+static lib_status vm_app_write_speed(void *machine, x86_nxvm_product_speed speed)
 {
-    return vm_machine_set_speed(machine, speed == X86_PRODUCT_SPEED_TURBO ?
+    return vm_machine_set_speed(machine, speed == X86_NXVM_PRODUCT_SPEED_TURBO ?
         VM_MACHINE_SPEED_TURBO : VM_MACHINE_SPEED_STANDARD);
 }
 
@@ -292,10 +292,10 @@ static lib_bool vm_app_standard_extension(void *context,
     emulator_machine *machine, emulator_session_machine_state state,
     const char *line, emulator_session_command_result *out)
 {
-    const app_composed_machine *app = context;
-    x86_product_information information;
-    x86_product_speed speed;
-    lib_u8 command[X86_PRODUCT_COMMAND_PATH_CAPACITY];
+    const x86_nxvm_product_machine *app = context;
+    x86_nxvm_product_information information;
+    x86_nxvm_product_speed speed;
+    lib_u8 command[X86_IBMPC_PRODUCT_COMMAND_PATH_CAPACITY];
 
     (void)machine;
     if (app == LIB_NULL || line == LIB_NULL || out == LIB_NULL) return LIB_FALSE;
@@ -331,16 +331,16 @@ static lib_bool vm_app_standard_extension(void *context,
     if (lib_text_compare((const char *)command, "speed") == 0) {
         if (vm_app_speed_read(app, &speed) == LIB_STATUS_OK)
             vm_app_extension_append(out, "Speed: %s\r\n",
-                speed == X86_PRODUCT_SPEED_TURBO ? "turbo" : "standard");
+                speed == X86_NXVM_PRODUCT_SPEED_TURBO ? "turbo" : "standard");
         return LIB_TRUE;
     }
     if (lib_text_compare((const char *)command, "speed standard") == 0 ||
         lib_text_compare((const char *)command, "speed turbo") == 0) {
         speed = lib_text_compare((const char *)command, "speed turbo") == 0 ?
-            X86_PRODUCT_SPEED_TURBO : X86_PRODUCT_SPEED_STANDARD;
+            X86_NXVM_PRODUCT_SPEED_TURBO : X86_NXVM_PRODUCT_SPEED_STANDARD;
         if (vm_app_speed_write(app, speed) == LIB_STATUS_OK)
             vm_app_extension_append(out, "Speed: %s\r\n",
-                speed == X86_PRODUCT_SPEED_TURBO ? "turbo" : "standard");
+                speed == X86_NXVM_PRODUCT_SPEED_TURBO ? "turbo" : "standard");
         else
             vm_app_extension_append(out,
                 "Cannot change speed while session is running.\r\n");
@@ -349,12 +349,12 @@ static lib_bool vm_app_standard_extension(void *context,
     return vm_app_extension_floppy(machine, state, (char *)command, out);
 }
 
-lib_status vm_app_configure_standard_extensions(app_composed_machine *app,
-    x86_product_command_extensions *out_extensions)
+lib_status vm_app_configure_standard_extensions(x86_nxvm_product_machine *app,
+    x86_ibmpc_product_command_extensions *out_extensions)
 {
     if (app == LIB_NULL || out_extensions == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    *out_extensions = (x86_product_command_extensions){
+    *out_extensions = (x86_ibmpc_product_command_extensions){
         .context = app,
         .submit = vm_app_standard_extension,
         .help = {vm_app_standard_help_rows,

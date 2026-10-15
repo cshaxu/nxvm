@@ -1,5 +1,16 @@
 # NXVM Import Index
 
+## T561 S1 Canonical SoftPC Split
+
+Owner-authorized project MIT import from SoftPC
+`3af1955932fcb9e61ceec3456493580e316a12c9`: src/test pairs for lib, emulator,
+x86-debug, x86-ibmpc and x86-nxvm. Lib/Emulator are already identical. Old
+src/x86 tools and Product are replaced by the three split packages without
+changing their canonical bytes or source notices; Core receivers adapt their
+namespaces and NXVM capability/lifetime boundary. No protected input or App
+source is imported. [S1 evidence](../../evidence/t561-s1-softpc-ten-tree-import.md)
+records exact file counts, normalized code review and verification.
+
 The NXVM copyright holder authorizes imports into this repository under the
 root MIT License. The source foundation is NXVM commit
 `6d6b7d70ab6ed83ab973d27aeea6db88f4e87e4f`; its original complete M1 manifest

@@ -16,8 +16,10 @@ src/
   lib/                  shared C and platform services
   emulator/{machine,session,ui,product}/
                         ISA-neutral execution, control, UI and composition
-  x86/{xasm32,debug,product}/
-                        portable x86 tools and shared IBM PC interaction
+  x86-debug/{xasm32,product}/
+                        portable assembler/disassembler and Debug CLI
+  x86-ibmpc/product/     shared PC interaction and process entry
+  x86-nxvm/product/      NXVM-specific information/speed contract
   core/{chips,x86,board-base,board-xt,board-at,machine,product}/
                            NXVM-only machine stack and family product support
   app-my5160/           fixed IBM 5160 App: main, product binding,
@@ -42,13 +44,14 @@ Common PC/AT descriptor/materialization and immutable ROM mapping live in
 core/board-base/pc_at_profile and pc_at_rom. Machine's pc_at_preparation owns the
 one allocated AT candidate and ROM preparation; each App supplies its fixed
 choices and validator. No mixed default/5170 compile guards remain.
-The shared x86/IBM-PC Debug and hotkey implementation lives in
-`src/x86/product`; neutral Machine/Session/UI composition, fixed monitor
+Shared PC Debug routing and hotkeys live in `src/x86-ibmpc/product`; reusable
+Debug CLI and assembly tools live in `src/x86-debug`. Neutral Machine/Session/UI composition, fixed monitor
 command grammar and help/startup framing live in `src/emulator/product` and
 `test/emulator/product`. `core/product`
 contains the NXVM-family INI, Machine adapter and extensions used by the four
-NXVM Apps; it is not an IBM PC Product dependency. Shared process entry/banner
-formatting consumes App-provided identity, request loader and factory. The
+NXVM Apps; it is not an IBM PC Product dependency. Shared process entry consumes
+App-provided identity/banner and already composed machine/UI values; Core owns
+the INI loader and factory. The
 former `app-nxvm/devices` implementation is removed. Shared board mechanisms
 live in the flat `core/board-*` receivers. MyDeskPro386 keeps D4 memory decoding
 in `d4_memory.*`, board signals in `d4_platform.*`, and fixed construction in
@@ -118,8 +121,9 @@ empty future-profile directories. Retained
 NXVM composition/configuration tests live directly in `test/app-nxvm/unit/`;
 firmware tests remain in `test/app-nxvm/unit/firmware/`. All other NXVM unit tests are direct children of `test/app-nxvm/unit/`. DeskPro unit tests
 are flat under `test/app-mydeskpro386/unit`. CPU, chip, execution-Core and board-timing tests
-live under `test/core`, preserving all CPU models. The remaining `test/x86` package
-covers only portable Debug/Xasm32. Neutral Core tests build independently of
+live under `test/core`, preserving all CPU models. `test/x86-debug` covers
+portable Debug/Xasm32; `test/x86-ibmpc` owns PC interaction tests and
+`test/x86-nxvm` owns its information/speed contract tests. Neutral Core tests build independently of
 NXVM board composition.
 `test/app-nxvm/integration/` stays separate;
 at cutover it uses the real INI path and external assets. Unit tests use code-
@@ -133,7 +137,7 @@ fixtures or removing duplicate machinery must not reduce behavior coverage.
 
 The four fixed Apps consume the sole Core Machine/Product implementation;
 they do not supply libraries to one another. Portable Debug/Xasm32 tooling
-remains in x86; NXVM PC mechanisms live in Core, and immutable model choices
+remains in x86-debug; NXVM PC mechanisms live in Core, and immutable model choices
 and D4 remain in each App.
 PC110 remains future work, not an empty source/test directory.
 

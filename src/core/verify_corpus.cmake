@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.23)
 if(NOT DEFINED CORE_ROOT)
     set(CORE_ROOT "${CMAKE_CURRENT_LIST_DIR}")
 endif()
-set(core_allowed_corpora core lib emulator x86)
+set(core_allowed_corpora core lib emulator x86-debug x86-ibmpc x86-nxvm)
 
 # Core owns the NXVM-only machine stack.  Validate source includes rather
 # than target names, so the boundary remains visible to standalone consumers.
@@ -31,7 +31,7 @@ foreach(path IN LISTS core_sources)
                 message(FATAL_ERROR "Core may not depend on an outer component: ${path} -> ${header}")
             endif()
         endif()
-        if(header MATCHES "^x86/product/" AND NOT path MATCHES "^product/")
+        if(header MATCHES "^x86-(ibmpc|nxvm)/product/" AND NOT path MATCHES "^product/")
             message(FATAL_ERROR "Only core/product may consume portable Product: ${path} -> ${header}")
         endif()
         if(header MATCHES "^core/product/" AND NOT path MATCHES "^product/")

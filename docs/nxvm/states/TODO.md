@@ -6,7 +6,8 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
 
 - [ ] **Shared package vocabulary (`TODO(Low)`).** Shared rules still enumerate
   historical `lib/common/x86` paths. Current shared roots are the source/test
-  pairs for Lib, Emulator and x86; NXVM-only machine/board mechanisms live in
+  pairs for Lib, Emulator, X86 Debug, X86 IBM PC and X86 NXVM after T561 S1;
+  NXVM-only machine/board mechanisms still live in
   Core. T556 S8 finding A6 requires a separate Td to reconcile shared-rule
   vocabulary; S9 does not modify docs/rules or the public six.
 - [ ] **Shared artifact wording (`TODO(Low)`).** Execution's historical fixed-

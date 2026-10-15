@@ -16,7 +16,7 @@ if (-not (Test-Path $sourceRoot -PathType Container)) {
 function Get-Owner([string]$Path) {
     if ($Path -match '^lib/') { return "lib" }
     if ($Path -match '^emulator/') { return "emulator" }
-    if ($Path -match '^x86/') { return "x86" }
+    if ($Path -match '^(x86-debug|x86-ibmpc|x86-nxvm)/') { return $Matches[1] }
     if ($Path -match '^core/chips/[^/]+/') { return "core/chips" }
     if ($Path -match '^core/(x86|board-base|board-xt|board-at|machine|product)/') {
         return "core/$($Matches[1])"
@@ -31,14 +31,16 @@ function Get-Owner([string]$Path) {
 $allowedTargets = @{
     "lib" = @()
     "emulator" = @("lib")
-    "x86" = @("lib", "emulator")
+    "x86-debug" = @("lib", "emulator")
+    "x86-ibmpc" = @("lib", "emulator", "x86-debug")
+    "x86-nxvm" = @("lib", "emulator")
     "core/chips" = @("lib")
     "core/x86" = @("lib", "core/chips")
     "core/board-at" = @("lib", "core/chips", "core/x86")
     "core/board-xt" = @("lib", "core/chips", "core/x86")
     "core/board-base" = @("lib", "core/chips", "core/x86", "core/board-at", "core/board-xt")
-    "core/machine" = @("lib", "emulator", "x86", "core/chips", "core/x86", "core/board-base")
-    "core/product" = @("lib", "emulator", "x86", "core/machine")
+    "core/machine" = @("lib", "emulator", "x86-debug", "core/chips", "core/x86", "core/board-base")
+    "core/product" = @("lib", "emulator", "x86-ibmpc", "x86-nxvm", "core/machine")
 }
 
 $observed = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)

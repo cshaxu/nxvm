@@ -86,10 +86,10 @@ lib_i32 main(void)
         .fixed_disk_mode = {LIB_STORAGE_MEDIUM_OVERLAY}, .memory_bytes = 1024u};
     vm_machine_config config;
     const vm_machine_config empty = {0};
-    app_composed_machine machine;
-    x86_product_information info;
-    x86_product_speed app_speed;
-    x86_product_command_extensions extensions;
+    x86_nxvm_product_machine machine;
+    x86_nxvm_product_information info;
+    x86_nxvm_product_speed app_speed;
+    x86_ibmpc_product_command_extensions extensions;
     emulator_session_command_result result;
     const lib_status expected[] = {LIB_STATUS_OK, LIB_STATUS_UNSUPPORTED,
         LIB_STATUS_NO_MEMORY, LIB_STATUS_INVALID_STATE};
@@ -102,7 +102,7 @@ lib_i32 main(void)
         return 1;
     for (phase = 0u; phase < 4u; ++phase) {
         releases = creations = descriptions = 0u;
-        machine = (app_composed_machine){.composition.machine = &candidate};
+        machine = (x86_nxvm_product_machine){.composition.machine = &candidate};
         if (vm_app_compose_machine(&binding, &request, &machine) != expected[phase])
             return 2;
         if (phase == 0u) machine.composition.destroy(machine.composition.machine);
@@ -127,11 +127,11 @@ lib_i32 main(void)
         info.fixed_disk_image_bytes != 4096u || info.floppy_image_bytes != 360u ||
         !info.floppy_media_inserted || !info.fixed_disk_present ||
         !info.fixed_disk_media_connected || !info.external_firmware) return 5;
-    if (machine.set_speed(machine.composition.machine, X86_PRODUCT_SPEED_TURBO) != LIB_STATUS_OK ||
+    if (machine.set_speed(machine.composition.machine, X86_NXVM_PRODUCT_SPEED_TURBO) != LIB_STATUS_OK ||
         speed != VM_MACHINE_SPEED_TURBO ||
         machine.get_speed(machine.composition.machine, &app_speed) != LIB_STATUS_OK ||
-        app_speed != X86_PRODUCT_SPEED_TURBO ||
-        machine.set_speed(machine.composition.machine, X86_PRODUCT_SPEED_STANDARD) != LIB_STATUS_OK ||
+        app_speed != X86_NXVM_PRODUCT_SPEED_TURBO ||
+        machine.set_speed(machine.composition.machine, X86_NXVM_PRODUCT_SPEED_STANDARD) != LIB_STATUS_OK ||
         speed != VM_MACHINE_SPEED_STANDARD) return 6;
     if (vm_app_configure_standard_extensions(&machine, &extensions) != LIB_STATUS_OK ||
         extensions.submit == LIB_NULL ||

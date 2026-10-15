@@ -43,7 +43,7 @@ lib_i32 integration_ini_session_assets_present(
 
 lib_status integration_ini_session_restart(integration_ini_session *session)
 {
-    app_composed_machine composed = {0};
+    x86_nxvm_product_machine composed = {0};
     void *machine = LIB_NULL;
     lib_status status;
 

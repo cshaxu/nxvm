@@ -5,11 +5,14 @@ get_filename_component(CORE_SOURCE_ROOT "${CORE_ROOT}/.." ABSOLUTE)
 if(NOT TARGET core-machine)
     add_subdirectory("${CORE_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/core")
 endif()
-if(NOT TARGET x86-product)
-    add_subdirectory("${CORE_SOURCE_ROOT}/product" "${CMAKE_CURRENT_BINARY_DIR}/product")
+if(NOT TARGET x86-ibmpc-product)
+    add_subdirectory("${CORE_SOURCE_ROOT}/x86-ibmpc" "${CMAKE_CURRENT_BINARY_DIR}/x86-ibmpc")
+endif()
+if(NOT TARGET x86-nxvm-product)
+    add_subdirectory("${CORE_SOURCE_ROOT}/x86-nxvm" "${CMAKE_CURRENT_BINARY_DIR}/x86-nxvm")
 endif()
 
 add_library(core-product STATIC factory.c ini.c startup.c)
 target_include_directories(core-product PUBLIC ${CORE_SOURCE_ROOT})
-target_link_libraries(core-product PUBLIC core-machine x86-product
+target_link_libraries(core-product PUBLIC core-machine x86-ibmpc-product x86-nxvm-product
     types storage base)

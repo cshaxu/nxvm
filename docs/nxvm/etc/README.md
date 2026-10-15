@@ -1,5 +1,8 @@
 # Supporting Documentation Index
 
+T561 S1: [Pinned SoftPC ten-tree import](evidence/t561-s1-softpc-ten-tree-import.md)
+records exact paths, normalized source review, receiver lifetime and qualification.
+
 T560 S1: [Complete 486SX CPU convergence inventory](evidence/t560-s1-cpu-convergence.md)
 
 T560 S2: [Base system implementation evidence](evidence/t560-s2-base-system.md)

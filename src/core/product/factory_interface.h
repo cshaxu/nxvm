@@ -2,8 +2,9 @@
 #define VM_APP_FACTORY_INTERFACE_H
 
 #include "core/product/request_interface.h"
-#include "x86/product/entry_interface.h"
-#include "x86/product/command_interface.h"
+#include "x86-ibmpc/product/entry_interface.h"
+#include "x86-ibmpc/product/command_interface.h"
+#include "x86-nxvm/product/machine_interface.h"
 #include "core/machine/input_interface.h"
 
 /* Fixed composition values and assets outlive Product. prepare interprets the
@@ -23,13 +24,13 @@ typedef struct vm_app_machine_binding {
 lib_status vm_app_configure_machine(const vm_app_machine_binding *binding,
     const vm_session_request *request, vm_machine_config *out_config);
 lib_status vm_app_compose_machine(const vm_app_machine_binding *binding,
-    const vm_session_request *request, app_composed_machine *out_machine);
+    const vm_session_request *request, x86_nxvm_product_machine *out_machine);
 lib_status vm_app_configure_ui(const vm_session_request *request,
     app_composed_ui *out_ui);
 
 /* NXVM-family commands are registered by each App; shared Product dispatch
  * has no INFO, SPEED or floppy cases. */
-lib_status vm_app_configure_standard_extensions(app_composed_machine *machine,
-    x86_product_command_extensions *out_extensions);
+lib_status vm_app_configure_standard_extensions(x86_nxvm_product_machine *machine,
+    x86_ibmpc_product_command_extensions *out_extensions);
 
 #endif

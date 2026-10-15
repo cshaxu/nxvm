@@ -9,7 +9,7 @@ if(EXISTS "${obsolete_adapter}")
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/emulator/product/composition.c" composition_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/command.c" product_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86-ibmpc/product/command.c" product_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/debug_adapter.c"
     debug_source)
 

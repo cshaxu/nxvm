@@ -5,7 +5,7 @@ include("${CMAKE_SOURCE_DIR}/src/core/product/build.cmake")
 
 add_executable(nxvm-firmware-build EXCLUDE_FROM_ALL
     src/app-nxvm/firmware/build.c)
-target_link_libraries(nxvm-firmware-build PRIVATE x86-xasm32 storage)
+target_link_libraries(nxvm-firmware-build PRIVATE x86-debug-xasm32 storage)
 
 set(nxvm_default_firmware_sources)
 foreach(unit IN ITEMS entry boot video equipment memory system floppy_post
@@ -57,7 +57,9 @@ set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     shared-lib-tests
     shared-emulator-tests
-    shared-x86-tests
+    shared-x86-debug-tests
+    shared-x86-ibmpc-tests
+    shared-x86-nxvm-tests
     core-product-tests
     core-x86-tests
     core-board-tests)
@@ -755,12 +757,12 @@ target_include_directories(vm-app PUBLIC
     "${CMAKE_BINARY_DIR}/generated"
 )
 target_link_libraries(vm-app PUBLIC
-    x86-product
+    x86-ibmpc-product
     core-product
     emulator-session
     emulator-ui
-    x86-debug
-    x86-xasm32
+    x86-debug-product
+    x86-debug-xasm32
     vm-profile-selected
     storage
     base)
@@ -1915,8 +1917,8 @@ function(add_current_vm_artifact target version)
         APP_PRODUCT_INI_NAME="${NXVM_PRODUCT_INI_NAME}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0560)
-add_current_vm_artifact(vm-0-5-0560 "0.5.0560")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0561)
+add_current_vm_artifact(vm-0-5-0561 "0.5.0561")
 add_dependencies(pc-product-ini-identity-smoke ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/test/pc-product-ini-identity")
 project_add_test(pc-product-ini-identity-smoke integration "${PROJECT_CURRENT_VM_RUNTIME_PATH}"
@@ -2859,13 +2861,13 @@ file(GENERATE
 set(PROJECT_DIRECT_COMPILATION_PRODUCTION_TARGETS
     mydeskpro386-d4
     core-product
-    x86-product
+    x86-ibmpc-product
     core-board-base
     core-x86
     core-chip-cpu
     emulator-machine
-    x86-xasm32
-    x86-debug
+    x86-debug-xasm32
+    x86-debug-product
     vm-profile-selected
     vm-profile-tests
     core-machine-media

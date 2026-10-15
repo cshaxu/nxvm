@@ -2,8 +2,11 @@
 
 ## Admission And Objective
 
-Unnumbered M5 candidate at the head of the [NXVM queue](../states/QUEUE.md),
-by owner direction on 2026-10-15. The owner requests:
+Admitted as M5 T561 on 2026-10-15 after owner-approved T560 staged closure
+`453455e59`. The owner inserts S1 before the extraction: import SoftPC's
+Lib, Emulator, X86 Debug, X86 IBM PC and X86 NXVM source/test packages
+byte-for-byte, including the owner's corrected X86 IBM PC scope.
+The original owner request is:
 "core -> x86-core + x86-nxvm，其中x86-core可供myraidenii使用", followed by
 "回到主工作树，把这个写成proposal加入队列首位".
 
@@ -14,14 +17,10 @@ SoftPC can continue using its own machine implementation with X86 Debug and
 X86 IBM PC; it is not required to adopt this execution core. MyNES and MyNeoGeo
 must not acquire an x86 dependency merely to use shared host facilities.
 
-The owner subsequently approved T560 staged closure before this refactor.
-This proposal allocates no T/S identifier, authorizes no production edits and
-does not discharge the CPU successor's remaining timing/admission work.
-Admission freezes the then-accepted implementation and test baseline;
-do not extract from another session's uncommitted CPU work. Planning inspection
-used main HEAD `6621f09f011449e08cbe24b04951e001e37f5af6`, whose working tree
-contains ongoing S9 changes. The earlier research-worktree baseline is not the
-implementation baseline for this candidate.
+The accepted implementation baseline is clean `453455e59`, including frozen
+T560 S9 `b906c7138`. The CPU successor retains all remaining C16/C17/final
+qualification; this refactor does not resume that work or upgrade its grades.
+Earlier planning inspection used `6621f09f0`; it is not the extraction baseline.
 
 ## Target Components
 
@@ -129,7 +128,21 @@ MyRaidenII and MyNeoGeo implementation changes are not implicit scope.
 
 ## Planned Batches
 
-These are future S-sized batches, not allocated identifiers:
+S1 is admitted for the exact ten-tree import from clean SoftPC
+`3af1955932fcb9e61ceec3456493580e316a12c9`. Lib/Emulator's four trees already
+match byte-for-byte. Add the three split packages and their independent tests;
+retain all upstream bytes and manifests. Necessary registration infrastructure
+must not weaken the existing Core or shared tests. X86 IBM PC is explicitly
+included by the owner's scope correction.
+
+S1 switches running Apps to the complete imported product/tools split and
+retires old src/test/x86. Adapt Core consumers without compatibility aliases
+or CPU semantic changes. Canonical packages remain byte-identical; Core owns
+the necessary NXVM information/speed and machine-lifetime adapter.
+Do not claim the header-only X86 NXVM package already implements the full
+planned machine/chip/board package.
+
+The following remaining batches are plans, not allocated S identifiers:
 
 | Batch | Deliverable | Exit evidence |
 | --- | --- | --- |

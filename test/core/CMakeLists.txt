@@ -18,6 +18,7 @@ set(SHARED_CORE_TEST_TARGETS)
 include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 shared_register_test(core product/ini core-product)
 shared_register_test(core product/factory core-product)
+shared_register_test(core product/startup core-product)
 
 set(core_external_test_directories
     "${CMAKE_CURRENT_LIST_DIR}/setup"

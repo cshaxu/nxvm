@@ -3,7 +3,7 @@
 
 #include <windows.h>
 
-#include "x86/debug/protocol_interface.h"
+#include "x86-debug/product/protocol_interface.h"
 #include "test/core/setup/session_ini.h"
 
 #define VM_TIMER_BDA_TICKS 0x046cu
