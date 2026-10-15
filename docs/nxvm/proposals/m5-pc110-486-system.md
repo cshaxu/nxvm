@@ -82,9 +82,11 @@ coverage record; CURRENT alone admits each executing batch.
 - Final batch: complete ledger reconciliation, production Core connection,
   retained-machine regressions and full dual-width artifact qualification.
 
-S1--S5 are accepted; S5 delivery 33cb2efe1 qualifies actual cache/test commands,
+S1--S6 are accepted. S5 delivery 33cb2efe1 qualifies actual cache/test commands,
 physical routing and shared memory LOCK with locked page-table updates.
-S6 feature/VME/debug/exception/SX-FPU source/current-path review is admitted.
+S6 delivery 926bfe185 qualifies selected VME/debug/exception/SX-FPU semantics
+and carried entry priorities at its explicit source/model grades. S7's
+SMM/power source and state-owner review is next, not yet an active packet.
 Later numeric S boundaries
 remain plans until admission; simple adjacent batches may combine. Development uses focused
 batch tests, followed by required closure qualification once per stable revision.

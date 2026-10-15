@@ -472,3 +472,14 @@ inputs are unchanged. [S6 delivery evidence](../etc/evidence/t560-s6-feature-exc
 contains counts, terminal logs, source/model limits and final artifact hashes.
 This is the complete implementation candidate pending pushed-P review; S6
 acceptance and later S7--S10 completion are not inferred from these results.
+
+One-session coordinator actual-change review accepts pushed implementation
+926bfe1855ef9959a0c1b2519ff9c0f7b37b3382 after checking the complete original
+S6 packet against its actual source/tests/gate/manifest/docs/eight EXEs and
+source grades, not only the passing summaries. The CPU remains one owner;
+the public FPU fixture and existing lifecycle gate are preserved, while the
+internal Executor proof is properly classified. S6 closes through pure
+governance P2 with no executable-input change. T560 stays open and S7--S10,
+including SMM/power, whole inherited semantics, timing and final construction
+admission, retain all their obligations. No complete 486SX or PC110 runtime
+claim is made by this bounded acceptance.

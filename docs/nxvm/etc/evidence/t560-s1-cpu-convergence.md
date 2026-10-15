@@ -102,8 +102,8 @@ mode policy in Core. The public neutral FPU fixture remains unchanged.
 
 Final 602/602 units per width, complete specialized gates, eight passing
 integration groups and eight verified 0560 EXEs are recorded in the S6
-delivery candidate. P push and coordinator acceptance remain CURRENT's
-responsibility. This evidence does not close C11/C12 SMM/power, C15's whole
+delivery. Coordinator actual-change review accepts pushed 926bfe185; CURRENT
+records S6 closure. This evidence does not close C11/C12 SMM/power, C15's whole
 inherited corpus, C16 timing or C17 admission; S7--S10 retain them in T560.
 No applicable CPU gap is transferred outside this task.
 

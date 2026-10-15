@@ -1064,3 +1064,30 @@ malformed-input silicon behavior are not promoted from the declared models.
 No manual RDP/desktop interaction, complete Windows support or complete 486SX
 CPU qualification is claimed. C11/C12 SMM/power, C15 whole inherited semantics,
 C16 timing and C17 production admission remain in mandatory S7--S10.
+
+## Coordinator Actual-Change Acceptance
+
+The one-session coordinator reviews pushed implementation
+926bfe1855ef9959a0c1b2519ff9c0f7b37b3382, rather than accepting the executor
+report alone. Actual source, test, gate, manifest, document and artifact changes
+are reconciled with the original request, active packet and R1--R7 inventory.
+The review accepts the single flags/CR4 rule, real VME redirection, unified DB
+entry, source-scoped gate/ESP handling and SX absent-FPU semantics. It checks
+that the old instruction style and earlier-family branches remain, private
+helpers have distinct responsibilities, accepted effects are not replayed,
+public FPU proof is restored, internal Executor proof has its actual owner,
+and the Jcc gate retains its observation/transaction ordering assertion.
+
+The review also checks original-source versus L2 grades, the finite test
+tables and failure outcomes, final whole-unit/specialized/integration results,
+all eight artifact hashes, PE/Release identities and unchanged excluded inputs.
+No partial group, initial failed wrapper, compile-only result or manual RDP
+assumption substitutes for the final proof. The three remaining strict-matrix
+deferrals and existing warning exceptions are not relabelled as passed strict
+source. No Shared-six, MyNES, App source or owner-input change is admitted.
+
+The coordinator accepts P1 and closes S6 through the subsequent purely
+governance P2. Its document edits change no executable input; the eight P1
+artifacts remain current without another rebuild. T560 remains open with
+S7--S10 mandatory, and production 486 admission is still closed. No CPU
+obligation is moved out of this task to manufacture task completion.
