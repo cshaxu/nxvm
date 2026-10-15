@@ -6,33 +6,13 @@ M5 T561 remains open. S1 is accepted after coordinator actual-change review of
 pushed Shared `15d86fc8e` and NXVM `6c95c2da3`. S2 is accepted after coordinator
 actual-change review of pushed `82e3257cc`. S3 CPU/FPU extraction is accepted
 after actual-change review of pushed Shared `8bb5bcaa5` and NXVM `039d946ab`.
-S4 is admitted next for PC metadata/default/trace separation before neutral
-Machine extraction; it does not resume CPU qualification.
+S4 PC metadata/default/trace separation is accepted after actual-change review
+of pushed `f136911be`. Neutral Machine extraction is next; CPU qualification
+does not resume.
 The [proposal](../proposals/m5-core-x86-core-nxvm-split.md) and
 [convergence ledger](../history/M5-T561-core-package-split.md) retain I1--I5.
 
-## Active Packet — M5 T561 S4
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T561 S4 after accepted S3 `1df04f40d`; one-session coordinator/executor. |
-| Admission And Approval | Owner-approved complete split and automatic sequential S admission; NXVM target only for this prerequisite. No imported Shared package or MyNES implementation change. |
-| Objective | Consume I3's P2/P3/P5 prerequisite: move the complete PC timing qualification table, its construction/publication and board eligibility decisions to Board-Base; board owns PC-specific trace IDs and PC CPU/RAM defaults. Neutral execution consumes explicit CPU and memory and retains one time/bus/execution owner. |
-| Non-goals | No CPU/FPU algorithms or timing grades, C16/C17, neutral Machine relocation, device-order redesign, Lib/Emulator changes, new host thread, manager, trace buffer, compatibility alias or sibling import. |
-| Reference Baseline | Clean pushed `1df04f40d`; S2's P2/P3/P5 receiving decisions and S3's qualified eight 0561 PC artifacts. |
-| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), [S2 ownership decisions](../etc/evidence/t561-s2/review.md), I3 prerequisite in T561 history. |
-| Files And ABI Surface | Core x86 machine/interface/state/scheduler/attachment/trace, Board-Base plan/board/state/deadline/trace contract, direct Core/App tests and checkers, Core manifests and NXVM docs/eight artifacts. Move 30-row declaration types/storage/APIs to their sole board owner with same IDs/grades/seams; remove qualification argument from neutral deadline callback. Neutral trace envelope/record uses existing-width scalar IDs; board owns seven PC device IDs with original values, neutral bus-DMA event remains neutral. Board prepare resolves DEFAULT CPU and zero RAM; generic allocator requires nonzero explicit RAM, board retains PC resize limits. Preliminary non-mechanical production +180--320/-220--380, tests +140--300/-140--300, plus mechanical constant/receiver substitutions; refine from actual audit. No new persistent state, only moved ownership. |
-| Applicable Rules | EXECUTION/ARCHITECTURE/CODING/DOCUMENT, NXVM design ARCHITECTURE/CODING and source policy; architecture-governance before coding-governance. Sole state owner, inward dependencies, Types vocabulary, mirrored source/test responsibility, preserved hardware/source eligibility and original instruction style. |
-| Verification | Original x64/x86 Release Ninja/ccache graphs, -j8 build/-j4 tests; focused board qualification/default/trace/resize/deadline tests, complete repository units and existing specialized gates; required four-profile integrations, rebuild/deploy eight 0561 PC EXEs with published CLI/INI/PE/hash proof; manifests/DAG/types/documentation and full actual-diff audit. No alternative graph/cache reset or budget weakening. |
-| Expected Markers | Generic executor no longer declares/stores PC qualification or PC-only trace tags/defaults; board table remains complete, copied once, failure-atomic and reset-stable. Original device trace IDs/order and Release no-op preserved. Explicit small neutral RAM works; PC defaults/resize bounds and closed production 486SX remain unchanged. All required receiving proof passes both widths. |
-| Asset Needs | Same approved external firmware/media inputs. Eight PC executable inputs change; rebuild 0.5.0561 pairs, preserve INI/disks/ROMs/snapshots and all MyNES assets. |
-| Reporting Requirements | Report concrete design/files/estimated diff before implementation, ownership and qualification progress, actual per-surface added/deleted/net lines, retained paths and unverified desktop/RDP boundaries, pushed implementation then governance acceptance. |
-| Stop Conditions | Lost qualification IDs/grades/provenance, changed guest device ordering or CPU behavior, duplicate table/default authority, new outward edge, missing receiving coverage/input, necessary Lib/Emulator modification or unrelated conflict. Revise material design before continuing; never weaken assertions to obtain a pass. |
-| Exit Criteria | P2/P3/P5 obligations reconciled with original qualification semantics, no mirrored PC table in executor, complete dual-width proof/eight artifacts and coordinator actual-change acceptance. Push complete NXVM delivery then governance acceptance; T561 remains open for I3 execution and I4/I5. |
-| Original Owner Request | Execute the complete agreed Core-to-X86-Core/X86-NXVM split with Product distinct; match all test subcomponent layouts to their production owners. |
-| Similar-Issue Sweep | Every timing-table read/write/validator and deadline callback; all PC trace emitters/readers and numeric identity; constructor/reconfigure/default callers and tests, board admission, qualification gates and historical evidence keys. Preserve or explicitly transfer each remaining owner, never add a second scheduler or fallback path. |
-
-## Delivered S4 PC Policy Separation
+## Accepted S4 PC Policy Separation
 
 [Frozen S4 evidence](../etc/evidence/t561-s4-pc-policy-separation.md) and
 [170-file hash review](../etc/evidence/t561-s4-file-review.tsv) record the moved
@@ -47,8 +27,11 @@ gates, 48 receiving integration executions per width plus restored-default
 identity, and all eight published CLI/INI/PE/version/hash checks. The eight
 0561 PC EXEs are rebuilt and deployed; both graphs return to default. Imported
 packages, X86 Core CPU/FPU, Lib/Emulator, MyNES and owner inputs are unchanged.
-Manual RDP/physical/full Windows GUI qualification is not claimed. Actual-change
-coordinator acceptance is still required; I3 extraction, I4 and I5 remain open.
+Manual RDP/physical/full Windows GUI qualification is not claimed. Coordinator
+actual-change review accepts pushed `f136911be` against the packet, original
+request, moved policy bodies, tests, frozen hashes and published assets. The
+full S4 packet remains in that implementation revision. I3 extraction, I4 and
+I5 remain open; T561 stays open and no implementation runs without the next packet.
 
 ## Accepted S3 CPU/FPU Extraction
 
