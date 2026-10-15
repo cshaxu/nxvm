@@ -815,3 +815,11 @@ eight PE/hash-verified 0560 artifacts. Core manifest hash-first ordering is
 preserved to avoid unrelated churn. Detailed original/L2 limits, actual
 source/test diff and artifact identities are in S8 evidence. Complete-P and
 coordinator review are next; C16/S9 and C17/S10 stay mandatory and T560 open.
+
+On 2026-10-15 the same session switches to coordinator and accepts pushed
+P1 `585e08dad2144e13681f8f72838a6cc40be8d464` after actual-change review.
+The S8 evidence records the reviewed owners, finite dispositions, qualification
+and limits. S8/C15 is closed, not the complete CPU task. The active packet is
+removed from Current and retained in P1's Git snapshot; the latest open T560
+keeps compact progress. No S9 implementation is performed before admission.
+Production timing/admission and final qualification remain S9/S10.

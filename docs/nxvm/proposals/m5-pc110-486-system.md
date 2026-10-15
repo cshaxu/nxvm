@@ -93,6 +93,16 @@ rechecks. Complete specialized gates and all eight integration/release groups
 pass, and eight verified 0560 EXEs are deployed. C11/C12 acceptance is bounded
 by its explicit source/model grades; C15/S8, C16/S9 and C17/S10 remain open.
 This is not production 486 admission or complete CPU qualification.
+
+S8 delivery `585e08dad` is accepted after coordinator actual-change review.
+Its [complete functional disposition](../etc/evidence/t560-s8-inherited-semantics.md#c15-final-functional-disposition-candidate)
+reconciles C15's whole frozen opcode/group/form universe at the explicitly
+recorded original/L2 source grades, with real fault/restart and older-family
+proof. Final whole units pass 605/605 per width, both specialized aggregates
+pass, all eight profile integration groups pass (48 rows per width without
+repeated MyNES rows), and eight PE/hash-verified 0560 EXEs are deployed.
+C15/S8 is closed; C16/S9 timing and C17/S10 production admission remain open.
+No fitted-board, manual RDP or full Windows GUI claim is added.
 Later numeric S boundaries
 remain plans until admission; simple adjacent batches may combine. Development uses focused
 batch tests, followed by required closure qualification once per stable revision.

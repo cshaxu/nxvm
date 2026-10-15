@@ -2619,3 +2619,35 @@ are still mandatory; this is not a complete 486 CPU/PC110 or full Windows 3.1
 GUI qualification. Automated desktop-labelled tests pass as listed in the
 whole/integration logs; no manual RDP, phone keyboard, desktop gameplay or
 complete Windows GUI session has been performed.
+
+## Coordinator Actual-Change Acceptance
+
+On 2026-10-15 the same session switches from executor to coordinator and
+reviews pushed complete P1 `585e08dad2144e13681f8f72838a6cc40be8d464`.
+This is an explicit one-session dual-role review, not an independent-person
+review. The actual three production-file diffs, original table-style handlers,
+metadata/preview linkage, CPU-owned transient fields and lifecycle callers,
+retained test-owner changes, new integer boundary table, inventory masks,
+NXVM gate token, manifests, committed artifact paths and terminal logs are
+checked against the frozen S8 packet and C15 universe. P1 and the worktree
+source/tests/artifacts are identical; the acceptance change is documents only.
+
+Accepted invariants: one CPU execution/exception owner; no second decoder or
+memory/port route; real frames and accepted side effects rather than terminal
+shutdown as a universal oracle; complete reserved/admitted form dispositions;
+explicit original/retrospective L2 and undefined-output limits; retained old
+profile behavior and timing assertions; existing Lib Types and inward component
+dependencies; no Shared-six/MyNES/input mutation; all required x64/x86 tests,
+gates, integrations and eight artifacts actually qualified. The two private
+transient fields preserve information that architectural EFLAGS overwrites
+between iterations and have actual fault/lifetime consumers, not a mirrored
+product state or a framework. The small FE cleanup removes invalid work at
+its owner without weakening legal INC/DEC or adding a fallback.
+
+C15 is accepted at the functional source/model grades recorded above; S8 is
+closed. C16/S9 timing and C17/S10 production admission/final T qualification
+remain mandatory and T560 stays open. No manual/RDP/full Windows GUI or fitted
+PC110 hardware qualification is claimed. The original packet is retained in
+P1's Git snapshot, and Current now has compact open-T progress with no active
+S until the next admission. No production or artifact change accompanies
+this acceptance record; P1's eight deployment identities remain current.

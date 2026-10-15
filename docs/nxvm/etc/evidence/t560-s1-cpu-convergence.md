@@ -132,6 +132,29 @@ all eight integration/release groups pass; eight stripped 0560 PC EXEs are
 deployed with PE, version, INI identity and SHA-256 evidence. This acceptance
 does not claim Windows 3.1 GUI or manual/RDP qualification.
 
+### S8 Inherited Functional Subcase Acceptance
+
+Coordinator actual-change review accepts pushed implementation `585e08dad`
+against the [complete S8 functional disposition and qualification](t560-s8-inherited-semantics.md#c15-final-functional-disposition-candidate).
+C15's two opcode spaces, group extensions and twenty inherited instruction
+families have selected-family proof or explicit source-qualified undefined/
+non-applicable dispositions. Confirmed selector, task/VM86, query, decimal,
+admission, REP compare, PUSH shutdown and FE operand-order classes are repaired
+at the existing CPU owners. Historical/retrospective source grades remain
+explicit; no successful stub or second executor substitutes for a legal form.
+
+Full repository units pass 605/605 per width, both complete specialized
+aggregates pass, all eight fixed-profile integration groups pass (48 rows per
+width), both restored-default process identities pass, and all eight stripped
+0560 EXEs have verified PE widths and recorded hashes. Shared-six, MyNES
+source/binaries and owner inputs are unchanged. The complete P is published.
+
+C15 is accepted at those functional source/model grades. C16/S9 still owns
+the whole selected timing corpus and dynamic penalties; C17/S10 still owns
+production construction and final task qualification. Production SX admission
+remains closed. Fitted PC110 identity/electrical limits and unperformed manual
+RDP/Windows GUI validation are not inferred from this CPU proof.
+
 ## Initial Direct Inspection
 
 ### S4 Translation-State Subcase Evidence
