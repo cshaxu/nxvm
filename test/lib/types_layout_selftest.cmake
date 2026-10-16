@@ -5,7 +5,7 @@ cmake_policy(SET CMP0057 NEW)
 set(fixture "${TEST_WORK_DIR}/types-layout-fixture")
 file(MAKE_DIRECTORY "${fixture}")
 file(REMOVE "${fixture}/CMakeLists.txt")
-foreach(component types base console console-broker storage audio kvm-base kvm-window kvm-console)
+foreach(component types base console console-broker storage audio/pcm audio/midi audio/fm kvm-base kvm-window kvm-console)
     file(REMOVE "${fixture}/${component}/edge.h")
 endforeach()
 file(COPY "${LIBRARY_ROOT}/types" DESTINATION "${fixture}")
@@ -19,7 +19,10 @@ file(REMOVE "${fixture}/consumer.c" "${fixture}/types/probe.h"
     "${fixture}/console-broker/win32/lock_probe.c"
     "${fixture}/kvm-window/win32/encoding_probe.c"
     "${fixture}/kvm-window/input_probe.c"
-    "${fixture}/kvm-console/input_probe.c")
+    "${fixture}/kvm-console/input_probe.c"
+    "${fixture}/audio/pcm/probe_interface.h"
+    "${fixture}/audio/pcm/win32/probe_interface.h"
+    "${fixture}/audio/pcm/win32/probe.c")
 set(probe "${fixture}/types/probe.h")
 foreach(retired IN ITEMS kvm-base/mailbox_wake_interface.h
         kvm-base/win32/mailbox.c kvm-base/linux/mailbox.c)
@@ -52,7 +55,8 @@ endforeach()
 check_layout(pass)
 
 foreach(retired IN ITEMS host_sync_mutex host_clock_milliseconds console_mutex
-        host_console_broker HOST_CONSOLE_RAW_EVENTS)
+        host_console_broker HOST_CONSOLE_RAW_EVENTS LIB_BASE_CONSOLE_INTERFACE_H
+        KVM_LINKVM_KEY_ENTER kvm_linkvm_input)
     file(WRITE "${fixture}/console/edge.h" "void ${retired}(void);\n")
     check_layout(fail)
 endforeach()
@@ -71,23 +75,27 @@ foreach(path IN ITEMS console/lock_probe.c kvm-base/mailbox_probe.c)
     file(REMOVE "${fixture}/${path}")
 endforeach()
 
-# Exact component DAG: exhaust all 64 possible direct edges, not only a few
+# Exact component DAG: exhaust all ordered direct edges, not only a few
 # forbidden filename patterns. Each fixture is removed before the next check.
-set(components types base console console-broker storage audio kvm-base kvm-window kvm-console)
+set(components types base console console-broker storage audio/pcm audio/midi audio/fm kvm-base kvm-window kvm-console)
 set(allowed_types "")
 set(allowed_base types)
 set(allowed_console types base)
 set(allowed_console-broker types base console)
 set(allowed_storage types)
-set(allowed_audio types base)
+set(allowed_audio-pcm types base)
+set(allowed_audio-midi types)
+set(allowed_audio-fm types)
 set(allowed_kvm-base types base)
 set(allowed_kvm-window types kvm-base)
 set(allowed_kvm-console types base console kvm-base)
 foreach(owner IN LISTS components)
+    string(REPLACE "/" "-" owner_target "${owner}")
     file(MAKE_DIRECTORY "${fixture}/${owner}")
     foreach(dependency IN LISTS components)
+        string(REPLACE "/" "-" dependency_target "${dependency}")
         set(expected fail)
-        if(owner STREQUAL dependency OR dependency IN_LIST allowed_${owner})
+        if(owner STREQUAL dependency OR dependency IN_LIST allowed_${owner_target})
             set(expected pass)
         endif()
         file(WRITE "${fixture}/${owner}/edge.h"
@@ -95,11 +103,32 @@ foreach(owner IN LISTS components)
         check_layout(${expected})
         file(REMOVE "${fixture}/${owner}/edge.h")
         file(WRITE "${fixture}/CMakeLists.txt"
-            "target_link_libraries(${owner} INTERFACE ${dependency})\n")
+            "target_link_libraries(${owner_target} INTERFACE ${dependency_target})\n")
         check_layout(${expected})
         file(REMOVE "${fixture}/CMakeLists.txt")
     endforeach()
 endforeach()
+
+# A nested PCM owner has the same private/platform boundary as flat owners.
+set(pcm_probe "${fixture}/audio/pcm/win32/probe.c")
+file(MAKE_DIRECTORY "${fixture}/audio/pcm/win32")
+foreach(header IN ITEMS audio/pcm/stream.h types/win32/audio.h)
+    file(WRITE "${pcm_probe}" "#include \"lib/${header}\"\n")
+    check_layout(pass)
+endforeach()
+foreach(header IN ITEMS audio/pcm/linux/stream.h types/linux/sync.h)
+    file(WRITE "${pcm_probe}" "#include \"lib/${header}\"\n")
+    check_layout(fail)
+endforeach()
+file(REMOVE "${pcm_probe}")
+file(WRITE "${fixture}/audio/pcm/probe_interface.h"
+    "#include \"lib/audio/pcm/win32/stream.h\"\n")
+check_layout(fail)
+file(REMOVE "${fixture}/audio/pcm/probe_interface.h")
+file(WRITE "${fixture}/audio/pcm/win32/probe_interface.h" "/* invalid public location */\n")
+check_layout(fail)
+file(REMOVE "${fixture}/audio/pcm/win32/probe_interface.h")
+check_layout(pass)
 file(WRITE "${fixture}/CMakeLists.txt"
     "TARGET_LINK_LIBRARIES(console-broker PRIVATE kvm-window)\n")
 check_layout(fail)

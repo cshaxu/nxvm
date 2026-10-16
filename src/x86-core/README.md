@@ -1,4 +1,6 @@
-# NXVM Shared X86 Core
+# Shared X86 Core
+
+Standalone CMake projects are `shared-x86-core` (source) and `shared-test-x86-core` (tests).
 
 CPU, FPU and neutral execution mechanisms, with no PC motherboard, firmware
 selection, media or host-product policy. `cpu` owns architectural state, decoding, execution, exceptions, bus

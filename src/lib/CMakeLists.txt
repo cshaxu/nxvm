@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    project(nxvm_shared_library LANGUAGES C)
+    project(shared-lib LANGUAGES C)
     include(CTest)
 endif()
 set(CMAKE_C_STANDARD 11)
@@ -92,17 +92,31 @@ add_library(storage STATIC ${LIBRARY_STORAGE_SOURCES})
 library_root(storage)
 target_link_libraries(storage PUBLIC types)
 
-add_library(audio STATIC audio/stream.c)
+add_library(audio-pcm STATIC audio/pcm/stream.c)
 if(WIN32)
-    target_sources(audio PRIVATE audio/win32/stream.c)
+    target_sources(audio-pcm PRIVATE audio/pcm/win32/stream.c)
 else()
-    target_sources(audio PRIVATE audio/linux/stream.c)
+    target_sources(audio-pcm PRIVATE audio/pcm/linux/stream.c)
 endif()
-library_root(audio)
-target_link_libraries(audio PUBLIC types base)
+library_root(audio-pcm)
+target_link_libraries(audio-pcm PUBLIC types base)
+
+add_library(audio-midi STATIC audio/midi/output.c)
+if(WIN32)
+    target_sources(audio-midi PRIVATE audio/midi/win32/output.c)
+else()
+    target_sources(audio-midi PRIVATE audio/midi/linux/output.c)
+endif()
+library_root(audio-midi)
+target_link_libraries(audio-midi PUBLIC types)
+
+add_library(audio-fm STATIC audio/fm/output.c)
+library_root(audio-fm)
+target_link_libraries(audio-fm PUBLIC types)
 
 if(WIN32)
-    target_link_libraries(audio PRIVATE ole32)
+    target_link_libraries(audio-pcm PRIVATE ole32)
+    target_link_libraries(audio-midi PRIVATE winmm)
     target_link_libraries(kvm-base PRIVATE user32)
     target_link_libraries(kvm-window PRIVATE user32 gdi32)
     target_link_libraries(console-broker PRIVATE user32)
@@ -115,7 +129,7 @@ endif()
 # peer root remains independently compilable and names its exact dependencies.
 add_library(lib-neutral-corpus INTERFACE)
 target_link_libraries(lib-neutral-corpus INTERFACE
-    types base console console-broker storage audio kvm-base kvm-window kvm-console)
+    types base console console-broker storage audio-pcm audio-midi audio-fm kvm-base kvm-window kvm-console)
 
 add_custom_target(lib-verify-manifest
     COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_LIST_DIR}

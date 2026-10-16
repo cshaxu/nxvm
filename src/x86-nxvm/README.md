@@ -1,5 +1,7 @@
 # X86 NXVM
 
+Standalone CMake projects are `shared-x86-nxvm` (source) and `shared-test-x86-nxvm` (tests).
+
 Owns NXVM-family peripheral chips, PC boards, the Emulator Machine adapter and
 family Product. Matching tests live under the same component paths. Each chip
 has one implementation and target under `chips/<chip>`; chip code depends on

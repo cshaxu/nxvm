@@ -156,21 +156,37 @@ lib_i32 main(void)
         if (fixture.live) return 5;
         if (received_banner != definition.banner) return 6;
     }
+    {
+        char long_name[4096];
+        x86_ibmpc_product_definition oversized = definition;
+        lib_memory_set(long_name, 'x', sizeof(long_name) - 1u);
+        long_name[sizeof(long_name) - 1u] = '\0';
+        oversized.name = long_name;
+        failure = 0u;
+        created = 0u;
+        if (x86_ibmpc_product_run(&oversized) != 1 || fixture.live || created != 1u)
+            return 7;
+    }
     return 0;
 }
 lib_status emulator_product_monitor_format_window_titles(const char *name,
     char *out_running, lib_size running_capacity, char *out_paused,
     lib_size paused_capacity)
 {
-    return lib_c_snprintf(out_running, running_capacity, "%s", name) < 0 ||
-        lib_c_snprintf(out_paused, paused_capacity, "%s", name) < 0 ?
+    lib_i32 written = lib_c_snprintf(out_running, running_capacity, "%s", name);
+    if (written < 0 || (lib_size)written >= running_capacity)
+        return LIB_STATUS_LIMIT_EXCEEDED;
+    written = lib_c_snprintf(out_paused, paused_capacity, "%s", name);
+    return written < 0 || (lib_size)written >= paused_capacity ?
         LIB_STATUS_LIMIT_EXCEEDED : LIB_STATUS_OK;
 }
 
 lib_status emulator_product_monitor_format_window_status(const char *name,
     emulator_product_help_map hotkeys, char *out_text, lib_size capacity)
 {
+    lib_i32 written;
     (void)hotkeys;
-    return lib_c_snprintf(out_text, capacity, "%s", name) < 0 ?
+    written = lib_c_snprintf(out_text, capacity, "%s", name);
+    return written < 0 || (lib_size)written >= capacity ?
         LIB_STATUS_LIMIT_EXCEEDED : LIB_STATUS_OK;
 }

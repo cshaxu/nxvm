@@ -10,7 +10,7 @@ int main(void)
     kvm_keyboard_normalizer state = { 0 };
     lib_test_assert(kvm_keyboard_submit_record(&(kvm_keyboard_normalizer){ 0 }, LIB_NULL,
         LIB_NULL, capture, &(kvm_keyboard_record){ KVM_KEYBOARD_TRANSITION,
-            0u, KVM_LINKVM_KEY_UP, 0u, 0u, 0u, 1, 1u }));
+            0u, KVM_LINUX_KEY_UP, 0u, 0u, 0u, 1, 1u }));
     lib_test_assert(received.type == KVM_EVENT_KEY && received.data.key.key == KVM_KEY_UP &&
         received.data.key.scan_code == 0u);
     lib_test_assert(kvm_keyboard_submit_record(&state, LIB_NULL, LIB_NULL, capture,

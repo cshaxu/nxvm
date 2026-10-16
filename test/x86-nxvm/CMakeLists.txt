@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    project(x86_nxvm_tests LANGUAGES C)
+    project(shared-test-x86-nxvm LANGUAGES C)
     enable_testing()
 endif()
 set(CMAKE_C_STANDARD 11)

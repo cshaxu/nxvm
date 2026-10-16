@@ -1,5 +1,7 @@
 # Emulator corpus
 
+Standalone CMake projects are `shared-emulator` (source) and `shared-test-emulator` (tests).
+
 This package selects C11 without extensions in standalone and embedded builds.
 GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
 

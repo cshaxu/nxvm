@@ -14,6 +14,8 @@ static lib_u32 events_created;
 static lib_u32 fail_at, calls;
 static lib_win32_dword wait_result;
 static lib_bool interrupted;
+static lib_win32_hresult format_status;
+static float volumes[2];
 
 static lib_win32_hresult result(void)
 { return ++calls == fail_at ? (lib_win32_hresult)-1 : 0; }
@@ -42,7 +44,16 @@ static lib_win32_hresult format_check(const lib_win32_wave_format *format,
     lib_test_assert(format->nAvgBytesPerSec == expected_rate * channels * 2 && format->cbSize == 0);
     lib_test_assert(flags == (LIB_WIN32_AUDIO_STREAM_FLAGS_EVENT_CALLBACK |
         LIB_WIN32_AUDIO_STREAM_FLAGS_AUTOCONVERTPCM | LIB_WIN32_AUDIO_STREAM_FLAGS_SRC_DEFAULT_QUALITY));
-    return result();
+    lib_win32_hresult status = result();
+    return status < 0 ? status : format_status;
+}
+
+static lib_win32_hresult set_volumes(lib_win32_uint32 count, const float *levels)
+{
+    lib_test_assert(count == channels);
+    lib_win32_hresult status = result();
+    if (status >= 0) lib_memory_copy(volumes, levels, count * sizeof(*levels));
+    return status;
 }
 
 static lib_win32_handle event_create(void)
@@ -128,6 +139,10 @@ static lib_win32_dword wait_events(lib_win32_dword count,
 #define lib_win32_audio_client_reset(c) ((void)(c),++reset,result())
 #undef lib_win32_audio_render_client_release
 #define lib_win32_audio_render_client_release(c) ((void)(c),++released)
+#undef lib_win32_audio_stream_volume_set_all
+#define lib_win32_audio_stream_volume_set_all(c,n,v) ((void)(c),set_volumes(n,v))
+#undef lib_win32_audio_stream_volume_release
+#define lib_win32_audio_stream_volume_release(c) ((void)(c),++released)
 #undef lib_win32_audio_client_release
 #define lib_win32_audio_client_release(c) ((void)(c),++released)
 #undef lib_win32_audio_device_release
@@ -144,7 +159,7 @@ static lib_win32_dword wait_events(lib_win32_dword count,
 #define lib_win32_reset_event(h) ((h) == &objects[4] ? (interrupted = LIB_FALSE) : LIB_FALSE,LIB_WIN32_TRUE)
 #undef lib_win32_wait_for_multiple_objects
 #define lib_win32_wait_for_multiple_objects wait_events
-#include "lib/audio/win32/stream.c"
+#include "lib/audio/pcm/win32/stream.c"
 
 static void clear_probe(void)
 {
@@ -152,83 +167,159 @@ static void clear_probe(void)
     started = stopped = reset = waits = padding = pending_frames = delivered_samples = 0;
     events_created = 0;
     interrupted = LIB_FALSE;
+    format_status = 0;
     wait_result = LIB_WIN32_WAIT_OBJECT_0;
 }
 
 int main(void)
 {
-    const lib_u32 rates[] = {22050, 44100, 48000};
+    const lib_u32 rates[] = {3921, 8000, 11025, 12345, 22050, 44100, 48000};
     lib_i16 samples[18];
     for (lib_i32 i = 0; i < 18; ++i) samples[i] = (lib_i16)(i * 997 - 8000);
-    for (lib_size rate = 0; rate < 3; ++rate) for (channels = 1; channels <= 2; ++channels) {
-        audio_stream_platform *platform = LIB_NULL;
+    for (lib_size rate = 0; rate < sizeof(rates) / sizeof(*rates); ++rate) for (channels = 1; channels <= 2; ++channels) {
+        audio_pcm_stream_platform *platform = LIB_NULL;
         lib_u32 accepted;
+        lib_u64 submitted, consumed;
+        const lib_u16 gains[2] = {0u, 65535u};
         expected_rate = rates[rate];
-        lib_audio_stream_options options = {expected_rate, channels};
+        lib_audio_pcm_stream_options options = {expected_rate, channels};
         clear_probe();
-        lib_test_assert(audio_stream_platform_create(&options, &platform) == LIB_STATUS_OK);
-        lib_test_assert(audio_stream_platform_worker_attach(platform) == LIB_STATUS_OK);
+        lib_test_assert(audio_pcm_stream_platform_create(&options, &platform) == LIB_STATUS_OK);
+        lib_test_assert(audio_pcm_stream_platform_worker_attach(platform) == LIB_STATUS_OK);
         lib_test_assert(delivered_samples == 0 && started == 1);
         padding = 4;
-        lib_test_assert(audio_stream_platform_wait_writable(platform) == LIB_STATUS_OK && waits == 1);
+        lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_OK);
+        lib_test_assert(submitted == 0 && consumed == 0);
+        lib_test_assert(audio_pcm_stream_platform_set_gain(platform, gains, channels) == LIB_STATUS_OK);
+        lib_test_assert(volumes[0] == 0.0f && (channels == 1 || volumes[1] == 1.0f));
+        lib_test_assert(audio_pcm_stream_platform_set_gain(platform, gains, 3) == LIB_STATUS_INVALID_ARGUMENT);
+        fail_at = calls + 1;
+        lib_test_assert(audio_pcm_stream_platform_set_gain(platform, gains, channels) == LIB_STATUS_IO_ERROR);
+        fail_at = 0;
+        padding = 4;
+        lib_test_assert(audio_pcm_stream_platform_wait_writable(platform) == LIB_STATUS_OK && waits == 1);
         for (lib_u32 run = 0; run < 2; ++run) {
             delivered_samples = 0;
             padding = 4;
-            lib_test_assert(audio_stream_platform_enqueue(platform, samples, 9, &accepted) == LIB_STATUS_OK);
+            lib_test_assert(audio_pcm_stream_platform_enqueue(platform, samples, 9, &accepted) == LIB_STATUS_OK);
             lib_test_assert(accepted == 9 && delivered_samples == 9 * channels);
             lib_test_assert(lib_memory_compare(samples, delivered, delivered_samples * sizeof(*samples)) == 0);
-            lib_test_assert(audio_stream_platform_clear(platform) == LIB_STATUS_OK);
+            lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_OK);
+            lib_test_assert(submitted == 9 && consumed == 8);
+            lib_test_assert(audio_pcm_stream_platform_wait_progress(platform) == LIB_STATUS_OK);
+            lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_OK);
+            lib_test_assert(submitted == 9 && consumed == 9);
+            /* An additional native wake with no input cannot invent consumption. */
+            lib_test_assert(audio_pcm_stream_platform_wait_progress(platform) == LIB_STATUS_OK);
+            lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_OK);
+            lib_test_assert(submitted == 9 && consumed == 9);
+            lib_test_assert(audio_pcm_stream_platform_clear(platform) == LIB_STATUS_OK);
+            padding = 0;
+            lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_OK);
+            lib_test_assert(submitted == 0 && consumed == 0);
         }
         padding = 4; wait_result = LIB_WIN32_WAIT_OBJECT_0 + 1;
-        lib_test_assert(audio_stream_platform_wait_writable(platform) == LIB_STATUS_LIMIT_EXCEEDED);
+        lib_test_assert(audio_pcm_stream_platform_wait_writable(platform) == LIB_STATUS_LIMIT_EXCEEDED);
         padding = 4;
-        lib_test_assert(audio_stream_platform_enqueue(platform, samples, 1, &accepted) == LIB_STATUS_LIMIT_EXCEEDED);
+        lib_test_assert(audio_pcm_stream_platform_enqueue(platform, samples, 1, &accepted) == LIB_STATUS_LIMIT_EXCEEDED);
         lib_test_assert(accepted == 0);
         padding = 4; wait_result = LIB_WIN32_WAIT_FAILED;
-        lib_test_assert(audio_stream_platform_wait_writable(platform) == LIB_STATUS_IO_ERROR);
+        lib_test_assert(audio_pcm_stream_platform_wait_writable(platform) == LIB_STATUS_IO_ERROR);
+        padding = 5;
+        lib_test_assert(audio_pcm_stream_platform_wait_writable(platform) == LIB_STATUS_IO_ERROR);
+        lib_test_assert(audio_pcm_stream_platform_enqueue(platform, samples, 1, &accepted) == LIB_STATUS_IO_ERROR);
+        lib_test_assert(accepted == 0);
+        lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_IO_ERROR);
+        lib_test_assert(submitted == 0 && consumed == 0);
+        padding = 0; fail_at = calls + 1;
+        lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_IO_ERROR);
+        lib_test_assert(submitted == 0 && consumed == 0);
+        fail_at = 0;
         /* Padding, GetBuffer and ReleaseBuffer failures must not claim any
          * accepted PCM. Successful retries use the same production path. */
         for (lib_u32 failure = 1; failure <= 3; ++failure) {
             delivered_samples = 0; padding = 0; fail_at = calls + failure;
-            lib_test_assert(audio_stream_platform_enqueue(platform, samples, 1, &accepted) == LIB_STATUS_IO_ERROR);
+            lib_test_assert(audio_pcm_stream_platform_enqueue(platform, samples, 1, &accepted) == LIB_STATUS_IO_ERROR);
             lib_test_assert(accepted == 0 && delivered_samples == 0);
             fail_at = 0;
-            lib_test_assert(audio_stream_platform_enqueue(platform, samples, 1, &accepted) == LIB_STATUS_OK);
+            lib_test_assert(audio_pcm_stream_platform_enqueue(platform, samples, 1, &accepted) == LIB_STATUS_OK);
             lib_test_assert(accepted == 1 && delivered_samples == channels);
             lib_test_assert(lib_memory_compare(samples, delivered, channels * sizeof(*samples)) == 0);
         }
         /* A pending interruption may arrive after a prefix was committed. */
         padding = 0; delivered_samples = 0; wait_result = LIB_WIN32_WAIT_OBJECT_0;
-        lib_test_assert(audio_stream_platform_cancel_wait(platform) == LIB_STATUS_OK);
-        lib_test_assert(audio_stream_platform_enqueue(platform, samples, 9, &accepted) == LIB_STATUS_LIMIT_EXCEEDED);
+        lib_test_assert(audio_pcm_stream_platform_cancel_wait(platform) == LIB_STATUS_OK);
+        lib_test_assert(audio_pcm_stream_platform_enqueue(platform, samples, 9, &accepted) == LIB_STATUS_LIMIT_EXCEEDED);
         lib_test_assert(accepted == 4 && delivered_samples == 4 * channels);
-        lib_test_assert(audio_stream_platform_enqueue(platform, samples + accepted * channels,
+        lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_OK);
+        lib_test_assert(submitted == 7 && consumed == 3);
+        lib_test_assert(audio_pcm_stream_platform_enqueue(platform, samples + accepted * channels,
             9 - accepted, &accepted) == LIB_STATUS_OK);
         lib_test_assert(accepted == 5 && delivered_samples == 9 * channels);
         lib_test_assert(lib_memory_compare(samples, delivered, delivered_samples * sizeof(*samples)) == 0);
         /* Clear also consumes cancellation when no native wait observed it. */
-        lib_test_assert(audio_stream_platform_cancel_wait(platform) == LIB_STATUS_OK);
-        lib_test_assert(audio_stream_platform_clear(platform) == LIB_STATUS_OK && !interrupted);
-        audio_stream_platform_worker_detach(platform);
+        lib_test_assert(audio_pcm_stream_platform_cancel_wait(platform) == LIB_STATUS_OK);
+        lib_test_assert(audio_pcm_stream_platform_clear(platform) == LIB_STATUS_OK && !interrupted);
+        audio_pcm_stream_platform_worker_detach(platform);
         lib_test_assert(acquired == released && initialized == uninitialized);
         lib_test_assert(started == 4 && stopped == 4 && reset == 4);
-        lib_test_assert(audio_stream_platform_destroy(&platform) == LIB_STATUS_OK && platform == LIB_NULL);
+        lib_test_assert(audio_pcm_stream_platform_destroy(&platform) == LIB_STATUS_OK && platform == LIB_NULL);
         lib_test_assert(closed == events_created && closed == 2);
     }
     /* Every initialization OS call may fail; all already acquired resources
      * must be released, and the platform remains safe to destroy. */
     channels = 1; expected_rate = 48000;
-    for (lib_u32 failure = 1; failure <= 13; ++failure) {
-        audio_stream_platform *platform = LIB_NULL;
-        lib_audio_stream_options options = {expected_rate, channels};
+    for (lib_u32 failure = 1; failure <= 14; ++failure) {
+        audio_pcm_stream_platform *platform = LIB_NULL;
+        lib_audio_pcm_stream_options options = {expected_rate, channels};
         clear_probe(); fail_at = failure;
-        lib_status status = audio_stream_platform_create(&options, &platform);
+        lib_status status = audio_pcm_stream_platform_create(&options, &platform);
         if (status == LIB_STATUS_OK) {
-            lib_test_assert(audio_stream_platform_worker_attach(platform) == LIB_STATUS_IO_ERROR);
-            lib_test_assert(audio_stream_platform_destroy(&platform) == LIB_STATUS_OK);
+            lib_test_assert(audio_pcm_stream_platform_worker_attach(platform) == LIB_STATUS_IO_ERROR);
+            lib_test_assert(audio_pcm_stream_platform_destroy(&platform) == LIB_STATUS_OK);
         } else lib_test_assert(status == LIB_STATUS_IO_ERROR && platform == LIB_NULL);
         lib_test_assert(acquired == released && initialized == uninitialized);
         lib_test_assert(closed == events_created);
+    }
+    {
+        audio_pcm_stream_platform *platform = LIB_NULL;
+        lib_audio_pcm_stream_options options = {48000, 1};
+        lib_u32 accepted;
+        lib_u64 submitted, consumed;
+        const lib_u16 half_gain[1] = {32768u};
+        clear_probe();
+        options.sample_rate = 0;
+        lib_test_assert(audio_pcm_stream_platform_create(&options, &platform) == LIB_STATUS_INVALID_ARGUMENT);
+        options.sample_rate = LIB_UINT32_MAX;
+        lib_test_assert(audio_pcm_stream_platform_create(&options, &platform) == LIB_STATUS_INVALID_ARGUMENT);
+        lib_test_assert(calls == 0 && platform == LIB_NULL);
+        options.sample_rate = 48000;
+        format_status = LIB_WIN32_AUDIO_UNSUPPORTED_FORMAT;
+        lib_test_assert(audio_pcm_stream_platform_create(&options, &platform) == LIB_STATUS_OK);
+        lib_test_assert(audio_pcm_stream_platform_worker_attach(platform) == LIB_STATUS_UNSUPPORTED);
+        lib_test_assert(acquired == released && initialized == uninitialized);
+        lib_test_assert(audio_pcm_stream_platform_destroy(&platform) == LIB_STATUS_OK);
+        clear_probe();
+        lib_test_assert(audio_pcm_stream_platform_create(&options, &platform) == LIB_STATUS_OK);
+        lib_test_assert(audio_pcm_stream_platform_worker_attach(platform) == LIB_STATUS_OK);
+        lib_test_assert(audio_pcm_stream_platform_set_gain(platform, half_gain, 1) == LIB_STATUS_OK);
+        lib_test_assert(volumes[0] > 0.5f && volumes[0] < 0.501f);
+        /* Two priming frames remain ahead of one newly submitted input frame. */
+        padding = 2;
+        lib_test_assert(audio_pcm_stream_platform_enqueue(platform, samples, 1, &accepted) == LIB_STATUS_OK);
+        lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_OK);
+        lib_test_assert(submitted == 1 && consumed == 0);
+        padding = 1;
+        lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_OK);
+        lib_test_assert(submitted == 1 && consumed == 0);
+        padding = 0;
+        lib_test_assert(audio_pcm_stream_platform_progress(platform, &submitted, &consumed) == LIB_STATUS_OK);
+        lib_test_assert(submitted == 1 && consumed == 1);
+        platform->submitted_frames = LIB_UINT64_MAX;
+        lib_test_assert(audio_pcm_stream_platform_enqueue(platform, samples, 1, &accepted) == LIB_STATUS_LIMIT_EXCEEDED);
+        lib_test_assert(accepted == 0 && platform->submitted_frames == LIB_UINT64_MAX);
+        audio_pcm_stream_platform_worker_detach(platform);
+        lib_test_assert(audio_pcm_stream_platform_destroy(&platform) == LIB_STATUS_OK);
     }
     return 0;
 }

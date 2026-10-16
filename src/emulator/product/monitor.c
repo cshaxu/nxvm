@@ -455,11 +455,16 @@ lib_status emulator_product_monitor_format_window_titles(const char *name,
     char *out_running, lib_size running_capacity, char *out_paused,
     lib_size paused_capacity)
 {
+    lib_i32 written;
+
     if (name == LIB_NULL || out_running == LIB_NULL || out_paused == LIB_NULL ||
         running_capacity == 0u || paused_capacity == 0u)
         return LIB_STATUS_INVALID_ARGUMENT;
-    if (lib_c_snprintf(out_running, running_capacity, "%s (Running)", name) < 0 ||
-        lib_c_snprintf(out_paused, paused_capacity, "%s (Paused)", name) < 0)
+    written = lib_c_snprintf(out_running, running_capacity, "%s (Running)", name);
+    if (written < 0 || (lib_size)written >= running_capacity)
+        return LIB_STATUS_LIMIT_EXCEEDED;
+    written = lib_c_snprintf(out_paused, paused_capacity, "%s (Paused)", name);
+    if (written < 0 || (lib_size)written >= paused_capacity)
         return LIB_STATUS_LIMIT_EXCEEDED;
     return LIB_STATUS_OK;
 }
@@ -468,15 +473,17 @@ lib_status emulator_product_monitor_format_window_status(const char *name,
     emulator_product_help_map hotkeys, char *out_text, lib_size capacity)
 {
     lib_size used = 0u;
+    lib_i32 written;
 
     if (name == LIB_NULL || out_text == LIB_NULL || capacity == 0u)
         return LIB_STATUS_INVALID_ARGUMENT;
     if (emulator_product_monitor_validate_rows(hotkeys) != LIB_STATUS_OK)
         return LIB_STATUS_INVALID_ARGUMENT;
     out_text[0] = '\0';
-    if (lib_c_snprintf(out_text, capacity,
+    written = lib_c_snprintf(out_text, capacity,
             "%s is running in the Window.\r\n\r\nWhile the machine is running:\r\n",
-            name) < 0)
+            name);
+    if (written < 0 || (lib_size)written >= capacity)
         return LIB_STATUS_LIMIT_EXCEEDED;
     used = lib_text_length(out_text);
     return emulator_product_monitor_append_rows(hotkeys, out_text, capacity, &used);

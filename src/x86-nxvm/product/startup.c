@@ -42,9 +42,12 @@ lib_status x86_nxvm_product_ini_executable_path(const char *name, lib_u8 *path,
     if (base_process_executable_directory((char *)path, capacity) != LIB_STATUS_OK)
         return LIB_STATUS_INTERNAL_ERROR;
     length = lib_text_length((const char *)path);
-    if (length + 1u + name_length + 1u > capacity) return LIB_STATUS_INTERNAL_ERROR;
-    path[length] = '\\';
-    lib_memory_copy(path + length + 1u, name, name_length + 1u);
+    if (length != 0u && path[length - 1u] != '/' && path[length - 1u] != '\\') {
+        if (length + 1u + name_length + 1u > capacity) return LIB_STATUS_INTERNAL_ERROR;
+        path[length++] = '\\';
+    }
+    if (length + name_length + 1u > capacity) return LIB_STATUS_INTERNAL_ERROR;
+    lib_memory_copy(path + length, name, name_length + 1u);
     return LIB_STATUS_OK;
 }
 

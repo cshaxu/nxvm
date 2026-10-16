@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    project(nxvm_shared_emulator LANGUAGES C)
+    project(shared-emulator LANGUAGES C)
     set(EMULATOR_LIB_ROOT "" CACHE PATH "Explicit path to the shared Lib corpus")
     if(NOT EXISTS "${EMULATOR_LIB_ROOT}/CMakeLists.txt")
         message(FATAL_ERROR "EMULATOR_LIB_ROOT must name the shared Lib corpus")

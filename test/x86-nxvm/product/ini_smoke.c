@@ -3,6 +3,17 @@
 
 #include "x86-nxvm/product/ini_interface.h"
 #include "x86-nxvm/product/startup_interface.h"
+#include "lib/base/process_interface.h"
+
+static const char *executable_directory = "C:\\apps";
+
+lib_status base_process_executable_directory(char *output, lib_size capacity)
+{
+    lib_size length = lib_text_length(executable_directory);
+    if (length >= capacity) return LIB_STATUS_LIMIT_EXCEEDED;
+    lib_memory_copy(output, executable_directory, length + 1u);
+    return LIB_STATUS_OK;
+}
 
 static lib_bool text_equal(const lib_u8 *left, const char *right)
 {
@@ -81,6 +92,17 @@ lib_i32 main(void)
     if (x86_nxvm_product_ini_executable_path("product.ini", rejected_path,
             sizeof("product.ini")) !=
             LIB_STATUS_INVALID_ARGUMENT || !text_equal(rejected_path, "unchanged")) return 1;
+    {
+        static const char *const directories[] = {"C:\\", "/", "\\\\server\\share\\", "C:\\apps"};
+        static const char *const expected[] = {"C:\\product.ini", "/product.ini",
+            "\\\\server\\share\\product.ini", "C:\\apps\\product.ini"};
+        for (lib_size index = 0u; index < sizeof(directories) / sizeof(directories[0]); ++index) {
+            executable_directory = directories[index];
+            if (x86_nxvm_product_ini_executable_path("product.ini", executable_ini_path,
+                    lib_text_length(expected[index]) + 1u) != LIB_STATUS_OK ||
+                !text_equal(executable_ini_path, expected[index])) return 1;
+        }
+    }
     lib_c_printf("NXVM-INI:OK\n");
     return 0;
 }
