@@ -259,3 +259,22 @@ comparison, preserved test predicates, all 796 recorded files and eight hashes.
 The file ledger freezes P2; this governance acceptance is separate. I4/S8 is
 closed; I5/S9 remains next and CPU qualification is not resumed. Current owns
 the retained S8 packet and next admission state.
+
+## S9 Final Qualification Delivery
+
+The [final evidence](../etc/evidence/t561-s9-final-qualification.md) reconciles
+all 679 original Core paths and I0--I5. Both standalone entry points build:
+X86 Core 165/165 and X86 NXVM 215/215 tests per width; all 71 public headers
+compile independently on both widths. The real non-PC consumer links only
+Machine/CPU/FPU. Both original cached graphs pass 626 repository units,
+48 profile integration executions, specialized gates and all eight published
+CLI/INI/PE/version/hash checks. No assertion or budget is reduced.
+
+The only code delta is root test-boundary enforcement, +10/-4 lines: reject
+missing X86 Core reverse links and foreign test-source paths, with six
+negative/positive assertions. Production and package contents are unchanged.
+All eight PC EXEs are rebuilt; MyNES and protected inputs are unchanged.
+Existing App tests' NXVM adapter-private coupling is recorded separately in
+TODO, not confused with the removed neutral Core private-layout borrowing.
+Physical RDP/fresh diagnostic-ROM checks and remaining CPU C16/C17 qualification
+are not claimed. Pushed delivery still requires coordinator acceptance.

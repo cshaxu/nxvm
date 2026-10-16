@@ -88,7 +88,7 @@ completed with one App per S; its prerequisite includes the accepted
 [AT composition correction](../history/M5-T542-at-composition-residual-proposal.md).
 Its accepted corrective S11 then placed board-common/XT/AT, Machine and Product
 under a separate ibmpc package. That historical layout is not the current
-source map; current architecture places the PC-private mechanisms in Core.
+source map; current architecture places the PC-private mechanisms in X86 NXVM.
 The later candidates retain their semantic qualification scope against the
 resulting owners; extraction alone does not qualify new hardware or timing.
 

@@ -6,10 +6,10 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
 
 - [ ] **Shared package vocabulary (`TODO(Low)`).** Shared rules still enumerate
   historical `lib/common/x86` paths. Current shared roots are the source/test
-  pairs for Lib, Emulator, X86 Debug, X86 IBM PC and X86 NXVM after T561 S1;
-  NXVM-only machine/board mechanisms still live in
-  Core. T556 S8 finding A6 requires a separate Td to reconcile shared-rule
-  vocabulary; S9 does not modify docs/rules or the public six.
+  pairs for Lib, Emulator, X86 Debug, X86 IBM PC and X86 Core; the separate
+  X86 NXVM package owns NXVM-family chips, boards, Machine and Product after
+  T561 S8. T556 S8 finding A6 requires a separate Td to reconcile shared-rule
+  vocabulary; T561 does not modify docs/rules.
 - [ ] **Shared artifact wording (`TODO(Low)`).** Execution's historical fixed-
   product paragraph still prescribes machine-key filenames, nested directories
   and a generated INI. T557 explicitly records the owner's overriding contract:
@@ -62,6 +62,17 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
   hide required digital behavior here.
 
 ## Architecture And Portability Debt
+
+- [ ] **PC App test adapter encapsulation (`TODO(Medium)`).** T561 S9's final
+  sweep distinguishes the repaired X86 Core private CPU/Machine borrowing
+  from existing App tests that still include
+  `x86-nxvm/machine/machine_private.h`. Production Apps do not include it, and
+  neither standalone package test build depends on those App tests. Admit a
+  bounded NXVM test-owner review to classify observation, composition and
+  fault-injection uses, move lower-owner assertions to their package, and use
+  existing public operations for true App assertions. Do not add a public raw
+  Core getter, copy the layout into a fixture, or weaken existing assertions.
+  The risk is App test coupling to adapter layout, not a second runtime path.
 
 - [ ] **Common Machine wake failure (`TODO(Medium)`).** T542 S10's read-only
   sweep found ignored event-signal failures in start/resume/stop/reset/input

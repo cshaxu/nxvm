@@ -14,13 +14,13 @@ after actual-change review of pushed `4bba9fc0c`.
 S7 neutral Machine extraction is accepted after actual-change review of pushed
 Shared `0da6818d5` and NXVM `b77d1f482`. S8 NXVM consolidation is accepted
 after coordinator actual-change review of pushed Shared `2fce75e62` and
-NXVM `b7c6b9bbb`. S9 independent-package/final qualification is next.
+NXVM `b7c6b9bbb`. S9 independent-package/final qualification is active.
 The [proposal](../proposals/m5-core-x86-core-nxvm-split.md) and
 [convergence ledger](../history/M5-T561-core-package-split.md) retain I1--I5.
 
 | Task | Progress |
 | --- | --- |
-| T561 S8 | Accepted: pushed `2fce75e62` / `b7c6b9bbb`; 626/626 units and 48 profile integration executions per width, specialized gates and eight qualified 0561 PC EXEs. Coordinator reviewed actual changes, 796 file records and eight artifact hashes. S9 remains next; T561 stays open. |
+| T561 S9 | Delivery ready: independent Core 165 and NXVM 215 tests, root 626 units and 48 integration executions pass per width; eight PC EXEs published. Awaiting pushed actual-change review; T561 stays open until acceptance. |
 
 ## Accepted S8 NXVM Consolidation
 
@@ -37,27 +37,29 @@ Both original cached graphs pass 626 units, 48 integrations and specialized
 checks per width. The eight PC releases pass real CLI/INI/PE/version/hash checks.
 Manual RDP and fresh diagnostic-ROM qualification are not claimed. I4/S8 is
 closed; I5/S9 final independent-package acceptance and the separate CPU
-C16/C17/final-qualification successor remain open. No new implementation
-begins before the S9 packet is admitted.
+C16/C17/final-qualification successor remain open. The S9 packet below
+admits final independent-package qualification.
+
+## Active S9 Independent Package And Final Qualification
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T561 S8 after accepted S7 P3 `123440835`; one session performs coordinator and executor roles sequentially. |
-| Admission And Approval | Owner-approved Core split and automatic sequential S execution; the approved S2 ownership map and T561 S8 proposal cover NXVM-family source, tests and receiving Apps. No new Shared capability or Lib/Emulator edit is admitted. |
-| Objective | Consume I4: move remaining Core owners into the sole full x86-nxvm package, mirror source/test hierarchy, absorb information/speed contracts and remove Board tests' borrowing of private CPU layouts. |
-| Non-goals | No CPU/FPU algorithm or timing-grade change, C16/C17 qualification, new hardware, public test facade, parallel implementation, Lib/Emulator/MyNES change or sibling import. |
-| Reference Baseline | Clean accepted `123440835`, S7 implementation `0da6818d5` and `b77d1f482`; S2 frozen ownership inventory remains the disposition reference, not a current-tree hash check. |
-| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), S8; [convergence ledger](../history/M5-T561-core-package-split.md), I4. |
-| Files And ABI Surface | Remaining 152 src/core and 313 test/core tracked paths; existing src/test/x86-nxvm, four App receivers, family CMake/tools/gates and current documents. Canonical board/adapter/product names replace retired Core names without aliases; chip prefixes stay stable. No new public CPU observation interface. Initial non-mechanical estimate: production +120--250/-180--350; tests +300--600/-250--500; build/gates +200--400/-200--400, excluding mechanical moves/substitutions. Refine against actual changes before delivery. |
-| Applicable Rules | NXVM guide, architecture, source layout, source policy; shared Execution, Architecture, Coding and Document rules; architecture-governance then coding-governance skills. One owner per lifetime, inward public dependencies, mirrored tests, preserved semantics and scoped commits. |
-| Verification | Both original Release Ninja/ccache graphs: complete repository units, specialized dependency/manifest/naming gates, four-profile integrations and published CLI/INI/PE/version/hash checks. Review moved bodies against baseline after declared substitutions; map every moved test predicate. Public Machine/PIC regression replaces private CPU fixture access. |
-| Expected Markers | No live src/core or test/core owner, retired target or include alias; one x86-nxvm-product implementation, independent chip leaves, board tests use public inward contracts; no lower dependency on NXVM or App. |
-| Asset Needs | Rebuild/deploy eight current 0561 PC EXEs in existing directories; preserve INI/media/snapshot/ROM inputs and MyNES artifacts. Reuse original graphs and persistent cache; no new qualification directory. |
-| Reporting Requirements | Record exact path/symbol disposition, actual added/deleted/net lines, retained production owners, tests and artifact hashes. Distinguish automated integration from unperformed manual desktop/RDP and final S9 qualification. |
-| Stop Conditions | Needed new public CPU contract, product behavior/timing change, private-layout copying, unrelated ownership conflict or protected-input mutation; report before expanding scope. |
-| Exit Criteria | Complete I4 implementation and required verification, eight qualified artifacts, actual-change coordinator review, complete target-scoped P commits pushed and clean worktree. T561 remains open for S9. |
-| Original Owner Request | Split core into x86-core and x86-nxvm; keep Machine separate from Product, and make test directory/file hierarchy follow the new source component owners. |
-| Similar-Issue Sweep | All tracked source/test/build/tool receivers: retired Core paths/targets/symbols, private CPU/Machine headers, outer App dependencies in package gates, duplicate speed/info types and cross-owner fixture use. Historical evidence remains historical. |
+| Identifier Mode | Continuation T561 S9 after accepted S8 P3 `0349e2f5c`; coordinator and executor roles run sequentially in this session. |
+| Admission And Approval | Owner-approved Core split and automatic sequential S execution cover proposal S9 and I5. Targets NXVM and Shared only for necessary package verification/build-boundary repairs; all four PC Apps are receivers. No Lib/Emulator, MyNES or sibling edit. |
+| Objective | Prove independent X86 Core and X86 NXVM source/test packages, reconcile the complete S2 inventory and I0--I5, and qualify the final four-App implementation without retired Core paths. |
+| Non-goals | No CPU semantics/timing upgrade, C16/C17 completion, new hardware, compatibility alias, public test facade, second scheduler or unrelated product change. |
+| Reference Baseline | Clean pushed `0349e2f5c`; S8 implementations `2fce75e62` and `b7c6b9bbb`; S2 frozen 679-path inventory and preserved CPU successor ledger. |
+| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), S9; [convergence ledger](../history/M5-T561-core-package-split.md), I5 and final I0--I4 reconciliation. |
+| Files And ABI Surface | Package CMake/gates/tests and shared test/verify_test_boundaries.cmake with its self-test where final verification proves a gap; NXVM task evidence/current/proposal/history. Confirmed root gate omission: X86 Debug/IBM PC must reject X86 Core links, and foreign test-package paths must include X86 Core. No ABI or production change planned. Estimate: production +0/-0; build/tests +0--100/-0--60; documentation/evidence separately. Any discovered behavior defect requires a packet revision before implementation. |
+| Applicable Rules | NXVM guide, architecture/layout, source policy; shared Execution, Architecture, Coding and Document; architecture-governance followed by coding-governance skills. Single owner, inward public contracts, mirrored test ownership, unchanged qualification grades and scoped commits. |
+| Verification | Independent source/test entry builds for both packages on x64/x86, selectable CPU/FPU targets and real neutral consumer assertions; package manifests/DAG/negative gates; original root Ninja graphs complete units, specialized gates and four-profile integrations on both widths; eight PC release identity/PE/hash checks; documentation governance and actual-change review. |
+| Expected Markers | No retired src/core or test/core production/test dependency; no PC package link in neutral consumer; all 679 inventory paths reconciled; independent package suites and full receiving suites pass without reduced assertions or budgets. |
+| Asset Needs | Preserve current eight 0561 artifacts if executable inputs remain unchanged; rebuild/deploy if inputs change. All INI, ROM, media, snapshots and MyNES artifacts preserved. Root qualification uses original two graphs; dedicated standalone package graphs prove independent entry points and share build/.ccache, not replacement product graphs. |
+| Reporting Requirements | Record requirement-to-proof matrix, actual diff and retained paths, source/test counts, package/full-suite results and artifact hashes; distinguish automated integrations from unperformed physical desktop/RDP and fresh diagnostic-ROM checks. |
+| Stop Conditions | New public capability, timing/behavior change, protected input mutation, unrelated work conflict or a required Lib/Emulator edit. Report and revise scope rather than weakening qualification. |
+| Exit Criteria | I5 plus final I0--I4 audit proven, required dual-width suites and artifacts valid, actual changes reviewed, complete target-scoped P commits pushed and worktree clean. T closure requires the explicit whole-proposal audit, not a subset pass. |
+| Original Owner Request | Split Core into independently composable x86-core and x86-nxvm, mirror source/test owners, preserve four PC Apps and enable a real non-PC public consumer. |
+| Similar-Issue Sweep | Audit all current package/source/test/build receivers for retired includes/targets, private layout borrowing, outer dependencies, missing independent registration and duplicate owners; historical records retain historical terminology. |
 
 ## Accepted S7 Neutral Machine Extraction
 
