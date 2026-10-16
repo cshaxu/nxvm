@@ -251,63 +251,6 @@ lib_status x86_nxvm_machine_fdd_replace_bytes(t_fdd *fdd, const void *bytes,
     return x86_nxvm_machine_fdd_install_medium(fdd, candidate, marks, LIB_FALSE);
 }
 
-static lib_size x86_nxvm_machine_fdd_byte_offset(const t_fdd *fdd,
-    lib_u16 cylinder, lib_u16 head,
-    lib_u16 sector, lib_u16 offset)
-{
-    return (((cylinder * fdd->data.nhead + head) *
-        fdd->data.nsector + (sector - 1u)) * fdd->data.nbyte) + offset;
-}
-
-lib_bool x86_nxvm_machine_fdd_chs_valid(const t_fdd *fdd, lib_u16 cylinder,
-    lib_u16 head, lib_u16 sector, lib_u16 bytes)
-{
-    return fdd != LIB_NULL && fdd->connect.flagDiskExist &&
-        fdd->connect.medium != LIB_NULL &&
-        cylinder < fdd->data.ncyl && head < fdd->data.nhead && sector > 0u &&
-        sector <= fdd->data.nsector && bytes == fdd->data.nbyte;
-}
-
-lib_status x86_nxvm_machine_fdd_read_byte(const t_fdd *fdd, lib_u16 cylinder,
-    lib_u16 head, lib_u16 sector, lib_u16 offset,
-    lib_u8 *out_byte)
-{
-    if (out_byte == LIB_NULL || !x86_nxvm_machine_fdd_chs_valid(fdd, cylinder, head,
-        sector, fdd != LIB_NULL ? fdd->data.nbyte : 0u) ||
-        offset >= fdd->data.nbyte) return LIB_STATUS_INVALID_ARGUMENT;
-    return lib_storage_medium_read_at(fdd->connect.medium,
-        x86_nxvm_machine_fdd_byte_offset(fdd, cylinder, head, sector, offset), out_byte,
-        1u);
-}
-
-lib_status x86_nxvm_machine_fdd_write_byte(t_fdd *fdd, lib_u16 cylinder,
-    lib_u16 head, lib_u16 sector, lib_u16 offset,
-    lib_u8 value)
-{
-    if (fdd == LIB_NULL || !x86_nxvm_machine_fdd_chs_valid(
-        fdd, cylinder, head, sector, fdd->data.nbyte) || offset >= fdd->data.nbyte) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    if (fdd->connect.flagReadOnly) return LIB_STATUS_INVALID_STATE;
-    return lib_storage_medium_write_at(fdd->connect.medium,
-        x86_nxvm_machine_fdd_byte_offset(fdd, cylinder, head, sector, offset), &value,
-        1u);
-}
-
-lib_status x86_nxvm_machine_fdd_format_sector(t_fdd *fdd, lib_u16 cylinder,
-    lib_u16 head, lib_u16 sector, lib_u8 fill_byte)
-{
-    if (fdd == LIB_NULL || !x86_nxvm_machine_fdd_chs_valid(
-        fdd, cylinder, head, sector, fdd->data.nbyte)) return LIB_STATUS_INVALID_ARGUMENT;
-    if (fdd->connect.flagReadOnly) return LIB_STATUS_INVALID_STATE;
-    lib_status status = lib_storage_medium_fill_at(fdd->connect.medium,
-        x86_nxvm_machine_fdd_byte_offset(fdd, cylinder, head, sector, 0u),
-        fdd->data.nbyte, fill_byte);
-    if (status != LIB_STATUS_OK) return status;
-    ++fdd->connect.media_generation;
-    return LIB_STATUS_OK;
-}
-
 lib_status x86_nxvm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
     const x86_nxvm_board_media_geometry *geometry)
 {

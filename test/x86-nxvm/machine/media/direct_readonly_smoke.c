@@ -60,9 +60,10 @@ lib_i32 main(void)
     x86_nxvm_machine_hdd_initialize(&hdd);
     if (x86_nxvm_machine_fdd_insert_for(&fdd, vm_media_direct_fdd_path,
             LIB_STORAGE_MEDIUM_READONLY) != LIB_FALSE ||
-        !fdd.connect.flagReadOnly || x86_nxvm_machine_fdd_read_byte(&fdd, 0u, 0u, 1u, 0u,
-            &byte) != LIB_FALSE || byte != 0xa5u ||
-        x86_nxvm_machine_fdd_write_byte(&fdd, 0u, 0u, 1u, 0u, 0u) != LIB_STATUS_INVALID_STATE ||
+        !fdd.connect.flagReadOnly || x86_nxvm_machine_fdd_media_provider()->read_bytes(&fdd, 0u,
+            &byte, 1u) != X86_NXVM_BOARD_MEDIA_RESULT_OK || byte != 0xa5u ||
+        x86_nxvm_machine_fdd_media_provider()->write_bytes(&fdd, 0u, &byte, 1u) !=
+            X86_NXVM_BOARD_MEDIA_RESULT_READ_ONLY ||
         x86_nxvm_machine_hdd_insert(&hdd, vm_media_direct_hdd_path,
             LIB_STORAGE_MEDIUM_READONLY) != LIB_FALSE ||
         !hdd.connect.flagReadOnly || x86_nxvm_machine_hdd_media_provider()->write_bytes(&hdd,
@@ -84,7 +85,8 @@ lib_i32 main(void)
     if (!failed && (x86_nxvm_machine_fdd_replace_bytes(&fdd, vm_media_direct_fdd_bytes,
             sizeof(vm_media_direct_fdd_bytes)) != LIB_STATUS_OK ||
         fdd.connect.flagReadOnly ||
-        x86_nxvm_machine_fdd_write_byte(&fdd, 0u, 0u, 1u, 0u, direct_value) != LIB_STATUS_OK ||
+        x86_nxvm_machine_fdd_media_provider()->write_bytes(&fdd, 0u, &direct_value, 1u) !=
+            X86_NXVM_BOARD_MEDIA_RESULT_OK ||
         x86_nxvm_machine_hdd_replace_bytes(&hdd, hdd_bytes, sizeof(hdd_bytes)) != LIB_STATUS_OK ||
         hdd.connect.flagReadOnly ||
         x86_nxvm_machine_hdd_media_provider()->write_bytes(&hdd, 0u, &direct_value, 1u) !=
@@ -105,7 +107,8 @@ lib_i32 main(void)
         x86_nxvm_machine_hdd_remove(&hdd) != LIB_FALSE) failed = 1;
     if (!failed && (x86_nxvm_machine_fdd_insert_for(&fdd, vm_media_direct_fdd_path,
             LIB_STORAGE_MEDIUM_DIRECT) != LIB_FALSE ||
-        x86_nxvm_machine_fdd_write_byte(&fdd, 0u, 0u, 1u, 0u, direct_value) != LIB_FALSE ||
+        x86_nxvm_machine_fdd_media_provider()->write_bytes(&fdd, 0u, &direct_value, 1u) !=
+            X86_NXVM_BOARD_MEDIA_RESULT_OK ||
         x86_nxvm_machine_hdd_insert(&hdd, vm_media_direct_hdd_path,
             LIB_STORAGE_MEDIUM_DIRECT) != LIB_FALSE ||
         x86_nxvm_machine_hdd_media_provider()->write_bytes(&hdd, 0u, &direct_value,

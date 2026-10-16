@@ -260,6 +260,24 @@ static void unavailable_fixed_commands(void)
     }
 }
 
+static void fixed_argument_contract(void)
+{
+    const char *words[] = {"start", "reset", "stop", "pause", "resume",
+        "load", "save", "debug", "help", "exit"};
+    const emulator_product_monitor_provider provider = {0};
+    emulator_session_command_result result;
+    char line[64];
+    for (lib_size index = 0u; index < sizeof(words) / sizeof(words[0]); ++index) {
+        lib_test_assert(lib_c_snprintf(line, sizeof(line), "%s unexpected", words[index]) > 0);
+        emulator_product_monitor_provider_submit_line((void *)&provider,
+            EMULATOR_SESSION_MACHINE_STOPPED, line, &result);
+        lib_test_assert(lib_text_compare(result.text, index == 5u || index == 6u ?
+            "Feature not implemented.\r\n" : "Unknown command.\r\n") == 0);
+        lib_test_assert(result.request == EMULATOR_SESSION_REQUEST_NONE &&
+            result.arm_prompt && !result.exit_requested);
+    }
+}
+
 static void lifecycle_contract(void)
 {
     const emulator_product_monitor_provider provider = {0};
@@ -300,6 +318,7 @@ int main(void)
     window_text_capacity();
     provider_contract();
     unavailable_fixed_commands();
+    fixed_argument_contract();
     lifecycle_contract();
     return 0;
 }

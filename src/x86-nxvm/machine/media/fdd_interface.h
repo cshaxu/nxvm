@@ -18,16 +18,6 @@ typedef struct t_fdd t_fdd;
 
 lib_size x86_nxvm_machine_fdd_image_size(const t_fdd *fdd);
 lib_bool x86_nxvm_machine_fdd_has_media(const t_fdd *fdd);
-lib_bool x86_nxvm_machine_fdd_chs_valid(const t_fdd *fdd, lib_u16 cylinder,
-    lib_u16 head, lib_u16 sector, lib_u16 bytes);
-lib_status x86_nxvm_machine_fdd_read_byte(const t_fdd *fdd, lib_u16 cylinder,
-    lib_u16 head, lib_u16 sector, lib_u16 offset,
-    lib_u8 *out_byte);
-lib_status x86_nxvm_machine_fdd_write_byte(t_fdd *fdd, lib_u16 cylinder,
-    lib_u16 head, lib_u16 sector, lib_u16 offset,
-    lib_u8 value);
-lib_status x86_nxvm_machine_fdd_format_sector(t_fdd *fdd, lib_u16 cylinder,
-    lib_u16 head, lib_u16 sector, lib_u8 fill_byte);
 /* Caller owns the opaque object; provider contexts borrow it until destruction.
  * Allocate into an empty slot. Failure leaves that slot unchanged.
  * Calls are serialized by the stopped/paused Machine owner. */

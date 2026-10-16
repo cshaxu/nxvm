@@ -178,7 +178,8 @@ int main(void)
     if (x86_nxvm_machine_fdd_replace_bytes(&fdd, replacement_fdd_bytes,
             sizeof(replacement_fdd_bytes)) != LIB_STATUS_IO_ERROR ||
         !x86_nxvm_machine_fdd_has_media(&fdd) ||
-        x86_nxvm_machine_fdd_read_byte(&fdd, 0u, 0u, 1u, 0u, &byte) != LIB_STATUS_OK ||
+        x86_nxvm_machine_fdd_media_provider()->read_bytes(&fdd, 0u, &byte, 1u) !=
+            X86_NXVM_BOARD_MEDIA_RESULT_OK ||
         byte != replacement_fdd_bytes[0u]) return 1;
     vm_media_close_failure_pending = LIB_TRUE;
     if (x86_nxvm_machine_hdd_replace_bytes(&hdd, replacement_hdd_bytes,

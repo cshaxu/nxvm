@@ -35,6 +35,30 @@ _Static_assert(lib_offsetof(kvm_text_cell, background) == 3u, "background offset
 static void check_validation(void)
 {
     kvm_console_text_frame text = {0};
+    lib_u32 height, top, bottom;
+    text.base = (kvm_text_frame){.text_columns = 80u, .text_rows = 25u,
+        .cursor_mode = KVM_CURSOR_SOURCE, .cursor_top = 14u, .cursor_bottom = 31u};
+    lib_test_assert(kvm_text_cursor_shape(&text.base, &height, &top, &bottom));
+    lib_test_assert(height == 16u && top == 14u && bottom == 16u);
+    text.base.cursor_phase = LIB_FALSE;
+    lib_test_assert(kvm_text_cursor_shape(&text.base, &height, &top, &bottom));
+    text.base.font_height = 32u;
+    lib_test_assert(kvm_text_cursor_shape(&text.base, &height, &top, &bottom));
+    lib_test_assert(height == 32u && top == 14u && bottom == 32u);
+    text.base.font_height = 14u;
+    lib_test_assert(!kvm_text_cursor_shape(&text.base, &height, &top, &bottom));
+    text.base.cursor_bottom = 0u;
+    lib_test_assert(kvm_text_cursor_shape(&text.base, &height, &top, &bottom));
+    lib_test_assert(top == 0u && bottom == 14u);
+    text.base.font_height = 512u;
+    lib_test_assert(kvm_text_cursor_shape(&text.base, &height, &top, &bottom));
+    lib_test_assert(top == 0u && bottom == 512u);
+    text.base.cursor_row = 25;
+    lib_test_assert(!kvm_text_cursor_shape(&text.base, &height, &top, &bottom));
+    text.base.cursor_row = 0;
+    text.base.cursor_mode = KVM_CURSOR_DISABLED;
+    lib_test_assert(!kvm_text_cursor_shape(&text.base, &height, &top, &bottom));
+    text = (kvm_console_text_frame){0};
     lib_test_assert(KVM_TEXT_FONT_DEFAULT_HEIGHT == 16u);
     source = (kvm_window_frame){0};
     lib_test_assert(kvm_window_frame_validate(LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);

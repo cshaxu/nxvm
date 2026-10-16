@@ -43,6 +43,10 @@ lib_status x86_debug_open(x86_debug *debug, emulator_machine *machine);
 void x86_debug_close(x86_debug *debug);
 lib_status x86_debug_submit_line(x86_debug *debug, const char *line,
     x86_debug_result *out_result);
+/* Both operations leave out_result untouched on invalid arguments. Once output
+ * begins, the result is valid even on output failure: the execution plan is
+ * requested cancelled, continuation cleared, and a nonallocating error with a
+ * ready "-" prompt replaces partial output. The original status is preserved. */
 lib_status x86_debug_observe_machine(x86_debug *debug,
     x86_debug_machine_state state, lib_status status,
     x86_debug_result *out_result);

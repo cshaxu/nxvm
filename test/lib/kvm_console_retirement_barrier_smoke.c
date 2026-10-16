@@ -458,9 +458,10 @@ static void check_character_banks(void)
     lib_test_assert(captured.rows == 50 && captured.text[3999] == 0x2588 &&
         captured.foreground[3999] == 5 && captured.background[3999] == 6);
     /* KVM scanlines are normalized before the independent Console boundary. */
-    const struct { lib_u32 height, top, bottom; lib_bool visible; lib_u32 out_bottom; } cases[] = {
-        {0,14,15,LIB_TRUE,15}, {16,20,21,LIB_FALSE,15}, {16,14,31,LIB_TRUE,15},
-        {16,4,7,LIB_TRUE,7}, {8,7,255,LIB_TRUE,7}, {16,9,8,LIB_TRUE,8}
+    const struct { lib_u32 height, top, bottom; lib_bool visible; lib_u32 out_top, out_bottom; } cases[] = {
+        {0,14,15,LIB_TRUE,14,15}, {16,20,21,LIB_FALSE,20,15}, {16,14,31,LIB_TRUE,14,15},
+        {16,4,7,LIB_TRUE,4,7}, {8,7,255,LIB_TRUE,7,7}, {16,9,8,LIB_TRUE,1,0},
+        {512,9,8,LIB_TRUE,1,0}, {16,0,15,LIB_TRUE,1,0}
     };
     for (lib_u32 i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
         frame.base.font_height = cases[i].height;
@@ -471,7 +472,7 @@ static void check_character_banks(void)
         lib_test_assert(kvm_console_publish_text_frame(&console, &frame) == LIB_STATUS_OK);
         lib_test_assert(captured.font_height == (cases[i].height ? cases[i].height : KVM_TEXT_FONT_DEFAULT_HEIGHT));
         lib_test_assert(captured.cursor_visible == cases[i].visible);
-        lib_test_assert(captured.cursor_top == cases[i].top && captured.cursor_bottom == cases[i].out_bottom);
+        lib_test_assert(captured.cursor_top == cases[i].out_top && captured.cursor_bottom == cases[i].out_bottom);
         lib_test_assert(captured.cursor_phase == 1);
     }
     frame.base.cursor_top = 0;

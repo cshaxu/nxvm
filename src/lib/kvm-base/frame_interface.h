@@ -47,6 +47,28 @@ typedef struct kvm_text_frame {
     lib_u32 font_height;
 } kvm_text_frame;
 
+/* Resolve shape only; leaves own pixel/percentage conversion and blink phase.
+ * Outputs are scanlines [top, bottom); false means hidden. */
+static inline lib_bool kvm_text_cursor_shape(const kvm_text_frame *frame,
+    lib_u32 *height, lib_u32 *top, lib_u32 *bottom)
+{
+    if (frame == LIB_NULL || height == LIB_NULL || top == LIB_NULL || bottom == LIB_NULL)
+        return LIB_FALSE;
+    *height = frame->font_height ? frame->font_height : KVM_TEXT_FONT_DEFAULT_HEIGHT;
+    *top = 0u;
+    *bottom = *height;
+    if (frame->cursor_mode == KVM_CURSOR_DISABLED || frame->cursor_column < 0 ||
+        frame->cursor_row < 0 || frame->cursor_column >= frame->text_columns ||
+        frame->cursor_row >= frame->text_rows) return LIB_FALSE;
+    if (frame->cursor_bottom >= frame->cursor_top) {
+        *top = frame->cursor_top;
+        if (*top >= *height) return LIB_FALSE;
+        *bottom = (lib_u32)frame->cursor_bottom + 1u;
+        if (*bottom > *height) *bottom = *height;
+    }
+    return LIB_TRUE;
+}
+
 static inline lib_status kvm_text_frame_validate(const kvm_text_frame *frame)
 {
     if (frame == LIB_NULL || frame->text_columns == 0u || frame->text_rows == 0u)

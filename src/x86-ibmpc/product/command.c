@@ -10,20 +10,6 @@ static void x86_ibmpc_product_command_set_prompt(
 static void x86_ibmpc_product_command_message(emulator_session_command_result *out,
     const char *text);
 
-static lib_bool x86_ibmpc_product_command_snapshot_not_supported(void *opaque,
-    emulator_machine *machine, emulator_product_monitor_command command,
-    emulator_session_machine_state state, const char *arguments,
-    emulator_session_command_result *out)
-{
-    (void)opaque;
-    (void)machine;
-    (void)command;
-    (void)state;
-    (void)arguments;
-    x86_ibmpc_product_command_message(out, "Feature not implemented.");
-    return LIB_TRUE;
-}
-
 static void x86_ibmpc_product_command_message(emulator_session_command_result *out,
     const char *text)
 {
@@ -53,7 +39,8 @@ static lib_bool x86_ibmpc_product_command_submit_fixed(void *opaque,
     if (command == LIB_NULL || out == LIB_NULL) return LIB_FALSE;
     if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE ||
         fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD)
-        return command->extensions.submit_snapshot(command->extensions.context,
+        return command->extensions.submit_snapshot != LIB_NULL &&
+            command->extensions.submit_snapshot(command->extensions.context,
             command->machine, fixed_command, state, arguments, out);
     if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG) {
         if (x86_debug_open(command->debug, command->machine) != LIB_STATUS_OK) {
@@ -85,8 +72,18 @@ static void x86_ibmpc_product_command_set_prompt(const x86_ibmpc_product_command
 
 static void x86_ibmpc_product_command_copy_debug(x86_ibmpc_product_command_context *command,
                                    emulator_session_machine_state state, const x86_debug_result *result,
-                                   emulator_session_command_result *out)
+                                   lib_status status, emulator_session_command_result *out)
 {
+    if (status != LIB_STATUS_OK)
+        *out = (emulator_session_command_result){0};
+    if (status == LIB_STATUS_INVALID_ARGUMENT) {
+        x86_debug_close(command->debug);
+        command->debug_active = LIB_FALSE;
+        x86_ibmpc_product_command_message(out, "Invalid debug context.");
+        x86_ibmpc_product_command_set_prompt(command, out);
+        return;
+    }
+    if (!result->prompt_ready) return;
     out->detail = result->text;
     (void)lib_c_snprintf(command->debug_prompt, sizeof(command->debug_prompt), "%s", result->prompt);
     if (!result->keep_active)
@@ -99,6 +96,8 @@ static void x86_ibmpc_product_command_copy_debug(x86_ibmpc_product_command_conte
         out->request = EMULATOR_SESSION_REQUEST_RESUME;
     else if (result->lifecycle_request != X86_DEBUG_LIFECYCLE_NONE)
         (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug lifecycle request is not applicable.");
+    out->arm_prompt = out->request == EMULATOR_SESSION_REQUEST_NONE;
+    x86_ibmpc_product_command_set_prompt(command, out);
 }
 
 void x86_ibmpc_product_command_provider_submit_line(void *opaque,
@@ -113,18 +112,7 @@ void x86_ibmpc_product_command_provider_submit_line(void *opaque,
         x86_debug_result result = {0};
         lib_status status = x86_debug_submit_line(command->debug, line, &result);
         *out = (emulator_session_command_result){0};
-        if (status != LIB_STATUS_OK)
-        {
-            (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug command failed.");
-            emulator_machine_debug_cancel(command->machine);
-            (void)lib_c_snprintf(command->debug_prompt, sizeof(command->debug_prompt), "-");
-        }
-        else
-        {
-            x86_ibmpc_product_command_copy_debug(command, state, &result, out);
-        }
-        out->arm_prompt = out->request == EMULATOR_SESSION_REQUEST_NONE;
-        x86_ibmpc_product_command_set_prompt(command, out);
+        x86_ibmpc_product_command_copy_debug(command, state, &result, status, out);
         return;
     }
     emulator_product_monitor_provider_submit_line(opaque, state, line, out);
@@ -143,18 +131,8 @@ void x86_ibmpc_product_command_provider_note_runtime(void *opaque,
         x86_debug_machine_state state = completed == EMULATOR_SESSION_MACHINE_PAUSED ? X86_DEBUG_MACHINE_PAUSED : completed == EMULATOR_SESSION_MACHINE_RUNNING ? X86_DEBUG_MACHINE_RUNNING
                                                                                                                                                                   : X86_DEBUG_MACHINE_STOPPED;
         x86_debug_result result = {0};
-        if (x86_debug_observe_machine(command->debug, state, LIB_STATUS_OK, &result) != LIB_STATUS_OK)
-        {
-            (void)lib_c_snprintf(out->text, sizeof(out->text), "Debug command failed.");
-            emulator_machine_debug_cancel(command->machine);
-            (void)lib_c_snprintf(command->debug_prompt, sizeof(command->debug_prompt), "-");
-        }
-        else if (result.prompt_ready)
-        {
-            x86_ibmpc_product_command_copy_debug(command, completed, &result, out);
-            out->arm_prompt = out->request == EMULATOR_SESSION_REQUEST_NONE;
-            x86_ibmpc_product_command_set_prompt(command, out);
-        }
+        lib_status status = x86_debug_observe_machine(command->debug, state, LIB_STATUS_OK, &result);
+        x86_ibmpc_product_command_copy_debug(command, completed, &result, status, out);
     }
 }
 
@@ -167,8 +145,6 @@ lib_status x86_ibmpc_product_command_initialize(x86_ibmpc_product_command_contex
     lib_memory_set(command, 0, sizeof(*command));
     command->machine = machine;
     if (extensions != LIB_NULL) command->extensions = *extensions;
-    if (command->extensions.submit_snapshot == LIB_NULL)
-        command->extensions.submit_snapshot = x86_ibmpc_product_command_snapshot_not_supported;
     command->monitor = (emulator_product_monitor_provider){
         .context = command,
         .extension_commands = command->extensions.help,

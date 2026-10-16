@@ -3,24 +3,53 @@
 
 #define EMULATOR_PRODUCT_HELP_DESCRIPTION_COLUMN 17u
 
-static const emulator_product_help_row emulator_product_monitor_machine_rows[] = {
-    {"start", "cold-reset and run the machine"},
-    {"reset", "cold-reset and pause at firmware entry"},
-    {"stop", "stop execution"},
-    {"pause", "request machine pause"},
-    {"resume", "continue a paused machine"}
+typedef enum emulator_product_command_group {
+    EMULATOR_PRODUCT_GROUP_MACHINE,
+    EMULATOR_PRODUCT_GROUP_SNAPSHOT,
+    EMULATOR_PRODUCT_GROUP_GENERAL
+} emulator_product_command_group;
+
+typedef struct emulator_product_command_description {
+    emulator_product_monitor_command command;
+    const char *word;
+    emulator_product_help_row help;
+    emulator_product_command_group group;
+    lib_bool accepts_arguments;
+} emulator_product_command_description;
+
+static const emulator_product_command_description emulator_product_commands[] = {
+    {EMULATOR_PRODUCT_MONITOR_COMMAND_START, "start",
+        {"start", "cold-reset and run the machine"}, EMULATOR_PRODUCT_GROUP_MACHINE, LIB_FALSE},
+    {EMULATOR_PRODUCT_MONITOR_COMMAND_RESET, "reset",
+        {"reset", "cold-reset and pause at firmware entry"}, EMULATOR_PRODUCT_GROUP_MACHINE, LIB_FALSE},
+    {EMULATOR_PRODUCT_MONITOR_COMMAND_STOP, "stop",
+        {"stop", "stop execution"}, EMULATOR_PRODUCT_GROUP_MACHINE, LIB_FALSE},
+    {EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE, "pause",
+        {"pause", "request machine pause"}, EMULATOR_PRODUCT_GROUP_MACHINE, LIB_FALSE},
+    {EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME, "resume",
+        {"resume", "continue a paused machine"}, EMULATOR_PRODUCT_GROUP_MACHINE, LIB_FALSE},
+    {EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD, "load",
+        {"load <file>", "load a snapshot while stopped"}, EMULATOR_PRODUCT_GROUP_SNAPSHOT, LIB_TRUE},
+    {EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE, "save",
+        {"save <file>", "save a running or paused machine"}, EMULATOR_PRODUCT_GROUP_SNAPSHOT, LIB_TRUE},
+    {EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG, "debug",
+        {"debug", "enter debugger (q returns to monitor)"}, EMULATOR_PRODUCT_GROUP_GENERAL, LIB_FALSE},
+    {EMULATOR_PRODUCT_MONITOR_COMMAND_HELP, "help",
+        {"help", "show this help"}, EMULATOR_PRODUCT_GROUP_GENERAL, LIB_FALSE},
+    {EMULATOR_PRODUCT_MONITOR_COMMAND_EXIT, "exit",
+        {"exit", "quit"}, EMULATOR_PRODUCT_GROUP_GENERAL, LIB_FALSE}
 };
 
-static const emulator_product_help_row emulator_product_monitor_snapshot_rows[] = {
-    {"load <file>", "load a snapshot while stopped"},
-    {"save <file>", "save a running or paused machine"}
-};
-
-static const emulator_product_help_row emulator_product_monitor_general_rows[] = {
-    {"debug", "enter debugger (q returns to monitor)"},
-    {"help", "show this help"},
-    {"exit", "quit"}
-};
+static const emulator_product_command_description *emulator_product_command_find(
+    emulator_product_monitor_command command)
+{
+    for (lib_size index = 0u; index < sizeof(emulator_product_commands) /
+            sizeof(emulator_product_commands[0]); ++index) {
+        if (emulator_product_commands[index].command == command)
+            return &emulator_product_commands[index];
+    }
+    return LIB_NULL;
+}
 
 static void emulator_product_monitor_clear_result(
     emulator_session_command_result *out_result)
@@ -50,18 +79,6 @@ static void emulator_product_monitor_lifecycle_message(
 {
     emulator_product_monitor_message(out_result, text);
     emulator_product_monitor_set_prompt(out_result);
-}
-
-static lib_bool emulator_product_monitor_requires_machine(
-    emulator_product_monitor_command command)
-{
-    return command == EMULATOR_PRODUCT_MONITOR_COMMAND_START ||
-        command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME ||
-        command == EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE ||
-        command == EMULATOR_PRODUCT_MONITOR_COMMAND_STOP ||
-        command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESET ||
-        command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE ||
-        command == EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD;
 }
 
 lib_bool emulator_product_monitor_request_lifecycle(
@@ -154,26 +171,10 @@ static lib_bool emulator_product_monitor_command_equal(const char *text,
 static emulator_product_monitor_command emulator_product_monitor_lookup(
     const char *word)
 {
-    static const struct {
-        const char *word;
-        emulator_product_monitor_command command;
-    } commands[] = {
-        {"start", EMULATOR_PRODUCT_MONITOR_COMMAND_START},
-        {"resume", EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME},
-        {"pause", EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE},
-        {"stop", EMULATOR_PRODUCT_MONITOR_COMMAND_STOP},
-        {"reset", EMULATOR_PRODUCT_MONITOR_COMMAND_RESET},
-        {"save", EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE},
-        {"load", EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD},
-        {"debug", EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG},
-        {"help", EMULATOR_PRODUCT_MONITOR_COMMAND_HELP},
-        {"exit", EMULATOR_PRODUCT_MONITOR_COMMAND_EXIT}
-    };
-    lib_size index;
-
-    for (index = 0u; index < sizeof(commands) / sizeof(commands[0]); ++index) {
-        if (emulator_product_monitor_command_equal(word, commands[index].word))
-            return commands[index].command;
+    for (lib_size index = 0u; index < sizeof(emulator_product_commands) /
+            sizeof(emulator_product_commands[0]); ++index) {
+        if (emulator_product_monitor_command_equal(word, emulator_product_commands[index].word))
+            return emulator_product_commands[index].command;
     }
     return EMULATOR_PRODUCT_MONITOR_COMMAND_NONE;
 }
@@ -238,6 +239,7 @@ void emulator_product_monitor_provider_submit_line(void *opaque,
     emulator_product_monitor_command command;
     const char *arguments;
     const char *cursor;
+    const emulator_product_command_description *description;
 
     emulator_product_monitor_clear_result(out_result);
     if (provider == LIB_NULL || out_result == LIB_NULL || line == LIB_NULL) {
@@ -261,8 +263,8 @@ void emulator_product_monitor_provider_submit_line(void *opaque,
         emulator_product_monitor_set_prompt(out_result);
         return;
     }
-    if (command != EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE &&
-        command != EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD && *arguments != '\0') {
+    description = emulator_product_command_find(command);
+    if (!description->accepts_arguments && *arguments != '\0') {
         emulator_product_monitor_message(out_result, "Unknown command.");
         emulator_product_monitor_set_prompt(out_result);
         return;
@@ -276,16 +278,12 @@ void emulator_product_monitor_provider_submit_line(void *opaque,
         return;
     }
     if (state == EMULATOR_SESSION_MACHINE_ERROR &&
-        emulator_product_monitor_requires_machine(command)) {
+        description->group != EMULATOR_PRODUCT_GROUP_GENERAL) {
         emulator_product_monitor_lifecycle_message(out_result,
             "Machine has failed; exit and restart the program.");
         return;
     }
-    if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_START ||
-        command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME ||
-        command == EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE ||
-        command == EMULATOR_PRODUCT_MONITOR_COMMAND_STOP ||
-        command == EMULATOR_PRODUCT_MONITOR_COMMAND_RESET) {
+    if (description->group == EMULATOR_PRODUCT_GROUP_MACHINE) {
         (void)emulator_product_monitor_request_lifecycle(provider, command, state, out_result);
         emulator_product_monitor_set_prompt(out_result);
         return;
@@ -413,16 +411,6 @@ lib_status emulator_product_monitor_format_help(emulator_product_help_map extens
     emulator_product_help_map hotkeys, char *out_text, lib_size capacity)
 {
     lib_size used = 0u;
-    emulator_product_help_map machine = {
-        emulator_product_monitor_machine_rows,
-        sizeof(emulator_product_monitor_machine_rows) / sizeof(emulator_product_monitor_machine_rows[0])};
-    emulator_product_help_map snapshots = {
-        emulator_product_monitor_snapshot_rows,
-        sizeof(emulator_product_monitor_snapshot_rows) / sizeof(emulator_product_monitor_snapshot_rows[0])};
-    emulator_product_help_map general = {
-        emulator_product_monitor_general_rows,
-        sizeof(emulator_product_monitor_general_rows) / sizeof(emulator_product_monitor_general_rows[0])};
-
     if (out_text == LIB_NULL || capacity == 0u)
         return LIB_STATUS_INVALID_ARGUMENT;
     if (emulator_product_monitor_validate_rows(extensions) != LIB_STATUS_OK ||
@@ -430,13 +418,19 @@ lib_status emulator_product_monitor_format_help(emulator_product_help_map extens
         return LIB_STATUS_INVALID_ARGUMENT;
     out_text[0] = '\0';
     if (emulator_product_monitor_append(out_text, capacity, &used,
-            "Control your virtual machine:\r\n") != LIB_STATUS_OK ||
-        emulator_product_monitor_append_rows(machine, out_text, capacity, &used) != LIB_STATUS_OK ||
-        emulator_product_monitor_append(out_text, capacity, &used, "\r\n") != LIB_STATUS_OK ||
-        emulator_product_monitor_append_rows(snapshots, out_text, capacity, &used) != LIB_STATUS_OK ||
-        emulator_product_monitor_append(out_text, capacity, &used, "\r\n") != LIB_STATUS_OK ||
-        emulator_product_monitor_append_rows(general, out_text, capacity, &used) != LIB_STATUS_OK)
+            "Control your virtual machine:\r\n") != LIB_STATUS_OK)
         return LIB_STATUS_LIMIT_EXCEEDED;
+    for (lib_size index = 0u; index < sizeof(emulator_product_commands) /
+            sizeof(emulator_product_commands[0]); ++index) {
+        if (index != 0u && emulator_product_commands[index].group !=
+                emulator_product_commands[index - 1u].group &&
+            emulator_product_monitor_append(out_text, capacity, &used, "\r\n") != LIB_STATUS_OK)
+            return LIB_STATUS_LIMIT_EXCEEDED;
+        if (emulator_product_monitor_append_rows(
+                (emulator_product_help_map){&emulator_product_commands[index].help, 1u},
+                out_text, capacity, &used) != LIB_STATUS_OK)
+            return LIB_STATUS_LIMIT_EXCEEDED;
+    }
     if (extensions.count != 0u) {
         if (emulator_product_monitor_append(out_text, capacity, &used, "\r\n") != LIB_STATUS_OK ||
             emulator_product_monitor_append_rows(extensions, out_text, capacity, &used) != LIB_STATUS_OK)

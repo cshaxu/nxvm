@@ -142,6 +142,7 @@ lib_status kvm_console_publish_text_frame(kvm_console *console,
     lib_console_text_frame text_frame = { 0 };
     const kvm_text_frame *text;
     lib_size index;
+    lib_u32 top, bottom;
 
     if (console == LIB_NULL || frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     text = &frame->base;
@@ -158,17 +159,13 @@ lib_status kvm_console_publish_text_frame(kvm_console *console,
     lib_memory_copy(text_frame.palette, text->text_palette, sizeof(text_frame.palette));
     text_frame.cursor_column = text->cursor_column;
     text_frame.cursor_row = text->cursor_row;
-    text_frame.cursor_top = text->cursor_top;
-    text_frame.cursor_bottom = text->cursor_bottom;
     /* Native Console owns blinking; source phase cannot be reproduced exactly. */
-    text_frame.cursor_visible = text->cursor_mode != KVM_CURSOR_DISABLED;
+    text_frame.cursor_visible = kvm_text_cursor_shape(text,
+        &text_frame.font_height, &top, &bottom);
     text_frame.cursor_phase = LIB_TRUE;
-    text_frame.font_height = text->font_height ? text->font_height : KVM_TEXT_FONT_DEFAULT_HEIGHT;
-    if (text->cursor_bottom >= text->cursor_top) {
-        if (text->cursor_top >= text_frame.font_height)
-            text_frame.cursor_visible = LIB_FALSE;
-        if (text->cursor_bottom >= text_frame.font_height)
-            text_frame.cursor_bottom = (lib_u8)(text_frame.font_height - 1u);
-    }
+    /* The native contract represents a full cell by an inverted range, even
+     * for logical fonts taller than its byte-sized cursor coordinates. */
+    text_frame.cursor_top = bottom == text_frame.font_height && top == 0u ? 1u : (lib_u8)top;
+    text_frame.cursor_bottom = bottom == text_frame.font_height && top == 0u ? 0u : (lib_u8)(bottom - 1u);
     return lib_console_write_text_frame(console->logical_console, &text_frame);
 }

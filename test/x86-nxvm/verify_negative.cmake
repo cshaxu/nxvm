@@ -32,6 +32,8 @@ expect_source_rejected("chip-machine"
     "#include \"x86-nxvm/machine/machine_interface.h\"\n" "Forbidden x86-nxvm edge")
 expect_source_rejected("outer-source"
     "#include \"outer/product/main.c\"\n" "Noncanonical")
+expect_source_rejected("retired-fdd"
+    "void x86_nxvm_machine_fdd_read_byte(void);\n" "Retired FDD access path")
 
 # Test ownership includes nested registration files and component fixtures.
 set(probe "${PROBE_ROOT}/test-ownership")

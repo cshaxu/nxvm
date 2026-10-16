@@ -171,12 +171,15 @@ static void command_begin_output(command_context *command, x86_debug_result *res
 static lib_status command_end_output(command_context *command)
 {
     if (command->output_status != LIB_STATUS_OK) {
+        emulator_machine_debug_cancel(command->machine);
         command->continuation = COMMAND_CONTINUATION_NONE;
         command->pending_line_available = LIB_FALSE;
         command->run_kind = COMMAND_RUN_NONE;
-        command->result->lifecycle_request = X86_DEBUG_LIFECYCLE_NONE;
-        command->result->prompt[0] = '-';
-        command->result->prompt[1] = '\0';
+        *command->result = (x86_debug_result){
+            .text = "Debug command failed.", .prompt = "-",
+            .prompt_ready = LIB_TRUE, .keep_active = LIB_TRUE};
+        command->result = LIB_NULL;
+        return command->output_status;
     }
     while (command->output_length != 0u &&
         (command->output[command->output_length - 1u] == '\r' ||
@@ -3167,8 +3170,7 @@ lib_status x86_debug_submit_line(x86_debug *command,
         goto finished;
     }
     if (command->continuation == COMMAND_CONTINUATION_NONE) {
-        if (!command_copy_text_checked(strCmdBuff, sizeof(strCmdBuff), line))
-            return LIB_STATUS_INVALID_ARGUMENT;
+        lib_memory_copy(strCmdBuff, line, lib_text_length(line) + 1u);
         parse(debugContext);
         if (!nErrPos && command_needs_machine(command) && !command_prepare_machine(command))
             goto finished;
@@ -3176,8 +3178,9 @@ lib_status x86_debug_submit_line(x86_debug *command,
         exec(debugContext);
     } else {
         if (command_needs_machine(command) && !command_prepare_machine(command)) goto finished;
-        if (!command_copy_text_checked(command->pending_line,
-                sizeof(command->pending_line), line)) return LIB_STATUS_INVALID_ARGUMENT;
+        _Static_assert(sizeof(command->pending_line) == sizeof(command->command_buffer),
+            "Continuation input shares the validated line capacity");
+        lib_memory_copy(command->pending_line, line, lib_text_length(line) + 1u);
         command->pending_line_available = LIB_TRUE;
         switch (command->continuation) {
         case COMMAND_CONTINUATION_ASSEMBLE:

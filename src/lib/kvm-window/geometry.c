@@ -105,8 +105,7 @@ lib_bool kvm_window_cursor_rect(const kvm_window_frame *frame, const kvm_window_
     lib_i32 width, height, cell_top, cell_bottom;
     lib_u32 top, bottom, font_height;
     if (kvm_window_frame_validate(frame) != LIB_STATUS_OK || !display || !cursor || frame->graphics ||
-        frame->text.base.cursor_mode == KVM_CURSOR_DISABLED || frame->text.base.cursor_column < 0 || frame->text.base.cursor_row < 0 ||
-        frame->text.base.cursor_column >= frame->text.base.text_columns || frame->text.base.cursor_row >= frame->text.base.text_rows)
+        !kvm_text_cursor_shape(&frame->text.base, &font_height, &top, &bottom))
         return LIB_FALSE;
     width = display->right - display->left;
     height = display->bottom - display->top;
@@ -115,19 +114,10 @@ lib_bool kvm_window_cursor_rect(const kvm_window_frame *frame, const kvm_window_
     cell_bottom = (lib_i32)((lib_i64)(frame->text.base.cursor_row+1)*height/frame->text.base.text_rows);
     cursor->left = display->left+(lib_i32)((lib_i64)frame->text.base.cursor_column*width/frame->text.base.text_columns);
     cursor->right = display->left+(lib_i32)((lib_i64)(frame->text.base.cursor_column+1)*width/frame->text.base.text_columns);
-    cursor->top = display->top+cell_top;
-    cursor->bottom = display->top+cell_bottom;
-    font_height = frame->text.base.font_height ? frame->text.base.font_height : KVM_TEXT_FONT_DEFAULT_HEIGHT;
-    if (frame->text.base.cursor_bottom >= frame->text.base.cursor_top) {
-        top = frame->text.base.cursor_top;
-        if (top >= font_height) return LIB_FALSE;
-        bottom = (lib_u32)frame->text.base.cursor_bottom + 1u;
-        if (bottom > font_height) bottom = font_height;
-        cursor->top = display->top+cell_top+(lib_i32)(
-            (lib_i64)(cell_bottom-cell_top)*top/font_height);
-        cursor->bottom = display->top+cell_top+(lib_i32)(
-            ((lib_i64)(cell_bottom-cell_top)*bottom+font_height-1u)/font_height);
-    }
+    cursor->top = display->top+cell_top+(lib_i32)(
+        (lib_i64)(cell_bottom-cell_top)*top/font_height);
+    cursor->bottom = display->top+cell_top+(lib_i32)(
+        ((lib_i64)(cell_bottom-cell_top)*bottom+font_height-1u)/font_height);
     return cursor->right > cursor->left && cursor->bottom > cursor->top;
 }
 

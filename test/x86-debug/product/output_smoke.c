@@ -3,15 +3,31 @@
 
 static lib_bool fail_allocation;
 static lib_u32 allocations;
+static lib_u32 cancellations;
+static volatile lib_status access_status = LIB_STATUS_INVALID_STATE;
 static void *allocate(lib_size count, lib_size size)
 { ++allocations; return lib_allocate_zero(count, size); }
 static void *grow(void *memory, lib_size bytes)
 { return fail_allocation ? LIB_NULL : lib_reallocate(memory, bytes); }
-static void cancel(emulator_machine *machine) { (void)machine; }
+static void cancel(emulator_machine *machine) { if (machine != LIB_NULL) ++cancellations; }
+static lib_status acquire(emulator_machine *machine, emulator_machine_debug_lease *lease)
+{ (void)machine; (void)lease; return access_status; }
 #define lib_reallocate grow
 #define lib_allocate_zero allocate
 #define emulator_machine_debug_cancel cancel
+#define emulator_machine_debug_acquire acquire
 #include "x86-debug/product/command.c"
+
+static void check_failed_result(const x86_debug *command, const x86_debug_result *result)
+{
+    lib_test_assert(result->prompt_ready && result->keep_active &&
+        result->lifecycle_request == X86_DEBUG_LIFECYCLE_NONE);
+    lib_test_assert(lib_text_compare(result->prompt, "-") == 0 &&
+        lib_text_compare(result->text, "Debug command failed.") == 0);
+    lib_test_assert(command->continuation == COMMAND_CONTINUATION_NONE &&
+        !command->pending_line_available && command->run_kind == COMMAND_RUN_NONE &&
+        command->result == LIB_NULL);
+}
 
 #if defined(DEBUG_MAXNARG) || defined(DEBUG_MAXNASMARG)
 #error "Retired Debug capacity names must not remain"
@@ -27,6 +43,16 @@ int main(void)
     /* These original CLI operations do not access a machine at all. */
     fail_allocation = LIB_TRUE;
     lib_test_assert(x86_debug_submit_line(command, "?", &result) == LIB_STATUS_NO_MEMORY);
+    check_failed_result(command, &result);
+    lib_test_assert(cancellations == 1u);
+    command->run_kind = COMMAND_RUN_TRACE_REAL;
+    lib_test_assert(x86_debug_observe_machine(command, X86_DEBUG_MACHINE_PAUSED,
+        LIB_STATUS_OK, &result) == LIB_STATUS_NO_MEMORY);
+    check_failed_result(command, &result);
+    lib_test_assert(cancellations == 2u);
+    lib_test_assert(x86_debug_submit_line(command, LIB_NULL, &result) == LIB_STATUS_INVALID_ARGUMENT);
+    check_failed_result(command, &result); /* Invalid input leaves the result untouched. */
+    lib_test_assert(cancellations == 2u);
     fail_allocation = LIB_FALSE;
     lib_test_assert(x86_debug_submit_line(command, "?", &result) == LIB_STATUS_OK);
     lib_test_assert(lib_text_find_substring(result.text, "assemble") && lib_text_compare(result.prompt, "-") == 0);
@@ -42,6 +68,8 @@ int main(void)
     fail_allocation = LIB_TRUE;
     lib_test_assert(command_printf(command, "%10000s", "tail") == -1);
     lib_test_assert(command_end_output(command) == LIB_STATUS_NO_MEMORY);
+    check_failed_result(command, &result);
+    lib_test_assert(cancellations == 3u);
     fail_allocation = LIB_FALSE;
     lib_test_assert(x86_debug_submit_line(command, "", &result) == LIB_STATUS_OK);
     lib_test_assert(lib_text_compare(result.text, "") == 0 && lib_text_compare(result.prompt, "-") == 0);
