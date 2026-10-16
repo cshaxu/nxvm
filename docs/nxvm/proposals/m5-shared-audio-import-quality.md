@@ -123,4 +123,6 @@ S1--S3 ledger evidence, enumerate and execute the full admitted external
 integration suite on both widths against the final frozen baseline, review
 any failures without weakening assertions, and verify current artifacts and
 manifests. Selected receiving integrations do not substitute for this T gate.
-This is a proposed batch, not admission or authorization to close T562.
+The owner now admits this batch as S4. No new production repair is admitted;
+failure must be diagnosed and explicitly scoped before edits. Current records
+the frozen baseline, complete verification inventory and closure boundary.

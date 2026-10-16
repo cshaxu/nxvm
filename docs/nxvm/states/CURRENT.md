@@ -4,9 +4,30 @@
 
 S3 is accepted and closed by the owner after corrective deliveries Shared
 `86175d302`, MyNES `66d02ba64` and NXVM `e86eb135e`. T562 remains open;
-no S is active. The complete S3 packet is retained in delivery e86eb135e.
-The next proposed batch is final T-level integration/closure qualification,
-not yet admitted; the queued 486SX successor remains unadmitted.
+S3 has no active packet. Its complete packet is retained in delivery e86eb135e.
+The owner now admits S4 final T-level integration/closure qualification;
+the queued 486SX successor remains unadmitted.
+
+## T562 S4 — Final Qualification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, next unused S4 of open M5 T562 after accepted S3. |
+| Admission And Approval | Owner approves execution of final qualification and reporting after S3 acceptance. Target NXVM governance; Shared and MyNES are read-only receiving verification surfaces. |
+| Objective | Reconcile S1--S3 and prove the final admitted integration gate against frozen 83b91104f. |
+| Non-goals | No production/test semantics changes, new imports, CPU qualification claims, sibling changes or user input mutation. |
+| Reference Baseline | Clean 83b91104f; accepted correction 86175d302/66d02ba64/e86eb135e and ten current artifact hashes. |
+| Candidate Proposal | ../proposals/m5-shared-audio-import-quality.md, Remaining T-Level Gate. |
+| Files And ABI Surface | NXVM Current/proposal/history/evidence and any PC artifact relinked by profile qualification; no ABI change. Any actual code repair requires revised scope before editing. |
+| Applicable Rules | Execution reading set, complete units and external integration gate, original cached graphs, source policy for existing external test assets, Documentation authority and actual-change review. |
+| Verification | Original x64/x86 Ninja/ccache graphs; all 631 repository units each; complete registered integrations for default and each of XT/AT/DeskPro profiles, MyNES once per width; existing specialized gates, documentation, artifact identity/hash and diff checks. |
+| Expected Markers | Zero failures/skips for each required suite; no missing executable or asset; all ten deployed files retain the accepted source/version identity, with refreshed hashes for profile-induced relinks. |
+| Asset Needs | Existing owner-managed external inputs only. Preserve all INI/media/ROM/snapshots. Current artifacts remain valid absent changed executable inputs; do not force timestamp rebuilds. |
+| Reporting Requirements | Freeze test inventory, counts per profile/width, actual results and logs; distinguish automated desktop from manual/RDP/physical-device tests. Record any failure without hiding it behind a rerun. |
+| Stop Conditions | Failed required qualification, missing assets, unapproved repair or changed inputs; do not weaken assertions or claim T closure while blocked. |
+| Exit Criteria | Complete ledger and verification proof, actual-diff review, pushed evidence/governance and clean worktree; report T eligibility without claiming unrelated CPU completion. |
+| Original Owner Request | Approved next final qualification S; execute and report results. |
+| Similar-Issue Sweep | Qualification-only: reconcile all registered profile variants and existing S3 native-console failure record; no implementation defect class changed. |
 
 ## M5 T562 — Shared Import And Quality
 
@@ -15,6 +36,7 @@ not yet admitted; the queued 486SX successor remains unadmitted.
 | T562 S1 | Closed after actual-change review of Shared 0d12458ae, MyNES 765acc462 and NXVM 3f31b832d. Both widths pass 630 repository units, 48 profile integration executions and final specialized gates. Ten rebuilt EXEs are published; T562 remains open for owner acceptance. |
 | T562 S2 | Closed after actual-commit review of Shared e5b346309 and NXVM 8f3280726: five quality findings repaired, 630 units per width, selected integrations and eight PC artifacts verified. T562 remains open. |
 | T562 S3 | Owner accepted and closed after P4/P5/P6 actual-change review. Final 631 units per width pass; receiving integrations and ten rebuilt EXEs are verified. [Correction evidence](../etc/evidence/t562-s3-correction.md) preserves the initial x86 native-console failure and unchanged passing rerun; [hashes](../etc/evidence/t562-s3-correction-artifacts.json) identify current artifacts. T562 remains open for its final qualification gate. |
+| T562 S4 | Final qualification passes: 631 units and 48 integration executions per width, restored-default identity and four published PC CLI checks, both specialized gates and ten artifact identities. [Evidence](../etc/evidence/t562-s4-final-qualification.md) and [hashes](../etc/evidence/t562-s4-artifacts.json) await final pushed-delivery closure review. |
 
 ## T562 S2 — Accepted Shared Quality Cleanup
 

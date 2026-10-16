@@ -80,3 +80,16 @@ review accepts actual deliveries 86175d302, 66d02ba64 and e86eb135e against the
 correction evidence. S3 closes; T562 remains open for final T-level external
 integration qualification. No next S or queued CPU task is admitted. This
 governance-only closure changes no executable inputs and requires no rebuild.
+
+## S4 Final Qualification
+
+Owner admitted the final T gate after S3 acceptance. Frozen production at
+83b91104f passes 631 complete units and 48 admitted integration executions per
+width, plus restored-default identity and four published PC CLI checks each.
+Both specialized aggregates pass. S4 changed no source/test code, assertions
+or budgets. Eight PC artifacts relinked during profile selection and are
+published with refreshed hashes; MyNES's pair is unchanged.
+
+[Final evidence](../etc/evidence/t562-s4-final-qualification.md) maps the complete
+ledger, inventories, desktop limits and remaining independent debt. P1 contains
+the actual artifacts and qualification records; final governance review follows.
