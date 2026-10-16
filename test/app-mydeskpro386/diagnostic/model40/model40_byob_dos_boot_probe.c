@@ -1626,7 +1626,7 @@ static lib_i32 vm_byob_snapshot_has_prompt(const x86_video_snapshot *snapshot)
 static lib_i32 vm_byob_send_f1(x86_nxvm_machine *session, lib_i32 pressed,
     lib_u8 *out_scan_set)
 {
-    core_machine_guest_input_event event = {0};
+    x86_nxvm_test_guest_input_event event = {0};
     lib_u8 scan_set = 0u;
 
     if (session == LIB_NULL || session->x86_core_machine == LIB_NULL ||
@@ -1634,7 +1634,7 @@ static lib_i32 vm_byob_send_f1(x86_nxvm_machine *session, lib_i32 pressed,
             session->board, &scan_set) !=
             LIB_STATUS_OK) return 0;
     *out_scan_set = scan_set;
-    event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
+    event.kind = X86_NXVM_TEST_GUEST_INPUT_KEY;
     event.data.key.scan_code = 0x3bu;
     event.data.key.virtual_key = 0x70u;
     event.data.key.pressed = pressed != 0;

@@ -95,9 +95,9 @@ lib_i32 main(void)
         x86_core_machine_memory_read(session->x86_core_machine, VM_KBC_AUX_BYTES_ADDRESS,
             bytes, 1u) != LIB_STATUS_OK || bytes[0] != 0xfau) { stage = 2; goto done; }
     {
-        core_machine_guest_input_event event = {0};
+        x86_nxvm_test_guest_input_event event = {0};
 
-        event.kind = CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE;
+        event.kind = X86_NXVM_TEST_GUEST_INPUT_RELATIVE_MOUSE;
         event.data.relative_mouse.delta_x = 5;
         event.data.relative_mouse.delta_y = 3;
         event.data.relative_mouse.buttons = 0x01u;

@@ -51,3 +51,23 @@ and P3 3f31b832d. The indexed evidence maps each row to direct tests and
 published hashes. S1 is closed; T562 remains open for the owner's acceptance.
 SoftPC can adopt the derived shared repairs and separately fix its root-path
 App join; no sibling worktree was changed here.
+
+## S2 Shared Quality Convergence
+
+Owner admitted the complete subsequent read-only audit findings on 2026-10-16.
+The frozen five-row batch is:
+
+| Finding | Required disposition | Direct proof |
+| --- | --- | --- |
+| Port compatibility | Delete no-caller legacy handler dispatch and unused read registration helpers; retain one typed route registry and live range/wired-OR semantics | Caller sweep and port regressions |
+| Test ownership | Move Board-Base contracts/assembly and mixed PIC/KBC wiring tests to Board-Base; retain real Board-AT unit behavior | Registrations, include/link review and unchanged assertions |
+| Public wrapper | Use Emulator's existing machine composition value directly; name real PC UI options by their owner | Entry/startup/factory tests and receiver builds |
+| Names | Retire Core/IBMPC legacy test prefixes, guards and filenames under current X86 package owners | Whole affected-tree sweep and manifest/build references |
+| Gates | Reject unrecognized source layout; cover included test CMake registrations and subcomponent upward fixture edges; tighten Core private-header/link edges | Negative injection tests and full corpus checks |
+
+No new framework, state, compatibility alias or hardware special case is
+admitted. Shared changes and NXVM documentation/artifacts use separate P
+commits after complete dual-width repository-unit qualification. The eight
+affected PC EXEs retain 0562. MyNES does not link changed X86 production code;
+its executable inputs remain unchanged. Existing external integration and
+manual-device limitations are not reclassified as passes by this cleanup.

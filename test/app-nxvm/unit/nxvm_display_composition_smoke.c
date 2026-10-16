@@ -18,7 +18,7 @@ static void vm_display_composition_port_write(x86_nxvm_machine *session, lib_u16
 }
 
 static lib_i32 vm_display_composition_capture(x86_nxvm_machine *session,
-    core_machine_guest_display_frame *frame, x86_video_kind expected_kind)
+    x86_nxvm_test_guest_display_frame *frame, x86_video_kind expected_kind)
 {
     return x86_nxvm_machine_publish_display(session, LIB_TRUE) == LIB_STATUS_OK &&
         session->display_kind == expected_kind &&
@@ -113,7 +113,7 @@ static lib_i32 vm_display_composition_delivery(x86_nxvm_machine *session)
 lib_i32 main(void)
 {
     x86_nxvm_machine *session = LIB_NULL;
-    static core_machine_guest_display_frame frame;
+    static x86_nxvm_test_guest_display_frame frame;
     static x86_video_snapshot snapshot;
     static x86_video_snapshot_observation observation;
     x86_core_machine_timeline_observation timeline;
@@ -132,7 +132,7 @@ lib_i32 main(void)
     vm_display_composition_enable_text(session, 25u);
     lib_memory_set(&frame, 0, sizeof(frame));
     failed |= !vm_display_composition_capture(session, &frame, X86_VIDEO_KIND_TEXT) ||
-        frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
+        frame.kind != X86_NXVM_TEST_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u || frame.palette_rgb[0u] != 0x000000u ||
         frame.palette_rgb[15u] != 0xaaaaffu;
     text_generation = frame.generation;
@@ -200,7 +200,7 @@ lib_i32 main(void)
             sizeof(cga_odd)) != LIB_STATUS_OK;
     failed |= !vm_display_composition_capture(session, &frame,
         X86_VIDEO_KIND_CGA_320X200X4) ||
-        frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS ||
+        frame.kind != X86_NXVM_TEST_GUEST_DISPLAY_KIND_INDEXED_PIXELS ||
         frame.pixel_width != 320u || frame.pixel_height != 200u ||
         frame.pixels[0] != 0u || frame.pixels[1] != 1u ||
         frame.pixels[2] != 2u || frame.pixels[3] != 3u ||
@@ -219,7 +219,7 @@ lib_i32 main(void)
             sizeof(ega_pixel)) != LIB_STATUS_OK ||
         !vm_display_composition_capture(session, &frame,
             X86_VIDEO_KIND_EGA_320X200X16) ||
-        frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS ||
+        frame.kind != X86_NXVM_TEST_GUEST_DISPLAY_KIND_INDEXED_PIXELS ||
         frame.pixel_width != 320u || frame.pixel_height != 200u ||
         frame.pixels[0] != 15u || frame.pixels[1] != 0u ||
         frame.pixels[2] != 15u || frame.palette_rgb[15] != 0xaaaaffu ||
@@ -301,7 +301,7 @@ lib_i32 main(void)
         &timeline) != LIB_STATUS_OK || timeline.now != 0u ||
         timeline.pending_events != 0u ||
         test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
-        frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 1u ||
+        frame.kind != X86_NXVM_TEST_GUEST_DISPLAY_KIND_TEXT || frame.columns != 1u ||
         frame.rows != 1u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
         frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xaaaaffu ||
         x86_nxvm_board_capture_display_snapshot(session->board, &snapshot) !=

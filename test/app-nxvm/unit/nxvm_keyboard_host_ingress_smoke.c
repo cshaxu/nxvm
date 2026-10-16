@@ -10,10 +10,10 @@
 lib_i32 main(void)
 {
     x86_nxvm_machine *session = LIB_NULL;
-    core_machine_guest_input_event event = {0};
+    x86_nxvm_test_guest_input_event event = {0};
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK) goto fail;
-    event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
+    event.kind = X86_NXVM_TEST_GUEST_INPUT_KEY;
     event.data.key.scan_code = 0x2au;
     event.data.key.virtual_key = 0x10u;
     event.data.key.pressed = LIB_TRUE;
@@ -27,14 +27,14 @@ lib_i32 main(void)
     if (vm_test_submit_host_input(session, &event) != LIB_STATUS_OK) goto fail;
     event.data.key.pressed = LIB_FALSE;
     if (vm_test_submit_host_input(session, &event) != LIB_STATUS_OK) goto fail;
-    event.kind = (core_machine_guest_input_kind)2;
+    event.kind = (x86_nxvm_test_guest_input_kind)2;
     if (vm_test_submit_host_input(session, &event) != LIB_STATUS_INVALID_ARGUMENT) goto fail;
     x86_nxvm_machine_destroy(session);
     printf("HOST-INGRESS:OK\n");
     return 0;
 
 fail:
-    event.kind = (core_machine_guest_input_kind)2;
+    event.kind = (x86_nxvm_test_guest_input_kind)2;
     if (vm_test_submit_host_input(session, &event) != LIB_STATUS_INVALID_ARGUMENT) goto fail;
     x86_nxvm_machine_destroy(session);
     return 1;

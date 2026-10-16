@@ -19,3 +19,18 @@ on version text. Coordinator review inspected those committed changes,
 confirmed all ten current artifact hashes and unchanged user inputs, and
 accepted every finite ledger row. The subsequent governance-only P records
 that acceptance; it does not change source or executable inputs.
+
+## S2 Shared Boundary And Redundant-Path Cleanup
+
+Owner admitted all five subsequent audit findings. Shared P1 `e5b346309`
+removes unused port dispatch and the empty composition wrapper, corrects test
+ownership/names and strengthens gates. The NXVM receiving P updates direct
+test/build references and publishes eight 0562 PC EXEs; MyNES is unchanged.
+
+[S2 evidence](../etc/evidence/t562-s2-shared-boundary-cleanup.md) and
+[artifact hashes](../etc/evidence/t562-s2-artifacts.json) record both widths:
+630 units, 15 selected integration executions and four final published CLI
+checks each, plus complete specialized gates. Three desktop-labelled units
+per width pass; manual RDP and fresh full external qualification are not claimed.
+Implementation qualification is complete and awaits coordinator actual-commit
+review. T562 remains open.

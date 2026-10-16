@@ -18,7 +18,7 @@ foreach(line IN LISTS ctest_lines)
         list(APPEND registered "${CMAKE_MATCH_2}")
     elseif(line MATCHES "^add_test\\(\\\"(unit|integration)\\.([^\\\"]+)\\\"")
         list(APPEND registered "${CMAKE_MATCH_2}")
-    elseif(line MATCHES "^add_test\\(\\[=\\[(core|x86-core)\\.[^]]+\\]=\\] \"([^\"]+)\"")
+    elseif(line MATCHES "^add_test\\(\\[=\\[(x86-core|x86-nxvm)\\.[^]]+\\]=\\] \"([^\"]+)\"")
         # Component-owned registrations retain their component-relative names.
         # Match the real executable target rather than inventing a second name.
         get_filename_component(shared_target "${CMAKE_MATCH_2}" NAME_WE)

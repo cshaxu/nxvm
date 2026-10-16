@@ -21,7 +21,7 @@ static DWORD WINAPI vm_dos_fdisk_fdisk_run(void *opaque)
 
 static lib_i32 vm_dos_fdisk_fdisk_has_text(const x86_nxvm_machine *session, const char *text)
 {
-    core_machine_guest_display_frame frame;
+    x86_nxvm_test_guest_display_frame frame;
     lib_size cell;
     lib_size character;
     lib_size length = lib_text_length(text);

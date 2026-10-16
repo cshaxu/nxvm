@@ -103,9 +103,9 @@ lib_i32 main(void)
             0x20u, 0u) || !model40_kbc_extension_contract(session)) goto done;
     stage = 2;
     {
-        core_machine_guest_input_event event = {0};
+        x86_nxvm_test_guest_input_event event = {0};
 
-        event.kind = CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE;
+        event.kind = X86_NXVM_TEST_GUEST_INPUT_RELATIVE_MOUSE;
         event.data.relative_mouse.delta_x = 1;
         event.data.relative_mouse.delta_y = 1;
         event.data.relative_mouse.buttons = 1u;

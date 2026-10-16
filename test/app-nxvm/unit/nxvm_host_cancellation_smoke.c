@@ -13,10 +13,10 @@
 lib_i32 main(void)
 {
     x86_nxvm_machine *session = LIB_NULL;
-    core_machine_guest_input_event event = { 0 };
+    x86_nxvm_test_guest_input_event event = { 0 };
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK) goto fail;
-    event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
+    event.kind = X86_NXVM_TEST_GUEST_INPUT_KEY;
     event.data.key.scan_code = VM_HOST_CANCELLATION_F9_SCAN_CODE;
     event.data.key.virtual_key = VM_HOST_CANCELLATION_F9_VIRTUAL_KEY;
     event.data.key.pressed = LIB_TRUE;

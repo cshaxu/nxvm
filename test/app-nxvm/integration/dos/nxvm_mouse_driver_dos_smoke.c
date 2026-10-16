@@ -352,8 +352,8 @@ lib_i32 main(lib_i32 argc, char **argv)
     bytes_address = ((lib_u32)observation.cpu.cs << 4) + bytes_offset;
     stage = 5;
     {
-        core_machine_guest_input_event event = {0};
-        event.kind = CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE;
+        x86_nxvm_test_guest_input_event event = {0};
+        event.kind = X86_NXVM_TEST_GUEST_INPUT_RELATIVE_MOUSE;
         event.data.relative_mouse.delta_x = 5;
         event.data.relative_mouse.delta_y = 3;
         event.data.relative_mouse.buttons = 0x01u;

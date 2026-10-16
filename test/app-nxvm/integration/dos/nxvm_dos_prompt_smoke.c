@@ -88,7 +88,7 @@ fail:
 }
 static lib_i32 has_dos_prompt(const x86_nxvm_machine *session)
 {
-    core_machine_guest_display_frame frame;
+    x86_nxvm_test_guest_display_frame frame;
     lib_size cell;
 
     if (session == LIB_NULL) return 0;

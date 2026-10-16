@@ -1287,7 +1287,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     x86-nxvm-board-kbc-controller-smoke
     x86-nxvm-board-xt-ppi-keyboard-smoke
     x86-nxvm-board-kbc-serial-cadence-smoke
-    x86-nxvm-board-kbc-aux-port-smoke
+    x86-nxvm-test-board_kbc_aux_port
     x86-nxvm-board-dma-channel-smoke
     x86-nxvm-board-dma-binding-token-smoke
     x86-nxvm-machine-media-provider-smoke

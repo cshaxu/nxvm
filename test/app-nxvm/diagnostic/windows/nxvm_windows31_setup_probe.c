@@ -25,10 +25,10 @@
 static lib_i32 vm_windows31_setup_submit_input(x86_nxvm_machine *session,
     lib_u16 scan_code, lib_u16 virtual_key, lib_i32 pressed)
 {
-    core_machine_guest_input_event event = { 0 };
+    x86_nxvm_test_guest_input_event event = { 0 };
 
     if (session == LIB_NULL) return 0;
-    event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
+    event.kind = X86_NXVM_TEST_GUEST_INPUT_KEY;
     event.data.key.scan_code = scan_code;
     event.data.key.virtual_key = virtual_key;
     event.data.key.pressed = pressed != 0;
@@ -37,7 +37,7 @@ static lib_i32 vm_windows31_setup_submit_input(x86_nxvm_machine *session,
 
 static lib_i32 vm_windows31_setup_has_text(const x86_nxvm_machine *session, const char *text)
 {
-    core_machine_guest_display_frame frame;
+    x86_nxvm_test_guest_display_frame frame;
     lib_size cell;
     lib_size character;
     lib_size length = lib_text_length(text);
@@ -55,7 +55,7 @@ static lib_i32 vm_windows31_setup_has_text(const x86_nxvm_machine *session, cons
 
 static lib_i32 vm_windows31_setup_has_prompt(const x86_nxvm_machine *session)
 {
-    core_machine_guest_display_frame frame;
+    x86_nxvm_test_guest_display_frame frame;
     lib_size cell;
 
     if (session == LIB_NULL || test_nxvm_machine_capture_presentation(session,
@@ -148,7 +148,7 @@ static lib_i32 vm_windows31_setup_type_windows(x86_nxvm_machine *session)
 
 static void vm_windows31_setup_print_frame(const x86_nxvm_machine *session)
 {
-    core_machine_guest_display_frame frame;
+    x86_nxvm_test_guest_display_frame frame;
     lib_size row;
     lib_size column;
 

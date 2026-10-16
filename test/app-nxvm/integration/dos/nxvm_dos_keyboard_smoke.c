@@ -22,11 +22,11 @@
 static lib_i32 vm_dos_keyboard_submit_key(x86_nxvm_machine *session,
     lib_u16 scan_code, lib_u16 virtual_key, lib_i32 pressed)
 {
-    core_machine_guest_input_event event = { 0 };
+    x86_nxvm_test_guest_input_event event = { 0 };
     lib_status status;
 
     if (session == LIB_NULL) return 0;
-    event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
+    event.kind = X86_NXVM_TEST_GUEST_INPUT_KEY;
     event.data.key.scan_code = scan_code;
     event.data.key.virtual_key = virtual_key;
     event.data.key.pressed = pressed != 0;
@@ -48,7 +48,7 @@ static lib_i32 vm_dos_keyboard_submit_return(x86_nxvm_machine *session)
 static lib_i32 vm_dos_keyboard_has_text(const x86_nxvm_machine *session,
     const char *text)
 {
-    core_machine_guest_display_frame frame;
+    x86_nxvm_test_guest_display_frame frame;
     lib_size cell;
     lib_size character;
     lib_size length = lib_text_length(text);
@@ -65,7 +65,7 @@ static lib_i32 vm_dos_keyboard_has_text(const x86_nxvm_machine *session,
 
 static lib_i32 vm_dos_keyboard_has_prompt(const x86_nxvm_machine *session)
 {
-    core_machine_guest_display_frame frame;
+    x86_nxvm_test_guest_display_frame frame;
     lib_size cell;
 
     if (test_nxvm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
@@ -144,7 +144,7 @@ static lib_i32 vm_dos_keyboard_verify_text_frame(x86_nxvm_machine *session)
 static void vm_dos_keyboard_report_failure(const x86_nxvm_machine *session,
     const x86_core_cpu_state *state)
 {
-    core_machine_guest_display_frame frame;
+    x86_nxvm_test_guest_display_frame frame;
     lib_u16 head = 0u;
     lib_u16 tail = 0u;
     lib_u8 video_mode = 0u;
