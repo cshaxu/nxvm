@@ -180,6 +180,23 @@ C01--C17 and external qualification S8. These retain their original required
 exits and source restrictions. No manual RDP, physical-machine equivalence,
 PC110 boot or complete Windows GUI qualification is claimed here.
 
+## Coordinator Acceptance
+
+One-session coordinator review inspected actual Shared `4fb3d5238` and NXVM
+`b331fe40d`, including source branches, all added test matrices, manifests,
+version/preset/target alignment, final artifact hashes and task/debt records.
+The nominal family dispositions retain the original source restrictions and
+named event/dynamic/runtime receivers; no unresolved complete-CPU obligation
+is discharged by this S. Production +17/-5 and tests +400/-13 match the
+reviewed code. No unrelated product or owner input changed.
+
+The test-fixture development failures and the one unchanged verifier timeout
+remain recorded rather than hidden. Numeric assertions use the appropriate
+existing instruction/cache owners; the timeout has a bounded test-efficiency
+TODO. All required S2 results have passing evidence, publication is complete,
+and both implementation commits are pushed. S2 is accepted and closed;
+T563 and the overall 486SX goal remain open for S3--S8.
+
 ## Final Delivery Verification
 
 Shared implementation is `4fb3d5238`. The NXVM publication commit containing

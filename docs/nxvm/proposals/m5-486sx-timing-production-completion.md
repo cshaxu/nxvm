@@ -57,8 +57,9 @@ public API or a permanent alternative timing service.
 ## Planned Bounded S Batches
 
 The following sequential S plan follows the current owner audit in
-[S1 evidence](../etc/evidence/t563-s1-rebase.md). Current records S1 acceptance
-and S2 admission. Each later admission freezes numerical sources, files and diff estimates;
+[S1 evidence](../etc/evidence/t563-s1-rebase.md). Current records S1 and S2 acceptance;
+[S2 evidence](../etc/evidence/t563-s2-nominal-allocation.md) retains nominal
+coverage and publication. Each later admission freezes numerical sources, files and diff estimates;
 simple related forms are implemented and tested as a cohort, not one opcode per S.
 
 | S | Cohort and owner | Required exit |
