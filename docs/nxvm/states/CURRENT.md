@@ -12,15 +12,33 @@ S5 neutral advancement and interrupt wiring is accepted after
 actual-change review of pushed `d72a0165d`. S6 P7/P8 decode/construction is accepted
 after actual-change review of pushed `4bba9fc0c`.
 S7 neutral Machine extraction is accepted after actual-change review of pushed
-Shared `0da6818d5` and NXVM `b77d1f482`. NXVM consolidation is next.
+Shared `0da6818d5` and NXVM `b77d1f482`. S8 NXVM consolidation is accepted
+after coordinator actual-change review of pushed Shared `2fce75e62` and
+NXVM `b7c6b9bbb`. S9 independent-package/final qualification is next.
 The [proposal](../proposals/m5-core-x86-core-nxvm-split.md) and
 [convergence ledger](../history/M5-T561-core-package-split.md) retain I1--I5.
 
 | Task | Progress |
 | --- | --- |
-| T561 S8 | Implementation and automatic qualification complete: 626/626 units and 48 profile integration executions per width, specialized gates and eight rebuilt/published 0561 PC EXEs. Actual-change review precedes scoped P commits and coordinator acceptance; S9 final qualification remains. |
+| T561 S8 | Accepted: pushed `2fce75e62` / `b7c6b9bbb`; 626/626 units and 48 profile integration executions per width, specialized gates and eight qualified 0561 PC EXEs. Coordinator reviewed actual changes, 796 file records and eight artifact hashes. S9 remains next; T561 stays open. |
 
-## Active S8 NXVM Consolidation
+## Accepted S8 NXVM Consolidation
+
+The [delivery evidence](../etc/evidence/t561-s8-nxvm-consolidation.md),
+[file ledger](../etc/evidence/t561-s8-file-review.tsv) and
+[artifact hashes](../etc/evidence/t561-s8-artifacts.json) qualify pushed
+Shared `2fce75e62` and NXVM `b7c6b9bbb`. The file ledger freezes P2's reviewed
+contents; this subsequent governance acceptance updates Current/history/proposal
+only. All 796 recorded files and eight artifact hashes were checked before
+acceptance. Production C/H is net -5 and test C/H net -771, including mechanical
+renames; no CPU/FPU algorithm, Lib/Emulator or MyNES change occurred.
+
+Both original cached graphs pass 626 units, 48 integrations and specialized
+checks per width. The eight PC releases pass real CLI/INI/PE/version/hash checks.
+Manual RDP and fresh diagnostic-ROM qualification are not claimed. I4/S8 is
+closed; I5/S9 final independent-package acceptance and the separate CPU
+C16/C17/final-qualification successor remain open. No new implementation
+begins before the S9 packet is admitted.
 
 | Field | Required record |
 | --- | --- |
