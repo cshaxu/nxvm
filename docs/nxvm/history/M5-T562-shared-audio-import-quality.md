@@ -3,7 +3,7 @@
 Owner admitted the committed SoftPC eight-tree import and all Td S180 repairs,
 plus shared-/shared-test- project naming. S1 is accepted and closed after
 coordinator review; T562 remains open for owner acceptance. P3 retains the packet;
-the [proposal](../proposals/m5-shared-audio-import-quality.md) owns the ledger.
+the [archived proposal](M5-T562-shared-audio-import-quality-proposal.md) retains the ledger.
 
 [Evidence](../etc/evidence/t562-s1-shared-import-quality.md) records the fixed
 upstream baseline, 33 derived paths, actual diff and all receiver results.
@@ -93,3 +93,14 @@ published with refreshed hashes; MyNES's pair is unchanged.
 [Final evidence](../etc/evidence/t562-s4-final-qualification.md) maps the complete
 ledger, inventories, desktop limits and remaining independent debt. P1 contains
 the actual artifacts and qualification records; final governance review follows.
+
+### Final Closure
+
+Coordinator review of pushed P1 `131e7d65c` confirms the complete frozen
+qualification inventory, all first-attempt passing results, unchanged
+source/test/owner inputs, eight refreshed PC artifact hashes and the unchanged
+MyNES pair. S4 and T562 are closed. The ledger's accepted repairs remain at
+their single owners; no new in-scope gap was found. Existing native-console
+intermittency and manual/physical validation limits remain explicit, not erased.
+The next queued 486SX qualification remains unadmitted. P2 records only this
+governance closure and proposal archival; no executable input changes.

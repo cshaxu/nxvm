@@ -2,9 +2,10 @@
 
 The entries below are ordered unnumbered candidates.
 
-The owner's committed Shared import/repair request is now active as
-[T562](../proposals/m5-shared-audio-import-quality.md). It precedes the
-candidates below without admitting or completing their CPU work.
+The owner's Shared import/repair request is closed as
+[T562](../history/M5-T562-shared-audio-import-quality-proposal.md) after S4 final
+qualification at 131e7d65c. The candidates below remain unadmitted; CPU work
+is not completed by Shared package qualification.
 
 ## M5 Candidates
 
