@@ -1,5 +1,8 @@
 # Supporting Documentation Index
 
+T562 S1: [Shared import and quality](evidence/t562-s1-shared-import-quality.md)
+records the committed baseline, derived repairs and receiving qualification.
+
 T561 S4: [PC metadata/default/trace separation](evidence/t561-s4-pc-policy-separation.md)
 records the Board-owned qualification and defaults before neutral execution moves.
 

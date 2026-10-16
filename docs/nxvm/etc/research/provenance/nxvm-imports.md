@@ -155,3 +155,17 @@ the Shared source/test corpus.
   `test/ibmpc` repairs rather than replacing them with SoftPC's older paths;
   `docs/nxvm/etc/evidence/t547-s1-softpc-eight-component-reconciliation.md`
   records the path-level disposition.
+
+## T562 S1 — Committed SoftPC Audio And Shared Quality
+
+- Source: project-owned SoftPC `44cad54822316ca57fb66f937607db29b80bf3f1`.
+- Exact initial transfer: src/test Lib, Emulator, X86 Debug and X86 IBM PC.
+  Export uses Git archive, not the sibling working tree; every copied file
+  was SHA-256 compared before local repairs. Upstream uncommitted heartbeat
+  and Sound Blaster changes are excluded.
+- Root MIT owner authorization and existing notices are preserved. No App,
+  recovered-machine source, firmware, media or third-party payload is imported.
+- Derived changes: formatter/path/failure contracts and owner/project naming;
+  direct MyNES PCM receiver. X86 Core/NXVM names change locally, not by import.
+- [Evidence](../../evidence/t562-s1-shared-import-quality.md) records the
+  baseline, finite repair ledger and receiving qualification.

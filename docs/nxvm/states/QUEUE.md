@@ -2,6 +2,10 @@
 
 The entries below are ordered unnumbered candidates.
 
+The owner's committed Shared import/repair request is now active as
+[T562](../proposals/m5-shared-audio-import-quality.md). It precedes the
+candidates below without admitting or completing their CPU work.
+
 ## M5 Candidates
 
 The owner selected former entry 3, [PC110](../proposals/m5-pc110-evidence-and-implementation.md),

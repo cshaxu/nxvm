@@ -2,6 +2,38 @@
 
 ## Current Work
 
+## Active M5 T562 S1 — Committed Shared Import And Repairs
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T562 S1 after closed T561 and completed Td S180. |
+| Admission And Approval | Owner requests exact committed SoftPC eight-tree import followed by all confirmed audit repairs and shared-/shared-test- naming; includes Shared, NXVM and necessary MyNES receivers. |
+| Objective | Import the pinned corpus, repair its confirmed contracts/names, and publish verified receiving Apps. |
+| Non-goals | No uncommitted upstream heartbeat/Sound Blaster work, new guest features, compatibility aliases, recovery threads, INI/media/snapshot changes or CPU qualification. |
+| Reference Baseline | NXVM 80c572112 clean; SoftPC 44cad54822316ca57fb66f937607db29b80bf3f1 committed trees; Td S180 audit. |
+| Candidate Proposal | [Import and repair ledger](../proposals/m5-shared-audio-import-quality.md). |
+| Files And ABI Surface | Eight imported roots; six source/test project CMake identities; X86 NXVM startup and MyNES PCM/config receivers/tests; required manifests/build/version/docs/artifacts. Import estimate source Lib +1050/-294 and test Lib +1051/-364 including metadata; local repairs estimated production +80--160/-40--100 and tests +180--320/-20--60. No local public API expansion planned. |
+| Applicable Rules | NXVM/MyNES guides, Execution, Document, Architecture/Coding and their governance skills, both source/layout authorities and source policies. |
+| Verification | Pinned import hashes; focused failure/boundary regressions, all x64/x86 repository units, affected App integrations, standalone project configure, owner dependencies/Types/manifests/docs, eight PC and two MyNES product builds/deployment hashes/PE checks. |
+| Expected Markers | Exact upstream snapshot before repair; no ignored PCM completion failure, formatter false success, duplicate path separator or retired audio receiver; correct standalone identities. |
+| Asset Needs | Existing authorized external build/integration inputs only; preserve all owner INI/ROM/media/snapshots. PC 0562; MyNES retains 0044. |
+| Reporting Requirements | Report contract/estimated diff before edits, actual delta and retained paths after review, test/artifact evidence and unverified manual/device boundaries; target-separated complete P pushes. |
+| Stop Conditions | Independent license conflict, necessary new public mechanism or unexplained concurrent target changes; report exact boundary without importing uncommitted sibling files. |
+| Exit Criteria | All proposal ledger rows proven, both widths pass full units and receiving checks, affected deployed artifacts current, manifests valid, actual diff reviewed and complete scoped commits pushed. |
+| Original Owner Request | Admit an S, import committed SoftPC eight components unchanged, then perform all audited renaming and repairs on that baseline. |
+| Similar-Issue Sweep | All formatter results in eight trees, Base directory consumers, PCM publication/completion/failure notifications, Console/Linux identifiers and every six-package standalone source/test project declaration. |
+
+This owner-selected import precedes the unadmitted CPU successor; its queue
+position and unresolved C16/C17 qualification are unchanged.
+
+S1 implementation is delivered by Shared `0d12458ae`, MyNES `765acc462`
+and this NXVM artifact/evidence commit. Both widths pass 630 repository
+units, 48 profile integration executions and final specialized gates.
+Ten rebuilt EXEs are recorded in the
+[artifact inventory](../etc/evidence/t562-s1-artifacts.json); old PC 0561
+pairs are replaced by 0562. INI/media/ROM/snapshot files are unchanged.
+Coordinator actual-change acceptance remains the final S closure step.
+
 ## Completed M5 Td S180 Shared Eight-Tree Audit
 
 Owner-requested audit is complete; no source/test/build/artifact was changed.
