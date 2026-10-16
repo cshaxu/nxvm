@@ -25,12 +25,16 @@
 
 | Task | Progress |
 | --- | --- |
-| T563 S1 | Audit complete: current owners and ten residual receiver gaps mapped to S2--S8; fresh 631/631 units pass per width. Documentation delivery/review in progress. |
+| T563 S1 | Closed after coordinator review of pushed 895c1e360: current owners and ten residual receiver gaps mapped to S2--S8; fresh 631/631 units pass per width. |
 
 [S1 evidence](../etc/evidence/t563-s1-rebase.md) distinguishes staged CPU
 calculators from the unallocated runtime selector and still-closed production
 gate. No executable input changed; no artifact refresh or fresh integration
 qualification is claimed in this documentation batch.
+
+T563 remains open. Next is S2, the complete nominal/form-allocation cohort;
+its implementation packet and source-derived estimates must be frozen before
+code changes. No complete 486SX qualification or C17 admission is claimed.
 
 ## Previous Task
 

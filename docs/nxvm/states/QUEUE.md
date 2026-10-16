@@ -60,7 +60,7 @@ package/receiver acceptance. The CPU successor is now admitted as T563 below.
 
 The owner admits the former first candidate as
 [T563](../proposals/m5-486sx-timing-production-completion.md); Current owns
-its active S1. No PC110 receiver is admitted by that CPU work.
+its S status. No PC110 receiver is admitted by that CPU work.
 
 1. [PC110: board, chipset and firmware mapping](../proposals/m5-pc110-board.md)
 2. [PC110: keyboard, pointer and power](../proposals/m5-pc110-input-power.md)

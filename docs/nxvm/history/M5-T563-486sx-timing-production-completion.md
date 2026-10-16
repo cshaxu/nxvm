@@ -11,3 +11,9 @@ gaps in [evidence](../etc/evidence/t563-s1-rebase.md). The proposal now plans
 S2--S8 with explicit cohort exits. Fresh builds and all 631 repository units
 pass on each width using the persistent Ninja/ccache graphs. No source, test,
 public API, manifest, App configuration or executable input changed.
+
+Coordinator reviewed pushed `895c1e360` against the S1 packet: five NXVM
+documentation files, +185/-33, with no executable changes. Original C01--C17
+and source/model limitations remain referenced, all residual cohorts have
+receivers and fresh unit results match their logs. S1 is closed; T563 stays
+open for S2--S8. This acceptance is an audit delivery, not CPU completion.
