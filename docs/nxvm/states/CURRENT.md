@@ -9,39 +9,33 @@ after actual-change review of pushed Shared `8bb5bcaa5` and NXVM `039d946ab`.
 S4 PC metadata/default/trace separation is accepted after actual-change review
 of pushed `f136911be`. Neutral Machine extraction is next; CPU qualification
 does not resume. S5 neutral advancement and interrupt wiring is accepted after
-actual-change review of pushed `d72a0165d`; address-decode separation and the
-actual Machine move remain next. S6 is admitted for P7/P8 decode/construction.
+actual-change review of pushed `d72a0165d`. S6 P7/P8 decode/construction is accepted
+after actual-change review of pushed `4bba9fc0c`.
 The [proposal](../proposals/m5-core-x86-core-nxvm-split.md) and
 [convergence ledger](../history/M5-T561-core-package-split.md) retain I1--I5.
 
-S6 implementation is delivered for actual-change acceptance with
-[frozen evidence](../etc/evidence/t561-s6-address-decode.md): 627/627 repository
-units, specialized gates and 48 receiving integrations plus restored identity
-per width; eight rebuilt/deployed 0561 PC EXEs pass actual CLI/INI/PE/hash
-checks. Both original graphs are restored to default. P7/P8 is the bounded
-delivery, not physical extraction or T closure; imported packages, CPU/FPU,
-MyNES and owner inputs are unchanged. Manual RDP/physical/full GUI is unverified.
-
-## Active Packet — M5 T561 S6
-
-| Field | Required record |
+| Task | Progress |
 | --- | --- |
-| Identifier Mode | Continuation T561 S6 after accepted S5 `b23431527`; one-session coordinator/executor. |
-| Admission And Approval | Owner-approved complete split and automatic sequential S admission. NXVM Core, four-App direct receivers, tests/checkers/docs/eight PC artifacts only; no imported packages, CPU/FPU, Lib/Emulator or MyNES change. |
-| Objective | Consume I3 P7/P8: Board owns the two existing PC A20 decode policies; neutral memory consumes an explicit copied address range/reset-clear-mask and owns the sole routed access mechanism. Audit existing immutable ROM, bounded firmware/entry construction and reset/reentry/failure semantics, retaining already-neutral mechanisms without a second BIOS path. |
-| Non-goals | No directory move, CPU/timing grade/C16/C17 change, device rewrite, per-byte address callback, route registry, extra cache, mirrored A20 flag, thread, manager, new host BIOS behavior or sibling import. |
-| Reference Baseline | Clean accepted `b23431527`; S2 P7/P8, all S5 receiving qualification and eight 0561 PC EXEs. |
-| Candidate Proposal | [Core split](../proposals/m5-core-x86-core-nxvm-split.md), [S2 decisions](../etc/evidence/t561-s2/review.md), [T561 ledger](../history/M5-T561-core-package-split.md). |
-| Files And ABI Surface | Core memory/config/construction and direct tests; Board configuration/A20/port/KBC bindings and App direct receivers; affected checkers, manifests/docs/eight artifacts. Replace the PC-policy enum in neutral executor config by a copied first/last/reset_clear_mask value. Three existing live/paused/query operations become neutral clear-mask operations; PC Boolean A20 adaptation moves to Board APIs with real Board handles. Raw-reset priority terminology follows actual decode order. Preliminary production +120--240/-100--200, tests +120--260/-70--160 plus mechanical receiver substitutions. No new persistent flag or callback; existing gate state is represented as a bit mask and immutable range/reset data. |
-| Applicable Rules | Execution/Architecture/Coding/Document, NXVM Architecture/Coding/source policy; architecture-governance before coding-governance. One routing/state owner, inward dependencies, Types vocabulary, mirrored source/test owners, original CPU eligibility/grades and protected-input rules. |
-| Verification | Original dual-width Ninja/ccache graphs, build -j8/test -j4. Focused range/mask/reset/cache/ROM/provider-fallthrough/entry/reentry/failure and both PC-policy tests first; actual diff review, full repository units/specialized gates and four-profile integrations; eight rebuilt/deployed 0561 PC EXEs with published CLI/INI/PE/version/hash checks. No budget/assertion weakening or alternate graph. |
-| Expected Markers | Neutral default decode is identity, not an implicit PC A20 gate. Board explicitly preserves global-bit20 and first-to-second-MiB behavior and reset values, including 5170's KBC-driven enabled reset. Raw reset overlays precede line decode; ordinary provider UNSUPPORTED falls through while real failures propagate. Alias/ROM/cache/inspection semantics remain on one path. Generic non-PC bit/range proof and failed config atomicity are direct tests. |
-| Asset Needs | Same approved BYOB inputs; preserve all INI, external ROM/media/snapshots and MyNES assets; rebuild four PC dual-width pairs. |
-| Reporting Requirements | Explain existing route evaluation and chosen minimum data contract before edits; record files, actual added/deleted/net lines, mechanism/owner audit, both-policy and failure evidence, qualification/artifacts and unexecuted manual boundaries. Complete implementation P then separate actual-change acceptance. |
-| Stop Conditions | A second memory path, per-byte callback, changed PC wrap/reset/provider/cache semantics, lost reentry/failure guards, invented CPU behavior, necessary Shared edit or unrelated conflict. Revise design rather than retain policy in the neutral package or weaken tests. |
-| Exit Criteria | Complete P7 policy/mechanism separation and P8 audit with retained construction/failure proof, all required dual-width regressions/gates/integrations and artifacts, manifests/docs/actual-change review, complete scoped P pushed and coordinator accepted. I3 actual move/non-PC execution, I4/I5 remain open. |
-| Original Owner Request | Complete Core split into X86 Core/X86 NXVM, keep Product distinct and mirror source/test structures. |
-| Similar-Issue Sweep | All A20 policy/flag/set/signal/observe and private raw-overlay names, Core config/default/reset/cache/real-mode/memory paths, Board port/KBC reset and App tests; immutable ROM and firmware/entry callbacks, failure/recursive-run guards and source/test checkers. CPU architectural A20M vocabulary is retained, not mistaken for PC policy. |
+| T561 S6 | Accepted P7/P8 prerequisite; actual neutral Machine extraction/non-PC proof, NXVM consolidation and final qualification remain open. No active S between acceptance and next admission. |
+
+## Accepted S6 Address Decode Boundary
+
+[Actual-change evidence](../etc/evidence/t561-s6-address-decode.md) and the
+[36-file review](../etc/evidence/t561-s6-file-review.tsv) cover pushed
+`4bba9fc0c`: PC A20 policy/pins are Board-owned and neutral memory consumes
+one explicit range/reset-clear-mask. ROM, aliases, cache, DMA and firmware/
+entry guards retain their prior path and failure semantics. Production C/H
+is +110/-89 (net +21); tests +174/-43 (net +131); family CMake +19/-4.
+
+Both original graphs pass 627/627 repository units, specialized gates and
+48 receiving integrations plus restored identity per width. Eight rebuilt
+0561 PC EXEs pass actual published CLI/INI/PE/version/hash checks. Imported
+packages, CPU/FPU, MyNES and owner inputs are unchanged; manual RDP/physical/
+full interactive GUI qualification is not claimed. Coordinator actual-change
+review verifies the pushed bodies, all review/artifact hashes and requirement
+mapping. The complete admission packet remains in P1's CURRENT revision.
+S6 closes P7/P8 only; I3 physical extraction/non-PC proof, I4 and I5 remain
+open. S7 is next, with no implementation before its admission packet.
 
 ## Accepted S5 Advancement Boundary
 

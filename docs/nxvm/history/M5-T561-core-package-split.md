@@ -13,7 +13,7 @@ queued with its complete original ledger and requires later admission.
 | I0 exact ten-tree prerequisite | Lib/Emulator/X86 Debug/X86 IBM PC/X86 NXVM src/test match pinned SoftPC commit; manifests, root registration and migrated product receivers verified. | S1 accepted after pushed P1/P2 actual-change review; 264 exact files and full receiving proof below. |
 | I1 complete disposition | Every current Core source/test/target and public contract has one destination, dependency and verification owner; all PC assumptions and SoftPC split prerequisites classified. | S2 accepted after actual-change review of pushed `82e3257cc`: complete 679-path inventory and explicit mixed-contract receiving decisions; no implementation qualification implied. |
 | I2 CPU/FPU extraction | One independent shared CPU/FPU implementation and corresponding tests, correct interfaces, all old consumers migrated and superseded paths removed. | S3 accepted after actual-change review of Shared `8bb5bcaa5` and NXVM `039d946ab`; original CPU functionality/grades retained. I3/I4 private-test receiving obligations remain explicit. |
-| I3 neutral execution core | CPU composition, memory/port routes, guest time, transactions and debug independent of PC policy, with real ROM-free non-PC board proof. | S4 P2/P3/P5 accepted in `f136911be`; S5 P4/P6 accepted in `d72a0165d`. P7/P8 and actual extraction/non-PC proof remain open, with one executor/timeline. |
+| I3 neutral execution core | CPU composition, memory/port routes, guest time, transactions and debug independent of PC policy, with real ROM-free non-PC board proof. | S4 P2/P3/P5 accepted in `f136911be`; S5 P4/P6 accepted in `d72a0165d`; S6 P7/P8 accepted in `4bba9fc0c`. Actual extraction/non-PC proof remains open, with one executor/timeline. |
 | I4 NXVM consolidation | Chips, board-base/XT/AT, driver and family Product in X86 NXVM; all four Apps use the same package, no duplicates or old-path aliases. | Future batch; real PC product/runtime receivers mapped before moving. |
 | I5 final qualification | Full dual-width units/gates, all required PC integrations and affected artifacts, independent package builds, exact ownership and documentation, no dependency on retired roots. | T exit; not implied by staged S1 tests. |
 
@@ -212,5 +212,10 @@ Eight rebuilt/deployed 0561 PC EXEs pass actual published CLI/INI/PE/version/
 release-count/hash checks. Three automated desktop unit cases per width pass;
 manual RDP/physical/full interactive Windows GUI is not claimed. Lib/Emulator,
 imported packages, CPU/FPU, MyNES and owner inputs remain unchanged. Delivery
-awaits coordinator actual-change acceptance. I3 actual Machine extraction and
-non-PC proof, I4 and I5 remain open; CPU C16/C17/final qualification is not resumed.
+is accepted after coordinator actual-change review of pushed `4bba9fc0c`:
+the actual decoder/configuration/Board/test/checker changes, preserved route
+bodies, all 36 reviewed file hashes, eight artifact hashes, qualified results
+and scope-preservation diff satisfy the packet. Documentation governance and
+whitespace checks pass. The complete S6 packet remains in P1's CURRENT
+revision; S6 is closed. I3 actual Machine extraction and non-PC proof, I4 and
+I5 remain open; CPU C16/C17/final qualification is not resumed.
