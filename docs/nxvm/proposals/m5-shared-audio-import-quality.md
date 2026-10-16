@@ -109,3 +109,18 @@ in [S3 evidence](../etc/evidence/t562-s3-equivalent-paths.md). Both widths pass
 12 MyNES integrations and four published PC CLI checks. Ten EXEs are rebuilt.
 The per-package estimated/actual diff and retained platform responsibilities
 are recorded there. S3 is delivered for owner acceptance, not T closure.
+
+The owner subsequently accepts the correction and closes S3 after Shared
+86175d302, MyNES 66d02ba64 and NXVM e86eb135e actual-change review. The
+[correction evidence](../etc/evidence/t562-s3-correction.md) supersedes earlier
+delivery qualification. Its recorded intermittent native-console failure is
+retained in the MyNES ledger, not declared repaired. T562 remains open.
+
+### Remaining T-Level Gate
+
+The proposed next S is a bounded final qualification/closure audit: reconcile
+S1--S3 ledger evidence, enumerate and execute the full admitted external
+integration suite on both widths against the final frozen baseline, review
+any failures without weakening assertions, and verify current artifacts and
+manifests. Selected receiving integrations do not substitute for this T gate.
+This is a proposed batch, not admission or authorization to close T562.

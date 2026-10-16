@@ -74,3 +74,9 @@ selected PC integrations, MyNES integrations and final specialized gates.
 An initial x86 native-console Escape/pause failure passed unchanged isolated
 and complete-suite reruns; its unproven cause remains explicitly recorded in
 the MyNES ledger. No full-tree or physical-input correctness claim is made.
+
+The owner accepts S3 after correction and project-name confirmation. Coordinator
+review accepts actual deliveries 86175d302, 66d02ba64 and e86eb135e against the
+correction evidence. S3 closes; T562 remains open for final T-level external
+integration qualification. No next S or queued CPU task is admitted. This
+governance-only closure changes no executable inputs and requires no rebuild.
