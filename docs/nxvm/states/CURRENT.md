@@ -4,57 +4,28 @@
 
 ## M5 T563 — Remaining 486SX Timing And Production
 
-S2 is closed after coordinator actual-commit review of Shared `4fb3d5238`
-and NXVM `b331fe40d`. Its complete active packet is retained in P2. S3 is
-admitted below for memory/translation under the
-[existing proposal](../proposals/m5-486sx-timing-production-completion.md).
-
-## T563 S3 Active Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, M5 T563 S3; one-session coordinator/executor role cycle. Shared implementation 6f4a03a89 is pushed; this NXVM delivery records the matching qualification and eight releases, pending coordinator actual-commit review. |
-| Admission And Approval | Owner's current admission and standing sequential-S/CPU accuracy-upgrade approval, 2026-10-16. Targets Shared (X86 Core CPU and its tests) and NXVM (evidence, qualification and eight PC artifacts). Four PC consumers are covered; MyNES and sibling repositories remain unchanged. |
-| Objective | Complete the proposal's C16 memory/translation cohort: ordinary and UMOV operand forms, stack/string/descriptor/control accesses, locked/split/failed accesses, and cached/mixed/cold page walks including A/D attempts. Derive costs from the sole actual access owner, preserving source grades and avoiding duplicate bus cost. |
-| Non-goals | No Lib/Emulator changes, public API, new hardware-state mirror, second execution/timing path, C17 admission, App CPU/configuration change or complete CPU claim. Fetch/bus/decode/REP lifetime remains S4; event/system totals S5; sole final selector/preview aggregation S6. |
-| Reference Baseline | Clean accepted 68dd1b9e0, Shared implementation 4fb3d5238, NXVM delivery b331fe40d; original T560 C01--C17 ledger and S9 access/operand evidence preserved. S2 qualifications are baseline evidence, not fresh S3 results. |
-| Candidate Proposal | [Remaining 486SX completion](../proposals/m5-486sx-timing-production-completion.md), S3 and C16 memory/translation row; [S3 inventory](../etc/evidence/t563-s3-memory-translation.md). |
-| Files And ABI Surface | Expected src/x86-core/cpu/cpu_timing_model.c, cpu_instructions.c, cpu_instructions.h and private cpu_timing.h; existing test/x86-core/cpu cache, paging, instruction and protected-mode tests as required, manifests. No public ABI extension. Initial estimate production +150--350/-40--120 and tests +500--1000/-30--100; role/residency census revises expected totals to production +300--450/-50--130, tests +1200--1600/-40--100 for real far/gate/task/permission matrices. Same S3 scope and owners. NXVM task records and eight existing 0563 artifacts are excluded from code counts. |
-| Applicable Rules | AGENTS; NXVM guide and CONTRIBUTING; shared EXECUTION/ARCHITECTURE/CODING/DOCUMENT; NXVM ARCHITECTURE/CODING; source policy; architecture-governance and coding-governance skills. Sole access/timeline ownership, inward dependencies, Types vocabulary, actual failure facts, source-grade honesty, nonmutating queries, no imported external source. |
-| Verification | Original reusable x64/x86 Ninja/ccache graphs only, -j8 builds. Focused actual-execution access/translation cohorts during development; frozen complete repository unit inventories, specialized manifest/dependency/Types/docs gates, four-PC selected configuration/boot integrations and final published CLI/PE/deployment checks per width. Run each required group once after freeze; retain and diagnose failures without relabelling them passes. |
-| Expected Markers | Each admitted memory/form class has source-backed numeric or explicit qualified model proof; invalid/failed queries preserve output. No cache/TLB/bus mutation from cost queries. Manifest and boundary gates pass; final CTest/JUnit records identify actual inventory and exceptions. Unallocated selector and closed C17 remain explicit until their receiving S. |
-| Asset Needs | Existing external owner firmware/media read-only; no new download, ROM changes or protected input commit. Rebuild/deploy eight 0.5.0563 PC EXEs after production changes, verify final hashes after all builds; preserve MyNES, INI and snapshots. |
-| Reporting Requirements | Confirm owners, sources, grouped plan and estimates before code edits; record cohort dispositions, same-issue sweep, actual source/test +/minus/net, retained paths and verification limits. Complete target-separated P commits, immediate push, actual-diff coordinator review; no partial implementation P or CPU-complete claim. |
-| Stop Conditions | Source conflict requiring an accuracy downgrade, public boundary expansion or Lib/Emulator change requires review. Do not invent cached-walk constants, silently count failed accesses as successful, hide unresolved classes behind a later checkpoint or alter owner media/system settings to obtain a pass. |
-| Exit Criteria | Entire admitted S3 cohort reconciled against original ledger with real CPU execution proof and source/model allocation, sole access accounting and no double charging; dual-width required qualification, eight current PC artifacts, manifests/docs/evidence and reviewed/pushed complete delivery. S3 remains active if any member lacks disposition/proof. |
-| Original Owner Request | Implement complete 486SX; resume the remaining CPU work after accepted Shared refactor, batch related instructions efficiently, preserve all original C16/C17 obligations, and execute the next approved S. Current owner: "admit and execute". |
-| Similar-Issue Sweep | Inspect all timing_data_misses/timing_locked_reads/timing_table_misses/timing_unaligned_accesses/timing_tlb_* producers, clears and consumers; all opcode families using the operand helper; linear split/preflight/commit, paging races/failures and event accesses. Record each owner and S3 disposition or named S4/S5/S6 receiver; old-family execution, preview and next-instruction clearing must remain intact. |
+S3 is closed after coordinator actual-commit review of Shared `6f4a03a89`
+and NXVM `1006281a9`. Its complete active packet is retained in P2. No S is
+currently active; the next planned batch is S4 fetch/bus, decode and REP under
+the [existing proposal](../proposals/m5-486sx-timing-production-completion.md).
 
 | Task | Progress |
 | --- | --- |
-| T563 S1 | Closed after coordinator review of pushed 895c1e360: current owners and ten residual receiver gaps mapped to S2--S8; fresh 631/631 units pass per width. |
-| T563 S2 | Closed: nominal/model allocation, real numerical/mode/failure witnesses and source grades reconciled. Both 631-unit inventories have passing results (x64 one verifier timeout passed isolated repeat); 16 selected integrations per width, specialized gates and eight published CLI checks pass. Eight 0563 PC EXEs deployed; no complete C16/C17 claim. |
-| T563 S3 | Delivered for coordinator review: Shared 6f4a03a89, complete memory/translation allocation and proof; 631/631 units, 16 selected integrations, four published CLI checks and specialized gates pass per width. Eight 0563 PC EXEs refreshed. C16 final selection and C17 stay closed. |
+| T563 S1 | Closed after review of 895c1e360: original C01--C17 and ten residual receivers reconciled; unchanged 631/631 units per width. |
+| T563 S2 | Closed at 68dd1b9e0: nominal/form allocation, real numerical/mode/failure witnesses and source grades; required dual-width qualification and eight 0563 PC EXEs. |
+| T563 S3 | Closed: memory/translation, stack/string/descriptor/control/task/permission roles and source-qualified models; 631/631 units, 16 selected integrations, four published CLI checks and specialized gates pass per width. Eight 0563 PC EXEs refreshed. C16 final selection and C17 stay closed. |
 
-[S1 evidence](../etc/evidence/t563-s1-rebase.md) distinguishes staged CPU
-calculators from the unallocated runtime selector and still-closed production
-gate. S1 changed no executable input; S2's code and publication are recorded
-separately below.
-
-T563 remains open. S2 completed the nominal/form-allocation cohort; the
-remaining S3--S8 exits are unchanged. No complete 486SX qualification or C17
-admission is claimed.
-
-[S2 delivery evidence](../etc/evidence/t563-s2-nominal-allocation.md)
-records the finite family census, actual diff, final verification and
-[eight artifact hashes](../etc/evidence/t563-s2-artifacts.json).
-
-[S3 delivery evidence](../etc/evidence/t563-s3-memory-translation.md) maps
-the complete memory/translation batch to actual execution and source/model
-grades. [Final artifact hashes](../etc/evidence/t563-s3-artifacts.json)
+[S1 evidence](../etc/evidence/t563-s1-rebase.md) retains the original receiver
+ledger. [S2 delivery](../etc/evidence/t563-s2-nominal-allocation.md) records the
+nominal family census and source restrictions. [S3 delivery and actual-commit
+review](../etc/evidence/t563-s3-memory-translation.md) maps the whole admitted
+access batch to proof; [final artifact hashes](../etc/evidence/t563-s3-artifacts.json)
 were checked after all builds and published CLI tests. Lib, Emulator, MyNES,
-owner INIs/media/firmware and four App CPU choices remain unchanged. This
-is scoped S3 qualification, not full external-media or complete CPU delivery.
+owner INIs/media/firmware and four App CPU choices remain unchanged.
+
+T563 and the complete 486SX goal remain open for S4--S8. S3 is scoped access
+allocation, not full external-media, complete C16 runtime/preview, C17 production
+admission, PC110 or complete CPU qualification.
 
 ## Previous Task
 

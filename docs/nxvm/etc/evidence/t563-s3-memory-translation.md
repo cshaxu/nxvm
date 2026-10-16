@@ -579,3 +579,22 @@ manifests, task evidence and eight binary changes. Self-review finds no new
 public boundary, state mirror, second execution path, source-grade escalation
 or changed App CPU selection. C16 runtime/preview and C17 remain incomplete;
 passing older-family PC boots cannot discharge those gates.
+
+## Coordinator Actual-Commit Acceptance
+
+The one-session coordinator reviewed pushed Shared `6f4a03a89` and NXVM
+`1006281a9`: every changed CPU observation/allocation hunk, the three actual
+execution test files, both manifests, full packet/ledger mapping, result
+inventories and eight binary hashes. The reviewed production/test counts
+match the table above. Query/failure publication and source/model labels
+preserve sole ownership; the Task Gate correction prevents a duplicated
+transfer term. The GDT/current-LDT/candidate-LDT helper retains distinct
+validation and pre-SX behavior, not an alternate interpreter or cache owner.
+
+Actual committed paths confirm no Lib, Emulator, MyNES, other X86 package,
+App CPU choice or tracked owner input changes. Manifest checks and all eight
+hashes pass again after push; both required implementation commits are on
+origin/master, with no pending background job. Required S3 qualification has
+no failed or skipped row. The bounded full batch R3/R4 is accepted and S3 is
+closed. The complete packet remains in P2. T563 and its original C01--C17
+completion predicate remain open for S4--S8; no complete CPU or PC110 claim.

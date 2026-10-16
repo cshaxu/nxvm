@@ -17,3 +17,14 @@ documentation files, +185/-33, with no executable changes. Original C01--C17
 and source/model limitations remain referenced, all residual cohorts have
 receivers and fresh unit results match their logs. S1 is closed; T563 stays
 open for S2--S8. This acceptance is an audit delivery, not CPU completion.
+
+S2 accepted Shared `4fb3d5238` and NXVM `b331fe40d`, with coordinator
+acceptance `68dd1b9e0`; its nominal/form evidence remains linked from Current.
+S3 now accepts Shared `6f4a03a89` and NXVM `1006281a9` after actual-commit
+review. [Memory/translation evidence](../etc/evidence/t563-s3-memory-translation.md)
+maps S1 R3/R4 to completed access allocation and real-execution proof. Both
+631-unit inventories, 16 selected PC integrations per width, published CLI
+identities, specialized gates and eight 0563 PC artifacts pass. Lib, Emulator,
+MyNES and owner inputs are unchanged. S3 is closed, not complete C16/C17;
+fetch/bus/decode/REP, events/system, final selector/preview, production admission
+and whole qualification retain their S4--S8 receivers.
