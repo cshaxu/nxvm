@@ -4,12 +4,17 @@
 
 NXVM-hosted [T562 S3](../../nxvm/states/CURRENT.md) admits MyNES as a receiver
 of Shared KVM cursor-shape and Emulator fixed-command metadata consolidation.
-Shared source is `c81762c5f`. No MyNES source, test, configuration or snapshot
-change is admitted. Both
+The S3 correction additionally admits the real Machine pacing/PCM receiver
+regression and rebuilt artifacts for the Emulator heartbeat fix. No MyNES
+production, configuration or snapshot change is admitted. Earlier delivery
+source was `c81762c5f`; corrective Shared delivery is `86175d302`. Both
 widths pass all 631 repository units and 12 MyNES integrations, including
 automated native Window/Console tests. Both 0044 EXEs are rebuilt and recorded
-in the [delivery inventory](../../nxvm/etc/evidence/t562-s3-artifacts.json).
-The [S3 evidence](../../nxvm/etc/evidence/t562-s3-equivalent-paths.md) distinguishes
+in the [correction inventory](../../nxvm/etc/evidence/t562-s3-correction-artifacts.json).
+The first x86 native-console integration failed its Escape/pause assertion;
+unchanged isolated and complete-suite reruns passed. Its unproven cause remains
+in the review ledger; it is not claimed repaired.
+The [S3 evidence](../../nxvm/etc/evidence/t562-s3-correction.md) distinguishes
 background/automated desktop proof from unperformed manual RDP acceptance.
 Earlier hashes below remain historical; RDP input is not requalified.
 

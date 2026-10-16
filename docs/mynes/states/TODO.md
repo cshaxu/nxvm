@@ -18,6 +18,18 @@
 
 ## Governance Debt
 
+### Native Console Pause Qualification
+
+- Priority: P2; observed in NXVM-hosted T562 S3 correction on 2026-10-16.
+- Owner: MyNES native-console integration qualification. The x86 complete
+  suite failed the existing Escape/pause assertion after 10 seconds; unchanged
+  isolated and complete 12-test reruns passed. x64 passed initially.
+- Risk: intermittent native input/qualification failure; no established
+  production cause, and no assertion or timeout was weakened.
+- Admission: separately investigate input delivery, broker takeover and machine
+  pause observations if reproduced; preserve the original failure evidence.
+- Evidence: [S3 correction](../../nxvm/etc/evidence/t562-s3-correction.md).
+
 | Priority | Debt | Admission path |
 | --- | --- | --- |
 | P1 | Battery `.sav` and snapshot `.mns` saves still truncate their destination before writing; write/close failure can destroy the prior disk copy. S12 propagates errors but cannot provide file-level rollback. Owner explicitly defers atomic replacement; current Storage has no file replacement API (medium_replace transfers a lease only). | Separately approved Shared storage capability, then MyNES adoption for both save paths with write/close/replace failure tests. No native API bypass or product-local storage implementation. |

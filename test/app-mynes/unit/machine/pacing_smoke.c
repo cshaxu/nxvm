@@ -66,6 +66,22 @@ int main(void)
     assert(driver->audio_staging_count <= MACHINE_DRIVER_AUDIO_STAGING_CAPACITY);
     machine_driver_set_heartbeat(driver, LIB_FALSE);
     assert(driver->audio_staging_count == 0u);
+    /* Resume starts pacing at the current guest position, not the pre-pause
+     * origin. Disable is idempotent and discards the adapter's pending PCM. */
+    for (slice = 0u; slice < 2u; ++slice) {
+        driver->audio_staging_count = 2u;
+        driver->audio_staging_read = 1u;
+        driver->audio_staging_write = 3u;
+        machine_driver_set_heartbeat(driver, LIB_FALSE);
+        assert(driver->audio_staging_count == 0u);
+        assert(driver->audio_staging_read == 0u && driver->audio_staging_write == 0u);
+    }
+    driver->pacing_ready = LIB_FALSE;
+    driver->pacing_origin_cycles = LIB_UINT64_MAX;
+    machine_driver_set_heartbeat(driver, LIB_TRUE);
+    assert(driver->pacing_ready);
+    assert(driver->pacing_origin_cycles == driver->machine->cycles);
+    machine_driver_set_heartbeat(driver, LIB_FALSE);
     assert(machine_driver_destroy(driver) == LIB_STATUS_OK);
     return 0;
 }
